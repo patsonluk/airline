@@ -1,0 +1,21 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
+GET		 /airlines						  controllers.Application.getAllAirlines
+PUT 	 /links 						  controllers.Application.addLink
+GET		 /links/id/:linkId 				  controllers.Application.getLink(linkId : Int)
+GET		 /links							  controllers.Application.getAllLinks
+GET		 /link-consumptions				  controllers.Application.getAllLinkConsumptions	
+DELETE	 /links/id/:linkId				  controllers.Application.deleteLink(linkId: Int)
+DELETE   /links							  controllers.Application.deleteAllLinks
+GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels	
+GET		 /airplanes				  		  controllers.AirplaneApplication.getAirplanes(airlineId : Int)
+PUT	     /airplanes						  controllers.AirplaneApplication.addAirplane(model: Int, quantity: Int, airlineId : Int)
+
+OPTIONS    /*path     controllers.Application.options(path)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file)
