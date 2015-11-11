@@ -1,22 +1,25 @@
 package com.patson
 
-import scala.concurrent.Future
-import scala.util.{ Failure, Success }
-import akka.actor.ActorSystem
-import akka.util.ByteString
-import akka.stream.FlowMaterializer
-import akka.stream.scaladsl.{ OnCompleteSink, Source, Sink }
-import akka.stream.scaladsl.Flow
-import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
-import scala.concurrent.Await
-import java.util.regex.Pattern
-import java.sql.Connection
-import java.sql.DriverManager
-import akka.stream.scaladsl.ForeachSink
+import scala.collection.immutable.Map
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import com.patson.model.AirportInfo
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import com.patson.data.AirportSource
+import com.patson.model.Airport
+import com.patson.model.FlightPreference
+import com.patson.model.FlightPreferencePool
+import com.patson.model.FlightPreferencePool
+import com.patson.model.PassengerGroup
+import com.patson.model.PassengerGroup
+import akka.actor.ActorSystem
+import akka.stream.FlowMaterializer
+import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
+import com.patson.model.LoyaltyPreference
+import com.patson.model.SimplePreference
 
 
 object DemandGenerator extends App {
@@ -27,7 +30,7 @@ object DemandGenerator extends App {
 //
 //  implicit val materializer = FlowMaterializer()
 
-  def computeDemandBetweenAirports(fromAirport : AirportInfo, toAirport : AirportInfo, totalWorldPower : Long) = {
+  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, totalWorldPower : Long) = {
     if (fromAirport == toAirport) {
       0
     } else {
@@ -39,59 +42,94 @@ object DemandGenerator extends App {
   mainFlow
   
   def mainFlow() = {
-    Await.ready(computeDemand(DataSource.loadAirportData()), Duration.Inf)
+    Await.ready(computeDemand(), Duration.Inf)
     
     actorSystem.shutdown()
   }
   
-  def computeDemand(airportInfo : List[AirportInfo]) = {
-    val totalWorldPower = airportInfo.foldRight(0L)( _.power + _)
+  def computeDemand() = {
+    println("Loading airports")
+    //val allAirports = AirportSource.loadAllAirports(true)
+    val airports = AirportSource.loadAllAirports(true).filter { _.size >= 2 }
+    println("Loaded " + airports.size + " airports")
+    val totalWorldPower = airports.foldRight(0L)( _.power + _)
     
-	  val airportSource = Source(airportInfo)
-	  val computeFlow: Flow[AirportInfo, (AirportInfo, Map[AirportInfo, Int])] = Flow[AirportInfo].filter { _.power > 0 }.mapAsync { 
-	    fromAirport : AirportInfo => {
+	  val airportSource = Source(airports)
+	  
+	   
+	  
+	  val computeFlow: Flow[Airport, (Airport, List[(Airport, Int)])] = Flow[Airport].filter { _.power > 0 }.mapAsync { 
+	    fromAirport : Airport => {
 	      Future {
-	        val demandMap = airportInfo.foldLeft(Map[AirportInfo, Int]())((demandMap, toAirport) => {
+	        val demandList = ListBuffer[(Airport, Int)]() 
+	        airports.foreach { toAirport => 
 	          val demand = computeDemandBetweenAirports(fromAirport, toAirport, totalWorldPower)
 	          if (demand > 0) {
-	            demandMap + Tuple2(toAirport, demand)
-	          } else {
-	            demandMap
-	          }
-	        }) 
-	        (fromAirport, demandMap)
+	            demandList.append((toAirport, demand))
+	          } 
+	        } 
+	        
+	        (fromAirport, demandList.toList)
 	      }
 	    }
 	  }
-    //val resultSink = Sink.foreach { demandInfo : (AirportInfo, Map[AirportInfo, Int]) => println() }
+	  
+	  val demandChunkSize = 10
+	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, Int)]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, Int)])].map {
+	    case (fromAirport, toAirportsWithDemand) =>
+	      val passangerGroupDemand = ListBuffer[(PassengerGroup, Airport, Int)]() 
+        //for each city generate different preferences
+        val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
+
+        val demandListFromThisAiport = toAirportsWithDemand.foreach {
+          case (toAirport, demand) =>
+            var remainingDemand = demand
+            while (remainingDemand > demandChunkSize) {
+              passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw), toAirport, demandChunkSize))
+              remainingDemand -= demandChunkSize
+            }
+            passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw), toAirport, remainingDemand)) // don't forget the last chunk
+        }
+	      passangerGroupDemand.toList
+	  }
+	  
+	  
+    //val resultSink = Sink.foreach { demandInfo : (Airport, Map[Airport, Int]) => println() }
     var counter = 0
     var progressCount = 0
-    val progressChunk = airportInfo.length / 100
+    val progressChunk = airports.length / 100
     
-    val resultSink = Sink.fold(Map[AirportInfo, Map[AirportInfo, Int]]()) {
-      (map, demandInfo : (AirportInfo, Map[AirportInfo, Int])) =>
-        map + demandInfo 
+    val resultSink = Sink.fold(List[(PassengerGroup, Airport, Int)]()) {
+      (holder, demandInfo : List[(PassengerGroup, Airport, Int)]) =>
+        holder ++ demandInfo 
     }
     
-    val completeFlow = airportSource.via(computeFlow).to(resultSink)
+    val completeFlow = airportSource.via(computeFlow).via(toPassengerGroupFlow).to(resultSink)
     val materializedFlow = completeFlow.run()
     materializedFlow.get(resultSink)
   }
   
-  
-  
+  def getFlightPreferencePoolOnAirport(fromAirport : Airport) : FlightPreferencePool = {
+    //for now 5 simple preferences per airport
+    val simplePreferenceCount = 5;
 
-  def buildList(e : Any, list : List[Any]) : List[Any] = {
-   buildList(e, e :: list) 
-  }
-  
-  
-
-//  case class AirportInfo(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, size : Int, power : Long) {
-//    val citiesServed = scala.collection.mutable.MutableList[CityInfo]()
-//    def addCityServed(city : CityInfo) {
-//      citiesServed += city
+    //TODO
+    val flightPreferences = ListBuffer[(FlightPreference, Int)]()
+    for (i <- 0 until simplePreferenceCount) { 
+      flightPreferences.append((SimplePreference(i, simplePreferenceCount - 1), 1))
+    }
+        
+//    fromAirport.airlineLoyalties.foreach {
+//      case(airline, strength) => flightPreferences.append((LoyaltyPreference(airline, strength), strength * 10))    
 //    }
-//  }
-
+    
+    //for now 20 loyalty preferences per airport
+    val loyaltyPreferenceCount = 20;
+    for (i <- 0 until loyaltyPreferenceCount) {
+      flightPreferences.append((LoyaltyPreference.getLoyaltyPreferenceWithId(fromAirport.airlineLoyalties.toMap), 1))
+    }
+    
+    
+    new FlightPreferencePool(flightPreferences.toList)
+  }
 }

@@ -1,6 +1,5 @@
 package com.patson.model
 
-import com.patson.model.AirportInfo
-
-case class Link(from : AirportInfo, to : AirportInfo, price : Double, distance : Double, var capacity: Int) {   
+case class Link(from : Airport, to : Airport, airline: Airline, price : Double, distance : Double, capacity: Int) extends IdObject{
+  var availableSeats : Int = capacity
 }

@@ -13,9 +13,11 @@ import scala.concurrent.Await
 import java.util.regex.Pattern
 import java.sql.Connection
 import java.sql.DriverManager
-import com.patson.Constants._
-import com.patson.model.CityInfo
-import com.patson.model.AirportInfo
+import com.patson.data.Constants._
+import com.patson.model.City
+import com.patson.model.Airport
+import com.patson.data.AirportSource
+import com.patson.data.Meta
 
 object GeoDataGenerator extends App {
 
@@ -30,15 +32,15 @@ object GeoDataGenerator extends App {
   mainFlow
   
   def mainFlow() {
-//    val cityList = Await.result(getCityInfo(), Duration(1, TimeUnit.MINUTES))
+//    val cityList = Await.result(getCity(), Duration(1, TimeUnit.MINUTES))
 //    cityList.foreach{ println }
 //    println(cityList.size)
     
-//    val airportList = Await.result(getAirportInfo(), Duration(1, TimeUnit.MINUTES))
+//    val airportList = Await.result(getAirport(), Duration(1, TimeUnit.MINUTES))
 //    airportList.foreach{ println }
 //    println(airportList.size)
     
-    buildAirportData(getAirportInfo(), getCityInfo(getIncomeInfo()))
+    buildAirportData(getAirport(), getCity(getIncomeInfo()))
 //    println(calculateDistance(38.898556, -77.037852, 38.897147, -77.043934))
 //    println(calculateLongitudeBoundary(38.898556, -77.037852, 0.526))
 //    println(calculateLongitudeBoundary(38.898556, 77.037852, 0.526))
@@ -47,26 +49,26 @@ object GeoDataGenerator extends App {
   }
   
 
-  def getCityInfo(incomeInfo : Map[String, Int]): Future[List[CityInfo]] = {
+  def getCity(incomeInfo : Map[String, Int]): Future[List[City]] = {
     val citySource = Source(scala.io.Source.fromFile("cities1000.txt").getLines())
     val splitFlow: Flow[String, Array[String]] = Flow[String].map(_.split("\\t"))
-    val parseFlow: Flow[Array[String], CityInfo] = Flow[Array[String]].filter { infoArray => infoArray(6) == "P" && (infoArray(7) == "PPLC" || infoArray(7) == "PPL") || infoArray(7) == "PPLA2" }.map {
+    val parseFlow: Flow[Array[String], City] = Flow[Array[String]].filter { infoArray => infoArray(6) == "P" && (infoArray(7) == "PPLC" || infoArray(7) == "PPL") || infoArray(7) == "PPLA2" }.map {
       info =>
         {
-          new CityInfo(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, (info(14).toLong * incomeInfo.get(info(8)).getOrElse(DEFAULT_UNKNOWN_INCOME))) //1, 4, 5, 8 - country code, 14
+          new City(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, (info(14).toLong * incomeInfo.get(info(8)).getOrElse(DEFAULT_UNKNOWN_INCOME))) //1, 4, 5, 8 - country code, 14
         }
     }
 
-    val resultSink = Sink.fold(List[CityInfo]())((cityList, cityInfo : CityInfo) => (cityInfo :: cityList))
+    val resultSink = Sink.fold(List[City]())((cityList, City : City) => (City :: cityList))
     
     val completeFlow = citySource.via(splitFlow).via(parseFlow).to(resultSink)
     val materializedFlow = completeFlow.run()
     materializedFlow.get(resultSink)
   }
   
-  def getAirportInfo() : Future[List[AirportInfo]]= {
+  def getAirport() : Future[List[Airport]]= {
     val airportSource = Source(scala.io.Source.fromFile("airports.csv").getLines())
-    //val airportSource = Source(scala.io.Source.fromFile("short-airports.csv").getLines())
+//    val airportSource = Source(scala.io.Source.fromFile("short-airports.csv").getLines())
 //    val pattern = Pattern.compile("(?:^|,)(?=[^\"]|(\")?)\"?((?(1)[^\"]*|[^,\"]*))\"?(?=,|$)");
 //    pattern.matcher("test1,\"test2\",\"test3,test4\"").find
 //    val splitFlow: Flow[String, Array[String]] = Flow[String].map {
@@ -92,7 +94,7 @@ object GeoDataGenerator extends App {
 
     var headerLine = true
     
-    val constructAirportInfoFlow : Flow[Array[String], AirportInfo] = Flow[Array[String]].map {
+    val constructAirportFlow : Flow[Array[String], Airport] = Flow[Array[String]].map {
       info => 
         val airportSize = 
           info(2) match {
@@ -101,12 +103,12 @@ object GeoDataGenerator extends App {
             case "large_airport" => 3
             case _ => 0
           }
-        new AirportInfo(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), airportSize) //2 - size, 3 - name, 4 - lat, 5 - long, 8 - country, 10 - city, 12 - code1, 13- code2
+        new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), airportSize) //2 - size, 3 - name, 4 - lat, 5 - long, 8 - country, 10 - city, 12 - code1, 13- code2
     }
 
-    val resultSink = Sink.fold(List[AirportInfo]())((airportList, airportInfo : AirportInfo) => (airportInfo :: airportList))
+    val resultSink = Sink.fold(List[Airport]())((airportList, Airport : Airport) => (Airport :: airportList))
     
-    val completeFlow = airportSource.via(splitFlow).via(constructAirportInfoFlow).to(resultSink)
+    val completeFlow = airportSource.via(splitFlow).via(constructAirportFlow).to(resultSink)
     val materializedFlow = completeFlow.run()
     materializedFlow.get(resultSink)
   }
@@ -129,12 +131,12 @@ object GeoDataGenerator extends App {
       collection.immutable.HashMap() ++ incomeMap
   }
   
-  def buildAirportData(airportInfo : Future[List[AirportInfo]], cityInfo : Future[List[CityInfo]]) {
-    val combinedFuture = Future.sequence(Seq(airportInfo, cityInfo))
+  def buildAirportData(Airport : Future[List[Airport]], City : Future[List[City]]) {
+    val combinedFuture = Future.sequence(Seq(Airport, City))
     combinedFuture.onComplete { 
       case Success(results) =>
-        val airportResult : List[AirportInfo] = results(0).asInstanceOf[List[AirportInfo]]
-        val cityResult : List[CityInfo] = results(1).asInstanceOf[List[CityInfo]]
+        val airportResult : List[Airport] = results(0).asInstanceOf[List[Airport]]
+        val cityResult : List[City] = results(1).asInstanceOf[List[City]]
         
         println(airportResult.size + " airports")
         println(cityResult.size + " cities")
@@ -150,7 +152,7 @@ object GeoDataGenerator extends App {
         for (city <- citiesSortedByLongitude) {
           //calculate max and min longitude that we should kick off the calculation
           val boundaryLongitude = calculateLongitudeBoundary(city.latitude, city.longitude, 200)
-          val potentialAirports = scala.collection.mutable.MutableList[(AirportInfo, Double)]()
+          val potentialAirports = scala.collection.mutable.MutableList[(Airport, Double)]()
           for (airport <- airportsSortedByLongitude) {
             if (airport.size > 0 &&
                 airport.countryCode == city.countryCode &&
@@ -183,39 +185,14 @@ object GeoDataGenerator extends App {
           }
         }
         
-        //open the hsqldb
-        Class.forName(DB_DRIVER);
-//        Class.forName("org.hsqldb.jdbcDriver");
-        val connection = DriverManager.getConnection(DATABASE_CONNECTION, DATABASE_USER, "");
-        //connection.setCatalog("airport")
-        createSchema(connection)
+        val airports = airportResult.map { Airport => 
+          Airport.power = Airport.citiesServed.foldLeft(0.toLong)( _ + _.power)
+          Airport
+        }.sortBy { _.power }
         
-        val preparedStatement = connection.prepareStatement("INSERT INTO airport(iata, icao, name, latitude, longitude, country_code, city, airport_size, power) VALUES(?,?,?,?,?,?,?,?,?)")
+        Meta.resetDatabase
         
-        var executeCounter = 0
-        
-        connection.setAutoCommit(false)
-        airportResult.map(airportInfo => (airportInfo, airportInfo.citiesServed.foldLeft(0.toLong)( _ + _.power))).sortBy(_._2).foreach {
-          case (airport, power) =>
-            preparedStatement.setString(1, airport.iata)
-            preparedStatement.setString(2, airport.icao)
-            preparedStatement.setString(3, airport.name)
-            preparedStatement.setDouble(4, airport.latitude)
-            preparedStatement.setDouble(5, airport.longitude)
-            preparedStatement.setString(6, airport.countryCode)
-            preparedStatement.setString(7, airport.city)
-            preparedStatement.setInt(8, airport.size)
-            preparedStatement.setLong(9, power.toLong)
-            if (preparedStatement.executeUpdate() != 1) {
-              println(airport + " power " + airport.power)
-            }
-            
-            executeCounter += 1
-        }
-        connection.commit()
-        println(executeCounter)
-        
-        connection.close()
+        AirportSource.saveAirports(airports)
         
         
         //Goal : map all city to some airport
@@ -234,13 +211,7 @@ object GeoDataGenerator extends App {
     Await.result(combinedFuture, Duration.Inf)
   }
   
-  def createSchema(connection : Connection) {
-//    val tables = connection.getMetaData.getTables(null, null, AIRPORT_SCHEMA_NAME, null)
-//    if (!tables.next()) { //then table does not exist, create one
-      connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_SCHEMA_NAME).execute()
-      connection.prepareStatement("CREATE TABLE " + AIRPORT_SCHEMA_NAME + "( id INTEGER IDENTITY, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256), airport_size INTEGER, power LONG)").execute()
-//    }
-  }
+  
   
   
   def calculateLongitudeBoundary(latInDegree : Double, lonInDegree: Double, maxDistance : Double) = {

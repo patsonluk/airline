@@ -1,0 +1,36 @@
+package com.patson.model
+
+/**
+ * Cost base model
+ */
+object Pricing {
+  //200 km = 300
+  //1000 km = 300 + 200 = 500 
+  //2000 km = 500 + 200 = 700
+  //10000 km = 700 + 800 = 1500
+  val modifierBrackets = List((200, 1.5),(800, 0.25),(1000, 0.2),(Int.MaxValue, 0.1))
+  
+  
+  def computeStandardPrice(distance : Double) : Double = {
+    var remainDistance = distance
+    var price = 0.0
+    for (priceBracket <- modifierBrackets) {
+      if (priceBracket._1 >= remainDistance) {
+        return price + remainDistance * priceBracket._2
+      } else {
+        price += priceBracket._1 * priceBracket._2
+      }
+    }
+    price
+  }
+  
+  // if price is zero, adjustment = -distance 
+  // if price is at standard price, adjustment = 0
+  // if price is at double the standard price, adjustment = distance . Fair enough!
+  def standardCostAdjustmentFromPrice(distance: Double, price: Double): Double = {
+    val standardPrice = computeStandardPrice(distance)
+    (price - standardPrice) / standardPrice * distance
+  }
+  
+ 
+}
