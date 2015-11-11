@@ -1,34 +1,176 @@
-function initMap() {
-  
+var map
+var flightPaths
+var activeInput
 
-  var map = new google.maps.Map(document.getElementById('map'), {
+$( document ).ready(function() {
+	flightPaths = []
+	activeInput = $("#fromAirport")
+	loadAirlines()
+})
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
 	center: {lat: 20, lng: 150.644},
    	zoom : 2
   });
-
-  airports = [
-              ["Chek Lap Kok International Airport",22.3089008331,113.915000916,"HKG"],
-              ["Los Angeles International Airport",33.94250107,-118.4079971,"LAX"]
-             ]
   
-  for (i = 0; i < airports.length; i++) {
-	  var airportInfo = airports[i]
-	  var position = {lat: airportInfo[1], lng: airportInfo[2]};
-	  var marker = new google.maps.Marker({
-		    position: position,
-		    map: map,
-		    title: airportInfo[0],
-	  		airportCode: airportInfo[3]
-		  });
-	  
-	  function clickFunction(code) {
-		  alert(code)
-	  }
-	  
-	  marker.addListener('click', function() { 
-		  alert(this.airportCode) 
-		  });
-	  //var f = new clickFunction(airportInfo[3])
-  }
+  getAirports()
+  refreshLinks()
 }
 
+function addMarkers(airports) {
+	for (i = 0; i < airports.length; i++) {
+		  var airportInfo = airports[i]
+		  var position = {lat: airportInfo.latitude, lng: airportInfo.longitude};
+		  var marker = new google.maps.Marker({
+			    position: position,
+			    map: map,
+			    title: airportInfo.name,
+		  		airportCode: airportInfo.iata,
+		  		airportId: airportInfo.id
+			  });
+		  
+		  marker.addListener('click', function() {
+			  var airportId = this.airportId
+			  if (activeInput.is($("#fromAirport"))) {
+				  $("#fromAirport").val(airportId)
+				  activeInput = $("#toAirport")
+			  } else {
+				  $("#toAirport").val(airportId)
+				  activeInput = $("#fromAirport")
+			  }
+		  });
+	}
+}
+
+function loadAirlines() {
+	$.ajax({
+		type: 'GET',
+		url: "http://localhost:9001/airlines",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(airlines) {
+	    	$.each(airlines, function( key, airline ) {
+	    		$("#airlineOption").append($("<option></option>").attr("value", airline.id).text(airline.name)); 
+	  		});
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function loadConsumptions() {
+	$("#consumptions").empty()
+	$.ajax({
+		type: 'GET',
+		url: "http://localhost:9001/link-consumptions",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(consumptions) {
+	    	$.each(consumptions, function( key, consumption ) {
+	    		$("#consumptions").append($("<div></div>").text(consumption.airlineName + " - " + consumption.fromAirportCode + "=>" + consumption.toAirportCode + " : " + consumption.consumption)); 
+	  		});
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function submitLinkForm() {
+	if ($("#fromAirport").val() && $("#toAirport").val()) {
+		var url = "http://localhost:9001/links"
+		var airportData = { 
+			"fromAirportId" : parseInt($("#fromAirport").val()), 
+			"toAirportId" : parseInt($("#toAirport").val()),
+			"airlineId" : parseInt($("#airlineOption").val()),
+			"capacity" : parseInt($("#capacity").val()), 
+			"price" : parseFloat($("#price").val()) }
+		$.ajax({
+			type: 'PUT',
+			url: url,
+		    data: JSON.stringify(airportData),
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
+		    success: function(savedLink) {
+		        drawFlightPath(savedLink)
+		    },
+	        error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	}
+}
+
+function removeAllLinks() {
+	$.ajax({
+		type: 'DELETE',
+		url: "http://localhost:9001/links",
+	    success: function() {
+	    	refreshLinks()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+	
+	
+}
+
+function refreshLinks() {
+	//remove all links from UI first
+	$.each(flightPaths, function( key, value ) {
+		  value.setMap(null)
+		});
+	flightPaths = []
+	
+	$.ajax({
+		type: 'GET',
+		url: "http://localhost:9001/links",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(links) {
+	    	$.each(links, function( key, link ) {
+	    		drawFlightPath(link)
+	  		});
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function drawFlightPath(link) {
+   var flightPath = new google.maps.Polyline({
+     path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}], 
+     geodesic: true,
+     strokeColor: '#F2B022',
+     strokeOpacity: 1.0,
+     strokeWeight: 2
+                           });
+   
+   flightPath.setMap(map)
+   flightPaths.push(flightPath)
+}
+
+function appendConsole(message) {
+	$('#console').append( message + '<br/>')
+}
+
+function getAirports() {
+	$.getJSON( "http://localhost:9001/airports?count=10", function( data ) {
+		  addMarkers(data)
+		});
+}
+	
+	
+	
+	
+	
+	
