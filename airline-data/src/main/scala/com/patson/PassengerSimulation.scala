@@ -62,7 +62,7 @@ object PassengerSimulation extends App {
     
     val links = LinkSource.loadAllLinks()
     
-    passengerConsume(demand, links)
+    val consumptionResult = passengerConsume(demand, links)
     
     
     
@@ -151,18 +151,20 @@ object PassengerSimulation extends App {
     println("Total chunks that consume something " + consumptionResult.size)
     //consumptionResult.foreach(println(_))
     
-    val soldLinks = links.filter{ link => link.availableSeats < link.capacity  }.map { link =>
-      (link, link.capacity - link.availableSeats)
-      }.sortBy {
-        case (_, soldSeats) => soldSeats 
-      }
-      
-    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + Pricing.computeStandardPrice(link.distance) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
-    println("seats sold: " + soldLinks.foldLeft(0) {
-      case (holder, (link, soldSeats)) => holder + soldSeats
-    })
+//    val soldLinks = links.filter{ link => link.availableSeats < link.capacity  }.map { link =>
+//      (link, link.capacity - link.availableSeats)
+//      }.sortBy {
+//        case (_, soldSeats) => soldSeats 
+//      }
+//      
+//    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + Pricing.computeStandardPrice(link.distance) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
+//    println("seats sold: " + soldLinks.foldLeft(0) {
+//      case (holder, (link, soldSeats)) => holder + soldSeats
+//    })
+//    
+//    LinkSource.saveLinkConsumptions(soldLinks)
     
-    LinkSource.saveLinkConsumptions(soldLinks)
+    consumptionResult
   }
   
    
@@ -268,7 +270,7 @@ object PassengerSimulation extends App {
               val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
               val price = computePrice(distance)
               //println(distance + " km, $" + price)
-              Link(fromAirport, toAirport, dummyAirline, price, distance, 100) :: list  
+              Link(fromAirport, toAirport, dummyAirline, price, distance.toInt, 100) :: list  
             } else {
               list
             }
@@ -284,7 +286,7 @@ object PassengerSimulation extends App {
         cost += (distance - priceBracket * i) * multiplier
         multiplier += 0.5 
     }
-    cost
+    cost.toInt
   }
   
   

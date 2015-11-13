@@ -50,7 +50,7 @@ case class LoyaltyPreference(loyaltyList : Map[Airline, Int], id : Int)  extends
       //the actualReduceFactor is random number (linear distribution) from minReduceFactorForThisAirline up to the maxReduceFactorForThisAirline. 
       val actualReduceFactor = minReduceFactorForThisAirline + (maxReduceFactorForThisAirline - minReduceFactorForThisAirline) * Math.random()
       
-      perceivedPrice = link.price / actualReduceFactor
+      perceivedPrice = (link.price / actualReduceFactor).toInt
     }
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     

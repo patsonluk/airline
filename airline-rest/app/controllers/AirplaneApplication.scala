@@ -63,27 +63,32 @@ object AirplaneApplication extends Controller {
   
   def addAirplane(model: Int, quantity : Int, airlineId : Int) = Action {
     val modelGet = ModelSource.loadModelById(model)
-    val airlineGet = AirlineSource.loadAirlineById(airlineId)
+    val airlineGet = AirlineSource.loadAirlineById(airlineId, true)
     if (modelGet.isEmpty || airlineGet.isEmpty) {
-      BadRequest("unknown model or airline").withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-      )
+      BadRequest("unknown model or airline").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
     } else {
       val airplane = Airplane(modelGet.get, airlineGet.get)
-      val airplanes = ListBuffer[Airplane]()
-      for (i <- 0 until quantity) {
-        airplanes.append(airplane.copy())
-      }
-      
-      val updateCount = AirplaneSource.saveAirplanes(airplanes.toList)
-      if (updateCount > 0) {
-          Accepted(Json.obj("updateCount" -> updateCount)).withHeaders(
-            ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-            )
+      val airline = airlineGet.get
+      if (airline.airlineInfo.balance < (airplane.model.price * quantity)) { //not enough money!
+        UnprocessableEntity("Not enough money").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")   
       } else {
-          UnprocessableEntity("Cannot save airplane").withHeaders(
-            ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-            )
+        airline.airlineInfo.balance -= airplane.model.price * quantity
+        AirlineSource.updateAirlineInfo(List(airline))
+        val airplanes = ListBuffer[Airplane]()
+        for (i <- 0 until quantity) {
+          airplanes.append(airplane.copy())
+        }
+        
+        val updateCount = AirplaneSource.saveAirplanes(airplanes.toList)
+        if (updateCount > 0) {
+            Accepted(Json.obj("updateCount" -> updateCount)).withHeaders(
+              ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+              )
+        } else {
+            UnprocessableEntity("Cannot save airplane").withHeaders(
+              ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+              )
+        }
       }
     }
   }

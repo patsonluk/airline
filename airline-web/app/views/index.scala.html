@@ -7,45 +7,104 @@
       #map { height: 100%; }
     </style>
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
-    
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <script src="@routes.Assets.versioned("javascripts/jquery-2.1.4.js")"></script>
   </head>
   <body>
-    <div id="map" style="width: 80% ; float: left;" ></div>
-    <div id="panel" style="width: 20% ; float: right;" >
-    	Airline: <select id="airlineOption" onclick="updateAirlineInfo($(this).val())"></select>
-    	<div>
-    		From: <input type="text" id="fromAirport"/><br/>
-    		To:	<input type="text" id="toAirport"/><br/>
-    		Capacity: <input type="text" id="capacity" value="100"/><br/>
-    		Price: <input type="text" id="price" value="1000"/><br/>
-    		<div class="button" id="addLinkButton" onclick="submitLinkForm()">Add Link</div>
+  
+  	<div id="topBar" data-scroll="false" class="menubar">
+  		Balance: <div id="balance"></div>
+  	</div>
+  	<div id="main" style="width: 100%" >
+	    <div id="map" style="width: 80% ; float: left;" ></div>
+	    <div id="leftPanel" style="width: 20% ; float: right;" >
+	    	Airline: <select id="airlineOption" onchange="updateAllPanels($(this).val())"></select>
+	    	<div>
+	    		From: <span id="fromAirportName"></span><input type="hidden" id="fromAirport"/><br/>
+	    		To:	  <span id="toAirportName"></span><input type="hidden" id="toAirport"/><br/>
+	    		<div class="button" id="planLinkButton" onclick="planLink($('#airlineOption').val(), $('#fromAirport').val(), $('#toAirport').val())">Plan Route</div>
+	    		<div id="planLinkDiv" style="display: none;">
+	    			<div>Distance: <span id="planLinkDistanceSpan"></span>km</div>
+	    			<div>Price: $<input type="text" id="planLinkPrice"/></div>
+	    			<div>Aircraft: <select id="planLinkAirplaneSelect"></select><br/></div> 
+	    		</div>
+	    		
+	    		
+	    		<!--  Price: <input type="text" id="price" value="1000"/><br/> -->
+	    		<div class="button" id="addLinkButton" onclick="createLink()">Create new route</div>
+		    </div>
+		   	<div class="button" id="removeAllLinksButton" onclick="removeAllLinks()">Remove all Links</div>	
+	    	<div>
+	    		Buy aircraft:<br/>
+	    		Model : <select id="airplaneModelOption" onchange="updateModelInfo($('#modelInfo'), $(this).val())"></select><br/>
+	    		Quantity :  <input type="text" id="airplaneQuantity" value="1"/>
+	    		<div id="modelInfo"></div> 
+	    		<div class="button" onclick="addAirplane($('#airplaneModelOption').val(), $('#airplaneQuantity').val(), $('#airlineOption').val())">Purchase Aircrafts</div>
+	    	</div>
+	    	
+	    	
+	    	<div class="button" onclick="loadConsumptions()">Load Results</div>
+	    	<div id="consumptions">
+			</div>
+			<div id="console" style="width: 80%">
+				message: <br/>
+			</div>    	
 	    </div>
-	   	<div class="button" id="removeAllLinksButton" onclick="removeAllLinks()">Remove all Links</div>	
-    	<div>
-    		Buy aircraft:<br/>
-    		Model : <select id="airplaneModelOption" onchange="updateModelInfo($('#modelInfo'), $(this).val())"></select><br/>
-    		Quantity :  <input type="text" id="airplaneQuantity" value="1"/>
-    		<div id="modelInfo"></div> 
-    		<div class="button" onclick="addAirplane($('#airplaneModelOption').val(), $('#airplaneQuantity').val(), $('#airlineOption').val())">Purchase Aircrafts</div>
-    	</div>
-    	<div>
-    		Owned aircraft:<br/>
-    		<div id="ownedAircraftInfo"> </div>
-    	</div>
-    	
-    	
-    	<div class="button" onclick="loadConsumptions()">Load Results</div>
-    	<div id="consumptions">
-		</div>
-		<div id="console" style="width: 80%">
-			message: <br/>
-		</div>    	
-    </div> 
-    
-    <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
+	    <div id="bottomPanel" style="width: 80% ; float: left;" >
+	    	<div id="linkListPanel" style="width: 30% ; float: left;">
+	    		<h4>Routes</h4>
+	    		<div id="linkList"> </div>	
+	    	</div>
+	    	<div id="airplaneListPanel" style="width: 20% ; float: left;">
+	    		<h4>Airplanes</h4>
+	    		<div id="airplaneList"> </div>
+	   		</div>
+	    	<div id="detailsPanel" style="width: 50% ; float: left;">
+	    		<h4>Details</h4>
+	    		<div id="linkDetails" style="width: 100%; display: none;">
+	    			<div class="table" style="width: 100%">
+		    			<div style="display: table-row;">
+		    				<div class="label"><h5>From:</h5></div>
+		    				<div class="value" id="linkFromAirport"></div>
+		    			</div>
+		    			<div style="display: table-row;">
+		    				<div class="label"><h5>To:</h5></div>
+		    				<div class="value" id="linkToAirport"></div>
+		    			</div>
+		    			<div style="display: table-row;">
+		    				<div class="label"><h5>Price:</h5></div>
+		    				<div class="value" id="linkPrice"></div>
+		    			</div>
+		    			<div style="display: table-row;">
+		    				<div class="label"><h5>Distance:</h5></div>
+		    				<div class="value" id="linkDistance"></div>
+		    			</div>
+		    			<div style="display: table-row;">
+		    				<div class="label"><h5>Capacity:</h5></div>
+		    				<div class="value" id="linkCapacity"></div>
+		    			</div>
+		    			<div style="display: table-row;">
+		    				<div class="label"><h5>Load Factor:</h5></div>
+		    				<div class="value" id="linkLoadFactor"></div>
+		    			</div>
+		    			<div style="display: table-row;">
+		    				<div class="label"><h5>Profit:</h5></div>
+		    				<div class="value" id="linkProfit"></div>
+		    			</div>
+	    			</div>
+	    			<input type="hidden" id="actionLinkId"></input>
+	    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete Route</div>
+	    		</div>
+	    		<div id="airplaneDetails" style="width: 100%; display: none;"></div>
+	    	</div>
+	    </div>
+	     
+	    <div style="clear:both"/>
+    </div>
+    <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script async defer
 src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&callback=initMap">
 </script> 

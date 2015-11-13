@@ -11,23 +11,23 @@ object Pricing {
   val modifierBrackets = List((200, 1.5),(800, 0.25),(1000, 0.2),(Int.MaxValue, 0.1))
   
   
-  def computeStandardPrice(distance : Double) : Double = {
+  def computeStandardPrice(distance : Int) : Int = {
     var remainDistance = distance
     var price = 0.0
     for (priceBracket <- modifierBrackets) {
       if (priceBracket._1 >= remainDistance) {
-        return price + remainDistance * priceBracket._2
+        return (price + remainDistance * priceBracket._2).toInt
       } else {
         price += priceBracket._1 * priceBracket._2
       }
     }
-    price
+    price.toInt
   }
   
   // if price is zero, adjustment = -distance 
   // if price is at standard price, adjustment = 0
   // if price is at double the standard price, adjustment = distance . Fair enough!
-  def standardCostAdjustmentFromPrice(distance: Double, price: Double): Double = {
+  def standardCostAdjustmentFromPrice(distance: Int, price: Int): Double = {
     val standardPrice = computeStandardPrice(distance)
     (price - standardPrice) / standardPrice * distance
   }

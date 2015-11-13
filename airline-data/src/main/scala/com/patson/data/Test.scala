@@ -7,6 +7,9 @@ import com.patson.model.airplane.Airplane
 import com.patson.data.airplane.ModelSource
 
 object Test extends App {
-  Meta.createSchema()
+  AirlineSource.loadAirlinesByCriteria(List.empty, true).foreach {
+    airline => 
+    println(airline.airlineInfo.balance) 
+  }
     
 }

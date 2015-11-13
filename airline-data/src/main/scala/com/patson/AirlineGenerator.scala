@@ -54,7 +54,9 @@ object AirlineGenerator extends App {
     
     val airlines = ListBuffer[Airline]()
     for (i <- 1 to count) {
-      airlines.append(Airline("Airline " + i))
+      val newAirline = Airline("Airline " + i)
+      newAirline.setBalance(5000000)
+      airlines.append(newAirline)
     }
     AirlineSource.saveAirlines(airlines.toList)
   }

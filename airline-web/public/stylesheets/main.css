@@ -1,0 +1,17 @@
+#main {
+	margin-top: 40px;
+}
+#map {
+/*     width: 500px; */
+    height: 500px;
+    background-color: #FFF;
+}
+.table .label {
+	display: table-cell;
+	width: 30%;
+	 
+}
+.table .value {
+	display: table-cell;
+	width: 70%;
+}

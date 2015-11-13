@@ -33,7 +33,8 @@ function addAirplane(modelId, quantity, airlineId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	updateAirlineInfo(airlineId)
+	    	updateAirplaneList(airlineId, $('#airplaneList'))
+	    	updateBalance(airlineId)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -57,31 +58,21 @@ function updateModelInfo(modelInfoDiv, modelId) {
 	  		
 }
 
-function refreshLinks() {
-	//remove all links from UI first
-	$.each(flightPaths, function( key, value ) {
-		  value.setMap(null)
-		});
-	flightPaths = []
-	
+function updateAirplaneList(airlineId, airplaneList) {
+	airplaneList.empty()
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/links",
+		url: "http://localhost:9001/airplanes?airlineId=" + airlineId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(links) {
-	    	$.each(links, function( key, link ) {
-	    		drawFlightPath(link)
+	    success: function(airplanes) {
+	    	$.each(airplanes, function( key, airplane ) {
+	    		airplaneList.append($("<h5></h5>").text(airplane.name + ' (id ' + airplane.id + ')'))
 	  		});
 	    },
-        error: function(jqXHR, textStatus, errorThrown) {
+	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
 }
-
-	
-	
-	
-	

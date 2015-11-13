@@ -13,7 +13,7 @@ object AirplaneSource {
   def loadAirplanesCriteria(criteria : List[(String, Any)]) = {
       val connection = Meta.getConnection()
       
-      var queryString = "SELECT owner, m.id as id, model, name, capacity, fuel_burn, speed, range, price  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id" 
+      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, range, price  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id" 
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -35,6 +35,7 @@ object AirplaneSource {
       while (resultSet.next()) {
         val model = ModelSource.getModelFromRow(resultSet)
         val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")))
+        airplane.id = resultSet.getInt("id")
         airplanes.append(airplane)
       }
       
@@ -42,7 +43,7 @@ object AirplaneSource {
       preparedStatement.close()
       connection.close()
       
-      println("Loaded " + airplanes.length + " airplane records")
+      //println("Loaded " + airplanes.length + " airplane records")
       airplanes.toList
   }
   def loadAllAirplanes() = {
@@ -51,6 +52,63 @@ object AirplaneSource {
   
   def loadAirplanesByOwner(ownerId : Int) = {
     loadAirplanesCriteria(List(("owner", ownerId)))
+  }
+  
+  def loadAirplaneById(id : Int) : Option[Airplane] = {
+    val result = loadAirplanesCriteria(List(("a.id", id)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+    
+  }
+  
+  def loadAirplanesWithAssignedLinkByOwner(ownerId : Int)  : List[(Airplane, Option[Link])] = {
+    loadAirplanesWithAssignedLinkByCriteria(List(("owner", ownerId)))
+  }
+  
+  def loadAirplanesWithAssignedLinkByCriteria(criteria : List[(String, Any)]) : List[(Airplane, Option[Link])]= {
+    val connection = Meta.getConnection()
+      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, range, price, la.link  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + LINK_ASSIGNMENT_TABLE + " la ON a.id = la.airplane"  
+      
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+      
+      val preparedStatement = connection.prepareStatement(queryString)
+      
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+      
+      val resultSet = preparedStatement.executeQuery()
+      
+      val airplanesWithAssignedLink = new ListBuffer[(Airplane, Option[Link])]()
+      while (resultSet.next()) {
+        val model = ModelSource.getModelFromRow(resultSet)
+        val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")))
+        airplane.id = resultSet.getInt("id")
+        if (resultSet.getObject("link") != null) {
+          val linkId = resultSet.getInt("link")
+          val assignedLink = LinkSource.loadLinkById(linkId)
+          airplanesWithAssignedLink.append((airplane, assignedLink))
+        } else{
+          airplanesWithAssignedLink.append((airplane, None))
+        }
+        
+      }
+      
+      resultSet.close()
+      preparedStatement.close()
+      connection.close()
+      
+      //println("Loaded " + airplanesWithAssignedLink.length + " airplane records (with assigned link)")
+      airplanesWithAssignedLink.toList
   }
   
  def deleteAllAirplanes() = {
@@ -79,15 +137,12 @@ object AirplaneSource {
     var updateCount = 0
     airplanes.foreach { 
       airplane =>
-        println("???" + airplane)
         preparedStatement.setInt(1, airplane.owner.id)
         preparedStatement.setInt(2, airplane.model.id)
         updateCount += preparedStatement.executeUpdate()
     }
     preparedStatement.close()
     connection.close()
-    
-    println("!!!!" + loadAllAirplanes.size)
     
     updateCount
   }

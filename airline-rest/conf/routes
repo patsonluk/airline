@@ -5,15 +5,21 @@
 # Home page
 GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
 GET		 /airlines						  controllers.Application.getAllAirlines
-PUT 	 /links 						  controllers.Application.addLink
-GET		 /links/id/:linkId 				  controllers.Application.getLink(linkId : Int)
-GET		 /links							  controllers.Application.getAllLinks
-GET		 /link-consumptions				  controllers.Application.getAllLinkConsumptions	
-DELETE	 /links/id/:linkId				  controllers.Application.deleteLink(linkId: Int)
-DELETE   /links							  controllers.Application.deleteAllLinks
+GET		 /airlines/:airlineId	  		  controllers.Application.getAirline(airlineId : Int)
+GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int)
+GET		 /airlines/:airlineId/links	  	  controllers.LinkApplication.getLinks(airlineId : Int)
+PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
+PUT 	 /links 				          controllers.LinkApplication.addLink
+GET		 /links							  controllers.LinkApplication.getAllLinks
+GET		 /links/id/:linkId 				  controllers.LinkApplication.getLink(linkId : Int)
+DELETE   /links/id/:linkId 				  controllers.LinkApplication.deleteLink(linkId : Int)
+DELETE   /links							  controllers.LinkApplication.deleteAllLinks
+GET		 /link-consumptions/id/:linkId	  controllers.LinkApplication.getLinkConsumption(linkId: Int)
+GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels	
 GET		 /airplanes				  		  controllers.AirplaneApplication.getAirplanes(airlineId : Int)
 PUT	     /airplanes						  controllers.AirplaneApplication.addAirplane(model: Int, quantity: Int, airlineId : Int)
+POST	 /plan-link						  controllers.LinkApplication.planLink
 
 OPTIONS    /*path     controllers.Application.options(path)
 

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      html, body { height: 100%; margin: 0; padding: 0; }
+      #map { height: 100%; }
+    </style>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
+    <script src="@routes.Assets.versioned("javascripts/jquery-2.1.4.js")"></script>
+  </head>
+  <body>
+  
+  	<div id="topBar" data-scroll="false" class="menubar">
+  		Balance: <div id="balance"></div>
+  	</div>
+  	<div id="main" style="width: 100%" >
+	    <div id="map" style="width: 80% ; float: left;" ></div>
+	    <div id="panel" style="width: 20% ; float: right;" >
+	    	Airline: <select id="airlineOption" onclick="updateAirlineInfo($(this).val())"></select>
+	    	<div>
+	    		From: <input type="text" id="fromAirport"/><br/>
+	    		To:	<input type="text" id="toAirport"/><br/>
+	    		Capacity: <input type="text" id="capacity" value="100"/><br/>
+	    		Price: <input type="text" id="price" value="1000"/><br/>
+	    		<div class="button" id="addLinkButton" onclick="insertTestLink()">Add Link</div>
+		    </div>
+		   	<div class="button" id="removeAllLinksButton" onclick="removeAllLinks()">Remove all Links</div>	
+	    	<div>
+	    		Buy aircraft:<br/>
+	    		Model : <select id="airplaneModelOption" onchange="updateModelInfo($('#modelInfo'), $(this).val())"></select><br/>
+	    		Quantity :  <input type="text" id="airplaneQuantity" value="1"/>
+	    		<div id="modelInfo"></div> 
+	    		<div class="button" onclick="addAirplane($('#airplaneModelOption').val(), $('#airplaneQuantity').val(), $('#airlineOption').val())">Purchase Aircrafts</div>
+	    	</div>
+	    	<div>
+	    		Owned aircraft:<br/>
+	    		<div id="ownedAircraftInfo"> </div>
+	    	</div>
+	    	
+	    	
+	    	<div class="button" onclick="loadConsumptions()">Load Results</div>
+	    	<div id="consumptions">
+			</div>
+			<div id="console" style="width: 80%">
+				message: <br/>
+			</div>    	
+	    </div> 
+	    <div style="clear:both"/>
+    </div>
+    <script src="@routes.Assets.versioned("javascripts/test-airport.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
+    <script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&callback=initMap">
+</script> 
+  </body>
+</html>

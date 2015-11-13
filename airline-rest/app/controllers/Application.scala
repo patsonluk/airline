@@ -37,63 +37,12 @@ object Application extends Controller {
     
     def writes(airline: Airline): JsValue = JsObject(List(
       "id" -> JsNumber(airline.id),
-      "name" -> JsString(airline.name)))
+      "name" -> JsString(airline.name),
+      "balance" -> JsNumber(airline.airlineInfo.balance)))
   }
   
   
-  implicit object LinkFormat extends Format[Link] {
-    def reads(json: JsValue): JsResult[Link] = {
-      val fromAirportId = json.\("fromAirportId").as[Int]
-      val toAirportId = json.\("toAirportId").as[Int]
-      val airlineId = json.\("airlineId").as[Int]
-      val capacity = json.\("capacity").as[Int]
-      val price = json.\("price").as[Double]
-//      val fromAirport = Airport.fromId(fromAirportId)
-//      val toAirport = Airport.fromId(toAirportId)
-            //val airline = Airline.fromId(airlineId)
-      val fromAirport = AirportSource.loadAirportById(fromAirportId).get
-      val toAirport = AirportSource.loadAirportById(toAirportId).get
-      val airline = AirlineSource.loadAirlineById(airlineId).get
-      val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
-      
-      val link = Link(fromAirport, toAirport, airline, price, distance, capacity)
-      (json \ "id").asOpt[Int].foreach { link.id = _ } 
-      JsSuccess(link)
-    }
-    
-    def writes(link: Link): JsValue = JsObject(List(
-      "id" -> JsNumber(link.id),
-      "fromAirportId" -> JsNumber(link.from.id),
-      "toAiportId" -> JsNumber(link.to.id),
-      "airlineId" -> JsNumber(link.airline.id),
-      "price" -> JsNumber(link.price),
-      "distance" -> JsNumber(link.distance),
-      "capacity" -> JsNumber(link.capacity),
-      "availableSeat" -> JsNumber(link.availableSeats),
-      "fromLatitude" -> JsNumber(link.from.latitude),
-      "fromLongitude" -> JsNumber(link.from.longitude),
-      "toLatitude" -> JsNumber(link.to.latitude),
-      "toLongitude" -> JsNumber(link.to.longitude)))
-  }
   
-  implicit object LinkConsumptionFormat extends Writes[(Link, Int)] {
-    def writes(linkConsumption: (Link, Int)): JsValue = {
-      linkConsumption match {
-        case(link, consumption) =>
-          JsObject(List(
-      "id" -> JsNumber(link.id),
-      "fromAirportCode" -> JsString(link.from.iata),
-      "fromAirportName" -> JsString(link.from.name),
-      "toAirportCode" -> JsString(link.to.iata),
-      "toAirportName" -> JsString(link.to.name),
-      "airlineName" -> JsString(link.airline.name),
-      "price" -> JsNumber(link.price),
-      "distance" -> JsNumber(link.distance),
-      "capacity" -> JsNumber(link.capacity),
-      "consumption" -> JsNumber(consumption)))
-      }
-    }
-  }
   
   def getAirports(count : Int) = Action {
     val airports = AirportSource.loadAllAirports()
@@ -110,53 +59,14 @@ object Application extends Controller {
     )
   }
   
-  def addLink() = Action { request =>
-    if (request.body.isInstanceOf[AnyContentAsJson]) {
-      val newLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
-      println("PUT " + newLink)
-      
-      LinkSource.saveLink(newLink) match {
-        case Some(link) =>
-          Created(Json.toJson(link)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")      
-        case None => UnprocessableEntity("Cannot insert link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
-      }
-    } else {
-      BadRequest("Cannot insert link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
-    }
+  def getAirline(airlineId : Int) = Action {
+     AirlineSource.loadAirlineById(airlineId, true) match {
+       case Some(airline) =>  Ok(Json.toJson(airline)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+       case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+     }
   }
   
-  def getLink(linkId : Int) = Action { request =>
-    val link = LinkSource.loadLinkById(linkId)
-    Ok(Json.toJson(link)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
-  }
-  
-  def getAllLinks() = Action {
-     val links = LinkSource.loadAllLinks()
-    Ok(Json.toJson(links)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
-  }
-  
-  def deleteAllLinks() = Action {
-    val count = LinkSource.deleteAllLinks()
-    Ok(Json.obj("count" -> count)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
-  }
-  
-  def deleteLink(linkId: Int) = Action {
-    val count = LinkSource.deleteLink(linkId)  
-    Ok(Json.obj("count" -> count)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
-  }
-  
-  def getAllLinkConsumptions() = Action {
-     val linkConsumptions = LinkSource.loadLinkConsumptions()
-    Ok(Json.toJson(linkConsumptions)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
-  }
-
- 
+   
   
   def options(path: String) = Action {
   Ok("").withHeaders(
