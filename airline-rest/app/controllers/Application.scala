@@ -2,7 +2,6 @@ package controllers
 
 import play.api.libs.json._
 import play.api.mvc._
-import models.Book._
 import play.api.libs.json.Json
 import com.patson.model.Airport
 import com.patson.model.Airline
@@ -110,16 +109,4 @@ object Application extends Controller {
 }
 
   case class LinkInfo(fromId : Int, toId : Int, price : Double, capacity : Int)  
-//  def saveBook = Action(BodyParsers.parse.json) { request =>
-//    val b = request.body.validate[Book]
-//    b.fold(
-//      errors => {
-//        BadRequest(Json.obj("status" -> "OK", "message" -> JsError.toFlatJson(errors)))
-//      },
-//      book => {
-//        addBook(book)
-//        Ok(Json.obj("status" -> "OK"))
-//      }
-//    )
-//  }
 }
