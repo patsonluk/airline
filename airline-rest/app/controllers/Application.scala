@@ -21,12 +21,31 @@ object Application extends Controller {
       JsSuccess(airport)
     }
     
-    def writes(airport: Airport): JsValue = JsObject(List(
+    def writes(airport: Airport): JsValue = {
+      val averageIncome = airport.power / airport.population
+      val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
+//      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) { 
+//        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)  
+//      }
+//      val awarenessMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) { 
+//        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.awareness)  
+//      }
+      
+      JsObject(List(
       "id" -> JsNumber(airport.id),
       "name" -> JsString(airport.name),
       "iata" -> JsString(airport.iata),
+      "size" -> JsNumber(airport.size),
       "latitude" -> JsNumber(airport.latitude),
-      "longitude" -> JsNumber(airport.longitude)))
+      "longitude" -> JsNumber(airport.longitude),
+      "countryCode" -> JsString(airport.countryCode),
+      "population" -> JsNumber(airport.population),
+      "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel),
+      "appealList" -> JsArray(airport.airlineAppeals.toList.map {  
+        case (airline, appeal) => Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "loyalty" -> appeal.loyalty, "awareness" -> appeal.awareness)
+        }
+      )))
+    }
   }
   
   implicit object AirlineFormat extends Format[Airline] {
@@ -35,6 +54,11 @@ object Application extends Controller {
       JsSuccess(airline)
     }
     
+    def writes(airline: Airline): JsValue = JsObject(List(
+      "id" -> JsNumber(airline.id),
+      "name" -> JsString(airline.name)))
+  }
+  object OwnedAirlineWrites extends Writes[Airline] {
     def writes(airline: Airline): JsValue = JsObject(List(
       "id" -> JsNumber(airline.id),
       "name" -> JsString(airline.name),
@@ -52,6 +76,13 @@ object Application extends Controller {
     )
   }
   
+  def getAirport(airportId : Int) = Action {
+     AirportSource.loadAirportById(airportId, true) match {
+       case Some(airport) =>  Ok(Json.toJson(airport)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+       case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+     }
+  }
+  
   def getAllAirlines() = Action {
      val airlines = AirlineSource.loadAllAirlines()
     Ok(Json.toJson(airlines)).withHeaders(
@@ -61,7 +92,7 @@ object Application extends Controller {
   
   def getAirline(airlineId : Int) = Action {
      AirlineSource.loadAirlineById(airlineId, true) match {
-       case Some(airline) =>  Ok(Json.toJson(airline)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+       case Some(airline) =>  Ok(Json.toJson(airline)(OwnedAirlineWrites)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*") //TODO make sure you really own the airline!
        case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
      }
   }

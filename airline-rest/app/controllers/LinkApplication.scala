@@ -28,23 +28,13 @@ import play.api.mvc.Action
 import play.api.mvc.AnyContentAsJson
 import play.api.mvc.Controller
 import com.patson.model.Pricing
+import play.api.libs.json.JsNumber
+import play.api.libs.json.JsObject
+import com.patson.model.Computation
+import com.patson.model.LinkConsumptionDetails
+import play.api.libs.json.JsObject
 
 object LinkApplication extends Controller {
-
-  implicit object AirplaneWrites extends Writes[Airplane] {
-    def writes(airplane: Airplane): JsValue = {
-          JsObject(List(
-      "id" -> JsNumber(airplane.id),
-      "ownerId" -> JsNumber(airplane.owner.id), 
-      "name" -> JsString(airplane.model.name),
-      "capacity" -> JsNumber(airplane.model.capacity),
-      "fuelBurn" -> JsNumber(airplane.model.fuelBurn),
-      "speed" -> JsNumber(airplane.model.speed),
-      "range" -> JsNumber(airplane.model.range),
-      "price" -> JsNumber(airplane.model.price)))
-    }
-  }
-  
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -56,8 +46,9 @@ object LinkApplication extends Controller {
       val toAirport = AirportSource.loadAirportById(toAirportId).get
       val airline = AirlineSource.loadAirlineById(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+      val quality = json.\("quality").as[Int]
       
-      val link = Link(fromAirport, toAirport, airline, price, distance.toInt, capacity)
+      val link = Link(fromAirport, toAirport, airline, price, distance.toInt, capacity, quality, distance.toInt * 60 / 800, 1)
       (json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
@@ -74,19 +65,35 @@ object LinkApplication extends Controller {
       val fromAirport = AirportSource.loadAirportById(fromAirportId).get
       val toAirport = AirportSource.loadAirportById(toAirportId).get
       val airline = AirlineSource.loadAirlineById(airlineId).get
-      val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+      val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val airplaneIds = json.\("airplanes").as[List[Int]]
-      var capacity = 0; //TODO capacity calculation should take frequency into consideration
+      val frequencyPerAirplane = json.\("frequencyPerAirplane").as[Int]
+
+      var capacity = 0; 
+      var frequency = 0;
+      var duration = Integer.MAX_VALUE;
       val airplanes = airplaneIds.foldRight(List[Airplane]()) { (airplaneId, foldList) =>
         AirplaneSource.loadAirplaneById(airplaneId) match { 
           case Some(airplane) =>
-            capacity += airplane.model.capacity
+            capacity += airplane.model.capacity * frequencyPerAirplane
+            //verify frequency is valid here!
+            duration = Computation.calculateDuration(airplane, distance) //unit is minute ...actually can just calculate once...o well
+            val maxFrequency = Computation.calculateMaxFrequency(airplane, duration)
+            if (maxFrequency > frequencyPerAirplane) { //TODO log error!
+              println("max frequecny exceeded, max " + maxFrequency + " found " + frequencyPerAirplane)
+              frequency += maxFrequency  
+            } else {
+              frequency += frequencyPerAirplane
+            }
+            
+            
             airplane :: foldList
           case None => foldList
         }
       }
+      val quality = 0 //TODO calculate quality
       
-      val link = Link(fromAirport, toAirport, airline, price, distance.toInt, capacity)
+      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, quality, duration, frequency)
       link.assignedAirplanes = airplanes
       (json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
@@ -100,10 +107,15 @@ object LinkApplication extends Controller {
       "toAirportCode" -> JsString(link.to.iata),
       "fromAirportName" -> JsString(link.from.name),
       "toAirportName" -> JsString(link.to.name),
+      "fromAirportCity" -> JsString(link.from.city),
+      "toAirportCity" -> JsString(link.to.city),
       "airlineId" -> JsNumber(link.airline.id),
       "price" -> JsNumber(link.price),
       "distance" -> JsNumber(link.distance),
       "capacity" -> JsNumber(link.capacity),
+      "quality" -> JsNumber(link.capacity),
+      "duration" -> JsNumber(link.duration),
+      "frequency" -> JsNumber(link.frequency),
       "availableSeat" -> JsNumber(link.availableSeats),
       "fromLatitude" -> JsNumber(link.from.latitude),
       "fromLongitude" -> JsNumber(link.from.longitude),
@@ -129,6 +141,20 @@ object LinkApplication extends Controller {
       "capacity" -> JsNumber(linkConsumption.capacity),
       "soldSeats" -> JsNumber(linkConsumption.soldSeats)))
       
+    }
+  }
+  
+  implicit object AirplaneWithMaxFrequencyWrites extends Writes[AirplaneWithPlanRouteInfo] {
+    def writes(airplaneWithMaxFrequency: AirplaneWithPlanRouteInfo): JsValue = {
+      Json.toJson(airplaneWithMaxFrequency.airplane).asInstanceOf[JsObject] + ("duration" , JsNumber(airplaneWithMaxFrequency.duration)) + ("maxFrequency" -> JsNumber(airplaneWithMaxFrequency.maxFrequency))
+    }
+  }
+  
+  implicit object LinkWithProfitWrites extends Writes[(Link, Int)] {
+    def writes(linkWithProfit: (Link, Int)): JsValue = { 
+      val link = linkWithProfit._1
+      val profit = linkWithProfit._2
+      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit))
     }
   }
   
@@ -162,12 +188,28 @@ object LinkApplication extends Controller {
       if (newLink.assignedAirplanes.isEmpty) {
         BadRequest("Cannot insert link - no airplane assigned").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
       } else {
-        println("PUT " + newLink)
+        //check if the assigned planes are either previously unassigned or assigned to this link
+        val airplanesForThisLink = newLink.assignedAirplanes
+        val occupiedAirplanes = airplanesForThisLink.flatMap { airplaneForThisLink => 
+          val assignedLink = AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneForThisLink.id).get._2
+          if (assignedLink.isDefined && assignedLink.get.id != newLink.id) {
+            List(airplaneForThisLink)
+          } else {
+            List.empty
+          }
+        } 
         
-        LinkSource.saveLink(newLink) match {
-          case Some(link) =>
-            Created(Json.toJson(link)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")      
-          case None => UnprocessableEntity("Cannot insert link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        if (occupiedAirplanes.isEmpty) {
+          
+          println("PUT " + newLink)
+          
+          LinkSource.saveLink(newLink) match {
+            case Some(link) =>
+              Created(Json.toJson(link)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")      
+            case None => UnprocessableEntity("Cannot insert link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          }
+        } else {
+           BadRequest("Cannot insert link - some airplanes already occupied " + occupiedAirplanes).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
         }
       }
     } else {
@@ -189,11 +231,24 @@ object LinkApplication extends Controller {
     )
   }
   
-  def getLinks(airlineId : Int) = Action {
-     val links = LinkSource.loadLinksByAirlineId(airlineId)
-    Ok(Json.toJson(links)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
+  def getLinks(airlineId : Int, getProfit : Boolean) = Action {
+    val links = LinkSource.loadLinksByAirlineId(airlineId)
+    if (!getProfit) {
+      Ok(Json.toJson(links)).withHeaders(
+        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+      )
+    } else {
+      val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
+        foldMap + (linkConsumptionDetails.linkId -> linkConsumptionDetails)
+      }
+      val linksWithProfit = links.map { link =>  
+        (link, consumptions.get(link.id).fold(0)(_.profit))  
+      }
+      Ok(Json.toJson(linksWithProfit)).withHeaders(
+        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+      )
+    }
+     
   }
   
   def deleteAllLinks() = Action {
@@ -237,7 +292,12 @@ object LinkApplication extends Controller {
               case (airplane, None) => 
                 airplane.model.range >= distance
             }.map(_._1)
-            Ok(Json.obj("distance" -> distance, "suggestedPrice" -> Pricing.computeStandardPrice(distance)) + ("freeAirplanes", Json.toJson(freeAirplanes))).withHeaders(
+            val freeAirplanesWithPlanRouteInfo = freeAirplanes.map { airplane =>
+              val duration = Computation.calculateDuration(airplane, distance)
+              val maxFrequency = Computation.calculateMaxFrequency(airplane, duration)
+              AirplaneWithPlanRouteInfo(airplane, duration, maxFrequency)
+            }
+            Ok(Json.obj("distance" -> distance, "suggestedPrice" -> Pricing.computeStandardPrice(distance)) + ("freeAirplanes", Json.toJson(freeAirplanesWithPlanRouteInfo))).withHeaders(
             ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
             )
           case None => BadRequest("unknown toAirport").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
@@ -245,8 +305,8 @@ object LinkApplication extends Controller {
         case None => BadRequest("unknown toAirport").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
     }
   }
- 
 
   
   class PlanLinkResult(distance : Double, availableAirplanes : List[Airplane])
+  case class AirplaneWithPlanRouteInfo(airplane : Airplane, duration : Int, maxFrequency : Int)
 }

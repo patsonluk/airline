@@ -1,3 +1,3 @@
 package com.patson.model
 
-case class Route(links: List[Link], cost: Double)
+case class Route(links: List[LinkWithCost], totalCost: Double)

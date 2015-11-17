@@ -1,10 +1,9 @@
 var wsUri = "ws://localhost:9000/wsWithActor"; 
 var balanceDiv;
 var websocket;
-var airlineId
+var selectedAirlineId
 
 $( document ).ready(function() {
-	balanceDiv = $("#balance");
 	connectWebSocket();
 })
 
@@ -18,12 +17,15 @@ function connectWebSocket(airlineId) {
 
 function setWebSocketAirlineId(airlineId) {
 	sendMessage(airlineId)
+	selectedAirlineId = airlineId
 }
 
 function onOpen(evt) {}  
 function onClose(evt) {}  
 function onMessage(evt) {
-	balanceDiv.text(evt.data)
+	if (selectedAirlineId) {
+		updateAllPanels(selectedAirlineId)
+	}
 }  
 function onError(evt) {
 	balanceDiv.text("???") 

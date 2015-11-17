@@ -68,7 +68,7 @@ object AirlineSource {
   
   def saveAirlines(airlines : List[Airline]) = {
     val connection = Meta.getConnection()
-    
+    connection.setAutoCommit(false)
     val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_TABLE + "(name) VALUES(?)")
         
     airlines.foreach { 
@@ -90,23 +90,38 @@ object AirlineSource {
     }
     
     preparedStatement.close()
+    connection.commit()
     connection.close()
     
     airlines
   }
   
-  def updateAirlineInfo(airlines : List[Airline]) = {
-    val connection = Meta.getConnection()  
-    airlines.foreach { airline => 
-      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ? WHERE airline = ?")
-      updateStatement.setLong(1, airline.airlineInfo.balance)
-      updateStatement.setInt(2, airline.id)
+//  def updateAirlineInfo(airlines : List[Airline]) = {
+//    val connection = Meta.getConnection()
+//    connection.setAutoCommit(false)
+//    airlines.foreach { airline => 
+//      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ? WHERE airline = ?")
+//      updateStatement.setLong(1, airline.airlineInfo.balance)
+//      updateStatement.setInt(2, airline.id)
+//      updateStatement.executeUpdate()
+//      updateStatement.close()
+//    }
+//    connection.commit()          
+//    connection.close()
+//  }
+  
+  def adjustAirlineBalance(airlineId : Int, delta : Long) = {
+    this.synchronized {
+      val connection = Meta.getConnection()
+      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = balance + ? WHERE airline = ?")
+      updateStatement.setLong(1, delta)
+      updateStatement.setInt(2, airlineId)
       updateStatement.executeUpdate()
       updateStatement.close()
+      connection.close()
     }
-          
-    connection.close()
   }
+  
   
   
   def deleteAirline(airlineId : Int) = {

@@ -4,10 +4,13 @@
 
 # Home page
 GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
+GET		 /airports/id/:airportId 		  controllers.Application.getAirport(airportId : Int)
 GET		 /airlines						  controllers.Application.getAllAirlines
 GET		 /airlines/:airlineId	  		  controllers.Application.getAirline(airlineId : Int)
-GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int)
-GET		 /airlines/:airlineId/links	  	  controllers.LinkApplication.getLinks(airlineId : Int)
+GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int, getAssignedLink : Boolean ?= false)
+GET		 /airlines/:airlineId/airplanes/:airplaneId	controllers.AirplaneApplication.getAirplane(airlineId : Int, airplaneId : Int)
+DELETE	 /airlines/:airlineId/airplanes/:airplaneId	controllers.AirplaneApplication.sellAirplane(airlineId : Int, airplaneId : Int)
+GET		 /airlines/:airlineId/links	  	  controllers.LinkApplication.getLinks(airlineId : Int, getProfit : Boolean ?= false)
 PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
 PUT 	 /links 				          controllers.LinkApplication.addLink
 GET		 /links							  controllers.LinkApplication.getAllLinks
@@ -17,7 +20,6 @@ DELETE   /links							  controllers.LinkApplication.deleteAllLinks
 GET		 /link-consumptions/id/:linkId	  controllers.LinkApplication.getLinkConsumption(linkId: Int)
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels	
-GET		 /airplanes				  		  controllers.AirplaneApplication.getAirplanes(airlineId : Int)
 PUT	     /airplanes						  controllers.AirplaneApplication.addAirplane(model: Int, quantity: Int, airlineId : Int)
 POST	 /plan-link						  controllers.LinkApplication.planLink
 

@@ -4,8 +4,8 @@ import scala.math.BigDecimal.int2bigDecimal
 import com.patson.data.AirlineSource
 import com.patson.data.AirplaneSource
 import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane.Airplane
-import com.patson.model.airplane.Model
+import com.patson.model.airplane._
+import com.patson.model._
 import play.api.libs.json.JsNumber
 import play.api.libs.json.JsObject
 import play.api.libs.json.JsString
@@ -14,38 +14,21 @@ import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
 import scala.collection.mutable.ListBuffer
+import controllers.LinkApplication.LinkFormat
+import com.patson.data.CycleSource
 
 
 object AirplaneApplication extends Controller {
-
-  implicit object AirplaneModelWrites extends Writes[Model] {
-    def writes(airplaneModel: Model): JsValue = {
-          JsObject(List(
-      "id" -> JsNumber(airplaneModel.id),
-      "name" -> JsString(airplaneModel.name),
-      "capacity" -> JsNumber(airplaneModel.capacity),
-      "fuelBurn" -> JsNumber(airplaneModel.fuelBurn),
-      "speed" -> JsNumber(airplaneModel.speed),
-      "range" -> JsNumber(airplaneModel.range),
-      "price" -> JsNumber(airplaneModel.price)))
-      
+  implicit object AirplaneWithAssignedLinkWrites extends Writes[(Airplane, Option[Link])] {
+    def writes(airplaneWithAssignedLink : (Airplane, Option[Link])): JsValue = {
+      val airplane = airplaneWithAssignedLink._1
+      val jsObject = Json.toJson(airplane).asInstanceOf[JsObject]
+      airplaneWithAssignedLink._2.fold( jsObject ) { link =>
+        jsObject + ("link", Json.toJson(link)(LinkFormat))
+      }
     }
   }
   
-  implicit object AirplaneWrites extends Writes[Airplane] {
-    def writes(airplane: Airplane): JsValue = {
-          JsObject(List(
-      "id" -> JsNumber(airplane.id),
-      "ownerId" -> JsNumber(airplane.owner.id), 
-      "name" -> JsString(airplane.model.name),
-      "capacity" -> JsNumber(airplane.model.capacity),
-      "fuelBurn" -> JsNumber(airplane.model.fuelBurn),
-      "speed" -> JsNumber(airplane.model.speed),
-      "range" -> JsNumber(airplane.model.range),
-      "price" -> JsNumber(airplane.model.price)))
-      
-    }
-  }
   
   def getAirplaneModels() = Action {
     val models = ModelSource.loadAllModels()
@@ -54,11 +37,50 @@ object AirplaneApplication extends Controller {
     )
   }
   
-  def getAirplanes(airlineId : Int) = Action {
-    val airpalnes = AirplaneSource.loadAirplanesByOwner(airlineId)
-    Ok(Json.toJson(airpalnes)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
+  def getAirplanes(airlineId : Int, getAssignedLink : Boolean) = Action {
+    if (!getAssignedLink) {
+      val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId)
+      Ok(Json.toJson(airplanes)).withHeaders(
+        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+      )
+    } else {
+      val airplanesWithLink : List[(Airplane, Option[Link])]= AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
+      Ok(Json.toJson(airplanesWithLink)).withHeaders(
+        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+      )
+    }
+  }
+  
+  def getAirplane(airlineId : Int, airplaneId : Int) = Action {
+    AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId) match {
+      case Some(airplaneWithLink) =>
+        if (airplaneWithLink._1.owner.id == airlineId) {
+          Ok(Json.toJson(airplaneWithLink)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")     
+        } else {
+          Forbidden.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        }
+      case None =>
+        BadRequest("airplane not found").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+    }
+  }
+  
+  def sellAirplane(airlineId : Int, airplaneId : Int) = Action {
+    AirplaneSource.loadAirplaneById(airplaneId) match {
+      case Some(airplane) =>
+        if (airplane.owner.id == airlineId) {
+          val sellValue = Computation.calculateAirplaneValue(airplane)
+          if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
+            AirlineSource.adjustAirlineBalance(airlineId, sellValue)
+            Ok(Json.toJson(airplane)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          } else {
+            NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          }
+        } else {
+          Forbidden.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        }
+      case None =>
+        BadRequest("airplane not found").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+    }
   }
   
   def addAirplane(model: Int, quantity : Int, airlineId : Int) = Action {
@@ -67,13 +89,13 @@ object AirplaneApplication extends Controller {
     if (modelGet.isEmpty || airlineGet.isEmpty) {
       BadRequest("unknown model or airline").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
     } else {
-      val airplane = Airplane(modelGet.get, airlineGet.get)
+      val airplane = Airplane(modelGet.get, airlineGet.get, CycleSource.loadCycle(), 100)
       val airline = airlineGet.get
       if (airline.airlineInfo.balance < (airplane.model.price * quantity)) { //not enough money!
         UnprocessableEntity("Not enough money").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")   
       } else {
-        airline.airlineInfo.balance -= airplane.model.price * quantity
-        AirlineSource.updateAirlineInfo(List(airline))
+        
+        AirlineSource.adjustAirlineBalance(airlineId,  -1 * airplane.model.price * quantity)
         val airplanes = ListBuffer[Airplane]()
         for (i <- 0 until quantity) {
           airplanes.append(airplane.copy())

@@ -6,20 +6,22 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+
 import com.patson.data.AirportSource
 import com.patson.model.Airport
+import com.patson.model.AppealPreference
 import com.patson.model.FlightPreference
 import com.patson.model.FlightPreferencePool
 import com.patson.model.FlightPreferencePool
 import com.patson.model.PassengerGroup
 import com.patson.model.PassengerGroup
+import com.patson.model.SimplePreference
+
 import akka.actor.ActorSystem
 import akka.stream.FlowMaterializer
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import com.patson.model.LoyaltyPreference
-import com.patson.model.SimplePreference
 
 
 object DemandGenerator extends App {
@@ -74,7 +76,7 @@ object DemandGenerator extends App {
 	    }
 	  }
 	  
-	  val demandChunkSize = 10
+	  val demandChunkSize = 5
 	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, Int)]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, Int)])].map {
 	    case (fromAirport, toAirportsWithDemand) =>
 	      val passangerGroupDemand = ListBuffer[(PassengerGroup, Airport, Int)]() 
@@ -83,12 +85,15 @@ object DemandGenerator extends App {
 
         val demandListFromThisAiport = toAirportsWithDemand.foreach {
           case (toAirport, demand) =>
+            val splitStart = System.nanoTime()
             var remainingDemand = demand
             while (remainingDemand > demandChunkSize) {
               passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw), toAirport, demandChunkSize))
               remainingDemand -= demandChunkSize
             }
             passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw), toAirport, remainingDemand)) // don't forget the last chunk
+            val splitEnd = System.nanoTime()
+//            println("Split took " + (splitEnd - splitStart))
         }
 	      passangerGroupDemand.toList
 	  }
@@ -96,17 +101,29 @@ object DemandGenerator extends App {
 	  
     //val resultSink = Sink.foreach { demandInfo : (Airport, Map[Airport, Int]) => println() }
     var counter = 0
-    var progressCount = 0
     val progressChunk = airports.length / 100
     
-    val resultSink = Sink.fold(List[(PassengerGroup, Airport, Int)]()) {
+//    val resultSink = Sink.fold(List[(PassengerGroup, Airport, Int)]()) {
+//      (holder, demandInfo : List[(PassengerGroup, Airport, Int)]) =>
+//        val resultFoldStart = System.nanoTime()
+//        val newHolder = holder ++ demandInfo 
+//        val resultFoldEnd = System.nanoTime()
+//        println("Result fold took " + (resultFoldEnd - resultFoldStart))
+//        newHolder
+//    }
+    val resultSink = Sink.fold(ListBuffer[(PassengerGroup, Airport, Int)]()) {
       (holder, demandInfo : List[(PassengerGroup, Airport, Int)]) =>
-        holder ++ demandInfo 
+        counter += 1
+        if (progressChunk == 0 || counter % progressChunk == 0) {
+          print(".")
+        }
+        holder.appendAll(demandInfo) 
+        holder
     }
     
     val completeFlow = airportSource.via(computeFlow).via(toPassengerGroupFlow).to(resultSink)
     val materializedFlow = completeFlow.run()
-    materializedFlow.get(resultSink)
+    materializedFlow.get(resultSink).map(_.toList)
   }
   
   def getFlightPreferencePoolOnAirport(fromAirport : Airport) : FlightPreferencePool = {
@@ -123,10 +140,10 @@ object DemandGenerator extends App {
 //      case(airline, strength) => flightPreferences.append((LoyaltyPreference(airline, strength), strength * 10))    
 //    }
     
-    //for now 20 loyalty preferences per airport
-    val loyaltyPreferenceCount = 20;
+    //for now 100 loyalty preferences per airport
+    val loyaltyPreferenceCount = 100;
     for (i <- 0 until loyaltyPreferenceCount) {
-      flightPreferences.append((LoyaltyPreference.getLoyaltyPreferenceWithId(fromAirport.airlineLoyalties.toMap), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.airlineAppeals.toMap), 1))
     }
     
     

@@ -18,15 +18,39 @@
   	<div id="main" style="width: 100%" >
 	    <div id="map" style="width: 80% ; float: left;" ></div>
 	    <div id="leftPanel" style="width: 20% ; float: right;" >
-	    	Airline: <select id="airlineOption" onchange="updateAllPanels($(this).val())"></select>
+	    	Airline: <select id="airlineOption" onchange="selectAirline($(this).val())"></select>
 	    	<div>
-	    		From: <span id="fromAirportName"></span><input type="hidden" id="fromAirport"/><br/>
-	    		To:	  <span id="toAirportName"></span><input type="hidden" id="toAirport"/><br/>
-	    		<div class="button" id="planLinkButton" onclick="planLink($('#airlineOption').val(), $('#fromAirport').val(), $('#toAirport').val())">Plan Route</div>
-	    		<div id="planLinkDiv" style="display: none;">
-	    			<div>Distance: <span id="planLinkDistanceSpan"></span>km</div>
-	    			<div>Price: $<input type="text" id="planLinkPrice"/></div>
-	    			<div>Aircraft: <select id="planLinkAirplaneSelect"></select><br/></div> 
+	    		<div class="table" style="width: 100%">
+	    			<input type="hidden" id="planLinkFromAirportId"/><br/>
+	    			<input type="hidden" id="planLinkToAirportId"/><br/>
+		    		<div class="table-row">
+		    			<div class="label"><h5>From:</h5></div>
+		    			<div class="value" id="planLinkFromAirportName"></div>
+		    		</div>
+		    		<div class="table-row">
+		    			<div class="label"><h5>To:</h5></div>
+		    			<div class="value" id="planLinkToAirportName"></div>
+		    		</div>
+	    			<div class="table-row">
+		    			<div class="label"><h5>Distance:</h5></div>
+		    			<div class="value" id="planLinkDistance"></div>
+		    		</div>
+		    		<div class="table-row">
+		    			<div class="label"><h5>Flight Duration:</h5></div>
+		    			<div class="value" id="planLinkDuration"></div>
+		    		</div>
+		    		<div class="table-row">
+		    			<div class="label"><h5>Price:</h5></div>
+		    			<div class="value"><input type="text" id="planLinkPrice"/></div>
+		    		</div>
+		    		<div class="table-row">
+		    			<div class="label"><h5>Flight Frequency:</h5></div>
+		    			<div class="value"><input type="text" id="planLinkFrequency"/></div>
+		    		</div>
+		    		<div class="table-row">
+		    			<div class="label"><h5>Aircraft:</h5></div>
+		    			<div class="value"> <select id="planLinkAirplaneSelect" onchange="updatePlanLinkInfoWithAirplaneSelected($(this).val())"></select></div>
+		    		</div>
 	    		</div>
 	    		
 	    		
@@ -36,7 +60,7 @@
 		   	<div class="button" id="removeAllLinksButton" onclick="removeAllLinks()">Remove all Links</div>	
 	    	<div>
 	    		Buy aircraft:<br/>
-	    		Model : <select id="airplaneModelOption" onchange="updateModelInfo($('#modelInfo'), $(this).val())"></select><br/>
+	    		Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/>
 	    		Quantity :  <input type="text" id="airplaneQuantity" value="1"/>
 	    		<div id="modelInfo"></div> 
 	    		<div class="button" onclick="addAirplane($('#airplaneModelOption').val(), $('#airplaneQuantity').val(), $('#airlineOption').val())">Purchase Aircrafts</div>
@@ -60,34 +84,45 @@
 	    		<div id="airplaneList"> </div>
 	   		</div>
 	    	<div id="detailsPanel" style="width: 50% ; float: left;">
-	    		<h4>Details</h4>
 	    		<div id="linkDetails" style="width: 100%; display: none;">
-	    			<div class="table" style="width: 100%">
-		    			<div style="display: table-row;">
+	    			<div class="table" id="linkCurrentDetails" style="width: 100%">
+    					<h4>Current Details</h4>
+	    				<div class="table-row">
 		    				<div class="label"><h5>From:</h5></div>
 		    				<div class="value" id="linkFromAirport"></div>
 		    			</div>
-		    			<div style="display: table-row;">
+		    			<div class="table-row">
 		    				<div class="label"><h5>To:</h5></div>
 		    				<div class="value" id="linkToAirport"></div>
 		    			</div>
-		    			<div style="display: table-row;">
-		    				<div class="label"><h5>Price:</h5></div>
-		    				<div class="value" id="linkPrice"></div>
-		    			</div>
-		    			<div style="display: table-row;">
+		    			<div class="table-row">
 		    				<div class="label"><h5>Distance:</h5></div>
 		    				<div class="value" id="linkDistance"></div>
 		    			</div>
-		    			<div style="display: table-row;">
-		    				<div class="label"><h5>Capacity:</h5></div>
-		    				<div class="value" id="linkCapacity"></div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Price:</h5></div>
+		    				<div class="value" id="linkCurrentPrice"></div>
 		    			</div>
-		    			<div style="display: table-row;">
+		    			<div class="table-row">
+		    				<div class="label"><h5>Capacity:</h5></div>
+		    				<div class="value" id="linkCurrentCapacity"></div>
+		    			</div>
+		    		</div>
+		    		<div class="table" id="linkHistoryDetails" style="width: 100%">
+	    				<h4>History</h4>	
+		    			<div class="table-row">
+		    				<div class="label"><h5>Price:</h5></div>
+		    				<div class="value" id="linkHistoryPrice"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Capacity:</h5></div>
+		    				<div class="value" id="linkHistoryCapacity"></div>
+		    			</div>
+		    			<div class="table-row">
 		    				<div class="label"><h5>Load Factor:</h5></div>
 		    				<div class="value" id="linkLoadFactor"></div>
 		    			</div>
-		    			<div style="display: table-row;">
+		    			<div class="table-row">
 		    				<div class="label"><h5>Profit:</h5></div>
 		    				<div class="value" id="linkProfit"></div>
 		    			</div>
@@ -95,11 +130,89 @@
 	    			<input type="hidden" id="actionLinkId"></input>
 	    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete Route</div>
 	    		</div>
-	    		<div id="airplaneDetails" style="width: 100%; display: none;"></div>
+	    		<div id="airplaneDetails" style="width: 100%; display: none;">
+	    			<div class="table" style="width: 100%">
+    					<div class="table-row">
+		    				<div class="label"><h5>Aircraft Id:</h5></div>
+		    				<div class="value" id="airplaneDetailsId"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Model Name:</h5></div>
+		    				<div class="value" id="airplaneDetailsName"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Capacity:</h5></div>
+		    				<div class="value" id="airplaneDetailsCapacity"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Fuel Burn:</h5></div>
+		    				<div class="value" id="airplaneDetailsFuelBurn"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Flight Range:</h5></div>
+		    				<div class="value" id="airplaneDetailsRange"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Aircraft Condition:</h5></div>
+		    				<div class="value" id="airplaneDetailsCondition"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Aircraft Age:</h5></div>
+		    				<div class="value" id="airplaneDetailsAge"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Selling Value:</h5></div>
+		    				<div class="value" id="airplaneDetailsValue"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Assigned Route:</h5></div>
+		    				<div class="value" id="airplaneDetailsLink"></div>
+		    			</div>
+		    		</div>
+    				<input type="hidden" id="actionAirplaneId"></input>
+	    			<div class="button" onclick="sellAirplane($('#airlineOption').val(), $('#actionAirplaneId').val())">Sell Aircraft</div>
+	    		</div>
 	    	</div>
 	    </div>
 	     
 	    <div style="clear:both"/>
+    </div>
+    
+    <div style="display: none; width: 100%;" id="airportPopup">
+    	<h3 id="airportPopupName"></h3>
+    	<div class="table" style="width: 100%">
+   			<div class="table-row">
+   				<div class="label"><h5>IATA code:</h5></div>
+   				<div class="value" id="airportPopupIata"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Country code:</h5></div>
+   				<div class="value" id="airportPopupCountryCode"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Airport Scale:</h5></div>
+   				<div class="value" id="airportPopupSize"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Population coverage:</h5></div>
+   				<div class="value" id="airportPopupPopulation"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Average income level:</h5></div>
+   				<div class="value" id="airportPopupIncomeLevel"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Awareness of your airline:</h5></div>
+   				<div class="value" id="airportPopupAwareness"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Loyalty to your airline:</h5></div>
+   				<div class="value" id="airportPopupLoyalty"></div>
+   			</div>
+   			<input type="hidden" id="airportPopupId"></input>
+		</div>
+		<div class="button" onclick="planFromAirport($('#airportPopupId').val(), $('#airportPopupName').text())">Plan Route (from airport)</div>
+		<div class="button" onclick="planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())">Plan Route (to airport)</div> 
     </div>
     <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>

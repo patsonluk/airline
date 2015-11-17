@@ -36,7 +36,7 @@ class BackgroundJob {
                 case None =>
               }
            }
-          Thread.sleep(10000)
+          Thread.sleep(30000)
         }
       }
     }

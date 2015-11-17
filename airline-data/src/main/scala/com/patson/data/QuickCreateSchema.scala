@@ -8,5 +8,4 @@ import com.patson.data.airplane.ModelSource
 
 object QuickCreateSchema extends App {
 //  Meta.createSchema()
-    
 }

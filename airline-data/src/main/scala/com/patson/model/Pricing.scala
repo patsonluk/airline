@@ -29,7 +29,7 @@ object Pricing {
   // if price is at double the standard price, adjustment = distance . Fair enough!
   def standardCostAdjustmentFromPrice(distance: Int, price: Int): Double = {
     val standardPrice = computeStandardPrice(distance)
-    (price - standardPrice) / standardPrice * distance
+    (price - standardPrice) * 1.0 / standardPrice * distance
   }
   
  

@@ -23,8 +23,9 @@ import java.util.concurrent.TimeUnit
 object MainSimulation extends App {
   
   
-  val FUEL_UNIT_COST = 500 //for now...
+  val FUEL_UNIT_COST = 2 //for now...
   val AIRLINE_FIXED_COST = 10000 //for now...
+  val CREW_UNIT_COST = 10 //for now...
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 
 //  import actorSystem.dispatcher
@@ -39,32 +40,69 @@ object MainSimulation extends App {
     actorSystem.scheduler.schedule(Duration.Zero, Duration(1, TimeUnit.MINUTES), actor, Start)
   }
   
-  def startWeeklyCycle(week : Int) {
+  def startCycle(cycle : Int) = {
+      val links = LinkSource.loadAllLinks(true)
+      airportSimulation(cycle, links) 
+      linkSimulation(cycle, links)  
+  }
+  
+  def airportSimulation(cycle: Int, links : List[Link]) = {
+    val airportWithLinks = Map[Airport, Set[Airline]]()
+    links.foreach { link =>
+      val airlinesOnThisAirport = airportWithLinks.getOrElseUpdate(link.from, Set[Airline]())
+      airlinesOnThisAirport.add(link.airline)
+    }
+    val incrementWithLink = 0.2
+    
+    //add awareness based on links
+    airportWithLinks.foreach {
+      case(airport, airlinesWithLinks) =>
+        airlinesWithLinks.foreach { airline =>  
+          val existingAwareness = airport.airlineAppeals.get(airline).map { _.awareness }.getOrElse(0.0)
+          val newAwareness = 
+            if ((existingAwareness + incrementWithLink) >= AirlineAppeal.MAX_AWARENESS) {
+              AirlineAppeal.MAX_AWARENESS   
+            } else {
+              (((existingAwareness + incrementWithLink) * 10).toInt).toDouble / 10
+            }
+          airport.setAirlineAwareness(airline, newAwareness)
+        }
+    }
+    
+    //update the awareness on these airport
+    AirportSource.updateAirlineAppeal(airportWithLinks.keys.toList)
+   
+    
+  }
+  
+  
+  def linkSimulation(cycle: Int, links : List[Link]) = {
     val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
         holder + demandValue
     })
 
-    val links = LinkSource.loadAllLinks()
-    
     val consumptionResult = PassengerSimulation.passengerConsume(demand, links)
-    
+    println("Consumption result : ")
+    consumptionResult.foreach { 
+      case(_, _, _, links) => println(links)
+    }
     
     val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
       (link, foldList) =>
         val soldSeats = link.capacity - link.availableSeats
         val totalFuelBurn = link.assignedAirplanes.foldLeft(0)(_ + _.model.fuelBurn) //fuel burn actually similar to crew cost
-        val fuelCost = totalFuelBurn * FUEL_UNIT_COST
-        val fixedCost = 0
-        val crewCost = 0
+        val fuelCost = totalFuelBurn * link.duration * FUEL_UNIT_COST * link.frequency
+        val fixedCost = 1000
+        val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
         val revenue = soldSeats * link.price
         val profit = revenue - fuelCost - fixedCost - crewCost
-        val consumption = LinkConsumptionDetails(link.id, link.price, link.capacity, soldSeats, fuelCost, crewCost, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, week)
-        println(consumption)
+        val consumption = LinkConsumptionDetails(link.id, link.price, link.capacity, soldSeats, fuelCost, crewCost, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
         consumption :: foldList
     }
     
+    LinkSource.deleteLinkConsumptionsByCycle(10)
     LinkSource.saveLinkConsumptions(linkConsumptionDetails)
     
     val linkConsumptionDetailsByAirline = Map[Int, ListBuffer[LinkConsumptionDetails]]()
@@ -83,21 +121,24 @@ object MainSimulation extends App {
             linkConsumptions.foldLeft(0L)(_ + _.profit) - AIRLINE_FIXED_COST
           case None=>  
             0 - AIRLINE_FIXED_COST
+              
         }
+        AirlineSource.adjustAirlineBalance(airline.id, profit)
       //  airlineProfit.put(airline, profit)
-        airline.airlineInfo.balance += profit
+          
         println(airline + " profit is: " + profit + " new balance is " + airline.airlineInfo.balance)
     }
     
-    AirlineSource.updateAirlineInfo(allAirlines)
+    
   }
   
   class MainSimulationActor extends Actor {
-    var currentWeek = 0
+    var currentWeek = CycleSource.loadCycle()
     def receive = {
       case Start =>
-        startWeeklyCycle(currentWeek)
+        startCycle(currentWeek)
         currentWeek += 1
+        CycleSource.setCycle(currentWeek)
     }
   }
   

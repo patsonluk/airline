@@ -6,12 +6,19 @@
     height: 500px;
     background-color: #FFF;
 }
+.table {
+	display: table;
+}
 .table .label {
 	display: table-cell;
-	width: 30%;
+	width: 40%;
 	 
 }
 .table .value {
 	display: table-cell;
-	width: 70%;
+	width: 60%;
+}
+.table .table-row {
+	display: table-row;
+	width: 100%;
 }

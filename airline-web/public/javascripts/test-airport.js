@@ -88,6 +88,7 @@ function insertTestLink() {
 			"toAirportId" : parseInt($("#toAirport").val()),
 			"airlineId" : parseInt($("#airlineOption").val()),
 			"capacity" : parseInt($("#capacity").val()), 
+			"quality" : parseInt($("#quality").val()),
 			"price" : parseFloat($("#price").val()) }
 		$.ajax({
 			type: 'PUT',
