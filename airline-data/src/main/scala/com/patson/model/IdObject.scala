@@ -1,6 +1,6 @@
 package com.patson.model
 
 trait IdObject {
-   var id : Int = 0
+   def id : Int
 }
 

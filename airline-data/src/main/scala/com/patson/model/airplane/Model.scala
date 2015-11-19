@@ -3,7 +3,7 @@ package com.patson.model.airplane
 import com.patson.model.IdObject
 import com.patson.model.Airline
 
-case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int) extends IdObject
+case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, var id : Int = 0) extends IdObject
 
 
 object Model {

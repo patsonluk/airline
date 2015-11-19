@@ -1,19 +1,26 @@
 package com.patson.model
 
-case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, size : Int, var power : Long, var population : Long, slots : Int, availableSlots : Int) extends IdObject {
+case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, size : Int, var power : Long, var population : Long, slots : Int, availableSlots : Int, var id : Int = 0) extends IdObject {
   val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
   val airlineAppeals = scala.collection.mutable.Map[Airline, AirlineAppeal]()
   def addCityServed(city : City, share : Double) {
     citiesServed += Tuple2(city, share)
   }
-  def setAirlineLoyalty(airline : Airline, value : Double) {
+  def setAirlineLoyalty(airline : Airline, value : Double) = {
     val oldAppeal = airlineAppeals.getOrElse(airline, AirlineAppeal(0, 0))
     airlineAppeals.put(airline, AirlineAppeal(value, oldAppeal.awareness))
   }
-  def setAirlineAwareness(airline : Airline, value : Double) {
+  def setAirlineAwareness(airline : Airline, value : Double) = {
     val oldAppeal = airlineAppeals.getOrElse(airline, AirlineAppeal(0, 0))
     airlineAppeals.put(airline, AirlineAppeal(oldAppeal.loyalty, value))
   }
+  def getAirlineLoyalty(airline : Airline) : Double = {
+    airlineAppeals.get(airline).fold(0.0)(_.loyalty)
+  }
+  def getAirlineAwareness(airline : Airline) : Double = {
+    airlineAppeals.get(airline).fold(0.0)(_.awareness)
+  }
+  
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)

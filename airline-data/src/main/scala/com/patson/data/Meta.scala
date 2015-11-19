@@ -51,9 +51,9 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //
-//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_APPEAL_TABLE)
-//     statement.execute()
-//     statement.close()
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_APPEAL_TABLE)
+     statement.execute()
+     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP INDEX IF EXISTS " + AIRPORT_CITY_SHARE_INDEX)
 //     statement.execute()
@@ -79,9 +79,9 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_TABLE)
-     statement.execute()
-     statement.close()
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_TABLE)
+//     statement.execute()
+//     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_MODEL_TABLE)
 //     statement.execute()
@@ -109,13 +109,14 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-//     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_APPEAL_TABLE + "(" + 
-//                                             "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-//                                             "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-//                                             "loyalty DOUBLE," + 
-//	                                           "awareness DOUBLE)")
-//     statement.execute()
-//     statement.close()
+     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_APPEAL_TABLE + "(" + 
+                                             "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "loyalty DOUBLE," + 
+	                                           "awareness DOUBLE)")
+     
+     statement.execute()
+     statement.close()
 //     
 //     statement = connection.prepareStatement("CREATE UNIQUE INDEX " + AIRPORT_AIRLINE_INDEX +  " ON " + AIRLINE_APPEAL_TABLE + "(airport, airline)")
 //     statement.execute()
@@ -198,15 +199,15 @@ object Meta {
 //     statement.close()
 //     
 //
-     statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_TABLE + "(" + 
-                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                             "model INTEGER REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                             "owner INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                             "constructed_cycle INTEGER, " +
-                                             "condition DECIMAL(6,2))")
-
-     statement.execute()
-     statement.close()
+//     statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_TABLE + "(" + 
+//                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+//                                             "model INTEGER REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+//                                             "owner INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+//                                             "constructed_cycle INTEGER, " +
+//                                             "condition DECIMAL(6,2))")
+//
+//     statement.execute()
+//     statement.close()
      
      connection.close()
   }

@@ -89,7 +89,7 @@ object AirplaneApplication extends Controller {
     if (modelGet.isEmpty || airlineGet.isEmpty) {
       BadRequest("unknown model or airline").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
     } else {
-      val airplane = Airplane(modelGet.get, airlineGet.get, CycleSource.loadCycle(), 100)
+      val airplane = Airplane(modelGet.get, airlineGet.get, CycleSource.loadCycle(), Airplane.MAX_CONDITION)
       val airline = airlineGet.get
       if (airline.airlineInfo.balance < (airplane.model.price * quantity)) { //not enough money!
         UnprocessableEntity("Not enough money").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")   

@@ -1,15 +1,17 @@
 package com.patson.model
 
 import scala.collection.mutable.Map
-
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Finders
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
-
 import akka.actor.ActorSystem
 import akka.testkit.ImplicitSender
 import akka.testkit.TestKit
+import com.patson.data.AirplaneSource
+import com.patson.data.AirplaneSource
+import com.patson.model.airplane.Airplane
+import com.patson.model.airplane.Model
  
 class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
@@ -71,7 +73,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.setAirlineLoyalty(testAirline1, 50)
       fromAirport.setAirlineLoyalty(testAirline2, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, 1000, 10000, 10000, 0, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, 1000, 10100, 10000, 0, 600, 1)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, 1000, 10000, 10000, 0, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -84,6 +86,24 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( >= (0.9))         //should be around 50 50
       ratio.shouldBe( <= (1.1))
     }
+    "generate similar cost if everything is the same, and small differece in raw link quality".in {
+      fromAirport.setAirlineLoyalty(testAirline1, 50)
+      fromAirport.setAirlineLoyalty(testAirline2, 50)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, 1000, 10000, 10000, 51, 600, 1)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, 1000, 10100, 10000, 50, 600, 1)
+      var airline1Picked = 0
+      var airline2Picked = 0
+      for (i <- 0 until 100000) {
+        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val link1Cost = preference.computeCost(airline1Link)
+        val link2Cost = preference.computeCost(airline2Link)
+        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+      }
+      val ratio = airline1Picked.toDouble / airline2Picked 
+      ratio.shouldBe( >= (0.9))         //should be around 50 50
+      ratio.shouldBe( <= (1.1))
+    }
+    
     "generate differentiating but overlapping cost if everything is the same, but loyal at big difference".in {
       fromAirport.setAirlineLoyalty(testAirline1, 10)
       fromAirport.setAirlineLoyalty(testAirline2, 50)
@@ -149,6 +169,54 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       airline1Picked.shouldBe(0) //noone should pick airline 1
+    }
+    "generate differentiating but overlapping cost if everything is the same, but quality at big difference".in {
+      val adjustedAirline1 = testAirline1.copy()
+      adjustedAirline1.setServiceQuality(70)
+      val adjustedAirline2 = testAirline2.copy()
+      adjustedAirline2.setServiceQuality(20)
+      fromAirport.setAirlineLoyalty(adjustedAirline1, 50)
+      fromAirport.setAirlineLoyalty(adjustedAirline2, 50)
+      val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, 1000, 10000, 10000, 60, 600, 1)
+      val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, 1000, 10000, 10000, 10, 600, 1)
+      airline2Link.assignedAirplanes = List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100))
+      airline1Link.assignedAirplanes = List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100))
+       
+      var airline1Picked = 0
+      var airline2Picked = 0
+      for (i <- 0 until 100000) {
+        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val link1Cost = preference.computeCost(airline1Link)
+        val link2Cost = preference.computeCost(airline2Link)
+        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+      }
+      val ratio = airline1Picked.toDouble / airline2Picked 
+      ratio.shouldBe( >= (2.0)) //significantly more people should pick airline 1
+      ratio.shouldBe( < (10.0)) //yet some will still pick airline 2
+    }
+    "generate almost no overlapping cost if everything is the same, but quality at huge difference (0 vs 100)".in {
+      val adjustedAirline1 = testAirline1.copy()
+      adjustedAirline1.setServiceQuality(100)
+      val adjustedAirline2 = testAirline2.copy()
+      adjustedAirline2.setServiceQuality(0)
+      fromAirport.setAirlineLoyalty(adjustedAirline1, 50)
+      fromAirport.setAirlineLoyalty(adjustedAirline2, 50)
+      val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, 1000, 10000, 10000, 100, 600, 1)
+      val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, 1000, 10000, 10000, 0, 600, 1)
+      airline2Link.assignedAirplanes = List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100))
+      airline1Link.assignedAirplanes = List(Airplane(Model.fromId(0), adjustedAirline2, 0, 0))
+       
+      var airline1Picked = 0
+      var airline2Picked = 0
+      for (i <- 0 until 100000) {
+        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val link1Cost = preference.computeCost(airline1Link)
+        val link2Cost = preference.computeCost(airline2Link)
+        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+      }
+      val ratio = airline1Picked.toDouble / airline2Picked 
+      ratio.shouldBe( >= (4.0)) //significantly more people should pick airline 1
+      //ratio.shouldBe( < (.0)) //yet some will still pick airline 2
     }
   }
 }

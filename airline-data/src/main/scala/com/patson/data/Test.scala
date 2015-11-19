@@ -10,36 +10,32 @@ import scala.concurrent._
 import scala.concurrent.duration.Duration
 import com.patson.model.Runway
 import scala.collection.mutable.Map
+import scala.util.Random
 
 object Test extends App {
-//  println(Math.log(1000 / 1000) / Math.log(1.5))
-//  println(Math.log(5000 / 1000) / Math.log(1.5))
-//  println(Math.log(10000 / 1000) / Math.log(1.5))
-//  println(Math.log(82763.3576508157 / 1000) / Math.log(1.5))
-   val runways = Await.result(GeoDataGenerator.getRunway(), Duration.Inf)
-   val airportUpgrades = Map[String, Int]()
-   runways.foreach { 
-     case (icao, runways) =>
-       var longRunway = 0 
-       var veryLongRunway = 0
-       var megaRunway = 0
-       runways.foreach { runway =>
-         if (runway.length >= 10000) {
-           megaRunway += 1
-         } else if (runway.length >= 9000) {
-           veryLongRunway += 1
-         } else if (runway.length >= 7000) {
-           longRunway += 1
-         }
-       }
-       if (megaRunway > 0) {
-         airportUpgrades.put(icao, 5 + megaRunway) //at least size 6
-       } else if (veryLongRunway > 0) {
-         airportUpgrades.put(icao, 5) //size 5
-       } else if (longRunway > 3) {
-         airportUpgrades.put(icao, 4) //size 4
-       }
-   }
-   
-   println(airportUpgrades)
+  val idObject = getIdObject
+  println(TestCase1(1) == TestCase1(1))
+  println(TestCase2(2) == TestCase2(2))
+  val obj1 = TestCase1(1)
+  val obj2 = TestCase1(1)
+  println(obj2 == obj1)
+  obj1.id = 5
+  println(obj2 == obj1)
+  
+  
+  def getIdObject : TestIdObject = {
+    if (Random.nextBoolean()) {
+      TestCase1(1)
+    } else {
+      TestCase3(2)
+    }
+  }
 }
+
+case class TestCase1(i : Int, var id : Int = 0) extends TestIdObject
+case class TestCase2(j : Double, var id : Int = 0) extends TestIdObject
+case class TestCase3(k : Long, var id : Int = 0) extends TestIdObject
+abstract class TestIdObject {
+  def id : Int
+}
+

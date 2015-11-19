@@ -93,7 +93,7 @@ object LinkSource {
   }
   
   def saveLink(link : Link) : Option[Link] = {
-     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.quality, link.duration, link.frequency, link.assignedAirplanes) match { 
+     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.assignedAirplanes) match { 
        case Some(generatedId) => 
          link.id = generatedId
          Some(link)
@@ -102,7 +102,7 @@ object LinkSource {
      }
   }
   
-  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : Int, distance : Double, capacity : Int, quality : Int,  duration : Int, frequency : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
+  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : Int, distance : Double, capacity : Int, rawQuality : Int,  duration : Int, frequency : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
      //open the hsqldb
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price, distance, capacity, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?)")
@@ -114,7 +114,7 @@ object LinkSource {
       preparedStatement.setInt(4, price)
       preparedStatement.setDouble(5, distance)
       preparedStatement.setInt(6, capacity)
-      preparedStatement.setInt(7, quality)
+      preparedStatement.setInt(7, rawQuality)
       preparedStatement.setInt(8, duration)
       preparedStatement.setInt(9, frequency)
       

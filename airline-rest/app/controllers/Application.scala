@@ -41,7 +41,7 @@ object Application extends Controller {
       "population" -> JsNumber(airport.population),
       "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel),
       "appealList" -> JsArray(airport.airlineAppeals.toList.map {  
-        case (airline, appeal) => Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "loyalty" -> appeal.loyalty, "awareness" -> appeal.awareness)
+        case (airline, appeal) => Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
         }
       )))
     }

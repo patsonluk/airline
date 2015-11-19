@@ -79,14 +79,18 @@ function updatePopupAppeal(airportId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airport) {
-	    	
+	    	var hasMatch = false
 	    	$.each(airport.appealList, function( key, appeal ) {
 	    		if (appeal.airlineId == airlineId) {
 	    			$("#airportPopupAwareness").text(appeal.awareness)
 	    			$("#airportPopupLoyalty").text(appeal.loyalty)
+	    			hasMatch = true
 	    		}
-	    		
 	  		});
+	    	if (!hasMatch) {
+	    		$("#airportPopupAwareness").text("0")
+	    		$("#airportPopupLoyalty").text("0")
+	    	}
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

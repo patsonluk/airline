@@ -91,7 +91,7 @@ function drawFlightPath(link) {
    }
    
    var colorHex = "#" + parseInt(redHex).toString(16) + parseInt(greenHex).toString(16) + "20"
-   //console.log(profitFactor +  " : " + colorHex)
+   console.log(profitFactor +  " : " + colorHex)
    
    var flightPath = new google.maps.Polyline({
      path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}], 

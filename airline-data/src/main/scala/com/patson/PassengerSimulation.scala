@@ -123,16 +123,21 @@ object PassengerSimulation extends App {
        demandChunks.foreach {
          case (passengerGroup, toAirport, chunkSize) => 
            allRoutesMap.get(passengerGroup).foreach { toAirportRouteMap =>
+//             if (!toAirportRouteMap.isEmpty) {
+//               println("to airport route map" + toAirportRouteMap)
+//             }
              toAirportRouteMap.get(toAirport) match { 
                case Some(pickedRoute) =>
                  //println("picked route info" + passengerGroup + " " + pickedRoute.links(0).airline)
-                 val totalDistance = pickedRoute.links.foldLeft(0.0)(_ + _.link.distance)
+                 //val totalDistance = pickedRoute.links.foldLeft(0.0)(_ + _.link.distance)
+                 val fromAirport = passengerGroup.fromAirport 
+                 val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude) * 2 //at most double
                  
                  //println("RecommendedPrice  " +  Pricing.computeStandardPrice(totalDistance))
                  //add some randomness here
                  //val affordableCost = totalDistance * (1.25 - Random.nextFloat() / 2)
                  //val affordableCost = totalDistance * (Util.getBellRandom(1))
-                 val affordableCost = totalDistance
+                 val affordableCost = distance
                  if (affordableCost >= pickedRoute.totalCost) { //OK!
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize)( (foldInt, linkWithDirection) => if (linkWithDirection.link.availableSeats < foldInt) { linkWithDirection.link.availableSeats } else { foldInt })
                    //some capacity available on all the links, consume them NOMNOM NOM!
@@ -210,7 +215,9 @@ object PassengerSimulation extends App {
             val airlineAwareness = passengerGroup.fromAirport.airlineAppeals.get(link.airline).map { _.awareness }.getOrElse(0.0) 
             airlineAwareness > Random.nextDouble() * AirlineAppeal.MAX_AWARENESS
           }.flatMap { link =>
-            val cost = passengerGroup.preference.computeCost(link)
+            var cost = passengerGroup.preference.computeCost(link)
+            //add extra cost for low frequency, this would add a small constant to make people less likely to take connection flight (even with high frequency)
+            cost += 100  + (50.toDouble / link.frequency - 1) * 100
             List(LinkWithCost(link, cost, false), LinkWithCost(link, cost, true)) //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly! 
           }
         
@@ -365,7 +372,7 @@ object PassengerSimulation extends App {
 //           if distance[u] + w < distance[v]:
 //               distance[v] := distance[u] + w
 //               predecessor[v] := u
-    for (i <- 0 until maxHop - 1) {
+    for (i <- 0 until maxHop) {
       val updatingLinks = ListBuffer[LinkWithCost]()
       for (linkWithCost <- linksWithCost) {
         if (distanceMap(linkWithCost.from) + linkWithCost.cost < distanceMap(linkWithCost.to)) {
@@ -385,23 +392,25 @@ object PassengerSimulation extends App {
     toAirports.foldLeft(Map[Airport, Route]()){ (map, to) =>  
       var walker = to
       var noSolution = false;
+      var foundSolution = false
       var route = ListBuffer[LinkWithCost]()
-      while (walker != from && !noSolution) {
+      var hopCounter = 0
+      while (!foundSolution && !noSolution && hopCounter < maxHop) {
         predecessorMap.get(walker) match {
           case Some(link) =>
             route.prepend(link)
             walker = link.from
+            if (walker == from) {
+              foundSolution = true
+            }
           case None => 
             noSolution = true
         }
       }
-      if (noSolution) {
-        //map + Tuple2(to, List[Link]())
-        map
-      } else {
-//        route.foreach { link => print(link.from.name + " => ") }
-//        println(route.last.to.name)
+      if (foundSolution) {
         map + Tuple2(to, Route(route.toList, distanceMap(to)))
+      } else {
+        map
       }  
     }
   }

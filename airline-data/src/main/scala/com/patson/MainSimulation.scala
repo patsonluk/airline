@@ -23,9 +23,15 @@ import java.util.concurrent.TimeUnit
 object MainSimulation extends App {
   
   
-  val FUEL_UNIT_COST = 2 //for now...
+  val FUEL_UNIT_COST = 0.2 //for now...
   val AIRLINE_FIXED_COST = 10000 //for now...
   val CREW_UNIT_COST = 10 //for now...
+  
+  val AWARENESS_DECAY = 0.1
+  val AWARENESS_INCREMENT_WITH_LINKS = 0.2
+  val LOYALTY_DECAY = 0.01
+  val MAX_LOYALTY_ADJUSTMENT = 1
+  
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 
 //  import actorSystem.dispatcher
@@ -42,41 +48,61 @@ object MainSimulation extends App {
   
   def startCycle(cycle : Int) = {
       val links = LinkSource.loadAllLinks(true)
-      airportSimulation(cycle, links) 
-      linkSimulation(cycle, links)  
+      airportSimulation(cycle) 
+      linkSimulation(cycle)  
   }
   
-  def airportSimulation(cycle: Int, links : List[Link]) = {
-    val airportWithLinks = Map[Airport, Set[Airline]]()
+  def airportSimulation(cycle: Int) = {
+    
+    //do decay
+    val allAirports = AirportSource.loadAllAirports(true)
+    //decay awareness and loyalty
+    allAirports.foreach { airport =>
+      val updatedAppeals = airport.airlineAppeals.map { 
+        case(airline, AirlineAppeal(loyalty, awareness)) =>
+          val newLoyalty = if (loyalty - LOYALTY_DECAY <= 0) 0 else loyalty - LOYALTY_DECAY
+          val newAwareness = if (awareness - AWARENESS_DECAY <= 0) 0 else awareness - AWARENESS_DECAY
+          (airline, AirlineAppeal(newLoyalty, newAwareness))
+      }.filter { 
+        case (airline, AirlineAppeal(newLoyalty, newAwareness)) => newLoyalty > 0 || newAwareness > 0
+      }
+      airport.airlineAppeals.clear()
+      airport.airlineAppeals ++= updatedAppeals
+    }
+    AirportSource.updateAirlineAppeal(allAirports)
+    
+    
+    //increment of awareness
+    val links = LinkSource.loadAllLinks(true) 
+    
+    val airportWithLinks = Map[(Airport, Airline), Set[Link]]()
     links.foreach { link =>
-      val airlinesOnThisAirport = airportWithLinks.getOrElseUpdate(link.from, Set[Airline]())
-      airlinesOnThisAirport.add(link.airline)
-    }
-    val incrementWithLink = 0.2
-    
-    //add awareness based on links
-    airportWithLinks.foreach {
-      case(airport, airlinesWithLinks) =>
-        airlinesWithLinks.foreach { airline =>  
-          val existingAwareness = airport.airlineAppeals.get(airline).map { _.awareness }.getOrElse(0.0)
-          val newAwareness = 
-            if ((existingAwareness + incrementWithLink) >= AirlineAppeal.MAX_AWARENESS) {
-              AirlineAppeal.MAX_AWARENESS   
-            } else {
-              (((existingAwareness + incrementWithLink) * 10).toInt).toDouble / 10
-            }
-          airport.setAirlineAwareness(airline, newAwareness)
-        }
+      val airlinesFlyiesFromThisAirport = airportWithLinks.getOrElseUpdate((link.from, link.airline), Set[Link]())
+      airlinesFlyiesFromThisAirport.add(link)
+      
+      val airlinesFlyiesToThisAirport = airportWithLinks.getOrElseUpdate((link.to, link.airline), Set[Link]())
+      airlinesFlyiesToThisAirport.add(link)
     }
     
-    //update the awareness on these airport
-    AirportSource.updateAirlineAppeal(airportWithLinks.keys.toList)
-   
-    
+    val updatingAirports = Set[Airport]()
+    //add awareness based on airline with some links to/from an airport
+    airportWithLinks.keySet.foreach {
+      case(airport, airline) =>
+        val existingAwareness = airport.airlineAppeals.get(airline).map { _.awareness }.getOrElse(0.0)
+        val newAwareness = 
+          if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
+            AirlineAppeal.MAX_AWARENESS   
+          } else {
+            (((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) * 10).toInt).toDouble / 10
+          }
+        airport.setAirlineAwareness(airline, newAwareness)
+        updatingAirports.add(airport)
+    }
+    AirportSource.updateAirlineAppeal(updatingAirports.toList);
   }
   
-  
-  def linkSimulation(cycle: Int, links : List[Link]) = {
+  def linkSimulation(cycle: Int) = {
+    val links = LinkSource.loadAllLinks(true)
     val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
@@ -93,7 +119,12 @@ object MainSimulation extends App {
       (link, foldList) =>
         val soldSeats = link.capacity - link.availableSeats
         val totalFuelBurn = link.assignedAirplanes.foldLeft(0)(_ + _.model.fuelBurn) //fuel burn actually similar to crew cost
-        val fuelCost = totalFuelBurn * link.duration * FUEL_UNIT_COST * link.frequency
+        val fuelCost = (
+          if (link.duration <= 60) {
+            totalFuelBurn * 10 * link.duration * FUEL_UNIT_COST * link.frequency
+          } else {
+            (totalFuelBurn * 10 * 60 + totalFuelBurn * (link.duration - 60)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then crusing at 1/10 the cost
+          }).toInt
         val fixedCost = 1000
         val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
         val revenue = soldSeats * link.price
@@ -129,6 +160,37 @@ object MainSimulation extends App {
         println(airline + " profit is: " + profit + " new balance is " + airline.airlineInfo.balance)
     }
     
+    
+    //update the loyalty on airports based on link consumption
+    println("start updating loyalty")
+    val airportSoldLinks = Map[(Airport, Airline), Set[Link]]()
+    
+    links.filter { link => link.capacity > link.availableSeats }.foreach { link =>
+      airportSoldLinks.getOrElseUpdate((link.to, link.airline), Set[Link]()).add(link) 
+      airportSoldLinks.getOrElseUpdate((link.from, link.airline), Set[Link]()).add(link)
+    }
+    
+    val updatingAirports = Set[Airport]()
+    airportSoldLinks.foreach {
+      case ((airport, airline), links) =>
+        val totalTransportedPassengers = links.foldLeft(0) { (foldInt, link) => foldInt + (link.capacity - link.availableSeats) } 
+        val totalQualityProduct = links.foldLeft(0L) { (foldLong, link) => foldLong + (link.capacity - link.availableSeats) * link.computedQuality }
+        val averageQuality = totalQualityProduct.toDouble / totalTransportedPassengers
+        
+        var loyaltyAdjustment = totalTransportedPassengers / 1000.0 / (airport.size * airport.size) //on a size 1 airport, 1000 transported passengers is enough to move the loyalty by 1, on size 7 it's 7 * 7 * 1000)
+        if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {
+          loyaltyAdjustment = MAX_LOYALTY_ADJUSTMENT
+        }
+        val existingLoyalty = airport.getAirlineLoyalty(airline) 
+        if (existingLoyalty < averageQuality) {
+           airport.setAirlineLoyalty(airline, existingLoyalty + loyaltyAdjustment) 
+        } else {
+           airport.setAirlineLoyalty(airline, existingLoyalty - loyaltyAdjustment)
+        }
+        updatingAirports.add(airport)
+        println("loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airline))
+    }
+    AirportSource.updateAirlineAppeal(updatingAirports.toList)
     
   }
   
