@@ -13,8 +13,8 @@ import com.patson.model.LinkConsumptionDetails
 
 object LinkSource {
   def loadLinksByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
-      val connection = Meta.getConnection()
-      
+    val connection = Meta.getConnection()
+    try {  
       var queryString = "SELECT * FROM " + LINK_TABLE 
       
       if (!criteria.isEmpty) {
@@ -71,11 +71,12 @@ object LinkSource {
       
       resultSet.close()
       preparedStatement.close()
-      connection.close()
-      
-//      println("Loaded " + links.length + " link records")
       links.toList
+    } finally {
+      connection.close()
+    }
   }
+  
   def loadLinkById(linkId : Int) : Option[Link] = {
     val result = loadLinksByCriteria(List(("id", linkId)))
     if (result.isEmpty) {
@@ -140,25 +141,28 @@ object LinkSource {
   }
   def updateAssignedPlanes(linkId : Int, airplanes : List[Airplane]) = {
     val connection = Meta.getConnection()
-    connection.setAutoCommit(false)
-    
-    //remove all the existing ones assigned to this link
-    val removeStatement = connection.prepareStatement("DELETE FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
-    removeStatement.setInt(1, linkId)
-    removeStatement.executeUpdate()
-    removeStatement.close()
-    
-    
-    airplanes.foreach { airplane => 
-      val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane) VALUES(?,?)")
-      insertStatement.setInt(1, linkId)
-      insertStatement.setInt(2, airplane.id)
-      insertStatement.executeUpdate()
-      insertStatement.close
-    }    
-    
-    connection.commit()
-    connection.close()
+    try {
+      connection.setAutoCommit(false)
+      
+      //remove all the existing ones assigned to this link
+      val removeStatement = connection.prepareStatement("DELETE FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
+      removeStatement.setInt(1, linkId)
+      removeStatement.executeUpdate()
+      removeStatement.close()
+      
+      
+      airplanes.foreach { airplane => 
+        val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane) VALUES(?,?)")
+        insertStatement.setInt(1, linkId)
+        insertStatement.setInt(2, airplane.id)
+        insertStatement.executeUpdate()
+        insertStatement.close
+      }    
+      
+      connection.commit()
+    } finally {
+      connection.close()
+    }
   }
   
   
@@ -172,8 +176,8 @@ object LinkSource {
   
   def deleteLinksByCriteria(criteria : List[(String, Any)]) = {
       //open the hsqldb
-      val connection = Meta.getConnection()
-      
+    val connection = Meta.getConnection()
+    try {  
       var queryString = "DELETE FROM link "
       
       if (!criteria.isEmpty) {
@@ -193,10 +197,12 @@ object LinkSource {
       val deletedCount = preparedStatement.executeUpdate()
       
       preparedStatement.close()
-      connection.close()
-      
       println("Deleted " + deletedCount + " link records")
       deletedCount
+    } finally {
+      connection.close()
+    }
+      
   }
   
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
@@ -204,45 +210,50 @@ object LinkSource {
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price, capacity, sold_seats, fuel_cost, crew_cost, fixed_cost, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
-    connection.setAutoCommit(false)
-    linkConsumptions.foreach { linkConsumption =>
-        preparedStatement.setInt(1, linkConsumption.linkId)
-        preparedStatement.setInt(2, linkConsumption.price)
-        preparedStatement.setInt(3, linkConsumption.capacity)
-        preparedStatement.setInt(4, linkConsumption.soldSeats)
-        preparedStatement.setInt(5, linkConsumption.fuelCost)
-        preparedStatement.setInt(6, linkConsumption.crewCost)
-        preparedStatement.setInt(7, linkConsumption.fixedCost)
-        preparedStatement.setInt(8, linkConsumption.revenue)
-        preparedStatement.setInt(9, linkConsumption.profit)
-        preparedStatement.setInt(10, linkConsumption.fromAirportId)
-        preparedStatement.setInt(11, linkConsumption.toAirportId)
-        preparedStatement.setInt(12, linkConsumption.airlineId)
-        preparedStatement.setInt(13, linkConsumption.distance)
-        preparedStatement.setInt(14, linkConsumption.cycle)
-        preparedStatement.executeUpdate()
+    try {
+      connection.setAutoCommit(false)
+      linkConsumptions.foreach { linkConsumption =>
+          preparedStatement.setInt(1, linkConsumption.linkId)
+          preparedStatement.setInt(2, linkConsumption.price)
+          preparedStatement.setInt(3, linkConsumption.capacity)
+          preparedStatement.setInt(4, linkConsumption.soldSeats)
+          preparedStatement.setInt(5, linkConsumption.fuelCost)
+          preparedStatement.setInt(6, linkConsumption.crewCost)
+          preparedStatement.setInt(7, linkConsumption.fixedCost)
+          preparedStatement.setInt(8, linkConsumption.revenue)
+          preparedStatement.setInt(9, linkConsumption.profit)
+          preparedStatement.setInt(10, linkConsumption.fromAirportId)
+          preparedStatement.setInt(11, linkConsumption.toAirportId)
+          preparedStatement.setInt(12, linkConsumption.airlineId)
+          preparedStatement.setInt(13, linkConsumption.distance)
+          preparedStatement.setInt(14, linkConsumption.cycle)
+          preparedStatement.executeUpdate()
+        }
+      preparedStatement.close()
+      connection.commit
+    } finally {
+      connection.close()
     }
-    preparedStatement.close()
-    connection.commit
-    connection.close()
   }
   def deleteLinkConsumptionsByCycle(cyclesFromLatest : Int) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val latestCycleStatement = connection.prepareStatement("SELECT MAX(cycle) FROM " + LINK_CONSUMPTION_TABLE)
-    val resultSet = latestCycleStatement.executeQuery()
-    val latestCycle = if (resultSet.next()) { resultSet.getInt(1) } else 0
-    latestCycleStatement.close()  
-    
-    val deleteFrom = if (latestCycle - cyclesFromLatest < 0) 0 else latestCycle - cyclesFromLatest 
-    
-    val deleteStatement = connection.prepareStatement("DELETE FROM " + LINK_CONSUMPTION_TABLE + " WHERE cycle <= ?")
-    deleteStatement.setInt(1, deleteFrom)
-    val deletedConsumption = deleteStatement.executeUpdate()
-    deleteStatement.close()
-    connection.close()
-    
-    deletedConsumption
+    try {
+      val latestCycleStatement = connection.prepareStatement("SELECT MAX(cycle) FROM " + LINK_CONSUMPTION_TABLE)
+      val resultSet = latestCycleStatement.executeQuery()
+      val latestCycle = if (resultSet.next()) { resultSet.getInt(1) } else 0
+      latestCycleStatement.close()  
+      
+      val deleteFrom = if (latestCycle - cyclesFromLatest < 0) 0 else latestCycle - cyclesFromLatest 
+      
+      val deleteStatement = connection.prepareStatement("DELETE FROM " + LINK_CONSUMPTION_TABLE + " WHERE cycle <= ?")
+      deleteStatement.setInt(1, deleteFrom)
+      val deletedConsumption = deleteStatement.executeUpdate()
+      deleteStatement.close()
+      deletedConsumption
+    } finally {
+      connection.close()
+    }
   }
   
   def loadLinkConsumptions(cycleCount : Int = 1) = {
@@ -261,56 +272,57 @@ object LinkSource {
   def loadLinkConsumptionsByCriteria(criteria : List[(String, Any)], cycleCount : Int) = {
     val connection = Meta.getConnection()
       
-    val latestCycleStatement = connection.prepareStatement("SELECT MAX(cycle) FROM " + LINK_CONSUMPTION_TABLE)
-    val latestCycleResultSet = latestCycleStatement.executeQuery()
-    val latestCycle = if (latestCycleResultSet.next()) { latestCycleResultSet.getInt(1) } else 0
-    latestCycleStatement.close()
-    
-    var queryString = "SELECT * FROM link_consumption WHERE cycle > ?"
-    
-    if (!criteria.isEmpty) {
-      queryString += " AND "
-      for (i <- 0 until criteria.size - 1) {
-        queryString += criteria(i)._1 + " = ? AND "
+    try {
+      val latestCycleStatement = connection.prepareStatement("SELECT MAX(cycle) FROM " + LINK_CONSUMPTION_TABLE)
+      val latestCycleResultSet = latestCycleStatement.executeQuery()
+      val latestCycle = if (latestCycleResultSet.next()) { latestCycleResultSet.getInt(1) } else 0
+      latestCycleStatement.close()
+      
+      var queryString = "SELECT * FROM link_consumption WHERE cycle > ?"
+      
+      if (!criteria.isEmpty) {
+        queryString += " AND "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
       }
-      queryString += criteria.last._1 + " = ?"
+    
+      queryString += " ORDER BY cycle DESC"
+      
+      val preparedStatement = connection.prepareStatement(queryString)
+      
+      preparedStatement.setInt(1, latestCycle - cycleCount)
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 2, criteria(i)._2)
+      }
+      
+      val resultSet = preparedStatement.executeQuery()
+      
+      val linkConsumptions = new ListBuffer[LinkConsumptionDetails]()
+      while (resultSet.next()) {
+          linkConsumptions.append(LinkConsumptionDetails(
+          resultSet.getInt("link"),
+          resultSet.getInt("price"),
+          resultSet.getInt("capacity"),
+          resultSet.getInt("sold_seats"),
+          resultSet.getInt("fuel_cost"),
+          resultSet.getInt("crew_cost"),
+          resultSet.getInt("fixed_cost"),
+          resultSet.getInt("revenue"),
+          resultSet.getInt("profit"),
+          resultSet.getInt("from_airport"),
+          resultSet.getInt("to_airport"),
+          resultSet.getInt("airline"),
+          resultSet.getInt("distance"),
+          resultSet.getInt("cycle")))
+      }
+      
+      resultSet.close()
+      preparedStatement.close()
+      linkConsumptions.toList
+    } finally {
+      connection.close()
     }
-  
-    queryString += " ORDER BY cycle DESC"
-    
-    val preparedStatement = connection.prepareStatement(queryString)
-    
-    preparedStatement.setInt(1, latestCycle - cycleCount)
-    for (i <- 0 until criteria.size) {
-      preparedStatement.setObject(i + 2, criteria(i)._2)
-    }
-    
-    val resultSet = preparedStatement.executeQuery()
-    
-    val linkConsumptions = new ListBuffer[LinkConsumptionDetails]()
-    while (resultSet.next()) {
-        linkConsumptions.append(LinkConsumptionDetails(
-        resultSet.getInt("link"),
-        resultSet.getInt("price"),
-        resultSet.getInt("capacity"),
-        resultSet.getInt("sold_seats"),
-        resultSet.getInt("fuel_cost"),
-        resultSet.getInt("crew_cost"),
-        resultSet.getInt("fixed_cost"),
-        resultSet.getInt("revenue"),
-        resultSet.getInt("profit"),
-        resultSet.getInt("from_airport"),
-        resultSet.getInt("to_airport"),
-        resultSet.getInt("airline"),
-        resultSet.getInt("distance"),
-        resultSet.getInt("cycle")))
-    }
-    
-    resultSet.close()
-    preparedStatement.close()
-    connection.close()
-    
-    linkConsumptions.toList
   }
-
 }

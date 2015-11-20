@@ -13,8 +13,8 @@ object AirportSource {
   
   def loadAirportsByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
       //open the hsqldb
-      val connection = Meta.getConnection()
-      
+    val connection = Meta.getConnection()
+    try {  
       var queryString = "SELECT * FROM airport"
       
       if (!criteria.isEmpty) {
@@ -73,9 +73,11 @@ object AirportSource {
       
       resultSet.close()
       preparedStatement.close()
-      connection.close()
-      
       airportData.toList
+    } finally {
+      connection.close()
+    }
+      
   }
   
   
@@ -97,8 +99,8 @@ object AirportSource {
   }
   
   def updateAirlineAppeal(airports: List[Airport]) = {
-     val connection = Meta.getConnection()
-        
+   val connection = Meta.getConnection()
+   try {  
      connection.setAutoCommit(false)
      airports.foreach { airport => 
       val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
@@ -119,91 +121,99 @@ object AirportSource {
         }
      }
      connection.commit()
+   } finally {
      connection.close()
+   }
   }
   
   def saveAirports(airports : List[Airport]) = {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, airport_size, power, population, slots, available_slots) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
     
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, airport_size, power, population, slots, available_slots) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
-    
-    connection.setAutoCommit(false)
-    airports.foreach { 
-      airport =>
-        preparedStatement.setString(1, airport.iata)
-        preparedStatement.setString(2, airport.icao)
-        preparedStatement.setString(3, airport.name)
-        preparedStatement.setDouble(4, airport.latitude)
-        preparedStatement.setDouble(5, airport.longitude)
-        preparedStatement.setString(6, airport.countryCode)
-        preparedStatement.setString(7, airport.city)
-        preparedStatement.setInt(8, airport.size)
-        preparedStatement.setLong(9, airport.power)
-        preparedStatement.setLong(10, airport.population)
-        preparedStatement.setInt(11, airport.slots)
-        preparedStatement.setInt(12, airport.availableSlots)
-        
-        preparedStatement.executeUpdate()
-        val generatedKeys = preparedStatement.getGeneratedKeys
-        
-        if (generatedKeys.next()) {
-          val generatedId = generatedKeys.getInt(1)
-          airport.id = generatedId
+      connection.setAutoCommit(false)
+      airports.foreach { 
+        airport =>
+          preparedStatement.setString(1, airport.iata)
+          preparedStatement.setString(2, airport.icao)
+          preparedStatement.setString(3, airport.name)
+          preparedStatement.setDouble(4, airport.latitude)
+          preparedStatement.setDouble(5, airport.longitude)
+          preparedStatement.setString(6, airport.countryCode)
+          preparedStatement.setString(7, airport.city)
+          preparedStatement.setInt(8, airport.size)
+          preparedStatement.setLong(9, airport.power)
+          preparedStatement.setLong(10, airport.population)
+          preparedStatement.setInt(11, airport.slots)
+          preparedStatement.setInt(12, airport.availableSlots)
           
-          //insert airline info too
-          airport.citiesServed.foreach { 
-            case (city, share) =>
-            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_CITY_SHARE_TABLE + "(airport, city, share) VALUES(?,?,?)")
-            infoStatement.setInt(1, airport.id)
-            infoStatement.setInt(2, city.id)
-            infoStatement.setDouble(3, share)
-//            println("airport : " + airport.id + " city : " + city.id)
-            infoStatement.executeUpdate()
-            infoStatement.close()
+          preparedStatement.executeUpdate()
+          val generatedKeys = preparedStatement.getGeneratedKeys
+          
+          if (generatedKeys.next()) {
+            val generatedId = generatedKeys.getInt(1)
+            airport.id = generatedId
+            
+            //insert airline info too
+            airport.citiesServed.foreach { 
+              case (city, share) =>
+              val infoStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_CITY_SHARE_TABLE + "(airport, city, share) VALUES(?,?,?)")
+              infoStatement.setInt(1, airport.id)
+              infoStatement.setInt(2, city.id)
+              infoStatement.setDouble(3, share)
+    //            println("airport : " + airport.id + " city : " + city.id)
+              infoStatement.executeUpdate()
+              infoStatement.close()
+            }
           }
-        }
+      }
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
     }
-    preparedStatement.close()
-    connection.commit()
-    connection.close()
   }
   
   def updateAirports(airports : List[Airport]) = {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
     
-    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, power = ?, population = ?, slots = ?, available_slots = ? WHERE id = ?")
-    
-    connection.setAutoCommit(false)
-    airports.foreach { 
-      airport =>
-        preparedStatement.setInt(1, airport.size)
-        preparedStatement.setLong(2, airport.power)
-        preparedStatement.setLong(3, airport.population)
-        preparedStatement.setInt(4, airport.slots)
-        preparedStatement.setInt(5, airport.availableSlots)
-        preparedStatement.setInt(6, airport.id)
-        preparedStatement.executeUpdate()
+    try {
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, power = ?, population = ?, slots = ?, available_slots = ? WHERE id = ?")
+      
+      connection.setAutoCommit(false)
+      airports.foreach { 
+        airport =>
+          preparedStatement.setInt(1, airport.size)
+          preparedStatement.setLong(2, airport.power)
+          preparedStatement.setLong(3, airport.population)
+          preparedStatement.setInt(4, airport.slots)
+          preparedStatement.setInt(5, airport.availableSlots)
+          preparedStatement.setInt(6, airport.id)
+          preparedStatement.executeUpdate()
+      }
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
     }
-    preparedStatement.close()
-    connection.commit()
-    connection.close()
   }
   
   def deleteAllAirports() = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    
-    var queryString = "DELETE FROM " + AIRPORT_TABLE
-    
-    val preparedStatement = connection.prepareStatement(queryString)
-    val deletedCount = preparedStatement.executeUpdate()
-    
-    preparedStatement.close()
-    connection.close()
-    
-    println("Deleted " + deletedCount + " airport records")
-    deletedCount
+    try {
+      var queryString = "DELETE FROM " + AIRPORT_TABLE
+      
+      val preparedStatement = connection.prepareStatement(queryString)
+      val deletedCount = preparedStatement.executeUpdate()
+      
+      preparedStatement.close()
+      println("Deleted " + deletedCount + " airport records")
+      deletedCount
+    } finally {
+      connection.close()
+    }
   }
 }

@@ -12,8 +12,8 @@ object CitySource {
   
   def loadCitiesByCriteria(criteria : List[(String, Any)]) = {
       //open the hsqldb
-      val connection = Meta.getConnection()
-      
+    val connection = Meta.getConnection()
+    try {  
       var queryString = "SELECT * FROM " + CITY_TABLE
       
       if (!criteria.isEmpty) {
@@ -50,9 +50,10 @@ object CitySource {
       
       resultSet.close()
       preparedStatement.close()
-      connection.close()
-      
       cityList.toList
+    } finally {
+      connection.close()
+    }
   }
   
   
@@ -66,8 +67,8 @@ object CitySource {
   }
   
   def deleteAllCitites() = {
-      val connection = Meta.getConnection()
-      
+    val connection = Meta.getConnection()
+    try {  
       var queryString = "DELETE FROM " + CITY_TABLE
       
       val preparedStatement = connection.prepareStatement(queryString)
@@ -75,15 +76,17 @@ object CitySource {
       val deletedCount = preparedStatement.executeUpdate()
       
       preparedStatement.close()
-      connection.close()
-      
       println("Deleted " + deletedCount + " city records")
       deletedCount
+    } finally {
+      connection.close()
+    }
+      
   }
   
   def saveCities(cities : List[City]) = {
-        val connection = Meta.getConnection()
-        
+    val connection = Meta.getConnection()
+    try {    
         val preparedStatement = connection.prepareStatement("INSERT INTO " + CITY_TABLE + "(name, latitude, longitude, country_code, population, income) VALUES(?,?,?,?,?,?)")
         
         connection.setAutoCommit(false)
@@ -106,15 +109,15 @@ object CitySource {
         }
         preparedStatement.close()
         connection.commit()
-        
-        connection.close()
-        
+    } finally {
+      connection.close()
+    }        
         
   } 
   def updateCities(cities : List[City]) = {
             Class.forName(DB_DRIVER);
-        val connection = Meta.getConnection()
-        
+    val connection = Meta.getConnection()
+    try {    
         val preparedStatement = connection.prepareStatement("UPDATE " + CITY_TABLE + "SET population = ?, income = ? WHERE id = ?")
         
         connection.setAutoCommit(false)
@@ -127,7 +130,8 @@ object CitySource {
         }
         preparedStatement.close()
         connection.commit()
-        
+    } finally {
         connection.close()
+    }
   }
 }
