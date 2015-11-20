@@ -124,6 +124,7 @@ function loadLinkDetails(linkId) {
 	    	$("#linkToAirport").text(link.toAirportName)
 	    	$("#linkCurrentPrice").text(link.price)
 	    	$("#linkDistance").text(link.distance)
+	    	$("#linkQuality").text(link.computedQuality)
 	    	$("#linkCurrentCapacity").text(link.capacity)
 	    	$("#linkCurrentDetails").show()
 	    	
@@ -228,7 +229,8 @@ function createLink() {
 			"airlineId" : parseInt($("#airlineOption").val()),
 			"airplanes" : [parseInt($("#planLinkAirplaneSelect").val())], 
 			"price" : parseFloat($("#planLinkPrice").val()),
-			"frequencyPerAirplane" : parseFloat($("#planLinkFrequency").val())}
+			"frequencyPerAirplane" : parseFloat($("#planLinkFrequency").val()),
+			"rawQuality" : (parseInt($("#planLinkServiceLevel").val()) + 1) * 20}
 		$.ajax({
 			type: 'PUT',
 			url: url,

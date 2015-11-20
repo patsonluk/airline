@@ -5,7 +5,7 @@ import com.patson.model.airplane.Airplane
 case class Link(from : Airport, to : Airport, airline: Airline, price : Int, distance : Int, capacity: Int, rawQuality : Int, duration : Int, frequency : Int, var id : Int = 0) extends IdObject{
   var availableSeats : Int = capacity
   var assignedAirplanes : List[Airplane] = List.empty
-  val MAX_RAW_QUALITY = 100
+  
   private var hasComputedQuality = false
   private var hasComputedQualityPriceAdjust = false
   private var computedQualityStore : Int = 0
@@ -17,7 +17,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : Int, dis
         0
       } else {
         hasComputedQuality = true
-        computedQualityStore = (rawQuality.toDouble / MAX_RAW_QUALITY * 30 + airline.airlineInfo.serviceQuality.toDouble / Airline.MAX_SERVICE_QUALITY * 50 + (assignedAirplanes.foldLeft(0.0)( _ + _.condition.toDouble)) / assignedAirplanes.size / Airplane.MAX_CONDITION * 20).toInt
+        computedQualityStore = (rawQuality.toDouble / Link.MAX_RAW_QUALITY * 30 + airline.airlineInfo.serviceQuality.toDouble / Airline.MAX_SERVICE_QUALITY * 50 + (assignedAirplanes.foldLeft(0.0)( _ + _.condition.toDouble)) / assignedAirplanes.size / Airplane.MAX_CONDITION * 20).toInt
 //        println("computed quality " + computedQualityStore)
         computedQualityStore
       }
@@ -62,6 +62,10 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : Int, dis
     }
   }
   
+}
+
+object Link {
+  val MAX_RAW_QUALITY = 100
 }
 
 case class LinkWithCost(link : Link, cost : Double, inverted : Boolean) {

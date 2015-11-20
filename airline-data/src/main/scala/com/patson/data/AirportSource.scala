@@ -104,6 +104,7 @@ object AirportSource {
       val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
       purgeStatement.setInt(1, airport.id)
       purgeStatement.executeUpdate()
+      purgeStatement.close()
       
       airport.airlineAppeals.foreach { 
         case(airline, airlineAppeal) =>
@@ -118,7 +119,6 @@ object AirportSource {
         }
      }
      connection.commit()
-              
      connection.close()
   }
   
@@ -160,9 +160,11 @@ object AirportSource {
             infoStatement.setDouble(3, share)
 //            println("airport : " + airport.id + " city : " + city.id)
             infoStatement.executeUpdate()
+            infoStatement.close()
           }
-        } 
+        }
     }
+    preparedStatement.close()
     connection.commit()
     connection.close()
   }
@@ -184,6 +186,7 @@ object AirportSource {
         preparedStatement.setInt(6, airport.id)
         preparedStatement.executeUpdate()
     }
+    preparedStatement.close()
     connection.commit()
     connection.close()
   }

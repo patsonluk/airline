@@ -58,6 +58,16 @@ function addMarkers(airports) {
 			  $("#airportPopupId").val(this.airportId)
 			  infoWindow.setContent($("#airportPopup").html())
 			  infoWindow.open(map, this);
+			  $("#planFromAirportButton").click(function() {
+				  planFromAirport($('#airportPopupId').val(), $('#airportPopupName').text())
+				  infoWindow.close();
+			  });
+			  $("#planToAirportButton").click(function() {
+				  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
+				  infoWindow.close();
+			  });
+			  
+			  
 		  });
 		  marker.setVisible(isShowMarker(marker, currentZoom))
 		  markers.push(marker)
@@ -133,9 +143,3 @@ function getAirports() {
 		  addMarkers(data)
 		});
 }
-	
-	
-	
-	
-	
-	

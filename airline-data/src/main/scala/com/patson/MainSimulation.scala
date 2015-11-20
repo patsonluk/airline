@@ -28,9 +28,9 @@ object MainSimulation extends App {
   val CREW_UNIT_COST = 10 //for now...
   
   val AWARENESS_DECAY = 0.1
-  val AWARENESS_INCREMENT_WITH_LINKS = 0.2
+  val AWARENESS_INCREMENT_WITH_LINKS = 0.3
   val LOYALTY_DECAY = 0.01
-  val MAX_LOYALTY_ADJUSTMENT = 1
+  val MAX_LOYALTY_ADJUSTMENT = 0.5
   
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 
@@ -110,10 +110,10 @@ object MainSimulation extends App {
     })
 
     val consumptionResult = PassengerSimulation.passengerConsume(demand, links)
-    println("Consumption result : ")
-    consumptionResult.foreach { 
-      case(_, _, _, links) => println(links)
-    }
+//    println("Consumption result : ")
+//    consumptionResult.foreach { 
+//      case(_, _, _, links) => println(links)
+//    }
     
     val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
       (link, foldList) =>
@@ -177,7 +177,7 @@ object MainSimulation extends App {
         val totalQualityProduct = links.foldLeft(0L) { (foldLong, link) => foldLong + (link.capacity - link.availableSeats) * link.computedQuality }
         val averageQuality = totalQualityProduct.toDouble / totalTransportedPassengers
         
-        var loyaltyAdjustment = totalTransportedPassengers / 1000.0 / (airport.size * airport.size) //on a size 1 airport, 1000 transported passengers is enough to move the loyalty by 1, on size 7 it's 7 * 7 * 1000)
+        var loyaltyAdjustment = totalTransportedPassengers / 200.0 / (airport.size * airport.size) //on a size 1 airport, 200 transported passengers is enough to move the loyalty by 1, on size 7 it's 7 * 7 * 1000)
         if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {
           loyaltyAdjustment = MAX_LOYALTY_ADJUSTMENT
         }

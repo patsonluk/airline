@@ -33,6 +33,7 @@ import play.api.libs.json.JsObject
 import com.patson.model.Computation
 import com.patson.model.LinkConsumptionDetails
 import play.api.libs.json.JsObject
+import play.api.libs.json.JsError
 
 object LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -46,9 +47,9 @@ object LinkApplication extends Controller {
       val toAirport = AirportSource.loadAirportById(toAirportId).get
       val airline = AirlineSource.loadAirlineById(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
-      val quality = json.\("quality").as[Int]
+      val rawQuality = json.\("quality").as[Int]
       
-      val link = Link(fromAirport, toAirport, airline, price, distance.toInt, capacity, quality, distance.toInt * 60 / 800, 1)
+      val link = Link(fromAirport, toAirport, airline, price, distance.toInt, capacity, rawQuality, distance.toInt * 60 / 800, 1)
       (json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
@@ -91,9 +92,15 @@ object LinkApplication extends Controller {
           case None => foldList
         }
       }
-      val quality = 0 //TODO calculate quality
+      var rawQuality =  json.\("rawQuality").as[Int]
+      if (rawQuality > Link.MAX_RAW_QUALITY) {
+        rawQuality = Link.MAX_RAW_QUALITY
+      } else if (rawQuality < 0) {
+        rawQuality = 0
+      }
+         
       
-      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, quality, duration, frequency)
+      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency)
       link.assignedAirplanes = airplanes
       (json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
@@ -113,7 +120,8 @@ object LinkApplication extends Controller {
       "price" -> JsNumber(link.price),
       "distance" -> JsNumber(link.distance),
       "capacity" -> JsNumber(link.capacity),
-      "quality" -> JsNumber(link.capacity),
+      "rawQuality" -> JsNumber(link.rawQuality),
+      "computedQuality" -> JsNumber(link.computedQuality),
       "duration" -> JsNumber(link.duration),
       "frequency" -> JsNumber(link.frequency),
       "availableSeat" -> JsNumber(link.availableSeats),

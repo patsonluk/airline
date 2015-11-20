@@ -64,7 +64,8 @@ object LinkSource {
             }
           }
           link.assignedAirplanes = assignedAirplanes.toList        
-          links += link    
+          links += link   
+          linkAssignmentStatement.close()
         }
       }
       
@@ -147,9 +148,9 @@ object LinkSource {
     removeStatement.executeUpdate()
     removeStatement.close()
     
-    var insertStatement : PreparedStatement = null
+    
     airplanes.foreach { airplane => 
-      insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane) VALUES(?,?)")
+      val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane) VALUES(?,?)")
       insertStatement.setInt(1, linkId)
       insertStatement.setInt(2, airplane.id)
       insertStatement.executeUpdate()
@@ -221,8 +222,8 @@ object LinkSource {
         preparedStatement.setInt(14, linkConsumption.cycle)
         preparedStatement.executeUpdate()
     }
-    connection.commit
     preparedStatement.close()
+    connection.commit
     connection.close()
   }
   def deleteLinkConsumptionsByCycle(cyclesFromLatest : Int) = {

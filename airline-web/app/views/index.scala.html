@@ -9,6 +9,11 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <script src="@routes.Assets.versioned("javascripts/jquery-2.1.4.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
   </head>
   <body>
   
@@ -36,6 +41,10 @@
 		    			<div class="value" id="planLinkDistance"></div>
 		    		</div>
 		    		<div class="table-row">
+		    			<div class="label"><h5>Aircraft:</h5></div>
+		    			<div class="value"> <select id="planLinkAirplaneSelect" onchange="updatePlanLinkInfoWithAirplaneSelected($(this).val())"></select></div>
+		    		</div>
+		    		<div class="table-row">
 		    			<div class="label"><h5>Flight Duration:</h5></div>
 		    			<div class="value" id="planLinkDuration"></div>
 		    		</div>
@@ -48,9 +57,11 @@
 		    			<div class="value"><input type="text" id="planLinkFrequency"/></div>
 		    		</div>
 		    		<div class="table-row">
-		    			<div class="label"><h5>Aircraft:</h5></div>
-		    			<div class="value"> <select id="planLinkAirplaneSelect" onchange="updatePlanLinkInfoWithAirplaneSelected($(this).val())"></select></div>
+		    			<div class="label"><h5>Service Level:</h5></div>
+		    			<div class="value"><div id="serviceLevelBar"></div><input type="hidden" id="planLinkServiceLevel" value="0"/></div>
+		    			<script type="text/javascript">generateImageBar('@routes.Assets.versioned("images/icons/star-empty.png")', '@routes.Assets.versioned("images/icons/star.png")', 5, $("#serviceLevelBar"), $("#planLinkServiceLevel"))</script>
 		    		</div>
+		    		
 	    		</div>
 	    		
 	    		
@@ -102,6 +113,10 @@
 		    			<div class="table-row">
 		    				<div class="label"><h5>Price:</h5></div>
 		    				<div class="value" id="linkCurrentPrice"></div>
+		    			</div>
+		    			<div class="table-row">
+		    				<div class="label"><h5>Overall Quality:</h5></div>
+		    				<div class="value" id="linkQuality"></div>
 		    			</div>
 		    			<div class="table-row">
 		    				<div class="label"><h5>Capacity:</h5></div>
@@ -211,13 +226,9 @@
    			</div>
    			<input type="hidden" id="airportPopupId"></input>
 		</div>
-		<div class="button" onclick="planFromAirport($('#airportPopupId').val(), $('#airportPopupName').text())">Plan Route (from airport)</div>
-		<div class="button" onclick="planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())">Plan Route (to airport)</div> 
+		<div class="button" id="planFromAirportButton">Plan Route (from airport)</div>
+		<div class="button" id="planToAirportButton">Plan Route (to airport)</div> 
     </div>
-    <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script async defer
 src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&callback=initMap">
 </script> 
