@@ -1,10 +1,11 @@
 package com.patson.data
 
 import scala.collection.mutable.ListBuffer
-
 import com.patson.data.Constants._
 import com.patson.model.Airport
 import com.patson.model.Airline
+import scala.collection.mutable.Map
+import com.patson.model.AirlineAppeal
 
 object AirportSource {
   def loadAllAirports(fullLoad : Boolean = false) = {
@@ -35,7 +36,7 @@ object AirportSource {
       val resultSet = preparedStatement.executeQuery()
       
       val airportData = new ListBuffer[Airport]()
-      val airlineMap : Map[Int, Airline] = AirlineSource.loadAllAirlines().foldLeft(Map[Int, Airline]())( (container, airline) => container + Tuple2(airline.id, airline))
+      //val airlineMap : Map[Int, Airline] = AirlineSource.loadAllAirlines().foldLeft(Map[Int, Airline]())( (container, airline) => container + Tuple2(airline.id, airline))
       
       
       while (resultSet.next()) {
@@ -55,19 +56,29 @@ object AirportSource {
         airport.id = resultSet.getInt("id")
         airportData += airport
         if (fullLoad) {
+          val airlineAppeals = Map[Int, AirlineAppeal]()
           val loyaltyStatement = connection.prepareStatement("SELECT airline, loyalty, awareness FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
           loyaltyStatement.setInt(1, airport.id)
           val loyaltyResultSet = loyaltyStatement.executeQuery()
           while (loyaltyResultSet.next()) {
             val airlineId = loyaltyResultSet.getInt("airline")
-             airlineMap.get(airlineId) match {
-              case Some(airline) => 
-                airport.setAirlineLoyalty(airline, loyaltyResultSet.getDouble("loyalty"))
-                airport.setAirlineAwareness(airline, loyaltyResultSet.getDouble("awareness"))
-              case None => println("Unexpected! Cannot load airline with id " + airlineId)
-            }
+            airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
           }
+          airport.initAirlineAppeals(airlineAppeals.toMap)
           loyaltyStatement.close()
+          
+          val slotAssignments = Map[Int, Int]()
+          val slotStatement = connection.prepareStatement("SELECT airline, SUM(frequency) as total_frequency FROM " + LINK_TABLE + " WHERE (from_airport = ? OR to_airport = ?) GROUP BY airline")
+          slotStatement.setInt(1, airport.id)
+          slotStatement.setInt(2, airport.id)
+          
+          val slotResultSet = slotStatement.executeQuery()
+          while (slotResultSet.next()) {
+            val airlineId = slotResultSet.getInt("airline")
+            slotAssignments.put(airlineId, slotResultSet.getInt("total_frequency"))
+          }
+          airport.initSlotAssignments(slotAssignments.toMap)
+          slotStatement.close()
         }
       }
       
@@ -99,6 +110,11 @@ object AirportSource {
   }
   
   def updateAirlineAppeal(airports: List[Airport]) = {
+   airports.foreach { airport => //make sure all loaded properly
+     if (!airport.isAirlineAppealsInitialized) {
+       throw new IllegalStateException("cannot save airline appeal as it's not initialized properly!")
+     }
+   }
    val connection = Meta.getConnection()
    try {  
      connection.setAutoCommit(false)
@@ -108,16 +124,20 @@ object AirportSource {
       purgeStatement.executeUpdate()
       purgeStatement.close()
       
-      airport.airlineAppeals.foreach { 
-        case(airline, airlineAppeal) =>
-          val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
-          //println( airport.id + "  " + airline.id)
-          insertStatement.setInt(1, airport.id)
-          insertStatement.setInt(2, airline.id)
-          insertStatement.setDouble(3, airlineAppeal.loyalty)
-          insertStatement.setDouble(4, airlineAppeal.awareness)
-          insertStatement.executeUpdate()
-          insertStatement.close()
+      
+      
+      airport.getAirlineAppeals.foreach { 
+        case(airlineId, airlineAppeal) =>
+          if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
+            val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
+            //println( airport.id + "  " + airline.id)
+            insertStatement.setInt(1, airport.id)
+            insertStatement.setInt(2, airlineId)
+            insertStatement.setDouble(3, airlineAppeal.loyalty)
+            insertStatement.setDouble(4, airlineAppeal.awareness)
+            insertStatement.executeUpdate()
+            insertStatement.close()
+          }
         }
      }
      connection.commit()
@@ -125,6 +145,48 @@ object AirportSource {
      connection.close()
    }
   }
+  
+//  def updateSlotAssignments(airports: List[Airport]) = {
+//     airports.foreach { airport => //make sure all loaded properly
+//       if (!airport.isSlotAssignmentsInitialized) {
+//         throw new IllegalStateException("cannot save slot assignments as it's not initialized properly!")
+//       }
+//     }
+//     val connection = Meta.getConnection()
+//     try {  
+//       connection.setAutoCommit(false)
+//       airports.foreach { airport => 
+//        val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_SLOT_ASSIGNMENT_TABLE + " WHERE airport = ?")
+//        purgeStatement.setInt(1, airport.id)
+//        purgeStatement.executeUpdate()
+//        purgeStatement.close()
+//        
+//        var assignedSlots = 0
+//        airport.getAirlineSlotAssignments.foreach { 
+//          case(airlineId, assignmentValue) =>
+//            val insertStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_SLOT_ASSIGNMENT_TABLE + "(airport, airline, assignment_value) VALUES (?,?,?)")
+//            //println( airport.id + "  " + airline.id)
+//            insertStatement.setInt(1, airport.id)
+//            insertStatement.setInt(2, airlineId)
+//            insertStatement.setInt(3, assignmentValue)
+//            insertStatement.executeUpdate()
+//            insertStatement.close()
+//            assignedSlots += assignmentValue
+//          }
+//       //update airport slot
+//          val slotStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET available_slots = ? WHERE id = ?")
+//          slotStatement.setInt(1, airport.availableSlots)
+//          slotStatement.setInt(2, airport.id)
+//          slotStatement.executeUpdate()
+//          slotStatement.close()
+//       }
+//
+//       
+//       connection.commit()
+//     } finally {
+//       connection.close()
+//     }
+//  }
   
   def saveAirports(airports : List[Airport]) = {
             Class.forName(DB_DRIVER);
@@ -162,7 +224,6 @@ object AirportSource {
               infoStatement.setInt(1, airport.id)
               infoStatement.setInt(2, city.id)
               infoStatement.setDouble(3, share)
-    //            println("airport : " + airport.id + " city : " + city.id)
               infoStatement.executeUpdate()
               infoStatement.close()
             }

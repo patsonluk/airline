@@ -29,6 +29,7 @@ package object controllers {
       "id" -> JsNumber(airplane.id),
       "ownerId" -> JsNumber(airplane.owner.id), 
       "name" -> JsString(airplane.model.name),
+      "modelId" -> JsNumber(airplane.model.id),
       "capacity" -> JsNumber(airplane.model.capacity),
       "fuelBurn" -> JsNumber(airplane.model.fuelBurn),
       "speed" -> JsNumber(airplane.model.speed),

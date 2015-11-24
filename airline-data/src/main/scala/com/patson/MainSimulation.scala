@@ -28,8 +28,15 @@ object MainSimulation extends App {
   val CREW_UNIT_COST = 10 //for now...
   
   val AWARENESS_DECAY = 0.1
-  val AWARENESS_INCREMENT_WITH_LINKS = 0.3
+  val AWARENESS_INCREMENT_WITH_LINKS = 0.2
+  val AWARENESS_INCREMENT_WITH_HQ = 0.3
+  val AWARENESS_INCREMENT_WITH_BASE = 0.1
   val LOYALTY_DECAY = 0.01
+  val LOYALTY_AUTO_INCREMENT_WITH_HQ = 0.05
+  val LOYALTY_AUTO_INCREMENT_WITH_BASE = 0.02
+  val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
+  val LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE = 15 //how much loyalty will increment to just because of being a HQ
+  
   val MAX_LOYALTY_ADJUSTMENT = 0.5
   
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
@@ -56,22 +63,59 @@ object MainSimulation extends App {
     
     //do decay
     val allAirports = AirportSource.loadAllAirports(true)
+    
+    
+    val basesByAirport : Map[Int, List[AirlineBase]] = AirlineSource.loadAirlineBasesByCriteria(List.empty).foldLeft(Map[Int, List[AirlineBase]]()) { (foldMap, airlineBase) =>
+      val bases = foldMap.getOrElse(airlineBase.airport.id, List[AirlineBase]())
+      foldMap + (airlineBase.airport.id -> (airlineBase :: bases))
+    }
+    
     //decay awareness and loyalty
     allAirports.foreach { airport =>
-      val updatedAppeals = airport.airlineAppeals.map { 
+      airport.getAirlineAppeals().foreach { 
         case(airline, AirlineAppeal(loyalty, awareness)) =>
+          //decay    
           val newLoyalty = if (loyalty - LOYALTY_DECAY <= 0) 0 else loyalty - LOYALTY_DECAY
           val newAwareness = if (awareness - AWARENESS_DECAY <= 0) 0 else awareness - AWARENESS_DECAY
-          (airline, AirlineAppeal(newLoyalty, newAwareness))
-      }.filter { 
-        case (airline, AirlineAppeal(newLoyalty, newAwareness)) => newLoyalty > 0 || newAwareness > 0
+          
+          airport.setAirlineLoyalty(airline, newLoyalty)
+          airport.setAirlineAwareness(airline, newAwareness)
       }
-      airport.airlineAppeals.clear()
-      airport.airlineAppeals ++= updatedAppeals
+       //add base on bases
+      basesByAirport.get(airport.id).foreach { _.foreach { base =>
+          var newAwareness : Double = airport.getAirlineAwareness(base.airline.id)
+          var newLoyalty : Double = airport.getAirlineLoyalty(base.airline.id)
+          if (base.headquarter) {
+             newAwareness += AWARENESS_INCREMENT_WITH_HQ
+             if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
+               newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_HQ
+               if (newLoyalty > LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
+                 newLoyalty = LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ
+               }
+             }
+          } else {
+             newAwareness += AWARENESS_INCREMENT_WITH_BASE
+             if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
+               newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_BASE
+               if (newLoyalty > LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
+                 newLoyalty = LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE
+               }
+             }
+          }
+          if (newAwareness > AirlineAppeal.MAX_AWARENESS) {
+            newAwareness = AirlineAppeal.MAX_AWARENESS
+          }
+          if (newLoyalty > AirlineAppeal.MAX_LOYALTY) {
+            newLoyalty = AirlineAppeal.MAX_LOYALTY
+          }
+          airport.setAirlineAwareness(base.airline.id, newAwareness)
+          airport.setAirlineAwareness(base.airline.id, newLoyalty)
+        }
+      }
     }
+      
     AirportSource.updateAirlineAppeal(allAirports)
-    
-    
+        
     //increment of awareness
     val links = LinkSource.loadAllLinks(true) 
     
@@ -88,17 +132,24 @@ object MainSimulation extends App {
     //add awareness based on airline with some links to/from an airport
     airportWithLinks.keySet.foreach {
       case(airport, airline) =>
-        val existingAwareness = airport.airlineAppeals.get(airline).map { _.awareness }.getOrElse(0.0)
+        val existingAwareness = airport.getAirlineAwareness(airline.id)
         val newAwareness = 
           if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
             AirlineAppeal.MAX_AWARENESS   
           } else {
             (((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) * 10).toInt).toDouble / 10
           }
-        airport.setAirlineAwareness(airline, newAwareness)
+        airport.setAirlineAwareness(airline.id, newAwareness)
         updatingAirports.add(airport)
     }
+    
     AirportSource.updateAirlineAppeal(updatingAirports.toList);
+    
+    
+        
+    
+    
+    
   }
   
   def linkSimulation(cycle: Int) = {
@@ -118,7 +169,7 @@ object MainSimulation extends App {
     val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
       (link, foldList) =>
         val soldSeats = link.capacity - link.availableSeats
-        val totalFuelBurn = link.assignedAirplanes.foldLeft(0)(_ + _.model.fuelBurn) //fuel burn actually similar to crew cost
+        val totalFuelBurn = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.fuelBurn) //fuel burn actually similar to crew cost
         val fuelCost = (
           if (link.duration <= 60) {
             totalFuelBurn * 10 * link.duration * FUEL_UNIT_COST * link.frequency
@@ -181,14 +232,14 @@ object MainSimulation extends App {
         if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {
           loyaltyAdjustment = MAX_LOYALTY_ADJUSTMENT
         }
-        val existingLoyalty = airport.getAirlineLoyalty(airline) 
+        val existingLoyalty = airport.getAirlineLoyalty(airline.id) 
         if (existingLoyalty < averageQuality) {
-           airport.setAirlineLoyalty(airline, existingLoyalty + loyaltyAdjustment) 
+           airport.setAirlineLoyalty(airline.id, existingLoyalty + loyaltyAdjustment) 
         } else {
-           airport.setAirlineLoyalty(airline, existingLoyalty - loyaltyAdjustment)
+           airport.setAirlineLoyalty(airline.id, existingLoyalty - loyaltyAdjustment)
         }
         updatingAirports.add(airport)
-        println("loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airline))
+        println("loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airline.id))
     }
     AirportSource.updateAirlineAppeal(updatingAirports.toList)
     

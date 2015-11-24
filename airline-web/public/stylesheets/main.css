@@ -22,3 +22,13 @@
 	display: table-row;
 	width: 100%;
 }
+.table .table-header {
+	display: table-caption;
+	width: 100%;
+}
+
+
+img.button {
+	cursor: pointer
+}
+	

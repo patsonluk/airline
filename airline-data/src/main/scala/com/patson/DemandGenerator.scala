@@ -143,7 +143,7 @@ object DemandGenerator extends App {
     //for now 100 loyalty preferences per airport
     val loyaltyPreferenceCount = 100;
     for (i <- 0 until loyaltyPreferenceCount) {
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.airlineAppeals.toMap), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals()), 1))
     }
     
     

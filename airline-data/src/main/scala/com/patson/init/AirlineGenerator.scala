@@ -46,8 +46,8 @@ object AirlineGenerator extends App {
     airlines.foreach { airline => 
       counter += 1  
       airports.foreach {  airport =>
-        airport.setAirlineLoyalty(airline, counter) 
-        airport.setAirlineAwareness(airline, 10)
+        airport.setAirlineLoyalty(airline.id, counter) 
+        airport.setAirlineAwareness(airline.id, 10)
       }
     }
     

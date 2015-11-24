@@ -212,7 +212,7 @@ object PassengerSimulation extends App {
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
         val linksWithCost = links.filter{ link => 
           //from the perspective of the passenger group, how well does it know each link
-            val airlineAwareness = passengerGroup.fromAirport.airlineAppeals.get(link.airline).map { _.awareness }.getOrElse(0.0) 
+            val airlineAwareness = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id) 
             airlineAwareness > Random.nextDouble() * AirlineAppeal.MAX_AWARENESS
           }.flatMap { link =>
             var cost = passengerGroup.preference.computeCost(link)

@@ -29,20 +29,13 @@ object GeoDataGenerator extends App {
   mainFlow
   
   def mainFlow() {
-//    val cityList = Await.result(getCity(), Duration(1, TimeUnit.MINUTES))
-//    cityList.foreach{ println }
-//    println(cityList.size)
-    
-//    val airportList = Await.result(getAirport(), Duration(1, TimeUnit.MINUTES))
-//    airportList.foreach{ println }
-//    println(airportList.size)
-    
     val getCityFuture = getCity(getIncomeInfo())
     
     val cities = Await.result(getCityFuture, Duration.Inf)  
         
     //make sure cities are saved first as we need the id for airport info
     try {
+//      AirportSource.deleteAllAirports()
       CitySource.deleteAllCitites()
       CitySource.saveCities(cities)
     } catch {
@@ -61,7 +54,9 @@ object GeoDataGenerator extends App {
   def getCity(incomeInfo : Map[String, Int]): Future[List[City]] = {
     val citySource = Source(scala.io.Source.fromFile("cities1000.txt").getLines())
     val splitFlow: Flow[String, Array[String]] = Flow[String].map(_.split("\\t"))
-    val parseFlow: Flow[Array[String], City] = Flow[Array[String]].filter { infoArray => infoArray(6) == "P" && infoArray(7) == "PPLC" || infoArray(7) == "PPL" || infoArray(7) == "PPLA" || infoArray(7) == "PPLA2" }.map {
+    val parseFlow: Flow[Array[String], City] = Flow[Array[String]].filter { infoArray =>
+      infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0  
+    }.map {
       info =>
         {
           new City(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, incomeInfo.get(info(8)).getOrElse(DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
@@ -73,6 +68,10 @@ object GeoDataGenerator extends App {
     val completeFlow = citySource.via(splitFlow).via(parseFlow).to(resultSink)
     val materializedFlow = completeFlow.run()
     materializedFlow.get(resultSink)
+  }
+  
+  def isCity(placeCode : String, countryCode : String) : Boolean = {
+    placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || (placeCode == "PPL" && (countryCode == "AU" || countryCode == "CA"))  
   }
   
   def getRunway() : Future[Map[String, List[Runway]]] = {
@@ -262,7 +261,13 @@ object GeoDataGenerator extends App {
             potentialAirports(0)._1.addCityServed(city, 1)
           } else if (potentialAirports.size > 1) {
             //val sortedAirports = potentialAirports.sortBy(_._2).sortBy(- _._1.size)
-            val (totalWeight, airportWeights) = potentialAirports.foldRight((0.0, List[(Airport, Int)]())) {
+            val dominateAirportSize : Int =  potentialAirports.filter(_._2 <= 100).map( _._1).reduceLeftOption { (largestAirport, airport) =>
+              if (largestAirport.size < airport.size) airport else largestAirport
+            }.fold(0)(_.size)
+            
+            val validAirports = if (dominateAirportSize >= 6) { potentialAirports.filter(_._1.size >= 4) } else potentialAirports //there's a super airport within 100km, then other airports can only get some share if it's size >= 4 
+            
+            val (totalWeight, airportWeights) = validAirports.foldRight((0.0, List[(Airport, Int)]())) {
               case (Tuple2(airport, distance), Tuple2(foldInt, airportWeightList)) => 
                 val thisAirportWeight = (if (distance <= 100) 2 else 1) * airport.size * airport.size
                 (thisAirportWeight + foldInt, (airport, thisAirportWeight) :: airportWeightList)
@@ -291,6 +296,22 @@ object GeoDataGenerator extends App {
           airport.population = airport.citiesServed.foldLeft(0.toLong) {
             case(foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong
           }
+          
+          //calculate slots
+          val slots = airport.size match {
+            case 1 => 5
+            case 2 => 10
+            case 3 => 20
+            case 4 => 50
+            case 5 => 80
+            case 6 => 120
+            case 7 => 170
+            case size : Int if size >= 8 => 220
+            case _ => 0
+          }
+          airport.slots = slots
+          airport.initAvailableSlots = slots
+          
           airport
         }.sortBy { _.power }
         
@@ -334,7 +355,7 @@ object GeoDataGenerator extends App {
 
   }
 
-  def adjustAirportByRunway(rawAirportResult: List[Airport], runwayResult: Map[String, List[Runway]]) = {
+  def adjustAirportByRunway(rawAirportResult: List[Airport], runwayResult: Map[String, List[Runway]]) : List[Airport]= {
     val MAX_AIRPORT_SIZE = 9
     rawAirportResult.map { rawAirport =>
       if (rawAirport.size == 3) { //have to at least to be a big airport for adjustment 
@@ -356,21 +377,19 @@ object GeoDataGenerator extends App {
            if (megaRunway > 0) {
              println(rawAirport.name)
              val size = 5 + megaRunway //at least size 6, max out at 9
-             rawAirport.copy(size = if (size > MAX_AIRPORT_SIZE) MAX_AIRPORT_SIZE else size) 
+             rawAirport.size = if (size > MAX_AIRPORT_SIZE) MAX_AIRPORT_SIZE else size 
            } else if (veryLongRunway > 0) {
              if (veryLongRunway > 1) { //2 very long runway
-               rawAirport.copy(size = 5) //size 5
+               rawAirport.size = 5 //size 5
              } else if (longRunway > 0) { //1 very long 1 long
-               rawAirport.copy(size = 5) //size 5
+               rawAirport.size = 5 //size 5
              } else {
-               rawAirport.copy(size = 4) //size 4
+               rawAirport.size = 4 //size 4
              }
            } else if (longRunway > 1) {
-             rawAirport.copy(size = 4) //size 4
-           } else {
-             rawAirport
+             rawAirport.size = 4//size 4
            }
-           
+          rawAirport
           case None => rawAirport //no change
         }
       } else {

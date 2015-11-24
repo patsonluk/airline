@@ -6,7 +6,7 @@ import com.patson.model.Airport
 import com.patson.model.Link
 import com.patson.model.Airline
 import com.patson.model.airplane.Airplane
-import com.patson.model.airplane.Airplane
+import com.patson.model.airplane.Model
 import com.patson.data.airplane.ModelSource
 
 object AirplaneSource {
@@ -33,7 +33,15 @@ object AirplaneSource {
       
       val airplanes = new ListBuffer[Airplane]()
       while (resultSet.next()) {
-        val model = ModelSource.getModelFromRow(resultSet)
+        val model = Model( 
+          resultSet.getString("name"),
+          resultSet.getInt("capacity"),
+          resultSet.getInt("fuel_burn"),
+          resultSet.getInt("speed"),
+          resultSet.getInt("range"),
+          resultSet.getInt("price"),
+          resultSet.getInt("model")
+          )
         val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getBigDecimal("condition"))
         airplane.id = resultSet.getInt("id")
         airplanes.append(airplane)
@@ -99,7 +107,18 @@ object AirplaneSource {
       
       val airplanesWithAssignedLink = new ListBuffer[(Airplane, Option[Link])]()
       while (resultSet.next()) {
-        val model = ModelSource.getModelFromRow(resultSet)
+        val model = Model( 
+          resultSet.getString("name"),
+          resultSet.getInt("capacity"),
+          resultSet.getInt("fuel_burn"),
+          resultSet.getInt("speed"),
+          resultSet.getInt("range"),
+          resultSet.getInt("price"),
+          resultSet.getInt("model")
+          )
+          
+      
+
         val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getBigDecimal("condition"))
         airplane.id = resultSet.getInt("id")
         if (resultSet.getObject("link") != null) {

@@ -63,7 +63,7 @@ object LinkSource {
               case None => println("cannot load assigned airplane with id " + assignmentResult.getInt("airplane"))
             }
           }
-          link.assignedAirplanes = assignedAirplanes.toList        
+          link.setAssignedAirplanes(assignedAirplanes.toList)        
           links += link   
           linkAssignmentStatement.close()
         }
@@ -95,7 +95,7 @@ object LinkSource {
   }
   
   def saveLink(link : Link) : Option[Link] = {
-     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.assignedAirplanes) match { 
+     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.getAssignedAirplanes) match { 
        case Some(generatedId) => 
          link.id = generatedId
          Some(link)
@@ -139,6 +139,35 @@ object LinkSource {
       connection.close()
     }
   }
+  def updateLink(link : Link) = {
+    //open the hsqldb
+    val connection = Meta.getConnection()
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price = ?, capacity = ?, quality = ?, duration = ?, frequency = ? WHERE id = ?")
+
+    try {
+      preparedStatement.setInt(1, link.price)
+      preparedStatement.setInt(2, link.capacity)
+      preparedStatement.setInt(3, link.rawQuality)
+      preparedStatement.setInt(4, link.duration)
+      preparedStatement.setInt(5, link.frequency)
+      preparedStatement.setInt(6, link.id)
+      
+      val updateCount = preparedStatement.executeUpdate()
+      println("Updated " + updateCount + " link!")
+      
+      if (updateCount > 0) {
+          //try to save assigned airplanes if any
+          updateAssignedPlanes(link.id, link.getAssignedAirplanes())
+      }
+      
+      updateCount
+    } finally {
+      preparedStatement.close()
+      connection.close()
+    }
+  }
+  
+  
   def updateAssignedPlanes(linkId : Int, airplanes : List[Airplane]) = {
     val connection = Meta.getConnection()
     try {

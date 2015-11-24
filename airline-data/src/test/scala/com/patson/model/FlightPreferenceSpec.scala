@@ -8,8 +8,6 @@ import org.scalatest.WordSpecLike
 import akka.actor.ActorSystem
 import akka.testkit.ImplicitSender
 import akka.testkit.TestKit
-import com.patson.data.AirplaneSource
-import com.patson.data.AirplaneSource
 import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
  
@@ -22,8 +20,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     TestKit.shutdownActorSystem(system)
   }
  
-  val testAirline1 = Airline("airline 1")
-  val testAirline2 = Airline("airline 2")
+  val testAirline1 = Airline("airline 1", 1)
+  val testAirline2 = Airline("airline 2", 2)
   val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", 1, 0, 0, 0, 0)
   val toAirport = Airport("", "", "To Airport", 0, 0, "", "", 1, 0, 0, 0, 0)
   val airline1Link = Link(fromAirport, toAirport, testAirline1, 100, 10000, 10000, 0, 600, 1)
@@ -33,12 +31,13 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   
   "An AppealPreference".must {
     "generate similar cost if price and distance is the same, and small differece in loyalty".in {
-      fromAirport.setAirlineLoyalty(testAirline1, 30)
-      fromAirport.setAirlineLoyalty(testAirline2, 32)
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, 30)
+      fromAirport.setAirlineLoyalty(testAirline2.id, 32)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         //should be around 50 50
@@ -51,14 +50,15 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       
     }
     "generate similar cost if distance and loyalty is the same, and small differece in price".in {
-      fromAirport.setAirlineLoyalty(testAirline1, 50)
-      fromAirport.setAirlineLoyalty(testAirline2, 50)
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, 50)
+      fromAirport.setAirlineLoyalty(testAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, 1000, 10000, 10000, 0, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, testAirline2, 1005, 10000, 10000, 0, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         //should be around 50 50
@@ -70,14 +70,15 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( <= (1.1))
     }
     "generate similar cost if price and loyalty is the same, and small differece in distance".in {
-      fromAirport.setAirlineLoyalty(testAirline1, 50)
-      fromAirport.setAirlineLoyalty(testAirline2, 50)
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, 50)
+      fromAirport.setAirlineLoyalty(testAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, 1000, 10000, 10000, 0, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, testAirline2, 1000, 10000, 10000, 0, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
@@ -87,14 +88,15 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( <= (1.1))
     }
     "generate similar cost if everything is the same, and small differece in raw link quality".in {
-      fromAirport.setAirlineLoyalty(testAirline1, 50)
-      fromAirport.setAirlineLoyalty(testAirline2, 50)
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, 50)
+      fromAirport.setAirlineLoyalty(testAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, 1000, 10000, 10000, 51, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, testAirline2, 1000, 10100, 10000, 50, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
@@ -104,15 +106,16 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( <= (1.1))
     }
     
-    "generate differentiating but overlapping cost if everything is the same, but loyal at big difference".in {
-      fromAirport.setAirlineLoyalty(testAirline1, 10)
-      fromAirport.setAirlineLoyalty(testAirline2, 50)
+    "generate differentiating but overlapping cost if everything is the same, but loyalty at big difference".in {
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, 10)
+      fromAirport.setAirlineLoyalty(testAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, 1000, 10000, 10000, 0, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, testAirline2, 1000, 10000, 10000, 0, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
@@ -121,15 +124,16 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( <= (0.5)) //significantly more people should pick airline 2
       ratio.shouldBe( > (0.1)) //yet some will still pick airline 1
     }
-    "generate almost no overlapping cost if everything is the same, but loyal at min vs max".in {
-      fromAirport.setAirlineLoyalty(testAirline1, 0)
-      fromAirport.setAirlineLoyalty(testAirline2, 100)
+    "generate almost no overlapping cost if everything is the same, but loyalty at min vs max".in {
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, 0)
+      fromAirport.setAirlineLoyalty(testAirline2.id, 100)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, 1000, 10000, 10000, 0, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, testAirline2, 1000, 10000, 10000, 0, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
@@ -139,14 +143,15 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( > (0.0)) //yet some will still pick airline 1 due to randomness 
     }
     "generate differentiating but overlapping cost if everything is the same, but price at big difference".in {
-      fromAirport.setAirlineLoyalty(testAirline1, 50)
-      fromAirport.setAirlineLoyalty(testAirline2, 50)
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, 50)
+      fromAirport.setAirlineLoyalty(testAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, 1000, 10000, 10000, 0, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, testAirline2, 1500, 10000, 10000, 0, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
@@ -156,14 +161,15 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( < (10.0)) //yet some will still pick airline 2
     }
     "generate no overlapping cost if everything is the same, but price is at huge difference".in {
-      fromAirport.setAirlineLoyalty(testAirline1, 50)
-      fromAirport.setAirlineLoyalty(testAirline2, 50)
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, 50)
+      fromAirport.setAirlineLoyalty(testAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, 5000, 10000, 10000, 0, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, testAirline2, 1000, 10000, 10000, 0, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
@@ -175,17 +181,18 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       adjustedAirline1.setServiceQuality(70)
       val adjustedAirline2 = testAirline2.copy()
       adjustedAirline2.setServiceQuality(20)
-      fromAirport.setAirlineLoyalty(adjustedAirline1, 50)
-      fromAirport.setAirlineLoyalty(adjustedAirline2, 50)
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(adjustedAirline1.id, 50)
+      fromAirport.setAirlineLoyalty(adjustedAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, 1000, 10000, 10000, 60, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, 1000, 10000, 10000, 10, 600, 1)
-      airline2Link.assignedAirplanes = List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100))
-      airline1Link.assignedAirplanes = List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100))
+      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100)))
+      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100)))
        
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
@@ -199,17 +206,18 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       adjustedAirline1.setServiceQuality(100)
       val adjustedAirline2 = testAirline2.copy()
       adjustedAirline2.setServiceQuality(0)
-      fromAirport.setAirlineLoyalty(adjustedAirline1, 50)
-      fromAirport.setAirlineLoyalty(adjustedAirline2, 50)
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(adjustedAirline1.id, 50)
+      fromAirport.setAirlineLoyalty(adjustedAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, 1000, 10000, 10000, 100, 600, 1)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, 1000, 10000, 10000, 0, 600, 1)
-      airline2Link.assignedAirplanes = List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100))
-      airline1Link.assignedAirplanes = List(Airplane(Model.fromId(0), adjustedAirline2, 0, 0))
+      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100)))
+      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 0)))
        
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
-        val preference = AppealPreference(fromAirport.airlineAppeals.toMap, 0)
+        val preference = AppealPreference(fromAirport.getAirlineAppeals().toMap, 0)
         val link1Cost = preference.computeCost(airline1Link)
         val link2Cost = preference.computeCost(airline2Link)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1

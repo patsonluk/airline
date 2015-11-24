@@ -4,16 +4,16 @@ import com.patson.model.airplane._
 import com.patson.data.CycleSource
 
 object Computation {
-  def calculateDuration(airplane: Airplane, distance : Int) = {
+  def calculateDuration(airplaneModel: Model, distance : Int) = {
     //assuming achieving max speed at 500km, otherwise half speed
     if (distance <= 500) {
-      distance * 60 / (airplane.model.speed / 2) 
+      distance * 60 / (airplaneModel.speed / 2) 
     } else {
-      (distance - 500) * 60 / airplane.model.speed + 500 * 60 / (airplane.model.speed / 2)  
+      (distance - 500) * 60 / airplaneModel.speed + 500 * 60 / (airplaneModel.speed / 2)  
     }
   }
 
-  def calculateMaxFrequency(airplane : Airplane, duration : Int) = {
+  def calculateMaxFrequency(duration : Int) = {
     val roundTripTime = duration * 2 + 240 //240 constant turn-around for now - penalizing so long range flight is more profitable //TODO better calculation later
     val availableFlightTimePerWeek = 5 * 24 * 60 //assume per week only 5 days are "flyable"
     availableFlightTimePerWeek / roundTripTime

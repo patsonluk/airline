@@ -28,7 +28,7 @@ case class SimplePreference(priceWeight : Int, maxPriceWeight : Int) extends Fli
 
 
 
-case class AppealPreference(appealList : Map[Airline, AirlineAppeal], id : Int)  extends FlightPreference{
+case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  extends FlightPreference{
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //val drawPool = new DrawPool(appealList)
@@ -44,7 +44,7 @@ case class AppealPreference(appealList : Map[Airline, AirlineAppeal], id : Int) 
     //at min loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty. (at 1, means no reduction)
     val minReduceFactorAtMinLoyalty = 1
     
-    val appeal = appealList.getOrElse(link.airline, AirlineAppeal(0, 0))
+    val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
     
     var perceivedPrice = link.price;
     val loyalty = appeal.loyalty
@@ -81,7 +81,7 @@ case class AppealPreference(appealList : Map[Airline, AirlineAppeal], id : Int) 
 
 object AppealPreference {
   var count: Int = 0
-  def getAppealPreferenceWithId(appealList : Map[Airline, AirlineAppeal]) = {
+  def getAppealPreferenceWithId(appealList : Map[Int, AirlineAppeal]) = {
     count += 1
     AppealPreference(appealList, count)
   }

@@ -34,8 +34,9 @@ function addAirplane(modelId, quantity, airlineId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	updateAirplaneList(airlineId, $('#airplaneList'))
-	    	updateBalance(airlineId)
+//	    	updateAirplaneList(airlineId, $('#airplaneList'))
+//	    	updateBalance(airlineId)
+	    	updateAllPanels(airlineId)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

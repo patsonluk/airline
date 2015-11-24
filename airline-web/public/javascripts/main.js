@@ -1,6 +1,6 @@
 var map
-var activeInput
 var markers = []
+var activeAirline
 
 $( document ).ready(function() {
 	flightPaths = []
@@ -27,7 +27,7 @@ function initMap() {
 
 function addMarkers(airports) {
 	var infoWindow = new google.maps.InfoWindow({
-		maxWidth : 400
+		maxWidth : 500
 	})
 	currentZoom = map.getZoom()
 	for (i = 0; i < airports.length; i++) {
@@ -39,35 +39,47 @@ function addMarkers(airports) {
 			    title: airportInfo.name,
 			    airportName: airportInfo.name,
 		  		airportCode: airportInfo.iata,
+		  		airportCity: airportInfo.city,
 		  		airportId: airportInfo.id,
 		  		airportSize: airportInfo.size,
 		  		airportPopulation: airportInfo.population,
 		  		airportIncomeLevel: airportInfo.incomeLevel,
-		  		airportCountryCode: airportInfo.countryCode
+		  		airportCountryCode: airportInfo.countryCode,
+		  		airportSlots : airportInfo.slots,
+		  		airportAvailableSlots: airportInfo.availableSlots
 			  });
 		  
 		  marker.addListener('click', function() {
 			  infoWindow.close();
+			  
+			  var isBase = updateBaseInfo(this.airportId)
 			  $("#airportPopupName").text(this.airportName)
 			  $("#airportPopupIata").text(this.airportCode)
+			  $("#airportPopupCity").text(this.airportCity)
 			  $("#airportPopupSize").text(this.airportSize)
 			  $("#airportPopupPopulation").text(this.airportPopulation)
 			  $("#airportPopupIncomeLevel").text(this.airportIncomeLevel)
 			  $("#airportPopupCountryCode").text(this.airportCountryCode)
+			  $("#airportPopupSlots").text(this.airportAvailableSlots + " (" + this.airportSlots + ")")
 			  updatePopupAppeal(this.airportId)
+			  updatePopupSlots(this.airportId)
 			  $("#airportPopupId").val(this.airportId)
 			  infoWindow.setContent($("#airportPopup").html())
 			  infoWindow.open(map, this);
-			  $("#planFromAirportButton").click(function() {
-				  planFromAirport($('#airportPopupId').val(), $('#airportPopupName').text())
-				  infoWindow.close();
-			  });
+			  
+			  if (isBase) {
+				  $("#planFromAirportButton").show()
+				  $("#planFromAirportButton").click(function() {
+					  planFromAirport($('#airportPopupId').val(), $('#airportPopupName').text())
+					  infoWindow.close();
+				  });
+			  } else {
+				  $("#planFromAirportButton").hide()
+			  }
 			  $("#planToAirportButton").click(function() {
 				  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
 				  infoWindow.close();
 			  });
-			  
-			  
 		  });
 		  marker.setVisible(isShowMarker(marker, currentZoom))
 		  markers.push(marker)
@@ -76,7 +88,30 @@ function addMarkers(airports) {
 function isShowMarker(marker, zoom) {
 	return (zoom + marker.airportSize > 7) //init zoom at 2, so show all that is size > 5
 }
-
+function updateBaseInfo(airportId) {
+	$("#buildHeadquarterButton").hide()
+	$("#buildBaseButton").hide()
+	$("#airportIcons img").hide()
+	if (!activeAirline.headquarterAirport) {
+	  $("#buildHeadquarterButton").show()
+	} else {
+	  var baseAirport
+	  for (i = 0; i < activeAirline.baseAirports.length; i++) {
+		  if (activeAirline.baseAirports[i].airportId == airportId) {
+			  baseAirport = activeAirline.baseAirports[i]
+			  break
+		  }
+	  }
+	  if (!baseAirport) {
+	  	$("#buildBaseButton").show()
+	  } else if (activeAirline.headquarterAirport.id == baseAirport.id){ //a HQ
+		$("#popupHeadquarterIcon").show() 
+	  } else { //a base
+		$("#popupBaseIcon").show()
+	  }
+	}
+	return baseAirport
+}
 
 function updatePopupAppeal(airportId) {
 	//clear the old ones
@@ -85,7 +120,7 @@ function updatePopupAppeal(airportId) {
 	var airlineId = $("#airlineOption").val()
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airports/id/" + airportId,
+		url: "http://localhost:9001/airports/" + airportId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airport) {
@@ -101,6 +136,35 @@ function updatePopupAppeal(airportId) {
 	    		$("#airportPopupAwareness").text("0")
 	    		$("#airportPopupLoyalty").text("0")
 	    	}
+	    	
+//	    	hasMatch = false
+//	    	$.each(airport.slotAssignmentList, function( key, slotInfo ) {
+//	    		if (slotInfo.airlineId == airlineId) {
+//	    			$("#airportPopupAssignedSlots").text(slotInfo.slotAssignment)
+//	    			hasMatch = true
+//	    		}
+//	  		});
+//	    	if (!hasMatch) {
+//	    		$("#airportPopupAssignedSlots").text("0")
+//	    	}
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function updatePopupSlots(airportId) {
+	//clear the old ones
+	$("#airportPopupAssignedSlots").text()
+	var airlineId = activeAirline.id
+	$.ajax({
+		type: 'GET',
+		url: "http://localhost:9001/airports/" + airportId + "/slots?airlineId=" + airlineId,
+	    dataType: 'json',
+	    success: function(slotInfo) {
+    		$("#airportPopupAssignedSlots").text(slotInfo.assignedSlots + " (" + slotInfo.maxSlots + ")")
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -111,13 +175,14 @@ function updatePopupAppeal(airportId) {
 
 
 
+
 function updateAllPanels(airlineId) {
-	updateBalance(airlineId)
+	updateAirlineInfo(airlineId)
 	updateAirplaneList(airlineId, $("#airplaneList"))
 	updateLinksInfo()
 }
 
-function updateBalance(airlineId) {
+function updateAirlineInfo(airlineId) {
 	$.ajax({
 		type: 'GET',
 		url: "http://localhost:9001/airlines/" + airlineId,
@@ -125,12 +190,23 @@ function updateBalance(airlineId) {
 	    dataType: 'json',
 	    success: function(airline) {
 	    	$("#balance").text(airline.balance)
+	    	activeAirline = airline
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function setActiveDiv(activeDiv) {
+//	activeDiv.siblings().hide(500)
+//activeDiv.show(500)
+	if (activeDiv.siblings(":visible").length){
+		activeDiv.siblings(":visible").fadeOut(200, function() { activeDiv.fadeIn(500) })
+	} else {
+		activeDiv.fadeIn(200)
+	}
 }
 
 
@@ -139,7 +215,7 @@ function appendConsole(message) {
 }
 
 function getAirports() {
-	$.getJSON( "http://localhost:9001/airports?count=300", function( data ) {
+	$.getJSON( "http://localhost:9001/airports?count=600", function( data ) {
 		  addMarkers(data)
 		});
 }

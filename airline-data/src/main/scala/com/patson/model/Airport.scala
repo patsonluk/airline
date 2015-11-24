@@ -1,25 +1,132 @@
 package com.patson.model
 
-case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, size : Int, var power : Long, var population : Long, slots : Int, availableSlots : Int, var id : Int = 0) extends IdObject {
+case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, var size : Int, var power : Long, var population : Long, var slots : Int, var initAvailableSlots : Int, var id : Int = 0) extends IdObject {
   val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
-  val airlineAppeals = scala.collection.mutable.Map[Airline, AirlineAppeal]()
+  private[this] val airlineAppeals = scala.collection.mutable.Map[Int, AirlineAppeal]()
+  private[this] var airlineAppealsLoaded = false
+  private[this] val slotAssignments = scala.collection.mutable.Map[Int, Int]()
+  private[this] var slotAssignmentsLoaded = false
+  
+  def availableSlots : Int = {
+    if (slotAssignmentsLoaded) {
+      slots - slotAssignments.foldLeft(0)(_ + _._2)
+    } else {
+      initAvailableSlots
+    }
+  }
+  
+  
+  
   def addCityServed(city : City, share : Double) {
     citiesServed += Tuple2(city, share)
   }
-  def setAirlineLoyalty(airline : Airline, value : Double) = {
-    val oldAppeal = airlineAppeals.getOrElse(airline, AirlineAppeal(0, 0))
-    airlineAppeals.put(airline, AirlineAppeal(value, oldAppeal.awareness))
+  
+  def getAirlineAppeals() : Map[Int, AirlineAppeal] = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    airlineAppeals.toMap
   }
-  def setAirlineAwareness(airline : Airline, value : Double) = {
-    val oldAppeal = airlineAppeals.getOrElse(airline, AirlineAppeal(0, 0))
-    airlineAppeals.put(airline, AirlineAppeal(oldAppeal.loyalty, value))
+  
+  def setAirlineLoyalty(airlineId : Int, value : Double) = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    val oldAppeal = airlineAppeals.getOrElse(airlineId, AirlineAppeal(0, 0))
+    airlineAppeals.put(airlineId, AirlineAppeal(value, oldAppeal.awareness))
   }
-  def getAirlineLoyalty(airline : Airline) : Double = {
-    airlineAppeals.get(airline).fold(0.0)(_.loyalty)
+  def setAirlineAwareness(airlineId : Int, value : Double) = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    val oldAppeal = airlineAppeals.getOrElse(airlineId, AirlineAppeal(0, 0))
+    airlineAppeals.put(airlineId, AirlineAppeal(oldAppeal.loyalty, value))
   }
-  def getAirlineAwareness(airline : Airline) : Double = {
-    airlineAppeals.get(airline).fold(0.0)(_.awareness)
+  def getAirlineLoyalty(airlineId : Int) : Double = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    airlineAppeals.get(airlineId).fold(0.0)(_.loyalty)
   }
+  def getAirlineAwareness(airlineId : Int) : Double = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    airlineAppeals.get(airlineId).fold(0.0)(_.awareness)
+  }
+  
+  def isAirlineAppealsInitialized = airlineAppealsLoaded
+  def isSlotAssignmentsInitialized = slotAssignmentsLoaded
+  
+  def getAirlineSlotAssignment(airlineId : Int) = {
+    if (!slotAssignmentsLoaded) {
+      throw new IllegalStateException("airport slot assignment is not properly initialized! If loaded from DB, please use fullload")
+    }
+    slotAssignments.getOrElse(airlineId, 0)
+  }
+  
+  /**
+   * Get max slots that can be assigned to this airline (including existing ones)
+   */
+  def getMaxSlotAssignment(airlineId : Int) : Int = {
+    val reservedSlots = (slots * 0.1).toInt //airport always keep 10% spare
+    val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airlineId)
+    if (availableSlots < reservedSlots) { //at reserved range already...cannot assign any new slots to existing airline
+      if (currentAssignedSlotToThisAirline > 0) {
+        currentAssignedSlotToThisAirline
+      } else if (availableSlots > 0) { //some hope for new airline...
+        1
+      } else { //sry all full
+        0
+      } 
+    } else { //calculate how many can be assigned
+      val maxSlotsByLoyalty = ((slots - reservedSlots) * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at 100% get all the available (minus reserved)
+      val maxSlotsByAwareness = (getAirlineAwareness(airlineId) * 5 / AirlineAppeal.MAX_AWARENESS).toInt // +5 at max awareness
+      val maxSlots = Math.max(1, Math.max(maxSlotsByLoyalty, maxSlotsByAwareness))
+        
+      //now see whether this new max slot would violate anything
+      if (maxSlots <= currentAssignedSlotToThisAirline) { //you can keep what you have but we cannot give u more as we don't like you anymore than before
+        currentAssignedSlotToThisAirline
+      } else {
+        var increment = maxSlots - currentAssignedSlotToThisAirline
+        if (availableSlots - increment < reservedSlots) { //nah cannot assign into the reserved range
+           increment = availableSlots - reservedSlots  //can give u what is left before reserved range at most   
+        }
+        currentAssignedSlotToThisAirline + increment
+      }
+    }
+  }
+  
+  def setAirlineSlotAssignment(airlineId : Int, value : Int) = {
+    if (!slotAssignmentsLoaded) {
+      throw new IllegalStateException("airport slot assignment is not properly initialized! If loaded from DB, please use fullload")
+    }
+    val maxAssignment = getMaxSlotAssignment(airlineId)
+    if (value > maxAssignment) {
+      throw new IllegalArgumentException("Cannot assign that many slots to this airline!") 
+    }
+    slotAssignments.put(airlineId, value)
+  }
+  
+  def getAirlineSlotAssignments() : Map[Int, Int] = {
+    if (!slotAssignmentsLoaded) {
+      throw new IllegalStateException("airport slot assignment is not properly initialized! If loaded from DB, please use fullload")
+    }
+    slotAssignments.toMap
+  }
+  
+  
+  def initAirlineAppeals(airlineAppeals : Map[Int, AirlineAppeal]) = {
+    this.airlineAppeals.clear()
+    this.airlineAppeals ++= airlineAppeals
+    airlineAppealsLoaded = true
+  }
+  def initSlotAssignments(slotAssignments : Map[Int, Int]) = {
+    this.slotAssignments.clear()
+    this.slotAssignments ++= slotAssignments
+    slotAssignmentsLoaded = true
+  }
+  
   
 }
 

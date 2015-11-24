@@ -1,15 +1,36 @@
 package com.patson.model
 
 import com.patson.model.airplane.Airplane
+import com.patson.model.airplane.Model
 
+/**
+ * 
+ * Frequency sum of all assigned plane
+ */
 case class Link(from : Airport, to : Airport, airline: Airline, price : Int, distance : Int, capacity: Int, rawQuality : Int, duration : Int, frequency : Int, var id : Int = 0) extends IdObject{
   var availableSeats : Int = capacity
-  var assignedAirplanes : List[Airplane] = List.empty
+  private var assignedAirplanes : List[Airplane] = List.empty
+  private var assignedModel : Option[Model] = None
   
   private var hasComputedQuality = false
   private var hasComputedQualityPriceAdjust = false
   private var computedQualityStore : Int = 0
   private var computedQualityPriceAdjustStore : Double = 1.0
+  
+  def setAssignedAirplanes(assignedAirplanes : List[Airplane]) = {
+    this.assignedAirplanes = assignedAirplanes
+    if (!assignedAirplanes.isEmpty) {
+      assignedModel = Some(assignedAirplanes(0).model)
+    }
+  }
+  
+  def getAssignedAirplanes() = {
+    assignedAirplanes
+  }
+  
+  def getAssignedModel() : Option[Model] = {
+    assignedModel
+  }
   
   def computedQuality : Int= {
     if (!hasComputedQuality) {

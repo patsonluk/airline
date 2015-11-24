@@ -2,8 +2,7 @@ package com.patson.data
 
 import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
-import com.patson.model.Airline
-import com.patson.model.AirlineInfo
+import com.patson.model._
 
 object AirlineSource {
   def loadAllAirlines(fullLoad : Boolean = false) = {
@@ -100,21 +99,7 @@ object AirlineSource {
     
     airlines
   }
-  
-//  def updateAirlineInfo(airlines : List[Airline]) = {
-//    val connection = Meta.getConnection()
-//    connection.setAutoCommit(false)
-//    airlines.foreach { airline => 
-//      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ? WHERE airline = ?")
-//      updateStatement.setLong(1, airline.airlineInfo.balance)
-//      updateStatement.setInt(2, airline.id)
-//      updateStatement.executeUpdate()
-//      updateStatement.close()
-//    }
-//    connection.commit()          
-//    connection.close()
-//  }
-  
+
   def adjustAirlineBalance(airlineId : Int, delta : Long) = {
     this.synchronized {
       val connection = Meta.getConnection()
@@ -168,4 +153,128 @@ object AirlineSource {
     }
       
   }
+  def loadAirlineBasesByAirport(airportId : Int) : List[AirlineBase] = {
+    loadAirlineBasesByCriteria(List(("airport", airportId)))
+  }
+  
+  def loadAirlineBasesByAirline(airlineId : Int) : List[AirlineBase] = {
+    loadAirlineBasesByCriteria(List(("airline", airlineId)))
+  }
+  def loadAirlineHeadquarter(airlineId : Int) : Option[AirlineBase] = {
+    val result = loadAirlineBasesByCriteria(List(("airline", airlineId), ("headquarter", true)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+  
+  def loadAirlineBaseByAirlineAndAirport(airlineId : Int, airportId : Int) : Option[AirlineBase] = {
+    val result = loadAirlineBasesByCriteria(List(("airline", airlineId), ("airport", airportId)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+  
+  def loadAirlineBasesByCriteria(criteria : List[(String, Any)]) : List[AirlineBase] = {
+      //open the hsqldb
+      val connection = Meta.getConnection() 
+      try {
+        var queryString = "SELECT * FROM " + AIRLINE_BASE_TABLE
+        
+        if (!criteria.isEmpty) {
+          queryString += " WHERE "
+          for (i <- 0 until criteria.size - 1) {
+            queryString += criteria(i)._1 + " = ? AND "
+          }
+          queryString += criteria.last._1 + " = ?"
+        }
+        
+        val preparedStatement = connection.prepareStatement(queryString)
+        
+        for (i <- 0 until criteria.size) {
+          preparedStatement.setObject(i + 1, criteria(i)._2)
+        }
+        
+        
+        val resultSet = preparedStatement.executeQuery()
+        
+        val bases = new ListBuffer[AirlineBase]()
+        while (resultSet.next()) {
+          val airline = Airline.fromId(resultSet.getInt("airline"))
+          //val airport = Airport.fromId(resultSet.getInt("airport"))
+          val airport = AirportSource.loadAirportById(resultSet.getInt("airport")).get
+          val scale = resultSet.getInt("scale")
+          val foundedCycle = resultSet.getInt("founded_cycle")
+          val headquarter = resultSet.getBoolean("headquarter")
+          
+          bases += AirlineBase(airline, airport, scale, foundedCycle, headquarter)
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        bases.toList
+      } finally {
+        connection.close()
+      }
+  }
+  
+  
+  //case class AirlineBase(airline : Airline, airport : Airport, scale : Int, headQuarter : Boolean = false, var id : Int = 0) extends IdObject
+  def saveAirlineBase(airlineBase : AirlineBase) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_BASE_TABLE + "(airline, airport, scale, founded_cycle, headquarter) VALUES(?, ?, ?, ?, ?)")
+          
+      preparedStatement.setInt(1, airlineBase.airline.id)
+      preparedStatement.setInt(2, airlineBase.airport.id)
+      preparedStatement.setInt(3, airlineBase.scale)
+      preparedStatement.setInt(4, airlineBase.foundedCycle)
+      preparedStatement.setBoolean(5, airlineBase.headquarter)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def deleteAirlineBase(airlineBase : AirlineBase) = {
+    deleteAirlineBaseByCriteria(List(("airline", airlineBase.airline.id), ("airport", airlineBase.airport.id)))
+  }
+  
+  def deleteAirlineBaseByCriteria(criteria : List[(String, Any)]) = {
+      //open the hsqldb
+    val connection = Meta.getConnection()
+    try {
+      var queryString = "DELETE FROM " + AIRLINE_BASE_TABLE
+      
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+      
+      val preparedStatement = connection.prepareStatement(queryString)
+      
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+      
+      val deletedCount = preparedStatement.executeUpdate()
+      
+      preparedStatement.close()
+      println("Deleted " + deletedCount + " airline base records")
+      deletedCount
+      
+    } finally {
+      connection.close()
+    }
+      
+  }
+  
 }
