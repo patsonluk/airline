@@ -9,5 +9,36 @@ GET     /test                       controllers.Application.test
 #Web Socket management
 GET		/wsWithActor						controllers.WebsocketApplication.wsWithActor
 
+POST	/login							  controllers.LoginApplication.login
+GET		 /login							  controllers.LoginApplication.login
+GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
+GET		 /airports/:airportId 		  	  controllers.Application.getAirport(airportId : Int)
+GET	 	 /airports/:airportId/slots	      controllers.Application.getAirportSlots(airportId : Int, airlineId : Int)
+POST	 /airports/:airportId/slots	      controllers.Application.postAirportSlots(airportId : Int)
+GET		 /airlines						  controllers.AirlineApplication.getAllAirlines
+GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int)
+GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int, getAssignedLink : Boolean ?= false)
+GET		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.getAirplane(airlineId : Int, airplaneId : Int)
+DELETE	 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.sellAirplane(airlineId : Int, airplaneId : Int)
+GET		 /airlines/:airlineId/links	  	  controllers.LinkApplication.getLinks(airlineId : Int, getProfit : Boolean ?= false)
+GET		 /airlines/:airlineId/bases		  controllers.AirlineApplication.getBases(airlineId : Int)
+GET		 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.getBase(airlineId : Int, airportId : Int)
+DELETE	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.deleteBase(airlineId : Int, airportId : Int)
+PUT	 	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.putBase(airlineId : Int, airportId : Int)
+PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
+PUT 	 /links 				          controllers.LinkApplication.addLink
+GET		 /links							  controllers.LinkApplication.getAllLinks
+GET		 /links/id/:linkId 				  controllers.LinkApplication.getLink(linkId : Int)
+DELETE   /links/id/:linkId 				  controllers.LinkApplication.deleteLink(linkId : Int)
+DELETE   /links							  controllers.LinkApplication.deleteAllLinks
+GET		 /link-consumptions/id/:linkId	  controllers.LinkApplication.getLinkConsumption(linkId: Int)
+GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
+GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels	
+PUT	     /airplanes						  controllers.AirplaneApplication.addAirplane(model: Int, quantity: Int, airlineId : Int)
+POST	 /plan-link						  controllers.LinkApplication.planLink
+
+OPTIONS    /*path     controllers.Application.options(path)
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

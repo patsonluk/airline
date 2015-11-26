@@ -3,10 +3,30 @@ var markers = []
 var activeAirline
 
 $( document ).ready(function() {
+	login()
 	flightPaths = []
 	activeInput = $("#fromAirport")
 	loadAirlines()
 })
+
+function login()  {
+	$.ajax
+	({
+	  type: "GET",
+	  url: "login",
+	  async: false,
+	  username: "patson",
+	  password: "1234444",
+	  data: '{ "comment" }',
+	  success: function(message) {
+	    	console.log(message)
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
@@ -120,7 +140,7 @@ function updatePopupAppeal(airportId) {
 	var airlineId = $("#airlineOption").val()
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airports/" + airportId,
+		url: "airports/" + airportId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airport) {
@@ -161,7 +181,7 @@ function updatePopupSlots(airportId) {
 	var airlineId = activeAirline.id
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airports/" + airportId + "/slots?airlineId=" + airlineId,
+		url: "airports/" + airportId + "/slots?airlineId=" + airlineId,
 	    dataType: 'json',
 	    success: function(slotInfo) {
     		$("#airportPopupAssignedSlots").text(slotInfo.assignedSlots + " (" + slotInfo.maxSlots + ")")
@@ -185,7 +205,7 @@ function updateAllPanels(airlineId) {
 function updateAirlineInfo(airlineId) {
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airlines/" + airlineId,
+		url: "airlines/" + airlineId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airline) {
@@ -215,7 +235,7 @@ function appendConsole(message) {
 }
 
 function getAirports() {
-	$.getJSON( "http://localhost:9001/airports?count=600", function( data ) {
+	$.getJSON( "airports?count=600", function( data ) {
 		  addMarkers(data)
 		});
 }

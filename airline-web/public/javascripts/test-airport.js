@@ -46,7 +46,7 @@ function addMarkers(airports) {
 function loadAirlines() {
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airlines",
+		url: "airlines",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airlines) {
@@ -65,7 +65,7 @@ function loadConsumptions() {
 	$("#consumptions").empty()
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/link-consumptions",
+		url: "link-consumptions",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(consumptions) {
@@ -82,7 +82,7 @@ function loadConsumptions() {
 
 function insertTestLink() {
 	if ($("#fromAirport").val() && $("#toAirport").val()) {
-		var url = "http://localhost:9001/test-links"
+		var url = "test-links"
 		var airportData = { 
 			"fromAirportId" : parseInt($("#fromAirport").val()), 
 			"toAirportId" : parseInt($("#toAirport").val()),
@@ -110,7 +110,7 @@ function insertTestLink() {
 function removeAllLinks() {
 	$.ajax({
 		type: 'DELETE',
-		url: "http://localhost:9001/links",
+		url: "links",
 	    success: function() {
 	    	refreshLinks()
 	    },
@@ -132,7 +132,7 @@ function refreshLinks() {
 	
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/links",
+		url: "links",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(links) {
@@ -165,7 +165,7 @@ function appendConsole(message) {
 }
 
 function getAirports() {
-	$.getJSON( "http://localhost:9001/airports?count=10", function( data ) {
+	$.getJSON( "airports?count=10", function( data ) {
 		  addMarkers(data)
 		});
 }

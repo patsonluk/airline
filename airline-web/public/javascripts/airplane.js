@@ -7,7 +7,7 @@ $( document ).ready(function() {
 function loadAirplaneModels() {
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airplane-models",
+		url: "airplane-models",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(models) {
@@ -26,7 +26,7 @@ function loadAirplaneModels() {
 
 
 function addAirplane(modelId, quantity, airlineId) {
-	var url = "http://localhost:9001/airplanes?model=" + modelId + "&quantity=" + quantity + "&airlineId=" + airlineId 
+	var url = "airplanes?model=" + modelId + "&quantity=" + quantity + "&airlineId=" + airlineId 
 	$.ajax({
 		type: 'PUT',
 		data: JSON.stringify({}),
@@ -49,7 +49,7 @@ function sellAirplane(airlineId, airplaneId) {
 	$.ajax({
 		type: 'DELETE',
 		data: JSON.stringify({}),
-		url: "http://localhost:9001/airlines/" + airlineId + "/airplanes/" + airplaneId,
+		url: "airlines/" + airlineId + "/airplanes/" + airplaneId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
@@ -82,7 +82,7 @@ function updateAirplaneList(airlineId, airplaneList) {
 	airplaneList.empty()
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airlines/"+ airlineId + "/airplanes?getAssignedLink=true",
+		url: "airlines/"+ airlineId + "/airplanes?getAssignedLink=true",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airplanes) {
@@ -106,7 +106,7 @@ function loadAirplaneDetails(airlineId, airplaneId) {
 	//load link
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airlines/" + airlineId + "/airplanes/" + airplaneId + "?getAssignedLink=true",
+		url: "airlines/" + airlineId + "/airplanes/" + airplaneId + "?getAssignedLink=true",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airplane) {

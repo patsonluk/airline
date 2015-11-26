@@ -3,7 +3,7 @@ var flightPaths
 function loadAirlines() {
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/airlines",
+		url: "airlines",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airlines) {
@@ -30,7 +30,7 @@ function selectAirline(airlineId) {
 }
 
 function buildBase(airportId, isHeadquarter) {
-	var url = "http://localhost:9001/airlines/" + activeAirline.id + "/bases/" + $("#airportPopupId").val() 
+	var url = "airlines/" + activeAirline.id + "/bases/" + $("#airportPopupId").val() 
 	var baseData = { 
 			"airportId" : parseInt($("#airportPopupId").val()),
 			"airlineId" : activeAirline.id,
@@ -67,9 +67,9 @@ function updateLinksInfo() {
 	
 	var url;
 	if ($('#airlineOption').val()) {
-		url = "http://localhost:9001/airlines/" + $('#airlineOption').val() + "/links?getProfit=true"
+		url = "airlines/" + $('#airlineOption').val() + "/links?getProfit=true"
 	} else {
-		url = "http://localhost:9001/links?getProfit=true"
+		url = "links?getProfit=true"
 	}
 	
 	$.ajax({
@@ -143,7 +143,7 @@ function loadLinkDetails(linkId) {
 	//load link
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/links/id/" + linkId,
+		url: "links/id/" + linkId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
@@ -165,7 +165,7 @@ function loadLinkDetails(linkId) {
 	//load history
 	$.ajax({
 		type: 'GET',
-		url: "http://localhost:9001/link-consumptions/id/" + linkId,
+		url: "link-consumptions/id/" + linkId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(linkConsumption) {
@@ -225,7 +225,7 @@ function planToAirport(toAirportId, toAirportName) {
 
 function planLink(airlineId, fromAirport, toAirport) {
 	if (fromAirport && toAirport) {
-		var url = "http://localhost:9001/plan-link"
+		var url = "plan-link"
 		$.ajax({
 			type: 'POST',
 			url: url,
@@ -354,7 +354,7 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 
 function createLink() {
 	if ($("#planLinkFromAirportId").val() && $("#planLinkToAirportId").val()) {
-		var url = "http://localhost:9001/links"
+		var url = "links"
 	    console.log("selected " + $("#planLinkAirplaneSelect").val())
 	    var linkData = { 
 			"fromAirportId" : parseInt($("#planLinkFromAirportId").val()), 
@@ -388,7 +388,7 @@ function createLink() {
 function deleteLink(linkId) {
 	$.ajax({
 		type: 'DELETE',
-		url: "http://localhost:9001/links/id/" + linkId,
+		url: "links/id/" + linkId,
 	    success: function() {
 	    	updateLinksInfo()
 	    },
@@ -405,7 +405,7 @@ function deleteLink(linkId) {
 function removeAllLinks() {
 	$.ajax({
 		type: 'DELETE',
-		url: "http://localhost:9001/links",
+		url: "links",
 	    success: function() {
 	    	updateLinksInfo()
 	    },
