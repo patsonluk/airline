@@ -15,6 +15,7 @@ import play.api.libs.json.Writes
 import play.api.mvc._
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
+import controllers.AuthenticationObject.AuthenticatedAirline
 
 
 class AirplaneApplication extends Controller {
@@ -36,7 +37,7 @@ class AirplaneApplication extends Controller {
     )
   }
   
-  def getAirplanes(airlineId : Int, getAssignedLink : Boolean) = Action {
+  def getAirplanes(airlineId : Int, getAssignedLink : Boolean) =  AuthenticatedAirline(airlineId) {
     if (!getAssignedLink) {
       val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId)
       Ok(Json.toJson(airplanes)).withHeaders(
@@ -50,7 +51,7 @@ class AirplaneApplication extends Controller {
     }
   }
   
-  def getAirplane(airlineId : Int, airplaneId : Int) = Action {
+  def getAirplane(airlineId : Int, airplaneId : Int) =  AuthenticatedAirline(airlineId) {
     AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId) match {
       case Some(airplaneWithLink) =>
         if (airplaneWithLink._1.owner.id == airlineId) {
@@ -63,7 +64,7 @@ class AirplaneApplication extends Controller {
     }
   }
   
-  def sellAirplane(airlineId : Int, airplaneId : Int) = Action {
+  def sellAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) {
     AirplaneSource.loadAirplaneById(airplaneId) match {
       case Some(airplane) =>
         if (airplane.owner.id == airlineId) {
@@ -82,7 +83,7 @@ class AirplaneApplication extends Controller {
     }
   }
   
-  def addAirplane(model: Int, quantity : Int, airlineId : Int) = Action {
+  def addAirplane(model: Int, quantity : Int, airlineId : Int) = AuthenticatedAirline(airlineId) {
     val modelGet = ModelSource.loadModelById(model)
     val airlineGet = AirlineSource.loadAirlineById(airlineId, true)
     if (modelGet.isEmpty || airlineGet.isEmpty) {

@@ -16,7 +16,7 @@ function login()  {
 	  url: "login",
 	  async: false,
 	  username: "patson",
-	  password: "1234444",
+	  password: "1234",
 	  data: '{ "comment" }',
 	  success: function(message) {
 	    	console.log(message)

@@ -13,7 +13,8 @@ import com.patson.data.AirlineSource
 import com.patson.data.CycleSource
 import com.patson.model.AirlineBase
 import com.patson.model.AirlineBase
-import controllers.Authetication.Authenticated
+import controllers.AuthenticationObject.Authenticated
+import controllers.AuthenticationObject.AuthenticatedAirline
 
 
 class AirlineApplication extends Controller {
@@ -53,14 +54,13 @@ class AirlineApplication extends Controller {
 
   def getAllAirlines() = Authenticated { implicit request =>
      val airlines = AirlineSource.loadAllAirlines()
-     println("get airlines user is " + request.user)
     Ok(Json.toJson(airlines)).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"
     )
   }
   
-  def getAirline(airlineId : Int) = Action {
+  def getAirline(airlineId : Int) = AuthenticatedAirline(airlineId) {
      AirlineSource.loadAirlineById(airlineId, true) match {
        case Some(airline) =>
          var airlineJson = Json.toJson(airline)(OwnedAirlineWrites).asInstanceOf[JsObject]
@@ -74,16 +74,16 @@ class AirlineApplication extends Controller {
        case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
      }
   }
-  def getBases(airlineId : Int) = Action {
+  def getBases(airlineId : Int) = AuthenticatedAirline(airlineId) {
     Ok(Json.toJson(AirlineSource.loadAirlineBasesByAirline(airlineId))).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
   }
-  def getBase(airlineId : Int, airportId : Int) = Action  {
+  def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
       case Some(base) => Ok(Json.toJson(base)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
       case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
     }
   }
-  def deleteBase(airlineId : Int, airportId : Int) = Action {
+  def deleteBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
       case Some(base) if base.headquarter => //no deleting head quarter for now
         BadRequest("Not allowed to delete headquarter for now").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
@@ -94,7 +94,7 @@ class AirlineApplication extends Controller {
         NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*") 
     }
   }
-  def putBase(airlineId : Int, airportId : Int) = Action { request =>
+  def putBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
       val inputBase = request.body.asInstanceOf[AnyContentAsJson].json.as[AirlineBase]
       //TODO validations

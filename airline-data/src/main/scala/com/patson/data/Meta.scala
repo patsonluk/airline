@@ -83,6 +83,18 @@ object Meta {
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_MODEL_TABLE)
 //     statement.execute()
 //     statement.close()
+       
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_TABLE)
+       statement.execute()
+       statement.close()
+     
+       statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_SECRET_TABLE)
+       statement.execute()
+       statement.close()
+       
+       statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_AIRLINE_TABLE)
+       statement.execute()
+       statement.close()
 //     
 //     statement = connection.prepareStatement("CREATE TABLE " + CYCLE_TABLE + "(cycle INTEGER PRIMARY KEY)")
 //     statement.execute()
@@ -239,6 +251,30 @@ object Meta {
 //
 //     statement.execute()
 //     statement.close()
+//     
+//     
+     statement = connection.prepareStatement("CREATE TABLE " + USER_TABLE + "(" +
+                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                             "user_name VARCHAR(100) UNIQUE, " +
+                                             "email VARCHAR(256) NOT NULL, " +
+                                             "status  VARCHAR(256) NOT NULL, " +
+                                             "creation_time DATETIME DEFAULT CURRENT_TIMESTAMP)")
+     statement.execute()
+     statement.close()
+       
+     statement = connection.prepareStatement("CREATE TABLE " + USER_SECRET_TABLE + "(" + 
+                                             "user_name VARCHAR(100) PRIMARY KEY REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "digest VARCHAR(32) NOT NULL, " +
+                                             "salt VARCHAR(32) NOT NULL)")
+     statement.execute()
+     statement.close()
+     
+     statement = connection.prepareStatement("CREATE TABLE " + USER_AIRLINE_TABLE + "(" +
+                                             "airline INTEGER PRIMARY KEY," +
+                                             "user_name VARCHAR(100) REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
+     statement.execute()
+     statement.close()
      
      connection.close()
   }

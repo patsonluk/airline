@@ -9,8 +9,9 @@ GET     /test                       controllers.Application.test
 #Web Socket management
 GET		/wsWithActor						controllers.WebsocketApplication.wsWithActor
 
-POST	/login							  controllers.LoginApplication.login
-GET		 /login							  controllers.LoginApplication.login
+POST	 /login							  controllers.UserApplication.login
+GET		 /login							  controllers.UserApplication.login
+#PUT		 /users							  controllers.UserApplication.putUser
 GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
 GET		 /airports/:airportId 		  	  controllers.Application.getAirport(airportId : Int)
 GET	 	 /airports/:airportId/slots	      controllers.Application.getAirportSlots(airportId : Int, airlineId : Int)
