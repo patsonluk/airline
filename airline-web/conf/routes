@@ -21,22 +21,26 @@ GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airli
 GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int, getAssignedLink : Boolean ?= false)
 GET		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.getAirplane(airlineId : Int, airplaneId : Int)
 DELETE	 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.sellAirplane(airlineId : Int, airplaneId : Int)
+PUT	     /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.addAirplane(airlineId : Int, model: Int, quantity: Int)
 GET		 /airlines/:airlineId/links	  	  controllers.LinkApplication.getLinks(airlineId : Int, getProfit : Boolean ?= false)
+PUT 	 /airlines/:airlineId/links 	  controllers.LinkApplication.addLink(airlineId : Int)
+DELETE   /airlines/:airlineId/links/:linkId 		 	controllers.LinkApplication.deleteLink(airlineId : Int, linkId : Int)
+GET		 /airlines/:airlineId/links/:linkId 			controllers.LinkApplication.getLink(airlineId : Int, linkId : Int)
 GET		 /airlines/:airlineId/bases		  controllers.AirlineApplication.getBases(airlineId : Int)
 GET		 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.getBase(airlineId : Int, airportId : Int)
 DELETE	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.deleteBase(airlineId : Int, airportId : Int)
 PUT	 	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.putBase(airlineId : Int, airportId : Int)
+GET		 /airlines/:airlineId/link-consumptions/:linkId	  controllers.LinkApplication.getLinkConsumption(airlineId : Int, linkId: Int)
+POST	 /airlines/:airlineId/plan-link	  controllers.LinkApplication.planLink(airlineId : Int)
+
+
 PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
-PUT 	 /links 				          controllers.LinkApplication.addLink
 GET		 /links							  controllers.LinkApplication.getAllLinks
-GET		 /links/id/:linkId 				  controllers.LinkApplication.getLink(linkId : Int)
-DELETE   /links/id/:linkId 				  controllers.LinkApplication.deleteLink(linkId : Int)
 DELETE   /links							  controllers.LinkApplication.deleteAllLinks
-GET		 /link-consumptions/id/:linkId	  controllers.LinkApplication.getLinkConsumption(linkId: Int)
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels	
-PUT	     /airplanes						  controllers.AirplaneApplication.addAirplane(model: Int, quantity: Int, airlineId : Int)
-POST	 /plan-link						  controllers.LinkApplication.planLink
+
+
 
 OPTIONS    /*path     controllers.Application.options(path)
 

@@ -65,12 +65,7 @@ function updateLinksInfo() {
 	//remove link details
 	//$("#linkDetails").hide()
 	
-	var url;
-	if ($('#airlineOption').val()) {
-		url = "airlines/" + $('#airlineOption').val() + "/links?getProfit=true"
-	} else {
-		url = "links?getProfit=true"
-	}
+	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
 	
 	$.ajax({
 		type: 'GET',
@@ -140,10 +135,11 @@ function loadLinkDetails(linkId) {
 //	$("#linkDetails").show()
 	setActiveDiv($("#linkDetails"))
 	$("#actionLinkId").val(linkId)
+	var airlineId = activeAirline.id
 	//load link
 	$.ajax({
 		type: 'GET',
-		url: "links/id/" + linkId,
+		url: "airlines/" + airlineId + "/links/" + linkId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
@@ -165,7 +161,7 @@ function loadLinkDetails(linkId) {
 	//load history
 	$.ajax({
 		type: 'GET',
-		url: "link-consumptions/id/" + linkId,
+		url: "airlines/" + airlineId + "/link-consumptions/" + linkId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(linkConsumption) {
@@ -204,7 +200,7 @@ function planFromAirport(fromAirportId, fromAirportName) {
 	$('#planLinkFromAirportId').val(fromAirportId)
 	$('#planLinkFromAirportName').text(fromAirportName)
 	if ($('#planLinkFromAirportId').val() && $('#planLinkToAirportId').val()) {
-		planLink($('#airlineOption').val(), $('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
+		planLink($('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
 	}
 	setActiveDiv($('#planLinkDetails'))
 }
@@ -217,15 +213,16 @@ function planToAirport(toAirportId, toAirportName) {
 		$('#planLinkFromAirportName').text(activeAirline.headquarterAirport.airportName)
 	}
 	if ($('#planLinkFromAirportId').val() && $('#planLinkToAirportId').val()) {
-		planLink($('#airlineOption').val(), $('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
+		planLink($('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
 	}
 	setActiveDiv($('#planLinkDetails'))
 }
 
 
-function planLink(airlineId, fromAirport, toAirport) {
+function planLink(fromAirport, toAirport) {
+	var airlineId = activeAirline.id
 	if (fromAirport && toAirport) {
-		var url = "plan-link"
+		var url = "airlines/" + airlineId + "/plan-link"
 		$.ajax({
 			type: 'POST',
 			url: url,
@@ -354,13 +351,14 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 
 function createLink() {
 	if ($("#planLinkFromAirportId").val() && $("#planLinkToAirportId").val()) {
-		var url = "links"
+		var airlineId = activeAirline.id
+		var url = "airlines/" + airlineId + "/links"
 	    console.log("selected " + $("#planLinkAirplaneSelect").val())
 	    var linkData = { 
 			"fromAirportId" : parseInt($("#planLinkFromAirportId").val()), 
 			"toAirportId" : parseInt($("#planLinkToAirportId").val()),
-			"airlineId" : parseInt($("#airlineOption").val()),
-			"airplanes" : $("#planLinkAirplaneSelect").val().map(Number), 
+			"airplanes" : $("#planLinkAirplaneSelect").val().map(Number),
+			"airlineId" : airlineId,
 			"price" : parseFloat($("#planLinkPrice").val()),
 			"frequency" : parseInt($("#planLinkFrequency").val()),
 			"model" : parseInt($("#planLinkModelSelect").val()),
@@ -372,7 +370,7 @@ function createLink() {
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
 		    success: function(savedLink) {
-		    	updateAllPanels(parseInt($("#airlineOption").val()))
+		    	updateAllPanels(activeAirline.id)
 		    	if (savedLink.id) {
 		    		loadLinkDetails(savedLink.id)
 		    	}
@@ -388,8 +386,9 @@ function createLink() {
 function deleteLink(linkId) {
 	$.ajax({
 		type: 'DELETE',
-		url: "links/id/" + linkId,
+		url: "airlines/" + activeAirline.id + "/links/" + linkId,
 	    success: function() {
+	    	$("#linkDetails").fadeOut(200)
 	    	updateLinksInfo()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

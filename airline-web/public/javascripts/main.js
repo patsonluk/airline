@@ -137,7 +137,7 @@ function updatePopupAppeal(airportId) {
 	//clear the old ones
 	$("#airportPopupAwareness").text()
 	$("#airportPopupLoyalty").text()
-	var airlineId = $("#airlineOption").val()
+	var airlineId = activeAirline.id
 	$.ajax({
 		type: 'GET',
 		url: "airports/" + airportId,
@@ -198,8 +198,6 @@ function updatePopupSlots(airportId) {
 
 function updateAllPanels(airlineId) {
 	updateAirlineInfo(airlineId)
-	updateAirplaneList(airlineId, $("#airplaneList"))
-	updateLinksInfo()
 }
 
 function updateAirlineInfo(airlineId) {
@@ -211,6 +209,8 @@ function updateAirlineInfo(airlineId) {
 	    success: function(airline) {
 	    	$("#balance").text(airline.balance)
 	    	activeAirline = airline
+	    	updateAirplaneList($("#airplaneList"))
+	    	updateLinksInfo()
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -223,7 +223,7 @@ function setActiveDiv(activeDiv) {
 //	activeDiv.siblings().hide(500)
 //activeDiv.show(500)
 	if (activeDiv.siblings(":visible").length){
-		activeDiv.siblings(":visible").fadeOut(200, function() { activeDiv.fadeIn(500) })
+		activeDiv.siblings(":visible").fadeOut(200, function() { activeDiv.fadeIn(200) })
 	} else {
 		activeDiv.fadeIn(200)
 	}

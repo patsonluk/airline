@@ -55,12 +55,12 @@ class AirplaneApplication extends Controller {
     AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId) match {
       case Some(airplaneWithLink) =>
         if (airplaneWithLink._1.owner.id == airlineId) {
-          Ok(Json.toJson(airplaneWithLink)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")     
+          Ok(Json.toJson(airplaneWithLink))     
         } else {
-          Forbidden.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          Forbidden
         }
       case None =>
-        BadRequest("airplane not found").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        BadRequest("airplane not found")
     }
   }
   
@@ -71,28 +71,27 @@ class AirplaneApplication extends Controller {
           val sellValue = Computation.calculateAirplaneValue(airplane)
           if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
             AirlineSource.adjustAirlineBalance(airlineId, sellValue)
-            Ok(Json.toJson(airplane)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+            Ok(Json.toJson(airplane))
           } else {
-            NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+            NotFound
           }
         } else {
-          Forbidden.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          Forbidden
         }
       case None =>
-        BadRequest("airplane not found").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        BadRequest("airplane not found")
     }
   }
   
-  def addAirplane(model: Int, quantity : Int, airlineId : Int) = AuthenticatedAirline(airlineId) {
+  def addAirplane(airlineId : Int, model : Int, quantity : Int) = AuthenticatedAirline(airlineId) { request =>
     val modelGet = ModelSource.loadModelById(model)
-    val airlineGet = AirlineSource.loadAirlineById(airlineId, true)
-    if (modelGet.isEmpty || airlineGet.isEmpty) {
-      BadRequest("unknown model or airline").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+    if (modelGet.isEmpty) {
+      BadRequest("unknown model or airline")
     } else {
-      val airplane = Airplane(modelGet.get, airlineGet.get, CycleSource.loadCycle(), Airplane.MAX_CONDITION)
-      val airline = airlineGet.get
+      val airline = request.user
+      val airplane = Airplane(modelGet.get, airline, CycleSource.loadCycle(), Airplane.MAX_CONDITION)
       if (airline.airlineInfo.balance < (airplane.model.price * quantity)) { //not enough money!
-        UnprocessableEntity("Not enough money").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")   
+        BadRequest("Not enough money")   
       } else {
         
         AirlineSource.adjustAirlineBalance(airlineId,  -1 * airplane.model.price * quantity)
@@ -103,13 +102,9 @@ class AirplaneApplication extends Controller {
         
         val updateCount = AirplaneSource.saveAirplanes(airplanes.toList)
         if (updateCount > 0) {
-            Accepted(Json.obj("updateCount" -> updateCount)).withHeaders(
-              ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-              )
+            Accepted(Json.obj("updateCount" -> updateCount))
         } else {
-            UnprocessableEntity("Cannot save airplane").withHeaders(
-              ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-              )
+            UnprocessableEntity("Cannot save airplane")
         }
       }
     }

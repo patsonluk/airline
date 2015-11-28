@@ -91,8 +91,8 @@ class Application extends Controller {
   
   def getAirport(airportId : Int) = Action {
      AirportSource.loadAirportById(airportId, true) match {
-       case Some(airport) =>  Ok(Json.toJson(airport)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
-       case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+       case Some(airport) =>  Ok(Json.toJson(airport))
+       case None => NotFound
      }
   }
   def getAirportSlots(airportId : Int, airlineId : Int) = Action {
@@ -100,8 +100,8 @@ class Application extends Controller {
        case Some(airport) =>  
          val maxSlots = airport.getMaxSlotAssignment(airlineId)
          val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
-         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots))).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
-       case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots)))
+       case None => NotFound
      }
   }
   
@@ -111,12 +111,12 @@ class Application extends Controller {
          val AirportSlotData(airlineId, slotCount) = airportSlotForm.bindFromRequest.get
          try {
            airport.setAirlineSlotAssignment(airlineId, slotCount)
-           Ok(Json.toJson(airport)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+           Ok(Json.toJson(airport))
          } catch {
            case e:IllegalArgumentException  => 
-             BadRequest("Not allowed to allocate this amount of slots").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+             BadRequest("Not allowed to allocate this amount of slots")
          }
-       case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+       case None => NotFound
      }
   }
   

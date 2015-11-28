@@ -60,38 +60,35 @@ class AirlineApplication extends Controller {
     )
   }
   
-  def getAirline(airlineId : Int) = AuthenticatedAirline(airlineId) {
-     AirlineSource.loadAirlineById(airlineId, true) match {
-       case Some(airline) =>
-         var airlineJson = Json.toJson(airline)(OwnedAirlineWrites).asInstanceOf[JsObject]
-         AirlineSource.loadAirlineHeadquarter(airlineId).foreach { headquarter => 
-           airlineJson = airlineJson + ("headquarterAirport"-> Json.toJson(headquarter))
-         }
-         val bases = AirlineSource.loadAirlineBasesByAirline(airlineId)
-         airlineJson = airlineJson + ("baseAirports"-> Json.toJson(bases))
-         
-         Ok(airlineJson).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*") //TODO make sure you really own the airline!
-       case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+  def getAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+     val airline = request.user
+     var airlineJson = Json.toJson(airline)(OwnedAirlineWrites).asInstanceOf[JsObject]
+     AirlineSource.loadAirlineHeadquarter(airlineId).foreach { headquarter => 
+       airlineJson = airlineJson + ("headquarterAirport"-> Json.toJson(headquarter))
      }
+     val bases = AirlineSource.loadAirlineBasesByAirline(airlineId)
+     airlineJson = airlineJson + ("baseAirports"-> Json.toJson(bases))
+     
+     Ok(airlineJson)
   }
   def getBases(airlineId : Int) = AuthenticatedAirline(airlineId) {
-    Ok(Json.toJson(AirlineSource.loadAirlineBasesByAirline(airlineId))).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+    Ok(Json.toJson(AirlineSource.loadAirlineBasesByAirline(airlineId)))
   }
   def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
-      case Some(base) => Ok(Json.toJson(base)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
-      case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+      case Some(base) => Ok(Json.toJson(base))
+      case None => NotFound
     }
   }
   def deleteBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
       case Some(base) if base.headquarter => //no deleting head quarter for now
-        BadRequest("Not allowed to delete headquarter for now").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        BadRequest("Not allowed to delete headquarter for now")
       case Some(base) =>
         AirlineSource.deleteAirlineBase(base)
-        Ok(Json.toJson(base)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        Ok(Json.toJson(base))
       case None => //
-        NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*") 
+        NotFound 
     }
   }
   def putBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
@@ -102,16 +99,16 @@ class AirlineApplication extends Controller {
          AirlineSource.loadAirlineHeadquarter(airlineId) match {
            case Some(headquarter) =>
            if (headquarter.airport.id != airportId) {
-             BadRequest("Not allowed to change headquarter for now").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+             BadRequest("Not allowed to change headquarter for now")
            } else {
              val updateBase = headquarter.copy(scale = inputBase.scale)
              AirlineSource.saveAirlineBase(updateBase)
-             Created(Json.toJson(updateBase)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+             Created(Json.toJson(updateBase))
            }
            case None => //ok to add then
              val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle())
              AirlineSource.saveAirlineBase(newBase)
-             Created(Json.toJson(newBase)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+             Created(Json.toJson(newBase))
          }
       } else {
         //TODO validations
@@ -119,15 +116,15 @@ class AirlineApplication extends Controller {
         case Some(base) => //updating
           val updateBase = base.copy(scale = inputBase.scale)
           AirlineSource.saveAirlineBase(updateBase)
-          Created(Json.toJson(updateBase)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          Created(Json.toJson(updateBase))
         case None => //
           val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle())
           AirlineSource.saveAirlineBase(newBase)
-          Created(Json.toJson(newBase)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          Created(Json.toJson(newBase))
         } 
       }
     } else {
-      BadRequest("Cannot insert base").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+      BadRequest("Cannot insert base")
     }
   }
 }

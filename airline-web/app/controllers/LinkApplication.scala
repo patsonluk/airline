@@ -26,6 +26,10 @@ import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.mvc._
 import com.patson.data.airplane.ModelSource
+import controllers.AuthenticationObject.AuthenticatedAirline
+import play.api.mvc.Security.AuthenticatedRequest
+import controllers.AuthenticationObject.AuthenticatedAirline
+import controllers.AuthenticationObject.AuthenticatedAirline
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -98,10 +102,9 @@ class LinkApplication extends Controller {
     }
   }
   
-  case class PlanLinkData(airlineId: Int, fromAirportId: Int, toAirportId: Int)
+  case class PlanLinkData(fromAirportId: Int, toAirportId: Int)
   val planLinkForm = Form(
     mapping(
-      "airlineId" -> number,
       "fromAirportId" -> number,
       "toAirportId" -> number
     )(PlanLinkData.apply)(PlanLinkData.unapply)
@@ -114,19 +117,24 @@ class LinkApplication extends Controller {
       
       LinkSource.saveLink(newLink) match {
         case Some(link) =>
-          Created(Json.toJson(link)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")      
-        case None => UnprocessableEntity("Cannot insert link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          Created(Json.toJson(link))      
+        case None => UnprocessableEntity("Cannot insert link")
       }
     } else {
-      BadRequest("Cannot insert link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+      BadRequest("Cannot insert link")
     }
   }
  
-  def addLinkBlock(request : Request[AnyContent]) : Result = {
+  def addLinkBlock(request : AuthenticatedRequest[AnyContent, Airline]) : Result = {
     if (request.body.isInstanceOf[AnyContentAsJson]) {
       val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
+      if (incomingLink.airline.id != request.user.id) {
+        println("airline " + request.user.id + " trying to add link for airline " + incomingLink.airline.id + " ! Error")
+        return Forbidden
+      }
+      
       if (incomingLink.getAssignedAirplanes.isEmpty) {
-        return BadRequest("Cannot insert link - no airplane assigned").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        return BadRequest("Cannot insert link - no airplane assigned")
       }
       
       val links = LinkSource.loadLinksByCriteria(List(("airline", incomingLink.airline.id), ("from_airport", incomingLink.from.id)), true).filter { _.to.id == incomingLink.to.id }
@@ -140,7 +148,7 @@ class LinkApplication extends Controller {
       val maxFrequency = Computation.calculateMaxFrequency(incomingLink.duration)
       if (maxFrequency * incomingLink.getAssignedAirplanes().size < incomingLink.frequency) { //TODO log error!
         println("max frequecny exceeded, max " + maxFrequency + " found " +  incomingLink.frequency)
-        return BadRequest("Cannot insert link - frequency exceeded limit").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")  
+        return BadRequest("Cannot insert link - frequency exceeded limit")  
       }
       //TODO validate slot on airport ....probably rethink how to simplify all these calculation!
       
@@ -148,7 +156,7 @@ class LinkApplication extends Controller {
       //validate all airplanes are same model
       val airplaneModels = airplanesForThisLink.foldLeft(Set[Model]())(_ + _.model) //should be just one element
       if (airplaneModels.size != 1) {
-        return BadRequest("Cannot insert link - not all airplanes are same model").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        return BadRequest("Cannot insert link - not all airplanes are same model")
       }
       
       //check if the assigned planes are either previously unassigned or assigned to this link
@@ -162,41 +170,47 @@ class LinkApplication extends Controller {
       }
         
       if (!occupiedAirplanes.isEmpty) {
-        return BadRequest("Cannot insert link - some airplanes already occupied " + occupiedAirplanes).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        return BadRequest("Cannot insert link - some airplanes already occupied " + occupiedAirplanes)
       }
       
       println("PUT " + incomingLink)
             
       if (isNewLink) {
         LinkSource.saveLink(incomingLink) match {
-          case Some(link) => Created(Json.toJson(link)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")      
-          case None => UnprocessableEntity("Cannot insert link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          case Some(link) => Created(Json.toJson(link))      
+          case None => UnprocessableEntity("Cannot insert link")
         }
       } else {
         LinkSource.updateLink(incomingLink) match {
-          case 1 => Accepted(Json.toJson(incomingLink)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")      
-          case _ => UnprocessableEntity("Cannot update link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          case 1 => Accepted(Json.toJson(incomingLink))      
+          case _ => UnprocessableEntity("Cannot update link")
         }
       }
     } else {
-      BadRequest("Cannot put link").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+      BadRequest("Cannot put link")
     }
   }
   
-  def addLink() = Action { request => addLinkBlock(request) }
+  def addLink(airlineId : Int) = AuthenticatedAirline(airlineId) { request => addLinkBlock(request) }
   
-  def getLink(linkId : Int) = Action { request =>
-    val link = LinkSource.loadLinkById(linkId)
-    Ok(Json.toJson(link)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
+  def getLink(airlineId : Int, linkId : Int) = AuthenticatedAirline(airlineId) { request =>
+    LinkSource.loadLinkById(linkId) match {
+      case Some(link) =>
+        if (link.airline.id == airlineId) {
+          Ok(Json.toJson(link))
+        } else {
+          Forbidden
+        }
+      case None =>
+        NotFound
+    }
+    
+    
   }
   
   def getAllLinks() = Action {
      val links = LinkSource.loadAllLinks()
-    Ok(Json.toJson(links)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
+    Ok(Json.toJson(links))
   }
   
   def getLinks(airlineId : Int, getProfit : Boolean) = Action {
@@ -221,34 +235,51 @@ class LinkApplication extends Controller {
   
   def deleteAllLinks() = Action {
     val count = LinkSource.deleteAllLinks()
-    Ok(Json.obj("count" -> count)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+    Ok(Json.obj("count" -> count))
   }
   
-  def deleteLink(linkId: Int) = Action {
-    val count = LinkSource.deleteLink(linkId)  
-    Ok(Json.obj("count" -> count)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+  def deleteLink(airlineId : Int, linkId: Int) = AuthenticatedAirline(airlineId) {
+    //verify the airline indeed has that link
+    LinkSource.loadLinkById(linkId) match {
+      case Some(link) =>
+        if (link.airline.id != airlineId) {
+        Forbidden
+      } else {
+        val count = LinkSource.deleteLink(linkId)  
+        Ok(Json.obj("count" -> count))    
+      }
+      case None =>
+        NotFound
+    }
   }
   
-  def getLinkConsumption(linkId : Int) = Action {
-     val linkConsumptions = LinkSource.loadLinkConsumptionsByLinkId(linkId) 
-     if (linkConsumptions.isEmpty) {
-       Ok(Json.obj()).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")  
-     } else {
-       Ok(Json.toJson(linkConsumptions(0))).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
-     }
+  def getLinkConsumption(airlineId : Int, linkId : Int) = Action {
+    LinkSource.loadLinkById(linkId) match {
+      case Some(link) =>
+        if (link.airline.id == airlineId) {
+          val linkConsumptions = LinkSource.loadLinkConsumptionsByLinkId(linkId) 
+          if (linkConsumptions.isEmpty) {
+            Ok(Json.obj())  
+          } else {
+            Ok(Json.toJson(linkConsumptions(0)))
+          }     
+        } else {
+          Forbidden
+        }
+      case None => NotFound
+    }
+     
   }
   
   def getAllLinkConsumptions() = Action {
      val linkConsumptions = LinkSource.loadLinkConsumptions()
-    Ok(Json.toJson(linkConsumptions)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
+     Ok(Json.toJson(linkConsumptions))
   }
 
 
   
-  def planLink() = Action { implicit request =>
-    val PlanLinkData(airlineId, fromAirportId, toAirportId) = planLinkForm.bindFromRequest.get
+  def planLink(airlineId : Int) = Action { implicit request =>
+    val PlanLinkData(fromAirportId, toAirportId) = planLinkForm.bindFromRequest.get
     AirportSource.loadAirportById(fromAirportId, true) match {
       case Some(fromAirport) =>
         AirportSource.loadAirportById(toAirportId, true) match {
@@ -307,9 +338,9 @@ class LinkApplication extends Controller {
             Ok(resultObject).withHeaders(
             ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
             )
-          case None => BadRequest("unknown toAirport").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+          case None => BadRequest("unknown toAirport")
         }
-        case None => BadRequest("unknown toAirport").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
+        case None => BadRequest("unknown toAirport")
     }
   }
 
