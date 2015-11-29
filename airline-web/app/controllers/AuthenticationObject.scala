@@ -27,7 +27,7 @@ object AuthenticationObject {
   def getUserFromRequest(request : RequestHeader) : Option[User] = {
     if (!request.session.isEmpty && request.session.get("userId").isDefined) {
       val userId = request.session.get("userId").get
-      println("from session userId " + userId)
+//      println("from session userId " + userId)
       UserSource.loadUserById(userId.toInt)
     } else { 
       if (!request.headers.get("Authorization").isEmpty) {
@@ -35,7 +35,7 @@ object AuthenticationObject {
           authorization.split(" ").drop(1).headOption.flatMap { encoded =>
             new String(org.apache.commons.codec.binary.Base64.decodeBase64(encoded.getBytes)).split(":").toList match {
               case userName :: password :: Nil  =>
-                println("from header " + userName + " : " + password)
+//                println("from header " + userName + " : " + password)
                 if (Authentication.authenticate(userName, password)) {
                   UserSource.loadUserByUserName(userName)                
                 } else {

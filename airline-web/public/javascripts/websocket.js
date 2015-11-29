@@ -3,24 +3,24 @@ var balanceDiv;
 var websocket;
 var selectedAirlineId
 
-$( document ).ready(function() {
-	connectWebSocket();
-})
+$( document ).ready(function() {})
 
 function connectWebSocket(airlineId) {
 	websocket = new WebSocket(wsUri); 
-	websocket.onopen = function(evt) { onOpen(evt) }; 
+	websocket.onopen = function(evt) {
+		sendMessage(airlineId) 
+		console.log("successfully open socket on airline " + airlineId)
+	}; 
 	websocket.onclose = function(evt) { onClose(evt) }; 
 	websocket.onmessage = function(evt) { onMessage(evt) }; 
 	websocket.onerror = function(evt) { onError(evt) }; 
 }
 
-function setWebSocketAirlineId(airlineId) {
-	sendMessage(airlineId)
+function initWebSocket(airlineId) {
 	selectedAirlineId = airlineId
+	connectWebSocket(airlineId)
 }
 
-function onOpen(evt) {}  
 function onClose(evt) {}  
 function onMessage(evt) {
 	if (selectedAirlineId) {
@@ -28,7 +28,7 @@ function onMessage(evt) {
 	}
 }  
 function onError(evt) {
-	balanceDiv.text("???") 
+	console.log(evt)
 } 
 
 function sendMessage(message) {

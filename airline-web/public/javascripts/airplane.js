@@ -99,9 +99,6 @@ function updateAirplaneList(airplaneList) {
 }
 
 function loadAirplaneDetails(airlineId, airplaneId) {
-	$("#linkDetails").hide()
-	$('#airplaneDetails').show()
-	
 	$("#actionAirplaneId").val(airplaneId)
 	//load link
 	$.ajax({
@@ -124,6 +121,7 @@ function loadAirplaneDetails(airlineId, airplaneId) {
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
 	    	}
+	    	setActiveDiv($('#airplaneDetails'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

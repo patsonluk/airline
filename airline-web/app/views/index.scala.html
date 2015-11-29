@@ -9,7 +9,11 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <script src="@routes.Assets.versioned("javascripts/jquery-2.1.4.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/jquery.cookie.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/highcharts.js")"></script>
+    
     <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
@@ -18,13 +22,33 @@
   <body>
   
   	<div id="topBar" data-scroll="false" class="menubar">
-  		Balance: <div id="balance"></div>
+  		<div style="float: left;">Balance: <span id="balance" class="label"></span></div>
+  		
+  		<div style="float: right;">
+  			<div style="display: hidden;" id="loginDiv">
+	  			<span class="label">User Name</span>
+	  			<input type="text" id="loginUserName"/>
+	  			<span class="label">Password</span>
+	  			<input type="password" id="loginPassword"/>
+	  			<div class="button" onclick="login()">Login</div>
+  			</div>
+  			<div style="float: right; display: hidden;" id="logoutDiv">
+  				<span id="currentUserName" class="label"></span>
+  				<div class="button" onclick="logout()">Logout</div> 
+  			</div>
+		</div>
   	</div>
   	<div id="main" style="width: 100%" >
-	    <div id="map" style="width: 80% ; float: left;" ></div>
+  		<div id="canvas" style="width: 80% ; float: left;" >
+  			<div id="map" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
+  			<div id="airportCanvas" style="display: none;">
+  				<div class="button" onclick="setActiveDiv($('#map'))">Back to World Map</div>
+  				<div id="airportMap" style=" height: 500px ; width: 600px" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
+  			</div>
+  		</div>
 	    <div id="leftPanel" style="width: 20% ; float: right;" >
-	    	Airline: <select id="airlineOption" onchange="selectAirline($(this).val())"></select>
-	    	<div class="button" id="removeAllLinksButton" onclick="removeAllLinks()">Remove all Links</div>	
+	    	<!-- Airline: <select id="airlineOption" onchange="selectAirline($(this).val())"></select>  -->
+	    	<!-- <div class="button" id="removeAllLinksButton" onclick="removeAllLinks()">Remove all Links</div>-->	
 	    	<div>
 	    		Buy aircraft:<br/>
 	    		Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/>
@@ -207,8 +231,10 @@
     </div>
     
     <div style="display: none; width: 100%;" id="airportPopup">
-    	<h3 id="airportPopupName"></h3>
     	<input type="hidden" id="airportPopupId"></input>
+    	<div>
+    		<span id="airportPopupName" class="header"></span><img title="View Airport Details" src='@routes.Assets.versioned("images/icons/information-32.png")' class="button" onclick="showAirportDetails($('#airportPopupId').val())">
+    	</div>
     	<div id="airportIcons">
     		<img alt="Your Headquarter" title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon"><img alt="Your Base" title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon">
     	</div>
@@ -259,6 +285,31 @@
 		<div class="button" id="planFromAirportButton">Plan Route (from airport)</div>
 		<div class="button" id="planToAirportButton">Plan Route (to airport)</div>
     </div>
+    
+     <div style="display: none; width: 100%;" id="cityPopup">
+    	<input type="hidden" id="cityPopupId"></input>
+    	<div id="cityPopupName" class="header"></div>
+    	<div id="cityIcons">
+    		<!-- <img alt="Your Headquarter" title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon"><img alt="Your Base" title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon">  -->
+    	</div>
+    	<div class="table" style="width: 100%">
+   			<div class="table-row">
+   				<div class="label"><h5>Country code:</h5></div>
+   				<div class="value" id="cityPopupCountryCode"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Population:</h5></div>
+   				<div class="value" id="cityPopupPopulation"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Average income level:</h5></div>
+   				<div class="value" id="cityPopupIncomeLevel"></div>
+   			</div>
+		</div>
+		
+		<div id="cityPie" width="200" height="200"></div>
+    </div>
+    
     <script async defer
 src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&callback=initMap">
 </script> 

@@ -1,11 +1,24 @@
 #main {
-	margin-top: 40px;
+	margin-top: 50px;
 }
 #map {
 /*     width: 500px; */
     height: 500px;
     background-color: #FFF;
 }
+.menubar {
+	position: fixed;
+	top: 0px;
+	height: 40px;
+	width: 100%;
+	z-index: 9999;
+	background-color: #FFF;
+/* 	margin-top: -80px; */
+	-moz-box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+	-webkit-box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+	box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+}
+
 .table {
 	display: table;
 }
@@ -25,6 +38,22 @@
 .table .table-header {
 	display: table-caption;
 	width: 100%;
+}
+
+div.label, span.label, div.header, span.header {
+	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	line-height: 1.6em;
+	color: #454544;
+	text-decoration: none;
+	font-size: 12px;
+}
+
+div.label, span.label {
+	font-size: 12px;
+}
+
+div.header, span.header {
+	font-size: 18px;
 }
 
 

@@ -10,9 +10,9 @@
     <script src="@routes.Assets.versioned("javascripts/jquery-2.1.4.js")"></script>
   </head>
   <body>
-  
   	<div id="topBar" data-scroll="false" class="menubar">
-  		Balance: <div id="balance"></div>
+  		<div style="float: left;">Balance: <div id="balance"></div></div>
+  		<div style="float: right;">Balance: <div id="balance"></div></div>
   	</div>
   	<div id="main" style="width: 100%" >
 	    <div id="map" style="width: 80% ; float: left;" ></div>
@@ -47,7 +47,7 @@
 				message: <br/>
 			</div>    	
 	    </div> 
-	    <div style="clear:both"/>
+	    <div style="clear:both"></div>
     </div>
     <script src="@routes.Assets.versioned("javascripts/test-airport.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>

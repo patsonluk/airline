@@ -2,8 +2,7 @@ package com.patson.data
 
 import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
-import com.patson.model.Airport
-import com.patson.model.Airline
+import com.patson.model._
 import scala.collection.mutable.Map
 import com.patson.model.AirlineAppeal
 
@@ -79,6 +78,25 @@ object AirportSource {
           }
           airport.initSlotAssignments(slotAssignments.toMap)
           slotStatement.close()
+          
+          
+          val cityStatement = connection.prepareStatement("SELECT a.*, c.* FROM " + AIRPORT_CITY_SHARE_TABLE + " a LEFT JOIN " + CITY_TABLE + " c ON a.city = c.id WHERE airport = ?")
+          cityStatement.setInt(1, airport.id)
+          
+          val cityResultSet = cityStatement.executeQuery()
+          while (cityResultSet.next()) {
+             val city = City( 
+              cityResultSet.getString("name"),
+              cityResultSet.getDouble("latitude"),
+              cityResultSet.getDouble("longitude"),
+              cityResultSet.getString("country_code"),
+              cityResultSet.getInt("population"),
+              cityResultSet.getInt("income"),
+              cityResultSet.getInt("city"))
+            airport.addCityServed(city, cityResultSet.getDouble("share"))
+          }
+          
+          cityStatement.close()
         }
       }
       

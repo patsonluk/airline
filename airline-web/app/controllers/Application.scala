@@ -4,17 +4,16 @@ import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.json.Json
-import com.patson.model.Airport
-import com.patson.model.Airline
+import com.patson.model._
 import com.patson.data.AirportSource
 import com.patson.Util
 import com.patson.model.Link
 import com.patson.data.LinkSource
 import com.patson.data.AirlineSource
-
 import play.api.data.Form
 import play.api.data.Forms.mapping
 import play.api.data.Forms.number
+import com.patson.data.CitySource
 
 
 class Application extends Controller {
@@ -46,6 +45,7 @@ class Application extends Controller {
       "population" -> JsNumber(airport.population),
       "slots" -> JsNumber(airport.slots),
       "availableSlots" -> JsNumber(airport.availableSlots),
+      "radius" -> JsNumber(Computation.calculateAirportRadius(airport)),
       "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
       
       
@@ -62,9 +62,26 @@ class Application extends Controller {
         ))
       }
       
+      airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.toList.map(_._1)))
+      
       airportObject
     }
   }
+  implicit object CityWrites extends Writes[City] {
+    def writes(city: City): JsValue = {
+      val averageIncome = city.income
+      val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
+      JsObject(List(
+      "id" -> JsNumber(city.id),    
+      "name" -> JsString(city.name),
+      "latitude" -> JsNumber(city.latitude),
+      "longitude" -> JsNumber(city.longitude),
+      "countryCode" -> JsString(city.countryCode),
+      "population" -> JsNumber(city.population),
+      "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
+    }
+  }
+ 
   
   case class AirportSlotData(airlineId: Int, slotCount: Int)
   val airportSlotForm = Form(
@@ -73,6 +90,8 @@ class Application extends Controller {
       "slotCount" -> number
     )(AirportSlotData.apply)(AirportSlotData.unapply)
   )
+  
+  
   
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
@@ -95,7 +114,7 @@ class Application extends Controller {
        case None => NotFound
      }
   }
-  def getAirportSlots(airportId : Int, airlineId : Int) = Action {
+  def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
     AirportSource.loadAirportById(airportId, true) match {  
        case Some(airport) =>  
          val maxSlots = airport.getMaxSlotAssignment(airlineId)
@@ -105,24 +124,8 @@ class Application extends Controller {
      }
   }
   
-  def postAirportSlots(airportId : Int) = Action { implicit request =>
-     AirportSource.loadAirportById(airportId, true) match {  
-       case Some(airport) =>  
-         val AirportSlotData(airlineId, slotCount) = airportSlotForm.bindFromRequest.get
-         try {
-           airport.setAirlineSlotAssignment(airlineId, slotCount)
-           Ok(Json.toJson(airport))
-         } catch {
-           case e:IllegalArgumentException  => 
-             BadRequest("Not allowed to allocate this amount of slots")
-         }
-       case None => NotFound
-     }
-  }
-  
   def options(path: String) = Action {
   Ok("").withHeaders(
-    "Access-Control-Allow-Origin" -> "http://localhost:9000",
     "Access-Control-Allow-Methods" -> "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers" -> "Accept, Origin, Content-type, X-Json, X-Prototype-Version, X-Requested-With, Authorization",
     "Access-Control-Allow-Credentials" -> "true",

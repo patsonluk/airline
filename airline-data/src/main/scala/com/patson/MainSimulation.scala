@@ -208,7 +208,7 @@ object MainSimulation extends App {
         AirlineSource.adjustAirlineBalance(airline.id, profit)
       //  airlineProfit.put(airline, profit)
           
-        println(airline + " profit is: " + profit + " new balance is " + airline.airlineInfo.balance)
+        println(airline + " profit is: " + profit + " new balance is " + (airline.airlineInfo.balance + profit))
     }
     
     

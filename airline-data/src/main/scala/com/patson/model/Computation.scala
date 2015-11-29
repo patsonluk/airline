@@ -30,4 +30,13 @@ object Computation {
     val value = airplane.model.price * 0.8 * airplane.condition / 100 * ((maxAge - calculateAge(airplane.constructedCycle)).toDouble / maxAge)
     if (value < 0) 0 else value.toInt
   }
+  
+  def calculateAirportRadius(airport : Airport) : Int = {
+    airport.size match {
+      case 1 => 50
+      case 2 => 100
+      case n if (n >= 3) => 200
+      case _ => 0
+    }
+  }
 }

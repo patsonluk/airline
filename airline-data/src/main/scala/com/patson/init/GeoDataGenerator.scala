@@ -16,6 +16,7 @@ import com.patson.data.CitySource
 import com.patson.Util
 import com.patson.model.Runway
 import com.patson.model.RunwayType
+import com.patson.model.Computation
 
 object GeoDataGenerator extends App {
 
@@ -248,9 +249,8 @@ object GeoDataGenerator extends App {
                 airport.countryCode == city.countryCode &&
                 airport.longitude >= boundaryLongitude._1 && airport.longitude <= boundaryLongitude._2) {
               val distance = Util.calculateDistance(city.latitude, city.longitude, airport.latitude, airport.longitude)
-              if ((airport.size == 1 && distance <= 50) || 
-                  (airport.size == 2 && distance <= 100) ||
-                  (airport.size >= 3 && distance <= 200)) {
+              val airportRadis = Computation.calculateAirportRadius(airport)
+              if (airportRadis >= distance) {
                   //println(city.name + " => " + airport.name)
                  potentialAirports += Tuple2(airport, distance)
               }

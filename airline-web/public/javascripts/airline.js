@@ -1,4 +1,4 @@
-var flightPaths
+var flightPaths = []
 
 function loadAirlines() {
 	$.ajax({
@@ -25,7 +25,7 @@ function loadAirlines() {
 }
 
 function selectAirline(airlineId) {
-	setWebSocketAirlineId(airlineId)
+	initWebSocket(airlineId)
 	updateAllPanels(airlineId)
 }
 
@@ -192,7 +192,7 @@ function editLink() {
 	$("#planLinkFromAirportId").val($("#linkFromAirportId").val())
 	$("#planLinkToAirportId").val($("#linkToAirportId").val())
 	setActiveDiv($('#planLinkDetails'))
-	planLink(activeAirline.id, $("#linkFromAirportId").val(), $("#linkToAirportId").val())
+	planLink($("#linkFromAirportId").val(), $("#linkToAirportId").val())
 }
 
 
