@@ -103,7 +103,7 @@ class Application extends Controller {
   
   
   def index = Action {
-    Ok(views.html.index())
+    Ok(views.html.index(""))
   }
   def test = Action {
     Ok(views.html.test())

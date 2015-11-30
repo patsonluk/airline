@@ -26,7 +26,7 @@
                 signupForm("username"),
                 '_label -> <h4>Username</h4>, 
                 '_help -> "Please choose a valid username.",
-                '_error -> signupForm.globalError
+                '_error -> signupForm.error("username")
             )
             </div>
             <div style="padding: 10px;">
@@ -48,6 +48,14 @@
                 '_label -> <h4>Repeat password</h4>,
                 '_help -> "Please repeat your password again.",
                 '_error -> signupForm.error("password")
+            )
+            </div>
+            <div style="padding: 10px;">
+            @inputText(
+                signupForm("airlineName"),
+                '_label -> <h4>Airline name</h4>, 
+                '_help -> "Please enter your airline name.",
+                '_error -> signupForm.error("airlineName")
             )
             </div>
         </fieldset>

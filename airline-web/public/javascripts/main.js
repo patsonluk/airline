@@ -9,7 +9,29 @@ $( document ).ready(function() {
 	} else {
 		refreshLoginBar()
 	}
+	if ($("#floatMessage").val()) {
+		showFloatMessage($("#floatMessage").val())
+	}	
 })
+
+function showFloatMessage(message) {
+	$("#floatMessageBox").text(message)
+	$("#floatMessageBox").css({ top:"-=20px"})
+	$("#floatMessageBox").show()
+	$("#floatMessageBox").animate({ top:"0px" }, "fast", function() {
+		setTimeout(function() { 
+			console.log("closing")
+			$('#floatMessageBox').animate({ top:"-=20px",opacity:0 }, "slow")
+		}, 3000)
+	})
+	
+	//scroll the message box to the top offset of browser's scrool bar
+	$(window).scroll(function()
+	{
+  		$('#floatMessageBox').animate({top:$(window).scrollTop()+"px" },{queue: false, duration: 350});
+	});
+	
+}
 
 function refreshLoginBar() {
 	if (!activeUser) {
@@ -38,8 +60,12 @@ function loadUser(isLogin) {
 		  
 	  },
 	    error: function(jqXHR, textStatus, errorThrown) {
+	    	if (jqXHR.status == 401) {
+	    		showFloatMessage("Incorrect username or password")
+	    	} else {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    	}
 	    }
 	}
 	if (isLogin) {
@@ -70,6 +96,7 @@ function logout() {
 	    	activeAirline = null
 	    	$.removeCookie('sessionActive')
 	    	refreshLoginBar()
+	    	showFloatMessage("Successfully logged out")
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -108,6 +135,7 @@ function updateAirlineInfo(airlineId) {
 	    dataType: 'json',
 	    success: function(airline) {
 	    	$("#balance").text(airline.balance)
+	    	$("#currentAirline").text(airline.name)
 	    	activeAirline = airline
 	    	updateAirplaneList($("#airplaneList"))
 	    	updateLinksInfo()
