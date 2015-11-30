@@ -60,4 +60,23 @@ div.header, span.header {
 img.button {
 	cursor: pointer
 }
-	
+
+.gm-style-iw {
+   overflow: hidden !important; 
+   line-height: 1.35;
+   white-space: nowrap;
+}
+dd.info {
+	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	line-height: 1.6em;
+	color: #454544;
+	text-decoration: none;
+	font-size: 10px;
+}
+dd.error {
+	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	line-height: 1.6em;
+	color: #ff8080;
+	text-decoration: none;
+	font-size: 10px;
+}	

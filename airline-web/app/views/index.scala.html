@@ -1,4 +1,3 @@
-@(message: String)
 <!DOCTYPE html>
 <html>
   <head>
@@ -10,8 +9,13 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <script src="@routes.Assets.versioned("javascripts/jquery-2.1.4.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/jquery.cookie.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/highcharts.js")"></script>
-    
+    <!-- <script src="@routes.Assets.versioned("javascripts/highcharts.js")"></script> -->
+    <!-- <script src="@routes.Assets.versioned("javascripts/pie-highcharts.js")"></script> -->
+    <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/pie-fusioncharts.js")"></script>
+
     <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
@@ -31,6 +35,7 @@
 	  			<span class="label">Password</span>
 	  			<input type="password" id="loginPassword"/>
 	  			<div class="button" onclick="login()">Login</div>
+	  			<a href="signup"><div class="button" onclick="">Sign Up</div></a>
   			</div>
   			<div style="float: right; display: hidden;" id="logoutDiv">
   				<span id="currentUserName" class="label"></span>
@@ -233,7 +238,7 @@
     <div style="display: none; width: 100%;" id="airportPopup">
     	<input type="hidden" id="airportPopupId"></input>
     	<div>
-    		<span id="airportPopupName" class="header"></span><img title="View Airport Details" src='@routes.Assets.versioned("images/icons/information-32.png")' class="button" onclick="showAirportDetails($('#airportPopupId').val())">
+    		<span id="airportPopupName" class="header"></span><img title="View Airport Details" src='@routes.Assets.versioned("images/icons/information-24.png")' class="button" onclick="showAirportDetails($('#airportPopupId').val())">
     	</div>
     	<div id="airportIcons">
     		<img alt="Your Headquarter" title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon"><img alt="Your Base" title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon">
@@ -307,7 +312,7 @@
    			</div>
 		</div>
 		
-		<div id="cityPie" width="200" height="200"></div>
+		<div id="cityPie" style="height: 200px; width: 350px;"></div>
     </div>
     
     <script async defer

@@ -3,7 +3,7 @@ package com.patson.data
 import scala.collection.mutable.ListBuffer
 
 import com.patson.data.Constants._
-import com.patson.model.City
+import com.patson.model._
 
 object CitySource {
   def loadAllCities() = {
@@ -57,7 +57,7 @@ object CitySource {
   }
   
   
-  def loadCityById(id : Int, fullLoad : Boolean = false) = {
+  def loadCityById(id : Int) = {
       val result = loadCitiesByCriteria(List(("id", id)))
       if (result.isEmpty) {
         None

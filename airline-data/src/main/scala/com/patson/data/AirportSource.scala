@@ -295,4 +295,37 @@ object AirportSource {
       connection.close()
     }
   }
+  
+  def loadAirportSharesOnCity(cityId : Int) : List[(Airport, Double)] = {
+    CitySource.loadCityById(cityId) match {
+      case Some(city) =>
+          //open the hsqldb
+        val connection = Meta.getConnection()
+        try {  
+          //var queryString = "SELECT * FROM " + AIRPORT_CITY_SHARE_TABLE + " c LEFT JOIN " + AIRPORT_TABLE + " a ON c.airport = a.id WHERE c.city = ?"
+          val queryString = "SELECT * FROM " + AIRPORT_CITY_SHARE_TABLE + " WHERE city = ?"
+          
+          val preparedStatement = connection.prepareStatement(queryString)
+          
+          preparedStatement.setInt(1, cityId)
+          
+          val resultSet = preparedStatement.executeQuery()
+          
+          val airportShareList = new ListBuffer[(Airport, Double)]()
+          
+          while (resultSet.next()) {
+            loadAirportById(resultSet.getInt("airport")).foreach { airport => //TODO optimization? 
+              airportShareList.append((airport, resultSet.getDouble("share")))
+            } 
+          }
+          
+          resultSet.close()
+          preparedStatement.close()
+          airportShareList.toList
+        } finally {
+          connection.close()
+        }        
+      case None => List.empty 
+    }
+  }
 }

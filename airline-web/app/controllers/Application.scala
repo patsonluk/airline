@@ -81,6 +81,15 @@ class Application extends Controller {
       "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
     }
   }
+  
+  implicit object AirportShareWrites extends Writes[(Airport, Double)] {
+    def writes(airportShare: (Airport, Double)): JsValue = {
+      JsObject(List(
+      "airportName" -> JsString(airportShare._1.name),    
+      "airportId" -> JsNumber(airportShare._1.id),
+      "share" -> JsNumber(BigDecimal(airportShare._2).setScale(4, BigDecimal.RoundingMode.HALF_EVEN))))
+    }
+  }
  
   
   case class AirportSlotData(airlineId: Int, slotCount: Int)
@@ -94,7 +103,7 @@ class Application extends Controller {
   
   
   def index = Action {
-    Ok(views.html.index("Your new application is ready."))
+    Ok(views.html.index())
   }
   def test = Action {
     Ok(views.html.test())
@@ -103,9 +112,7 @@ class Application extends Controller {
   def getAirports(count : Int) = Action {
     val airports = AirportSource.loadAllAirports()
     val selectedAirports = airports.takeRight(count)
-    Ok(Json.toJson(selectedAirports)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
+    Ok(Json.toJson(selectedAirports))
   }
   
   def getAirport(airportId : Int) = Action {
@@ -123,6 +130,10 @@ class Application extends Controller {
        case None => NotFound
      }
   }
+  def getAirportSharesOnCity(cityId : Int) = Action {
+    Ok(Json.toJson(AirportSource.loadAirportSharesOnCity(cityId)))
+  }
+  
   
   def options(path: String) = Action {
   Ok("").withHeaders(

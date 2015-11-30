@@ -900,7 +900,7 @@ input {
 	border: 1px solid #6093e7;
 	outline: none;
 	border-radius: 3px;
-	margin-bottom: 20px;
+/* 	margin-bottom: 20px; */
 	text-align: center;
 }
 textarea {

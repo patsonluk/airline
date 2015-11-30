@@ -17,6 +17,7 @@ GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
 GET		 /airports/:airportId 		  	  controllers.Application.getAirport(airportId : Int)
 #GET		 /airports/:airportId/details  	  controllers.Application.getAirportDetails(airportId : Int)
 GET	 	 /airports/:airportId/slots	      controllers.Application.getAirportSlotsByAirline(airportId : Int, airlineId : Int)
+GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
 GET		 /airlines						  controllers.AirlineApplication.getAllAirlines
 GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int)
 GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int, getAssignedLink : Boolean ?= false)
@@ -40,6 +41,12 @@ GET		 /links							  controllers.LinkApplication.getAllLinks
 DELETE   /links							  controllers.LinkApplication.deleteAllLinks
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels	
+
+
+# Signup
+GET     /signup                     controllers.SignUp.form
+#GET     /editUser/fakeuser             controllers.SignUp.editForm
+POST    /signup                     controllers.SignUp.submit
 
 
 

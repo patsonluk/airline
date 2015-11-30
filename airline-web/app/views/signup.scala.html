@@ -1,0 +1,62 @@
+@(signupForm: Form[NewUser])
+
+@import helper._
+@import play.api.Play.current
+@import play.api.i18n.Messages.Implicits._
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      html, body { height: 100%; margin: 0; padding: 0; }
+      #map { height: 100%; }
+    </style>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
+    <script src="@routes.Assets.versioned("javascripts/jquery-2.1.4.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/jquery.cookie.js")"></script>
+  </head>
+  <body>
+
+    @helper.form(action = routes.SignUp.submit) {
+        
+        <fieldset>
+            <h3>Account informations</h3>
+            <div style="padding: 10px;">
+            @inputText(
+                signupForm("username"),
+                '_label -> <h4>Username</h4>, 
+                '_help -> "Please choose a valid username.",
+                '_error -> signupForm.globalError
+            )
+            </div>
+            <div style="padding: 10px;">
+            @inputText(
+                signupForm("email"), '_label -> <h4>Email</h4>,
+                '_help -> "Enter a valid email address."
+            )
+            </div>
+            <div style="padding: 10px;">
+            @inputPassword(
+                signupForm("password.main"), 
+                '_label -> <h4>Password</h4>,
+                '_help -> "A password must be at least 6 characters. "
+            )
+            </div>
+            <div style="padding: 10px;">
+            @inputPassword(
+                signupForm("password.confirm"), 
+                '_label -> <h4>Repeat password</h4>,
+                '_help -> "Please repeat your password again.",
+                '_error -> signupForm.error("password")
+            )
+            </div>
+        </fieldset>
+        <div class="actions">
+        	<div class="button" onclick="$(this).parents('form:first').submit()">Sign Up</div>
+            <!--  <input type="submit" class="button" value="Sign Up"> -->
+            <a href="@routes.Application.index" class="btn">Cancel</a>
+        </div>
+        
+    }
+</body>    
+</html>

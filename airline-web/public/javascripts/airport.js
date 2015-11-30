@@ -31,7 +31,7 @@ function populateAirportDetails(airport) {
 //	    draggable: false
 	  });
 	if (airport) {
-		addCityMarkers(airportMap, airport.citiesServed)
+		addCityMarkers(airportMap, airport)
 		google.maps.event.addListenerOnce(airportMap, 'idle', function() {
 		    google.maps.event.trigger(airportMap, 'resize');
 		    airportMap.setCenter({lat: airport.latitude, lng: airport.longitude}); 
@@ -133,7 +133,8 @@ function addMarkers(airports) {
 	markers = resultMarkers
 }
 
-function addCityMarkers(airportMap, cities) {
+function addCityMarkers(airportMap, airport) {
+	var cities = airport.citiesServed
 	var infoWindow = new google.maps.InfoWindow({
 		maxWidth : 500
 	})
@@ -168,62 +169,29 @@ function addCityMarkers(airportMap, cities) {
 			  $("#cityPopupCountryCode").text(city.countryCode)
 			  $("#cityPopupId").val(city.id)
 			   
-			  infoWindow.setContent($("#cityPopup").html())
 			  
 			  
 ///////////////
 				 ///////////////////////////!!!!!!!!!!
-			$('#cityPie').highcharts({
-		        chart: {
-		            plotBackgroundColor: null,
-		            plotBorderWidth: null,
-		            plotShadow: false,
-		            height: 200,
-		            width: 200,
-		            type: 'pie',
-		        },
-		        plotOptions: {
-		            pie: {
-		                allowPointSelect: true,
-		                cursor: 'pointer',
-		                size: '100%',
-		                dataLabels: {
-		                    enabled: true,
-		                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-		                    style: {
-		                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-		                    }
-		                }
-		            }
-		        },
-		        series: [{
-		            name: "Brands",
-		            colorByPoint: true,
-		            data: [{
-		                name: "Microsoft Internet Explorer",
-		                y: 56.33
-		            }, {
-		                name: "Chrome",
-		                y: 24.03,
-		                sliced: true,
-		                selected: true
-		            }, {
-		                name: "Firefox",
-		                y: 10.38
-		            }, {
-		                name: "Safari",
-		                y: 4.77
-		            }, {
-		                name: "Opera",
-		                y: 0.91
-		            }, {
-		                name: "Proprietary or Undetectable",
-		                y: 0.2
-		            }]
-		        }]
-			  });
+			$.ajax({
+				type: 'GET',
+				url: "cities/" + city.id + "/airportShares",
+			    contentType: 'application/json; charset=utf-8',
+			    dataType: 'json',
+//			    async: false,
+			    success: function(airportShares) {
+			    	plotAirportShares(airportShares, airport.id, $("#cityPie"))
+			    },
+			    error: function(jqXHR, textStatus, errorThrown) {
+			            console.log(JSON.stringify(jqXHR));
+			            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+			    }
+			});
+			
+			infoWindow.setContent($("#cityPopup").html())			
+			infoWindow.open(airportMap, this);
 			  
-			  infoWindow.open(airportMap, this);
+			  
 			/////////////////////!!!!!!!!!!!!!!!
 		 ///////////////
 		  });
