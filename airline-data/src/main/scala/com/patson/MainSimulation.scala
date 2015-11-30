@@ -109,7 +109,7 @@ object MainSimulation extends App {
             newLoyalty = AirlineAppeal.MAX_LOYALTY
           }
           airport.setAirlineAwareness(base.airline.id, newAwareness)
-          airport.setAirlineAwareness(base.airline.id, newLoyalty)
+          airport.setAirlineLoyalty(base.airline.id, newLoyalty)
         }
       }
     }
