@@ -32,15 +32,6 @@ object DemandGenerator extends App {
 //
 //  implicit val materializer = FlowMaterializer()
 
-  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, totalWorldPower : Long) = {
-    if (fromAirport == toAirport) {
-      0
-    } else {
-      val passengerSupplyPerWeek =  (fromAirport.power / 30000 / 52).toInt //assuming 1 flight per year if PPP is 30k
-      (passengerSupplyPerWeek * toAirport.power / totalWorldPower).toInt //TODO only proportional to target airport power for now
-    }
-  }
-  
   mainFlow
   
   def mainFlow() = {
@@ -66,6 +57,7 @@ object DemandGenerator extends App {
 	        val demandList = ListBuffer[(Airport, Int)]() 
 	        airports.foreach { toAirport => 
 	          val demand = computeDemandBetweenAirports(fromAirport, toAirport, totalWorldPower)
+	          
 	          if (demand > 0) {
 	            demandList.append((toAirport, demand))
 	          } 
@@ -126,6 +118,47 @@ object DemandGenerator extends App {
     materializedFlow.get(resultSink).map(_.toList)
   }
   
+  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, totalWorldPower : Long) = {
+    if (fromAirport == toAirport) {
+      0
+    } else {
+      val passengerSupplyPerWeek =  (fromAirport.power / 30000 / 52).toInt //assuming 1 flight per year if PPP is 30k
+      import FlightType._
+      val multiplier = getFlightType(fromAirport, toAirport) match {
+        case SHORT_HAUL_DOMESTIC => 4
+        case LONG_HAUL_DOMESTIC => 2
+        case SHORT_HAUL_INTERNATIONAL => 1.5
+        case LONG_HAUL_INTERNATIONAL => 1
+        case EXTRA_LONG_HAUL_INTERNATIONAL => 0.5
+      }
+      
+      (passengerSupplyPerWeek * multiplier * toAirport.power / totalWorldPower).toInt 
+    }
+  }
+  
+  def getFlightType(fromAirport : Airport, toAirport : Airport) = { //need quick calculation
+    var longitudeDelta = Math.abs(fromAirport.longitude - toAirport.longitude)
+    if (longitudeDelta >= 180) { longitudeDelta = 360 - longitudeDelta } //wraps around
+    var latitudeDelta = Math.abs(fromAirport.latitude - toAirport.latitude)
+    
+    import FlightType._
+    if (fromAirport.countryCode == toAirport.countryCode) { //domestic
+      if (longitudeDelta <= 20 && latitudeDelta <= 15) {
+        SHORT_HAUL_DOMESTIC
+      } else {
+        LONG_HAUL_DOMESTIC
+      }
+    } else { //international
+      if (longitudeDelta <= 20 && latitudeDelta <= 20) {
+        SHORT_HAUL_INTERNATIONAL
+      } else if (longitudeDelta <= 50 && latitudeDelta <= 30) {
+        LONG_HAUL_INTERNATIONAL
+      } else {
+        EXTRA_LONG_HAUL_INTERNATIONAL
+      }
+    }
+  }
+  
   def getFlightPreferencePoolOnAirport(fromAirport : Airport) : FlightPreferencePool = {
     //for now 5 simple preferences per airport
     val simplePreferenceCount = 5;
@@ -149,4 +182,9 @@ object DemandGenerator extends App {
     
     new FlightPreferencePool(flightPreferences.toList)
   }
+  
+  object FlightType extends Enumeration {
+    type FlightType = Value
+    val SHORT_HAUL_DOMESTIC, LONG_HAUL_DOMESTIC, SHORT_HAUL_INTERNATIONAL, LONG_HAUL_INTERNATIONAL, EXTRA_LONG_HAUL_INTERNATIONAL = Value
+}
 }

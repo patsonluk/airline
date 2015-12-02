@@ -8,6 +8,9 @@ function showAirportDetails(airportId) {
 	    	if (airport) {
 	    		populateAirportDetails(airport)
 	    		setActiveDiv($("#airportCanvas"))
+	    		$("#floatBackButton").show()
+	    		shimmeringDiv($("#floatBackButton"))
+	    		
 	    	}
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -56,7 +59,30 @@ function populateAirportDetails(airport) {
 		        fillOpacity: 0.3,
 		        map: airportMap
 		    });
+		loadAirportStatistics(airport)
 	}
+}
+
+function loadAirportStatistics(airport) {
+	$.ajax({
+		type: 'GET',
+		url: "airports/" + airport.id + "/link-statistics",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+//	    async: false,
+	    success: function(airportStatistics) {
+	    	plotPie(airportStatistics.departure, null , $("#departurePie"), "airportName", "passengers")
+	    	plotPie(airportStatistics.destination, null, $("#destinationPie"), "airportName", "passengers")
+	    	plotPie(airportStatistics.connectionFrom, null, $("#connectionFromPie"), "airportName", "passengers")
+	    	plotPie(airportStatistics.connectionTo, null, $("#connectionToPie"), "airportName", "passengers")
+	    	plotPie(airportStatistics.airlineDeparture, activeAirline.name, $("#airlineDeparturePie"), "airlineName", "passengers")
+	    	plotPie(airportStatistics.airlineArrival, activeAirline.name, $("#airlineArrivalPie"), "airlineName", "passengers")
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 

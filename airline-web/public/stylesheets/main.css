@@ -83,7 +83,8 @@ dd.error {
 
 #floatMessageBox {
 	position: absolute;
-	top: 0; right: 0;
+	top: 0; 
+	right: 0;
 	border-radius: 0px 0px 0px 15px;
 	z-index: 1000;
 /* 	background:#ffc; */
@@ -93,4 +94,17 @@ dd.error {
 	box-shadow:inset 0 0 2px white,0 0 3px rgba(0, 0, 0, 0.5);
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	
+}
+
+#floatBackButton {
+	position: absolute;
+	top: 100px; 
+	left: 0px;
+	z-index: 1000;
+/* 	background:#ffc; */
+	padding:5px;
+	text-align:center;
+	box-shadow:inset 0 0 2px white, 0 0 30px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.7);
+/* 	box-shadow:inset 0 0 2px white,0 0 3px rgba(0, 0, 0, 0.5); */
+/* 	font-family: "Open Sans", Verdana, Arial, sans-serif; */
 }

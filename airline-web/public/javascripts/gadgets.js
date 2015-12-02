@@ -62,3 +62,12 @@ function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput
 	}
 }
 
+function shimmeringDiv(div) {
+	var originalBackgroundColor = div.css("backgroundColor")
+	var originalColor = div.css("color")
+	div.animate( { backgroundColor:'#EDFBFF', color: '#6093e7' }, 1000, function() {
+		div.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 1000)
+		//div.toggle( "bounce", { times: 3 }, "slow" )
+	})
+	setTimeout(function() { shimmeringDiv(div) }, 5000)
+}

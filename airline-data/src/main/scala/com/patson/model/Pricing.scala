@@ -24,12 +24,12 @@ object Pricing {
     price.toInt
   }
   
-  // if price is zero, adjustment = -distance 
-  // if price is at standard price, adjustment = 0
-  // if price is at double the standard price, adjustment = distance . Fair enough!
-  def standardCostAdjustmentFromPrice(distance: Int, price: Int): Double = {
+  // if price is zero, adjustmentRatio = 0 
+  // if price is at standard price, adjustmentRatio = 1
+  // if price is at double the standard price, adjustmentRatio = 2 . Fair enough!
+  def standardCostAdjustmentRatioFromPrice(distance: Int, price: Int): Double = {
     val standardPrice = computeStandardPrice(distance)
-    (price - standardPrice) * 1.0 / standardPrice * distance
+    ((price - standardPrice).toDouble / standardPrice) + 1
   }
   
  

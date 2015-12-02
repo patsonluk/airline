@@ -137,7 +137,7 @@ object MainSimulation extends App {
           if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
             AirlineAppeal.MAX_AWARENESS   
           } else {
-            (((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) * 10).toInt).toDouble / 10
+            existingAwareness + AWARENESS_INCREMENT_WITH_LINKS
           }
         airport.setAirlineAwareness(airline.id, newAwareness)
         updatingAirports.add(airport)
@@ -160,12 +160,15 @@ object MainSimulation extends App {
         holder + demandValue
     })
 
-    val consumptionResult = PassengerSimulation.passengerConsume(demand, links)
-//    println("Consumption result : ")
-//    consumptionResult.foreach { 
-//      case(_, _, _, links) => println(links)
-//    }
+    val consumptionResult: List[(PassengerGroup, Airport, Int, Route)] = PassengerSimulation.passengerConsume(demand, links)
+    //generate statistic 
+    println("Generating stats")
+    val linkStatistics = generateLinkStatistics(consumptionResult, cycle)
+    println("Saving generated stats to DB")
+    LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
+    LinkStatisticsSource.saveLinkStatistics(linkStatistics)
     
+    println("Calculating profits by links")
     val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
       (link, foldList) =>
         val soldSeats = link.capacity - link.availableSeats
@@ -256,5 +259,36 @@ object MainSimulation extends App {
   }
   
   case class Start()
+
+  def generateLinkStatistics(consumptionResult: List[(PassengerGroup, Airport, Int, Route)], cycle : Int) : List[LinkStatistics] = {
+    val statistics = Map[LinkStatisticsKey, Int]()
+    consumptionResult.foreach {
+      case (_, _, passengerCount, route) =>
+        for (i <- 0 until route.links.size) {
+          val link = route.links(i) 
+          val airline = link.link.airline
+          val key = 
+            if (i == 0) {
+              if (route.links.size == 1) {
+                LinkStatisticsKey(link.from, link.to, true, true, airline)  
+              } else {
+                LinkStatisticsKey(link.from, link.to, true, false, airline)
+              }
+            } else if (i == route.links.size -1) { //last one in list
+              LinkStatisticsKey(link.from, link.to, false, true, airline)
+            } else { //in the middle
+              LinkStatisticsKey(link.from, link.to, false, false, airline)
+            }
+          val newPassengerCount = statistics.getOrElse(key, 0) + passengerCount
+          statistics.put(key, newPassengerCount)
+        }
+    }
+    
+    statistics.map { 
+      case (linkStatisticsKey, passenger) =>
+        LinkStatistics(linkStatisticsKey, passenger, cycle)
+    }.toList
+    
+  }
 }
 

@@ -14,6 +14,7 @@ import play.api.data.Form
 import play.api.data.Forms.mapping
 import play.api.data.Forms.number
 import com.patson.data.CitySource
+import com.patson.data.LinkStatisticsSource
 
 
 class Application extends Controller {
@@ -90,6 +91,23 @@ class Application extends Controller {
       "share" -> JsNumber(BigDecimal(airportShare._2).setScale(4, BigDecimal.RoundingMode.HALF_EVEN))))
     }
   }
+  
+   implicit object AirportPassengersWrites extends Writes[(Airport, Int)] {
+    def writes(airportPassenger: (Airport, Int)): JsValue = {
+      JsObject(List(
+      "airportName" -> JsString(airportPassenger._1.name),    
+      "airportId" -> JsNumber(airportPassenger._1.id),
+      "passengers" -> JsNumber(airportPassenger._2)))
+    }
+  }
+   implicit object AirlinePassengersWrites extends Writes[(Airline, Int)] {
+     def writes(airlinePassenger: (Airline, Int)): JsValue = {
+      JsObject(List(
+      "airlineName" -> JsString(airlinePassenger._1.name),    
+      "airlineId" -> JsNumber(airlinePassenger._1.id),
+      "passengers" -> JsNumber(airlinePassenger._2)))
+    }
+  }
  
   
   case class AirportSlotData(airlineId: Int, slotCount: Int)
@@ -132,6 +150,52 @@ class Application extends Controller {
   }
   def getAirportSharesOnCity(cityId : Int) = Action {
     Ok(Json.toJson(AirportSource.loadAirportSharesOnCity(cityId)))
+  }
+  
+  def getAirportLinkStatistics(airportId : Int) = Action {
+    //group things up
+    val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId)
+    val flightsToThisAirport = LinkStatisticsSource.loadLinkStatisticsByToAirport(airportId)
+    val (flightsInitialDeparture, flightsConnectionFrom) = flightsFromThisAirport.partition { _.key.isDeparture }
+    val (flightsFinalDestination, flightsConnectionTo) = flightsToThisAirport.partition { _.key.isDestination }
+    
+    val flightDepartureByAirline = flightsFromThisAirport.groupBy { _.key.airline }
+    val flightDestinationByAirline = flightsToThisAirport.groupBy { _.key.airline }
+    
+    
+    //fold them to get total numbers
+    val statisticsInitialDeparture : Map[Airport, Int] = flightsInitialDeparture.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
+      val airport = linkStatisticsEntry.key.toAirport
+      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
+    }
+    val statisticsFinalDestination : Map[Airport, Int] = flightsFinalDestination.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
+      val airport = linkStatisticsEntry.key.fromAirport
+      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
+    }
+    val statisticsConnectionFrom : Map[Airport, Int] = flightsConnectionFrom.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
+      val airport = linkStatisticsEntry.key.toAirport
+      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
+    }
+    val statisticsConnectionTo :Map[Airport, Int] = flightsConnectionTo.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
+      val airport = linkStatisticsEntry.key.fromAirport
+      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
+    }
+    val statisticsDepartureByAirline : List[(Airline, Int)] = flightDepartureByAirline.foldRight(List[(Airline, Int)]()) { 
+      case ((airline, statistics), foldList) =>
+        val totalPassengersOfThisAirline = statistics.foldLeft(0)( _ + _.passengers) //all the passengers of this airline
+        (airline, totalPassengersOfThisAirline) :: foldList
+    }
+    val statisticsArrivalByAirline : List[(Airline, Int)] = flightDestinationByAirline.foldRight(List[(Airline, Int)]()) { 
+      case ((airline, statistics), foldList) =>
+        val totalPassengersOfThisAirline = statistics.foldLeft(0)( _ + _.passengers) //all the passengers of this airline
+        (airline, totalPassengersOfThisAirline) :: foldList
+    }
+    Ok(Json.obj("departure" -> Json.toJson(statisticsInitialDeparture), 
+                "destination" -> Json.toJson(statisticsFinalDestination),
+                "connectionFrom" -> Json.toJson(statisticsConnectionFrom),
+                "connectionTo" -> Json.toJson(statisticsConnectionTo),
+                "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),
+                "airlineArrival" -> Json.toJson(statisticsArrivalByAirline)))
   }
   
   

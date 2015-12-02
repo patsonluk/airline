@@ -21,7 +21,7 @@ case class SimplePreference(priceWeight : Int, maxPriceWeight : Int) extends Fli
     //from minFactorForPriceWeight up to maxFactorForPriceWeight. Proportional to priceWeight/maxPriceWeight
     val actualFactorForPriceWeight = minFactorForPriceWeight + priceWeight.toDouble / maxPriceWeight * (maxFactorForPriceWeight - minFactorForPriceWeight)
     
-    val cost = link.distance + Pricing.standardCostAdjustmentFromPrice(link.distance, link.price) * actualFactorForPriceWeight
+    val cost = link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link.distance, link.price) * actualFactorForPriceWeight
     if (cost <= 0) 1 else cost //just in case
   }
 }
@@ -65,7 +65,8 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  ext
         
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
-    val baseCost = link.distance + Pricing.standardCostAdjustmentFromPrice(link.distance, perceivedPrice)
+    //cost is in terms of flight duration
+    val baseCost = link.duration * Pricing.standardCostAdjustmentRatioFromPrice(link.distance, perceivedPrice)
     
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
     

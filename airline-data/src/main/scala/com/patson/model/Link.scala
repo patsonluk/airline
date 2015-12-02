@@ -89,6 +89,9 @@ object Link {
   val MAX_RAW_QUALITY = 100
 }
 
+/**
+ * Take note that cost is in terms of flight Duration (minutes)
+ */
 case class LinkWithCost(link : Link, cost : Double, inverted : Boolean) {
     def from : Airport = if (inverted) link.to else link.from
     def to : Airport = if (inverted) link.from else link.to

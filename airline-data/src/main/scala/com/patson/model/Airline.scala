@@ -14,7 +14,7 @@ case class AirlineInfo(var balance : Long = 0, var serviceQuality : Int = 0)
 
 object Airline {
   def fromId(id : Int) = {
-    val airlineWithJustId = Airline("")
+    val airlineWithJustId = Airline("<unknown>")
     airlineWithJustId.id = id
     airlineWithJustId
   }

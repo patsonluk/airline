@@ -126,6 +126,7 @@ object PassengerSimulation extends App {
 //             if (!toAirportRouteMap.isEmpty) {
 //               println("to airport route map" + toAirportRouteMap)
 //             }
+             
              toAirportRouteMap.get(toAirport) match { 
                case Some(pickedRoute) =>
                  //println("picked route info" + passengerGroup + " " + pickedRoute.links(0).airline)
@@ -137,7 +138,8 @@ object PassengerSimulation extends App {
                  //add some randomness here
                  //val affordableCost = totalDistance * (1.25 - Random.nextFloat() / 2)
                  //val affordableCost = totalDistance * (Util.getBellRandom(1))
-                 val affordableCost = distance
+                 val MIN_AIPLANE_SPEED = 300.0
+                 val affordableCost = distance / MIN_AIPLANE_SPEED * 60//assuming the passenger can tolerate the duration of going with the slowest plane
                  if (affordableCost >= pickedRoute.totalCost) { //OK!
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize)( (foldInt, linkWithDirection) => if (linkWithDirection.link.availableSeats < foldInt) { linkWithDirection.link.availableSeats } else { foldInt })
                    //some capacity available on all the links, consume them NOMNOM NOM!
@@ -216,8 +218,10 @@ object PassengerSimulation extends App {
             airlineAwareness > Random.nextDouble() * AirlineAppeal.MAX_AWARENESS
           }.flatMap { link =>
             var cost = passengerGroup.preference.computeCost(link)
-            //add extra cost for low frequency, this would add a small constant to make people less likely to take connection flight (even with high frequency)
-            cost += 100  + (50.toDouble / link.frequency - 1) * 100
+            //add extra cost for low frequency...lets not make this so complicated now
+//            if (link.frequency < 7) {
+//              cost *= 1 + (1.0 / link.frequency) //at most double the cost if it's only once per weak
+//            }
             List(LinkWithCost(link, cost, false), LinkWithCost(link, cost, true)) //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly! 
           }
         
@@ -374,11 +378,31 @@ object PassengerSimulation extends App {
 //               predecessor[v] := u
     for (i <- 0 until maxHop) {
       val updatingLinks = ListBuffer[LinkWithCost]()
+      
       for (linkWithCost <- linksWithCost) {
-        if (distanceMap(linkWithCost.from) + linkWithCost.cost < distanceMap(linkWithCost.to)) {
-//          distanceMap.put(link.to, distanceMap(link.from) + link.cost)
-//          predecessorMap.put(link.to, link)
-          updatingLinks.append(linkWithCost)
+        var shouldCompute = true
+        var connectionCost = 0.0
+        if (i > 0) { 
+          if (!predecessorMap.contains(linkWithCost.from)) { //then don't even bother, no valid path to the "from airport" of this link anyway 
+            shouldCompute = false
+          } else { //calculate connection cost
+              connectionCost += 20 //at least 20 mins to make the connection
+              //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
+              val frequency = Math.max(predecessorMap(linkWithCost.from).link.frequency, linkWithCost.link.frequency)
+              //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
+              if (frequency < 42) {
+                connectionCost += (2 * 24 * 60).toDouble / frequency //at worst (both at 1, assuming to wait extra 2 days)
+              }
+          }
+        }
+        
+        if (shouldCompute) {
+          val cost = linkWithCost.cost + connectionCost
+          if (distanceMap(linkWithCost.from) + cost < distanceMap(linkWithCost.to)) {
+  //          distanceMap.put(link.to, distanceMap(link.from) + link.cost)
+  //          predecessorMap.put(link.to, link)
+            updatingLinks.append(linkWithCost.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
+          }
         }
       }
       updatingLinks.foreach { updatingLink => 
