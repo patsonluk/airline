@@ -24,7 +24,7 @@ function initWebSocket(airlineId) {
 function onClose(evt) {}  
 function onMessage(evt) {
 	if (selectedAirlineId) {
-		updateAllPanels(selectedAirlineId)
+		refreshPanels(selectedAirlineId)
 	}
 }  
 function onError(evt) {

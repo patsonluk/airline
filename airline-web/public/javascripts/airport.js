@@ -154,10 +154,10 @@ function addMarkers(airports) {
 		  marker.setVisible(isShowMarker(marker, currentZoom))
 		  resultMarkers[airportInfo.id] = marker
 	}
-	
 	//now assign it to markers to indicate that it's ready
 	markers = resultMarkers
 }
+
 
 function addCityMarkers(airportMap, airport) {
 	var cities = airport.citiesServed

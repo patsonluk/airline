@@ -53,15 +53,15 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 //		}
 		data.push(entry)
 	})
-	container.insertFusionCharts({
+	var ref = container.insertFusionCharts({
 		type: 'pie2d',
 	    width: '100%',
-	    height: '195',
+	    height: '150',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
 	    		"animation": "0",
-	    		"pieRadius": "70",
+	    		"pieRadius": "65",
 	    		"showBorder":"0",
                 "use3DLighting": "1",
                 "showPercentInTooltip": "1",
@@ -70,6 +70,7 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
                 "toolTipPadding": "5",
                 "showHoverEffect":"1",
                 "bgAlpha":"0",
+                "canvasBgAlpha" : "0",
                 "showLabels":"0",
                 "showValues":"0",
                 "plottooltext": "$label - Passengers : $datavalue ($percentValue)"

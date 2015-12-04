@@ -130,6 +130,25 @@ function updateAllPanels(airlineId) {
 	updateAirlineInfo(airlineId)
 }
 
+//does not remove or add any components
+function refreshPanels(airlineId) {
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + airlineId,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(airline) {
+	    	$("#balance").text(airline.balance)
+	    	refreshLinks()
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+
 function updateAirlineInfo(airlineId) {
 	$.ajax({
 		type: 'GET',

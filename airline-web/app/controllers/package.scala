@@ -12,6 +12,7 @@ import play.api.libs.json.Format
 import play.api.libs.json.JsResult
 import com.patson.Util
 import play.api.libs.json.JsSuccess
+import play.api.libs.json.Json
 
 
 
@@ -110,6 +111,7 @@ package object controllers {
       "fromLatitude" -> JsNumber(link.from.latitude),
       "fromLongitude" -> JsNumber(link.from.longitude),
       "toLatitude" -> JsNumber(link.to.latitude),
-      "toLongitude" -> JsNumber(link.to.longitude)))
+      "toLongitude" -> JsNumber(link.to.longitude),
+      "assignedAirplanes" -> Json.toJson(link.getAssignedAirplanes())))
   }
 }

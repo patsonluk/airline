@@ -24,7 +24,6 @@
     <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
-    
   </head>
   <body>
   	<input type="hidden" id="floatMessage" value="@message"/>
@@ -53,33 +52,33 @@
   		<div id="canvas" style="width: 80% ; float: left;" >
   			<div id="map" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
   			<div id="airportCanvas" style="display: none;">
-  				<div id="airportMap" style=" height: 500px ; width: 600px; float: left;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
-  				<!-- <div id="airportStatistics" style="float: right;">  -->
+  				<div id="airportMap" style=" height: 500px ; width: 550px; float: left;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
+  				<div id="airportStatistics" style="width: 900px; height: 400px; float: left;" class="section">
 	  				<div style="float: left;">
-	  					<h3 align="center">Airline share (as Departure)</h3>
-	  					<div id="airlineDeparturePie" style="height: 200px; width: 400px;"></div>
+	  					<h5 align="center">Airline share (as Departure)</h5>
+	  					<div id="airlineDeparturePie" style="height: 160px; width: 300px;" align="center"></div>
 	  				</div>
 	  				<div style="float: left;">	
-	  					<h3 align="center">Airline share (as Arrival)</h3>
-	  					<div id="airlineArrivalPie" style="height: 200px; width: 400px;"></div>
+	  					<h5 align="center">Airline share (as Arrival)</h5>
+	  					<div id="airlineArrivalPie" style="height: 160px; width: 300px;" align="center"></div>
 	  				</div>
 	  				<div style="float: left;">
-	  					<h3 align="center">Initial Departure from this Airport</h3>
-	  					<div id="departurePie" style="height: 200px; width: 400px;"></div>
+	  					<h5 align="center">Initial Departure from this Airport</h5>
+	  					<div id="departurePie" style="height: 160px; width: 300px;" align="center"></div>
 					</div>
 	  				<div style="float: left;">
-	  					<h3 align="center">Final Destination as this Airport</h3>	
-	  					<div id="destinationPie" style="height: 200px; width: 400px;"></div>
+	  					<h5 align="center">Final Destination as this Airport</h5>	
+	  					<div id="destinationPie" style="height: 160px; width: 300px;" align="center"></div>
 	 				</div>
 	  				<div style="float: left;">
-	  					<h3 align="center">Connection flight from this Airport</h3>
-	  					<div id="connectionFromPie" style="height: 200px; width: 400px;"></div>
+	  					<h5 align="center">Connection flight from this Airport</h5>
+	  					<div id="connectionFromPie" style="height: 160px; width: 300px;" align="center"></div>
 	  				</div>
 	  				<div style="float: left;">
-	  					<h3 align="center">Connection flight to this Airport</h3>
-	  					<div id="connectionToPie" style="height: 200px; width: 400px;"></div>
+	  					<h5 align="center">Connection flight to this Airport</h5>
+	  					<div id="connectionToPie" style="height: 160px; width: 300px;" align="center"></div>
 	  				</div>
-  				<!-- </div>  -->
+  				</div>
   			</div>
   		</div>
   	<!-- main canvas end -->
@@ -163,7 +162,7 @@
 	    			<input type="hidden" id="actionLinkId"></input>
 	    			<input type="hidden" id="linkFromAirportId"></input>
 	    			<input type="hidden" id="linkToAirportId"></input>
-	    			<div class="button" onclick="editLink()">Edit</div>
+	    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
 	    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
 	    		</div>
     			<div id="planLinkDetails" style="width: 100%; display: none;">
@@ -349,7 +348,8 @@
     </div>
     
     <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&callback=initMap">
-</script> 
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
+</script>
+	 
   </body>
 </html>

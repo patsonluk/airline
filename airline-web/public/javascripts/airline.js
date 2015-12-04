@@ -1,4 +1,6 @@
-var flightPaths = []
+var flightPaths = {}
+var flightMarkers = []
+var flightMarkerAnimations = []
 
 function loadAirlines() {
 	$.ajax({
@@ -52,13 +54,28 @@ function buildBase(airportId, isHeadquarter) {
 	});
 }
 
+//remove and re-add all the links
 function updateLinksInfo() {
+	//remove all animation intervals
+	$.each(flightMarkerAnimations, function( key, value ) {
+		  window.clearInterval(value)
+	});
 	//remove all links from UI first
 	//remove from Map
 	$.each(flightPaths, function( key, value ) {
+		$.each(value, function(key2, line) {
+			line.setMap(null)
+			})
+		});
+	
+	$.each(flightMarkers, function( key, value ) {
 		  value.setMap(null)
 		});
-	flightPaths = []
+	
+	flightMarkerAnimations = []
+	flightPaths = {}
+	flightMarkers = []
+	
 	//remove from link list
 	$('#linkList').empty()
 
@@ -85,8 +102,72 @@ function updateLinksInfo() {
 	});
 }
 
+//refresh links without removal/addition
+function refreshLinks() {
+	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
+	
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(links) {
+	    	$.each(links, function( key, link ) {
+	    		refreshFlightPath(link)
+	  		});
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+
 
 function drawFlightPath(link) {
+	
+   var flightPath = new google.maps.Polyline({
+     path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}],
+     geodesic: true,
+     strokeColor: getLinkColor(link),
+     strokeOpacity: 0.6,
+     strokeWeight: 2
+   });
+   
+   var icon = "assets/images/icons/airplane.png"
+   
+   addFlightMarker(flightPath, link);
+   flightPath.setMap(map)
+   
+   var shadowPath = new google.maps.Polyline({
+	     path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}],
+	     geodesic: true,
+	     map: map,
+	     strokeColor: getLinkColor(link),
+	     strokeOpacity: 0.01,
+	     strokeWeight: 15,
+	     zIndex: 100
+	   });
+   shadowPath.addListener('click', function() {
+   		loadLinkDetails(link.id)
+   });
+   
+   
+   
+   flightPaths[link.id] = [flightPath, shadowPath]
+}
+
+function refreshFlightPath(link) {
+	if (flightPaths[link.id]) {
+		$.each(flightPaths[link.id], function(key, line) {
+			line.setOptions({ strokeColor : getLinkColor(link)})
+		})
+		//flightPaths[link.id].setOptions({ strokeColor : getLinkColor(link)})
+	}
+}
+
+function getLinkColor(link) {
    var profitFactor = link.profit / link.capacity
    var maxProfitFactor = 500
    var minProfitFactor = -500
@@ -112,18 +193,83 @@ function drawFlightPath(link) {
    if (redHexString.length == 1) { redHexString = "0" + redHexString }
    var greenHexString = parseInt(greenHex).toString(16)
    if (greenHexString.length == 1) { greenHexString = "0" + greenHexString }
-   var colorHex = "#" + redHexString + greenHexString + "20"
-   
-   var flightPath = new google.maps.Polyline({
-     path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}], 
-     geodesic: true,
-     strokeColor: colorHex,
-     strokeOpacity: 1.0,
-     strokeWeight: 2
-                           });
-   flightPath.setMap(map)
-   flightPaths.push(flightPath)
+   return colorHex = "#" + redHexString + greenHexString + "20"
 }
+
+
+//Use the DOM setInterval() function to change the offset of the symbol
+//at fixed intervals.
+function addFlightMarker(line, link) {
+	if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
+		var from = line.getPath().getAt(0)
+		var to = line.getPath().getAt(1)
+		var image = {
+	        url: "assets/images/markers/dot.png",
+	        origin: new google.maps.Point(0, 0),
+	        anchor: new google.maps.Point(6, 6),
+	    };
+	
+		var totalIntervals = 60 * 24 * 7 //min in a week
+		var frequency = link.frequency
+		var airplaneCount = link.assignedAirplanes.length
+		var frequencyByAirplane = {}
+		$.each(link.assignedAirplanes, function(key, airplane) {
+			frequencyByAirplane[key] = Math.floor(frequency / airplaneCount)
+		})
+		for (i = 0; i < frequency % airplaneCount; i++) { //assign the remainder
+			frequencyByAirplane[i] = frequencyByAirplane[i] + 1
+		}
+		 
+		var markersOfThisLink = []
+		$.each(frequencyByAirplane, function(key, airplane) {
+			var marker = new google.maps.Marker({
+			    position: from,
+			    icon : image, 
+			    totalDistance : link.distance,
+			    totalDuration : link.duration * 2, //make it X2 duration as we dont show return trip. so a single trip should animate double the duration
+			    elapsedDuration : 0,
+			    nextDepartureFrame : Math.floor(key * link.duration * 2 / airplaneCount),
+				departureInterval : Math.floor(totalIntervals / frequencyByAirplane[key]),
+			    isActive: false,
+			    clickable: false
+			});
+			
+			flightMarkers.push(marker)
+			markersOfThisLink.push(marker)
+		})
+		
+		var count = 0;
+		flightMarkerAnimations.push(window.setInterval(function() {
+			$.each(markersOfThisLink, function(key, marker) { 
+				if (count == marker.nextDepartureFrame) {
+					marker.isActive = true
+					marker.elapsedDuration = 0
+					marker.setPosition(from)
+					marker.setMap(map)
+				} else if (marker.isActive) {
+					marker.elapsedDuration += 1
+					
+					if (marker.elapsedDuration == marker.totalDuration) { //arrived
+						marker.setMap(null)
+						marker.isActive = false
+						marker.nextDepartureFrame = (marker.nextDepartureFrame + marker.departureInterval) % totalIntervals
+						console.log("next departure " + marker.nextDepartureFrame)
+					} else {
+						var newPosition = google.maps.geometry.spherical.interpolate(from, to, marker.elapsedDuration / marker.totalDuration)
+						marker.setPosition(newPosition)
+					}
+				}
+				if (count % (totalIntervals/10) == 0) {
+					console.log(count)
+				}
+			})
+			count = (count + 1) % totalIntervals;
+		}, 20));
+	}
+}
+
+
+
 
 function insertLinkToList(link, linkList) {
 	linkList.append($("<a href='javascript:void(0)' onclick='loadLinkDetails(" + link.id + ")'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
@@ -186,13 +332,24 @@ function loadLinkDetails(linkId) {
 	});
 }
 
-function editLink() {
-	$("#planLinkFromAirportName").text($("#linkFromAirport").text())
-	$("#planLinkToAirportName").text($("#linkToAirport").text())
-	$("#planLinkFromAirportId").val($("#linkFromAirportId").val())
-	$("#planLinkToAirportId").val($("#linkToAirportId").val())
-	setActiveDiv($('#planLinkDetails'))
-	planLink($("#linkFromAirportId").val(), $("#linkToAirportId").val())
+function editLink(linkId) {
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/links/" + linkId,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(link) {
+	    	$("#planLinkFromAirportName").text(link.fromAirportName)
+	    	$("#planLinkToAirportName").text(link.toAirportName)
+	    	$("#planLinkFromAirportId").val(link.fromAirportId)
+	    	$("#planLinkToAirportId").val(link.toAirportId)
+	    	planLink(link.fromAirportId, link.toAirportId)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 
@@ -202,7 +359,6 @@ function planFromAirport(fromAirportId, fromAirportName) {
 	if ($('#planLinkFromAirportId').val() && $('#planLinkToAirportId').val()) {
 		planLink($('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
 	}
-	setActiveDiv($('#planLinkDetails'))
 }
 
 function planToAirport(toAirportId, toAirportName) {
@@ -215,7 +371,6 @@ function planToAirport(toAirportId, toAirportName) {
 	if ($('#planLinkFromAirportId').val() && $('#planLinkToAirportId').val()) {
 		planLink($('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
 	}
-	setActiveDiv($('#planLinkDetails'))
 }
 
 
@@ -237,6 +392,7 @@ function planLink(fromAirport, toAirport) {
 		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 		    }
 		});
+		setActiveDiv($('#planLinkDetails'))
 	}
 }
 
@@ -288,14 +444,14 @@ function updateFrequencyBar(airplaneModelId) {
 	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
 	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
 	
-	if (maxFrequencyByAirplanes < maxFrequencyFromAirport && maxFrequencyByAirplanes < maxFrequencyToAirport) { //limited by airplanes
+	if (maxFrequencyByAirplanes <= maxFrequencyFromAirport && maxFrequencyByAirplanes <= maxFrequencyToAirport) { //limited by airplanes
 		if (maxFrequencyByAirplanes == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {
 			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"))
 		}
 		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by airplanes")
-	} else if (maxFrequencyFromAirport < maxFrequencyToAirport && maxFrequencyFromAirport < maxFrequencyByAirplanes) { //limited by from airport
+	} else if (maxFrequencyFromAirport <= maxFrequencyToAirport && maxFrequencyFromAirport <= maxFrequencyByAirplanes) { //limited by from airport
 		if (maxFrequencyFromAirport == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {

@@ -147,7 +147,7 @@ class LinkApplication extends Controller {
       //validate frequency by duration
       val maxFrequency = Computation.calculateMaxFrequency(incomingLink.duration)
       if (maxFrequency * incomingLink.getAssignedAirplanes().size < incomingLink.frequency) { //TODO log error!
-        println("max frequecny exceeded, max " + maxFrequency + " found " +  incomingLink.frequency)
+        println("max frequecny exceeded, max " + maxFrequency * incomingLink.getAssignedAirplanes().size + " found " +  incomingLink.frequency)
         return BadRequest("Cannot insert link - frequency exceeded limit")  
       }
       //TODO validate slot on airport ....probably rethink how to simplify all these calculation!
@@ -213,8 +213,14 @@ class LinkApplication extends Controller {
     Ok(Json.toJson(links))
   }
   
-  def getLinks(airlineId : Int, getProfit : Boolean) = Action {
-    val links = LinkSource.loadLinksByAirlineId(airlineId)
+  def getLinks(airlineId : Int, getProfit : Boolean, toAirportId : Int) = Action {
+     
+    val links = 
+      if (toAirportId == -1) {
+        LinkSource.loadLinksByAirlineId(airlineId)
+      } else {
+        LinkSource.loadLinksByCriteria(List(("airline", airlineId), ("to_airport", toAirportId)))
+      }
     if (!getProfit) {
       Ok(Json.toJson(links)).withHeaders(
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
@@ -323,7 +329,7 @@ class LinkApplication extends Controller {
                 val existingSlotsUsedByThisModel= if (assignedModel.isDefined && assignedModel.get.id == model.id) { existingLink.get.frequency } else { 0 } 
                 val maxFrequencyByModel : Int = Computation.calculateMaxFrequency(duration)
                 
-                planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, maxFrequencyByModel, assignedModel.isDefined && assignedModel.get.id == model.id, airplaneList.toList)) 
+                planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, maxFrequencyByModel, assignedModel.isDefined && assignedModel.get.id == model.id, airplaneList.toList))
             }
             
             var resultObject = Json.obj("distance" -> distance, 

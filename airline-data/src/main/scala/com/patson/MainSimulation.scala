@@ -144,12 +144,6 @@ object MainSimulation extends App {
     }
     
     AirportSource.updateAirlineAppeal(updatingAirports.toList);
-    
-    
-        
-    
-    
-    
   }
   
   def linkSimulation(cycle: Int) = {
