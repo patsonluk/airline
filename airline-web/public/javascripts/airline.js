@@ -253,14 +253,11 @@ function addFlightMarker(line, link) {
 						marker.setMap(null)
 						marker.isActive = false
 						marker.nextDepartureFrame = (marker.nextDepartureFrame + marker.departureInterval) % totalIntervals
-						console.log("next departure " + marker.nextDepartureFrame)
+						//console.log("next departure " + marker.nextDepartureFrame)
 					} else {
 						var newPosition = google.maps.geometry.spherical.interpolate(from, to, marker.elapsedDuration / marker.totalDuration)
 						marker.setPosition(newPosition)
 					}
-				}
-				if (count % (totalIntervals/10) == 0) {
-					console.log(count)
 				}
 			})
 			count = (count + 1) % totalIntervals;
@@ -553,6 +550,138 @@ function deleteLink(linkId) {
 	    }
 	});
 }
+
+
+function showVipRoutes() {
+	map.setZoom(2)
+	map.setCenter({lat: 20, lng: 150.644})
+   	
+	$.ajax({
+		type: 'GET',
+		url: "vip-routes",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(routes) {
+	    	var routePaths = []
+	    	$.each(routes, function(key1, route) { 
+	    		var paths = []
+	    		$.each(route, function(key2, link) { //create paths for each route
+	    			var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
+	    			var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
+	    			var vipPath = new google.maps.Polyline({
+	    				 geodesic: true,
+	    			     strokeColor: "yellow",
+	    			     strokeOpacity: 0.6,
+	    			     strokeWeight: 2,
+	    			     from : from,
+	    			     to : to,
+	    			     distance : google.maps.geometry.spherical.computeDistanceBetween(from, to) / 1000
+	    			});
+	    			paths.push(vipPath)
+	    		})
+	    		routePaths.push(paths)
+	    	})
+	    	
+	    	animateVipRoutes(routePaths, 0, 0, 0, null)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, currentDistance, vipMarker) {
+	var route = routePaths[currentRouteIndex]
+	var path = route[currentPathIndex]
+	if (currentDistance >= path.distance) {
+		currentPathIndex ++
+		if (currentPathIndex == route.length) { // all done with this route
+			animateArrival(vipMarker, true, 4) //hoooray! hop hop hop
+			setTimeout(function(removingRoute, done) {
+				$.each(removingRoute, function(key, path) {
+					path.setMap(null)
+				})
+				fadeOutMarker(vipMarker)
+				if (!done) {
+					animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, 0, null)
+				}
+			}, 4000, routePaths[currentRouteIndex], currentRouteIndex + 1 == routePaths.length)
+			
+			currentPathIndex = 0 //reset path index for next route
+			currentRouteIndex++
+		} else {
+			animateArrival(vipMarker, false, 4) //connnection meh
+			setTimeout(function() {
+				vipMarker.setAnimation(null)
+				animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, 0, vipMarker) 
+			}, 4000)
+		}
+	} else {
+		var from = path.from
+		var to = path.to
+		var newPosition = google.maps.geometry.spherical.interpolate(from, to, currentDistance / path.distance)
+		var newPath = path.getPath()
+		newPath.removeAt(1) //remove last to
+		newPath.push(newPosition) 
+		path.setPath(newPath)
+		
+		//add path and marker on first frame
+		if (currentDistance == 0) {
+			path.setMap(map)
+		}
+		if (vipMarker == null) {
+			var image = {
+	    	        url: "assets/images/icons/star-24.png",
+	    	        origin: new google.maps.Point(0, 0),
+	    	        anchor: new google.maps.Point(12, 12),
+	    	    };
+	    	vipMarker = new google.maps.Marker({
+	    		map : map,
+	    		icon : image, 
+			    clickable: false,
+			    zIndex: 1100
+			});
+		}
+		vipMarker.setPosition(newPosition)
+		setTimeout(function() { animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, currentDistance + 50, vipMarker) }, 20)
+	}
+}
+
+function animateArrival(vipMarker, bounce, influencePointCount) {
+	if (bounce) {
+		vipMarker.setAnimation(google.maps.Animation.BOUNCE)
+	}
+	
+	var iconDistance = 10
+	var anchorXShift = 8 + ((influencePointCount - 1) / 2) * iconDistance //icon center + biggest shift	
+	//drop some color wheels!
+	for (i = 0 ; i < influencePointCount; i++) {
+		setTimeout( function (index) {
+			var anchorX = anchorXShift - index * iconDistance
+			var image = {
+	    	        url: "assets/images/icons/color--plus.png",
+	    	        origin: new google.maps.Point(0, 0),
+					anchor: new google.maps.Point(anchorX, 30),
+	    	    }; 
+			colorMarker = new google.maps.Marker({
+	    		icon : image, 
+	    		position : vipMarker.getPosition(),
+			    clickable: false,
+			    map : map,
+			    opacity: 0,
+			    zIndex: 1000 + i,
+			})
+			fadeInMarker(colorMarker)
+			setTimeout( function(marker) {
+				fadeOutMarker(marker)
+			}, 3000, colorMarker)
+		}, (i + 1) * 200, i)
+	}
+}
+
+
+
 
 	
 //TEST METHODS

@@ -30,6 +30,7 @@ import controllers.AuthenticationObject.AuthenticatedAirline
 import play.api.mvc.Security.AuthenticatedRequest
 import controllers.AuthenticationObject.AuthenticatedAirline
 import controllers.AuthenticationObject.AuthenticatedAirline
+import com.patson.data.RouteHistorySource
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -101,6 +102,31 @@ class LinkApplication extends Controller {
       Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit))
     }
   }
+  
+  implicit object RouteWrites extends Writes[Route] {
+    def writes(route : Route): JsValue = { 
+      Json.toJson(route.links)
+    }
+  }
+  implicit object linkWithDirectionWrites extends Writes[LinkWithCost] {
+    def writes(linkWithDirection : LinkWithCost): JsValue = {
+      JsObject(List(
+        "linkId" -> JsNumber(linkWithDirection.link.id),
+        "fromAirportId" -> JsNumber(linkWithDirection.from.id),
+        "toAirportId" -> JsNumber(linkWithDirection.to.id),
+        "fromAirportCode" -> JsString(linkWithDirection.from.iata),
+        "toAirportCode" -> JsString(linkWithDirection.to.iata),
+        "fromAirportName" -> JsString(linkWithDirection.from.name),
+        "toAirportName" -> JsString(linkWithDirection.to.name),
+        "airlineId" -> JsNumber(linkWithDirection.link.airline.id),
+        "airlineName" -> JsString(linkWithDirection.link.airline.name),
+        "fromLatitude" -> JsNumber(linkWithDirection.from.latitude),
+        "fromLongitude" -> JsNumber(linkWithDirection.from.longitude),
+        "toLatitude" -> JsNumber(linkWithDirection.to.latitude),
+        "toLongitude" -> JsNumber(linkWithDirection.to.longitude)))
+    }
+  }
+  
   
   case class PlanLinkData(fromAirportId: Int, toAirportId: Int)
   val planLinkForm = Form(
@@ -341,13 +367,15 @@ class LinkApplication extends Controller {
               resultObject = resultObject + ("existingLink", Json.toJson(existingLink))
             }
             
-            Ok(resultObject).withHeaders(
-            ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-            )
+            Ok(resultObject)
           case None => BadRequest("unknown toAirport")
         }
         case None => BadRequest("unknown toAirport")
     }
+  }
+  
+  def getVipRoutes() = Action {
+    Ok(Json.toJson(RouteHistorySource.loadVipRoutes()))
   }
 
   

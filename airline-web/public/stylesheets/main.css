@@ -116,3 +116,19 @@ div.section {
 	margin: 10px;
 	padding: 5px;
 }
+
+div.googleMapButton {
+    box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px;
+    border-radius: 2px;
+    cursor: pointer;
+    background-color: rgb(255, 255, 255);
+    width: 28px;
+    height: 28px;
+    margin-right: 10px;
+}
+
+.alignHelper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}

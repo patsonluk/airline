@@ -31,7 +31,6 @@
   	<div id="floatBackButton" style="display: none;" class="button" onclick="setActiveDiv($('#map')); $(this).hide()">Back to World Map</div>
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div style="float: left;"><span id="currentAirline" class="label"></span> Balance: <span id="balance" class="label"></span></div>
-  		
   		<div style="float: right;">
   			<div style="display: hidden;" id="loginDiv">
 	  			<span class="label">User Name</span>
@@ -48,6 +47,7 @@
 		</div>
   	</div>
   	<div id="main" style="width: 100%" >
+		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div>
   	<!-- main canvas start -->
   		<div id="canvas" style="width: 80% ; float: left;" >
   			<div id="map" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
@@ -259,7 +259,7 @@
 		    			</div>
 		    		</div>
     				<input type="hidden" id="actionAirplaneId"></input>
-	    			<div class="button" onclick="sellAirplane($('#airlineOption').val(), $('#actionAirplaneId').val())">Sell Aircraft</div>
+	    			<div class="button" onclick="sellAirplane($('#actionAirplaneId').val())">Sell Aircraft</div>
 	    		</div>
 	    	</div>
 	    </div>

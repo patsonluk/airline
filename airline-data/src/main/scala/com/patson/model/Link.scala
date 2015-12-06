@@ -48,20 +48,16 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : Int, dis
   }
   
    //adjust by quality
-  
-  //shortest haul at 30 is ok. long haul 7000+ requires 70 quality to be neutral
-  private val LONG_HAUL_CUT_OFF = 7000
-  private val SHORT_HAUL_CUT_OFF = 500
-  private val LONG_HAUL_NEUTRAL_QUALITY = 70
-  private val SHORT_HAUL_NEUTRAL_QUALITY = 30
+  import FlightType._
   private val neutralQuality = 
-    if (distance > LONG_HAUL_CUT_OFF) {
-      LONG_HAUL_NEUTRAL_QUALITY 
-    } else if (distance < SHORT_HAUL_CUT_OFF) {
-      SHORT_HAUL_NEUTRAL_QUALITY
-    } else {
-      (SHORT_HAUL_NEUTRAL_QUALITY + (distance - SHORT_HAUL_CUT_OFF).toDouble / (LONG_HAUL_CUT_OFF - SHORT_HAUL_CUT_OFF) * (LONG_HAUL_NEUTRAL_QUALITY - SHORT_HAUL_NEUTRAL_QUALITY)).toInt
+    Computation.getFlightType(from, to) match {
+      case SHORT_HAUL_DOMESTIC => 30
+      case SHORT_HAUL_INTERNATIONAL => 40
+      case LONG_HAUL_DOMESTIC => 50
+      case LONG_HAUL_INTERNATIONAL => 60
+      case EXTRA_LONG_HAUL_INTERNATIONAL => 70
     }
+    
   private val MAX_QUALITY = 100
   private val MAX_QUALITY_PRICE_MULTIPLIER = 0.5 // At Max quality, perceived price can cut by half
   private val MIN_QUALITY_PRICE_MULITPLIER = 0.5 // At Min quality, perceived price can increase by 0.5

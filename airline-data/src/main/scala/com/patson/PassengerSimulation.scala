@@ -73,7 +73,7 @@ object PassengerSimulation extends App {
         case (_, soldSeats) => soldSeats 
       }
       
-    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + Pricing.computeStandardPrice(link.distance) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
+    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + Pricing.computeStandardPrice(link) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
     println("seats sold: " + soldLinks.foldLeft(0) {
       case (holder, (link, soldSeats)) => holder + soldSeats
     })

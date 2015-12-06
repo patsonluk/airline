@@ -44,15 +44,14 @@ function addAirplane(modelId, quantity) {
 	});
 }
 
-function sellAirplane(airlineId, airplaneId) {
+function sellAirplane(airplaneId) {
 	$.ajax({
 		type: 'DELETE',
-		data: JSON.stringify({}),
-		url: "airlines/" + airlineId + "/airplanes/" + airplaneId,
+		url: "airlines/" + activeAirline.id + "/airplanes/" + airplaneId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	updateAllPanels(airlineId)
+	    	updateAllPanels(activeAirline.id)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

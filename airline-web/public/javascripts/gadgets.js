@@ -71,3 +71,31 @@ function shimmeringDiv(div) {
 	})
 	setTimeout(function() { shimmeringDiv(div) }, 5000)
 }
+
+function fadeOutMarker(marker) {
+	marker.opacities = [0.8, 0.6, 0.4, 0.2, 0]
+	fadeOutMarkerRecursive(marker)
+}
+function fadeOutMarkerRecursive(marker) {
+	if (marker.opacities.length > 0) {
+    	marker.setOpacity(marker.opacities[0])
+    	marker.opacities.shift()
+    	var icon = marker.getIcon()
+    	icon.anchor = new google.maps.Point(icon.anchor.x, icon.anchor.y + 2),
+    	setTimeout(function() { fadeOutMarkerRecursive(marker) }, 50)
+	} else {
+		marker.setMap(null)
+	}
+}
+
+function fadeInMarker(marker) {
+	marker.opacities = [0.2, 0.4, 0.6, 0.8, 1.0]
+	fadeInMarkerRecursive(marker)
+}
+function fadeInMarkerRecursive(marker) {
+	if (marker.opacities.length > 0) {
+		marker.setOpacity(marker.opacities[0])
+    	marker.opacities.shift()
+    	setTimeout(function() { fadeInMarkerRecursive(marker) }, 20)
+	}
+}

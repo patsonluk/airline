@@ -39,4 +39,27 @@ object Computation {
       case _ => 0
     }
   }
+  
+  def getFlightType(fromAirport : Airport, toAirport : Airport) = { //need quick calculation
+    var longitudeDelta = Math.abs(fromAirport.longitude - toAirport.longitude)
+    if (longitudeDelta >= 180) { longitudeDelta = 360 - longitudeDelta } //wraps around
+    var latitudeDelta = Math.abs(fromAirport.latitude - toAirport.latitude)
+    
+    import FlightType._
+    if (fromAirport.countryCode == toAirport.countryCode) { //domestic
+      if (longitudeDelta <= 20 && latitudeDelta <= 15) {
+        SHORT_HAUL_DOMESTIC
+      } else {
+        LONG_HAUL_DOMESTIC
+      }
+    } else { //international
+      if (longitudeDelta <= 20 && latitudeDelta <= 20) {
+        SHORT_HAUL_INTERNATIONAL
+      } else if (longitudeDelta <= 50 && latitudeDelta <= 30) {
+        LONG_HAUL_INTERNATIONAL
+      } else {
+        EXTRA_LONG_HAUL_INTERNATIONAL
+      }
+    }
+  }
 }

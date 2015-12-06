@@ -1,36 +1,47 @@
 package com.patson.model
+import FlightType._
 
 /**
  * Cost base model
  */
 object Pricing {
-  //200 km = 300
-  //1000 km = 300 + 200 = 500 
-  //2000 km = 500 + 200 = 700
-  //10000 km = 700 + 800 = 1500
-  val modifierBrackets = List((200, 1.5),(800, 0.25),(1000, 0.2),(Int.MaxValue, 0.1))
+  val INTERNATIONAL_PRICE_MULTIPLIER = 1.2
   
+  //200 km = 100
+  //1000 km = 100 + 100 = 200  (800 * 0.125) 
+  //2000 km = 200 + 100 = 300  (1000 * 0.1)
+  //10000 km = 300 + 400 = 700 (8000 * 0.05)
+  val modifierBrackets = List((200, 0.5),(800, 0.125),(1000, 0.1),(Int.MaxValue, 0.05))
   
-  def computeStandardPrice(distance : Int) : Int = {
+  def computeStandardPrice(link : Link) : Int = {
+    computeStandardPrice(link.distance, Computation.getFlightType(link.from, link.to))
+  }
+  def computeStandardPrice(distance : Int, flightType : FlightType) : Int = {
     var remainDistance = distance
     var price = 0.0
-    for (priceBracket <- modifierBrackets) {
+    for (priceBracket <- modifierBrackets if(remainDistance > 0)) {
       if (priceBracket._1 >= remainDistance) {
-        return (price + remainDistance * priceBracket._2).toInt
+        price += remainDistance * priceBracket._2
       } else {
         price += priceBracket._1 * priceBracket._2
       }
+      remainDistance -= priceBracket._1
     }
-    price.toInt
+    (flightType match {
+      case SHORT_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL | EXTRA_LONG_HAUL_INTERNATIONAL => (price * INTERNATIONAL_PRICE_MULTIPLIER)
+      case _ => price
+    }).toInt
+    
   }
   
+  def standardCostAdjustmentRatioFromPrice(link : Link, price: Int): Double = {
+    standardCostAdjustmentRatioFromPrice(link.distance, Computation.getFlightType(link.from, link.to), price)
+  }
   // if price is zero, adjustmentRatio = 0 
   // if price is at standard price, adjustmentRatio = 1
   // if price is at double the standard price, adjustmentRatio = 2 . Fair enough!
-  def standardCostAdjustmentRatioFromPrice(distance: Int, price: Int): Double = {
-    val standardPrice = computeStandardPrice(distance)
+  def standardCostAdjustmentRatioFromPrice(distance: Int, flightType : FlightType, price: Int): Double = {
+    val standardPrice = computeStandardPrice(distance, flightType)
     ((price - standardPrice).toDouble / standardPrice) + 1
   }
-  
- 
 }

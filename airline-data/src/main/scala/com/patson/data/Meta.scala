@@ -67,8 +67,17 @@ object Meta {
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CONSUMPTION_TABLE)
 //     statement.execute()
 //     statement.close()
+//     
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_STATISTICS_TABLE)
+//     statement.execute()
+//     statement.close()
+          
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_TABLE)
+     statement.execute()
+     statement.close()
      
-     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_STATISTICS_TABLE)
+          
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_ENTRY_TABLE)
      statement.execute()
      statement.close()
 //     
@@ -223,40 +232,49 @@ object Meta {
 //     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_2 +  " ON " + LINK_CONSUMPTION_TABLE + "(airline)")
 //     statement.execute()
 //     statement.close()
-     
-     //from_airport, to_airport, is_departure, is_destination, passenger_count, cycle
-     statement = connection.prepareStatement("CREATE TABLE " + LINK_STATISTICS_TABLE + "(" +
-                                             "from_airport INTEGER, " +
-	                                           "to_airport INTEGER, " +
-                                             "is_departure INTEGER, " +
-                                             "is_destination INTEGER, " +
-                                             "passenger_count INTEGER, " +
-                                             "airline INTEGER, " +
-                                             "cycle INTEGER, " +
-                                             "PRIMARY KEY (from_airport, to_airport, is_departure, is_destination, cycle))")
-     statement.execute()
-     statement.close()
-                                             
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_1 +  " ON " + LINK_STATISTICS_TABLE + "(from_airport)")
-     statement.execute()
-     statement.close()
-     
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_2 +  " ON " + LINK_STATISTICS_TABLE + "(to_airport)")
-     statement.execute()
-     statement.close()
-     
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_3 +  " ON " + LINK_STATISTICS_TABLE + "(airline)")
-     statement.execute()
-     statement.close()
-     
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_4 +  " ON " + LINK_STATISTICS_TABLE + "(cycle)")
-     statement.execute()
-     statement.close()
-                                             
-                                             
-     
+//     
+//     //from_airport, to_airport, is_departure, is_destination, passenger_count, cycle
+//     statement = connection.prepareStatement("CREATE TABLE " + LINK_STATISTICS_TABLE + "(" +
+//                                             "from_airport INTEGER, " +
+//	                                           "to_airport INTEGER, " +
+//                                             "is_departure INTEGER, " +
+//                                             "is_destination INTEGER, " +
+//                                             "passenger_count INTEGER, " +
+//                                             "airline INTEGER, " +
+//                                             "cycle INTEGER, " +
+//                                             "PRIMARY KEY (from_airport, to_airport, is_departure, is_destination, cycle))")
 //     statement.execute()
 //     statement.close()
+//                                             
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_1 +  " ON " + LINK_STATISTICS_TABLE + "(from_airport)")
+//     statement.execute()
+//     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_2 +  " ON " + LINK_STATISTICS_TABLE + "(to_airport)")
+//     statement.execute()
+//     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_3 +  " ON " + LINK_STATISTICS_TABLE + "(airline)")
+//     statement.execute()
+//     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_4 +  " ON " + LINK_STATISTICS_TABLE + "(cycle)")
+//     statement.execute()
+//     statement.close()
+     
+     statement = connection.prepareStatement("CREATE TABLE " + VIP_ROUTE_TABLE + "(" +
+                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                             "cycle INTEGER)")
+     statement.execute()
+     statement.close()
+     
+     statement = connection.prepareStatement("CREATE TABLE " + VIP_ROUTE_ENTRY_TABLE + "(" + 
+                                             "route INTEGER REFERENCES " + VIP_ROUTE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+                                             "from_airport INTEGER ," +
+                                             "to_airport INTEGER ," +
+                                             "airline INTEGER)")
+     statement.execute()
+     statement.close()
 //     
 //     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_1 +  " ON " + LINK_CONSUMPTION_TABLE + "(link)")
 //     statement.execute()
@@ -265,10 +283,7 @@ object Meta {
 //     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_2 +  " ON " + LINK_CONSUMPTION_TABLE + "(airline)")
 //     statement.execute()
 //     statement.close()
-
-     
-     
-     
+//     
 //     statement = connection.prepareStatement("CREATE TABLE " + LINK_ASSIGNMENT_TABLE + "(" +
 //                                             //"id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 //                                             "link INTEGER REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +

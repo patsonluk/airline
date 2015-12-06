@@ -40,6 +40,7 @@ POST	 /airlines/:airlineId/plan-link	  controllers.LinkApplication.planLink(airl
 PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
 GET		 /links							  controllers.LinkApplication.getAllLinks
 DELETE   /links							  controllers.LinkApplication.deleteAllLinks
+GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels	
 

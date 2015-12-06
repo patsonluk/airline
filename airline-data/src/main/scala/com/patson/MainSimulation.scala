@@ -39,6 +39,8 @@ object MainSimulation extends App {
   
   val MAX_LOYALTY_ADJUSTMENT = 0.5
   
+  private[this] val VIP_COUNT = 5 
+  
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 
 //  import actorSystem.dispatcher
@@ -162,6 +164,13 @@ object MainSimulation extends App {
     LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
     
+    println("Generating VIP")
+    val vipRoutes = generateVipRoutes(consumptionResult)
+    RouteHistorySource.deleteVipRouteBeforeCycle(cycle)
+    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
+    vipRoutes.foreach(println)
+    
+    
     println("Calculating profits by links")
     val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
       (link, foldList) =>
@@ -191,8 +200,6 @@ object MainSimulation extends App {
     }
     
     //compute profit
-    //val airlineProfit = Map[Airline, Long]()
-    
     val allAirlines = AirlineSource.loadAllAirlines(true)
     allAirlines.foreach { airline =>
         val profit = linkConsumptionDetailsByAirline.get(airline.id) match {
@@ -229,7 +236,7 @@ object MainSimulation extends App {
         if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {
           loyaltyAdjustment = MAX_LOYALTY_ADJUSTMENT
         }
-        val existingLoyalty = airport.getAirlineLoyalty(airline.id) 
+        val existingLoyalty = airport.getAirlineLoyalty(airline.id)
         if (existingLoyalty < averageQuality) {
            airport.setAirlineLoyalty(airline.id, existingLoyalty + loyaltyAdjustment) 
         } else {
@@ -283,6 +290,17 @@ object MainSimulation extends App {
         LinkStatistics(linkStatisticsKey, passenger, cycle)
     }.toList
     
+  }
+  
+  def generateVipRoutes(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[Route] = {
+    //simply take the first VIP_COUNT records for now
+    (if (consumptionResult.length < VIP_COUNT) {
+      consumptionResult
+    } else {
+      consumptionResult.take(VIP_COUNT)
+    }).map{ 
+        case (_, _, _, route) => route
+      }
   }
 }
 
