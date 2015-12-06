@@ -88,20 +88,14 @@ object MainSimulation extends App {
           var newAwareness : Double = airport.getAirlineAwareness(base.airline.id)
           var newLoyalty : Double = airport.getAirlineLoyalty(base.airline.id)
           if (base.headquarter) {
-             newAwareness += AWARENESS_INCREMENT_WITH_HQ
-             if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
-               newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_HQ
-               if (newLoyalty > LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
-                 newLoyalty = LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ
-               }
-             }
+            newAwareness += AWARENESS_INCREMENT_WITH_HQ
+            if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
+              newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_HQ
+            }
           } else {
              newAwareness += AWARENESS_INCREMENT_WITH_BASE
              if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
                newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_BASE
-               if (newLoyalty > LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
-                 newLoyalty = LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE
-               }
              }
           }
           if (newAwareness > AirlineAppeal.MAX_AWARENESS) {
@@ -168,26 +162,11 @@ object MainSimulation extends App {
     val vipRoutes = generateVipRoutes(consumptionResult)
     RouteHistorySource.deleteVipRouteBeforeCycle(cycle)
     RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
-    vipRoutes.foreach(println)
-    
     
     println("Calculating profits by links")
     val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
       (link, foldList) =>
-        val soldSeats = link.capacity - link.availableSeats
-        val totalFuelBurn = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.fuelBurn) //fuel burn actually similar to crew cost
-        val fuelCost = (
-          if (link.duration <= 60) {
-            totalFuelBurn * 10 * link.duration * FUEL_UNIT_COST * link.frequency
-          } else {
-            (totalFuelBurn * 10 * 60 + totalFuelBurn * (link.duration - 60)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then crusing at 1/10 the cost
-          }).toInt
-        val fixedCost = 1000
-        val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
-        val revenue = soldSeats * link.price
-        val profit = revenue - fuelCost - fixedCost - crewCost
-        val consumption = LinkConsumptionDetails(link.id, link.price, link.capacity, soldSeats, fuelCost, crewCost, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
-        consumption :: foldList
+        computeLinkConsumptionDetail(link, cycle) :: foldList
     }
     
     LinkSource.deleteLinkConsumptionsByCycle(10)
@@ -218,16 +197,18 @@ object MainSimulation extends App {
     
     //update the loyalty on airports based on link consumption
     println("start updating loyalty")
-    val airportSoldLinks = Map[(Airport, Airline), Set[Link]]()
+    val airportSoldLinks = Map[(Int, Int), Set[Link]]() //Map[(airportId, airlineId), links] //cannot use Airport instance directly as they are not the same instance 
     
     links.filter { link => link.capacity > link.availableSeats }.foreach { link =>
-      airportSoldLinks.getOrElseUpdate((link.to, link.airline), Set[Link]()).add(link) 
-      airportSoldLinks.getOrElseUpdate((link.from, link.airline), Set[Link]()).add(link)
+      airportSoldLinks.getOrElseUpdate((link.to.id, link.airline.id), Set[Link]()).add(link) 
+      airportSoldLinks.getOrElseUpdate((link.from.id, link.airline.id), Set[Link]()).add(link)
     }
     
-    val updatingAirports = Set[Airport]()
+    val updatingAirports = Map[Int, Airport]()
     airportSoldLinks.foreach {
-      case ((airport, airline), links) =>
+      case ((airportId, airlineId), links) =>
+        val airport = updatingAirports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, true).get)
+          
         val totalTransportedPassengers = links.foldLeft(0) { (foldInt, link) => foldInt + (link.capacity - link.availableSeats) } 
         val totalQualityProduct = links.foldLeft(0L) { (foldLong, link) => foldLong + (link.capacity - link.availableSeats) * link.computedQuality }
         val averageQuality = totalQualityProduct.toDouble / totalTransportedPassengers
@@ -236,17 +217,33 @@ object MainSimulation extends App {
         if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {
           loyaltyAdjustment = MAX_LOYALTY_ADJUSTMENT
         }
-        val existingLoyalty = airport.getAirlineLoyalty(airline.id)
+        val existingLoyalty = airport.getAirlineLoyalty(airlineId)
         if (existingLoyalty < averageQuality) {
-           airport.setAirlineLoyalty(airline.id, existingLoyalty + loyaltyAdjustment) 
+           airport.setAirlineLoyalty(airlineId, existingLoyalty + loyaltyAdjustment) 
         } else {
-           airport.setAirlineLoyalty(airline.id, existingLoyalty - loyaltyAdjustment)
+           airport.setAirlineLoyalty(airlineId, existingLoyalty - loyaltyAdjustment)
         }
-        updatingAirports.add(airport)
-        println("loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airline.id))
+        println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
     }
-    AirportSource.updateAirlineAppeal(updatingAirports.toList)
+    AirportSource.updateAirlineAppeal(updatingAirports.values.toList)
     
+  }
+  
+  def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
+    val soldSeats = link.capacity - link.availableSeats
+    val totalFuelBurn = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.fuelBurn) //fuel burn actually similar to crew cost
+    val fuelCost = (
+      if (link.duration <= 60) {
+        totalFuelBurn * 10 * link.duration * FUEL_UNIT_COST * link.frequency
+      } else {
+        (totalFuelBurn * 10 * 60 + totalFuelBurn * (link.duration - 60)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/10 the cost
+      }).toInt
+    val fixedCost = 1000
+    val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
+    val revenue = soldSeats * link.price
+    val profit = revenue - fuelCost - fixedCost - crewCost
+
+    LinkConsumptionDetails(link.id, link.price, link.capacity, soldSeats, fuelCost, crewCost, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)  
   }
   
   class MainSimulationActor extends Actor {

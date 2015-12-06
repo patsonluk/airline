@@ -148,7 +148,6 @@ object AirportSource {
         case(airlineId, airlineAppeal) =>
           if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
             val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
-            //println( airport.id + "  " + airline.id)
             insertStatement.setInt(1, airport.id)
             insertStatement.setInt(2, airlineId)
             insertStatement.setDouble(3, airlineAppeal.loyalty)
