@@ -5,13 +5,13 @@ import FlightType._
  * Cost base model
  */
 object Pricing {
-  val INTERNATIONAL_PRICE_MULTIPLIER = 1.2
+  val INTERNATIONAL_PRICE_MULTIPLIER = 1.25
   
-  //200 km = 100
-  //1000 km = 100 + 100 = 200  (800 * 0.125) 
-  //2000 km = 200 + 100 = 300  (1000 * 0.1)
-  //10000 km = 300 + 400 = 700 (8000 * 0.05)
-  val modifierBrackets = List((200, 0.5),(800, 0.125),(1000, 0.1),(Int.MaxValue, 0.05))
+  //200 km = 150
+  //1000 km = 150 + 100 = 250  (800 * 0.125) 
+  //2000 km = 250 + 100 = 350  (1000 * 0.1)
+  //10000 km = 350 + 400 = 750 (8000 * 0.05)
+  val modifierBrackets = List((200, 0.75),(800, 0.125),(1000, 0.1),(Int.MaxValue, 0.05))
   
   def computeStandardPrice(link : Link) : Int = {
     computeStandardPrice(link.distance, Computation.getFlightType(link.from, link.to))
@@ -28,7 +28,7 @@ object Pricing {
       remainDistance -= priceBracket._1
     }
     (flightType match {
-      case SHORT_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL | EXTRA_LONG_HAUL_INTERNATIONAL => (price * INTERNATIONAL_PRICE_MULTIPLIER)
+      case SHORT_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL | ULTRA_LONG_HAUL_INTERNATIONAL => (price * INTERNATIONAL_PRICE_MULTIPLIER)
       case _ => price
     }).toInt
     

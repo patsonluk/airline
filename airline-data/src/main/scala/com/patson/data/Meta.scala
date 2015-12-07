@@ -64,22 +64,22 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CONSUMPTION_TABLE)
-//     statement.execute()
-//     statement.close()
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CONSUMPTION_TABLE)
+     statement.execute()
+     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_STATISTICS_TABLE)
 //     statement.execute()
 //     statement.close()
-          
-     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_TABLE)
-     statement.execute()
-     statement.close()
-     
-          
-     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_ENTRY_TABLE)
-     statement.execute()
-     statement.close()
+//          
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_TABLE)
+//     statement.execute()
+//     statement.close()
+//     
+//          
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_ENTRY_TABLE)
+//     statement.execute()
+//     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_ASSIGNMENT_TABLE)
 //     statement.execute()
@@ -117,7 +117,7 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-//     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTOINCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256), airport_size INTEGER, power LONG, population LONG, slots LONG, available_slots LONG)")
+//     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTOINCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256), airport_size INTEGER, power LONG, population LONG, slots LONG)")
 //     statement.execute()
 //     statement.close()
 //     
@@ -205,25 +205,26 @@ object Meta {
 //     
 //     
 //     
-//     statement = connection.prepareStatement("CREATE TABLE " + LINK_CONSUMPTION_TABLE + "(" +
-//                                             "link INTEGER, " +
-//	                                           "price INTEGER, " +
-//                                             "capacity INTEGER, " +
-//                                             "sold_seats INTEGER, " +
-//                                             "fuel_cost INTEGER, " +
-//                                             "crew_cost INTEGER, " +
-//                                             "fixed_cost INTEGER, " +
-//                                             "revenue INTEGER, " +
-//                                             "profit INTEGER, " +
-//                                             "from_airport INTEGER, " +
-//                                             "to_airport INTEGER, " +
-//                                             "airline INTEGER, " +
-//                                             "distance INTEGER, " +
-//                                             "cycle INTEGER, " +
-//                                             "PRIMARY KEY (cycle, link))")
-//     
-//     statement.execute()
-//     statement.close()
+     statement = connection.prepareStatement("CREATE TABLE " + LINK_CONSUMPTION_TABLE + "(" +
+                                             "link INTEGER, " +
+	                                           "price INTEGER, " +
+                                             "capacity INTEGER, " +
+                                             "sold_seats INTEGER, " +
+                                             "fuel_cost INTEGER, " +
+                                             "crew_cost INTEGER, " +
+                                             "airport_fees INTEGER, " +
+                                             "fixed_cost INTEGER, " +
+                                             "revenue INTEGER, " +
+                                             "profit INTEGER, " +
+                                             "from_airport INTEGER, " +
+                                             "to_airport INTEGER, " +
+                                             "airline INTEGER, " +
+                                             "distance INTEGER, " +
+                                             "cycle INTEGER, " +
+                                             "PRIMARY KEY (cycle, link))")
+     
+     statement.execute()
+     statement.close()
 //     
 //     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_1 +  " ON " + LINK_CONSUMPTION_TABLE + "(link)")
 //     statement.execute()
@@ -261,20 +262,20 @@ object Meta {
 //     statement = connection.prepareStatement("CREATE INDEX " + LINK_STATISTICS_INDEX_4 +  " ON " + LINK_STATISTICS_TABLE + "(cycle)")
 //     statement.execute()
 //     statement.close()
-     
-     statement = connection.prepareStatement("CREATE TABLE " + VIP_ROUTE_TABLE + "(" +
-                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                             "cycle INTEGER)")
-     statement.execute()
-     statement.close()
-     
-     statement = connection.prepareStatement("CREATE TABLE " + VIP_ROUTE_ENTRY_TABLE + "(" + 
-                                             "route INTEGER REFERENCES " + VIP_ROUTE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
-                                             "from_airport INTEGER ," +
-                                             "to_airport INTEGER ," +
-                                             "airline INTEGER)")
-     statement.execute()
-     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE TABLE " + VIP_ROUTE_TABLE + "(" +
+//                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+//                                             "cycle INTEGER)")
+//     statement.execute()
+//     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE TABLE " + VIP_ROUTE_ENTRY_TABLE + "(" + 
+//                                             "route INTEGER REFERENCES " + VIP_ROUTE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+//                                             "from_airport INTEGER ," +
+//                                             "to_airport INTEGER ," +
+//                                             "airline INTEGER)")
+//     statement.execute()
+//     statement.close()
 //     
 //     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_1 +  " ON " + LINK_CONSUMPTION_TABLE + "(link)")
 //     statement.execute()

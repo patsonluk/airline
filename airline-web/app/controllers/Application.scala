@@ -45,12 +45,12 @@ class Application extends Controller {
       "countryCode" -> JsString(airport.countryCode),
       "population" -> JsNumber(airport.population),
       "slots" -> JsNumber(airport.slots),
-      "availableSlots" -> JsNumber(airport.availableSlots),
       "radius" -> JsNumber(Computation.calculateAirportRadius(airport)),
       "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
       
       
       if (airport.isSlotAssignmentsInitialized) {
+        airportObject = airportObject + ("availableSlots" -> JsNumber(airport.availableSlots))
         airportObject = airportObject + ("slotAssignmentList" -> JsArray(airport.getAirlineSlotAssignments().toList.map {  
           case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
           }

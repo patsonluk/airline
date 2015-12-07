@@ -1,6 +1,9 @@
 package com.patson.model
 
-case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, var size : Int, var power : Long, var population : Long, var slots : Int, var initAvailableSlots : Int, var id : Int = 0) extends IdObject {
+import com.patson.model.airplane.Model
+import com.patson.model.airplane.Model.Type
+
+case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
   val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
   private[this] val airlineAppeals = scala.collection.mutable.Map[Int, AirlineAppeal]()
   private[this] var airlineAppealsLoaded = false
@@ -11,7 +14,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     if (slotAssignmentsLoaded) {
       slots - slotAssignments.foldLeft(0)(_ + _._2)
     } else {
-      initAvailableSlots
+      throw new IllegalStateException("airline slot assignment is not properly initialized! If loaded from DB, please use fullload")
     }
   }
   
@@ -127,7 +130,31 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     slotAssignmentsLoaded = true
   }
   
+  //fixed fee for all airplane type
+  val slotFee : Int = { 
+    size match {
+      case 1 => 50 //small
+      case 2 => 50 //medium
+      case 3 => 50 //large
+      case 4 => 300  //international class
+      case 5 => 500
+      case 6 => 700 
+      case _ => 1000 //mega airports - not suitable for tiny jets
+    }
+  }
   
+  def landingFee(airplaneModel : Model) : Int = {
+    val perSeat = 
+      if (size <= 3) {
+        2
+      } else if (size == 4) {
+        4
+      } else {
+        8
+      }
+    
+    airplaneModel.capacity * perSeat
+  }
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)

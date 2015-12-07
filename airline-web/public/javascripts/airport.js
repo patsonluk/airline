@@ -87,7 +87,7 @@ function loadAirportStatistics(airport) {
 
 
 function getAirports() {
-	$.getJSON( "airports?count=600", function( data ) {
+	$.getJSON( "airports?count=1500", function( data ) {
 		  addMarkers(data)
 	});
 }
@@ -114,7 +114,6 @@ function addMarkers(airports) {
 		  		airportPopulation: airportInfo.population,
 		  		airportIncomeLevel: airportInfo.incomeLevel,
 		  		airportCountryCode: airportInfo.countryCode,
-		  		airportSlots : airportInfo.slots,
 		  		airportAvailableSlots: airportInfo.availableSlots,
 		  		icon: airportMarkerIcon
 			  });
@@ -130,8 +129,7 @@ function addMarkers(airports) {
 			  $("#airportPopupPopulation").text(this.airportPopulation)
 			  $("#airportPopupIncomeLevel").text(this.airportIncomeLevel)
 			  $("#airportPopupCountryCode").text(this.airportCountryCode)
-			  $("#airportPopupSlots").text(this.airportAvailableSlots + " (" + this.airportSlots + ")")
-			  updatePopupAppeal(this.airportId)
+			  updatePopupDetails(this.airportId)
 			  updatePopupSlots(this.airportId)
 			  $("#airportPopupId").val(this.airportId)
 			  infoWindow.setContent($("#airportPopup").html())
@@ -256,10 +254,12 @@ function updateBaseInfo(airportId) {
 	return baseAirport
 }
 
-function updatePopupAppeal(airportId) {
+function updatePopupDetails(airportId) {
 	//clear the old ones
 	$("#airportPopupAwareness").text()
 	$("#airportPopupLoyalty").text()
+	$("#airportPopupSlots").text(this.airportAvailableSlots + " (" + this.airportSlots + ")")
+			  
 	var airlineId = activeAirline.id
 	$.ajax({
 		type: 'GET',
@@ -280,16 +280,7 @@ function updatePopupAppeal(airportId) {
 	    		$("#airportPopupLoyalty").text("0")
 	    	}
 	    	
-//	    	hasMatch = false
-//	    	$.each(airport.slotAssignmentList, function( key, slotInfo ) {
-//	    		if (slotInfo.airlineId == airlineId) {
-//	    			$("#airportPopupAssignedSlots").text(slotInfo.slotAssignment)
-//	    			hasMatch = true
-//	    		}
-//	  		});
-//	    	if (!hasMatch) {
-//	    		$("#airportPopupAssignedSlots").text("0")
-//	    	}
+	    	$("#airportPopupSlots").text(airport.availableSlots + " (" + airport.slots + ")")
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

@@ -158,7 +158,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
       ratio.shouldBe( >= (2.0)) //significantly more people should pick airline 1
-      ratio.shouldBe( < (10.0)) //yet some will still pick airline 2
+      ratio.shouldBe( < (20.0)) //yet some will still pick airline 2
     }
     "generate no overlapping cost if everything is the same, but price is at huge difference".in {
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())

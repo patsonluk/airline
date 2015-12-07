@@ -4,19 +4,37 @@ import com.patson.model.airplane._
 import com.patson.data.CycleSource
 
 object Computation {
+  //distance vs max speed
+  val speedLimits = List((300, 350), (400, 500), (400, 700))  
   def calculateDuration(airplaneModel: Model, distance : Int) = {
-    //assuming achieving max speed at 500km, otherwise half speed
-    if (distance <= 500) {
-      distance * 60 / (airplaneModel.speed / 2) 
-    } else {
-      (distance - 500) * 60 / airplaneModel.speed + 500 * 60 / (airplaneModel.speed / 2)  
+    var remainDistance = distance
+    var duration = 0;
+    for ((distanceBucket, maxSpeed) <- speedLimits if(remainDistance > 0)) {
+      val speed = Math.min(maxSpeed, airplaneModel.speed)
+      if (distanceBucket >= remainDistance) {
+        duration += remainDistance * 60 / speed
+      } else {
+        duration += distanceBucket * 60 / speed
+      }
+      remainDistance -= distanceBucket
     }
+    
+    if (remainDistance > 0) {
+      duration += remainDistance * 60 / airplaneModel.speed
+    }
+    duration
   }
 
-  def calculateMaxFrequency(duration : Int) = {
-    val roundTripTime = duration * 2 + 240 //240 constant turn-around for now - penalizing so long range flight is more profitable //TODO better calculation later
-    val availableFlightTimePerWeek = 5 * 24 * 60 //assume per week only 5 days are "flyable"
-    availableFlightTimePerWeek / roundTripTime
+  def calculateMaxFrequency(airplaneModel: Model, distance : Int) = {
+    if (airplaneModel.range < distance) {
+      0
+    } else {
+      val duration = calculateDuration(airplaneModel, distance)
+      val roundTripTime = (duration + airplaneModel.turnoverTime) * 2
+      val availableFlightTimePerWeek = 4 * 24 * 60 //assume per week only 4 days are "flyable"
+      //println(airplaneModel + " distance " + distance + " freq: " + availableFlightTimePerWeek / roundTripTime + " times")
+      availableFlightTimePerWeek / roundTripTime
+    }
   }
   
   def calculateAge(fromCycle : Int) = {
@@ -58,7 +76,7 @@ object Computation {
       } else if (longitudeDelta <= 50 && latitudeDelta <= 30) {
         LONG_HAUL_INTERNATIONAL
       } else {
-        EXTRA_LONG_HAUL_INTERNATIONAL
+        ULTRA_LONG_HAUL_INTERNATIONAL
       }
     }
   }

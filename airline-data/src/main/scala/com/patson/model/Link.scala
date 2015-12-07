@@ -55,7 +55,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : Int, dis
       case SHORT_HAUL_INTERNATIONAL => 40
       case LONG_HAUL_DOMESTIC => 50
       case LONG_HAUL_INTERNATIONAL => 60
-      case EXTRA_LONG_HAUL_INTERNATIONAL => 70
+      case ULTRA_LONG_HAUL_INTERNATIONAL => 70
     }
     
   private val MAX_QUALITY = 100

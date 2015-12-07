@@ -50,8 +50,7 @@ object AirportSource {
           resultSet.getInt("airport_size"),
           resultSet.getLong("power"),
           resultSet.getLong("population"),
-          resultSet.getInt("slots"),
-          resultSet.getInt("available_slots"))
+          resultSet.getInt("slots"))
         airport.id = resultSet.getInt("id")
         airportData += airport
         if (fullLoad) {
@@ -163,53 +162,11 @@ object AirportSource {
    }
   }
   
-//  def updateSlotAssignments(airports: List[Airport]) = {
-//     airports.foreach { airport => //make sure all loaded properly
-//       if (!airport.isSlotAssignmentsInitialized) {
-//         throw new IllegalStateException("cannot save slot assignments as it's not initialized properly!")
-//       }
-//     }
-//     val connection = Meta.getConnection()
-//     try {  
-//       connection.setAutoCommit(false)
-//       airports.foreach { airport => 
-//        val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_SLOT_ASSIGNMENT_TABLE + " WHERE airport = ?")
-//        purgeStatement.setInt(1, airport.id)
-//        purgeStatement.executeUpdate()
-//        purgeStatement.close()
-//        
-//        var assignedSlots = 0
-//        airport.getAirlineSlotAssignments.foreach { 
-//          case(airlineId, assignmentValue) =>
-//            val insertStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_SLOT_ASSIGNMENT_TABLE + "(airport, airline, assignment_value) VALUES (?,?,?)")
-//            //println( airport.id + "  " + airline.id)
-//            insertStatement.setInt(1, airport.id)
-//            insertStatement.setInt(2, airlineId)
-//            insertStatement.setInt(3, assignmentValue)
-//            insertStatement.executeUpdate()
-//            insertStatement.close()
-//            assignedSlots += assignmentValue
-//          }
-//       //update airport slot
-//          val slotStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET available_slots = ? WHERE id = ?")
-//          slotStatement.setInt(1, airport.availableSlots)
-//          slotStatement.setInt(2, airport.id)
-//          slotStatement.executeUpdate()
-//          slotStatement.close()
-//       }
-//
-//       
-//       connection.commit()
-//     } finally {
-//       connection.close()
-//     }
-//  }
-  
   def saveAirports(airports : List[Airport]) = {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, airport_size, power, population, slots, available_slots) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, airport_size, power, population, slots)  VALUES(?,?,?,?,?,?,?,?,?,?,?)")
     
       connection.setAutoCommit(false)
       airports.foreach { 
@@ -225,7 +182,6 @@ object AirportSource {
           preparedStatement.setLong(9, airport.power)
           preparedStatement.setLong(10, airport.population)
           preparedStatement.setInt(11, airport.slots)
-          preparedStatement.setInt(12, airport.availableSlots)
           
           preparedStatement.executeUpdate()
           val generatedKeys = preparedStatement.getGeneratedKeys
@@ -258,7 +214,7 @@ object AirportSource {
     val connection = Meta.getConnection()
     
     try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, power = ?, population = ?, slots = ?, available_slots = ? WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, power = ?, population = ?, slots = ?  WHERE id = ?")
       
       connection.setAutoCommit(false)
       airports.foreach { 
@@ -267,8 +223,7 @@ object AirportSource {
           preparedStatement.setLong(2, airport.power)
           preparedStatement.setLong(3, airport.population)
           preparedStatement.setInt(4, airport.slots)
-          preparedStatement.setInt(5, airport.availableSlots)
-          preparedStatement.setInt(6, airport.id)
+          preparedStatement.setInt(5, airport.id)
           preparedStatement.executeUpdate()
       }
       preparedStatement.close()

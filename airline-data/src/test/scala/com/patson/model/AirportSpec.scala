@@ -22,7 +22,7 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
  
   val testAirline1 = Airline("airline 1", 1)
   val testAirline2 = Airline("airline 2", 2)
-  val airport = Airport("", "", "Airport", 0, 0, "", "", 1, 0, 0, slots = 100, initAvailableSlots = 100)
+  val airport = Airport("", "", "Airport", 0, 0, "", "", 1, 0, 0, slots = 100)
   
   
   "Airport.availableSlots()".must {

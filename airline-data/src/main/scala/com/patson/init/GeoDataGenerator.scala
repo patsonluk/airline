@@ -25,7 +25,6 @@ object GeoDataGenerator extends App {
   //implicit val materializer = FlowMaterializer()
 
   private val DEFAULT_UNKNOWN_INCOME = 100
-  private val DEFAULT_SLOTS = Map(0 -> 5, 1 -> 10, 2 -> 20, 3 -> 80) 
   
   mainFlow
   
@@ -171,8 +170,7 @@ object GeoDataGenerator extends App {
             case "large_airport" => 3
             case _ => 0
           }
-        val slots = DEFAULT_SLOTS.getOrElse(airportSize, 0)
-        new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), airportSize, 0, 0, slots, slots) //2 - size, 3 - name, 4 - lat, 5 - long, 8 - country, 10 - city, 12 - code1, 13- code2
+        new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), airportSize, 0, 0, 0) //2 - size, 3 - name, 4 - lat, 5 - long, 8 - country, 10 - city, 12 - code1, 13- code2
     }
 
     val resultSink = Sink.fold(List[Airport]())((airportList, Airport : Airport) => (Airport :: airportList))
@@ -299,18 +297,17 @@ object GeoDataGenerator extends App {
           
           //calculate slots
           val slots = airport.size match {
-            case 1 => 5
-            case 2 => 10
-            case 3 => 20
-            case 4 => 50
-            case 5 => 80
-            case 6 => 120
-            case 7 => 170
-            case size : Int if size >= 8 => 220
+            case 1 => 50
+            case 2 => 100
+            case 3 => 450
+            case 4 => 700
+            case 5 => 1200
+            case 6 => 1700
+            case 7 => 2200
+            case size : Int if size >= 8 => 2800
             case _ => 0
           }
           airport.slots = slots
-          airport.initAvailableSlots = slots
           
           airport
         }.sortBy { _.power }

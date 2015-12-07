@@ -31,19 +31,18 @@ case class SimplePreference(priceWeight : Int, maxPriceWeight : Int) extends Fli
 case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  extends FlightPreference{
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
+  //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
+  val maxReduceFactorAtMaxLoyalty = 2
+  //at min loyalty (0), passenger can perceive the ticket price down to actual price / maxReduceFactorAtMinLoyalty.  
+  val maxReduceFactorAtMinLoyalty = 1.25
+  
+  //at max loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty.
+  val minReduceFactorAtMaxLoyalty = 1.25
+  //at min loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty. (at 1, means no reduction)
+  val minReduceFactorAtMinLoyalty = 1
   //val drawPool = new DrawPool(appealList)
   
   def computeCost(link : Link) = {
-    //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
-    val maxReduceFactorAtMaxLoyalty = 3
-    //at min loyalty (0), passenger can perceive the ticket price down to actual price / maxReduceFactorAtMinLoyalty.  
-    val maxReduceFactorAtMinLoyalty = 1.5
-    
-    //at max loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty.
-    val minReduceFactorAtMaxLoyalty = 1.5
-    //at min loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty. (at 1, means no reduction)
-    val minReduceFactorAtMinLoyalty = 1
-    
     val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
     
     var perceivedPrice = link.price;
@@ -66,17 +65,18 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  ext
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
     //cost is in terms of flight duration
-    val baseCost = link.duration * Pricing.standardCostAdjustmentRatioFromPrice(link, perceivedPrice)
+    val baseCost = link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, perceivedPrice)
     
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
     
  
-    //val noise = (1 + (Util.getBellRandom(0)) * 0.8) // max 10% noise : 0.6 - 1.4
-    val noise = (1 + (0.5 - Math.random()) * 0.8) // max 10% noise : 0.6 - 1.4
-    
+    val noise = (1 + (Util.getBellRandom(0)) * 0.8) // max 10% noise : 0.6 - 1.4
+    //val noise = (1 + (0.5 - Math.random()) * 0.8) // max 10% noise : 0.6 - 1.4
     
     //NOISE?
-    baseCost * noise
+    val finalCost = baseCost * noise
+    
+    finalCost
   }
 }
 

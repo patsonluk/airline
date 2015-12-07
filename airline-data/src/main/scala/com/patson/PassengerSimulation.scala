@@ -132,14 +132,15 @@ object PassengerSimulation extends App {
                  //println("picked route info" + passengerGroup + " " + pickedRoute.links(0).airline)
                  //val totalDistance = pickedRoute.links.foldLeft(0.0)(_ + _.link.distance)
                  val fromAirport = passengerGroup.fromAirport 
-                 val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude) * 2 //at most double
+                 val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
                  
                  //println("RecommendedPrice  " +  Pricing.computeStandardPrice(totalDistance))
                  //add some randomness here
                  //val affordableCost = totalDistance * (1.25 - Random.nextFloat() / 2)
                  //val affordableCost = totalDistance * (Util.getBellRandom(1))
-                 val MIN_AIPLANE_SPEED = 300.0
-                 val affordableCost = distance / MIN_AIPLANE_SPEED * 60//assuming the passenger can tolerate the duration of going with the slowest plane
+                 //val MIN_AIPLANE_SPEED = 300.0
+                 val affordableCost = distance * 0.8  
+                 
                  if (affordableCost >= pickedRoute.totalCost) { //OK!
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize)( (foldInt, linkWithDirection) => if (linkWithDirection.link.availableSeats < foldInt) { linkWithDirection.link.availableSeats } else { foldInt })
                    //some capacity available on all the links, consume them NOMNOM NOM!
