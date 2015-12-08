@@ -84,7 +84,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       } 
     } else { //calculate how many can be assigned
       val maxSlotsByLoyalty = ((slots - reservedSlots) * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at 100% get all the available (minus reserved)
-      val maxSlotsByAwareness = (getAirlineAwareness(airlineId) * 5 / AirlineAppeal.MAX_AWARENESS).toInt + 1// +5 (total 6) at max awareness
+      val maxSlotsByAwareness = (getAirlineAwareness(airlineId) * 10 / AirlineAppeal.MAX_AWARENESS).toInt + 1// +10 (total 11) at max awareness
       val maxSlots = Math.max(maxSlotsByLoyalty, maxSlotsByAwareness)
         
       //now see whether this new max slot would violate anything

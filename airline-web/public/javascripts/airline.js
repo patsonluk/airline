@@ -515,7 +515,7 @@ function createLink() {
 			"price" : parseFloat($("#planLinkPrice").val()),
 			"frequency" : parseInt($("#planLinkFrequency").val()),
 			"model" : parseInt($("#planLinkModelSelect").val()),
-			"rawQuality" : (parseInt($("#planLinkServiceLevel").val()) + 1) * 20}
+			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20}
 		$.ajax({
 			type: 'PUT',
 			url: url,
