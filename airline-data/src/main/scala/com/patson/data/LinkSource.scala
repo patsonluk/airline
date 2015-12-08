@@ -237,7 +237,7 @@ object LinkSource {
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price, capacity, sold_seats, fuel_cost, crew_cost, airport_fees, inflight_cost, fixed_cost, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price, capacity, sold_seats, fuel_cost, crew_cost, airport_fees, inflight_cost, fixed_cost, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       connection.setAutoCommit(false)
