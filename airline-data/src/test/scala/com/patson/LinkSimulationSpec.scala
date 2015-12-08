@@ -228,7 +228,16 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     val capacity = frequency * airplane.model.capacity
     val price = Pricing.computeStandardPrice(distance, flightType)
     
-    val link = Link(fromAirport.copy(size = airportSize), toAirport.copy(size = airportSize), testAirline1, price, distance = distance, capacity, rawQuality = 0, duration, frequency)
+    val neutralQuality = 
+      flightType match {
+      case SHORT_HAUL_DOMESTIC => 30
+      case SHORT_HAUL_INTERNATIONAL => 40
+      case LONG_HAUL_DOMESTIC => 50
+      case LONG_HAUL_INTERNATIONAL => 60
+      case ULTRA_LONG_HAUL_INTERNATIONAL => 70
+    }
+    
+    val link = Link(fromAirport.copy(size = airportSize), toAirport.copy(size = airportSize), testAirline1, price, distance = distance, capacity, rawQuality = neutralQuality, duration, frequency)
     link.availableSeats = (capacity * (1 - loadFactor)).toInt
     link.setAssignedAirplanes(List(airplane))
     

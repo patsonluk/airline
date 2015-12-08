@@ -49,7 +49,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : Int, dis
   
    //adjust by quality
   import FlightType._
-  private val neutralQuality = 
+  val neutralQuality = 
     Computation.getFlightType(from, to) match {
       case SHORT_HAUL_DOMESTIC => 30
       case SHORT_HAUL_INTERNATIONAL => 40
@@ -86,7 +86,7 @@ object Link {
 }
 
 /**
- * Take note that cost is in terms of flight Duration (minutes)
+ * Take note that cost is in terms of flight distance (km)
  */
 case class LinkWithCost(link : Link, cost : Double, inverted : Boolean) {
     def from : Airport = if (inverted) link.to else link.from

@@ -7,7 +7,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object LinkSimulation {
-  private val FUEL_UNIT_COST = 0.08 //for now...
+  private val FUEL_UNIT_COST = 0.1 //for now...
   private val AIRLINE_FIXED_COST = 10000 //for now...
   private val CREW_UNIT_COST = 10 //for now...
   
@@ -112,12 +112,13 @@ object LinkSimulation {
         (totalFuelBurn * 10 * 30 + totalFuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
       }) * (0.3 + 0.7 * loadFactor)).toInt //at 0 LF, reduce fuel consumption by 70%
     val fixedCost = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost)
-    val airportFees = (link.from.slotFee + link.to.slotFee + link.getAssignedModel().fold(0)(link.from.landingFee(_)) + link.getAssignedModel().fold(0)(link.to.landingFee(_))) * link.frequency  
+    val airportFees = (link.from.slotFee + link.to.slotFee + link.getAssignedModel().fold(0)(link.from.landingFee(_)) + link.getAssignedModel().fold(0)(link.to.landingFee(_))) * link.frequency 
+    val inflightCost = (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats //10 hours, on top quality flight, cost is 100 per passenger
     val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
     val revenue = soldSeats * link.price
-    val profit = revenue - fuelCost - fixedCost - crewCost - airportFees
+    val profit = revenue - fuelCost - fixedCost - crewCost - airportFees - inflightCost
 
-    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, soldSeats, fuelCost, crewCost, airportFees, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
+    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, soldSeats, fuelCost, crewCost, airportFees, inflightCost, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
     println("profit : " + result.profit + " result: " + result)
     result
   }

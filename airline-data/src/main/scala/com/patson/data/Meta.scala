@@ -213,6 +213,7 @@ object Meta {
                                              "fuel_cost INTEGER, " +
                                              "crew_cost INTEGER, " +
                                              "airport_fees INTEGER, " +
+                                             "inflight_cost INTEGER, " +
                                              "fixed_cost INTEGER, " +
                                              "revenue INTEGER, " +
                                              "profit INTEGER, " +
