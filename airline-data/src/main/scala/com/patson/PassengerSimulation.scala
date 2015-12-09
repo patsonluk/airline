@@ -392,7 +392,7 @@ object PassengerSimulation extends App {
               val frequency = Math.max(predecessorMap(linkWithCost.from).link.frequency, linkWithCost.link.frequency)
               //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
               if (frequency < 42) {
-                connectionCost += (2 * 24 * 500).toDouble / frequency //at worst (both at 1, assuming to wait extra 2 days)
+                connectionCost += (2 * 24 * 50).toDouble / frequency //at worst (both at 1, assuming to wait extra 2 days)
               }
           }
         }

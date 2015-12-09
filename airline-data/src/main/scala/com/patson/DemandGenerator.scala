@@ -131,8 +131,8 @@ object DemandGenerator extends App {
         case LONG_HAUL_INTERNATIONAL => 1
         case ULTRA_LONG_HAUL_INTERNATIONAL => 0.5
       }
-      
-      (passengerSupplyPerWeek * multiplier * toAirport.power / totalWorldPower).toInt 
+      val demand = (passengerSupplyPerWeek * multiplier * toAirport.power / totalWorldPower).toInt
+      demand
     }
   }
   
