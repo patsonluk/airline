@@ -2,6 +2,7 @@ var map
 var markers
 var activeAirline
 var activeUser
+var selectedLink
 
 $( document ).ready(function() {
 	if ($.cookie('sessionActive')) {
@@ -143,6 +144,9 @@ function refreshPanels(airlineId) {
 	    success: function(airline) {
 	    	$("#balance").text(airline.balance)
 	    	refreshLinks()
+	    	if (selectedLink) {
+	    		loadLinkDetails(selectedLink)
+	    	}
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

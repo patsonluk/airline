@@ -41,7 +41,7 @@ object LinkSimulation {
         computeLinkConsumptionDetail(link, cycle) :: foldList
     }
     
-    LinkSource.deleteLinkConsumptionsByCycle(10)
+    LinkSource.deleteLinkConsumptionsByCycle(30)
     LinkSource.saveLinkConsumptions(linkConsumptionDetails)
     
     val linkConsumptionDetailsByAirline = Map[Int, ListBuffer[LinkConsumptionDetails]]()

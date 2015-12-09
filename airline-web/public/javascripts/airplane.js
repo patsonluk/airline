@@ -120,7 +120,7 @@ function loadAirplaneDetails(airlineId, airplaneId) {
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
 	    	}
-	    	setActiveDiv($('#airplaneDetails'))
+	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

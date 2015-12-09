@@ -71,7 +71,8 @@ class LinkApplication extends Controller {
       "distance" -> JsNumber(linkConsumption.distance),
       "profit" -> JsNumber(linkConsumption.profit),
       "capacity" -> JsNumber(linkConsumption.capacity),
-      "soldSeats" -> JsNumber(linkConsumption.soldSeats)))
+      "soldSeats" -> JsNumber(linkConsumption.soldSeats),
+      "cycle" -> JsNumber(linkConsumption.cycle)))
       
     }
   }
@@ -285,15 +286,15 @@ class LinkApplication extends Controller {
     }
   }
   
-  def getLinkConsumption(airlineId : Int, linkId : Int) = Action {
+  def getLinkConsumption(airlineId : Int, linkId : Int, cycleCount : Int) = Action {
     LinkSource.loadLinkById(linkId) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
-          val linkConsumptions = LinkSource.loadLinkConsumptionsByLinkId(linkId) 
+          val linkConsumptions = LinkSource.loadLinkConsumptionsByLinkId(linkId, cycleCount) 
           if (linkConsumptions.isEmpty) {
             Ok(Json.obj())  
           } else {
-            Ok(Json.toJson(linkConsumptions(0)))
+            Ok(Json.toJson(linkConsumptions.take(cycleCount)))
           }     
         } else {
           Forbidden

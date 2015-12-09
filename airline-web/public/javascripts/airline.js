@@ -56,6 +56,7 @@ function buildBase(airportId, isHeadquarter) {
 
 //remove and re-add all the links
 function updateLinksInfo() {
+	selectedLink = null
 	//remove all animation intervals
 	$.each(flightMarkerAnimations, function( key, value ) {
 		  window.clearInterval(value)
@@ -276,6 +277,7 @@ function insertLinkToList(link, linkList) {
 function loadLinkDetails(linkId) {
 //	$('#airplaneDetails').hide()
 //	$("#linkDetails").show()
+	selectedLink = linkId
 	setActiveDiv($("#linkDetails"))
 	$("#actionLinkId").val(linkId)
 	var airlineId = activeAirline.id
@@ -304,22 +306,24 @@ function loadLinkDetails(linkId) {
 	//load history
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + airlineId + "/link-consumptions/" + linkId,
+		url: "airlines/" + airlineId + "/link-consumptions/" + linkId + "?cycleCount=30",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(linkConsumption) {
-	    	if (jQuery.isEmptyObject(linkConsumption)) {
+	    success: function(linkConsumptions) {
+	    	if (jQuery.isEmptyObject(linkConsumptions)) {
 	    		$("#linkHistoryPrice").text("-")
 		    	$("#linkHistoryCapacity").text("-")
 		    	$("#linkLoadFactor").text("-")
 		    	$("#linkProfit").text("-")
 	    	} else {
+	    		var linkConsumption = linkConsumptions[0]
 	    		$("#linkHistoryPrice").text(linkConsumption.price)
 		    	$("#linkHistoryCapacity").text(linkConsumption.capacity)
 		    	var loadFactor = linkConsumption.soldSeats / linkConsumption.capacity * 100
 		    	$("#linkLoadFactor").text(parseInt(loadFactor) + "%")
 		    	$("#linkProfit").text("$" + linkConsumption.profit)
 	    	}
+	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
 	    	$("#linkHistoryDetails").show()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -330,6 +334,7 @@ function loadLinkDetails(linkId) {
 }
 
 function editLink(linkId) {
+	selectedLink = null //no refreshing...todo fix this to make it looks better
 	$.ajax({
 		type: 'GET',
 		url: "airlines/" + activeAirline.id + "/links/" + linkId,
