@@ -41,24 +41,23 @@ function plotLinkProfit(linkConsumptions, container) {
 	var category = []
 	 
 	var profitByMonth = {}
+	var monthOrder = []
 	$.each(linkConsumptions, function(index, linkConsumption) {
 		//group in months first
 		var month = Math.floor(linkConsumption.cycle / 4)
-		if (!profitByMonth[month]) {
+		if (profitByMonth[month] === undefined) {
 			profitByMonth[month] = linkConsumption.profit
+			monthOrder.push(month)
 		} else {
 			profitByMonth[month] += linkConsumption.profit
 		}
 	})
 	
 	var maxMonth = 6
-	var monthCounter = 0
-	$.each(profitByMonth, function(key, profit) {
-		if (monthCounter < maxMonth) {
-			data.push({ value : profit })
-			category.push({ label : key })
-		} 
-		monthCounter ++
+	monthOrder = monthOrder.slice(0, maxMonth)
+	$.each(monthOrder.reverse(), function(key, month) {
+		data.push({ value : profitByMonth[month] })
+		category.push({ label : month.toString() })
 	})
 	
 	var chart = container.insertFusionCharts({
@@ -82,6 +81,59 @@ function plotLinkProfit(linkConsumptions, container) {
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [ {"data" : data}, {"renderas" : "Line", "data" : data} ]
 	    	            
+	    }
+	})
+}
+
+function plotLinkRidership(linkConsumptions, container) {
+	var capacityData = []
+	var soldSeatsData = []
+	var loadFactorData = []
+	
+	var category = []
+	 
+	var maxWeek = 24
+	
+	linkConsumptions = linkConsumptions.slice(0, maxWeek)
+	$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
+		capacityData.push({ value : linkConsumption.capacity })
+		soldSeatsData.push({ value : linkConsumption.soldSeats })
+		loadFactorData.push({ value : (linkConsumption.soldSeats / linkConsumption.capacity * 100).toFixed(2) })
+		var month = Math.floor(linkConsumption.cycle / 4)
+		//var week = linkConsumption.cycle % 4 + 1
+		category.push({ label : month.toString()})
+	})
+	
+	var chart = container.insertFusionCharts({
+		type: 'mscombi2d',
+	    width: '100%',
+	    height: '195',
+	    dataFormat: 'json',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": "Month",
+	    		"YAxisName": "Seats",
+	    		//"sYAxisName": "Load Factor %",
+	    		"sNumberSuffix" : "%",
+	            "sYAxisMaxValue" : "100",
+	    		"useroundedges": "1",
+	    		"animation": "0",
+	    		"showBorder":"0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "plotBorderAlpha": "10",
+                "bgAlpha":"0",
+                "showValues":"0",
+                "canvasPadding":"0",
+                "labelDisplay":"wrap",
+                "labelStep": "4"
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : [ 
+			              { "seriesName": "Capacity", "renderAs" : "line", "data" : capacityData}
+			            , {"seriesName": "Sold Seats","renderAs" : "area", "data" : soldSeatsData}
+			            //, {"seriesName": "Load Factor", "renderAs" : "line", "parentYAxis": "S", "data" : loadFactorData} 
+			            ]
 	    }
 	})
 }

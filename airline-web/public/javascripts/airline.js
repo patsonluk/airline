@@ -324,6 +324,7 @@ function loadLinkDetails(linkId) {
 		    	$("#linkProfit").text("$" + linkConsumption.profit)
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
+	    	plotLinkRidership(linkConsumptions, $("#linkRidershipChart"))
 	    	$("#linkHistoryDetails").show()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -575,11 +576,12 @@ function showVipRoutes() {
 	    			var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
 	    			var vipPath = new google.maps.Polyline({
 	    				 geodesic: true,
-	    			     strokeColor: "yellow",
+	    			     strokeColor: "#DC83FC",
 	    			     strokeOpacity: 0.6,
 	    			     strokeWeight: 2,
 	    			     from : from,
 	    			     to : to,
+	    			     zIndex : 500,
 	    			     distance : google.maps.geometry.spherical.computeDistanceBetween(from, to) / 1000
 	    			});
 	    			paths.push(vipPath)
