@@ -2,6 +2,8 @@ var flightPaths = {}
 var flightMarkers = []
 var flightMarkerAnimations = []
 var historyPaths = []
+var invertedHistoryPaths = []
+var linkHistoryState = "hidden"
 
 function loadAirlines() {
 	$.ajax({
@@ -376,12 +378,7 @@ function watchLink(linkId) {
 }
 
 function toggleLinkHistory() {
-	if (historyPaths.length > 0) {
-		$.each(historyPaths, function(key, path) {
-			path.setMap(null)
-		})
-		historyPaths = []
-	} else {
+	if (linkHistoryState == "hidden") {
 		$.ajax({
 			type: 'GET',
 			url: "airlines/" + activeAirline.id + "/link-history",
@@ -390,28 +387,46 @@ function toggleLinkHistory() {
 		    success: function(linkHistory) {
 		    	if (!jQuery.isEmptyObject(linkHistory)) {
 		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink)
+		    			drawLinkHistoryPath(relatedLink, false)
 		    		})
-		    	} 
+		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
+		    			drawLinkHistoryPath(relatedLink, true)
+		    		})
+		    		showLinkHistoryPaths(false)
+		    		linkHistoryState = "show"
+		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));
 		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 		    }
 		});
+	} else if (linkHistoryState == "show") {
+		showLinkHistoryPaths(true)
+		linkHistoryState = "showInverted"
+	} else if (linkHistoryState == "showInverted") {
+		$.each(historyPaths, function(key, path) {
+			path.setMap(null)
+		})
+		historyPaths = []
+		linkHistoryState = "hidden"
+	} else {
+		console.log("unknown linkHistoryState " + linkHistoryState)
 	}
 }
 function hideLinkHistory() {
 	
 }
 
-function drawLinkHistoryPath(link) {
+function drawLinkHistoryPath(link, inverted) {
 	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
 	var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
 	
 	var lineSymbol = {
 	    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
 	};
+	
+	console.log("from " + link.fromAirportCode + " to " + link.toAirportCode + " passenger " + link.passenger)
 
 	var relatedPath = new google.maps.Polyline({
 		 geodesic: true,
@@ -424,9 +439,19 @@ function drawLinkHistoryPath(link) {
 		      offset: '100%'
 		    }],
 	     zIndex : 400,
-	     map : map
+	     inverted : inverted
 	});
 	historyPaths.push(relatedPath)
+}
+
+function showLinkHistoryPaths(inverted) {
+	$.each(historyPaths, function(key, historyPath) {
+		if ((inverted && historyPath.inverted) || (!inverted && !historyPath.inverted)) {
+			historyPath.setMap(map)
+		} else {
+			historyPath.setMap(null)
+		}
+	})
 }
 
 

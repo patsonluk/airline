@@ -245,6 +245,7 @@ object Meta {
      
      statement = connection.prepareStatement("CREATE TABLE " + LINK_HISTORY_TABLE + "(" +
                                              "watched_link INTEGER REFERENCES " + WATCHED_LINK_TABLE + "(watched_link) ON DELETE CASCADE, " +
+                                             "inverted INTEGER, " +
 	                                           "related_link INTEGER, " +
                                              "from_airport INTEGER, " +
                                              "to_airport INTEGER, " +

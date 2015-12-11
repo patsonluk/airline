@@ -100,20 +100,27 @@ object LinkHistorySource {
       val resultSet = preparedStatement.executeQuery()
       
       val linkHistoryMap = Map[Int, Set[RelatedLink]]()
+      val invertedLinkHistoryMap = Map[Int, Set[RelatedLink]]()
       while (resultSet.next()) {
         val watchedLinkId = resultSet.getInt("watched_link")
         val relatedLinkId = resultSet.getInt("related_link")
         val fromAirport = allAirports(resultSet.getInt("from_airport"))
         val toAirport = allAirports(resultSet.getInt("to_airport"))
         val airline = allAirlines(resultSet.getInt("airline"))
-        linkHistoryMap.getOrElseUpdate(watchedLinkId, Set[RelatedLink]()) += RelatedLink(relatedLinkId, fromAirport, toAirport, airline, resultSet.getInt("passenger"))
+        
+        val relatedLink = RelatedLink(relatedLinkId, fromAirport, toAirport, airline, resultSet.getInt("passenger"))
+        if (!resultSet.getBoolean("inverted")) {
+          linkHistoryMap.getOrElseUpdate(watchedLinkId, Set[RelatedLink]()) += relatedLink
+        } else {
+          invertedLinkHistoryMap.getOrElseUpdate(watchedLinkId, Set[RelatedLink]()) += relatedLink
+        }
       }
       
       resultSet.close()
       preparedStatement.close()
       
-      linkHistoryMap.map {
-        case (watchedLinkId, relatedLinks) => LinkHistory(watchedLinkId, relatedLinks.toSet)
+      linkHistoryMap.keySet.union(invertedLinkHistoryMap.keySet).map { watchedLinkId =>
+        LinkHistory(watchedLinkId, linkHistoryMap.getOrElse(watchedLinkId, Set.empty).toSet, invertedLinkHistoryMap.getOrElse(watchedLinkId, Set.empty).toSet)
       }.toList
     } finally {
       connection.close()
@@ -145,16 +152,27 @@ object LinkHistorySource {
         println("Deleted " + deletedCount + " link history records")
         
         //add
-        val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_HISTORY_TABLE + "(watched_link, related_link, from_airport, to_airport, airline, passenger) VALUES(?,?,?,?,?,?)")
+        val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_HISTORY_TABLE + "(watched_link, inverted, related_link, from_airport, to_airport, airline, passenger) VALUES(?,?,?,?,?,?,?)")
         linkHistory.foreach { 
           linkHistoryEntry =>
             linkHistoryEntry.relatedLinks.foreach { relatedLink => 
               insertStatement.setInt(1, linkHistoryEntry.watchedLinkId)
-              insertStatement.setInt(2, relatedLink.relatedLinkId)
-              insertStatement.setInt(3, relatedLink.fromAirport.id)
-              insertStatement.setInt(4, relatedLink.toAirport.id)
-              insertStatement.setInt(5, relatedLink.airline.id)
-              insertStatement.setInt(6, relatedLink.passengers)
+              insertStatement.setBoolean(2, false)
+              insertStatement.setInt(3, relatedLink.relatedLinkId)
+              insertStatement.setInt(4, relatedLink.fromAirport.id)
+              insertStatement.setInt(5, relatedLink.toAirport.id)
+              insertStatement.setInt(6, relatedLink.airline.id)
+              insertStatement.setInt(7, relatedLink.passengers)
+              insertStatement.executeUpdate()  
+            }
+            linkHistoryEntry.invertedRelatedLinks.foreach { invertedRelatedLink => 
+              insertStatement.setInt(1, linkHistoryEntry.watchedLinkId)
+              insertStatement.setBoolean(2, true)
+              insertStatement.setInt(3, invertedRelatedLink.relatedLinkId)
+              insertStatement.setInt(4, invertedRelatedLink.fromAirport.id)
+              insertStatement.setInt(5, invertedRelatedLink.toAirport.id)
+              insertStatement.setInt(6, invertedRelatedLink.airline.id)
+              insertStatement.setInt(7, invertedRelatedLink.passengers)
               insertStatement.executeUpdate()  
             }
         }

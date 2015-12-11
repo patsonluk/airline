@@ -82,7 +82,8 @@ class LinkApplication extends Controller {
     def writes(linkHistory: LinkHistory): JsValue = {
           JsObject(List(
       "watchedLinkId" -> JsNumber(linkHistory.watchedLinkId),
-      "relatedLinks" -> Json.toJson(linkHistory.relatedLinks)))
+      "relatedLinks" -> Json.toJson(linkHistory.relatedLinks),
+      "invertedRelatedLinks" -> Json.toJson(linkHistory.invertedRelatedLinks)))
     }
   }
   
