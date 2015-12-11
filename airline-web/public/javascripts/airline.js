@@ -1,6 +1,7 @@
 var flightPaths = {}
 var flightMarkers = []
 var flightMarkerAnimations = []
+var historyPaths = []
 
 function loadAirlines() {
 	$.ajax({
@@ -353,6 +354,79 @@ function editLink(linkId) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function watchLink(linkId) {
+	$.ajax({
+		type: 'PUT',
+		url: "airlines/" + activeAirline.id + "/watched-link?linkId=" + linkId,
+		data: JSON.stringify({}),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(watchedLinkId) {
+	    	if (watchedLinkId) {
+	    		activeWatchedLink = watchedLinkId
+	    	}
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function toggleLinkHistory() {
+	if (historyPaths.length > 0) {
+		$.each(historyPaths, function(key, path) {
+			path.setMap(null)
+		})
+		historyPaths = []
+	} else {
+		$.ajax({
+			type: 'GET',
+			url: "airlines/" + activeAirline.id + "/link-history",
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
+		    success: function(linkHistory) {
+		    	if (!jQuery.isEmptyObject(linkHistory)) {
+		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
+		    			drawLinkHistoryPath(relatedLink)
+		    		})
+		    	} 
+		    },
+	        error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	}
+}
+function hideLinkHistory() {
+	
+}
+
+function drawLinkHistoryPath(link) {
+	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
+	var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
+	
+	var lineSymbol = {
+	    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+	};
+
+	var relatedPath = new google.maps.Polyline({
+		 geodesic: true,
+	     strokeColor: "#DC83FC",
+	     strokeOpacity: 0.6,
+	     strokeWeight: 2,
+	     path: [from, to],
+	     icons: [{
+		      icon: lineSymbol,
+		      offset: '100%'
+		    }],
+	     zIndex : 400,
+	     map : map
+	});
+	historyPaths.push(relatedPath)
 }
 
 

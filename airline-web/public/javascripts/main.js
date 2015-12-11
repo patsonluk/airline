@@ -3,6 +3,7 @@ var markers
 var activeAirline
 var activeUser
 var selectedLink
+var activeWatchedLink
 
 $( document ).ready(function() {
 	if ($.cookie('sessionActive')) {
@@ -126,6 +127,10 @@ function initMap() {
   
   $("#vipButton").index = 1
   map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#vipButton")[0]);
+  
+  $("#linkHistoryButton").index = 2
+  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
+  
   getAirports()
 }
 

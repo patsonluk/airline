@@ -64,13 +64,21 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CONSUMPTION_TABLE)
-     statement.execute()
-     statement.close()
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CONSUMPTION_TABLE)
+//     statement.execute()
+//     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_STATISTICS_TABLE)
 //     statement.execute()
 //     statement.close()
+     
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + WATCHED_LINK_TABLE)
+     statement.execute()
+     statement.close()
+     
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_HISTORY_TABLE)
+     statement.execute()
+     statement.close()
 //          
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_TABLE)
 //     statement.execute()
@@ -205,27 +213,52 @@ object Meta {
 //     
 //     
 //     
-     statement = connection.prepareStatement("CREATE TABLE " + LINK_CONSUMPTION_TABLE + "(" +
-                                             "link INTEGER, " +
-	                                           "price INTEGER, " +
-                                             "capacity INTEGER, " +
-                                             "sold_seats INTEGER, " +
-                                             "fuel_cost INTEGER, " +
-                                             "crew_cost INTEGER, " +
-                                             "airport_fees INTEGER, " +
-                                             "inflight_cost INTEGER, " +
-                                             "fixed_cost INTEGER, " +
-                                             "revenue INTEGER, " +
-                                             "profit INTEGER, " +
-                                             "from_airport INTEGER, " +
-                                             "to_airport INTEGER, " +
-                                             "airline INTEGER, " +
-                                             "distance INTEGER, " +
-                                             "cycle INTEGER, " +
-                                             "PRIMARY KEY (cycle, link))")
+//     statement = connection.prepareStatement("CREATE TABLE " + LINK_CONSUMPTION_TABLE + "(" +
+//                                             "link INTEGER, " +
+//	                                           "price INTEGER, " +
+//                                             "capacity INTEGER, " +
+//                                             "sold_seats INTEGER, " +
+//                                             "fuel_cost INTEGER, " +
+//                                             "crew_cost INTEGER, " +
+//                                             "airport_fees INTEGER, " +
+//                                             "inflight_cost INTEGER, " +
+//                                             "fixed_cost INTEGER, " +
+//                                             "revenue INTEGER, " +
+//                                             "profit INTEGER, " +
+//                                             "from_airport INTEGER, " +
+//                                             "to_airport INTEGER, " +
+//                                             "airline INTEGER, " +
+//                                             "distance INTEGER, " +
+//                                             "cycle INTEGER, " +
+//                                             "PRIMARY KEY (cycle, link))")
+//     
+//     statement.execute()
+//     statement.close()
+     
+     statement = connection.prepareStatement("CREATE TABLE " + WATCHED_LINK_TABLE + "(" +
+                                             "airline INTEGER PRIMARY KEY, " +
+	                                           "watched_link INTEGER UNIQUE, " +
+                                             "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
      
      statement.execute()
      statement.close()
+     
+     statement = connection.prepareStatement("CREATE TABLE " + LINK_HISTORY_TABLE + "(" +
+                                             "watched_link INTEGER REFERENCES " + WATCHED_LINK_TABLE + "(watched_link) ON DELETE CASCADE, " +
+	                                           "related_link INTEGER, " +
+                                             "from_airport INTEGER, " +
+                                             "to_airport INTEGER, " +
+                                             "airline INTEGER, " +
+                                             "passenger INTEGER)")
+                                             
+     
+     statement.execute()
+     statement.close()
+     
+     statement = connection.prepareStatement("CREATE INDEX " + LINK_HISTORY_INDEX_1 +  " ON " + LINK_HISTORY_TABLE + "(watched_link)")
+     statement.execute()
+     statement.close()
+     
 //     
 //     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_1 +  " ON " + LINK_CONSUMPTION_TABLE + "(link)")
 //     statement.execute()

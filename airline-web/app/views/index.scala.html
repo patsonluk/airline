@@ -47,6 +47,7 @@
 		</div>
   	</div>
   	<div id="main" style="width: 100%" >
+  		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div>
 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div>
   	<!-- main canvas start -->
   		<div id="canvas" style="width: 80% ; float: left;" >
@@ -200,6 +201,7 @@
 		    			<input type="hidden" id="linkFromAirportId"></input>
 		    			<input type="hidden" id="linkToAirportId"></input>
 		    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
+		    			<div class="button" onclick="watchLink($('#actionLinkId').val())">Watch</div>
 		    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
 		    		</div>
 		    		

@@ -30,6 +30,11 @@ object LinkSimulation {
     LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
     
+    //generate link history
+    val linkHistory = generateLinkHistory(consumptionResult)
+    println("Saving generated history to DB")
+    LinkHistorySource.updateLinkHistory(linkHistory)
+    
     println("Generating VIP")
     val vipRoutes = generateVipRoutes(consumptionResult)
     RouteHistorySource.deleteVipRouteBeforeCycle(cycle)
@@ -153,6 +158,36 @@ object LinkSimulation {
     }.toList
     
   }
+  
+   def generateLinkHistory(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[LinkHistory] = {
+    val linkHistoryMap = Map[Int, Map[(Int, Airport, Airport, Airline), Int]]() // [watchedLink, [(linkId, fromAiport, toAirport, airline), totalPassengers]]
+    
+    val watchedLinkIds : List[Int] = LinkHistorySource.loadAllWatchedLinkIds()
+    
+    consumptionResult.foreach {
+      case (_, _, passengerCount, route) =>
+        val watchedLinks = route.links.map { linkWithCost => linkWithCost.link.id }.intersect(watchedLinkIds)
+        watchedLinks.foreach { watchedLinkId =>
+          val relatedLinksMap = linkHistoryMap.getOrElseUpdate(watchedLinkId, Map[(Int, Airport, Airport, Airline), Int]()) //can't use link/linkWithCost directly as linkWithCost has directions
+          route.links.foreach { linkInRoute =>
+            val linkKey = (linkInRoute.link.id, linkInRoute.from, linkInRoute.to, linkInRoute.link.airline)
+            val existingPassengersForThisLink = relatedLinksMap.getOrElse(linkKey, 0)
+            relatedLinksMap.put(linkKey, existingPassengersForThisLink + passengerCount)
+          }
+        }
+    }
+    
+    linkHistoryMap.map {
+      case(watchedLinkId, relatedLinksMap) =>
+        val relatedLinks =
+        relatedLinksMap.map { 
+          case((linkId, fromAirport, toAirport, airline), passenger) => RelatedLink(linkId, fromAirport, toAirport, airline, passenger)
+        }.toSet
+        LinkHistory(watchedLinkId, relatedLinks)
+    }.toList
+  }
+  
+  
   
   def generateVipRoutes(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[Route] = {
     //simply take the first VIP_COUNT records for now

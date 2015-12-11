@@ -31,6 +31,7 @@ import play.api.mvc.Security.AuthenticatedRequest
 import controllers.AuthenticationObject.AuthenticatedAirline
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.RouteHistorySource
+import com.patson.data.LinkHistorySource
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -74,6 +75,33 @@ class LinkApplication extends Controller {
       "soldSeats" -> JsNumber(linkConsumption.soldSeats),
       "cycle" -> JsNumber(linkConsumption.cycle)))
       
+    }
+  }
+  
+  implicit object LinkHistoryWrites extends Writes[LinkHistory] {
+    def writes(linkHistory: LinkHistory): JsValue = {
+          JsObject(List(
+      "watchedLinkId" -> JsNumber(linkHistory.watchedLinkId),
+      "relatedLinks" -> Json.toJson(linkHistory.relatedLinks)))
+    }
+  }
+  
+  implicit object RelatedLinkWrites extends Writes[RelatedLink] {
+    def writes(relatedLink : RelatedLink): JsValue = {
+          JsObject(List(
+      "fromAirportCode" -> JsString(relatedLink.fromAirport.iata),
+      "fromAirportName" -> JsString(relatedLink.fromAirport.name),
+      "toAirportCode" -> JsString(relatedLink.toAirport.iata),
+      "toAirportName" -> JsString(relatedLink.toAirport.name),
+      "fromAirportCity" -> JsString(relatedLink.fromAirport.city),
+      "toAirportCity" -> JsString(relatedLink.toAirport.city),
+      "fromLatitude" -> JsNumber(relatedLink.fromAirport.latitude),
+      "fromLongitude" -> JsNumber(relatedLink.fromAirport.longitude),
+      "toLatitude" -> JsNumber(relatedLink.toAirport.latitude),
+      "toLongitude" -> JsNumber(relatedLink.toAirport.longitude),
+      "airlineId" -> JsNumber(relatedLink.airline.id),
+      "airlineName" -> JsString(relatedLink.airline.name),
+      "passenger" -> JsNumber(relatedLink.passengers)))
     }
   }
   
@@ -377,6 +405,29 @@ class LinkApplication extends Controller {
   
   def getVipRoutes() = Action {
     Ok(Json.toJson(RouteHistorySource.loadVipRoutes()))
+  }
+  
+  def setWatchedLink(airlineId : Int, linkId : Int) = AuthenticatedAirline(airlineId) {
+    LinkHistorySource.updateWatchedLinkId(airlineId, linkId)
+    Ok(Json.toJson(linkId))
+  }
+  
+  def getWatchedLink(airlineId : Int) = AuthenticatedAirline(airlineId) {
+    Ok(LinkHistorySource.loadWatchedLinkIdByAirline(airlineId) match {
+      case Some(watchedLinkId) => Json.toJson(watchedLinkId)
+      case None => Json.obj()
+    })
+  }
+  
+  def getLinkHistory(airlineId : Int) = AuthenticatedAirline(airlineId) {
+    LinkHistorySource.loadWatchedLinkIdByAirline(airlineId) match {
+      case Some(watchedLinkId) =>
+        LinkHistorySource.loadLinkHistoryByWatchedLinkId(watchedLinkId) match {
+          case Some(linkHistory) => Ok(Json.toJson(linkHistory))
+          case None => Ok(Json.obj())
+        }
+      case None => Ok(Json.obj())
+    }
   }
 
   

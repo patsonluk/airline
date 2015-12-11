@@ -39,7 +39,6 @@ object MainSimulation extends App {
   }
   
   def startCycle(cycle : Int) = {
-      val links = LinkSource.loadAllLinks(true)
       AirportSimulation.airportSimulation(cycle) 
       LinkSimulation.linkSimulation(cycle)  
   }
