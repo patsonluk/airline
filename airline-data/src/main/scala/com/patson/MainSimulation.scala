@@ -40,7 +40,8 @@ object MainSimulation extends App {
   
   def startCycle(cycle : Int) = {
       AirportSimulation.airportSimulation(cycle) 
-      LinkSimulation.linkSimulation(cycle)  
+      val linkResult : Map[Int, ListBuffer[LinkConsumptionDetails]] = LinkSimulation.linkSimulation(cycle)
+      AirlineSimulation.airlineSimulation(linkResult, cycle)
   }
   
   

@@ -7,12 +7,9 @@ import com.patson.model._
 
 
 object Test extends App {
-  val airport = Airport("", "", "Airport", 0, 0, "", "", 5, 0, 0, slots = 100)
-  println(airport.slotFee)
-  airport.size = 5
-  println(airport.slotFee)
+  println(Math.log(0.1) / Math.log(1.1))
+  println(Math.log(10) / Math.log(1.1))  
+  println(Math.log(10000) / Math.log(1.1))
 }
 
-case class B(value1 : Int, var value2 : Int) {
-  var value3 : Int = 0
-}
+

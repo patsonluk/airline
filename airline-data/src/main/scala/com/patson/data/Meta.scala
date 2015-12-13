@@ -43,9 +43,9 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_INFO_TABLE)
-//     statement.execute()
-//     statement.close()
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_INFO_TABLE)
+     statement.execute()
+     statement.close()
 //
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_APPEAL_TABLE)
 //     statement.execute()
@@ -133,11 +133,13 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-//     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_INFO_TABLE + "(" +
-//                                             "airline INTEGER PRIMARY KEY REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-//                                             "balance LONG)")
-//     statement.execute()
-//     statement.close()
+     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_INFO_TABLE + "(" +
+                                             "airline INTEGER PRIMARY KEY REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "balance LONG," +
+                                             "service_quality DOUBLE," +
+                                             "reputation DOUBLE)")
+     statement.execute()
+     statement.close()
 //     
 //     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_APPEAL_TABLE + "(" + 
 //                                             "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +

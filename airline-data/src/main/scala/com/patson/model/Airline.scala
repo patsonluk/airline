@@ -5,12 +5,19 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   def setBalance(balance : Long) = { 
     airlineInfo.balance = balance 
   }
-  def setServiceQuality(serviceQuality : Int) {
+  def setServiceQuality(serviceQuality : Double) {
     airlineInfo.serviceQuality = serviceQuality
   }
+  def setReputation(reputation : Double) {
+    airlineInfo.reputation = reputation
+  }
+  
+  def getBalance() = airlineInfo.balance
+  def getServiceQuality() = airlineInfo.serviceQuality
+  def getReputation() = airlineInfo.reputation
 }
 
-case class AirlineInfo(var balance : Long = 0, var serviceQuality : Int = 0)
+case class AirlineInfo(var balance : Long = 0, var serviceQuality : Double = 0, var reputation : Double = 0)
 
 object Airline {
   def fromId(id : Int) = {

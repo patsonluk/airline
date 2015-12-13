@@ -15,7 +15,7 @@ object AirlineSource {
       try {
         var queryString = "SELECT id, name FROM " + AIRLINE_TABLE + " a"
         if (fullLoad) {
-          queryString = "SELECT a.id AS id, a.name AS name, ai.balance AS balance FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
+          queryString = "SELECT a.id AS id, a.name AS name, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
         }
         
         
@@ -42,6 +42,8 @@ object AirlineSource {
           airline.id = resultSet.getInt("id")
           if (fullLoad) {
             airline.setBalance(resultSet.getLong("balance"))
+            airline.setReputation(resultSet.getDouble("reputation"))
+            airline.setServiceQuality(resultSet.getDouble("service_quality"))
           }
           
           airlines += airline
@@ -84,9 +86,11 @@ object AirlineSource {
             airline.id = generatedId
             
             //insert airline info too
-            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance) VALUES(?, ?)")
+            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, reputation) VALUES(?,?,?,?)")
             infoStatement.setInt(1, airline.id)
-            infoStatement.setLong(2, airline.airlineInfo.balance)
+            infoStatement.setLong(2, airline.getBalance())
+            infoStatement.setDouble(3, airline.getServiceQuality())
+            infoStatement.setDouble(4, airline.getReputation())
             infoStatement.executeUpdate()
           } 
       }
@@ -101,11 +105,26 @@ object AirlineSource {
   }
 
   def adjustAirlineBalance(airlineId : Int, delta : Long) = {
+	    this.synchronized {
+	      val connection = Meta.getConnection()
+	      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = balance + ? WHERE airline = ?")
+	      updateStatement.setLong(1, delta)
+	      updateStatement.setInt(2, airlineId)
+	      updateStatement.executeUpdate()
+	      updateStatement.close()
+	      connection.close()
+	    }
+	  }
+  
+  
+  def saveAirlineInfo(airline : Airline) = {
     this.synchronized {
       val connection = Meta.getConnection()
-      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = balance + ? WHERE airline = ?")
-      updateStatement.setLong(1, delta)
-      updateStatement.setInt(2, airlineId)
+      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, reputation = ? WHERE airline = ?")
+      updateStatement.setLong(1, airline.getBalance())
+      updateStatement.setDouble(2, airline.getServiceQuality())
+      updateStatement.setDouble(3, airline.getReputation())
+      updateStatement.setInt(4, airline.id)
       updateStatement.executeUpdate()
       updateStatement.close()
       connection.close()

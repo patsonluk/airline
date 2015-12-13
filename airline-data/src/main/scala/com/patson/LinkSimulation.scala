@@ -8,13 +8,12 @@ import scala.concurrent.duration.Duration
 
 object LinkSimulation {
   private val FUEL_UNIT_COST = 0.1 //for now...
-  private val AIRLINE_FIXED_COST = 10000 //for now...
   private val CREW_UNIT_COST = 10 //for now...
   
   private val MAX_LOYALTY_ADJUSTMENT = 0.5
   private[this] val VIP_COUNT = 5
   
-  def linkSimulation(cycle: Int) = {
+  def linkSimulation(cycle: Int) : Map[Int, ListBuffer[LinkConsumptionDetails]] = {
     val links = LinkSource.loadAllLinks(true)
     val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
@@ -55,23 +54,6 @@ object LinkSimulation {
       consumptionsForThisAirline.append(linkConsumption)
     }
     
-    //compute profit
-    val allAirlines = AirlineSource.loadAllAirlines(true)
-    allAirlines.foreach { airline =>
-        val profit = linkConsumptionDetailsByAirline.get(airline.id) match {
-          case Some(linkConsumptions) => 
-            linkConsumptions.foldLeft(0L)(_ + _.profit) - AIRLINE_FIXED_COST
-          case None=>  
-            0 - AIRLINE_FIXED_COST
-              
-        }
-        AirlineSource.adjustAirlineBalance(airline.id, profit)
-      //  airlineProfit.put(airline, profit)
-          
-        println(airline + " profit is: " + profit + " new balance is " + (airline.airlineInfo.balance + profit))
-    }
-    
-    
     //update the loyalty on airports based on link consumption
     println("start updating loyalty")
     val airportSoldLinks = Map[(Int, Int), Set[Link]]() //Map[(airportId, airlineId), links] //cannot use Airport instance directly as they are not the same instance 
@@ -104,6 +86,7 @@ object LinkSimulation {
     }
     AirportSource.updateAirlineAppeal(updatingAirports.values.toList)
     
+    linkConsumptionDetailsByAirline
   }
   
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {

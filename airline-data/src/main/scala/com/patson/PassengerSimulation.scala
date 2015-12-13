@@ -215,7 +215,11 @@ object PassengerSimulation extends App {
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
         val linksWithCost = links.filter{ link => 
           //from the perspective of the passenger group, how well does it know each link
-            val airlineAwareness = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id) 
+            val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
+            val airlineAwarenessFromReputation = link.airline.getReputation() / 2 
+            //println("Awareness from reputation " + airlineAwarenessFromReputation)
+            val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
+            
             airlineAwareness > Random.nextDouble() * AirlineAppeal.MAX_AWARENESS
           }.flatMap { link =>
             var cost = passengerGroup.preference.computeCost(link)
@@ -400,17 +404,11 @@ object PassengerSimulation extends App {
         if (shouldCompute) {
           val cost = linkWithCost.cost + connectionCost
           if (distanceMap(linkWithCost.from) + cost < distanceMap(linkWithCost.to)) {
-  //          distanceMap.put(link.to, distanceMap(link.from) + link.cost)
-  //          predecessorMap.put(link.to, link)
-            updatingLinks.append(linkWithCost.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
+            distanceMap.put(linkWithCost.to, distanceMap(linkWithCost.from) + cost)
+            predecessorMap.put(linkWithCost.to, linkWithCost.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
           }
         }
       }
-      updatingLinks.foreach { updatingLink => 
-          distanceMap.put(updatingLink.to, distanceMap(updatingLink.from) + updatingLink.cost)
-          predecessorMap.put(updatingLink.to, updatingLink)
-      }
-      
     }
     
     //println("cost found : " + distanceMap(to))
@@ -431,6 +429,7 @@ object PassengerSimulation extends App {
           case None => 
             noSolution = true
         }
+        hopCounter += 1        
       }
       if (foundSolution) {
         map + Tuple2(to, Route(route.toList, distanceMap(to)))
