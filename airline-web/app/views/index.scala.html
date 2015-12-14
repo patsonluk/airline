@@ -51,7 +51,7 @@
 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div>
   	<!-- main canvas start -->
   		<div id="canvas" style="width: 80% ; float: left;" >
-  			<div id="map" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
+  			<div id="map" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
   			<div id="airportCanvas" style="display: none;">
   				<div id="airportMap" style=" height: 500px ; width: 550px; float: left;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
   				<div id="airportStatistics" style="width: 900px; height: 400px; float: left;" class="section">
@@ -346,6 +346,28 @@
 		</div>
 		
 		<div id="cityPie" style="height: 200px; width: 350px;"></div>
+    </div>
+    
+    <div style="display: none; width: 100%;" id="linkHistoryPopup">
+    	<input type="hidden" id="linkHistoryPopupId"></input>
+    	<div class="table" style="width: 100%">
+   			<div class="table-row">
+   				<div class="label"><h5>From :</h5></div>
+   				<div class="value" id="linkHistoryPopupFrom"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>To:</h5></div>
+   				<div class="value" id="linkHistoryPopupTo"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Passengers of your airline:</h5></div>
+   				<div class="value" id="linkHistoryThisAirlinePassengers"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Passengers of other airline:</h5></div>
+   				<div class="value" id="linkHistoryOtherAirlinePassengers"></div>
+   			</div>
+		</div>
     </div>
     
     <script async defer

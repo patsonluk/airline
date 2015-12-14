@@ -56,8 +56,8 @@ package object controllers {
       val airlineId = json.\("airlineId").as[Int]
       //val capacity = json.\("capacity").as[Int]
       val price = json.\("price").as[Int]
-      val fromAirport = AirportSource.loadAirportById(fromAirportId).get
-      val toAirport = AirportSource.loadAirportById(toAirportId).get
+      val fromAirport = AirportSource.loadAirportById(fromAirportId, true).get
+      val toAirport = AirportSource.loadAirportById(toAirportId, true).get
       val airline = AirlineSource.loadAirlineById(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val airplaneIds = json.\("airplanes").as[List[Int]]

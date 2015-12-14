@@ -16,7 +16,7 @@ object AirplaneModelInitializer extends App {
     ModelSource.deleteAllModels()
   
     //case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int) extends IdObject
-    val models = List(Model("Cessna 421", capacity = 7, fuelBurn = 10, speed = 300, range = 1555, price = 550000),
+    val models = List(Model("Cessna 421", capacity = 7, fuelBurn = 7, speed = 300, range = 1555, price = 550000),
                       Model("Cessna Caravan", capacity = 14, fuelBurn = 15, speed = 344, range = 2400, price = 1600000),
                       Model("Embraer EMB 120 Brasilia", capacity = 30, fuelBurn = 54, speed = 552, range = 1750, price = 8500000),
                       Model("Embraer ERJ 140", capacity = 44, fuelBurn = 81, speed = 828, range = 2315, price = 17000000),

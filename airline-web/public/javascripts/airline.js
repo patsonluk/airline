@@ -1,8 +1,7 @@
 var flightPaths = {}
 var flightMarkers = []
 var flightMarkerAnimations = []
-var historyPaths = []
-var invertedHistoryPaths = []
+var historyPaths = {}
 var linkHistoryState = "hidden"
 
 function loadAirlines() {
@@ -387,13 +386,13 @@ function toggleLinkHistory() {
 		    success: function(linkHistory) {
 		    	if (!jQuery.isEmptyObject(linkHistory)) {
 		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, false)
+		    			drawLinkHistoryPath(relatedLink, false, linkHistory.watchedLinkId)
 		    		})
 		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, true)
+		    			drawLinkHistoryPath(relatedLink, true, linkHistory.watchedLinkId)
 		    		})
-		    		showLinkHistoryPaths(false)
 		    		linkHistoryState = "show"
+		    		showLinkHistoryPaths(linkHistoryState)
 		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
@@ -402,54 +401,118 @@ function toggleLinkHistory() {
 		    }
 		});
 	} else if (linkHistoryState == "show") {
-		showLinkHistoryPaths(true)
 		linkHistoryState = "showInverted"
+		showLinkHistoryPaths(linkHistoryState)
 	} else if (linkHistoryState == "showInverted") {
-		$.each(historyPaths, function(key, path) {
-			path.setMap(null)
-		})
-		historyPaths = []
 		linkHistoryState = "hidden"
+		showLinkHistoryPaths(linkHistoryState)
+		historyPaths = {}
 	} else {
 		console.log("unknown linkHistoryState " + linkHistoryState)
 	}
 }
-function hideLinkHistory() {
-	
-}
 
-function drawLinkHistoryPath(link, inverted) {
+function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
 	var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
+	var pathKey = link.fromAirportId + "|"  + link.toAirportId + "|" + inverted
 	
 	var lineSymbol = {
-	    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+	    path: google.maps.SymbolPath.FORWARD_OPEN_ARROW
 	};
 	
-	console.log("from " + link.fromAirportCode + " to " + link.toAirportCode + " passenger " + link.passenger)
-
-	var relatedPath = new google.maps.Polyline({
-		 geodesic: true,
-	     strokeColor: "#DC83FC",
-	     strokeOpacity: 0.6,
-	     strokeWeight: 2,
-	     path: [from, to],
-	     icons: [{
-		      icon: lineSymbol,
-		      offset: '100%'
-		    }],
-	     zIndex : 400,
-	     inverted : inverted
-	});
-	historyPaths.push(relatedPath)
+	var isWatchedLink = link.linkId == watchedLinkId
+	var relatedPath
+	if (!historyPaths[pathKey]) {
+		relatedPath = new google.maps.Polyline({
+			 geodesic: true,
+		     strokeColor: isWatchedLink ? "#FF3BF2" : "#DC83FC",
+		     strokeOpacity: 0.6,
+		     strokeWeight: 2,
+		     path: [from, to],
+		     icons: [{
+			      icon: lineSymbol,
+			      offset: '50%'
+			    }],
+		     zIndex : 1100,
+		     inverted : inverted,
+		     thisAirlinePassengers : 0,
+		     otherAirlinePassengers : 0,
+		     watched : isWatchedLink
+		});
+		
+		var fromAirport
+		if (link.fromAirportCity) {
+			fromAirport = link.fromAirportCity + "(" + link.fromAirportCode + ")"
+		} else {
+			fromAirport = link.fromAirportName
+		}
+		
+		var toAirport 
+		if (link.toAirportCity) {
+			toAirport = link.toAirportCity + "(" + link.toAirportCode + ")"
+		} else {
+			toAirport = link.toAirportName
+		}
+		
+		shadowPath = new google.maps.Polyline({
+			 geodesic: true,
+		     strokeColor: "#DC83FC",
+		     strokeOpacity: 0.01,
+		     strokeWeight: 25,
+		     path: [from, to],
+		     zIndex : 401,
+		     inverted : inverted,
+		     fromAirport : fromAirport,
+		     toAirport : toAirport,
+		     thisAirlinePassengers : 0,
+		     otherAirlinePassengers : 0
+		});
+		
+		relatedPath.shadowPath = shadowPath
+		
+		var infowindow; 
+		shadowPath.addListener('mouseover', function(event) {
+			$("#linkHistoryPopupFrom").text(this.fromAirport)
+			$("#linkHistoryPopupTo").text(this.toAirport)
+			$("#linkHistoryThisAirlinePassengers").text(this.thisAirlinePassengers)
+			$("#linkHistoryOtherAirlinePassengers").text(this.otherAirlinePassengers)
+			infowindow = new google.maps.InfoWindow({
+	             content: $("#linkHistoryPopup").html(),
+	             maxWidth : 300});
+			
+			infowindow.setPosition(event.latLng);
+			infowindow.open(map);
+		})		
+		shadowPath.addListener('mouseout', function(event) {
+			infowindow.close()
+		})
+		
+		historyPaths[pathKey] = relatedPath
+	} else {
+		relatedPath = historyPaths[pathKey]
+	}
+	
+	if (link.airlineId == activeAirline.id) {
+		shadowPath.thisAirlinePassengers += link.passenger
+	} else {
+		shadowPath.otherAirlinePassengers += link.passenger
+	}
 }
 
-function showLinkHistoryPaths(inverted) {
+function showLinkHistoryPaths(state) {
 	$.each(historyPaths, function(key, historyPath) {
-		if ((inverted && historyPath.inverted) || (!inverted && !historyPath.inverted)) {
+		if ((state == "showInverted" && historyPath.inverted) || (state == "show" && !historyPath.inverted)) {
+			if (historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers > 1000) {
+				historyPath.setOptions({strokeWeight : 3})
+			} else if (historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers > 10000) {
+				historyPath.setOptions({strokeWeight : 4})
+			}
 			historyPath.setMap(map)
+			historyPath.shadowPath.setMap(map)
 		} else {
 			historyPath.setMap(null)
+			historyPath.shadowPath.setMap(null)
 		}
 	})
 }

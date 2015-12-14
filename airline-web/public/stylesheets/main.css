@@ -85,7 +85,7 @@ dd.error {
 	position: absolute;
 	top: 0; 
 	right: 0;
-	border-radius: 0px 0px 0px 15px;
+	border-radius: 0px 0px 15px 15px;
 	z-index: 1000;
 /* 	background:#ffc; */
 	background: linear-gradient(#F0E069 0%, #FFF6B3 10%);

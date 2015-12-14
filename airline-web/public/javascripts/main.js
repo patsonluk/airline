@@ -22,7 +22,8 @@ $( document ).ready(function() {
 
 function showFloatMessage(message) {
 	$("#floatMessageBox").text(message)
-	$("#floatMessageBox").css({ top:"-=20px"})
+	var centerX = $("#floatMessageBox").parent().width() / 2 - $("#floatMessageBox").width() / 2 
+	$("#floatMessageBox").css({ top:"-=20px", left: centerX})
 	$("#floatMessageBox").show()
 	$("#floatMessageBox").animate({ top:"0px" }, "fast", function() {
 		setTimeout(function() { 

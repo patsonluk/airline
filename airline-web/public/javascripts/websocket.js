@@ -8,7 +8,7 @@ $( document ).ready(function() {})
 function connectWebSocket(airlineId) {
 	websocket = new WebSocket(wsUri); 
 	websocket.onopen = function(evt) {
-		sendMessage(airlineId) 
+		sendMessage(airlineId)  //send airlineId to indicate we want to listen to messages for this airline Id
 		console.log("successfully open socket on airline " + airlineId)
 	}; 
 	websocket.onclose = function(evt) { onClose(evt) }; 
@@ -22,7 +22,8 @@ function initWebSocket(airlineId) {
 }
 
 function onClose(evt) {}  
-function onMessage(evt) {
+function onMessage(evt) { //right now the message is just the cycle #, so refresh the panels
+	console.log("websocket received message : " + evt.data)
 	if (selectedAirlineId) {
 		refreshPanels(selectedAirlineId)
 	}

@@ -97,11 +97,23 @@ function addMarkers(airports) {
 		maxWidth : 500
 	})
 	currentZoom = map.getZoom()
-	var airportMarkerIcon = $("#map").data("airportMarker")
+	var largeAirportMarkerIcon = $("#map").data("largeAirportMarker")
+	var mediumAirportMarkerIcon = $("#map").data("mediumAirportMarker")
+	var smallAirportMarkerIcon = $("#map").data("smallAirportMarker")
+	
 	var resultMarkers = {}
 	for (i = 0; i < airports.length; i++) {
 		  var airportInfo = airports[i]
 		  var position = {lat: airportInfo.latitude, lng: airportInfo.longitude};
+		  var icon
+		  if (airportInfo.size <= 3) {
+			  icon = smallAirportMarkerIcon
+		  } else if (airportInfo.size <= 6) {
+			  icon = mediumAirportMarkerIcon
+		  } else {
+			  icon = largeAirportMarkerIcon
+		  }
+		  
 		  var marker = new google.maps.Marker({
 			    position: position,
 			    map: map,
@@ -115,7 +127,7 @@ function addMarkers(airports) {
 		  		airportIncomeLevel: airportInfo.incomeLevel,
 		  		airportCountryCode: airportInfo.countryCode,
 		  		airportAvailableSlots: airportInfo.availableSlots,
-		  		icon: airportMarkerIcon
+		  		icon: icon
 			  });
 		  
 		  marker.addListener('click', function() {
@@ -226,7 +238,7 @@ function addCityMarkers(airportMap, airport) {
 
 
 function isShowMarker(marker, zoom) {
-	return (marker.isBase) || ((zoom >= 4) && (zoom + marker.airportSize >= 9)) //start showing size >= 5 at zoom 4 
+	return (marker.isBase) || ((zoom >= 4) && (zoom + marker.airportSize / 2 >= 7.5)) //start showing size >= 7 at zoom 4 
 }
 
 function updateBaseInfo(airportId) {

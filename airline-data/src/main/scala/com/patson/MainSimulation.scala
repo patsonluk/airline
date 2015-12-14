@@ -19,6 +19,8 @@ import scala.collection.mutable.Map
 import akka.actor.Actor
 import akka.actor.Props
 import java.util.concurrent.TimeUnit
+import com.patson.stream.SimulationEventStream
+import com.patson.stream.CycleCompleted
 
 object MainSimulation extends App {
   
@@ -37,11 +39,14 @@ object MainSimulation extends App {
     val actor = actorSystem.actorOf(Props[MainSimulationActor])
     actorSystem.scheduler.schedule(Duration.Zero, Duration(1, TimeUnit.MINUTES), actor, Start)
   }
+
   
   def startCycle(cycle : Int) = {
       AirportSimulation.airportSimulation(cycle) 
       val linkResult : Map[Int, ListBuffer[LinkConsumptionDetails]] = LinkSimulation.linkSimulation(cycle)
       AirlineSimulation.airlineSimulation(linkResult, cycle)
+      //notify the websockets via EventStream
+      SimulationEventStream.publish(CycleCompleted(cycle), None)
   }
   
   

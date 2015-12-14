@@ -90,8 +90,11 @@ class LinkApplication extends Controller {
   implicit object RelatedLinkWrites extends Writes[RelatedLink] {
     def writes(relatedLink : RelatedLink): JsValue = {
           JsObject(List(
+      "linkId" -> JsNumber(relatedLink.relatedLinkId),
+      "fromAirportId" -> JsNumber(relatedLink.fromAirport.id),
       "fromAirportCode" -> JsString(relatedLink.fromAirport.iata),
       "fromAirportName" -> JsString(relatedLink.fromAirport.name),
+      "toAirportId" -> JsNumber(relatedLink.toAirport.id),
       "toAirportCode" -> JsString(relatedLink.toAirport.iata),
       "toAirportName" -> JsString(relatedLink.toAirport.name),
       "fromAirportCity" -> JsString(relatedLink.fromAirport.city),
@@ -184,8 +187,10 @@ class LinkApplication extends Controller {
   def addLinkBlock(request : AuthenticatedRequest[AnyContent, Airline]) : Result = {
     if (request.body.isInstanceOf[AnyContentAsJson]) {
       val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
-      if (incomingLink.airline.id != request.user.id) {
-        println("airline " + request.user.id + " trying to add link for airline " + incomingLink.airline.id + " ! Error")
+      val airlineId = incomingLink.airline.id
+      
+      if (airlineId != request.user.id) {
+        println("airline " + request.user.id + " trying to add link for airline " + airlineId + " ! Error")
         return Forbidden
       }
       
@@ -193,9 +198,11 @@ class LinkApplication extends Controller {
         return BadRequest("Cannot insert link - no airplane assigned")
       }
       
-      val links = LinkSource.loadLinksByCriteria(List(("airline", incomingLink.airline.id), ("from_airport", incomingLink.from.id)), true).filter { _.to.id == incomingLink.to.id }
+      val links = LinkSource.loadLinksByCriteria(List(("airline", airlineId), ("from_airport", incomingLink.from.id)), true).filter { _.to.id == incomingLink.to.id }
+      var existingLink : Option[Link] = None
       if (!links.isEmpty) {
         incomingLink.id = links(0).id
+        existingLink = Some(links(0))
       }
       
       val isNewLink = links.isEmpty
@@ -203,10 +210,21 @@ class LinkApplication extends Controller {
       //validate frequency by duration
       val maxFrequency = incomingLink.getAssignedModel().fold(0)(assignedModel => Computation.calculateMaxFrequency(assignedModel, incomingLink.distance))
       if (maxFrequency * incomingLink.getAssignedAirplanes().size < incomingLink.frequency) { //TODO log error!
-        println("max frequecny exceeded, max " + maxFrequency * incomingLink.getAssignedAirplanes().size + " found " +  incomingLink.frequency)
+        println("max frequency exceeded, max " + maxFrequency * incomingLink.getAssignedAirplanes().size + " found " +  incomingLink.frequency)
         return BadRequest("Cannot insert link - frequency exceeded limit")  
       }
-      //TODO validate slot on airport ....probably rethink how to simplify all these calculation!
+
+      //validate slots      
+      val existingFrequency = existingLink.fold(0)(_.frequency)
+      val frequencyChange = incomingLink.frequency - existingFrequency
+      if ((incomingLink.from.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.from.getMaxSlotAssignment(airlineId)) {
+        println("max slot exceeded, tried to add " + frequencyChange + " but from airport slot at " + incomingLink.from.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.from.getMaxSlotAssignment(airlineId))
+        return BadRequest("Cannot insert link - frequency exceeded limit - from airport does not have enough slots")
+      }
+      if ((incomingLink.to.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.to.getMaxSlotAssignment(airlineId)) {
+        println("max slot exceeded, tried to add " + frequencyChange + " but to airport slot at " + incomingLink.to.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.to.getMaxSlotAssignment(airlineId))
+        return BadRequest("Cannot insert link - frequency exceeded limit - to airport does not have enough slots")
+      }
       
       val airplanesForThisLink = incomingLink.getAssignedAirplanes
       //validate all airplanes are same model

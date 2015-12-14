@@ -94,7 +94,7 @@ function plotLinkRidership(linkConsumptions, container) {
 	 
 	var maxWeek = 24
 	
-	linkConsumptions = linkConsumptions.slice(0, maxWeek)
+	linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
 	$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
 		capacityData.push({ value : linkConsumption.capacity })
 		soldSeatsData.push({ value : linkConsumption.soldSeats })
