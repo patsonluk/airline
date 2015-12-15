@@ -43,7 +43,7 @@ object DemandGenerator extends App {
   def computeDemand() = {
     println("Loading airports")
     //val allAirports = AirportSource.loadAllAirports(true)
-    val airports = AirportSource.loadAllAirports(true).filter { _.size >= 2 }
+    val airports = AirportSource.loadAllAirports(true).filter { _.iata != ""  }
     println("Loaded " + airports.size + " airports")
     val totalWorldPower = airports.foldRight(0L)( _.power + _)
     
