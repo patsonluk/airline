@@ -149,6 +149,8 @@ function refreshPanels(airlineId) {
 	    dataType: 'json',
 	    success: function(airline) {
 	    	$("#balance").text(airline.balance)
+	    	$("#reputation").text(airline.reputation + "(" + getAirlineCategory(airline.reputation) + ")")
+	    	$("#serviceQuality").text(airline.serviceQuality)
 	    	refreshLinks()
 	    	if (selectedLink) {
 	    		loadLinkDetails(selectedLink)
@@ -161,6 +163,30 @@ function refreshPanels(airlineId) {
 	});
 }
 
+function getAirlineCategory(reputation) {
+	if (reputation < 10) {
+		return "New Airline"
+	} else if (reputation < 20) {
+		return "Local Airline"
+	} else if (reputation < 30) {
+		return "Municipal Airline"
+	} else if (reputation < 40) {
+		return "Regional Airline"
+	} else if (reputation < 50) {
+		return "Continental Airline"
+	} else if (reputation < 60) {
+		return "Lesser International Airline"
+	} else if (reputation < 70) {
+		return "Third-class International Airline"
+	} else if (reputation < 80) {
+		return "Second-class International Airline"
+	} else if (reputation < 90) {
+		return "Major Internation Airline"
+	} else {
+		return "Top Internation Airline"
+	}
+}
+
 
 function updateAirlineInfo(airlineId) {
 	$.ajax({
@@ -170,6 +196,8 @@ function updateAirlineInfo(airlineId) {
 	    dataType: 'json',
 	    success: function(airline) {
 	    	$("#balance").text(airline.balance)
+	    	$("#reputation").text(airline.reputation + "(" + getAirlineCategory(airline.reputation) + ")")
+	    	$("#serviceQuality").text(airline.serviceQuality)
 	    	$("#currentAirline").text(airline.name)
 	    	activeAirline = airline
 	    	updateAirplaneList($("#airplaneList"))

@@ -25,7 +25,7 @@ class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
             val subscriberId = MyWebSocketActor.nextSubscriberId(userId)
             RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
               case CycleCompleted(cycle) => 
-                println("Received cycle completed: " + cycle)
+                //println("Received cycle completed: " + cycle)
                 out ! cycle.toString() //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle  
             }, subscriberId)
             

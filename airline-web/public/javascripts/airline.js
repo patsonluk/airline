@@ -58,7 +58,6 @@ function buildBase(airportId, isHeadquarter) {
 
 //remove and re-add all the links
 function updateLinksInfo() {
-	selectedLink = null
 	//remove all animation intervals
 	$.each(flightMarkerAnimations, function( key, value ) {
 		  window.clearInterval(value)

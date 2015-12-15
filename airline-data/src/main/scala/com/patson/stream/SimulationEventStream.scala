@@ -7,6 +7,7 @@ import scala.util.Failure
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.Set
 import com.typesafe.config.ConfigFactory
+import akka.remote.RemotingLifecycleEvent
 
 object SimulationEventStream{
   val config = ConfigFactory.load()
@@ -24,6 +25,7 @@ object SimulationEventStream{
     system.eventStream.publish(topic, payload)
   }
   
+  
   class BridgeActor extends Actor {
     def receive = {
       case "subscribe" =>
@@ -38,8 +40,9 @@ object SimulationEventStream{
           println("forwarding message back to " + registeredActor.path)
           registeredActor ! (topic, payload) 
         }
-      case _ =>
-        println("UNKNOWN???")
+      case "ping" => //do nothing
+      case _ => println("UNKNOWN message")
+      
     }
   }
 }

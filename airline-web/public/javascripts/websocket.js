@@ -1,5 +1,4 @@
 var wsUri = "ws://localhost:9000/wsWithActor"; 
-var balanceDiv;
 var websocket;
 var selectedAirlineId
 
