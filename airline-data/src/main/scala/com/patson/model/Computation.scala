@@ -25,13 +25,13 @@ object Computation {
     duration
   }
 
-  def calculateMaxFrequency(airplaneModel: Model, distance : Int) = {
+  def calculateMaxFrequency(airplaneModel: Model, distance : Int) : Int = {
     if (airplaneModel.range < distance) {
       0
     } else {
       val duration = calculateDuration(airplaneModel, distance)
       val roundTripTime = (duration + airplaneModel.turnoverTime) * 2
-      val availableFlightTimePerWeek = 4 * 24 * 60 //assume per week only 4 days are "flyable"
+      val availableFlightTimePerWeek = (3.5 * 24 * 60).toInt //assume per week only 3 days are "flyable"
       //println(airplaneModel + " distance " + distance + " freq: " + availableFlightTimePerWeek / roundTripTime + " times")
       availableFlightTimePerWeek / roundTripTime
     }
