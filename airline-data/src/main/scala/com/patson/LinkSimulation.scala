@@ -92,19 +92,23 @@ object LinkSimulation {
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
     val soldSeats = link.capacity - link.availableSeats
     val loadFactor = soldSeats.toDouble / link.capacity
-    val totalFuelBurn = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.fuelBurn) //fuel burn actually similar to crew cost
-    val fuelCost = ((
-      if (link.duration <= 30) {
-        totalFuelBurn * 10 * link.duration * FUEL_UNIT_COST * link.frequency
-      } else {
-        (totalFuelBurn * 10 * 30 + totalFuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
-      }) * (0.3 + 0.7 * loadFactor)).toInt //at 0 LF, reduce fuel consumption by 70%
+    //val totalFuelBurn = link //fuel burn actually similar to crew cost
+    val fuelCost = link.getAssignedModel() match {
+      case Some(model) =>
+        (if (link.duration <= 30) {
+          model.fuelBurn * 10 * link.duration * FUEL_UNIT_COST * link.frequency
+        } else {
+          (model.fuelBurn * 10 * 30 + model.fuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
+        } * (0.3 + 0.7 * loadFactor)).toInt
+      case None => 0
+    }
+       //at 0 LF, reduce fuel consumption by 70%
     val fixedCost = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost)
     val airportFees = link.getAssignedModel() match {
       case Some(model) => (link.from.slotFee(model) + link.to.slotFee(model) + link.from.landingFee(model) + link.to.landingFee(model)) * link.frequency
       case None => 0 
     }
-    val inflightCost = (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats //10 hours, on top quality flight, cost is 100 per passenger
+    val inflightCost = (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost
     val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
     val revenue = soldSeats * link.price
     val profit = revenue - fuelCost - fixedCost - crewCost - airportFees - inflightCost
