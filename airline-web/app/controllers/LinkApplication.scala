@@ -71,6 +71,12 @@ class LinkApplication extends Controller {
       "price" -> JsNumber(linkConsumption.price),
       "distance" -> JsNumber(linkConsumption.distance),
       "profit" -> JsNumber(linkConsumption.profit),
+      "revenue" -> JsNumber(linkConsumption.revenue),
+      "fuelCost" -> JsNumber(linkConsumption.fuelCost),
+      "crewCost" -> JsNumber(linkConsumption.crewCost),
+      "airportFees" -> JsNumber(linkConsumption.airportFees),
+      "fixedCost" -> JsNumber(linkConsumption.fixedCost),
+      "inflightCost" -> JsNumber(linkConsumption.inflightCost),
       "capacity" -> JsNumber(linkConsumption.capacity),
       "soldSeats" -> JsNumber(linkConsumption.soldSeats),
       "cycle" -> JsNumber(linkConsumption.cycle)))
@@ -231,6 +237,22 @@ class LinkApplication extends Controller {
       val airplaneModels = airplanesForThisLink.foldLeft(Set[Model]())(_ + _.model) //should be just one element
       if (airplaneModels.size != 1) {
         return BadRequest("Cannot insert link - not all airplanes are same model")
+      }
+      
+      //validate the model has the range
+      val model = airplaneModels.toList(0)
+      if (model.range < incomingLink.distance) {
+        return BadRequest("Cannot insert link - model cannot reach that distance")
+      }
+      
+      //validate the model is allowed in the from and to airport
+      if (model.range < incomingLink.distance) {
+        return BadRequest("Cannot insert link - model cannot reach that distance")
+      }
+      
+      //validate the model is allowed for airport sizes
+      if (!incomingLink.from.allowsModel(model) || !incomingLink.to.allowsModel(model)) {
+        return BadRequest("Cannot insert link - airport size does not allow that!")
       }
       
       //check if the assigned planes are either previously unassigned or assigned to this link
@@ -397,7 +419,9 @@ class LinkApplication extends Controller {
             }
             val planLinkInfoByModel = ListBuffer[ModelPlanLinkInfo]()
             
-            availableAirplanesByModel.foreach { 
+            availableAirplanesByModel.filter{
+              case (model, _) => fromAirport.allowsModel(model) && toAirport.allowsModel(model) 
+            }.foreach {
               case(model, airplaneList) => 
                 val duration = Computation.calculateDuration(model, distance)
                 val existingSlotsUsedByThisModel= if (assignedModel.isDefined && assignedModel.get.id == model.id) { existingLink.get.frequency } else { 0 } 

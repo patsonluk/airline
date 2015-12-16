@@ -168,6 +168,19 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     
     airplaneModel.capacity * perSeat
   }
+  
+  def allowsModel(airplaneModel : Model) : Boolean = {
+    import Model.Type._
+    airplaneModel.airplaneType match {
+      case LIGHT => true   
+      case REGIONAL => true
+      case SMALL => size >= 2
+      case MEDIUM => size >= 3
+      case LARGE => size >= 4
+      case JUMBO => size >= 5
+    }
+    
+  }
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)

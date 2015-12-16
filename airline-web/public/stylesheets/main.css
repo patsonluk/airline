@@ -132,3 +132,11 @@ div.googleMapButton {
     height: 100%;
     vertical-align: middle;
 }
+
+div.divider {
+	width: 100%;
+	border-top: 1px solid #6093e7;
+	text-align: center;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}

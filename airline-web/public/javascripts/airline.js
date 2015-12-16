@@ -289,8 +289,8 @@ function loadLinkDetails(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-    		$("#linkFromAirport").text(link.fromAirportName)
-	    	$("#linkToAirport").text(link.toAirportName)
+	    	$("#linkFromAirport").text(getAirportText(link.fromAirportCity, link.fromAirportName))
+	    	$("#linkToAirport").text(getAirportText(link.toAirportCity, link.toAirportName))
 	    	$("#linkCurrentPrice").text(link.price)
 	    	$("#linkDistance").text(link.distance)
 	    	$("#linkQuality").text(link.computedQuality)
@@ -316,6 +316,11 @@ function loadLinkDetails(linkId) {
 		    	$("#linkHistoryCapacity").text("-")
 		    	$("#linkLoadFactor").text("-")
 		    	$("#linkProfit").text("-")
+		    	$("#linkRevenue").text("-")
+		    	$("#linkFuelCost").text("-")
+		    	$("#linkCrewCost").text("-")
+		    	$("#linkAirportFees").text("-")
+		    	$("#linkOtherCosts").text("-")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
 	    		$("#linkHistoryPrice").text(linkConsumption.price)
@@ -323,6 +328,11 @@ function loadLinkDetails(linkId) {
 		    	var loadFactor = linkConsumption.soldSeats / linkConsumption.capacity * 100
 		    	$("#linkLoadFactor").text(parseInt(loadFactor) + "%")
 		    	$("#linkProfit").text("$" + linkConsumption.profit)
+		    	$("#linkRevenue").text("$" + linkConsumption.revenue)
+		    	$("#linkFuelCost").text("$" + linkConsumption.fuelCost)
+		    	$("#linkCrewCost").text("$" + linkConsumption.crewCost)
+		    	$("#linkAirportFees").text("$" + linkConsumption.airportFees)
+		    	$("#linkOtherCosts").text("$" + (linkConsumption.inflightCost + linkConsumption.fixedCost))
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
 	    	plotLinkRidership(linkConsumptions, $("#linkRidershipChart"))
@@ -848,7 +858,13 @@ function animateArrival(vipMarker, bounce, influencePointCount) {
 	}
 }
 
-
+function getAirportText(city, airportName) {
+	if (city) {
+		return city + "(" + airportName + ")"
+	} else {
+		return airportName
+	}
+}
 
 
 	
@@ -866,7 +882,7 @@ function removeAllLinks() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
-	
-	
 }
+
+
 	
