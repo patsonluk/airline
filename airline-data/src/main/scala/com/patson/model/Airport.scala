@@ -131,9 +131,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     slotAssignmentsLoaded = true
   }
   
-  //fixed fee for all airplane type
-  val slotFee : Int = { 
-    size match {
+  
+  def slotFee(airplaneModel : Model) : Int = { 
+    val baseSlotFee = size match {
       case 1 => 50 //small
       case 2 => 50 //medium
       case 3 => 50 //large
@@ -142,6 +142,18 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case 6 => 700 
       case _ => 1000 //mega airports - not suitable for tiny jets
     }
+    
+    import Model.Type._
+    val multipler = airplaneModel.airplaneType match {
+      case LIGHT => 1
+      case REGIONAL => 1
+      case SMALL => 2
+      case MEDIUM => 3
+      case LARGE => 5
+      case JUMBO => 7
+    }
+    
+    baseSlotFee * multipler    
   }
   
   def landingFee(airplaneModel : Model) : Int = {

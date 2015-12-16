@@ -100,7 +100,10 @@ object LinkSimulation {
         (totalFuelBurn * 10 * 30 + totalFuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
       }) * (0.3 + 0.7 * loadFactor)).toInt //at 0 LF, reduce fuel consumption by 70%
     val fixedCost = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost)
-    val airportFees = (link.from.slotFee + link.to.slotFee + link.getAssignedModel().fold(0)(link.from.landingFee(_)) + link.getAssignedModel().fold(0)(link.to.landingFee(_))) * link.frequency 
+    val airportFees = link.getAssignedModel() match {
+      case Some(model) => (link.from.slotFee(model) + link.to.slotFee(model) + link.from.landingFee(model) + link.to.landingFee(model)) * link.frequency
+      case None => 0 
+    }
     val inflightCost = (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats //10 hours, on top quality flight, cost is 100 per passenger
     val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
     val revenue = soldSeats * link.price
