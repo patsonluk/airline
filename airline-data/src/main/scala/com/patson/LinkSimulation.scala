@@ -7,8 +7,8 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object LinkSimulation {
-  private val FUEL_UNIT_COST = 0.1 //for now...
-  private val CREW_UNIT_COST = 10 //for now...
+  private val FUEL_UNIT_COST = 0.12 //for now...
+  private val CREW_UNIT_COST = 15 //for now...
   
   private val MAX_LOYALTY_ADJUSTMENT = 0.5
   private[this] val VIP_COUNT = 5
@@ -99,7 +99,7 @@ object LinkSimulation {
           model.fuelBurn * 10 * link.duration * FUEL_UNIT_COST * link.frequency
         } else {
           (model.fuelBurn * 10 * 30 + model.fuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
-        } * (0.3 + 0.7 * loadFactor)).toInt
+        } * (0.5 + 0.5 * loadFactor)).toInt //at 0 LF, 50% fuel cost
       case None => 0
     }
        //at 0 LF, reduce fuel consumption by 70%

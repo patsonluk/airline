@@ -8,7 +8,7 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
   val airplaneType : Type = {
     capacity match {
       case x if (x <= 15) => LIGHT
-      case x if (x <= 40) => REGIONAL
+      case x if (x <= 60) => REGIONAL
       case x if (x <= 150) => SMALL 
       case x if (x <= 250) => MEDIUM
       case x if (x <= 350) => LARGE
@@ -17,12 +17,12 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
   }
   val turnoverTime : Int = {
     airplaneType match {
-      case LIGHT => 30
-      case REGIONAL => 50
-      case SMALL => 80 
-      case MEDIUM => 120
-      case LARGE => 160
-      case JUMBO => 200 
+      case LIGHT => 45
+      case REGIONAL => 70
+      case SMALL => 100 
+      case MEDIUM => 140
+      case LARGE => 180
+      case JUMBO => 220 
     }
   }
   
