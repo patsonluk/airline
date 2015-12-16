@@ -385,12 +385,9 @@ object PassengerSimulation extends App {
       val updatingLinks = ListBuffer[LinkWithCost]()
       
       for (linkWithCost <- linksWithCost) {
-        var shouldCompute = true
-        var connectionCost = 0.0
-        if (i > 0) { 
-          if (!predecessorMap.contains(linkWithCost.from)) { //then don't even bother, no valid path to the "from airport" of this link anyway 
-            shouldCompute = false
-          } else { //calculate connection cost
+        if (linkWithCost.from == from || predecessorMap.contains(linkWithCost.from)) {
+          var connectionCost = 0.0
+          if (linkWithCost.from != from) { //then it should be a connection flight
               connectionCost += 20 * 500 / 60 //at least 20 mins to make the connection 
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
               val frequency = Math.max(predecessorMap(linkWithCost.from).link.frequency, linkWithCost.link.frequency)
@@ -399,14 +396,11 @@ object PassengerSimulation extends App {
                 connectionCost += (2 * 24 * 50).toDouble / frequency //at worst (both at 1, assuming to wait extra 2 days)
               }
           }
-        }
-        
-        if (shouldCompute) {
           val cost = linkWithCost.cost + connectionCost
           if (distanceMap(linkWithCost.from) + cost < distanceMap(linkWithCost.to)) {
             distanceMap.put(linkWithCost.to, distanceMap(linkWithCost.from) + cost)
             predecessorMap.put(linkWithCost.to, linkWithCost.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
-          }
+          }  
         }
       }
     }
