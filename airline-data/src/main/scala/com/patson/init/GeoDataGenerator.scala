@@ -264,19 +264,21 @@ object GeoDataGenerator extends App {
             potentialAirports(0)._1.addCityServed(city, 1)
           } else if (potentialAirports.size > 1) {
             //val sortedAirports = potentialAirports.sortBy(_._2).sortBy(- _._1.size)
-            val dominateAirportSize : Int =  potentialAirports.filter(_._2 <= 100).map( _._1).reduceLeftOption { (largestAirport, airport) =>
+            val dominateAirportSize : Int =  potentialAirports.filter(_._2 <= 50).map( _._1).reduceLeftOption { (largestAirport, airport) =>
               if (largestAirport.size < airport.size) airport else largestAirport
             }.fold(0)(_.size)
             
-            //val validAirports = if (dominateAirportSize >= 6) { potentialAirports.filter(_._1.size >= 4) } else potentialAirports //there's a super airport within 100km, then other airports can only get some share if it's size >= 4
+            val validAirports = if (dominateAirportSize >= 6) { potentialAirports.filter(_._1.size >= 2) } else potentialAirports //there's a super airport within 50km, then other airports can only get some share if it's size >= 3
 
-            val validAirports = potentialAirports            //give small airpots a chance... for now
+//            val validAirports = potentialAirports            //give small airports a chance... for now
             
-            val (totalWeight, airportWeights) = validAirports.foldRight((0.0, List[(Airport, Int)]())) {
-              case (Tuple2(airport, distance), Tuple2(foldInt, airportWeightList)) => 
-                val thisAirportWeight = (if (distance <= 100) 2 else 1) * airport.size * airport.size
-                (thisAirportWeight + foldInt, (airport, thisAirportWeight) :: airportWeightList)
-            }
+            val airportWeights = validAirports.foldRight(List[(Airport, Int)]()) {
+              case (Tuple2(airport, distance), airportWeightList) => 
+                val thisAirportWeight = (if (distance <= 25) 5 else if (distance <= 50) 3 else if (distance <= 100) 2 else 1) * airport.size * airport.size * airport.size
+                (airport, thisAirportWeight) :: airportWeightList
+            }.sortBy(_._2).takeRight(10) //take the largest 10
+            
+            val totalWeight = airportWeights.foldRight(0)(_ ._2+ _)
             
             airportWeights.foreach {
               case Tuple2(airport, weight) => airport.addCityServed(city, weight.toDouble / totalWeight) 
