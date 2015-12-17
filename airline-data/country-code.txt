@@ -3,7 +3,7 @@ Afghanistan,AF,AFG,004,ISO 3166-2:AF,Asia,Southern Asia,142,034
 Albania,AL,ALB,008,ISO 3166-2:AL,Europe,Southern Europe,150,039
 Algeria,DZ,DZA,012,ISO 3166-2:DZ,Africa,Northern Africa,002,015
 American Samoa,AS,ASM,016,ISO 3166-2:AS,Oceania,Polynesia,009,061
-Andorra,AD,AND,020,ISO 3166-2:AD,Europe,Southern Europe,150,039
+Andorra,AD,ADO,020,ISO 3166-2:AD,Europe,Southern Europe,150,039
 Angola,AO,AGO,024,ISO 3166-2:AO,Africa,Middle Africa,002,017
 Anguilla,AI,AIA,660,ISO 3166-2:AI,Americas,Caribbean,019,029
 Antarctica,AQ,ATA,010,ISO 3166-2:AQ,,,,
@@ -49,7 +49,7 @@ Cocos (Keeling) Islands,CC,CCK,166,ISO 3166-2:CC,,,,
 Colombia,CO,COL,170,ISO 3166-2:CO,Americas,South America,019,005
 Comoros,KM,COM,174,ISO 3166-2:KM,Africa,Eastern Africa,002,014
 Congo,CG,COG,178,ISO 3166-2:CG,Africa,Middle Africa,002,017
-Congo (Democratic Republic of the),CD,COD,180,ISO 3166-2:CD,Africa,Middle Africa,002,017
+Congo (Democratic Republic of the),CD,ZAR,180,ISO 3166-2:CD,Africa,Middle Africa,002,017
 Cook Islands,CK,COK,184,ISO 3166-2:CK,Oceania,Polynesia,009,061
 Costa Rica,CR,CRI,188,ISO 3166-2:CR,Americas,Central America,019,013
 Côte d'Ivoire,CI,CIV,384,ISO 3166-2:CI,Africa,Western Africa,002,011
@@ -179,7 +179,7 @@ Portugal,PT,PRT,620,ISO 3166-2:PT,Europe,Southern Europe,150,039
 Puerto Rico,PR,PRI,630,ISO 3166-2:PR,Americas,Caribbean,019,029
 Qatar,QA,QAT,634,ISO 3166-2:QA,Asia,Western Asia,142,145
 Réunion,RE,REU,638,ISO 3166-2:RE,Africa,Eastern Africa,002,014
-Romania,RO,ROU,642,ISO 3166-2:RO,Europe,Eastern Europe,150,151
+Romania,RO,ROM,642,ISO 3166-2:RO,Europe,Eastern Europe,150,151
 Russian Federation,RU,RUS,643,ISO 3166-2:RU,Europe,Eastern Europe,150,151
 Rwanda,RW,RWA,646,ISO 3166-2:RW,Africa,Eastern Africa,002,014
 Saint Barthélemy,BL,BLM,652,ISO 3166-2:BL,Americas,Caribbean,019,029
@@ -219,7 +219,7 @@ Taiwan,TW,TWN,158,ISO 3166-2:TW,Asia,Eastern Asia,142,030
 Tajikistan,TJ,TJK,762,ISO 3166-2:TJ,Asia,Central Asia,142,143
 Tanzania,TZ,TZA,834,ISO 3166-2:TZ,Africa,Eastern Africa,002,014
 Thailand,TH,THA,764,ISO 3166-2:TH,Asia,South-Eastern Asia,142,035
-Timor-Leste,TL,TLS,626,ISO 3166-2:TL,Asia,South-Eastern Asia,142,035
+Timor-Leste,TL,TMP,626,ISO 3166-2:TL,Asia,South-Eastern Asia,142,035
 Togo,TG,TGO,768,ISO 3166-2:TG,Africa,Western Africa,002,011
 Tokelau,TK,TKL,772,ISO 3166-2:TK,Oceania,Polynesia,009,061
 Tonga,TO,TON,776,ISO 3166-2:TO,Oceania,Polynesia,009,061
@@ -247,3 +247,4 @@ Western Sahara,EH,ESH,732,ISO 3166-2:EH,Africa,Northern Africa,002,015
 Yemen,YE,YEM,887,ISO 3166-2:YE,Asia,Western Asia,142,145
 Zambia,ZM,ZMB,894,ISO 3166-2:ZM,Africa,Eastern Africa,002,014
 Zimbabwe,ZW,ZWE,716,ISO 3166-2:ZW,Africa,Eastern Africa,002,014
+Kosovo,XK,KSV,688,ISO 3166-2:RS,Europe,Southern Europe,150,039
