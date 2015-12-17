@@ -92,29 +92,29 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       consumptionResult.profit.should(be < 0)
     }
     
-    "Some profit (but not good) at 0.5 LF at suitable range".in {
+    "Some profit (but not good) at 0.6 LF at suitable range".in {
       var airplane = lightAirplane
-      var consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.5, 3)
+      var consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.6, 3)
       consumptionResult.profit.should(be > 0)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       
       airplane = regionalAirplane
-      consumptionResult = simulateStandard(1000, airplane, SHORT_HAUL_DOMESTIC, 0.5, 3)
+      consumptionResult = simulateStandard(1000, airplane, SHORT_HAUL_DOMESTIC, 0.6, 3)
       consumptionResult.profit.should(be > 0)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       
       airplane = smallAirplane
-      consumptionResult = simulateStandard(4000, airplane, LONG_HAUL_DOMESTIC, 0.5, 4)
+      consumptionResult = simulateStandard(4000, airplane, LONG_HAUL_DOMESTIC, 0.6, 4)
       consumptionResult.profit.should(be > 0)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       
       airplane = mediumAirplane
-      consumptionResult = simulateStandard(8000, airplane, LONG_HAUL_INTERNATIONAL, 0.5, 5)
+      consumptionResult = simulateStandard(8000, airplane, LONG_HAUL_INTERNATIONAL, 0.6, 5)
       consumptionResult.profit.should(be > 0)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       
       airplane = largeAirplane
-      consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERNATIONAL, 0.5, 6)
+      consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERNATIONAL, 0.6, 6)
       consumptionResult.profit.should(be > 0)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
     }
@@ -191,18 +191,18 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
 //      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1)
 //      verfiyProfitMargin(consumptionResult, airplane.model, false)
     }
-    "Only profitable with smaller jets on very short route < 200 km at small airport (0.5 LF)".in {
+    "Only profitable with smaller jets on very short route < 200 km at small airport (0.6 LF)".in {
       var airplane = lightAirplane
-      var consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.5)
+      var consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.6)
       consumptionResult.profit.should(be > 0)
             
       airplane = regionalAirplane
-      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.5)
+      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.6)
       consumptionResult.profit.should(be > 0)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       
       airplane = smallAirplane
-      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.5)
+      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.6)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       
             //medium and large cannot fly small airports

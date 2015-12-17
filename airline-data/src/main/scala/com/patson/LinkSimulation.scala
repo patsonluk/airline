@@ -108,7 +108,7 @@ object LinkSimulation {
       case Some(model) => (link.from.slotFee(model) + link.to.slotFee(model) + link.from.landingFee(model) + link.to.landingFee(model)) * link.frequency
       case None => 0 
     }
-    val inflightCost = (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost
+    val inflightCost = (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2 //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost . Roundtrip X 2
     val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
     val revenue = soldSeats * link.price
     val profit = revenue - fuelCost - fixedCost - crewCost - airportFees - inflightCost
