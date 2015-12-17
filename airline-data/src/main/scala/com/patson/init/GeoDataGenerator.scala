@@ -24,7 +24,7 @@ object GeoDataGenerator extends App {
 
   //implicit val materializer = FlowMaterializer()
 
-  private val DEFAULT_UNKNOWN_INCOME = 100
+  private val DEFAULT_UNKNOWN_INCOME = 1000
   
   mainFlow
   
@@ -58,10 +58,15 @@ object GeoDataGenerator extends App {
       infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0  
     }.map {
       info =>
-        {
+        {  
+          if (incomeInfo.get(info(8)).isEmpty) {
+            println(info(8) + " has no income info")
+          }
           new City(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, incomeInfo.get(info(8)).getOrElse(DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
         }
     }
+    
+    
 
     val resultSink = Sink.fold(List[City]())((cityList, City : City) => (City :: cityList))
     
@@ -71,7 +76,7 @@ object GeoDataGenerator extends App {
   }
   
   def isCity(placeCode : String, countryCode : String) : Boolean = {
-    placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || (placeCode == "PPL" && (countryCode == "AU" || countryCode == "CA"))  
+    placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || (placeCode == "PPLA3" && countryCode != "CN") || (placeCode == "PPL" && (countryCode == "AU" /*|| countryCode == "CA"*/))  
   }
   
   def getRunway() : Future[Map[String, List[Runway]]] = {
@@ -170,7 +175,7 @@ object GeoDataGenerator extends App {
             case "large_airport" => 3
             case _ => 0
           }
-        new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), airportSize, 0, 0, 0) //2 - size, 3 - name, 4 - lat, 5 - long, 8 - country, 10 - city, 12 - code1, 13- code2
+        new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), zone = info(7), airportSize, 0, 0, 0) //2 - size, 3 - name, 4 - lat, 5 - long, 7 - zone, 8 - country, 10 - city, 12 - code1, 13- code2
     }
 
     val resultSink = Sink.fold(List[Airport]())((airportList, Airport : Airport) => (Airport :: airportList))
@@ -227,7 +232,7 @@ object GeoDataGenerator extends App {
         println(citites.size + " cities")
         
         val airportResult = adjustAirportByRunway(rawAirportResult.filter { airport => 
-            ! (airport.name.toLowerCase().contains(" base") || airport.name.toLowerCase().contains(" airbase"))
+             airport.name.toLowerCase().contains(" airport")
           }, runwayResult)
         
         val airportsSortedByLongitude = airportResult.sortBy(_.longitude)

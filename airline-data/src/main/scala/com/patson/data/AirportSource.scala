@@ -47,6 +47,7 @@ object AirportSource {
           resultSet.getDouble("longitude"),
           resultSet.getString("country_code"),
           resultSet.getString("city"),
+          resultSet.getString("zone"),
           resultSet.getInt("airport_size"),
           resultSet.getLong("power"),
           resultSet.getLong("population"),
@@ -166,7 +167,7 @@ object AirportSource {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, airport_size, power, population, slots)  VALUES(?,?,?,?,?,?,?,?,?,?,?)")
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, zone, airport_size, power, population, slots)  VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
     
       connection.setAutoCommit(false)
       airports.foreach { 
@@ -178,10 +179,11 @@ object AirportSource {
           preparedStatement.setDouble(5, airport.longitude)
           preparedStatement.setString(6, airport.countryCode)
           preparedStatement.setString(7, airport.city)
-          preparedStatement.setInt(8, airport.size)
-          preparedStatement.setLong(9, airport.power)
-          preparedStatement.setLong(10, airport.population)
-          preparedStatement.setInt(11, airport.slots)
+          preparedStatement.setString(8, airport.zone)
+          preparedStatement.setInt(9, airport.size)
+          preparedStatement.setLong(10, airport.power)
+          preparedStatement.setLong(11, airport.population)
+          preparedStatement.setInt(12, airport.slots)
           
           preparedStatement.executeUpdate()
           val generatedKeys = preparedStatement.getGeneratedKeys

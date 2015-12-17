@@ -22,7 +22,7 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
  
   val testAirline1 = Airline("airline 1", 1)
   val testAirline2 = Airline("airline 2", 2)
-  val airport = Airport("", "", "Airport", 0, 0, "", "", 1, 0, 0, slots = 100)
+  val airport = Airport("", "", "Airport", 0, 0, "", "", "", 1, 0, 0, slots = 100)
   
   
   "Airport.availableSlots()".must {
@@ -93,7 +93,7 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
       clonedAirport.initAirlineAppeals(Map())
       clonedAirport.setAirlineLoyalty(testAirline1.id, 100)
       clonedAirport.getMaxSlotAssignment(testAirline1.id).shouldBe(50) //can only give 10 
-      clonedAirport.getMaxSlotAssignment(3).shouldBe(1) //new airline
+      clonedAirport.getMaxSlotAssignment(3).shouldBe(5) //new airline
     }
   }
 }

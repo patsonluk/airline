@@ -3,7 +3,7 @@ package com.patson.model
 import com.patson.model.airplane.Model
 import com.patson.model.airplane.Model.Type
 
-case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
+case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
   val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
   private[this] val airlineAppeals = scala.collection.mutable.Map[Int, AirlineAppeal]()
   private[this] var airlineAppealsLoaded = false
@@ -79,7 +79,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       if (currentAssignedSlotToThisAirline > 0) {
         currentAssignedSlotToThisAirline
       } else if (availableSlots > 0) { //some hope for new airline...
-        Math.min(availableSlots, minSlots)
+        1
       } else { //sry all full
         0
       } 
@@ -191,7 +191,7 @@ object AirlineAppeal {
 
 object Airport {
   def fromId(id : Int) = {
-    val airportWithJustId = Airport("", "", "", 0, 0, "", "", 0, 0, 0, 0, 0)
+    val airportWithJustId = Airport("", "", "", 0, 0, "", "", "", 0, 0, 0, 0, 0)
     airportWithJustId.id = id
     airportWithJustId
   }
