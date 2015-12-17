@@ -268,7 +268,9 @@ object GeoDataGenerator extends App {
               if (largestAirport.size < airport.size) airport else largestAirport
             }.fold(0)(_.size)
             
-            val validAirports = if (dominateAirportSize >= 6) { potentialAirports.filter(_._1.size >= 4) } else potentialAirports //there's a super airport within 100km, then other airports can only get some share if it's size >= 4 
+            //val validAirports = if (dominateAirportSize >= 6) { potentialAirports.filter(_._1.size >= 4) } else potentialAirports //there's a super airport within 100km, then other airports can only get some share if it's size >= 4
+
+            val validAirports = potentialAirports            //give small airpots a chance... for now
             
             val (totalWeight, airportWeights) = validAirports.foldRight((0.0, List[(Airport, Int)]())) {
               case (Tuple2(airport, distance), Tuple2(foldInt, airportWeightList)) => 
