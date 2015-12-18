@@ -22,6 +22,8 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import com.patson.model.Computation
 import com.patson.model.FlightType
+import com.patson.model.BUSINESS
+import com.patson.model.ECONOMY
 
 
 object DemandGenerator extends App {
@@ -143,7 +145,7 @@ object DemandGenerator extends App {
     //TODO
     val flightPreferences = ListBuffer[(FlightPreference, Int)]()
     for (i <- 0 until simplePreferenceCount) { 
-      flightPreferences.append((SimplePreference(i, simplePreferenceCount - 1), 1))
+      flightPreferences.append((SimplePreference(i, simplePreferenceCount - 1, ECONOMY), 1))
     }
         
 //    fromAirport.airlineLoyalties.foreach {
@@ -153,7 +155,7 @@ object DemandGenerator extends App {
     //for now 100 loyalty preferences per airport
     val loyaltyPreferenceCount = 100;
     for (i <- 0 until loyaltyPreferenceCount) {
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals()), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), ECONOMY), 1))
     }
     
     

@@ -41,10 +41,10 @@ object RouteHistorySource {
           val toAirport = AirportSource.loadAirportById(toAirportId, false).getOrElse(Airport.fromId(toAirportId))
           val airlineId = routeEntryResultSet.getInt("airline")
           val airline = AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId))
-          links += Link(from = fromAirport, to = toAirport, airline = airline, price = 0, distance = 0, capacity = 0, rawQuality = 0, duration = 0, frequency = 0)
+          links += Link(from = fromAirport, to = toAirport, airline = airline, price = LinkPrice(Map.empty), distance = 0, capacity = LinkCapacity(Map.empty), rawQuality = 0, duration = 0, frequency = 0)
         }
         routeEntryStatement.close()
-        routes += Route(links.map(LinkWithCost(_, 0, false)).toList, 0) 
+        routes += Route(links.map(LinkConsideration(_, 0, ECONOMY, false)).toList, 0) 
       }
       
       resultSet.close()

@@ -58,7 +58,7 @@ object LinkSimulation {
     println("start updating loyalty")
     val airportSoldLinks = Map[(Int, Int), Set[Link]]() //Map[(airportId, airlineId), links] //cannot use Airport instance directly as they are not the same instance 
     
-    links.filter { link => link.capacity > link.availableSeats }.foreach { link =>
+    links.foreach { link =>
       airportSoldLinks.getOrElseUpdate((link.to.id, link.airline.id), Set[Link]()).add(link) 
       airportSoldLinks.getOrElseUpdate((link.from.id, link.airline.id), Set[Link]()).add(link)
     }
@@ -68,8 +68,8 @@ object LinkSimulation {
       case ((airportId, airlineId), links) =>
         val airport = updatingAirports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, true).get)
           
-        val totalTransportedPassengers = links.foldLeft(0) { (foldInt, link) => foldInt + (link.capacity - link.availableSeats) } 
-        val totalQualityProduct = links.foldLeft(0L) { (foldLong, link) => foldLong + (link.capacity - link.availableSeats) * link.computedQuality }
+        val totalTransportedPassengers = links.foldLeft(0) { (foldInt, link) => foldInt + link.getTotalSoldSeats } 
+        val totalQualityProduct = links.foldLeft(0L) { (foldLong, link) => foldLong + totalTransportedPassengers * link.computedQuality }
         val averageQuality = totalQualityProduct.toDouble / totalTransportedPassengers
         
         var loyaltyAdjustment = totalTransportedPassengers / 200.0 / (airport.size * airport.size) //on a size 1 airport, 200 transported passengers is enough to move the loyalty by 1, on size 7 it's 7 * 7 * 1000)
@@ -90,8 +90,9 @@ object LinkSimulation {
   }
   
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
-    val soldSeats = link.capacity - link.availableSeats
-    val loadFactor = soldSeats.toDouble / link.capacity
+    
+    val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
+    
     //val totalFuelBurn = link //fuel burn actually similar to crew cost
     val fuelCost = link.getAssignedModel() match {
       case Some(model) =>
@@ -108,12 +109,20 @@ object LinkSimulation {
       case Some(model) => (link.from.slotFee(model) + link.to.slotFee(model) + link.from.landingFee(model) + link.to.landingFee(model)) * link.frequency
       case None => 0 
     }
-    val inflightCost = (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2 //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost . Roundtrip X 2
-    val crewCost = link.capacity * link.duration / 60 * CREW_UNIT_COST 
-    val revenue = soldSeats * link.price
+    
+    var inflightCost, crewCost, revenue = 0 
+    link.capacity.capacityMap.keys.foreach { linkClass =>
+      val capacity = link.capacity(linkClass)
+      val soldSeats = capacity - link.availableSeats(linkClass)
+      
+      inflightCost += linkClass.resourceMultiplier * (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2 //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost . Roundtrip X 2
+      crewCost += linkClass.resourceMultiplier * capacity * link.duration / 60 * CREW_UNIT_COST 
+      revenue += soldSeats * link.price(linkClass)
+    }
+    
     val profit = revenue - fuelCost - fixedCost - crewCost - airportFees - inflightCost
 
-    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, soldSeats, fuelCost, crewCost, airportFees, inflightCost, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
+    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, fuelCost, crewCost, airportFees, inflightCost, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
     println("profit : " + result.profit + " result: " + result)
     result
   }

@@ -7,8 +7,8 @@ import com.patson.model.airplane.Model
  * 
  * Frequency sum of all assigned plane
  */
-case class Link(from : Airport, to : Airport, airline: Airline, price : Int, distance : Int, capacity: Int, rawQuality : Int, duration : Int, frequency : Int, var id : Int = 0) extends IdObject{
-  var availableSeats : Int = capacity
+case class Link(from : Airport, to : Airport, airline: Airline, price : LinkPrice, distance : Int, capacity: LinkCapacity, rawQuality : Int, duration : Int, frequency : Int, var id : Int = 0) extends IdObject{
+  var availableSeats : LinkCapacity = capacity.copy()
   private var assignedAirplanes : List[Airplane] = List.empty
   private var assignedModel : Option[Model] = None
   
@@ -45,6 +45,29 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : Int, dis
     } else {
       computedQualityStore
     }
+  }
+  
+  def getTotalCapacity : Int = {
+    capacity.capacityMap.map(_._2).foldLeft(0)(_ + _)
+  }
+  
+  def getTotalAvailableSeats : Int = {
+    availableSeats.capacityMap.map(_._2).foldLeft(0)(_ + _)
+  }
+  
+  def getTotalSoldSeats : Int = {
+    getTotalCapacity - getTotalAvailableSeats 
+  }
+  
+  
+  
+  def soldSeats : LinkCapacity = {
+    LinkCapacity(
+      capacity.capacityMap.map { 
+        case (linkClass, capacity) =>
+        (linkClass, capacity - availableSeats(linkClass))
+      }
+    )
   }
   
    //adjust by quality
@@ -88,7 +111,7 @@ object Link {
 /**
  * Take note that cost is in terms of flight distance (km)
  */
-case class LinkWithCost(link : Link, cost : Double, inverted : Boolean) {
+case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, inverted : Boolean) {
     def from : Airport = if (inverted) link.to else link.from
     def to : Airport = if (inverted) link.from else link.to
     
@@ -96,3 +119,20 @@ case class LinkWithCost(link : Link, cost : Double, inverted : Boolean) {
       this.getClass.getSimpleName + "(" + from.name + " => " + to.name + " (inverted?) " + inverted + ")"
     }
 }
+
+sealed abstract class LinkClass(val spaceMultiplier : Int, val resourceMultiplier : Int, val priceMultiplier : Int, val level : Int) //level for sorting/comparison purpose
+case object FIRST extends LinkClass(10, 10, 12, 3)
+case object BUSINESS extends LinkClass(3, 5, 5, 2)
+case object ECONOMY extends LinkClass(1, 1, 1, 1)
+
+
+
+case class LinkCapacity(capacityMap : Map[LinkClass, Int]) {
+  def apply(linkClass : LinkClass) = { capacityMap.getOrElse(linkClass, 0) }
+}
+
+case class LinkPrice(priceMap : Map[LinkClass, Int]) {
+  def apply(linkClass : LinkClass) = { priceMap.getOrElse(linkClass, 0) } 
+}
+
+

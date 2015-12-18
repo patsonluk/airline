@@ -2,14 +2,9 @@ package com.patson.data
 import com.patson.data.Constants._
 import scala.collection.mutable.ListBuffer
 import java.sql.DriverManager
-import com.patson.model.Airport
-import com.patson.model.Link
-import com.patson.model.Airline
 import com.patson.model.airplane.Airplane
 import java.sql.PreparedStatement
-import com.patson.model.LinkConsumptionDetails
-import com.patson.model.LinkConsumptionDetails
-import com.patson.model.LinkConsumptionDetails
+import com.patson.model._
 
 object LinkSource {
   def loadLinksByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
@@ -45,9 +40,9 @@ object LinkSource {
               fromAirport.get,
               toAirport.get,
               airline.get,
-              resultSet.getInt("price"),
+              LinkPrice(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
               resultSet.getInt("distance"),
-              resultSet.getInt("capacity"),
+              LinkCapacity(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
               resultSet.getInt("quality"),
               resultSet.getInt("duration"),
               resultSet.getInt("frequency"))
@@ -104,21 +99,25 @@ object LinkSource {
      }
   }
   
-  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : Int, distance : Double, capacity : Int, rawQuality : Int,  duration : Int, frequency : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
+  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkPrice, distance : Double, capacity : LinkCapacity, rawQuality : Int,  duration : Int, frequency : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price, distance, capacity, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       preparedStatement.setInt(1, fromAirportId)
       preparedStatement.setInt(2, toAirportId)
       preparedStatement.setInt(3, airlineId)
-      preparedStatement.setInt(4, price)
-      preparedStatement.setDouble(5, distance)
-      preparedStatement.setInt(6, capacity)
-      preparedStatement.setInt(7, rawQuality)
-      preparedStatement.setInt(8, duration)
-      preparedStatement.setInt(9, frequency)
+      preparedStatement.setInt(4, price(ECONOMY))
+      preparedStatement.setInt(5, price(BUSINESS))
+      preparedStatement.setInt(6, price(FIRST))
+      preparedStatement.setDouble(7, distance)
+      preparedStatement.setInt(8, capacity(ECONOMY))
+      preparedStatement.setInt(9, capacity(BUSINESS))
+      preparedStatement.setInt(10, capacity(BUSINESS))
+      preparedStatement.setInt(11, rawQuality)
+      preparedStatement.setInt(12, duration)
+      preparedStatement.setInt(13, frequency)
       
       val updateCount = preparedStatement.executeUpdate()
       println("Saved " + updateCount + " link!")
@@ -142,15 +141,19 @@ object LinkSource {
   def updateLink(link : Link) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price = ?, capacity = ?, quality = ?, duration = ?, frequency = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ? WHERE id = ?")
 
     try {
-      preparedStatement.setInt(1, link.price)
-      preparedStatement.setInt(2, link.capacity)
-      preparedStatement.setInt(3, link.rawQuality)
-      preparedStatement.setInt(4, link.duration)
-      preparedStatement.setInt(5, link.frequency)
-      preparedStatement.setInt(6, link.id)
+      preparedStatement.setInt(1, link.price(ECONOMY))
+      preparedStatement.setInt(2, link.price(BUSINESS))
+      preparedStatement.setInt(3, link.price(FIRST))
+      preparedStatement.setInt(4, link.capacity(ECONOMY))
+      preparedStatement.setInt(5, link.capacity(BUSINESS))
+      preparedStatement.setInt(6, link.capacity(FIRST))
+      preparedStatement.setInt(7, link.rawQuality)
+      preparedStatement.setInt(8, link.duration)
+      preparedStatement.setInt(9, link.frequency)
+      preparedStatement.setInt(10, link.id)
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
@@ -237,27 +240,33 @@ object LinkSource {
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price, capacity, sold_seats, fuel_cost, crew_cost, airport_fees, inflight_cost, fixed_cost, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, fuel_cost, crew_cost, airport_fees, inflight_cost, fixed_cost, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       connection.setAutoCommit(false)
       linkConsumptions.foreach { linkConsumption =>
           preparedStatement.setInt(1, linkConsumption.linkId)
-          preparedStatement.setInt(2, linkConsumption.price)
-          preparedStatement.setInt(3, linkConsumption.capacity)
-          preparedStatement.setInt(4, linkConsumption.soldSeats)
-          preparedStatement.setInt(5, linkConsumption.fuelCost)
-          preparedStatement.setInt(6, linkConsumption.crewCost)
-          preparedStatement.setInt(7, linkConsumption.airportFees)
-          preparedStatement.setInt(8, linkConsumption.inflightCost)
-          preparedStatement.setInt(9, linkConsumption.fixedCost)
-          preparedStatement.setInt(10, linkConsumption.revenue)
-          preparedStatement.setInt(11, linkConsumption.profit)
-          preparedStatement.setInt(12, linkConsumption.fromAirportId)
-          preparedStatement.setInt(13, linkConsumption.toAirportId)
-          preparedStatement.setInt(14, linkConsumption.airlineId)
-          preparedStatement.setInt(15, linkConsumption.distance)
-          preparedStatement.setInt(16, linkConsumption.cycle)
+          preparedStatement.setInt(2, linkConsumption.price(ECONOMY))
+          preparedStatement.setInt(3, linkConsumption.price(BUSINESS))
+          preparedStatement.setInt(4, linkConsumption.price(FIRST))
+          preparedStatement.setInt(5, linkConsumption.capacity(ECONOMY))
+          preparedStatement.setInt(6, linkConsumption.capacity(BUSINESS))
+          preparedStatement.setInt(7, linkConsumption.capacity(FIRST))
+          preparedStatement.setInt(8, linkConsumption.soldSeats(ECONOMY))
+          preparedStatement.setInt(9, linkConsumption.soldSeats(BUSINESS))
+          preparedStatement.setInt(10, linkConsumption.soldSeats(FIRST))
+          preparedStatement.setInt(11, linkConsumption.fuelCost)
+          preparedStatement.setInt(12, linkConsumption.crewCost)
+          preparedStatement.setInt(13, linkConsumption.airportFees)
+          preparedStatement.setInt(14, linkConsumption.inflightCost)
+          preparedStatement.setInt(15, linkConsumption.fixedCost)
+          preparedStatement.setInt(16, linkConsumption.revenue)
+          preparedStatement.setInt(17, linkConsumption.profit)
+          preparedStatement.setInt(18, linkConsumption.fromAirportId)
+          preparedStatement.setInt(19, linkConsumption.toAirportId)
+          preparedStatement.setInt(20, linkConsumption.airlineId)
+          preparedStatement.setInt(21, linkConsumption.distance)
+          preparedStatement.setInt(22, linkConsumption.cycle)
           preparedStatement.executeUpdate()
         }
       preparedStatement.close()
@@ -334,9 +343,9 @@ object LinkSource {
       while (resultSet.next()) {
           linkConsumptions.append(LinkConsumptionDetails(
           resultSet.getInt("link"),
-          resultSet.getInt("price"),
-          resultSet.getInt("capacity"),
-          resultSet.getInt("sold_seats"),
+          LinkPrice(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
+          LinkCapacity(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
+          LinkCapacity(Map(ECONOMY -> resultSet.getInt("sold_seats_economy"), BUSINESS -> resultSet.getInt("sold_seats_business"), FIRST -> resultSet.getInt("sold_seats_first"))),
           resultSet.getInt("fuel_cost"),
           resultSet.getInt("crew_cost"),
           resultSet.getInt("airport_fees"),

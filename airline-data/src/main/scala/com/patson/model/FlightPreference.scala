@@ -6,14 +6,15 @@ import scala.util.Random
 import com.patson.Util
 
 abstract class FlightPreference {
-  def computeCost(link : Link) : Double  
+  def computeCost(link : Link) : Double
+  def linkClass : LinkClass
 }
 
 /**
  * priceWeight 		to what extent would deviation from standard pricing affects the cost. 
  * maxPriceWeight what is the maxPriceWeight possible
  */
-case class SimplePreference(priceWeight : Int, maxPriceWeight : Int) extends FlightPreference{
+case class SimplePreference(priceWeight : Int, maxPriceWeight : Int, linkClass : LinkClass) extends FlightPreference{
   def computeCost(link : Link) = {
     val minFactorForPriceWeight = 0.2
     val maxFactorForPriceWeight = 1
@@ -21,14 +22,14 @@ case class SimplePreference(priceWeight : Int, maxPriceWeight : Int) extends Fli
     //from minFactorForPriceWeight up to maxFactorForPriceWeight. Proportional to priceWeight/maxPriceWeight
     val actualFactorForPriceWeight = minFactorForPriceWeight + priceWeight.toDouble / maxPriceWeight * (maxFactorForPriceWeight - minFactorForPriceWeight)
     
-    val cost = link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, link.price) * actualFactorForPriceWeight
+    val cost = link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, linkClass, link.price(linkClass)) * actualFactorForPriceWeight
     if (cost <= 0) 1 else cost //just in case
   }
 }
 
 
 
-case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  extends FlightPreference{
+case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, id : Int)  extends FlightPreference{
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
@@ -45,7 +46,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  ext
   def computeCost(link : Link) = {
     val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
     
-    var perceivedPrice = link.price;
+    var perceivedPrice = link.price(linkClass);
     val loyalty = appeal.loyalty
     if (loyalty != 0) {
       //the maxReduceFactorForThisAirline, if at max loyalty, it is the same as maxReduceFactorAtMaxLoyalty, at 0 loyalty, this is at maxReduceFactorAtMinLoyalty
@@ -56,7 +57,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  ext
       //the actualReduceFactor is random number (linear distribution) from minReduceFactorForThisAirline up to the maxReduceFactorForThisAirline. 
       val actualReduceFactor = minReduceFactorForThisAirline + (maxReduceFactorForThisAirline - minReduceFactorForThisAirline) * Math.random()
       
-      perceivedPrice = (link.price / actualReduceFactor).toInt
+      perceivedPrice = (perceivedPrice / actualReduceFactor).toInt
     }
     
     //adjust by quality  
@@ -65,7 +66,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  ext
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
     //cost is in terms of flight duration
-    val baseCost = link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, perceivedPrice)
+    val baseCost = link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, linkClass, perceivedPrice)
     
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
     
@@ -82,9 +83,9 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], id : Int)  ext
 
 object AppealPreference {
   var count: Int = 0
-  def getAppealPreferenceWithId(appealList : Map[Int, AirlineAppeal]) = {
+  def getAppealPreferenceWithId(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass) = {
     count += 1
-    AppealPreference(appealList, count)
+    AppealPreference(appealList, linkClass, count)
   }
 }
 
