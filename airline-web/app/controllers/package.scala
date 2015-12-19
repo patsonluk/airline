@@ -83,7 +83,7 @@ package object controllers {
         rawQuality = 0
       }
          
-      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency)
+      val link = Link(fromAirport, toAirport, airline, LinkPrice.getInstance(price), distance, LinkCapacity.getInstance(capacity), rawQuality, duration, frequency)
       link.setAssignedAirplanes(airplanes)
       (json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
@@ -100,14 +100,14 @@ package object controllers {
       "fromAirportCity" -> JsString(link.from.city),
       "toAirportCity" -> JsString(link.to.city),
       "airlineId" -> JsNumber(link.airline.id),
-      "price" -> JsNumber(link.price),
+      "price" -> JsNumber(link.price(ECONOMY)),
       "distance" -> JsNumber(link.distance),
-      "capacity" -> JsNumber(link.capacity),
+      "capacity" -> JsNumber(link.capacity(ECONOMY)),
       "rawQuality" -> JsNumber(link.rawQuality),
       "computedQuality" -> JsNumber(link.computedQuality),
       "duration" -> JsNumber(link.duration),
       "frequency" -> JsNumber(link.frequency),
-      "availableSeat" -> JsNumber(link.availableSeats),
+      "availableSeat" -> JsNumber(link.availableSeats(ECONOMY)),
       "fromLatitude" -> JsNumber(link.from.latitude),
       "fromLongitude" -> JsNumber(link.from.longitude),
       "toLatitude" -> JsNumber(link.to.latitude),

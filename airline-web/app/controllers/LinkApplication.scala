@@ -10,8 +10,6 @@ import com.patson.data.AirplaneSource
 import com.patson.data.AirportSource
 import com.patson.data.LinkSource
 import com.patson.model._
-import com.patson.model.Computation
-import com.patson.model.LinkConsumptionDetails
 import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
 import play.api.data.Form
@@ -26,9 +24,7 @@ import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.mvc._
 import com.patson.data.airplane.ModelSource
-import controllers.AuthenticationObject.AuthenticatedAirline
 import play.api.mvc.Security.AuthenticatedRequest
-import controllers.AuthenticationObject.AuthenticatedAirline
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.RouteHistorySource
 import com.patson.data.LinkHistorySource
@@ -47,7 +43,7 @@ class LinkApplication extends Controller {
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
       val rawQuality = json.\("quality").as[Int]
       
-      val link = Link(fromAirport, toAirport, airline, price, distance.toInt, capacity, rawQuality, distance.toInt * 60 / 800, 1)
+      val link = Link(fromAirport, toAirport, airline, LinkPrice.getInstance(price), distance.toInt, LinkCapacity.getInstance(capacity), rawQuality, distance.toInt * 60 / 800, 1)
       (json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
@@ -68,7 +64,7 @@ class LinkApplication extends Controller {
       "toAirportCode" -> JsString(toAirport.map(_.iata).getOrElse("XXX")),
       "toAirportName" -> JsString(toAirport.map(_.name).getOrElse("<unknown>")),
       "airlineName" -> JsString(airline.map(_.name).getOrElse("<unknown>")),
-      "price" -> JsNumber(linkConsumption.price),
+      "price" -> JsNumber(linkConsumption.price(ECONOMY)),
       "distance" -> JsNumber(linkConsumption.distance),
       "profit" -> JsNumber(linkConsumption.profit),
       "revenue" -> JsNumber(linkConsumption.revenue),
@@ -77,8 +73,8 @@ class LinkApplication extends Controller {
       "airportFees" -> JsNumber(linkConsumption.airportFees),
       "fixedCost" -> JsNumber(linkConsumption.fixedCost),
       "inflightCost" -> JsNumber(linkConsumption.inflightCost),
-      "capacity" -> JsNumber(linkConsumption.capacity),
-      "soldSeats" -> JsNumber(linkConsumption.soldSeats),
+      "capacity" -> JsNumber(linkConsumption.capacity(ECONOMY)),
+      "soldSeats" -> JsNumber(linkConsumption.soldSeats(ECONOMY)),
       "cycle" -> JsNumber(linkConsumption.cycle)))
       
     }
@@ -147,8 +143,8 @@ class LinkApplication extends Controller {
       Json.toJson(route.links)
     }
   }
-  implicit object linkWithDirectionWrites extends Writes[LinkWithCost] {
-    def writes(linkWithDirection : LinkWithCost): JsValue = {
+  implicit object linkWithDirectionWrites extends Writes[LinkConsideration] {
+    def writes(linkWithDirection : LinkConsideration): JsValue = {
       JsObject(List(
         "linkId" -> JsNumber(linkWithDirection.link.id),
         "fromAirportId" -> JsNumber(linkWithDirection.from.id),

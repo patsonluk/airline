@@ -13,6 +13,7 @@ import com.patson.stream.SimulationEvent
 import akka.remote.DisassociatedEvent
 import akka.remote.AssociatedEvent
 import akka.actor.PoisonPill
+import java.util.concurrent.TimeUnit
 
 sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
   override def receive = { 
@@ -94,7 +95,7 @@ object RemoteSubscribe {
   
   
   def unsubscribe(subscriberid : String) = {
-    system.actorSelection(system./(getLocalSubscriberName(subscriberid))).resolveOne()(Timeout(1000)).map {
+    system.actorSelection(system./(getLocalSubscriberName(subscriberid))).resolveOne()(Timeout(10, TimeUnit.SECONDS)).map {
       actorRef =>
         println("Unsubscribing " + actorRef.path)
         remoteActor.!("unsubscribe")(actorRef)
