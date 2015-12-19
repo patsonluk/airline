@@ -54,16 +54,16 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       var frequency = Computation.calculateMaxFrequency(airplane.model, distance)
       var capacity = frequency * airplane.model.capacity
       
-      var link = Link(fromAirport, toAirport, testAirline1, price, distance, capacity, rawQuality = 0, duration, frequency)
-      link.availableSeats = 0
+      var link = Link(fromAirport, toAirport, testAirline1, LinkPrice(Map(ECONOMY -> price)), distance, LinkCapacity(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency)
+      link.availableSeats = LinkCapacity(Map(ECONOMY -> 0))
       link.setAssignedAirplanes(List(airplane))
       
       val consumptionResultHighFequency = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       frequency = 1
       capacity = frequency * airplane.model.capacity
-      link = link.copy(capacity = capacity, frequency = frequency)
-      link.availableSeats = 0
+      link = link.copy(capacity = LinkCapacity(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.availableSeats = LinkCapacity(Map(ECONOMY -> 0))
       link.setAssignedAirplanes(List(airplane))
       val consumptionResultLowFequency = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
@@ -221,7 +221,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   
   def verfiyProfitMargin(consumptionResult : LinkConsumptionDetails, model : Model, expectGoodReturn : Boolean) = {
     val profitMargin = consumptionResult.profit.toDouble / consumptionResult.revenue.toDouble
-    println(consumptionResult.soldSeats * 100 / consumptionResult.capacity + "%" + " PM:" +  profitMargin + " " +  model.name + " " + consumptionResult)
+    println(consumptionResult.soldSeats(ECONOMY) * 100 / consumptionResult.capacity(ECONOMY) + "%" + " PM:" +  profitMargin + " " +  model.name + " " + consumptionResult)
     if (expectGoodReturn) {
       profitMargin.should(be >= GOOD_PROFIT_MARGIN(model.airplaneType) and be <= MAX_PROFIT_MARGIN)
     } else {
@@ -245,8 +245,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       case ULTRA_LONG_HAUL_INTERNATIONAL => 70
     }
     
-    val link = Link(fromAirport.copy(size = airportSize), toAirport.copy(size = airportSize), testAirline1, price, distance = distance, capacity, rawQuality = neutralQuality, duration, frequency)
-    link.availableSeats = (capacity * (1 - loadFactor)).toInt
+    val link = Link(fromAirport.copy(size = airportSize), toAirport.copy(size = airportSize), testAirline1, LinkPrice(Map(ECONOMY -> price)), distance = distance, LinkCapacity(Map(ECONOMY -> capacity)), rawQuality = neutralQuality, duration, frequency)
+    link.availableSeats = LinkCapacity(Map(ECONOMY -> (capacity * (1 - loadFactor)).toInt))
     link.setAssignedAirplanes(List(airplane))
     
     val consumptionResult = LinkSimulation.computeLinkConsumptionDetail(link , 0)

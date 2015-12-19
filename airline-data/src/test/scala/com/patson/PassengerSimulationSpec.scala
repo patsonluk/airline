@@ -40,17 +40,17 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       routes.size.shouldBe(0)
     }
     "find n route if there's 1 link to each target".in {
-      val links = toAirports.foldRight(List[LinkWithCost]()) { (airport, foldList) =>
-        LinkWithCost(Link(fromAirport, airport, testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false) :: foldList
+      val links = toAirports.foldRight(List[LinkConsideration]()) { (airport, foldList) =>
+        LinkConsideration(Link(fromAirport, airport, testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false) :: foldList
       }
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, links, 3)
       routes.size.shouldBe(toAirports.size)
       toAirports.foreach { toAirport => routes.isDefinedAt(toAirport).shouldBe(true) }
     }
     "find route if there's a link chain to target within max hop".in {
-      val links = List(LinkWithCost(Link(fromAirport, toAirportsList(0), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false),
-          LinkWithCost(Link(toAirportsList(0), toAirportsList(1), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false),
-          LinkWithCost(Link(toAirportsList(1), toAirportsList(2), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false))
+      val links = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false))
       
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, links, 3)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(true)
@@ -59,9 +59,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(links)
     }
     "find route if there's a reverse link chain to target within max hop".in {
-      val links = List(LinkWithCost(Link(toAirportsList(2), toAirportsList(1), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, true),
-          LinkWithCost(Link(toAirportsList(1), toAirportsList(0), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, true),
-          LinkWithCost(Link(toAirportsList(0), fromAirport, testAirline1, 100, 10000, 10000, 0, 600, 1), 100, true))
+      val links = List(LinkConsideration(Link(toAirportsList(2), toAirportsList(1), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, true),
+          LinkConsideration(Link(toAirportsList(1), toAirportsList(0), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, true),
+          LinkConsideration(Link(toAirportsList(0), fromAirport, testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, true))
       
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, links, 3)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(true)
@@ -70,18 +70,18 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(links)
     }
     "find no route if there's a link chain to target but exceed max hop".in {
-     val links = List(LinkWithCost(Link(fromAirport, toAirportsList(0), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false),
-          LinkWithCost(Link(toAirportsList(0), toAirportsList(1), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false),
-          LinkWithCost(Link(toAirportsList(1), toAirportsList(2), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false))
+     val links = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false))
       
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, links, 2)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
     }
     "find a cheaper route even with connection flights (with frequent service)".in {
-     val cheapLinks = List(LinkWithCost(Link(fromAirport, toAirportsList(0), testAirline1, 100, distance = 3500, 10000, 0, duration = 200, frequency = 42), 3500, false),
-          LinkWithCost(Link(toAirportsList(0), toAirportsList(1), testAirline1, 100, distance = 3500, 10000, 0, duration = 200, frequency = 42), 3500, false),
-          LinkWithCost(Link(toAirportsList(1), toAirportsList(2), testAirline1, 100, distance = 3500, 10000, 0, duration = 200, frequency = 42), 3500, false))
-     val allLinks = LinkWithCost(Link(fromAirport, toAirportsList(2), testAirline1, 100, 10000, 10000, 0, duration = 600, frequency = 1), 13000, false) :: cheapLinks
+     val cheapLinks = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100), distance = 3500, LinkCapacity.getInstance(10000), 0, duration = 200, frequency = 42), 3500, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100), distance = 3500, LinkCapacity.getInstance(10000), 0, duration = 200, frequency = 42), 3500, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100), distance = 3500, LinkCapacity.getInstance(10000), 0, duration = 200, frequency = 42), 3500, ECONOMY, false))
+     val allLinks = LinkConsideration(Link(fromAirport, toAirportsList(2), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, duration = 600, frequency = 1), 13000, ECONOMY, false) :: cheapLinks
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, allLinks, 3)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(true)
       val route = routes.get(toAirportsList(2)).get
@@ -89,10 +89,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(cheapLinks)
     }
     "user direct route even though it's more expensive as connection flight is not frequent enough".in {
-     val cheapLinks = List(LinkWithCost(Link(fromAirport, toAirportsList(0), testAirline1, 100, 10000, 10000, 0, duration = 200, frequency = 1), 200, false),
-          LinkWithCost(Link(toAirportsList(0), toAirportsList(1), testAirline1, 100, 10000, 10000, 0, duration = 200, frequency = 1), 200, false),
-          LinkWithCost(Link(toAirportsList(1), toAirportsList(2), testAirline1, 100, 10000, 10000, 0, duration = 200, frequency = 1), 200, false))
-     val expensiveLink = LinkWithCost(Link(fromAirport, toAirportsList(2), testAirline1, 100, 10000, 10000, 0, duration = 600, frequency = 1), 1400, false)
+     val cheapLinks = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, duration = 200, frequency = 1), 200, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, duration = 200, frequency = 1), 200, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, duration = 200, frequency = 1), 200, ECONOMY, false))
+     val expensiveLink = LinkConsideration(Link(fromAirport, toAirportsList(2), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, duration = 600, frequency = 1), 1400, ECONOMY, false)
      val allLinks =  expensiveLink :: cheapLinks
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, allLinks, 3)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(true)
@@ -103,10 +103,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     
     "use expensive route if cheaper route exceed max hop".in {
-     val cheapLinks = List(LinkWithCost(Link(fromAirport, toAirportsList(0), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false),
-          LinkWithCost(Link(toAirportsList(0), toAirportsList(1), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false),
-          LinkWithCost(Link(toAirportsList(1), toAirportsList(2), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false))
-     val expensiveLink = LinkWithCost(Link(fromAirport, toAirportsList(2), testAirline1, 100, 10000, 10000, 0, 600, 1), 301, false)
+     val cheapLinks = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false))
+     val expensiveLink = LinkConsideration(Link(fromAirport, toAirportsList(2), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 301, ECONOMY, false)
      val allLinks = expensiveLink :: cheapLinks
           
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, allLinks, 2)
@@ -116,9 +116,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(List(expensiveLink))
     }
     "find no route if there's a link chain to target but one is not in correct direction".in {
-     val links = List(LinkWithCost(Link(fromAirport, toAirportsList(0), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false),
-          LinkWithCost(Link(toAirportsList(0), toAirportsList(1), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, true), //wrong direction
-          LinkWithCost(Link(toAirportsList(1), toAirportsList(2), testAirline1, 100, 10000, 10000, 0, 600, 1), 100, false))
+     val links = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
+          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, true), //wrong direction
+          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false))
       
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, links, 3)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(false)

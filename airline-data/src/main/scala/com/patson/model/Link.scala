@@ -130,9 +130,19 @@ case object ECONOMY extends LinkClass(1, 1, 1, 1)
 case class LinkCapacity(capacityMap : Map[LinkClass, Int]) {
   def apply(linkClass : LinkClass) = { capacityMap.getOrElse(linkClass, 0) }
 }
+object LinkCapacity {
+  def getInstance(economy : Int = 0, business : Int = 0, first : Int = 0) : LinkCapacity = {
+    LinkCapacity(Map(ECONOMY -> economy, BUSINESS -> business, FIRST -> first))
+  }
+}
 
 case class LinkPrice(priceMap : Map[LinkClass, Int]) {
   def apply(linkClass : LinkClass) = { priceMap.getOrElse(linkClass, 0) } 
+}
+object LinkPrice {
+  def getInstance(economy : Int = 0, business : Int = 0, first : Int = 0) : LinkPrice = {
+    LinkPrice(Map(ECONOMY -> economy, BUSINESS -> business, FIRST -> first))
+  }
 }
 
 
