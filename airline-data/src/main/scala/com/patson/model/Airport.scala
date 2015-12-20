@@ -9,7 +9,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var airlineAppealsLoaded = false
   private[this] val slotAssignments = scala.collection.mutable.Map[Int, Int]()
   private[this] var slotAssignmentsLoaded = false
-  
+  private[this] val airlineBases = scala.collection.mutable.Map[Int, AirlineBase]()
+  private[this] var airlineBasesLoaded = false
+    
   def availableSlots : Int = {
     if (slotAssignmentsLoaded) {
       slots - slotAssignments.foldLeft(0)(_ + _._2)
@@ -119,6 +121,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     slotAssignments.toMap
   }
   
+  def getAirlineBase(airlineId : Int) : Option[AirlineBase] = {
+    if (!airlineBasesLoaded) {
+      throw new IllegalStateException("airport base is not properly initialized! If loaded from DB, please use fullload")
+    }
+    airlineBases.get(airlineId)
+  }
+  
+  def getAirlineBases() : Map[Int, AirlineBase] = {
+    airlineBases.toMap
+  }
   
   def initAirlineAppeals(airlineAppeals : Map[Int, AirlineAppeal]) = {
     this.airlineAppeals.clear()
@@ -130,9 +142,15 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     this.slotAssignments ++= slotAssignments
     slotAssignmentsLoaded = true
   }
+  def initAirlineBases(airlineBases : List[AirlineBase]) = {
+    this.airlineBases.clear()
+    airlineBases.foreach { airlineBase =>
+      this.airlineBases.put(airlineBase.airline.id, airlineBase)
+    }
+    airlineBasesLoaded = true
+  }
   
-  
-  def slotFee(airplaneModel : Model) : Int = { 
+  def slotFee(airplaneModel : Model, airline : Airline) : Int = { 
     val baseSlotFee = size match {
       case 1 => 50 //small
       case 2 => 50 //medium
@@ -153,7 +171,15 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case JUMBO => 25
     }
     
-    baseSlotFee * multipler    
+    //apply discount if it's a base
+    val discount = getAirlineBase(airline.id) match {
+      case Some(airlineBase) =>
+        if (airlineBase.headquarter) 0.5 else 0.8 //headquarter 50% off, base 20% off
+      case None =>
+        1 //no discount
+    }
+    
+    (baseSlotFee * multipler * discount).toInt    
   }
   
   def landingFee(airplaneModel : Model) : Int = {
