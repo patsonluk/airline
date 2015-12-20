@@ -20,7 +20,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     TestKit.shutdownActorSystem(system)
   }
  
-  val defaultPrice = LinkPrice.getInstance(1000 * ECONOMY.priceMultiplier, 1000 * BUSINESS.priceMultiplier, 1000 * FIRST.priceMultiplier)
+  val defaultPrice = LinkPrice.getInstance((1000 * ECONOMY.priceMultiplier).toInt, (1000 * BUSINESS.priceMultiplier).toInt, (1000 * FIRST.priceMultiplier).toInt)
   val defaultCapacity = LinkCapacity.getInstance(10000, 10000, 10000)
   
   val testAirline1 = Airline("airline 1", 1)

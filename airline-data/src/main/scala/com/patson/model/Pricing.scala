@@ -14,9 +14,9 @@ object Pricing {
   val modifierBrackets = List((200, 0.75),(800, 0.125),(1000, 0.1),(Int.MaxValue, 0.05))
   
   def computeStandardPrice(link : Link, linkClass : LinkClass) : Int = {
-    computeStandardPrice(link.distance, Computation.getFlightType(link.from, link.to))
+    computeStandardPrice(link.distance, Computation.getFlightType(link.from, link.to), linkClass)
   }
-  def computeStandardPrice(distance : Int, flightType : FlightType) : Int = {
+  def computeStandardPrice(distance : Int, flightType : FlightType, linkClass : LinkClass) : Int = {
     var remainDistance = distance
     var price = 0.0
     for (priceBracket <- modifierBrackets if(remainDistance > 0)) {
@@ -27,10 +27,10 @@ object Pricing {
       }
       remainDistance -= priceBracket._1
     }
-    (flightType match {
+    ((flightType match {
       case SHORT_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL | ULTRA_LONG_HAUL_INTERNATIONAL => (price * INTERNATIONAL_PRICE_MULTIPLIER)
       case _ => price
-    }).toInt
+    }) * linkClass.priceMultiplier).toInt
     
   }
   
@@ -41,7 +41,7 @@ object Pricing {
   // if price is at standard price, adjustmentRatio = 1
   // if price is at double the standard price, adjustmentRatio = 2 . Fair enough!
   def standardCostAdjustmentRatioFromPrice(distance: Int, flightType : FlightType, linkClass :LinkClass, price: Int): Double = {
-      var standardPrice = computeStandardPrice(distance, flightType) * linkClass.priceMultiplier
+      var standardPrice = computeStandardPrice(distance, flightType, linkClass)
       ((price - standardPrice).toDouble / standardPrice) + 1
   }
 }

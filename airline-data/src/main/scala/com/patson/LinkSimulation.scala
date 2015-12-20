@@ -7,7 +7,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object LinkSimulation {
-  private val FUEL_UNIT_COST = 0.12 //for now...
+  private val FUEL_UNIT_COST = 0.1//for now...
   private val CREW_UNIT_COST = 15 //for now...
   
   private val MAX_LOYALTY_ADJUSTMENT = 0.5
@@ -92,10 +92,11 @@ object LinkSimulation {
     //val totalFuelBurn = link //fuel burn actually similar to crew cost
     val fuelCost = link.getAssignedModel() match {
       case Some(model) =>
-        (if (link.duration <= 30) {
-          model.fuelBurn * 10 * link.duration * FUEL_UNIT_COST * link.frequency
+        (if (link.duration <= 90) {
+          val ascendTime, descendTime = (link.duration / 2)
+          (model.fuelBurn * 8 * ascendTime + model.fuelBurn * descendTime) * FUEL_UNIT_COST * link.frequency 
         } else {
-          (model.fuelBurn * 10 * 30 + model.fuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
+          (model.fuelBurn * 8 * 45 + model.fuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
         } * (0.5 + 0.5 * loadFactor)).toInt //at 0 LF, 50% fuel cost
       case None => 0
     }
@@ -113,8 +114,8 @@ object LinkSimulation {
       val capacity = link.capacity(linkClass)
       val soldSeats = capacity - link.availableSeats(linkClass)
       
-      inflightCost += linkClass.resourceMultiplier * (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2 //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost . Roundtrip X 2
-      crewCost += linkClass.resourceMultiplier * capacity * link.duration / 60 * CREW_UNIT_COST 
+      inflightCost += (linkClass.resourceMultiplier * (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2).toInt //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost . Roundtrip X 2
+      crewCost += (linkClass.resourceMultiplier * capacity * link.duration / 60 * CREW_UNIT_COST).toInt 
       revenue += soldSeats * link.price(linkClass)
     }
     

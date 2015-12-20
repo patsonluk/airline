@@ -153,12 +153,12 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   def slotFee(airplaneModel : Model, airline : Airline) : Int = { 
     val baseSlotFee = size match {
       case 1 => 50 //small
-      case 2 => 50 //medium
-      case 3 => 50 //large
-      case 4 => 300  //international class
-      case 5 => 500
-      case 6 => 700 
-      case _ => 1000 //mega airports - not suitable for tiny jets
+      case 2 => 100 //medium
+      case 3 => 300 //large
+      case 4 => 800  //international class
+      case 5 => 1000
+      case 6 => 1500 
+      case _ => 2000 //mega airports - not suitable for tiny jets
     }
     
     import Model.Type._

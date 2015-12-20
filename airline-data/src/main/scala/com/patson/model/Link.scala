@@ -110,10 +110,10 @@ case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, 
     }
 }
 
-sealed abstract class LinkClass(val spaceMultiplier : Int, val resourceMultiplier : Int, val priceMultiplier : Int, val level : Int) //level for sorting/comparison purpose
-case object FIRST extends LinkClass(10, 10, 12, 3)
-case object BUSINESS extends LinkClass(3, 5, 5, 2)
-case object ECONOMY extends LinkClass(1, 1, 1, 1)
+sealed abstract class LinkClass(val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val level : Int) //level for sorting/comparison purpose
+case object FIRST extends LinkClass(spaceMultiplier = 8, resourceMultiplier = 6, priceMultiplier = 10, 3)
+case object BUSINESS extends LinkClass(spaceMultiplier = 4, resourceMultiplier = 3, priceMultiplier = 4, 2)
+case object ECONOMY extends LinkClass(spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, 1)
 
 
 
