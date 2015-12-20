@@ -94,9 +94,9 @@ object LinkSimulation {
       case Some(model) =>
         (if (link.duration <= 90) {
           val ascendTime, descendTime = (link.duration / 2)
-          (model.fuelBurn * 8 * ascendTime + model.fuelBurn * descendTime) * FUEL_UNIT_COST * link.frequency 
+          (model.fuelBurn * 10 * ascendTime + model.fuelBurn * descendTime) * FUEL_UNIT_COST * link.frequency 
         } else {
-          (model.fuelBurn * 8 * 45 + model.fuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
+          (model.fuelBurn * 10 * 45 + model.fuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
         } * (0.5 + 0.5 * loadFactor)).toInt //at 0 LF, 50% fuel cost
       case None => 0
     }
