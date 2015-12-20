@@ -64,9 +64,9 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CONSUMPTION_TABLE)
-     statement.execute()
-     statement.close()
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CONSUMPTION_TABLE)
+//     statement.execute()
+//     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_STATISTICS_TABLE)
 //     statement.execute()
@@ -93,9 +93,9 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_TABLE)
-     statement.execute()
-     statement.close()
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_TABLE)
+//     statement.execute()
+//     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_TABLE)
 //     statement.execute()
@@ -166,6 +166,13 @@ object Meta {
 //                                             "PRIMARY KEY (airport, airline))")
 //     statement.execute()
 //     statement.close()
+     
+     statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_BASE_INDEX_1 +  " ON " + AIRPORT_TABLE + "(id)")
+     statement.execute()
+     statement.close()
+     statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_BASE_INDEX_2 +  " ON " + AIRLINE_TABLE + "(id)")
+     statement.execute()
+     statement.close()
 //     
 //     
 //     
@@ -185,72 +192,72 @@ object Meta {
 //     statement.close()
 //     
 //     
-     statement = connection.prepareStatement("CREATE TABLE " + LINK_TABLE + "(" +
-                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                             "from_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                             "to_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                             "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                             "price_economy INTEGER, " + 
-                                             "price_business INTEGER, " +
-                                             "price_first INTEGER, " +
-                                             "distance DOUBLE, " + 
-                                             "capacity_economy INTEGER, " +
-                                             "capacity_business INTEGER, " +
-                                             "capacity_first INTEGER, " +
-                                             "quality INTEGER, " +
-                                             "duration INTEGER, " +
-                                             "frequency INTEGER)")
-     statement.execute()
-     statement.close()
-     
-     statement = connection.prepareStatement("CREATE UNIQUE INDEX " + LINK_INDEX_1 +  " ON " + LINK_TABLE + "(from_airport, to_airport, airline)")
-     statement.execute()
-     statement.close()
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_2 +  " ON " + LINK_TABLE + "(from_airport)")
-     statement.execute()
-     statement.close()
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_3 +  " ON " + LINK_TABLE + "(to_airport)")
-     statement.execute()
-     statement.close()
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_4 +  " ON " + LINK_TABLE + "(airline)")
-     statement.execute()
-     statement.close()
-     
-     statement = connection.prepareStatement("CREATE TABLE " + LINK_CONSUMPTION_TABLE + "(" +
-                                             "link INTEGER, " +
-	                                           "price_economy INTEGER, " +
-	                                           "price_business INTEGER, " +
-	                                           "price_first INTEGER, " +
-                                             "capacity_economy INTEGER, " +
-                                             "capacity_business INTEGER, " +
-                                             "capacity_first INTEGER, " +
-                                             "sold_seats_economy INTEGER, " +
-                                             "sold_seats_business INTEGER, " +
-                                             "sold_seats_first INTEGER, " +
-                                             "fuel_cost INTEGER, " +
-                                             "crew_cost INTEGER, " +
-                                             "airport_fees INTEGER, " +
-                                             "inflight_cost INTEGER, " +
-                                             "fixed_cost INTEGER, " +
-                                             "revenue INTEGER, " +
-                                             "profit INTEGER, " +
-                                             "from_airport INTEGER, " +
-                                             "to_airport INTEGER, " +
-                                             "airline INTEGER, " +
-                                             "distance INTEGER, " +
-                                             "cycle INTEGER, " +
-                                             "PRIMARY KEY (cycle, link))")
-     
-     statement.execute()
-     statement.close()
-     
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_1 +  " ON " + LINK_CONSUMPTION_TABLE + "(link)")
-     statement.execute()
-     statement.close()
-     
-     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_2 +  " ON " + LINK_CONSUMPTION_TABLE + "(airline)")
-     statement.execute()
-     statement.close()
+//     statement = connection.prepareStatement("CREATE TABLE " + LINK_TABLE + "(" +
+//                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+//                                             "from_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+//                                             "to_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+//                                             "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+//                                             "price_economy INTEGER, " + 
+//                                             "price_business INTEGER, " +
+//                                             "price_first INTEGER, " +
+//                                             "distance DOUBLE, " + 
+//                                             "capacity_economy INTEGER, " +
+//                                             "capacity_business INTEGER, " +
+//                                             "capacity_first INTEGER, " +
+//                                             "quality INTEGER, " +
+//                                             "duration INTEGER, " +
+//                                             "frequency INTEGER)")
+//     statement.execute()
+//     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE UNIQUE INDEX " + LINK_INDEX_1 +  " ON " + LINK_TABLE + "(from_airport, to_airport, airline)")
+//     statement.execute()
+//     statement.close()
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_2 +  " ON " + LINK_TABLE + "(from_airport)")
+//     statement.execute()
+//     statement.close()
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_3 +  " ON " + LINK_TABLE + "(to_airport)")
+//     statement.execute()
+//     statement.close()
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_4 +  " ON " + LINK_TABLE + "(airline)")
+//     statement.execute()
+//     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE TABLE " + LINK_CONSUMPTION_TABLE + "(" +
+//                                             "link INTEGER, " +
+//	                                           "price_economy INTEGER, " +
+//	                                           "price_business INTEGER, " +
+//	                                           "price_first INTEGER, " +
+//                                             "capacity_economy INTEGER, " +
+//                                             "capacity_business INTEGER, " +
+//                                             "capacity_first INTEGER, " +
+//                                             "sold_seats_economy INTEGER, " +
+//                                             "sold_seats_business INTEGER, " +
+//                                             "sold_seats_first INTEGER, " +
+//                                             "fuel_cost INTEGER, " +
+//                                             "crew_cost INTEGER, " +
+//                                             "airport_fees INTEGER, " +
+//                                             "inflight_cost INTEGER, " +
+//                                             "fixed_cost INTEGER, " +
+//                                             "revenue INTEGER, " +
+//                                             "profit INTEGER, " +
+//                                             "from_airport INTEGER, " +
+//                                             "to_airport INTEGER, " +
+//                                             "airline INTEGER, " +
+//                                             "distance INTEGER, " +
+//                                             "cycle INTEGER, " +
+//                                             "PRIMARY KEY (cycle, link))")
+//     
+//     statement.execute()
+//     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_1 +  " ON " + LINK_CONSUMPTION_TABLE + "(link)")
+//     statement.execute()
+//     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_2 +  " ON " + LINK_CONSUMPTION_TABLE + "(airline)")
+//     statement.execute()
+//     statement.close()
 //      
 //     statement = connection.prepareStatement("CREATE TABLE " + WATCHED_LINK_TABLE + "(" +
 //                                             "airline INTEGER PRIMARY KEY, " +
