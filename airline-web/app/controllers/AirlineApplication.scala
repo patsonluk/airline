@@ -110,6 +110,12 @@ class AirlineApplication extends Controller {
            case None => //ok to add then
              val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle())
              AirlineSource.saveAirlineBase(newBase)
+             AirportSource.loadAirportById(newBase.airport.id, true).foreach {  airport =>//TODO for now. Maybe update to Ad event later on
+                if (airport.getAirlineAwareness(airlineId) < 10) { //update to 10 for hq
+                 airport.setAirlineAwareness(airlineId, 10)
+                 AirportSource.updateAirlineAppeal(List(airport))
+               }
+             }
              Created(Json.toJson(newBase))
          }
       } else {
