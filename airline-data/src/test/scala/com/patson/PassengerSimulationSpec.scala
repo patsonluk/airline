@@ -9,6 +9,8 @@ import akka.testkit.TestKit
 import com.patson.model._
 import scala.collection.mutable.Set
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
  
 class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
@@ -19,10 +21,15 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     TestKit.shutdownActorSystem(system)
   }
  
-  val testAirline1 = Airline("airline 1")
-  val testAirline2 = Airline("airline 2")
+  val testAirline1 = Airline("airline 1", 1)
+  val testAirline2 = Airline("airline 2", 2)
   val fromAirport = Airport.fromId(1)
-  val toAirportsList = List(Airport.fromId(2), Airport.fromId(3), Airport.fromId(4), Airport.fromId(5))
+  val airlineAppeal = AirlineAppeal(0, 100)
+  fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
+  val toAirportsList = List(Airport.fromId(2), Airport.fromId(3), Airport.fromId(4))
+  toAirportsList.foreach {
+    _.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
+  }
   val toAirports = Set[Airport]()
   toAirports ++= toAirportsList
   val allAirports = Set[Airport]()
@@ -101,7 +108,6 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(expensiveLink)
     }
     
-    
     "use expensive route if cheaper route exceed max hop".in {
      val cheapLinks = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
           LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100), 10000, LinkCapacity.getInstance(10000), 0, 600, 1), 100, ECONOMY, false),
@@ -122,6 +128,95 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirports, links, 3)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
+    }
+  }
+  "findAllRoutes".must {
+    "find routes if there're valid links".in {
+      val links = List(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1), 
+                      Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, 0))
+      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, 0))
+      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, 0))
+
+      val toAirports = Set[Airport]()
+      toAirports ++= toAirportsList
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links), Duration.Inf)
+      
+      result.isDefinedAt(economyPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(economyPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+      result.isDefinedAt(businessPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(businessPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+      result.isDefinedAt(firstPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(firstPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+    }
+    "find routes if there're valid links (from and to inverse)".in {
+      val links = List(Link(toAirportsList(2), toAirportsList(1), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(toAirportsList(1), toAirportsList(0), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1), 
+                      Link(toAirportsList(0), fromAirport, testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, 0))
+      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, 0))
+      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, 0))
+
+      val toAirports = Set[Airport]()
+      toAirports ++= toAirportsList
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links), Duration.Inf)
+      
+      result.isDefinedAt(economyPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(economyPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+      result.isDefinedAt(businessPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(businessPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+      result.isDefinedAt(firstPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(firstPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+    }
+    "find no route if there's link but no capacity left for the specified class".in {
+      val links = List(Link(fromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(0, 10000, 0), 0, 600, 1),
+                      Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(0, 10000, 0), 0, 600, 1), 
+                      Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(0, 10000, 0), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, 0))
+      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, 0))
+      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, 0))
+
+      val toAirports = Set[Airport]()
+      toAirports ++= toAirportsList
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links), Duration.Inf)
+      
+      result(economyPassengerGroup).isEmpty.shouldBe(true) //no seat for economy
+      result(firstPassengerGroup).isEmpty.shouldBe(true) //no seat for first
+      
+      toAirports.foreach { toAirport =>
+        result(businessPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+    }
+    "find no route if the airline has no awareness at the fromAirport".in {
+      val clonedFromAirport = fromAirport.copy()
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      val links = List(Link(clonedFromAirport, toAirportsList(0), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1), 
+                      Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkPrice.getInstance(100, 100, 100), 10000, LinkCapacity.getInstance(10000, 10000, 10000), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(clonedFromAirport, AppealPreference(Map.empty, ECONOMY, 0))
+      
+      val toAirports = Set[Airport]()
+      toAirports ++= toAirportsList
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports), links), Duration.Inf)
+      
+      result(economyPassengerGroup).isEmpty.shouldBe(true) //no awareness
     }
   }
 }

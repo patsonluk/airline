@@ -20,17 +20,17 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     TestKit.shutdownActorSystem(system)
   }
  
-  val defaultPrice = LinkPrice.getInstance(1000)
-  val defaultCapacity = LinkCapacity.getInstance(10000)
+  val defaultPrice = LinkPrice.getInstance(1000 * ECONOMY.priceMultiplier, 1000 * BUSINESS.priceMultiplier, 1000 * FIRST.priceMultiplier)
+  val defaultCapacity = LinkCapacity.getInstance(10000, 10000, 10000)
   
   val testAirline1 = Airline("airline 1", 1)
   val testAirline2 = Airline("airline 2", 2)
   val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, 0, 0, 0, 0)
   val toAirport = Airport("", "", "To Airport", 0, 0, "", "", "", 1, 0, 0, 0, 0)
-  val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
-  val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
-  
-  
+  val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, rawQuality = 40, 600, 1)
+  val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, rawQuality = 40, 600, 1)
+  airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline1, 0, 100)))
+  airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline2, 0, 100)))
   
   "An AppealPreference".must {
     "generate similar cost if price and distance is the same, and small differece in loyalty".in {
@@ -229,5 +229,22 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( >= (4.0)) //significantly more people should pick airline 1
       //ratio.shouldBe( < (.0)) //yet some will still pick airline 2
     }
+    "generate higher cost for higher link class if the quality is the same". in {
+      var economyTotalCost : Long = 0
+      var businessTotalCost : Long = 0
+      var firstTotalCost : Long = 0
+      for (i <- 0 until 100000) {
+        val economyCost = AppealPreference(fromAirport.getAirlineAppeals().toMap, ECONOMY, 0).computeCost(airline1Link)
+        val businessCost = AppealPreference(fromAirport.getAirlineAppeals().toMap, BUSINESS, 0).computeCost(airline1Link)
+        val firstCost = AppealPreference(fromAirport.getAirlineAppeals().toMap, FIRST, 0).computeCost(airline1Link)
+        economyTotalCost += economyCost.toLong
+        businessTotalCost += businessCost.toLong
+        firstTotalCost += firstCost.toLong
+      }
+      
+      economyTotalCost.should(be < businessTotalCost)
+      businessTotalCost.should(be < firstTotalCost)
+    }
+    
   }
 }
