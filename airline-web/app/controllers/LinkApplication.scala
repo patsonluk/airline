@@ -427,7 +427,7 @@ class LinkApplication extends Controller {
             }
             
             var resultObject = Json.obj("distance" -> distance, 
-                                        "suggestedPrice" -> Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport)), 
+                                        "suggestedPrice" -> Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), ECONOMY), //TODO temporary, add other classes soon 
                                         "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
                                         "maxFrequencyToAirport" -> maxFrequencyToAirport) + ("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
              
