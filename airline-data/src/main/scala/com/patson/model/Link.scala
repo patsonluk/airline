@@ -13,9 +13,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkPric
   private var assignedModel : Option[Model] = None
   
   private var hasComputedQuality = false
-  private var hasComputedQualityPriceAdjust = false
   private var computedQualityStore : Int = 0
-  private var computedQualityPriceAdjustStore : Double = 1.0
+  private var computedQualityPriceAdjust : collection.mutable.Map[LinkClass, Double] = collection.mutable.Map[LinkClass, Double]()
   
   def setAssignedAirplanes(assignedAirplanes : List[Airplane]) = {
     this.assignedAirplanes = assignedAirplanes
@@ -72,36 +71,27 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkPric
   
    //adjust by quality
   import FlightType._
-  val neutralQuality = 
+  val neutralQualityOfClass = (linkClass : LinkClass) => {
+    val linkClassMultiplier = linkClass.level - 1
     Computation.getFlightType(from, to) match {
-      case SHORT_HAUL_DOMESTIC => 30
-      case SHORT_HAUL_INTERNATIONAL => 40
-      case LONG_HAUL_DOMESTIC => 50
-      case LONG_HAUL_INTERNATIONAL => 60
-      case ULTRA_LONG_HAUL_INTERNATIONAL => 70
-    }
-    
-  private val MAX_QUALITY = 100
-  private val MAX_QUALITY_PRICE_MULTIPLIER = 0.5 // At Max quality, perceived price can cut by half
-  private val MIN_QUALITY_PRICE_MULITPLIER = 0.5 // At Min quality, perceived price can increase by 0.5
-    
-  //println("neutral quality : " + neutralQuality + " distance : " + distance)
-  def computeQualityPriceAdjust : Double = {
-    if (!hasComputedQualityPriceAdjust) { 
-      if (computedQuality > neutralQuality) {
-        computedQualityPriceAdjustStore = 1 - MAX_QUALITY_PRICE_MULTIPLIER * (computedQuality - neutralQuality).toDouble / (MAX_QUALITY - neutralQuality)
-      } else if (computedQuality < neutralQuality) {
-        computedQualityPriceAdjustStore = 1 + MIN_QUALITY_PRICE_MULITPLIER  * (neutralQuality - computedQuality).toDouble / (neutralQuality)
-      } 
-      
-      hasComputedQualityPriceAdjust = true
-//      println("computed adjust " + computedQualityPriceAdjustStore)
-      computedQualityPriceAdjustStore
-    } else {
-      computedQualityPriceAdjustStore
+      case SHORT_HAUL_DOMESTIC => 30 + linkClassMultiplier * 15
+      case SHORT_HAUL_INTERNATIONAL => 35 + linkClassMultiplier * 15
+      case LONG_HAUL_DOMESTIC => 45 + linkClassMultiplier * 15
+      case LONG_HAUL_INTERNATIONAL => 50 + linkClassMultiplier * 15
+      case ULTRA_LONG_HAUL_INTERNATIONAL => 55 + linkClassMultiplier * 15
     }
   }
-  
+    
+  private val MAX_QUALITY = 100
+    
+  //println("neutral quality : " + neutralQuality + " distance : " + distance)
+  def computeQualityPriceAdjust(linkClass : LinkClass) : Double = {
+    if (!computedQualityPriceAdjust.isDefinedAt(linkClass)) {
+      val neutralQuality = neutralQualityOfClass(linkClass)
+      computedQualityPriceAdjust.put(linkClass, 1 + ((neutralQuality - computedQuality).toDouble / MAX_QUALITY) * 0.5) //if neutral is at 50, 0 quality yields 1.25, max quality yields 0.75
+    }
+    computedQualityPriceAdjust(linkClass)
+  }
 }
 
 object Link {

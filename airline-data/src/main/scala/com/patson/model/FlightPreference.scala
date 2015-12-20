@@ -61,7 +61,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     }
     
     //adjust by quality  
-    perceivedPrice = (perceivedPrice * link.computeQualityPriceAdjust).toInt
+    perceivedPrice = (perceivedPrice * link.computeQualityPriceAdjust(linkClass)).toInt
         
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
