@@ -15,7 +15,7 @@ import scala.util.Random
 import scala.concurrent.Future
 import com.patson.data._
 import com.patson.model._
-import scala.collection.mutable.Map
+import scala.collection.immutable.Map
 import akka.actor.Actor
 import akka.actor.Props
 import java.util.concurrent.TimeUnit
@@ -43,7 +43,7 @@ object MainSimulation extends App {
   
   def startCycle(cycle : Int) = {
       AirportSimulation.airportSimulation(cycle) 
-      val linkResult : Map[Int, ListBuffer[LinkConsumptionDetails]] = LinkSimulation.linkSimulation(cycle)
+      val linkResult : Map[Int, List[LinkConsumptionDetails]] = LinkSimulation.linkSimulation(cycle)
       AirlineSimulation.airlineSimulation(linkResult, cycle)
       //notify the websockets via EventStream
       SimulationEventStream.publish(CycleCompleted(cycle), None)

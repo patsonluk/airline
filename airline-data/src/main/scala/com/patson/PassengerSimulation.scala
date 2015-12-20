@@ -179,7 +179,17 @@ object PassengerSimulation extends App {
   }
   
    
-  
+  /**
+   * Return all routes if available, with destination defined in the input Map's value, the Input map key indicates various Passenger Group
+   * 
+   * Returned value is in form of Future[Map[PassengerGroup, Map[Airport, Route]]], which the Map key should always present even if no valid route is found at all
+   * for that particular PassengerGroup, in such a case the map value will just me an empty map.
+   * 
+   * Take note that when finding routes, in order to be considered as a valid route, this method takes into consideration of:
+   * 1. whether the link has available capacity left for the PassengerGroup's link Class, all the links in between 2 points should have capacity for the correct class
+   * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
+   *    
+   */
   def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], links : List[Link]) : Future[Map[PassengerGroup, Map[Airport, Route]]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
@@ -200,7 +210,7 @@ object PassengerSimulation extends App {
       case(passengerGroup, toAirports) =>
         val linkClass = passengerGroup.preference.linkClass
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
-        val linksWithCost = links.filter{ link => 
+        val linkConsiderations = links.filter{ link => 
           //from the perspective of the passenger group, how well does it know each link
             val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
             val airlineAwarenessFromReputation = link.airline.getReputation() / 2 
@@ -241,7 +251,7 @@ object PassengerSimulation extends App {
 //        println()
         //then find the shortest route based on the cost
         
-        val routeMap = findShortestRoute(passengerGroup.fromAirport, toAirports, allVertices, linksWithCost, 4)
+        val routeMap = findShortestRoute(passengerGroup.fromAirport, toAirports, allVertices, linkConsiderations, 4)
         //if (!routeMap.isEmpty) { println(routeMap) }
         (passengerGroup, routeMap)
     }

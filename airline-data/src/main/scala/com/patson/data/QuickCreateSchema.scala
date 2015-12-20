@@ -7,5 +7,5 @@ import com.patson.model.airplane.Airplane
 import com.patson.data.airplane.ModelSource
 
 object QuickCreateSchema extends App {
-  Meta.createSchema()
+//  Meta.createSchema()
 }

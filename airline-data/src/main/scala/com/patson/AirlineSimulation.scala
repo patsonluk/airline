@@ -10,7 +10,7 @@ object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
   private val REPUTATION_INCREMENT = 0.5 
   
-  def airlineSimulation(linkResult : Map[Int, ListBuffer[LinkConsumptionDetails]], cycle: Int) = {
+  def airlineSimulation(linkResult : scala.collection.immutable.Map[Int, List[LinkConsumptionDetails]], cycle: Int) = {
     //compute profit
     val allAirlines = AirlineSource.loadAllAirlines(true)
     allAirlines.foreach { airline =>

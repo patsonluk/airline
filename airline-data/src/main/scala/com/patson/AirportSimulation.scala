@@ -30,15 +30,13 @@ object AirportSimulation {
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE = 15 //how much loyalty will increment to just because of being a HQ
   
   def airportSimulation(cycle: Int) = {
-    
+    println("starting airport simulation")
+    println("loading all airports")
     //do decay
     val allAirports = AirportSource.loadAllAirports(true)
     
+    println("finished loading all airports")
     
-    val basesByAirport : Map[Int, List[AirlineBase]] = AirlineSource.loadAirlineBasesByCriteria(List.empty).foldLeft(Map[Int, List[AirlineBase]]()) { (foldMap, airlineBase) =>
-      val bases = foldMap.getOrElse(airlineBase.airport.id, List[AirlineBase]())
-      foldMap + (airlineBase.airport.id -> (airlineBase :: bases))
-    }
     
     //decay awareness and loyalty
     allAirports.foreach { airport =>
@@ -52,29 +50,28 @@ object AirportSimulation {
           airport.setAirlineAwareness(airline, newAwareness)
       }
        //add base on bases
-      basesByAirport.get(airport.id).foreach { _.foreach { base =>
-          var newAwareness : Double = airport.getAirlineAwareness(base.airline.id)
-          var newLoyalty : Double = airport.getAirlineLoyalty(base.airline.id)
-          if (base.headquarter) {
-            newAwareness += AWARENESS_INCREMENT_WITH_HQ
-            if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
-              newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_HQ
-            }
-          } else {
-             newAwareness += AWARENESS_INCREMENT_WITH_BASE
-             if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
-               newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_BASE
-             }
+      airport.getAirlineBases().values.foreach { base =>
+        var newAwareness : Double = airport.getAirlineAwareness(base.airline.id)
+        var newLoyalty : Double = airport.getAirlineLoyalty(base.airline.id)
+        if (base.headquarter) {
+          newAwareness += AWARENESS_INCREMENT_WITH_HQ
+          if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
+            newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_HQ
           }
-          if (newAwareness > AirlineAppeal.MAX_AWARENESS) {
-            newAwareness = AirlineAppeal.MAX_AWARENESS
-          }
-          if (newLoyalty > AirlineAppeal.MAX_LOYALTY) {
-            newLoyalty = AirlineAppeal.MAX_LOYALTY
-          }
-          airport.setAirlineAwareness(base.airline.id, newAwareness)
-          airport.setAirlineLoyalty(base.airline.id, newLoyalty)
+        } else {
+           newAwareness += AWARENESS_INCREMENT_WITH_BASE
+           if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
+             newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_BASE
+           }
         }
+        if (newAwareness > AirlineAppeal.MAX_AWARENESS) {
+          newAwareness = AirlineAppeal.MAX_AWARENESS
+        }
+        if (newLoyalty > AirlineAppeal.MAX_LOYALTY) {
+          newLoyalty = AirlineAppeal.MAX_LOYALTY
+        }
+        airport.setAirlineAwareness(base.airline.id, newAwareness)
+        airport.setAirlineLoyalty(base.airline.id, newLoyalty)
       }
     }
       

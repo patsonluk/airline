@@ -13,7 +13,7 @@ object LinkSimulation {
   private val MAX_LOYALTY_ADJUSTMENT = 0.5
   private[this] val VIP_COUNT = 5
   
-  def linkSimulation(cycle: Int) : Map[Int, ListBuffer[LinkConsumptionDetails]] = {
+  def linkSimulation(cycle: Int) : scala.collection.immutable.Map[Int, List[LinkConsumptionDetails]] = {
     val links = LinkSource.loadAllLinks(true)
     val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
@@ -48,11 +48,7 @@ object LinkSimulation {
     LinkSource.deleteLinkConsumptionsByCycle(30)
     LinkSource.saveLinkConsumptions(linkConsumptionDetails)
     
-    val linkConsumptionDetailsByAirline = Map[Int, ListBuffer[LinkConsumptionDetails]]()
-    linkConsumptionDetails.foreach { linkConsumption =>
-      val consumptionsForThisAirline = linkConsumptionDetailsByAirline.getOrElseUpdate(linkConsumption.airlineId, ListBuffer())
-      consumptionsForThisAirline.append(linkConsumption)
-    }
+    val linkConsumptionDetailsByAirline = linkConsumptionDetails.groupBy { _.airlineId }
     
     //update the loyalty on airports based on link consumption
     println("start updating loyalty")
@@ -106,7 +102,9 @@ object LinkSimulation {
        //at 0 LF, reduce fuel consumption by 70%
     val fixedCost = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost)
     val airportFees = link.getAssignedModel() match {
-      case Some(model) => (link.from.slotFee(model) + link.to.slotFee(model) + link.from.landingFee(model) + link.to.landingFee(model)) * link.frequency
+      case Some(model) =>
+        val airline = link.airline
+        (link.from.slotFee(model, airline) + link.to.slotFee(model, airline) + link.from.landingFee(model) + link.to.landingFee(model)) * link.frequency
       case None => 0 
     }
     
