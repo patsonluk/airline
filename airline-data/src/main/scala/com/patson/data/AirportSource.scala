@@ -96,6 +96,22 @@ object AirportSource {
             airport.addCityServed(city, cityResultSet.getDouble("share"))
           }
           
+          val airlineBaseStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_BASE_TABLE + " WHERE airport = ?")
+          airlineBaseStatement.setInt(1, airport.id)
+          
+          val airlineBaseResultSet = airlineBaseStatement.executeQuery()
+          val airlineBases = ListBuffer[AirlineBase]()
+          while (airlineBaseResultSet.next()) {
+             val airline = Airline.fromId(airlineBaseResultSet.getInt("airline"))
+             val scale = airlineBaseResultSet.getInt("scale")
+             val foundedCycle = airlineBaseResultSet.getInt("founded_cycle")
+             val headquarter = airlineBaseResultSet.getBoolean("headquarter")
+             
+             airlineBases += AirlineBase(airline, airport, scale, foundedCycle, headquarter)
+          }
+          
+          airport.initAirlineBases(airlineBases.toList)
+          
           cityStatement.close()
         }
       }
