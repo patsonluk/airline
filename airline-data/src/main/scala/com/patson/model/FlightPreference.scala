@@ -107,21 +107,27 @@ object AppealPreference {
 
 
 class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]) {
-  val pool = ListBuffer[FlightPreference]()
-  preferencesWithWeight.foreach { 
-    case (flightPreference, weight) =>
-      for (i <- 0 until weight) {
-        pool.append(flightPreference)
+  val pool : Map[LinkClass, List[FlightPreference]] = preferencesWithWeight.groupBy {
+    case (flightPrefernce, weight) => flightPrefernce.linkClass
+  }.mapValues { 
+    _.flatMap {
+      case (flightPreference, weight) => (0 until weight).foldRight(List[FlightPreference]()) { (_, foldList) =>
+        flightPreference :: foldList 
       }
+    }
   }
+  
+  
+  
 //  val pool = preferencesWithWeight.foldRight(List[FlightPreference]()) {
 //    (entry, foldList) => 
 //      Range(0, entry._2, 1).foldRight(List[FlightPreference]())((_, childFoldList) => entry._1 :: childFoldList) ::: foldList
 //  }
   
-  def draw : FlightPreference = {
+  def draw(linkClass : LinkClass) : FlightPreference = {
     //Random.shuffle(pool).apply(0)
-    pool(Random.nextInt(pool.length))
+    val poolForClass = pool(linkClass)
+    poolForClass(Random.nextInt(poolForClass.length))
   }
 }
 

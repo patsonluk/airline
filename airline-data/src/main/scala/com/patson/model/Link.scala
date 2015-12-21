@@ -114,6 +114,11 @@ sealed abstract class LinkClass(val spaceMultiplier : Double, val resourceMultip
 case object FIRST extends LinkClass(spaceMultiplier = 8, resourceMultiplier = 6, priceMultiplier = 10, 3)
 case object BUSINESS extends LinkClass(spaceMultiplier = 4, resourceMultiplier = 3, priceMultiplier = 4, 2)
 case object ECONOMY extends LinkClass(spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, 1)
+object LinkClass {
+  def values() : List[LinkClass] =  {
+    List(FIRST, BUSINESS, ECONOMY)
+  }
+}
 
 
 

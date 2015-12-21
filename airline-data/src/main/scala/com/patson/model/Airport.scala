@@ -11,7 +11,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var slotAssignmentsLoaded = false
   private[this] val airlineBases = scala.collection.mutable.Map[Int, AirlineBase]()
   private[this] var airlineBasesLoaded = false
-    
+
+  val income = if (population > 0) { power / population } else 0
+  
   def availableSlots : Int = {
     if (slotAssignmentsLoaded) {
       slots - slotAssignments.foldLeft(0)(_ + _._2)
@@ -19,8 +21,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       throw new IllegalStateException("airline slot assignment is not properly initialized! If loaded from DB, please use fullload")
     }
   }
-  
-  
   
   def addCityServed(city : City, share : Double) {
     citiesServed += Tuple2(city, share)
