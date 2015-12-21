@@ -16,27 +16,27 @@ import com.patson.model._
 
 
 
-object DemandGenerator extends App {
+object DemandGenerator {
 
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 //
 //  import actorSystem.dispatcher
 //
 //  implicit val materializer = FlowMaterializer()
-  private val FIRST_CLASS_INCOME_MIN = 50000
-  private val FIRST_CLASS_INCOME_MAX = 200000
-  private val FIRST_CLASS_PERCENTAGE_MAX = 0.05
-  private val BUSINESS_CLASS_INCOME_MIN = 20000
-  private val BUSINESS_CLASS_INCOME_MAX = 100000
-  private val BUSINESS_CLASS_PERCENTAGE_MAX = 0.15
+  private[this] val FIRST_CLASS_INCOME_MIN = 50000
+  private[this] val FIRST_CLASS_INCOME_MAX = 200000
+  private[this] val FIRST_CLASS_PERCENTAGE_MAX = 0.05 //max 5% first
+  private[this] val BUSINESS_CLASS_INCOME_MIN = 20000
+  private[this] val BUSINESS_CLASS_INCOME_MAX = 200000
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = 0.20 //max 20% business
   
-  mainFlow
-  
-  def mainFlow() = {
-    Await.ready(computeDemand(), Duration.Inf)
-    
-    actorSystem.shutdown()
-  }
+//  mainFlow
+//  
+//  def mainFlow() = {
+//    Await.ready(computeDemand(), Duration.Inf)
+//    
+//    actorSystem.shutdown()
+//  }
   
   def computeDemand() = {
     println("Loading airports")
