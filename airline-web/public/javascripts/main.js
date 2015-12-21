@@ -18,6 +18,8 @@ $( document ).ready(function() {
 	{
   		$('#floatBackButton').animate({top: ($(window).scrollTop() + 100) + "px" },{queue: false, duration: 350});
 	});
+	
+	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
 function showFloatMessage(message) {

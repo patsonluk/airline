@@ -116,6 +116,7 @@ class LinkApplication extends Controller {
       val jsObject = JsObject(List(
       "modelId" -> JsNumber(modelPlanLinkInfo.model.id), 
       "modelName" -> JsString(modelPlanLinkInfo.model.name),
+      "capacity" -> JsNumber(modelPlanLinkInfo.model.capacity),
       "duration" -> JsNumber(modelPlanLinkInfo.duration), 
       "maxFrequency" -> JsNumber(modelPlanLinkInfo.maxFrequency),
       "isAssigned" -> JsBoolean(modelPlanLinkInfo.isAssigned)))
@@ -426,8 +427,13 @@ class LinkApplication extends Controller {
                 planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, maxFrequencyByModel, assignedModel.isDefined && assignedModel.get.id == model.id, airplaneList.toList))
             }
             
+            
+            val suggestedPrice : LinkPrice = LinkPrice.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), ECONOMY),
+                                                                   Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), BUSINESS),
+                                                                   Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), FIRST))
+            
             var resultObject = Json.obj("distance" -> distance, 
-                                        "suggestedPrice" -> Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), ECONOMY), //TODO temporary, add other classes soon 
+                                        "suggestedPrice" -> suggestedPrice,  
                                         "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
                                         "maxFrequencyToAirport" -> maxFrequencyToAirport) + ("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
              

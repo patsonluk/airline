@@ -291,10 +291,10 @@ function loadLinkDetails(linkId) {
 	    success: function(link) {
 	    	$("#linkFromAirport").text(getAirportText(link.fromAirportCity, link.fromAirportName))
 	    	$("#linkToAirport").text(getAirportText(link.toAirportCity, link.toAirportName))
-	    	$("#linkCurrentPrice").text(link.price)
+	    	$("#linkCurrentPrice").text(link.price.economy + " / " + link.price.business + " / " + link.price.first)
 	    	$("#linkDistance").text(link.distance)
 	    	$("#linkQuality").text(link.computedQuality)
-	    	$("#linkCurrentCapacity").text(link.capacity)
+	    	$("#linkCurrentCapacity").text(link.capacity.economy + " / " + link.capacity.business + " / " + link.capacity.first)
 	    	$("#linkCurrentDetails").show()
 	    	$("#linkToAirportId").val(link.toAirportId)
 	    	$("#linkFromAirportId").val(link.fromAirportId)
@@ -577,11 +577,15 @@ var existingLinkModelId = 0
 function updatePlanLinkInfo(linkInfo) {
 	$('#planLinkDistance').text(linkInfo.distance)
 	if (!linkInfo.existingLink) {
-		$('#planLinkPrice').val(linkInfo.suggestedPrice)
+		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)
+		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)
+		$('#planLinkFirstPrice').val(linkInfo.suggestedPrice.first)
 		$('#addLinkButton').show()
 		$('#updateLinkButton').hide()
 	} else {
-		$('#planLinkPrice').val(linkInfo.existingLink.price)
+		$('#planLinkEconomyPrice').val(linkInfo.existingLink.price.economy)
+		$('#planLinkBusinessPrice').val(linkInfo.existingLink.price.business)
+		$('#planLinkFirstPrice').val(linkInfo.existingLink.price.first)
 		$('#addLinkButton').hide()
 		$('#updateLinkButton').show()
 	}
@@ -606,7 +610,7 @@ function updatePlanLinkInfo(linkInfo) {
 
 	updatePlanLinkInfoWithModelSelected($("#planLinkModelSelect").val())
 }
-function updateFrequencyBar(airplaneModelId) {
+function updateFrequencyBar(airplaneModelId, callback) {
 	var frequencyBar = $("#frequencyBar")
 	var selectedCount
 	if ($("#planLinkAirplaneSelect").val()) { 
@@ -622,21 +626,21 @@ function updateFrequencyBar(airplaneModelId) {
 		if (maxFrequencyByAirplanes == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {
-			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"))
+			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"), null, null, callback)
 		}
 		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by airplanes")
 	} else if (maxFrequencyFromAirport <= maxFrequencyToAirport && maxFrequencyFromAirport <= maxFrequencyByAirplanes) { //limited by from airport
 		if (maxFrequencyFromAirport == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {
-			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyFromAirport, frequencyBar, $("#planLinkFrequency"))
+			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyFromAirport, frequencyBar, $("#planLinkFrequency"), null, null, callback)
 		}
 		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by Departure Airport")
 	} else { //limited by to airport
 		if (maxFrequencyToAirport == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {
-			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyToAirport, frequencyBar, $("#planLinkFrequency"))
+			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyToAirport, frequencyBar, $("#planLinkFrequency"), null, null, callback)
 		}
 		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by Destination Airport")
 	}
@@ -664,13 +668,23 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 		if (isCurrentlyAssigned) {
 			$("#planLinkFrequency").val(existingLink.frequency)
 			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
+			thisModelPlanLinkInfo.configuration = { "economy" : existingLink.capacity.economy / existingLink.frequency, 
+													"business" : existingLink.capacity.business / existingLink.frequency, 
+													"first" : existingLink.capacity.first / existingLink.frequency}
 		} else {
 			$("#planLinkFrequency").val(1)
 			$("#planLinkServiceLevel").val(1)
 			$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
+			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
 		}
-		updateFrequencyBar(airplaneModelId)
-	
+		 
+		updateFrequencyBar(airplaneModelId, function(oldFrequency, newFrequency) {
+			console.log("frequency from " + oldFrequency + " to " + newFrequency)
+			console.log(thisModelPlanLinkInfo.configuration)
+		})
+		
+		plotSeatConfigurationGauge($("#seatConfigurationGauge"), thisModelPlanLinkInfo.configuration, thisModelPlanLinkInfo.capacity)
+			
 		var serviceLevelBar = $("#serviceLevelBar")
 		generateImageBar(serviceLevelBar.data("emptyIcon"), serviceLevelBar.data("fillIcon"), 5, serviceLevelBar, $("#planLinkServiceLevel"))
 		$("#planLinkExtendedDetails").show()
@@ -684,12 +698,14 @@ function createLink() {
 		var airlineId = activeAirline.id
 		var url = "airlines/" + airlineId + "/links"
 	    console.log("selected " + $("#planLinkAirplaneSelect").val())
+	    var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
 	    var linkData = { 
 			"fromAirportId" : parseInt($("#planLinkFromAirportId").val()), 
 			"toAirportId" : parseInt($("#planLinkToAirportId").val()),
 			"airplanes" : $("#planLinkAirplaneSelect").val().map(Number),
 			"airlineId" : airlineId,
-			"price" : parseFloat($("#planLinkPrice").val()),
+			"configuration" : { "economy" : configuration.economy, "business" : configuration.business, "first" : configuration.first},
+			"price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},
 			"frequency" : parseInt($("#planLinkFrequency").val()),
 			"model" : parseInt($("#planLinkModelSelect").val()),
 			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20}

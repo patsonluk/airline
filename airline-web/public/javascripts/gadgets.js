@@ -1,4 +1,4 @@
-function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction) {
+function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, callback) {
 	containerDiv.empty()
 	var images = []
 	
@@ -24,7 +24,14 @@ function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput
 		image.data('index', i)
 		image.click(updateImageBar)
 		//image.click(function () { valueInput.val($(this).data('index')); })
-		image.click(function () { valueInput.val(indexToValueFunction($(this).data('index'))); })
+		image.click(function () {
+			var newValue = indexToValueFunction($(this).data('index'))
+			var oldValue = parseInt(valueInput.val())
+			valueInput.val(newValue); 
+			if (callback) {
+				callback(oldValue, newValue)
+			}
+		})
 		image.hover(updateImageBar, resetImageBar)
 
 		containerDiv.append(image)
