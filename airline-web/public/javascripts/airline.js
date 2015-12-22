@@ -291,10 +291,10 @@ function loadLinkDetails(linkId) {
 	    success: function(link) {
 	    	$("#linkFromAirport").text(getAirportText(link.fromAirportCity, link.fromAirportName))
 	    	$("#linkToAirport").text(getAirportText(link.toAirportCity, link.toAirportName))
-	    	$("#linkCurrentPrice").text(link.price.economy + " / " + link.price.business + " / " + link.price.first)
+	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price), "$")
 	    	$("#linkDistance").text(link.distance)
 	    	$("#linkQuality").text(link.computedQuality)
-	    	$("#linkCurrentCapacity").text(link.capacity.economy + " / " + link.capacity.business + " / " + link.capacity.first)
+	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
 	    	$("#linkCurrentDetails").show()
 	    	$("#linkToAirportId").val(link.toAirportId)
 	    	$("#linkFromAirportId").val(link.fromAirportId)
@@ -323,10 +323,18 @@ function loadLinkDetails(linkId) {
 		    	$("#linkOtherCosts").text("-")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
-	    		$("#linkHistoryPrice").text(linkConsumption.price)
-		    	$("#linkHistoryCapacity").text(linkConsumption.capacity)
-		    	var loadFactor = linkConsumption.soldSeats / linkConsumption.capacity * 100
-		    	$("#linkLoadFactor").text(parseInt(loadFactor) + "%")
+	    		$("#linkHistoryPrice").text(toLinkClassValueString(linkConsumption.price, "$"))
+		    	$("#linkHistoryCapacity").text(toLinkClassValueString(linkConsumption.capacity))
+		    	
+		    	var loadFactor = {}
+		    	loadFactor.economy = "-"
+		    	if (linkConsumption.capacity.economy > 0)  { loadFactor.economy = parseInt(linkConsumption.soldSeats.economy / linkConsumption.capacity.economy * 100)}
+	    		loadFactor.business = "-"
+			    if (linkConsumption.capacity.business > 0)  { loadFactor.business = parseInt(linkConsumption.soldSeats.business / linkConsumption.capacity.business * 100)}
+	    		loadFactor.first = "-"
+				if (linkConsumption.capacity.first > 0)  { loadFactor.first = parseInt(linkConsumption.soldSeats.first / linkConsumption.capacity.first * 100)}
+		    	
+	    		$("#linkLoadFactor").text(toLinkClassValueString(loadFactor, "", "%"))
 		    	$("#linkProfit").text("$" + linkConsumption.profit)
 		    	$("#linkRevenue").text("$" + linkConsumption.revenue)
 		    	$("#linkFuelCost").text("$" + linkConsumption.fuelCost)
@@ -576,6 +584,8 @@ var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
 	$('#planLinkDistance').text(linkInfo.distance)
+	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
+	$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
 	if (!linkInfo.existingLink) {
 		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)
 		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)

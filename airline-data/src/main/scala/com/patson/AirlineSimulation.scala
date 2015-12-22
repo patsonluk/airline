@@ -18,7 +18,7 @@ object AirlineSimulation {
         linkResult.get(airline.id) match {
           case Some(linkConsumptions) =>
             profit = linkConsumptions.foldLeft(0L)(_ + _.profit) - AIRLINE_FIXED_COST
-            val totalPassengers = linkConsumptions.foldLeft(0)(_ + _.soldSeats.capacityMap.map(_._2).sum)
+            val totalPassengers = linkConsumptions.foldLeft(0)(_ + _.soldSeats.total)
             
             var targetReputation = Math.log(totalPassengers / 1000) / Math.log(1.1)
             if (targetReputation > 100) {

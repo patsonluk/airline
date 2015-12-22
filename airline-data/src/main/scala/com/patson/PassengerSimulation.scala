@@ -132,7 +132,7 @@ object PassengerSimulation extends App {
                      pickedRoute.links.foreach { linkConsideration =>
                        val newAvailableSeats = linkConsideration.link.availableSeats(linkClass) - consumptionSize
                        
-                       linkConsideration.link.availableSeats = LinkCapacity(linkConsideration.link.availableSeats.capacityMap.+(linkClass -> newAvailableSeats))
+                       linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(linkClass -> newAvailableSeats))
     //                   if (link.availableSeats == 0) {
     //                     println("EXHAUSED!! = " + link)
     //                   }
@@ -312,7 +312,7 @@ object PassengerSimulation extends App {
               val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
               val price = computePrice(distance)
               //println(distance + " km, $" + price)
-              Link(fromAirport, toAirport, dummyAirline, LinkPrice(Map(ECONOMY -> price)), distance.toInt, LinkCapacity(Map(ECONOMY -> 100)), 10, distance.toInt * 60 / 500, 1) :: list  
+              Link(fromAirport, toAirport, dummyAirline, LinkClassValues(Map(ECONOMY -> price)), distance.toInt, LinkClassValues(Map(ECONOMY -> 100)), 10, distance.toInt * 60 / 500, 1) :: list  
             } else {
               list
             }

@@ -30,6 +30,10 @@ object DemandGenerator {
   private[this] val BUSINESS_CLASS_INCOME_MAX = 200000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = 0.20 //max 20% business
   
+  
+  val defaultTotalWorldPower = {
+    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
+  }
 //  mainFlow
 //  
 //  def mainFlow() = {
@@ -43,18 +47,17 @@ object DemandGenerator {
     //val allAirports = AirportSource.loadAllAirports(true)
     val airports = AirportSource.loadAllAirports(true).filter { _.iata != ""  }
     println("Loaded " + airports.size + " airports")
-    val totalWorldPower = airports.foldRight(0L)( _.power + _)
     
-	  val airportSource = Source(airports)
+    val airportSource = Source(airports)
 	  
-	  val computeFlow: Flow[Airport, (Airport, List[(Airport, FlightDemand)])] = Flow[Airport].filter { _.power > 0 }.mapAsync { 
+	  val computeFlow: Flow[Airport, (Airport, List[(Airport, LinkClassValues)])] = Flow[Airport].filter { _.power > 0 }.mapAsync { 
 	    fromAirport : Airport => {
 	      Future {
-	        val demandList = ListBuffer[(Airport, FlightDemand)]() 
+	        val demandList = ListBuffer[(Airport, LinkClassValues)]() 
 	        airports.foreach { toAirport => 
-	          val demand = computeDemandBetweenAirports(fromAirport, toAirport, totalWorldPower)
+	          val demand = computeDemandBetweenAirports(fromAirport, toAirport)
 	          
-	          if (demand.hasDemand) {
+	          if (demand.total > 0) {
 	            demandList.append((toAirport, demand))
 	          } 
 	        } 
@@ -65,7 +68,7 @@ object DemandGenerator {
 	  }
 	  
 	  val demandChunkSize = 5
-	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, FlightDemand)]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, FlightDemand)])].map {
+	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, LinkClassValues)]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, LinkClassValues)])].map {
 	    case (fromAirport, toAirportsWithDemand) =>
 	      val passangerGroupDemand = ListBuffer[(PassengerGroup, Airport, Int)]() 
         //for each city generate different preferences
@@ -115,16 +118,16 @@ object DemandGenerator {
     materializedFlow.get(resultSink).map(_.toList)
   }
   
-  private[patson] def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, totalWorldPower : Long) : FlightDemand = {
+  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, totalWorldPower : Long = defaultTotalWorldPower) : LinkClassValues = {
     if (fromAirport == toAirport) {
-      new FlightDemand(0, 0, 0)
+      LinkClassValues.getInstance(0, 0, 0)
     } else {
       val passengerSupplyPerWeek =  (fromAirport.power / 30000 / 52).toInt //assuming 1 flight per year if income per capita is 30k
       import FlightType._
       val flightType = Computation.getFlightType(fromAirport, toAirport)
       val multiplier = flightType match {
-        case SHORT_HAUL_DOMESTIC => 4
-        case LONG_HAUL_DOMESTIC => 2
+        case SHORT_HAUL_DOMESTIC => 10
+        case LONG_HAUL_DOMESTIC => 5
         case SHORT_HAUL_INTERNATIONAL => 1.5
         case LONG_HAUL_INTERNATIONAL => 1
         case ULTRA_LONG_HAUL_INTERNATIONAL => 0.5
@@ -161,7 +164,7 @@ object DemandGenerator {
       val firstClassDemand = (totalDemand * firstClassPercentage).toInt
       val businessClassDemand = (totalDemand * businessClassPercentage).toInt
       val economyClassDemand = totalDemand - firstClassDemand - businessClassDemand
-      new FlightDemand(economyClassDemand, businessClassDemand, firstClassDemand)
+      LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
     }
   }
   
@@ -186,11 +189,4 @@ object DemandGenerator {
     
     new FlightPreferencePool(flightPreferences.toList)
   }
-  
-  sealed private[patson] class FlightDemand(economy : Int, business : Int, first : Int) {
-    val hasDemand = economy > 0 || business > 0 || first > 0
-    private val demandMap : Map[LinkClass, Int] = Map(ECONOMY -> economy, BUSINESS -> business, FIRST -> first)
-    def apply(linkClass : LinkClass) = demandMap(linkClass)
-  }
-  
 }

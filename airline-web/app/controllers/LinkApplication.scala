@@ -28,6 +28,7 @@ import play.api.mvc.Security.AuthenticatedRequest
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.RouteHistorySource
 import com.patson.data.LinkHistorySource
+import com.patson.DemandGenerator
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -43,7 +44,7 @@ class LinkApplication extends Controller {
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
       val rawQuality = json.\("quality").as[Int]
       
-      val link = Link(fromAirport, toAirport, airline, LinkPrice.getInstance(price), distance.toInt, LinkCapacity.getInstance(capacity), rawQuality, distance.toInt * 60 / 800, 1)
+      val link = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(price), distance.toInt, LinkClassValues.getInstance(capacity), rawQuality, distance.toInt * 60 / 800, 1)
       (json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
@@ -64,7 +65,7 @@ class LinkApplication extends Controller {
       "toAirportCode" -> JsString(toAirport.map(_.iata).getOrElse("XXX")),
       "toAirportName" -> JsString(toAirport.map(_.name).getOrElse("<unknown>")),
       "airlineName" -> JsString(airline.map(_.name).getOrElse("<unknown>")),
-      "price" -> JsNumber(linkConsumption.price(ECONOMY)),
+      "price" -> Json.toJson(linkConsumption.price),
       "distance" -> JsNumber(linkConsumption.distance),
       "profit" -> JsNumber(linkConsumption.profit),
       "revenue" -> JsNumber(linkConsumption.revenue),
@@ -73,8 +74,8 @@ class LinkApplication extends Controller {
       "airportFees" -> JsNumber(linkConsumption.airportFees),
       "fixedCost" -> JsNumber(linkConsumption.fixedCost),
       "inflightCost" -> JsNumber(linkConsumption.inflightCost),
-      "capacity" -> JsNumber(linkConsumption.capacity(ECONOMY)),
-      "soldSeats" -> JsNumber(linkConsumption.soldSeats(ECONOMY)),
+      "capacity" -> Json.toJson(linkConsumption.capacity),
+      "soldSeats" -> Json.toJson(linkConsumption.soldSeats),
       "cycle" -> JsNumber(linkConsumption.cycle)))
       
     }
@@ -428,14 +429,19 @@ class LinkApplication extends Controller {
             }
             
             
-            val suggestedPrice : LinkPrice = LinkPrice.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), ECONOMY),
+            val suggestedPrice : LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), ECONOMY),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), BUSINESS),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), FIRST))
             
+            val directDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport)
+            val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id).map { _.capacity.total }.sum 
+                                                                   
             var resultObject = Json.obj("distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,  
                                         "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
-                                        "maxFrequencyToAirport" -> maxFrequencyToAirport) + ("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
+                                        "maxFrequencyToAirport" -> maxFrequencyToAirport,
+                                        "directDemand" -> directDemand,
+                                        "airportLinkCapacity" -> airportLinkCapacity).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
              
             if (existingLink.isDefined) {
               resultObject = resultObject + ("existingLink", Json.toJson(existingLink))

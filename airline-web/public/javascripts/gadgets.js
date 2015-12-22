@@ -106,3 +106,13 @@ function fadeInMarkerRecursive(marker) {
     	setTimeout(function() { fadeInMarkerRecursive(marker) }, 20)
 	}
 }
+
+function toLinkClassValueString(linkValues, prefix, suffix) {
+	if (!prefix) {
+		prefix = ""
+	}
+	if (!suffix) {
+		suffix = ""
+	}
+ 	return prefix + linkValues.economy + suffix + " / " + prefix + linkValues.business + suffix + " / " + prefix + linkValues.first + suffix
+}

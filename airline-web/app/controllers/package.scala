@@ -49,17 +49,11 @@ package object controllers {
     }
   }
   
-  implicit object LinkCapacityWrites extends Writes[LinkCapacity] {
-    def writes(linkCapacity: LinkCapacity): JsValue = JsObject(List(
-      "economy" -> JsNumber(linkCapacity(ECONOMY)),
-      "business" -> JsNumber(linkCapacity(BUSINESS)),
-      "first" -> JsNumber(linkCapacity(FIRST))))
-  }
-  implicit object LinkPriceWrites extends Writes[LinkPrice] {
-    def writes(linkPrice: LinkPrice): JsValue = JsObject(List(
-      "economy" -> JsNumber(linkPrice(ECONOMY)),
-      "business" -> JsNumber(linkPrice(BUSINESS)),
-      "first" -> JsNumber(linkPrice(FIRST))))
+  implicit object LinkClassValuesWrites extends Writes[LinkClassValues] {
+    def writes(linkClassValues: LinkClassValues): JsValue = JsObject(List(
+      "economy" -> JsNumber(linkClassValues(ECONOMY)),
+      "business" -> JsNumber(linkClassValues(BUSINESS)),
+      "first" -> JsNumber(linkClassValues(FIRST))))
   }
   
   implicit object LinkFormat extends Format[Link] {
@@ -68,7 +62,7 @@ package object controllers {
       val toAirportId = json.\("toAirportId").as[Int]
       val airlineId = json.\("airlineId").as[Int]
       //val capacity = json.\("capacity").as[Int]
-      val price = LinkPrice.getInstance(json.\("price").\("economy").as[Int], json.\("price").\("business").as[Int], json.\("price").\("first").as[Int])
+      val price = LinkClassValues.getInstance(json.\("price").\("economy").as[Int], json.\("price").\("business").as[Int], json.\("price").\("first").as[Int])
       val fromAirport = AirportSource.loadAirportById(fromAirportId, true).get
       val toAirport = AirportSource.loadAirportById(toAirportId, true).get
       val airline = AirlineSource.loadAirlineById(airlineId).get
@@ -77,7 +71,7 @@ package object controllers {
       val frequency = json.\("frequency").as[Int]
       val modelId = json.\("model").as[Int]
       
-      val capacity = LinkCapacity.getInstance(frequency * json.\("configuration").\("economy").as[Int],
+      val capacity = LinkClassValues.getInstance(frequency * json.\("configuration").\("economy").as[Int],
                                               frequency * json.\("configuration").\("business").as[Int],
                                               frequency * json.\("configuration").\("first").as[Int])
                                 

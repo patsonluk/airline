@@ -201,7 +201,6 @@ function plotLinkProfit(linkConsumptions, container) {
 function plotLinkRidership(linkConsumptions, container) {
 	var capacityData = []
 	var soldSeatsData = []
-	var loadFactorData = []
 	
 	var category = []
 	 
@@ -209,9 +208,11 @@ function plotLinkRidership(linkConsumptions, container) {
 	
 	linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
 	$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
-		capacityData.push({ value : linkConsumption.capacity })
-		soldSeatsData.push({ value : linkConsumption.soldSeats })
-		loadFactorData.push({ value : (linkConsumption.soldSeats / linkConsumption.capacity * 100).toFixed(2) })
+		var capacity = linkConsumption.capacity.economy + linkConsumption.capacity.business + linkConsumption.capacity.first
+		capacityData.push({ value : capacity })
+		var soldSeats = linkConsumption.soldSeats.economy + linkConsumption.soldSeats.business + linkConsumption.soldSeats.first
+		soldSeatsData.push({ value : soldSeats })
+		
 		var month = Math.floor(linkConsumption.cycle / 4)
 		//var week = linkConsumption.cycle % 4 + 1
 		category.push({ label : month.toString()})

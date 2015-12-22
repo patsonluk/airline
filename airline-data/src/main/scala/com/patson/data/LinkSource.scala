@@ -40,9 +40,9 @@ object LinkSource {
               fromAirport.get,
               toAirport.get,
               airline.get,
-              LinkPrice(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
+              LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
               resultSet.getInt("distance"),
-              LinkCapacity(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
+              LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
               resultSet.getInt("quality"),
               resultSet.getInt("duration"),
               resultSet.getInt("frequency"))
@@ -89,6 +89,14 @@ object LinkSource {
     loadLinksByCriteria(List(("airline", airlineId)))
   }
   
+  def loadLinksByFromAirport(fromAirportId : Int) = {
+    loadLinksByCriteria(List(("from_airport", fromAirportId)), true)
+  }
+  
+  def loadLinksByToAirport(toAirportId : Int) = {
+    loadLinksByCriteria(List(("to_airport", toAirportId)), true)
+  }
+  
   def saveLink(link : Link) : Option[Link] = {
      saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.getAssignedAirplanes) match { 
        case Some(generatedId) => 
@@ -99,7 +107,7 @@ object LinkSource {
      }
   }
   
-  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkPrice, distance : Double, capacity : LinkCapacity, rawQuality : Int,  duration : Int, frequency : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
+  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
      //open the hsqldb
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
@@ -343,9 +351,9 @@ object LinkSource {
       while (resultSet.next()) {
           linkConsumptions.append(LinkConsumptionDetails(
           resultSet.getInt("link"),
-          LinkPrice(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
-          LinkCapacity(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
-          LinkCapacity(Map(ECONOMY -> resultSet.getInt("sold_seats_economy"), BUSINESS -> resultSet.getInt("sold_seats_business"), FIRST -> resultSet.getInt("sold_seats_first"))),
+          LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
+          LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
+          LinkClassValues(Map(ECONOMY -> resultSet.getInt("sold_seats_economy"), BUSINESS -> resultSet.getInt("sold_seats_business"), FIRST -> resultSet.getInt("sold_seats_first"))),
           resultSet.getInt("fuel_cost"),
           resultSet.getInt("crew_cost"),
           resultSet.getInt("airport_fees"),

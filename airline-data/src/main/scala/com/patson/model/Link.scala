@@ -7,8 +7,8 @@ import com.patson.model.airplane.Model
  * 
  * Frequency sum of all assigned plane
  */
-case class Link(from : Airport, to : Airport, airline: Airline, price : LinkPrice, distance : Int, capacity: LinkCapacity, rawQuality : Int, duration : Int, frequency : Int, var id : Int = 0) extends IdObject{
-  var availableSeats : LinkCapacity = capacity.copy()
+case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, var id : Int = 0) extends IdObject{
+  var availableSeats : LinkClassValues = capacity.copy()
   private var assignedAirplanes : List[Airplane] = List.empty
   private var assignedModel : Option[Model] = None
   
@@ -47,11 +47,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkPric
   }
   
   def getTotalCapacity : Int = {
-    capacity.capacityMap.map(_._2).foldLeft(0)(_ + _)
+    capacity.total
   }
   
   def getTotalAvailableSeats : Int = {
-    availableSeats.capacityMap.map(_._2).foldLeft(0)(_ + _)
+    availableSeats.total
   }
   
   def getTotalSoldSeats : Int = {
@@ -60,9 +60,9 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkPric
   
   
   
-  def soldSeats : LinkCapacity = {
-    LinkCapacity(
-      capacity.capacityMap.map { 
+  def soldSeats : LinkClassValues = {
+    LinkClassValues(
+      capacity.map.map { 
         case (linkClass, capacity) =>
         (linkClass, capacity - availableSeats(linkClass))
       }
@@ -119,25 +119,3 @@ object LinkClass {
     List(FIRST, BUSINESS, ECONOMY)
   }
 }
-
-
-
-case class LinkCapacity(capacityMap : Map[LinkClass, Int]) {
-  def apply(linkClass : LinkClass) = { capacityMap.getOrElse(linkClass, 0) }
-}
-object LinkCapacity {
-  def getInstance(economy : Int = 0, business : Int = 0, first : Int = 0) : LinkCapacity = {
-    LinkCapacity(Map(ECONOMY -> economy, BUSINESS -> business, FIRST -> first))
-  }
-}
-
-case class LinkPrice(priceMap : Map[LinkClass, Int]) {
-  def apply(linkClass : LinkClass) = { priceMap.getOrElse(linkClass, 0) } 
-}
-object LinkPrice {
-  def getInstance(economy : Int = 0, business : Int = 0, first : Int = 0) : LinkPrice = {
-    LinkPrice(Map(ECONOMY -> economy, BUSINESS -> business, FIRST -> first))
-  }
-}
-
-
