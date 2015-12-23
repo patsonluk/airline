@@ -433,7 +433,9 @@ class LinkApplication extends Controller {
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), BUSINESS),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), FIRST))
             
-            val directDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport)
+            val directDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport) 
+            
+            
             val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id).map { _.capacity.total }.sum 
                                                                    
             var resultObject = Json.obj("distance" -> distance, 
