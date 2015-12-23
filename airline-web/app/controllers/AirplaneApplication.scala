@@ -68,7 +68,7 @@ class AirplaneApplication extends Controller {
     AirplaneSource.loadAirplaneById(airplaneId) match {
       case Some(airplane) =>
         if (airplane.owner.id == airlineId) {
-          val sellValue = Computation.calculateAirplaneValue(airplane)
+          val sellValue = Computation.calculateAirplaneSellValue(airplane)
           if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
             AirlineSource.adjustAirlineBalance(airlineId, sellValue)
             Ok(Json.toJson(airplane))
@@ -89,7 +89,7 @@ class AirplaneApplication extends Controller {
       BadRequest("unknown model or airline")
     } else {
       val airline = request.user
-      val airplane = Airplane(modelGet.get, airline, CycleSource.loadCycle(), Airplane.MAX_CONDITION)
+      val airplane = Airplane(modelGet.get, airline, CycleSource.loadCycle(), Airplane.MAX_CONDITION, depreciationRate = 0, value = modelGet.get.price)
       if (airline.airlineInfo.balance < (airplane.model.price * quantity)) { //not enough money!
         BadRequest("Not enough money")   
       } else {
