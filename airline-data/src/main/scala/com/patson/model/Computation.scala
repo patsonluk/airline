@@ -42,10 +42,9 @@ object Computation {
     currentCycle - fromCycle 
   }
   
-  def calculateAirplaneValue(airplane : Airplane) : Int = {
-    val maxAge = 30 * 52 //after age 30 no value...
-    //80% off * condition * (age out of 30 years ratio)
-    val value = airplane.model.price * 0.8 * airplane.condition / 100 * ((maxAge - calculateAge(airplane.constructedCycle)).toDouble / maxAge)
+  def calculateAirplaneSellValue(airplane : Airplane) : Int = {
+    //80% off
+    val value = airplane.value * 0.8
     if (value < 0) 0 else value.toInt
   }
   

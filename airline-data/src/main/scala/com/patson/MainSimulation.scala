@@ -42,7 +42,8 @@ object MainSimulation extends App {
 
   
   def startCycle(cycle : Int) = {
-      AirportSimulation.airportSimulation(cycle) 
+      AirportSimulation.airportSimulation(cycle)
+      AirplaneSimulation.airplaneSimulation(cycle)
       val linkResult : Map[Int, List[LinkConsumptionDetails]] = LinkSimulation.linkSimulation(cycle)
       AirlineSimulation.airlineSimulation(linkResult, cycle)
       //notify the websockets via EventStream

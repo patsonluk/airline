@@ -35,16 +35,17 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   val mediumModel = Model("Boeing 787-8 Dreamliner", capacity = 250, fuelBurn = 274, speed = 907, range = 13621, price = 225000000)
   val largeAirplaneModel = Model("Boeing 777-300", capacity = 550, fuelBurn = 500, speed = 945, range = 11121, price = 250000000)
                       
-  val lightAirplane = Airplane(lightModel, testAirline1, 0, 100)      
-  val regionalAirplane = Airplane(regionalModel, testAirline1, 0, 100)
-  val smallAirplane = Airplane(smallModel, testAirline1, 0, 100)
-  val mediumAirplane = Airplane(mediumModel, testAirline1, 0, 100)
-  val largeAirplane = Airplane(largeAirplaneModel, testAirline1, 0, 100)
+  val decayRate = (AirplaneSimulation.MAX_DECAY + AirplaneSimulation.MIN_DECAY) / 2
+  val lightAirplane = Airplane(lightModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(lightModel, decayRate), lightModel.price)      
+  val regionalAirplane = Airplane(regionalModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(regionalModel, decayRate), regionalModel.price)
+  val smallAirplane = Airplane(smallModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(smallModel, decayRate), smallModel.price)
+  val mediumAirplane = Airplane(mediumModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(mediumModel, decayRate), mediumModel.price)
+  val largeAirplane = Airplane(largeAirplaneModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, decayRate), largeAirplaneModel.price)
   
   import Model.Type._
   //LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.4, REGIONAL -> 0.3, SMALL -> 0.25, MEDIUM -> 0.20, LARGE -> 0.15, JUMBO -> 0.15)
-  private val MAX_PROFIT_MARGIN = 0.6 //nothing should exceed 60%
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.3, SMALL -> 0.25, MEDIUM -> 0.20, LARGE -> 0.15, JUMBO -> 0.15)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.8, REGIONAL -> 0.7, SMALL -> 0.6, MEDIUM -> 0.55, LARGE -> 0.50, JUMBO -> 0.50)
   
   "Compute profit".must {
     "More profitable with more frequency flight (max LF)".in {
@@ -223,8 +224,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       economyResult.profit.should(be < businessResult.profit)
       businessResult.profit.should(be < firstResult.profit)
       
-      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN)      
-      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN)
+      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))      
+      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))
       //(firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN)  ok...if all first class is filled, should be high profit
     }
     "More profit at higher link class at max LF (small plane)".in  {
@@ -264,8 +265,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       economyResult.profit.should(be < businessResult.profit)
       businessResult.profit.should(be < firstResult.profit)
       
-      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN)      
-      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN)
+      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))      
+      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))
       //(firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN) // ok...if all first class is filled, should be high profit
     }
     "More profit at higher link class at max LF (large plane)".in  {
@@ -305,8 +306,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       economyResult.profit.should(be < businessResult.profit)
       businessResult.profit.should(be < firstResult.profit)
       
-      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN)      
-      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN)
+      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))      
+      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))
       //(firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN) ok...if all first class is filled, should be high profit
     }
   }
@@ -315,7 +316,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     val profitMargin = consumptionResult.profit.toDouble / consumptionResult.revenue.toDouble
     println(consumptionResult.soldSeats(ECONOMY) * 100 / consumptionResult.capacity(ECONOMY) + "%" + " PM:" +  profitMargin + " " +  model.name + " " + consumptionResult)
     if (expectGoodReturn) {
-      profitMargin.should(be >= GOOD_PROFIT_MARGIN(model.airplaneType) and be <= MAX_PROFIT_MARGIN)
+      profitMargin.should(be >= GOOD_PROFIT_MARGIN(model.airplaneType) and be <= MAX_PROFIT_MARGIN(model.airplaneType))
     } else {
       profitMargin.should(be < GOOD_PROFIT_MARGIN(model.airplaneType))
     }
@@ -352,7 +353,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     
     
     link.setAssignedAirplanes((0 until airplaneCount).foldRight(List[Airplane]()) { 
-      case (_, foldList) => Airplane(airplaneModel, testAirline1, 0, 100) :: foldList  
+      case (_, foldList) => Airplane(airplaneModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(airplaneModel, decayRate), airplaneModel.price) :: foldList  
     })
     
     val consumptionResult = LinkSimulation.computeLinkConsumptionDetail(link , 0)

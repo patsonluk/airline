@@ -51,10 +51,9 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-//      statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_BASE_TABLE)
-//      statement.execute()
-//      statement.close()
-//     
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_BASE_TABLE)
+//     statement.execute()
+//     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_CITY_SHARE_TABLE)
 //     statement.execute()
@@ -97,25 +96,25 @@ object Meta {
 //     statement.execute()
 //     statement.close()
 //     
-//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_TABLE)
-//     statement.execute()
-//     statement.close()
+     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_TABLE)
+     statement.execute()
+     statement.close()
 //     
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_MODEL_TABLE)
 //     statement.execute()
 //     statement.close()
 //       
 //     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_TABLE)
-//       statement.execute()
-//       statement.close()
+//     statement.execute()
+//     statement.close()
+//   
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_SECRET_TABLE)
+//     statement.execute()
+//     statement.close()
 //     
-//       statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_SECRET_TABLE)
-//       statement.execute()
-//       statement.close()
-//       
-//       statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_AIRLINE_TABLE)
-//       statement.execute()
-//       statement.close()
+//     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_AIRLINE_TABLE)
+//     statement.execute()
+//     statement.close()
 //     
 //     statement = connection.prepareStatement("CREATE TABLE " + CYCLE_TABLE + "(cycle INTEGER PRIMARY KEY)")
 //     statement.execute()
@@ -137,6 +136,7 @@ object Meta {
 //                                             "airline INTEGER PRIMARY KEY REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
 //                                             "balance LONG," +
 //                                             "service_quality DOUBLE," +
+//                                             "maintenance_quality DOUBLE," +
 //                                             "reputation DOUBLE)")
 //     statement.execute()
 //     statement.close()
@@ -166,13 +166,13 @@ object Meta {
 //                                             "PRIMARY KEY (airport, airline))")
 //     statement.execute()
 //     statement.close()
-     
-     statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_BASE_INDEX_1 +  " ON " + AIRPORT_TABLE + "(id)")
-     statement.execute()
-     statement.close()
-     statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_BASE_INDEX_2 +  " ON " + AIRLINE_TABLE + "(id)")
-     statement.execute()
-     statement.close()
+//     
+//     statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_BASE_INDEX_1 +  " ON " + AIRPORT_TABLE + "(id)")
+//     statement.execute()
+//     statement.close()
+//     statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_BASE_INDEX_2 +  " ON " + AIRLINE_TABLE + "(id)")
+//     statement.execute()
+//     statement.close()
 //     
 //     
 //     
@@ -239,6 +239,7 @@ object Meta {
 //                                             "airport_fees INTEGER, " +
 //                                             "inflight_cost INTEGER, " +
 //                                             "fixed_cost INTEGER, " +
+//                                             "depreciation INTEGER, " +
 //                                             "revenue INTEGER, " +
 //                                             "profit INTEGER, " +
 //                                             "from_airport INTEGER, " +
@@ -348,15 +349,17 @@ object Meta {
 //     statement.close()
 //     
 //
-//     statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_TABLE + "(" + 
-//                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-//                                             "model INTEGER REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-//                                             "owner INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-//                                             "constructed_cycle INTEGER, " +
-//                                             "condition DECIMAL(6,2))")
-//
-//     statement.execute()
-//     statement.close()
+     statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_TABLE + "(" + 
+                                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                             "model INTEGER REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "owner INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "constructed_cycle INTEGER, " +
+                                             "condition DOUBLE, " +
+                                             "depreciation_rate INTEGER, " +
+                                             "value INTEGER)")
+
+     statement.execute()
+     statement.close()
 //     
 //     
 //     statement = connection.prepareStatement("CREATE TABLE " + USER_TABLE + "(" +
@@ -381,7 +384,7 @@ object Meta {
 //                                             "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
 //     statement.execute()
 //     statement.close()
-     
+//     
      connection.close()
   }
 }

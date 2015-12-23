@@ -7,8 +7,8 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object LinkSimulation {
-  private val FUEL_UNIT_COST = 0.1//for now...
-  private val CREW_UNIT_COST = 15 //for now...
+  private val FUEL_UNIT_COST = 0.08//for now...
+  private val CREW_UNIT_COST = 12 //for now...
   
   private val MAX_LOYALTY_ADJUSTMENT = 0.5
   private[this] val VIP_COUNT = 5
@@ -109,6 +109,8 @@ object LinkSimulation {
       case None => 0 
     }
     
+    val depreciation = link.getAssignedAirplanes().foldLeft(0)(_ + _.depreciationRate)
+    
     var inflightCost, crewCost, revenue = 0 
     link.capacity.map.keys.foreach { linkClass =>
       val capacity = link.capacity(linkClass)
@@ -119,10 +121,10 @@ object LinkSimulation {
       revenue += soldSeats * link.price(linkClass)
     }
     
-    val profit = revenue - fuelCost - fixedCost - crewCost - airportFees - inflightCost
+    val profit = revenue - fuelCost - fixedCost - crewCost - airportFees - inflightCost - depreciation
 
-    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, fuelCost, crewCost, airportFees, inflightCost, fixedCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
-    println("profit : " + result.profit + " result: " + result)
+    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, fuelCost, crewCost, airportFees, inflightCost, fixedCost, depreciation, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
+    println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     result
   }
   
