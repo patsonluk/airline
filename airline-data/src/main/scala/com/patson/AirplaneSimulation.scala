@@ -20,8 +20,9 @@ import akka.actor.Props
 import java.util.concurrent.TimeUnit
 
 object AirplaneSimulation {
-  val MAX_DECAY = 100.toDouble / (35 * 52) //assume 35 year lifespan
-  val MIN_DECAY = 30.toDouble / (35 * 52) //assume decay to 70% with best service
+  val LIFE_SPAN = 35 * 52 //in unit of weeks
+  val MAX_DECAY = 100.toDouble / LIFE_SPAN
+  val MIN_DECAY = 30.toDouble / LIFE_SPAN //assume decay to 70% with best service
   
   def airplaneSimulation(cycle: Int) = {
     println("starting airplane simulation")
@@ -36,17 +37,7 @@ object AirplaneSimulation {
       case (owner, airplanes) => {
         AirlineSource.loadAirlineById(owner.id, true) match {
           case Some(airline) =>
-            var decayRate = MAX_DECAY - (MAX_DECAY - MIN_DECAY) * (airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
-            airplanes.foreach { 
-              case(airplane, assignedLink) =>
-                if (assignedLink.isEmpty) { //not assigned to any links, decay slowly
-                  decayRate = decayRate / 10 
-                }
-                val newCondition = airplane.condition - decayRate
-                val depreciationRate = computeDepreciationRate(airplane.model, decayRate)
-                val newValue = airplane.value - depreciationRate 
-                updatingAirplanes.append(airplane.copy(condition = newCondition, depreciationRate = depreciationRate, value = newValue))
-            }
+            updatingAirplanes ++= decayAirplanesByAirline(airplanes, airline)
           case None => println("airline " + owner.id + " has airplanes but the airline cannot be loaded!")//invalid airline?
         }
       }
@@ -61,5 +52,19 @@ object AirplaneSimulation {
     depreciationRate
   }
   
-  
+  def decayAirplanesByAirline(airplanesWithAssignedLink : List[(Airplane, Option[Link])], airline : Airline) : List[Airplane] = {
+    val updatingAirplanes = ListBuffer[Airplane]()
+    var decayRate = MAX_DECAY - (MAX_DECAY - MIN_DECAY) * (airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
+    airplanesWithAssignedLink.foreach { 
+      case(airplane, assignedLink) =>
+        if (assignedLink.isEmpty) { //not assigned to any links, decay slowly
+          decayRate = decayRate / 10 
+        }
+        val newCondition = airplane.condition - decayRate
+        val depreciationRate = computeDepreciationRate(airplane.model, decayRate)
+        val newValue = airplane.value - depreciationRate 
+        updatingAirplanes.append(airplane.copy(condition = newCondition, depreciationRate = depreciationRate, value = newValue))
+    }
+    updatingAirplanes.toList
+  }
 }
