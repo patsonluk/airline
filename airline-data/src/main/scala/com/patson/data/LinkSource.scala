@@ -73,7 +73,7 @@ object LinkSource {
   }
   
   def loadLinkById(linkId : Int) : Option[Link] = {
-    val result = loadLinksByCriteria(List(("id", linkId)))
+    val result = loadLinksByCriteria(List(("id", linkId)), true)
     if (result.isEmpty) {
       None
     } else {
