@@ -101,7 +101,7 @@ object LinkSimulation {
       case None => 0
     }
        //at 0 LF, reduce fuel consumption by 70%
-    val fixedCost = link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost)
+    val maintenanceCost = (link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
     val airportFees = link.getAssignedModel() match {
       case Some(model) =>
         val airline = link.airline
@@ -121,9 +121,9 @@ object LinkSimulation {
       revenue += soldSeats * link.price(linkClass)
     }
     
-    val profit = revenue - fuelCost - fixedCost - crewCost - airportFees - inflightCost - depreciation
+    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - depreciation
 
-    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, fuelCost, crewCost, airportFees, inflightCost, fixedCost, depreciation, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
+    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, fuelCost, crewCost, airportFees, inflightCost, maintenanceCost, depreciation, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
     println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     result
   }

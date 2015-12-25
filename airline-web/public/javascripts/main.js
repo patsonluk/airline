@@ -150,9 +150,7 @@ function refreshPanels(airlineId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airline) {
-	    	$("#balance").text(airline.balance)
-	    	$("#reputation").text(airline.reputation + "(" + getAirlineCategory(airline.reputation) + ")")
-	    	$("#serviceQuality").text(airline.serviceQuality)
+	    	refreshTopBar(airline)
 	    	refreshLinks()
 	    	if (selectedLink) {
 	    		loadLinkDetails(selectedLink)
@@ -187,30 +185,6 @@ function getAirlineCategory(reputation) {
 	} else {
 		return "Top Internation Airline"
 	}
-}
-
-
-function updateAirlineInfo(airlineId) {
-	$.ajax({
-		type: 'GET',
-		url: "airlines/" + airlineId,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(airline) {
-	    	$("#balance").text(airline.balance)
-	    	$("#reputation").text(airline.reputation + "(" + getAirlineCategory(airline.reputation) + ")")
-	    	$("#serviceQuality").text(airline.serviceQuality)
-	    	$("#currentAirline").text(airline.name)
-	    	activeAirline = airline
-	    	updateAirplaneList($("#airplaneList"))
-	    	updateLinksInfo()
-	    	updateAirportMarkers(airline)
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
 }
 
 function setActiveDiv(activeDiv) {

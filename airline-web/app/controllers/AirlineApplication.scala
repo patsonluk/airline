@@ -34,7 +34,9 @@ class AirlineApplication extends Controller {
       "name" -> JsString(airline.name),
       "balance" -> JsNumber(airline.airlineInfo.balance),
       "reputation" -> JsNumber(BigDecimal(airline.airlineInfo.reputation).setScale(2, BigDecimal.RoundingMode.HALF_EVEN)),
-      "serviceQuality" -> JsNumber(airline.airlineInfo.serviceQuality)))
+      "serviceQuality" -> JsNumber(airline.airlineInfo.serviceQuality),
+      "serviceFunding" -> JsNumber(airline.airlineInfo.serviceFunding),
+      "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality)))
   }
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {

@@ -44,6 +44,7 @@ object AirlineSource {
             airline.setBalance(resultSet.getLong("balance"))
             airline.setReputation(resultSet.getDouble("reputation"))
             airline.setServiceQuality(resultSet.getDouble("service_quality"))
+            airline.setServiceFunding(resultSet.getInt("service_funding"))
             airline.setMaintainenceQuality(resultSet.getDouble("maintenance_quality"))
           }
           
@@ -87,12 +88,13 @@ object AirlineSource {
             airline.id = generatedId
             
             //insert airline info too
-            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, maintenance_quality, reputation) VALUES(?,?,?,?,?)")
+            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, service_funding, maintenance_quality, reputation) VALUES(?,?,?,?,?,?)")
             infoStatement.setInt(1, airline.id)
             infoStatement.setLong(2, airline.getBalance())
             infoStatement.setDouble(3, airline.getServiceQuality())
-            infoStatement.setDouble(4, airline.getMaintenanceQuality())
-            infoStatement.setDouble(5, airline.getReputation())
+            infoStatement.setInt(4, airline.getServiceFunding())
+            infoStatement.setDouble(5, airline.getMaintenanceQuality())
+            infoStatement.setDouble(6, airline.getReputation())
             infoStatement.executeUpdate()
           } 
       }
@@ -122,12 +124,13 @@ object AirlineSource {
   def saveAirlineInfo(airline : Airline) = {
     this.synchronized {
       val connection = Meta.getConnection()
-      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, maintenance_quality = ?, reputation = ? WHERE airline = ?")
+      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ? WHERE airline = ?")
       updateStatement.setLong(1, airline.getBalance())
       updateStatement.setDouble(2, airline.getServiceQuality())
-      updateStatement.setDouble(3, airline.getMaintenanceQuality())
-      updateStatement.setDouble(4, airline.getReputation())
-      updateStatement.setInt(5, airline.id)
+      updateStatement.setInt(3, airline.getServiceFunding())
+      updateStatement.setDouble(4, airline.getMaintenanceQuality())
+      updateStatement.setDouble(5, airline.getReputation())
+      updateStatement.setInt(6, airline.id)
       updateStatement.executeUpdate()
       updateStatement.close()
       connection.close()

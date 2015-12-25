@@ -4,6 +4,39 @@ var flightMarkerAnimations = []
 var historyPaths = {}
 var linkHistoryState = "hidden"
 
+	
+function updateAirlineInfo(airlineId) {
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + airlineId,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(airline) {
+	    	refreshTopBar(airline)
+	    	$("#currentAirline").text(airline.name)
+	    	$("#serviceFunding").val(airline.serviceFunding)
+			$("#maintenanceQuality").val(airline.maintenanceQuality)
+			plotMaintenanceQualityGauge($("#maintenanceQualityGauge"), $("#maintenanceQuality"))
+	    	activeAirline = airline
+	    	updateAirplaneList($("#airplaneList"))
+	    	updateLinksInfo()
+	    	updateAirportMarkers(airline)
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+	
+	
+	
+function refreshTopBar(airline) {
+	$("#balance").text(airline.balance)
+	$("#reputation").text(airline.reputation + "(" + getAirlineCategory(airline.reputation) + ")")
+	$("#serviceQuality").text(airline.serviceQuality)
+}
+
 function loadAirlines() {
 	$.ajax({
 		type: 'GET',
@@ -320,6 +353,7 @@ function loadLinkDetails(linkId) {
 		    	$("#linkFuelCost").text("-")
 		    	$("#linkCrewCost").text("-")
 		    	$("#linkAirportFees").text("-")
+		    	$("#linkDepreciation").text("-")
 		    	$("#linkOtherCosts").text("-")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
@@ -340,7 +374,8 @@ function loadLinkDetails(linkId) {
 		    	$("#linkFuelCost").text("$" + linkConsumption.fuelCost)
 		    	$("#linkCrewCost").text("$" + linkConsumption.crewCost)
 		    	$("#linkAirportFees").text("$" + linkConsumption.airportFees)
-		    	$("#linkOtherCosts").text("$" + (linkConsumption.inflightCost + linkConsumption.fixedCost))
+		    	$("#linkDepreciation").text("$" + linkConsumption.depreciation)
+		    	$("#linkOtherCosts").text("$" + (linkConsumption.inflightCost + linkConsumption.maintenanceCost))
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
 	    	plotLinkRidership(linkConsumptions, $("#linkRidershipChart"))
@@ -892,6 +927,43 @@ function getAirportText(city, airportName) {
 	}
 }
 
+function updateServiceFunding() {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/serviceFunding"
+    var data = { "serviceFunding" : parseInt($("#serviceFunding").val()) }
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function() {
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function updateMaintenanceQuality() {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/maintenanceQuality"
+    var data = { "maintenanceQuality" : parseInt($("#maintenanceQuality").val()) }
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function() {
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
 
 	
 //TEST METHODS

@@ -1,4 +1,71 @@
-
+function plotMaintenanceQualityGauge(container, currentQualityInput) {
+	var dataSource = { 
+			"chart": {
+		    	"theme": "fint",
+		        "lowerLimit": "0",
+		        "upperLimit": "100",
+		        "showTickMarks": "0",
+		        "showTickValues": "0",
+		        "showborder": "0",
+		        "showtooltip": "0",
+		        "chartBottomMargin": "0",
+		        "bgAlpha":"0",
+		        "valueFontSize": "11",  
+		        "valueFontBold": "0",
+		        "animation": "0",
+		        "editMode": "1",
+		        "decimals": "0",
+		        "baseFontColor": "#FFFFFF"
+		    },
+		    "pointers": {
+		        //Multiple pointers defined here
+		        "pointer": [
+		            {
+		                "bgColor": "#FFE62B",
+		                "bgAlpha": "50",
+		                "showValue": "0",
+		                "sides" : "3",
+		                "borderColor": "#FFE62B",
+		                "borderAlpha": "20",
+		                "value" : currentQualityInput.val()
+		            }
+		        ]
+		    },
+		    "colorRange" : {
+		    	"color": [
+                      {
+                    	  "minValue": "0",
+                          "maxValue": "100",
+                          "label": currentQualityInput.val() + "%",
+                          "code": "#6baa01"
+                      }]
+		    }
+		}
+	var chart = container.insertFusionCharts(
+			{	
+				type: 'hlineargauge',
+		        width: '200',
+		        height: '25',
+		        dataFormat: 'json',
+			    dataSource: dataSource,
+				events: {
+		            //Event is raised when a real-time gauge or chart completes updating data.
+		            //Where we can get the updated data and display the same.
+		            "realTimeUpdateComplete" : function (evt, arg){
+		                var newQuality = evt.sender.getData(1)
+		                //take the floor
+		                newQuality = Math.floor(newQuality)
+		                dataSource["pointers"]["pointer"][0].value = newQuality
+		                dataSource["colorRange"]["color"][0].label = newQuality + "%"
+		                currentQualityInput.val(newQuality)
+		                container.updateFusionCharts({
+		                	"dataSource": dataSource
+		                });
+		            }
+		        }
+			})
+	
+}
 
 function plotSeatConfigurationGauge(container, configuration, maxSeats) {
 	var dataSource = { 

@@ -1,12 +1,15 @@
 package com.patson.model
 
 case class Airline(name: String, var id : Int = 0) extends IdObject {
-  val airlineInfo = AirlineInfo(0, 0, 0, 0)
+  val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
   def setBalance(balance : Long) = { 
     airlineInfo.balance = balance 
   }
   def setServiceQuality(serviceQuality : Double) {
     airlineInfo.serviceQuality = serviceQuality
+  }
+  def setServiceFunding(serviceFunding : Int) {
+    airlineInfo.serviceFunding = serviceFunding
   }
   def setReputation(reputation : Double) {
     airlineInfo.reputation = reputation
@@ -17,11 +20,12 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   
   def getBalance() = airlineInfo.balance
   def getServiceQuality() = airlineInfo.serviceQuality
+  def getServiceFunding() = airlineInfo.serviceFunding
   def getReputation() = airlineInfo.reputation
   def getMaintenanceQuality() = airlineInfo.maintenanceQuality
 }
 
-case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var reputation : Double)
+case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double)
 
 object Airline {
   def fromId(id : Int) = {

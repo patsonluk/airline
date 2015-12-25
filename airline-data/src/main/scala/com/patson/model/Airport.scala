@@ -155,10 +155,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case 1 => 50 //small
       case 2 => 50 //medium
       case 3 => 80 //large
-      case 4 => 300  //international class
-      case 5 => 500
-      case 6 => 700 
-      case _ => 1000 //mega airports - not suitable for tiny jets
+      case 4 => 150  //international class
+      case 5 => 250
+      case 6 => 350 
+      case _ => 500 //mega airports - not suitable for tiny jets
     }
     
     import Model.Type._
@@ -185,11 +185,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   def landingFee(airplaneModel : Model) : Int = {
     val perSeat = 
       if (size <= 3) {
-        2
-      } else if (size == 4) {
-        4
+        3
       } else {
-        8
+        size
       }
     
     airplaneModel.capacity * perSeat

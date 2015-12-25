@@ -72,7 +72,7 @@ class LinkApplication extends Controller {
       "fuelCost" -> JsNumber(linkConsumption.fuelCost),
       "crewCost" -> JsNumber(linkConsumption.crewCost),
       "airportFees" -> JsNumber(linkConsumption.airportFees),
-      "fixedCost" -> JsNumber(linkConsumption.fixedCost),
+      "maintenanceCost" -> JsNumber(linkConsumption.maintenanceCost),
       "depreciation" -> JsNumber(linkConsumption.depreciation),
       "inflightCost" -> JsNumber(linkConsumption.inflightCost),
       "capacity" -> Json.toJson(linkConsumption.capacity),
@@ -481,6 +481,32 @@ class LinkApplication extends Controller {
           case None => Ok(Json.obj())
         }
       case None => Ok(Json.obj())
+    }
+  }
+  
+  def updateServiceFunding(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.body.isInstanceOf[AnyContentAsJson]) {
+      val serviceFunding = request.body.asInstanceOf[AnyContentAsJson].json.\("serviceFunding").as[Int]
+      
+      val airline = request.user
+      airline.setServiceFunding(serviceFunding)
+      AirlineSource.saveAirlineInfo(airline)
+      Ok(Json.obj())
+    } else {
+      BadRequest("Cannot Update service funding")
+    }
+  }
+  
+  def updateMaintenanceQuality(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.body.isInstanceOf[AnyContentAsJson]) {
+      val maintenanceQuality = request.body.asInstanceOf[AnyContentAsJson].json.\("maintenanceQuality").as[Int]
+      
+      val airline = request.user
+      airline.setMaintainenceQuality(maintenanceQuality)
+      AirlineSource.saveAirlineInfo(airline)
+      Ok(Json.obj())
+    } else {
+      BadRequest("Cannot Update maintenance quality")
     }
   }
 

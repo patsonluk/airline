@@ -36,7 +36,7 @@ object AirplaneSimulation {
       case (owner, airplanes) => {
         AirlineSource.loadAirlineById(owner.id, true) match {
           case Some(airline) =>
-            var decayRate = MAX_DECAY - (MAX_DECAY - MIN_DECAY) * (airline.getServiceQuality() / Airline.MAX_SERVICE_QUALITY)
+            var decayRate = MAX_DECAY - (MAX_DECAY - MIN_DECAY) * (airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
             airplanes.foreach { 
               case(airplane, assignedLink) =>
                 if (assignedLink.isEmpty) { //not assigned to any links, decay slowly

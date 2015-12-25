@@ -126,8 +126,8 @@ object DemandGenerator {
       import FlightType._
       val flightType = Computation.getFlightType(fromAirport, toAirport)
       val multiplier = flightType match {
-        case SHORT_HAUL_DOMESTIC => 10
-        case LONG_HAUL_DOMESTIC => 5
+        case SHORT_HAUL_DOMESTIC => 6
+        case LONG_HAUL_DOMESTIC => 3
         case SHORT_HAUL_INTERNATIONAL => 1.5
         case LONG_HAUL_INTERNATIONAL => 1
         case ULTRA_LONG_HAUL_INTERNATIONAL => 0.5

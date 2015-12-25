@@ -248,7 +248,7 @@ object LinkSource {
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, fuel_cost, crew_cost, airport_fees, inflight_cost, fixed_cost, depreciation, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, fuel_cost, crew_cost, airport_fees, inflight_cost, maintenance_cost, depreciation, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       connection.setAutoCommit(false)
@@ -267,7 +267,7 @@ object LinkSource {
           preparedStatement.setInt(12, linkConsumption.crewCost)
           preparedStatement.setInt(13, linkConsumption.airportFees)
           preparedStatement.setInt(14, linkConsumption.inflightCost)
-          preparedStatement.setInt(15, linkConsumption.fixedCost)
+          preparedStatement.setInt(15, linkConsumption.maintenanceCost)
           preparedStatement.setInt(16, linkConsumption.depreciation)
           preparedStatement.setInt(17, linkConsumption.revenue)
           preparedStatement.setInt(18, linkConsumption.profit)
@@ -359,7 +359,7 @@ object LinkSource {
           resultSet.getInt("crew_cost"),
           resultSet.getInt("airport_fees"),
           resultSet.getInt("inflight_cost"),
-          resultSet.getInt("fixed_cost"),
+          resultSet.getInt("maintenance_cost"),
           resultSet.getInt("depreciation"),
           resultSet.getInt("revenue"),
           resultSet.getInt("profit"),

@@ -37,6 +37,8 @@ GET		 /airlines/:airlineId/link-consumptions/:linkId	  controllers.LinkApplicati
 PUT		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.setWatchedLink(airlineId: Int, linkId: Int)
 GET		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.getWatchedLink(airlineId: Int)
 GET		 /airlines/:airlineId/link-history 				controllers.LinkApplication.getLinkHistory(airlineId: Int)
+PUT		 /airlines/:airlineId/serviceFunding			controllers.LinkApplication.updateServiceFunding(airlineId: Int)
+PUT		 /airlines/:airlineId/maintenanceQuality			controllers.LinkApplication.updateMaintenanceQuality(airlineId: Int)
 
 POST	 /airlines/:airlineId/plan-link	  controllers.LinkApplication.planLink(airlineId : Int)
 
