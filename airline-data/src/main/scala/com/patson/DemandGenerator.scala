@@ -145,10 +145,10 @@ object DemandGenerator {
       
       //adjustments : these zones do not have good ground transport
       if (fromAirport.zone == toAirport.zone && (fromAirport.zone == "OC" || fromAirport.zone == "NA" || fromAirport.zone == "AF")) { 
-        multiplier *= 3
+        multiplier *= 5
       }
       
-      val totalDemand = (fromAirport.power.doubleValue() / 3000000000L * toAirport.power / 3000000000L * multiplier).toInt  
+      val totalDemand = (fromAirport.power.doubleValue() / 40000000000L * toAirport.power / 40000000000L * multiplier).toInt  
       
       //compute demand composition. depends on from airport income
       val income = fromAirport.income

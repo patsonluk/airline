@@ -15,7 +15,7 @@ import scala.concurrent.duration.Duration
 class DemandGeneratorSpec extends WordSpecLike with Matchers {
   "generateDemand".must {
     "Generate more demand with higher pop airports".in {
-       val highPopulation = 1000000
+       val highPopulation = 10000000
        val lowPopulation = highPopulation / 2
        val income : Long = 50000
        val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = highPopulation * income, population = highPopulation, 0, id = 1)
@@ -31,7 +31,7 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        highPopDemand(FIRST).should(be > lowPopDemand(FIRST))
     }
     "Generate more demand with higher income airports".in {
-       val population = 1000000
+       val population = 10000000
        val highIncome : Long = 50000
        val lowIncome : Long = 10000
        val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
@@ -47,7 +47,7 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        highDemand(FIRST).should(be > lowDemand(FIRST))
     }
     "Generate higher first class and business class ratio for higher income airports".in {
-       val population = 1000000
+       val population = 10000000
        val highIncome : Long = 50000
        val lowIncome : Long = 30000
        
@@ -66,7 +66,7 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        (highDemand(FIRST).toDouble / totalHighDemand).should(be > (lowDemand(FIRST).toDouble / totalLowDemand)) //high income should have relatively higher first ratio
     }
     "Generate more passenger for shorter routes".in {
-      val population = 1000000
+      val population = 10000000
        val highIncome : Long = 50000
        val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
        val closeAirport = Airport("", "", "", latitude = 0, longitude = 10, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
@@ -81,7 +81,7 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        closeDemand(FIRST).should(be < farDemand(FIRST)) //only long routes have first class demand
     }
     "Generate higher first class and business class ratio for business passengers".in {
-       val population = 1000000
+       val population = 10000000
        val highIncome : Long = 50000
        
        val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
@@ -98,7 +98,7 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        (businessDemand(FIRST).toDouble / totalBusinessDemand).should(be > (touristDemand(FIRST).toDouble / totalTouristDemand)) //business passenger should have  should have relatively higher first ratio
     }
     "Generate higher ratio of tourist in higher income from Airport".in {
-      val population = 1000000
+      val population = 10000000
        val highIncome : Long = 50000
        val lowIncome : Long = 30000
        
