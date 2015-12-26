@@ -11,13 +11,14 @@ object AirlineSimulation {
   private val REPUTATION_INCREMENT = 0.5 
   private val SERVICE_DELTA = 1
   
-  def airlineSimulation(linkResult : scala.collection.immutable.Map[Int, List[LinkConsumptionDetails]], cycle: Int) = {
+  def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails]) = {
     //compute profit
     val allAirlines = AirlineSource.loadAllAirlines(true)
     val allLinks = LinkSource.loadAllLinks(false).groupBy { _.airline.id }
+    val linkResultByAirline = linkResult.groupBy { _.airlineId }
     allAirlines.foreach { airline =>
         var airlineProfit = 0L
-        linkResult.get(airline.id).foreach { linkConsumptions =>
+        linkResultByAirline.get(airline.id).foreach { linkConsumptions =>
           airlineProfit = linkConsumptions.foldLeft(0L)(_ + _.profit)
           val totalPassengers = linkConsumptions.foldLeft(0)(_ + _.soldSeats.total)
           

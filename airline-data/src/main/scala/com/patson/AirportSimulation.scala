@@ -29,12 +29,15 @@ object AirportSimulation {
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE = 15 //how much loyalty will increment to just because of being a HQ
   
-  def airportSimulation(cycle: Int) = {
+  private val MAX_LOYALTY_ADJUSTMENT = 0.5
+  
+  
+  def airportSimulation(cycle: Int, linkConsumptions : List[LinkConsumptionDetails]) = {
     println("starting airport simulation")
     println("loading all airports")
     //do decay
     val allAirports = AirportSource.loadAllAirports(true)
-    
+    val allAirportsMap = allAirports.map( airport => airport.id -> airport).toMap
     println("finished loading all airports")
     
     
@@ -75,10 +78,10 @@ object AirportSimulation {
       }
     }
       
-    AirportSource.updateAirlineAppeal(allAirports)
+    //AirportSource.updateAirlineAppeal(allAirports)
         
     //increment of awareness
-    val links = LinkSource.loadAllLinks(true) 
+    val links = LinkSource.loadAllLinks() 
     
     val airportWithLinks = Map[(Int, Int), Set[Link]]() //(airportId, airlineId)
     links.foreach { link =>
@@ -89,11 +92,10 @@ object AirportSimulation {
       airlinesFlyiesToThisAirport.add(link)
     }
     
-    val updatingAirports = Map[Int, Airport]()
     //add awareness based on airline with some links to/from an airport
     airportWithLinks.keySet.foreach {
       case(airportId, airlineId) =>
-        val airport = updatingAirports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, true).get)
+        val airport = allAirportsMap(airportId)
         val existingAwareness = airport.getAirlineAwareness(airlineId)
         val newAwareness = 
           if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
@@ -104,6 +106,53 @@ object AirportSimulation {
         airport.setAirlineAwareness(airlineId, newAwareness)
     }
     
-    AirportSource.updateAirlineAppeal(updatingAirports.values.toList);
+    
+    //update the loyalty on airports based on link consumption
+    println("start updating loyalty")
+    val toAirportSoldLinks = linkConsumptions.groupBy { _.toAirportId } //Map[(airportId, airlineId), links] //cannot use Airport instance directly as they are not the same instance 
+    val fromAirportSoldLinks = linkConsumptions.groupBy { _.fromAirportId }
+    val airportSoldLinks: scala.collection.immutable.Map[Int, Seq[LinkConsumptionDetails]] = 
+      (toAirportSoldLinks.toSeq ++ fromAirportSoldLinks.toSeq).groupBy(_._1).mapValues { linkConsumptions =>
+        linkConsumptions.map { 
+          case (_, linkConsumptionsByDirection) => linkConsumptionsByDirection
+        }.flatten
+    }
+    
+    airportSoldLinks.foreach {
+      case (airportId, soldLinks) =>
+        updateAirportBySoldLinks(allAirportsMap(airportId), soldLinks)
+    }
+    
+    AirportSource.updateAirlineAppeal(allAirports)
+  }
+  
+  def updateAirportBySoldLinks(airport : Airport, soldLinks : Seq[LinkConsumptionDetails]) = {
+    soldLinks.groupBy { _.airlineId }.foreach {
+      case(airlineId, soldLinksByAirline) => {
+        val totalTransportedPassengers = soldLinksByAirline.map { _.soldSeats.total }.sum 
+        val totalQualityProduct = soldLinksByAirline.map { soldLink => soldLink.soldSeats.total.toLong * soldLink.quality }.sum
+        val averageQuality = totalQualityProduct / totalTransportedPassengers
+        
+        var loyaltyAdjustment = totalTransportedPassengers * 1000.toDouble / airport.population  
+        if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {
+          loyaltyAdjustment = MAX_LOYALTY_ADJUSTMENT
+        }
+        val existingLoyalty = airport.getAirlineLoyalty(airlineId)
+        if (existingLoyalty < averageQuality) {
+            if (existingLoyalty + loyaltyAdjustment >= averageQuality) {
+              airport.setAirlineLoyalty(airlineId, averageQuality)
+            } else {
+              airport.setAirlineLoyalty(airlineId, existingLoyalty + loyaltyAdjustment)
+            }
+        } else {
+          if (existingLoyalty - loyaltyAdjustment <= averageQuality) {
+            airport.setAirlineLoyalty(airlineId, averageQuality)
+          } else {
+            airport.setAirlineLoyalty(airlineId, existingLoyalty - loyaltyAdjustment)
+          }
+        }
+        println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
+      }
+    }
   }
 }

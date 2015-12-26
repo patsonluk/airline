@@ -248,7 +248,7 @@ object LinkSource {
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, fuel_cost, crew_cost, airport_fees, inflight_cost, maintenance_cost, depreciation, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, maintenance_cost, depreciation, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       connection.setAutoCommit(false)
@@ -263,19 +263,20 @@ object LinkSource {
           preparedStatement.setInt(8, linkConsumption.soldSeats(ECONOMY))
           preparedStatement.setInt(9, linkConsumption.soldSeats(BUSINESS))
           preparedStatement.setInt(10, linkConsumption.soldSeats(FIRST))
-          preparedStatement.setInt(11, linkConsumption.fuelCost)
-          preparedStatement.setInt(12, linkConsumption.crewCost)
-          preparedStatement.setInt(13, linkConsumption.airportFees)
-          preparedStatement.setInt(14, linkConsumption.inflightCost)
-          preparedStatement.setInt(15, linkConsumption.maintenanceCost)
-          preparedStatement.setInt(16, linkConsumption.depreciation)
-          preparedStatement.setInt(17, linkConsumption.revenue)
-          preparedStatement.setInt(18, linkConsumption.profit)
-          preparedStatement.setInt(19, linkConsumption.fromAirportId)
-          preparedStatement.setInt(20, linkConsumption.toAirportId)
-          preparedStatement.setInt(21, linkConsumption.airlineId)
-          preparedStatement.setInt(22, linkConsumption.distance)
-          preparedStatement.setInt(23, linkConsumption.cycle)
+          preparedStatement.setInt(11, linkConsumption.quality)
+          preparedStatement.setInt(12, linkConsumption.fuelCost)
+          preparedStatement.setInt(13, linkConsumption.crewCost)
+          preparedStatement.setInt(14, linkConsumption.airportFees)
+          preparedStatement.setInt(15, linkConsumption.inflightCost)
+          preparedStatement.setInt(16, linkConsumption.maintenanceCost)
+          preparedStatement.setInt(17, linkConsumption.depreciation)
+          preparedStatement.setInt(18, linkConsumption.revenue)
+          preparedStatement.setInt(19, linkConsumption.profit)
+          preparedStatement.setInt(20, linkConsumption.fromAirportId)
+          preparedStatement.setInt(21, linkConsumption.toAirportId)
+          preparedStatement.setInt(22, linkConsumption.airlineId)
+          preparedStatement.setInt(23, linkConsumption.distance)
+          preparedStatement.setInt(24, linkConsumption.cycle)
           preparedStatement.executeUpdate()
         }
       preparedStatement.close()
@@ -355,6 +356,7 @@ object LinkSource {
           LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
           LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
           LinkClassValues(Map(ECONOMY -> resultSet.getInt("sold_seats_economy"), BUSINESS -> resultSet.getInt("sold_seats_business"), FIRST -> resultSet.getInt("sold_seats_first"))),
+          resultSet.getInt("quality"),
           resultSet.getInt("fuel_cost"),
           resultSet.getInt("crew_cost"),
           resultSet.getInt("airport_fees"),

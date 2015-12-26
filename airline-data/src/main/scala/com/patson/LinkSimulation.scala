@@ -10,10 +10,9 @@ object LinkSimulation {
   private val FUEL_UNIT_COST = 0.08//for now...
   private val CREW_UNIT_COST = 12 //for now...
   
-  private val MAX_LOYALTY_ADJUSTMENT = 0.5
   private[this] val VIP_COUNT = 5
   
-  def linkSimulation(cycle: Int) : scala.collection.immutable.Map[Int, List[LinkConsumptionDetails]] = {
+  def linkSimulation(cycle: Int) : List[LinkConsumptionDetails] = {
     val links = LinkSource.loadAllLinks(true)
     val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
@@ -48,41 +47,7 @@ object LinkSimulation {
     LinkSource.deleteLinkConsumptionsByCycle(30)
     LinkSource.saveLinkConsumptions(linkConsumptionDetails)
     
-    val linkConsumptionDetailsByAirline = linkConsumptionDetails.groupBy { _.airlineId }
-    
-    //update the loyalty on airports based on link consumption
-    println("start updating loyalty")
-    val airportSoldLinks = Map[(Int, Int), Set[Link]]() //Map[(airportId, airlineId), links] //cannot use Airport instance directly as they are not the same instance 
-    
-    links.foreach { link =>
-      airportSoldLinks.getOrElseUpdate((link.to.id, link.airline.id), Set[Link]()).add(link) 
-      airportSoldLinks.getOrElseUpdate((link.from.id, link.airline.id), Set[Link]()).add(link)
-    }
-    
-    val updatingAirports = Map[Int, Airport]()
-    airportSoldLinks.foreach {
-      case ((airportId, airlineId), links) =>
-        val airport = updatingAirports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, true).get)
-          
-        val totalTransportedPassengers = links.foldLeft(0) { (foldInt, link) => foldInt + link.getTotalSoldSeats } 
-        val totalQualityProduct = links.foldLeft(0L) { (foldLong, link) => foldLong + totalTransportedPassengers * link.computedQuality }
-        val averageQuality = totalQualityProduct.toDouble / totalTransportedPassengers
-        
-        var loyaltyAdjustment = totalTransportedPassengers / 200.0 / (airport.size * airport.size) //on a size 1 airport, 200 transported passengers is enough to move the loyalty by 1, on size 7 it's 7 * 7 * 1000)
-        if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {
-          loyaltyAdjustment = MAX_LOYALTY_ADJUSTMENT
-        }
-        val existingLoyalty = airport.getAirlineLoyalty(airlineId)
-        if (existingLoyalty < averageQuality) {
-           airport.setAirlineLoyalty(airlineId, existingLoyalty + loyaltyAdjustment) 
-        } else {
-           airport.setAirlineLoyalty(airlineId, existingLoyalty - loyaltyAdjustment)
-        }
-        println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
-    }
-    AirportSource.updateAirlineAppeal(updatingAirports.values.toList)
-    
-    linkConsumptionDetailsByAirline
+    linkConsumptionDetails
   }
   
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
@@ -123,7 +88,7 @@ object LinkSimulation {
     
     val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - depreciation
 
-    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, fuelCost, crewCost, airportFees, inflightCost, maintenanceCost, depreciation, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
+    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, maintenanceCost, depreciation, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
     println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     result
   }
