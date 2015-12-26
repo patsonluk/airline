@@ -44,7 +44,7 @@ object AirlineSimulation {
           
            val totalCapacity = links.map { _.capacity.total }.sum
            if (totalCapacity > 0) {
-             var targetServiceQuality = airline.getServiceFunding() * 500 / totalCapacity
+             var targetServiceQuality = airline.getServiceFunding() * 5 / totalCapacity
              if (targetServiceQuality > 100) {
                targetServiceQuality = 100
              }
