@@ -141,6 +141,7 @@ function addMarkers(airports) {
 			  $("#airportPopupPopulation").text(this.airportPopulation)
 			  $("#airportPopupIncomeLevel").text(this.airportIncomeLevel)
 			  $("#airportPopupCountryCode").text(this.airportCountryCode)
+			  $("#airportPopupCountryCode").append("<img src='assets/images/flags/" + this.airportCountryCode + ".png' />")
 			  updatePopupDetails(this.airportId)
 			  updatePopupSlots(this.airportId)
 			  $("#airportPopupId").val(this.airportId)
@@ -203,6 +204,7 @@ function addCityMarkers(airportMap, airport) {
 			  $("#cityPopupPopulation").text(city.population)
 			  $("#cityPopupIncomeLevel").text(city.incomeLevel)
 			  $("#cityPopupCountryCode").text(city.countryCode)
+			  $("#cityPopupCountryCode").append("<img src='assets/images/flags/" + city.countryCode + ".png' />")
 			  $("#cityPopupId").val(city.id)
 			   
 			  

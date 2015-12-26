@@ -112,7 +112,7 @@ function loadAirplaneDetails(airlineId, airplaneId) {
 	    	$("#airplaneDetailsFuelBurn").text(airplane.fuelBurn)
 	    	$("#airplaneDetailsSpeed").text(airplane.speed + " km / hr")
 	    	$("#airplaneDetailsRange").text(airplane.range + " km")
-	    	$("#airplaneDetailsCondition").text(airplane.condition + "%")
+	    	$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
 	    	$("#airplaneDetailsAge").text(airplane.age + "week(s)")
 	    	$("#airplaneDetailsValue").text("$" + airplane.value)
 	    	if (airplane.link) {

@@ -110,6 +110,8 @@ package object controllers {
       "toAirportName" -> JsString(link.to.name),
       "fromAirportCity" -> JsString(link.from.city),
       "toAirportCity" -> JsString(link.to.city),
+      "fromCountryCode" -> JsString(link.from.countryCode),
+      "toCountryCode" -> JsString(link.to.countryCode),
       "airlineId" -> JsNumber(link.airline.id),
       "price" -> Json.toJson(link.price),
       "distance" -> JsNumber(link.distance),

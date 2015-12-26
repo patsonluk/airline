@@ -323,7 +323,9 @@ function loadLinkDetails(linkId) {
 	    dataType: 'json',
 	    success: function(link) {
 	    	$("#linkFromAirport").text(getAirportText(link.fromAirportCity, link.fromAirportName))
+	    	$("#linkFromAirport").append("<img src='assets/images/flags/" + link.fromCountryCode + ".png' />")
 	    	$("#linkToAirport").text(getAirportText(link.toAirportCity, link.toAirportName))
+	    	$("#linkToAirport").append("<img src='assets/images/flags/" + link.toCountryCode + ".png' />")
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price), "$")
 	    	$("#linkDistance").text(link.distance)
 	    	$("#linkQuality").text(link.computedQuality)
@@ -397,7 +399,9 @@ function editLink(linkId) {
 	    dataType: 'json',
 	    success: function(link) {
 	    	$("#planLinkFromAirportName").text(link.fromAirportName)
+	    	$("#planLinkFromAirportName").append("<img src='assets/images/flags/" + link.fromCountryCode + ".png' />")
 	    	$("#planLinkToAirportName").text(link.toAirportName)
+	    	$("#planLinkToAirportName").append("<img src='assets/images/flags/" + link.toCountryCode + ".png' />")
 	    	$("#planLinkFromAirportId").val(link.fromAirportId)
 	    	$("#planLinkToAirportId").val(link.toAirportId)
 	    	planLink(link.fromAirportId, link.toAirportId)
@@ -570,9 +574,10 @@ function showLinkHistoryPaths(state) {
 }
 
 
-function planFromAirport(fromAirportId, fromAirportName) {
+function planFromAirport(fromAirportId) {
 	$('#planLinkFromAirportId').val(fromAirportId)
-	$('#planLinkFromAirportName').text(fromAirportName)
+//	$('#planLinkFromAirportName').text(fromAirportName)
+	
 	if ($('#planLinkFromAirportId').val() && $('#planLinkToAirportId').val()) {
 		planLink($('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
 	}
@@ -580,10 +585,11 @@ function planFromAirport(fromAirportId, fromAirportName) {
 
 function planToAirport(toAirportId, toAirportName) {
 	$('#planLinkToAirportId').val(toAirportId)
-	$('#planLinkToAirportName').text(toAirportName)
+	//$('#planLinkToAirportName').text(toAirportName)
+	
 	if (!$('#planLinkFromAirportId').val()) { //set the HQ by default for now
 		$('#planLinkFromAirportId').val(activeAirline.headquarterAirport.airportId)
-		$('#planLinkFromAirportName').text(activeAirline.headquarterAirport.airportName)
+		//$('#planLinkFromAirportName').text(activeAirline.headquarterAirport.airportName)
 	}
 	if ($('#planLinkFromAirportId').val() && $('#planLinkToAirportId').val()) {
 		planLink($('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
@@ -618,6 +624,12 @@ var planLinkInfoByModel = {}
 var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
+	$('#planLinkFromAirportName').text(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName))
+	$('#planLinkFromAirportName').append("<img src='assets/images/flags/" + linkInfo.fromCountryCode + ".png' />")
+	
+	$('#planLinkToAirportName').text(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName))
+	$('#planLinkToAirportName').append("<img src='assets/images/flags/" + linkInfo.toCountryCode + ".png' />")
+	
 	$('#planLinkDistance').text(linkInfo.distance)
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
 	$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)

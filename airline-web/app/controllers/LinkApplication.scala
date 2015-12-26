@@ -439,7 +439,13 @@ class LinkApplication extends Controller {
             
             val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id).map { _.capacity.total }.sum 
                                                                    
-            var resultObject = Json.obj("distance" -> distance, 
+            var resultObject = Json.obj("fromAirportName" -> fromAirport.name,
+                                        "fromAirportCity" -> fromAirport.city,
+                                        "fromCountryCode" -> fromAirport.countryCode,
+                                        "toAirportName" -> toAirport.name,
+                                        "toAirportCity" -> toAirport.city,
+                                        "toCountryCode" -> toAirport.countryCode,
+                                        "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,  
                                         "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
                                         "maxFrequencyToAirport" -> maxFrequencyToAirport,
