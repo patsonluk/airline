@@ -273,17 +273,19 @@ function plotLinkRidership(linkConsumptions, container) {
 	 
 	var maxWeek = 24
 	
-	linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
-	$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
-		var capacity = linkConsumption.capacity.economy + linkConsumption.capacity.business + linkConsumption.capacity.first
-		capacityData.push({ value : capacity })
-		var soldSeats = linkConsumption.soldSeats.economy + linkConsumption.soldSeats.business + linkConsumption.soldSeats.first
-		soldSeatsData.push({ value : soldSeats })
-		
-		var month = Math.floor(linkConsumption.cycle / 4)
-		//var week = linkConsumption.cycle % 4 + 1
-		category.push({ label : month.toString()})
-	})
+	if (linkConsumptions) {
+		linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
+		$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
+			var capacity = linkConsumption.capacity.economy + linkConsumption.capacity.business + linkConsumption.capacity.first
+			capacityData.push({ value : capacity })
+			var soldSeats = linkConsumption.soldSeats.economy + linkConsumption.soldSeats.business + linkConsumption.soldSeats.first
+			soldSeatsData.push({ value : soldSeats })
+			
+			var month = Math.floor(linkConsumption.cycle / 4)
+			//var week = linkConsumption.cycle % 4 + 1
+			category.push({ label : month.toString()})
+		})
+	}
 	
 	var chart = container.insertFusionCharts({
 		type: 'mscombi2d',

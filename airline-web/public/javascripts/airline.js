@@ -165,7 +165,7 @@ function drawFlightPath(link) {
    var flightPath = new google.maps.Polyline({
      path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}],
      geodesic: true,
-     strokeColor: getLinkColor(link),
+     strokeColor: getLinkColor(link.profit, link.revenue),
      strokeOpacity: 0.6,
      strokeWeight: 2
    });
@@ -179,7 +179,7 @@ function drawFlightPath(link) {
 	     path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}],
 	     geodesic: true,
 	     map: map,
-	     strokeColor: getLinkColor(link),
+	     strokeColor: getLinkColor(link.profit, link.revenue),
 	     strokeOpacity: 0.01,
 	     strokeWeight: 15,
 	     zIndex: 100
@@ -196,39 +196,43 @@ function drawFlightPath(link) {
 function refreshFlightPath(link) {
 	if (flightPaths[link.id]) {
 		$.each(flightPaths[link.id], function(key, line) {
-			line.setOptions({ strokeColor : getLinkColor(link)})
+			line.setOptions({ strokeColor : getLinkColor(link.profit, link.revenue)})
 		})
 		//flightPaths[link.id].setOptions({ strokeColor : getLinkColor(link)})
 	}
 }
 
-function getLinkColor(link) {
-   var profitFactor = link.profit / link.capacity
-   var maxProfitFactor = 500
-   var minProfitFactor = -500
-   if (profitFactor > maxProfitFactor) {
-	   profitFactor = maxProfitFactor
-   } else if (profitFactor < minProfitFactor) {
-	   profitFactor = minProfitFactor
+function getLinkColor(profit, revenue) {
+   if (profit !== undefined && revenue > 0) {
+	   var profitFactor = profit / revenue
+	   var maxProfitFactor = 0.5
+	   var minProfitFactor = -0.5
+	   if (profitFactor > maxProfitFactor) {
+		   profitFactor = maxProfitFactor
+	   } else if (profitFactor < minProfitFactor) {
+		   profitFactor = minProfitFactor
+	   }
+	   var redHex 
+	   if (profitFactor > 0) {
+		   redHex = 220 * (1 - (profitFactor / maxProfitFactor)) 
+	   } else { 
+		   redHex = 220 
+	   }
+	   var greenHex
+	   if (profitFactor < 0) { 
+		   greenHex = 220 * (1 + (profitFactor / maxProfitFactor)) 
+	   } else { 
+		   greenHex = 220 
+	   }
+	   
+	   var redHexString = parseInt(redHex).toString(16)
+	   if (redHexString.length == 1) { redHexString = "0" + redHexString }
+	   var greenHexString = parseInt(greenHex).toString(16)
+	   if (greenHexString.length == 1) { greenHexString = "0" + greenHexString }
+	   return colorHex = "#" + redHexString + greenHexString + "20"
+   } else {
+	   return "#DCDC20"
    }
-   var redHex 
-   if (profitFactor > 0) {
-	   redHex = 220 * (1 - (profitFactor / maxProfitFactor)) 
-   } else { 
-	   redHex = 220 
-   }
-   var greenHex
-   if (profitFactor < 0) { 
-	   greenHex = 220 * (1 + (profitFactor / maxProfitFactor)) 
-   } else { 
-	   greenHex = 220 
-   }
-   
-   var redHexString = parseInt(redHex).toString(16)
-   if (redHexString.length == 1) { redHexString = "0" + redHexString }
-   var greenHexString = parseInt(greenHex).toString(16)
-   if (greenHexString.length == 1) { greenHexString = "0" + greenHexString }
-   return colorHex = "#" + redHexString + greenHexString + "20"
 }
 
 
@@ -599,6 +603,7 @@ function planToAirport(toAirportId, toAirportName) {
 
 function planLink(fromAirport, toAirport) {
 	var airlineId = activeAirline.id
+	selectedLink = null //no refresh
 	if (fromAirport && toAirport) {
 		var url = "airlines/" + airlineId + "/plan-link"
 		$.ajax({
@@ -632,6 +637,8 @@ function updatePlanLinkInfo(linkInfo) {
 	
 	$('#planLinkDistance').text(linkInfo.distance)
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
+	$('#planLinkBusinessPassengers').text(linkInfo.businessPassengers)
+	$('#planLinkTouristPassengers').text(linkInfo.touristPassengers)
 	$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
 	if (!linkInfo.existingLink) {
 		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)

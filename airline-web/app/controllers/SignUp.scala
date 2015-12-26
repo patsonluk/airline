@@ -81,6 +81,7 @@ class SignUp extends Controller {
         
         val newAirline = Airline(userInput.airlineName)
         newAirline.setBalance(1000000)
+        newAirline.setMaintainenceQuality(100)
         AirlineSource.saveAirlines(List(newAirline))
         
         UserSource.setUserAirline(user, newAirline)

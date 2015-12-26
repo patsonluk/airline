@@ -26,7 +26,7 @@ class Application extends Controller {
     
     def writes(airport: Airport): JsValue = {
       val averageIncome = airport.power / airport.population
-      val incomeLevel = (Math.log(averageIncome.toDouble / 500) / Math.log(1.1)).toInt
+      val incomeLevel = Computation.getIncomeLevel(airport.income)
 //      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) { 
 //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)  
 //      }

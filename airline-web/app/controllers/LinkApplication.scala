@@ -133,11 +133,12 @@ class LinkApplication extends Controller {
     
   }
   
-  implicit object LinkWithProfitWrites extends Writes[(Link, Int)] {
-    def writes(linkWithProfit: (Link, Int)): JsValue = { 
+  implicit object LinkWithProfitWrites extends Writes[(Link, Int, Int)] {
+    def writes(linkWithProfit: (Link, Int, Int)): JsValue = { 
       val link = linkWithProfit._1
       val profit = linkWithProfit._2
-      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit))
+      val revenue = linkWithProfit._3
+      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue))
     }
   }
   
@@ -325,7 +326,7 @@ class LinkApplication extends Controller {
         foldMap + (linkConsumptionDetails.linkId -> linkConsumptionDetails)
       }
       val linksWithProfit = links.map { link =>  
-        (link, consumptions.get(link.id).fold(0)(_.profit))  
+        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue))  
       }
       Ok(Json.toJson(linksWithProfit)).withHeaders(
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
@@ -434,9 +435,10 @@ class LinkApplication extends Controller {
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), BUSINESS),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), FIRST))
             
-            val directDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport) 
+            val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, PassengerType.BUSINESS)
+            val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, PassengerType.TOURIST)
             
-            
+            val directDemand = directBusinessDemand + directTouristDemand
             val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id).map { _.capacity.total }.sum 
                                                                    
             var resultObject = Json.obj("fromAirportName" -> fromAirport.name,
@@ -450,6 +452,8 @@ class LinkApplication extends Controller {
                                         "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
                                         "maxFrequencyToAirport" -> maxFrequencyToAirport,
                                         "directDemand" -> directDemand,
+                                        "businessPassengers" -> directBusinessDemand.total,
+                                        "touristPassengers" -> directTouristDemand.total,
                                         "airportLinkCapacity" -> airportLinkCapacity).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
              
             if (existingLink.isDefined) {
