@@ -131,7 +131,7 @@ object AirportSimulation {
       case(airlineId, soldLinksByAirline) => {
         val totalTransportedPassengers = soldLinksByAirline.map { _.soldSeats.total }.sum 
         val totalQualityProduct = soldLinksByAirline.map { soldLink => soldLink.soldSeats.total.toLong * soldLink.quality }.sum
-        val averageQuality = totalQualityProduct / totalTransportedPassengers
+        val averageQuality = if (totalTransportedPassengers == 0) 0 else totalQualityProduct / totalTransportedPassengers
         
         var loyaltyAdjustment = totalTransportedPassengers * 1000.toDouble / airport.population  
         if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {

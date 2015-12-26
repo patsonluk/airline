@@ -79,4 +79,16 @@ object Computation {
       }
     }
   }
+
+  /**
+   * Returns a normalized income level, should be greater than 0
+   */
+  def getIncomeLevel(income : Int) : Int = {
+    val incomeLevel = (Math.log(income.toDouble / 500) / Math.log(1.1)).toInt
+    if (incomeLevel < 1) {
+      1
+    } else {
+      incomeLevel
+    }
+  }
 }

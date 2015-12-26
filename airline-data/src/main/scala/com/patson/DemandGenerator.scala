@@ -13,7 +13,7 @@ import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import com.patson.model._
-
+import com.patson.model.PassengerType
 
 
 object DemandGenerator {
@@ -23,12 +23,12 @@ object DemandGenerator {
 //  import actorSystem.dispatcher
 //
 //  implicit val materializer = FlowMaterializer()
-  private[this] val FIRST_CLASS_INCOME_MIN = 50000
-  private[this] val FIRST_CLASS_INCOME_MAX = 200000
-  private[this] val FIRST_CLASS_PERCENTAGE_MAX = 0.05 //max 5% first
-  private[this] val BUSINESS_CLASS_INCOME_MIN = 20000
-  private[this] val BUSINESS_CLASS_INCOME_MAX = 200000
-  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = 0.20 //max 20% business
+  private[this] val FIRST_CLASS_INCOME_MIN = 25000
+  private[this] val FIRST_CLASS_INCOME_MAX = 100000
+  private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02) //max 8% first (Business passenger), 2% first (Tourist)
+  private[this] val BUSINESS_CLASS_INCOME_MIN = 10000
+  private[this] val BUSINESS_CLASS_INCOME_MAX = 100000
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.30, PassengerType.TOURIST -> 0.10) //max 30% business (Business passenger), 10% business (Tourist) 
   
   
   val defaultTotalWorldPower = {
@@ -50,16 +50,20 @@ object DemandGenerator {
     
     val airportSource = Source(airports)
 	  
-	  val computeFlow: Flow[Airport, (Airport, List[(Airport, LinkClassValues)])] = Flow[Airport].filter { _.power > 0 }.mapAsync { 
+	  val computeFlow: Flow[Airport, (Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])] = Flow[Airport].filter { _.power > 0 }.mapAsync { 
 	    fromAirport : Airport => {
 	      Future {
-	        val demandList = ListBuffer[(Airport, LinkClassValues)]() 
+	        val demandList = ListBuffer[(Airport, (PassengerType.Value, LinkClassValues))]() 
 	        airports.foreach { toAirport => 
-	          val demand = computeDemandBetweenAirports(fromAirport, toAirport)
+	          val businessDemand = computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.BUSINESS)
+	          val touristDemand = computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.TOURIST)
 	          
-	          if (demand.total > 0) {
-	            demandList.append((toAirport, demand))
+	          if (businessDemand.total > 0) {
+	            demandList.append((toAirport, (PassengerType.BUSINESS, businessDemand)))
 	          } 
+	          if (touristDemand.total > 0) {
+	            demandList.append((toAirport, (PassengerType.TOURIST, touristDemand)))
+	          }
 	        } 
 	        
 	        (fromAirport, demandList.toList)
@@ -68,22 +72,22 @@ object DemandGenerator {
 	  }
 	  
 	  val demandChunkSize = 5
-	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, LinkClassValues)]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, LinkClassValues)])].map {
+	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])].map {
 	    case (fromAirport, toAirportsWithDemand) =>
 	      val passangerGroupDemand = ListBuffer[(PassengerGroup, Airport, Int)]() 
         //for each city generate different preferences
         val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
 
         val demandListFromThisAiport = toAirportsWithDemand.foreach {
-          case (toAirport, demand) =>
+          case (toAirport, (passengerType, demand)) =>
             LinkClass.values().foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
                 while (remainingDemand > demandChunkSize) {
-                  passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass)), toAirport, demandChunkSize))
+                  passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
                   remainingDemand -= demandChunkSize
                 }
-                passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass)), toAirport, remainingDemand)) // don't forget the last chunk}
+                passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
               }
             }
         }
@@ -118,45 +122,57 @@ object DemandGenerator {
     materializedFlow.get(resultSink).map(_.toList)
   }
   
-  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, totalWorldPower : Long = defaultTotalWorldPower) : LinkClassValues = {
+  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, passengerType : PassengerType.Value) : LinkClassValues = {
     if (fromAirport == toAirport) {
       LinkClassValues.getInstance(0, 0, 0)
     } else {
-      val passengerSupplyPerWeek =  (fromAirport.power / 30000 / 52).toInt //assuming 1 flight per year if income per capita is 30k
       import FlightType._
       val flightType = Computation.getFlightType(fromAirport, toAirport)
-      val multiplier = flightType match {
+      
+      var multiplier = flightType match {
         case SHORT_HAUL_DOMESTIC => 6
         case LONG_HAUL_DOMESTIC => 3
-        case SHORT_HAUL_INTERNATIONAL => 1.5
+        case SHORT_HAUL_INTERNATIONAL => if (passengerType == PassengerType.BUSINESS) 1.5 else 2.0
         case LONG_HAUL_INTERNATIONAL => 1
-        case ULTRA_LONG_HAUL_INTERNATIONAL => 0.5
+        case ULTRA_LONG_HAUL_INTERNATIONAL => if (passengerType == PassengerType.BUSINESS) 0.5 else 0.3
       }
-      val totalDemand = (passengerSupplyPerWeek * multiplier * toAirport.power / totalWorldPower).toInt
       
-      //compute demand composition
-      val totalIncome = fromAirport.income + toAirport.income
+      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 15 income level increment
+      val incomeLevel = Computation.getIncomeLevel(fromAirport.income)
+      if (passengerType == PassengerType.TOURIST && incomeLevel > 25) { 
+        multiplier *= (((incomeLevel - 25).toDouble / 15) * 2)       
+      }
+      
+      //adjustments : these zones do not have good ground transport
+      if (fromAirport.zone == toAirport.zone && (fromAirport.zone == "OC" || fromAirport.zone == "NA" || fromAirport.zone == "AF")) { 
+        multiplier *= 3
+      }
+      
+      val totalDemand = (fromAirport.power.doubleValue() / 3000000000L * toAirport.power / 3000000000L * multiplier).toInt  
+      
+      //compute demand composition. depends on from airport income
+      val income = fromAirport.income
 
-      val firstClassPercentage = 
+      val firstClassPercentage : Double = 
         if (flightType == LONG_HAUL_INTERNATIONAL || flightType == ULTRA_LONG_HAUL_INTERNATIONAL) {
-          if (totalIncome <= FIRST_CLASS_INCOME_MIN) {
+          if (income <= FIRST_CLASS_INCOME_MIN) {
             0 
-          } else if (totalIncome >= FIRST_CLASS_INCOME_MAX) {
-            FIRST_CLASS_PERCENTAGE_MAX 
+          } else if (income >= FIRST_CLASS_INCOME_MAX) {
+            FIRST_CLASS_PERCENTAGE_MAX(passengerType) 
           } else { 
-            FIRST_CLASS_PERCENTAGE_MAX * (totalIncome - FIRST_CLASS_INCOME_MIN) / (FIRST_CLASS_INCOME_MAX - FIRST_CLASS_INCOME_MIN)
+            FIRST_CLASS_PERCENTAGE_MAX(passengerType) * (income - FIRST_CLASS_INCOME_MIN) / (FIRST_CLASS_INCOME_MAX - FIRST_CLASS_INCOME_MIN)
           }
         } else {
          0 
         }
-      val businessClassPercentage =
+      val businessClassPercentage : Double =
         if (flightType != SHORT_HAUL_DOMESTIC) {
-          if (totalIncome <= BUSINESS_CLASS_INCOME_MIN) {
+          if (income <= BUSINESS_CLASS_INCOME_MIN) {
             0 
-          } else if (totalIncome >= BUSINESS_CLASS_INCOME_MAX) {
-            BUSINESS_CLASS_PERCENTAGE_MAX 
+          } else if (income >= BUSINESS_CLASS_INCOME_MAX) {
+            BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) 
           } else { 
-            BUSINESS_CLASS_PERCENTAGE_MAX * (totalIncome - BUSINESS_CLASS_INCOME_MIN) / (BUSINESS_CLASS_INCOME_MAX - BUSINESS_CLASS_INCOME_MIN)
+            BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * (income - BUSINESS_CLASS_INCOME_MIN) / (BUSINESS_CLASS_INCOME_MAX - BUSINESS_CLASS_INCOME_MIN)
           }
         } else {
          0 
@@ -189,4 +205,6 @@ object DemandGenerator {
     
     new FlightPreferencePool(flightPreferences.toList)
   }
+  
+  sealed case class Demand(businessDemand : LinkClassValues, touristDemand : LinkClassValues)
 }

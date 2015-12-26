@@ -11,8 +11,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var slotAssignmentsLoaded = false
   private[this] val airlineBases = scala.collection.mutable.Map[Int, AirlineBase]()
   private[this] var airlineBasesLoaded = false
+  //private[this] val features = scala.collection.mutable.List[
 
-  val income = if (population > 0) { power / population } else 0
+  val income = if (population > 0) (power / population).toInt  else 0
   
   def availableSlots : Int = {
     if (slotAssignmentsLoaded) {
@@ -86,10 +87,22 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
         0
       } 
     } else { //calculate how many can be assigned
-      val maxSlotsByLoyalty = ((slots - reservedSlots) * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at 100% get all the available (minus reserved)
+      val maxSlotsByLoyalty = ((slots - reservedSlots) * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY / 2)).toInt //base on loyalty, at 50% get all the available (minus reserved)
       val maxSlotsByAwareness = (getAirlineAwareness(airlineId) * 10 / AirlineAppeal.MAX_AWARENESS).toInt + minSlots// +10 at max awareness
-      val maxSlots = Math.max(maxSlotsByLoyalty, maxSlotsByAwareness)
-        
+      val maxSlotsByAppeal = Math.max(maxSlotsByLoyalty, maxSlotsByAwareness)
+      
+      //if it's not a base, give it 30 slots max
+      //if it's a base (not HQ), give it 1/5 max
+      //if it's a base (HQ), give it 1/3 max
+      val maxSlotsByBase =
+        getAirlineBase(airlineId) match {
+          case Some(base) if (base.headquarter) => (slots - reservedSlots) / 3
+          case Some(base) if (!base.headquarter) => (slots - reservedSlots) / 5
+          case None => 30  
+          
+        }
+      val maxSlots = Math.min(maxSlotsByAppeal, maxSlotsByBase)
+      
       //now see whether this new max slot would violate anything
       if (maxSlots <= currentAssignedSlotToThisAirline) { //you can keep what you have but we cannot give u more as we don't like you anymore than before
         currentAssignedSlotToThisAirline
