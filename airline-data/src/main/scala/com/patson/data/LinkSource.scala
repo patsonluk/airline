@@ -85,16 +85,16 @@ object LinkSource {
       loadLinksByCriteria(List.empty, fullLoad)
   }
   
-  def loadLinksByAirlineId(airlineId : Int) = {
-    loadLinksByCriteria(List(("airline", airlineId)))
+  def loadLinksByAirlineId(airlineId : Int, fullLoad : Boolean = false) = {
+    loadLinksByCriteria(List(("airline", airlineId)), fullLoad)
   }
   
-  def loadLinksByFromAirport(fromAirportId : Int) = {
-    loadLinksByCriteria(List(("from_airport", fromAirportId)), true)
+  def loadLinksByFromAirport(fromAirportId : Int, fullLoad : Boolean = false) = {
+    loadLinksByCriteria(List(("from_airport", fromAirportId)), fullLoad)
   }
   
-  def loadLinksByToAirport(toAirportId : Int) = {
-    loadLinksByCriteria(List(("to_airport", toAirportId)), true)
+  def loadLinksByToAirport(toAirportId : Int, fullLoad : Boolean = false) = {
+    loadLinksByCriteria(List(("to_airport", toAirportId)), fullLoad)
   }
   
   def saveLink(link : Link) : Option[Link] = {
