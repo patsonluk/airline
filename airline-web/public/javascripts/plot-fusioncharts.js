@@ -68,6 +68,7 @@ function plotMaintenanceQualityGauge(container, currentQualityInput) {
 }
 
 function plotSeatConfigurationGauge(container, configuration, maxSeats) {
+	container.empty()
 	var dataSource = { 
 		"chart": {
 	    	"theme": "fint",
@@ -77,7 +78,7 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats) {
 	        "showTickValues": "0",
 	        "showborder": "0",
 	        "showtooltip": "0",
-	        "chartBottomMargin": "20",
+	        "chartBottomMargin": "0",
 	        "bgAlpha":"0",
 	        "valueFontSize": "11",  
 	        "valueFontBold": "0",
@@ -147,7 +148,7 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats) {
 	{	
 		type: 'hlineargauge',
         width: '300',
-        height: '50',
+        height: '30',
         dataFormat: 'json',
 	    dataSource: dataSource,
         "events": {
@@ -163,8 +164,18 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats) {
                 
                 configuration["first"] = Math.floor(maxSeats * (100 - firstPosition) / 100 / 8)
                 
-                configuration["business"] = Math.floor((maxSeats * (100 - businessPosition) / 100 - configuration["first"] * 8) / 4)
-                configuration["economy"] = Math.floor(maxSeats * businessPosition / 100)
+                if (firstPosition == 0) { //allow elimination of all business seats
+                	configuration["business"] = 0
+                } else {
+                	configuration["business"] = Math.floor((maxSeats * (100 - businessPosition) / 100 - configuration["first"] * 8) / 4)
+                }
+                
+                if (businessPosition == 0) { //allow elimination of all economy seats
+                	configuration["economy"] = 0
+                } else {
+                	configuration["economy"] = maxSeats - configuration["first"] * 8 - configuration["business"] * 4
+                }
+                
                 
                 console.log(configuration)
                 
