@@ -50,6 +50,7 @@ class AirlineApplication extends Controller {
     def writes(base: AirlineBase): JsValue = JsObject(List(
       "airportId" -> JsNumber(base.airport.id),
       "airportName" -> JsString(base.airport.name),
+      "airportZone" -> JsString(base.airport.zone),
       "airlineId" -> JsNumber(base.airline.id),
       "scale" -> JsNumber(base.scale),
       "headquarter" -> JsBoolean(base.headquarter),

@@ -620,6 +620,8 @@ function planLink(fromAirport, toAirport) {
 		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 		    }
 		});
+		//hide existing info
+		$("#planLinkDetails div.value").hide()
 		setActiveDiv($('#planLinkDetails'))
 	}
 }
@@ -673,6 +675,7 @@ function updatePlanLinkInfo(linkInfo) {
 	});
 
 	updatePlanLinkInfoWithModelSelected($("#planLinkModelSelect").val())
+	$("#planLinkDetails div.value").show()
 }
 function updateFrequencyBar(airplaneModelId, callback) {
 	var frequencyBar = $("#frequencyBar")

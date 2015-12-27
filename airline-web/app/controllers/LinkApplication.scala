@@ -269,6 +269,21 @@ class LinkApplication extends Controller {
         return BadRequest("Cannot insert link - some airplanes already occupied " + occupiedAirplanes)
       }
       
+      //valid configuration is valid
+      if ((incomingLink.capacity(ECONOMY) * ECONOMY.spaceMultiplier + 
+           incomingLink.capacity(BUSINESS) * BUSINESS.spaceMultiplier + 
+           incomingLink.capacity(FIRST) * FIRST.spaceMultiplier) > incomingLink.frequency * model.capacity) {
+        return BadRequest("Requested capacity exceed the allowed limit, invalid configuration!")
+      }
+      
+      //valid from airport is a base
+      if (incomingLink.from.getAirlineBase(airlineId).isEmpty) {
+        return BadRequest("Cannot fly from this airport, this is not a base!")
+      }
+      if (incomingLink.from.id == incomingLink.to.id) {
+        return BadRequest("Same from and to airport!")
+      }
+      
       println("PUT " + incomingLink)
             
       if (isNewLink) {

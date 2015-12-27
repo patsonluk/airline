@@ -46,6 +46,7 @@ class Application extends Controller {
       "population" -> JsNumber(airport.population),
       "slots" -> JsNumber(airport.slots),
       "radius" -> JsNumber(Computation.calculateAirportRadius(airport)),
+      "zone" -> JsString(airport.zone),
       "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
       
       
@@ -108,6 +109,14 @@ class Application extends Controller {
       "passengers" -> JsNumber(airlinePassenger._2)))
     }
   }
+   
+//  object SimpleLinkWrites extends Writes[Link] {
+//    def writes(link: Link): JsValue = {
+//      JsObject(List(
+//      "id" -> JsNumber(link.id),    
+//      "airlineId" -> JsNumber(link.airline.id)))
+//    }
+//  }
  
   
   case class AirportSlotData(airlineId: Int, slotCount: Int)
@@ -135,7 +144,14 @@ class Application extends Controller {
   
   def getAirport(airportId : Int) = Action {
      AirportSource.loadAirportById(airportId, true) match {
-       case Some(airport) =>  Ok(Json.toJson(airport))
+       case Some(airport) =>
+         //find links going to this airport too, send simplified data
+         val links = LinkSource.loadLinksByFromAirport(airportId) ++ LinkSource.loadLinksByToAirport(airportId)
+         val linkCountJson = links.groupBy { _.airline.id }.foldRight(Json.obj()) { 
+           case((airlineId, links), foldJson) => foldJson + (airlineId.toString() -> JsNumber(links.length)) 
+         }
+         
+         Ok(Json.toJson(airport).asInstanceOf[JsObject] + ("linkCounts" -> linkCountJson))
        case None => NotFound
      }
   }

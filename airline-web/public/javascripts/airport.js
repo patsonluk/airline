@@ -126,6 +126,7 @@ function addMarkers(airports) {
 		  		airportPopulation: airportInfo.population,
 		  		airportIncomeLevel: airportInfo.incomeLevel,
 		  		airportCountryCode: airportInfo.countryCode,
+		  		airportZone : airportInfo.zone,
 		  		airportAvailableSlots: airportInfo.availableSlots,
 		  		icon: icon
 			  });
@@ -257,13 +258,13 @@ function updateBaseInfo(airportId) {
 			  break
 		  }
 	  }
-	  if (!baseAirport) {
-	  	$("#buildBaseButton").show()
-	  } else if (baseAirport.headquarter){ //a HQ
-		$("#popupHeadquarterIcon").show() 
-	  } else { //a base
-		$("#popupBaseIcon").show()
-	  }
+	  if (baseAirport){ //a base
+		  if (baseAirport.headquarter){ //a HQ
+			$("#popupHeadquarterIcon").show() 
+		  } else { 
+			$("#popupBaseIcon").show()
+		  }
+		}
 	}
 	return baseAirport
 }
@@ -295,12 +296,28 @@ function updatePopupDetails(airportId) {
 	    	}
 	    	
 	    	$("#airportPopupSlots").text(airport.availableSlots + " (" + airport.slots + ")")
+	    	
+	    	$.each(airport.linkCounts, function(withLinksAirlineId, linkCount) {
+	    		if (airlineId == withLinksAirlineId) {
+	    			updateBuildBaseButton(airport.zone)
+	    		}
+	  		});
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function updateBuildBaseButton(airportZone) { //check if the zone already has base
+	for (i = 0; i < activeAirline.baseAirports.length; i++) {
+	  if (activeAirline.baseAirports[i].airportZone == airportZone) {
+		  return //no 2nd basein the zone for now
+	  }
+	}
+	
+	$("#buildBaseButton").show()
 }
 
 function updatePopupSlots(airportId) {
