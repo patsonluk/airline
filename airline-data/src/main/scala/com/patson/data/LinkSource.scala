@@ -122,7 +122,7 @@ object LinkSource {
       preparedStatement.setDouble(7, distance)
       preparedStatement.setInt(8, capacity(ECONOMY))
       preparedStatement.setInt(9, capacity(BUSINESS))
-      preparedStatement.setInt(10, capacity(BUSINESS))
+      preparedStatement.setInt(10, capacity(FIRST))
       preparedStatement.setInt(11, rawQuality)
       preparedStatement.setInt(12, duration)
       preparedStatement.setInt(13, frequency)
