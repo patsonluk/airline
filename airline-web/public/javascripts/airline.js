@@ -689,27 +689,27 @@ function updateFrequencyBar(airplaneModelId, callback) {
 	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
 	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
 	
-	if (maxFrequencyByAirplanes <= maxFrequencyFromAirport && maxFrequencyByAirplanes <= maxFrequencyToAirport) { //limited by airplanes
-		if (maxFrequencyByAirplanes == 0) {
-			frequencyBar.text("No routing allowed, reason: ")
-		} else {
-			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"), null, null, callback)
-		}
-		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by airplanes")
-	} else if (maxFrequencyFromAirport <= maxFrequencyToAirport && maxFrequencyFromAirport <= maxFrequencyByAirplanes) { //limited by from airport
+	if (maxFrequencyFromAirport <= maxFrequencyToAirport && maxFrequencyFromAirport <= maxFrequencyByAirplanes) { //limited by from airport 
 		if (maxFrequencyFromAirport == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {
 			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyFromAirport, frequencyBar, $("#planLinkFrequency"), null, null, callback)
 		}
 		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by Departure Airport")
-	} else { //limited by to airport
+	} else if (maxFrequencyToAirport <= maxFrequencyFromAirport && maxFrequencyToAirport <= maxFrequencyByAirplanes) { //limited by to airport 
 		if (maxFrequencyToAirport == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {
 			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyToAirport, frequencyBar, $("#planLinkFrequency"), null, null, callback)
 		}
 		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by Destination Airport")
+	} else { //limited by airplanes
+		if (maxFrequencyByAirplanes == 0) {
+			frequencyBar.text("No routing allowed, reason: ")
+		} else {
+			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"), null, null, callback)
+		}
+		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by airplanes")
 	}
 }
 
