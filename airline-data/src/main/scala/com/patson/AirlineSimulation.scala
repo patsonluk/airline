@@ -20,9 +20,14 @@ object AirlineSimulation {
         var airlineProfit = 0L
         linkResultByAirline.get(airline.id).foreach { linkConsumptions =>
           airlineProfit = linkConsumptions.foldLeft(0L)(_ + _.profit)
-          val totalPassengers = linkConsumptions.foldLeft(0)(_ + _.soldSeats.total)
           
-          var targetReputation = Math.log(totalPassengers / 1000) / Math.log(1.1)
+          
+          val totalPassengerKilometers = linkConsumptions.foldLeft(0L) { (foldLong, linkConsumption) =>
+            foldLong + linkConsumption.soldSeats.total * linkConsumption.distance
+          }
+          
+          //https://en.wikipedia.org/wiki/World%27s_largest_airlines
+          var targetReputation = Math.log(totalPassengerKilometers / 5000) / Math.log(1.2)
           if (targetReputation > 100) {
             targetReputation = 100
           } else if (targetReputation < 10) {
