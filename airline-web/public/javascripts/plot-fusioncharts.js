@@ -284,7 +284,7 @@ function plotLinkRidership(linkConsumptions, container) {
 	 
 	var maxWeek = 24
 	
-	if (linkConsumptions) {
+	if (!jQuery.isEmptyObject(linkConsumptions)) {
 		linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
 		$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
 			var capacity = linkConsumption.capacity.economy + linkConsumption.capacity.business + linkConsumption.capacity.first
