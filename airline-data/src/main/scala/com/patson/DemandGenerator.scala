@@ -58,6 +58,10 @@ object DemandGenerator {
 	          val businessDemand = computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.BUSINESS)
 	          val touristDemand = computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.TOURIST)
 	          
+//	          if (businessDemand.total > 0 && touristDemand.total > 0) {
+//	            println(businessDemand + " : " + touristDemand)
+//	          }
+//	          
 	          if (businessDemand.total > 0) {
 	            demandList.append((toAirport, (PassengerType.BUSINESS, businessDemand)))
 	          } 
@@ -65,7 +69,6 @@ object DemandGenerator {
 	            demandList.append((toAirport, (PassengerType.TOURIST, touristDemand)))
 	          }
 	        } 
-	        
 	        (fromAirport, demandList.toList)
 	      }
 	    }
@@ -137,6 +140,10 @@ object DemandGenerator {
         case ULTRA_LONG_HAUL_INTERNATIONAL => if (passengerType == PassengerType.BUSINESS) 0.5 else 0.3
       }
       
+      if (passengerType == PassengerType.TOURIST) {
+        multiplier *= 0.3 //generate very small number of tourist, as it should be mainly driven by features
+      }
+      
       //adjustment : extra bonus to tourist supply for rich airports, up to double at every 15 income level increment
       val incomeLevel = Computation.getIncomeLevel(fromAirport.income)
       if (passengerType == PassengerType.TOURIST && incomeLevel > 25) { 
@@ -145,10 +152,21 @@ object DemandGenerator {
       
       //adjustments : these zones do not have good ground transport
       if (fromAirport.zone == toAirport.zone && (fromAirport.zone == "OC" || fromAirport.zone == "NA" || fromAirport.zone == "AF")) { 
-        multiplier *= 5
+        multiplier *= 4
       }
       
-      val totalDemand = (fromAirport.power.doubleValue() / 30000000000L * toAirport.power / 30000000000L * multiplier).toInt  
+      val rawDemand = (fromAirport.power.doubleValue() / 20000000000L * toAirport.power / 20000000000L * multiplier).toInt
+      
+      var totalDemand = rawDemand
+      //adjust by features
+      fromAirport.getFeatures().foreach { feature =>
+         val adjustment = feature.demandAdjustment(rawDemand, passengerType, fromAirport.id, fromAirport, toAirport)
+         totalDemand += adjustment
+      }
+      toAirport.getFeatures().foreach { feature => 
+          val adjustment = feature.demandAdjustment(rawDemand, passengerType, toAirport.id, fromAirport, toAirport)
+         totalDemand += adjustment
+      }
       
       //compute demand composition. depends on from airport income
       val income = fromAirport.income

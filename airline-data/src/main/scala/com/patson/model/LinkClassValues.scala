@@ -10,6 +10,9 @@ case class LinkClassValues(map : Map[LinkClass, Int]) {
       foldMap + (key -> (map.getOrElse(key, 0) + otherValue.map.getOrElse(key, 0)))
     })
   }
+  def *(multiplier : Double) : LinkClassValues = {
+    LinkClassValues(map.mapValues { value => (value * multiplier).toInt })
+  }
 }
 object LinkClassValues {
   def getInstance(economy : Int = 0, business : Int = 0, first : Int = 0) : LinkClassValues = {

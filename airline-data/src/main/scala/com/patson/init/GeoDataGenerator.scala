@@ -341,6 +341,9 @@ object GeoDataGenerator extends App {
       case Failure(failure) => println()
     }
     Await.result(combinedFuture, Duration.Inf)
+    
+    //patch features
+    AirportFeaturePatcher.patchFeatures()
   }
   
   

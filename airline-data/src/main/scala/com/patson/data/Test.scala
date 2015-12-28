@@ -6,10 +6,11 @@ import java.util.Calendar
 import com.patson.model._
 import com.patson.LinkSimulation
 import com.patson.model.airplane._
+import com.patson.init.AirportFeaturePatcher
 
 
 object Test extends App {
-  println(LinkClassValues.getInstance(1, 2, 3) + LinkClassValues.getInstance(2, 3, 5))
+  AirportFeaturePatcher.patchFeatures()
 }
 
 

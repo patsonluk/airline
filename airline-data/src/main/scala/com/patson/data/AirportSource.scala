@@ -95,6 +95,7 @@ object AirportSource {
               cityResultSet.getInt("city"))
             airport.addCityServed(city, cityResultSet.getDouble("share"))
           }
+          cityStatement.close()
           
           val airlineBaseStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_BASE_TABLE + " WHERE airport = ?")
           airlineBaseStatement.setInt(1, airport.id)
@@ -109,10 +110,26 @@ object AirportSource {
              
              airlineBases += AirlineBase(airline, airport, scale, foundedCycle, headquarter)
           }
-          
+          airlineBaseStatement.close()
           airport.initAirlineBases(airlineBases.toList)
           
-          cityStatement.close()
+          
+          //load features
+          val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
+          featureStatement.setInt(1, airport.id)
+          
+          val featureResultSet = featureStatement.executeQuery()
+          val features = ListBuffer[AirportFeature]()
+          
+          import AirportFeatureType._
+          while (featureResultSet.next()) {
+             val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
+             val strength = featureResultSet.getInt("strength")
+             
+             features += AirportFeature(featureType, strength)
+          }
+          featureStatement.close()
+          airport.initFeatures(features.toList)
         }
       }
       
@@ -218,6 +235,15 @@ object AirportSource {
               infoStatement.executeUpdate()
               infoStatement.close()
             }
+            //insert features
+            airport.getFeatures().foreach { feature =>
+              val featureStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_FEATURE_TABLE + "(airport, feature_type, strength) VALUES(?,?,?)")
+              featureStatement.setInt(1, airport.id)
+              featureStatement.setString(2, feature.featureType.toString())
+              featureStatement.setInt(3, feature.strength)
+              featureStatement.executeUpdate()
+              featureStatement.close()
+            }
           }
       }
       preparedStatement.close()
@@ -250,6 +276,31 @@ object AirportSource {
       connection.close()
     }
   }
+  def updateAirportFeatures(airports : List[Airport]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      airports.foreach { airport =>
+        val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
+        purgeStatement.setInt(1, airport.id)
+        purgeStatement.executeUpdate()
+        purgeStatement.close()
+
+        val featureStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_FEATURE_TABLE + "(airport, feature_type, strength) VALUES(?,?,?)")
+        airport.getFeatures().foreach { feature =>
+          featureStatement.setInt(1, airport.id)
+          featureStatement.setString(2, feature.featureType.toString())
+          featureStatement.setInt(3, feature.strength)
+          featureStatement.executeUpdate()
+        }
+        featureStatement.close()
+      }
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+  
   
   def deleteAllAirports() = {
     //open the hsqldb

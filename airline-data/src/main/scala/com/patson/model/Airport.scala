@@ -2,6 +2,7 @@ package com.patson.model
 
 import com.patson.model.airplane.Model
 import com.patson.model.airplane.Model.Type
+import scala.collection.mutable.ListBuffer
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
   val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
@@ -11,7 +12,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var slotAssignmentsLoaded = false
   private[this] val airlineBases = scala.collection.mutable.Map[Int, AirlineBase]()
   private[this] var airlineBasesLoaded = false
-  //private[this] val features = scala.collection.mutable.List[
+  private[this] val features = ListBuffer[AirportFeature]()
+  private[this] var featuresLoaded = false
+  
 
   val income = if (population > 0) (power / population).toInt  else 0
   
@@ -145,6 +148,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     airlineBases.toMap
   }
   
+  def getFeatures() : List[AirportFeature] = {
+    features.toList
+  }
+  
   def initAirlineAppeals(airlineAppeals : Map[Int, AirlineAppeal]) = {
     this.airlineAppeals.clear()
     this.airlineAppeals ++= airlineAppeals
@@ -161,6 +168,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       this.airlineBases.put(airlineBase.airline.id, airlineBase)
     }
     airlineBasesLoaded = true
+  }
+  def initFeatures(features : List[AirportFeature]) = {
+    this.features.clear()
+    this.features ++= features
+    featuresLoaded = true
   }
   
   def slotFee(airplaneModel : Model, airline : Airline) : Int = { 

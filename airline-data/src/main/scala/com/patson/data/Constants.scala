@@ -7,6 +7,8 @@ object Constants {
   val AIRPORT_CITY_SHARE_INDEX_1 = "airport_city_index_1"
   val AIRPORT_CITY_SHARE_INDEX_2 = "airport_city_index_2"
   val AIRPORT_CITY_SHARE_TABLE = "airport_city"
+  val AIRPORT_FEATURE_TABLE = "airport_feature"
+  val AIRPORT_FEATURE_INDEX_1 = "airport_feature_index_1"
   val LINK_TABLE = "link"
   val LINK_INDEX_1 = "link_index_1"
   val LINK_INDEX_2 = "link_index_2"
