@@ -81,13 +81,16 @@ function updateAirplaneList(airplaneList) {
 	var airlineId = activeAirline.id
 	$.ajax({
 		type: 'GET',
-		url: "airlines/"+ airlineId + "/airplanes?getAssignedLink=true",
+		url: "airlines/"+ airlineId + "/airplanes?simpleResult=true",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(airplanes) {
-	    	$.each(airplanes, function( key, airplane ) {
-	    		airplaneList.append($("<a href='javascript:void(0)' onclick='loadAirplaneDetails(" + airlineId + "," + airplane.id + ")'></a>").text(airplane.name + ' (id ' + airplane.id + ')'))
-				airplaneList.append($("<br/>"))
+	    success: function(models) { //a list of model with airplanes
+	    	$.each(models, function(key, model) {
+	    		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
+	    		var aLink = $("<a href='javascript:void(0)' onclick='expandAirplaneList(this.modelInfo)'></a>").text(label)
+	    		airplaneList.append(aLink)
+	    		aLink.get(0).modelInfo = model //tag the info to the element
+	    		airplaneList.append($("<br/>"))
 	  		});
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -96,8 +99,22 @@ function updateAirplaneList(airplaneList) {
 	    }
 	});
 }
+function expandAirplaneList(modelInfo) {
+	var airplaneList = $("#expandedAirplaneList")
+	airplaneList.empty()
+	$.each(modelInfo.assignedAirplanes, function( key, airplaneId ) {
+		airplaneList.append($("<a href='javascript:void(0)' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
+		airplaneList.append($("<br/>"))
+	});
+	
+	$.each(modelInfo.freeAirplanes, function( key, airplane ) {
+		airplaneList.append($("<a href='javascript:void(0)' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
+		airplaneList.append($("<br/>"))
+	});
+}
 
-function loadAirplaneDetails(airlineId, airplaneId) {
+function loadAirplaneDetails(airplaneId) {
+	var airlineId = activeAirline.id 
 	$("#actionAirplaneId").val(airplaneId)
 	//load link
 	$.ajax({

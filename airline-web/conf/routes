@@ -21,7 +21,7 @@ GET	 	 /airports/:airportId/link-statistics	        controllers.Application.getA
 GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
 GET		 /airlines						  controllers.AirlineApplication.getAllAirlines
 GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int)
-GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int, getAssignedLink : Boolean ?= false)
+GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int, simpleResult : Boolean ?= false)
 GET		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.getAirplane(airlineId : Int, airplaneId : Int)
 DELETE	 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.sellAirplane(airlineId : Int, airplaneId : Int)
 PUT	     /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.addAirplane(airlineId : Int, model: Int, quantity: Int)

@@ -29,25 +29,42 @@ class AirplaneApplication extends Controller {
     }
   }
   
+  implicit object AirplanesByModelWrites extends Writes[AirplanesByModel] {
+    def writes(airplanesByModel: AirplanesByModel): JsValue = {
+      Json.toJson(airplanesByModel.model).asInstanceOf[JsObject] + (
+          "assignedAirplanes" -> Json.toJson(airplanesByModel.assignedAirplanes.map { _.id })) + (
+          "freeAirplanes" -> Json.toJson(airplanesByModel.freeAirplanes.map {_.id})) 
+    }
+  }
+  
+  
+  
   
   def getAirplaneModels() = Action {
     val models = ModelSource.loadAllModels()
-    Ok(Json.toJson(models)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
+    Ok(Json.toJson(models))
   }
   
-  def getAirplanes(airlineId : Int, getAssignedLink : Boolean) =  AuthenticatedAirline(airlineId) {
-    if (!getAssignedLink) {
-      val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId)
-      Ok(Json.toJson(airplanes)).withHeaders(
-        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-      )
+  def getAirplanes(airlineId : Int, simpleResult : Boolean) = AuthenticatedAirline(airlineId) {
+    if (simpleResult) {
+      val airplanesWithLink : List[(Airplane, Option[Link])]= AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
+      
+      val airplanesByModel: Map[Model, (List[Airplane], List[Airplane])] = airplanesWithLink.groupBy( _._1.model ).mapValues { airplanesWithLink : List[(Airplane, Option[Link])] =>
+        airplanesWithLink.partition {
+          case (_, linkOption) => linkOption.isDefined
+        }
+      }.mapValues {
+        case (assignedAirplanes, freeAirplanes) =>
+          (assignedAirplanes.map(_._1), freeAirplanes.map(_._1)) //get rid of the Option[Link] now as we have 2 lists already
+      }
+      
+      val airplanesByModelList = airplanesByModel.map {
+        case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, freeAirplanes)
+      }
+      Ok(Json.toJson(airplanesByModelList))
     } else {
       val airplanesWithLink : List[(Airplane, Option[Link])]= AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
-      Ok(Json.toJson(airplanesWithLink)).withHeaders(
-        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-      )
+      Ok(Json.toJson(airplanesWithLink))
     }
   }
   
@@ -110,4 +127,5 @@ class AirplaneApplication extends Controller {
     }
   }
 
+  sealed case class AirplanesByModel(model : Model, assignedAirplanes : List[Airplane], freeAirplanes : List[Airplane]) 
 }
