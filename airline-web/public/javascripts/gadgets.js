@@ -116,3 +116,26 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	}
  	return prefix + linkValues.economy + suffix + " / " + prefix + linkValues.business + suffix + " / " + prefix + linkValues.first + suffix
 }
+
+function changeColoredElementValue(element, newValue) {
+	var oldValue = element.text()
+	if ($.isNumeric(oldValue) && $.isNumeric(newValue)) { //only do coloring for numeric values
+		var originalColor = element.css("color")
+		var originalBackgroundColor = element.css("background-color")
+		
+		if (parseFloat(oldValue) < parseFloat(newValue)) {
+			element.animate({"background-color" : "#A1D490", "color" : "#248F00"}, 1000, function() {
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+			})
+		} else if (parseFloat(oldValue) > parseFloat(newValue)) {
+			element.animate({"background-color" : "#F7B6A1", "color" : "#FA7246"}, 1000, function() {
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+			})
+		} else {
+			element.animate({"background-color" : "#FFFC9E", "color" : "#FFDD00"}, 1000, function() {
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+			})
+		}
+	}
+	element.text(newValue)
+}

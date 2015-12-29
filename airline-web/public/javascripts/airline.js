@@ -32,9 +32,10 @@ function updateAirlineInfo(airlineId) {
 	
 	
 function refreshTopBar(airline) {
-	$("#balance").text(airline.balance)
-	$("#reputation").text(airline.reputation + "(" + getAirlineCategory(airline.reputation) + ")")
-	$("#serviceQuality").text(airline.serviceQuality)
+	changeColoredElementValue($("#balance"), airline.balance)
+	changeColoredElementValue($("#reputation"), airline.reputation)
+	changeColoredElementValue($("#serviceQuality"), airline.serviceQuality)
+	$("#reputationLevel").text("(" + getAirlineCategory(airline.reputation) + ")")
 }
 
 function loadAirlines() {

@@ -43,6 +43,7 @@
 div.label, span.label, div.header, span.header {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
+	border-radius: 3px 3px 3px 3px;
 	color: #454544;
 	text-decoration: none;
 	font-size: 12px;
