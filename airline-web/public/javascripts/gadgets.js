@@ -119,7 +119,7 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 
 function changeColoredElementValue(element, newValue) {
 	var oldValue = element.text()
-	if ($.isNumeric(oldValue) && $.isNumeric(newValue)) { //only do coloring for numeric values
+	if (!element.is(':animated') && $.isNumeric(oldValue) && $.isNumeric(newValue)) { //only do coloring for numeric values
 		var originalColor = element.css("color")
 		var originalBackgroundColor = element.css("background-color")
 		
