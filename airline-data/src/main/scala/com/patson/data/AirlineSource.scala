@@ -302,4 +302,16 @@ object AirlineSource {
       
   }
   
+  def deleteGeneratedAirlines(fromId : Int) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_TABLE + " WHERE id >= ?")
+        preparedStatement.setInt(1, fromId)
+        val updateCount = preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
 }

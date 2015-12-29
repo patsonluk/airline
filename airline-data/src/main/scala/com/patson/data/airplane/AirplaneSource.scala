@@ -189,6 +189,12 @@ object AirplaneSource {
           preparedStatement.setInt(5, airplane.depreciationRate)
           preparedStatement.setInt(6, airplane.value)
           updateCount += preparedStatement.executeUpdate()
+          
+          val generatedKeys = preparedStatement.getGeneratedKeys
+          if (generatedKeys.next()) {
+            val generatedId = generatedKeys.getInt(1)
+            airplane.id = generatedId //assign id back to the airplane
+          }
       }
       connection.commit()
       preparedStatement.close()

@@ -10,7 +10,7 @@ import com.patson.init.AirportFeaturePatcher
 
 
 object Test extends App {
-  AirportFeaturePatcher.patchFeatures()
+  
 }
 
 

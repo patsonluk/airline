@@ -232,7 +232,7 @@ object GeoDataGenerator extends App {
         println(citites.size + " cities")
         
         val airportResult = adjustAirportByRunway(rawAirportResult.filter { airport => 
-             airport.iata != "" && airport.name.toLowerCase().contains(" airport")
+             airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
           }, runwayResult)
         
         val airportsSortedByLongitude = airportResult.sortBy(_.longitude)

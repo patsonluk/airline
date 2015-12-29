@@ -128,13 +128,13 @@ object LinkSource {
       preparedStatement.setInt(13, frequency)
       
       val updateCount = preparedStatement.executeUpdate()
-      println("Saved " + updateCount + " link!")
+      //println("Saved " + updateCount + " link!")
       
       if (updateCount > 0) {
         val generatedKeys = preparedStatement.getGeneratedKeys
         if (generatedKeys.next()) {
           val generatedId = generatedKeys.getInt(1)
-          println("Id is " + generatedId)
+        //  println("Id is " + generatedId)
           //try to save assigned airplanes if any
           updateAssignedPlanes(generatedId, airplanes)
           return Some(generatedId)

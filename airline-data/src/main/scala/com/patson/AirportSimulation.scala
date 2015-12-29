@@ -151,7 +151,7 @@ object AirportSimulation {
             airport.setAirlineLoyalty(airlineId, existingLoyalty - loyaltyAdjustment)
           }
         }
-        println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
+        //println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
       }
     }
   }

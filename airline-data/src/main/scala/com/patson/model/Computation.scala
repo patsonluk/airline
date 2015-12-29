@@ -2,6 +2,7 @@ package com.patson.model
 
 import com.patson.model.airplane._
 import com.patson.data.CycleSource
+import com.patson.Util
 
 object Computation {
   //distance vs max speed
@@ -55,6 +56,10 @@ object Computation {
       case n if (n >= 3) => 200
       case _ => 0
     }
+  }
+  
+  def calculateDistance(fromAirport : Airport, toAirport : Airport) : Int = {
+    Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   }
   
   def getFlightType(fromAirport : Airport, toAirport : Airport) = { //need quick calculation

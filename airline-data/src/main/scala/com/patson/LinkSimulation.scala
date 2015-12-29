@@ -89,7 +89,7 @@ object LinkSimulation {
     val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - depreciation
 
     val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, maintenanceCost, depreciation, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
-    println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
+    //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     result
   }
   

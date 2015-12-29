@@ -37,17 +37,21 @@ object MainSimulation extends App {
   def mainFlow() = {
     import actorSystem.dispatcher
     val actor = actorSystem.actorOf(Props[MainSimulationActor])
-    actorSystem.scheduler.schedule(Duration.Zero, Duration(1, TimeUnit.MINUTES), actor, Start)
+    actorSystem.scheduler.schedule(Duration.Zero, Duration(2, TimeUnit.MINUTES), actor, Start)
   }
 
   
   def startCycle(cycle : Int) = {
+      val cycleStart = System.currentTimeMillis()
       val linkResult : List[LinkConsumptionDetails] = LinkSimulation.linkSimulation(cycle)
       AirportSimulation.airportSimulation(cycle, linkResult)
       AirplaneSimulation.airplaneSimulation(cycle)
       AirlineSimulation.airlineSimulation(cycle, linkResult)
       //notify the websockets via EventStream
       SimulationEventStream.publish(CycleCompleted(cycle), None)
+      val cycleEnd = System.currentTimeMillis()
+      
+      println("cycle " + cycle + " spent " + (cycleEnd - cycleStart) / 1000 + " secs")
   }
   
   
