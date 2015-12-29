@@ -61,7 +61,11 @@ object AirlineSimulation {
                   airline.setServiceQuality(currentServiceQuality + SERVICE_DELTA)
                 } 
               } else {
-                airline.setServiceQuality(targetServiceQuality) //drop right the way to the target level
+                if (currentServiceQuality - SERVICE_DELTA <= targetServiceQuality) {
+                  airline.setServiceQuality(targetServiceQuality) 
+                } else {
+                  airline.setServiceQuality(currentServiceQuality - SERVICE_DELTA)
+                }
               }
            } 
         }
