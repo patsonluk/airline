@@ -13,11 +13,7 @@ object AirlineSource {
       //open the hsqldb
       val connection = Meta.getConnection() 
       try {
-        var queryString = "SELECT id, name FROM " + AIRLINE_TABLE + " a"
-        if (fullLoad) {
-          queryString = "SELECT a.id AS id, a.name AS name, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
-        }
-        
+        var queryString = "SELECT a.id AS id, a.name AS name, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
         
         if (!criteria.isEmpty) {
           queryString += " WHERE "
@@ -40,13 +36,11 @@ object AirlineSource {
         while (resultSet.next()) {
           val airline = Airline(resultSet.getString("name"))
           airline.id = resultSet.getInt("id")
-          if (fullLoad) {
-            airline.setBalance(resultSet.getLong("balance"))
-            airline.setReputation(resultSet.getDouble("reputation"))
-            airline.setServiceQuality(resultSet.getDouble("service_quality"))
-            airline.setServiceFunding(resultSet.getInt("service_funding"))
-            airline.setMaintainenceQuality(resultSet.getDouble("maintenance_quality"))
-          }
+          airline.setBalance(resultSet.getLong("balance"))
+          airline.setReputation(resultSet.getDouble("reputation"))
+          airline.setServiceQuality(resultSet.getDouble("service_quality"))
+          airline.setServiceFunding(resultSet.getInt("service_funding"))
+          airline.setMaintainenceQuality(resultSet.getDouble("maintenance_quality"))
           
           airlines += airline
         }

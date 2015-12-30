@@ -2,9 +2,20 @@ package com.patson
 
 import scala.util.Random
 import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 
 object Util {
+  private[this] val GUASSIAN_POOL_SIZE : Int= 1000000
+  private[this] val gaussianPool : Array[Double] = new Array(GUASSIAN_POOL_SIZE) 
+  
+  println("Generating Guassian pool...")
+  for (i <- 0 until GUASSIAN_POOL_SIZE) {
+    gaussianPool(i) = Random.nextGaussian()
+  }
+  
+  println("Finished generating pool of " + GUASSIAN_POOL_SIZE)
+  
   def calculateDistance(lat1InDegree : Double, lon1InDegree: Double, lat2InDegree : Double, lon2InDegree : Double) = {
     val lat1 = Math.toRadians(lat1InDegree)
     val lat2 = Math.toRadians(lat2InDegree)
@@ -31,7 +42,8 @@ object Util {
     
     //squeeze it to cutoff as boundary : from (-cutoff,cutoff) to (-0.5, 0.5), then shift center from 0.0 to center, such that boundary is (cutoff - 0.5, cutoff + 0.5)
     //val value = Random.nextGaussian() / (2 * cutoff)  + center
-    val randomGaussian = Random.nextGaussian();
+    //val randomGaussian = Random.nextGaussian();
+    val randomGaussian = gaussianPool(Random.nextInt(GUASSIAN_POOL_SIZE))
     if (randomGaussian < -1 * cutoff || randomGaussian > cutoff) { //regen
       getBellRandom(center, boundaryFromCenter)
     } else { //within cutoff, now scale and shift to desired value

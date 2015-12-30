@@ -17,17 +17,15 @@ object AirlineGenerator extends App {
   mainFlow
   
   def mainFlow() = {
-    val airlines = generateAirlines(100)
-    airlines.foreach {
-      println
-    }
+    generateAirlines(150)
+    
     println("DONE Creating airlines")
     
     actorSystem.shutdown()
   }
   
-  def generateAirlines(count: Int) = {
-    val airlines = scala.collection.mutable.Map[Airline, AirlineBase]()
+  def generateAirlines(count: Int) : Unit = {
+    //val airlines = scala.collection.mutable.Map[Airline, AirlineBase]()
     //val airlineBases = ListBuffer[AirlineBase]()
     val airports = AirportSource.loadAllAirports(true).sortBy { _.power }
     val topAirports = airports.takeRight(count)
@@ -45,7 +43,7 @@ object AirlineGenerator extends App {
       newAirline.setMaintainenceQuality(100)
       
       val airlineBase = AirlineBase(newAirline, baseAirport, 1, 1, true)
-      airlines.put(newAirline, airlineBase)
+      //airlines.put(newAirline, airlineBase)
       
       AirlineSource.saveAirlines(List(newAirline))
       UserSource.setUserAirline(user, newAirline)
@@ -63,8 +61,6 @@ object AirlineGenerator extends App {
       generateLinks(newAirline, baseAirport, airports.filter { airport => airport.zone != baseAirport.zone }, 50, 5, models)
       
     }
-    
-    airlines
   }
   
   def generateLinks(airline : Airline, fromAirport : Airport,  toAirports : List[Airport], poolSize: Int, linkCount : Int, airplaneModels : List[Model]) {
@@ -135,6 +131,7 @@ object AirlineGenerator extends App {
       }
     }
     
-    newLinks.foreach { link => LinkSource.saveLink(link) }
+    LinkSource.saveLinks(newLinks.toList)
+    //newLinks.foreach { link => LinkSource.saveLink(link) }
   }
 }

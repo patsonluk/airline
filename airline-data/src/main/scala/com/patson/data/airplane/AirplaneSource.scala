@@ -72,12 +72,12 @@ object AirplaneSource {
     
   }
   
-  def loadAirplanesWithAssignedLinkByOwner(ownerId : Int)  : List[(Airplane, Option[Link])] = {
-    loadAirplanesWithAssignedLinkByCriteria(List(("owner", ownerId)))
+  def loadAirplanesWithAssignedLinkByOwner(ownerId : Int, fullLoad : Boolean = true)  : List[(Airplane, Option[Link])] = {
+    loadAirplanesWithAssignedLinkByCriteria(List(("owner", ownerId)), fullLoad)
   }
   
-  def loadAirplanesWithAssignedLinkByAirplaneId(airplaneId : Int) : Option[(Airplane, Option[Link])] = {
-    val result = loadAirplanesWithAssignedLinkByCriteria(List(("a.id", airplaneId)))
+  def loadAirplanesWithAssignedLinkByAirplaneId(airplaneId : Int, fullLoad : Boolean = true) : Option[(Airplane, Option[Link])] = {
+    val result = loadAirplanesWithAssignedLinkByCriteria(List(("a.id", airplaneId)), fullLoad)
     if (result.isEmpty) {
       None
     } else {
@@ -85,7 +85,7 @@ object AirplaneSource {
     }
    }
   
-  def loadAirplanesWithAssignedLinkByCriteria(criteria : List[(String, Any)]) : List[(Airplane, Option[Link])]= {
+  def loadAirplanesWithAssignedLinkByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) : List[(Airplane, Option[Link])]= {
     val connection = Meta.getConnection()
       var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, range, price, constructed_cycle, condition, depreciation_rate, value, la.link  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + LINK_ASSIGNMENT_TABLE + " la ON a.id = la.airplane"  
       
@@ -123,7 +123,12 @@ object AirplaneSource {
         airplane.id = resultSet.getInt("id")
         if (resultSet.getObject("link") != null) {
           val linkId = resultSet.getInt("link")
-          val assignedLink = LinkSource.loadLinkById(linkId)
+          val assignedLink =
+            if (fullLoad) {
+              LinkSource.loadLinkById(linkId)
+            } else {
+              Some(Link.fromId(linkId))
+            }
           airplanesWithAssignedLink.append((airplane, assignedLink))
         } else{
           airplanesWithAssignedLink.append((airplane, None))

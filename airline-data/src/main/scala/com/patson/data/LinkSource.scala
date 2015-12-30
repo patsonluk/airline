@@ -72,8 +72,8 @@ object LinkSource {
     }
   }
   
-  def loadLinkById(linkId : Int) : Option[Link] = {
-    val result = loadLinksByCriteria(List(("id", linkId)), true)
+  def loadLinkById(linkId : Int, fullLoad : Boolean = true) : Option[Link] = {
+    val result = loadLinksByCriteria(List(("id", linkId)), fullLoad)
     if (result.isEmpty) {
       None
     } else {
@@ -146,6 +146,51 @@ object LinkSource {
       connection.close()
     }
   }
+  
+  def saveLinks(links : List[Link]) : Int = {
+     //open the hsqldb
+    val connection = Meta.getConnection()
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    var updateCount = 0
+    connection.setAutoCommit(false)
+    try {
+      links.foreach { link =>
+        preparedStatement.setInt(1, link.from.id)
+        preparedStatement.setInt(2, link.to.id)
+        preparedStatement.setInt(3, link.airline.id)
+        preparedStatement.setInt(4, link.price(ECONOMY))
+        preparedStatement.setInt(5, link.price(BUSINESS))
+        preparedStatement.setInt(6, link.price(FIRST))
+        preparedStatement.setDouble(7, link.distance)
+        preparedStatement.setInt(8, link.capacity(ECONOMY))
+        preparedStatement.setInt(9, link.capacity(BUSINESS))
+        preparedStatement.setInt(10, link.capacity(FIRST))
+        preparedStatement.setInt(11, link.rawQuality)
+        preparedStatement.setInt(12, link.duration)
+        preparedStatement.setInt(13, link.frequency)
+        
+        updateCount += preparedStatement.executeUpdate()
+        //println("Saved " + updateCount + " link!")
+        
+        if (updateCount > 0) {
+          val generatedKeys = preparedStatement.getGeneratedKeys
+          if (generatedKeys.next()) {
+            val generatedId = generatedKeys.getInt(1)
+            link.id = generatedId
+          }
+        }
+      }
+      connection.commit()
+    } finally {
+      preparedStatement.close()
+      connection.close()
+    }
+    links.foreach { link =>
+      updateAssignedPlanes(link.id, link.getAssignedAirplanes())
+    }
+    updateCount
+  }
+  
   def updateLink(link : Link) = {
     //open the hsqldb
     val connection = Meta.getConnection()
