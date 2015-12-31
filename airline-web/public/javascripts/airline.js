@@ -204,10 +204,18 @@ function refreshFlightPath(link) {
 }
 
 function getLinkColor(profit, revenue) {
-   if (profit !== undefined && revenue > 0) {
-	   var profitFactor = profit / revenue
+   if (profit !== undefined) {
 	   var maxProfitFactor = 0.5
 	   var minProfitFactor = -0.5
+	   var profitFactor
+	   if (revenue > 0) {
+		   profitFactor = profit / revenue
+	   } else if (profit < 0) { //revenue 0, losing money
+		   profitFactor = minProfitFactor
+	   } else {
+		   profitFactor = 0
+	   }
+	   
 	   if (profitFactor > maxProfitFactor) {
 		   profitFactor = maxProfitFactor
 	   } else if (profitFactor < minProfitFactor) {
@@ -231,7 +239,7 @@ function getLinkColor(profit, revenue) {
 	   var greenHexString = parseInt(greenHex).toString(16)
 	   if (greenHexString.length == 1) { greenHexString = "0" + greenHexString }
 	   return colorHex = "#" + redHexString + greenHexString + "20"
-   } else {
+   } else  { //no history yet
 	   return "#DCDC20"
    }
 }
