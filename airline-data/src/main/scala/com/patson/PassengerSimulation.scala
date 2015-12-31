@@ -16,6 +16,7 @@ import scala.concurrent.Future
 import com.patson.data.AirportSource
 import com.patson.data.LinkSource
 import com.patson.model._
+import scala.collection.mutable.ArrayBuffer
 
 object PassengerSimulation extends App {
 
@@ -190,10 +191,12 @@ object PassengerSimulation extends App {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], links : List[Link]) : Future[Map[PassengerGroup, Map[Airport, Route]]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link]) : Future[Map[PassengerGroup, Map[Airport, Route]]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
+    
+    val links = linksList.toArray
     
      //Step 0: find all vertex
     val allVertices = Set[Airport]()
@@ -210,8 +213,12 @@ object PassengerSimulation extends App {
       case(passengerGroup, toAirports) =>
         val linkClass = passengerGroup.preference.linkClass
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
-        val linkConsiderations = ListBuffer[LinkConsideration]() 
-        links.withFilter { link =>
+        val linkConsiderations = ArrayBuffer[LinkConsideration]()
+        
+        var walker = 0
+        while (walker < links.length) {
+          val link = links(walker)
+          walker += 1
             //see if there are any seats for that class left
             val hasSeatsLeft = link.availableSeats(linkClass) > 0
             if (hasSeatsLeft) {
@@ -221,19 +228,17 @@ object PassengerSimulation extends App {
               //println("Awareness from reputation " + airlineAwarenessFromReputation)
               val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
               
-              airlineAwareness > Random.nextDouble() * AirlineAppeal.MAX_AWARENESS
-            } else {
-              false
+              if (airlineAwareness > Random.nextDouble() * AirlineAppeal.MAX_AWARENESS) {
+                var cost = passengerGroup.preference.computeCost(link)
+                //add extra cost for low frequency...lets not make this so complicated now
+    //            if (link.frequency < 7) {
+    //              cost *= 1 + (1.0 / link.frequency) //at most double the cost if it's only once per weak
+    //            }
+                linkConsiderations += LinkConsideration(link, cost, linkClass, false)
+                linkConsiderations += LinkConsideration(link, cost, linkClass, true) //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly! 
+              }
             }
-          }.foreach { link =>
-            var cost = passengerGroup.preference.computeCost(link)
-            //add extra cost for low frequency...lets not make this so complicated now
-//            if (link.frequency < 7) {
-//              cost *= 1 + (1.0 / link.frequency) //at most double the cost if it's only once per weak
-//            }
-            linkConsiderations += LinkConsideration(link, cost, linkClass, false)
-            linkConsiderations += LinkConsideration(link, cost, linkClass, true) //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly! 
-          }
+        }
         
 //        linksWithCost.foreach {
 //          case(link, cost) => println(link.airline.name + " price " + link.price + " cost " + cost + passengerGroup.preference)
@@ -254,7 +259,7 @@ object PassengerSimulation extends App {
 //        println()
         //then find the shortest route based on the cost
         
-        val routeMap = findShortestRoute(passengerGroup.fromAirport, toAirports, allVertices, linkConsiderations.toList, 4)
+        val routeMap = findShortestRoute(passengerGroup.fromAirport, toAirports, allVertices, linkConsiderations, 4)
         //if (!routeMap.isEmpty) { println(routeMap) }
         (passengerGroup, routeMap)
     }
@@ -361,7 +366,7 @@ object PassengerSimulation extends App {
    * Returns a map with valid route in format of
    * Map[toAiport, Route]
    */
-  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVerticesSource: Set[Airport], linkConsiderations : List[LinkConsideration], maxHop : Int) : Map[Airport, Route] = {
+  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVerticesSource: Set[Airport], linkConsiderations : Seq[LinkConsideration], maxHop : Int) : Map[Airport, Route] = {
    
 
     //     // Step 1: initialize graph
@@ -388,8 +393,12 @@ object PassengerSimulation extends App {
 //               distance[v] := distance[u] + w
 //               predecessor[v] := u
     for (i <- 0 until maxHop) {
-      val updatingLinks = ListBuffer[LinkConsideration]()
-      for (linkConsideration <- linkConsiderations) {
+      val updatingLinks = ArrayBuffer[LinkConsideration]()
+      var linkWalker = 0
+      while (linkWalker < linkConsiderations.length) {
+        val linkConsideration = linkConsiderations(linkWalker)
+        linkWalker += 1
+        
         if (linkConsideration.from.id == from.id || predecessorMap.contains(linkConsideration.from.id)) {
           var connectionCost = 0.0
           if (linkConsideration.from.id != from.id) { //then it should be a connection flight

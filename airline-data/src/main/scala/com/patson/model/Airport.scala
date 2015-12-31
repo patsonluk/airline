@@ -3,10 +3,11 @@ package com.patson.model
 import com.patson.model.airplane.Model
 import com.patson.model.airplane.Model.Type
 import scala.collection.mutable.ListBuffer
+import scala.collection.JavaConversions._
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
   val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
-  private[this] val airlineAppeals = scala.collection.mutable.Map[Int, AirlineAppeal]()
+  private[this] val airlineAppeals = new java.util.HashMap[Int, AirlineAppeal]()//scala.collection.mutable.Map[Int, AirlineAppeal]()
   private[this] var airlineAppealsLoaded = false
   private[this] val slotAssignments = scala.collection.mutable.Map[Int, Int]()
   private[this] var slotAssignmentsLoaded = false
@@ -55,13 +56,23 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    airlineAppeals.get(airlineId).fold(0.0)(_.loyalty)
+    val appeal = airlineAppeals.get(airlineId)
+    if (appeal != null) {
+      appeal.loyalty
+    } else {
+      0
+    }
   }
   def getAirlineAwareness(airlineId : Int) : Double = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    airlineAppeals.get(airlineId).fold(0.0)(_.awareness)
+    val appeal = airlineAppeals.get(airlineId)
+    if (appeal != null) {
+      appeal.awareness
+    } else {
+      0
+    }
   }
   
   def isAirlineAppealsInitialized = airlineAppealsLoaded
