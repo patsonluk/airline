@@ -105,12 +105,15 @@ object AirlineSource {
   def adjustAirlineBalance(airlineId : Int, delta : Long) = {
 	    this.synchronized {
 	      val connection = Meta.getConnection()
-	      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = balance + ? WHERE airline = ?")
-	      updateStatement.setLong(1, delta)
-	      updateStatement.setInt(2, airlineId)
-	      updateStatement.executeUpdate()
-	      updateStatement.close()
-	      connection.close()
+	      try {
+  	      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = balance + ? WHERE airline = ?")
+  	      updateStatement.setLong(1, delta)
+  	      updateStatement.setInt(2, airlineId)
+  	      updateStatement.executeUpdate()
+  	      updateStatement.close()
+	      } finally {
+  	      connection.close()
+	      }
 	    }
 	  }
   
@@ -118,16 +121,44 @@ object AirlineSource {
   def saveAirlineInfo(airline : Airline) = {
     this.synchronized {
       val connection = Meta.getConnection()
-      val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ? WHERE airline = ?")
-      updateStatement.setLong(1, airline.getBalance())
-      updateStatement.setDouble(2, airline.getServiceQuality())
-      updateStatement.setInt(3, airline.getServiceFunding())
-      updateStatement.setDouble(4, airline.getMaintenanceQuality())
-      updateStatement.setDouble(5, airline.getReputation())
-      updateStatement.setInt(6, airline.id)
-      updateStatement.executeUpdate()
-      updateStatement.close()
-      connection.close()
+      try {
+        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ? WHERE airline = ?")
+        updateStatement.setLong(1, airline.getBalance())
+        updateStatement.setDouble(2, airline.getServiceQuality())
+        updateStatement.setInt(3, airline.getServiceFunding())
+        updateStatement.setDouble(4, airline.getMaintenanceQuality())
+        updateStatement.setDouble(5, airline.getReputation())
+        updateStatement.setInt(6, airline.id)
+        updateStatement.executeUpdate()
+        updateStatement.close()
+      } finally {
+        connection.close()
+      }
+    }
+  }
+  
+  def saveAirlineInfo(airlines : List[Airline]) = {
+    this.synchronized {
+      val connection = Meta.getConnection()
+      
+      try {
+        connection.setAutoCommit(false)
+        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ? WHERE airline = ?")
+          
+        airlines.foreach { airline =>
+          updateStatement.setLong(1, airline.getBalance())
+          updateStatement.setDouble(2, airline.getServiceQuality())
+          updateStatement.setInt(3, airline.getServiceFunding())
+          updateStatement.setDouble(4, airline.getMaintenanceQuality())
+          updateStatement.setDouble(5, airline.getReputation())
+          updateStatement.setInt(6, airline.id)
+          updateStatement.executeUpdate()
+        }
+        updateStatement.close()
+        connection.commit()
+      } finally {
+        connection.close()
+      }
     }
   }
   

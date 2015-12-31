@@ -74,9 +74,9 @@ object AirlineSimulation {
         airlineProfit -= AIRLINE_FIXED_COST
         airline.setBalance(airline.getBalance() + airlineProfit)
         
-        AirlineSource.saveAirlineInfo(airline)
-        
         println(airline + " profit is: " + airlineProfit + " new balance is " + airline.getBalance() + " reputation " +  airline.getReputation())
     }
+    
+    AirlineSource.saveAirlineInfo(allAirlines)
   }
 }
