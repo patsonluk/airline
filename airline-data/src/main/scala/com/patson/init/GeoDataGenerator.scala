@@ -325,25 +325,13 @@ object GeoDataGenerator extends App {
         
         AirportSource.deleteAllAirports()
         AirportSource.saveAirports(airports)
-        
-        
-        //Goal : map all city to some airport
-        //Big airport = 200 km radius
-        //Medium airport = 100 km radius
-        //Small airport = 50 km radius
-        
-        //1. iterate thru city for airports within reaFch. the country code SHOULD BE the same. Pick serving airport with precedence of: 1. Size, 2. Distance
-        //2. for city that has no match, find the closest airport with country code match (what if a city still does not match?)
-        //3. now airport should have a list of cities it serves, calculate the total pop
 
-        
+        //patch features
+        AirportFeaturePatcher.patchFeatures()
         
       case Failure(failure) => println()
     }
     Await.result(combinedFuture, Duration.Inf)
-    
-    //patch features
-    AirportFeaturePatcher.patchFeatures()
   }
   
   

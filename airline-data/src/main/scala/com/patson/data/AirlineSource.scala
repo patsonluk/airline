@@ -3,6 +3,7 @@ package com.patson.data
 import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
 import com.patson.model._
+import java.sql.Statement
 
 object AirlineSource {
   def loadAllAirlines(fullLoad : Boolean = false) = {
@@ -69,7 +70,7 @@ object AirlineSource {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_TABLE + "(name) VALUES(?)")
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_TABLE + "(name) VALUES(?)", Statement.RETURN_GENERATED_KEYS)
           
       airlines.foreach { 
         airline =>

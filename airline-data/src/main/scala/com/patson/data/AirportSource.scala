@@ -5,6 +5,7 @@ import com.patson.data.Constants._
 import com.patson.model._
 import scala.collection.mutable.Map
 import com.patson.model.AirlineAppeal
+import java.sql.Statement
 
 object AirportSource {
   def loadAllAirports(fullLoad : Boolean = false) = {
@@ -200,7 +201,7 @@ object AirportSource {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, zone, airport_size, power, population, slots)  VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, zone, airport_size, power, population, slots)  VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     
       connection.setAutoCommit(false)
       airports.foreach { 

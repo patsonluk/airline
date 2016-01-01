@@ -15,7 +15,7 @@ object ModelSource {
       //open the hsqldb
       val connection = Meta.getConnection() 
       
-      var queryString = "SELECT id, name, capacity, fuel_burn, speed, range, price FROM " + AIRPLANE_MODEL_TABLE
+      var queryString = "SELECT id, name, capacity, fuel_burn, speed, fly_range, price FROM " + AIRPLANE_MODEL_TABLE
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -40,7 +40,7 @@ object ModelSource {
 //                                             "capacity INTEGER, " + 
 //                                             "fuel_burn INTEGER, " +
 //                                             "speed INTEGER, " +
-//                                             "range INTEGER, " +
+//                                             "fly_range INTEGER, " +
 //                                             "price INTEGER)")
       val models = new ListBuffer[Model]()
       while (resultSet.next()) {
@@ -60,7 +60,7 @@ object ModelSource {
           resultSet.getInt("capacity"),
           resultSet.getInt("fuel_burn"),
           resultSet.getInt("speed"),
-          resultSet.getInt("range"),
+          resultSet.getInt("fly_range"),
           resultSet.getInt("price")
           )
      model.id = resultSet.getInt("id")
@@ -98,7 +98,7 @@ object ModelSource {
   def saveModels(models : List[Model]) = {
     val connection = Meta.getConnection()
         
-        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_MODEL_TABLE + "(name, capacity, fuel_burn, speed, range, price) VALUES(?,?,?,?,?,?)")
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_MODEL_TABLE + "(name, capacity, fuel_burn, speed, fly_range, price) VALUES(?,?,?,?,?,?)")
         
         connection.setAutoCommit(false)
         models.foreach { 

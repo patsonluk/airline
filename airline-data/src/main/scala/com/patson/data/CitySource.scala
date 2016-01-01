@@ -1,9 +1,9 @@
 package com.patson.data
 
 import scala.collection.mutable.ListBuffer
-
 import com.patson.data.Constants._
 import com.patson.model._
+import java.sql.Statement
 
 object CitySource {
   def loadAllCities() = {
@@ -87,7 +87,7 @@ object CitySource {
   def saveCities(cities : List[City]) = {
     val connection = Meta.getConnection()
     try {    
-        val preparedStatement = connection.prepareStatement("INSERT INTO " + CITY_TABLE + "(name, latitude, longitude, country_code, population, income) VALUES(?,?,?,?,?,?)")
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + CITY_TABLE + "(name, latitude, longitude, country_code, population, income) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
         
         connection.setAutoCommit(false)
         cities.foreach { 

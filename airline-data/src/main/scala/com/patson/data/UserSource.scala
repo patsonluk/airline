@@ -5,6 +5,7 @@ import com.patson.data.Constants._
 import scala.collection.mutable.ListBuffer
 import java.util.Calendar
 import java.text.SimpleDateFormat
+import java.sql.Statement
 
 object UserSource {
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -127,7 +128,7 @@ object UserSource {
   def saveUser(user: User) = {
     val connection = Meta.getConnection()
     try {    
-        val preparedStatement = connection.prepareStatement("INSERT INTO " + USER_TABLE + "(user_name, email, status) VALUES(?,?,?)")
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + USER_TABLE + "(user_name, email, status) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS)
         preparedStatement.setString(1, user.userName)
         preparedStatement.setString(2, user.email)
         preparedStatement.setString(3, user.status.toString)

@@ -8,12 +8,13 @@ import com.patson.model.Airline
 import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
 import com.patson.data.airplane.ModelSource
+import java.sql.Statement
 
 object AirplaneSource {
   def loadAirplanesCriteria(criteria : List[(String, Any)]) = {
       val connection = Meta.getConnection()
       
-      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, range, price, constructed_cycle, condition, a.depreciation_rate, a.value FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id" 
+      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, airplane_condition, a.depreciation_rate, a.value FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id" 
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -38,11 +39,11 @@ object AirplaneSource {
           resultSet.getInt("capacity"),
           resultSet.getInt("fuel_burn"),
           resultSet.getInt("speed"),
-          resultSet.getInt("range"),
+          resultSet.getInt("fly_range"),
           resultSet.getInt("price"),
           resultSet.getInt("model")
           )
-        val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
+        val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
         airplane.id = resultSet.getInt("id")
         airplanes.append(airplane)
       }
@@ -87,7 +88,7 @@ object AirplaneSource {
   
   def loadAirplanesWithAssignedLinkByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) : List[(Airplane, Option[Link])]= {
     val connection = Meta.getConnection()
-      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, range, price, constructed_cycle, condition, depreciation_rate, value, la.link  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + LINK_ASSIGNMENT_TABLE + " la ON a.id = la.airplane"  
+      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, airplane_condition, depreciation_rate, value, la.link  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + LINK_ASSIGNMENT_TABLE + " la ON a.id = la.airplane"  
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -112,14 +113,14 @@ object AirplaneSource {
           resultSet.getInt("capacity"),
           resultSet.getInt("fuel_burn"),
           resultSet.getInt("speed"),
-          resultSet.getInt("range"),
+          resultSet.getInt("fly_range"),
           resultSet.getInt("price"),
           resultSet.getInt("model")
           )
           
       
 
-        val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
+        val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
         airplane.id = resultSet.getInt("id")
         if (resultSet.getObject("link") != null) {
           val linkId = resultSet.getInt("link")
@@ -183,7 +184,7 @@ object AirplaneSource {
       
     try {
       connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, condition, depreciation_rate, value) VALUES(?,?,?,?,?,?)")
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, airplane_condition, depreciation_rate, value) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       
       airplanes.foreach { 
         airplane =>
@@ -216,7 +217,7 @@ object AirplaneSource {
       
     try {
       connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET owner = ?, condition = ?, depreciation_rate = ?, value = ? WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET owner = ?, airplane_condition = ?, depreciation_rate = ?, value = ? WHERE id = ?")
       
       airplanes.foreach { 
         airplane =>

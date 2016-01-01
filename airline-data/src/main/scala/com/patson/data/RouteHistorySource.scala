@@ -4,6 +4,7 @@ import scala.collection.mutable.ListBuffer
 import java.sql.DriverManager
 import com.patson.model._
 import java.sql.PreparedStatement
+import java.sql.Statement
 
 object RouteHistorySource {
   def loadVipRoutesByCriteria(criteria : List[(String, Any)]) : List[Route]= {
@@ -63,7 +64,7 @@ object RouteHistorySource {
     val connection = Meta.getConnection()
     try {    
         
-        val routePreparedStatement = connection.prepareStatement("INSERT INTO " + VIP_ROUTE_TABLE + "(cycle) VALUES(?)")
+        val routePreparedStatement = connection.prepareStatement("INSERT INTO " + VIP_ROUTE_TABLE + "(cycle) VALUES(?)", Statement.RETURN_GENERATED_KEYS)
         
         connection.setAutoCommit(false)
         routes.foreach { route =>

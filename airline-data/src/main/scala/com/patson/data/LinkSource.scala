@@ -5,6 +5,7 @@ import java.sql.DriverManager
 import com.patson.model.airplane.Airplane
 import java.sql.PreparedStatement
 import com.patson.model._
+import java.sql.Statement
 
 object LinkSource {
   def loadLinksByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
@@ -110,7 +111,7 @@ object LinkSource {
   def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
     try {
       preparedStatement.setInt(1, fromAirportId)
@@ -150,7 +151,7 @@ object LinkSource {
   def saveLinks(links : List[Link]) : Int = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     var updateCount = 0
     connection.setAutoCommit(false)
     try {

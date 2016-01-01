@@ -46,7 +46,11 @@ object Constants {
   val USER_AIRLINE_TABLE = "user_airline"
   val VIP_ROUTE_TABLE = "vip_route"
   val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"
-  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
-  val DATABASE_USER = "sa"
-  val DB_DRIVER = "org.sqlite.JDBC"
+//  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
+//  val DB_DRIVER = "org.sqlite.JDBC"
+  val DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/airline?useSSL=false"
+  val DB_DRIVER = "com.mysql.jdbc.Driver"
+  val DATABASE_USER = "sa" 
+  val DATABASE_PASSWORD = "admin"
+  
 }
