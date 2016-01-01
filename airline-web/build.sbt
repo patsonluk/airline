@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   ws,
   specs2 % Test,
   "com.typesafe.akka" %% "akka-remote" % "2.3.11",
-  "default" %% "airline-data" % "1.0"
+  "default" %% "airline-data" % "1.1-SNAPSHOT"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"

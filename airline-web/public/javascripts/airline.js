@@ -18,7 +18,7 @@ function updateAirlineInfo(airlineId) {
 			$("#maintenanceQuality").val(airline.maintenanceQuality)
 			plotMaintenanceQualityGauge($("#maintenanceQualityGauge"), $("#maintenanceQuality"))
 	    	activeAirline = airline
-	    	updateAirplaneList($("#airplaneList"))
+	    	updateAirplaneList()
 	    	updateLinksInfo()
 	    	updateAirportMarkers(airline)
 	    },

@@ -35,7 +35,8 @@ function addAirplane(modelId, quantity) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	updateAllPanels(airlineId)
+	    	refreshPanels(airlineId)
+	    	updateAirplaneList()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -51,7 +52,8 @@ function sellAirplane(airplaneId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	updateAllPanels(activeAirline.id)
+	    	refreshPanels(activeAirline.id)
+	    	updateAirplaneList()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -76,7 +78,8 @@ function updateModelInfo() {
 	  		
 }
 
-function updateAirplaneList(airplaneList) {
+function updateAirplaneList() {
+	var airplaneList = $("#airplaneList")
 	airplaneList.empty()
 	var airlineId = activeAirline.id
 	$.ajax({
@@ -92,6 +95,7 @@ function updateAirplaneList(airplaneList) {
 	    		aLink.get(0).modelInfo = model //tag the info to the element
 	    		airplaneList.append($("<br/>"))
 	  		});
+	    	
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -107,7 +111,7 @@ function expandAirplaneList(modelInfo) {
 		airplaneList.append($("<br/>"))
 	});
 	
-	$.each(modelInfo.freeAirplanes, function( key, airplane ) {
+	$.each(modelInfo.freeAirplanes, function( key, airplaneId ) {
 		airplaneList.append($("<a href='javascript:void(0)' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
 		airplaneList.append($("<br/>"))
 	});
