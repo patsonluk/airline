@@ -100,7 +100,8 @@ package object controllers {
       JsSuccess(link)
     }
     
-    def writes(link: Link): JsValue = JsObject(List(
+    def writes(link: Link): JsValue = {
+      var json = JsObject(List(
       "id" -> JsNumber(link.id),
       "fromAirportId" -> JsNumber(link.from.id),
       "toAirportId" -> JsNumber(link.to.id),
@@ -126,7 +127,11 @@ package object controllers {
       "toLatitude" -> JsNumber(link.to.latitude),
       "toLongitude" -> JsNumber(link.to.longitude),
       "assignedAirplanes" -> Json.toJson(link.getAssignedAirplanes())))
+      
+      link.getAssignedModel().foreach { model =>
+        json = json + ("modelId" -> JsNumber(model.id))
+      }
+      json
+    }
   }
-  
-  
 }

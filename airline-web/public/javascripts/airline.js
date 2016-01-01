@@ -1,6 +1,6 @@
-var flightPaths = {}
-var flightMarkers = []
-var flightMarkerAnimations = []
+var flightPaths = {} //key: link id, value : { path, shadow }
+var flightMarkers = {} //key: link id, value: { markers : array[], animation}
+//var flightMarkerAnimations = []
 var historyPaths = {}
 var linkHistoryState = "hidden"
 
@@ -90,27 +90,34 @@ function buildBase(airportId, isHeadquarter) {
 	});
 }
 
+function clearMarkerEntry(markerEntry) {
+	//remove all animation intervals
+	window.clearInterval(markerEntry.animation)
+	
+	//remove all markers
+	$.each(markerEntry.markers, function(key, marker) {
+		marker.setMap(null)
+	})
+}
+
+function clearPathEntry(pathEntry) {
+	pathEntry.path.setMap(null)
+	pathEntry.shadow.setMap(null)
+}
+
 //remove and re-add all the links
 function updateLinksInfo() {
-	//remove all animation intervals
-	$.each(flightMarkerAnimations, function( key, value ) {
-		  window.clearInterval(value)
+
+	$.each(flightMarkers, function( linkId, markerEntry ) {
+		clearMarkerEntry(markerEntry)
 	});
 	//remove all links from UI first
-	//remove from Map
-	$.each(flightPaths, function( key, value ) {
-		$.each(value, function(key2, line) {
-			line.setMap(null)
-			})
-		});
+	$.each(flightPaths, function( key, pathEntry ) {
+		clearPathEntry(pathEntry)
+	})
 	
-	$.each(flightMarkers, function( key, value ) {
-		  value.setMap(null)
-		});
-	
-	flightMarkerAnimations = []
 	flightPaths = {}
-	flightMarkers = []
+	flightMarkers = {}
 	
 	//remove from link list
 	$('#linkList').empty()
@@ -168,12 +175,14 @@ function drawFlightPath(link) {
      geodesic: true,
      strokeColor: getLinkColor(link.profit, link.revenue),
      strokeOpacity: 0.6,
-     strokeWeight: 2
+     strokeWeight: 2,
+     frequency : link.frequency,
+     modelId : link.modelId
    });
    
    var icon = "assets/images/icons/airplane.png"
    
-   addFlightMarker(flightPath, link);
+   drawFlightMarker(flightPath, link);
    flightPath.setMap(map)
    
    var shadowPath = new google.maps.Polyline({
@@ -191,14 +200,20 @@ function drawFlightPath(link) {
    
    
    
-   flightPaths[link.id] = [flightPath, shadowPath]
+   flightPaths[link.id] = { path : flightPath, shadow : shadowPath }
 }
 
 function refreshFlightPath(link) {
 	if (flightPaths[link.id]) {
-		$.each(flightPaths[link.id], function(key, line) {
-			line.setOptions({ strokeColor : getLinkColor(link.profit, link.revenue)})
-		})
+		var path = flightPaths[link.id].path
+		if (path.frequency != link.frequency || path.modelId != link.modelId) { //require marker change
+			path.frequency = link.frequency
+			path.modelId = link.modelId
+			
+			drawFlightMarker(path, link)
+		} 
+		path.setOptions({ strokeColor : getLinkColor(link.profit, link.revenue)})
+	
 		//flightPaths[link.id].setOptions({ strokeColor : getLinkColor(link)})
 	}
 }
@@ -247,7 +262,15 @@ function getLinkColor(profit, revenue) {
 
 //Use the DOM setInterval() function to change the offset of the symbol
 //at fixed intervals.
-function addFlightMarker(line, link) {
+function drawFlightMarker(line, link) {
+	var linkId = link.id
+	
+	//clear the old entry first
+	var oldMarkerEntry = flightMarkers[link.id]
+	if (oldMarkerEntry) {
+		clearMarkerEntry(oldMarkerEntry)
+	}
+	
 	if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
 		var from = line.getPath().getAt(0)
 		var to = line.getPath().getAt(1)
@@ -282,12 +305,15 @@ function addFlightMarker(line, link) {
 			    clickable: false
 			});
 			
-			flightMarkers.push(marker)
+			//flightMarkers.push(marker)
 			markersOfThisLink.push(marker)
 		})
 		
+		flightMarkers[linkId] = {} //initialize
+		flightMarkers[linkId].markers = markersOfThisLink
+		
 		var count = 0;
-		flightMarkerAnimations.push(window.setInterval(function() {
+		var animation = window.setInterval(function() {
 			$.each(markersOfThisLink, function(key, marker) { 
 				if (count == marker.nextDepartureFrame) {
 					marker.isActive = true
@@ -309,7 +335,9 @@ function addFlightMarker(line, link) {
 				}
 			})
 			count = (count + 1) % totalIntervals;
-		}, 20));
+		}, 20)
+		
+		flightMarkers[linkId].animation = animation;
 	}
 }
 
@@ -317,11 +345,16 @@ function addFlightMarker(line, link) {
 
 
 function insertLinkToList(link, linkList) {
-	linkList.append($("<a href='javascript:void(0)' onclick='loadLinkDetails(" + link.id + ")'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
+	linkList.append($("<a href='javascript:void(0)' data-link-id='" +  link.id + "' onclick='loadLinkDetails(" + link.id + ")'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
 	linkList.append($("<br/>"))
 }
 
 function loadLinkDetails(linkId) {
+	$("#linkList a.selected").removeClass("selected")
+	//highlight the corresponding elements
+	var selectedListItem = $("#linkList a[data-link-id='" + linkId + "']")
+	selectedListItem.addClass("selected")
+	
 //	$('#airplaneDetails').hide()
 //	$("#linkDetails").show()
 	selectedLink = linkId
@@ -346,6 +379,8 @@ function loadLinkDetails(linkId) {
 	    	$("#linkCurrentDetails").show()
 	    	$("#linkToAirportId").val(link.toAirportId)
 	    	$("#linkFromAirportId").val(link.fromAirportId)
+	    	
+	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -792,9 +827,14 @@ function createLink() {
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
 		    success: function(savedLink) {
-		    	updateAllPanels(activeAirline.id)
 		    	if (savedLink.id) {
-		    		loadLinkDetails(savedLink.id)
+		    		if (!flightPaths[savedLink.id]) { //new link, just redraw everything for now
+		    			updateAllPanels(activeAirline.id)
+		    		} else {
+		    			selectedLink = savedLink.id
+		    			refreshPanels(activeAirline.id)
+		    		}
+		    		
 		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {

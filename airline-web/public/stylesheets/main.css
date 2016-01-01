@@ -141,3 +141,8 @@ div.divider {
 	margin-top: 5px;
 	margin-bottom: 5px;
 }
+
+a.selected, a:hover {
+	border-radius: 3px 3px 3px 3px;
+	background-color: #A1D490;	
+}
