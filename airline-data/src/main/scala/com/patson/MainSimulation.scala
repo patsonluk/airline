@@ -43,6 +43,7 @@ object MainSimulation extends App {
   
   def startCycle(cycle : Int) = {
       val cycleStart = System.currentTimeMillis()
+      println("cycle " + cycle + " starting!")
       val linkResult : List[LinkConsumptionDetails] = LinkSimulation.linkSimulation(cycle)
       AirportSimulation.airportSimulation(cycle, linkResult)
       AirplaneSimulation.airplaneSimulation(cycle)

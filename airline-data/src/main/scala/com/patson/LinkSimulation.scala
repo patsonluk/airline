@@ -13,7 +13,9 @@ object LinkSimulation {
   private[this] val VIP_COUNT = 5
   
   def linkSimulation(cycle: Int) : List[LinkConsumptionDetails] = {
+    println("Loading all links")
     val links = LinkSource.loadAllLinks(true)
+    println("Finished loading all links")
     val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
