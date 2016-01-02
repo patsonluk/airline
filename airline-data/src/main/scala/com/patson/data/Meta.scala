@@ -157,21 +157,28 @@ object Meta {
          statement.close()
          
          statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_INFO_TABLE + "(" +
-                                                 "airline INTEGER PRIMARY KEY REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                                 "airline INTEGER PRIMARY KEY, " +
                                                  "balance LONG," +
                                                  "service_quality DOUBLE," +
                                                  "service_funding INTEGER," +
                                                  "maintenance_quality DOUBLE," +
-                                                 "reputation DOUBLE)")
+                                                 "reputation DOUBLE," +
+                                                 "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" + 
+                                                 ")")
+                                                 
+                                                 
          statement.execute()
          statement.close()
          
          statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_APPEAL_TABLE + "(" + 
-                                                 "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                                 "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                                 "airport INTEGER, " +
+                                                 "airline INTEGER, " +
                                                  "loyalty DOUBLE," + 
     	                                           "awareness DOUBLE," +
-                                                 "PRIMARY KEY (airport, airline))")
+                                                 "PRIMARY KEY (airport, airline)," +
+                                                 "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," + 
+                                                 "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                                 ")")
          statement.execute()
          statement.close()
          
@@ -183,12 +190,15 @@ object Meta {
          statement.execute()
          statement.close()
          statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_BASE_TABLE + "(" + 
-                                                 "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                                 "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                                 "airport INTEGER, " +
+                                                 "airline INTEGER, " +
                                                  "scale INTEGER," + 
                                                  "founded_cycle INTEGER," +
     	                                           "headquarter INTEGER," +
-                                                 "PRIMARY KEY (airport, airline))")
+                                                 "PRIMARY KEY (airport, airline)," +
+                                                 "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," + 
+                                                 "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                                 ")")
          statement.execute()
          statement.close()
          
@@ -202,10 +212,13 @@ object Meta {
          
          
          statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" + 
-                                                 "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
-                                                 "city INTEGER REFERENCES " + CITY_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+                                                 "airport INTEGER," +
+                                                 "city INTEGER," +
                                                  "share DOUBLE," +
-                                                 "PRIMARY KEY (airport, city))")
+                                                 "PRIMARY KEY (airport, city)," +
+                                                 "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," + 
+                                                 "FOREIGN KEY(city) REFERENCES " + CITY_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                                 ")")
          statement.execute()
          statement.close()
          
@@ -217,10 +230,12 @@ object Meta {
          statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_FEATURE_TABLE + "(" +
-                                            "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+                                            "airport INTEGER," +
                                             "feature_type VARCHAR(256)," +
                                             "strength DOUBLE," +
-                                            "PRIMARY KEY (airport, feature_type))")
+                                            "PRIMARY KEY (airport, feature_type)," +
+                                            "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" + 
+                                            ")")
     statement.execute()
     statement.close()
 
@@ -232,9 +247,9 @@ object Meta {
          
          statement = connection.prepareStatement("CREATE TABLE " + LINK_TABLE + "(" +
                                                  "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-                                                 "from_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                                 "to_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                                 "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                                 "from_airport INTEGER, " +
+                                                 "to_airport INTEGER, " +
+                                                 "airline INTEGER, " +
                                                  "price_economy INTEGER, " + 
                                                  "price_business INTEGER, " +
                                                  "price_first INTEGER, " +
@@ -244,7 +259,11 @@ object Meta {
                                                  "capacity_first INTEGER, " +
                                                  "quality INTEGER, " +
                                                  "duration INTEGER, " +
-                                                 "frequency INTEGER)")
+                                                 "frequency INTEGER," +
+                                                 "FOREIGN KEY(from_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," + 
+                                                 "FOREIGN KEY(to_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+                                                 "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                                 ")")
          statement.execute()
          statement.close()
          
@@ -308,13 +327,15 @@ object Meta {
          statement.close()
          
          statement = connection.prepareStatement("CREATE TABLE " + LINK_HISTORY_TABLE + "(" +
-                                                 "watched_link INTEGER REFERENCES " + WATCHED_LINK_TABLE + "(watched_link) ON DELETE CASCADE, " +
+                                                 "watched_link INTEGER, " +
                                                  "inverted INTEGER, " +
     	                                           "related_link INTEGER, " +
                                                  "from_airport INTEGER, " +
                                                  "to_airport INTEGER, " +
                                                  "airline INTEGER, " +
-                                                 "passenger INTEGER)")
+                                                 "passenger INTEGER," +
+                                                 "FOREIGN KEY(watched_link) REFERENCES " + WATCHED_LINK_TABLE + "(watched_link) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                                 ")")
                                                  
          
          statement.execute()
@@ -360,18 +381,23 @@ object Meta {
          statement.close()
          
          statement = connection.prepareStatement("CREATE TABLE " + VIP_ROUTE_ENTRY_TABLE + "(" + 
-                                                 "route INTEGER REFERENCES " + VIP_ROUTE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+                                                 "route INTEGER," +
                                                  "from_airport INTEGER ," +
                                                  "to_airport INTEGER ," +
-                                                 "airline INTEGER)")
+                                                 "airline INTEGER," +
+                                                 "FOREIGN KEY(route) REFERENCES " + VIP_ROUTE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                                 ")")
          statement.execute()
          statement.close()
          
          statement = connection.prepareStatement("CREATE TABLE " + LINK_ASSIGNMENT_TABLE + "(" +
                                                  //"id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-                                                 "link INTEGER REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                                 "airplane INTEGER REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                                 "PRIMARY KEY (link, airplane))")
+                                                 "link INTEGER, " +
+                                                 "airplane INTEGER, " +
+                                                 "PRIMARY KEY (link, airplane)," +
+                                                 "FOREIGN KEY(link) REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+                                                 "FOREIGN KEY(airplane) REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                                 ")")
          statement.execute()
          statement.close()
 
@@ -398,12 +424,15 @@ object Meta {
 
      statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_TABLE + "(" + 
                                              "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-                                             "model INTEGER REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                             "owner INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "model INTEGER, " +
+                                             "owner INTEGER, " +
                                              "constructed_cycle INTEGER, " +
                                              "airplane_condition DOUBLE, " +
                                              "depreciation_rate INTEGER, " +
-                                             "value INTEGER)")
+                                             "value INTEGER," +
+                                             "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," + 
+                                             "FOREIGN KEY(owner) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                             ")")
 
      statement.execute()
      statement.close()
@@ -424,16 +453,20 @@ object Meta {
      statement.close()
        
      statement = connection.prepareStatement("CREATE TABLE " + USER_SECRET_TABLE + "(" + 
-                                             "user_name VARCHAR(100) PRIMARY KEY REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "user_name VARCHAR(100) PRIMARY KEY," +
                                              "digest VARCHAR(32) NOT NULL, " +
-                                             "salt VARCHAR(32) NOT NULL)")
+                                             "salt VARCHAR(32) NOT NULL," +
+                                             "FOREIGN KEY(user_name) REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE" + 
+                                             ")")
      statement.execute()
      statement.close()
      
      statement = connection.prepareStatement("CREATE TABLE " + USER_AIRLINE_TABLE + "(" +
                                              "airline INTEGER PRIMARY KEY," +
-                                             "user_name VARCHAR(100) REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE, " +
-                                             "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
+                                             "user_name VARCHAR(100)," +
+                                             "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," + 
+                                             "FOREIGN KEY(user_name) REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE" +
+                                             ")")
      statement.execute()
      statement.close()
      
