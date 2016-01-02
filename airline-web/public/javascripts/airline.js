@@ -135,7 +135,7 @@ function updateLinksInfo() {
 	    success: function(links) {
 	    	$.each(links, function( key, link ) {
 	    		drawFlightPath(link)
-	    		insertLinkToList(link, $('#linkList'))
+	    		insertLinkToList(link)
 	  		});
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -344,7 +344,8 @@ function drawFlightMarker(line, link) {
 
 
 
-function insertLinkToList(link, linkList) {
+function insertLinkToList(link) {
+	var linkList = $('#linkList')
 	linkList.append($("<a href='javascript:void(0)' data-link-id='" +  link.id + "' onclick='loadLinkDetails(" + link.id + ")'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
 	linkList.append($("<br/>"))
 }
@@ -828,13 +829,14 @@ function createLink() {
 		    dataType: 'json',
 		    success: function(savedLink) {
 		    	if (savedLink.id) {
-		    		if (!flightPaths[savedLink.id]) { //new link, just redraw everything for now
-		    			updateAllPanels(activeAirline.id)
-		    		} else {
-		    			selectedLink = savedLink.id
-		    			refreshPanels(activeAirline.id)
+		    		selectedLink = savedLink.id
+		    		if (!flightPaths[savedLink.id]) { //new link
+		    			//add to link List
+		    			insertLinkToList(savedLink)
+		    			//draw flight path
+		    			drawFlightPath(savedLink)
 		    		}
-		    		
+		    		refreshPanels(activeAirline.id)
 		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
@@ -852,6 +854,7 @@ function deleteLink(linkId) {
 	    success: function() {
 	    	$("#linkDetails").fadeOut(200)
 	    	updateLinksInfo()
+	    	updateAirplaneList() //refresh all airplane list for now
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
