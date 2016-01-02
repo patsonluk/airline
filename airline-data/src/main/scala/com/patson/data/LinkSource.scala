@@ -10,6 +10,8 @@ import java.sql.Statement
 object LinkSource {
   def loadLinksByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
     val connection = Meta.getConnection()
+    val airportCache = scala.collection.mutable.Map[Int, Airport]()
+    val airlineCache = scala.collection.mutable.Map[Int, Airline]()
     try {  
       var queryString = "SELECT * FROM " + LINK_TABLE 
       
@@ -31,38 +33,39 @@ object LinkSource {
       
       val links = new ListBuffer[Link]()
       while (resultSet.next()) {
-        val fromAirport = AirportSource.loadAirportById(resultSet.getInt("from_airport"), fullLoad)
-        val toAirport = AirportSource.loadAirportById(resultSet.getInt("to_airport"), fullLoad)
-        val airline = AirlineSource.loadAirlineById(resultSet.getInt("airline"), fullLoad)
-        if (fromAirport.isEmpty || toAirport.isEmpty) {
-          println("Cannot load link, airports not found !")
-        } else {
-          val link = Link( 
-              fromAirport.get,
-              toAirport.get,
-              airline.get,
-              LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
-              resultSet.getInt("distance"),
-              LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
-              resultSet.getInt("quality"),
-              resultSet.getInt("duration"),
-              resultSet.getInt("frequency"))
-          link.id = resultSet.getInt("id")
-          
-          val linkAssignmentStatement = connection.prepareStatement("SELECT airplane FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
-          linkAssignmentStatement.setInt(1, link.id)
-          val assignmentResult = linkAssignmentStatement.executeQuery();
-          val assignedAirplanes = ListBuffer[Airplane]()
-          while (assignmentResult.next()) {
-            AirplaneSource.loadAirplaneById(assignmentResult.getInt("airplane")) match {
-              case Some(airplane) => assignedAirplanes.append(airplane)
-              case None => println("cannot load assigned airplane with id " + assignmentResult.getInt("airplane"))
-            }
+        val fromAirportId = resultSet.getInt("from_airport")
+        val toAirportId = resultSet.getInt("to_airport")
+        val airlineId = resultSet.getInt("airline")
+        
+        val fromAirport = airportCache.getOrElseUpdate(fromAirportId, AirportSource.loadAirportById(fromAirportId, fullLoad).get)
+        val toAirport = airportCache.getOrElseUpdate(toAirportId, AirportSource.loadAirportById(toAirportId, fullLoad).get)
+        val airline = airlineCache.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, fullLoad).get)
+        
+        val link = Link( 
+            fromAirport,
+            toAirport,
+            airline,
+            LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
+            resultSet.getInt("distance"),
+            LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
+            resultSet.getInt("quality"),
+            resultSet.getInt("duration"),
+            resultSet.getInt("frequency"))
+        link.id = resultSet.getInt("id")
+        
+        val linkAssignmentStatement = connection.prepareStatement("SELECT airplane FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
+        linkAssignmentStatement.setInt(1, link.id)
+        val assignmentResult = linkAssignmentStatement.executeQuery();
+        val assignedAirplanes = ListBuffer[Airplane]()
+        while (assignmentResult.next()) {
+          AirplaneSource.loadAirplaneById(assignmentResult.getInt("airplane")) match {
+            case Some(airplane) => assignedAirplanes.append(airplane)
+            case None => println("cannot load assigned airplane with id " + assignmentResult.getInt("airplane"))
           }
-          link.setAssignedAirplanes(assignedAirplanes.toList)        
-          links += link   
-          linkAssignmentStatement.close()
         }
+        link.setAssignedAirplanes(assignedAirplanes.toList)        
+        links += link   
+        linkAssignmentStatement.close()
       }
       
       resultSet.close()
