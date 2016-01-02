@@ -353,8 +353,7 @@ object Meta {
                                                  "is_destination INTEGER, " +
                                                  "passenger_count INTEGER, " +
                                                  "airline INTEGER, " +
-                                                 "cycle INTEGER, " +
-                                                 "PRIMARY KEY (from_airport, to_airport, is_departure, is_destination, cycle))")
+                                                 "cycle INTEGER))")
          statement.execute()
          statement.close()
                                                  
