@@ -80,6 +80,11 @@ function updateModelInfo() {
 
 function updateAirplaneList() {
 	var airplaneList = $("#airplaneList")
+	var selectedModelId //check previously selected model id
+	if ($("#airplaneList a.selected").length !== 0) {
+		selectedModelId = $("#airplaneList a.selected").data("modelId")
+	}
+	
 	airplaneList.empty()
 	var airlineId = activeAirline.id
 	$.ajax({
@@ -90,10 +95,14 @@ function updateAirplaneList() {
 	    success: function(models) { //a list of model with airplanes
 	    	$.each(models, function(key, model) {
 	    		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
-	    		var aLink = $("<a href='javascript:void(0)' onclick='expandAirplaneList(this.modelInfo)'></a>").text(label)
+	    		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
 	    		airplaneList.append(aLink)
 	    		aLink.get(0).modelInfo = model //tag the info to the element
 	    		airplaneList.append($("<br/>"))
+	    		
+	    		if (selectedModelId == model.id) {
+	    			selectAirplaneModel(model)
+	    		}
 	  		});
 	    	
 	    },
@@ -103,6 +112,15 @@ function updateAirplaneList() {
 	    }
 	});
 }
+function selectAirplaneModel(model) {
+	$("#airplaneList a.selected").removeClass("selected")
+	//highlight the selected model
+	$("#airplaneList a[data-model-id='" + model.id +"']").addClass("selected")
+	
+	//expand the airplane list under this model
+	expandAirplaneList(model)
+}
+
 function expandAirplaneList(modelInfo) {
 	var airplaneList = $("#expandedAirplaneList")
 	airplaneList.empty()
