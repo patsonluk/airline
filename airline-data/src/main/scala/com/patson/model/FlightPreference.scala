@@ -66,7 +66,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
     //cost is in terms of flight duration
-    val baseCost = link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, linkClass, perceivedPrice)
+    val baseCost = perceivedPrice//link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, linkClass, perceivedPrice)
     
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
     

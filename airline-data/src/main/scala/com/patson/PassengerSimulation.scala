@@ -135,10 +135,10 @@ object PassengerSimulation extends App {
                  //val affordableCost = totalDistance * (1.25 - Random.nextFloat() / 2)
                  //val affordableCost = totalDistance * (Util.getBellRandom(1))
                  //val MIN_AIPLANE_SPEED = 300.0
-                 val affordableCost = distance * 0.8  
+                 val linkClass = passengerGroup.preference.linkClass
+                 val affordableCost = Pricing.computeStandardPrice(distance.toInt, Computation.getFlightType(fromAirport, toAirport), linkClass) * 2   
                  
                  if (affordableCost >= pickedRoute.totalCost) { //OK!
-                   val linkClass = passengerGroup.preference.linkClass
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
                      val availableSeats = linkConsideration.link.availableSeats(linkClass) 
                      if (availableSeats < foldInt) { availableSeats } else { foldInt }
@@ -392,12 +392,13 @@ object PassengerSimulation extends App {
         if (linkConsideration.from.id == from.id || predecessorMap.containsKey(linkConsideration.from.id)) {
           var connectionCost = 0.0
           if (linkConsideration.from.id != from.id) { //then it should be a connection flight
-              connectionCost += 20 * 500 / 60 //at least 20 mins to make the connection 
+              //connectionCost += 20 * 500 / 60 //at least 20 mins to make the connection
+              connectionCost += 50 //like adding $30 to ticket at least
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
               val frequency = Math.max(predecessorMap.get(linkConsideration.from.id).link.frequency, linkConsideration.link.frequency)
               //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
               if (frequency < 42) {
-                connectionCost += (2 * 24 * 50).toDouble / frequency //at worst (both at 1, assuming to wait extra 2 days)
+                connectionCost += (3.5 * 24 * 10) / frequency //each extra hour wait is like $10 more
               }
           }
           val cost = linkConsideration.cost + connectionCost
