@@ -11,6 +11,10 @@ import com.patson.data.airplane.ModelSource
 import java.sql.Statement
 
 object AirplaneSource {
+  val LINK_FULL_LOAD = Map(DetailType.LINK -> true)
+  val LINK_SIMPLE_LOAD = Map(DetailType.LINK -> false)
+  val LINK_ID_LOAD : Map[DetailType.Value, Boolean] = Map.empty
+  
   def loadAirplanesCriteria(criteria : List[(String, Any)]) = {
       val connection = Meta.getConnection()
       
@@ -73,12 +77,12 @@ object AirplaneSource {
     
   }
   
-  def loadAirplanesWithAssignedLinkByOwner(ownerId : Int, fullLoad : Boolean = true)  : List[(Airplane, Option[Link])] = {
-    loadAirplanesWithAssignedLinkByCriteria(List(("owner", ownerId)), fullLoad)
+  def loadAirplanesWithAssignedLinkByOwner(ownerId : Int, loadDetails : Map[DetailType.Value, Boolean] = LINK_ID_LOAD)  : List[(Airplane, Option[Link])] = {
+    loadAirplanesWithAssignedLinkByCriteria(List(("owner", ownerId)), loadDetails)
   }
   
-  def loadAirplanesWithAssignedLinkByAirplaneId(airplaneId : Int, fullLoad : Boolean = true) : Option[(Airplane, Option[Link])] = {
-    val result = loadAirplanesWithAssignedLinkByCriteria(List(("a.id", airplaneId)), fullLoad)
+  def loadAirplanesWithAssignedLinkByAirplaneId(airplaneId : Int, loadDetails : Map[DetailType.Value, Boolean] = LINK_ID_LOAD) : Option[(Airplane, Option[Link])] = {
+    val result = loadAirplanesWithAssignedLinkByCriteria(List(("a.id", airplaneId)), loadDetails)
     if (result.isEmpty) {
       None
     } else {
@@ -86,7 +90,7 @@ object AirplaneSource {
     }
    }
   
-  def loadAirplanesWithAssignedLinkByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) : List[(Airplane, Option[Link])]= {
+  def loadAirplanesWithAssignedLinkByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = LINK_ID_LOAD) : List[(Airplane, Option[Link])]= {
     val connection = Meta.getConnection()
       var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, airplane_condition, depreciation_rate, value, la.link  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + LINK_ASSIGNMENT_TABLE + " la ON a.id = la.airplane"  
       
@@ -102,6 +106,16 @@ object AirplaneSource {
       
       for (i <- 0 until criteria.size) {
         preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+      
+      val loadLinkFunction : (Int => Link) = loadDetails.get(DetailType.LINK) match {
+        case Some(fullLoad) => (linkId : Int) => 
+          if (fullLoad) {
+            LinkSource.loadLinkById(linkId, LinkSource.FULL_LOAD).get 
+          } else {
+            LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD).get
+          }
+        case None => (linkId : Int) => Link.fromId(linkId) 
       }
       
       val resultSet = preparedStatement.executeQuery()
@@ -124,13 +138,9 @@ object AirplaneSource {
         airplane.id = resultSet.getInt("id")
         if (resultSet.getObject("link") != null) {
           val linkId = resultSet.getInt("link")
-          val assignedLink =
-            if (fullLoad) {
-              LinkSource.loadLinkById(linkId)
-            } else {
-              Some(Link.fromId(linkId))
-            }
-          airplanesWithAssignedLink.append((airplane, assignedLink))
+          val assignedLink = loadLinkFunction(linkId)
+            
+          airplanesWithAssignedLink.append((airplane, Some(assignedLink)))
         } else{
           airplanesWithAssignedLink.append((airplane, None))
         }
@@ -236,5 +246,9 @@ object AirplaneSource {
     }
     
     updateCount
+  }
+  
+  object DetailType extends Enumeration {
+    val LINK = Value
   }
 }

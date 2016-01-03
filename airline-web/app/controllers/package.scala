@@ -78,7 +78,7 @@ package object controllers {
       val duration = ModelSource.loadModelById(modelId).fold(Integer.MAX_VALUE)(Computation.calculateDuration(_, distance))
        
       val airplanes = airplaneIds.foldRight(List[Airplane]()) { (airplaneId, foldList) =>
-        AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId) match { 
+        AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId, AirplaneSource.LINK_SIMPLE_LOAD) match { 
           case Some((airplane, Some(link))) if (link.from.id != fromAirport.id || link.to.id != toAirport.id) =>
             throw new IllegalStateException("Airplane with id " + airplaneId + " is assigned to other link")
           case Some((airplane, _)) =>
@@ -96,7 +96,7 @@ package object controllers {
          
       val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency)
       link.setAssignedAirplanes(airplanes)
-      (json \ "id").asOpt[Int].foreach { link.id = _ } 
+      //(json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
     

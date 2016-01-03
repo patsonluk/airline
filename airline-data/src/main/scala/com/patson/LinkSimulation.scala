@@ -14,7 +14,7 @@ object LinkSimulation {
   
   def linkSimulation(cycle: Int) : List[LinkConsumptionDetails] = {
     println("Loading all links")
-    val links = LinkSource.loadAllLinks(true)
+    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
     println("Finished loading all links")
     val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     println("DONE with demand total demand: " + demand.foldLeft(0) {

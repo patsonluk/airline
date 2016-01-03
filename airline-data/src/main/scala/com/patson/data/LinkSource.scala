@@ -7,8 +7,13 @@ import java.sql.PreparedStatement
 import com.patson.model._
 import java.sql.Statement
 
+
 object LinkSource {
-  def loadLinksByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
+  val FULL_LOAD = Map(DetailType.AIRLINE -> true, DetailType.AIRPORT -> true, DetailType.AIRPLANE -> true)
+  val SIMPLE_LOAD = Map(DetailType.AIRLINE -> false, DetailType.AIRPORT -> false, DetailType.AIRPLANE -> false)
+  val ID_LOAD : Map[DetailType.Type, Boolean] = Map.empty
+  
+  def loadLinksByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
     val connection = Meta.getConnection()
     val airportCache = scala.collection.mutable.Map[Int, Airport]()
     val airlineCache = scala.collection.mutable.Map[Int, Airline]()
@@ -31,15 +36,30 @@ object LinkSource {
       
       val resultSet = preparedStatement.executeQuery()
       
+      val loadAirportFunction : (Int => Airport) = loadDetails.get(DetailType.AIRPORT) match {
+        case Some(fullLoad) => (airportId : Int) => AirportSource.loadAirportById(airportId, fullLoad).get 
+        case None => (airportId : Int) => Airport.fromId(airportId) 
+      }
+      
+      val loadAirlineFunction : (Int => Airline) = loadDetails.get(DetailType.AIRLINE) match {
+        case Some(fullLoad) => (airlineId : Int) => AirlineSource.loadAirlineById(airlineId, fullLoad).get 
+        case None => (airlineId : Int) => Airline.fromId(airlineId) 
+      }
+      
+      val loadAirplaneFunction : (Int => Airline) = loadDetails.get(DetailType.AIRLINE) match {
+        case Some(fullLoad) => (airlineId : Int) => AirlineSource.loadAirlineById(airlineId, fullLoad).get 
+        case None => (airlineId : Int) => Airline.fromId(airlineId) 
+      }
+      
       val links = new ListBuffer[Link]()
       while (resultSet.next()) {
         val fromAirportId = resultSet.getInt("from_airport")
         val toAirportId = resultSet.getInt("to_airport")
         val airlineId = resultSet.getInt("airline")
         
-        val fromAirport = airportCache.getOrElseUpdate(fromAirportId, AirportSource.loadAirportById(fromAirportId, fullLoad).get)
-        val toAirport = airportCache.getOrElseUpdate(toAirportId, AirportSource.loadAirportById(toAirportId, fullLoad).get)
-        val airline = airlineCache.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, fullLoad).get)
+        val fromAirport = airportCache.getOrElseUpdate(fromAirportId, loadAirportFunction(fromAirportId))
+        val toAirport = airportCache.getOrElseUpdate(toAirportId, loadAirportFunction(toAirportId))
+        val airline = airlineCache.getOrElseUpdate(airlineId, loadAirlineFunction(airlineId))
         
         val link = Link( 
             fromAirport,
@@ -53,19 +73,23 @@ object LinkSource {
             resultSet.getInt("frequency"))
         link.id = resultSet.getInt("id")
         
-        val linkAssignmentStatement = connection.prepareStatement("SELECT airplane FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
-        linkAssignmentStatement.setInt(1, link.id)
-        val assignmentResult = linkAssignmentStatement.executeQuery();
-        val assignedAirplanes = ListBuffer[Airplane]()
-        while (assignmentResult.next()) {
-          AirplaneSource.loadAirplaneById(assignmentResult.getInt("airplane")) match {
-            case Some(airplane) => assignedAirplanes.append(airplane)
-            case None => println("cannot load assigned airplane with id " + assignmentResult.getInt("airplane"))
-          }
+        loadDetails.get(DetailType.AIRPLANE) match {
+          case Some(fullLoad) => //fulload doesnt make a diff here...
+            val linkAssignmentStatement = connection.prepareStatement("SELECT airplane FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
+            linkAssignmentStatement.setInt(1, link.id)
+            val assignmentResult = linkAssignmentStatement.executeQuery();
+            val assignedAirplanes = ListBuffer[Airplane]()
+            while (assignmentResult.next()) {
+              AirplaneSource.loadAirplaneById(assignmentResult.getInt("airplane")) match {
+                case Some(airplane) => assignedAirplanes.append(airplane)
+                case None => println("cannot load assigned airplane with id " + assignmentResult.getInt("airplane"))
+              }
+            }
+            link.setAssignedAirplanes(assignedAirplanes.toList)
+            linkAssignmentStatement.close()
+          case None => //do not load assigned airplanes
         }
-        link.setAssignedAirplanes(assignedAirplanes.toList)        
         links += link   
-        linkAssignmentStatement.close()
       }
       
       resultSet.close()
@@ -76,29 +100,40 @@ object LinkSource {
     }
   }
   
-  def loadLinkById(linkId : Int, fullLoad : Boolean = true) : Option[Link] = {
-    val result = loadLinksByCriteria(List(("id", linkId)), fullLoad)
+  def loadLinkById(linkId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : Option[Link] = {
+    val result = loadLinksByCriteria(List(("id", linkId)), loadDetails)
     if (result.isEmpty) {
       None
     } else {
       Some(result(0))
     }
   }
-  
-  def loadAllLinks(fullLoad : Boolean = false) = {
-      loadLinksByCriteria(List.empty, fullLoad)
+  def loadLinkByAirportsAndAirline(fromAirportId : Int,  toAirportId : Int, airlineId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : Option[Link] = {
+    val result = loadLinksByCriteria(List(("from_airport", fromAirportId), ("to_airport", toAirportId), ("airline", airlineId)), loadDetails)
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+  def loadLinksByAirports(fromAirportId : Int, toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : List[Link] = {
+    loadLinksByCriteria(List(("from_airport", fromAirportId), ("to_airport", toAirportId)), loadDetails)
   }
   
-  def loadLinksByAirlineId(airlineId : Int, fullLoad : Boolean = false) = {
-    loadLinksByCriteria(List(("airline", airlineId)), fullLoad)
+  def loadAllLinks(loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+      loadLinksByCriteria(List.empty, loadDetails)
   }
   
-  def loadLinksByFromAirport(fromAirportId : Int, fullLoad : Boolean = false) = {
-    loadLinksByCriteria(List(("from_airport", fromAirportId)), fullLoad)
+  def loadLinksByAirlineId(airlineId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadLinksByCriteria(List(("airline", airlineId)), loadDetails)
   }
   
-  def loadLinksByToAirport(toAirportId : Int, fullLoad : Boolean = false) = {
-    loadLinksByCriteria(List(("to_airport", toAirportId)), fullLoad)
+  def loadLinksByFromAirport(fromAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadLinksByCriteria(List(("from_airport", fromAirportId)), loadDetails)
+  }
+  
+  def loadLinksByToAirport(toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadLinksByCriteria(List(("to_airport", toAirportId)), loadDetails)
   }
   
   def saveLink(link : Link) : Option[Link] = {
@@ -427,5 +462,10 @@ object LinkSource {
     } finally {
       connection.close()
     }
+  }
+  
+  object DetailType extends Enumeration {
+    type Type = Value
+    val AIRPORT, AIRLINE, AIRPLANE = Value
   }
 }

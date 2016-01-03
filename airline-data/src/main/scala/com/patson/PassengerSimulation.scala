@@ -43,7 +43,7 @@ object PassengerSimulation extends App {
 //    val links = generateFlightLinks(airportData)
 //    println("Generated " + links.size + " links")
     
-    val links = LinkSource.loadAllLinks(true)
+    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
     
     val consumptionResult = passengerConsume(demand, links)
     

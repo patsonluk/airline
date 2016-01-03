@@ -14,7 +14,7 @@ object AirlineSimulation {
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails]) = {
     //compute profit
     val allAirlines = AirlineSource.loadAllAirlines(true)
-    val allLinks = LinkSource.loadAllLinks(false).groupBy { _.airline.id }
+    val allLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD).groupBy { _.airline.id }
     val linkResultByAirline = linkResult.groupBy { _.airlineId }
     allAirlines.foreach { airline =>
         var airlineProfit = 0L

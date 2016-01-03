@@ -28,7 +28,7 @@ object AirplaneSimulation {
     println("starting airplane simulation")
     println("loading all airplanes")
     //do decay
-    val allAirplanes = AirplaneSource.loadAirplanesWithAssignedLinkByCriteria(List.empty, false)
+    val allAirplanes = AirplaneSource.loadAirplanesWithAssignedLinkByCriteria(List.empty)
     
     println("finished loading all airplanes")
     
