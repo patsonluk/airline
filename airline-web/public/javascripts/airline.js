@@ -276,7 +276,20 @@ function highlightPath(path) {
 			currentRgb = { r : currentRgb.r - colorStep.r, g : currentRgb.g - colorStep.g, b : currentRgb.b - colorStep.b }
 		}
 		//convert currentRgb back to hexstring
-		var colorHexString = "#" + Math.round(currentRgb.r).toString(16) + Math.round(currentRgb.g).toString(16) + Math.round(currentRgb.b).toString(16)   
+		var redHex = Math.round(currentRgb.r).toString(16)
+		if (redHex.length < 2) {
+			redHex = "0" + redHex
+		}
+		var greenHex = Math.round(currentRgb.g).toString(16)
+		if (greenHex.length < 2) {
+			greenHex = "0" + greenHex
+		}
+		var blueHex = Math.round(currentRgb.b).toString(16)
+		if (blueHex.length < 2) {
+			blueHex = "0" + blueHex
+		}
+		 
+		var colorHexString = "#" + redHex + greenHex + blueHex
 		path.path.setOptions({ strokeColor : colorHexString , strokeWeight : 4})
 		
 		currentFrame = (currentFrame + 1) % (totalFrames * 2)
