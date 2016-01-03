@@ -195,7 +195,7 @@ function drawFlightPath(link) {
 	     zIndex: 100
 	   });
    shadowPath.addListener('click', function() {
-   		loadLinkDetails(link.id)
+   		loadLinkDetails(link.id, false)
    });
    
    
@@ -258,6 +258,38 @@ function getLinkColor(profit, revenue) {
 	   return "#DCDC20"
    }
 }
+
+function highlightPath(path) {
+	var originalColorString = path.path.strokeColor
+	path.path.originalColor = originalColorString
+	var totalFrames = 20
+	
+	var rgbHexValue = parseInt(originalColorString.substring(1), 16);
+	var currentRgb = { r : rgbHexValue >> (4 * 4), g : rgbHexValue >> (2 * 4) & 0xff, b : rgbHexValue & 0xff }
+	var highlightColor = { r : 0xff, g : 0xff, b : 0xff}
+	var colorStep = { r : (highlightColor.r - currentRgb.r) / totalFrames, g : (highlightColor.g - currentRgb.g) / totalFrames, b : (highlightColor.b - currentRgb.b) / totalFrames }
+	var currentFrame = 0
+	var animation = window.setInterval(function() {
+		if (currentFrame < totalFrames) { //transition to highlight color
+			currentRgb = { r : currentRgb.r + colorStep.r, g : currentRgb.g + colorStep.g, b : currentRgb.b + colorStep.b }
+		} else { //transition back to original color
+			currentRgb = { r : currentRgb.r - colorStep.r, g : currentRgb.g - colorStep.g, b : currentRgb.b - colorStep.b }
+		}
+		//convert currentRgb back to hexstring
+		var colorHexString = "#" + Math.round(currentRgb.r).toString(16) + Math.round(currentRgb.g).toString(16) + Math.round(currentRgb.b).toString(16)   
+		path.path.setOptions({ strokeColor : colorHexString , strokeWeight : 4})
+		
+		currentFrame = (currentFrame + 1) % (totalFrames * 2)
+		
+	}, 50)
+	path.path.animation = animation
+}
+function unhighlightPath(path) {
+	window.clearInterval(path.path.animation)
+	path.path["animation"] = undefined
+	path.path.setOptions({ strokeColor : path.path.originalColor , strokeWeight : 2})
+}
+
 
 
 //Use the DOM setInterval() function to change the offset of the symbol
@@ -346,13 +378,28 @@ function drawFlightMarker(line, link) {
 
 function insertLinkToList(link) {
 	var linkList = $('#linkList')
-	linkList.append($("<a href='javascript:void(0)' data-link-id='" +  link.id + "' onclick='loadLinkDetails(" + link.id + ")'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
+	linkList.append($("<a href='javascript:void(0)' data-link-id='" +  link.id + "' onclick='loadLinkDetails(" + link.id + ", true)'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
 	linkList.append($("<br/>"))
 }
 
-function loadLinkDetails(linkId) {
-	$("#linkList a.selected").removeClass("selected")
-	//highlight the corresponding elements
+function loadLinkDetails(linkId, refocus) {
+	var previousSelectedListItem = $("#linkList a.selected")
+	 
+	if (previousSelectedListItem.length > 0) {
+		previousSelectedListItem.removeClass("selected")
+		var previousLinkId = previousSelectedListItem.data("linkId")
+		unhighlightPath(flightPaths[previousLinkId])
+	}
+	
+	//highlight the selected link's flight path
+	highlightPath(flightPaths[linkId])
+	
+	//focus to the from airport
+	if (refocus) {
+		map.setCenter(flightPaths[linkId].path.getPath().getAt(0))
+	}
+	
+	//highlight the corresponding list item
 	var selectedListItem = $("#linkList a[data-link-id='" + linkId + "']")
 	selectedListItem.addClass("selected")
 	
