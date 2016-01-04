@@ -146,7 +146,7 @@ class Application extends Controller {
      AirportSource.loadAirportById(airportId, true) match {
        case Some(airport) =>
          //find links going to this airport too, send simplified data
-         val links = LinkSource.loadLinksByFromAirport(airportId) ++ LinkSource.loadLinksByToAirport(airportId)
+         val links = LinkSource.loadLinksByFromAirport(airportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByToAirport(airportId, LinkSource.ID_LOAD)
          val linkCountJson = links.groupBy { _.airline.id }.foldRight(Json.obj()) { 
            case((airlineId, links), foldJson) => foldJson + (airlineId.toString() -> JsNumber(links.length)) 
          }
