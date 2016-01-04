@@ -3,7 +3,7 @@ var flightMarkers = {} //key: link id, value: { markers : array[], animation}
 //var flightMarkerAnimations = []
 var historyPaths = {}
 var linkHistoryState = "hidden"
-var tempPath = {} //temp path for new link creation
+var tempPath //temp path for new link creation
 
 	
 function updateAirlineInfo(airlineId) {
@@ -198,7 +198,7 @@ function drawFlightPath(link) {
    var resultPath = { path : flightPath, shadow : shadowPath }
    if (link.id) {
 	  shadowPath.addListener('click', function() {
-	   		loadLinkDetails(link.id, false)
+	   		selectLinkAndLoadDetails(link.id, false)
 	  });
       drawFlightMarker(flightPath, link);
 	  flightPaths[link.id] = resultPath 
@@ -395,7 +395,7 @@ function drawFlightMarker(line, link) {
 
 function insertLinkToList(link) {
 	var linkList = $('#linkList')
-	linkList.append($("<a href='javascript:void(0)' data-link-id='" +  link.id + "' onclick='loadLinkDetails(" + link.id + ", true)'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
+	linkList.append($("<a href='javascript:void(0)' data-link-id='" +  link.id + "' onclick='selectLinkAndLoadDetails(" + link.id + ", true)'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
 	linkList.append($("<br/>"))
 }
 
@@ -414,7 +414,15 @@ function unselectLink() {
 	$("#linkDetails").hide()
 }
 
-function loadLinkDetails(linkId, refocus) {
+function selectLinkAndLoadDetails(linkId, refocus) {
+	selectLink(linkId, refocus)
+	refreshLinkDetails(linkId)
+}
+
+/**
+ * Performs UI changes for selecting a link
+ */
+function selectLink(linkId, refocus) {
 	unselectLink()
 	
 	//highlight the selected link's flight path
@@ -429,12 +437,8 @@ function loadLinkDetails(linkId, refocus) {
 	var selectedListItem = $("#linkList a[data-link-id='" + linkId + "']")
 	selectedListItem.addClass("selected")
 	
-//	$('#airplaneDetails').hide()
-//	$("#linkDetails").show()
 	selectedLink = linkId
 	setActiveDiv($("#linkDetails"))
-	
-	refreshLinkDetails(linkId)
 	$("#actionLinkId").val(linkId)
 }
 
@@ -912,14 +916,14 @@ function createLink() {
 		    dataType: 'json',
 		    success: function(savedLink) {
 		    	if (savedLink.id) {
-		    		selectedLink = savedLink.id
 		    		if (!flightPaths[savedLink.id]) { //new link
 		    			//remove temp path
 		    			removeTempPath()
 		    			//add to link List
 		    			insertLinkToList(savedLink)
 		    			//draw flight path
-		    			drawFlightPath(savedLink)
+		    			var newPath = drawFlightPath(savedLink)
+		    			selectLink(savedLink.id, false)
 		    		}
 		    		refreshPanels(activeAirline.id)
 		    		setActiveDiv($('#linkDetails'))
