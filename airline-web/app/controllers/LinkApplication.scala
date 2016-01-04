@@ -305,7 +305,7 @@ class LinkApplication extends Controller {
   def addLink(airlineId : Int) = AuthenticatedAirline(airlineId) { request => addLinkBlock(request) }
   
   def getLink(airlineId : Int, linkId : Int) = AuthenticatedAirline(airlineId) { request =>
-    LinkSource.loadLinkById(linkId) match {
+    LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
           Ok(Json.toJson(link))
@@ -460,9 +460,13 @@ class LinkApplication extends Controller {
                                                                    
             var resultObject = Json.obj("fromAirportName" -> fromAirport.name,
                                         "fromAirportCity" -> fromAirport.city,
+                                        "fromAirportLatitude" -> fromAirport.latitude,
+                                        "fromAirportLongitude" -> fromAirport.longitude,
                                         "fromCountryCode" -> fromAirport.countryCode,
                                         "toAirportName" -> toAirport.name,
                                         "toAirportCity" -> toAirport.city,
+                                        "toAirportLatitude" -> toAirport.latitude,
+                                        "toAirportLongitude" -> toAirport.longitude,
                                         "toCountryCode" -> toAirport.countryCode,
                                         "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,  

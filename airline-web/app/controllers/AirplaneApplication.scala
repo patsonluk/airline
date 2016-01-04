@@ -69,7 +69,7 @@ class AirplaneApplication extends Controller {
   }
   
   def getAirplane(airlineId : Int, airplaneId : Int) =  AuthenticatedAirline(airlineId) {
-    AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId) match {
+    AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId, AirplaneSource.LINK_FULL_LOAD) match {
       case Some(airplaneWithLink) =>
         if (airplaneWithLink._1.owner.id == airlineId) {
           Ok(Json.toJson(airplaneWithLink))     
