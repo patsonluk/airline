@@ -153,7 +153,7 @@ function refreshPanels(airlineId) {
 	    	refreshTopBar(airline)
 	    	refreshLinks()
 	    	if (selectedLink) {
-	    		loadLinkDetails(selectedLink)
+	    		refreshLinkDetails(selectedLink)
 	    	}
 	    	updateAirplaneList() //refresh all airplane list for now
 	    },
@@ -197,6 +197,7 @@ function setActiveDiv(activeDiv) {
 		activeDiv.fadeIn(200)
 	}
 }
+
 
 
 function appendConsole(message) {

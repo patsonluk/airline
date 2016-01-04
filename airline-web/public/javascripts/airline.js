@@ -3,6 +3,7 @@ var flightMarkers = {} //key: link id, value: { markers : array[], animation}
 //var flightMarkerAnimations = []
 var historyPaths = {}
 var linkHistoryState = "hidden"
+var tempPath = {} //temp path for new link creation
 
 	
 function updateAirlineInfo(airlineId) {
@@ -182,7 +183,6 @@ function drawFlightPath(link) {
    
    var icon = "assets/images/icons/airplane.png"
    
-   drawFlightMarker(flightPath, link);
    flightPath.setMap(map)
    
    var shadowPath = new google.maps.Polyline({
@@ -194,13 +194,17 @@ function drawFlightPath(link) {
 	     strokeWeight: 15,
 	     zIndex: 100
 	   });
-   shadowPath.addListener('click', function() {
-   		loadLinkDetails(link.id, false)
-   });
    
+   var resultPath = { path : flightPath, shadow : shadowPath }
+   if (link.id) {
+	  shadowPath.addListener('click', function() {
+	   		loadLinkDetails(link.id, false)
+	  });
+      drawFlightMarker(flightPath, link);
+	  flightPaths[link.id] = resultPath 
+   }
    
-   
-   flightPaths[link.id] = { path : flightPath, shadow : shadowPath }
+   return resultPath
 }
 
 function refreshFlightPath(link) {
@@ -395,14 +399,23 @@ function insertLinkToList(link) {
 	linkList.append($("<br/>"))
 }
 
-function loadLinkDetails(linkId, refocus) {
+function unselectLink() {
 	var previousSelectedListItem = $("#linkList a.selected")
 	 
 	if (previousSelectedListItem.length > 0) {
 		previousSelectedListItem.removeClass("selected")
 		var previousLinkId = previousSelectedListItem.data("linkId")
 		unhighlightPath(flightPaths[previousLinkId])
+		
+		//clear link detail div
 	}
+	selectedLink = undefined
+	
+	$("#linkDetails").hide()
+}
+
+function loadLinkDetails(linkId, refocus) {
+	unselectLink()
 	
 	//highlight the selected link's flight path
 	highlightPath(flightPaths[linkId])
@@ -420,7 +433,12 @@ function loadLinkDetails(linkId, refocus) {
 //	$("#linkDetails").show()
 	selectedLink = linkId
 	setActiveDiv($("#linkDetails"))
+	
+	refreshLinkDetails(linkId)
 	$("#actionLinkId").val(linkId)
+}
+
+function refreshLinkDetails(linkId) {
 	var airlineId = activeAirline.id
 	//load link
 	$.ajax({
@@ -440,8 +458,6 @@ function loadLinkDetails(linkId, refocus) {
 	    	$("#linkCurrentDetails").show()
 	    	$("#linkToAirportId").val(link.toAirportId)
 	    	$("#linkFromAirportId").val(link.fromAirportId)
-	    	
-	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -500,7 +516,6 @@ function loadLinkDetails(linkId, refocus) {
 }
 
 function editLink(linkId) {
-	selectedLink = null //no refreshing...todo fix this to make it looks better
 	$.ajax({
 		type: 'GET',
 		url: "airlines/" + activeAirline.id + "/links/" + linkId,
@@ -708,7 +723,7 @@ function planToAirport(toAirportId, toAirportName) {
 
 function planLink(fromAirport, toAirport) {
 	var airlineId = activeAirline.id
-	selectedLink = null //no refresh
+	
 	if (fromAirport && toAirport) {
 		var url = "airlines/" + airlineId + "/plan-link"
 		$.ajax({
@@ -753,6 +768,14 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#planLinkFirstPrice').val(linkInfo.suggestedPrice.first)
 		$('#addLinkButton').show()
 		$('#updateLinkButton').hide()
+		
+		//unselect the existing path if any
+		unselectLink()
+		//create a temp path
+		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
+		//set the temp path
+		tempPath = drawFlightPath(tempLink)
+		highlightPath(tempPath)
 	} else {
 		$('#planLinkEconomyPrice').val(linkInfo.existingLink.price.economy)
 		$('#planLinkBusinessPrice').val(linkInfo.existingLink.price.business)
@@ -891,12 +914,15 @@ function createLink() {
 		    	if (savedLink.id) {
 		    		selectedLink = savedLink.id
 		    		if (!flightPaths[savedLink.id]) { //new link
+		    			//remove temp path
+		    			removeTempPath()
 		    			//add to link List
 		    			insertLinkToList(savedLink)
 		    			//draw flight path
 		    			drawFlightPath(savedLink)
 		    		}
 		    		refreshPanels(activeAirline.id)
+		    		setActiveDiv($('#linkDetails'))
 		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
@@ -921,6 +947,22 @@ function deleteLink(linkId) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function cancelPlanLink() {
+	//remove the temp path
+	if (tempPath) { //create new link
+		removeTempPath()
+		$('#planLinkDetails').hide()
+	} else { //simply go back to linkDetails
+		setActiveDiv($('#linkDetails'))
+	}
+}
+
+function removeTempPath() {
+	unhighlightPath(tempPath)
+	clearPathEntry(tempPath)
+	tempPath = undefined
 }
 
 
