@@ -439,6 +439,10 @@ object Meta {
     statement = connection.prepareStatement("CREATE INDEX " + AIRPLANE_INDEX_1 + " ON " + AIRPLANE_TABLE + "(owner)")
     statement.execute()
     statement.close()
+    
+    statement = connection.prepareStatement("CREATE INDEX " + AIRPLANE_INDEX_2 + " ON " + AIRPLANE_TABLE + "(model)")
+    statement.execute()
+    statement.close()
 
      
      
