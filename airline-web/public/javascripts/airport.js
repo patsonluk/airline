@@ -59,9 +59,43 @@ function populateAirportDetails(airport) {
 		        fillOpacity: 0.3,
 		        map: airportMap
 		    });
+		loadAirportSchedule(airport)
 		loadAirportStatistics(airport)
 	}
 }
+
+function loadAirportSchedule(airport) {
+	$.ajax({
+		type: 'GET',
+		url: "airports/" + airport.id + "/link-schedule/0",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(linkSchedules) {
+	    	$('#airportSchedule').empty()
+	    	var board = new DepartureBoard(document.getElementById('airportSchedule'), { rowCount: 20, letterCount: 35 });
+	    	var boardValues = []
+	    	
+			//board.setValue (['19:30 London King\'s Cross', '19:42 Sheffield']);
+			
+			$.each(linkSchedules, function(index, entry) {
+	    		$.each(entry.links, function(index, link) {
+	    			//$('#airportSchedule').append("<div>" + entry.timeSlotTime + "  " + link.linkCode + " to " + link.destination + "</div>")
+	    			boardValues.push(entry.timeSlotTime + "  " + pad(link.linkCode, 7) + " " + link.destination)
+	    		})
+	    	})
+	    	board.setValue(boardValues)
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+function pad(str, max) {
+	  str = str.toString();
+	  return str.length < max ? pad(str + " ", max) : str;
+}
+
 
 function loadAirportStatistics(airport) {
 	$.ajax({
@@ -69,7 +103,6 @@ function loadAirportStatistics(airport) {
 		url: "airports/" + airport.id + "/link-statistics",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-//	    async: false,
 	    success: function(airportStatistics) {
 	    	plotPie(airportStatistics.departure, null , $("#departurePie"), "airportName", "passengers")
 	    	plotPie(airportStatistics.destination, null, $("#destinationPie"), "airportName", "passengers")
@@ -247,7 +280,8 @@ function isShowMarker(marker, zoom) {
 function updateBaseInfo(airportId) {
 	$("#buildHeadquarterButton").hide()
 	$("#buildBaseButton").hide()
-	$("#airportIcons img").hide()
+	$("#airportIcons .baseIcon").hide()
+	
 	if (!activeAirline.headquarterAirport) {
 	  $("#buildHeadquarterButton").show()
 	} else {
@@ -274,7 +308,7 @@ function updatePopupDetails(airportId) {
 	$("#airportPopupAwareness").text()
 	$("#airportPopupLoyalty").text()
 	$("#airportPopupSlots").text(this.airportAvailableSlots + " (" + this.airportSlots + ")")
-			  
+	$("#airportIcons .feature").hide()		  
 	var airlineId = activeAirline.id
 	$.ajax({
 		type: 'GET',
@@ -302,6 +336,10 @@ function updatePopupDetails(airportId) {
 	    			updateBuildBaseButton(airport.zone)
 	    		}
 	  		});
+	    	
+	    	$.each(airport.features, function(index, feature) {
+	    		$("#airportIcons").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'><span class='label'>" +  feature.strength + "</span></div>")
+	    	})
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

@@ -8,16 +8,21 @@
     </style>
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
-    <script src="@routes.Assets.versioned("javascripts/jquery-2.1.4.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/jquery-ui.min.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/jquery.cookie.js")"></script>
-    <!-- <script src="@routes.Assets.versioned("javascripts/highcharts.js")"></script> -->
+    
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery-ui.min.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
+    <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
     <!-- <script src="@routes.Assets.versioned("javascripts/plot-highcharts.js")"></script> -->
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/plot-fusioncharts.js")"></script>
+	
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("departure-board/css/departure-board.css")">"
+	<script src="@routes.Assets.versioned("departure-board/js/departure-board.js")"></script>
+	
 
     <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
@@ -65,6 +70,7 @@
   			<div id="map" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
   			<div id="airportCanvas" style="display: none;">
   				<div id="airportMap" style=" height: 500px ; width: 550px; float: left;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
+  				<div id="airportSchedule" style="width: 900px; height: 400px; float: left;"></div>
   				<div id="airportStatistics" style="width: 900px; height: 400px; float: left;" class="section">
 	  				<div style="float: left;">
 	  					<h5 align="center">Airline share (as Departure)</h5>
@@ -337,7 +343,8 @@
     		<span id="airportPopupName" class="header"></span><img title="View Airport Details" src='@routes.Assets.versioned("images/icons/information-24.png")' class="button" onclick="showAirportDetails($('#airportPopupId').val())">
     	</div>
     	<div id="airportIcons">
-    		<img alt="Your Headquarter" title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon"><img alt="Your Base" title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon">
+    		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon">
+    		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon">
     	</div>
     	<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), true)">Build Headquarter</div>
     	<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Build Base</div>

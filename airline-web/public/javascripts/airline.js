@@ -406,8 +406,6 @@ function unselectLink() {
 		previousSelectedListItem.removeClass("selected")
 		var previousLinkId = previousSelectedListItem.data("linkId")
 		unhighlightPath(flightPaths[previousLinkId])
-		
-		//clear link detail div
 	}
 	selectedLink = undefined
 	
@@ -424,6 +422,10 @@ function selectLinkAndLoadDetails(linkId, refocus) {
  */
 function selectLink(linkId, refocus) {
 	unselectLink()
+	
+	if (tempPath) {
+		removeTempPath(tempPath)
+	}
 	
 	//highlight the selected link's flight path
 	highlightPath(flightPaths[linkId])

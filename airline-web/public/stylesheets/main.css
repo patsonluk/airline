@@ -146,3 +146,9 @@ a.selected, a:hover {
 	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;	
 }
+
+#airportIcons .feature { 
+	margin-left: 2px;
+	margin-right: 2px;
+}
+ 
