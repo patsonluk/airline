@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 object AirportFeaturePatcher {
   import AirportFeatureType._
   val featureList = Map(
-    INTERNATION_HUB -> Map[String, Int](
+    INTERNATIONAL_HUB -> Map[String, Int](
         "JFK" -> 8,
         "LHR" -> 8,
         "HKG" -> 7,

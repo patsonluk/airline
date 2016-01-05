@@ -19,7 +19,7 @@ object AirportFeature {
   import AirportFeatureType._
   def apply(featureType : AirportFeatureType, strength : Int) : AirportFeature = {
     featureType match {
-      case INTERNATION_HUB => InternationalHubFeature(strength)  
+      case INTERNATIONAL_HUB => InternationalHubFeature(strength)  
       case VACATION_HUB => VacationHubFeature(strength)
       case FINANCIAL_HUB => FinancialHubFeature(strength)
       case DOMESTIC_AIRPORT => DomesticAirportFeature(strength)
@@ -28,7 +28,7 @@ object AirportFeature {
 }
 
 sealed case class InternationalHubFeature(strength : Int) extends AirportFeature {
-  val featureType = AirportFeatureType.INTERNATION_HUB
+  val featureType = AirportFeatureType.INTERNATIONAL_HUB
   override def demandAdjustment(rawDemand : Int, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport) : Int = {
     if (airportId == toAirport.id) { //only affect if as a destination
       val multiplier =
@@ -100,5 +100,14 @@ sealed case class DomesticAirportFeature(strength : Int) extends AirportFeature 
 
 object AirportFeatureType extends Enumeration {
     type AirportFeatureType = Value
-    val INTERNATION_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, UNKNOWN = Value
+    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, UNKNOWN = Value
+    def getDescription(featureType : AirportFeatureType) = {
+      featureType match {
+        case INTERNATIONAL_HUB => "Internation Hub"
+        case VACATION_HUB => "Vacation Hub"
+        case FINANCIAL_HUB => "Financial Hub"
+        case DOMESTIC_AIRPORT => "Domestic Airport"
+        case UNKNOWN => "Unknown"
+      }
+    }
 }

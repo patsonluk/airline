@@ -159,6 +159,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     airlineBases.toMap
   }
   
+  def isFeaturesLoaded = featuresLoaded
+  
   def getFeatures() : List[AirportFeature] = {
     features.toList
   }
