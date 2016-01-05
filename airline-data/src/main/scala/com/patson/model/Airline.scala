@@ -23,6 +23,14 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   def getServiceFunding() = airlineInfo.serviceFunding
   def getReputation() = airlineInfo.reputation
   def getMaintenanceQuality() = airlineInfo.maintenanceQuality
+  def getAirlineCode() = {
+    var code = name.split("\\s+").foldLeft("")( (foldString, nameToken) => foldString + nameToken.charAt(0).toUpper)
+    if (code.length() > 2) {
+      code.substring(0, 2)
+    } else {
+      code
+    }
+  }
 }
 
 case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double)
