@@ -72,7 +72,7 @@ function loadAirportSchedule(airport) {
 	    dataType: 'json',
 	    success: function(linkSchedules) {
 	    	$('#airportSchedule').empty()
-	    	var board = new DepartureBoard(document.getElementById('airportSchedule'), { rowCount: 20, letterCount: 16 });
+	    	var board = new DepartureBoard(document.getElementById('airportSchedule'), { rowCount: 16, letterCount: 40 });
 	    	var boardValues = []
 	    	
 			//board.setValue (['19:30 London King\'s Cross', '19:42 Sheffield']);
