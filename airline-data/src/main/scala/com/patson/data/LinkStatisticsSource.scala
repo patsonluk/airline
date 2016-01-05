@@ -84,7 +84,7 @@ object LinkStatisticsSource {
   def saveLinkStatistics(linkStatistics : List[LinkStatistics]) = {
     val connection = Meta.getConnection()
     try {    
-        val preparedStatement = connection.prepareStatement("REPLACE INTO " + LINK_STATISTICS_TABLE + "(from_airport, to_airport, is_departure, is_destination, airline, passenger_count, cycle) VALUES(?,?,?,?,?,?,?)")
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_STATISTICS_TABLE + "(from_airport, to_airport, is_departure, is_destination, airline, passenger_count, cycle) VALUES(?,?,?,?,?,?,?)")
         
         connection.setAutoCommit(false)
         linkStatistics.foreach { 
