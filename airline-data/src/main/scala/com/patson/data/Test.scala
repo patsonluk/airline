@@ -10,7 +10,8 @@ import com.patson.init.AirportFeaturePatcher
 
 
 object Test extends App {
-   AirportFeaturePatcher.patchFeatures() 
+   //AirportFeaturePatcher.patchFeatures()
+  println(5.hashCode())
 }
 
 

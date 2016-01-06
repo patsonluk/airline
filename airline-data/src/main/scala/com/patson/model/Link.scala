@@ -2,6 +2,7 @@ package com.patson.model
 
 import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
+import com.patson.model.Scheduling.TimeSlot
 
 /**
  * 
@@ -92,6 +93,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     }
     computedQualityPriceAdjust(linkClass)
   }
+  
+  lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
 }
 
 object Link {

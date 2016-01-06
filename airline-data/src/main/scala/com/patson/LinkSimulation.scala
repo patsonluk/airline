@@ -67,7 +67,7 @@ object LinkSimulation {
         } * (0.7 + 0.3 * loadFactor)).toInt //at 0 LF, 70% fuel cost
       case None => 0
     }
-       //at 0 LF, reduce fuel consumption by 70%
+
     val maintenanceCost = (link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
     val airportFees = link.getAssignedModel() match {
       case Some(model) =>
