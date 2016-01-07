@@ -4,6 +4,7 @@ var activeAirline
 var activeUser
 var selectedLink
 var activeWatchedLink
+var currentTime
 
 $( document ).ready(function() {
 	if ($.cookie('sessionActive')) {
@@ -188,6 +189,25 @@ function getAirlineCategory(reputation) {
 	}
 }
 
+var totalmillisecPerWeek = 7 * 24 * 60 * 60 * 1000
+var refreshInterval = 100 //100 millsec
+var incrementPerInterval = totalmillisecPerWeek / (4 * 60 * 1000) * refreshInterval //current 4 minutes per week
+var refreshIntervalId
+var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+
+function updateTime(cycle, fraction) {
+	currentTime = (cycle + fraction) * totalmillisecPerWeek 
+	if (!refreshIntervalId) { //start incrementing
+		refreshIntervalId = setInterval( function() {
+			currentTime += incrementPerInterval
+			var date = new Date(currentTime)
+			$("#currentTime").text("(" + days[date.getDay()] + ") " + (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear() + " " + date.getHours() + ":00")
+		}, refreshInterval);
+	}
+}
+
+
 function setActiveDiv(activeDiv) {
 //	activeDiv.siblings().hide(500)
 //activeDiv.show(500)
@@ -197,8 +217,6 @@ function setActiveDiv(activeDiv) {
 		activeDiv.fadeIn(200)
 	}
 }
-
-
 
 function appendConsole(message) {
 	$('#console').append( message + '<br/>')

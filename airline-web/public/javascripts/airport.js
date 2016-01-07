@@ -78,9 +78,10 @@ var flapperOptions = {
 
 function loadAirportSchedule(airport) {
 	var lineCount = 17
+	var date = new Date(currentTime)
 	$.ajax({
 		type: 'GET',
-		url: "airports/" + airport.id + "/link-schedule/0",
+		url: "airports/" + airport.id + "/link-schedule/" + date.getDay() + "/" + date.getHours(),
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(linkSchedules) {

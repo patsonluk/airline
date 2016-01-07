@@ -237,7 +237,7 @@ class Application extends Controller {
                 "airlineArrival" -> Json.toJson(statisticsArrivalByAirline)))
   }
   
-  def getAirportLinkSchedule(airportId : Int, dayOfWeek : Int) = Action {
+  def getAirportLinkSchedule(airportId : Int, dayOfWeek : Int, hour : Int) = Action {
     val links = LinkSource.loadLinksByFromAirport(airportId, LinkSource.SIMPLE_LOAD) ++ (LinkSource.loadLinksByToAirport(airportId, LinkSource.SIMPLE_LOAD).map { link => link.copy(from = link.to, to = link.from) })
     
     val map = Map[Int, String]()
@@ -250,7 +250,13 @@ class Application extends Controller {
       case(timeSlot, _) => timeSlot.totalMinutes
     }
     
-    Ok(Json.toJson(timeSlotLinkList))
+    val filteredList = timeSlotLinkList.dropWhile {
+      case(timeslot, _) => timeslot.dayOfWeek < dayOfWeek || (timeslot.dayOfWeek == dayOfWeek && timeslot.hour < hour) 
+    }.takeWhile {
+      case(timeslot, _) => timeslot.dayOfWeek == dayOfWeek
+    }
+    
+    Ok(Json.toJson(filteredList))
   }
       
   

@@ -8,6 +8,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.Set
 import com.typesafe.config.ConfigFactory
 import akka.remote.RemotingLifecycleEvent
+import com.patson.MainSimulation
 
 object SimulationEventStream{
   val config = ConfigFactory.load()
@@ -27,14 +28,26 @@ object SimulationEventStream{
   
   
   class BridgeActor extends Actor {
+    var currentCycle : Int = 0
+    var cycleStartTime : Long = 0
+    
     def receive = {
       case "subscribe" =>
         println("subcribing actor " + sender().path)
+        val elapsedFraction = (System.currentTimeMillis() - cycleStartTime).toDouble / (MainSimulation.CYCLE_DURATION * 1000)
+        sender() ! (CycleInfo(currentCycle, elapsedFraction), None)
         registeredActors += sender()
       case "unsubscribe" =>
         println("unsubcribing actor " + sender().path)
         registeredActors -= sender()
       case (topic: SimulationEvent, payload: Any) =>
+        topic match {
+          case CycleStart(cycle) =>
+            currentCycle = cycle
+            cycleStartTime = System.currentTimeMillis()
+          case _ => //nothing
+        }
+        
         println("received " + topic)
         registeredActors.foreach { registeredActor =>
           println("forwarding message back to " + registeredActor.path)
@@ -50,3 +63,5 @@ object SimulationEventStream{
 
 class SimulationEvent
 case class CycleCompleted(cycle : Int) extends SimulationEvent
+case class CycleStart(cycle: Int) extends SimulationEvent
+case class CycleInfo(cycle: Int, fraction : Double) extends SimulationEvent

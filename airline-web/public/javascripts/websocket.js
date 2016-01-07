@@ -22,9 +22,20 @@ function initWebSocket(airlineId) {
 
 function onClose(evt) {}  
 function onMessage(evt) { //right now the message is just the cycle #, so refresh the panels
+	
 	console.log("websocket received message : " + evt.data)
-	if (selectedAirlineId) {
-		refreshPanels(selectedAirlineId)
+	var json = JSON.parse(evt.data)
+	
+	if (json.messageType == "cycleInfo") { //update time
+		updateTime(json.cycle, json.fraction)
+	} else if (json.messageType == "cycleStart") { //update time
+		updateTime(json.cycle, 0)
+	} else if (json.messageType == "cycleCompleted") {
+		if (selectedAirlineId) {
+			refreshPanels(selectedAirlineId)
+		}
+	} else {
+		console.warn("unknown message type " + evt.data)
 	}
 }  
 function onError(evt) {

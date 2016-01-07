@@ -7,9 +7,10 @@ import play.api.libs.ws._
 import play.api.mvc._
 import websocket.MyWebSocketActor
 import scala.concurrent.Future
+import play.api.libs.json.JsValue
 
 class WebsocketApplication @Inject()(ws: WSClient) extends Controller {
-  def wsWithActor = WebSocket.tryAcceptWithActor[String, String] { request => 
+  def wsWithActor = WebSocket.tryAcceptWithActor[JsValue, JsValue] { request => 
     Future.successful(request.session.get("userId") match {
       case None =>
         Logger.info("websocket rejected")

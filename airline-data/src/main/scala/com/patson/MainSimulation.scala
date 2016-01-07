@@ -21,11 +21,10 @@ import akka.actor.Props
 import java.util.concurrent.TimeUnit
 import com.patson.stream.SimulationEventStream
 import com.patson.stream.CycleCompleted
+import com.patson.stream.CycleStart
 
 object MainSimulation extends App {
-  
-   
-  
+  val CYCLE_DURATION : Int = 4 * 60
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 
 //  import actorSystem.dispatcher
@@ -37,13 +36,14 @@ object MainSimulation extends App {
   def mainFlow() = {
     import actorSystem.dispatcher
     val actor = actorSystem.actorOf(Props[MainSimulationActor])
-    actorSystem.scheduler.schedule(Duration.Zero, Duration(2, TimeUnit.MINUTES), actor, Start)
+    actorSystem.scheduler.schedule(Duration.Zero, Duration(CYCLE_DURATION, TimeUnit.SECONDS), actor, Start)
   }
 
   
   def startCycle(cycle : Int) = {
       val cycleStart = System.currentTimeMillis()
       println("cycle " + cycle + " starting!")
+      SimulationEventStream.publish(CycleStart(cycle), None)
       val linkResult : List[LinkConsumptionDetails] = LinkSimulation.linkSimulation(cycle)
       AirportSimulation.airportSimulation(cycle, linkResult)
       AirplaneSimulation.airplaneSimulation(cycle)

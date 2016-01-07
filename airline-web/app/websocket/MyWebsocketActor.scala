@@ -4,6 +4,8 @@ import akka.actor._
 import com.patson.data.UserSource
 import com.patson.stream._
 import java.util.concurrent.atomic.AtomicLong
+import play.api.libs.json.JsNumber
+import play.api.libs.json.Json
 
 object MyWebSocketActor {
   val counter = new AtomicLong() 
@@ -18,7 +20,7 @@ class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
     case Notification(message) =>
 //      println("going to send " + message + " back to the websocket")
       out ! message
-    case airlineId : String => //directly recieve message from the websocket (the only message the websocket client send down now is the airline id
+    case JsNumber(airlineId) => //directly recieve message from the websocket (the only message the websocket client send down now is the airline id
       try {
         UserSource.loadUserById(userId).foreach { user => 
           if (user.hasAccessToAirline(airlineId.toInt)) {
@@ -26,7 +28,11 @@ class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
             RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
               case CycleCompleted(cycle) => 
                 //println("Received cycle completed: " + cycle)
-                out ! cycle.toString() //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle  
+                out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
+              case CycleStart(cycle) =>
+                out ! Json.obj("messageType" -> "cycleStart", "cycle" -> cycle)
+              case CycleInfo(cycle, fraction) =>  
+                out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction)
             }, subscriberId)
             
             this.subscriberId = Some(subscriberId)
@@ -39,7 +45,7 @@ class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
         case _ : NumberFormatException => println("Receieved websocket message " +  airlineId + " which is not numeric!")
       }
     case any =>
-      println("received " + any) 
+      println("received " + any + " not handled")  
   }
   
   override def aroundPostStop() = {
