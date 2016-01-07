@@ -151,4 +151,7 @@ a.selected, a:hover {
 	margin-left: 2px;
 	margin-right: 2px;
 }
+#airportSchedule {
+	background-image: url(../flapper/img/brushed.png);
+}
  

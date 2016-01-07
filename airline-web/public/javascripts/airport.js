@@ -64,7 +64,20 @@ function populateAirportDetails(airport) {
 	}
 }
 
+var flapperOptions = {
+		  width: 30,             // number of digits
+		  align: 'left',       // aligns values to the left or right of display
+		  chars: null,          // array of characters that Flapper can display
+		  chars_preset: 'alphanum',  // 'num', 'hexnum', 'alpha' or 'alphanum'
+		  timing: 250,          // the maximum timing for digit animation
+		  min_timing: 10,       // the minimum timing for digit animation
+		  transform: true,       // Flapper automatically detects the jquery.transform
+		  on_anim_start: null,   // Callback for start of animation
+		  on_anim_end: null,     // Callback for end of animation
+		}
+
 function loadAirportSchedule(airport) {
+	var lineCount = 17
 	$.ajax({
 		type: 'GET',
 		url: "airports/" + airport.id + "/link-schedule/0",
@@ -72,18 +85,39 @@ function loadAirportSchedule(airport) {
 	    dataType: 'json',
 	    success: function(linkSchedules) {
 	    	$('#airportSchedule').empty()
-	    	var board = new DepartureBoard(document.getElementById('airportSchedule'), { rowCount: 16, letterCount: 40 });
-	    	var boardValues = []
-	    	
-			//board.setValue (['19:30 London King\'s Cross', '19:42 Sheffield']);
-			
-			$.each(linkSchedules, function(index, entry) {
+	    	//var board = new DepartureBoard(document.getElementById('airportSchedule'), { rowCount: 16, letterCount: 40 });
+	    	//var boardValues = []
+	    	var counter = 0
+	    	var departureBoardLines = []
+	    	$.each(linkSchedules, function(index, entry) {
 	    		$.each(entry.links, function(index, link) {
-	    			//$('#airportSchedule').append("<div>" + entry.timeSlotTime + "  " + link.linkCode + " to " + link.destination + "</div>")
-	    			boardValues.push(entry.timeSlotTime + "  " + pad(link.linkCode, 7) + " " + link.destination)
+	    			counter ++
+	    			if (counter < lineCount) {
+		    			var text = (entry.timeSlotTime + "  " + pad(link.linkCode, 7) + " " + link.destination).toUpperCase()
+		    			//departureBoardLines.push($("<input class='XXS'/>").appendTo('#airportSchedule').flapper(flapperOptions).val(text))
+		    			departureBoardLines.push({ input : $("<input class='XXS'/>").appendTo('#airportSchedule').flapper(flapperOptions), text : text})
+	    			}
 	    		})
 	    	})
-	    	board.setValue(boardValues)
+	    	
+	    	
+	    	for (var i = 0 ; i < (lineCount - counter - 1); i++) { //pad extra lines
+	    		console.log(i + " and " + (lineCount - counter))
+	    		$("<input class='XXS'/>").appendTo('#airportSchedule').flapper(flapperOptions)
+	    	}
+	    	
+	    	function animateLines() {
+	    		if (departureBoardLines.length > 0) {
+	    			//departureBoardLines.shift().change()
+	    			var element = departureBoardLines.shift()
+	    			element.input.val(element.text).change()
+		    		setTimeout(function() {
+			    		animateLines()
+			    	}, 2000)
+	    		}
+	    	}
+	    	animateLines()
+	    	//board.setValue(boardValues)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -91,6 +125,8 @@ function loadAirportSchedule(airport) {
 	    }
 	});
 }
+
+
 function pad(str, max) {
 	  str = str.toString();
 	  return str.length < max ? pad(str + " ", max) : str;
