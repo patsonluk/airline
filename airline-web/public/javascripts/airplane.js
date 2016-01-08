@@ -154,8 +154,9 @@ function loadAirplaneDetails(airplaneId) {
 	    	$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
 	    	$("#airplaneDetailsAge").text(airplane.age + "week(s)")
 	    	$("#airplaneDetailsValue").text("$" + airplane.value)
+	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.link) {
-	    		$("#airplaneDetailsLink").text(airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")")
+	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='selectLinkAndLoadDetails(" + airplane.link.id + ")'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
 	    		$("#sellAirplaneButton").hide()
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
