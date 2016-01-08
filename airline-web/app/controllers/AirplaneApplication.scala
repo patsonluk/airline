@@ -82,8 +82,10 @@ class AirplaneApplication extends Controller {
   }
   
   def sellAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) {
-    AirplaneSource.loadAirplaneById(airplaneId) match {
-      case Some(airplane) =>
+    AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId) match {
+      case Some((airplane, Some(link))) => //still assigned to some link, do not allow selling
+        BadRequest("airplane still assigned to link " + link)
+      case Some((airplane, None)) =>
         if (airplane.owner.id == airlineId) {
           val sellValue = Computation.calculateAirplaneSellValue(airplane)
           if (AirplaneSource.deleteAirplane(airplaneId) == 1) {

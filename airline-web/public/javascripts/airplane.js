@@ -156,8 +156,10 @@ function loadAirplaneDetails(airplaneId) {
 	    	$("#airplaneDetailsValue").text("$" + airplane.value)
 	    	if (airplane.link) {
 	    		$("#airplaneDetailsLink").text(airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")")
+	    		$("#sellAirplaneButton").hide()
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
+	    		$("#sellAirplaneButton").show()
 	    	}
 	    	
 	    },
