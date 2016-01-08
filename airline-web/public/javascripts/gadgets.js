@@ -118,7 +118,11 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 }
 
 function changeColoredElementValue(element, newValue) {
-	var oldValue = element.text()
+	var oldValue = element.data('numericValue')
+	if ($.isNumeric(newValue)) {
+		element.data('numericValue', parseFloat(newValue))
+	}
+	
 	if (!element.is(':animated') && $.isNumeric(oldValue) && $.isNumeric(newValue)) { //only do coloring for numeric values
 		var originalColor = element.css("color")
 		var originalBackgroundColor = element.css("background-color")
@@ -137,5 +141,16 @@ function changeColoredElementValue(element, newValue) {
 			})
 		}
 	}
-	element.text(newValue)
+	if ($.isNumeric(newValue)) {
+		element.text(commaSeparateNumber(newValue))
+	} else {
+		element.text(newValue)
+	}
+}
+
+function commaSeparateNumber(val){
+    while (/(\d+)(\d{3})/.test(val.toString())){
+      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+    }
+    return val;
 }

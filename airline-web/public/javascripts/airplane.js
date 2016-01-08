@@ -73,7 +73,7 @@ function updateModelInfo() {
 			+ "<br/>Fuel Burn : " + model.fuelBurn
 			+ "<br/>Speed : " + model.speed
 			+ "<br/>Range : " + model.range
-			+ "<br/>Price : " + model.price +
+			+ "<br/>Price : " + commaSeparateNumber(model.price) +
 			"</div>")); 
 	  		
 }
@@ -153,7 +153,7 @@ function loadAirplaneDetails(airplaneId) {
 	    	$("#airplaneDetailsRange").text(airplane.range + " km")
 	    	$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
 	    	$("#airplaneDetailsAge").text(airplane.age + "week(s)")
-	    	$("#airplaneDetailsValue").text("$" + airplane.value)
+	    	$("#airplaneDetailsValue").text("$" + commaSeparateNumber(airplane.value))
 	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.link) {
 	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='selectLinkAndLoadDetails(" + airplane.link.id + ")'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )

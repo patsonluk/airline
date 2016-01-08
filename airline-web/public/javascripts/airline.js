@@ -502,13 +502,13 @@ function refreshLinkDetails(linkId) {
 				if (linkConsumption.capacity.first > 0)  { loadFactor.first = parseInt(linkConsumption.soldSeats.first / linkConsumption.capacity.first * 100)}
 		    	
 	    		$("#linkLoadFactor").text(toLinkClassValueString(loadFactor, "", "%"))
-		    	$("#linkProfit").text("$" + linkConsumption.profit)
-		    	$("#linkRevenue").text("$" + linkConsumption.revenue)
-		    	$("#linkFuelCost").text("$" + linkConsumption.fuelCost)
-		    	$("#linkCrewCost").text("$" + linkConsumption.crewCost)
-		    	$("#linkAirportFees").text("$" + linkConsumption.airportFees)
-		    	$("#linkDepreciation").text("$" + linkConsumption.depreciation)
-		    	$("#linkOtherCosts").text("$" + (linkConsumption.inflightCost + linkConsumption.maintenanceCost))
+		    	$("#linkProfit").text("$" + commaSeparateNumber(linkConsumption.profit))
+		    	$("#linkRevenue").text("$" + commaSeparateNumber(linkConsumption.revenue))
+		    	$("#linkFuelCost").text("$" + commaSeparateNumber(linkConsumption.fuelCost))
+		    	$("#linkCrewCost").text("$" + commaSeparateNumber(linkConsumption.crewCost))
+		    	$("#linkAirportFees").text("$" + commaSeparateNumber(linkConsumption.airportFees))
+		    	$("#linkDepreciation").text("$" + commaSeparateNumber(linkConsumption.depreciation))
+		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost))
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
 	    	plotLinkRidership(linkConsumptions, $("#linkRidershipChart"))
