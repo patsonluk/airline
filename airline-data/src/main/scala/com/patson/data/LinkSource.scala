@@ -116,7 +116,7 @@ object LinkSource {
       Some(result(0))
     }
   }
-  def loadLinksByAirports(fromAirportId : Int, toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : List[Link] = {
+  def loadLinksByAirports(fromAirportId : Int, toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) : List[Link] = {
     loadLinksByCriteria(List(("from_airport", fromAirportId), ("to_airport", toAirportId)), loadDetails)
   }
   
