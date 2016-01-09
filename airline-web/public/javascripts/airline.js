@@ -178,7 +178,8 @@ function drawFlightPath(link) {
      strokeOpacity: 0.6,
      strokeWeight: 2,
      frequency : link.frequency,
-     modelId : link.modelId
+     modelId : link.modelId,
+     zIndex: 90
    });
    
    var icon = "assets/images/icons/airplane.png"
@@ -294,7 +295,7 @@ function highlightPath(path) {
 		}
 		 
 		var colorHexString = "#" + redHex + greenHex + blueHex
-		path.path.setOptions({ strokeColor : colorHexString , strokeWeight : 4})
+		path.path.setOptions({ strokeColor : colorHexString , strokeWeight : 4, zIndex : 91})
 		
 		currentFrame = (currentFrame + 1) % (totalFrames * 2)
 		
@@ -304,7 +305,7 @@ function highlightPath(path) {
 function unhighlightPath(path) {
 	window.clearInterval(path.path.animation)
 	path.path["animation"] = undefined
-	path.path.setOptions({ strokeColor : path.path.originalColor , strokeWeight : 2})
+	path.path.setOptions({ strokeColor : path.path.originalColor , strokeWeight : 2, zIndex : 90})
 }
 
 
@@ -446,6 +447,9 @@ function selectLink(linkId, refocus) {
 
 function refreshLinkDetails(linkId) {
 	var airlineId = activeAirline.id
+	
+	$("#linkCompetitons .data-row").remove()
+	
 	//load link
 	$.ajax({
 		type: 'GET',
@@ -457,13 +461,35 @@ function refreshLinkDetails(linkId) {
 	    	$("#linkFromAirport").append("<img src='assets/images/flags/" + link.fromCountryCode + ".png' />")
 	    	$("#linkToAirport").text(getAirportText(link.toAirportCity, link.toAirportName))
 	    	$("#linkToAirport").append("<img src='assets/images/flags/" + link.toCountryCode + ".png' />")
-	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price), "$")
+	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
 	    	$("#linkDistance").text(link.distance)
 	    	$("#linkQuality").text(link.computedQuality)
 	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
 	    	$("#linkCurrentDetails").show()
 	    	$("#linkToAirportId").val(link.toAirportId)
 	    	$("#linkFromAirportId").val(link.fromAirportId)
+	    	
+	    	//load competition
+	    	$.ajax({
+	    		type: 'GET',
+	    		url: "airports/" + link.fromAirportId + "/to/" + link.toAirportId,
+	    	    contentType: 'application/json; charset=utf-8',
+	    	    dataType: 'json',
+	    	    success: function(linkConsumptions) {
+	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
+	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+	    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(link.price, "$")
+	    	    				+ "</div><div style='display: table-cell;'>" + linkConsumption.capacity 
+	    	    				+ "</div><div style='display: table-cell;'>" + linkConsumption.quality + "</div></div>")
+	    	    	})
+	    	    	$("#linkCompetitons").show()
+	    	    },
+	            error: function(jqXHR, textStatus, errorThrown) {
+	    	            console.log(JSON.stringify(jqXHR));
+	    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    	    }
+	    	});
+	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -519,6 +545,8 @@ function refreshLinkDetails(linkId) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+	
+	
 }
 
 function editLink(linkId) {
@@ -613,7 +641,7 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 		relatedPath = new google.maps.Polyline({
 			 geodesic: true,
 		     strokeColor: isWatchedLink ? "#FF3BF2" : "#DC83FC",
-		     strokeOpacity: 0.6,
+		     strokeOpacity: 0.8,
 		     strokeWeight: 2,
 		     path: [from, to],
 		     icons: [{
@@ -644,7 +672,7 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 		shadowPath = new google.maps.Polyline({
 			 geodesic: true,
 		     strokeColor: "#DC83FC",
-		     strokeOpacity: 0.01,
+		     strokeOpacity: 0.0001,
 		     strokeWeight: 25,
 		     path: [from, to],
 		     zIndex : 401,
@@ -689,11 +717,16 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 function showLinkHistoryPaths(state) {
 	$.each(historyPaths, function(key, historyPath) {
 		if ((state == "showInverted" && historyPath.inverted) || (state == "show" && !historyPath.inverted)) {
-			if (historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers > 1000) {
+			var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers
+			if (totalPassengers > 1000) {
 				historyPath.setOptions({strokeWeight : 3})
-			} else if (historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers > 10000) {
+			} else if (totalPassengers > 2000) {
 				historyPath.setOptions({strokeWeight : 4})
+			} else if (totalPassengers < 100) {
+				var newOpacity = 0.1 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.1) 
+				historyPath.setOptions({strokeOpacity : newOpacity})
 			}
+			
 			historyPath.setMap(map)
 			historyPath.shadowPath.setMap(map)
 		} else {

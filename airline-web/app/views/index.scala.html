@@ -196,6 +196,14 @@
 			    				<div class="value" id="linkCurrentCapacity"></div>
 			    			</div>
 			    		</div>
+			    		<input type="hidden" id="actionLinkId"></input>
+		    			<input type="hidden" id="linkFromAirportId"></input>
+		    			<input type="hidden" id="linkToAirportId"></input>
+		    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
+		    			<div class="button" onclick="watchLink($('#actionLinkId').val())">Watch</div>
+		    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
+		    			<div class="button" onclick="unselectLink()">Cancel</div>
+			    		
 			    		<div class="divider"></div>
 			    		<div class="table" id="linkHistoryDetails" style="width: 100%">
 		    				<h4>History</h4>	
@@ -240,14 +248,15 @@
 			    				<div class="value" id="linkOtherCosts"></div>
 			    			</div>
 		    			</div>
-		    			
-		    			<input type="hidden" id="actionLinkId"></input>
-		    			<input type="hidden" id="linkFromAirportId"></input>
-		    			<input type="hidden" id="linkToAirportId"></input>
-		    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
-		    			<div class="button" onclick="watchLink($('#actionLinkId').val())">Watch</div>
-		    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
-		    			<div class="button" onclick="unselectLink()">Cancel</div>
+		    			<div class="table" id="linkCompetitons" style="width: 100%">
+	    					<h4>Direct Competitions</h4>
+	    					<div class='table-row'>
+	    						<div style="display: table-cell;"><h5>Airline</h5></div>
+	    						<div style="display: table-cell;"><h5>Price</h5></div>
+	    						<div style="display: table-cell;"><h5>Capacity</h5></div>
+	    						<div style="display: table-cell;"><h5>Quality</h5></div>
+	    					</div>
+	    				</div>
 		    		</div>
 		    		
 	    			<div id="linkProfitChart" style="height: 200px; width: 50%; float: left;"></div>

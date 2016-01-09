@@ -150,7 +150,7 @@ class LinkApplication extends Controller {
       Json.toJson(route.links)
     }
   }
-  implicit object linkWithDirectionWrites extends Writes[LinkConsideration] {
+  implicit object LinkWithDirectionWrites extends Writes[LinkConsideration] {
     def writes(linkWithDirection : LinkConsideration): JsValue = {
       JsObject(List(
         "linkId" -> JsNumber(linkWithDirection.link.id),
@@ -168,7 +168,6 @@ class LinkApplication extends Controller {
         "toLongitude" -> JsNumber(linkWithDirection.to.longitude)))
     }
   }
-  
   
   case class PlanLinkData(fromAirportId: Int, toAirportId: Int)
   val planLinkForm = Form(
@@ -245,11 +244,6 @@ class LinkApplication extends Controller {
         return BadRequest("Cannot insert link - model cannot reach that distance")
       }
       
-      //validate the model is allowed in the from and to airport
-      if (model.range < incomingLink.distance) {
-        return BadRequest("Cannot insert link - model cannot reach that distance")
-      }
-      
       //validate the model is allowed for airport sizes
       if (!incomingLink.from.allowsModel(model) || !incomingLink.to.allowsModel(model)) {
         return BadRequest("Cannot insert link - airport size does not allow that!")
@@ -315,8 +309,6 @@ class LinkApplication extends Controller {
       case None =>
         NotFound
     }
-    
-    
   }
   
   def getAllLinks() = Action {
