@@ -38,9 +38,9 @@ sealed case class InternationalHubFeature(strength : Int) extends AirportFeature
           1
         }
       val flightType = Computation.getFlightType(fromAirport, toAirport)
-      if (flightType == SHORT_HAUL_INTERNATIONAL) {
+      if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL) {
         (rawDemand * (strengthFactor * 0.5) * multiplier).toInt //at MAX_STREGTH, add 2x for business traveler, 0.5x for tourists (short haul)   
-      } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == ULTRA_LONG_HAUL_INTERNATIONAL) {
+      } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
         (rawDemand * (strengthFactor * 0.25) * multiplier).toInt //at MAX_STREGTH, add 1x for business traveler, 0.25x for tourists (long haul)
       } else {
         0

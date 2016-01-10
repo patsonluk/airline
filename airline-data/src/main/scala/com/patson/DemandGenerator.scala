@@ -135,9 +135,9 @@ object DemandGenerator {
       var multiplier = flightType match {
         case SHORT_HAUL_DOMESTIC => 6
         case LONG_HAUL_DOMESTIC => 3
-        case SHORT_HAUL_INTERNATIONAL => if (passengerType == PassengerType.BUSINESS) 1.5 else 2.0
-        case LONG_HAUL_INTERNATIONAL => 1
-        case ULTRA_LONG_HAUL_INTERNATIONAL => if (passengerType == PassengerType.BUSINESS) 0.5 else 0.3
+        case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => if (passengerType == PassengerType.BUSINESS) 1.5 else 2.0
+        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => 1
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL  => if (passengerType == PassengerType.BUSINESS) 0.5 else 0.3
       }
       
       if (passengerType == PassengerType.TOURIST) {
@@ -172,7 +172,7 @@ object DemandGenerator {
       val income = fromAirport.income
 
       val firstClassPercentage : Double = 
-        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == ULTRA_LONG_HAUL_INTERNATIONAL) {
+        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
           if (income <= FIRST_CLASS_INCOME_MIN) {
             0 
           } else if (income >= FIRST_CLASS_INCOME_MAX) {

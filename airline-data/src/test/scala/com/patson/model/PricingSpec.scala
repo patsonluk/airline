@@ -38,10 +38,12 @@ class PricingSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
       Pricing.computeStandardPrice(200, SHORT_HAUL_INTERNATIONAL, ECONOMY).shouldBe((150 * Pricing.INTERNATIONAL_PRICE_MULTIPLIER).toInt)
       Pricing.computeStandardPrice(1000, SHORT_HAUL_INTERNATIONAL, ECONOMY).shouldBe((250 * Pricing.INTERNATIONAL_PRICE_MULTIPLIER).toInt)
       Pricing.computeStandardPrice(1500, SHORT_HAUL_INTERNATIONAL, ECONOMY).shouldBe((300 * Pricing.INTERNATIONAL_PRICE_MULTIPLIER).toInt)
+      Pricing.computeStandardPrice(1500, SHORT_HAUL_INTERCONTINENTAL, ECONOMY).shouldBe((300 * Pricing.INTERCONTINENTAL_PRICE_MULTIPLIER).toInt)
       Pricing.computeStandardPrice(2000, LONG_HAUL_INTERNATIONAL, ECONOMY).shouldBe((350 * Pricing.INTERNATIONAL_PRICE_MULTIPLIER).toInt)
       Pricing.computeStandardPrice(6000, LONG_HAUL_INTERNATIONAL, ECONOMY).shouldBe((550 * Pricing.INTERNATIONAL_PRICE_MULTIPLIER).toInt)
-      Pricing.computeStandardPrice(10000, ULTRA_LONG_HAUL_INTERNATIONAL, ECONOMY).shouldBe((750 * Pricing.INTERNATIONAL_PRICE_MULTIPLIER).toInt)
-      Pricing.computeStandardPrice(14000, ULTRA_LONG_HAUL_INTERNATIONAL, ECONOMY).shouldBe((950 * Pricing.INTERNATIONAL_PRICE_MULTIPLIER).toInt)
+      Pricing.computeStandardPrice(6000, LONG_HAUL_INTERCONTINENTAL, ECONOMY).shouldBe((550 * Pricing.INTERCONTINENTAL_PRICE_MULTIPLIER).toInt)
+      Pricing.computeStandardPrice(10000, ULTRA_LONG_HAUL_INTERCONTINENTAL, ECONOMY).shouldBe((750 * Pricing.INTERCONTINENTAL_PRICE_MULTIPLIER).toInt)
+      Pricing.computeStandardPrice(14000, ULTRA_LONG_HAUL_INTERCONTINENTAL, ECONOMY).shouldBe((950 * Pricing.INTERCONTINENTAL_PRICE_MULTIPLIER).toInt)
     }
   }
 }

@@ -77,9 +77,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     Computation.getFlightType(from, to) match {
       case SHORT_HAUL_DOMESTIC => 30 + linkClassMultiplier * 15
       case SHORT_HAUL_INTERNATIONAL => 35 + linkClassMultiplier * 15
+      case SHORT_HAUL_INTERCONTINENTAL => 40 + linkClassMultiplier * 15
       case LONG_HAUL_DOMESTIC => 45 + linkClassMultiplier * 15
       case LONG_HAUL_INTERNATIONAL => 50 + linkClassMultiplier * 15
-      case ULTRA_LONG_HAUL_INTERNATIONAL => 55 + linkClassMultiplier * 15
+      case LONG_HAUL_INTERCONTINENTAL => 55 + linkClassMultiplier * 15
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 60 + linkClassMultiplier * 15
     }
   }
     

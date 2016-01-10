@@ -91,7 +91,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       consumptionResult.profit.should(be < 0)
       
       airplane = largeAirplane
-      consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERNATIONAL, 0.1, 6)
+      consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERCONTINENTAL, 0.1, 6)
       consumptionResult.profit.should(be < 0)
     }
     
@@ -117,7 +117,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       
       airplane = largeAirplane
-      consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERNATIONAL, 0.6, 6)
+      consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERCONTINENTAL, 0.6, 6)
       consumptionResult.profit.should(be > 0)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
     }
@@ -144,7 +144,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
 //      verfiyReturnRate(consumptionResult, airplane.model, true)
       
       airplane = largeAirplane
-      consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERNATIONAL, 1, 6)
+      consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERCONTINENTAL, 1, 6)
       consumptionResult.profit.should(be > 0)
 //      verfiyReturnRate(consumptionResult, airplane.model, false)
     }
@@ -282,9 +282,9 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val allBusinessCapacity : LinkClassValues = LinkClassValues.getInstance(0, maxBusinessCapacity, 0)
       val allFirstCapacity : LinkClassValues = LinkClassValues.getInstance(0, 0, maxFirstCapacity)
       
-      val economyPrice = Pricing.computeStandardPrice(distance, ULTRA_LONG_HAUL_INTERNATIONAL, ECONOMY)
-      val businessPrice = Pricing.computeStandardPrice(distance, ULTRA_LONG_HAUL_INTERNATIONAL, BUSINESS)
-      val firstPrice = Pricing.computeStandardPrice(distance, ULTRA_LONG_HAUL_INTERNATIONAL, FIRST)
+      val economyPrice = Pricing.computeStandardPrice(distance, ULTRA_LONG_HAUL_INTERCONTINENTAL, ECONOMY)
+      val businessPrice = Pricing.computeStandardPrice(distance, ULTRA_LONG_HAUL_INTERCONTINENTAL, BUSINESS)
+      val firstPrice = Pricing.computeStandardPrice(distance, ULTRA_LONG_HAUL_INTERCONTINENTAL, FIRST)
     
       val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = 60, duration, frequency)
       val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice)), distance = distance, allBusinessCapacity, rawQuality = 60, duration, frequency)
@@ -338,9 +338,11 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       flightType match {
       case SHORT_HAUL_DOMESTIC => 30
       case SHORT_HAUL_INTERNATIONAL => 40
+      case SHORT_HAUL_INTERCONTINENTAL => 45
       case LONG_HAUL_DOMESTIC => 50
       case LONG_HAUL_INTERNATIONAL => 60
-      case ULTRA_LONG_HAUL_INTERNATIONAL => 70
+      case LONG_HAUL_INTERCONTINENTAL => 65
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 75
     }
     
     val fromAirportClone = fromAirport.copy(size = airportSize)

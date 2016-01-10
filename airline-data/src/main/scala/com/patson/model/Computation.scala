@@ -74,13 +74,19 @@ object Computation {
       } else {
         LONG_HAUL_DOMESTIC
       }
-    } else { //international
+    } else if (fromAirport.zone == toAirport.zone) { //international but same continent
       if (longitudeDelta <= 20 && latitudeDelta <= 20) {
         SHORT_HAUL_INTERNATIONAL
-      } else if (longitudeDelta <= 50 && latitudeDelta <= 30) {
-        LONG_HAUL_INTERNATIONAL
       } else {
-        ULTRA_LONG_HAUL_INTERNATIONAL
+        LONG_HAUL_INTERNATIONAL
+      }
+    } else {
+      if (longitudeDelta <= 20 && latitudeDelta <= 20) {
+        SHORT_HAUL_INTERCONTINENTAL
+      } else if (longitudeDelta <= 50 && latitudeDelta <= 30) {
+        LONG_HAUL_INTERCONTINENTAL
+      } else {
+        ULTRA_LONG_HAUL_INTERCONTINENTAL
       }
     }
   }
