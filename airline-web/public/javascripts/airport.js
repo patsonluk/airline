@@ -135,10 +135,11 @@ function loadAirportStatistics(airport) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airportStatistics) {
-	    	plotPie(airportStatistics.departure, null , $("#departurePie"), "airportName", "passengers")
-	    	plotPie(airportStatistics.destination, null, $("#destinationPie"), "airportName", "passengers")
-	    	plotPie(airportStatistics.connectionFrom, null, $("#connectionFromPie"), "airportName", "passengers")
-	    	plotPie(airportStatistics.connectionTo, null, $("#connectionToPie"), "airportName", "passengers")
+	    	var transitTypeData = [
+	    	 {"transitType" : "departure/arrival passengers", "passengers" : airportStatistics.departureOrArrivalPassengers},
+	    	 {"transitType" : "transit passengers", "passengers" : airportStatistics.transitPassengers}
+	    	 ]
+	    	plotPie(transitTypeData, null , $("#transitTypePie"), "transitType", "passengers")
 	    	plotPie(airportStatistics.airlineDeparture, activeAirline.name, $("#airlineDeparturePie"), "airlineName", "passengers")
 	    	plotPie(airportStatistics.airlineArrival, activeAirline.name, $("#airlineArrivalPie"), "airlineName", "passengers")
 	    },

@@ -209,30 +209,36 @@ class Application extends Controller {
     //group things up
     val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId)
     val flightsToThisAirport = LinkStatisticsSource.loadLinkStatisticsByToAirport(airportId)
-    val (flightsInitialDeparture, flightsConnectionFrom) = flightsFromThisAirport.partition { _.key.isDeparture }
-    val (flightsFinalDestination, flightsConnectionTo) = flightsToThisAirport.partition { _.key.isDestination }
+//    val (flightsInitialDeparture, flightsConnectionFrom) = flightsFromThisAirport.partition { _.key.isDeparture }
+//    val (flightsFinalDestination, flightsConnectionTo) = flightsToThisAirport.partition { _.key.isDestination }
+    val departureOrArrivalFlights = flightsFromThisAirport.filter { _.key.isDeparture} ++ flightsToThisAirport.filter { _.key.isDestination }
+    val connectionFlights = flightsFromThisAirport.filterNot { _.key.isDeparture} ++ flightsToThisAirport.filterNot { _.key.isDestination }
     
     val flightDepartureByAirline = flightsFromThisAirport.groupBy { _.key.airline }
     val flightDestinationByAirline = flightsToThisAirport.groupBy { _.key.airline }
     
     
     //fold them to get total numbers
-    val statisticsInitialDeparture : Map[Airport, Int] = flightsInitialDeparture.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
-      val airport = linkStatisticsEntry.key.toAirport
-      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
-    }
-    val statisticsFinalDestination : Map[Airport, Int] = flightsFinalDestination.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
-      val airport = linkStatisticsEntry.key.fromAirport
-      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
-    }
-    val statisticsConnectionFrom : Map[Airport, Int] = flightsConnectionFrom.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
-      val airport = linkStatisticsEntry.key.toAirport
-      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
-    }
-    val statisticsConnectionTo :Map[Airport, Int] = flightsConnectionTo.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
-      val airport = linkStatisticsEntry.key.fromAirport
-      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
-    }
+//    val statisticsInitialDeparture : Map[Airport, Int] = flightsInitialDeparture.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
+//      val airport = linkStatisticsEntry.key.toAirport
+//      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
+//    }
+//    val statisticsFinalDestination : Map[Airport, Int] = flightsFinalDestination.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
+//      val airport = linkStatisticsEntry.key.fromAirport
+//      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
+//    }
+//    val statisticsConnectionFrom : Map[Airport, Int] = flightsConnectionFrom.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
+//      val airport = linkStatisticsEntry.key.toAirport
+//      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
+//    }
+//    val statisticsConnectionTo :Map[Airport, Int] = flightsConnectionTo.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
+//      val airport = linkStatisticsEntry.key.fromAirport
+//      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
+//    }
+    val departureOrArrivalPassengers = departureOrArrivalFlights.map{ _.passengers }.sum
+    val transitPassengers = connectionFlights.map{ _.passengers }.sum
+      
+    
     val statisticsDepartureByAirline : List[(Airline, Int)] = flightDepartureByAirline.foldRight(List[(Airline, Int)]()) { 
       case ((airline, statistics), foldList) =>
         val totalPassengersOfThisAirline = statistics.foldLeft(0)( _ + _.passengers) //all the passengers of this airline
@@ -243,10 +249,8 @@ class Application extends Controller {
         val totalPassengersOfThisAirline = statistics.foldLeft(0)( _ + _.passengers) //all the passengers of this airline
         (airline, totalPassengersOfThisAirline) :: foldList
     }
-    Ok(Json.obj("departure" -> Json.toJson(statisticsInitialDeparture), 
-                "destination" -> Json.toJson(statisticsFinalDestination),
-                "connectionFrom" -> Json.toJson(statisticsConnectionFrom),
-                "connectionTo" -> Json.toJson(statisticsConnectionTo),
+    Ok(Json.obj("departureOrArrivalPassengers" -> departureOrArrivalPassengers, 
+                "transitPassengers" -> transitPassengers,
                 "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),
                 "airlineArrival" -> Json.toJson(statisticsArrivalByAirline)))
   }
