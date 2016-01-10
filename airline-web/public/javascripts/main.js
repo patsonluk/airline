@@ -202,7 +202,7 @@ function updateTime(cycle, fraction) {
 		refreshIntervalId = setInterval( function() {
 			currentTime += incrementPerInterval
 			var date = new Date(currentTime)
-			$("#currentTime").text("(" + days[date.getDay()] + ") " + (date.getMonth() + 1) + '/' + date.getDate() + '/' +  date.getFullYear() + " " + date.getHours() + ":00")
+			$("#currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) + '/' +  date.getFullYear() + " " + padBefore(date.getHours(), "0", 2) + ":00")
 		}, refreshInterval);
 	}
 }

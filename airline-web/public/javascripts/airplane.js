@@ -35,7 +35,7 @@ function addAirplane(modelId, quantity) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	refreshPanels(airlineId)
+	    	refreshTopBar(airlineId)
 	    	updateAirplaneList()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -52,7 +52,7 @@ function sellAirplane(airplaneId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	refreshPanels(activeAirline.id)
+	    	refreshTopBar(activeAirline.id)
 	    	updateAirplaneList()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -156,7 +156,7 @@ function loadAirplaneDetails(airplaneId) {
 	    	$("#airplaneDetailsValue").text("$" + commaSeparateNumber(airplane.value))
 	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.link) {
-	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='selectLinkAndLoadDetails(" + airplane.link.id + ")'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
+	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='selectLinkAndLoadDetails(" + airplane.link.id + ", true)'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
 	    		$("#sellAirplaneButton").hide()
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")

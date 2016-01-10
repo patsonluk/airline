@@ -154,3 +154,13 @@ function commaSeparateNumber(val){
     }
     return val;
 }
+
+function padAfter(str, padChar, max) {
+    str = str.toString();
+	return str.length < max ? padAfter(str + padChar, padChar, max) : str;
+}
+function padBefore(str, padChar, max) {
+	str = str.toString();
+	return str.length < max ? padBefore(padChar + str, padChar, max) : str;
+}
+

@@ -94,7 +94,7 @@ function loadAirportSchedule(airport) {
 	    		$.each(entry.links, function(index, link) {
 	    			counter ++
 	    			if (counter < lineCount) {
-		    			var text = (entry.timeSlotTime + "  " + pad(link.linkCode, 7) + " " + link.destination).toUpperCase()
+		    			var text = (entry.timeSlotTime + "  " + padAfter(link.linkCode, " ", 7) + " " + link.destination).toUpperCase()
 		    			//departureBoardLines.push($("<input class='XXS'/>").appendTo('#airportSchedule').flapper(flapperOptions).val(text))
 		    			departureBoardLines.push({ input : $("<input class='XXS'/>").appendTo('#airportSchedule').flapper(flapperOptions), text : text})
 	    			}
@@ -125,12 +125,6 @@ function loadAirportSchedule(airport) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
-}
-
-
-function pad(str, max) {
-	  str = str.toString();
-	  return str.length < max ? pad(str + " ", max) : str;
 }
 
 
