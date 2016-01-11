@@ -231,9 +231,11 @@ object GeoDataGenerator extends App {
         println(runwayResult.size + " solid runways")
         println(citites.size + " cities")
         
-        val airportResult = adjustAirportByRunway(rawAirportResult.filter { airport => 
+        var airportResult = adjustAirportByRunway(rawAirportResult.filter { airport => 
              airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
           }, runwayResult)
+          
+        airportResult = adjustAirportSize(airportResult)  
         
         val airportsSortedByLongitude = airportResult.sortBy(_.longitude)
         val citiesSortedByLongitude = citites.sortBy(_.longitude)
@@ -372,8 +374,7 @@ object GeoDataGenerator extends App {
              
            if (megaRunway > 0) {
              println(rawAirport.name)
-             val size = 5 + megaRunway //at least size 6, max out at 9
-             rawAirport.size = if (size > MAX_AIRPORT_SIZE) MAX_AIRPORT_SIZE else size 
+             rawAirport.size = 6 
            } else if (veryLongRunway > 0) {
              if (veryLongRunway > 1) { //2 very long runway
                rawAirport.size = 5 //size 5
@@ -394,8 +395,11 @@ object GeoDataGenerator extends App {
     }
   }
   
-  
-  
-  
- 
+  def adjustAirportSize(airports: List[Airport]) : List[Airport]= {
+    airports.foreach { airport => AirportSizeAdjust.sizeList.get(airport.iata).foreach { newSize => 
+        airport.size = newSize
+      }
+    }
+    airports 
+  }
 }
