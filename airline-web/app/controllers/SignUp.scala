@@ -80,7 +80,7 @@ class SignUp extends Controller {
         Authentication.createUserSecret(userInput.username, userInput.password)
         
         val newAirline = Airline(userInput.airlineName)
-        newAirline.setBalance(1000000)
+        newAirline.setBalance(10000000)
         newAirline.setMaintainenceQuality(100)
         AirlineSource.saveAirlines(List(newAirline))
         

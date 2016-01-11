@@ -281,9 +281,18 @@
 			    			<div class="value" id="planLinkTouristPassengers"></div>
 			    		</div>
 			    		<div class="table-row">
-			    			<div class="label"><h5>Existing Routes Capacity:</h5></div>
-			    			<div class="value" id="planLinkAirportLinkCapacity"></div>
-			    		</div>
+			    			<div class="label"><h5>Direct Competitions:</h5></div>
+			    			<div class="value">
+								<div class="table" id="planLinkCompetitons" style="width: 100%">
+			    					<div class='table-row'>
+			    						<div style="display: table-cell;"><h5>Airline</h5></div>
+			    						<div style="display: table-cell;"><h5>Price</h5></div>
+			    						<div style="display: table-cell;"><h5>Capacity</h5></div>
+			    						<div style="display: table-cell;"><h5>Quality</h5></div>
+			    					</div>
+			    				</div>			    			
+			    			</div> 
+	    				</div>
 			    		<div class="table-row">
 			    			<div class="label"><h5>Aircraft Model:</h5></div>
 			    			<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val())"></select></div>

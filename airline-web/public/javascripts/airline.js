@@ -476,12 +476,17 @@ function refreshLinkDetails(linkId) {
 	    	    contentType: 'application/json; charset=utf-8',
 	    	    dataType: 'json',
 	    	    success: function(linkConsumptions) {
-	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
-	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
-	    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(link.price, "$")
-	    	    				+ "</div><div style='display: table-cell;'>" + linkConsumption.capacity 
-	    	    				+ "</div><div style='display: table-cell;'>" + linkConsumption.quality + "</div></div>")
+    	    		$.each(linkConsumptions, function(index, linkConsumption) {
+    	    			if (linkConsumption.airlineId != airlineId) {
+		    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
+		    	    				+ "</div><div style='display: table-cell;'>" + linkConsumption.capacity 
+		    	    				+ "</div><div style='display: table-cell;'>" + linkConsumption.quality + "</div></div>")
+    	    			}
 	    	    	})
+	    	    	if ($("#linkCompetitons .data-row").length == 0) {
+	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
+	    	    	}
 	    	    	$("#linkCompetitons").show()
 	    	    },
 	            error: function(jqXHR, textStatus, errorThrown) {
@@ -800,7 +805,24 @@ function updatePlanLinkInfo(linkInfo) {
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
 	$('#planLinkBusinessPassengers').text(linkInfo.businessPassengers)
 	$('#planLinkTouristPassengers').text(linkInfo.touristPassengers)
-	$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
+	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
+	
+	
+	$("#planLinkCompetitons .data-row").remove()
+	$.each(linkInfo.otherLinks, function(index, linkConsumption) {
+		if (linkConsumption.airlineId != activeAirline.id) {
+			$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+				    	    			   + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
+				    	    			   + "</div><div style='display: table-cell;'>" + linkConsumption.capacity 
+				    	    			   + "</div><div style='display: table-cell;'>" + linkConsumption.quality + "</div></div>")
+		}			
+	})
+	if ($("#planLinkCompetitons .data-row").length == 0) {
+		$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
+	}
+	
+	
+	
 	if (!linkInfo.existingLink) {
 		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)
 		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)

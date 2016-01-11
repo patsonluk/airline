@@ -448,7 +448,7 @@ class LinkApplication extends Controller {
             val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, PassengerType.TOURIST)
             
             val directDemand = directBusinessDemand + directTouristDemand
-            val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum 
+            //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum 
                                                                    
             var resultObject = Json.obj("fromAirportName" -> fromAirport.name,
                                         "fromAirportCity" -> fromAirport.city,
@@ -466,9 +466,14 @@ class LinkApplication extends Controller {
                                         "maxFrequencyToAirport" -> maxFrequencyToAirport,
                                         "directDemand" -> directDemand,
                                         "businessPassengers" -> directBusinessDemand.total,
-                                        "touristPassengers" -> directTouristDemand.total,
-                                        "airportLinkCapacity" -> airportLinkCapacity).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
-             
+                                        "touristPassengers" -> directTouristDemand.total).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
+            
+            val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
+              LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
+            }
+            var otherLinkArray = Json.toJson(competitorLinkConsumptions.map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq)
+            resultObject = resultObject + ("otherLinks", otherLinkArray)
+                                        
             if (existingLink.isDefined) {
               resultObject = resultObject + ("existingLink", Json.toJson(existingLink))
             }

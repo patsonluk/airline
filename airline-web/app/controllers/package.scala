@@ -134,4 +134,17 @@ package object controllers {
       json
     }
   }
+  
+  object SimpleLinkConsumptionWrite extends Writes[LinkConsumptionDetails] {
+     def writes(linkConsumption : LinkConsumptionDetails): JsValue = {
+       
+      JsObject(List(
+        "linkId" -> JsNumber(linkConsumption.linkId),
+        "airlineId" -> JsNumber(linkConsumption.airlineId),
+        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.airlineId).fold("<unknown airline>") { _.name }),
+        "price" -> Json.toJson(linkConsumption.price),
+        "capacity" -> JsNumber(linkConsumption.capacity.total),
+        "quality" -> JsNumber(linkConsumption.quality)))
+    }
+  }
 }

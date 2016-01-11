@@ -132,19 +132,6 @@ class Application extends Controller {
       ))
     }
   }
-  
-  object SimpleLinkConsumptionWrite extends Writes[LinkConsumptionDetails] {
-     def writes(linkConsumption : LinkConsumptionDetails): JsValue = {
-       
-      JsObject(List(
-        "linkId" -> JsNumber(linkConsumption.linkId),
-        "airlineId" -> JsNumber(linkConsumption.airlineId),
-        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.airlineId).fold("<unknown airline>") { _.name }),
-        "price" -> Json.toJson(linkConsumption.price),
-        "capacity" -> JsNumber(linkConsumption.capacity.total),
-        "quality" -> JsNumber(linkConsumption.quality)))
-    }
-  }
 
    
 //  object SimpleLinkWrites extends Writes[Link] {
@@ -278,7 +265,7 @@ class Application extends Controller {
   }
   
   def getAirportLinkConsumptions(fromAirportId : Int, toAirportId : Int) = Action {
-    val competitorLinkConsumptions = LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD).flatMap { link =>
+    val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
       LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
     }
     Ok(Json.toJson(competitorLinkConsumptions.map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq))
