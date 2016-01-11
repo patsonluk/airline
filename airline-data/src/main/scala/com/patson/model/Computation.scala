@@ -49,15 +49,6 @@ object Computation {
     if (value < 0) 0 else value.toInt
   }
   
-  def calculateAirportRadius(airport : Airport) : Int = {
-    airport.size match {
-      case 1 => 50
-      case 2 => 100
-      case n if (n >= 3) => 200
-      case _ => 0
-    }
-  }
-  
   def calculateDistance(fromAirport : Airport, toAirport : Airport) : Int = {
     Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   }

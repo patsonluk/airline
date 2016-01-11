@@ -245,15 +245,14 @@ object GeoDataGenerator extends App {
         
         for (city <- citiesSortedByLongitude) {
           //calculate max and min longitude that we should kick off the calculation
-          val boundaryLongitude = calculateLongitudeBoundary(city.latitude, city.longitude, 200)
+          val boundaryLongitude = calculateLongitudeBoundary(city.latitude, city.longitude, 300)
           val potentialAirports = scala.collection.mutable.MutableList[(Airport, Double)]()
           for (airport <- airportsSortedByLongitude) {
             if (airport.size > 0 &&
                 airport.countryCode == city.countryCode &&
                 airport.longitude >= boundaryLongitude._1 && airport.longitude <= boundaryLongitude._2) {
               val distance = Util.calculateDistance(city.latitude, city.longitude, airport.latitude, airport.longitude)
-              val airportRadis = Computation.calculateAirportRadius(airport)
-              if (airportRadis >= distance) {
+              if (airport.airportRadius >= distance) {
                   //println(city.name + " => " + airport.name)
                  potentialAirports += Tuple2(airport, distance)
               }
@@ -274,7 +273,7 @@ object GeoDataGenerator extends App {
             
             val airportWeights = validAirports.foldRight(List[(Airport, Int)]()) {
               case (Tuple2(airport, distance), airportWeightList) => 
-                val thisAirportWeight = (if (distance <= 25) 5 else if (distance <= 50) 3 else if (distance <= 100) 2 else 1) * airport.size * airport.size * airport.size
+                val thisAirportWeight = (if (distance <= 25) 20 else if (distance <= 50) 12 else if (distance <= 100) 8 else if (distance <= 200) 2 else 1) * airport.size * airport.size
                 (airport, thisAirportWeight) :: airportWeightList
             }.sortBy(_._2).takeRight(10) //take the largest 10
             

@@ -35,8 +35,7 @@ function addAirplane(modelId, quantity) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	refreshTopBar(airlineId)
-	    	updateAirplaneList()
+	    	refreshPanels(airlineId)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -52,8 +51,7 @@ function sellAirplane(airplaneId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
-	    	refreshTopBar(activeAirline.id)
-	    	updateAirplaneList()
+	    	refreshPanels(activeAirline.id)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
