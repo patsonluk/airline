@@ -16,14 +16,17 @@ abstract class FlightPreference {
  */
 case class SimplePreference(priceWeight : Int, maxPriceWeight : Int, linkClass : LinkClass) extends FlightPreference{
   def computeCost(link : Link) = {
-    val minFactorForPriceWeight = 0.2
+    val minFactorForPriceWeight = 0.2 //we cannot use 0.0. otherwise extremely expensive ticket will be accepted
     val maxFactorForPriceWeight = 1
     
     //from minFactorForPriceWeight up to maxFactorForPriceWeight. Proportional to priceWeight/maxPriceWeight
     val actualFactorForPriceWeight = minFactorForPriceWeight + priceWeight.toDouble / maxPriceWeight * (maxFactorForPriceWeight - minFactorForPriceWeight)
     
-    val cost = link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, linkClass, link.price(linkClass)) * actualFactorForPriceWeight
-    if (cost <= 0) 1 else cost //just in case
+    val standardPrice = Pricing.computeStandardPrice(link, linkClass)
+    val deltaFromStandardPrice = link.price(linkClass) - standardPrice 
+    
+    val cost = standardPrice + deltaFromStandardPrice * actualFactorForPriceWeight
+    cost
   }
 }
 

@@ -35,15 +35,4 @@ object Pricing {
     }) * linkClass.priceMultiplier).toInt
     
   }
-  
-  def standardCostAdjustmentRatioFromPrice(link : Link, linkClass :LinkClass, price: Int): Double = {
-    standardCostAdjustmentRatioFromPrice(link.distance, Computation.getFlightType(link.from, link.to), linkClass, price)
-  }
-  // if price is zero, adjustmentRatio = 0 
-  // if price is at standard price, adjustmentRatio = 1
-  // if price is at double the standard price, adjustmentRatio = 2 . Fair enough!
-  def standardCostAdjustmentRatioFromPrice(distance: Int, flightType : FlightType, linkClass :LinkClass, price: Int): Double = {
-      var standardPrice = computeStandardPrice(distance, flightType, linkClass)
-      ((price - standardPrice).toDouble / standardPrice) + 1
-  }
 }

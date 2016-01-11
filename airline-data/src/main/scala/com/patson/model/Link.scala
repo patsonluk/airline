@@ -107,7 +107,7 @@ object Link {
 }
 
 /**
- * Take note that cost is in terms of flight distance (km)
+ * Cost is the adjusted price
  */
 case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, inverted : Boolean) {
     def from : Airport = if (inverted) link.to else link.from

@@ -245,6 +245,22 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       economyTotalCost.should(be < businessTotalCost)
       businessTotalCost.should(be < firstTotalCost)
     }
-    
   }
+   "An SimplePreference".must {
+      "adjust price accordingly due to price weight ". in {
+      val cost1 = SimplePreference(0, 10, ECONOMY).computeCost(airline1Link)
+      val cost2 = SimplePreference(10, 10, ECONOMY).computeCost(airline1Link)
+      val standardPrice = Pricing.computeStandardPrice(airline1Link, ECONOMY)
+      val delta1 = Math.abs(cost1 - standardPrice) //should be small delta as this group of customer care less about price
+      val delta2 = Math.abs(cost2 - standardPrice)
+      delta1.should(be < delta2)
+    }
+     "should not completely ignore price delta even at lowest price sensitivity". in {
+      val cost1 = SimplePreference(0, 10, ECONOMY).computeCost(airline1Link)
+      val standardPrice = Pricing.computeStandardPrice(airline1Link, ECONOMY)
+      val delta1 = Math.abs(cost1 - standardPrice) 
+      delta1.should(be > 0.0)
+    }
+      
+   }
 }
