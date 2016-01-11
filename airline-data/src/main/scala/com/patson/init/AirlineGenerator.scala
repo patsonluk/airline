@@ -1,5 +1,6 @@
 package com.patson.init
 
+import scala.collection.mutable.Set
 import scala.collection.mutable.ListBuffer
 import com.patson.data._
 import com.patson.data.Constants._
@@ -11,13 +12,14 @@ import scala.util.Random
 import com.patson.DemandGenerator
 import com.patson.data._
 import com.patson.data.airplane._
+import scala.collection.mutable.ArrayBuffer
 
 
 object AirlineGenerator extends App {
   mainFlow
   
   def mainFlow() = {
-    generateAirlines(150)
+    generateAirlines(250)
     
     println("DONE Creating airlines")
     
@@ -64,15 +66,15 @@ object AirlineGenerator extends App {
   }
   
   def generateLinks(airline : Airline, fromAirport : Airport,  toAirports : List[Airport], poolSize: Int, linkCount : Int, airplaneModels : List[Model]) {
-    //only try to goto the top linkCount * 3 airports in the zone
+    //only try to goto the top poolSize of airprots
     val topToAirports = toAirports.takeRight(poolSize)
     
-    val pickedToAirports = 
-      if (topToAirports.length <= linkCount) {
-        topToAirports
-      } else {
-        Random.shuffle(topToAirports).take(linkCount)
-      }
+    val pickedToAirports = drawFromPool(topToAirports.reverse, linkCount) 
+//      if (topToAirports.length <= linkCount) {
+//        topToAirports
+//      } else {
+//        Random.shuffle(topToAirports).take(linkCount)
+//      }
     val airplaneModelsByRange = airplaneModels.sortBy { _.range }
     val airplaneModelsByCapacity = airplaneModels.sortBy { _.capacity } (Ordering[Int].reverse)
     val newLinks = ListBuffer[Link]()
@@ -133,5 +135,22 @@ object AirlineGenerator extends App {
     
     LinkSource.saveLinks(newLinks.toList)
     //newLinks.foreach { link => LinkSource.saveLink(link) }
+  }
+  
+  def drawFromPool(poolTopFirst : Seq[Airport], drawSize : Int) : Seq[Airport] = {
+    if (drawSize >= poolTopFirst.length) {
+      poolTopFirst
+    } else {
+      var walker = 0
+      val probably = 0.3
+      val result = Set[Airport]() 
+      while (result.size < drawSize) {
+        if (Random.nextDouble() <= 0.3) {
+          result += poolTopFirst(walker)
+        }
+        walker = (walker + 1) % poolTopFirst.size
+      }
+      result.toSeq
+    }
   }
 }
