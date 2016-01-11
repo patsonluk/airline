@@ -247,8 +247,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   lazy val airportRadius : Int = {
     size match {
       case 1 => 100
-      case 2 => 200
-      case n if (n >= 3) => 300
+      case 2 => 150
+      case n if (n >= 3) => 250
       case _ => 0
     }
   }

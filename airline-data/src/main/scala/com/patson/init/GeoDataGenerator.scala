@@ -273,7 +273,7 @@ object GeoDataGenerator extends App {
             
             val airportWeights = validAirports.foldRight(List[(Airport, Int)]()) {
               case (Tuple2(airport, distance), airportWeightList) => 
-                val thisAirportWeight = (if (distance <= 25) 20 else if (distance <= 50) 12 else if (distance <= 100) 8 else if (distance <= 200) 2 else 1) * airport.size * airport.size
+                val thisAirportWeight = (if (distance <= 25) 30 else if (distance <= 50) 20 else if (distance <= 100) 8 else if (distance <= 200) 2 else 1) * airport.size * airport.size
                 (airport, thisAirportWeight) :: airportWeightList
             }.sortBy(_._2).takeRight(10) //take the largest 10
             
