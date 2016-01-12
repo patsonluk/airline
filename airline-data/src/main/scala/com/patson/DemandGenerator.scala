@@ -151,8 +151,12 @@ object DemandGenerator {
       }
       
       //adjustments : these zones do not have good ground transport
-      if (fromAirport.zone == toAirport.zone && (fromAirport.zone == "OC" || fromAirport.zone == "NA" || fromAirport.zone == "AF")) { 
-        multiplier *= 4
+      if (fromAirport.zone == toAirport.zone) {
+        if (fromAirport.zone == "OC" || fromAirport.zone == "AF") {
+          multiplier *= 4
+        } else if (fromAirport.zone == "SA" || fromAirport.zone == "NA") {
+          multiplier *= 3
+        }
       }
       
       val rawDemand = (fromAirport.power.doubleValue() / 20000000000L * toAirport.power / 20000000000L * multiplier).toInt
