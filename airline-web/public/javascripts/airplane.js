@@ -123,17 +123,21 @@ function expandAirplaneList(modelInfo) {
 	var airplaneList = $("#expandedAirplaneList")
 	airplaneList.empty()
 	$.each(modelInfo.assignedAirplanes, function( key, airplaneId ) {
-		airplaneList.append($("<a href='javascript:void(0)' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
+		airplaneList.append($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
 		airplaneList.append($("<br/>"))
 	});
 	
 	$.each(modelInfo.freeAirplanes, function( key, airplaneId ) {
-		airplaneList.append($("<a href='javascript:void(0)' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
+		airplaneList.append($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
 		airplaneList.append($("<br/>"))
 	});
 }
 
 function loadAirplaneDetails(airplaneId) {
+	$("#expandedAirplaneList a.selected").removeClass("selected")
+	//highlight the selected model
+	$("#expandedAirplaneList a[data-airplane-id='" + airplaneId +"']").addClass("selected")
+	
 	var airlineId = activeAirline.id 
 	$("#actionAirplaneId").val(airplaneId)
 	//load link

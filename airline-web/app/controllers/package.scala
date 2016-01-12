@@ -144,6 +144,7 @@ package object controllers {
         "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.airlineId).fold("<unknown airline>") { _.name }),
         "price" -> Json.toJson(linkConsumption.price),
         "capacity" -> JsNumber(linkConsumption.capacity.total),
+        "soldSeats" -> JsNumber(linkConsumption.soldSeats.total),
         "quality" -> JsNumber(linkConsumption.quality)))
     }
   }

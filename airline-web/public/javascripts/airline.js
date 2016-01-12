@@ -15,6 +15,11 @@ function updateAirlineInfo(airlineId) {
 	    success: function(airline) {
 	    	refreshTopBar(airline)
 	    	$("#currentAirline").text(airline.name)
+	    	if (airline.headquarterAirport) {
+	    		$("#currentAirlineCountry").html("<img src='assets/images/flags/" + airline.headquarterAirport.countryCode + ".png' />")
+	    	} else {
+	    		$("#currentAirlineCountry").empty()
+	    	}
 	    	$("#serviceFunding").val(airline.serviceFunding)
 			$("#maintenanceQuality").val(airline.maintenanceQuality)
 			plotMaintenanceQualityGauge($("#maintenanceQualityGauge"), $("#maintenanceQuality"))
@@ -488,6 +493,8 @@ function refreshLinkDetails(linkId) {
 	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
 	    	    	}
 	    	    	$("#linkCompetitons").show()
+	    	    	
+	    	    	plotPie(linkConsumptions, null, $("#linkCompetitionsPie"), "airlineName", "soldSeats")
 	    	    },
 	            error: function(jqXHR, textStatus, errorThrown) {
 	    	            console.log(JSON.stringify(jqXHR));
