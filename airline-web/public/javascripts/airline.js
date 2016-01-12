@@ -921,15 +921,19 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 		
 		$('#planLinkDuration').text(thisModelPlanLinkInfo.duration)
 		
+		if (existingLink) {
+			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
+		} else {
+			$("#planLinkServiceLevel").val(1)
+		}
+		
 		if (isCurrentlyAssigned) {
 			$("#planLinkFrequency").val(existingLink.frequency)
-			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
 			thisModelPlanLinkInfo.configuration = { "economy" : existingLink.capacity.economy / existingLink.frequency, 
 													"business" : existingLink.capacity.business / existingLink.frequency, 
 													"first" : existingLink.capacity.first / existingLink.frequency}
 		} else {
 			$("#planLinkFrequency").val(1)
-			$("#planLinkServiceLevel").val(1)
 			$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
 			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
 		}
