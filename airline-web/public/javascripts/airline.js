@@ -873,6 +873,13 @@ function updatePlanLinkInfo(linkInfo) {
 	updatePlanLinkInfoWithModelSelected($("#planLinkModelSelect").val())
 	$("#planLinkDetails div.value").show()
 }
+
+function resetPrice() {
+	$('#planLinkEconomyPrice').val(planLinkInfo.suggestedPrice.economy)
+	$('#planLinkBusinessPrice').val(planLinkInfo.suggestedPrice.business)
+	$('#planLinkFirstPrice').val(planLinkInfo.suggestedPrice.first)
+}
+
 function updateFrequencyBar(airplaneModelId, callback) {
 	var frequencyBar = $("#frequencyBar")
 	var selectedCount
