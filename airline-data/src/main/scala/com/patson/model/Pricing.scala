@@ -12,7 +12,7 @@ object Pricing {
   //10000 km = 350 + 400 = 750 (8000 * 0.05)
   val modifierBrackets = List((200, 0.25),(800, 0.125),(1000, 0.1),(Int.MaxValue, 0.05))
   val INTERNATIONAL_PRICE_MULTIPLIER = 1.25
-  val INTERCONTINENTAL_PRICE_MULTIPLIER = 1.5
+  val INTERCONTINENTAL_PRICE_MULTIPLIER = 2
   
   def computeStandardPrice(link : Link, linkClass : LinkClass) : Int = {
     computeStandardPrice(link.distance, Computation.getFlightType(link.from, link.to), linkClass)
