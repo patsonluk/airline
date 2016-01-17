@@ -7,11 +7,16 @@ import com.patson.model._
 import com.patson.LinkSimulation
 import com.patson.model.airplane._
 import com.patson.init.AirportFeaturePatcher
+import com.patson.init.AirportLinkPatcher
+import scala.collection.mutable.Set
+import scala.collection.mutable.ArrayBuffer
+import com.patson.RouteFinder
 
 
 object Test extends App {
-   //AirportFeaturePatcher.patchFeatures()
-  println(5.hashCode())
+  GeoDataGenerator.buildCountryData(AirportSource.loadAllAirports(false))    
 }
+
+
 
 

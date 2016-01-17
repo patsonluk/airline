@@ -17,6 +17,9 @@ import com.patson.Util
 import com.patson.model.Runway
 import com.patson.model.RunwayType
 import com.patson.model.Computation
+import scala.collection.mutable.ArrayBuffer
+import com.patson.model.Country
+import com.patson.data.CountrySource
 
 object GeoDataGenerator extends App {
 
@@ -42,10 +45,9 @@ object GeoDataGenerator extends App {
       case e : Throwable => e.printStackTrace()
     }
     
-    buildAirportData(getAirport(), getRunway(), cities)
-//    println(calculateDistance(38.898556, -77.037852, 38.897147, -77.043934))
-//    println(calculateLongitudeBoundary(38.898556, -77.037852, 0.526))
-//    println(calculateLongitudeBoundary(38.898556, 77.037852, 0.526))
+    val airports = buildAirportData(getAirport(), getRunway(), cities)
+    
+    buildCountryData(airports)
     
     actorSystem.shutdown()
   }
@@ -220,119 +222,117 @@ object GeoDataGenerator extends App {
       collection.immutable.HashMap() ++ incomeMap
   }
   
-  def buildAirportData(airportFuture : Future[List[Airport]], runwayFuture : Future[Map[String, List[Runway]]], citites: List[City]) {
+  def buildAirportData(airportFuture : Future[List[Airport]], runwayFuture : Future[Map[String, List[Runway]]], citites: List[City]) : List[Airport] = {
     val combinedFuture = Future.sequence(Seq(airportFuture, runwayFuture))
-    combinedFuture.onComplete { 
-      case Success(results) =>
-        val rawAirportResult : List[Airport] = results(0).asInstanceOf[List[Airport]]
-        val runwayResult : Map[String, List[Runway]] = results(1).asInstanceOf[Map[String, List[Runway]]]
-        
-        println(rawAirportResult.size + " airports")
-        println(runwayResult.size + " solid runways")
-        println(citites.size + " cities")
-        
-        var airportResult = adjustAirportByRunway(rawAirportResult.filter { airport => 
-             airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
-          }, runwayResult)
-          
-        airportResult = adjustAirportSize(airportResult)  
-        
-        val airportsSortedByLongitude = airportResult.sortBy(_.longitude)
-        val citiesSortedByLongitude = citites.sortBy(_.longitude)
-        
-        
-        
-        var counter = 0;
-        var progressCount = 0;
-        
-        for (city <- citiesSortedByLongitude) {
-          //calculate max and min longitude that we should kick off the calculation
-          val boundaryLongitude = calculateLongitudeBoundary(city.latitude, city.longitude, 300)
-          val potentialAirports = scala.collection.mutable.MutableList[(Airport, Double)]()
-          for (airport <- airportsSortedByLongitude) {
-            if (airport.size > 0 &&
-                airport.countryCode == city.countryCode &&
-                airport.longitude >= boundaryLongitude._1 && airport.longitude <= boundaryLongitude._2) {
-              val distance = Util.calculateDistance(city.latitude, city.longitude, airport.latitude, airport.longitude)
-              if (airport.airportRadius >= distance) {
-                  //println(city.name + " => " + airport.name)
-                 potentialAirports += Tuple2(airport, distance)
-              }
-            }
-          }
-          
-          if (potentialAirports.size == 1) {
-            potentialAirports(0)._1.addCityServed(city, 1)
-          } else if (potentialAirports.size > 1) {
-            //val sortedAirports = potentialAirports.sortBy(_._2).sortBy(- _._1.size)
-            val dominateAirportSize : Int =  potentialAirports.filter(_._2 <= 50).map( _._1).reduceLeftOption { (largestAirport, airport) =>
-              if (largestAirport.size < airport.size) airport else largestAirport
-            }.fold(0)(_.size)
-            
-            val validAirports = if (dominateAirportSize >= 6) { potentialAirports.filter(_._1.size >= 2) } else potentialAirports //there's a super airport within 50km, then other airports can only get some share if it's size >= 3
-
-//            val validAirports = potentialAirports            //give small airports a chance... for now
-            
-            val airportWeights = validAirports.foldRight(List[(Airport, Int)]()) {
-              case (Tuple2(airport, distance), airportWeightList) => 
-                val thisAirportWeight = (if (distance <= 25) 30 else if (distance <= 50) 20 else if (distance <= 100) 8 else if (distance <= 200) 2 else 1) * airport.size * airport.size
-                (airport, thisAirportWeight) :: airportWeightList
-            }.sortBy(_._2).takeRight(10) //take the largest 10
-            
-            val totalWeight = airportWeights.foldRight(0)(_ ._2+ _)
-            
-            airportWeights.foreach {
-              case Tuple2(airport, weight) => airport.addCityServed(city, weight.toDouble / totalWeight) 
-            }
-          }
-          
-          val progressChunk = citiesSortedByLongitude.size / 100
-          counter += 1
-          if (counter % progressChunk == 0) {
-            progressCount += 1;
-            print(".")
-            if (progressCount % 10 == 0) {
-              print(progressCount + "% ")
-            }
+    val results = Await.result(combinedFuture, Duration.Inf) 
+      
+    val rawAirportResult : List[Airport] = results(0).asInstanceOf[List[Airport]]
+    val runwayResult : Map[String, List[Runway]] = results(1).asInstanceOf[Map[String, List[Runway]]]
+    
+    println(rawAirportResult.size + " airports")
+    println(runwayResult.size + " solid runways")
+    println(citites.size + " cities")
+    
+    var airportResult = adjustAirportByRunway(rawAirportResult.filter { airport => 
+         airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
+      }, runwayResult)
+      
+    airportResult = adjustAirportSize(airportResult)  
+    
+    val airportsSortedByLongitude = airportResult.sortBy(_.longitude)
+    val citiesSortedByLongitude = citites.sortBy(_.longitude)
+    
+    
+    
+    var counter = 0;
+    var progressCount = 0;
+    
+    for (city <- citiesSortedByLongitude) {
+      //calculate max and min longitude that we should kick off the calculation
+      val boundaryLongitude = calculateLongitudeBoundary(city.latitude, city.longitude, 300)
+      val potentialAirports = scala.collection.mutable.MutableList[(Airport, Double)]()
+      for (airport <- airportsSortedByLongitude) {
+        if (airport.size > 0 &&
+            airport.countryCode == city.countryCode &&
+            airport.longitude >= boundaryLongitude._1 && airport.longitude <= boundaryLongitude._2) {
+          val distance = Util.calculateDistance(city.latitude, city.longitude, airport.latitude, airport.longitude)
+          if (airport.airportRadius >= distance) {
+              //println(city.name + " => " + airport.name)
+             potentialAirports += Tuple2(airport, distance)
           }
         }
+      }
+      
+      if (potentialAirports.size == 1) {
+        potentialAirports(0)._1.addCityServed(city, 1)
+      } else if (potentialAirports.size > 1) {
+        //val sortedAirports = potentialAirports.sortBy(_._2).sortBy(- _._1.size)
+        val dominateAirportSize : Int =  potentialAirports.filter(_._2 <= 50).map( _._1).reduceLeftOption { (largestAirport, airport) =>
+          if (largestAirport.size < airport.size) airport else largestAirport
+        }.fold(0)(_.size)
         
-        val airports = airportResult.map { airport => 
-          airport.power = airport.citiesServed.foldLeft(0.toLong) {
-            case(foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong * city.income
-          }
-          airport.population = airport.citiesServed.foldLeft(0.toLong) {
-            case(foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong
-          }
-          
-          //calculate slots
-          val slots = airport.size match {
-            case 1 => 50
-            case 2 => 100
-            case 3 => 450
-            case 4 => 700
-            case 5 => 1200
-            case 6 => 1700
-            case 7 => 2200
-            case size : Int if size >= 8 => 2800
-            case _ => 0
-          }
-          airport.slots = slots
-          
-          airport
-        }.sortBy { _.power }
-        
-        //Meta.resetDatabase
-        
-        AirportSource.deleteAllAirports()
-        AirportSource.saveAirports(airports)
+        val validAirports = if (dominateAirportSize >= 6) { potentialAirports.filter(_._1.size >= 2) } else potentialAirports //there's a super airport within 50km, then other airports can only get some share if it's size >= 3
 
-        //patch features
-        AirportFeaturePatcher.patchFeatures()
+//            val validAirports = potentialAirports            //give small airports a chance... for now
         
-      case Failure(failure) => println()
+        val airportWeights = validAirports.foldRight(List[(Airport, Int)]()) {
+          case (Tuple2(airport, distance), airportWeightList) => 
+            val thisAirportWeight = (if (distance <= 25) 30 else if (distance <= 50) 20 else if (distance <= 100) 8 else if (distance <= 200) 2 else 1) * airport.size * airport.size
+            (airport, thisAirportWeight) :: airportWeightList
+        }.sortBy(_._2).takeRight(10) //take the largest 10
+        
+        val totalWeight = airportWeights.foldRight(0)(_ ._2+ _)
+        
+        airportWeights.foreach {
+          case Tuple2(airport, weight) => airport.addCityServed(city, weight.toDouble / totalWeight) 
+        }
+      }
+      
+      val progressChunk = citiesSortedByLongitude.size / 100
+      counter += 1
+      if (counter % progressChunk == 0) {
+        progressCount += 1;
+        print(".")
+        if (progressCount % 10 == 0) {
+          print(progressCount + "% ")
+        }
+      }
     }
-    Await.result(combinedFuture, Duration.Inf)
+    
+    val airports = airportResult.map { airport => 
+      airport.power = airport.citiesServed.foldLeft(0.toLong) {
+        case(foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong * city.income
+      }
+      airport.population = airport.citiesServed.foldLeft(0.toLong) {
+        case(foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong
+      }
+      
+      //calculate slots
+      val slots = airport.size match {
+        case 1 => 50
+        case 2 => 100
+        case 3 => 450
+        case 4 => 700
+        case 5 => 1200
+        case 6 => 1700
+        case 7 => 2200
+        case size : Int if size >= 8 => 2800
+        case _ => 0
+      }
+      airport.slots = slots
+      
+      airport
+    }.sortBy { _.power }
+    
+    //Meta.resetDatabase
+    
+    AirportSource.deleteAllAirports()
+    AirportSource.saveAirports(airports)
+
+    //patch features
+    AirportFeaturePatcher.patchFeatures()
+    
+    airports
   }
   
   
@@ -401,5 +401,69 @@ object GeoDataGenerator extends App {
       }
     }
     airports 
+  }
+  
+  def buildCountryData(airports: Seq[Airport]) {
+    val airportsByCountry : Map[String, Seq[Airport]] = airports.groupBy { airport => airport.countryCode }
+    
+    val countryCodeToNameMap = scala.io.Source.fromFile("country-code.txt").getLines().map(_.split(",")).map{ tokens => 
+        val countryCode = tokens(1)
+        val name = tokens(0)
+        (countryCode, name)    
+   }.toMap
+   
+   
+   val codeMap = scala.io.Source.fromFile("country-code.txt").getLines().map(_.split(",")).map { tokens => 
+     (tokens(2), tokens(1))
+   }.toMap
+   
+   val opennessMap : Map[String, Int] = scala.io.Source.fromFile("openness.csv").getLines().map(_.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1)).map{ tokens =>
+     val trimmedTokens = tokens.map { token : String =>  
+        if (token.startsWith("\"") && token.endsWith("\"")) { 
+          token.substring(1, token.length() - 1) 
+        } else {
+          token
+        }
+     }
+     
+     val countryCode3 = trimmedTokens(1)
+     val opennessRanking : Option[Int] = 
+       trimmedTokens.drop(4).reverse.find { token => !token.isEmpty() } match {
+         case Some(rankingString) => 
+           try { 
+             Some(rankingString.toInt)
+           } catch {
+             case _ : NumberFormatException => None//ok just ignore
+           }
+         case None => None
+     }
+     codeMap.get(countryCode3) match {
+       case Some(countryCode2) =>
+         val opennessValue = opennessRanking.fold(0) { opennessRankingValue =>
+           if (opennessRankingValue > 200) {
+             0
+           } else {
+             (200 - opennessRankingValue) / 20 + 1
+           }
+         }
+         Some((countryCode2, opennessValue))
+       case None =>
+         //println("cannot find matching country code for " + countryCode3)
+         None
+     }
+   }.flatten.toMap
+   
+    
+    val countries = ArrayBuffer[Country]()
+    airportsByCountry.foreach {
+      case (countryCode, airports) =>
+        val totalAirportPopulation = airports.map { _.population }.sum
+        val averageIncome = if (totalAirportPopulation == 0) { 0 } else { airports.map { _.power }.sum / totalAirportPopulation }
+        val openness = 
+        countries += Country(countryCode, countryCodeToNameMap(countryCode), totalAirportPopulation.toInt, averageIncome.toInt, opennessMap.getOrElse(countryCode, 0)) 
+    }
+   
+    CountrySource.saveCountries(countries.toList)
+    
   }
 }
