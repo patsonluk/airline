@@ -108,8 +108,9 @@ object AirportSource {
              val scale = airlineBaseResultSet.getInt("scale")
              val foundedCycle = airlineBaseResultSet.getInt("founded_cycle")
              val headquarter = airlineBaseResultSet.getBoolean("headquarter")
+             val countryCode = airlineBaseResultSet.getString("country")
              
-             airlineBases += AirlineBase(airline, airport, scale, foundedCycle, headquarter)
+             airlineBases += AirlineBase(airline, airport, countryCode, scale, foundedCycle, headquarter)
           }
           airlineBaseStatement.close()
           airport.initAirlineBases(airlineBases.toList)
@@ -160,6 +161,10 @@ object AirportSource {
         Some(result(0))
       }
   }
+  def loadAirportsByCountry(countryCode : String) = {
+    loadAirportsByCriteria(List(("country_code", countryCode)))
+  }
+  
   
   def updateAirlineAppeal(airports: List[Airport]) = {
    airports.foreach { airport => //make sure all loaded properly

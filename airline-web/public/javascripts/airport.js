@@ -1,23 +1,26 @@
 function showAirportDetails(airportId) {
-	$.ajax({
-		type: 'GET',
-		url: "airports/" + airportId,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(airport) {
-	    	if (airport) {
-	    		populateAirportDetails(airport)
-	    		setActiveDiv($("#airportCanvas"))
-	    		$("#floatBackButton").show()
-	    		shimmeringDiv($("#floatBackButton"))
-	    		
-	    	}
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+	if (setActiveDiv($("#airportCanvas"))) {
+		if (!airportId) {
+			airportId = activeAirline.headquarterAirport.airportId
+		}
+		$.ajax({
+			type: 'GET',
+			url: "airports/" + airportId,
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
+		    success: function(airport) {
+		    	if (airport) {
+		    		populateAirportDetails(airport)
+	//	    		$("#floatBackButton").show()
+	//	    		shimmeringDiv($("#floatBackButton"))
+		    	}
+		    },
+		    error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	}
 }
 
 

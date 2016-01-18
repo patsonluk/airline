@@ -1,11 +1,13 @@
 #main {
 	margin-top: 50px;
 }
+
 #map {
-/*     width: 500px; */
-    height: 500px;
-    background-color: #FFF;
+	/*     width: 500px; */
+	height: 500px;
+	background-color: #FFF;
 }
+
 .menubar {
 	position: fixed;
 	top: 0px;
@@ -13,28 +15,31 @@
 	width: 100%;
 	z-index: 999;
 	background-color: #FFF;
-/* 	margin-top: -80px; */
-	-moz-box-shadow: 0 2px 2px rgba(0,0,0,0.2);
-	-webkit-box-shadow: 0 2px 2px rgba(0,0,0,0.2);
-	box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+	/* 	margin-top: -80px; */
+	-moz-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+	-webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
 }
 
 .table {
 	display: table;
 }
+
 .table .label {
 	display: table-cell;
 	width: 40%;
-	 
 }
+
 .table .value {
 	display: table-cell;
 	width: 60%;
 }
+
 .table .table-row {
 	display: table-row;
 	width: 100%;
 }
+
 .table .table-header {
 	display: table-caption;
 	width: 100%;
@@ -43,7 +48,6 @@
 div.label, span.label, div.header, span.header {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	border-radius: 3px 3px 3px 3px;
 	color: #454544;
 	text-decoration: none;
 	font-size: 12px;
@@ -57,16 +61,32 @@ div.header, span.header {
 	font-size: 18px;
 }
 
+div.button {
+	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	line-height: 1.6em;
+	color: #454544;
+	background-color: #efefef;
+	text-decoration: none;
+	font-size: 12px;
+	display: inline-block;
+	font-weight: 300;
+	text-transform: uppercase;
+	cursor: pointer;
+	padding: 5px 15px;
+	border-radius: 3px;
+	margin: 5px 5px;
+}
 
 img.button {
 	cursor: pointer
 }
 
 .gm-style-iw {
-   overflow: hidden !important; 
-   line-height: 1.35;
-   white-space: nowrap;
+	overflow: hidden !important;
+	line-height: 1.35;
+	white-space: nowrap;
 }
+
 dd.info {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
@@ -74,64 +94,65 @@ dd.info {
 	text-decoration: none;
 	font-size: 10px;
 }
+
 dd.error {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	color: #ff8080;
 	text-decoration: none;
 	font-size: 10px;
-}	
+}
 
 #floatMessageBox {
 	position: absolute;
-	top: 0; 
+	top: 0;
 	right: 0;
 	border-radius: 0px 0px 15px 15px;
 	z-index: 1000;
-/* 	background:#ffc; */
+	/* 	background:#ffc; */
 	background: linear-gradient(#F0E069 0%, #FFF6B3 10%);
-	padding:5px;
-	text-align:center;
-	box-shadow:inset 0 0 2px white,0 0 3px rgba(0, 0, 0, 0.5);
+	padding: 5px;
+	text-align: center;
+	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
-	
 }
 
 #floatBackButton {
 	position: absolute;
-	top: 100px; 
+	top: 100px;
 	left: 0px;
 	z-index: 1000;
-/* 	background:#ffc; */
-	padding:5px;
-	text-align:center;
-	box-shadow:inset 0 0 2px white, 0 0 30px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 255, 0.7);
-/* 	box-shadow:inset 0 0 2px white,0 0 3px rgba(0, 0, 0, 0.5); */
-/* 	font-family: "Open Sans", Verdana, Arial, sans-serif; */
+	/* 	background:#ffc; */
+	padding: 5px;
+	text-align: center;
+	box-shadow: inset 0 0 2px white, 0 0 30px rgba(0, 0, 0, 0.5), 0 0 10px
+		rgba(255, 255, 255, 0.7);
+	/* 	box-shadow:inset 0 0 2px white,0 0 3px rgba(0, 0, 0, 0.5); */
+	/* 	font-family: "Open Sans", Verdana, Arial, sans-serif; */
 }
 
 div.section {
 	border-radius: 5px 5px 5px 5px;
 	background: linear-gradient(#FFFFFF 90%, #EEEEEE 100%);
-	box-shadow:inset 0 0 2px white,0 0 3px rgba(0, 0, 0, 0.5);
+	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
 	margin: 10px;
 	padding: 5px;
 }
 
 div.googleMapButton {
-    box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px;
-    border-radius: 2px;
-    cursor: pointer;
-    background-color: rgb(255, 255, 255);
-    width: 28px;
-    height: 28px;
-    margin-right: 10px;
+	box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px;
+	border-radius: 2px;
+	cursor: pointer;
+	background-color: rgb(255, 255, 255);
+	width: 28px;
+	height: 28px;
+	margin-right: 10px;
 }
 
 .alignHelper {
-    display: inline-block;
-    height: 100%;
-    vertical-align: middle;
+	display: inline-block;
+	height: 100%;
+	vertical-align: middle;
 }
 
 div.divider {
@@ -144,14 +165,41 @@ div.divider {
 
 a.selected, a:hover {
 	border-radius: 3px 3px 3px 3px;
-	background-color: #A1D490;	
+	background-color: #A1D490;
 }
 
-#airportIcons .feature { 
+#airportIcons .feature {
 	margin-left: 2px;
 	margin-right: 2px;
 }
+
 #airportSchedule {
 	background-image: url(../flapper/img/brushed.png);
 }
- 
+
+.tabs {
+	list-style: none;
+	position: relative;
+} 
+.tabs li { 
+	float : left;
+	display: block;
+	padding: 14px 21px;
+	border-radius: 3px 3px 0 0;
+	cursor: pointer;
+	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	line-height: 1.6em;
+	color: #454544;
+	text-decoration: none;
+	font-size: 12px;
+}
+
+
+.tabs li:hover {
+	color: #6093e7;
+}
+.tabs li.active {
+	font-weight: 700;
+	background-color: #6093e7;
+	color: #FFF;
+}

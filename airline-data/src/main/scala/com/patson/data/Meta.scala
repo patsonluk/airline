@@ -154,26 +154,26 @@ object Meta {
 //    statement = connection.prepareStatement("CREATE TABLE " + CITY_TABLE + "(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), population INTEGER, income INTEGER)")
 //    statement.execute()
 //    statement.close()
-    
-    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_TABLE + "(code CHAR(2) PRIMARY KEY, name VARCHAR(256), airport_population INTEGER, income INTEGER, openness INTEGER)")
-    statement.execute()
-    statement.close()
-    
-    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_AIRLINE_RELATIONSHIP_TABLE + "(country CHAR(2), airline INTEGER, relationship INTEGER," +
-                                            "PRIMARY KEY (country, airline)," +
-	                                          "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
-	                                          "FOREIGN KEY(country) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE)")
-    statement.execute()
-    statement.close()
-
-    statement = connection.prepareStatement("CREATE INDEX " + COUNTRY_AIRLINE_RELATIONSHIP_INDEX_1 + " ON " + AIRLINE_TABLE + "(id)")
-    statement.execute()
-    statement.close()
-
-    statement = connection.prepareStatement("CREATE INDEX " + COUNTRY_AIRLINE_RELATIONSHIP_INDEX_2 + " ON " + COUNTRY_TABLE + "(code)")
-    statement.execute()
-    statement.close()
-    
+//    
+//    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_TABLE + "(code CHAR(2) PRIMARY KEY, name VARCHAR(256), airport_population INTEGER, income INTEGER, openness INTEGER)")
+//    statement.execute()
+//    statement.close()
+//    
+//    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_AIRLINE_RELATIONSHIP_TABLE + "(country CHAR(2), airline INTEGER, relationship INTEGER," +
+//                                            "PRIMARY KEY (country, airline)," +
+//	                                          "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+//	                                          "FOREIGN KEY(country) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE)")
+//    statement.execute()
+//    statement.close()
+//
+//    statement = connection.prepareStatement("CREATE INDEX " + COUNTRY_AIRLINE_RELATIONSHIP_INDEX_1 + " ON " + AIRLINE_TABLE + "(id)")
+//    statement.execute()
+//    statement.close()
+//
+//    statement = connection.prepareStatement("CREATE INDEX " + COUNTRY_AIRLINE_RELATIONSHIP_INDEX_2 + " ON " + COUNTRY_TABLE + "(code)")
+//    statement.execute()
+//    statement.close()
+//    
 //    statement = connection.prepareStatement("CREATE TABLE " + CITY_TABLE + "(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), population INTEGER, income INTEGER)")
 //    statement.execute()
 //    statement.close()
@@ -181,6 +181,11 @@ object Meta {
 //    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256), zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG)")
 //    statement.execute()
 //    statement.close()
+//    
+//    statement = connection.prepareStatement("CREATE INDEX " + AIRPORT_INDEX_1 + " ON " + AIRPORT_TABLE + "(country_code)")
+//    statement.execute()
+//    statement.close()
+//    
 //
 //    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(256))")
 //    statement.execute()
@@ -224,9 +229,11 @@ object Meta {
 //      "scale INTEGER," +
 //      "founded_cycle INTEGER," +
 //      "headquarter INTEGER," +
+//      "country CHAR(2) NOT NULL, " +
 //      "PRIMARY KEY (airport, airline)," +
 //      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
 //      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+//      "FOREIGN KEY(country) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE" +
 //      ")")
 //    statement.execute()
 //    statement.close()
@@ -237,6 +244,9 @@ object Meta {
 //    statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_BASE_INDEX_2 + " ON " + AIRLINE_TABLE + "(id)")
 //    statement.execute()
 //    statement.close()
+      statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_BASE_INDEX_3 + " ON " + COUNTRY_TABLE + "(code)")
+      statement.execute()
+      statement.close()
 //
 //    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
 //      "airport INTEGER," +

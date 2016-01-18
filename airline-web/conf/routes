@@ -41,8 +41,9 @@ GET		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.getWatch
 GET		 /airlines/:airlineId/link-history 				controllers.LinkApplication.getLinkHistory(airlineId: Int)
 PUT		 /airlines/:airlineId/serviceFunding			controllers.LinkApplication.updateServiceFunding(airlineId: Int)
 PUT		 /airlines/:airlineId/maintenanceQuality			controllers.LinkApplication.updateMaintenanceQuality(airlineId: Int)
-
 POST	 /airlines/:airlineId/plan-link	  controllers.LinkApplication.planLink(airlineId : Int)
+GET		 /countries					  controllers.CountryApplication.getAllCountries
+GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
 
 
 PUT 	 /test-links 				      controllers.LinkApplication.addTestLink

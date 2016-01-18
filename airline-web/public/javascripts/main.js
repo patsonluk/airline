@@ -208,16 +208,6 @@ function updateTime(cycle, fraction) {
 }
 
 
-function setActiveDiv(activeDiv) {
-//	activeDiv.siblings().hide(500)
-//activeDiv.show(500)
-	if (activeDiv.siblings(":visible").length){
-		activeDiv.siblings(":visible").fadeOut(200, function() { activeDiv.fadeIn(200) })
-	} else {
-		activeDiv.fadeIn(200)
-	}
-}
-
 function appendConsole(message) {
 	$('#console').append( message + '<br/>')
 }

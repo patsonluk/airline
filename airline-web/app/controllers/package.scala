@@ -13,10 +13,22 @@ import play.api.libs.json.JsResult
 import com.patson.Util
 import play.api.libs.json.JsSuccess
 import play.api.libs.json.Json
+import play.api.libs.json.JsBoolean
 
 
 
 package object controllers {
+  implicit object AirlineFormat extends Format[Airline] {
+    def reads(json: JsValue): JsResult[Airline] = {
+      val airline = Airline.fromId((json \ "id").as[Int])
+      JsSuccess(airline)
+    }
+    
+    def writes(airline: Airline): JsValue = JsObject(List(
+      "id" -> JsNumber(airline.id),
+      "name" -> JsString(airline.name)))
+  }
+  
   implicit object AirplaneModelWrites extends Writes[Model] {
     def writes(airplaneModel: Model): JsValue = {
           JsObject(List(
@@ -147,5 +159,27 @@ package object controllers {
         "soldSeats" -> JsNumber(linkConsumption.soldSeats.total),
         "quality" -> JsNumber(linkConsumption.quality)))
     }
+  }
+  
+  implicit object AirlineBaseFormat extends Format[AirlineBase] {
+    def reads(json: JsValue): JsResult[AirlineBase] = {
+      val airport = Airport.fromId((json \ "airportId").as[Int])
+      val airline = Airline.fromId((json \ "airlineId").as[Int])
+      val scale = (json \ "scale").as[Int]
+      val headquarter = (json \ "headquarter").as[Boolean]
+      JsSuccess(AirlineBase(airline, airport, "", scale, 0, headquarter))
+    }
+    
+    def writes(base: AirlineBase): JsValue = JsObject(List(
+      "airportId" -> JsNumber(base.airport.id),
+      "airportName" -> JsString(base.airport.name),
+      "countryCode" -> JsString(base.airport.countryCode),
+      "airportZone" -> JsString(base.airport.zone),
+      "city" -> JsString(base.airport.city),
+      "airlineId" -> JsNumber(base.airline.id),
+      "airlineName" -> JsString(base.airline.name),
+      "scale" -> JsNumber(base.scale),
+      "headquarter" -> JsBoolean(base.headquarter),
+      "foundedCycle" -> JsNumber(base.foundedCycle)))
   }
 }

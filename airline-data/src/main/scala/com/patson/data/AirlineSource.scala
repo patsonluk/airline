@@ -1,6 +1,7 @@
 package com.patson.data
 
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.Map
 import com.patson.data.Constants._
 import com.patson.model._
 import java.sql.Statement
@@ -211,6 +212,12 @@ object AirlineSource {
   def loadAirlineBasesByAirline(airlineId : Int) : List[AirlineBase] = {
     loadAirlineBasesByCriteria(List(("airline", airlineId)))
   }
+  
+  
+  def loadAirlineBasesByCountryCode(countryCode : String) : List[AirlineBase] = {
+    loadAirlineBasesByCriteria(List(("country", countryCode)))
+  }
+  
   def loadAirlineHeadquarter(airlineId : Int) : Option[AirlineBase] = {
     val result = loadAirlineBasesByCriteria(List(("airline", airlineId), ("headquarter", true)))
     if (result.isEmpty) {
@@ -253,15 +260,21 @@ object AirlineSource {
         val resultSet = preparedStatement.executeQuery()
         
         val bases = new ListBuffer[AirlineBase]()
+        
+        val airports = Map[Int, Airport]()
+        val airlines = Map[Int, Airline]()
         while (resultSet.next()) {
-          val airline = Airline.fromId(resultSet.getInt("airline"))
+          val airlineId = resultSet.getInt("airline")
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           //val airport = Airport.fromId(resultSet.getInt("airport"))
-          val airport = AirportSource.loadAirportById(resultSet.getInt("airport")).get
+          val airportId = resultSet.getInt("airport")
+          val airport = airports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, false).get)
           val scale = resultSet.getInt("scale")
           val foundedCycle = resultSet.getInt("founded_cycle")
           val headquarter = resultSet.getBoolean("headquarter")
+          val countryCode = resultSet.getString("country")
           
-          bases += AirlineBase(airline, airport, scale, foundedCycle, headquarter)
+          bases += AirlineBase(airline, airport, countryCode, scale, foundedCycle, headquarter)
         }
         
         resultSet.close()
@@ -278,13 +291,14 @@ object AirlineSource {
   def saveAirlineBase(airlineBase : AirlineBase) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_BASE_TABLE + "(airline, airport, scale, founded_cycle, headquarter) VALUES(?, ?, ?, ?, ?)")
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_BASE_TABLE + "(airline, airport, scale, founded_cycle, headquarter, country) VALUES(?, ?, ?, ?, ?, ?)")
           
       preparedStatement.setInt(1, airlineBase.airline.id)
       preparedStatement.setInt(2, airlineBase.airport.id)
       preparedStatement.setInt(3, airlineBase.scale)
       preparedStatement.setInt(4, airlineBase.foundedCycle)
       preparedStatement.setBoolean(5, airlineBase.headquarter)
+      preparedStatement.setString(6, airlineBase.countryCode)
       preparedStatement.executeUpdate()
       preparedStatement.close()
     } finally {

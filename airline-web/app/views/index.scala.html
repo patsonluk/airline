@@ -28,13 +28,13 @@
     <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/country.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
   </head>
   <body>
   	<input type="hidden" id="floatMessage" value="@message"/>
   	<div id="floatMessageBox" style="height: 30px; width: 400px; display: none;"></div>
-  	<div id="floatBackButton" style="display: none;" class="button" onclick="setActiveDiv($('#map')); $(this).hide()">Back to World Map</div>
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div style="float: left;">
   			<span id="currentTime" class="label"></span>
@@ -64,7 +64,18 @@
   			</div>
 		</div>
   	</div>
+  	
+  	
   	<div id="main" style="width: 100%" >
+  		<div style="width: 100%">
+	  		<ul class="tabs">
+			  <li class="button" onclick="setActiveDiv($('#map'))"><span>World Map</span></li>
+			  <li class="button" onclick="showAirportDetails()"><span>Airport</span></li>
+			  <li class="button" onclick="showCountryView()"><span>Country</span></li>
+			  <li class="button"><span>Airplane</span></li>
+			</ul>
+		</div>
+		<div style="clear:both"/>
   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div>
 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div>
   	<!-- main canvas start -->
@@ -87,6 +98,43 @@
 	  					<div id="transitTypePie" style="height: 160px; width: 300px;" align="center"></div>
 	 				</div>
   				</div>
+  			</div>
+  			<div id="countryCanvas" style="display: none;">
+  				<div id="countryList" style="height: 500px ; width : 300px; float: left; overflow-y: scroll;"></div>
+  				<div id="countryDetails" class="table" style="width: 900px;" float: left;">
+  					<div class="table-row">
+	    				<div class="label"><h5>Country:</h5></div>
+	    				<div class="value" id="countryDetailsName"></div>
+	    			</div>
+	    			<div class="table-row">
+	    				<div class="label"><h5>Income Level:</h5></div>
+	    				<div class="value" id="countryDetailsIncomeLevel"></div>
+	    			</div>
+	    			<div class="table-row">
+	    				<div class="label"><h5>Market Openness:</h5></div>
+	    				<div class="value" id="countryDetailsOpenness"></div>
+	    			</div>
+	    			<div class="table-row">
+	    				<div class="label"><h5>Large Airports:</h5></div>
+	    				<div class="value" id="countryDetailsLargeAirportCount"></div>
+	    			</div>
+	    			<div class="table-row">
+	    				<div class="label"><h5>Medium Airports:</h5></div>
+	    				<div class="value" id="countryDetailsMediumAirportCount"></div>
+	    			</div>
+	    			<div class="table-row">
+	    				<div class="label"><h5>Small Airports:</h5></div>
+	    				<div class="value" id="countryDetailsSmallAirportCount"></div>
+	    			</div>
+	    			<div class="table-row">
+	    				<div class="label"><h5>Airline Headquarters:</h5></div>
+	    				<div class="value" id="countryDetailsAirlineHeadquarters"></div>
+	    			</div>
+	    			<div class="table-row">
+	    				<div class="label"><h5>Airline Bases:</h5></div>
+	    				<div class="value" id="countryDetailsAirlineBases"></div>
+	    			</div>
+	    		</div>
   			</div>
   		</div>
   	<!-- main canvas end -->

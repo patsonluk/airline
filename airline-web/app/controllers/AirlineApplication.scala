@@ -18,16 +18,6 @@ import controllers.AuthenticationObject.AuthenticatedAirline
 
 
 class AirlineApplication extends Controller {
-  implicit object AirlineFormat extends Format[Airline] {
-    def reads(json: JsValue): JsResult[Airline] = {
-      val airline = Airline.fromId((json \ "id").as[Int])
-      JsSuccess(airline)
-    }
-    
-    def writes(airline: Airline): JsValue = JsObject(List(
-      "id" -> JsNumber(airline.id),
-      "name" -> JsString(airline.name)))
-  }
   object OwnedAirlineWrites extends Writes[Airline] {
     def writes(airline: Airline): JsValue = JsObject(List(
       "id" -> JsNumber(airline.id),
@@ -38,26 +28,7 @@ class AirlineApplication extends Controller {
       "serviceFunding" -> JsNumber(airline.airlineInfo.serviceFunding),
       "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality)))
   }
-  implicit object AirlineBaseFormat extends Format[AirlineBase] {
-    def reads(json: JsValue): JsResult[AirlineBase] = {
-      val airport = Airport.fromId((json \ "airportId").as[Int])
-      val airline = Airline.fromId((json \ "airlineId").as[Int])
-      val scale = (json \ "scale").as[Int]
-      val headquarter = (json \ "headquarter").as[Boolean]
-      JsSuccess(AirlineBase(airline, airport, scale, 0, headquarter))
-    }
-    
-    def writes(base: AirlineBase): JsValue = JsObject(List(
-      "airportId" -> JsNumber(base.airport.id),
-      "airportName" -> JsString(base.airport.name),
-      "countryCode" -> JsString(base.airport.countryCode),
-      "airportZone" -> JsString(base.airport.zone),
-      "airlineId" -> JsNumber(base.airline.id),
-      "scale" -> JsNumber(base.scale),
-      "headquarter" -> JsBoolean(base.headquarter),
-      "foundedCycle" -> JsNumber(base.foundedCycle)))
-  }
-
+  
   def getAllAirlines() = Authenticated { implicit request =>
      val airlines = AirlineSource.loadAllAirlines()
     Ok(Json.toJson(airlines)).withHeaders(
@@ -112,16 +83,18 @@ class AirlineApplication extends Controller {
              Created(Json.toJson(updateBase))
            }
            case None => //ok to add then
-             val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle())
-             AirlineSource.saveAirlineBase(newBase)
-             AirportSource.loadAirportById(newBase.airport.id, true).foreach {  airport =>//TODO for now. Maybe update to Ad event later on
-                if (airport.getAirlineAwareness(airlineId) < 10) { //update to 10 for hq
+             AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+               BadRequest("airport id " +  inputBase.airport.id + " not found!")
+             } { airport =>//TODO for now. Maybe update to Ad event later on
+               val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
+               AirlineSource.saveAirlineBase(newBase)
+               if (airport.getAirlineAwareness(airlineId) < 10) { //update to 10 for hq
                  airport.setAirlineAwareness(airlineId, 10)
                  AirportSource.updateAirlineAppeal(List(airport))
                }
+               Created(Json.toJson(newBase))
              }
-             Created(Json.toJson(newBase))
-         }
+          }
       } else {
         //TODO validations
         AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 

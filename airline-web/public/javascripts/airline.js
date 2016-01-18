@@ -419,6 +419,7 @@ function unselectLink() {
 }
 
 function selectLinkAndLoadDetails(linkId, refocus) {
+	setActiveDiv($("#map"))
 	selectLink(linkId, refocus)
 	refreshLinkDetails(linkId)
 }
@@ -1171,14 +1172,6 @@ function animateArrival(vipMarker, bounce, influencePointCount) {
 				fadeOutMarker(marker)
 			}, 3000, colorMarker)
 		}, (i + 1) * 200, i)
-	}
-}
-
-function getAirportText(city, airportName) {
-	if (city) {
-		return city + "(" + airportName + ")"
-	} else {
-		return airportName
 	}
 }
 

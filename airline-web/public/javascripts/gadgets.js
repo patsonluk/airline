@@ -164,3 +164,23 @@ function padBefore(str, padChar, max) {
 	return str.length < max ? padBefore(padChar + str, padChar, max) : str;
 }
 
+function getAirportText(city, airportName) {
+	if (city) {
+		return city + "(" + airportName + ")"
+	} else {
+		return airportName
+	}
+}
+
+function setActiveDiv(activeDiv) {
+	if (activeDiv.siblings(":visible").length){
+		activeDiv.siblings(":visible").fadeOut(200, function() { activeDiv.fadeIn(200) })
+	} else {
+		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
+			return false;
+		} else {
+			activeDiv.fadeIn(200)
+		}
+	}
+	return true;
+}
