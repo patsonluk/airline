@@ -20,6 +20,8 @@ GET	 	 /airports/:airportId/slots	      controllers.Application.getAirportSlotsB
 GET	 	 /airports/:airportId/link-statistics	        controllers.Application.getAirportLinkStatistics(airportId : Int)
 GET	 	 /airports/:airportId/link-schedule/:dayOfWeek/:hour controllers.Application.getAirportLinkSchedule(airportId : Int, dayOfWeek : Int, hour : Int)
 GET		 /airports/:fromAirportId/to/:toAirportId				controllers.Application.getAirportLinkConsumptions(fromAirportId : Int, toAirportId : Int)
+GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportProjects(airportId : Int)
+PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
 GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
 GET		 /airlines						  controllers.AirlineApplication.getAllAirlines
 GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int)

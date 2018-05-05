@@ -67,7 +67,6 @@ object CountrySource {
   }
   
   def saveCountries(countries : List[Country]) = {
-            Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement("REPLACE INTO " + COUNTRY_TABLE + "(code, name, airport_population, income, openness) VALUES (?,?,?,?,?)")
@@ -159,6 +158,10 @@ object CountrySource {
     } finally {
       connection.close()
     }  
+  }
+  
+  def loadAllCountryRelationships(): scala.collection.immutable.Map[Country, scala.collection.immutable.Map[Airline, Int]] = {
+    loadCountryRelationshipsByCriteria(List.empty)
   }
   
   def loadCountryRelationshipsByCountry(countryCode : String) : scala.collection.immutable.Map[Airline, Int] = {

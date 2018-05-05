@@ -83,7 +83,7 @@ object DemandGenerator {
 
         val demandListFromThisAiport = toAirportsWithDemand.foreach {
           case (toAirport, (passengerType, demand)) =>
-            LinkClass.values().foreach { linkClass =>
+            LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
                 while (remainingDemand > demandChunkSize) {

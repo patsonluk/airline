@@ -30,10 +30,15 @@ object LinkSimulation {
     LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
     
+    //save all consumptions
+    println("Saving all consumptions")
+    ConsumptionHistorySource.updateConsumptions(consumptionResult)
+    println("Saved all consumptions")
     //generate link history
-    val linkHistory = generateLinkHistory(consumptionResult)
-    println("Saving generated history to DB")
-    LinkHistorySource.updateLinkHistory(linkHistory)
+//    println("Generating link history")
+//    val linkHistory = generateLinkHistory(consumptionResult)
+//    println("Saving " + linkHistory.size + " generated history to DB")
+//    LinkHistorySource.updateLinkHistory(linkHistory)
     
     println("Generating VIP")
     val vipRoutes = generateVipRoutes(consumptionResult)
@@ -126,7 +131,7 @@ object LinkSimulation {
     
   }
   
-   def generateLinkHistory(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[LinkHistory] = {
+  def generateLinkHistory(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[LinkHistory] = {
     val linkHistoryMap = Map[(Int), Map[(Int, Airport, Airport, Airline, Boolean), Int]]() // [(watchedLink), [(linkId, fromAiport, toAirport, airline, watchedLinkInverted), totalPassengers]]
     
     val watchedLinkIds : List[Int] = LinkHistorySource.loadAllWatchedLinkIds()
