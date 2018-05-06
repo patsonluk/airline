@@ -19,7 +19,7 @@ object ConsumptionHistorySource {
     
     connection.setAutoCommit(false)
     
-    connection.createStatement().executeUpdate("DELETE * FROM " + PASSENGER_HISTORY_TABLE);
+    connection.createStatement().executeUpdate("DELETE FROM " + PASSENGER_HISTORY_TABLE);
     
     try {
       consumptions.foreach { consumption =>
@@ -69,20 +69,23 @@ object ConsumptionHistorySource {
   val loadConsumptionByLink : (Link => List[(PassengerType.Value, Int, Route)]) = (link : Link) => {
     val connection = Meta.getConnection()
     try {  
-      val preparedStatement = connection.prepareStatement("SELECT rc.id, ph.passenger_count, ph.passenger_type FROM " + LINK_CONSIDERATION_TABLE + " lc "
-          + " LEFT JOIN " + ROUTE_CONSUMPTION_TABLE + " rc ON lc.link = ? AND lc.route = rc.id "
-          + " LEFT JOIN " + PASSENGER_HISTORY_TABLE + " ph ON rc.passenger_group = ph.id")
+      val preparedStatement = connection.prepareStatement("SELECT rc.id as route_id, ph.passenger_count as passenger_count, ph.passenger_type as passenger_type FROM " + LINK_CONSIDERATION_TABLE + " lc "
+          + " JOIN " + ROUTE_CONSUMPTION_TABLE + " rc ON lc.link = ? AND lc.route = rc.id "
+          + " JOIN " + PASSENGER_HISTORY_TABLE + " ph ON rc.passenger_group = ph.id")
       preparedStatement.setInt(1, link.id)
       val resultSet = preparedStatement.executeQuery()
       
       val routeConsumptions = new ListBuffer[(PassengerType.Value, Int, Route)]
       while (resultSet.next()) {
-        val passengerType = PassengerType.apply(resultSet.getInt(3))
-        val passengerCount = resultSet.getInt(2)
-        val routeId = resultSet.getInt(1)
+        val passengerType = PassengerType.apply(resultSet.getInt("passenger_type"))
+        val passengerCount = resultSet.getInt("passenger_count")
+        val routeId = resultSet.getInt("route_id")
         
-        val routeConsumption = (passengerType, passengerCount, loadRouteById(routeId).get)
-        routeConsumptions += routeConsumption
+        loadRouteById(routeId).foreach { route =>
+          val routeConsumption = (passengerType, passengerCount, route)
+          routeConsumptions += routeConsumption  
+        }
+        
       }
       routeConsumptions.toList
     } finally {
@@ -128,6 +131,7 @@ object ConsumptionHistorySource {
         //now load all link considerations
         val queryString = "SELECT * FROM " + LINK_CONSIDERATION_TABLE + " WHERE route=?"
         val linkConsiderationStatement = connection.prepareStatement(queryString)
+        linkConsiderationStatement.setInt(1, routeId)
         val linkConsiderationResult = linkConsiderationStatement.executeQuery()
         
         val linkConsiderations = new ListBuffer[LinkConsideration]

@@ -147,7 +147,7 @@ class Application extends Controller {
     def reads(json: JsValue): JsResult[AirportProject] = {
       val airport = Airport.fromId((json \ "id").as[Int])
       val projectType = ProjectType.withName((json \ "projectType").as[String])
-      JsSuccess(AirportProject(airport, projectType, ProjectStatus.INITIATED, progress = 0))
+      JsSuccess(AirportProject(airport, projectType, ProjectStatus.INITIATED, progress = 0, duration = 0, level = 0)) //TODO not implemented
     }
   }
 
