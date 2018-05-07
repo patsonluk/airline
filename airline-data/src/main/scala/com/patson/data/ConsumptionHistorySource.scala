@@ -7,6 +7,7 @@ import java.sql.PreparedStatement
 import com.patson.model._
 import java.sql.Statement
 import java.sql.ResultSet
+import scala.collection.mutable.HashMap
 
 
 object ConsumptionHistorySource {
@@ -65,6 +66,42 @@ object ConsumptionHistorySource {
     }
   }
   
+  def loadAllConsumptions() : List[(PassengerType.Value, Int, Route)] = {
+    val connection = Meta.getConnection()
+    val linkMap = LinkSource.loadAllLinks(LinkSource.SIMPLE_LOAD).map { link => (link.id , link) }.toMap
+    try {  
+      val preparedStatement = connection.prepareStatement("SELECT ph.passenger_count, ph.passenger_type, rc.id as route_id, lc.inverted, lc.link, lc.link_class FROM " + PASSENGER_HISTORY_TABLE + " ph "
+          + " LEFT JOIN " + ROUTE_CONSUMPTION_TABLE + " rc ON rc.passenger_group = ph.id "
+          + " LEFT JOIN " + LINK_CONSIDERATION_TABLE + " lc ON lc.route = rc.id")
+
+      val resultSet = preparedStatement.executeQuery()
+      
+      val routeConsumptions = new HashMap[Int, (PassengerType.Value, Int)]() 
+      val linkConsiderations = new ListBuffer[(Int, LinkConsideration)] //route_id, linkConsideration
+      
+      while (resultSet.next()) {
+        linkMap.get(resultSet.getInt("link")).foreach { link =>
+          val routeId = resultSet.getInt("route_id")
+          val passengerType = PassengerType.apply(resultSet.getInt("passenger_type"))
+          val passengerCount = resultSet.getInt("passenger_count")
+          val linkConsideration = new LinkConsideration(link, 0, LinkClass.fromCode(resultSet.getString("link_class")), resultSet.getBoolean("inverted"))
+          linkConsiderations += ((routeId,  linkConsideration))
+          routeConsumptions.put(routeId, (passengerType, passengerCount))
+        }
+      }
+      
+      val allRoutes = linkConsiderations.groupBy(_._1).map {
+        case (routeId, linkConsiderationsByRoute) => new Route(linkConsiderationsByRoute.map(_._2).toList, 0, routeId)
+      }
+      
+      allRoutes.map { route => 
+        val consumption = routeConsumptions(route.id) 
+        (consumption._1, consumption._2, route)  
+      }.toList
+    } finally {
+      connection.close()
+    }
+  }
   
   val loadConsumptionByLink : (Link => List[(PassengerType.Value, Int, Route)]) = (link : Link) => {
     val connection = Meta.getConnection()

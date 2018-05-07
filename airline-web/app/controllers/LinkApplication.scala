@@ -508,7 +508,7 @@ class LinkApplication extends Controller {
         if (link.airline.id != airlineId) {
           Forbidden(Json.obj())
         } else {
-          Ok(Json.toJson(LinkApplication.computeRelatedLinkConsumption(link)))
+          Ok(Json.toJson(HistoryUtil.loadConsumptionByLink(link)))
         }
       }
       case None => NotFound(Json.obj())
@@ -571,55 +571,7 @@ class LinkApplication extends Controller {
 }
 
 object LinkApplication {
-  val computeRelatedLinkConsumption : Link => LinkHistory =  (sourceLink : Link) => {
-    println("Loading related consumption for " + sourceLink)
-    val relatedConsumptions : List[(PassengerType.Value, Int, Route)] = ConsumptionHistorySource.loadConsumptionByLink(sourceLink)
-    println("Finished loading related consumption for " + sourceLink)
-    
-    val relatedFowardLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
-        case(_, _, route) => route.links.find { linkConsideration => !linkConsideration.inverted && linkConsideration.link.id == sourceLink.id }.isDefined
-      }
-    ) 
-    
-    val relatedReverseLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
-        case(_, _, route) => route.links.find { linkConsideration => linkConsideration.inverted && linkConsideration.link.id == sourceLink.id }.isDefined
-      }
-    )
-       
-    LinkHistory(0, relatedFowardLinks.toSet, relatedReverseLinks.toSet)
-  }
+  
 
-  def computeRelatedLinks(relatedConsumption : List[(PassengerType.Value, Int, Route)]) : List[RelatedLink] = {
-    val relatedLinkConsumptions : List[(PassengerType.Value, Int, LinkConsideration)] = relatedConsumption.flatMap {
-      case(passengerType, passengerCount, route) => route.links.map { (passengerType, passengerCount, _) } 
-    } //flat map by expanding the route to the links of the route
-       
-       
-    //now group the link by the passenger type and the link itself
-    val groupedLinkConsumptions = relatedLinkConsumptions.groupBy { case(passengerType, _, linkConsideration) => (linkConsideration.link, linkConsideration.inverted, passengerType) }
-    
-    //fold the value of the grouped map, we only care about passenger count now
-    val computedConsumedLinks = groupedLinkConsumptions.mapValues{
-      _.foldLeft(0)( (totalPassengerCount, entry) => totalPassengerCount + entry._2)
-    }
-    
-    //now it should have a nice map of 
-    //key: Link, inverted, passengerType
-    //value: number of passengers
-    
-    computedConsumedLinks.map {
-      case (key, value) => {
-        val link = key._1
-        val inverted = key._2
-        val passengerType = key._3
-        val passengerCount = value
-        if (!inverted) {
-          new RelatedLink(link.id, link.from, link.to, link.airline, passengerCount)  
-        } else {
-          new RelatedLink(link.id, link.to, link.from, link.airline, passengerCount)
-        }
-      }
-    }.toList
-  }
   
 }
