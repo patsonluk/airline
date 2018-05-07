@@ -757,8 +757,10 @@ function showLinkHistoryPaths(state) {
 			} else if (totalPassengers > 2000) {
 				historyPath.setOptions({strokeWeight : 4})
 			} else if (totalPassengers < 100) {
-				var newOpacity = 0.1 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.1) 
-				historyPath.setOptions({strokeOpacity : newOpacity})
+				var newOpacity = 0.1 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.1)
+				if (!historyPath.watched) {
+					historyPath.setOptions({strokeOpacity : newOpacity})
+				}
 			}
 			
 			if (historyPath.watched) {
