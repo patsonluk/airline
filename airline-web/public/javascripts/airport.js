@@ -29,12 +29,13 @@ function populateAirportDetails(airport) {
 	var airportMap = new google.maps.Map(document.getElementById('airportMap'), {
 		//center: {lat: airport.latitude, lng: airport.longitude},
 	   	zoom : 6,
-	   	minZoom : 6
+	   	minZoom : 6,
 //	   	scrollwheel: false,
 //	    navigationControl: false,
 //	    mapTypeControl: false,
 //	    scaleControl: false,
-//	    draggable: false
+//	    draggable: false,
+	   	gestureHandling: 'greedy'
 	  });
 	if (airport) {
 		addCityMarkers(airportMap, airport)

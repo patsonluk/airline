@@ -119,7 +119,8 @@ function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
 	center: {lat: 20, lng: 150.644},
    	zoom : 2,
-   	minZoom : 2
+   	minZoom : 2,
+   	gestureHandling: 'greedy'
   });
   google.maps.event.addListener(map, 'zoom_changed', function() {
 	    var zoom = map.getZoom();

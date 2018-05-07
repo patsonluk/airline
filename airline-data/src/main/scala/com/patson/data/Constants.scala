@@ -55,9 +55,7 @@ object Constants {
   val USER_AIRLINE_TABLE = "user_airline"
   val VIP_ROUTE_TABLE = "vip_route"
   val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"
-  val LINK_CONSIDERATION_TABLE = "link_consideration"
   val PASSENGER_HISTORY_TABLE = "passenger_history"
-  val ROUTE_CONSUMPTION_TABLE = "route_consumption"
   
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"

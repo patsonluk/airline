@@ -111,9 +111,7 @@ function clearPathEntry(pathEntry) {
 	pathEntry.shadow.setMap(null)
 }
 
-//remove and re-add all the links
-function updateLinksInfo() {
-
+function clearAllPaths() {
 	$.each(flightMarkers, function( linkId, markerEntry ) {
 		clearMarkerEntry(markerEntry)
 	});
@@ -124,6 +122,11 @@ function updateLinksInfo() {
 	
 	flightPaths = {}
 	flightMarkers = {}
+}
+
+//remove and re-add all the links
+function updateLinksInfo() {
+	clearAllPaths()
 	
 	//remove from link list
 	$('#linkList').empty()
@@ -584,11 +587,12 @@ function editLink(linkId) {
 	});
 }
 
-function watchLink(linkId) {
+function watchLink(linkId, selfOnly) {
 	if (linkHistoryState == "hidden") {
+		clearAllPaths()
 		$.ajax({
 			type: 'GET',
-			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId,
+			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?selfOnly=" + selfOnly,
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
 		    success: function(linkHistory) {
@@ -613,8 +617,9 @@ function watchLink(linkId) {
 		showLinkHistoryPaths(linkHistoryState)
 	} else if (linkHistoryState == "showInverted") {
 		linkHistoryState = "hidden"
-		showLinkHistoryPaths(linkHistoryState)
+		showLinkHistoryPaths(linkHistoryState) //this actually remove all paths
 		historyPaths = {}
+		updateLinksInfo() //redraw all flight paths
 	} else {
 		console.log("unknown linkHistoryState " + linkHistoryState)
 	}

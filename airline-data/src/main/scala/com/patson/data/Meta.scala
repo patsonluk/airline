@@ -155,14 +155,6 @@ object Meta {
     statement.execute()
     statement.close()
         
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ROUTE_CONSUMPTION_TABLE)
-    statement.execute()
-    statement.close()
-    
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CONSIDERATION_TABLE)
-    statement.execute()
-    statement.close()
-    
     //
     //    statement = connection.prepareStatement("CREATE TABLE " + CYCLE_TABLE + "(cycle INTEGER PRIMARY KEY)")
     //    statement.execute()
@@ -540,30 +532,16 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + PASSENGER_HISTORY_TABLE + "(" + 
                                             "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
                                             "passenger_type INTEGER," + 
-                                            "passenger_count INTEGER)")
-    statement.execute()
-    statement.close()
-    
-    statement = connection.prepareStatement("CREATE TABLE " + ROUTE_CONSUMPTION_TABLE + "(" + 
-                                            "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
-                                            "passenger_group INTEGER," +
-                                            "cost DOUBLE," +
-                                            "FOREIGN KEY(passenger_group) REFERENCES " + PASSENGER_HISTORY_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)");
-    statement.execute()
-    statement.close()
-    
-    statement = connection.prepareStatement("CREATE TABLE " + LINK_CONSIDERATION_TABLE + "(" + 
-                                            "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
-                                            "route INTEGER," +
+                                            "passenger_count INTEGER," +
+                                            "route_id INTEGER," +
                                             "link INTEGER," +
-                                            "cost DOUBLE," +
                                             "link_class VARCHAR(2)," +
                                             "inverted INTEGER," +
-                                            "FOREIGN KEY(route) REFERENCES " + ROUTE_CONSUMPTION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
-                                            "FOREIGN KEY(link) REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)");
+                                            "FOREIGN KEY(link) REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
+                                            
     statement.execute()
     statement.close()
-    
+   
     connection.close()
   }
 }

@@ -13,9 +13,10 @@ object HistoryUtil {
   var loadedCycle = 0
   var allConsumptions : List[(PassengerType.Value, Int, Route)] = List() 
   
-  def loadConsumptionByLink(link : Link) : LinkHistory = {
+  def loadConsumptionByLink(link : Link, selfOnly : Boolean = false) : LinkHistory = {
     checkCache()
     
+    val airlineId = link.airline.id
     val relatedConsumptions = allConsumptions.filter {
       case(_, _, route) => {
         route.links.exists { linkConsideration => 
@@ -27,23 +28,25 @@ object HistoryUtil {
     println("Finished loading related consumption for " + link)
     
     val relatedFowardLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
-        case(_, _, route) => route.links.find { linkConsideration => !linkConsideration.inverted && linkConsideration.link.id == link.id }.isDefined
-      }
+        case(_, _, route) => route.links.find { linkConsideration => !linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
+      }, airlineId, selfOnly    
     ) 
     
     val relatedReverseLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
-        case(_, _, route) => route.links.find { linkConsideration => linkConsideration.inverted && linkConsideration.link.id == link.id }.isDefined
-      }
+        case(_, _, route) => route.links.find { linkConsideration => linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
+      }, airlineId, selfOnly
     )
        
     LinkHistory(0, relatedFowardLinks.toSet, relatedReverseLinks.toSet)
   }
   
-  private def computeRelatedLinks(relatedConsumption : List[(PassengerType.Value, Int, Route)]) : List[RelatedLink] = {
+  private def computeRelatedLinks(relatedConsumption : List[(PassengerType.Value, Int, Route)], airlineId : Int, selfOnly : Boolean) : List[RelatedLink] = {
     val relatedLinkConsumptions : List[(PassengerType.Value, Int, LinkConsideration)] = relatedConsumption.flatMap {
-      case(passengerType, passengerCount, route) => route.links.map { (passengerType, passengerCount, _) } 
+      case(passengerType, passengerCount, route) => route.links.map { (passengerType, passengerCount, _) }.filter {
+        case(_, _, link) => !selfOnly || link.link.airline.id == airlineId  
+      }
     } //flat map by expanding the route to the links of the route
-       
+    
        
     //now group the link by the passenger type and the link itself
     val groupedLinkConsumptions = relatedLinkConsumptions.groupBy { case(passengerType, _, linkConsideration) => (linkConsideration.link, linkConsideration.inverted, passengerType) }

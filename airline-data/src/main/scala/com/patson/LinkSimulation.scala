@@ -31,7 +31,7 @@ object LinkSimulation {
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
     
     //save all consumptions
-    println("Saving all consumptions")
+    println("Saving " + consumptionResult.size +  " consumptions")
     ConsumptionHistorySource.updateConsumptions(consumptionResult)
     println("Saved all consumptions")
     //generate link history

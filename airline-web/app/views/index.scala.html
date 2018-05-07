@@ -237,7 +237,8 @@
 		    			<input type="hidden" id="linkFromAirportId"></input>
 		    			<input type="hidden" id="linkToAirportId"></input>
 		    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
-		    			<div class="button" onclick="watchLink($('#actionLinkId').val())">Watch</div>
+		    			<div class="button" onclick="watchLink($('#actionLinkId').val(), false)">Watch</div>
+		    			<div class="button" onclick="watchLink($('#actionLinkId').val(), true)">Watch(Self)</div>
 		    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
 		    			<div class="button" onclick="unselectLink()">Cancel</div>
 			    		
