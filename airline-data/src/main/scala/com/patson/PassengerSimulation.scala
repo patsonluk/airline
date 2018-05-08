@@ -67,10 +67,6 @@ object PassengerSimulation extends App {
   }
   
   def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : List[(PassengerGroup, Airport, Int, Route)] = {
-     //randomize consumption order
-     //convert demandChunks to array
-     var demandChunks = Random.shuffle(demand).toArray
-     
      val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
      val consumptionCycleMax = 10; //try and rebuild routes 10 times
      var consumptionCycleCount = 0;
@@ -84,23 +80,27 @@ object PassengerSimulation extends App {
      }
      println("Total active airports: " + activeAirportIds.size)
      
+     println("Remove demand that is not covered by active airports, before " + demand.size);
+     
+     //randomize consumption order
+     //convert demandChunks to array
+     var demandChunks = Random.shuffle(demand.filter {
+       case(passengerGroup, toAirport, _) => activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
+     }).toArray
+     
+     println("After pruning : " + demandChunks.size);
+     
      while (consumptionCycleCount < consumptionCycleMax) {
        println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
        println("links: " + links.size)
-       
-        
        
        //find out required routes
        print("Find required routes...")
        val requiredRoutes = scala.collection.mutable.Map[PassengerGroup, Set[Airport]]()
        demandChunks.foreach {
          case (passengerGroup, toAirport, _) =>
-           if (activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)) {
-             var toAirports : Set[Airport] = requiredRoutes.getOrElseUpdate(passengerGroup, scala.collection.mutable.Set[Airport]())
-             toAirports.add(toAirport)
-           }
-//             var toAirports : Set[Airport] = requiredRoutes.getOrElseUpdate(passengerGroup, scala.collection.mutable.Set[Airport]())
-//             toAirports.add(toAirport)
+           var toAirports : Set[Airport] = requiredRoutes.getOrElseUpdate(passengerGroup, scala.collection.mutable.Set[Airport]())
+           toAirports.add(toAirport)
        }
        println("Done!")
        
@@ -215,8 +215,7 @@ object PassengerSimulation extends App {
     val links = linksList.toArray
     
     val demandSource = Source(requiredRoutes.iterator)
-    
-	  val computeFlow: Flow[(PassengerGroup, Set[Airport]), (PassengerGroup, Map[Airport, Route])] = Flow[(PassengerGroup, Set[Airport])].map {
+    val computeFlow: Flow[(PassengerGroup, Set[Airport]), (PassengerGroup, Map[Airport, Route])] = Flow[(PassengerGroup, Set[Airport])].map {
       case(passengerGroup, toAirports) =>
         val linkClass = passengerGroup.preference.linkClass
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
