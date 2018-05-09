@@ -8,15 +8,27 @@ import com.patson.model.AirlineAppeal
 import java.sql.Statement
 
 object AirportSource {
+  private[this] val BASE_QUERY = "SELECT * FROM airport"
   def loadAllAirports(fullLoad : Boolean = false) = {
       loadAirportsByCriteria(List.empty, fullLoad)
   }
   
+  def loadAirportsByIds(ids : List[Int], fullLoad : Boolean = false) = {
+    if (ids.isEmpty) {
+      List.empty
+    } else {
+      var queryString = BASE_QUERY + " where id IN (";
+      for (i <- 0 until ids.size - 1) {
+            queryString += "?,"
+      }
+      
+      queryString += "?)"
+      loadAirportsByQueryString(queryString, ids, fullLoad)
+    }
+  }
+  
   def loadAirportsByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
-      //open the hsqldb
-    val connection = Meta.getConnection()
-    try {  
-      var queryString = "SELECT * FROM airport"
+      var queryString = BASE_QUERY
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -26,10 +38,17 @@ object AirportSource {
         queryString += criteria.last._1 + " = ?"
       }
       
+      loadAirportsByQueryString(queryString, criteria.map(_._2), fullLoad)
+  }
+  
+  def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) = {
+      //open the hsqldb
+    val connection = Meta.getConnection()
+    try {  
       val preparedStatement = connection.prepareStatement(queryString)
       
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 1, parameters(i))
       }
       
       

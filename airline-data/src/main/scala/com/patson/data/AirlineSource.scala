@@ -7,28 +7,45 @@ import com.patson.model._
 import java.sql.Statement
 
 object AirlineSource {
+  private[this] val BASE_QUERY = "SELECT a.id AS id, a.name AS name, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
   def loadAllAirlines(fullLoad : Boolean = false) = {
       loadAirlinesByCriteria(List.empty, fullLoad)
   }
   
+  def loadAirlinesByIds(ids : List[Int], fullLoad : Boolean = false) = {
+    if (ids.isEmpty) {
+      List.empty
+    } else {
+      var queryString = BASE_QUERY + " where id IN (";
+      for (i <- 0 until ids.size - 1) {
+            queryString += "?,"
+      }
+      
+      queryString += "?)"
+      loadAirlinesByQueryString(queryString, ids, fullLoad)
+    }
+  }
+  
   def loadAirlinesByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
-      //open the hsqldb
-      val connection = Meta.getConnection() 
-      try {
-        var queryString = "SELECT a.id AS id, a.name AS name, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
-        
-        if (!criteria.isEmpty) {
-          queryString += " WHERE "
-          for (i <- 0 until criteria.size - 1) {
-            queryString += criteria(i)._1 + " = ? AND "
-          }
-          queryString += criteria.last._1 + " = ?"
+      var queryString = BASE_QUERY
+      
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
         }
-        
+        queryString += criteria.last._1 + " = ?"
+      }
+      loadAirlinesByQueryString(queryString, criteria.map(_._2))
+  }
+  
+  private def loadAirlinesByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) : List[Airline] = {
+    val connection = Meta.getConnection()
+    try {
         val preparedStatement = connection.prepareStatement(queryString)
         
-        for (i <- 0 until criteria.size) {
-          preparedStatement.setObject(i + 1, criteria(i)._2)
+        for (i <- 0 until parameters.size) {
+          preparedStatement.setObject(i + 1, parameters(i))
         }
         
         
