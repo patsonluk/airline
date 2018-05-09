@@ -94,6 +94,10 @@ object Meta {
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_FEATURE_TABLE)
     statement.execute()
     statement.close()
+    
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_PROJECT_TABLE)
+    statement.execute()
+    statement.close()
 
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_TABLE)
     statement.execute()
@@ -277,6 +281,23 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + AIRPORT_FEATURE_INDEX_1 + " ON " + AIRPORT_FEATURE_TABLE + "(airport)")
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_PROJECT_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airport INTEGER," +
+      "project_type VARCHAR(256)," +
+      "project_status VARCHAR(256)," +
+      "progress DOUBLE," +
+      "duration INTEGER," +
+      "level INTEGER," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE INDEX " + AIRPORT_PROJECT_INDEX_1 + " ON " + AIRPORT_PROJECT_TABLE + "(airport)")
     statement.execute()
     statement.close()
 
