@@ -22,7 +22,7 @@ object LinkSimulation {
         holder + demandValue
     })
 
-    val consumptionResult: List[(PassengerGroup, Airport, Int, Route)] = PassengerSimulation.passengerConsume(demand, links)
+    val consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int] = PassengerSimulation.passengerConsume(demand, links)
     //generate statistic 
     println("Generating stats")
     val linkStatistics = generateLinkStatistics(consumptionResult, cycle)
@@ -30,15 +30,20 @@ object LinkSimulation {
     LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
     
+    //save all consumptions
+    println("Saving " + consumptionResult.size +  " consumptions")
+    ConsumptionHistorySource.updateConsumptions(consumptionResult)
+    println("Saved all consumptions")
     //generate link history
-    val linkHistory = generateLinkHistory(consumptionResult)
-    println("Saving generated history to DB")
-    LinkHistorySource.updateLinkHistory(linkHistory)
+//    println("Generating link history")
+//    val linkHistory = generateLinkHistory(consumptionResult)
+//    println("Saving " + linkHistory.size + " generated history to DB")
+//    LinkHistorySource.updateLinkHistory(linkHistory)
     
-    println("Generating VIP")
-    val vipRoutes = generateVipRoutes(consumptionResult)
-    RouteHistorySource.deleteVipRouteBeforeCycle(cycle)
-    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
+//    println("Generating VIP")
+//    val vipRoutes = generateVipRoutes(consumptionResult)
+//    RouteHistorySource.deleteVipRouteBeforeCycle(cycle)
+//    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
     
     println("Calculating profits by links")
     val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
@@ -95,10 +100,10 @@ object LinkSimulation {
     result
   }
   
-  def generateLinkStatistics(consumptionResult: List[(PassengerGroup, Airport, Int, Route)], cycle : Int) : List[LinkStatistics] = {
+  def generateLinkStatistics(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : List[LinkStatistics] = {
     val statistics = Map[LinkStatisticsKey, Int]()
     consumptionResult.foreach {
-      case (_, _, passengerCount, route) =>
+      case ((_, _, route), passengerCount) =>
         for (i <- 0 until route.links.size) {
           val link = route.links(i) 
           val airline = link.link.airline
@@ -126,7 +131,7 @@ object LinkSimulation {
     
   }
   
-   def generateLinkHistory(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[LinkHistory] = {
+  def generateLinkHistory(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[LinkHistory] = {
     val linkHistoryMap = Map[(Int), Map[(Int, Airport, Airport, Airline, Boolean), Int]]() // [(watchedLink), [(linkId, fromAiport, toAirport, airline, watchedLinkInverted), totalPassengers]]
     
     val watchedLinkIds : List[Int] = LinkHistorySource.loadAllWatchedLinkIds()

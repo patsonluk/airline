@@ -109,7 +109,7 @@ object Link {
 /**
  * Cost is the adjusted price
  */
-case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, inverted : Boolean) {
+case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, inverted : Boolean, var id : Int = 0) extends IdObject {
     def from : Airport = if (inverted) link.to else link.from
     def to : Airport = if (inverted) link.from else link.to
     
@@ -118,12 +118,14 @@ case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, 
     }
 }
 
-sealed abstract class LinkClass(val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val level : Int) //level for sorting/comparison purpose
-case object FIRST extends LinkClass(spaceMultiplier = 8, resourceMultiplier = 6, priceMultiplier = 10, 3)
-case object BUSINESS extends LinkClass(spaceMultiplier = 4, resourceMultiplier = 3, priceMultiplier = 4, 2)
-case object ECONOMY extends LinkClass(spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, 1)
+sealed abstract class LinkClass(val code : String, val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val level : Int) //level for sorting/comparison purpose
+case object FIRST extends LinkClass("F", spaceMultiplier = 8, resourceMultiplier = 6, priceMultiplier = 10, 3)
+case object BUSINESS extends LinkClass("J", spaceMultiplier = 4, resourceMultiplier = 3, priceMultiplier = 4, 2)
+case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, 1)
 object LinkClass {
-  def values() : List[LinkClass] =  {
-    List(FIRST, BUSINESS, ECONOMY)
+  val values = List(FIRST, BUSINESS, ECONOMY)
+  
+  val fromCode : String => LinkClass = (code : String) => {
+    values.find { _.code == code }.get
   }
 }

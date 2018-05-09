@@ -18,6 +18,7 @@ import com.patson.data.LinkStatisticsSource
 import scala.collection.mutable.LinkedHashMap
 import scala.collection.mutable.ListBuffer
 import com.patson.model.Scheduling.TimeSlot
+import controllers.AuthenticationObject.AuthenticatedAirline
 
 
 class Application extends Controller {
@@ -130,6 +131,23 @@ class Application extends Controller {
       "timeSlotTime" -> JsString("%02d".format(timeSlotAssignment._1.hour) + ":" + "%02d".format(timeSlotAssignment._1.minute)),
       "links" -> linksObj
       ))
+    }
+  }
+  
+  implicit object AirportProjectFormat extends Format[AirportProject] {
+     def writes(project : AirportProject): JsValue = {
+       Json.obj(
+         "projectId" -> project.id,
+         "airportId" -> project.airport.id,    
+         "projectType" -> project.projectType.toString(),
+         "status" -> project.status.toString(), 
+         "progress" -> project.progress
+       )
+    }
+    def reads(json: JsValue): JsResult[AirportProject] = {
+      val airport = Airport.fromId((json \ "id").as[Int])
+      val projectType = ProjectType.withName((json \ "projectType").as[String])
+      JsSuccess(AirportProject(airport, projectType, ProjectStatus.INITIATED, progress = 0, duration = 0, level = 0)) //TODO not implemented
     }
   }
 
@@ -270,15 +288,29 @@ class Application extends Controller {
     }
     Ok(Json.toJson(competitorLinkConsumptions.map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq))
   }
+  
+  def getAirportProjects(airportId : Int) = Action {
+    val airportProjects = AirportSource.loadAirportProjectsByAirport(airportId)
+    Ok(Json.toJson(airportProjects))
+  }
+  
+  def addAirportProject(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
+     val airline = request.user
+    
+     //TODO validate airline can do it
+     val newProject = request.body.asInstanceOf[AnyContentAsJson].json.as[AirportProject]
+     AirportSource.saveAirportProject(newProject)
+     Ok(Json.toJson(newProject))
+  }
       
   
   def options(path: String) = Action {
-  Ok("").withHeaders(
-    "Access-Control-Allow-Methods" -> "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers" -> "Accept, Origin, Content-type, X-Json, X-Prototype-Version, X-Requested-With, Authorization",
-    "Access-Control-Allow-Credentials" -> "true",
-    "Access-Control-Max-Age" -> (60 * 60 * 24).toString
-  )
+    Ok("").withHeaders(
+      "Access-Control-Allow-Methods" -> "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers" -> "Accept, Origin, Content-type, X-Json, X-Prototype-Version, X-Requested-With, Authorization",
+      "Access-Control-Allow-Credentials" -> "true",
+      "Access-Control-Max-Age" -> (60 * 60 * 24).toString
+    )
   }
 
   case class LinkInfo(fromId : Int, toId : Int, price : Double, capacity : Int)

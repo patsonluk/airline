@@ -29,6 +29,7 @@ import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.RouteHistorySource
 import com.patson.data.LinkHistorySource
 import com.patson.DemandGenerator
+import com.patson.data.ConsumptionHistorySource
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -501,6 +502,21 @@ class LinkApplication extends Controller {
     })
   }
   
+  def getRelatedLinkConsumption(airlineId : Int, linkId : Int, selfOnly : Boolean) =  AuthenticatedAirline(airlineId) {
+    LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
+      case Some(link) => {
+        if (link.airline.id != airlineId) {
+          Forbidden(Json.obj())
+        } else {
+          Ok(Json.toJson(HistoryUtil.loadConsumptionByLink(link, selfOnly)))
+        }
+      }
+      case None => NotFound(Json.obj())
+    }
+  }
+  
+  
+  
   def getLinkHistory(airlineId : Int) = AuthenticatedAirline(airlineId) {
     LinkHistorySource.loadWatchedLinkIdByAirline(airlineId) match {
       case Some(watchedLinkId) =>
@@ -552,4 +568,10 @@ class LinkApplication extends Controller {
     
     (maxFrequencyFromAirport, maxFrequencyToAirport)
   }
+}
+
+object LinkApplication {
+  
+
+  
 }

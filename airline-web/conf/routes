@@ -20,6 +20,8 @@ GET	 	 /airports/:airportId/slots	      controllers.Application.getAirportSlotsB
 GET	 	 /airports/:airportId/link-statistics	        controllers.Application.getAirportLinkStatistics(airportId : Int)
 GET	 	 /airports/:airportId/link-schedule/:dayOfWeek/:hour controllers.Application.getAirportLinkSchedule(airportId : Int, dayOfWeek : Int, hour : Int)
 GET		 /airports/:fromAirportId/to/:toAirportId				controllers.Application.getAirportLinkConsumptions(fromAirportId : Int, toAirportId : Int)
+GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportProjects(airportId : Int)
+PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
 GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
 GET		 /airlines						  controllers.AirlineApplication.getAllAirlines
 GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int)
@@ -39,6 +41,7 @@ GET		 /airlines/:airlineId/link-consumptions/:linkId	  controllers.LinkApplicati
 PUT		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.setWatchedLink(airlineId: Int, linkId: Int)
 GET		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.getWatchedLink(airlineId: Int)
 GET		 /airlines/:airlineId/link-history 				controllers.LinkApplication.getLinkHistory(airlineId: Int)
+GET		 /airlines/:airlineId/related-link-consumption/:linkId		controllers.LinkApplication.getRelatedLinkConsumption(airlineId: Int, linkId: Int, selfOnly : Boolean ?= false)
 PUT		 /airlines/:airlineId/serviceFunding			controllers.LinkApplication.updateServiceFunding(airlineId: Int)
 PUT		 /airlines/:airlineId/maintenanceQuality			controllers.LinkApplication.updateMaintenanceQuality(airlineId: Int)
 POST	 /airlines/:airlineId/plan-link	  controllers.LinkApplication.planLink(airlineId : Int)

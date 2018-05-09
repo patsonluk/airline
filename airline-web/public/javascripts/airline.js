@@ -111,9 +111,7 @@ function clearPathEntry(pathEntry) {
 	pathEntry.shadow.setMap(null)
 }
 
-//remove and re-add all the links
-function updateLinksInfo() {
-
+function clearAllPaths() {
 	$.each(flightMarkers, function( linkId, markerEntry ) {
 		clearMarkerEntry(markerEntry)
 	});
@@ -124,6 +122,11 @@ function updateLinksInfo() {
 	
 	flightPaths = {}
 	flightMarkers = {}
+}
+
+//remove and re-add all the links
+function updateLinksInfo() {
+	clearAllPaths()
 	
 	//remove from link list
 	$('#linkList').empty()
@@ -270,8 +273,8 @@ function getLinkColor(profit, revenue) {
 }
 
 function highlightPath(path) {
-	var originalColorString = path.path.strokeColor
-	path.path.originalColor = originalColorString
+	var originalColorString = path.strokeColor
+	path.originalColor = originalColorString
 	var totalFrames = 20
 	
 	var rgbHexValue = parseInt(originalColorString.substring(1), 16);
@@ -300,17 +303,17 @@ function highlightPath(path) {
 		}
 		 
 		var colorHexString = "#" + redHex + greenHex + blueHex
-		path.path.setOptions({ strokeColor : colorHexString , strokeWeight : 4, zIndex : 91})
+		path.setOptions({ strokeColor : colorHexString , strokeWeight : 4, zIndex : 91})
 		
 		currentFrame = (currentFrame + 1) % (totalFrames * 2)
 		
 	}, 50)
-	path.path.animation = animation
+	path.animation = animation
 }
 function unhighlightPath(path) {
-	window.clearInterval(path.path.animation)
-	path.path["animation"] = undefined
-	path.path.setOptions({ strokeColor : path.path.originalColor , strokeWeight : 2, zIndex : 90})
+	window.clearInterval(path.animation)
+	path["animation"] = undefined
+	path.setOptions({ strokeColor : path.originalColor , strokeWeight : 2, zIndex : 90})
 }
 
 
@@ -411,7 +414,7 @@ function unselectLink() {
 	if (previousSelectedListItem.length > 0) {
 		previousSelectedListItem.removeClass("selected")
 		var previousLinkId = previousSelectedListItem.data("linkId")
-		unhighlightPath(flightPaths[previousLinkId])
+		unhighlightPath(flightPaths[previousLinkId].path)
 	}
 	selectedLink = undefined
 	
@@ -435,7 +438,7 @@ function selectLink(linkId, refocus) {
 	}
 	
 	//highlight the selected link's flight path
-	highlightPath(flightPaths[linkId])
+	highlightPath(flightPaths[linkId].path)
 	
 	//focus to the from airport
 	if (refocus) {
@@ -584,23 +587,42 @@ function editLink(linkId) {
 	});
 }
 
-function watchLink(linkId) {
-	$.ajax({
-		type: 'PUT',
-		url: "airlines/" + activeAirline.id + "/watched-link?linkId=" + linkId,
-		data: JSON.stringify({}),
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(watchedLinkId) {
-	    	if (watchedLinkId) {
-	    		activeWatchedLink = watchedLinkId
-	    	}
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+function watchLink(linkId, selfOnly) {
+	if (linkHistoryState == "hidden") {
+		clearAllPaths()
+		$.ajax({
+			type: 'GET',
+			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?selfOnly=" + selfOnly,
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
+		    success: function(linkHistory) {
+		    	if (!jQuery.isEmptyObject(linkHistory)) {
+		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
+		    			drawLinkHistoryPath(relatedLink, false, linkId)
+		    		})
+		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
+		    			drawLinkHistoryPath(relatedLink, true, linkId)
+		    		})
+		    		linkHistoryState = "show"
+		    		showLinkHistoryPaths(linkHistoryState)
+		    	}
+		    },
+	        error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	} else if (linkHistoryState == "show") {
+		linkHistoryState = "showInverted"
+		showLinkHistoryPaths(linkHistoryState)
+	} else if (linkHistoryState == "showInverted") {
+		linkHistoryState = "hidden"
+		showLinkHistoryPaths(linkHistoryState) //this actually remove all paths
+		historyPaths = {}
+		updateLinksInfo() //redraw all flight paths
+	} else {
+		console.log("unknown linkHistoryState " + linkHistoryState)
+	}
 }
 
 function toggleLinkHistory() {
@@ -649,11 +671,12 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 	};
 	
 	var isWatchedLink = link.linkId == watchedLinkId
+	
 	var relatedPath
 	if (!historyPaths[pathKey]) {
 		relatedPath = new google.maps.Polyline({
 			 geodesic: true,
-		     strokeColor: isWatchedLink ? "#FF3BF2" : "#DC83FC",
+		     strokeColor: "#DC83FC",
 		     strokeOpacity: 0.8,
 		     strokeWeight: 2,
 		     path: [from, to],
@@ -663,8 +686,6 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 			    }],
 		     zIndex : 1100,
 		     inverted : inverted,
-		     thisAirlinePassengers : 0,
-		     otherAirlinePassengers : 0,
 		     watched : isWatchedLink
 		});
 		
@@ -721,9 +742,9 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 	}
 	
 	if (link.airlineId == activeAirline.id) {
-		shadowPath.thisAirlinePassengers += link.passenger
+		relatedPath.shadowPath.thisAirlinePassengers += link.passenger
 	} else {
-		shadowPath.otherAirlinePassengers += link.passenger
+		relatedPath.shadowPath.otherAirlinePassengers += link.passenger
 	}
 }
 
@@ -736,8 +757,14 @@ function showLinkHistoryPaths(state) {
 			} else if (totalPassengers > 2000) {
 				historyPath.setOptions({strokeWeight : 4})
 			} else if (totalPassengers < 100) {
-				var newOpacity = 0.1 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.1) 
-				historyPath.setOptions({strokeOpacity : newOpacity})
+				var newOpacity = 0.1 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.1)
+				if (!historyPath.watched) {
+					historyPath.setOptions({strokeOpacity : newOpacity})
+				}
+			}
+			
+			if (historyPath.watched) {
+				highlightPath(historyPath)
 			}
 			
 			historyPath.setMap(map)
@@ -844,7 +871,7 @@ function updatePlanLinkInfo(linkInfo) {
 		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
 		//set the temp path
 		tempPath = drawFlightPath(tempLink)
-		highlightPath(tempPath)
+		highlightPath(tempPath.path)
 	} else {
 		$('#planLinkEconomyPrice').val(linkInfo.existingLink.price.economy)
 		$('#planLinkBusinessPrice').val(linkInfo.existingLink.price.business)
@@ -1040,7 +1067,7 @@ function cancelPlanLink() {
 }
 
 function removeTempPath() {
-	unhighlightPath(tempPath)
+	unhighlightPath(tempPath.path)
 	clearPathEntry(tempPath)
 	tempPath = undefined
 }

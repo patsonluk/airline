@@ -15,23 +15,29 @@ object AirplaneSource {
   val LINK_SIMPLE_LOAD = Map(DetailType.LINK -> false)
   val LINK_ID_LOAD : Map[DetailType.Value, Boolean] = Map.empty
   
+  private[this] val BASE_QUERY = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, airplane_condition, a.depreciation_rate, a.value FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id" 
+  
   def loadAirplanesCriteria(criteria : List[(String, Any)]) = {
-      val connection = Meta.getConnection()
-      
-      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, airplane_condition, a.depreciation_rate, a.value FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id" 
-      
-      if (!criteria.isEmpty) {
-        queryString += " WHERE "
-        for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
-        }
-        queryString += criteria.last._1 + " = ?"
+    var queryString = BASE_QUERY
+    
+    if (!criteria.isEmpty) {
+      queryString += " WHERE "
+      for (i <- 0 until criteria.size - 1) {
+        queryString += criteria(i)._1 + " = ? AND "
       }
+      queryString += criteria.last._1 + " = ?"
+    }
+    
+    loadAirplanesByQueryString(queryString, criteria.map(_._2))
+  }
+  
+  def loadAirplanesByQueryString(queryString : String, parameters : List[Any]) = {
+      val connection = Meta.getConnection()
       
       val preparedStatement = connection.prepareStatement(queryString)
       
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 1, parameters(i))
       }
       
       val resultSet = preparedStatement.executeQuery()
@@ -75,6 +81,21 @@ object AirplaneSource {
       Some(result(0))
     }
     
+  }
+  
+  def loadAirplanesByIds(ids : List[Int]) : List[Airplane] = {
+    if (ids.isEmpty) {
+      List.empty
+    } else {
+      var queryString = BASE_QUERY + " where a.id IN (";
+      for (i <- 0 until ids.size - 1) {
+            queryString += "?,"
+      }
+      
+      queryString += "?)"
+      loadAirplanesByQueryString(queryString, ids)
+    }
+      
   }
   
   def loadAirplanesWithAssignedLinkByOwner(ownerId : Int, loadDetails : Map[DetailType.Value, Boolean] = LINK_ID_LOAD)  : List[(Airplane, Option[Link])] = {

@@ -124,6 +124,18 @@ object AirportSimulation {
     }
     
     AirportSource.updateAirlineAppeal(allAirports)
+    
+    airportProjectSimulation(allAirports)
+  }
+  
+  def airportProjectSimulation(allAirports : List[Airport]) = {
+    import ProjectStatus._
+    println("simulating airport projects")
+    
+    val inProgressProjects = AirportSource.loadAllAirportProjects().filter { _.status != COMPLETED }
+    
+    
+    
   }
   
   def updateAirportBySoldLinks(airport : Airport, soldLinks : Seq[LinkConsumptionDetails]) = {

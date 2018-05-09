@@ -1,11 +1,16 @@
 package com.patson.data
 import com.patson.data.Constants._
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.Set
 import java.sql.DriverManager
 import com.patson.model.airplane.Airplane
 import java.sql.PreparedStatement
 import com.patson.model._
 import java.sql.Statement
+import scala.collection.mutable.HashSet
+import java.sql.Connection
+import scala.collection.mutable.HashMap
+ 
 
 
 object LinkSource {
@@ -15,8 +20,7 @@ object LinkSource {
   
   def loadLinksByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
     val connection = Meta.getConnection()
-    val airportCache = scala.collection.mutable.Map[Int, Airport]()
-    val airlineCache = scala.collection.mutable.Map[Int, Airline]()
+    
     try {  
       var queryString = "SELECT * FROM " + LINK_TABLE 
       
@@ -36,60 +40,73 @@ object LinkSource {
       
       val resultSet = preparedStatement.executeQuery()
       
-      val loadAirportFunction : (Int => Airport) = loadDetails.get(DetailType.AIRPORT) match {
-        case Some(fullLoad) => (airportId : Int) => AirportSource.loadAirportById(airportId, fullLoad).get 
-        case None => (airportId : Int) => Airport.fromId(airportId) 
-      }
-      
-      val loadAirlineFunction : (Int => Airline) = loadDetails.get(DetailType.AIRLINE) match {
-        case Some(fullLoad) => (airlineId : Int) => AirlineSource.loadAirlineById(airlineId, fullLoad).get 
-        case None => (airlineId : Int) => Airline.fromId(airlineId) 
-      }
-      
-      val loadAirplaneFunction : (Int => Airline) = loadDetails.get(DetailType.AIRLINE) match {
-        case Some(fullLoad) => (airlineId : Int) => AirlineSource.loadAirlineById(airlineId, fullLoad).get 
-        case None => (airlineId : Int) => Airline.fromId(airlineId) 
-      }
-      
       val links = new ListBuffer[Link]()
+      
+      val airportIds : Set[Int] = new HashSet[Int]
+      val airlineIds : Set[Int] = new HashSet[Int]
+      val linkIds : Set[Int] = new HashSet[Int]
+      
+      while (resultSet.next()) {
+        airportIds += resultSet.getInt("from_airport")
+        airportIds += resultSet.getInt("to_airport")
+        airlineIds += resultSet.getInt("airline")
+        linkIds += resultSet.getInt("id")
+      }
+      
+      val airportCache : Map[Int, Airport] = loadDetails.get(DetailType.AIRPORT) match {
+        case Some(fullLoad) => {
+          val airports = AirportSource.loadAirportsByIds(airportIds.toList, fullLoad)
+          airports.map( airport => (airport.id, airport)).toMap
+          
+        }
+        case None => airportIds.map(id => (id, Airport.fromId(id))).toMap 
+      }
+      
+      
+      val airlineCache : Map[Int, Airline] = loadDetails.get(DetailType.AIRLINE) match {
+        case Some(fullLoad) => {
+          val airlines = AirlineSource.loadAirlinesByIds(airlineIds.toList, fullLoad)
+          airlines.map( airline => (airline.id, airline)).toMap
+        }
+        case None => airlineIds.map(id => (id, Airline.fromId(id))).toMap 
+      }
+      
+      val assignedAirplaneCache : Map[Int, List[Airplane]] = loadDetails.get(DetailType.AIRPLANE) match {
+        case Some(fullLoad) => loadAssignedAirplanesByLinks(connection, linkIds.toList)
+        case None => Map.empty
+      }
+      
+      resultSet.beforeFirst()
       while (resultSet.next()) {
         val fromAirportId = resultSet.getInt("from_airport")
         val toAirportId = resultSet.getInt("to_airport")
         val airlineId = resultSet.getInt("airline")
         
-        val fromAirport = airportCache.getOrElseUpdate(fromAirportId, loadAirportFunction(fromAirportId))
-        val toAirport = airportCache.getOrElseUpdate(toAirportId, loadAirportFunction(toAirportId))
-        val airline = airlineCache.getOrElseUpdate(airlineId, loadAirlineFunction(airlineId))
+        val fromAirport = airportCache.get(fromAirportId)
+        val toAirport = airportCache.get(toAirportId)
+        val airline = airlineCache.get(airlineId)
         
-        val link = Link( 
-            fromAirport,
-            toAirport,
-            airline,
+        if (fromAirport.isDefined && toAirport.isDefined && airline.isDefined) {
+          val link = Link( 
+            fromAirport.get,
+            toAirport.get,
+            airline.get,
             LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
             resultSet.getInt("distance"),
             LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
             resultSet.getInt("quality"),
             resultSet.getInt("duration"),
             resultSet.getInt("frequency"))
-        link.id = resultSet.getInt("id")
-        
-        loadDetails.get(DetailType.AIRPLANE) match {
-          case Some(fullLoad) => //fulload doesnt make a diff here...
-            val linkAssignmentStatement = connection.prepareStatement("SELECT airplane FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
-            linkAssignmentStatement.setInt(1, link.id)
-            val assignmentResult = linkAssignmentStatement.executeQuery();
-            val assignedAirplanes = ListBuffer[Airplane]()
-            while (assignmentResult.next()) {
-              AirplaneSource.loadAirplaneById(assignmentResult.getInt("airplane")) match {
-                case Some(airplane) => assignedAirplanes.append(airplane)
-                case None => println("cannot load assigned airplane with id " + assignmentResult.getInt("airplane"))
-              }
-            }
-            link.setAssignedAirplanes(assignedAirplanes.toList)
-            linkAssignmentStatement.close()
-          case None => //do not load assigned airplanes
+          link.id = resultSet.getInt("id")
+          
+          assignedAirplaneCache.get(link.id).foreach {
+            link.setAssignedAirplanes(_)
+          }
+          
+          links += link          
+        } else {
+          println("Failed loading link [" + resultSet.getInt("id") + "] as some details cannot be loaded " + fromAirport + toAirport + airline)
         }
-        links += link   
       }
       
       resultSet.close()
@@ -97,6 +114,49 @@ object LinkSource {
       links.toList
     } finally {
       connection.close()
+    }
+  }
+  
+  def loadAssignedAirplanesByLinks(connection : Connection, linkIds : List[Int]) : Map[Int, List[Airplane]] = {
+    if (linkIds.isEmpty) {
+      Map.empty
+    } else {
+      var queryString = "SELECT link, airplane FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link IN ("
+      for (i <- 0 until linkIds.size - 1) {
+            queryString += "?,"
+      }
+      
+      queryString += "?)"
+      val linkAssignmentStatement = connection.prepareStatement(queryString)
+      for (i <- 0 until linkIds.size) {
+        linkAssignmentStatement.setInt(i + 1, linkIds(i))
+      }
+      
+      val assignmentResultSet = linkAssignmentStatement.executeQuery
+      
+      val airplaneIds = new HashSet[Int]
+      while (assignmentResultSet.next()) {
+          airplaneIds += assignmentResultSet.getInt("airplane")
+      }
+      
+      val airplaneCache = AirplaneSource.loadAirplanesByIds(airplaneIds.toList).map { airplane => (airplane.id, airplane) }.toMap
+      
+      assignmentResultSet.beforeFirst()
+      
+      val assignments = new HashMap[Int, ListBuffer[Airplane]]()
+      while (assignmentResultSet.next()) {
+        val link = assignmentResultSet.getInt("link")
+        airplaneCache.get(assignmentResultSet.getInt("airplane")).foreach { airplane =>
+          val airplanesForThisLink = assignments.getOrElseUpdate(link, new ListBuffer[Airplane]);
+          airplanesForThisLink += airplane
+        };
+          
+      }
+      
+      assignmentResultSet.close()
+      linkAssignmentStatement.close()
+      
+      assignments.mapValues{ _.toList }.toMap
     }
   }
   

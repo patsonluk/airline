@@ -15,11 +15,12 @@ import com.patson.RouteFinder
 
 object Test extends App {
   //GeoDataGenerator.buildCountryData(AirportSource.loadAllAirports(false))
-  val bases = AirlineSource.loadAirlineBasesByCriteria(List.empty)
-  bases.foreach { base =>
-    AirlineSource.saveAirlineBase(base.copy(countryCode = base.airport.countryCode))  
-  }
-  
+//  val bases = AirlineSource.loadAirlineBasesByCriteria(List.empty)
+//  bases.foreach { base =>
+//    AirlineSource.saveAirlineBase(base.copy(countryCode = base.airport.countryCode))  
+//  }
+  val result = ConsumptionHistorySource.loadAllConsumptions()
+  println(result.size)
 }
 
 

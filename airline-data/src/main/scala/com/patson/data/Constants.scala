@@ -10,6 +10,8 @@ object Constants {
   val AIRPORT_CITY_SHARE_TABLE = "airport_city"
   val AIRPORT_FEATURE_TABLE = "airport_feature"
   val AIRPORT_FEATURE_INDEX_1 = "airport_feature_index_1"
+  val AIRPORT_PROJECT_TABLE = "airport_project"
+  val AIRPORT_PROJECT_INDEX_1 = "airport_project_index_1"
   val COUNTRY_TABLE = "country"
   val COUNTRY_AIRLINE_RELATIONSHIP_TABLE = "country_airline_relationship"
   val COUNTRY_AIRLINE_RELATIONSHIP_INDEX_1 = "country_airline_relationship_index_1"
@@ -53,6 +55,9 @@ object Constants {
   val USER_AIRLINE_TABLE = "user_airline"
   val VIP_ROUTE_TABLE = "vip_route"
   val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"
+  val PASSENGER_HISTORY_TABLE = "passenger_history"
+  
+  
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"
   val DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/airline?useSSL=false"

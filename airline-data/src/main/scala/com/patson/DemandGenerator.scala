@@ -83,7 +83,7 @@ object DemandGenerator {
 
         val demandListFromThisAiport = toAirportsWithDemand.foreach {
           case (toAirport, (passengerType, demand)) =>
-            LinkClass.values().foreach { linkClass =>
+            LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
                 while (remainingDemand > demandChunkSize) {
@@ -216,8 +216,8 @@ object DemandGenerator {
       flightPreferences.append((SimplePreference(i, simplePreferenceCount - 1, ECONOMY), 1))
     }
         
-    //for now 25 * 3 loyalty preferences per airport
-    val loyaltyPreferenceCount = 25;
+    //for now 5 * 3 loyalty preferences per airport
+    val loyaltyPreferenceCount = 5;
     for (i <- 0 until loyaltyPreferenceCount) {
       flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), ECONOMY), 1))
       flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS), 1))

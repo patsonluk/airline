@@ -8,15 +8,27 @@ import com.patson.model.AirlineAppeal
 import java.sql.Statement
 
 object AirportSource {
+  private[this] val BASE_QUERY = "SELECT * FROM airport"
   def loadAllAirports(fullLoad : Boolean = false) = {
       loadAirportsByCriteria(List.empty, fullLoad)
   }
   
+  def loadAirportsByIds(ids : List[Int], fullLoad : Boolean = false) = {
+    if (ids.isEmpty) {
+      List.empty
+    } else {
+      var queryString = BASE_QUERY + " where id IN (";
+      for (i <- 0 until ids.size - 1) {
+            queryString += "?,"
+      }
+      
+      queryString += "?)"
+      loadAirportsByQueryString(queryString, ids, fullLoad)
+    }
+  }
+  
   def loadAirportsByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
-      //open the hsqldb
-    val connection = Meta.getConnection()
-    try {  
-      var queryString = "SELECT * FROM airport"
+      var queryString = BASE_QUERY
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -26,10 +38,17 @@ object AirportSource {
         queryString += criteria.last._1 + " = ?"
       }
       
+      loadAirportsByQueryString(queryString, criteria.map(_._2), fullLoad)
+  }
+  
+  def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) = {
+      //open the hsqldb
+    val connection = Meta.getConnection()
+    try {  
       val preparedStatement = connection.prepareStatement(queryString)
       
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 1, parameters(i))
       }
       
       
@@ -274,8 +293,10 @@ object AirportSource {
           preparedStatement.setLong(3, airport.population)
           preparedStatement.setInt(4, airport.slots)
           preparedStatement.setInt(5, airport.id)
-          preparedStatement.executeUpdate()
+          preparedStatement.addBatch()
+          //preparedStatement.executeUpdate()
       }
+      preparedStatement.executeBatch()
       preparedStatement.close()
       connection.commit()
     } finally {
@@ -355,6 +376,115 @@ object AirportSource {
           connection.close()
         }        
       case None => List.empty 
+    }
+  }
+  
+  def loadAirportProjectsByCriteria(criteria : List[(String, Any)]) = {
+    val connection = Meta.getConnection()
+    try {  
+      var queryString = "SELECT * FROM " + AIRPORT_PROJECT_TABLE
+      
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+      
+      val preparedStatement = connection.prepareStatement(queryString)
+      
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+      
+      
+      val resultSet = preparedStatement.executeQuery()
+      
+      val projects = ListBuffer[AirportProject]()
+      val airports = Map[Int, Airport]()
+      
+      import ProjectStatus._
+      import ProjectType._
+      while (resultSet.next()) {
+        val airportId = resultSet.getInt("airport")
+        val airport = airports.getOrElseUpdate(airportId, loadAirportById(airportId, false).get)
+        projects += AirportProject(airport = airport, 
+                                   projectType = ProjectType.withName(resultSet.getString("project_type")),
+                                   status = ProjectStatus.withName(resultSet.getString("project_status")),
+                                   progress = resultSet.getInt("progress"),
+                                   duration = resultSet.getInt("duration"),
+                                   level = resultSet.getInt("level"),
+                                   id = resultSet.getInt("id"))
+        
+      }    
+      resultSet.close()
+      preparedStatement.close()
+      
+      projects.toList
+    } finally {
+      connection.close()
+    }  
+  }
+  
+  def loadAirportProjectsByAirport(airportId : Int) = {
+    loadAirportsByCriteria(List(("airport", airportId)))
+  }
+  
+  def loadAirportProjectById(projectId : Int) = {
+    val result = loadAirportsByCriteria(List(("id", projectId)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+  
+  def loadAllAirportProjects() = {
+    loadAirportProjectsByCriteria(List.empty)
+  }
+  
+  def saveAirportProject(project : AirportProject) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_PROJECT_TABLE + "(airport, project_type, project_status, progress, duration, level)  VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      preparedStatement.setInt(1, project.airport.id)
+      preparedStatement.setString(2, project.projectType.toString)
+      preparedStatement.setString(3, project.status.toString)
+      preparedStatement.setDouble(4, project.progress)
+      preparedStatement.executeUpdate()
+      val generatedKeys = preparedStatement.getGeneratedKeys
+      if (generatedKeys.next()) {
+        val generatedId = generatedKeys.getInt(1)
+        project.id = generatedId
+      }
+      preparedStatement.close()
+      
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def updateAirportProjects(projects : List[AirportProject]) = {
+            
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_PROJECT_TABLE + " project_status = ?, project_progress = ? WHERE id = ?")
+    
+      connection.setAutoCommit(false)
+      projects.foreach { 
+        project =>
+          preparedStatement.setString(1, project.status.toString())
+          preparedStatement.setDouble(2, project.progress)
+          preparedStatement.setInt(3, project.id)
+          
+          preparedStatement.executeUpdate()
+      }
+      
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
     }
   }
 }
