@@ -66,7 +66,7 @@ object PassengerSimulation extends App {
     //findRandomRoutes(airportGroups(0)(0), airportGroups(4)(0), links.toList, 10)
   }
   
-  def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : List[(PassengerGroup, Airport, Int, Route)] = {
+  def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : Map[(PassengerGroup, Airport, Route), Int] = {
      val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
      val consumptionCycleMax = 10; //try and rebuild routes 10 times
      var consumptionCycleCount = 0;
@@ -82,11 +82,10 @@ object PassengerSimulation extends App {
      
      println("Remove demand that is not covered by active airports, before " + demand.size);
      
-     //randomize consumption order
-     //convert demandChunks to array
+     //randomize the demand chunks so later on it's consumed in a random (relatively even) manner
      var demandChunks = Random.shuffle(demand.filter {
        case(passengerGroup, toAirport, _) => activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
-     }).toArray
+     })
      
      println("After pruning : " + demandChunks.size);
      
@@ -94,7 +93,7 @@ object PassengerSimulation extends App {
        println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
        println("links: " + links.size)
        
-       //find out required routes
+       //find out required routes - which "to airports" does each passengerGroup has
        print("Find required routes...")
        val requiredRoutes = scala.collection.mutable.Map[PassengerGroup, Set[Airport]]()
        demandChunks.foreach {
@@ -115,6 +114,8 @@ object PassengerSimulation extends App {
        //start consuming routes
        println()
        print("Start to go through demand chunks and comsume...nom nom nom...")
+       
+       //we want to randomize the order and go chunk by chunk as we want to evenly/randomly distribute seats to each PassengerGroup
        val remainingDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
        demandChunks.foreach {
          case (passengerGroup, toAirport, chunkSize) => 
@@ -172,11 +173,19 @@ object PassengerSimulation extends App {
        println("Done!")
        
        //now process the remainingDemandChunks in next cycle 
-       demandChunks = remainingDemandChunks.toArray     
+       demandChunks = remainingDemandChunks.toList     
        consumptionCycleCount += 1
      }
      
     println("Total chunks that consume something " + consumptionResult.size)
+    
+    //collapse it now
+    val collapsedMap = consumptionResult.groupBy { 
+      case(passengerGroup, toAirport, passengerCount, route) => (passengerGroup, toAirport, route)  
+    }.mapValues { consumptions => consumptions.map(_._3).sum }
+    
+    
+    println("Collasped consumption map size: " + collapsedMap.size)
         
 //    val soldLinks = links.filter{ link => link.availableSeats < link.capacity  }.map { link =>
 //      (link, link.capacity - link.availableSeats)
@@ -191,7 +200,7 @@ object PassengerSimulation extends App {
 //    
 //    LinkSource.saveLinkConsumptions(soldLinks)
     
-    consumptionResult.toList
+    collapsedMap
   }
   
    
