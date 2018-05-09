@@ -154,8 +154,10 @@ object AirlineSource {
           updateStatement.setDouble(4, airline.getMaintenanceQuality())
           updateStatement.setDouble(5, airline.getReputation())
           updateStatement.setInt(6, airline.id)
-          updateStatement.executeUpdate()
+          //updateStatement.executeUpdate()
+          updateStatement.addBatch()
         }
+        updateStatement.executeBatch()
         updateStatement.close()
         connection.commit()
       } finally {

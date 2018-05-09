@@ -274,8 +274,10 @@ object AirportSource {
           preparedStatement.setLong(3, airport.population)
           preparedStatement.setInt(4, airport.slots)
           preparedStatement.setInt(5, airport.id)
-          preparedStatement.executeUpdate()
+          preparedStatement.addBatch()
+          //preparedStatement.executeUpdate()
       }
+      preparedStatement.executeBatch()
       preparedStatement.close()
       connection.commit()
     } finally {

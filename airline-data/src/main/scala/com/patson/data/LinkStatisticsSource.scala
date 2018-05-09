@@ -96,8 +96,10 @@ object LinkStatisticsSource {
             preparedStatement.setInt(5, linkStatisticsEntry.key.airline.id)
             preparedStatement.setInt(6, linkStatisticsEntry.passengers)
             preparedStatement.setInt(7, linkStatisticsEntry.cycle)
-            preparedStatement.executeUpdate()
+            //preparedStatement.executeUpdate()
+            preparedStatement.addBatch()
         }
+        preparedStatement.executeBatch()
         preparedStatement.close()
         connection.commit()
     } finally {

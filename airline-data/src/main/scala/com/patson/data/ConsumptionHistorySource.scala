@@ -11,7 +11,7 @@ import scala.collection.mutable.HashMap
 
 
 object ConsumptionHistorySource {
-  val updateConsumptions = (consumptions : List[(PassengerGroup, Airport, Int, Route)]) => {
+  val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
     val connection = Meta.getConnection()
     val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE + "(passenger_type, passenger_count, route_id, link, link_class, inverted) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     
@@ -22,7 +22,7 @@ object ConsumptionHistorySource {
     var routeId = 0
     try {
       consumptions.foreach { 
-        case(passengerGroup, _, passengerCount, route) => {
+        case((passengerGroup, _, route), passengerCount) => {
           routeId += 1
           passengerHistoryStatement.setInt(1, passengerGroup.passengerType.id)
           passengerHistoryStatement.setInt(2, passengerCount)
@@ -31,10 +31,12 @@ object ConsumptionHistorySource {
             passengerHistoryStatement.setInt(4, linkConsideration.link.id)
             passengerHistoryStatement.setString(5, linkConsideration.linkClass.code)
             passengerHistoryStatement.setBoolean(6, linkConsideration.inverted)
-            passengerHistoryStatement.executeUpdate()
+            //passengerHistoryStatement.executeUpdate()
+            passengerHistoryStatement.addBatch()
           }
         }
       }
+      passengerHistoryStatement.executeBatch()
       
       connection.commit()
     } finally {
