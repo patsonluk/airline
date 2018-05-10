@@ -177,12 +177,15 @@ function refreshLinks() {
 
 
 
-function drawFlightPath(link) {
+function drawFlightPath(link, linkColor) {
 	
+   if (!linkColor) {
+	   linkColor = getLinkColor(link.profit, link.revenue) 
+   }
    var flightPath = new google.maps.Polyline({
      path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}],
      geodesic: true,
-     strokeColor: getLinkColor(link.profit, link.revenue),
+     strokeColor: linkColor,
      strokeOpacity: 0.6,
      strokeWeight: 2,
      frequency : link.frequency,
@@ -856,7 +859,9 @@ function updatePlanLinkInfo(linkInfo) {
 		$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
 	}
 	
-	
+	if (tempPath) { //remove previous plan link if it exists
+		removeTempPath()
+	}
 	
 	if (!linkInfo.existingLink) {
 		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)
@@ -870,7 +875,7 @@ function updatePlanLinkInfo(linkInfo) {
 		//create a temp path
 		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
 		//set the temp path
-		tempPath = drawFlightPath(tempLink)
+		tempPath = drawFlightPath(tempLink, '#2658d3')
 		highlightPath(tempPath.path)
 	} else {
 		$('#planLinkEconomyPrice').val(linkInfo.existingLink.price.economy)
