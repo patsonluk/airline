@@ -16,13 +16,13 @@ object AirlineSource {
     if (ids.isEmpty) {
       List.empty
     } else {
-      var queryString = BASE_QUERY + " where id IN (";
+      val queryString = new StringBuilder(BASE_QUERY + " where id IN (");
       for (i <- 0 until ids.size - 1) {
-            queryString += "?,"
+            queryString.append("?,")
       }
       
-      queryString += "?)"
-      loadAirlinesByQueryString(queryString, ids, fullLoad)
+      queryString.append("?)")
+      loadAirlinesByQueryString(queryString.toString(), ids, fullLoad)
     }
   }
   
@@ -52,6 +52,7 @@ object AirlineSource {
         val resultSet = preparedStatement.executeQuery()
         
         val airlines = new ListBuffer[Airline]()
+        
         while (resultSet.next()) {
           val airline = Airline(resultSet.getString("name"))
           airline.id = resultSet.getInt("id")

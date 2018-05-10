@@ -87,13 +87,13 @@ object AirplaneSource {
     if (ids.isEmpty) {
       List.empty
     } else {
-      var queryString = BASE_QUERY + " where a.id IN (";
+      val queryString = new StringBuilder(BASE_QUERY + " where a.id IN (");
       for (i <- 0 until ids.size - 1) {
-            queryString += "?,"
+            queryString.append("?,")
       }
       
-      queryString += "?)"
-      loadAirplanesByQueryString(queryString, ids)
+      queryString.append("?)")
+      loadAirplanesByQueryString(queryString.toString(), ids)
     }
       
   }

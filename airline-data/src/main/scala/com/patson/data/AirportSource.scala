@@ -17,13 +17,13 @@ object AirportSource {
     if (ids.isEmpty) {
       List.empty
     } else {
-      var queryString = BASE_QUERY + " where id IN (";
+      val queryString = new StringBuilder(BASE_QUERY + " where id IN (");
       for (i <- 0 until ids.size - 1) {
-            queryString += "?,"
+            queryString.append("?,")
       }
       
-      queryString += "?)"
-      loadAirportsByQueryString(queryString, ids, fullLoad)
+      queryString.append("?)")
+      loadAirportsByQueryString(queryString.toString(), ids, fullLoad)
     }
   }
   
