@@ -14,6 +14,7 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import com.patson.model._
 import com.patson.model.PassengerType
+import scala.util.Random
 
 
 object DemandGenerator {
@@ -74,7 +75,7 @@ object DemandGenerator {
 	    }
 	  }
 	  
-	  val demandChunkSize = 5
+	  val baseDemandChunkSize = 5
 	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])].map {
 	    case (fromAirport, toAirportsWithDemand) =>
 	      val passangerGroupDemand = ListBuffer[(PassengerGroup, Airport, Int)]() 
@@ -86,9 +87,11 @@ object DemandGenerator {
             LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
+                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
                 while (remainingDemand > demandChunkSize) {
                   passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
                   remainingDemand -= demandChunkSize
+                  demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
                 }
                 passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
               }
