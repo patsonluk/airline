@@ -277,9 +277,13 @@ function plotLinkProfit(linkConsumptions, container) {
 }
 
 function plotLinkRidership(linkConsumptions, container) {
-	var capacityData = []
-	var soldSeatsData = []
-	
+	var emptySeatsData = []
+	var soldSeatsData = {
+			economy : [],
+			business : [],
+	        first : []
+	}
+		
 	var category = []
 	 
 	var maxWeek = 24
@@ -288,9 +292,12 @@ function plotLinkRidership(linkConsumptions, container) {
 		linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
 		$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
 			var capacity = linkConsumption.capacity.economy + linkConsumption.capacity.business + linkConsumption.capacity.first
-			capacityData.push({ value : capacity })
 			var soldSeats = linkConsumption.soldSeats.economy + linkConsumption.soldSeats.business + linkConsumption.soldSeats.first
-			soldSeatsData.push({ value : soldSeats })
+			emptySeatsData.push({ value : capacity - soldSeats  })
+			
+			soldSeatsData.economy.push({ value : linkConsumption.soldSeats.economy })
+			soldSeatsData.business.push({ value : linkConsumption.soldSeats.business })
+			soldSeatsData.first.push({ value : linkConsumption.soldSeats.first })
 			
 			var month = Math.floor(linkConsumption.cycle / 4)
 			//var week = linkConsumption.cycle % 4 + 1
@@ -299,7 +306,7 @@ function plotLinkRidership(linkConsumptions, container) {
 	}
 	
 	var chart = container.insertFusionCharts({
-		type: 'mscombi2d',
+		type: 'stackedarea2d',
 	    width: '100%',
 	    height: '195',
 	    dataFormat: 'json',
@@ -316,6 +323,8 @@ function plotLinkRidership(linkConsumptions, container) {
                 "toolTipBorderRadius": "2",
                 "toolTipPadding": "5",
                 "plotBorderAlpha": "10",
+                "usePlotGradientColor": "0",
+                "paletteColors": "#ffce00,#0375b4,#007849,#bbbbbb",
                 "bgAlpha":"0",
                 "showValues":"0",
                 "canvasPadding":"0",
@@ -323,9 +332,14 @@ function plotLinkRidership(linkConsumptions, container) {
                 "labelStep": "4"
 	    	},
 	    	"categories" : [{ "category" : category}],
-			"dataset" : [ 
-			              { "seriesName": "Capacity", "renderAs" : "line", "data" : capacityData}
-			            , {"seriesName": "Sold Seats","renderAs" : "area", "data" : soldSeatsData}
+			"dataset" : [
+						  {"seriesName": "Sold Seats (First)", "data" : soldSeatsData.first}
+						 ,{"seriesName": "Sold Seats (Business)","data" : soldSeatsData.business}
+						 ,{"seriesName": "Sold Seats (Economy)", "data" : soldSeatsData.economy}
+						 ,{ "seriesName": "Empty Seats", "data" : emptySeatsData}			              
+
+			            
+			            
 			            //, {"seriesName": "Load Factor", "renderAs" : "line", "parentYAxis": "S", "data" : loadFactorData} 
 			            ]
 	    }
