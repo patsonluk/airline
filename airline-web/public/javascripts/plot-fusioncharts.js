@@ -67,7 +67,7 @@ function plotMaintenanceQualityGauge(container, currentQualityInput) {
 	
 }
 
-function plotSeatConfigurationGauge(container, configuration, maxSeats) {
+function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMultipliers) {
 	container.empty()
 	var dataSource = { 
 		"chart": {
@@ -111,7 +111,7 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats) {
 	
 	function updateDataSource(configuration) {
 		var businessPosition = configuration.economy / maxSeats * 100
-		var firstPosition = (maxSeats - configuration.first * 8) / maxSeats * 100
+		var firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
 	
 		dataSource["colorRange"] = {
             "color": [
@@ -162,18 +162,18 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats) {
                 	businessPosition = firstPosition
                 }
                 
-                configuration["first"] = Math.round(maxSeats * (100 - firstPosition) / 100 / 8)
+                configuration["first"] = Math.round(maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
                 
                 if (firstPosition == 0) { //allow elimination of all business seats
                 	configuration["business"] = 0
                 } else {
-                	configuration["business"] = Math.round((maxSeats * (100 - businessPosition) / 100 - configuration["first"] * 8) / 4)
+                	configuration["business"] = Math.round((maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
                 }
                 
                 if (businessPosition == 0) { //allow elimination of all economy seats
                 	configuration["economy"] = 0
                 } else {
-                	configuration["economy"] = maxSeats - configuration["first"] * 8 - configuration["business"] * 4
+                	configuration["economy"] = maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business
                 }
                 
                 
@@ -276,9 +276,14 @@ function plotLinkProfit(linkConsumptions, container) {
 	})
 }
 
-function plotLinkRidership(linkConsumptions, container) {
+function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer) {
 	var emptySeatsData = []
 	var soldSeatsData = {
+			economy : [],
+			business : [],
+	        first : []
+	}
+	var revenueByClass = {
 			economy : [],
 			business : [],
 	        first : []
@@ -299,13 +304,17 @@ function plotLinkRidership(linkConsumptions, container) {
 			soldSeatsData.business.push({ value : linkConsumption.soldSeats.business })
 			soldSeatsData.first.push({ value : linkConsumption.soldSeats.first })
 			
+			revenueByClass.economy.push({ value : linkConsumption.price.economy * linkConsumption.soldSeats.economy })
+			revenueByClass.business.push({ value : linkConsumption.price.business * linkConsumption.soldSeats.business })
+			revenueByClass.first.push({ value : linkConsumption.price.first * linkConsumption.soldSeats.first })
+			
 			var month = Math.floor(linkConsumption.cycle / 4)
 			//var week = linkConsumption.cycle % 4 + 1
 			category.push({ label : month.toString()})
 		})
 	}
 	
-	var chart = container.insertFusionCharts({
+	var ridershipChart = ridershipContainer.insertFusionCharts( {
 		type: 'stackedarea2d',
 	    width: '100%',
 	    height: '195',
@@ -313,7 +322,7 @@ function plotLinkRidership(linkConsumptions, container) {
 		dataSource: {
 	    	"chart": {
 	    		"xAxisname": "Month",
-	    		"YAxisName": "Seats",
+	    		"YAxisName": "Seats Consumption",
 	    		//"sYAxisName": "Load Factor %",
 	    		"sNumberSuffix" : "%",
 	            "sYAxisMaxValue" : "100",
@@ -324,7 +333,7 @@ function plotLinkRidership(linkConsumptions, container) {
                 "toolTipPadding": "5",
                 "plotBorderAlpha": "10",
                 "usePlotGradientColor": "0",
-                "paletteColors": "#ffce00,#0375b4,#007849,#bbbbbb",
+                "paletteColors": "#007849,#0375b4,#ffce00,#bbbbbb",
                 "bgAlpha":"0",
                 "showValues":"0",
                 "canvasPadding":"0",
@@ -333,16 +342,48 @@ function plotLinkRidership(linkConsumptions, container) {
 	    	},
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [
-						  {"seriesName": "Sold Seats (First)", "data" : soldSeatsData.first}
+			              {"seriesName": "Sold Seats (Economy)", "data" : soldSeatsData.economy}
 						 ,{"seriesName": "Sold Seats (Business)","data" : soldSeatsData.business}
-						 ,{"seriesName": "Sold Seats (Economy)", "data" : soldSeatsData.economy}
+						 ,{"seriesName": "Sold Seats (First)", "data" : soldSeatsData.first}
 						 ,{ "seriesName": "Empty Seats", "data" : emptySeatsData}			              
-
-			            
-			            
 			            //, {"seriesName": "Load Factor", "renderAs" : "line", "parentYAxis": "S", "data" : loadFactorData} 
 			            ]
 	    }
+	})
+	
+	var revenueChart = revenueContainer.insertFusionCharts( {
+    	type: 'stackedarea2d',
+	    width: '100%',
+	    height: '195',
+	    dataFormat: 'json',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": "Month",
+	    		"YAxisName": "Revenue",
+	    		//"sYAxisName": "Load Factor %",
+	    		"sNumberSuffix" : "%",
+	            "sYAxisMaxValue" : "100",
+	    		"useroundedges": "1",
+	    		"animation": "0",
+	    		"showBorder":"0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "plotBorderAlpha": "10",
+                "usePlotGradientColor": "0",
+                "paletteColors": "#007849,#0375b4,#ffce00",
+                "bgAlpha":"0",
+                "showValues":"0",
+                "canvasPadding":"0",
+                "labelDisplay":"wrap",
+	            "labelStep": "4"
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : [
+			              {"seriesName": "Revenue (Economy)", "data" : revenueByClass.economy}
+						 ,{"seriesName": "Revenue (Business)","data" : revenueByClass.business}
+						 ,{"seriesName": "Revenue (First)", "data" : revenueByClass.first}
+			            ]
+	   }	
 	})
 }
 

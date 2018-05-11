@@ -556,7 +556,7 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost))
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
-	    	plotLinkRidership(linkConsumptions, $("#linkRidershipChart"))
+	    	plotLinkConsumption(linkConsumptions, $("#linkRidershipChart"), $("#linkRevenueChart"))
 	    	$("#linkHistoryDetails").show()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -990,7 +990,13 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 			console.log(thisModelPlanLinkInfo.configuration)
 		})
 		
-		plotSeatConfigurationGauge($("#seatConfigurationGauge"), thisModelPlanLinkInfo.configuration, thisModelPlanLinkInfo.capacity)
+		var spaceMultipliers = {
+			economy : planLinkInfo.economySpaceMultiplier,
+			business : planLinkInfo.businessSpaceMultiplier,
+			first : planLinkInfo.firstSpaceMultiplier
+		}
+		
+		plotSeatConfigurationGauge($("#seatConfigurationGauge"), thisModelPlanLinkInfo.configuration, thisModelPlanLinkInfo.capacity, spaceMultipliers)
 			
 		var serviceLevelBar = $("#serviceLevelBar")
 		generateImageBar(serviceLevelBar.data("emptyIcon"), serviceLevelBar.data("fillIcon"), 5, serviceLevelBar, $("#planLinkServiceLevel"))
