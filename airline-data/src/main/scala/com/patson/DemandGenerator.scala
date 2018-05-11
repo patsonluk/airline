@@ -135,44 +135,52 @@ object DemandGenerator {
       import FlightType._
       val flightType = Computation.getFlightType(fromAirport, toAirport)
       
-      var multiplier = flightType match {
-        case SHORT_HAUL_DOMESTIC => 6
+      //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
+      //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
+      //we are using income level for to airport as destination income difference should have less impact on demand compared to origination airport (and income level is log(income))
+      val toAirportIncomeLevel = Computation.getIncomeLevel(toAirport.income)
+      val baseDemand = (fromAirport.power.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 25) * (passengerType match {
+        case PassengerType.BUSINESS => 2
+        case PassengerType.TOURIST => 0.3
+      })
+      
+      var adjustedDemand = baseDemand
+      
+      //bonus for domestic and short-haul flight
+      adjustedDemand += baseDemand * (flightType match {
+        case SHORT_HAUL_DOMESTIC => 5
         case LONG_HAUL_DOMESTIC => 3
-        case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => if (passengerType == PassengerType.BUSINESS) 1.5 else 2.0
-        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => 1
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL  => if (passengerType == PassengerType.BUSINESS) 0.5 else 0.3
-      }
+        case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
+        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.5
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -0.75
+      })
       
-      if (passengerType == PassengerType.TOURIST) {
-        multiplier *= 0.3 //generate very small number of tourist, as it should be mainly driven by features
-      }
       
-      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 15 income level increment
+      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
       val incomeLevel = Computation.getIncomeLevel(fromAirport.income)
       if (passengerType == PassengerType.TOURIST && incomeLevel > 25) { 
-        multiplier *= (((incomeLevel - 25).toDouble / 15) * 2)       
+        adjustedDemand += baseDemand * (((incomeLevel - 25).toDouble / 10) * 2)       
       }
       
       //adjustments : these zones do not have good ground transport
       if (fromAirport.zone == toAirport.zone) {
-        if (fromAirport.zone == "OC" || fromAirport.zone == "AF") {
-          multiplier *= 4
-        } else if (fromAirport.zone == "SA" || fromAirport.zone == "NA") {
-          multiplier *= 3
+        if (fromAirport.zone == "AF") {
+          adjustedDemand +=  baseDemand * 2
+        } else if (fromAirport.zone == "SA") {
+          adjustedDemand +=  baseDemand * 1
+        } else if (fromAirport.zone == "OC" || fromAirport.zone == "NA") {
+          adjustedDemand +=  baseDemand * 0.5
         }
       }
       
-      val rawDemand = (fromAirport.power.doubleValue() / 20000000000L * toAirport.power / 20000000000L * multiplier).toInt
-      
-      var totalDemand = rawDemand
       //adjust by features
       fromAirport.getFeatures().foreach { feature =>
-         val adjustment = feature.demandAdjustment(rawDemand, passengerType, fromAirport.id, fromAirport, toAirport)
-         totalDemand += adjustment
+        val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport)
+        adjustedDemand += adjustment
       }
       toAirport.getFeatures().foreach { feature => 
-          val adjustment = feature.demandAdjustment(rawDemand, passengerType, toAirport.id, fromAirport, toAirport)
-         totalDemand += adjustment
+        val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport)
+        adjustedDemand += adjustment
       }
       
       //compute demand composition. depends on from airport income
@@ -202,9 +210,9 @@ object DemandGenerator {
         } else {
          0 
         }
-      val firstClassDemand = (totalDemand * firstClassPercentage).toInt
-      val businessClassDemand = (totalDemand * businessClassPercentage).toInt
-      val economyClassDemand = totalDemand - firstClassDemand - businessClassDemand
+      val firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
+      val businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
+      val economyClassDemand = adjustedDemand.toInt - firstClassDemand - businessClassDemand
       LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
     }
   }
