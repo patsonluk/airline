@@ -148,8 +148,8 @@ object DemandGenerator {
       
       //bonus for domestic and short-haul flight
       adjustedDemand += baseDemand * (flightType match {
-        case SHORT_HAUL_DOMESTIC => 5
-        case LONG_HAUL_DOMESTIC => 3
+        case SHORT_HAUL_DOMESTIC => 10
+        case LONG_HAUL_DOMESTIC => 7
         case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
         case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.5
         case ULTRA_LONG_HAUL_INTERCONTINENTAL => -0.75
