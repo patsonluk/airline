@@ -41,7 +41,7 @@ sealed case class InternationalHubFeature(strength : Int) extends AirportFeature
       if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL) {
         (rawDemand * (strengthFactor * 0.5) * multiplier).toInt //at MAX_STREGTH, add 2x for business traveler, 0.5x for tourists (short haul)   
       } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
-        (rawDemand * (strengthFactor * 0.25) * multiplier).toInt //at MAX_STREGTH, add 1x for business traveler, 0.25x for tourists (long haul)
+        (rawDemand * (strengthFactor * 1) * multiplier).toInt //at MAX_STREGTH, add 4x for business traveler, 1x for tourists (long haul)
       } else {
         0
       }
@@ -58,14 +58,14 @@ sealed case class VacationHubFeature(strength : Int) extends AirportFeature {
     if (toAirport.id == airportId && passengerType == PassengerType.TOURIST) { //only affect if as a destination and tourists
       val goFactor = { //out of how many people, will there be 1 going to this spot per year
         if (flightType == SHORT_HAUL_DOMESTIC || flightType == LONG_HAUL_DOMESTIC) {
-          30
+          5
         } else if (flightType == SHORT_HAUL_INTERNATIONAL) {
-          50
+          15
         } else {
-          200
+          30
         }
       }
-      (fromAirport.population / goFactor / 52 * fromAirport.income / 50000  * strengthFactor).toInt //assume in a city of 50k income out of goFactor people, 1 will visit this spot
+      (fromAirport.population / goFactor / 52 * fromAirport.income / 50000  * strengthFactor).toInt //assume in a city of 50k income out of goFactor people, 1 will visit this spot at full strength (10)
     } else {
       0
     }
