@@ -35,4 +35,10 @@ object Pricing {
     }) * linkClass.priceMultiplier).toInt
     
   }
+  
+  def computeStandardPriceForAllClass(distance : Int, fromAirport : Airport, toAirport : Airport) : LinkClassValues = {
+    LinkClassValues(LinkClass.values.map { linkClass =>
+      (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), linkClass))
+    }.toMap)
+  }
 }

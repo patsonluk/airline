@@ -219,4 +219,19 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       result(economyPassengerGroup).isEmpty.shouldBe(true) //no awareness
     }
   }
+  
+  
+//  val airport1 = Airport("", "", "", 0, 0, "", "", "", 0, 0, 0, 0, 0)
+//  val airport2 = Airport("", "", "", 0, 100, "", "", "", 0, 0, 0, 0, 0)
+//  val airport3 = Airport("", "", "", 0, 200, "", "", "", 0, 0, 0, 0, 0)
+  
+  
+  
+//  "IsLinkAffordable".must {
+//    "accept route that all links are at suggested price".in {
+//      val routes = PassengerSimulation.findShortestRoute(fromAirport, toAirports, allAirportIds, List.empty, 3)
+//      routes.size.shouldBe(0)
+//    }
+//    
+//  }
 }

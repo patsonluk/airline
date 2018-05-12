@@ -38,7 +38,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
         0
       } else {
         hasComputedQuality = true
-        computedQualityStore = (rawQuality.toDouble / Link.MAX_RAW_QUALITY * 30 + airline.airlineInfo.serviceQuality.toDouble / Airline.MAX_SERVICE_QUALITY * 50 + (assignedAirplanes.foldLeft(0.0)( _ + _.condition.toDouble)) / assignedAirplanes.size / Airplane.MAX_CONDITION * 20).toInt
+        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.serviceQuality.toDouble / Airline.MAX_SERVICE_QUALITY * 50 + (assignedAirplanes.foldLeft(0.0)( _ + _.condition.toDouble)) / assignedAirplanes.size / Airplane.MAX_CONDITION * 20).toInt
 //        println("computed quality " + computedQualityStore)
         computedQualityStore
       }
@@ -70,9 +70,29 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     )
   }
   
+  
+    
+  //println("neutral quality : " + neutralQuality + " distance : " + distance)
+  def computeQualityPriceAdjust(linkClass : LinkClass) : Double = {
+    if (!computedQualityPriceAdjust.isDefinedAt(linkClass)) {
+      val neutralQuality = Link.neutralQualityOfClass(linkClass, from, to)
+      computedQualityPriceAdjust.put(linkClass, 1 + ((neutralQuality - computedQuality).toDouble / Link.MAX_QUALITY) * 0.5) //if neutral is at 50, 0 quality yields 1.25, max quality yields 0.75
+    }
+    computedQualityPriceAdjust(linkClass)
+  }
+  
+  lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
+}
+
+object Link {
+  private val MAX_QUALITY = 100
+  def fromId(id : Int) : Link = {
+    Link(from = Airport.fromId(0), to = Airport.fromId(0), Airline.fromId(0), price = LinkClassValues.getInstance(), distance = 0, capacity = LinkClassValues.getInstance(), rawQuality = 0, duration = 0, frequency = 0, id = id)
+  }
+  
    //adjust by quality
   import FlightType._
-  val neutralQualityOfClass = (linkClass : LinkClass) => {
+  val neutralQualityOfClass = (linkClass : LinkClass, from : Airport, to : Airport) => {
     val linkClassMultiplier = linkClass.level - 1
     Computation.getFlightType(from, to) match {
       case SHORT_HAUL_DOMESTIC => 30 + linkClassMultiplier * 15
@@ -83,26 +103,6 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       case LONG_HAUL_INTERCONTINENTAL => 55 + linkClassMultiplier * 15
       case ULTRA_LONG_HAUL_INTERCONTINENTAL => 60 + linkClassMultiplier * 15
     }
-  }
-    
-  private val MAX_QUALITY = 100
-    
-  //println("neutral quality : " + neutralQuality + " distance : " + distance)
-  def computeQualityPriceAdjust(linkClass : LinkClass) : Double = {
-    if (!computedQualityPriceAdjust.isDefinedAt(linkClass)) {
-      val neutralQuality = neutralQualityOfClass(linkClass)
-      computedQualityPriceAdjust.put(linkClass, 1 + ((neutralQuality - computedQuality).toDouble / MAX_QUALITY) * 0.5) //if neutral is at 50, 0 quality yields 1.25, max quality yields 0.75
-    }
-    computedQualityPriceAdjust(linkClass)
-  }
-  
-  lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
-}
-
-object Link {
-  val MAX_RAW_QUALITY = 100
-  def fromId(id : Int) : Link = {
-    Link(from = Airport.fromId(0), to = Airport.fromId(0), Airline.fromId(0), price = LinkClassValues.getInstance(), distance = 0, capacity = LinkClassValues.getInstance(), rawQuality = 0, duration = 0, frequency = 0, id = id)
   }
 }
 

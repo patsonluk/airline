@@ -10,6 +10,8 @@ import akka.testkit.ImplicitSender
 import akka.testkit.TestKit
 import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
+import com.patson.DemandGenerator
+import com.patson.Util
  
 class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
@@ -20,15 +22,19 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     TestKit.shutdownActorSystem(system)
   }
  
-  val defaultPrice = LinkClassValues.getInstance((1000 * ECONOMY.priceMultiplier).toInt, (1000 * BUSINESS.priceMultiplier).toInt, (1000 * FIRST.priceMultiplier).toInt)
   val defaultCapacity = LinkClassValues.getInstance(10000, 10000, 10000)
   
   val testAirline1 = Airline("airline 1", 1)
   val testAirline2 = Airline("airline 2", 2)
   val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, 0, 0, 0, 0)
-  val toAirport = Airport("", "", "To Airport", 0, 0, "", "", "", 1, 0, 0, 0, 0)
-  val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, rawQuality = 40, 600, 1)
-  val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, rawQuality = 40, 600, 1)
+  val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, 0, 0, 0, 0)
+  val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
+  val defaultPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
+  
+  fromAirport.initAirlineAppeals(scala.collection.immutable.Map.empty)
+  toAirport.initAirlineAppeals(scala.collection.immutable.Map.empty)
+  val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport), 600, 1)  //make the quality a bit higher
+  val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport), 600, 1)  //make the quality a bit higher 
   airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline1, 0, 100, 0, 0)))
   airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline2, 0, 100, 0, 0)))
   
@@ -248,19 +254,36 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   }
    "An SimplePreference".must {
       "adjust price accordingly due to price weight ". in {
-      val cost1 = SimplePreference(0, 10, ECONOMY).computeCost(airline1Link)
-      val cost2 = SimplePreference(10, 10, ECONOMY).computeCost(airline1Link)
-      val standardPrice = Pricing.computeStandardPrice(airline1Link, ECONOMY)
+      val expensiveLink = airline1Link.copy(price = LinkClassValues.getInstance(10000, 10000, 10000))
+      val cost1 = SimplePreference(0.8, ECONOMY).computeCost(expensiveLink)
+      val cost2 = SimplePreference(1.2, ECONOMY).computeCost(expensiveLink)
+      val standardPrice = Pricing.computeStandardPrice(expensiveLink, ECONOMY)
       val delta1 = Math.abs(cost1 - standardPrice) //should be small delta as this group of customer care less about price
       val delta2 = Math.abs(cost2 - standardPrice)
       delta1.should(be < delta2)
     }
-     "should not completely ignore price delta even at lowest price sensitivity". in {
-      val cost1 = SimplePreference(0, 10, ECONOMY).computeCost(airline1Link)
-      val standardPrice = Pricing.computeStandardPrice(airline1Link, ECONOMY)
-      val delta1 = Math.abs(cost1 - standardPrice) 
-      delta1.should(be > 0.0)
-    }
+//     "should not completely ignore price delta even at lowest price sensitivity". in {
+//      val cost1 = SimplePreference(0, 10, ECONOMY).computeCost(airline1Link)
+//      val standardPrice = Pricing.computeStandardPrice(airline1Link, ECONOMY)
+//      val delta1 = Math.abs(cost1 - standardPrice) 
+//      delta1.should(be > 0.0)
+//    }
       
    }
+   
+  
+  //this is from DemandGenerator... 
+  "Get FlightPreference pool".must {
+    "not generate preference to compute to a cost higher than suggested price if the link is priced at standard price".in {
+       
+       DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport).pool.foreach {
+         case (linkClass, flightPreferences) => flightPreferences.foreach { flightPreference =>
+           val cost = flightPreference.computeCost(airline1Link)
+           println(flightPreference + " => " + cost)
+           assert(cost <= airline1Link.price(linkClass))
+         }
+         
+       }
+    }
+  }
 }

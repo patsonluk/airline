@@ -4,33 +4,34 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 import com.patson.Util
-
+/**
+ * Flight preference has a computeCost method that convert the existing price of a link to a "perceived price". The "perceived price" will be refer to "cost" here
+ * 
+ * When a link contains certain properties that the "Flight preference" likes/hates, it might reduce (if like) or increase (if hate) the "perceived price"  
+ */
 abstract class FlightPreference {
   def computeCost(link : Link) : Double
   def linkClass : LinkClass
 }
 
 /**
- * priceWeight 		to what extent would deviation from standard pricing affects the cost. 
- * maxPriceWeight what is the maxPriceWeight possible
+ * priceSensitivity : how sensitive to the price, base value is 1 (100%)
+ * 
+ * 1 : cost is the same as price no adjustment
+ * > 1 : more sensitive to price, a price that is deviated from "standard price" will have its effect amplified, for example a 2 (200%) would mean a $150 ticket with suggested price of $100, will be perceived as $200                      
+ * < 1 : less sensitive to price, a price that is deviated from "standard price" will have its effect weakened, for example a 0.5 (50%) would mean a $150 ticket with suggested price of $100, will be perceived as $125
+ * 
+ * Take note that 0 would means a preference that totally ignore the price difference (could be dangerous as very expensive ticket will get through)
  */
-case class SimplePreference(priceWeight : Int, maxPriceWeight : Int, linkClass : LinkClass) extends FlightPreference{
+case class SimplePreference(priceSensitivity : Double, linkClass: LinkClass) extends FlightPreference {
   def computeCost(link : Link) = {
-    val minFactorForPriceWeight = 0.2 //we cannot use 0.0. otherwise extremely expensive ticket will be accepted
-    val maxFactorForPriceWeight = 1
-    
-    //from minFactorForPriceWeight up to maxFactorForPriceWeight. Proportional to priceWeight/maxPriceWeight
-    val actualFactorForPriceWeight = minFactorForPriceWeight + priceWeight.toDouble / maxPriceWeight * (maxFactorForPriceWeight - minFactorForPriceWeight)
-    
     val standardPrice = Pricing.computeStandardPrice(link, linkClass)
     val deltaFromStandardPrice = link.price(linkClass) - standardPrice 
     
-    val cost = standardPrice + deltaFromStandardPrice * actualFactorForPriceWeight
+    val cost = standardPrice + deltaFromStandardPrice * priceSensitivity
     cost
   }
 }
-
-
 
 case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, id : Int)  extends FlightPreference{
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
@@ -74,8 +75,8 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
     
  
-    val noise = (1 + (Util.getBellRandom(0)) * 0.8) // max 10% noise : 0.6 - 1.4
-    //val noise = (1 + (0.5 - Math.random()) * 0.8) // max 10% noise : 0.6 - 1.4
+    val noise = (0.5 + (Util.getBellRandom(0)) * 0.5) // max noise : 0 - 1.0
+
     
     //NOISE?
     val finalCost = baseCost * noise
