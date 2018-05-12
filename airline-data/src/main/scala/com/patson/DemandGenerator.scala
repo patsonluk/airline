@@ -139,9 +139,12 @@ object DemandGenerator {
       //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
       //we are using income level for to airport as destination income difference should have less impact on demand compared to origination airport (and income level is log(income))
       val toAirportIncomeLevel = Computation.getIncomeLevel(toAirport.income)
-      val baseDemand = (fromAirport.power.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 25) * (passengerType match {
-        case PassengerType.BUSINESS => 2
-        case PassengerType.TOURIST => 0.3
+      val fromAirportIncome = fromAirport.power / fromAirport.population
+      val fromAirportAdjustedPower = if (fromAirportIncome < 50000) fromAirport.power else fromAirport.population * 50000 //to make high income airport a little bit less overpowered for base
+      
+      val baseDemand = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 25) * (passengerType match {
+        case PassengerType.BUSINESS => 6
+        case PassengerType.TOURIST => 1
       })
       
       var adjustedDemand = baseDemand
