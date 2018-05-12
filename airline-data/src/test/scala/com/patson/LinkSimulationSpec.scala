@@ -29,11 +29,11 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   val toAirport = Airport.fromId(2).copy(size = 3)
   toAirport.initAirlineBases(List.empty)
   
-  val lightModel = Model("Cessna Caravan", capacity = 14, fuelBurn = 14, speed = 344, range = 2400, price = 1600000)
-  val regionalModel = Model("Embraer ERJ 140", capacity = 44, fuelBurn = 70, speed = 828, range = 2315, price = 17000000)
-  val smallModel = Model("Bombardier CS100", capacity = 133, fuelBurn = 160, speed = 828, range = 5741, price = 71800000)
-  val mediumModel = Model("Boeing 787-8 Dreamliner", capacity = 250, fuelBurn = 274, speed = 907, range = 13621, price = 225000000)
-  val largeAirplaneModel = Model("Boeing 777-300", capacity = 550, fuelBurn = 500, speed = 945, range = 11121, price = 250000000)
+  val lightModel = Model.modelByName("Cessna Caravan")
+  val regionalModel = Model.modelByName("Embraer ERJ 140")
+  val smallModel = Model.modelByName("Bombardier CS100")
+  val mediumModel = Model.modelByName("Boeing 787-8 Dreamliner")
+  val largeAirplaneModel = Model.modelByName("Boeing 777-300")
                       
   val decayRate = (AirplaneSimulation.MAX_DECAY + AirplaneSimulation.MIN_DECAY) / 2
   val lightAirplane = Airplane(lightModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(lightModel, decayRate), lightModel.price)      
@@ -44,8 +44,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   
   import Model.Type._
   //LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.3, SMALL -> 0.25, MEDIUM -> 0.20, LARGE -> 0.15, JUMBO -> 0.15)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.8, REGIONAL -> 0.7, SMALL -> 0.6, MEDIUM -> 0.55, LARGE -> 0.50, JUMBO -> 0.50)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.3, SMALL -> 0.3, MEDIUM -> 0.3, LARGE -> 0.4, JUMBO -> 0.4)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.7, SMALL -> 0.7, MEDIUM -> 0.8, LARGE -> 0.8, JUMBO -> 0.8)
   
   "Compute profit".must {
     "More profitable with more frequency flight (max LF)".in {
@@ -224,12 +224,16 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       economyResult.profit.should(be < businessResult.profit)
       businessResult.profit.should(be < firstResult.profit)
       
+      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))      
+      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))
+      (firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))
+      
       (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))      
       (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))
-      //(firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN)  ok...if all first class is filled, should be high profit
+      (firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType)) 
     }
     "More profit at higher link class at max LF (small plane)".in  {
-       val airplane = smallAirplane
+      val airplane = smallAirplane
       val airplaneModel = airplane.model
       val distance = 5000
       val duration = Computation.calculateDuration(airplaneModel, distance)
@@ -265,9 +269,13 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       economyResult.profit.should(be < businessResult.profit)
       businessResult.profit.should(be < firstResult.profit)
       
+      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))      
+      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))
+      (firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))
+      
       (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))      
       (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))
-      //(firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN) // ok...if all first class is filled, should be high profit
+      (firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType)) 
     }
     "More profit at higher link class at max LF (large plane)".in  {
       val airplane = largeAirplane
@@ -306,9 +314,13 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       economyResult.profit.should(be < businessResult.profit)
       businessResult.profit.should(be < firstResult.profit)
       
+      (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))      
+      (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))
+      (firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be > GOOD_PROFIT_MARGIN(airplane.model.airplaneType))
+      
       (economyResult.profit.toDouble / economyResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))      
       (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))
-      //(firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN) ok...if all first class is filled, should be high profit
+      (firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType)) 
     }
   }
   

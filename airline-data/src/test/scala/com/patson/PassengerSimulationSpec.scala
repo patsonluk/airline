@@ -95,7 +95,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.size.shouldBe(3)
       route.links.equals(cheapLinks)
     }
-    "user direct route even though it's more expensive as connection flight is not frequent enough".in {
+    "use direct route even though it's more expensive as connection flight is not frequent enough".in {
      val cheapLinks = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1), 200, ECONOMY, false),
           LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1), 200, ECONOMY, false),
           LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1), 200, ECONOMY, false))
