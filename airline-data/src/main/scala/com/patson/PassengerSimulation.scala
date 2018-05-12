@@ -129,7 +129,7 @@ object PassengerSimulation extends App {
                  //println("picked route info" + passengerGroup + " " + pickedRoute.links(0).airline)
                  //val totalDistance = pickedRoute.links.foldLeft(0.0)(_ + _.link.distance)
                  val fromAirport = passengerGroup.fromAirport 
-                 val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+                 
                  
                  //println("RecommendedPrice  " +  Pricing.computeStandardPrice(totalDistance))
                  //add some randomness here
@@ -137,9 +137,8 @@ object PassengerSimulation extends App {
                  //val affordableCost = totalDistance * (Util.getBellRandom(1))
                  //val MIN_AIPLANE_SPEED = 300.0
                  val linkClass = passengerGroup.preference.linkClass
-                 val affordableCost = Pricing.computeStandardPrice(distance.toInt, Computation.getFlightType(fromAirport, toAirport), linkClass) * 2   
                  
-                 if (affordableCost >= pickedRoute.totalCost) { //OK!
+                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport, linkClass)) {
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
                      val availableSeats = linkConsideration.link.availableSeats(linkClass) 
                      if (availableSeats < foldInt) { availableSeats } else { foldInt }
@@ -202,6 +201,23 @@ object PassengerSimulation extends App {
     
     collapsedMap
   }
+  
+  def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, linkClass: LinkClass) : Boolean = {
+    val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+    val ROUTE_COST_TOLERANCE_FACTOR = 2
+    val routeAffordableCost = Pricing.computeStandardPrice(distance.toInt, Computation.getFlightType(fromAirport, toAirport), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
+                
+    if (pickedRoute.totalCost < routeAffordableCost) { //total cost okay, now look at individual cost to avoid extreme profit
+      val LINK_COST_TOLERANCE_FACTOR = 3;
+      val unaffordableLink = pickedRoute.links.find { linkConsideration =>//find links that are too expensive 
+                       linkConsideration.cost > Pricing.computeStandardPrice(distance.toInt, Computation.getFlightType(fromAirport, toAirport), linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
+      }
+      unaffordableLink.isEmpty
+    } else {
+      false 
+    }
+  }
+  
   
    
   /**
@@ -445,8 +461,6 @@ object PassengerSimulation extends App {
       }  
     }
   }
-  
-  
   
   
 //  def findRandomRoutes(from : Airport, to : Airport, links : List[Link], routeCount : Int) = {
