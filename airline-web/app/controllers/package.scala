@@ -100,8 +100,8 @@ package object controllers {
         }
       }
       var rawQuality =  json.\("rawQuality").as[Int]
-      if (rawQuality > Link.MAX_RAW_QUALITY) {
-        rawQuality = Link.MAX_RAW_QUALITY
+      if (rawQuality > Link.MAX_QUALITY) {
+        rawQuality = Link.MAX_QUALITY
       } else if (rawQuality < 0) {
         rawQuality = 0
       }
