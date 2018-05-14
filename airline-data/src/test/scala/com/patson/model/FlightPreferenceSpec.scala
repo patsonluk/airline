@@ -26,8 +26,11 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   
   val testAirline1 = Airline("airline 1", 1)
   val testAirline2 = Airline("airline 2", 2)
+  val topAirline = Airline("top airline", 3)
   val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, 0, 0, 0, 0)
   val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, 0, 0, 0, 0)
+  
+  
   val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   val defaultPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
   
@@ -35,8 +38,10 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   toAirport.initAirlineAppeals(scala.collection.immutable.Map.empty)
   val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport), 600, 1)  //make the quality a bit higher
   val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport), 600, 1)  //make the quality a bit higher 
+  val topAirlineLink = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 100, 600, 1) 
   airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline1, 0, 100, 0, 0)))
   airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline2, 0, 100, 0, 0)))
+  topAirlineLink.setAssignedAirplanes(List(Airplane(Model.fromId(0), topAirline, 0, 100, 0, 0)))
   
   "An AppealPreference".must {
     "generate similar cost if price and distance is the same, and small differece in loyalty".in {
@@ -156,7 +161,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.setAirlineLoyalty(testAirline1.id, 50)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1500), 10000, defaultCapacity, 0, 600, 1)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1300), 10000, defaultCapacity, 0, 600, 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -275,15 +280,51 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   //this is from DemandGenerator... 
   "Get FlightPreference pool".must {
     "not generate preference to compute to a cost higher than suggested price if the link is priced at standard price".in {
-       
-       DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport).pool.foreach {
-         case (linkClass, flightPreferences) => flightPreferences.foreach { flightPreference =>
-           val cost = flightPreference.computeCost(airline1Link)
-           println(flightPreference + " => " + cost)
-           assert(cost <= airline1Link.price(linkClass))
+       for (i <- 0 until 100) {
+         DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport).pool.foreach {
+           case (linkClass, flightPreferences) => flightPreferences.foreach { flightPreference =>
+             val cost = flightPreference.computeCost(airline1Link)
+             assert(cost <= airline1Link.price(linkClass))
+           }
          }
-         
        }
     }
+    "not generate preference to compute to a cost lower than standard price with overpriced ticket even with perfect link/airline".in {
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, AirlineAppeal.MAX_LOYALTY) //
+      val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
+      val extremePrice = suggestedPrice * 5
+      val extremeLink = airline1Link.copy(price = extremePrice, rawQuality = Link.MAX_QUALITY)
+      for (i <- 0 until 100) {
+        DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport).pool.foreach {
+          case (linkClass, flightPreferences) => flightPreferences.foreach { flightPreference =>
+            val cost = flightPreference.computeCost(extremeLink)
+            assert(cost >= suggestedPrice(linkClass)) //the cost should not be reduced to lower than the standard price no matter how good it is
+          }
+         
+        }
+      }
+    }
+    "generate preference to compute to a cost lower than standard price with slight overpriced ticket even with perfect link/airline".in {
+      fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
+      fromAirport.setAirlineLoyalty(testAirline1.id, AirlineAppeal.MAX_LOYALTY) //
+      val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
+      val highPrice = suggestedPrice * 2.5
+      val highPriceLink = airline1Link.copy(price = highPrice, rawQuality = Link.MAX_QUALITY)
+      
+      
+      for (i <- 0 until 100) {
+        val lowerCostOption = DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport).pool.find {
+           case (linkClass, flightPreferences) => flightPreferences.find{ flightPreference =>
+             val cost = flightPreference.computeCost(highPriceLink)
+             cost < suggestedPrice(linkClass)
+           }.isDefined
+        }
+        
+        assert(lowerCostOption.isDefined)
+      }
+    }
+    
+    
   }
 }

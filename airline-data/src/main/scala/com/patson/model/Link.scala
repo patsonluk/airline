@@ -85,7 +85,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 }
 
 object Link {
-  private val MAX_QUALITY = 100
+  val MAX_QUALITY = 100
   def fromId(id : Int) : Link = {
     Link(from = Airport.fromId(0), to = Airport.fromId(0), Airline.fromId(0), price = LinkClassValues.getInstance(), distance = 0, capacity = LinkClassValues.getInstance(), rawQuality = 0, duration = 0, frequency = 0, id = id)
   }
