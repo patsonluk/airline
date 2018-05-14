@@ -230,7 +230,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 //  val airport2 = Airport("", "", "", 0, 100, "", "", "", 0, 0, 0, 0, 0)
 //  val airport3 = Airport("", "", "", 0, 200, "", "", "", 0, 0, 0, 0, 0)
   
-  
+  val LOOP_COUNT = 10000
   
   "IsLinkAffordable".must {
     "accept all route (single link) at suggested price".in { 
@@ -244,8 +244,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, 600, 1)
           
       
-      //hmm kinda mix in flight preference here...might not be a good thing... loop 100 times so result is more consistent
-      for (i <- 0 until 100) {
+      //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
+      for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
             flightPreference.foreach {  flightPreference =>
@@ -261,7 +261,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       }
     }
     
-    "accept most route with links are at suggested price".in { //some might get rejected as people don't link taking connection
+    "accept most routes with links are at suggested price".in { //some might get rejected as people don't link taking connection
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
       
@@ -274,10 +274,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           airportWalker = toAirport
           newLink }
       
-      //hmm kinda mix in flight preference here...might not be a good thing... loop 100 times so result is more consistent
+      //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
       var totalRoutes = 0
       var totalAcceptedRoutes = 0;
-      for (i <- 0 until 100) {
+      for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
             flightPreference.foreach {  flightPreference =>
@@ -299,7 +299,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.9)
     }
     
-    "reject route with one link at 4X suggested price at min loyalty and quality".in {
+    "reject route with one short link at 4X suggested price at min loyalty and quality".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
       
@@ -321,7 +321,50 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 100 times so result is more consistent
-      for (i <- 0 until 100) {
+      for (i <- 0 until LOOP_COUNT) {
+        DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
+          case(linkClass, flightPreference) => {
+            flightPreference.foreach {  flightPreference =>
+              val linkConsiderations = links.map { link =>
+                val cost = flightPreference.computeCost(link)
+                new LinkConsideration(link, cost, linkClass, false)
+              }
+              
+              val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
+              assert(!PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, linkClass))
+            }
+          }
+        }
+      }
+      
+       
+    }
+    
+    "accept most routes with one short link at 2X suggested price at min loyalty and quality".in {
+      val clonedFromAirport  = fromAirport.copy()
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      
+      val toAirports = List[Airport] (
+        Airport("", "", "To Airport", 0, 30, "", "", "", 1, 0, 0, 0, id = 2),
+        Airport("", "", "To Airport", 0, 90, "", "", "", 1, 0, 0, 0, id = 3),
+        Airport("", "", "To Airport", 0, 92, "", "", "", 1, 0, 0, 0, id = 4) //the last segment is really short
+      )
+      
+      var airportWalker = clonedFromAirport
+      val links = toAirports.map { toAirport =>
+          val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
+          val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
+          
+          //make last link relatively expensive
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * (if (toAirport == toAirports.last) 2 else 1), distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1)
+          airportWalker = toAirport
+          newLink }
+      
+      
+      //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
+      var totalRoutes = 0
+      var totalAcceptedRoutes = 0;
+      for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
             flightPreference.foreach {  flightPreference =>
@@ -332,12 +375,18 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               
-              assert(!PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, linkClass), route + " " + flightPreference)
+              totalRoutes += 1
+              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, linkClass)) {
+                totalAcceptedRoutes += 1
+              }
             }
           }
         }
       }
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.9)
     }
+    
+    
     
     "reject route that at 2X suggested price at min loyalty and quality".in {
       val clonedFromAirport  = fromAirport.copy()
@@ -351,8 +400,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           airportWalker = toAirport
           newLink }
       
-      //hmm kinda mix in flight preference here...might not be a good thing... loop 100 times so result is more consistent
-      for (i <- 0 until 100) {
+      //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
+      for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
             flightPreference.foreach {  flightPreference =>
@@ -387,8 +436,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           airportWalker = toAirport
           newLink }
       
-      //hmm kinda mix in flight preference here...might not be a good thing... loop 100 times so result is more consistent
-      for (i <- 0 until 100) { 
+      //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
+      for (i <- 0 until LOOP_COUNT) { 
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
             flightPreference.foreach {  flightPreference =>
@@ -422,8 +471,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           airportWalker = toAirport
           newLink }
       
-      //hmm kinda mix in flight preference here...might not be a good thing... loop 100 times so result is more consistent
-      for (i <- 0 until 100) {
+      //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
+      for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
             flightPreference.foreach {  flightPreference =>
