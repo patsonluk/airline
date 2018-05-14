@@ -203,16 +203,21 @@ object PassengerSimulation extends App {
   }
   
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, linkClass: LinkClass) : Boolean = {
-    val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+    val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
     val ROUTE_COST_TOLERANCE_FACTOR = 1.75
-    val routeAffordableCost = Pricing.computeStandardPrice(distance.toInt, Computation.getFlightType(fromAirport, toAirport), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
+    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement.toInt, Computation.getFlightType(fromAirport, toAirport), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
 
-    //println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute) 
+//    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute) 
     
     if (pickedRoute.totalCost < routeAffordableCost) { //total cost okay, now look at individual cost to avoid extreme profit
-      val LINK_COST_TOLERANCE_FACTOR = 3;
-      val unaffordableLink = pickedRoute.links.find { linkConsideration =>//find links that are too expensive 
-                       linkConsideration.cost > Pricing.computeStandardPrice(distance.toInt, Computation.getFlightType(fromAirport, toAirport), linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
+      val LINK_COST_TOLERANCE_FACTOR = 2.5;
+      val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
+          val link = linkConsideration.link
+          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, Computation.getFlightType(link.from, link.to), linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
+          
+//          println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link)
+          linkConsideration.cost > linkAffordableCost
+        }
       }
       unaffordableLink.isEmpty
     } else {

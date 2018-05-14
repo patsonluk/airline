@@ -269,7 +269,6 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val links = toAirportsList.map { toAirport =>
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
-          println(suggestedPrice)
           val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport)
           val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, 600, 1)
           airportWalker = toAirport
@@ -300,7 +299,47 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.9)
     }
     
-    "reject route that all links are at 2 X suggested price at min loyalty and quality".in {
+    "reject route with one link at 4X suggested price at min loyalty and quality".in {
+      val clonedFromAirport  = fromAirport.copy()
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      
+      val toAirports = List[Airport] (
+        Airport("", "", "To Airport", 0, 30, "", "", "", 1, 0, 0, 0, id = 2),
+        Airport("", "", "To Airport", 0, 90, "", "", "", 1, 0, 0, 0, id = 3),
+        Airport("", "", "To Airport", 0, 92, "", "", "", 1, 0, 0, 0, id = 4) //even if the last segment is really short
+      )
+      
+      var airportWalker = clonedFromAirport
+      val links = toAirports.map { toAirport =>
+          val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
+          val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
+          
+          //make last link really expensive
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * (if (toAirport == toAirports.last) 4 else 1), distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1)
+          airportWalker = toAirport
+          newLink }
+      
+      
+      //hmm kinda mix in flight preference here...might not be a good thing... loop 100 times so result is more consistent
+      for (i <- 0 until 100) {
+        DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
+          case(linkClass, flightPreference) => {
+            flightPreference.foreach {  flightPreference =>
+              val linkConsiderations = links.map { link =>
+                val cost = flightPreference.computeCost(link)
+                new LinkConsideration(link, cost, linkClass, false)
+              }
+              
+              val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
+              
+              assert(!PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, linkClass), route + " " + flightPreference)
+            }
+          }
+        }
+      }
+    }
+    
+    "reject route that at 2X suggested price at min loyalty and quality".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
       
@@ -400,5 +439,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
         }
       }
     }
+    
+    
   }
 }
