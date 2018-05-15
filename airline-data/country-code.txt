@@ -102,7 +102,7 @@ Hungary,HU,HUN,348,ISO 3166-2:HU,Europe,Eastern Europe,150,151
 Iceland,IS,ISL,352,ISO 3166-2:IS,Europe,Northern Europe,150,154
 India,IN,IND,356,ISO 3166-2:IN,Asia,Southern Asia,142,034
 Indonesia,ID,IDN,360,ISO 3166-2:ID,Asia,South-Eastern Asia,142,035
-Iran (Islamic Republic of),IR,IRN,364,ISO 3166-2:IR,Asia,Southern Asia,142,034
+Iran,IR,IRN,364,ISO 3166-2:IR,Asia,Southern Asia,142,034
 Iraq,IQ,IRQ,368,ISO 3166-2:IQ,Asia,Western Asia,142,145
 Ireland,IE,IRL,372,ISO 3166-2:IE,Europe,Northern Europe,150,154
 Isle of Man,IM,IMN,833,ISO 3166-2:IM,Europe,Northern Europe,150,154
@@ -115,8 +115,8 @@ Jordan,JO,JOR,400,ISO 3166-2:JO,Asia,Western Asia,142,145
 Kazakhstan,KZ,KAZ,398,ISO 3166-2:KZ,Asia,Central Asia,142,143
 Kenya,KE,KEN,404,ISO 3166-2:KE,Africa,Eastern Africa,002,014
 Kiribati,KI,KIR,296,ISO 3166-2:KI,Oceania,Micronesia,009,057
-Korea (Democratic People's Republic of),KP,PRK,408,ISO 3166-2:KP,Asia,Eastern Asia,142,030
-Korea (Republic of),KR,KOR,410,ISO 3166-2:KR,Asia,Eastern Asia,142,030
+North Korea,KP,PRK,408,ISO 3166-2:KP,Asia,Eastern Asia,142,030
+South Korea,KR,KOR,410,ISO 3166-2:KR,Asia,Eastern Asia,142,030
 Kuwait,KW,KWT,414,ISO 3166-2:KW,Asia,Western Asia,142,145
 Kyrgyzstan,KG,KGZ,417,ISO 3166-2:KG,Asia,Central Asia,142,143
 Lao People's Democratic Republic,LA,LAO,418,ISO 3166-2:LA,Asia,South-Eastern Asia,142,035
@@ -232,14 +232,14 @@ Tuvalu,TV,TUV,798,ISO 3166-2:TV,Oceania,Polynesia,009,061
 Uganda,UG,UGA,800,ISO 3166-2:UG,Africa,Eastern Africa,002,014
 Ukraine,UA,UKR,804,ISO 3166-2:UA,Europe,Eastern Europe,150,151
 United Arab Emirates,AE,ARE,784,ISO 3166-2:AE,Asia,Western Asia,142,145
-United Kingdom of Great Britain and Northern Ireland,GB,GBR,826,ISO 3166-2:GB,Europe,Northern Europe,150,154
+United Kingdom,GB,GBR,826,ISO 3166-2:GB,Europe,Northern Europe,150,154
 United States of America,US,USA,840,ISO 3166-2:US,Americas,Northern America,019,021
 United States Minor Outlying Islands,UM,UMI,581,ISO 3166-2:UM,,,,
 Uruguay,UY,URY,858,ISO 3166-2:UY,Americas,South America,019,005
 Uzbekistan,UZ,UZB,860,ISO 3166-2:UZ,Asia,Central Asia,142,143
 Vanuatu,VU,VUT,548,ISO 3166-2:VU,Oceania,Melanesia,009,054
-Venezuela (Bolivarian Republic of),VE,VEN,862,ISO 3166-2:VE,Americas,South America,019,005
-Viet Nam,VN,VNM,704,ISO 3166-2:VN,Asia,South-Eastern Asia,142,035
+Venezuela,VE,VEN,862,ISO 3166-2:VE,Americas,South America,019,005
+Vietnam,VN,VNM,704,ISO 3166-2:VN,Asia,South-Eastern Asia,142,035
 Virgin Islands (British),VG,VGB,092,ISO 3166-2:VG,Americas,Caribbean,019,029
 Virgin Islands (U.S.),VI,VIR,850,ISO 3166-2:VI,Americas,Caribbean,019,029
 Wallis and Futuna,WF,WLF,876,ISO 3166-2:WF,Oceania,Polynesia,009,061
