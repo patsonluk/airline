@@ -32,6 +32,22 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     assignedModel
   }
   
+  /**
+   * Find seats at or below the requestedLinkClass
+   * 
+   * Returns the tuple of the matching class and seats available for that class
+   */
+  def availableSeatsAtOrBelowClass(targetLinkClass : LinkClass) : Option[(LinkClass, Int)] = {
+    for (level <- targetLinkClass.level to ECONOMY.level by -1) {
+      val linkClass = LinkClass.fromLevel(level)
+      val availableSeatsByClass = availableSeats(linkClass)
+      if (availableSeatsByClass > 0) {
+        return Some(linkClass, availableSeatsByClass)
+      }
+    }
+    None
+  }
+  
   def computedQuality : Int= {
     if (!hasComputedQuality) {
       if (assignedAirplanes.isEmpty) {
@@ -127,5 +143,9 @@ object LinkClass {
   
   val fromCode : String => LinkClass = (code : String) => {
     values.find { _.code == code }.get
+  }
+  
+  val fromLevel : Int => LinkClass = (level : Int) => {
+    values.find { _.level  == level}.get 
   }
 }
