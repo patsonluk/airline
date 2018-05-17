@@ -131,13 +131,11 @@ object CountrySource {
            insertStatement.setString(1, country1)
            insertStatement.setString(2, country2)
            insertStatement.setInt(3, relationShip)
-           //insertStatement.addBatch()
-           
-           insertStatement.executeUpdate()
+           insertStatement.addBatch()
          }
        }
        
-       //insertStatement.executeBatch() //somehow doing a batch gives constraint violation?
+       insertStatement.executeBatch()
        connection.commit()
        insertStatement.close()
      } finally {
