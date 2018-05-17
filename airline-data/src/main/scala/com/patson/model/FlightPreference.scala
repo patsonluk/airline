@@ -18,8 +18,8 @@ abstract class FlightPreference {
  * priceSensitivity : how sensitive to the price, base value is 1 (100%)
  * 
  * 1 : cost is the same as price no adjustment
- * > 1 : more sensitive to price, a price that is deviated from "standard price" will have its effect amplified, for example a 2 (200%) would mean a $150 ticket with suggested price of $100, will be perceived as $200                      
- * < 1 : less sensitive to price, a price that is deviated from "standard price" will have its effect weakened, for example a 0.5 (50%) would mean a $150 ticket with suggested price of $100, will be perceived as $125
+ * > 1 : more sensitive to price, a price that is deviated from "standard price" will have its effect amplified, for example a 2 (200%) would mean a $$150 ticket with suggested price of $$100, will be perceived as $$200                      
+ * < 1 : less sensitive to price, a price that is deviated from "standard price" will have its effect weakened, for example a 0.5 (50%) would mean a $$150 ticket with suggested price of $$100, will be perceived as $$125
  * 
  * Take note that 0 would means a preference that totally ignore the price difference (could be dangerous as very expensive ticket will get through)
  */

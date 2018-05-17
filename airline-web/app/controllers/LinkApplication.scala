@@ -30,6 +30,7 @@ import com.patson.data.RouteHistorySource
 import com.patson.data.LinkHistorySource
 import com.patson.DemandGenerator
 import com.patson.data.ConsumptionHistorySource
+import com.patson.data.CountrySource
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -444,9 +445,9 @@ class LinkApplication extends Controller {
             val suggestedPrice : LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), ECONOMY),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), BUSINESS),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), FIRST))
-            
-            val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, PassengerType.BUSINESS)
-            val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, PassengerType.TOURIST)
+            val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+            val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.BUSINESS)
+            val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.TOURIST)
             
             val directDemand = directBusinessDemand + directTouristDemand
             //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum 

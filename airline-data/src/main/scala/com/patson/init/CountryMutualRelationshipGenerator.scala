@@ -12,7 +12,9 @@ object CountryMutualRelationshipGenerator extends App {
     
     val finalMutalRelationshipMap = mutualRelationshipMap ++ mutualRelationshipPatchMap
     
-    println(finalMutalRelationshipMap)
+    println("Saving country mutual relationships: " + finalMutalRelationshipMap)
+    
+    CountrySource.updateCountryMutualRelationships(finalMutalRelationshipMap)
   }
   
   /**

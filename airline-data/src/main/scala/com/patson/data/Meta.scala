@@ -70,6 +70,10 @@ object Meta {
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + COUNTRY_AIRLINE_RELATIONSHIP_TABLE)
     statement.execute()
     statement.close()
+    
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE)
+    statement.execute()
+    statement.close()
 
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_TABLE)
     statement.execute()
@@ -192,6 +196,13 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + COUNTRY_AIRLINE_RELATIONSHIP_INDEX_2 + " ON " + COUNTRY_TABLE + "(code)")
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + "(country_1 CHAR(2), country_2 CHAR(2), relationship INTEGER," +
+                                            "PRIMARY KEY (country_1, country_2)," +
+                                            "FOREIGN KEY(country_1) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE," +
+                                            "FOREIGN KEY(country_2) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE)")
     statement.execute()
     statement.close()
 

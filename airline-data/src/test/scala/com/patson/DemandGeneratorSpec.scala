@@ -13,6 +13,8 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
  
 class DemandGeneratorSpec extends WordSpecLike with Matchers {
+  val DEFAULT_RELATIONSHIP = 0
+  
   "generateDemand".must {
     "Generate more demand with higher pop to airports".in {
        val highPopulation = 10000000
@@ -23,8 +25,8 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val lowPopToAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = lowPopulation * income, population = lowPopulation, 0, id = 3)
       
        //val totalWorldPower = fromAirport.power + highPopToAirport.power + lowPopToAirport.power
-       val highPopDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, highPopToAirport, PassengerType.BUSINESS)
-       val lowPopDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, lowPopToAirport, PassengerType.BUSINESS)
+       val highPopDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, highPopToAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val lowPopDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, lowPopToAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        
        highPopDemand(ECONOMY).should(be > lowPopDemand(ECONOMY))
        highPopDemand(BUSINESS).should(be > lowPopDemand(BUSINESS))
@@ -39,8 +41,8 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val lowPopFromAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = lowPopulation * income, population = lowPopulation, 0, id = 3)
       
        //val totalWorldPower = fromAirport.power + highPopToAirport.power + lowPopToAirport.power
-       val highPopDemand = DemandGenerator.computeDemandBetweenAirports(highPopFromAirport, toAirport, PassengerType.BUSINESS)
-       val lowPopDemand = DemandGenerator.computeDemandBetweenAirports(lowPopFromAirport, toAirport, PassengerType.BUSINESS)
+       val highPopDemand = DemandGenerator.computeDemandBetweenAirports(highPopFromAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val lowPopDemand = DemandGenerator.computeDemandBetweenAirports(lowPopFromAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        
        highPopDemand(ECONOMY).should(be > lowPopDemand(ECONOMY))
        highPopDemand(BUSINESS).should(be > lowPopDemand(BUSINESS))
@@ -55,8 +57,8 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val lowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * lowIncome, population = population, 0, id = 3)
       
        val totalWorldPower = fromAirport.power + highAirport.power + lowAirport.power
-       val highDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, highAirport, PassengerType.BUSINESS)
-       val lowDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, lowAirport, PassengerType.BUSINESS)
+       val highDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, highAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val lowDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, lowAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        
        highDemand(ECONOMY).should(be > lowDemand(ECONOMY))
        highDemand(BUSINESS).should(be > lowDemand(BUSINESS))
@@ -71,8 +73,8 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val lowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * lowIncome, population = population, 0, id = 3)
       
        //val totalWorldPower = fromAirport.power + highAirport.power + lowAirport.power
-       val highDemand = DemandGenerator.computeDemandBetweenAirports(highAirport, toAirport, PassengerType.BUSINESS)
-       val lowDemand = DemandGenerator.computeDemandBetweenAirports(lowAirport, toAirport, PassengerType.BUSINESS)
+       val highDemand = DemandGenerator.computeDemandBetweenAirports(highAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val lowDemand = DemandGenerator.computeDemandBetweenAirports(lowAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        
        highDemand(ECONOMY).should(be > lowDemand(ECONOMY))
        highDemand(BUSINESS).should(be > lowDemand(BUSINESS))
@@ -87,8 +89,8 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val fromLowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * lowIncome, population = population, 0, id = 3)
        val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
       
-       val highDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, PassengerType.BUSINESS)
-       val lowDemand = DemandGenerator.computeDemandBetweenAirports(fromLowAirport, toAirport, PassengerType.BUSINESS)
+       val highDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val lowDemand = DemandGenerator.computeDemandBetweenAirports(fromLowAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        
        val totalHighDemand = highDemand(ECONOMY) + highDemand(BUSINESS) + highDemand(FIRST)
        val totalLowDemand = lowDemand(ECONOMY) + lowDemand(BUSINESS) + lowDemand(FIRST)
@@ -104,8 +106,8 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val closeAirport = Airport("", "", "", latitude = 0, longitude = 10, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
        val farAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 3)
       
-       val closeDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, closeAirport, PassengerType.BUSINESS)
-       val farDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, farAirport, PassengerType.BUSINESS)
+       val closeDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, closeAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val farDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, farAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        
        closeDemand.total.should(be > farDemand.total)
        closeDemand(ECONOMY).should(be > farDemand(ECONOMY))
@@ -119,8 +121,8 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val toDomesticAirport = Airport("", "", "", latitude = 0, longitude = 10, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
        val toInternationalAirport =  Airport("", "", "", latitude = 0, longitude = 10, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 3)
       
-       val domesticDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toDomesticAirport, PassengerType.BUSINESS)
-       val internationalDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toInternationalAirport, PassengerType.BUSINESS)
+       val domesticDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toDomesticAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val internationalDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toInternationalAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        
        domesticDemand.total.should(be > internationalDemand.total)
     }
@@ -131,8 +133,8 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
        val toAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
        
-       val businessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.BUSINESS)
-       val touristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.TOURIST)
+       val businessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val touristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.TOURIST)
        
        val totalBusinessDemand = businessDemand(ECONOMY) + businessDemand(BUSINESS) + businessDemand(FIRST)
        val totalTouristDemand = touristDemand(ECONOMY) + touristDemand(BUSINESS) + touristDemand(FIRST)
@@ -150,14 +152,69 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        val fromLowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * lowIncome, population = population, 0, id = 3)
        val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
       
-       val highBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, PassengerType.BUSINESS)
-       val highTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, PassengerType.TOURIST)
+       val highBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val highTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.TOURIST)
        
-       val lowBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromLowAirport, toAirport, PassengerType.BUSINESS)
-       val lowTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromLowAirport, toAirport, PassengerType.TOURIST)
+       val lowBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromLowAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
+       val lowTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromLowAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.TOURIST)
        
        println((highTouristDemand.total.toDouble / highBusinessDemand.total) + " : " + (lowTouristDemand.total.toDouble / lowBusinessDemand.total))
        (highTouristDemand.total.toDouble / highBusinessDemand.total).should(be > lowTouristDemand.total.toDouble / lowBusinessDemand.total)
+    }
+    "Generate demand based on country relationships".in {
+       val population = 10000000
+       val highIncome : Long = 50000
+       
+       val fromAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
+       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
+      
+       val demandBusiness = scala.collection.mutable.Map[Int, LinkClassValues]()
+       val demandTourist = scala.collection.mutable.Map[Int, LinkClassValues]()
+       var relationship = -4
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       relationship = -3
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       relationship = -2
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       relationship = -1
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       relationship = 0
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       relationship = 1
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       relationship = 2
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       relationship = 3
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       relationship = 4
+       demandBusiness(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+       demandTourist(relationship) = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+       
+       assert(demandBusiness(-4).total == 0)
+       assert(demandTourist(-4).total == 0)
+       assert(demandBusiness(-3).total == 0)
+       assert(demandTourist(-3).total == 0)
+       
+       for (relationship <- -3 until 4) {
+         assert(demandBusiness(relationship).total < demandBusiness(relationship + 1).total)
+         assert(demandTourist(relationship).total < demandTourist(relationship + 1).total)
+       }
     }
   }
 }

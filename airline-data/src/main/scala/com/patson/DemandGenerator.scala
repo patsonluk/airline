@@ -15,6 +15,7 @@ import akka.stream.scaladsl.Source
 import com.patson.model._
 import com.patson.model.PassengerType
 import scala.util.Random
+import com.patson.data.CountrySource
 
 
 object DemandGenerator {
@@ -55,9 +56,11 @@ object DemandGenerator {
 	    fromAirport : Airport => {
 	      Future {
 	        val demandList = ListBuffer[(Airport, (PassengerType.Value, LinkClassValues))]() 
+	        val countryRelationships = CountrySource.getCountryMutualRelationShips()
 	        airports.foreach { toAirport => 
-	          val businessDemand = computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.BUSINESS)
-	          val touristDemand = computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.TOURIST)
+	          val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
+	          val businessDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+	          val touristDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
 	          
 //	          if (businessDemand.total > 0 && touristDemand.total > 0) {
 //	            println(businessDemand + " : " + touristDemand)
@@ -128,7 +131,7 @@ object DemandGenerator {
     materializedFlow.get(resultSink).map(_.toList)
   }
   
-  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, passengerType : PassengerType.Value) : LinkClassValues = {
+  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {
     if (fromAirport == toAirport) {
       LinkClassValues.getInstance(0, 0, 0)
     } else {
@@ -142,10 +145,26 @@ object DemandGenerator {
       val fromAirportIncome = fromAirport.power / fromAirport.population
       val fromAirportAdjustedPower = if (fromAirportIncome < 50000) fromAirport.power else fromAirport.population * 50000 //to make high income airport a little bit less overpowered for base
       
-      val baseDemand = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 25) * (passengerType match {
+      var baseDemand = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 25) * (passengerType match {
         case PassengerType.BUSINESS => 6
         case PassengerType.TOURIST => 1
       })
+      
+      if (fromAirport.countryCode != toAirport.countryCode) {
+        //baseDemand = baseDemand *
+        val mutliplier = 
+            if (relationship <= -3) 0 
+            else if (relationship == -2) 0.1
+            else if (relationship == -1) 0.2
+            else if (relationship == 0) 0.5
+            else if (relationship == 1) 0.8
+            else if (relationship == 2) 1
+            else if (relationship == 3) 1.5
+            else 2 // >= 4
+        baseDemand = baseDemand * mutliplier
+      }
+          
+      
       
       var adjustedDemand = baseDemand
       
