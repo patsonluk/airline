@@ -5,6 +5,7 @@ import com.patson.data.AirportSource
 import scala.collection.mutable.ListBuffer
 
 object AirportSizeAdjust {
+  //https://en.wikipedia.org/wiki/List_of_busiest_airports_by_passenger_traffic
   val sizeList = Map(
         "ATL" -> 10,
         "PEK" -> 9,
@@ -55,6 +56,74 @@ object AirportSizeAdjust {
         "MEX" -> 7,
         "MNL" -> 7,
         "DME" -> 7,
+        "KMG" -> 7,
+        "XIY" -> 7,
+        "SVO" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States
+        "DTW" -> 7,
+        "PHL" -> 7,
+        "FLL" -> 7,
+        "BWI" -> 7,
+        "DCA" -> 7,
+        "SLC" -> 7,
+        "MDW" -> 7,
+        "IAD" -> 7,
+        "SAN" -> 7,
+        "HNL" -> 7,
+        "TPA" -> 7,
+        "PDX" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Germany
+        "DUS" -> 7,
+        "TXL" -> 7,
+        "HAM" -> 7,
+        "SXF" -> 7,
+        "CGN" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Germany
+        "NCE" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Italy
+        "MXP" -> 7,
+        "VCE" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Spain
+        "AGP" -> 7,
+        "ALC" -> 7,
+        "LPA" -> 7,
+        "TFS" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Austria
+        "VIE" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_India
+        "BLR" -> 7,
+        "MAA" -> 7,
+        "CCU" -> 7,
+        "HYD" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Japan
+        "KIX" -> 7,
+        "FUK" -> 7,
+        "CTS" -> 7,
+        "OKA" -> 7,
+        "ITM" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_South_Korea
+        "CJU" -> 7,
+        "PUS" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Brazil
+        "BSB" -> 7,
+        "GIG" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Mexico
+        "CUN" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Russia
+        "LED" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Turkey
+        "SAW" -> 7,
+        "AYT" -> 7,
+        "ESB" -> 7,
+        "ADB" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Canada
+        "YVR" -> 7,
+        "YUL" -> 7,
+        "YYC" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Thailand
+        "HKT" -> 5,
+        
+        
        //below manual adjustment
         
         "BFI" -> 3

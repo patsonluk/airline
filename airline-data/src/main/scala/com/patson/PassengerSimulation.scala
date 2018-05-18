@@ -140,15 +140,17 @@ object PassengerSimulation extends App {
                  
                  if (isRouteAffordable(pickedRoute, fromAirport, toAirport, linkClass)) {
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
-                     val availableSeats = linkConsideration.link.availableSeats(linkClass) 
+                     val actualLinkClass = linkConsideration.linkClass
+                     val availableSeats = linkConsideration.link.availableSeats(actualLinkClass) 
                      if (availableSeats < foldInt) { availableSeats } else { foldInt }
                    }
                    //some capacity available on all the links, consume them NOMNOM NOM!
                    if (consumptionSize > 0) {
                      pickedRoute.links.foreach { linkConsideration =>
-                       val newAvailableSeats = linkConsideration.link.availableSeats(linkClass) - consumptionSize
+                       val actualLinkClass = linkConsideration.linkClass
+                       val newAvailableSeats = linkConsideration.link.availableSeats(actualLinkClass) - consumptionSize
                        
-                       linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(linkClass -> newAvailableSeats))
+                       linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(actualLinkClass -> newAvailableSeats))
     //                   if (link.availableSeats == 0) {
     //                     println("EXHAUSED!! = " + link)
     //                   }
@@ -257,25 +259,21 @@ object PassengerSimulation extends App {
         while (walker < links.length) {
           val link = links(walker)
           walker += 1
-            //see if there are any seats for that class left
-            val hasSeatsLeft = link.availableSeats(linkClass) > 0
-            if (hasSeatsLeft) {
-            //from the perspective of the passenger group, how well does it know each link
+            //see if there are any seats for that class (or lower) left
+            link.availableSeatsAtOrBelowClass(linkClass).foreach { 
+            case(matchingLinkClass, seatsLeft) =>
+              //from the perspective of the passenger group, how well does it know each link
               val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
               val airlineAwarenessFromReputation = link.airline.getReputation() / 2 
               //println("Awareness from reputation " + airlineAwarenessFromReputation)
               val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
               
               if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
-                var cost = passengerGroup.preference.computeCost(link)
-                //add extra cost for low frequency...lets not make this so complicated now
-    //            if (link.frequency < 7) {
-    //              cost *= 1 + (1.0 / link.frequency) //at most double the cost if it's only once per weak
-    //            }
-                linkConsiderations += LinkConsideration(link, cost, linkClass, false)
-                linkConsiderations += LinkConsideration(link, cost, linkClass, true) //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly! 
+                var cost = passengerGroup.preference.computeCost(link) //cost should NOT be lower if seats available are lower than requested class, this reflect the unwillingness to downgrade
+                linkConsiderations += LinkConsideration(link, cost, matchingLinkClass, false)
+                linkConsiderations += LinkConsideration(link, cost, matchingLinkClass, true) //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly! 
               }
-            }
+           }
         }
         
         //then find the shortest route based on the cost

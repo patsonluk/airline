@@ -162,18 +162,18 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
                 	businessPosition = firstPosition
                 }
                 
-                configuration["first"] = Math.round(maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
+                configuration["first"] = Math.floor(maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
                 
                 if (firstPosition == 0) { //allow elimination of all business seats
                 	configuration["business"] = 0
                 } else {
-                	configuration["business"] = Math.round((maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
+                	configuration["business"] = Math.floor((maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
                 }
                 
                 if (businessPosition == 0) { //allow elimination of all economy seats
                 	configuration["economy"] = 0
                 } else {
-                	configuration["economy"] = maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business
+                	configuration["economy"] = Math.floor((maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
                 }
                 
                 
