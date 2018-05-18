@@ -2,6 +2,7 @@ package com.patson.model
 
 case class Airline(name: String, var id : Int = 0) extends IdObject {
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
+  var bases : List[AirlineBase] = List.empty
   def setBalance(balance : Long) = { 
     airlineInfo.balance = balance 
   }
@@ -17,7 +18,13 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   def setMaintainenceQuality(maintainenceQuality : Double) {
     airlineInfo.maintenanceQuality = maintainenceQuality
   }
+  def setBases(bases : List[AirlineBase]) {
+    this.bases = bases
+  }
   
+  def getBases() = bases
+  def getHeadQuarter() = bases.find( _.headquarter ).get
+  def getCountryCode() = getHeadQuarter().countryCode
   def getBalance() = airlineInfo.balance
   def getServiceQuality() = airlineInfo.serviceQuality
   def getServiceFunding() = airlineInfo.serviceFunding
@@ -43,4 +50,5 @@ object Airline {
   }
   val MAX_SERVICE_QUALITY : Double = 100
   val MAX_MAINTENANCE_QUALITY : Double = 100
+  val MAX_REPUTATION : Double = 100
 }

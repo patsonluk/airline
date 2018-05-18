@@ -19,8 +19,11 @@ object Test extends App {
 //  bases.foreach { base =>
 //    AirlineSource.saveAirlineBase(base.copy(countryCode = base.airport.countryCode))  
 //  }
-  val result = ConsumptionHistorySource.loadAllConsumptions()
-  println(result.size)
+  val link = Link.fromId(1)
+  link.availableSeats = LinkClassValues.getInstance(10, 20, 35)
+//  println(link.availableSeatsAtOrBelowClass(FIRST))
+//  println(link.availableSeatsAtOrBelowClass(BUSINESS))
+//  println(link.availableSeatsAtOrBelowClass(ECONOMY))
 }
 
 
