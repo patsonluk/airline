@@ -53,8 +53,6 @@ object CountryMutualRelationshipGenerator extends App {
    */
   def getCountryMutalRelationshipPatch() = {
     val linesIter = scala.io.Source.fromFile("country-mutual-relationship-patch.csv").getLines()
-    val headerLine = linesIter.next()
-    
     val mutualRelationshipMap = Map[(String, String), Int]()
     
     while (linesIter.hasNext) {
