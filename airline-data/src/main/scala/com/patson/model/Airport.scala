@@ -149,18 +149,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       }
       
       
-      val maxSlotsByLoyalty = (slots * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY / 2)).toInt //base on loyalty, at full loyalty get 50% of all the available
-//      val maxSlotsByAwareness = (getAirlineAwareness(airlineId) * 30 / AirlineAppeal.MAX_AWARENESS).toInt + minSlots// +30 at max awareness
-      var maxSlotsByReputation : Int = (airline.getReputation() / Airline.MAX_REPUTATION * 9).toInt + 1 //max 10 with 100% reputation
-      if (airlineFromCountry != countryCode) { //from a foreign country, openness affects slots by reputation
-        //max openness 100 %, min openness 20 %
-        maxSlotsByReputation = (maxSlotsByReputation * (0.2 + (getCountry().openness.toDouble / Country.MAX_OPENNESS * 0.8))).toInt 
-      }
-      
-      
-      val maxSlotsByAppeal = Math.max(maxSlotsByLoyalty, maxSlotsByReputation)
-      
-      //if it's not a base, give it 30 slots max
+       //if it's not a base, give it 30 slots max
       //if it's a base (not HQ), give it 20% max
       //if it's a base (HQ), give it 50% max
       val maxSlotsByBase =
@@ -170,7 +159,17 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
           case None => 30  
           
         }
-      var maxSlots = Math.min(maxSlotsByAppeal, maxSlotsByBase)
+      
+      val maxSlotsByLoyalty = (maxSlotsByBase * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at full loyalty get 100% of max slot available
+//      val maxSlotsByAwareness = (getAirlineAwareness(airlineId) * 30 / AirlineAppeal.MAX_AWARENESS).toInt + minSlots// +30 at max awareness
+      var maxSlotsByReputation : Int = (airline.getReputation() / Airline.MAX_REPUTATION * 9).toInt + 1 //max 10 with 100% reputation
+      if (airlineFromCountry != countryCode) { //from a foreign country, openness affects slots by reputation
+        //max openness 100 %, min openness 20 %
+        maxSlotsByReputation = (maxSlotsByReputation * (0.2 + (getCountry().openness.toDouble / Country.MAX_OPENNESS * 0.8))).toInt 
+      }
+      
+      
+      var maxSlots = Math.max(maxSlotsByLoyalty, maxSlotsByReputation)
       
       if (maxSlots > 1 && countryRelationship < 0) {
         maxSlots /= 2
