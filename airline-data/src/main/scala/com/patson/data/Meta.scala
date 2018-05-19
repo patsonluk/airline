@@ -209,10 +209,10 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_INFO_TABLE + "(" +
       "airline INTEGER PRIMARY KEY, " +
       "balance LONG," +
-      "service_quality DOUBLE," +
+      "service_quality DECIMAL(5,2)," +
       "service_funding INTEGER," +
-      "maintenance_quality DOUBLE," +
-      "reputation DOUBLE," +
+      "maintenance_quality DECIMAL(5,2)," +
+      "reputation DECIMAL(5,2)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
 
@@ -222,8 +222,8 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_APPEAL_TABLE + "(" +
       "airport INTEGER, " +
       "airline INTEGER, " +
-      "loyalty DOUBLE," +
-      "awareness DOUBLE," +
+      "loyalty DECIMAL(5,2)," +
+      "awareness DECIMAL(5,2)," +
       "PRIMARY KEY (airport, airline)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
@@ -490,7 +490,7 @@ object Meta {
       "model INTEGER, " +
       "owner INTEGER, " +
       "constructed_cycle INTEGER, " +
-      "airplane_condition DOUBLE, " +
+      "airplane_condition DECIMAL(5,2), " +
       "depreciation_rate INTEGER, " +
       "value INTEGER," +
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
