@@ -118,6 +118,69 @@ object CountrySource {
      }
   }
   
+  def updateCountryMutualRelationships(relationships : Map[(String, String), Int]) = {
+     val connection = Meta.getConnection()
+     try {  
+       connection.setAutoCommit(false)
+       val purgeStatement = connection.prepareStatement("DELETE FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE)
+       purgeStatement.addBatch()
+       purgeStatement.close()
+       val insertStatement = connection.prepareStatement("INSERT INTO " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + "(country_1, country_2, relationship) VALUES (?,?,?)")
+       relationships.foreach { 
+         case ((country1, country2), relationShip) => {
+           insertStatement.setString(1, country1)
+           insertStatement.setString(2, country2)
+           insertStatement.setInt(3, relationShip)
+           insertStatement.addBatch()
+         }
+       }
+       
+       insertStatement.executeBatch()
+       connection.commit()
+       insertStatement.close()
+     } finally {
+       connection.close()
+     }
+  }
+  
+  def getCountryMutualRelationship(country1 : String, country2 : String) : Int = {
+     val connection = Meta.getConnection()
+     val statement = connection.prepareStatement("SELECT relationship FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + " WHERE country_1 = ? AND country_2 = ?")
+     try {
+       statement.setString(1, country1)
+       statement.setString(2, country2)
+       val result = statement.executeQuery();
+       
+       if (result.next()) {
+         result.getInt("relationship")
+       } else {
+         0
+       }
+     } finally {
+       statement.close()
+       connection.close()
+     }  
+  }
+  
+  def getCountryMutualRelationShips() : scala.collection.immutable.Map[(String, String), Int] = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("SELECT * FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE)
+     try {
+       
+       val result = statement.executeQuery();
+       
+       val relationships = Map[(String, String), Int]()
+       while (result.next()) {
+         relationships.put((result.getString("country_1"), result.getString("country_2")), result.getInt("relationship"))
+       }
+       
+       relationships.toMap
+     } finally {
+       statement.close()
+       connection.close()
+     }
+  }
+  
   def loadCountryRelationshipsByCriteria(criteria : List[(String, Any)]) : scala.collection.immutable.Map[Country, scala.collection.immutable.Map[Airline, Int]] = {
     val connection = Meta.getConnection()
     try {  

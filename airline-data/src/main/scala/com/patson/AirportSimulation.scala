@@ -23,6 +23,8 @@ object AirportSimulation {
   val AWARENESS_INCREMENT_WITH_LINKS = 0.2
   val AWARENESS_INCREMENT_WITH_HQ = 0.3
   val AWARENESS_INCREMENT_WITH_BASE = 0.1
+  val AWARENESS_INCREMENT_MAX_WITH_HQ = 50 //how much awareness will increment to just because of being a HQ
+  val AWARENESS_INCREMENT_MAX_WITH_BASE = 30 //how much awareness will increment to just because of being a HQ
   val LOYALTY_DECAY = 0.01
   val LOYALTY_AUTO_INCREMENT_WITH_HQ = 0.05
   val LOYALTY_AUTO_INCREMENT_WITH_BASE = 0.02
@@ -57,15 +59,19 @@ object AirportSimulation {
         var newAwareness : Double = airport.getAirlineAwareness(base.airline.id)
         var newLoyalty : Double = airport.getAirlineLoyalty(base.airline.id)
         if (base.headquarter) {
-          newAwareness += AWARENESS_INCREMENT_WITH_HQ
+          if (newAwareness < AWARENESS_INCREMENT_MAX_WITH_HQ) {
+            newAwareness += AWARENESS_INCREMENT_WITH_HQ  
+          }
           if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
             newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_HQ
           }
         } else {
-           newAwareness += AWARENESS_INCREMENT_WITH_BASE
-           if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
-             newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_BASE
-           }
+          if (newAwareness < AWARENESS_INCREMENT_MAX_WITH_BASE) {
+            newAwareness += AWARENESS_INCREMENT_WITH_BASE  
+          }
+          if (newLoyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
+            newLoyalty += LOYALTY_AUTO_INCREMENT_WITH_BASE
+          }
         }
         if (newAwareness > AirlineAppeal.MAX_AWARENESS) {
           newAwareness = AirlineAppeal.MAX_AWARENESS

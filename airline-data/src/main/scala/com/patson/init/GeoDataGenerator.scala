@@ -465,5 +465,6 @@ object GeoDataGenerator extends App {
    
     CountrySource.saveCountries(countries.toList)
     
+    CountryMutualRelationshipGenerator.mainFlow()
   }
 }

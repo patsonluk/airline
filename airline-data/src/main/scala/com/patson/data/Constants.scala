@@ -16,6 +16,7 @@ object Constants {
   val COUNTRY_AIRLINE_RELATIONSHIP_TABLE = "country_airline_relationship"
   val COUNTRY_AIRLINE_RELATIONSHIP_INDEX_1 = "country_airline_relationship_index_1"
   val COUNTRY_AIRLINE_RELATIONSHIP_INDEX_2 = "country_airline_relationship_index_2"
+  val COUNTRY_MUTUAL_RELATIONSHIP_TABLE = "country_mutual_relationship"
   val LINK_TABLE = "link"
   val LINK_INDEX_1 = "link_index_1"
   val LINK_INDEX_2 = "link_index_2"

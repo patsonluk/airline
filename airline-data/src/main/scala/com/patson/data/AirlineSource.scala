@@ -36,7 +36,7 @@ object AirlineSource {
         }
         queryString += criteria.last._1 + " = ?"
       }
-      loadAirlinesByQueryString(queryString, criteria.map(_._2))
+      loadAirlinesByQueryString(queryString, criteria.map(_._2), fullLoad)
   }
   
   private def loadAirlinesByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) : List[Airline] = {
@@ -61,6 +61,10 @@ object AirlineSource {
           airline.setServiceQuality(resultSet.getDouble("service_quality"))
           airline.setServiceFunding(resultSet.getInt("service_funding"))
           airline.setMaintainenceQuality(resultSet.getDouble("maintenance_quality"))
+          
+          if (fullLoad) {
+            airline.setBases(loadAirlineBasesByAirline(airline.id))
+          }
           
           airlines += airline
         }

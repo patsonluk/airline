@@ -78,8 +78,10 @@ object AirlineGenerator extends App {
     val airplaneModelsByRange = airplaneModels.sortBy { _.range }
     val airplaneModelsByCapacity = airplaneModels.sortBy { _.capacity } (Ordering[Int].reverse)
     val newLinks = ListBuffer[Link]()
+    val countryRelationships = CountrySource.getCountryMutualRelationShips()
     pickedToAirports.foreach { toAirport =>
-      val estimatedOneWayDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, PassengerType.TOURIST)
+      val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
+      val estimatedOneWayDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
       val targetSeats = estimatedOneWayDemand(ECONOMY)
       
       if (targetSeats > 0) {
