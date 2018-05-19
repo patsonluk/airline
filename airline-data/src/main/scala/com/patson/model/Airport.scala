@@ -155,7 +155,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       val maxSlotsByBase =
         getAirlineBase(airlineId) match {
           case Some(base) if (base.headquarter) => slots / 2
-          case Some(base) if (!base.headquarter) => slots / 5
+          case Some(base) if (!base.headquarter) => slots / 10
           case None => 30  
           
         }
