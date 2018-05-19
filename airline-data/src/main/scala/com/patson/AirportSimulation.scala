@@ -31,7 +31,8 @@ object AirportSimulation {
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE = 15 //how much loyalty will increment to just because of being a HQ
   
-  private val MAX_LOYALTY_ADJUSTMENT = 0.5
+  private[patson] val MAX_LOYALTY_INCREMENT = 1.0
+  private[patson] val MAX_LOYALTY_DECREMENT = 0.5
   
   
   def airportSimulation(cycle: Int, linkConsumptions : List[LinkConsumptionDetails]) = {
@@ -144,33 +145,68 @@ object AirportSimulation {
     
   }
   
-  def updateAirportBySoldLinks(airport : Airport, soldLinks : Seq[LinkConsumptionDetails]) = {
-    soldLinks.groupBy { _.airlineId }.foreach {
+  private def updateAirportBySoldLinks(airport : Airport, soldLinksForThisAirport : Seq[LinkConsumptionDetails]) = {
+    soldLinksForThisAirport.groupBy { _.airlineId }.foreach {
       case(airlineId, soldLinksByAirline) => {
-        val totalTransportedPassengers = soldLinksByAirline.map { _.soldSeats.total }.sum 
-        val totalQualityProduct = soldLinksByAirline.map { soldLink => soldLink.soldSeats.total.toLong * soldLink.quality }.sum
-        val averageQuality = if (totalTransportedPassengers == 0) 0 else totalQualityProduct / totalTransportedPassengers
+        val targetLoyalty = getTargetLoyalty(soldLinksByAirline, airport.population)
+        val currentLoyalty = airport.getAirlineLoyalty(airlineId)
+        val newLoyalty = getNewLoyalty(soldLinksByAirline, airport.population, currentLoyalty, targetLoyalty)  
+        airport.setAirlineLoyalty(airlineId, newLoyalty)
         
-        var loyaltyAdjustment = totalTransportedPassengers * 1000.toDouble / airport.population  
-        if (loyaltyAdjustment > MAX_LOYALTY_ADJUSTMENT) {
-          loyaltyAdjustment = MAX_LOYALTY_ADJUSTMENT
-        }
-        val existingLoyalty = airport.getAirlineLoyalty(airlineId)
-        if (existingLoyalty < averageQuality) {
-            if (existingLoyalty + loyaltyAdjustment >= averageQuality) {
-              airport.setAirlineLoyalty(airlineId, averageQuality)
-            } else {
-              airport.setAirlineLoyalty(airlineId, existingLoyalty + loyaltyAdjustment)
-            }
-        } else {
-          if (existingLoyalty - loyaltyAdjustment <= averageQuality) {
-            airport.setAirlineLoyalty(airlineId, averageQuality)
-          } else {
-            airport.setAirlineLoyalty(airlineId, existingLoyalty - loyaltyAdjustment)
-          }
-        }
         //println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
       }
     }
   }
+  
+  private[patson] val getTargetLoyalty : (Seq[LinkConsumptionDetails], Long) => Double = (soldLinks, population) => {
+    val totalTransportedPassengers = soldLinks.map { _.soldSeats.total }.sum 
+    val totalQualityProduct = soldLinks.map { soldLink => soldLink.soldSeats.total.toLong * soldLink.quality }.sum
+    val averageQuality = if (totalTransportedPassengers == 0) 0 else totalQualityProduct / totalTransportedPassengers
+    val targetLoyaltyByQuality = averageQuality 
+    //to attain MAX loyalty requires transporting everyone (1 X pop) once per year, the increment in on power to MAX loyalty = weekly passenger
+    //ie base ^ 100 = pop / 52  
+    //   base = (pop / 52) ^ 0.01 
+    //and base ^ targetLoyaltyBypassengerVolume  = passenger
+    //    targetLoyaltyBypassengerVolume * log(base) = log(passenger)
+    //    targetLoyaltyBypassengerVolume = log(passenger) / (0.01 * log(pop/52))
+    //    targetLoyaltyBypassengerVolume = log(passenger) * 100 / log(pop/52) 
+    
+    // now pop needs to be bigger than 52, otherwise we have problem, in fact lets make min pop 10000
+
+     
+    val targetLoyaltyBypassengerVolume = Math.log(totalTransportedPassengers) * 100 / Math.log(Math.max(10000, population) / 52)
+    if (targetLoyaltyBypassengerVolume < 0)  {
+      0
+    } else {
+      Math.min(targetLoyaltyByQuality, targetLoyaltyBypassengerVolume)
+    }
+  }
+  private[patson] val getNewLoyalty : (Seq[LinkConsumptionDetails], Long, Double, Double) => Double = (soldLinks, population, currentLoyalty, targetLoyalty) =>  {
+    if (currentLoyalty < targetLoyalty) { 
+      //to increment loyalty by 1 requires transporting everyone (1 X pop) once per year, we u
+      val yearlyRidershipForMaxIncrement = population * (0.0001 + currentLoyalty / 100 * 0.9999)
+      val weeklyRidershipForMaxIncrement = yearlyRidershipForMaxIncrement / 52
+      val weeklyPassengers = soldLinks.map { _.soldSeats.total }.sum 
+      
+      val adjustment = 
+        if (weeklyPassengers >= weeklyRidershipForMaxIncrement) {
+            MAX_LOYALTY_INCREMENT
+        } else { 
+            MAX_LOYALTY_INCREMENT * weeklyPassengers / weeklyRidershipForMaxIncrement
+        }
+      
+      if (currentLoyalty + adjustment >= targetLoyalty) {
+        targetLoyalty
+      } else {
+        currentLoyalty + adjustment
+      }
+    } else {
+      if (currentLoyalty - MAX_LOYALTY_DECREMENT <= targetLoyalty) {
+        targetLoyalty
+      } else {
+        currentLoyalty - MAX_LOYALTY_DECREMENT
+      }
+    }
+  }
+ 
 }
