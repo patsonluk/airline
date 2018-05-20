@@ -65,7 +65,7 @@ div.button {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	color: #454544;
-	background-color: #efefef;
+	background-color: #ddd;
 	text-decoration: none;
 	font-size: 12px;
 	display: inline-block;
@@ -129,6 +129,28 @@ dd.error {
 		rgba(255, 255, 255, 0.7);
 	/* 	box-shadow:inset 0 0 2px white,0 0 3px rgba(0, 0, 0, 0.5); */
 	/* 	font-family: "Open Sans", Verdana, Arial, sans-serif; */
+}
+
+#console  {
+	background: #000;
+	color: #ccc;
+	display: block;
+	padding: 5px;
+	-moz-box-shadow:    inset 0 0 5px #fff;
+  	-webkit-box-shadow: inset 0 0 5px #fff;
+	box-shadow:         inset 0 0 5px #fff;
+	font-family: Consolas;
+	height: 20px;
+}
+
+#console .actionMessage, #console .errorMessage {
+	animation-name: fadeIn;
+  	animation-duration: 1s;
+}
+
+
+#console .errorMessage {
+	color: #AF383F;
 }
 
 div.section {
@@ -202,4 +224,24 @@ a.selected, a:hover {
 	font-weight: 700;
 	background-color: #6093e7;
 	color: #FFF;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }

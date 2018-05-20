@@ -3,7 +3,6 @@ var markers
 var activeAirline
 var activeUser
 var selectedLink
-var activeWatchedLink
 var currentTime
 
 $( document ).ready(function() {
@@ -11,6 +10,7 @@ $( document ).ready(function() {
 		loadUser(false)
 	} else {
 		refreshLoginBar()
+		printConsole("Please log in")
 	}
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())
@@ -66,7 +66,9 @@ function loadUser(isLogin) {
 			  $("#loginUserName").val("")
 			  $("#loginPassword").val("")
 			  showFloatMessage("Successfully logged in")
+			  
 			  refreshLoginBar()
+			  printConsole('') //clear console
 		  }
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
@@ -109,8 +111,9 @@ function logout() {
 	    	activeUser = null
 	    	activeAirline = null
 	    	$.removeCookie('sessionActive')
-	    	refreshLoginBar()
-	    	showFloatMessage("Successfully logged out")
+	    	//refreshLoginBar()
+	    	//showFloatMessage("Successfully logged out")
+	    	location.reload();
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -147,6 +150,16 @@ function initMap() {
 
 function updateAllPanels(airlineId) {
 	updateAirlineInfo(airlineId)
+	
+	if (activeAirline) {
+		if (!activeAirline.headquarterAirport) {
+			printConsole("Zoom into the map and select an airport and click 'Build Headquarter' to select your headquarter. Smaller airports will only show when you zoom close enough")
+		} else if ($.isEmptyObject(flightPaths)) {
+			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget")
+		}
+		
+	}
+	
 }
 
 //does not remove or add any components
@@ -214,7 +227,14 @@ function updateTime(cycle, fraction) {
 }
 
 
-function appendConsole(message) {
-	$('#console').append( message + '<br/>')
+function printConsole(message, messageLevel = 1) {
+	var messageClass
+	if (messageLevel == 1) {
+		messageClass = 'actionMessage'
+	} else {
+		messageClass = 'errorMessage'
+	}
+	$('#console').html('<span class="' + messageClass + '">' + message + "</span>")
 }
+
 
