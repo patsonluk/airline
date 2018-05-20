@@ -123,7 +123,103 @@ object AirportSizeAdjust {
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Thailand
         "HKT" -> 5,
         
-        
+        //Adjustment on country with 1m pop+ but w/o a level 4 airport
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Afghanistan
+        "KBL" -> 4,
+        "KDH" -> 5,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Albania
+        "TIA" -> 5,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Angola
+        "LAD" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Bangladesh
+        "CGP" -> 4,
+        "DAC" -> 5,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Burkina_Faso
+        "OUA" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Benin
+        "COO" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Bolivia
+        "VVI" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_the_Democratic_Republic_of_the_Congo
+        "FIH" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_the_Republic_of_the_Congo
+        "BZV" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Ivory_Coast
+        "ABJ" -> 5,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Cameroon
+        "DLA" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Guinea
+        "CKY" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Guatemala
+        "GUA" -> 5,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Honduras
+        "TGU" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Haiti
+        "PAP" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Jamaica
+        "KIN" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Kyrgyzstan
+        "FRU" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_North_Korea
+        "FNJ" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Liberia
+        "ROB" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Lithuania
+        "RIX" -> 4,
+        "VNO" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Moldova
+        "KIV" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Madagascar
+        "TNR" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_the_Republic_of_Macedonia
+        "SKP" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Mali
+        "BKO" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Mongolia
+        "ULN" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Mauritania
+        "NKC" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Malawi
+        "LLW" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Mozambique
+        "MPM" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Niger
+        "NIM" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Nicaragua
+        "MGA" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Nepal
+        "KTM" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Paraguay
+        "ASU" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Rwanda
+        "KGL" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Sierra_Leone
+        "FNA" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Somalia
+        "MGQ" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_El_Salvador
+        "SAL" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Chad
+        "NDJ" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Tajikistan
+        "DYU" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Turkmenistan
+        "ASB" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Tanzania
+        "DAR" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Uganda
+        "EBB" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Venezuela
+        "CCS" -> 5,
+        "MAR" -> 5,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Kosovo
+        "PRN" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Yemen
+        "SAH" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Zambia
+        "LUN" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Zimbabwe
+        "HRE" -> 4,
        //below manual adjustment
         
         "BFI" -> 3
