@@ -218,15 +218,6 @@ function addMarkers(airports) {
 			  infoWindow.setContent($("#airportPopup").html())
 			  infoWindow.open(map, this);
 			  
-			  if (isBase) {
-				  $("#planFromAirportButton").show()
-				  $("#planFromAirportButton").click(function() {
-					  planFromAirport($('#airportPopupId').val(), $('#airportPopupName').text())
-					  infoWindow.close();
-				  });
-			  } else {
-				  $("#planFromAirportButton").hide()
-			  }
 			  $("#planToAirportButton").click(function() {
 				  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
 				  infoWindow.close();

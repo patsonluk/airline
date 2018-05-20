@@ -575,12 +575,6 @@ function editLink(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	$("#planLinkFromAirportName").text(link.fromAirportName)
-	    	$("#planLinkFromAirportName").append("<img src='assets/images/flags/" + link.fromCountryCode + ".png' />")
-	    	$("#planLinkToAirportName").text(link.toAirportName)
-	    	$("#planLinkToAirportName").append("<img src='assets/images/flags/" + link.toCountryCode + ".png' />")
-	    	$("#planLinkFromAirportId").val(link.fromAirportId)
-	    	$("#planLinkToAirportId").val(link.toAirportId)
 	    	planLink(link.fromAirportId, link.toAirportId)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -780,15 +774,6 @@ function showLinkHistoryPaths(state) {
 }
 
 
-function planFromAirport(fromAirportId) {
-	$('#planLinkFromAirportId').val(fromAirportId)
-//	$('#planLinkFromAirportName').text(fromAirportName)
-	
-	if ($('#planLinkFromAirportId').val() && $('#planLinkToAirportId').val()) {
-		planLink($('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
-	}
-}
-
 function planToAirport(toAirportId, toAirportName) {
 	$('#planLinkToAirportId').val(toAirportId)
 	//$('#planLinkToAirportName').text(toAirportName)
@@ -805,6 +790,8 @@ function planToAirport(toAirportId, toAirportName) {
 
 function planLink(fromAirport, toAirport) {
 	var airlineId = activeAirline.id
+	$("#planLinkFromAirportId").val(fromAirport)
+	$("#planLinkToAirportId").val(toAirport)
 	
 	if (fromAirport && toAirport) {
 		var url = "airlines/" + airlineId + "/plan-link"
@@ -833,8 +820,28 @@ var planLinkInfoByModel = {}
 var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
-	$('#planLinkFromAirportName').text(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName))
-	$('#planLinkFromAirportName').append("<img src='assets/images/flags/" + linkInfo.fromCountryCode + ".png' />")
+	$('#planLinkFromAirportName .text-value').text(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName))
+	$('#planLinkFromAirportName .flag').html("<img src='assets/images/flags/" + linkInfo.fromCountryCode + ".png' />")
+	
+	if (!linkInfo.existingLink && activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
+		$('#planLinkFromAirportEditIcon').show()
+		//fill the from list
+		$('#planLinkFromAirportSelect').empty()
+		$.each(activeAirline.baseAirports, function(index, base) {
+			var airportId = base.airportId
+			var cityName = base.city
+			var airportName = base.airportName
+			var option = $("<option></option>").attr("value", airportId).text(getAirportText(cityName, airportName))
+			
+			if ($('#planLinkFromAirportId').val() == airportId) {
+				option.prop("selected", true)
+			}
+			option.appendTo($("#planLinkFromAirportSelect"))
+		});
+	} else {
+		$('#planLinkFromAirportEditIcon').hide()
+	}
+	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	
 	$('#planLinkToAirportName').text(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName))
 	$('#planLinkToAirportName').append("<img src='assets/images/flags/" + linkInfo.toCountryCode + ".png' />")
