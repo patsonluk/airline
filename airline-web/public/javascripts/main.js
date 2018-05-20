@@ -23,19 +23,23 @@ $( document ).ready(function() {
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
-function showFloatMessage(message) {
+function showFloatMessage(message, timeout = 3000) {
 	$("#floatMessageBox").text(message)
 	var centerX = $("#floatMessageBox").parent().width() / 2 - $("#floatMessageBox").width() / 2 
-	$("#floatMessageBox").css({ top:"-=20px", left: centerX})
+	$("#floatMessageBox").css({ top:"-=20px", left: centerX, opacity:100})
 	$("#floatMessageBox").show()
 	$("#floatMessageBox").animate({ top:"0px" }, "fast", function() {
-		setTimeout(function() { 
-			console.log("closing")
-			$('#floatMessageBox').animate({ top:"-=20px",opacity:0 }, "slow")
-		}, 3000)
+		if (timeout > 0) {
+			setTimeout(function() { 
+				console.log("closing")
+				$('#floatMessageBox').animate({ top:"-=20px",opacity:0 }, "slow", function() {
+					$('#floatMessageBox').hide()
+				})
+			}, timeout)
+		}
 	})
 	
-	//scroll the message box to the top offset of browser's scrool bar
+	//scroll the message box to the top offset of browser's scroll bar
 	$(window).scroll(function()
 	{
   		$('#floatMessageBox').animate({top:$(window).scrollTop()+"px" },{queue: false, duration: 350});
@@ -61,6 +65,7 @@ function loadUser(isLogin) {
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
 			  $("#loginPassword").val("")
+			  showFloatMessage("Successfully logged in")
 			  refreshLoginBar()
 		  }
 		  if (user.airlineIds.length > 0) {
