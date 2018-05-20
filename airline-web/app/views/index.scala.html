@@ -188,20 +188,12 @@
 	  			<input type="hidden" id="actionAirplaneId"></input>
 	   			<div class="button" id ="sellAirplaneButton" onclick="sellAirplane($('#actionAirplaneId').val())">Sell Aircraft</div>
 	   		</div>
-		   		
-	    	<div>
-	    		Buy aircraft:<br/>
-	    		Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/>
-	    		Quantity :  <input type="text" id="airplaneQuantity" value="1"/>
-	    		<div id="modelInfo"></div> 
-	    		<div class="button" onclick="addAirplane($('#airplaneModelOption').val(), $('#airplaneQuantity').val())">Purchase Aircrafts</div>
-	    	</div>
 	    </div>
 	    <div id="bottomPanel" style="width: 80% ; float: left;" >
-	    	<div id="linkListPanel" style="width: 30% ; float: left;">
-	    		<h4>Routes</h4>
-	    		<div id="linkList"> </div>	
-	    	</div>
+<!-- 	    	<div id="linkListPanel" style="width: 30% ; float: left;"> -->
+<!-- 	    		<h4>Routes</h4> -->
+<!-- 	    		<div id="linkList"> </div>	 -->
+<!-- 	    	</div> -->
 	    	<div id="detailsPanel" style="width: 70% ; float: left;">
 	    		<div id="linkDetails" style="width: 100%; display: none;">
 	    			<div style="width: 50%; float: left">
@@ -351,7 +343,7 @@
 	    				</div>
 			    		<div class="table-row">
 			    			<div class="label"><h5>Aircraft Model:</h5></div>
-			    			<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val())"></select></div>
+			    			<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
 			    		</div>
 			    	</div>
 			    	<div class="table" style="width: 100%" id="planLinkExtendedDetails">
@@ -397,9 +389,39 @@
 		    		<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 		    	</div>
 	    	</div>
+   			<div id="extendedPanel" style="width: 30%; float: left;">
+				<div class="table" id="airplaneModelDetails" style="width: 100%" display: none;">
+					<h4>Airplane Model Details</h4>
+<!-- 					Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/> -->
+					<div class="table-row">
+		    			<div class="label"><h5>Model:</h5></div>
+		    			<div class="value" id="modelName"></div>
+			    	</div>
+			    	<div class="table-row">
+		    			<div class="label"><h5>Max Capacity:</h5></div>
+		    			<div class="value" id="capacity"></div>
+			    	</div>
+			    	<div class="table-row">
+		    			<div class="label"><h5>Fuel Burn:</h5></div>
+		    			<div class="value" id="fuelBurn"></div>
+			    	</div>
+			    	<div class="table-row">
+		    			<div class="label"><h5>Speed:</h5></div>
+		    			<div class="value" id="speed"></div>
+			    	</div>
+			    	<div class="table-row">
+		    			<div class="label"><h5>Max Flying Range:</h5></div>
+		    			<div class="value" id="range"></div>
+			    	</div>
+			    	<div class="table-row">
+		    			<div class="label"><h5>Purchase Price:</h5></div>
+		    			<div class="value" id="price"></div>
+			    	</div>
+		    		<div class="button" onclick="addAirplane($('#airplaneModelOption').val(), $('#airplaneQuantity').val())">Purchase Aircrafts</div>
+				</div>
+			</div>
 	    </div>
-	     
-	    <div style="clear:both"/>
+		<div style="clear:both"/>
     </div>
     
     <div style="display: none; width: 100%;" id="airportPopup">

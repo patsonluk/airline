@@ -184,3 +184,9 @@ function setActiveDiv(activeDiv) {
 	}
 	return true;
 }
+
+function hideActiveDiv(activeDiv) {
+	if (activeDiv.is(":visible")){
+		activeDiv.fadeOut(200)
+	}
+}

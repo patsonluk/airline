@@ -15,7 +15,7 @@ function loadAirplaneModels() {
 	    		$("#airplaneModelOption").append($("<option></option>").attr("value", model.id).text(model.name));
 	    		loadedModels[model.id] = model
 	  		});
-	    	updateModelInfo($('#modelInfo'))
+	    	//updateModelInfo($('#modelInfo'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -61,19 +61,16 @@ function sellAirplane(airplaneId) {
 }
 
 
-function updateModelInfo() {
-	var modelId = $("#airplaneModelOption").val()
-	$('#modelInfo').empty()
+function updateModelInfo(modelId) {
 	model = loadedModels[modelId]
-	$('#modelInfo').append($("<div>" +
-			"Model : " + model.name 
-			+ "<br/>Capacity  : " + model.capacity 
-			+ "<br/>Fuel Burn : " + model.fuelBurn
-			+ "<br/>Speed : " + model.speed
-			+ "<br/>Range : " + model.range
-			+ "<br/>Price : " + commaSeparateNumber(model.price) +
-			"</div>")); 
-	  		
+	$('#airplaneModelDetails #modelName').text(model.name)
+	$('#airplaneModelDetails #capacity').text(model.capacity)
+	$('#airplaneModelDetails #fuelBurn').text(model.fuelBurn)
+	$('#airplaneModelDetails #range').text(model.range)
+	$('#airplaneModelDetails #speed').text(model.speed)
+	$('#airplaneModelDetails #price').text(commaSeparateNumber(model.price))
+	
+	setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 }
 
 function updateAirplaneList() {

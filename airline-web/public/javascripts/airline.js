@@ -892,6 +892,7 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#addLinkButton').hide()
 		$('#updateLinkButton').show()
 	}
+	//populate airplane model drop down
 	$("#planLinkModelSelect").find('option').remove()
 
 	planLinkInfo = linkInfo
@@ -903,14 +904,19 @@ function updatePlanLinkInfo(linkInfo) {
 		var modelname = modelPlanLinkInfo.modelName
 		var option = $("<option></option>").attr("value", modelId).text(modelname + " (" + modelPlanLinkInfo.airplanes.length + ")")
 		option.appendTo($("#planLinkModelSelect"))
+		
 		if (modelPlanLinkInfo.isAssigned) {
 			option.prop("selected", true)
 			existingLinkModelId = modelId
+			updateModelInfo(modelId)
+		} else if (key == 0 && !linkInfo.existingLink) { //just select the first one on new link
+			option.prop("selected", true)
+			updateModelInfo(modelId)
 		}
 		
 		planLinkInfoByModel[modelId] = modelPlanLinkInfo
 	});
-
+	
 	updatePlanLinkInfoWithModelSelected($("#planLinkModelSelect").val())
 	$("#planLinkDetails div.value").show()
 }
@@ -1083,6 +1089,8 @@ function cancelPlanLink() {
 	} else { //simply go back to linkDetails
 		setActiveDiv($('#linkDetails'))
 	}
+	
+	hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
 }
 
 function removeTempPath() {
