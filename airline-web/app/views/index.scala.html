@@ -1,4 +1,3 @@
-@(message: String)
 <!DOCTYPE html>
 <html>
   <head>
@@ -33,7 +32,7 @@
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
   </head>
   <body>
-  	<input type="hidden" id="floatMessage" value="@message"/>
+<!--   	<input type="hidden" id="floatMessage" value="@message"/> -->
   	<div id="floatMessageBox" style="height: 30px; width: 400px; display: none;"></div>
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div style="float: left;">
@@ -75,8 +74,8 @@
 			</ul>
 		</div>
 		<div style="clear:both"/>
-  		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div>
-		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div>
+<!--   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
+<!-- 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
   	<!-- main canvas start -->
   		<div id="canvas" style="width: 80% ; float: left;" >
   			<div id="map" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
