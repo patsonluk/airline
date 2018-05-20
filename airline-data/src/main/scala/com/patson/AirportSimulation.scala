@@ -151,8 +151,6 @@ object AirportSimulation {
     soldLinksForThisAirport.groupBy { _.airlineId }.foreach {
       case(airlineId, soldLinksByAirline) => {
         val targetLoyalty = getTargetLoyalty(soldLinksByAirline, airport.population)
-        println(airport)
-        println(targetLoyalty)
         val currentLoyalty = airport.getAirlineLoyalty(airlineId)
         val newLoyalty = getNewLoyalty(currentLoyalty, targetLoyalty)  
         airport.setAirlineLoyalty(airlineId, newLoyalty)
