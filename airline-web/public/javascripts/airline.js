@@ -413,14 +413,11 @@ function insertLinkToList(link) {
 }
 
 function unselectLink() {
-	var previousSelectedListItem = $("#linkList a.selected")
-	 
-	if (previousSelectedListItem.length > 0) {
-		previousSelectedListItem.removeClass("selected")
-		var previousLinkId = previousSelectedListItem.data("linkId")
+	var previousLinkId = selectedLink
+	if (previousLinkId) {
 		unhighlightPath(flightPaths[previousLinkId].path)
+		selectedLink = undefined
 	}
-	selectedLink = undefined
 	
 	$("#linkDetails").hide()
 }
