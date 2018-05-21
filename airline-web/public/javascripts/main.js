@@ -234,7 +234,16 @@ function printConsole(message, messageLevel = 1) {
 	} else {
 		messageClass = 'errorMessage'
 	}
-	$('#console').html('<span class="' + messageClass + '">' + message + "</span>")
+	$('#console #consoleMessage').text(message)
+	$('#console #consoleMessage').removeClass().addClass(messageClass)
+}
+
+function toggleConsoleMessage() {
+	if ($('#console #consoleMessage').is(':visible')) {
+		$('#console #consoleMessage').fadeOut('slow')
+	} else {
+		$('#console #consoleMessage').fadeIn('slow')
+	}
 }
 
 

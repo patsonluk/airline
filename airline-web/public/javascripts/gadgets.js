@@ -190,3 +190,11 @@ function hideActiveDiv(activeDiv) {
 		activeDiv.fadeOut(200)
 	}
 }
+
+function toggleOnOff(element) {
+	if (element.is(":visible")){
+		element.fadeOut(200)
+	} else {
+		element.fadeIn(200)
+	}
+}

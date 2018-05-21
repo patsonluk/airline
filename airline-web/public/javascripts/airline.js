@@ -142,6 +142,7 @@ function updateLinksInfo() {
 		url: url,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
+	    async: false,
 	    success: function(links) {
 	    	$.each(links, function( key, link ) {
 	    		drawFlightPath(link)

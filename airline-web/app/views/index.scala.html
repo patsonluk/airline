@@ -65,7 +65,11 @@
 		</div>
   	</div>
   	<div id="main" style="width: 100%" >
-  		<div id="console" style="width: 100%" align="center"></div>
+  		<div id="console" class="marquee" style="width: 100%; position: relative; float: left;" align="center">
+  			<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
+  			<span id="consoleMessage"/>
+  		</div>
+  		
   		<div style="width: 100%">
 	  		<ul class="tabs">
 			  <li class="button" onclick="setActiveDiv($('#map'))"><span>World Map</span></li>
