@@ -415,7 +415,9 @@ function insertLinkToList(link) {
 function unselectLink() {
 	var previousLinkId = selectedLink
 	if (previousLinkId) {
-		unhighlightPath(flightPaths[previousLinkId].path)
+		if (flightPaths[previousLinkId]) {
+			unhighlightPath(flightPaths[previousLinkId].path)
+	    }
 		selectedLink = undefined
 	}
 	
@@ -1100,6 +1102,7 @@ function deleteLink(linkId) {
 	    	$("#linkDetails").fadeOut(200)
 	    	updateLinksInfo()
 	    	updateAirplaneList() //refresh all airplane list for now
+	    	unselectLink()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
