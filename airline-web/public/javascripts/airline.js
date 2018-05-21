@@ -452,6 +452,7 @@ function selectLink(linkId, refocus) {
 	
 	selectedLink = linkId
 	setActiveDiv($("#linkDetails"))
+	hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
 	$("#actionLinkId").val(linkId)
 }
 
@@ -896,23 +897,51 @@ function updatePlanLinkInfo(linkInfo) {
 	planLinkInfoByModel = {}
 	existingLinkModelId = 0
 	
+	//find the selected model
+	var selectedModelId
+	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
+		if (linkInfo.existingLink) {
+			if (modelPlanLinkInfo.isAssigned) { //highest precedence
+				selectedModelId = modelPlanLinkInfo.modelId
+				return false
+			}
+		} else {
+			if (modelPlanLinkInfo.airplanes.length > 0) { //select the first one with available planes
+				selectedModelId = modelPlanLinkInfo.modelId
+				return false
+			}  
+		}
+	})
+	
+	if (!selectedModelId && linkInfo.modelPlanLinkInfo.length > 0) {
+		selectedModelId = linkInfo.modelPlanLinkInfo[0].modelId
+	}
+	
+	
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		var modelId = modelPlanLinkInfo.modelId
 		var modelname = modelPlanLinkInfo.modelName
 		var option = $("<option></option>").attr("value", modelId).text(modelname + " (" + modelPlanLinkInfo.airplanes.length + ")")
 		option.appendTo($("#planLinkModelSelect"))
 		
-		if (modelPlanLinkInfo.isAssigned) {
+		if (selectedModelId == modelId) {
 			option.prop("selected", true)
-			existingLinkModelId = modelId
-			updateModelInfo(modelId)
-		} else if (key == 0 && !linkInfo.existingLink) { //just select the first one on new link
-			option.prop("selected", true)
+			if (linkInfo.existingLink) {
+				existingLinkModelId = modelId
+			}
 			updateModelInfo(modelId)
 		}
 		
 		planLinkInfoByModel[modelId] = modelPlanLinkInfo
 	});
+	
+	if (linkInfo.modelPlanLinkInfo.length == 0) {
+		$("#planLinkModelSelect").after("<span class='label warning'>No airplane model can fly to this destination</span>")
+		$("#planLinkModelSelect").hide()
+	} else {
+		$("#planLinkModelSelect").next($(".warning")).remove()
+		$("#planLinkModelSelect").show()
+	}
 	
 	updatePlanLinkInfoWithModelSelected($("#planLinkModelSelect").val())
 	$("#planLinkDetails div.value").show()
@@ -1052,6 +1081,7 @@ function createLink() {
 		    		}
 		    		refreshPanels(activeAirline.id)
 		    		setActiveDiv($('#linkDetails'))
+		    		hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
 		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
@@ -1086,8 +1116,7 @@ function cancelPlanLink() {
 	} else { //simply go back to linkDetails
 		setActiveDiv($('#linkDetails'))
 	}
-	
-	hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
+	hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
 }
 
 function removeTempPath() {

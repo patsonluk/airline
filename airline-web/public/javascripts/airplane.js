@@ -25,7 +25,7 @@ function loadAirplaneModels() {
 }
 
 
-function addAirplane(modelId, quantity) {
+function addAirplane(modelId, quantity, fromPlanLink = false) {
 	var airlineId = activeAirline.id
 	var url = "airlines/" + airlineId + "/airplanes?model=" + modelId + "&quantity=" + quantity + "&airlineId=" + airlineId 
 	$.ajax({
@@ -36,6 +36,9 @@ function addAirplane(modelId, quantity) {
 	    dataType: 'json',
 	    success: function(response) {
 	    	refreshPanels(airlineId)
+	    	if (fromPlanLink) {
+	    		planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -63,6 +66,7 @@ function sellAirplane(airplaneId) {
 
 function updateModelInfo(modelId) {
 	model = loadedModels[modelId]
+	$('#airplaneModelDetails #selectedModel').val(modelId)
 	$('#airplaneModelDetails #modelName').text(model.name)
 	$('#airplaneModelDetails #capacity').text(model.capacity)
 	$('#airplaneModelDetails #fuelBurn').text(model.fuelBurn)

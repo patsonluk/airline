@@ -390,7 +390,7 @@
 		    	</div>
 	    	</div>
    			<div id="extendedPanel" style="width: 30%; float: left;">
-				<div class="table" id="airplaneModelDetails" style="width: 100%" display: none;">
+				<div class="table" id="airplaneModelDetails" style="width: 100%; display: none;">
 					<h4>Airplane Model Details</h4>
 <!-- 					Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/> -->
 					<div class="table-row">
@@ -417,7 +417,8 @@
 		    			<div class="label"><h5>Purchase Price:</h5></div>
 		    			<div class="value" id="price"></div>
 			    	</div>
-		    		<div class="button" onclick="addAirplane($('#airplaneModelOption').val(), $('#airplaneQuantity').val())">Purchase Aircrafts</div>
+			    	<div class="button" onclick="addAirplane($('#airplaneModelDetails #selectedModel').val(), 1, true)">Purchase Aircrafts</div>
+			    	<input type="hidden" id="selectedModel"/>
 				</div>
 			</div>
 	    </div>
