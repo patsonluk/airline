@@ -112,7 +112,6 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	function updateDataSource(configuration) {
 		var businessPosition = configuration.economy / maxSeats * 100
 		var firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
-	
 		dataSource["colorRange"] = {
             "color": [
                       {
@@ -147,33 +146,28 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	var chart = container.insertFusionCharts(
 	{	
 		type: 'hlineargauge',
-        width: '300',
-        height: '30',
+        width: '500',
+        height: '50',
         dataFormat: 'json',
 	    dataSource: dataSource,
         "events": {
-            //Event is raised when a real-time gauge or chart completes updating data.
-            //Where we can get the updated data and display the same.
             "realTimeUpdateComplete" : function (evt, arg){
                 var firstPosition = evt.sender.getData(1)
                 var businessPosition = evt.sender.getData(2)
                 
-                if (firstPosition < businessPosition) {
-                	businessPosition = firstPosition
-                }
+                var tinyAdjustment = 0.001 //the tiny adjustment is to avoid precision problem that causes floor to truncate number like 0.99999
+                configuration["first"] = Math.floor(tinyAdjustment + maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
                 
-                configuration["first"] = Math.floor(maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
-                
-                if (firstPosition == 0) { //allow elimination of all business seats
+                if (firstPosition < businessPosition) {  //dragging first past business to the left => eliminate all business
                 	configuration["business"] = 0
                 } else {
-                	configuration["business"] = Math.floor((maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
+                	configuration["business"] = Math.floor(tinyAdjustment + (maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
                 }
                 
                 if (businessPosition == 0) { //allow elimination of all economy seats
                 	configuration["economy"] = 0
                 } else {
-                	configuration["economy"] = Math.floor((maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
+                	configuration["economy"] = Math.floor(tinyAdjustment + (maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
                 }
                 
                 
