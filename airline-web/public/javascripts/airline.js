@@ -426,7 +426,7 @@ function unselectLink() {
 }
 
 function selectLinkAndLoadDetails(linkId, refocus) {
-	setActiveDiv($("#map"))
+	//setActiveDiv($("#worldMapCanvas"))
 	selectLink(linkId, refocus)
 	refreshLinkDetails(linkId)
 }
