@@ -8,7 +8,11 @@ import java.text.SimpleDateFormat
 import java.sql.Statement
 
 object UserSource {
-  val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  val dateFormat = new ThreadLocal[SimpleDateFormat]() {
+    override def initialValue() = {
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    }
+  }
   
   def loadUserSecret(userName : String) : Option[UserSecret] = {
     val connection = Meta.getConnection() 
@@ -90,7 +94,7 @@ object UserSource {
         userAirlineStatment.close()
         val creationTime = Calendar.getInstance()
         
-        creationTime.setTime(dateFormat.parse(resultSet.getString("creation_time")))
+        creationTime.setTime(dateFormat.get().parse(resultSet.getString("creation_time")))
         val status = UserStatus.withName(resultSet.getString("status"))
         
         val user = User(userName, resultSet.getString("email"), creationTime, status, resultSet.getInt("id"))
