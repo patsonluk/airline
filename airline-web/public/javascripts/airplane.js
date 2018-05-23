@@ -1,4 +1,6 @@
 var loadedModels = {}
+var sortedModels = []
+var selectedModelId
 
 $( document ).ready(function() {
 	loadAirplaneModels()
@@ -12,7 +14,6 @@ function loadAirplaneModels() {
 	    dataType: 'json',
 	    success: function(models) {
 	    	$.each(models, function( key, model ) {
-	    		$("#airplaneModelOption").append($("<option></option>").attr("value", model.id).text(model.name));
 	    		loadedModels[model.id] = model
 	  		});
 	    	//updateModelInfo($('#modelInfo'))
@@ -156,15 +157,13 @@ function loadOwnedAirplaneDetails(airplaneId) {
 function showAirplaneCanvas() {
 	setActiveDiv($("#airplaneCanvas"))
 	
-	var airplaneModelList = $("#airplaneCanvas #airplaneModelList")
-	var selectedModelId //check previously selected model id
 	if ($("#airplaneCanvas #airplaneModelList a.selected").length !== 0) {
 		selectedModelId = $("#airplaneCanvas #airplaneModelList a.selected").data("modelId")
 	}
 	
-	airplaneModelList.empty()
 	var airlineId = activeAirline.id
 	var ownedModelIds = []
+	sortedModels = []
 	$.ajax({
 		type: 'GET',
 		url: "airlines/"+ airlineId + "/airplanes?simpleResult=true",
@@ -172,32 +171,44 @@ function showAirplaneCanvas() {
 	    dataType: 'json',
 	    success: function(ownedModels) { //a list of model with airplanes
 	    	$.each(ownedModels, function(key, model) {
-	    		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
-	    		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
-	    		airplaneModelList.append(aLink)
-	    		aLink.get(0).modelInfo = model //tag the info to the element
-	    		airplaneModelList.append($("<br/>"))
-	    		
-	    		if (selectedModelId == model.id) {
-	    			selectAirplaneModel(model)
-	    		}
 	    		ownedModelIds.push(model.id)
+	    		sortedModels.push(model)
 	  		});
 	    	
 	    	//now add all the models that the airline does not own
 	    	$.each(loadedModels, function(modelId, model) {
 	    		if (!ownedModelIds.includes(model.id)) {
-	    			var label = model.name + " (assigned: 0 free: 0)"
-		    		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
-		    		airplaneModelList.append(aLink)
-		    		aLink.get(0).modelInfo = model //tag the info to the element
-		    		airplaneModelList.append($("<br/>"))
+	    			model.assignedAirplanes = []
+	    			model.freeAirplanes = []
+	    			sortedModels.push(model)
 	    		}
 	    	})
+	    	
+	    	updateAirplaneModelList("price", "ascending")
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
+	});
+}
+
+function updateAirplaneModelList(sortingProperty, ascending) {
+	var airplaneModelList = $("#airplaneCanvas #airplaneModelList")
+	airplaneModelList.empty()
+	
+	//sort the list
+	sortedModels.sort(sortByProperty(sortingProperty, ascending == "ascending"))
+	
+	$.each(sortedModels, function(index, model) {
+		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
+		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
+		airplaneModelList.append(aLink)
+		aLink.get(0).modelInfo = model //tag the info to the element
+		airplaneModelList.append($("<br/>"))
+		
+		if (selectedModelId == model.id) {
+			selectAirplaneModel(model)
+		}
 	});
 }

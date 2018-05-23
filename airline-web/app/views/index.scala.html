@@ -375,8 +375,28 @@
 	    		</div>
   			</div>
   			<div id="airplaneCanvas" style="display: none;">
-  				<div id="airplaneModelList" style="height: 500px ; width : 20%; float: left; overflow-y: scroll;"></div>
-  				<div id="airplaneInventoryList" style="height: 500px ; width : 15%; float: left; overflow-y: scroll;"></div>
+  				<div style="height: 500px ; width : 35%; float: left;"> 
+	  				<div id="airplaneModelSort" style="height: 35px ; width : 100%;">
+	  					<span class="label">Sort:</span>
+		  					<select id="airplaneSortSelect" onchange="updateAirplaneModelList($('#airplaneSortSelect').val(), $('#airplaneSortOrderSelect').val())">
+		  						<option value="capacity" selected="selected">Max Capacity</option>
+		  						<option value="range">Max Flying Range</option>
+		  						<option value="price">Purchase Price</option>
+		  						<option value="assignedAirplanes">Owned (Assigned)</option>
+		  						<option value="freeAirplanes">Owned (Unassigned)</option>
+		  						<option value="name">Model Name</option>
+		  						<option value="speed">Speed</option>
+		  						<option value="fuelBurn">Fuel Burn</option>
+		  					</select>
+		  					<select id="airplaneSortOrderSelect" onchange="updateAirplaneModelList($('#airplaneSortSelect').val(), $('#airplaneSortOrderSelect').val())">
+		  						<option value="ascending" selected="selected">Ascending</option>
+		  						<option value="descending">Descending</option>
+		  					</select>
+	  					
+	  				</div>
+	 	  			<div id="airplaneModelList" style="height: 500px; width : 60%; float: left; overflow-y: scroll;"></div>
+	  				<div id="airplaneInventoryList" style="height: 500px ; width : 40%; float: left; overflow-y: scroll;"></div>	
+				</div>					  				
   				<div id="airplaneModelDetail" class="table section" style="width: 60%; float: left; display: none;">
   					<h4>Airplane Model Details</h4>
 					<div class="table-row">

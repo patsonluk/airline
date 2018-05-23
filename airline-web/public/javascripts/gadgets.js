@@ -155,6 +155,25 @@ function commaSeparateNumber(val){
     return val;
 }
 
+function sortByProperty(property, ascending = true) {
+    var sortOrder = 1;
+    
+    if(!ascending) {
+        sortOrder = -1;
+    }
+    
+    return function (a,b) {
+    	var aVal = a[property]
+    	var bVal = b[property]
+    	if (Array.isArray(aVal) && Array.isArray(bVal)) {
+    		aVal = aVal.length
+    		bVal = bVal.length
+    	}
+    	var result = (aVal < bVal) ? -1 : (aVal > bVal) ? 1 : 0;
+        return result * sortOrder;
+    }
+}
+
 function padAfter(str, padChar, max) {
     str = str.toString();
 	return str.length < max ? padAfter(str + padChar, padChar, max) : str;
