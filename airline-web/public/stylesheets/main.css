@@ -155,8 +155,17 @@ dd.error {
 
 div.section {
 	border-radius: 5px 5px 5px 5px;
-	background: linear-gradient(#FFFFFF 90%, #EEEEEE 100%);
+	//background: linear-gradient(#FFFFFF 90%, #EEEEEE 100%);
 	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
+	background-image: -webkit-gradient(linear, 0% 100%, 0% 90%, from(#EAE8E8), to(#FFFFFF));
+    background-image: -moz-linear-gradient(90deg, #EAE8E8 0%, #FFFFFF 10%);
+    border-radius: 0.5em 0.5em 0.5em 0.5em;
+    margin: 10px;
+    padding: 10px 10px 20px 10px;
+    //display: block;
+    //position: relative;
+}
+	
 	margin: 10px;
 	padding: 5px;
 }

@@ -25,7 +25,6 @@ function updateAirlineInfo(airlineId) {
 			$("#maintenanceQuality").val(airline.maintenanceQuality)
 			plotMaintenanceQualityGauge($("#maintenanceQualityGauge"), $("#maintenanceQuality"))
 	    	activeAirline = airline
-	    	updateAirplaneList()
 	    	updateLinksInfo()
 	    	updateAirportMarkers(airline)
 	    },
@@ -1102,7 +1101,6 @@ function deleteLink(linkId) {
 	    success: function() {
 	    	$("#linkDetails").fadeOut(200)
 	    	updateLinksInfo()
-	    	updateAirplaneList() //refresh all airplane list for now
 	    	unselectLink()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

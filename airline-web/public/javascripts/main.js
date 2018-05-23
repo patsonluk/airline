@@ -175,7 +175,6 @@ function refreshPanels(airlineId) {
 	    	if (selectedLink) {
 	    		refreshLinkDetails(selectedLink)
 	    	}
-	    	updateAirplaneList() //refresh all airplane list for now
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

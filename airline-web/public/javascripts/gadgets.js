@@ -182,12 +182,15 @@ function setActiveDiv(activeDiv) {
 			activeDiv.fadeIn(200)
 		}
 	}
+	activeDiv.parent().show()
+	
 	return true;
 }
 
 function hideActiveDiv(activeDiv) {
 	if (activeDiv.is(":visible")){
 		activeDiv.fadeOut(200)
+		activeDiv.parent().hide()
 	}
 }
 

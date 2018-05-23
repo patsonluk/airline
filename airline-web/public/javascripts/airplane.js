@@ -38,6 +38,8 @@ function addAirplane(modelId, quantity, fromPlanLink = false) {
 	    	refreshPanels(airlineId)
 	    	if (fromPlanLink) {
 	    		planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+	    	} else {
+	    		showAirplaneCanvas()
 	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -55,6 +57,7 @@ function sellAirplane(airplaneId) {
 	    dataType: 'json',
 	    success: function(response) {
 	    	refreshPanels(activeAirline.id)
+	    	showAirplaneCanvas()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -77,67 +80,47 @@ function updateModelInfo(modelId) {
 	setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 }
 
-function updateAirplaneList() {
-	var airplaneList = $("#airplaneList")
-	var selectedModelId //check previously selected model id
-	if ($("#airplaneList a.selected").length !== 0) {
-		selectedModelId = $("#airplaneList a.selected").data("modelId")
-	}
-	
-	airplaneList.empty()
-	var airlineId = activeAirline.id
-	$.ajax({
-		type: 'GET',
-		url: "airlines/"+ airlineId + "/airplanes?simpleResult=true",
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(models) { //a list of model with airplanes
-	    	$.each(models, function(key, model) {
-	    		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
-	    		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
-	    		airplaneList.append(aLink)
-	    		aLink.get(0).modelInfo = model //tag the info to the element
-	    		airplaneList.append($("<br/>"))
-	    		
-	    		if (selectedModelId == model.id) {
-	    			selectAirplaneModel(model)
-	    		}
-	  		});
-	    	
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
-}
 function selectAirplaneModel(model) {
-	$("#airplaneList a.selected").removeClass("selected")
+	$("#airplaneCanvas #airplaneModelList a.selected").removeClass("selected")
 	//highlight the selected model
-	$("#airplaneList a[data-model-id='" + model.id +"']").addClass("selected")
+	$("#airplaneCanvas #airplaneModelList a[data-model-id='" + model.id +"']").addClass("selected")
 	
 	//expand the airplane list under this model
-	expandAirplaneList(model)
+	showAirplaneInventory(model)
+	//show basic airplane model details
+	//model = loadedModels[modelId]
+	$('#airplaneCanvas #selectedModel').val(model.id)
+	$('#airplaneCanvas #modelName').text(model.name)
+	$('#airplaneCanvas #capacity').text(model.capacity)
+	$('#airplaneCanvas #fuelBurn').text(model.fuelBurn)
+	$('#airplaneCanvas #range').text(model.range)
+	$('#airplaneCanvas #speed').text(model.speed)
+	$('#airplaneCanvas #price').text(commaSeparateNumber(model.price))
+	$('#airplaneCanvas #airplaneModelDetail').fadeIn(200)
+	//hide owned model details
+	$('#airplaneCanvas #ownedAirplaneDetail').fadeOut(200)
 }
 
-function expandAirplaneList(modelInfo) {
-	var airplaneList = $("#expandedAirplaneList")
-	airplaneList.empty()
-	$.each(modelInfo.assignedAirplanes, function( key, airplaneId ) {
-		airplaneList.append($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
-		airplaneList.append($("<br/>"))
-	});
-	
-	$.each(modelInfo.freeAirplanes, function( key, airplaneId ) {
-		airplaneList.append($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
-		airplaneList.append($("<br/>"))
-	});
+function showAirplaneInventory(modelInfo) {
+	var airplaneInventoryList = $("#airplaneInventoryList")
+	airplaneInventoryList.empty()
+	if (modelInfo.assignedAirplanes || modelInfo.freeAirplanes) {
+		$.each(modelInfo.assignedAirplanes, function( key, airplaneId ) {
+			airplaneInventoryList.append($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
+			airplaneInventoryList.append($("<br/>"))
+		});
+		
+		$.each(modelInfo.freeAirplanes, function( key, airplaneId ) {
+			airplaneInventoryList.append($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
+			airplaneInventoryList.append($("<br/>"))
+		});
+	}
 }
 
-function loadAirplaneDetails(airplaneId) {
-	$("#expandedAirplaneList a.selected").removeClass("selected")
+function loadOwnedAirplaneDetails(airplaneId) {
+	$("#airplaneInventoryList a.selected").removeClass("selected")
 	//highlight the selected model
-	$("#expandedAirplaneList a[data-airplane-id='" + airplaneId +"']").addClass("selected")
+	$("#airplaneInventoryList a[data-airplane-id='" + airplaneId +"']").addClass("selected")
 	
 	var airlineId = activeAirline.id 
 	$("#actionAirplaneId").val(airplaneId)
@@ -149,12 +132,7 @@ function loadAirplaneDetails(airplaneId) {
 	    dataType: 'json',
 	    success: function(airplane) {
 	    	$("#airplaneDetailsId").text(airplane.id)
-    		$("#airplaneDetailsName").text(airplane.name)
-	    	$("#airplaneDetailsCapacity").text(airplane.capacity)
-	    	$("#airplaneDetailsFuelBurn").text(airplane.fuelBurn)
-	    	$("#airplaneDetailsSpeed").text(airplane.speed + " km / hr")
-	    	$("#airplaneDetailsRange").text(airplane.range + " km")
-	    	$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
+    		$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
 	    	$("#airplaneDetailsAge").text(airplane.age + "week(s)")
 	    	$("#airplaneDetailsValue").text("$" + commaSeparateNumber(airplane.value))
 	    	$("#airplaneDetailsLink").empty()
@@ -165,9 +143,59 @@ function loadAirplaneDetails(airplaneId) {
 	    		$("#airplaneDetailsLink").text("-")
 	    		$("#sellAirplaneButton").show()
 	    	}
+	    	$("#airplaneCanvas #ownedAirplaneDetail").fadeIn(200)
 	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function showAirplaneCanvas() {
+	setActiveDiv($("#airplaneCanvas"))
+	
+	var airplaneModelList = $("#airplaneCanvas #airplaneModelList")
+	var selectedModelId //check previously selected model id
+	if ($("#airplaneCanvas #airplaneModelList a.selected").length !== 0) {
+		selectedModelId = $("#airplaneCanvas #airplaneModelList a.selected").data("modelId")
+	}
+	
+	airplaneModelList.empty()
+	var airlineId = activeAirline.id
+	var ownedModelIds = []
+	$.ajax({
+		type: 'GET',
+		url: "airlines/"+ airlineId + "/airplanes?simpleResult=true",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(ownedModels) { //a list of model with airplanes
+	    	$.each(ownedModels, function(key, model) {
+	    		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
+	    		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
+	    		airplaneModelList.append(aLink)
+	    		aLink.get(0).modelInfo = model //tag the info to the element
+	    		airplaneModelList.append($("<br/>"))
+	    		
+	    		if (selectedModelId == model.id) {
+	    			selectAirplaneModel(model)
+	    		}
+	    		ownedModelIds.push(model.id)
+	  		});
+	    	
+	    	//now add all the models that the airline does not own
+	    	$.each(loadedModels, function(modelId, model) {
+	    		if (!ownedModelIds.includes(model.id)) {
+	    			var label = model.name + " (assigned: 0 free: 0)"
+		    		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
+		    		airplaneModelList.append(aLink)
+		    		aLink.get(0).modelInfo = model //tag the info to the element
+		    		airplaneModelList.append($("<br/>"))
+	    		}
+	    	})
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
