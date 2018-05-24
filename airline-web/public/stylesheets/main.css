@@ -1,15 +1,18 @@
-#main {
-	margin-top: 50px;
+body {
+	font-size: 13px;
+	font-family: "Open Sans", Verdana, Arial, sans-serif;
 }
 
+//#main {
+//	margin-top: 50px;
+//}
+
 #map {
-	/*     width: 500px; */
-	height: 500px;
 	background-color: #FFF;
 }
 
 .menubar {
-	position: fixed;
+	//position: fixed;
 	top: 0px;
 	height: 40px;
 	width: 100%;
@@ -194,7 +197,7 @@ div.divider {
 	margin-bottom: 5px;
 }
 
-a.selected, a:hover {
+a.selected, a:hover, span.selected {
 	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;
 }
@@ -215,7 +218,7 @@ a.selected, a:hover {
 .tabs li { 
 	float : left;
 	display: block;
-	padding: 14px 21px;
+	padding: 10px 10px;
 	border-radius: 3px 3px 0 0;
 	cursor: pointer;
 	font-family: "Open Sans", Verdana, Arial, sans-serif;

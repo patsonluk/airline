@@ -93,7 +93,7 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	                "bgColor": "#FFE62B",
 	                "bgAlpha": "50",
 	                "showValue": "0",
-	                "sides" : "4",
+	                //"sides" : "4",
 	                "borderColor": "#FFE62B",
 	                "borderAlpha": "20",
 	            },
@@ -101,7 +101,7 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	                "bgColor": "#0077CC",
 	                "bgAlpha": "50",
 	                "showValue": "0",
-	                "sides" : "3",
+	                //"sides" : "3",
 	                "borderColor": "#0077CC",
 	                "borderAlpha": "20",
 	            }
@@ -146,8 +146,8 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	var chart = container.insertFusionCharts(
 	{	
 		type: 'hlineargauge',
-        width: '500',
-        height: '50',
+        width: '100%',
+        height: '40px',
         dataFormat: 'json',
 	    dataSource: dataSource,
         "events": {
@@ -248,7 +248,7 @@ function plotLinkProfit(linkConsumptions, container) {
 	var chart = container.insertFusionCharts({
 		type: 'mscombi2d',
 	    width: '100%',
-	    height: '195',
+	    height: '100%',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
@@ -311,7 +311,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	var ridershipChart = ridershipContainer.insertFusionCharts( {
 		type: 'stackedarea2d',
 	    width: '100%',
-	    height: '195',
+	    height: '100%',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
@@ -348,7 +348,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	var revenueChart = revenueContainer.insertFusionCharts( {
     	type: 'stackedarea2d',
 	    width: '100%',
-	    height: '195',
+	    height: '100%',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
@@ -401,8 +401,8 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 	})
 	var ref = container.insertFusionCharts({
 		type: 'pie2d',
-	    width: '100%',
-	    height: '150',
+	    width: '300px',
+	    height: '160px',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {

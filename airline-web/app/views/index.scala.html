@@ -14,7 +14,6 @@
     <script src="@routes.Assets.versioned("javascripts/libs/jquery-ui.min.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
     <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
-    <!-- <script src="@routes.Assets.versioned("javascripts/plot-highcharts.js")"></script> -->
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")"></script>
@@ -70,23 +69,23 @@
   			<span id="consoleMessage"/>
   		</div>
   		
-  		<div style="width: 100%">
+  		<div style="width: 80px; float: left;">
 	  		<ul class="tabs">
-			  <li class="button" onclick="setActiveDiv($('#worldMapCanvas'))"><span>World Map</span></li>
-			  <li class="button" onclick="showAirportDetails()"><span>Airport</span></li>
-			  <li class="button" onclick="showCountryView()"><span>Country</span></li>
-			  <li class="button" onclick="showAirplaneCanvas()"><span>Airplane</span></li>
+			  <li class="button" onclick="setActiveDiv($('#worldMapCanvas')); selectTab($(this))"><span class="selected">Map</span></li>
+			  <li class="button" onclick="showAirportDetails(); selectTab($(this))"><span>Airport</span></li>
+			  <li class="button" onclick="showCountryView(); selectTab($(this))"><span>Country</span></li>
+			  <li class="button" onclick="showAirplaneCanvas(); selectTab( $(this))"><span>Airplane</span></li>
 			</ul>
 		</div>
-		<div style="clear:both"/>
+		
 <!--   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
 <!-- 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
   	<!-- main canvas start -->
-  		<div id="canvas" style="width: 80% ; float: left;" >
-  			<div id="worldMapCanvas">
-  				<div id="map" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
-  				<div id="bottomPanel" style="width: 100% ; float: left;" >
-			    	<div id="detailsPanel" class="section" style="width: 60% ; display:none; float: left;">
+  		<div id="canvas" style="width: 90% ; height: 80vh; float: left;" >
+  			<div id="worldMapCanvas" style="height: 100%;">
+  				<div id="map" style="height: 80%; width: 60%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
+  				<div id="sidePanel" style="width: 35% ; float: left;" >
+			    	<div id="detailsPanel" class="section" style="width: 100% ; display:none; float: left;">
 			    		<div id="linkDetails" style="width: 100%; display: none;">
 			    			<div style="width: 50%; float: left">
 				    			<div class="table" id="linkCurrentDetails" style="width: 100%">
@@ -179,12 +178,12 @@
 			    						<div style="display: table-cell;"><h5>Quality</h5></div>
 			    					</div>
 			    				</div>
-			    				<div id=linkCompetitionsPie style="height: 200px; width: 50%;"></div>
+			    				<div id=linkCompetitionsPie align="center"></div>
 				    		</div>
 				    		
-			    			<div id="linkProfitChart" style="height: 200px; width: 50%; float: left;"></div>
-			    			<div id="linkRidershipChart" style="height: 200px; width: 50%; float: left;"></div>
-			    			<div id="linkRevenueChart" style="height: 200px; width: 50%; float: left;"></div>
+			    			<div id="linkProfitChart" style="width: 50%; float: left; height: 170px;"></div>
+			    			<div id="linkRidershipChart" style="width: 50%; float: left; height: 250px;"></div>
+			    			<div id="linkRevenueChart" style="width: 50%; float: left; height: 250px;"></div>
 			    		</div>
 		    			<div id="planLinkDetails" style="width: 100%; display: none;">
 		    				<h4>Plan Route Details</h4>
@@ -268,7 +267,7 @@
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Seat Configurations:</h5></div>
-					    			<div class="value"><div id="seatConfigurationGauge" style="height: 50px;"></div></div>
+					    			<div class="value"><div id="seatConfigurationGauge"></div></div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Service Level:</h5></div>
@@ -282,7 +281,7 @@
 				    	</div>
 			    	</div>
 	<!-- 		    	end details panel -->
-		   			<div id="extendedPanel" class="section" style="width: 30%; float: left; display: none;">
+		   			<div id="extendedPanel" class="section" style="width: 100%; float: left; display: none;">
 						<div class="table" id="airplaneModelDetails" style="width: 100%; display: none;">
 							<h4>Airplane Model Details</h4>
 		<!-- 					Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/> -->

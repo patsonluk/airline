@@ -220,3 +220,9 @@ function toggleOnOff(element) {
 		element.fadeIn(200)
 	}
 }
+
+function selectTab(tab) {
+	tab.siblings().children("span").removeClass("selected")
+	//highlight the selected model
+	tab.children("span").addClass("selected")
+}
