@@ -138,11 +138,11 @@ function initMap() {
 	    })
   });  
   
-  $("#vipButton").index = 1
-  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#vipButton")[0]);
+//  $("#vipButton").index = 1
+//  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#vipButton")[0]);
   
-  $("#linkHistoryButton").index = 2
-  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
+//  $("#linkHistoryButton").index = 2
+//  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
   
   getAirports()
 }

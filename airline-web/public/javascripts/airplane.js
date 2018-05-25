@@ -74,9 +74,9 @@ function updateModelInfo(modelId) {
 	$('#airplaneModelDetails #modelName').text(model.name)
 	$('#airplaneModelDetails #capacity').text(model.capacity)
 	$('#airplaneModelDetails #fuelBurn').text(model.fuelBurn)
-	$('#airplaneModelDetails #range').text(model.range)
-	$('#airplaneModelDetails #speed').text(model.speed)
-	$('#airplaneModelDetails #price').text(commaSeparateNumber(model.price))
+	$('#airplaneModelDetails #range').text(model.range + "km")
+	$('#airplaneModelDetails #speed').text(model.speed + "km/h")
+	$('#airplaneModelDetails #price').text("$" + commaSeparateNumber(model.price))
 	
 	setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 }
@@ -94,9 +94,9 @@ function selectAirplaneModel(model) {
 	$('#airplaneCanvas #modelName').text(model.name)
 	$('#airplaneCanvas #capacity').text(model.capacity)
 	$('#airplaneCanvas #fuelBurn').text(model.fuelBurn)
-	$('#airplaneCanvas #range').text(model.range)
-	$('#airplaneCanvas #speed').text(model.speed)
-	$('#airplaneCanvas #price').text(commaSeparateNumber(model.price))
+	$('#airplaneCanvas #range').text(model.range + " km")
+	$('#airplaneCanvas #speed').text(model.speed + " km/h")
+	$('#airplaneCanvas #price').text("$" + commaSeparateNumber(model.price))
 	$('#airplaneCanvas #airplaneModelDetail').fadeIn(200)
 	//hide owned model details
 	$('#airplaneCanvas #ownedAirplaneDetail').fadeOut(200)

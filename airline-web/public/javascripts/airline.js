@@ -475,7 +475,7 @@ function refreshLinkDetails(linkId) {
 	    	$("#linkToAirport").text(getAirportText(link.toAirportCity, link.toAirportName))
 	    	$("#linkToAirport").append("<img src='assets/images/flags/" + link.toCountryCode + ".png' />")
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
-	    	$("#linkDistance").text(link.distance)
+	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").text(link.computedQuality)
 	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
 	    	$("#linkCurrentDetails").show()
@@ -847,10 +847,8 @@ function updatePlanLinkInfo(linkInfo) {
 	$('#planLinkToAirportName').text(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName))
 	$('#planLinkToAirportName').append("<img src='assets/images/flags/" + linkInfo.toCountryCode + ".png' />")
 	
-	$('#planLinkDistance').text(linkInfo.distance)
-	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
-	$('#planLinkBusinessPassengers').text(linkInfo.businessPassengers)
-	$('#planLinkTouristPassengers').text(linkInfo.touristPassengers)
+	$('#planLinkDistance').text(linkInfo.distance + " km")
+	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand) + " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
 	
 	
@@ -1008,7 +1006,7 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 			}
 		})
 		
-		$('#planLinkDuration').text(thisModelPlanLinkInfo.duration)
+		$('#planLinkDuration').text(thisModelPlanLinkInfo.duration + " mins")
 		
 		if (existingLink) {
 			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
@@ -1114,7 +1112,7 @@ function cancelPlanLink() {
 	//remove the temp path
 	if (tempPath) { //create new link
 		removeTempPath()
-		$('#planLinkDetails').hide()
+		hideActiveDiv($('#planLinkDetails'))
 	} else { //simply go back to linkDetails
 		setActiveDiv($('#linkDetails'))
 	}
