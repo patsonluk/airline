@@ -4,7 +4,7 @@ var flightMarkers = {} //key: link id, value: { markers : array[], animation}
 var historyPaths = {}
 var linkHistoryState = "hidden"
 var tempPath //temp path for new link creation
-
+var loadedLinks = []
 	
 function updateAirlineInfo(airlineId) {
 	$.ajax({
@@ -1292,6 +1292,57 @@ function updateMaintenanceQuality() {
 	    }
 	});
 }
+
+function showLinksDetails() {
+	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(links) {
+	    	loadedLinks = links
+	    	$.each(links, function(key, link) {
+				link.totalCapacity = link.capacity.economy + link.capacity.business + link.capacity.first
+				link.totalPassengers = link.passengers.economy + link.passengers.business + link.passengers.first
+			})
+	    	
+	    	updateLinksTable('fromAirport', 'ascending');
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+	
+	
+	setActiveDiv($('#linksCanvas'));
+}
+
+function updateLinksTable(sortingProperty, ascending) {
+	var linksTable = $("#linksCanvas #linksTable")
+	linksTable.children("div.table-row").remove()
+	
+	//sort the list
+	loadedLinks.sort(sortByProperty(sortingProperty, ascending == "ascending"))
+	
+	$.each(loadedLinks, function(index, link) {
+		var row = $("<div class='table-row'></div>")
+		
+		row.append("<div class='cell'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "</div>")
+		row.append("<div class='cell'>" + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+		row.append("<div class='cell' align='right'>" + link.distance + "km</div>")
+		row.append("<div class='cell' align='right'>" + link.totalCapacity + "</div>")
+		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.revenue) + "</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.profit) + "</div>")
+		
+		
+		linksTable.append(row)
+	});
+}
+
+
 
 	
 //TEST METHODS

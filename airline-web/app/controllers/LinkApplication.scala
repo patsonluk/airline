@@ -140,12 +140,13 @@ class LinkApplication extends Controller {
     
   }
   
-  implicit object LinkWithProfitWrites extends Writes[(Link, Int, Int)] {
-    def writes(linkWithProfit: (Link, Int, Int)): JsValue = { 
+  implicit object LinkWithProfitWrites extends Writes[(Link, Int, Int, LinkClassValues)] {
+    def writes(linkWithProfit: (Link, Int, Int, LinkClassValues)): JsValue = { 
       val link = linkWithProfit._1
       val profit = linkWithProfit._2
       val revenue = linkWithProfit._3
-      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue))
+      val passengers = linkWithProfit._4;
+      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue)) + ("passengers" -> Json.toJson(passengers))
     }
   }
   
@@ -337,7 +338,7 @@ class LinkApplication extends Controller {
         foldMap + (linkConsumptionDetails.linkId -> linkConsumptionDetails)
       }
       val linksWithProfit = links.map { link =>  
-        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue))  
+        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.soldSeats))  
       }
       Ok(Json.toJson(linksWithProfit)).withHeaders(
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"

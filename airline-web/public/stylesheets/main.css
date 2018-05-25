@@ -38,13 +38,17 @@ body {
 	width: 60%;
 }
 
+.table .cell {
+	display: table-cell;
+}
+
 .table .table-row {
 	display: table-row;
 	width: 100%;
 }
 
 .table .table-header {
-	display: table-caption;
+	display: table-header-group;
 	width: 100%;
 }
 
@@ -236,6 +240,10 @@ a.selected, a:hover, span.selected {
 	font-weight: 700;
 	background-color: #6093e7;
 	color: #FFF;
+}
+
+li.row {
+	padding: 3px;
 }
 
 .marquee span {

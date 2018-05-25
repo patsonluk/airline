@@ -103,17 +103,17 @@ function selectAirplaneModel(model) {
 }
 
 function showAirplaneInventory(modelInfo) {
-	var airplaneInventoryList = $("#airplaneInventoryList")
+	var airplaneInventoryList = $("#airplaneCanvas #airplaneInventoryList")
 	airplaneInventoryList.empty()
 	if (modelInfo.assignedAirplanes || modelInfo.freeAirplanes) {
 		$.each(modelInfo.assignedAirplanes, function( key, airplaneId ) {
-			airplaneInventoryList.append($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
-			airplaneInventoryList.append($("<br/>"))
+			var newListItem = $("<li class='row'></li>").appendTo(airplaneInventoryList)
+			newListItem.html($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
 		});
 		
 		$.each(modelInfo.freeAirplanes, function( key, airplaneId ) {
-			airplaneInventoryList.append($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
-			airplaneInventoryList.append($("<br/>"))
+			var newListItem = $("<li class='row'></li>").appendTo(airplaneInventoryList)
+			newListItem.html($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
 		});
 	}
 }
@@ -203,9 +203,8 @@ function updateAirplaneModelList(sortingProperty, ascending) {
 	$.each(sortedModels, function(index, model) {
 		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
 		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
-		airplaneModelList.append(aLink)
+		$("<li class='row'></li>").append(aLink).appendTo(airplaneModelList)
 		aLink.get(0).modelInfo = model //tag the info to the element
-		airplaneModelList.append($("<br/>"))
 		
 		if (selectedModelId == model.id) {
 			selectAirplaneModel(model)
