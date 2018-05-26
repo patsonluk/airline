@@ -47,6 +47,7 @@ body {
 	width: 100%;
 }
 
+
 .table .table-header {
 	display: table-header-group;
 	width: 100%;
@@ -201,9 +202,13 @@ div.divider {
 	margin-bottom: 5px;
 }
 
-a.selected, a:hover, span.selected {
+a.selected, a:hover, span.selected, .table .table-row.clickable:hover, .table .table-row.clickable.selected {
 	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;
+}
+
+.table .table-row.clickable:hover {
+	cursor: pointer;
 }
 
 #airportIcons .feature {

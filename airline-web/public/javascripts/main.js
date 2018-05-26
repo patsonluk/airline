@@ -540,4 +540,13 @@ function toggleConsoleMessage() {
 	}
 }
 
+function showWorldMap() {
+	setActiveDiv($('#worldMapCanvas'));
+	$('#sidePanel').appendTo($('#worldMapCanvas'))
+	
+	if (selectedLink) {
+		selectLinkAndLoadDetails(selectedLink)
+	}
+}
+
 

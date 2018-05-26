@@ -71,7 +71,7 @@
   		
   		<div style="width: 80px; float: left;">
 	  		<ul class="tabs">
-			  <li class="button" onclick="setActiveDiv($('#worldMapCanvas')); selectTab($(this))"><span class="selected">Map</span></li>
+			  <li class="button" onclick="showWorldMap(); selectTab($(this))"><span class="selected">Map</span></li>
 			  <li class="button" onclick="showLinksDetails(); selectTab($(this))"><span>Current Routes</span></li>
 			  <li class="button" onclick="showAirportDetails(); selectTab($(this))"><span>Airport</span></li>
 			  <li class="button" onclick="showCountryView(); selectTab($(this))"><span>Country</span></li>
@@ -84,9 +84,9 @@
   	<!-- main canvas start -->
   		<div id="canvas" style="width: 90% ; height: 80vh; float: left;" >
   			<div id="worldMapCanvas" style="height: 100%;">
-  				<div id="map" style="height: 80%; width: 60%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
-  				<div id="sidePanel" style="width: 35% ; float: left;" >
-			    	<div id="detailsPanel" class="section" style="width: 100% ; display:none; float: left;">
+  				<div id="map" style="height: 100%; width: 60%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
+  				<div id="sidePanel" style="width: 35% ; float: left; display:none;" >
+			    	<div id="detailsPanel" class="section" style="width: 100% ; float: left;">
 			    		<div id="linkDetails" style="width: 100%; display: none;">
 			    			<div style="width: 50%; float: left">
 				    			<div class="table" id="linkCurrentDetails" style="width: 100%">
@@ -315,13 +315,13 @@
   				<div style="height: 100% ; width : 50%; float: left;"> 
 	  	  			<div class="table" id="linksTable" style="height: 100%; width: 100%">
 	 	  				<div class="table-header">
-	 	  					<div class="cell" style="width: 20%"><a href='javascript:void(0)' onclick="updateLinksTable('fromAirportCity', 'ascending')">From Airport</a></div>
-	 	  					<div class="cell" style="width: 20%"><a href='javascript:void(0)' onclick="updateLinksTable('toAirportCity', 'ascending')">To Airport</a></div>
-	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' onclick="updateLinksTable('distance', 'descending')">Distance</a></div>
-	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' onclick="updateLinksTable('totalCapacity', 'descending')">Capacity</a></div>
-	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' onclick="updateLinksTable('totalPassengers', 'descending')">Passenger</a></div>
-	 	  					<div class="cell" style="width: 15%" align="right"><a href='javascript:void(0)' onclick="updateLinksTable('revenue', 'descending')">Revenue</a></div>
-	 	  					<div class="cell" style="width: 15%" align="right"><a href='javascript:void(0)' onclick="updateLinksTable('profit', 'descending')">Profit</a></div>
+	 	  					<div class="cell" style="width: 20%"><a href='javascript:void(0)' data-sort-property="fromAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))" class="selected">From Airport</a></div>
+	 	  					<div class="cell" style="width: 20%"><a href='javascript:void(0)' data-sort-property="toAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</a></div>
+	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</a></div>
+	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity</a></div>
+	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Passenger</a></div>
+	 	  					<div class="cell" style="width: 15%" align="right"><a href='javascript:void(0)' data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</a></div>
+	 	  					<div class="cell" style="width: 15%" align="right"><a href='javascript:void(0)' data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</a></div>
 						</div>
          			</div>
 				</div>					  				

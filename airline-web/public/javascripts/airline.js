@@ -421,7 +421,7 @@ function unselectLink() {
 		selectedLink = undefined
 	}
 	
-	$("#linkDetails").hide()
+	$("#sidePanel").fadeOut(200)
 }
 
 function selectLinkAndLoadDetails(linkId, refocus) {
@@ -429,6 +429,7 @@ function selectLinkAndLoadDetails(linkId, refocus) {
 	selectLink(linkId, refocus)
 	refreshLinkDetails(linkId)
 }
+
 
 /**
  * Performs UI changes for selecting a link
@@ -449,19 +450,17 @@ function selectLink(linkId, refocus) {
 	}
 	
 	//highlight the corresponding list item
-	var selectedListItem = $("#linkList a[data-link-id='" + linkId + "']")
-	selectedListItem.addClass("selected")
+//	var selectedListItem = $("#linkList a[data-link-id='" + linkId + "']")
+//	selectedListItem.addClass("selected")
 	
 	selectedLink = linkId
-	setActiveDiv($("#linkDetails"))
-	hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
-	$("#actionLinkId").val(linkId)
 }
 
 function refreshLinkDetails(linkId) {
 	var airlineId = activeAirline.id
 	
 	$("#linkCompetitons .data-row").remove()
+	$("#actionLinkId").val(linkId)
 	
 	//load link
 	$.ajax({
@@ -565,7 +564,9 @@ function refreshLinkDetails(linkId) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
-	
+	setActiveDiv($("#linkDetails"))
+	hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
+	$('#sidePanel').fadeIn(200);
 	
 }
 
@@ -804,6 +805,7 @@ function planLink(fromAirport, toAirport) {
 			dataType: 'json',
 		    success: function(linkInfo) {
 		    	updatePlanLinkInfo(linkInfo)
+		    	$('#sidePanel').fadeIn(200);
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));
@@ -814,6 +816,8 @@ function planLink(fromAirport, toAirport) {
 		$("#planLinkDetails div.value").hide()
 		setActiveDiv($('#planLinkDetails'))
 	}
+	
+	
 }
 
 var planLinkInfo = null
@@ -936,6 +940,7 @@ function updatePlanLinkInfo(linkInfo) {
 	});
 	
 	if (linkInfo.modelPlanLinkInfo.length == 0) {
+		$("#planLinkModelSelect").next($(".warning")).remove()
 		$("#planLinkModelSelect").after("<span class='label warning'>No airplane model can fly to this destination</span>")
 		$("#planLinkModelSelect").hide()
 	} else {
@@ -1082,6 +1087,10 @@ function createLink() {
 		    		refreshPanels(activeAirline.id)
 		    		setActiveDiv($('#linkDetails'))
 		    		hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
+		    		
+		    		if ($('#linksCanvas').is(':visible')) { //reload the links table then
+		    			loadLinksTable()
+		    		}
 		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
@@ -1100,6 +1109,10 @@ function deleteLink(linkId) {
 	    	$("#linkDetails").fadeOut(200)
 	    	updateLinksInfo()
 	    	unselectLink()
+	    	
+	    	if ($('#linksCanvas').is(':visible')) { //reload the links table then
+		    	loadLinksTable()
+    		}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -1112,8 +1125,9 @@ function cancelPlanLink() {
 	//remove the temp path
 	if (tempPath) { //create new link
 		removeTempPath()
-		hideActiveDiv($('#planLinkDetails'))
-	} else { //simply go back to linkDetails
+		//hideActiveDiv($('#planLinkDetails'))
+		$('#sidePanel').fadeOut(200) //hide the whole side panel
+	} else { //simply go back to linkDetails of the current link (exit edit mode)
 		setActiveDiv($('#linkDetails'))
 	}
 	hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
@@ -1294,6 +1308,14 @@ function updateMaintenanceQuality() {
 }
 
 function showLinksDetails() {
+	selectedLink = undefined
+	loadLinksTable()
+	setActiveDiv($('#linksCanvas'));
+	$('#sidePanel').fadeOut(200);
+	$('#sidePanel').appendTo($('#linksCanvas'))
+}
+
+function loadLinksTable() {
 	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
 	$.ajax({
 		type: 'GET',
@@ -1307,27 +1329,38 @@ function showLinksDetails() {
 				link.totalPassengers = link.passengers.economy + link.passengers.business + link.passengers.first
 			})
 	    	
-	    	updateLinksTable('fromAirport', 'ascending');
+			var selectedSortHeader = $('#linksTable .table-header .cell a.selected') 
+		    updateLinksTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
-	
-	
-	setActiveDiv($('#linksCanvas'));
 }
 
-function updateLinksTable(sortingProperty, ascending) {
+function toggleLinksTableSortOrder(sortHeader) {
+	if (sortHeader.data("sort-order") == "ascending") {
+		sortHeader.data("sort-order", "descending")
+	} else {
+		sortHeader.data("sort-order", "ascending")
+	}
+	
+	sortHeader.closest(".cell").siblings().children("a").removeClass("selected")
+	sortHeader.addClass("selected")
+	
+	updateLinksTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
+}
+
+function updateLinksTable(sortProperty, sortOrder) {
 	var linksTable = $("#linksCanvas #linksTable")
 	linksTable.children("div.table-row").remove()
 	
 	//sort the list
-	loadedLinks.sort(sortByProperty(sortingProperty, ascending == "ascending"))
+	loadedLinks.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
 	
 	$.each(loadedLinks, function(index, link) {
-		var row = $("<div class='table-row'></div>")
+		var row = $("<div class='table-row clickable' onclick='selectLinkFromTable($(this), " + link.id + ")'></div>")
 		
 		row.append("<div class='cell'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "</div>")
 		row.append("<div class='cell'>" + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
@@ -1337,11 +1370,19 @@ function updateLinksTable(sortingProperty, ascending) {
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.revenue) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.profit) + "</div>")
 		
+		if (selectedLink == link.id) {
+			row.addClass("selected")
+		}
 		
 		linksTable.append(row)
 	});
 }
 
+function selectLinkFromTable(row, linkId) {
+	row.siblings().removeClass("selected")
+	row.addClass("selected")
+	selectLinkAndLoadDetails(linkId)
+}
 
 
 	
