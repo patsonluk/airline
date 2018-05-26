@@ -1,4 +1,8 @@
 function plotMaintenanceQualityGauge(container, currentQualityInput) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var dataSource = { 
 			"chart": {
 		    	"theme": "fint",
@@ -68,6 +72,10 @@ function plotMaintenanceQualityGauge(container, currentQualityInput) {
 }
 
 function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMultipliers) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	container.empty()
 	var dataSource = { 
 		"chart": {
@@ -184,6 +192,10 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 }
 
 function plotAirportShares(airportShares, currentAirportId, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var data = []
 	$.each(airportShares, function(key, airportShare) {
 		var entry = {
@@ -222,6 +234,10 @@ function plotAirportShares(airportShares, currentAirportId, container) {
 }
 
 function plotLinkProfit(linkConsumptions, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var data = []
 	var category = []
 	 
@@ -271,6 +287,14 @@ function plotLinkProfit(linkConsumptions, container) {
 }
 
 function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer) {
+	ridershipContainer.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
+	revenueContainer.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var emptySeatsData = []
 	var soldSeatsData = {
 			economy : [],
@@ -383,6 +407,10 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 
 
 function plotPie(dataSource, currentKey, container, keyName, valueName) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var data = []
 	$.each(dataSource, function(key, dataEntry) {
 		var entry = {
