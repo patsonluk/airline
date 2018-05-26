@@ -313,15 +313,15 @@
 <!--   			end world map canvas -->
 			<div id="linksCanvas" style="display: none;">
   				<div style="height: 100% ; width : 50%; float: left;"> 
-	  	  			<div class="table" id="linksTable" style="height: 100%; width: 100%">
+	  	  			<div class="table data" id="linksTable" style="height: 100%; width: 100%">
 	 	  				<div class="table-header">
-	 	  					<div class="cell" style="width: 20%"><a href='javascript:void(0)' data-sort-property="fromAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))" class="selected">From Airport</a></div>
-	 	  					<div class="cell" style="width: 20%"><a href='javascript:void(0)' data-sort-property="toAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</a></div>
-	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</a></div>
-	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity</a></div>
-	 	  					<div class="cell" style="width: 8%" align="right"><a href='javascript:void(0)' data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Passenger</a></div>
-	 	  					<div class="cell" style="width: 15%" align="right"><a href='javascript:void(0)' data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</a></div>
-	 	  					<div class="cell" style="width: 15%" align="right"><a href='javascript:void(0)' data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</a></div>
+	 	  					<div class="cell clickable selected" style="width: 20%" data-sort-property="fromAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
+	 	  					<div class="cell clickable" style="width: 20%" data-sort-property="toAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
+	 	  					<div class="cell clickable" style="width: 8%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
+	 	  					<div class="cell clickable" style="width: 8%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity</div>
+	 	  					<div class="cell clickable" style="width: 8%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Passenger</div>
+	 	  					<div class="cell clickable" style="width: 15%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
+	 	  					<div class="cell clickable" style="width: 15%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 						</div>
          			</div>
 				</div>					  				

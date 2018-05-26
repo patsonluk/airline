@@ -1336,7 +1336,7 @@ function toggleLinksTableSortOrder(sortHeader) {
 		sortHeader.data("sort-order", "ascending")
 	}
 	
-	sortHeader.closest(".cell").siblings().children("a").removeClass("selected")
+	sortHeader.siblings().removeClass("selected")
 	sortHeader.addClass("selected")
 	
 	updateLinksTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
