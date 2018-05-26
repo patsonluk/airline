@@ -498,6 +498,15 @@ function addMarkers(airports) {
 		  		icon: icon
 			  });
 		  
+		  var zIndex = airportInfo.size * 10 
+		  var sizeAdjust = Math.floor(airportInfo.population / 1000000) //add something extra due to pop
+		  if (sizeAdjust > 9) {
+			sizeAdjust = 9;
+		  }
+		  zIndex += sizeAdjust
+		  
+		  marker.setZIndex(zIndex); //major airport should have higher index
+		  
 		  marker.addListener('click', function() {
 			  infoWindow.close();
 			  
