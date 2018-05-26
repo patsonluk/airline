@@ -221,7 +221,12 @@ function toggleOnOff(element) {
 	}
 }
 
-function selectTab(tab) {
+/**
+ * Performs UI change to highlighting a tab (and unhighlighting others) 
+ * @param tab
+ * @returns
+ */
+function highlightTab(tab) {
 	tab.siblings().children("span").removeClass("selected")
 	//highlight the selected model
 	tab.children("span").addClass("selected")

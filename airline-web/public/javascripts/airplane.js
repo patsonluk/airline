@@ -138,7 +138,7 @@ function loadOwnedAirplaneDetails(airplaneId) {
 	    	$("#airplaneDetailsValue").text("$" + commaSeparateNumber(airplane.value))
 	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.link) {
-	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='selectLinkAndLoadDetails(" + airplane.link.id + ", true)'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
+	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='selectLinkFromMap(" + airplane.link.id + ", true)'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
 	    		$("#sellAirplaneButton").hide()
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
@@ -156,6 +156,7 @@ function loadOwnedAirplaneDetails(airplaneId) {
 
 function showAirplaneCanvas() {
 	setActiveDiv($("#airplaneCanvas"))
+	highlightTab($('#airplaneCanvasTab'))
 	
 	if ($("#airplaneCanvas #airplaneModelList a.selected").length !== 0) {
 		selectedModelId = $("#airplaneCanvas #airplaneModelList a.selected").data("modelId")

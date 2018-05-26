@@ -1,32 +1,33 @@
 var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
 
 function showCountryView() {
-	if (setActiveDiv($("#countryCanvas"))) {
-		$.ajax({
-			type: 'GET',
-			url: "countries",
-		    contentType: 'application/json; charset=utf-8',
-		    dataType: 'json',
-		    success: function(countries) {
-		    	$("#countryList").empty()
-		    	$.each(countries, function(index, country) {
-		    		//var itemDiv = $("<div onclick='loadCountryDetails('" + country.countryCode +"')'><span class='label'>" + country.name + "</span></div>")
-		   
-		    		var itemDiv = $("<a href='javascript:void(0)' onclick='loadCountryDetails(\"" + country.countryCode + "\")'></a>").text(country.name)
-					$("#countryList").append(itemDiv)
-		    		if ($.inArray(country.countryCode, noFlags) == -1) {
-		    			$("#countryList").append("<img src='assets/images/flags/" + country.countryCode + ".png'/>")
-		    		}
-					$("#countryList").append("<br/>")
-		    		
-		    	})
-		    },
-		    error: function(jqXHR, textStatus, errorThrown) {
-		            console.log(JSON.stringify(jqXHR));
-		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-		    }
-		});
-	}
+	setActiveDiv($("#countryCanvas"))
+	highlightTab($('#countryCanvasTab'))
+	
+	$.ajax({
+		type: 'GET',
+		url: "countries",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(countries) {
+	    	$("#countryList").empty()
+	    	$.each(countries, function(index, country) {
+	    		//var itemDiv = $("<div onclick='loadCountryDetails('" + country.countryCode +"')'><span class='label'>" + country.name + "</span></div>")
+	   
+	    		var itemDiv = $("<a href='javascript:void(0)' onclick='loadCountryDetails(\"" + country.countryCode + "\")'></a>").text(country.name)
+				$("#countryList").append(itemDiv)
+	    		if ($.inArray(country.countryCode, noFlags) == -1) {
+	    			$("#countryList").append("<img src='assets/images/flags/" + country.countryCode + ".png'/>")
+	    		}
+				$("#countryList").append("<br/>")
+	    		
+	    	})
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function loadCountryDetails(countryId) {

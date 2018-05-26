@@ -66,10 +66,14 @@ function loadUser(isLogin) {
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
 			  $("#loginPassword").val("")
-			  showFloatMessage("Successfully logged in")
+			  
+			  if (isLogin) {
+				  showFloatMessage("Successfully logged in")
+			  }
 			  
 			  refreshLoginBar()
 			  printConsole('') //clear console
+			  getAirports();
 		  }
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
@@ -99,7 +103,6 @@ function loadUser(isLogin) {
 
 function login()  {
 	loadUser(true)
-	getAirports()
 }
 
 function logout() {
@@ -546,10 +549,11 @@ function toggleConsoleMessage() {
 
 function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
+	highlightTab($('#worldMapCanvasTab'))
 	$('#sidePanel').appendTo($('#worldMapCanvas'))
 	
 	if (selectedLink) {
-		selectLinkAndLoadDetails(selectedLink)
+		selectLinkFromMap(selectedLink, true)
 	}
 }
 

@@ -68,14 +68,14 @@
   			<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
   			<span id="consoleMessage"/>
   		</div>
-  		
+  		 
   		<div style="width: 80px; float: left;">
 	  		<ul class="tabs">
-			  <li class="button" onclick="showWorldMap(); selectTab($(this))"><span class="selected">Map</span></li>
-			  <li class="button" onclick="showLinksDetails(); selectTab($(this))"><span>Routes</span></li>
-			  <li class="button" onclick="showAirportDetails(); selectTab($(this))"><span>Airport</span></li>
-			  <li class="button" onclick="showCountryView(); selectTab($(this))"><span>Country</span></li>
-			  <li class="button" onclick="showAirplaneCanvas(); selectTab( $(this))"><span>Airplane</span></li>
+			  <li class="button" id="worldMapCanvasTab" onclick="showWorldMap();"><span class="selected">Map</span></li>
+			  <li class="button" id="linksCanvasTab" onclick="showLinksDetails();"><span>Routes</span></li>
+			  <li class="button" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li>
+			  <li class="button" id="countryCanvasTab" onclick="showCountryView();"><span>Country</span></li>
+			  <li class="button" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
 			</ul>
 		</div>
 		
@@ -123,11 +123,11 @@
 				    			<div class="button" onclick="watchLink($('#actionLinkId').val(), false)">Watch</div>
 				    			<div class="button" onclick="watchLink($('#actionLinkId').val(), true)">Watch(Self)</div>
 				    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
-				    			<div class="button" onclick="unselectLink()">Cancel</div>
+				    			<div class="button" onclick="deselectLink()">Cancel</div>
 					    		
 					    		<div class="divider"></div>
 					    		<div class="table" id="linkHistoryDetails" style="width: 100%">
-				    				<h4>History</h4>	
+				    				<h4>History<img id="watchHistoryIcon" src='@routes.Assets.versioned("images/icons/footprints.png")' class='button' onclick="toggleWatchLink()"  title="Toggle passenger history view"/></h4>	
 					    			<div class="table-row">
 					    				<div class="label"><h5>Price:</h5></div>
 					    				<div class="value" id="linkHistoryPrice"></div>
