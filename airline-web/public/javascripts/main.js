@@ -59,6 +59,7 @@ function loadUser(isLogin) {
 	var ajaxCall = {
 	  type: "POST",
 	  url: "login",
+	  async: false,
 	  success: function(user) {
 		  if (user) {
 			  activeUser = user
@@ -98,6 +99,7 @@ function loadUser(isLogin) {
 
 function login()  {
 	loadUser(true)
+	getAirports()
 }
 
 function logout() {
@@ -120,6 +122,8 @@ function logout() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+	
+	removeMarkers()
 }
 
 
@@ -439,7 +443,7 @@ function initMap() {
 //  $("#linkHistoryButton").index = 2
 //  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
   
-  getAirports()
+  
 }
 
 

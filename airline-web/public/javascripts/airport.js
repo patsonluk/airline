@@ -528,6 +528,12 @@ function addMarkers(airports) {
 	markers = resultMarkers
 }
 
+function removeMarkers() {
+	$.each(markers, function(key, marker) {
+		marker.setMap(null)
+	});
+	markers = {}
+}
 
 function addCityMarkers(airportMap, airport) {
 	var cities = airport.citiesServed
