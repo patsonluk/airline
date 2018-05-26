@@ -85,7 +85,7 @@
   		<div id="canvas" style="width: 90% ; height: 80vh; float: left;" >
   			<div id="worldMapCanvas" style="height: 100%;">
   				<div id="map" style="height: 100%; width: 60%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
-  				<div id="sidePanel" style="width: 35% ; float: left; display:none;" >
+				<div id="sidePanel" style="width: 35% ; float: left; display:none;" >
 			    	<div id="detailsPanel" class="section" style="width: 100% ; float: left;">
 			    		<div id="linkDetails" style="width: 100%; display: none;">
 			    			<div style="width: 50%; float: left">
@@ -120,14 +120,16 @@
 				    			<input type="hidden" id="linkFromAirportId"></input>
 				    			<input type="hidden" id="linkToAirportId"></input>
 				    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
-				    			<div class="button" onclick="watchLink($('#actionLinkId').val(), false)">Watch</div>
-				    			<div class="button" onclick="watchLink($('#actionLinkId').val(), true)">Watch(Self)</div>
 				    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
 				    			<div class="button" onclick="deselectLink()">Cancel</div>
 					    		
 					    		<div class="divider"></div>
 					    		<div class="table" id="linkHistoryDetails" style="width: 100%">
-				    				<h4>History<img id="watchHistoryIcon" src='@routes.Assets.versioned("images/icons/footprints.png")' class='button' onclick="toggleWatchLink()"  title="Toggle passenger history view"/></h4>	
+				    				<h4>
+				    					History
+				    					<img src='@routes.Assets.versioned("images/icons/footprints.png")' class='button' onclick="toggleLinkHistoryView(false)"  title="Toggle passenger history view"/>
+				    					<img src='@routes.Assets.versioned("images/icons/footprints.png")' class='button' onclick="toggleLinkHistoryView(true)"  title="Toggle passenger history view (owned routes only)"/>
+				    				</h4>	
 					    			<div class="table-row">
 					    				<div class="label"><h5>Price:</h5></div>
 					    				<div class="value" id="linkHistoryPrice"></div>
@@ -471,6 +473,7 @@
 		<div style="clear:both"/>
     </div>
     
+    <!-- popups and overlay buttons below. Hidden by default -->
     <div style="display: none; width: 100%;" id="airportPopup">
     	<input type="hidden" id="airportPopupId"></input>
     	<div>
@@ -573,8 +576,9 @@
 		</div>
     </div>
     
+    <div class="button" id="hideLinkHistoryButton" onclick="hideLinkHistoryView()" style="display: none;">Exit Link History View</div>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
-</script>
+	</script>
 	 
   </body>
 </html>

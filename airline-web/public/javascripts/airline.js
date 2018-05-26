@@ -276,44 +276,47 @@ function getLinkColor(profit, revenue) {
 }
 
 function highlightPath(path) {
-	var originalColorString = path.strokeColor
-	path.originalColor = originalColorString
-	var totalFrames = 20
-	
-	var rgbHexValue = parseInt(originalColorString.substring(1), 16);
-	var currentRgb = { r : rgbHexValue >> (4 * 4), g : rgbHexValue >> (2 * 4) & 0xff, b : rgbHexValue & 0xff }
-	var highlightColor = { r : 0xff, g : 0xff, b : 0xff}
-	var colorStep = { r : (highlightColor.r - currentRgb.r) / totalFrames, g : (highlightColor.g - currentRgb.g) / totalFrames, b : (highlightColor.b - currentRgb.b) / totalFrames }
-	var currentFrame = 0
-	var animation = window.setInterval(function() {
-		if (currentFrame < totalFrames) { //transition to highlight color
-			currentRgb = { r : currentRgb.r + colorStep.r, g : currentRgb.g + colorStep.g, b : currentRgb.b + colorStep.b }
-		} else { //transition back to original color
-			currentRgb = { r : currentRgb.r - colorStep.r, g : currentRgb.g - colorStep.g, b : currentRgb.b - colorStep.b }
-		}
-		//convert currentRgb back to hexstring
-		var redHex = Math.round(currentRgb.r).toString(16)
-		if (redHex.length < 2) {
-			redHex = "0" + redHex
-		}
-		var greenHex = Math.round(currentRgb.g).toString(16)
-		if (greenHex.length < 2) {
-			greenHex = "0" + greenHex
-		}
-		var blueHex = Math.round(currentRgb.b).toString(16)
-		if (blueHex.length < 2) {
-			blueHex = "0" + blueHex
-		}
-		 
-		var colorHexString = "#" + redHex + greenHex + blueHex
-		path.setOptions({ strokeColor : colorHexString , strokeWeight : 4, zIndex : 91})
+	if (!path.highlighted) { //only highlight again if it's not already done so
+		var originalColorString = path.strokeColor
+		path.originalColor = originalColorString
+		var totalFrames = 20
 		
-		currentFrame = (currentFrame + 1) % (totalFrames * 2)
+		var rgbHexValue = parseInt(originalColorString.substring(1), 16);
+		var currentRgb = { r : rgbHexValue >> (4 * 4), g : rgbHexValue >> (2 * 4) & 0xff, b : rgbHexValue & 0xff }
+		var highlightColor = { r : 0xff, g : 0xff, b : 0xff}
+		var colorStep = { r : (highlightColor.r - currentRgb.r) / totalFrames, g : (highlightColor.g - currentRgb.g) / totalFrames, b : (highlightColor.b - currentRgb.b) / totalFrames }
+		var currentFrame = 0
+		var animation = window.setInterval(function() {
+			if (currentFrame < totalFrames) { //transition to highlight color
+				currentRgb = { r : currentRgb.r + colorStep.r, g : currentRgb.g + colorStep.g, b : currentRgb.b + colorStep.b }
+			} else { //transition back to original color
+				currentRgb = { r : currentRgb.r - colorStep.r, g : currentRgb.g - colorStep.g, b : currentRgb.b - colorStep.b }
+			}
+			//convert currentRgb back to hexstring
+			var redHex = Math.round(currentRgb.r).toString(16)
+			if (redHex.length < 2) {
+				redHex = "0" + redHex
+			}
+			var greenHex = Math.round(currentRgb.g).toString(16)
+			if (greenHex.length < 2) {
+				greenHex = "0" + greenHex
+			}
+			var blueHex = Math.round(currentRgb.b).toString(16)
+			if (blueHex.length < 2) {
+				blueHex = "0" + blueHex
+			}
+			 
+			var colorHexString = "#" + redHex + greenHex + blueHex
+			path.setOptions({ strokeColor : colorHexString , strokeWeight : 4, zIndex : 91})
+			
+			currentFrame = (currentFrame + 1) % (totalFrames * 2)
+			
+		}, 50)
+		path.animation = animation
 		
-	}, 50)
-	path.animation = animation
+		path.highlighted = true
+	}		
 	
-	path.highlighted = true
 }
 function unhighlightPath(path) {
 	window.clearInterval(path.animation)
@@ -585,7 +588,7 @@ function editLink(linkId) {
 	});
 }
 
-function watchLink(linkId, selfOnly) {
+function toggleLinkHistory(linkId, selfOnly) {
 	if (linkHistoryState == "hidden") {
 		clearAllPaths()
 		$.ajax({
@@ -614,50 +617,13 @@ function watchLink(linkId, selfOnly) {
 		linkHistoryState = "showInverted"
 		showLinkHistoryPaths(linkHistoryState)
 	} else if (linkHistoryState == "showInverted") {
-		linkHistoryState = "hidden"
-		showLinkHistoryPaths(linkHistoryState) //this actually remove all paths
-		historyPaths = {}
-		updateLinksInfo() //redraw all flight paths
+		linkHistoryState = "show"
+		showLinkHistoryPaths(linkHistoryState)
 	} else {
 		console.log("unknown linkHistoryState " + linkHistoryState)
 	}
 }
 
-function toggleLinkHistory() {
-	if (linkHistoryState == "hidden") {
-		$.ajax({
-			type: 'GET',
-			url: "airlines/" + activeAirline.id + "/link-history",
-		    contentType: 'application/json; charset=utf-8',
-		    dataType: 'json',
-		    success: function(linkHistory) {
-		    	if (!jQuery.isEmptyObject(linkHistory)) {
-		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, false, linkHistory.watchedLinkId)
-		    		})
-		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, true, linkHistory.watchedLinkId)
-		    		})
-		    		linkHistoryState = "show"
-		    		showLinkHistoryPaths(linkHistoryState)
-		    	}
-		    },
-	        error: function(jqXHR, textStatus, errorThrown) {
-		            console.log(JSON.stringify(jqXHR));
-		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-		    }
-		});
-	} else if (linkHistoryState == "show") {
-		linkHistoryState = "showInverted"
-		showLinkHistoryPaths(linkHistoryState)
-	} else if (linkHistoryState == "showInverted") {
-		linkHistoryState = "hidden"
-		showLinkHistoryPaths(linkHistoryState)
-		historyPaths = {}
-	} else {
-		console.log("unknown linkHistoryState " + linkHistoryState)
-	}
-}
 
 function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
@@ -747,6 +713,8 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 }
 
 function showLinkHistoryPaths(state) {
+	
+	
 	$.each(historyPaths, function(key, historyPath) {
 		if ((state == "showInverted" && historyPath.inverted) || (state == "show" && !historyPath.inverted)) {
 			var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers
@@ -1414,12 +1382,21 @@ function removeAllLinks() {
 	});
 }
 
-function toggleWatchLink() {
+function toggleLinkHistoryView(self) {
 	if (!$('#worldMapCanvas').is(":visible")) {
 		showWorldMap()
 	}
 	
-	watchLink(selectedLink, false)
+	$("#hideLinkHistoryButton").fadeIn(200);
+	toggleLinkHistory(selectedLink, self)
+}
+
+function hideLinkHistoryView() {
+	linkHistoryState = "hidden"
+	showLinkHistoryPaths(linkHistoryState) //this actually remove all paths
+	historyPaths = {}
+	updateLinksInfo() //redraw all flight paths
+	$('#hideLinkHistoryButton').fadeOut(200);
 }
 
 	

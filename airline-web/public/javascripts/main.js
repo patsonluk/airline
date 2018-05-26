@@ -446,7 +446,7 @@ function initMap() {
 //  $("#linkHistoryButton").index = 2
 //  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
   
-  
+  map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
 }
 
 

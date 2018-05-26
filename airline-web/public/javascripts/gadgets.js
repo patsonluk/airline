@@ -231,3 +231,8 @@ function highlightTab(tab) {
 	//highlight the selected model
 	tab.children("span").addClass("selected")
 }
+
+function highlightSwitch(selectedSwitch) {
+	selectedSwitch.siblings().removeClass("selected")
+	selectedSwitch.addClass("selected")
+}

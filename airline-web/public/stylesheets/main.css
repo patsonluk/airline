@@ -85,6 +85,10 @@ div.button {
 	margin: 5px 5px;
 }
 
+div.button.selected {
+	background-color: #A1D490;
+}
+
 img.button {
 	cursor: pointer
 }
