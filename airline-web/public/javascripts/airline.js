@@ -145,7 +145,6 @@ function updateLinksInfo() {
 	    success: function(links) {
 	    	$.each(links, function( key, link ) {
 	    		drawFlightPath(link)
-	    		insertLinkToList(link)
 	  		});
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -404,13 +403,6 @@ function drawFlightMarker(line, link) {
 }
 
 
-
-
-function insertLinkToList(link) {
-	var linkList = $('#linkList')
-	linkList.append($("<a href='javascript:void(0)' data-link-id='" +  link.id + "' onclick='selectLinkAndLoadDetails(" + link.id + ", true)'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
-	linkList.append($("<br/>"))
-}
 
 function unselectLink() {
 	var previousLinkId = selectedLink
@@ -1078,8 +1070,6 @@ function createLink() {
 		    		if (!flightPaths[savedLink.id]) { //new link
 		    			//remove temp path
 		    			removeTempPath()
-		    			//add to link List
-		    			insertLinkToList(savedLink)
 		    			//draw flight path
 		    			var newPath = drawFlightPath(savedLink)
 		    			selectLink(savedLink.id, false)
