@@ -26,7 +26,7 @@ class CountryApplication extends Controller {
       Json.obj(
         "countryCode" -> country.countryCode,
         "name" -> country.name,
-        "aiportPopulation" -> country.airportPopulation,
+        "airportPopulation" -> country.airportPopulation,
         "incomeLevel" -> Computation.getIncomeLevel(country.income),
         "openness" ->  country.openness
       )

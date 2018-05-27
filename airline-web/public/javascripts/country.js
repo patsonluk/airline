@@ -1,33 +1,71 @@
 var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
+var loadedCountries = []
 
 function showCountryView() {
 	setActiveDiv($("#countryCanvas"))
 	highlightTab($('#countryCanvasTab'))
 	
+
 	$.ajax({
 		type: 'GET',
 		url: "countries",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(countries) {
+	    	loadedCountries = countries;
 	    	$("#countryList").empty()
-	    	$.each(countries, function(index, country) {
-	    		//var itemDiv = $("<div onclick='loadCountryDetails('" + country.countryCode +"')'><span class='label'>" + country.name + "</span></div>")
-	   
-	    		var itemDiv = $("<a href='javascript:void(0)' onclick='loadCountryDetails(\"" + country.countryCode + "\")'></a>").text(country.name)
-				$("#countryList").append(itemDiv)
-	    		if ($.inArray(country.countryCode, noFlags) == -1) {
-	    			$("#countryList").append("<img src='assets/images/flags/" + country.countryCode + ".png'/>")
-	    		}
-				$("#countryList").append("<br/>")
-	    		
-	    	})
+	    	
+	    	var selectedSortHeader = $('#countryTable .table-header .cell.selected') 
+		    updateCountryTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function updateCountryTable(sortProperty, sortOrder) {
+	var selectedCountry = $("#countryCanvas #countryTable div.table-row.selected").data('country-code')
+	var countryTable = $("#countryCanvas #countryTable")
+	
+	countryTable.children("div.table-row").remove()
+	
+	//sort the list
+	loadedCountries.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
+	
+	$.each(loadedCountries, function(index, country) {
+		var row = $("<div class='table-row clickable' data-country-code='" + country.countryCode + "' onclick=\"loadCountryDetails('" + country.countryCode + "')\"></div>")
+		if ($.inArray(country.countryCode, noFlags) != -1) {
+			row.append("<div class='cell'></div>")
+		} else {
+			row.append("<div class='cell'><img src='assets/images/flags/" + country.countryCode + ".png'/></div>")
+		}
+		
+		row.append("<div class='cell'>" + country.name + "</div>")
+		row.append("<div class='cell' align='right'>" + country.airportPopulation + "</div>")
+		row.append("<div class='cell' align='right'>" + country.incomeLevel + "</div>")
+		row.append("<div class='cell' align='right'>" + country.openness + "</div>")
+		
+		if (selectedCountry == country.countryCode) {
+			row.addClass("selected")
+		}
+		
+		countryTable.append(row)
+	});
+}
+
+function toggleCountryTableSortOrder(sortHeader) {
+	if (sortHeader.data("sort-order") == "ascending") {
+		sortHeader.data("sort-order", "descending")
+	} else {
+		sortHeader.data("sort-order", "ascending")
+	}
+	
+	sortHeader.siblings().removeClass("selected")
+	sortHeader.addClass("selected")
+	
+	updateCountryTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
 function loadCountryDetails(countryId) {
@@ -60,6 +98,7 @@ function loadCountryDetails(countryId) {
 	    	} else {
 	    		$("#countryDetailsAirlineBases").text("-")
 	    	}
+	    	$("#countryDetails").fadeIn(200);
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
