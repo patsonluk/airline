@@ -190,6 +190,19 @@ div.googleMapButton {
 	width: 28px;
 	height: 28px;
 	margin-right: 10px;
+	font: 11px;
+}
+
+div.googleMapPanel {
+	box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+	border-radius: 3px;
+	background-color: rgb(255, 255, 255);
+	margin-bottom: 22px;
+	text-align: center;
+	padding: 8 px;
+	margin: 10px;
+	font: 11px;
+	border: 2px solid #fff;
 }
 
 .alignHelper {
@@ -288,6 +301,7 @@ li.row  {
   top: 0;
   left: 0;
   right: 0;
+  cursor: pointer;
   background: rgba(255, 255, 255, 0); //transparent
 } 
 

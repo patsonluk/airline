@@ -81,6 +81,7 @@
 		
 <!--   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
 <!-- 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
+	<div id="hideLinkHistoryButton" class="googleMapButton button" onclick="hideLinkHistoryView()" style="display: none;" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-return.png")' style="vertical-align: middle; padding-right: 5px"/>Exit route history view</div>
   	<!-- main canvas start -->
   		<div id="canvas" style="width: 90% ; height: 80vh; float: left;" >
   			<div id="worldMapCanvas" style="height: 100%;">
@@ -127,8 +128,6 @@
 					    		<div class="table" id="linkHistoryDetails" style="width: 100%">
 				    				<h4>
 				    					History
-				    					<img src='@routes.Assets.versioned("images/icons/footprints.png")' class='button' onclick="toggleLinkHistoryView(false)"  title="Toggle passenger history view"/>
-				    					<img src='@routes.Assets.versioned("images/icons/footprints.png")' class='button' onclick="toggleLinkHistoryView(true)"  title="Toggle passenger history view (owned routes only)"/>
 				    				</h4>	
 					    			<div class="table-row">
 					    				<div class="label"><h5>Price:</h5></div>
@@ -171,6 +170,7 @@
 					    				<div class="value" id="linkOtherCosts"></div>
 					    			</div>
 				    			</div>
+				    			<div class="button" id="toggleLinkHistoryButton" onclick="toggleLinkHistoryView()">View Passenger Map</div>
 				    			<div class="divider"></div>
 				    			<div class="table" id="linkCompetitons" style="width: 100%">
 			    					<h4>Direct Competitions</h4>
@@ -575,8 +575,7 @@
    			</div>
 		</div>
     </div>
-    
-    <div class="button" id="hideLinkHistoryButton" onclick="hideLinkHistoryView()" style="display: none;">Exit Link History View</div>
+	 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
 	</script>
 	 

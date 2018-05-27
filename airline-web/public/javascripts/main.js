@@ -446,8 +446,48 @@ function initMap() {
 //  $("#linkHistoryButton").index = 2
 //  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
   
-  map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
+//  map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
+//  var linkControlDiv = document.createElement('div');
+//  linkControlDiv.id = 'linkControlDiv';
+//  var linkControl = new LinkHistoryControl(linkControlDiv, map);
+//
+//  $(linkControlDiv).hide()
+//  
+//  linkControlDiv.index = 1;
+//  map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
+//  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(hideLinkHistoryButton);
+  
 }
+
+function LinkHistoryControl(controlDiv, map) {
+    // Set CSS for the control border.
+    var controlUI = document.createElement('div');
+    controlUI.style.backgroundColor = '#fff';
+    controlUI.style.border = '2px solid #fff';
+    controlUI.style.borderRadius = '3px';
+    controlUI.style.boxShadow = ' 0px 1px 4px -1px rgba(0,0,0,.3)';
+    //controlUI.style.cursor = 'pointer';
+    controlUI.style.marginBottom = '22px';
+    controlUI.style.textAlign = 'center';
+    controlUI.title = 'Click to recenter the map';
+    controlUI.style.padding = '8px';
+    controlUI.style.margin= '10px';
+    controlUI.style.verticalAlign = 'middle';
+    controlDiv.appendChild(controlUI);
+    
+
+    $(controlUI).append("<img src='assets/images/icons/24-arrow-180.png' class='button' onclick='toggleLinkHistoryView(false)'  title='Toggle passenger history view'/>")
+    // Set CSS for the control interior.
+    $(controlUI).append("<span id='linkHistoryText' style='color: rgb(86, 86, 86); font-family: Roboto, Arial, sans-serif; font-size: 11px;'></span>");
+    
+    $(controlUI).append("<img src='assets/images/icons/24-arrow.png' class='button' onclick='toggleLinkHistoryView(false)'  title='Toggle passenger history view'/>")
+
+    // Setup the click event listeners: simply set the map to Chicago.
+    controlUI.addEventListener('click', function() {
+      map.setCenter(chicago);
+    });
+
+  }
 
 
 function updateAllPanels(airlineId) {
@@ -474,7 +514,7 @@ function refreshPanels(airlineId) {
 	    success: function(airline) {
 	    	refreshTopBar(airline)
 	    	refreshLinks()
-	    	if (selectedLink) {
+	    	if ($("#linkDetails").is(":visible")) {
 	    		refreshLinkDetails(selectedLink)
 	    	}
 	    },
@@ -528,15 +568,30 @@ function updateTime(cycle, fraction) {
 }
 
 
-function printConsole(message, messageLevel = 1) {
+function printConsole(message, messageLevel = 1, activateConsole = false) {
 	var messageClass
 	if (messageLevel == 1) {
 		messageClass = 'actionMessage'
 	} else {
 		messageClass = 'errorMessage'
 	}
-	$('#console #consoleMessage').text(message)
-	$('#console #consoleMessage').removeClass().addClass(messageClass)
+	
+	
+	var consoleVisible = $('#console #consoleMessage').is(':visible')
+	
+	if (consoleVisible) {
+		$('#console #consoleMessage').fadeOut('slow', function() { //fade out and reset positions
+			$('#console #consoleMessage').text(message)
+			$('#console #consoleMessage').removeClass().addClass(messageClass)
+			$('#console #consoleMessage').fadeIn('slow')
+		}) 
+	} else {
+		$('#console #consoleMessage').text(message)
+		$('#console #consoleMessage').removeClass().addClass(messageClass)
+		if (activateConsole) {
+			$('#console #consoleMessage').fadeIn('slow')
+		}
+	}
 }
 
 function toggleConsoleMessage() {

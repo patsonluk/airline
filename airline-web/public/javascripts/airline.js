@@ -5,6 +5,7 @@ var historyPaths = {}
 var linkHistoryState = "hidden"
 var tempPath //temp path for new link creation
 var loadedLinks = []
+var loadedLinksById = {}
 	
 function updateAirlineInfo(airlineId) {
 	$.ajax({
@@ -146,6 +147,7 @@ function updateLinksInfo() {
 	    	$.each(links, function( key, link ) {
 	    		drawFlightPath(link)
 	  		});
+	    	updateLoadedLinks(links);
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -167,6 +169,7 @@ function refreshLinks() {
 	    	$.each(links, function( key, link ) {
 	    		refreshFlightPath(link)
 	  		});
+	    	updateLoadedLinks(links);
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -588,12 +591,14 @@ function editLink(linkId) {
 	});
 }
 
-function toggleLinkHistory(linkId, selfOnly) {
+function toggleLinkHistory(linkId) {
+	var linkInfo = loadedLinksById[linkId]
+	
 	if (linkHistoryState == "hidden") {
 		clearAllPaths()
 		$.ajax({
 			type: 'GET',
-			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?selfOnly=" + selfOnly,
+			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId,
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
 		    success: function(linkHistory) {
@@ -604,6 +609,7 @@ function toggleLinkHistory(linkId, selfOnly) {
 		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
 		    			drawLinkHistoryPath(relatedLink, true, linkId)
 		    		})
+		    		printConsole("Passengers using this flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route. Click on 'View Passenger Map' again to see more...", 1, true);
 		    		linkHistoryState = "show"
 		    		showLinkHistoryPaths(linkHistoryState)
 		    	}
@@ -615,8 +621,18 @@ function toggleLinkHistory(linkId, selfOnly) {
 		});
 	} else if (linkHistoryState == "show") {
 		linkHistoryState = "showInverted"
+		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route. Click on 'View Passenger Map' again to see more...", 1);
 		showLinkHistoryPaths(linkHistoryState)
 	} else if (linkHistoryState == "showInverted") {
+		linkHistoryState = "showSelf"
+		showLinkHistoryPaths(linkHistoryState)
+		printConsole("Passengers using this flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' again to see more...", 1);
+	} else if (linkHistoryState == "showSelf") {
+		linkHistoryState = "showInvertedSelf"
+		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' again to see more...", 1);
+		showLinkHistoryPaths(linkHistoryState)
+	} else if (linkHistoryState == "showInvertedSelf") {
+		printConsole("Showing all passengers that took flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route. Click on 'View Passenger Map' to see more...", 1);
 		linkHistoryState = "show"
 		showLinkHistoryPaths(linkHistoryState)
 	} else {
@@ -713,10 +729,11 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 }
 
 function showLinkHistoryPaths(state) {
-	
-	
 	$.each(historyPaths, function(key, historyPath) {
-		if ((state == "showInverted" && historyPath.inverted) || (state == "show" && !historyPath.inverted)) {
+		if ((state == "showInverted" && historyPath.inverted) || 
+		    (state == "show" && !historyPath.inverted) ||
+		    (state == "showInvertedSelf" && historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0) ||
+		    (state == "showSelf" && !historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0)) {
 			var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers
 			if (totalPassengers > 1000) {
 				historyPath.setOptions({strokeWeight : 3})
@@ -728,7 +745,6 @@ function showLinkHistoryPaths(state) {
 					historyPath.setOptions({strokeOpacity : newOpacity})
 				}
 			}
-			
 			if (historyPath.watched) {
 				highlightPath(historyPath)
 			}
@@ -1049,10 +1065,11 @@ function createLink() {
 		    			var newPath = drawFlightPath(savedLink)
 		    			selectLinkFromMap(savedLink.id, false)
 		    		}
-		    		refreshPanels(activeAirline.id)
+		    		//refreshPanels(activeAirline.id)
+		    		refreshLinkDetails(savedLink.id)
 		    		setActiveDiv($('#linkDetails'))
 		    		hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
-		    		
+		    				    				    		
 		    		if ($('#linksCanvas').is(':visible')) { //reload the links table then
 		    			loadLinksTable()
 		    		}
@@ -1289,7 +1306,7 @@ function loadLinksTable() {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(links) {
-	    	loadedLinks = links
+	    	updateLoadedLinks(links);
 	    	$.each(links, function(key, link) {
 				link.totalCapacity = link.capacity.economy + link.capacity.business + link.capacity.first
 				link.totalPassengers = link.passengers.economy + link.passengers.business + link.passengers.first
@@ -1382,21 +1399,46 @@ function removeAllLinks() {
 	});
 }
 
-function toggleLinkHistoryView(self) {
+function toggleLinkHistoryView() {
 	if (!$('#worldMapCanvas').is(":visible")) {
 		showWorldMap()
 	}
 	
-	$("#hideLinkHistoryButton").fadeIn(200);
-	toggleLinkHistory(selectedLink, self)
+	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) { //push here otherwise it's not centered
+		map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
+	}
+	$("#hideLinkHistoryButton").fadeIn(200)
+	
+//	var linkControlDiv = document.createElement('div');
+//	linkControlDiv.id = 'linkControlDiv';
+//	var linkControl = new LinkHistoryControl(linkControlDiv, map);
+//	linkControlDiv.index = 1;
+//	map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
+//	map.controls[google.maps.ControlPosition.RIGHT_TOP].push($("#hideLinkHistoryButton")[0]);
+	
+	toggleLinkHistory(selectedLink)
 }
 
 function hideLinkHistoryView() {
 	linkHistoryState = "hidden"
+	printConsole('')
 	showLinkHistoryPaths(linkHistoryState) //this actually remove all paths
 	historyPaths = {}
 	updateLinksInfo() //redraw all flight paths
-	$('#hideLinkHistoryButton').fadeOut(200);
+	
+//	$("#linkHistoryPanel").fadeOut(200);
+	$("#hideLinkHistoryButton").fadeOut(200);
+//	map.controls[google.maps.ControlPosition.TOP_CENTER].clear();
+//	map.controls[google.maps.ControlPosition.RIGHT_TOP].clear();
+	
+}
+
+function updateLoadedLinks(links) {
+	loadedLinks = links;
+	loadedLinksById = {}
+	$.each(links, function(index, link) {
+		loadedLinksById[link.id] = link
+	});
 }
 
 	
