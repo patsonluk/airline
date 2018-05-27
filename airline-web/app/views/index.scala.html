@@ -81,9 +81,8 @@
 		
 <!--   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
 <!-- 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
-	<div id="hideLinkHistoryButton" class="googleMapButton button" onclick="hideLinkHistoryView()" style="display: none;" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-return.png")' style="vertical-align: middle; padding-right: 5px"/>Exit route history view</div>
   	<!-- main canvas start -->
-  		<div id="canvas" style="width: 90% ; height: 80vh; float: left;" >
+  		<div id="canvas" style="float: left;" >
   			<div id="worldMapCanvas" style="height: 100%;">
   				<div id="map" style="height: 100%; width: 60%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
 				<div id="sidePanel" style="width: 35% ; float: left; display:none;" >
@@ -314,7 +313,7 @@
   			</div>
 <!--   			end world map canvas -->
 			<div id="linksCanvas" style="display: none;">
-  				<div style="height: 100% ; width : 50%; float: left;"> 
+  				<div style="height: 100% ; width : 50%; float: left;" class="section"> 
 	  	  			<div class="table data" id="linksTable" style="height: 100%; width: 100%">
 	 	  				<div class="table-header">
 	 	  					<div class="cell clickable selected" style="width: 20%" data-sort-property="fromAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
@@ -349,9 +348,11 @@
 	 				</div>
   				</div>
   			</div>
-  			<div id="countryCanvas" style="display: none;">
-  				<div id="countryList" style="height: 500px ; width : 300px; float: left; overflow-y: scroll;"></div>
-  				<div id="countryDetails" class="table" style="width: 900px;" float: left;">
+  			<div id="countryCanvas" style="height: 100%; display: none;">
+  				<div class="section" style="height: 90% ; width : 35%; float: left; overflow: auto;">
+  					<ul id="countryList"></ul>
+  				</div>
+  				<div id="countryDetails" class="table section" style="width: 60%;" float: left;">
   					<div class="table-row">
 	    				<div class="label"><h5>Country:</h5></div>
 	    				<div class="value" id="countryDetailsName"></div>
@@ -387,7 +388,7 @@
 	    		</div>
   			</div>
   			<div id="airplaneCanvas" style="height: 100%; display: none;">
-  				<div style="height: 100% ; width : 35%; float: left;"> 
+  				<div class="section" style="height: 90% ; width : 35%; float: left;"> 
 	  				<div id="airplaneModelSort" style="height: 35px ; width : 100%;">
 	  					<span class="label">Sort:</span>
 		  					<select id="airplaneSortSelect" onchange="updateAirplaneModelList($('#airplaneSortSelect').val(), $('#airplaneSortOrderSelect').val())">
@@ -406,10 +407,12 @@
 		  					</select>
 	  					
 	  				</div>
-	 	  			<div style="height: 90%; width : 60%; float: left; overflow: auto;">
+	 	  			<div class="section" style="height: 90%; width : 50%; float: left; overflow: auto; margin: 10px 0px 10px 10px; border-radius: 5px 0px 0px 5px;">
+	 	  				<h4>Airplane Models</h4>
 	 	  				<ul id="airplaneModelList"></ul>
 	 	  			</div>
-	  				<div style="height: 90% ; width : 40%; float: left; overflow: auto;">
+	  				<div class="section" style="height: 90% ; width : 40%; float: left; overflow: auto; margin: 10px 10px 10px 0px; border-radius: 0px 5px 5px 0px;">
+	  					<h4>Inventory</h4>
 	  					<ul id="airplaneInventoryList"></ul>
 	  				</div>
 				</div>					  				
@@ -474,6 +477,7 @@
     </div>
     
     <!-- popups and overlay buttons below. Hidden by default -->
+	<div id="hideLinkHistoryButton" class="googleMapButton button" onclick="hideLinkHistoryView()" style="display: none;" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-return.png")' style="vertical-align: middle; padding-right: 5px"/>Exit route history view</div>
     <div style="display: none; width: 100%;" id="airportPopup">
     	<input type="hidden" id="airportPopupId"></input>
     	<div>

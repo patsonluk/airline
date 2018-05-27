@@ -1,6 +1,13 @@
 body {
 	font-size: 13px;
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	
+	background: #abbaab;  /* fallback for old browsers */
+	background: -webkit-linear-gradient(to bottom, #ffffff, #abbaab);  /* Chrome 10-25, Safari 5.1-6 */
+	background: linear-gradient(to bottom, #ffffff, #abbaab); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+	background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 //#main {
@@ -51,6 +58,10 @@ body {
 .table .table-header {
 	display: table-header-group;
 	width: 100%;
+}
+
+.table .table-header .cell{
+	border-bottom: 1px solid #6093e7;	
 }
 
 div.label, span.label, div.header, span.header {
@@ -147,7 +158,7 @@ dd.error {
 	background: #000;
 	color: #ccc;
 	display: block;
-	padding: 5px;
+	padding: 5px 0px;
 	-moz-box-shadow:    inset 0 0 5px #fff;
   	-webkit-box-shadow: inset 0 0 5px #fff;
 	box-shadow:         inset 0 0 5px #fff;
@@ -219,12 +230,12 @@ div.divider {
 	margin-bottom: 5px;
 }
 
-a.selected, a:hover, span.selected, .table .table-row.clickable:hover, .table .table-row.clickable.selected, .table .cell.clickable.selected{
+a.selected, a:hover, span.selected, .table .table-row.clickable:hover, .table .table-row.clickable.selected, .table .cell.clickable.selected, li.clickable:hover, li.clickable.selected{
 	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;
 }
 
-.table .table-row.clickable:hover, .table .cell.clickable:hover {
+a:hover, .table .table-row.clickable:hover, .table .cell.clickable:hover, li.clickable:hover {
 	cursor: pointer;
 }
 
@@ -265,8 +276,10 @@ a.selected, a:hover, span.selected, .table .table-row.clickable:hover, .table .t
 	color: #FFF;
 }
 
-li.row  {
+li.row, div.table-row {
 	padding: 3px;
+	font-size: 11px;
+	color: #616161;
 }
 
 .table.data .table-row div {
@@ -304,6 +317,19 @@ li.row  {
   cursor: pointer;
   background: rgba(255, 255, 255, 0); //transparent
 } 
+
+
+div#canvas {
+	width: -webkit-calc(100% - 80px);
+    width:    -moz-calc(100% - 80px);
+    width:         calc(100% - 80px);
+    height: -webkit-calc(100vh - 70px); 
+    height: -moz-calc(100vh - 70px);
+    height: calc(100vh - 70px);
+
+//	background-image:url("../../assets/images/background/brushedsteel.jpg");
+}
+
 
 
 /* Make it move */

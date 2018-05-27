@@ -82,9 +82,9 @@ function updateModelInfo(modelId) {
 }
 
 function selectAirplaneModel(model) {
-	$("#airplaneCanvas #airplaneModelList a.selected").removeClass("selected")
+	$("#airplaneCanvas #airplaneModelList li.selected").removeClass("selected")
 	//highlight the selected model
-	$("#airplaneCanvas #airplaneModelList a[data-model-id='" + model.id +"']").addClass("selected")
+	$("#airplaneCanvas #airplaneModelList li[data-model-id='" + model.id +"']").addClass("selected")
 	
 	//expand the airplane list under this model
 	showAirplaneInventory(model)
@@ -107,21 +107,19 @@ function showAirplaneInventory(modelInfo) {
 	airplaneInventoryList.empty()
 	if (modelInfo.assignedAirplanes || modelInfo.freeAirplanes) {
 		$.each(modelInfo.assignedAirplanes, function( key, airplaneId ) {
-			var newListItem = $("<li class='row'></li>").appendTo(airplaneInventoryList)
-			newListItem.html($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
+			$("<li class='row clickable' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'>" + modelInfo.name + " (id " + airplaneId + ")</li>").appendTo(airplaneInventoryList)
 		});
 		
 		$.each(modelInfo.freeAirplanes, function( key, airplaneId ) {
-			var newListItem = $("<li class='row'></li>").appendTo(airplaneInventoryList)
-			newListItem.html($("<a href='javascript:void(0)' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'></a>").text(modelInfo.name + ' (id ' + airplaneId + ')'))
+			$("<li class='row clickable' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'>" + modelInfo.name + " (id " + airplaneId + ")</li>").appendTo(airplaneInventoryList)
 		});
 	}
 }
 
 function loadOwnedAirplaneDetails(airplaneId) {
-	$("#airplaneInventoryList a.selected").removeClass("selected")
+	$("#airplaneInventoryList li.selected").removeClass("selected")
 	//highlight the selected model
-	$("#airplaneInventoryList a[data-airplane-id='" + airplaneId +"']").addClass("selected")
+	$("#airplaneInventoryList li[data-airplane-id='" + airplaneId +"']").addClass("selected")
 	
 	var airlineId = activeAirline.id 
 	$("#actionAirplaneId").val(airplaneId)
@@ -203,9 +201,8 @@ function updateAirplaneModelList(sortingProperty, ascending) {
 	
 	$.each(sortedModels, function(index, model) {
 		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
-		var aLink = $("<a href='javascript:void(0)' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'></a>").text(label)
-		$("<li class='row'></li>").append(aLink).appendTo(airplaneModelList)
-		aLink.get(0).modelInfo = model //tag the info to the element
+		var item = $("<li class='row clickable' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'>" + label + "</li>").appendTo(airplaneModelList)
+		item.get(0).modelInfo = model //tag the info to the element
 		
 		if (selectedModelId == model.id) {
 			selectAirplaneModel(model)
