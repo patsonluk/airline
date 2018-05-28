@@ -191,6 +191,37 @@ function getAirportText(city, airportName) {
 	}
 }
 
+function getRelationshipDescription(value) {
+	if (value >= 4) {
+		return "Alliance"
+	}
+	if (value == 3) {
+		return "Close"
+	}
+	if (value == 2) {
+		return "Friendly"
+	}
+	if (value == 1) { 
+		return "Warm"
+	}
+	if (value == 0) {
+		return "Neutral"
+	}
+	if (value == -1) {
+		return "Cold"
+	} 
+	if (value == -2) {
+		return "Hostile"
+	}
+	if (value == -3) {
+		return "In Conflict"
+	}
+	if (value <= -4) {
+		return "War"
+	}
+	
+}
+
 function setActiveDiv(activeDiv) {
 	if (activeDiv.siblings(":visible").length){
 		activeDiv.siblings(":visible").fadeOut(200, function() { activeDiv.fadeIn(200) })
