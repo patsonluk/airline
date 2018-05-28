@@ -24,7 +24,7 @@ Belize,BZ,BLZ,084,ISO 3166-2:BZ,Americas,Central America,019,013
 Benin,BJ,BEN,204,ISO 3166-2:BJ,Africa,Western Africa,002,011
 Bermuda,BM,BMU,060,ISO 3166-2:BM,Americas,Northern America,019,021
 Bhutan,BT,BTN,064,ISO 3166-2:BT,Asia,Southern Asia,142,034
-Bolivia (Plurinational State of),BO,BOL,068,ISO 3166-2:BO,Americas,South America,019,005
+Bolivia,BO,BOL,068,ISO 3166-2:BO,Americas,South America,019,005
 Bonaire,BQ,BES,535,ISO 3166-2:BQ,Americas,Caribbean,019,029
 Bosnia and Herzegovina,BA,BIH,070,ISO 3166-2:BA,Europe,Southern Europe,150,039
 Botswana,BW,BWA,072,ISO 3166-2:BW,Africa,Southern Africa,002,018
@@ -69,7 +69,7 @@ Equatorial Guinea,GQ,GNQ,226,ISO 3166-2:GQ,Africa,Middle Africa,002,017
 Eritrea,ER,ERI,232,ISO 3166-2:ER,Africa,Eastern Africa,002,014
 Estonia,EE,EST,233,ISO 3166-2:EE,Europe,Northern Europe,150,154
 Ethiopia,ET,ETH,231,ISO 3166-2:ET,Africa,Eastern Africa,002,014
-Falkland Islands (Malvinas),FK,FLK,238,ISO 3166-2:FK,Americas,South America,019,005
+Falkland Islands,FK,FLK,238,ISO 3166-2:FK,Americas,South America,019,005
 Faroe Islands,FO,FRO,234,ISO 3166-2:FO,Europe,Northern Europe,150,154
 Fiji,FJ,FJI,242,ISO 3166-2:FJ,Oceania,Melanesia,009,054
 Finland,FI,FIN,246,ISO 3166-2:FI,Europe,Northern Europe,150,154
@@ -129,7 +129,7 @@ Liechtenstein,LI,LIE,438,ISO 3166-2:LI,Europe,Western Europe,150,155
 Lithuania,LT,LTU,440,ISO 3166-2:LT,Europe,Northern Europe,150,154
 Luxembourg,LU,LUX,442,ISO 3166-2:LU,Europe,Western Europe,150,155
 Macao,MO,MAC,446,ISO 3166-2:MO,Asia,Eastern Asia,142,030
-Macedonia (the former Yugoslav Republic of),MK,MKD,807,ISO 3166-2:MK,Europe,Southern Europe,150,039
+Macedonia,MK,MKD,807,ISO 3166-2:MK,Europe,Southern Europe,150,039
 Madagascar,MG,MDG,450,ISO 3166-2:MG,Africa,Eastern Africa,002,014
 Malawi,MW,MWI,454,ISO 3166-2:MW,Africa,Eastern Africa,002,014
 Malaysia,MY,MYS,458,ISO 3166-2:MY,Asia,South-Eastern Asia,142,035
@@ -142,8 +142,8 @@ Mauritania,MR,MRT,478,ISO 3166-2:MR,Africa,Western Africa,002,011
 Mauritius,MU,MUS,480,ISO 3166-2:MU,Africa,Eastern Africa,002,014
 Mayotte,YT,MYT,175,ISO 3166-2:YT,Africa,Eastern Africa,002,014
 Mexico,MX,MEX,484,ISO 3166-2:MX,Americas,Central America,019,013
-Micronesia (Federated States of),FM,FSM,583,ISO 3166-2:FM,Oceania,Micronesia,009,057
-Moldova (Republic of),MD,MDA,498,ISO 3166-2:MD,Europe,Eastern Europe,150,151
+Micronesia,FM,FSM,583,ISO 3166-2:FM,Oceania,Micronesia,009,057
+Moldova,MD,MDA,498,ISO 3166-2:MD,Europe,Eastern Europe,150,151
 Monaco,MC,MCO,492,ISO 3166-2:MC,Europe,Western Europe,150,155
 Mongolia,MN,MNG,496,ISO 3166-2:MN,Asia,Eastern Asia,142,030
 Montenegro,ME,MNE,499,ISO 3166-2:ME,Europe,Southern Europe,150,039
