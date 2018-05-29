@@ -198,11 +198,12 @@ function setActiveDiv(activeDiv) {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
 			return false;
 		} else {
+			activeDiv.siblings().hide();
 			activeDiv.fadeIn(200)
 		}
 	}
-	activeDiv.parent().show()
 	
+	activeDiv.parent().show()
 	return true;
 }
 
