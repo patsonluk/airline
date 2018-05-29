@@ -77,8 +77,6 @@ function updateModelInfo(modelId) {
 	$('#airplaneModelDetails #range').text(model.range + "km")
 	$('#airplaneModelDetails #speed').text(model.speed + "km/h")
 	$('#airplaneModelDetails #price').text("$" + commaSeparateNumber(model.price))
-	
-	setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 }
 
 function selectAirplaneModel(model) {

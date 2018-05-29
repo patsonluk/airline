@@ -779,25 +779,27 @@ function planLink(fromAirport, toAirport) {
 	$("#planLinkToAirportId").val(toAirport)
 	
 	if (fromAirport && toAirport) {
-		var url = "airlines/" + airlineId + "/plan-link"
-		$.ajax({
-			type: 'POST',
-			url: url,
-			data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
-//			contentType: 'application/json; charset=utf-8',
-			dataType: 'json',
-		    success: function(linkInfo) {
-		    	updatePlanLinkInfo(linkInfo)
-		    	$('#sidePanel').fadeIn(200);
-		    },
-	        error: function(jqXHR, textStatus, errorThrown) {
-		            console.log(JSON.stringify(jqXHR));
-		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-		    }
-		});
-		//hide existing info
-		$("#planLinkDetails div.value").hide()
 		setActiveDiv($('#planLinkDetails'))
+		$('#sidePanel').fadeOut(200, function() {
+		var url = "airlines/" + airlineId + "/plan-link"
+			$.ajax({
+				type: 'POST',
+				url: url,
+				data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
+	//			contentType: 'application/json; charset=utf-8',
+				dataType: 'json',
+			    success: function(linkInfo) {
+			    	updatePlanLinkInfo(linkInfo)
+			    	$('#sidePanel').fadeIn(200);
+			    },
+		        error: function(jqXHR, textStatus, errorThrown) {
+			            console.log(JSON.stringify(jqXHR));
+			            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+			    }
+			});
+		//hide existing info
+		//$("#planLinkDetails div.value").hide()
+		});
 	}
 	
 	
@@ -928,9 +930,13 @@ function updatePlanLinkInfo(linkInfo) {
 		$("#planLinkModelSelect").next($(".warning")).remove()
 		$("#planLinkModelSelect").after("<span class='label warning'>No airplane model can fly to this destination</span>")
 		$("#planLinkModelSelect").hide()
+		
+		hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
 	} else {
 		$("#planLinkModelSelect").next($(".warning")).remove()
 		$("#planLinkModelSelect").show()
+		
+		setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 	}
 	
 	updatePlanLinkInfoWithModelSelected($("#planLinkModelSelect").val())
