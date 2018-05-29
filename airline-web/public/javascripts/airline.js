@@ -834,6 +834,8 @@ function updatePlanLinkInfo(linkInfo) {
 	$('#planLinkToAirportName').text(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName))
 	$('#planLinkToAirportName').append("<img src='assets/images/flags/" + linkInfo.toCountryCode + ".png' />")
 	
+	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
+	
 	$('#planLinkDistance').text(linkInfo.distance + " km")
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand) + " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)

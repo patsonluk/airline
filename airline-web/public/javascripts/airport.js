@@ -670,6 +670,10 @@ function updatePopupDetails(airportId) {
 	    		$("#airportPopupLoyalty").text("0")
 	    	}
 	    	
+	    	relationship = getRelationshipDescription(loadedCountriesByCode[airport.countryCode].mutualRelationship)
+	    	
+	    	$("#airportPopupRelationship").text(relationship)
+	    	
 	    	$("#airportPopupSlots").text(airport.availableSlots + " (" + airport.slots + ")")
 	    	
 	    	$.each(airport.linkCounts, function(withLinksAirlineId, linkCount) {

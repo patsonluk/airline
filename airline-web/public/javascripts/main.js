@@ -492,6 +492,7 @@ function LinkHistoryControl(controlDiv, map) {
 
 function updateAllPanels(airlineId) {
 	updateAirlineInfo(airlineId)
+	loadAllCountries()
 	
 	if (activeAirline) {
 		if (!activeAirline.headquarterAirport) {

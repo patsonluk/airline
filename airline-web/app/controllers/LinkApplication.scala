@@ -478,6 +478,7 @@ class LinkApplication extends Controller {
                                         "toAirportLatitude" -> toAirport.latitude,
                                         "toAirportLongitude" -> toAirport.longitude,
                                         "toCountryCode" -> toAirport.countryCode,
+                                        "mutualRelationship" -> relationship,
                                         "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,
                                         "economySpaceMultiplier" -> ECONOMY.spaceMultiplier, 

@@ -1,26 +1,35 @@
 var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
 var loadedCountries = []
+var loadedCountriesByCode = {}
 
 function showCountryView() {
 	setActiveDiv($("#countryCanvas"))
 	highlightTab($('#countryCanvasTab'))
 	
+	$("#countryList").empty()
+   	var selectedSortHeader = $('#countryTable .table-header .cell.selected') 
+    updateCountryTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
+}
+
+function loadAllCountries() {
 	var getUrl = "countries"
 	if (activeAirline && activeAirline.headquarterAirport) {
 		getUrl += "?homeCountryCode=" + activeAirline.headquarterAirport.countryCode
 	}
 	
+	loadedCountries = []
+	loadedCountriesByCode = {}
 	$.ajax({
 		type: 'GET',
 		url: getUrl,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(countries) {
-	    	loadedCountries = countries;
-	    	$("#countryList").empty()
+	    	$.each(countries, function(index, country) {
+	    		loadedCountriesByCode[country.countryCode] = country
+	    	});
 	    	
-	    	var selectedSortHeader = $('#countryTable .table-header .cell.selected') 
-		    updateCountryTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
+	    	loadedCountries = Object.values(loadedCountriesByCode);
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -54,7 +63,7 @@ function updateCountryTable(sortProperty, sortOrder) {
 		if (country.mutualRelationship) {
 			mutualRelationship = country.mutualRelationship 
 		}
-		row.append("<div class='cell' align='right'>" + mutualRelationship + "</div>")
+		row.append("<div class='cell' align='right'>" + getRelationshipDescription(mutualRelationship) + "</div>")
 		
 		if (selectedCountry == country.countryCode) {
 			row.addClass("selected")
@@ -129,3 +138,29 @@ function loadCountryDetails(countryId) {
 	});
 }
 
+function getRelationshipDescription(value) {
+	var description;
+	if (value >= 5) {
+		description = "Home Country"
+    } else if (value == 4) {
+		description = "Alliance"
+	} else if (value == 3) {
+		description = "Close"
+	} else if (value == 2) {
+		description = "Friendly"
+	} else if (value == 1) { 
+		description = "Warm"
+	} else if (value == 0) {
+		description = "Neutral"
+	} else if (value == -1) {
+		description = "Cold"
+	} else if (value == -2) {
+		description = "Hostile"
+	} else if (value == -3) {
+		description = "In Conflict"
+	} else if (value <= -4) {
+		description = "War"
+	}
+	
+	return description + ' (' + value + ')'
+}
