@@ -37,7 +37,7 @@ object AirportFeaturePatcher {
         "IAD" -> 2,
         "MIA" -> 2,
         "YVR" -> 2,
-        "DMK" -> 2,
+        "BKK" -> 2,
         "BOS" -> 2,
         "CGK" -> 2,
         "TPE" -> 3,
@@ -56,7 +56,7 @@ object AirportFeaturePatcher {
         "BOM" -> 2,
         "KIX" -> 3,
         "PEK" -> 2,
-        "DMK" -> 2,
+        "BKK" -> 2, //bangkok
         "HNL" -> 8, //honolulu
         "LAX" -> 2,
         "YVR" -> 2,
