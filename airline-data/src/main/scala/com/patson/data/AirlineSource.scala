@@ -4,7 +4,9 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Map
 import com.patson.data.Constants._
 import com.patson.model._
+import com.patson.MainSimulation
 import java.sql.Statement
+
 
 object AirlineSource {
   private[this] val BASE_QUERY = "SELECT a.id AS id, a.name AS name, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
@@ -364,6 +366,62 @@ object AirlineSource {
       connection.close()
     }
       
+  }
+  
+  
+  def saveTransaction(transaction : AirlineTransaction) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_TRANSACTION_TABLE + " VALUES(?, ?, ?, ?)")
+        preparedStatement.setInt(1, transaction.airlineId)
+        preparedStatement.setInt(2, transaction.transactionType.id)
+        preparedStatement.setDouble(3, transaction.amount)
+        preparedStatement.setInt(4, MainSimulation.currentWeek)
+        
+        preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def loadTransactions(cycle : Int) : List[AirlineTransaction] = {
+    val connection = Meta.getConnection()
+    try {
+        val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_TRANSACTION_TABLE + " WHERE cycle = ?")
+        
+        preparedStatement.setInt(1, cycle)
+        
+        val resultSet = preparedStatement.executeQuery()
+        
+        val transactions = new ListBuffer[AirlineTransaction]()
+        
+        while (resultSet.next()) {
+          transactions += AirlineTransaction(resultSet.getInt("airline"), TransactionType(resultSet.getInt("transaction_type")), resultSet.getLong("amount"))
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        transactions.toList
+      } finally {
+        connection.close()
+      }
+  }
+  
+  def deleteTransactions(cycleAndBefore : Int) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_TRANSACTION_TABLE + " WHERE cycle <= ?")
+        preparedStatement.setInt(1, cycleAndBefore)
+        
+        preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
   }
   
   def deleteGeneratedAirlines(fromId : Int) = {

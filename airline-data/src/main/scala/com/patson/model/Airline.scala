@@ -42,6 +42,22 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
 
 case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double)
 
+object TransactionType extends Enumeration {
+  type TransactionType = Value
+  val SELL_AIRPLANE, BUY_AIRPLANE, BUILD_BASE, CREATE_LINK = Value
+}
+
+object OtherBalanceItemType extends Enumeration {
+  type OtherBalanceItemType = Value
+  val INTEREST, BASE_UPKEEP, SERVICE_INVESTMENT, MAINTAINENCE_INVESTMENT, ADVERTISEMENT = Value
+}
+
+case class AirlineTransaction(airlineId : Int, transactionType : TransactionType.Value, amount : Long)
+case class AirlineBalanceData(profit : Long, revenue: Long, expense: Long, links : LinksBalanceData, transactions : TransactionsBalance, others : OthersBalance)
+case class LinksBalanceData(profit : Long, revenue : Long, expense : Long, airportFee : Long, fuelCost : Long, crewCost : Long, depreciation : Long, inflightCost : Long, maintenanceCost: Long)
+case class TransactionsBalance(profit : Long, revenue: Long, expense: Long, transactionSummary : Map[TransactionType.Value, Long])
+case class OthersBalance(profit : Long, revenue: Long, expense: Long, othersSummary : Map[OtherBalanceItemType.Value, Long])
+
 object Airline {
   def fromId(id : Int) = {
     val airlineWithJustId = Airline("<unknown>")

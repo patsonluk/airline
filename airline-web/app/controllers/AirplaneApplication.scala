@@ -16,6 +16,7 @@ import play.api.mvc._
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
+import com.patson.model.AirlineTransaction
 
 
 class AirplaneApplication extends Controller {
@@ -90,6 +91,7 @@ class AirplaneApplication extends Controller {
           val sellValue = Computation.calculateAirplaneSellValue(airplane)
           if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
             AirlineSource.adjustAirlineBalance(airlineId, sellValue)
+            AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.SELL_AIRPLANE, sellValue))
             Ok(Json.toJson(airplane))
           } else {
             NotFound
@@ -113,7 +115,9 @@ class AirplaneApplication extends Controller {
         BadRequest("Not enough money")   
       } else {
         
-        AirlineSource.adjustAirlineBalance(airlineId,  -1 * airplane.model.price * quantity)
+        val amount = -1 * airplane.model.price * quantity
+        AirlineSource.adjustAirlineBalance(airlineId, amount)
+        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.BUY_AIRPLANE, amount))
         val airplanes = ListBuffer[Airplane]()
         for (i <- 0 until quantity) {
           airplanes.append(airplane.copy())

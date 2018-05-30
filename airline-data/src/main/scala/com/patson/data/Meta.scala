@@ -263,6 +263,9 @@ object Meta {
       statement.execute()
       statement.close()
 
+      
+    createAirlineTransaction(connection)  
+      
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
       "city INTEGER," +
@@ -549,6 +552,30 @@ object Meta {
     statement.close()
     
     connection.close()
+  }
+  
+  def createAirlineTransaction(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_TRANSACTION_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_TRANSACTION_TABLE + "(" +
+      "airline INTEGER, " +
+      "transaction_type INTEGER, " +
+      "amount LONG," +
+      "cycle INTEGER," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_TRANSACTION_INDEX_1 + " ON " + AIRLINE_TRANSACTION_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_TRANSACTION_INDEX_2 + " ON " + AIRLINE_TRANSACTION_TABLE + "(cycle)")
+    statement.execute()
+    statement.close()
   }
 }
 

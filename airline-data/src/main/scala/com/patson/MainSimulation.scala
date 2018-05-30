@@ -25,6 +25,7 @@ import com.patson.stream.CycleStart
 
 object MainSimulation extends App {
   val CYCLE_DURATION : Int = 4 * 60
+  var currentWeek: Int = 0
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 
 //  import actorSystem.dispatcher
@@ -60,7 +61,7 @@ object MainSimulation extends App {
  
   
   class MainSimulationActor extends Actor {
-    var currentWeek = CycleSource.loadCycle()
+    currentWeek = CycleSource.loadCycle()
     def receive = {
       case Start =>
         startCycle(currentWeek)
@@ -68,6 +69,7 @@ object MainSimulation extends App {
         CycleSource.setCycle(currentWeek)
     }
   }
+   
   
   case class Start()
 
