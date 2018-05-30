@@ -1,26 +1,27 @@
 function showAirportDetails(airportId) {
-	if (setActiveDiv($("#airportCanvas"))) {
-		if (!airportId) {
-			airportId = activeAirline.headquarterAirport.airportId
-		}
-		$.ajax({
-			type: 'GET',
-			url: "airports/" + airportId,
-		    contentType: 'application/json; charset=utf-8',
-		    dataType: 'json',
-		    success: function(airport) {
-		    	if (airport) {
-		    		populateAirportDetails(airport)
-	//	    		$("#floatBackButton").show()
-	//	    		shimmeringDiv($("#floatBackButton"))
-		    	}
-		    },
-		    error: function(jqXHR, textStatus, errorThrown) {
-		            console.log(JSON.stringify(jqXHR));
-		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-		    }
-		});
+	setActiveDiv($("#airportCanvas"))
+	highlightTab($('#airportCanvasTab'))
+	
+	if (!airportId) {
+		airportId = activeAirline.headquarterAirport.airportId
 	}
+	$.ajax({
+		type: 'GET',
+		url: "airports/" + airportId,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(airport) {
+	    	if (airport) {
+	    		populateAirportDetails(airport)
+//	    		$("#floatBackButton").show()
+//	    		shimmeringDiv($("#floatBackButton"))
+	    	}
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 
@@ -35,7 +36,305 @@ function populateAirportDetails(airport) {
 //	    mapTypeControl: false,
 //	    scaleControl: false,
 //	    draggable: false,
-	   	gestureHandling: 'greedy'
+	   	gestureHandling: 'greedy',
+	   	gestureHandling: 'none',
+	   	fullscreenControl: false,
+	   	streetViewControl: false,
+        zoomControl: false,
+	   	styles: 
+	   		[
+	   		  {
+	   		    "elementType": "geometry",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#1d2c4d"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "elementType": "labels.text.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#8ec3b9"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "elementType": "labels.text.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#1a3646"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "administrative.country",
+	   		    "elementType": "geometry.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#4b6878"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "administrative.land_parcel",
+	   		    "elementType": "labels",
+	   		    "stylers": [
+	   		      {
+	   		        "visibility": "off"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "administrative.land_parcel",
+	   		    "elementType": "labels.text.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#64779e"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "administrative.province",
+	   		    "elementType": "geometry.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#4b6878"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "landscape.man_made",
+	   		    "elementType": "geometry.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#334e87"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "landscape.natural",
+	   		    "elementType": "geometry",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#023e58"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "poi",
+	   		    "elementType": "geometry",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#283d6a"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "poi",
+	   		    "elementType": "labels.text",
+	   		    "stylers": [
+	   		      {
+	   		        "visibility": "off"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "poi",
+	   		    "elementType": "labels.text.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#6f9ba5"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "poi",
+	   		    "elementType": "labels.text.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#1d2c4d"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "poi.business",
+	   		    "stylers": [
+	   		      {
+	   		        "visibility": "off"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "poi.park",
+	   		    "elementType": "geometry.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#023e58"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "poi.park",
+	   		    "elementType": "labels.text.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#3C7680"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road",
+	   		    "stylers": [
+	   		      {
+	   		        "visibility": "off"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road",
+	   		    "elementType": "geometry",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#304a7d"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road",
+	   		    "elementType": "labels.icon",
+	   		    "stylers": [
+	   		      {
+	   		        "visibility": "off"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road",
+	   		    "elementType": "labels.text.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#98a5be"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road",
+	   		    "elementType": "labels.text.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#1d2c4d"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road.highway",
+	   		    "elementType": "geometry",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#2c6675"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road.highway",
+	   		    "elementType": "geometry.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#255763"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road.highway",
+	   		    "elementType": "labels.text.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#b0d5ce"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road.highway",
+	   		    "elementType": "labels.text.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#023e58"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "road.local",
+	   		    "elementType": "labels",
+	   		    "stylers": [
+	   		      {
+	   		        "visibility": "off"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "transit",
+	   		    "stylers": [
+	   		      {
+	   		        "visibility": "off"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "transit",
+	   		    "elementType": "labels.text.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#98a5be"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "transit",
+	   		    "elementType": "labels.text.stroke",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#1d2c4d"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "transit.line",
+	   		    "elementType": "geometry.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#283d6a"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "transit.station",
+	   		    "elementType": "geometry",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#3a4762"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "water",
+	   		    "elementType": "geometry",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#0e1626"
+	   		      }
+	   		    ]
+	   		  },
+	   		  {
+	   		    "featureType": "water",
+	   		    "elementType": "labels.text.fill",
+	   		    "stylers": [
+	   		      {
+	   		        "color": "#4e6d70"
+	   		      }
+	   		    ]
+	   		  }
+	   		]
 	  });
 	if (airport) {
 		addCityMarkers(airportMap, airport)
@@ -200,6 +499,15 @@ function addMarkers(airports) {
 		  		icon: icon
 			  });
 		  
+		  var zIndex = airportInfo.size * 10 
+		  var sizeAdjust = Math.floor(airportInfo.population / 1000000) //add something extra due to pop
+		  if (sizeAdjust > 9) {
+			sizeAdjust = 9;
+		  }
+		  zIndex += sizeAdjust
+		  
+		  marker.setZIndex(zIndex); //major airport should have higher index
+		  
 		  marker.addListener('click', function() {
 			  infoWindow.close();
 			  
@@ -218,15 +526,6 @@ function addMarkers(airports) {
 			  infoWindow.setContent($("#airportPopup").html())
 			  infoWindow.open(map, this);
 			  
-			  if (isBase) {
-				  $("#planFromAirportButton").show()
-				  $("#planFromAirportButton").click(function() {
-					  planFromAirport($('#airportPopupId').val(), $('#airportPopupName').text())
-					  infoWindow.close();
-				  });
-			  } else {
-				  $("#planFromAirportButton").hide()
-			  }
 			  $("#planToAirportButton").click(function() {
 				  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
 				  infoWindow.close();
@@ -239,6 +538,12 @@ function addMarkers(airports) {
 	markers = resultMarkers
 }
 
+function removeMarkers() {
+	$.each(markers, function(key, marker) {
+		marker.setMap(null)
+	});
+	markers = {}
+}
 
 function addCityMarkers(airportMap, airport) {
 	var cities = airport.citiesServed
@@ -364,6 +669,10 @@ function updatePopupDetails(airportId) {
 	    		$("#airportPopupAwareness").text("0")
 	    		$("#airportPopupLoyalty").text("0")
 	    	}
+	    	
+	    	relationship = getRelationshipDescription(loadedCountriesByCode[airport.countryCode].mutualRelationship)
+	    	
+	    	$("#airportPopupRelationship").text(relationship)
 	    	
 	    	$("#airportPopupSlots").text(airport.availableSlots + " (" + airport.slots + ")")
 	    	

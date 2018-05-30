@@ -155,6 +155,25 @@ function commaSeparateNumber(val){
     return val;
 }
 
+function sortByProperty(property, ascending = true) {
+    var sortOrder = 1;
+    
+    if(!ascending) {
+        sortOrder = -1;
+    }
+    
+    return function (a,b) {
+    	var aVal = a[property]
+    	var bVal = b[property]
+    	if (Array.isArray(aVal) && Array.isArray(bVal)) {
+    		aVal = aVal.length
+    		bVal = bVal.length
+    	}
+    	var result = (aVal < bVal) ? -1 : (aVal > bVal) ? 1 : 0;
+        return result * sortOrder;
+    }
+}
+
 function padAfter(str, padChar, max) {
     str = str.toString();
 	return str.length < max ? padAfter(str + padChar, padChar, max) : str;
@@ -179,8 +198,42 @@ function setActiveDiv(activeDiv) {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
 			return false;
 		} else {
+			activeDiv.siblings().hide();
 			activeDiv.fadeIn(200)
 		}
 	}
+	
+	activeDiv.parent().show()
 	return true;
+}
+
+function hideActiveDiv(activeDiv) {
+	if (activeDiv.is(":visible")){
+		activeDiv.fadeOut(200)
+		activeDiv.parent().hide()
+	}
+}
+
+function toggleOnOff(element) {
+	if (element.is(":visible")){
+		element.fadeOut(200)
+	} else {
+		element.fadeIn(200)
+	}
+}
+
+/**
+ * Performs UI change to highlighting a tab (and unhighlighting others) 
+ * @param tab
+ * @returns
+ */
+function highlightTab(tab) {
+	tab.siblings().children("span").removeClass("selected")
+	//highlight the selected model
+	tab.children("span").addClass("selected")
+}
+
+function highlightSwitch(selectedSwitch) {
+	selectedSwitch.siblings().removeClass("selected")
+	selectedSwitch.addClass("selected")
 }

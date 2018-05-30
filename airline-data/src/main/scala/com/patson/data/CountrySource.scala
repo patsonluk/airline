@@ -181,6 +181,27 @@ object CountrySource {
      }
   }
   
+  def getCountryMutualRelationShips(country : String) : scala.collection.immutable.Map[(String, String), Int] = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("SELECT * FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + " WHERE country_1 = ?")
+     try {
+       
+       statement.setString(1, country)
+       val result = statement.executeQuery();
+       
+       
+       val relationships = Map[(String, String), Int]()
+       while (result.next()) {
+         relationships.put((result.getString("country_1"), result.getString("country_2")), result.getInt("relationship"))
+       }
+       
+       relationships.toMap
+     } finally {
+       statement.close()
+       connection.close()
+     }
+  }
+  
   def loadCountryRelationshipsByCriteria(criteria : List[(String, Any)]) : scala.collection.immutable.Map[Country, scala.collection.immutable.Map[Airline, Int]] = {
     val connection = Meta.getConnection()
     try {  

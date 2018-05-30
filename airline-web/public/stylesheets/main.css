@@ -1,15 +1,25 @@
-#main {
-	margin-top: 50px;
+body {
+	font-size: 13px;
+	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	
+	background: #abbaab;  /* fallback for old browsers */
+	background: -webkit-linear-gradient(to bottom, #ffffff, #abbaab);  /* Chrome 10-25, Safari 5.1-6 */
+	background: linear-gradient(to bottom, #ffffff, #abbaab); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+	background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
+//#main {
+//	margin-top: 50px;
+//}
+
 #map {
-	/*     width: 500px; */
-	height: 500px;
 	background-color: #FFF;
 }
 
 .menubar {
-	position: fixed;
+	//position: fixed;
 	top: 0px;
 	height: 40px;
 	width: 100%;
@@ -35,14 +45,23 @@
 	width: 60%;
 }
 
+.table .cell {
+	display: table-cell;
+}
+
 .table .table-row {
 	display: table-row;
 	width: 100%;
 }
 
+
 .table .table-header {
-	display: table-caption;
+	display: table-header-group;
 	width: 100%;
+}
+
+.table .table-header .cell{
+	border-bottom: 1px solid #6093e7;	
 }
 
 div.label, span.label, div.header, span.header {
@@ -65,7 +84,7 @@ div.button {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	color: #454544;
-	background-color: #efefef;
+	background-color: #ddd;
 	text-decoration: none;
 	font-size: 12px;
 	display: inline-block;
@@ -75,6 +94,10 @@ div.button {
 	padding: 5px 15px;
 	border-radius: 3px;
 	margin: 5px 5px;
+}
+
+div.button.selected {
+	background-color: #A1D490;
 }
 
 img.button {
@@ -131,10 +154,41 @@ dd.error {
 	/* 	font-family: "Open Sans", Verdana, Arial, sans-serif; */
 }
 
+#console  {
+	background: #000;
+	color: #ccc;
+	display: block;
+	padding: 5px 0px;
+	-moz-box-shadow:    inset 0 0 5px #fff;
+  	-webkit-box-shadow: inset 0 0 5px #fff;
+	box-shadow:         inset 0 0 5px #fff;
+	font-family: Consolas;
+	height: 20px;
+}
+
+#console .actionMessage, #console .errorMessage {
+	//animation-name: fadeIn;
+  	//animation-duration: 1s;
+}
+
+
+#console .errorMessage {
+	color: #AF383F;
+}
+
 div.section {
 	border-radius: 5px 5px 5px 5px;
-	background: linear-gradient(#FFFFFF 90%, #EEEEEE 100%);
+	//background: linear-gradient(#FFFFFF 90%, #EEEEEE 100%);
 	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
+	background-image: -webkit-gradient(linear, 0% 100%, 0% 90%, from(#EAE8E8), to(#FFFFFF));
+    background-image: -moz-linear-gradient(90deg, #EAE8E8 0%, #FFFFFF 10%);
+    border-radius: 0.5em 0.5em 0.5em 0.5em;
+    margin: 10px;
+    padding: 10px 10px 20px 10px;
+    //display: block;
+    //position: relative;
+}
+	
 	margin: 10px;
 	padding: 5px;
 }
@@ -147,6 +201,19 @@ div.googleMapButton {
 	width: 28px;
 	height: 28px;
 	margin-right: 10px;
+	font: 11px;
+}
+
+div.googleMapPanel {
+	box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+	border-radius: 3px;
+	background-color: rgb(255, 255, 255);
+	margin-bottom: 22px;
+	text-align: center;
+	padding: 8 px;
+	margin: 10px;
+	font: 11px;
+	border: 2px solid #fff;
 }
 
 .alignHelper {
@@ -163,10 +230,15 @@ div.divider {
 	margin-bottom: 5px;
 }
 
-a.selected, a:hover {
+a.selected, a:hover, span.selected, .table .table-row.clickable:hover, .table .table-row.clickable.selected, .table .cell.clickable.selected, li.clickable:hover, li.clickable.selected{
 	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;
 }
+
+a:hover, .table .table-row.clickable:hover, .table .cell.clickable:hover, li.clickable:hover {
+	cursor: pointer;
+}
+
 
 #airportIcons .feature {
 	margin-left: 2px;
@@ -184,7 +256,7 @@ a.selected, a:hover {
 .tabs li { 
 	float : left;
 	display: block;
-	padding: 14px 21px;
+	padding: 10px 10px;
 	border-radius: 3px 3px 0 0;
 	cursor: pointer;
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
@@ -202,4 +274,86 @@ a.selected, a:hover {
 	font-weight: 700;
 	background-color: #6093e7;
 	color: #FFF;
+}
+
+li.row, div.table-row {
+	padding: 3px;
+	font-size: 11px;
+	color: #616161;
+}
+
+.table.data .table-row div {
+	padding: 3px 0px;
+}
+
+.marquee span {
+    display: inline-block;
+    padding-left: 100%;
+    text-indent: 0;
+    animation: marquee 40s linear infinite;
+}
+
+/* Make it a marquee */
+.marquee {
+    margin: 0 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    //box-sizing: border-box;
+}
+
+.marquee span:hover {
+    animation-play-state: paused
+}
+
+.div-overlay {
+  content: " ";
+  z-index: 10;
+  display: block;
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0); //transparent
+} 
+
+
+div#canvas {
+	width: -webkit-calc(100% - 80px);
+    width:    -moz-calc(100% - 80px);
+    width:         calc(100% - 80px);
+    height: -webkit-calc(100vh - 70px); 
+    height: -moz-calc(100vh - 70px);
+    height: calc(100vh - 70px);
+
+//	background-image:url("../../assets/images/background/brushedsteel.jpg");
+}
+
+
+
+/* Make it move */
+@keyframes marquee {
+    0%   { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }

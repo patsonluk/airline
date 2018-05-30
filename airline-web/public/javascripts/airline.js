@@ -4,7 +4,8 @@ var flightMarkers = {} //key: link id, value: { markers : array[], animation}
 var historyPaths = {}
 var linkHistoryState = "hidden"
 var tempPath //temp path for new link creation
-
+var loadedLinks = []
+var loadedLinksById = {}
 	
 function updateAirlineInfo(airlineId) {
 	$.ajax({
@@ -12,6 +13,7 @@ function updateAirlineInfo(airlineId) {
 		url: "airlines/" + airlineId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
+	    async: false,
 	    success: function(airline) {
 	    	refreshTopBar(airline)
 	    	$("#currentAirline").text(airline.name)
@@ -24,7 +26,6 @@ function updateAirlineInfo(airlineId) {
 			$("#maintenanceQuality").val(airline.maintenanceQuality)
 			plotMaintenanceQualityGauge($("#maintenanceQualityGauge"), $("#maintenanceQuality"))
 	    	activeAirline = airline
-	    	updateAirplaneList()
 	    	updateLinksInfo()
 	    	updateAirportMarkers(airline)
 	    },
@@ -141,11 +142,12 @@ function updateLinksInfo() {
 		url: url,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
+	    async: false,
 	    success: function(links) {
 	    	$.each(links, function( key, link ) {
 	    		drawFlightPath(link)
-	    		insertLinkToList(link)
 	  		});
+	    	updateLoadedLinks(links);
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -167,6 +169,7 @@ function refreshLinks() {
 	    	$.each(links, function( key, link ) {
 	    		refreshFlightPath(link)
 	  		});
+	    	updateLoadedLinks(links);
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -210,7 +213,7 @@ function drawFlightPath(link, linkColor) {
    var resultPath = { path : flightPath, shadow : shadowPath }
    if (link.id) {
 	  shadowPath.addListener('click', function() {
-	   		selectLinkAndLoadDetails(link.id, false)
+	   		selectLinkFromMap(link.id, false)
 	  });
       drawFlightMarker(flightPath, link);
 	  flightPaths[link.id] = resultPath 
@@ -276,47 +279,54 @@ function getLinkColor(profit, revenue) {
 }
 
 function highlightPath(path) {
-	var originalColorString = path.strokeColor
-	path.originalColor = originalColorString
-	var totalFrames = 20
+	if (!path.highlighted) { //only highlight again if it's not already done so
+		var originalColorString = path.strokeColor
+		path.originalColor = originalColorString
+		var totalFrames = 20
+		
+		var rgbHexValue = parseInt(originalColorString.substring(1), 16);
+		var currentRgb = { r : rgbHexValue >> (4 * 4), g : rgbHexValue >> (2 * 4) & 0xff, b : rgbHexValue & 0xff }
+		var highlightColor = { r : 0xff, g : 0xff, b : 0xff}
+		var colorStep = { r : (highlightColor.r - currentRgb.r) / totalFrames, g : (highlightColor.g - currentRgb.g) / totalFrames, b : (highlightColor.b - currentRgb.b) / totalFrames }
+		var currentFrame = 0
+		var animation = window.setInterval(function() {
+			if (currentFrame < totalFrames) { //transition to highlight color
+				currentRgb = { r : currentRgb.r + colorStep.r, g : currentRgb.g + colorStep.g, b : currentRgb.b + colorStep.b }
+			} else { //transition back to original color
+				currentRgb = { r : currentRgb.r - colorStep.r, g : currentRgb.g - colorStep.g, b : currentRgb.b - colorStep.b }
+			}
+			//convert currentRgb back to hexstring
+			var redHex = Math.round(currentRgb.r).toString(16)
+			if (redHex.length < 2) {
+				redHex = "0" + redHex
+			}
+			var greenHex = Math.round(currentRgb.g).toString(16)
+			if (greenHex.length < 2) {
+				greenHex = "0" + greenHex
+			}
+			var blueHex = Math.round(currentRgb.b).toString(16)
+			if (blueHex.length < 2) {
+				blueHex = "0" + blueHex
+			}
+			 
+			var colorHexString = "#" + redHex + greenHex + blueHex
+			path.setOptions({ strokeColor : colorHexString , strokeWeight : 4, zIndex : 91})
+			
+			currentFrame = (currentFrame + 1) % (totalFrames * 2)
+			
+		}, 50)
+		path.animation = animation
+		
+		path.highlighted = true
+	}		
 	
-	var rgbHexValue = parseInt(originalColorString.substring(1), 16);
-	var currentRgb = { r : rgbHexValue >> (4 * 4), g : rgbHexValue >> (2 * 4) & 0xff, b : rgbHexValue & 0xff }
-	var highlightColor = { r : 0xff, g : 0xff, b : 0xff}
-	var colorStep = { r : (highlightColor.r - currentRgb.r) / totalFrames, g : (highlightColor.g - currentRgb.g) / totalFrames, b : (highlightColor.b - currentRgb.b) / totalFrames }
-	var currentFrame = 0
-	var animation = window.setInterval(function() {
-		if (currentFrame < totalFrames) { //transition to highlight color
-			currentRgb = { r : currentRgb.r + colorStep.r, g : currentRgb.g + colorStep.g, b : currentRgb.b + colorStep.b }
-		} else { //transition back to original color
-			currentRgb = { r : currentRgb.r - colorStep.r, g : currentRgb.g - colorStep.g, b : currentRgb.b - colorStep.b }
-		}
-		//convert currentRgb back to hexstring
-		var redHex = Math.round(currentRgb.r).toString(16)
-		if (redHex.length < 2) {
-			redHex = "0" + redHex
-		}
-		var greenHex = Math.round(currentRgb.g).toString(16)
-		if (greenHex.length < 2) {
-			greenHex = "0" + greenHex
-		}
-		var blueHex = Math.round(currentRgb.b).toString(16)
-		if (blueHex.length < 2) {
-			blueHex = "0" + blueHex
-		}
-		 
-		var colorHexString = "#" + redHex + greenHex + blueHex
-		path.setOptions({ strokeColor : colorHexString , strokeWeight : 4, zIndex : 91})
-		
-		currentFrame = (currentFrame + 1) % (totalFrames * 2)
-		
-	}, 50)
-	path.animation = animation
 }
 function unhighlightPath(path) {
 	window.clearInterval(path.animation)
 	path["animation"] = undefined
 	path.setOptions({ strokeColor : path.originalColor , strokeWeight : 2, zIndex : 90})
+	
+	delete path.highlighted
 }
 
 
@@ -403,39 +413,37 @@ function drawFlightMarker(line, link) {
 }
 
 
-
-
-function insertLinkToList(link) {
-	var linkList = $('#linkList')
-	linkList.append($("<a href='javascript:void(0)' data-link-id='" +  link.id + "' onclick='selectLinkAndLoadDetails(" + link.id + ", true)'></a>").text(link.fromAirportCode + " => " + link.toAirportCode + "(" + parseInt(link.distance) + "km)"))
-	linkList.append($("<br/>"))
-}
-
-function unselectLink() {
-	var previousSelectedListItem = $("#linkList a.selected")
-	 
-	if (previousSelectedListItem.length > 0) {
-		previousSelectedListItem.removeClass("selected")
-		var previousLinkId = previousSelectedListItem.data("linkId")
-		unhighlightPath(flightPaths[previousLinkId].path)
+/**
+ * deselect a currently selected link, perform both UI and underlying data changes
+ * @returns
+ */
+function deselectLink() {
+	if (selectedLink) {
+		unhighlightLink(selectedLink)
+		selectedLink = undefined
 	}
-	selectedLink = undefined
 	
-	$("#linkDetails").hide()
-}
-
-function selectLinkAndLoadDetails(linkId, refocus) {
-	setActiveDiv($("#map"))
-	selectLink(linkId, refocus)
-	refreshLinkDetails(linkId)
+	$("#sidePanel").fadeOut(200)
 }
 
 /**
- * Performs UI changes for selecting a link
+ * Perform UI changes for unhighlighting currently highlighted link
+ * @param linkId
+ * @returns
  */
-function selectLink(linkId, refocus) {
-	unselectLink()
-	
+function unhighlightLink() {
+	$.each(flightPaths, function(linkId, path) {
+		if (path.path.highlighted) {
+			unhighlightPath(path.path)
+		}
+	})
+		
+}
+
+/**
+ * Performs UI changes to highlight a link
+ */
+function highlightLink(linkId, refocus) {
 	if (tempPath) {
 		removeTempPath(tempPath)
 	}
@@ -449,18 +457,15 @@ function selectLink(linkId, refocus) {
 	}
 	
 	//highlight the corresponding list item
-	var selectedListItem = $("#linkList a[data-link-id='" + linkId + "']")
-	selectedListItem.addClass("selected")
-	
-	selectedLink = linkId
-	setActiveDiv($("#linkDetails"))
-	$("#actionLinkId").val(linkId)
+//	var selectedListItem = $("#linkList a[data-link-id='" + linkId + "']")
+//	selectedListItem.addClass("selected")
 }
 
 function refreshLinkDetails(linkId) {
 	var airlineId = activeAirline.id
 	
 	$("#linkCompetitons .data-row").remove()
+	$("#actionLinkId").val(linkId)
 	
 	//load link
 	$.ajax({
@@ -474,7 +479,7 @@ function refreshLinkDetails(linkId) {
 	    	$("#linkToAirport").text(getAirportText(link.toAirportCity, link.toAirportName))
 	    	$("#linkToAirport").append("<img src='assets/images/flags/" + link.toCountryCode + ".png' />")
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
-	    	$("#linkDistance").text(link.distance)
+	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").text(link.computedQuality)
 	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
 	    	$("#linkCurrentDetails").show()
@@ -564,7 +569,9 @@ function refreshLinkDetails(linkId) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
-	
+	setActiveDiv($("#linkDetails"))
+	hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
+	$('#sidePanel').fadeIn(200);
 	
 }
 
@@ -575,12 +582,6 @@ function editLink(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	$("#planLinkFromAirportName").text(link.fromAirportName)
-	    	$("#planLinkFromAirportName").append("<img src='assets/images/flags/" + link.fromCountryCode + ".png' />")
-	    	$("#planLinkToAirportName").text(link.toAirportName)
-	    	$("#planLinkToAirportName").append("<img src='assets/images/flags/" + link.toCountryCode + ".png' />")
-	    	$("#planLinkFromAirportId").val(link.fromAirportId)
-	    	$("#planLinkToAirportId").val(link.toAirportId)
 	    	planLink(link.fromAirportId, link.toAirportId)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -590,12 +591,14 @@ function editLink(linkId) {
 	});
 }
 
-function watchLink(linkId, selfOnly) {
+function toggleLinkHistory(linkId) {
+	var linkInfo = loadedLinksById[linkId]
+	
 	if (linkHistoryState == "hidden") {
 		clearAllPaths()
 		$.ajax({
 			type: 'GET',
-			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?selfOnly=" + selfOnly,
+			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId,
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
 		    success: function(linkHistory) {
@@ -606,6 +609,7 @@ function watchLink(linkId, selfOnly) {
 		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
 		    			drawLinkHistoryPath(relatedLink, true, linkId)
 		    		})
+		    		printConsole("Passengers using this flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route. Click on 'View Passenger Map' again to see more...", 1, true);
 		    		linkHistoryState = "show"
 		    		showLinkHistoryPaths(linkHistoryState)
 		    	}
@@ -617,52 +621,25 @@ function watchLink(linkId, selfOnly) {
 		});
 	} else if (linkHistoryState == "show") {
 		linkHistoryState = "showInverted"
+		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route. Click on 'View Passenger Map' again to see more...", 1);
 		showLinkHistoryPaths(linkHistoryState)
 	} else if (linkHistoryState == "showInverted") {
-		linkHistoryState = "hidden"
-		showLinkHistoryPaths(linkHistoryState) //this actually remove all paths
-		historyPaths = {}
-		updateLinksInfo() //redraw all flight paths
+		linkHistoryState = "showSelf"
+		showLinkHistoryPaths(linkHistoryState)
+		printConsole("Passengers using this flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' again to see more...", 1);
+	} else if (linkHistoryState == "showSelf") {
+		linkHistoryState = "showInvertedSelf"
+		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' again to see more...", 1);
+		showLinkHistoryPaths(linkHistoryState)
+	} else if (linkHistoryState == "showInvertedSelf") {
+		printConsole("Showing all passengers that took flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route. Click on 'View Passenger Map' to see more...", 1);
+		linkHistoryState = "show"
+		showLinkHistoryPaths(linkHistoryState)
 	} else {
 		console.log("unknown linkHistoryState " + linkHistoryState)
 	}
 }
 
-function toggleLinkHistory() {
-	if (linkHistoryState == "hidden") {
-		$.ajax({
-			type: 'GET',
-			url: "airlines/" + activeAirline.id + "/link-history",
-		    contentType: 'application/json; charset=utf-8',
-		    dataType: 'json',
-		    success: function(linkHistory) {
-		    	if (!jQuery.isEmptyObject(linkHistory)) {
-		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, false, linkHistory.watchedLinkId)
-		    		})
-		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, true, linkHistory.watchedLinkId)
-		    		})
-		    		linkHistoryState = "show"
-		    		showLinkHistoryPaths(linkHistoryState)
-		    	}
-		    },
-	        error: function(jqXHR, textStatus, errorThrown) {
-		            console.log(JSON.stringify(jqXHR));
-		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-		    }
-		});
-	} else if (linkHistoryState == "show") {
-		linkHistoryState = "showInverted"
-		showLinkHistoryPaths(linkHistoryState)
-	} else if (linkHistoryState == "showInverted") {
-		linkHistoryState = "hidden"
-		showLinkHistoryPaths(linkHistoryState)
-		historyPaths = {}
-	} else {
-		console.log("unknown linkHistoryState " + linkHistoryState)
-	}
-}
 
 function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
@@ -753,7 +730,10 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 
 function showLinkHistoryPaths(state) {
 	$.each(historyPaths, function(key, historyPath) {
-		if ((state == "showInverted" && historyPath.inverted) || (state == "show" && !historyPath.inverted)) {
+		if ((state == "showInverted" && historyPath.inverted) || 
+		    (state == "show" && !historyPath.inverted) ||
+		    (state == "showInvertedSelf" && historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0) ||
+		    (state == "showSelf" && !historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0)) {
 			var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers
 			if (totalPassengers > 1000) {
 				historyPath.setOptions({strokeWeight : 3})
@@ -765,7 +745,6 @@ function showLinkHistoryPaths(state) {
 					historyPath.setOptions({strokeOpacity : newOpacity})
 				}
 			}
-			
 			if (historyPath.watched) {
 				highlightPath(historyPath)
 			}
@@ -779,15 +758,6 @@ function showLinkHistoryPaths(state) {
 	})
 }
 
-
-function planFromAirport(fromAirportId) {
-	$('#planLinkFromAirportId').val(fromAirportId)
-//	$('#planLinkFromAirportName').text(fromAirportName)
-	
-	if ($('#planLinkFromAirportId').val() && $('#planLinkToAirportId').val()) {
-		planLink($('#planLinkFromAirportId').val(), $('#planLinkToAirportId').val())
-	}
-}
 
 function planToAirport(toAirportId, toAirportName) {
 	$('#planLinkToAirportId').val(toAirportId)
@@ -805,27 +775,34 @@ function planToAirport(toAirportId, toAirportName) {
 
 function planLink(fromAirport, toAirport) {
 	var airlineId = activeAirline.id
+	$("#planLinkFromAirportId").val(fromAirport)
+	$("#planLinkToAirportId").val(toAirport)
 	
 	if (fromAirport && toAirport) {
-		var url = "airlines/" + airlineId + "/plan-link"
-		$.ajax({
-			type: 'POST',
-			url: url,
-			data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
-//			contentType: 'application/json; charset=utf-8',
-			dataType: 'json',
-		    success: function(linkInfo) {
-		    	updatePlanLinkInfo(linkInfo)
-		    },
-	        error: function(jqXHR, textStatus, errorThrown) {
-		            console.log(JSON.stringify(jqXHR));
-		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-		    }
-		});
-		//hide existing info
-		$("#planLinkDetails div.value").hide()
 		setActiveDiv($('#planLinkDetails'))
+		$('#sidePanel').fadeOut(200, function() {
+		var url = "airlines/" + airlineId + "/plan-link"
+			$.ajax({
+				type: 'POST',
+				url: url,
+				data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
+	//			contentType: 'application/json; charset=utf-8',
+				dataType: 'json',
+			    success: function(linkInfo) {
+			    	updatePlanLinkInfo(linkInfo)
+			    	$('#sidePanel').fadeIn(200);
+			    },
+		        error: function(jqXHR, textStatus, errorThrown) {
+			            console.log(JSON.stringify(jqXHR));
+			            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+			    }
+			});
+		//hide existing info
+		//$("#planLinkDetails div.value").hide()
+		});
 	}
+	
+	
 }
 
 var planLinkInfo = null
@@ -833,16 +810,36 @@ var planLinkInfoByModel = {}
 var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
-	$('#planLinkFromAirportName').text(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName))
-	$('#planLinkFromAirportName').append("<img src='assets/images/flags/" + linkInfo.fromCountryCode + ".png' />")
+	$('#planLinkFromAirportName .text-value').text(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName))
+	$('#planLinkFromAirportName .flag').html("<img src='assets/images/flags/" + linkInfo.fromCountryCode + ".png' />")
+	
+	if (!linkInfo.existingLink && activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
+		$('#planLinkFromAirportEditIcon').show()
+		//fill the from list
+		$('#planLinkFromAirportSelect').empty()
+		$.each(activeAirline.baseAirports, function(index, base) {
+			var airportId = base.airportId
+			var cityName = base.city
+			var airportName = base.airportName
+			var option = $("<option></option>").attr("value", airportId).text(getAirportText(cityName, airportName))
+			
+			if ($('#planLinkFromAirportId').val() == airportId) {
+				option.prop("selected", true)
+			}
+			option.appendTo($("#planLinkFromAirportSelect"))
+		});
+	} else {
+		$('#planLinkFromAirportEditIcon').hide()
+	}
+	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	
 	$('#planLinkToAirportName').text(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName))
 	$('#planLinkToAirportName').append("<img src='assets/images/flags/" + linkInfo.toCountryCode + ".png' />")
 	
-	$('#planLinkDistance').text(linkInfo.distance)
-	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
-	$('#planLinkBusinessPassengers').text(linkInfo.businessPassengers)
-	$('#planLinkTouristPassengers').text(linkInfo.touristPassengers)
+	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
+	
+	$('#planLinkDistance').text(linkInfo.distance + " km")
+	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand) + " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
 	
 	
@@ -870,8 +867,8 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#addLinkButton').show()
 		$('#updateLinkButton').hide()
 		
-		//unselect the existing path if any
-		unselectLink()
+		//deselect the existing path if any
+		deselectLink()
 		//create a temp path
 		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
 		//set the temp path
@@ -884,25 +881,64 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#addLinkButton').hide()
 		$('#updateLinkButton').show()
 	}
+	//populate airplane model drop down
 	$("#planLinkModelSelect").find('option').remove()
 
 	planLinkInfo = linkInfo
 	planLinkInfoByModel = {}
 	existingLinkModelId = 0
 	
+	//find the selected model
+	var selectedModelId
+	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
+		if (linkInfo.existingLink) {
+			if (modelPlanLinkInfo.isAssigned) { //highest precedence
+				selectedModelId = modelPlanLinkInfo.modelId
+				return false
+			}
+		} else {
+			if (modelPlanLinkInfo.airplanes.length > 0) { //select the first one with available planes
+				selectedModelId = modelPlanLinkInfo.modelId
+				return false
+			}  
+		}
+	})
+	
+	if (!selectedModelId && linkInfo.modelPlanLinkInfo.length > 0) {
+		selectedModelId = linkInfo.modelPlanLinkInfo[0].modelId
+	}
+	
+	
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		var modelId = modelPlanLinkInfo.modelId
 		var modelname = modelPlanLinkInfo.modelName
 		var option = $("<option></option>").attr("value", modelId).text(modelname + " (" + modelPlanLinkInfo.airplanes.length + ")")
 		option.appendTo($("#planLinkModelSelect"))
-		if (modelPlanLinkInfo.isAssigned) {
+		
+		if (selectedModelId == modelId) {
 			option.prop("selected", true)
-			existingLinkModelId = modelId
+			if (linkInfo.existingLink) {
+				existingLinkModelId = modelId
+			}
+			updateModelInfo(modelId)
 		}
 		
 		planLinkInfoByModel[modelId] = modelPlanLinkInfo
 	});
-
+	
+	if (linkInfo.modelPlanLinkInfo.length == 0) {
+		$("#planLinkModelSelect").next($(".warning")).remove()
+		$("#planLinkModelSelect").after("<span class='label warning'>No airplane model can fly to this destination</span>")
+		$("#planLinkModelSelect").hide()
+		
+		hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
+	} else {
+		$("#planLinkModelSelect").next($(".warning")).remove()
+		$("#planLinkModelSelect").show()
+		
+		setActiveDiv($("#extendedPanel #airplaneModelDetails"))
+	}
+	
 	updatePlanLinkInfoWithModelSelected($("#planLinkModelSelect").val())
 	$("#planLinkDetails div.value").show()
 }
@@ -966,7 +1002,7 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 			}
 		})
 		
-		$('#planLinkDuration').text(thisModelPlanLinkInfo.duration)
+		$('#planLinkDuration').text(thisModelPlanLinkInfo.duration + " mins")
 		
 		if (existingLink) {
 			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
@@ -1033,14 +1069,18 @@ function createLink() {
 		    		if (!flightPaths[savedLink.id]) { //new link
 		    			//remove temp path
 		    			removeTempPath()
-		    			//add to link List
-		    			insertLinkToList(savedLink)
 		    			//draw flight path
 		    			var newPath = drawFlightPath(savedLink)
-		    			selectLink(savedLink.id, false)
+		    			selectLinkFromMap(savedLink.id, false)
 		    		}
-		    		refreshPanels(activeAirline.id)
+		    		//refreshPanels(activeAirline.id)
+		    		refreshLinkDetails(savedLink.id)
 		    		setActiveDiv($('#linkDetails'))
+		    		hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
+		    				    				    		
+		    		if ($('#linksCanvas').is(':visible')) { //reload the links table then
+		    			loadLinksTable()
+		    		}
 		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
@@ -1058,7 +1098,11 @@ function deleteLink(linkId) {
 	    success: function() {
 	    	$("#linkDetails").fadeOut(200)
 	    	updateLinksInfo()
-	    	updateAirplaneList() //refresh all airplane list for now
+	    	deselectLink()
+	    	
+	    	if ($('#linksCanvas').is(':visible')) { //reload the links table then
+		    	loadLinksTable()
+    		}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -1071,10 +1115,12 @@ function cancelPlanLink() {
 	//remove the temp path
 	if (tempPath) { //create new link
 		removeTempPath()
-		$('#planLinkDetails').hide()
-	} else { //simply go back to linkDetails
+		//hideActiveDiv($('#planLinkDetails'))
+		$('#sidePanel').fadeOut(200) //hide the whole side panel
+	} else { //simply go back to linkDetails of the current link (exit edit mode)
 		setActiveDiv($('#linkDetails'))
 	}
+	hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
 }
 
 function removeTempPath() {
@@ -1084,134 +1130,134 @@ function removeTempPath() {
 }
 
 
-function showVipRoutes() {
-	map.setZoom(2)
-	map.setCenter({lat: 20, lng: 150.644})
-   	
-	$.ajax({
-		type: 'GET',
-		url: "vip-routes",
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(routes) {
-	    	var routePaths = []
-	    	$.each(routes, function(key1, route) { 
-	    		var paths = []
-	    		$.each(route, function(key2, link) { //create paths for each route
-	    			var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
-	    			var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
-	    			var vipPath = new google.maps.Polyline({
-	    				 geodesic: true,
-	    			     strokeColor: "#DC83FC",
-	    			     strokeOpacity: 0.6,
-	    			     strokeWeight: 2,
-	    			     from : from,
-	    			     to : to,
-	    			     zIndex : 500,
-	    			     distance : google.maps.geometry.spherical.computeDistanceBetween(from, to) / 1000
-	    			});
-	    			paths.push(vipPath)
-	    		})
-	    		routePaths.push(paths)
-	    	})
-	    	
-	    	animateVipRoutes(routePaths, 0, 0, 0, null)
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
-}
+//function showVipRoutes() {
+//	map.setZoom(2)
+//	map.setCenter({lat: 20, lng: 150.644})
+//   	
+//	$.ajax({
+//		type: 'GET',
+//		url: "vip-routes",
+//	    contentType: 'application/json; charset=utf-8',
+//	    dataType: 'json',
+//	    success: function(routes) {
+//	    	var routePaths = []
+//	    	$.each(routes, function(key1, route) { 
+//	    		var paths = []
+//	    		$.each(route, function(key2, link) { //create paths for each route
+//	    			var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
+//	    			var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
+//	    			var vipPath = new google.maps.Polyline({
+//	    				 geodesic: true,
+//	    			     strokeColor: "#DC83FC",
+//	    			     strokeOpacity: 0.6,
+//	    			     strokeWeight: 2,
+//	    			     from : from,
+//	    			     to : to,
+//	    			     zIndex : 500,
+//	    			     distance : google.maps.geometry.spherical.computeDistanceBetween(from, to) / 1000
+//	    			});
+//	    			paths.push(vipPath)
+//	    		})
+//	    		routePaths.push(paths)
+//	    	})
+//	    	
+//	    	animateVipRoutes(routePaths, 0, 0, 0, null)
+//	    },
+//        error: function(jqXHR, textStatus, errorThrown) {
+//	            console.log(JSON.stringify(jqXHR));
+//	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+//	    }
+//	});
+//}
 
-function animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, currentDistance, vipMarker) {
-	var route = routePaths[currentRouteIndex]
-	var path = route[currentPathIndex]
-	if (currentDistance >= path.distance) {
-		currentPathIndex ++
-		if (currentPathIndex == route.length) { // all done with this route
-			animateArrival(vipMarker, true, 4) //hoooray! hop hop hop
-			setTimeout(function(removingRoute, done) {
-				$.each(removingRoute, function(key, path) {
-					path.setMap(null)
-				})
-				fadeOutMarker(vipMarker)
-				if (!done) {
-					animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, 0, null)
-				}
-			}, 4000, routePaths[currentRouteIndex], currentRouteIndex + 1 == routePaths.length)
-			
-			currentPathIndex = 0 //reset path index for next route
-			currentRouteIndex++
-		} else {
-			animateArrival(vipMarker, false, 4) //connnection meh
-			setTimeout(function() {
-				vipMarker.setAnimation(null)
-				animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, 0, vipMarker) 
-			}, 4000)
-		}
-	} else {
-		var from = path.from
-		var to = path.to
-		var newPosition = google.maps.geometry.spherical.interpolate(from, to, currentDistance / path.distance)
-		var newPath = path.getPath()
-		newPath.removeAt(1) //remove last to
-		newPath.push(newPosition) 
-		path.setPath(newPath)
-		
-		//add path and marker on first frame
-		if (currentDistance == 0) {
-			path.setMap(map)
-		}
-		if (vipMarker == null) {
-			var image = {
-	    	        url: "assets/images/icons/star-24.png",
-	    	        origin: new google.maps.Point(0, 0),
-	    	        anchor: new google.maps.Point(12, 12),
-	    	    };
-	    	vipMarker = new google.maps.Marker({
-	    		map : map,
-	    		icon : image, 
-			    clickable: false,
-			    zIndex: 1100
-			});
-		}
-		vipMarker.setPosition(newPosition)
-		setTimeout(function() { animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, currentDistance + 50, vipMarker) }, 20)
-	}
-}
-
-function animateArrival(vipMarker, bounce, influencePointCount) {
-	if (bounce) {
-		vipMarker.setAnimation(google.maps.Animation.BOUNCE)
-	}
-	
-	var iconDistance = 10
-	var anchorXShift = 8 + ((influencePointCount - 1) / 2) * iconDistance //icon center + biggest shift	
-	//drop some color wheels!
-	for (i = 0 ; i < influencePointCount; i++) {
-		setTimeout( function (index) {
-			var anchorX = anchorXShift - index * iconDistance
-			var image = {
-	    	        url: "assets/images/icons/color--plus.png",
-	    	        origin: new google.maps.Point(0, 0),
-					anchor: new google.maps.Point(anchorX, 30),
-	    	    }; 
-			colorMarker = new google.maps.Marker({
-	    		icon : image, 
-	    		position : vipMarker.getPosition(),
-			    clickable: false,
-			    map : map,
-			    opacity: 0,
-			    zIndex: 1000 + i,
-			})
-			fadeInMarker(colorMarker)
-			setTimeout( function(marker) {
-				fadeOutMarker(marker)
-			}, 3000, colorMarker)
-		}, (i + 1) * 200, i)
-	}
-}
+//function animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, currentDistance, vipMarker) {
+//	var route = routePaths[currentRouteIndex]
+//	var path = route[currentPathIndex]
+//	if (currentDistance >= path.distance) {
+//		currentPathIndex ++
+//		if (currentPathIndex == route.length) { // all done with this route
+//			animateArrival(vipMarker, true, 4) //hoooray! hop hop hop
+//			setTimeout(function(removingRoute, done) {
+//				$.each(removingRoute, function(key, path) {
+//					path.setMap(null)
+//				})
+//				fadeOutMarker(vipMarker)
+//				if (!done) {
+//					animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, 0, null)
+//				}
+//			}, 4000, routePaths[currentRouteIndex], currentRouteIndex + 1 == routePaths.length)
+//			
+//			currentPathIndex = 0 //reset path index for next route
+//			currentRouteIndex++
+//		} else {
+//			animateArrival(vipMarker, false, 4) //connnection meh
+//			setTimeout(function() {
+//				vipMarker.setAnimation(null)
+//				animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, 0, vipMarker) 
+//			}, 4000)
+//		}
+//	} else {
+//		var from = path.from
+//		var to = path.to
+//		var newPosition = google.maps.geometry.spherical.interpolate(from, to, currentDistance / path.distance)
+//		var newPath = path.getPath()
+//		newPath.removeAt(1) //remove last to
+//		newPath.push(newPosition) 
+//		path.setPath(newPath)
+//		
+//		//add path and marker on first frame
+//		if (currentDistance == 0) {
+//			path.setMap(map)
+//		}
+//		if (vipMarker == null) {
+//			var image = {
+//	    	        url: "assets/images/icons/star-24.png",
+//	    	        origin: new google.maps.Point(0, 0),
+//	    	        anchor: new google.maps.Point(12, 12),
+//	    	    };
+//	    	vipMarker = new google.maps.Marker({
+//	    		map : map,
+//	    		icon : image, 
+//			    clickable: false,
+//			    zIndex: 1100
+//			});
+//		}
+//		vipMarker.setPosition(newPosition)
+//		setTimeout(function() { animateVipRoutes(routePaths, currentRouteIndex, currentPathIndex, currentDistance + 50, vipMarker) }, 20)
+//	}
+//}
+//
+//function animateArrival(vipMarker, bounce, influencePointCount) {
+//	if (bounce) {
+//		vipMarker.setAnimation(google.maps.Animation.BOUNCE)
+//	}
+//	
+//	var iconDistance = 10
+//	var anchorXShift = 8 + ((influencePointCount - 1) / 2) * iconDistance //icon center + biggest shift	
+//	//drop some color wheels!
+//	for (i = 0 ; i < influencePointCount; i++) {
+//		setTimeout( function (index) {
+//			var anchorX = anchorXShift - index * iconDistance
+//			var image = {
+//	    	        url: "assets/images/icons/color--plus.png",
+//	    	        origin: new google.maps.Point(0, 0),
+//					anchor: new google.maps.Point(anchorX, 30),
+//	    	    }; 
+//			colorMarker = new google.maps.Marker({
+//	    		icon : image, 
+//	    		position : vipMarker.getPosition(),
+//			    clickable: false,
+//			    map : map,
+//			    opacity: 0,
+//			    zIndex: 1000 + i,
+//			})
+//			fadeInMarker(colorMarker)
+//			setTimeout( function(marker) {
+//				fadeOutMarker(marker)
+//			}, 3000, colorMarker)
+//		}, (i + 1) * 200, i)
+//	}
+//}
 
 function updateServiceFunding() {
 	var airlineId = activeAirline.id
@@ -1251,6 +1297,99 @@ function updateMaintenanceQuality() {
 	});
 }
 
+function showLinksDetails() {
+	selectedLink = undefined
+	loadLinksTable()
+	setActiveDiv($('#linksCanvas'));
+	highlightTab($('#linksCanvasTab'))
+	$('#sidePanel').fadeOut(200);
+	$('#sidePanel').appendTo($('#linksCanvas'))
+}
+
+function loadLinksTable() {
+	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(links) {
+	    	updateLoadedLinks(links);
+	    	$.each(links, function(key, link) {
+				link.totalCapacity = link.capacity.economy + link.capacity.business + link.capacity.first
+				link.totalPassengers = link.passengers.economy + link.passengers.business + link.passengers.first
+			})
+	    	
+			var selectedSortHeader = $('#linksTable .table-header .cell.selected') 
+		    updateLinksTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function toggleLinksTableSortOrder(sortHeader) {
+	if (sortHeader.data("sort-order") == "ascending") {
+		sortHeader.data("sort-order", "descending")
+	} else {
+		sortHeader.data("sort-order", "ascending")
+	}
+	
+	sortHeader.siblings().removeClass("selected")
+	sortHeader.addClass("selected")
+	
+	updateLinksTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
+}
+
+function updateLinksTable(sortProperty, sortOrder) {
+	var linksTable = $("#linksCanvas #linksTable")
+	linksTable.children("div.table-row").remove()
+	
+	//sort the list
+	loadedLinks.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
+	
+	$.each(loadedLinks, function(index, link) {
+		var row = $("<div class='table-row clickable' onclick='selectLinkFromTable($(this), " + link.id + ")'></div>")
+		
+		row.append("<div class='cell'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "</div>")
+		row.append("<div class='cell'>" + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+		row.append("<div class='cell' align='right'>" + link.distance + "km</div>")
+		row.append("<div class='cell' align='right'>" + link.totalCapacity + "</div>")
+		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.revenue) + "</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.profit) + "</div>")
+		
+		if (selectedLink == link.id) {
+			row.addClass("selected")
+		}
+		
+		linksTable.append(row)
+	});
+}
+
+function selectLinkFromMap(linkId, refocus=false) {
+	unhighlightLink(selectedLink)
+	selectedLink = linkId
+	highlightLink(linkId, refocus)
+	
+	//update link details panel
+	refreshLinkDetails(linkId)
+}
+
+
+function selectLinkFromTable(row, linkId) {
+	selectedLink = linkId
+	//update table
+	row.siblings().removeClass("selected")
+	row.addClass("selected")
+	
+	//update link details panel
+	refreshLinkDetails(linkId)
+}
+
+
 	
 //TEST METHODS
 
@@ -1268,5 +1407,46 @@ function removeAllLinks() {
 	});
 }
 
+function toggleLinkHistoryView() {
+	if (!$('#worldMapCanvas').is(":visible")) {
+		showWorldMap()
+	}
+	
+	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) { //push here otherwise it's not centered
+		map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
+	}
+	$("#hideLinkHistoryButton").fadeIn(200)
+	
+//	var linkControlDiv = document.createElement('div');
+//	linkControlDiv.id = 'linkControlDiv';
+//	var linkControl = new LinkHistoryControl(linkControlDiv, map);
+//	linkControlDiv.index = 1;
+//	map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
+//	map.controls[google.maps.ControlPosition.RIGHT_TOP].push($("#hideLinkHistoryButton")[0]);
+	
+	toggleLinkHistory(selectedLink)
+}
+
+function hideLinkHistoryView() {
+	linkHistoryState = "hidden"
+	printConsole('')
+	showLinkHistoryPaths(linkHistoryState) //this actually remove all paths
+	historyPaths = {}
+	updateLinksInfo() //redraw all flight paths
+	
+//	$("#linkHistoryPanel").fadeOut(200);
+	$("#hideLinkHistoryButton").fadeOut(200);
+//	map.controls[google.maps.ControlPosition.TOP_CENTER].clear();
+//	map.controls[google.maps.ControlPosition.RIGHT_TOP].clear();
+	
+}
+
+function updateLoadedLinks(links) {
+	loadedLinks = links;
+	loadedLinksById = {}
+	$.each(links, function(index, link) {
+		loadedLinksById[link.id] = link
+	});
+}
 
 	

@@ -102,10 +102,14 @@ class AirlineApplication extends Controller {
           val updateBase = base.copy(scale = inputBase.scale)
           AirlineSource.saveAirlineBase(updateBase)
           Created(Json.toJson(updateBase))
-        case None => //
-          val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle())
-          AirlineSource.saveAirlineBase(newBase)
-          Created(Json.toJson(newBase))
+        case None => //ok to add
+          AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+               BadRequest("airport id " +  inputBase.airport.id + " not found!")
+          } { airport =>
+            val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
+            AirlineSource.saveAirlineBase(newBase)
+            Created(Json.toJson(newBase))
+          }
         } 
       }
     } else {

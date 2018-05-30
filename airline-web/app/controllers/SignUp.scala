@@ -86,7 +86,8 @@ class SignUp extends Controller {
         
         UserSource.setUserAirline(user, newAirline)
         
-        Ok(html.index("User " + user.userName + " created! Please log in"))
+        Redirect("/")
+        //Ok(html.index("User " + user.userName + " created! Please log in"))
       }
     )
   }

@@ -26,17 +26,49 @@ class CountryApplication extends Controller {
       Json.obj(
         "countryCode" -> country.countryCode,
         "name" -> country.name,
-        "aiportPopulation" -> country.airportPopulation,
+        "airportPopulation" -> country.airportPopulation,
         "incomeLevel" -> Computation.getIncomeLevel(country.income),
         "openness" ->  country.openness
       )
     }
   }
-
-  def getAllCountries() = Action {
-    val countries = CountrySource.loadAllCountries()
-    Ok(Json.toJson(countries))
+  
+  implicit object CountryWithMutualRelationshipWrites extends Writes[(Country, Int)] {
+    def writes(countryWithMutualRelationship : (Country, Int)): JsValue = {
+      val (country, mutualRelationship) = countryWithMutualRelationship
+      Json.obj(
+        "countryCode" -> country.countryCode,
+        "name" -> country.name,
+        "airportPopulation" -> country.airportPopulation,
+        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "openness" ->  country.openness,
+        "mutualRelationship" -> mutualRelationship
+      )
+    }
   }
+
+  def getAllCountries(homeCountryCode : Option[String]) = Action {
+    val countries = CountrySource.loadAllCountries()
+    
+    homeCountryCode match {
+      case None => Ok(Json.toJson(countries))
+      case Some(homeCountryCode) => {
+        val mutualRelationships = CountrySource.getCountryMutualRelationShips(homeCountryCode)
+        val countriesWithMutualRelationship : List[(Country, Int)] = countries.map { country =>
+          if (country.countryCode == homeCountryCode) {
+            (country, 5) //use 5 as relationship
+          } else {
+            (country, mutualRelationships.get((homeCountryCode, country.countryCode)).getOrElse(0))
+          }
+        }
+    
+        Ok(Json.toJson(countriesWithMutualRelationship))
+      }
+        
+    }
+    
+  }
+  
   
   def getCountry(countryCode : String) = Action {
     CountrySource.loadCountryByCode(countryCode) match {

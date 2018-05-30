@@ -31,6 +31,8 @@ import com.patson.data.LinkHistorySource
 import com.patson.DemandGenerator
 import com.patson.data.ConsumptionHistorySource
 import com.patson.data.CountrySource
+import scala.collection.SortedMap
+import scala.collection.immutable.ListMap
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -138,12 +140,13 @@ class LinkApplication extends Controller {
     
   }
   
-  implicit object LinkWithProfitWrites extends Writes[(Link, Int, Int)] {
-    def writes(linkWithProfit: (Link, Int, Int)): JsValue = { 
+  implicit object LinkWithProfitWrites extends Writes[(Link, Int, Int, LinkClassValues)] {
+    def writes(linkWithProfit: (Link, Int, Int, LinkClassValues)): JsValue = { 
       val link = linkWithProfit._1
       val profit = linkWithProfit._2
       val revenue = linkWithProfit._3
-      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue))
+      val passengers = linkWithProfit._4;
+      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue)) + ("passengers" -> Json.toJson(passengers))
     }
   }
   
@@ -335,7 +338,7 @@ class LinkApplication extends Controller {
         foldMap + (linkConsumptionDetails.linkId -> linkConsumptionDetails)
       }
       val linksWithProfit = links.map { link =>  
-        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue))  
+        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.soldSeats))  
       }
       Ok(Json.toJson(linksWithProfit)).withHeaders(
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
@@ -400,7 +403,19 @@ class LinkApplication extends Controller {
             val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
             val (maxFrequencyFromAirport, maxFrequencyToAirport) = getMaxFrequencyByAirports(fromAirport, toAirport, Airline.fromId(airlineId), existingLink)
             
+            
+            //group airplanes by model, also add boolean to indicated whether the airplane is assigned to this link
+            val availableAirplanesByModel = Map[Model, ListBuffer[(Airplane, Boolean)]]()
+            
+            val modelsWithinRange : List[Model] = ModelSource.loadModelsWithinRange(distance)
+            modelsWithinRange.foreach {
+              availableAirplanesByModel.put(_, ListBuffer[(Airplane, Boolean)]())
+            }
+            
+            
             val airplanesWithAssignedLinks : List[(Airplane, Option[Link])] = AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
+            
+            //val airplaneModelsWithinRange = AirplaneSource.load
             val freeAirplanes = airplanesWithAssignedLinks.filter {
               case (_ , Some(_)) => false
               case (airplane, None) => 
@@ -415,24 +430,25 @@ class LinkApplication extends Controller {
               case _ => List.empty 
             }               
                
-            //group airplanes by model, also add boolean to indicated whether the airplane is assigned to this link
-            val availableAirplanesByModel = Map[Model, ListBuffer[(Airplane, Boolean)]]()
+            
             var assignedModel : Option[Model] = existingLink match {
               case Some(link) => link.getAssignedModel()
               case None => None
             }
             
             freeAirplanes.foreach { freeAirplane => 
-              availableAirplanesByModel.getOrElseUpdate(freeAirplane.model, ListBuffer[(Airplane, Boolean)]()).append((freeAirplane, false)) 
+              availableAirplanesByModel(freeAirplane.model).append((freeAirplane, false)) 
             }
             assignedToThisLinkAirplanes.foreach { assignedAirplane => 
-              availableAirplanesByModel.getOrElseUpdate(assignedAirplane.model, ListBuffer[(Airplane, Boolean)]()).append((assignedAirplane, true))
+              availableAirplanesByModel(assignedAirplane.model).append((assignedAirplane, true))
             }
             val planLinkInfoByModel = ListBuffer[ModelPlanLinkInfo]()
             
-            availableAirplanesByModel.filter{
+            val sortedAirplanesByModel = ListMap(availableAirplanesByModel.filter{
               case (model, _) => fromAirport.allowsModel(model) && toAirport.allowsModel(model) 
-            }.foreach {
+            }.toSeq.sortBy(_._1.range):_*)
+            
+            sortedAirplanesByModel.foreach {
               case(model, airplaneList) => 
                 val duration = Computation.calculateDuration(model, distance)
                 val existingSlotsUsedByThisModel= if (assignedModel.isDefined && assignedModel.get.id == model.id) { existingLink.get.frequency } else { 0 } 
@@ -462,6 +478,7 @@ class LinkApplication extends Controller {
                                         "toAirportLatitude" -> toAirport.latitude,
                                         "toAirportLongitude" -> toAirport.longitude,
                                         "toCountryCode" -> toAirport.countryCode,
+                                        "mutualRelationship" -> relationship,
                                         "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,
                                         "economySpaceMultiplier" -> ECONOMY.spaceMultiplier, 

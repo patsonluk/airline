@@ -7,28 +7,32 @@ import com.patson.data.Meta
 import java.sql.ResultSet
 
 object ModelSource {
+  private[this] val BASE_QUERY = "SELECT id, name, capacity, fuel_burn, speed, fly_range, price FROM " + AIRPLANE_MODEL_TABLE 
+  
   def loadAllModels() = {
       loadModelsByCriteria(List.empty)
   }
   
   def loadModelsByCriteria(criteria : List[(String, Any)]) = {
+    val queryString = new StringBuilder(BASE_QUERY) 
+      
+    if (!criteria.isEmpty) {
+      queryString.append(" WHERE ")
+      for (i <- 0 until criteria.size - 1) {
+        queryString.append(criteria(i)._1 + " = ? AND ")
+      }
+      queryString.append(criteria.last._1 + " = ?")
+    }
+    loadModelsByQuery(queryString.toString, criteria.map(_._2))
+  }
+  def loadModelsByQuery(queryString : String, parameters : Seq[Any] = Seq.empty) = {
       //open the hsqldb
       val connection = Meta.getConnection() 
       
-      var queryString = "SELECT id, name, capacity, fuel_burn, speed, fly_range, price FROM " + AIRPLANE_MODEL_TABLE
-      
-      if (!criteria.isEmpty) {
-        queryString += " WHERE "
-        for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
-        }
-        queryString += criteria.last._1 + " = ?"
-      }
-      
       val preparedStatement = connection.prepareStatement(queryString)
       
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 1, parameters(i))
       }
       
       
@@ -76,6 +80,12 @@ object ModelSource {
       }
   }
   
+  def loadModelsWithinRange(range : Int) = {
+    val queryString = new StringBuilder(BASE_QUERY) 
+      
+    queryString.append(" WHERE fly_range >= ?")
+    loadModelsByQuery(queryString.toString, Seq(range))
+  }
    
   def deleteAllModels() = {
       //open the hsqldb

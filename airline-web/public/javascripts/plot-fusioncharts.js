@@ -1,4 +1,8 @@
 function plotMaintenanceQualityGauge(container, currentQualityInput) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var dataSource = { 
 			"chart": {
 		    	"theme": "fint",
@@ -68,6 +72,10 @@ function plotMaintenanceQualityGauge(container, currentQualityInput) {
 }
 
 function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMultipliers) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	container.empty()
 	var dataSource = { 
 		"chart": {
@@ -93,7 +101,7 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	                "bgColor": "#FFE62B",
 	                "bgAlpha": "50",
 	                "showValue": "0",
-	                "sides" : "4",
+	                //"sides" : "4",
 	                "borderColor": "#FFE62B",
 	                "borderAlpha": "20",
 	            },
@@ -101,7 +109,7 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	                "bgColor": "#0077CC",
 	                "bgAlpha": "50",
 	                "showValue": "0",
-	                "sides" : "3",
+	                //"sides" : "3",
 	                "borderColor": "#0077CC",
 	                "borderAlpha": "20",
 	            }
@@ -112,7 +120,6 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	function updateDataSource(configuration) {
 		var businessPosition = configuration.economy / maxSeats * 100
 		var firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
-	
 		dataSource["colorRange"] = {
             "color": [
                       {
@@ -147,33 +154,28 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	var chart = container.insertFusionCharts(
 	{	
 		type: 'hlineargauge',
-        width: '300',
-        height: '30',
+        width: '100%',
+        height: '40px',
         dataFormat: 'json',
 	    dataSource: dataSource,
         "events": {
-            //Event is raised when a real-time gauge or chart completes updating data.
-            //Where we can get the updated data and display the same.
             "realTimeUpdateComplete" : function (evt, arg){
                 var firstPosition = evt.sender.getData(1)
                 var businessPosition = evt.sender.getData(2)
                 
-                if (firstPosition < businessPosition) {
-                	businessPosition = firstPosition
-                }
+                var tinyAdjustment = 0.001 //the tiny adjustment is to avoid precision problem that causes floor to truncate number like 0.99999
+                configuration["first"] = Math.floor(tinyAdjustment + maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
                 
-                configuration["first"] = Math.floor(maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
-                
-                if (firstPosition == 0) { //allow elimination of all business seats
+                if (firstPosition < businessPosition) {  //dragging first past business to the left => eliminate all business
                 	configuration["business"] = 0
                 } else {
-                	configuration["business"] = Math.floor((maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
+                	configuration["business"] = Math.floor(tinyAdjustment + (maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
                 }
                 
                 if (businessPosition == 0) { //allow elimination of all economy seats
                 	configuration["economy"] = 0
                 } else {
-                	configuration["economy"] = Math.floor((maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
+                	configuration["economy"] = Math.floor(tinyAdjustment + (maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
                 }
                 
                 
@@ -190,6 +192,10 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 }
 
 function plotAirportShares(airportShares, currentAirportId, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var data = []
 	$.each(airportShares, function(key, airportShare) {
 		var entry = {
@@ -228,6 +234,10 @@ function plotAirportShares(airportShares, currentAirportId, container) {
 }
 
 function plotLinkProfit(linkConsumptions, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var data = []
 	var category = []
 	 
@@ -254,7 +264,7 @@ function plotLinkProfit(linkConsumptions, container) {
 	var chart = container.insertFusionCharts({
 		type: 'mscombi2d',
 	    width: '100%',
-	    height: '195',
+	    height: '100%',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
@@ -277,6 +287,14 @@ function plotLinkProfit(linkConsumptions, container) {
 }
 
 function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer) {
+	ridershipContainer.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
+	revenueContainer.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var emptySeatsData = []
 	var soldSeatsData = {
 			economy : [],
@@ -317,7 +335,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	var ridershipChart = ridershipContainer.insertFusionCharts( {
 		type: 'stackedarea2d',
 	    width: '100%',
-	    height: '195',
+	    height: '100%',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
@@ -354,7 +372,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	var revenueChart = revenueContainer.insertFusionCharts( {
     	type: 'stackedarea2d',
 	    width: '100%',
-	    height: '195',
+	    height: '100%',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
@@ -389,6 +407,10 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 
 
 function plotPie(dataSource, currentKey, container, keyName, valueName) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
 	var data = []
 	$.each(dataSource, function(key, dataEntry) {
 		var entry = {
@@ -407,8 +429,8 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 	})
 	var ref = container.insertFusionCharts({
 		type: 'pie2d',
-	    width: '100%',
-	    height: '150',
+	    width: '300px',
+	    height: '160px',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
