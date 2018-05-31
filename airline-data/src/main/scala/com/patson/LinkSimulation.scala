@@ -131,43 +131,6 @@ object LinkSimulation {
     
   }
   
-  def generateLinkHistory(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[LinkHistory] = {
-    val linkHistoryMap = Map[(Int), Map[(Int, Airport, Airport, Airline, Boolean), Int]]() // [(watchedLink), [(linkId, fromAiport, toAirport, airline, watchedLinkInverted), totalPassengers]]
-    
-    val watchedLinkIds : List[Int] = LinkHistorySource.loadAllWatchedLinkIds()
-    
-    consumptionResult.foreach {
-      case (_, _, passengerCount, route) =>
-        val watchedLinks = route.links.map { linkWithCost => linkWithCost.link.id }.intersect(watchedLinkIds)
-        watchedLinks.foreach { watchedLinkId =>
-          val watchedLink = route.links.find( _.link.id == watchedLinkId).get
-          val relatedLinksMap = linkHistoryMap.getOrElseUpdate(watchedLinkId, Map[(Int, Airport, Airport, Airline, Boolean), Int]()) //can't use link/linkWithCost directly as linkWithCost has directions
-          route.links.foreach { linkInRoute =>
-            val linkKey = (linkInRoute.link.id, linkInRoute.from, linkInRoute.to, linkInRoute.link.airline, watchedLink.inverted)
-            val existingPassengersForThisLink = relatedLinksMap.getOrElse(linkKey, 0)
-            relatedLinksMap.put(linkKey, existingPassengersForThisLink + passengerCount)
-          }
-        }
-    }
-    
-    linkHistoryMap.map {
-      case(watchedLinkId, relatedLinksMap) =>
-        val relatedLinks = Set[RelatedLink]()
-        val invertedRelatedLinks = Set[RelatedLink]()
-        relatedLinksMap.foreach { 
-          case((linkId, fromAirport, toAirport, airline, inverted), passenger) =>
-            if (!inverted) {
-              relatedLinks += RelatedLink(linkId, fromAirport, toAirport, airline, passenger)
-            } else {
-              invertedRelatedLinks += RelatedLink(linkId, fromAirport, toAirport, airline, passenger)
-            }
-        }
-        LinkHistory(watchedLinkId, relatedLinks.toSet, invertedRelatedLinks.toSet)
-    }.toList
-  }
-  
-  
-  
   def generateVipRoutes(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[Route] = {
     //simply take the first VIP_COUNT records for now
     (if (consumptionResult.length < VIP_COUNT) {
