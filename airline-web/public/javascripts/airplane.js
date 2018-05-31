@@ -131,7 +131,7 @@ function loadOwnedAirplaneDetails(airplaneId) {
 	    	$("#airplaneDetailsId").text(airplane.id)
     		$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
 	    	$("#airplaneDetailsAge").text(airplane.age + "week(s)")
-	    	$("#airplaneDetailsValue").text("$" + commaSeparateNumber(airplane.value))
+	    	$("#airplaneDetailsSellValue").text("$" + commaSeparateNumber(airplane.sellValue))
 	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.link) {
 	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='selectLinkFromMap(" + airplane.link.id + ", true)'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
