@@ -154,8 +154,8 @@ function showAirplaneCanvas() {
 	setActiveDiv($("#airplaneCanvas"))
 	highlightTab($('#airplaneCanvasTab'))
 	
-	if ($("#airplaneCanvas #airplaneModelList a.selected").length !== 0) {
-		selectedModelId = $("#airplaneCanvas #airplaneModelList a.selected").data("modelId")
+	if ($("#airplaneCanvas #airplaneModelList li.selected").length !== 0) {
+		selectedModelId = $("#airplaneCanvas #airplaneModelList li.selected").data("modelId")
 	}
 	
 	var airlineId = activeAirline.id
@@ -181,7 +181,7 @@ function showAirplaneCanvas() {
 	    		}
 	    	})
 	    	
-	    	updateAirplaneModelList("price", "ascending")
+	    	updateAirplaneModelList($('#airplaneSortSelect').val(), $('#airplaneSortOrderSelect').val())
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
