@@ -28,6 +28,7 @@
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/country.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/office.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
   </head>
@@ -76,6 +77,7 @@
 			  <li class="button" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li>
 			  <li class="button" id="countryCanvasTab" onclick="showCountryView();"><span>Country</span></li>
 			  <li class="button" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
+			  <li class="button" id="officeCanvasTab" onclick="showOfficeCanvas();"><span>Office</span></li>
 			</ul>
 		</div>
 		
@@ -486,6 +488,160 @@
 			    	</div>
 			    	<input type="hidden" id="actionAirplaneId"></input>
 	   				<div class="button" id ="sellAirplaneButton" onclick="sellAirplane($('#actionAirplaneId').val())">Sell</div>
+	    		</div>
+  			</div>
+<!--   			end airplane canvas -->
+			<div id="officeCanvas" style="height: 100%; display: none;">
+				<div style="width : 50%; float: left; overflow: auto;" class="section">
+					<h4>Balance Sheet</h4> 
+					
+<!-- 					left column -->
+					<div style="height: 100%; width: 50%; float: left;">
+						<div class="table section" style="width: 90%;">
+							<h4>Total Balance</h4>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Total Revenue:</div>
+		 	  					<div id="totalRevenue" class="cell" style="text-align: right;">$1,231,231</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Total Expense:</div>
+		 	  					<div id="totalExpense" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Total Profit:</div>
+		 	  					<div id="totalProfit" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		         		</div>
+						<div class="table section" style="width: 90%;">
+							<h4>Flights</h4>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Ticket Revenue:</div>
+		 	  					<div id="linksTicketRevenue" class="cell" style="text-align: right;">$1,231,231</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airport Fee:</div>
+		 	  					<div id="linksAirportFee" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Fuel:</div>
+		 	  					<div id="linksFuelCost" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Crew:</div>
+		 	  					<div id="linksCrewCost" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Flight Supplies:</div>
+		 	  					<div id="linksInflightCost" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airplane Depreciation:</div>
+		 	  					<div id="linksDepreciation" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airplane Maintenance:</div>
+		 	  					<div id="linksMaintenance" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+			 	  				<div class="divider cell"></div>
+			 	  				<div class="divider cell"></div>
+			 	  			</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Flight Revenue:</div>
+		 	  					<div id="linksRevenue" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Flight Expense:</div>
+		 	  					<div id="linksExpense" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Flight Profit:</div>
+		 	  					<div id="linksProfit" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		         		</div>
+					</div>
+<!-- 					right column -->
+					<div style="height: 100%; width: 50%; float: right;">
+						<div class="table section" style="width: 90%;">
+							<h4>Transactions</h4>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airplane Sold:</div>
+		 	  					<div id="transactionsSellAirplane" class="cell" style="text-align: right;">$1,231,231</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airplane Purchase:</div>
+		 	  					<div id="transactionsBuyAirplane" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airline Office Construction:</div>
+		 	  					<div id="transactionsBuildBase" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Setup New Flight Route:</div>
+		 	  					<div id="transactionsCreateLink" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+			 	  				<div class="divider cell"></div>
+			 	  				<div class="divider cell"></div>
+			 	  			</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Transactions Revenue:</div>
+		 	  					<div id="transactionsRevenue" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Transactions Expense:</div>
+		 	  					<div id="transactionsExpense" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Transactions Profit:</div>
+		 	  					<div id="transactionsProfit" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		         		</div>
+		         		
+		         		<div class="table section" style="width: 90%;">
+							<h4>Others</h4>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airplane Sold:</div>
+		 	  					<div id="othersInterest" class="cell" style="text-align: right;">$1,231,231</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airplane Purchase:</div>
+		 	  					<div id="othersBaseUpkeep" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Airline Base Construction:</div>
+		 	  					<div id="othersServiceInvestment" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Setup New Flight Route:</div>
+		 	  					<div id="othersMaintenanceInvestment" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Advertisement:</div>
+		 	  					<div id="othersAdvertisement" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+			 	  				<div class="divider cell"></div>
+			 	  				<div class="divider cell"></div>
+			 	  			</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Others Revenue:</div>
+		 	  					<div id="othersRevenue" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Others Expense:</div>
+		 	  					<div id="othersExpense" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell">Others Profit:</div>
+		 	  					<div id="othersProfit" class="cell" style="text-align: right;">123</div>
+		 	  				</div>
+		         		</div>  
+					</div>
+<!-- 					end right side -->
+         		</div>		
+  				<div id="others" class="section" style="width: 35%; float:right;">
+  					
 	    		</div>
   			</div>
   		</div>

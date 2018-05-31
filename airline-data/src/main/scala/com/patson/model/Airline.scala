@@ -52,11 +52,11 @@ object OtherBalanceItemType extends Enumeration {
   val INTEREST, BASE_UPKEEP, SERVICE_INVESTMENT, MAINTAINENCE_INVESTMENT, ADVERTISEMENT = Value
 }
 
-case class AirlineTransaction(airlineId : Int, transactionType : TransactionType.Value, amount : Long)
-case class AirlineBalanceData(profit : Long, revenue: Long, expense: Long, links : LinksBalanceData, transactions : TransactionsBalance, others : OthersBalance)
-case class LinksBalanceData(profit : Long, revenue : Long, expense : Long, airportFee : Long, fuelCost : Long, crewCost : Long, depreciation : Long, inflightCost : Long, maintenanceCost: Long)
-case class TransactionsBalance(profit : Long, revenue: Long, expense: Long, transactionSummary : Map[TransactionType.Value, Long])
-case class OthersBalance(profit : Long, revenue: Long, expense: Long, othersSummary : Map[OtherBalanceItemType.Value, Long])
+case class AirlineTransaction(airlineId : Int, transactionType : TransactionType.Value, amount : Long, var cycle : Int = 0)
+case class AirlineBalanceData(airlineId : Int, profit : Long, revenue: Long, expense: Long, links : LinksBalanceData, transactions : TransactionsBalance, others : OthersBalance, var cycle : Int = 0)
+case class LinksBalanceData(airlineId : Int, profit : Long, revenue : Long, expense : Long, ticketRevenue: Long, airportFee : Long, fuelCost : Long, crewCost : Long, depreciation : Long, inflightCost : Long, maintenanceCost: Long, var cycle : Int = 0)
+case class TransactionsBalance(airlineId : Int, profit : Long, revenue: Long, expense: Long, transactionSummary : Map[TransactionType.Value, Long], var cycle : Int = 0)
+case class OthersBalance(airlineId : Int, profit : Long, revenue: Long, expense: Long, othersSummary : Map[OtherBalanceItemType.Value, Long], var cycle : Int = 0)
 
 object Airline {
   def fromId(id : Int) = {

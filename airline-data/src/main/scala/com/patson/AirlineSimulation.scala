@@ -31,9 +31,9 @@ object AirlineSimulation {
             val linksMaintenanceCost = linkConsumptions.foldLeft(0L)(_ + _.maintenanceCost)
             val linksRevenue = linkConsumptions.foldLeft(0L)(_ + _.revenue)
             val linksExpense = linksAirportFee + linksCrewCost + linksDepreciation + linksFuelCost + linksInflightCost + linksMaintenanceCost
-            LinksBalanceData(profit = linksProfit, revenue = linksRevenue, expense = linksExpense, airportFee = linksAirportFee, fuelCost = linksFuelCost, crewCost = linksCrewCost, depreciation = linksDepreciation, inflightCost = linksInflightCost, maintenanceCost= linksMaintenanceCost)
+            LinksBalanceData(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = linksAirportFee, fuelCost = linksFuelCost, crewCost = linksCrewCost, depreciation = linksDepreciation, inflightCost = linksInflightCost, maintenanceCost= linksMaintenanceCost)
           }
-          case None => LinksBalanceData(0, 0, 0, 0, 0, 0, 0, 0 ,0)
+          case None => LinksBalanceData(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0)
         }
         
         val transactionsBalance = allTransactions.get(airline.id) match {
@@ -51,9 +51,9 @@ object AirlineSimulation {
               val existingAmount = summary.getOrElse(transaction.transactionType, 0L)
               summary.put(transaction.transactionType, existingAmount + transaction.amount)
             }
-            TransactionsBalance(revenue - expense, revenue, expense, summary.toMap)
+            TransactionsBalance(airline.id, revenue - expense, revenue, expense, summary.toMap)
           }
-          case None => TransactionsBalance(0, 0, 0, scala.collection.immutable.Map.empty)
+          case None => TransactionsBalance(airline.id, 0, 0, 0, scala.collection.immutable.Map.empty)
         }
         
         
@@ -75,12 +75,12 @@ object AirlineSimulation {
           }
         }
         
-        val othersBalance = OthersBalance(othersRevenue - othersExpense, othersRevenue, othersExpense, othersSummary.toMap)
+        val othersBalance = OthersBalance(airline.id, othersRevenue - othersExpense, othersRevenue, othersExpense, othersSummary.toMap)
         
         val airlineRevenue = linksBalance.revenue + transactionsBalance.revenue + othersBalance.revenue
         val airlineExpense = linksBalance.expense + transactionsBalance.expense + othersBalance.expense
         val airlineProfit = airlineRevenue - airlineExpense
-        val airlineBalance = AirlineBalanceData(airlineProfit, airlineRevenue, airlineExpense, linksBalance, transactionsBalance, othersBalance)
+        val airlineBalance = AirlineBalanceData(airline.id, airlineProfit, airlineRevenue, airlineExpense, linksBalance, transactionsBalance, othersBalance)
         
 
         airline.setBalance(airline.getBalance() + linksBalance.profit + othersBalance.profit) //do NOT use airlineProfit here directly as transactionProfit has already been updated immediately back then
