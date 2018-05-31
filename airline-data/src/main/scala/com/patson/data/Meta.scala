@@ -119,10 +119,6 @@ object Meta {
     statement.execute()
     statement.close()
 
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_HISTORY_TABLE)
-    statement.execute()
-    statement.close()
-
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_TABLE)
     statement.execute()
     statement.close()
@@ -389,31 +385,31 @@ object Meta {
     statement.execute()
     statement.close()
 
-    statement = connection.prepareStatement("CREATE TABLE " + WATCHED_LINK_TABLE + "(" +
-      "airline INTEGER PRIMARY KEY, " +
-      "watched_link INTEGER UNIQUE, " +
-      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
-
-    statement.execute()
-    statement.close()
-
-    statement = connection.prepareStatement("CREATE TABLE " + LINK_HISTORY_TABLE + "(" +
-      "watched_link INTEGER, " +
-      "inverted INTEGER, " +
-      "related_link INTEGER, " +
-      "from_airport INTEGER, " +
-      "to_airport INTEGER, " +
-      "airline INTEGER, " +
-      "passenger INTEGER," +
-      "FOREIGN KEY(watched_link) REFERENCES " + WATCHED_LINK_TABLE + "(watched_link) ON DELETE CASCADE ON UPDATE CASCADE" +
-      ")")
-
-    statement.execute()
-    statement.close()
-
-    statement = connection.prepareStatement("CREATE INDEX " + LINK_HISTORY_INDEX_1 + " ON " + LINK_HISTORY_TABLE + "(watched_link)")
-    statement.execute()
-    statement.close()
+//    statement = connection.prepareStatement("CREATE TABLE " + WATCHED_LINK_TABLE + "(" +
+//      "airline INTEGER PRIMARY KEY, " +
+//      "watched_link INTEGER UNIQUE, " +
+//      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
+//
+//    statement.execute()
+//    statement.close()
+//
+//    statement = connection.prepareStatement("CREATE TABLE " + LINK_HISTORY_TABLE + "(" +
+//      "watched_link INTEGER, " +
+//      "inverted INTEGER, " +
+//      "related_link INTEGER, " +
+//      "from_airport INTEGER, " +
+//      "to_airport INTEGER, " +
+//      "airline INTEGER, " +
+//      "passenger INTEGER," +
+//      "FOREIGN KEY(watched_link) REFERENCES " + WATCHED_LINK_TABLE + "(watched_link) ON DELETE CASCADE ON UPDATE CASCADE" +
+//      ")")
+//
+//    statement.execute()
+//    statement.close()
+//
+//    statement = connection.prepareStatement("CREATE INDEX " + LINK_HISTORY_INDEX_1 + " ON " + LINK_HISTORY_TABLE + "(watched_link)")
+//    statement.execute()
+//    statement.close()
 
     //from_airport, to_airport, is_departure, is_destination, passenger_count, cycle
     statement = connection.prepareStatement("CREATE TABLE " + LINK_STATISTICS_TABLE + "(" +
@@ -546,8 +542,7 @@ object Meta {
                                             "route_id INTEGER," +
                                             "link INTEGER," +
                                             "link_class VARCHAR(2)," +
-                                            "inverted INTEGER," +
-                                            "FOREIGN KEY(link) REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
+                                            "inverted INTEGER)")
                                             
     statement.execute()
     statement.close()

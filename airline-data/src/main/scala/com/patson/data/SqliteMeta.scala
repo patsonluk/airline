@@ -82,10 +82,6 @@ object SqliteMeta {
          statement.execute()
          statement.close()
          
-         statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_HISTORY_TABLE)
-         statement.execute()
-         statement.close()
-              
          statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_TABLE)
          statement.execute()
          statement.close()
@@ -287,23 +283,6 @@ object SqliteMeta {
     	                                           "watched_link INTEGER UNIQUE, " +
                                                  "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
          
-         statement.execute()
-         statement.close()
-         
-         statement = connection.prepareStatement("CREATE TABLE " + LINK_HISTORY_TABLE + "(" +
-                                                 "watched_link INTEGER REFERENCES " + WATCHED_LINK_TABLE + "(watched_link) ON DELETE CASCADE, " +
-                                                 "inverted INTEGER, " +
-    	                                           "related_link INTEGER, " +
-                                                 "from_airport INTEGER, " +
-                                                 "to_airport INTEGER, " +
-                                                 "airline INTEGER, " +
-                                                 "passenger INTEGER)")
-                                                 
-         
-         statement.execute()
-         statement.close()
-         
-         statement = connection.prepareStatement("CREATE INDEX " + LINK_HISTORY_INDEX_1 +  " ON " + LINK_HISTORY_TABLE + "(watched_link)")
          statement.execute()
          statement.close()
          
