@@ -27,7 +27,6 @@ import com.patson.data.airplane.ModelSource
 import play.api.mvc.Security.AuthenticatedRequest
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.RouteHistorySource
-import com.patson.data.LinkHistorySource
 import com.patson.DemandGenerator
 import com.patson.data.ConsumptionHistorySource
 import com.patson.data.CountrySource
