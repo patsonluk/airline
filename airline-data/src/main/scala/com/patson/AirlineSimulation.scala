@@ -19,24 +19,25 @@ object AirlineSimulation {
     //purge the older transactions
     AirlineSource.deleteTransactions(cycle - 1)
     val linkResultByAirline = linkResult.groupBy { _.airlineId }
+    
+    val allIncomes = ListBuffer[AirlineIncome]()
     allAirlines.foreach { airline =>
-        val linksBalance = linkResultByAirline.get(airline.id) match { 
+        val linksIncome = linkResultByAirline.get(airline.id) match { 
           case Some(linkConsumptions) => {
             val linksProfit = linkConsumptions.foldLeft(0L)(_ + _.profit)
             val linksAirportFee = linkConsumptions.foldLeft(0L)(_ + _.airportFees)
             val linksCrewCost = linkConsumptions.foldLeft(0L)(_ + _.crewCost)
-            val linksDepreciation = linkConsumptions.foldLeft(0L)(_ + _.depreciation)
             val linksFuelCost = linkConsumptions.foldLeft(0L)(_ + _.fuelCost)
             val linksInflightCost = linkConsumptions.foldLeft(0L)(_ + _.inflightCost)
             val linksMaintenanceCost = linkConsumptions.foldLeft(0L)(_ + _.maintenanceCost)
             val linksRevenue = linkConsumptions.foldLeft(0L)(_ + _.revenue)
-            val linksExpense = linksAirportFee + linksCrewCost + linksDepreciation + linksFuelCost + linksInflightCost + linksMaintenanceCost
-            LinksBalanceData(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = linksAirportFee, fuelCost = linksFuelCost, crewCost = linksCrewCost, depreciation = linksDepreciation, inflightCost = linksInflightCost, maintenanceCost= linksMaintenanceCost)
+            val linksExpense = linksAirportFee + linksCrewCost + linksFuelCost + linksInflightCost + linksMaintenanceCost
+            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, maintenanceCost= -1 * linksMaintenanceCost)
           }
-          case None => LinksBalanceData(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0)
+          case None => LinksIncome(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         }
         
-        val transactionsBalance = allTransactions.get(airline.id) match {
+        val transactionsIncome = allTransactions.get(airline.id) match {
           case Some(transactions) => {
             var expense = 0L
             var revenue = 0L
@@ -51,17 +52,19 @@ object AirlineSimulation {
               val existingAmount = summary.getOrElse(transaction.transactionType, 0L)
               summary.put(transaction.transactionType, existingAmount + transaction.amount)
             }
-            TransactionsBalance(airline.id, revenue - expense, revenue, expense, summary.toMap)
+            TransactionsIncome(airline.id, revenue - expense, revenue, expense, capitalGain = summary.getOrElse(TransactionType.CAPITAL_GAIN, 0), createLink = summary.getOrElse(TransactionType.CREATE_LINK, 0))
           }
-          case None => TransactionsBalance(airline.id, 0, 0, 0, scala.collection.immutable.Map.empty)
+          case None => TransactionsIncome(airline.id, 0, 0, 0, capitalGain = 0, createLink = 0)
         }
         
         
-        val othersSummary = Map[OtherBalanceItemType.Value, Long]()
-        othersSummary.put(OtherBalanceItemType.SERVICE_INVESTMENT, airline.getServiceFunding() * -1)
-        othersSummary.put(OtherBalanceItemType.BASE_UPKEEP, airline.bases.foldLeft(0L)((upkeep, base) => {
+        
+        val othersSummary = Map[OtherIncomeItemType.Value, Long]()
+        othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, airline.getServiceFunding() * -1)
+        othersSummary.put(OtherIncomeItemType.BASE_UPKEEP, airline.bases.foldLeft(0L)((upkeep, base) => {
           upkeep - (if (base.headquarter) 100000 else 50000)
         }))
+        //othersSummary.put(OtherIncomeItemType.DEPRECIATION, depreciation * -1)
         
         var othersRevenue = 0L
         var othersExpense = 0L
@@ -75,15 +78,23 @@ object AirlineSimulation {
           }
         }
         
-        val othersBalance = OthersBalance(airline.id, othersRevenue - othersExpense, othersRevenue, othersExpense, othersSummary.toMap)
+        val othersIncome = OthersIncome(airline.id, othersRevenue - othersExpense, othersRevenue, othersExpense
+            , loanInterest = othersSummary.getOrElse(OtherIncomeItemType.LOAN_INTEREST, 0)
+            , baseUpkeep = othersSummary.getOrElse(OtherIncomeItemType.BASE_UPKEEP, 0)
+            , serviceInvestment = othersSummary.getOrElse(OtherIncomeItemType.SERVICE_INVESTMENT, 0)
+            , maintenanceInvestment = othersSummary.getOrElse(OtherIncomeItemType.MAINTENANCE_INVESTMENT, 0)
+            , advertisement = othersSummary.getOrElse(OtherIncomeItemType.ADVERTISEMENT, 0)
+            , depreciation = othersSummary.getOrElse(OtherIncomeItemType.DEPRECIATION, 0)
+        )
         
-        val airlineRevenue = linksBalance.revenue + transactionsBalance.revenue + othersBalance.revenue
-        val airlineExpense = linksBalance.expense + transactionsBalance.expense + othersBalance.expense
+        val airlineRevenue = linksIncome.revenue + transactionsIncome.revenue + othersIncome.revenue
+        val airlineExpense = linksIncome.expense + transactionsIncome.expense + othersIncome.expense
         val airlineProfit = airlineRevenue - airlineExpense
-        val airlineBalance = AirlineBalanceData(airline.id, airlineProfit, airlineRevenue, airlineExpense, linksBalance, transactionsBalance, othersBalance)
+        val airlineIncome = AirlineIncome(airline.id, airlineProfit, airlineRevenue, airlineExpense, linksIncome, transactionsIncome, othersIncome)
         
+        allIncomes += airlineIncome
 
-        airline.setBalance(airline.getBalance() + linksBalance.profit + othersBalance.profit) //do NOT use airlineProfit here directly as transactionProfit has already been updated immediately back then
+        airline.setBalance(airline.getBalance() + linksIncome.profit + othersIncome.profit) //do NOT use airlineProfit here directly as transactionProfit has already been updated immediately back then
           
         //update reputation
         linkResultByAirline.get(airline.id).foreach { linkConsumptions =>
@@ -126,6 +137,8 @@ object AirlineSimulation {
     }
     
     AirlineSource.saveAirlineInfo(allAirlines)
+    IncomeSource.saveIncomes(allIncomes.toList);
+    IncomeSource.deleteIncomesByCycle(1);
   }
   
   val getTargetQuality : (Int, Int) => Double = (funding : Int, capacity :Int) => {

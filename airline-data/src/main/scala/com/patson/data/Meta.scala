@@ -261,7 +261,7 @@ object Meta {
 
       
     createAirlineTransaction(connection)  
-    createBalance(connection)
+    createIncome(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -574,67 +574,82 @@ object Meta {
     statement.close()
   }
   
-  def createBalance(connection : Connection) {
-    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + BALANCE_TABLE)
+  def createIncome(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + INCOME_TABLE)
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + BALANCE_TABLE + "(" +
+    statement = connection.prepareStatement("CREATE TABLE " + INCOME_TABLE + "(" +
       "airline INTEGER, " +
       "profit LONG, " +
       "revenue LONG, " +
       "expense LONG," +
+      "period INTEGER," +
       "cycle INTEGER," +
-      "PRIMARY KEY (airline, cycle)" +
+      "PRIMARY KEY (airline, period, cycle)" +
       ")")
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINKS_BALANCE_TABLE)
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINKS_INCOME_TABLE)
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + LINKS_BALANCE_TABLE + "(" +
+    statement = connection.prepareStatement("CREATE TABLE " + LINKS_INCOME_TABLE + "(" +
       "airline INTEGER, " +
       "profit LONG, " +
       "revenue LONG, " +
       "expense LONG," +
       "ticket_revenue LONG," +
+      "airport_fee LONG," +
       "fuel_cost LONG," +
       "crew_cost LONG," +
-      "depreciation LONG," +
       "inflight_cost LONG," +
       "maintenance_cost LONG," +
+      "period INTEGER," +
       "cycle INTEGER," +
-      "PRIMARY KEY (airline, cycle)" +
+      "PRIMARY KEY (airline, period, cycle)" +
       ")")
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + TRANSACTIONS_BALANCE_TABLE)
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + TRANSACTIONS_INCOME_TABLE)
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + TRANSACTIONS_BALANCE_TABLE + "(" +
+    statement = connection.prepareStatement("CREATE TABLE " + TRANSACTIONS_INCOME_TABLE + "(" +
       "airline INTEGER, " +
-      "transaction_type INTEGER, " +
-      "amount LONG, " +
+      "profit LONG, " +
+      "revenue LONG, " +
+      "expense LONG, " +
+      "capital_gain LONG," +
+      "create_link LONG," +
+      "period INTEGER," +
       "cycle INTEGER," +
-      "PRIMARY KEY (airline, transaction_type, cycle)" +
+      "PRIMARY KEY (airline, period, cycle)" +
       ")")
+
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OTHERS_BALANCE_TABLE)
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OTHERS_INCOME_TABLE)
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + OTHERS_BALANCE_TABLE + "(" +
+    statement = connection.prepareStatement("CREATE TABLE " + OTHERS_INCOME_TABLE + "(" +
       "airline INTEGER, " +
-      "other_balance_item_type INTEGER, " +
-      "amount LONG, " +
+      "profit LONG, " +
+      "revenue LONG, " +
+      "expense LONG, " +
+      "loan_interest LONG," +
+      "base_upkeep LONG," +
+      "service_investment LONG," +
+      "maintenance_investment LONG," +
+      "advertisement LONG," +
+      "depreciation LONG," +
+      "period INTEGER," +
       "cycle INTEGER," +
-      "PRIMARY KEY (airline, transaction_type, cycle)" +
+      "PRIMARY KEY (airline, period, cycle)" +
       ")")
     statement.execute()
     statement.close()

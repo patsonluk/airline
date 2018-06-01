@@ -91,7 +91,8 @@ class AirplaneApplication extends Controller {
           val sellValue = Computation.calculateAirplaneSellValue(airplane)
           if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
             AirlineSource.adjustAirlineBalance(airlineId, sellValue)
-            AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.SELL_AIRPLANE, sellValue))
+            AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
+            
             Ok(Json.toJson(airplane))
           } else {
             NotFound
@@ -117,7 +118,7 @@ class AirplaneApplication extends Controller {
         
         val amount = -1 * airplane.model.price * quantity
         AirlineSource.adjustAirlineBalance(airlineId, amount)
-        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.BUY_AIRPLANE, amount))
+        
         val airplanes = ListBuffer[Airplane]()
         for (i <- 0 until quantity) {
           airplanes.append(airplane.copy())

@@ -45,5 +45,6 @@ object QuickCreateSchema extends App {
   
   def createSchema(connection : Connection) = {
     Meta.createAirlineTransaction(connection)
+    Meta.createIncome(connection)
   }
 }
