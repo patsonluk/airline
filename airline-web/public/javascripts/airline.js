@@ -536,7 +536,6 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkFuelCost").text("-")
 		    	$("#linkCrewCost").text("-")
 		    	$("#linkAirportFees").text("-")
-		    	$("#linkDepreciation").text("-")
 		    	$("#linkOtherCosts").text("-")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
@@ -557,7 +556,6 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkFuelCost").text("$" + commaSeparateNumber(linkConsumption.fuelCost))
 		    	$("#linkCrewCost").text("$" + commaSeparateNumber(linkConsumption.crewCost))
 		    	$("#linkAirportFees").text("$" + commaSeparateNumber(linkConsumption.airportFees))
-		    	$("#linkDepreciation").text("$" + commaSeparateNumber(linkConsumption.depreciation))
 		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost))
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
