@@ -376,7 +376,8 @@ object AirlineSource {
         preparedStatement.setInt(1, transaction.airlineId)
         preparedStatement.setInt(2, transaction.transactionType.id)
         preparedStatement.setDouble(3, transaction.amount)
-        preparedStatement.setInt(4, MainSimulation.currentWeek)
+        //cannot use MainSimulation.currentWeek as this could be called from other projects apart from simulation
+        preparedStatement.setInt(4,CycleSource.loadCycle())
         
         preparedStatement.executeUpdate()
         

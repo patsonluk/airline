@@ -32,7 +32,7 @@ object IncomeSource {
     val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, maintenance_cost, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
     val transactionsPreparedStatement = connection.prepareStatement("REPLACE INTO " + TRANSACTIONS_INCOME_TABLE + "(airline, profit, revenue, expense, capital_gain, create_link, period, cycle) VALUES(?,?,?,?,?,?,?,?)")
     val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, maintenance_investment, advertisement, depreciation,  period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
-    val cycle = MainSimulation.currentWeek
+    val cycle = CycleSource.loadCycle()
     try {
       connection.setAutoCommit(false)
       balances.foreach { balance =>
@@ -107,7 +107,7 @@ object IncomeSource {
      //open the hsqldb
     val connection = Meta.getConnection()
     try {
-      val currentCycle = MainSimulation.currentWeek
+      val currentCycle = CycleSource.loadCycle()
       val deleteFrom = if (currentCycle - cyclesFromNow < 0) 0 else currentCycle - cyclesFromNow 
       
       connection.setAutoCommit(false)
