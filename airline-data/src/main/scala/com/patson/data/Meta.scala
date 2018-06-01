@@ -364,7 +364,6 @@ object Meta {
       "airport_fees INTEGER, " +
       "inflight_cost INTEGER, " +
       "maintenance_cost INTEGER, " +
-      "depreciation INTEGER, " +
       "revenue INTEGER, " +
       "profit INTEGER, " +
       "from_airport INTEGER, " +
