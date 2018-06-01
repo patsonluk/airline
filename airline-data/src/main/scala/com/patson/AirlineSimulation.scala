@@ -48,7 +48,7 @@ object AirlineSimulation {
               if (transaction.amount >= 0) { 
                 revenue += transaction.amount
               } else {
-                expense += transaction.amount
+                expense -= transaction.amount
               }
               
               val existingAmount = summary.getOrElse(transaction.transactionType, 0L)
