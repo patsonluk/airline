@@ -20,11 +20,11 @@ import akka.actor.Props
 import java.util.concurrent.TimeUnit
 
 object AirplaneSimulation {
-  val LIFE_SPAN = 35 * 52 //in unit of weeks
-  val MAX_DECAY = 100.toDouble / LIFE_SPAN
-  val MIN_DECAY = 30.toDouble / LIFE_SPAN //assume decay to 70% with best service
+  val LIFE_SPAN = 35 * 52 //in unit of weeks, lifespan with best maintenance
+  val MAX_DECAY = 200.toDouble / LIFE_SPAN //assume decay to double with worse maintenance
+  val MIN_DECAY = 100.toDouble / LIFE_SPAN 
   
-  def airplaneSimulation(cycle: Int) = {
+  def airplaneSimulation(cycle: Int) : List[Airplane] = {
     println("starting airplane simulation")
     println("loading all airplanes")
     //do decay
@@ -45,6 +45,8 @@ object AirplaneSimulation {
     
     AirplaneSource.updateAirplanes(updatingAirplanes.toList)
     println("Finished updating all airplanes")
+    
+    updatingAirplanes.toList
   }
   
   def computeDepreciationRate(model : Model, decayRate : Double) = {
@@ -58,8 +60,8 @@ object AirplaneSimulation {
     airplanesWithAssignedLink.foreach { 
       case(airplane, assignedLink) =>
         val decayRate =
-          if (assignedLink.isEmpty) { //not assigned to any links, decay slowly
-            baseDecayRate / 10 
+          if (assignedLink.isEmpty) { //not assigned to any links, decay slower
+            baseDecayRate / 3 
           } else {
             baseDecayRate
           }

@@ -5,13 +5,14 @@ import com.patson.data._
 import scala.collection.mutable._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import com.patson.model.airplane.Airplane
 
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
   private val REPUTATION_INCREMENT = 0.5 
   private[patson] val MAX_SERVICE_QUALITY_INCREMENT : Double = 1
   
-  def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails]) = {
+  def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
     val allAirlines = AirlineSource.loadAllAirlines(true)
     val allLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD).groupBy { _.airline.id }
@@ -19,6 +20,7 @@ object AirlineSimulation {
     //purge the older transactions
     AirlineSource.deleteTransactions(cycle - 1)
     val linkResultByAirline = linkResult.groupBy { _.airlineId }
+    val airplanesByAirline = airplanes.groupBy(_.owner.id)
     
     val allIncomes = ListBuffer[AirlineIncome]()
     allAirlines.foreach { airline =>
@@ -64,7 +66,9 @@ object AirlineSimulation {
         othersSummary.put(OtherIncomeItemType.BASE_UPKEEP, airline.bases.foldLeft(0L)((upkeep, base) => {
           upkeep - (if (base.headquarter) 100000 else 50000)
         }))
-        //othersSummary.put(OtherIncomeItemType.DEPRECIATION, depreciation * -1)
+        othersSummary.put(OtherIncomeItemType.DEPRECIATION, airplanesByAirline.getOrElse(airline.id, List.empty).foldLeft(0L) {
+          case(depreciation, airplane) => (depreciation - airplane.depreciationRate) 
+        })
         
         var othersRevenue = 0L
         var othersExpense = 0L
