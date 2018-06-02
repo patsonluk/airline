@@ -123,18 +123,9 @@ class AirlineApplication extends Controller {
     }
   }
   
-  def getAirlineIncome(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def getAirlineIncomes(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
      val airline = request.user
-     val currentCycle = CycleSource.loadCycle()
-     val income = IncomeSource.loadIncomeByAirline(airlineId, currentCycle - 1, Period.WEEKLY) match {
-       case Some(income) => income
-       case None => AirlineIncome(airlineId, 
-        links = LinksIncome(airlineId, period = Period.WEEKLY, cycle = currentCycle - 1), 
-        transactions = TransactionsIncome(airlineId,  period = Period.WEEKLY, cycle = currentCycle - 1), 
-        others = OthersIncome(airlineId,  period = Period.WEEKLY, cycle = currentCycle - 1),
-        period = Period.WEEKLY, cycle = currentCycle - 1)
-     }
-     
-     Ok(Json.toJson(income))
+     val incomes = IncomeSource.loadIncomesByAirline(airlineId)   
+     Ok(Json.toJson(incomes))
   }
 }

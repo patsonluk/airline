@@ -24,6 +24,8 @@ object AirlineSimulation {
     val allCountries = CountrySource.loadAllCountries().map( country => (country.countryCode, country)).toMap
     
     val allIncomes = ListBuffer[AirlineIncome]()
+     
+    val currentCycle = MainSimulation.currentWeek
     allAirlines.foreach { airline =>
         val linksIncome = linkResultByAirline.get(airline.id) match { 
           case Some(linkConsumptions) => {
@@ -35,9 +37,9 @@ object AirlineSimulation {
             val linksMaintenanceCost = linkConsumptions.foldLeft(0L)(_ + _.maintenanceCost)
             val linksRevenue = linkConsumptions.foldLeft(0L)(_ + _.revenue)
             val linksExpense = linksAirportFee + linksCrewCost + linksFuelCost + linksInflightCost + linksMaintenanceCost
-            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, maintenanceCost= -1 * linksMaintenanceCost)
+            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, maintenanceCost= -1 * linksMaintenanceCost, cycle = currentCycle)
           }
-          case None => LinksIncome(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+          case None => LinksIncome(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle = currentCycle)
         }
         
         val transactionsIncome = allTransactions.get(airline.id) match {
@@ -55,9 +57,9 @@ object AirlineSimulation {
               val existingAmount = summary.getOrElse(transaction.transactionType, 0L)
               summary.put(transaction.transactionType, existingAmount + transaction.amount)
             }
-            TransactionsIncome(airline.id, revenue - expense, revenue, expense, capitalGain = summary.getOrElse(TransactionType.CAPITAL_GAIN, 0), createLink = summary.getOrElse(TransactionType.CREATE_LINK, 0))
+            TransactionsIncome(airline.id, revenue - expense, revenue, expense, capitalGain = summary.getOrElse(TransactionType.CAPITAL_GAIN, 0), createLink = summary.getOrElse(TransactionType.CREATE_LINK, 0), cycle = currentCycle)
           }
-          case None => TransactionsIncome(airline.id, 0, 0, 0, capitalGain = 0, createLink = 0)
+          case None => TransactionsIncome(airline.id, 0, 0, 0, capitalGain = 0, createLink = 0, cycle = currentCycle)
         }
         
         
@@ -92,15 +94,17 @@ object AirlineSimulation {
             , maintenanceInvestment = othersSummary.getOrElse(OtherIncomeItemType.MAINTENANCE_INVESTMENT, 0)
             , advertisement = othersSummary.getOrElse(OtherIncomeItemType.ADVERTISEMENT, 0)
             , depreciation = othersSummary.getOrElse(OtherIncomeItemType.DEPRECIATION, 0)
+            , cycle = currentCycle
         )
         
         val airlineRevenue = linksIncome.revenue + transactionsIncome.revenue + othersIncome.revenue
         val airlineExpense = linksIncome.expense + transactionsIncome.expense + othersIncome.expense
         val airlineProfit = airlineRevenue - airlineExpense
-        val airlineIncome = AirlineIncome(airline.id, airlineProfit, airlineRevenue, airlineExpense, linksIncome, transactionsIncome, othersIncome)
+        val airlineWeeklyIncome = AirlineIncome(airline.id, airlineProfit, airlineRevenue, airlineExpense, linksIncome, transactionsIncome, othersIncome, cycle = currentCycle)
         
-        allIncomes += airlineIncome
-
+        allIncomes += airlineWeeklyIncome
+        allIncomes ++= computeAccumulateIncome(airlineWeeklyIncome)
+        
         airline.setBalance(airline.getBalance() + linksIncome.profit + othersIncome.profit) //do NOT use airlineProfit here directly as transactionProfit has already been updated immediately back then
           
         //update reputation
@@ -145,7 +149,47 @@ object AirlineSimulation {
     
     AirlineSource.saveAirlineInfo(allAirlines)
     IncomeSource.saveIncomes(allIncomes.toList);
-    IncomeSource.deleteIncomesByCycle(1);
+    
+    //purge previous entry of current year/month
+    if (currentCycle % 4 != 0) { //clear previous entry for current month, if currentCycle % 4 == 0, it starts a new entry, so no previous entry for the same month to clear
+      IncomeSource.deleteIncomes(currentCycle - 1, Period.MONTHLY)
+    }
+    if (currentCycle % 52 != 0) { //clear previous entry for current year, if currentCycle % 52 == 0, it starts a new entry, so no previous entry for the same years to clear
+      IncomeSource.deleteIncomes(currentCycle - 1, Period.YEARLY)
+    }
+    
+    //purge old entries, keep 10 entries of each Period
+    IncomeSource.deleteIncomesBefore(currentCycle - 10, Period.WEEKLY);
+    IncomeSource.deleteIncomesBefore(currentCycle - 10 * 4, Period.MONTHLY);
+    IncomeSource.deleteIncomesBefore(currentCycle - 10 * 52, Period.YEARLY);
+  }
+  
+  /**
+   * compute monthly and yearly income 
+   * 
+   * Returns Updating income entries
+   */
+  def computeAccumulateIncome(weeklyIncome : AirlineIncome) : List[AirlineIncome] = {
+    //get existing entry
+    val currentWeek = MainSimulation.currentWeek
+    val airlineId = weeklyIncome.airlineId
+    val currentMonthIncomeOption = if (currentWeek % 4 == 0) None else IncomeSource.loadIncomeByAirline(airlineId, currentWeek - 1, Period.MONTHLY)
+    
+    val updatedMonthIncome = currentMonthIncomeOption match {
+      case Some(income) => {
+        income.update(weeklyIncome)
+      }
+      case None => weeklyIncome.copy(period = Period.MONTHLY)//new month
+    }
+    val currentYearIncomeOption = if (currentWeek % 52 == 0) None else IncomeSource.loadIncomeByAirline(airlineId, currentWeek - 1, Period.YEARLY)
+    val updatedYearIncome = currentYearIncomeOption match {
+      case Some(income) => {
+        income.update(weeklyIncome)
+      }
+      case None => weeklyIncome.copy(period = Period.YEARLY)//new year
+    }
+    
+    List[AirlineIncome](updatedMonthIncome, updatedYearIncome)
   }
   
   val getTargetQuality : (Int, Int) => Double = (funding : Int, capacity :Int) => {

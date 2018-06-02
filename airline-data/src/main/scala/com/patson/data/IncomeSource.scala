@@ -25,65 +25,65 @@ object IncomeSource {
 //case class TransactionsBalance(profit : Long, revenue: Long, expense: Long, transactionSummary : Map[TransactionType.Value, Long])
 //case class OthersBalance(profit : Long, revenue: Long, expense: Long, othersSummary : Map[OtherBalanceItemType.Value, Long])
   
-  def saveIncomes(balances: List[AirlineIncome]) = {
+  def saveIncomes(incomes: List[AirlineIncome]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
     val incomePreparedStatement = connection.prepareStatement("REPLACE INTO " + INCOME_TABLE + "(airline, profit, revenue, expense, period, cycle) VALUES(?,?,?,?,?,?)")
     val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, maintenance_cost, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
     val transactionsPreparedStatement = connection.prepareStatement("REPLACE INTO " + TRANSACTIONS_INCOME_TABLE + "(airline, profit, revenue, expense, capital_gain, create_link, period, cycle) VALUES(?,?,?,?,?,?,?,?)")
     val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, maintenance_investment, advertisement, depreciation,  period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
-    val cycle = CycleSource.loadCycle()
+    
     try {
       connection.setAutoCommit(false)
-      balances.foreach { balance =>
-          val period = balance.period
-          incomePreparedStatement.setInt(1, balance.airlineId)
-          incomePreparedStatement.setLong(2, balance.profit)
-          incomePreparedStatement.setLong(3, balance.revenue)
-          incomePreparedStatement.setLong(4, balance.expense)
+      incomes.foreach { income =>
+          val period = income.period
+          incomePreparedStatement.setInt(1, income.airlineId)
+          incomePreparedStatement.setLong(2, income.profit)
+          incomePreparedStatement.setLong(3, income.revenue)
+          incomePreparedStatement.setLong(4, income.expense)
           incomePreparedStatement.setInt(5, period.id)
-          incomePreparedStatement.setInt(6, cycle)
+          incomePreparedStatement.setInt(6, income.cycle)
           incomePreparedStatement.addBatch()
           
-          linksPreparedStatement.setInt(1, balance.airlineId)
-          linksPreparedStatement.setLong(2, balance.links.profit)
-          linksPreparedStatement.setLong(3, balance.links.revenue)
-          linksPreparedStatement.setLong(4, balance.links.expense)
-          linksPreparedStatement.setLong(5, balance.links.ticketRevenue)
-          linksPreparedStatement.setLong(6, balance.links.airportFee)
-          linksPreparedStatement.setLong(7, balance.links.fuelCost)
-          linksPreparedStatement.setLong(8, balance.links.crewCost)
-          linksPreparedStatement.setLong(9, balance.links.inflightCost)
-          linksPreparedStatement.setLong(10, balance.links.maintenanceCost)
+          linksPreparedStatement.setInt(1, income.airlineId)
+          linksPreparedStatement.setLong(2, income.links.profit)
+          linksPreparedStatement.setLong(3, income.links.revenue)
+          linksPreparedStatement.setLong(4, income.links.expense)
+          linksPreparedStatement.setLong(5, income.links.ticketRevenue)
+          linksPreparedStatement.setLong(6, income.links.airportFee)
+          linksPreparedStatement.setLong(7, income.links.fuelCost)
+          linksPreparedStatement.setLong(8, income.links.crewCost)
+          linksPreparedStatement.setLong(9, income.links.inflightCost)
+          linksPreparedStatement.setLong(10, income.links.maintenanceCost)
           linksPreparedStatement.setInt(11, period.id)
-          linksPreparedStatement.setInt(12, cycle)
+          linksPreparedStatement.setInt(12, income.cycle)
           linksPreparedStatement.addBatch()
           
           
-          transactionsPreparedStatement.setInt(1, balance.airlineId)
-          transactionsPreparedStatement.setLong(2, balance.transactions.profit)
-          transactionsPreparedStatement.setLong(3, balance.transactions.revenue)
-          transactionsPreparedStatement.setLong(4, balance.transactions.expense)
-          transactionsPreparedStatement.setLong(5, balance.transactions.capitalGain)
-          transactionsPreparedStatement.setLong(6, balance.transactions.createLink)
+          transactionsPreparedStatement.setInt(1, income.airlineId)
+          transactionsPreparedStatement.setLong(2, income.transactions.profit)
+          transactionsPreparedStatement.setLong(3, income.transactions.revenue)
+          transactionsPreparedStatement.setLong(4, income.transactions.expense)
+          transactionsPreparedStatement.setLong(5, income.transactions.capitalGain)
+          transactionsPreparedStatement.setLong(6, income.transactions.createLink)
           transactionsPreparedStatement.setInt(7, period.id)
-          transactionsPreparedStatement.setInt(8, cycle)
+          transactionsPreparedStatement.setInt(8, income.cycle)
           transactionsPreparedStatement.addBatch()
           
           
           
-          othersPreparedStatement.setInt(1, balance.airlineId)
-          othersPreparedStatement.setLong(2, balance.others.profit)
-          othersPreparedStatement.setLong(3, balance.others.revenue)
-          othersPreparedStatement.setLong(4, balance.others.expense)
-          othersPreparedStatement.setLong(5, balance.others.loanInterest)
-          othersPreparedStatement.setLong(6, balance.others.baseUpkeep)
-          othersPreparedStatement.setLong(7, balance.others.serviceInvestment)
-          othersPreparedStatement.setLong(8, balance.others.maintenanceInvestment)
-          othersPreparedStatement.setLong(9, balance.others.advertisement)
-          othersPreparedStatement.setLong(10, balance.others.depreciation)
+          othersPreparedStatement.setInt(1, income.airlineId)
+          othersPreparedStatement.setLong(2, income.others.profit)
+          othersPreparedStatement.setLong(3, income.others.revenue)
+          othersPreparedStatement.setLong(4, income.others.expense)
+          othersPreparedStatement.setLong(5, income.others.loanInterest)
+          othersPreparedStatement.setLong(6, income.others.baseUpkeep)
+          othersPreparedStatement.setLong(7, income.others.serviceInvestment)
+          othersPreparedStatement.setLong(8, income.others.maintenanceInvestment)
+          othersPreparedStatement.setLong(9, income.others.advertisement)
+          othersPreparedStatement.setLong(10, income.others.depreciation)
           othersPreparedStatement.setInt(11, period.id)
-          othersPreparedStatement.setInt(12, cycle)
+          othersPreparedStatement.setInt(12, income.cycle)
           othersPreparedStatement.addBatch()
           
           
@@ -103,28 +103,59 @@ object IncomeSource {
     }
   }
   
-  def deleteIncomesByCycle(cyclesFromNow : Int) = {
-     //open the hsqldb
+  def deleteIncomes(cycle : Int, period : Period.Value) = {
     val connection = Meta.getConnection()
     try {
-      val currentCycle = CycleSource.loadCycle()
-      val deleteFrom = if (currentCycle - cyclesFromNow < 0) 0 else currentCycle - cyclesFromNow 
-      
       connection.setAutoCommit(false)
-      var deleteStatement = connection.prepareStatement("DELETE FROM " + INCOME_TABLE + " WHERE cycle <= ?")
-      deleteStatement.setInt(1, deleteFrom)
+      var deleteStatement = connection.prepareStatement("DELETE FROM " + INCOME_TABLE + " WHERE cycle = ? AND period = ?")
+      deleteStatement.setInt(1, cycle)
+      deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
       
-      deleteStatement = connection.prepareStatement("DELETE FROM " + LINKS_INCOME_TABLE + " WHERE cycle <= ?")
-      deleteStatement.setInt(1, deleteFrom)
+      deleteStatement = connection.prepareStatement("DELETE FROM " + LINKS_INCOME_TABLE + " WHERE cycle = ? AND period = ?")
+      deleteStatement.setInt(1, cycle)
+      deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
       
-      deleteStatement = connection.prepareStatement("DELETE FROM " + TRANSACTIONS_INCOME_TABLE + " WHERE cycle <= ?")
-      deleteStatement.setInt(1, deleteFrom)
+      deleteStatement = connection.prepareStatement("DELETE FROM " + TRANSACTIONS_INCOME_TABLE + " WHERE cycle = ? AND period = ?")
+      deleteStatement.setInt(1, cycle)
+      deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
       
-      deleteStatement = connection.prepareStatement("DELETE FROM " + OTHERS_INCOME_TABLE + " WHERE cycle <= ?")
-      deleteStatement.setInt(1, deleteFrom)
+      deleteStatement = connection.prepareStatement("DELETE FROM " + OTHERS_INCOME_TABLE + " WHERE cycle = ? AND period = ?")
+      deleteStatement.setInt(1, cycle)
+      deleteStatement.setInt(2, period.id)
+      deleteStatement.executeUpdate()
+      
+      connection.commit
+    } finally {
+      connection.close()
+    }
+  }
+  
+  
+  def deleteIncomesBefore(cycleAndBefore : Int, period : Period.Value) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      var deleteStatement = connection.prepareStatement("DELETE FROM " + INCOME_TABLE + " WHERE cycle <= ? AND period = ?")
+      deleteStatement.setInt(1, cycleAndBefore)
+      deleteStatement.setInt(2, period.id)
+      deleteStatement.executeUpdate()
+      
+      deleteStatement = connection.prepareStatement("DELETE FROM " + LINKS_INCOME_TABLE + " WHERE cycle <= ? AND period = ?")
+      deleteStatement.setInt(1, cycleAndBefore)
+      deleteStatement.setInt(2, period.id)
+      deleteStatement.executeUpdate()
+      
+      deleteStatement = connection.prepareStatement("DELETE FROM " + TRANSACTIONS_INCOME_TABLE + " WHERE cycle <= ? AND period = ?")
+      deleteStatement.setInt(1, cycleAndBefore)
+      deleteStatement.setInt(2, period.id)
+      deleteStatement.executeUpdate()
+      
+      deleteStatement = connection.prepareStatement("DELETE FROM " + OTHERS_INCOME_TABLE + " WHERE cycle <= ? AND period = ?")
+      deleteStatement.setInt(1, cycleAndBefore)
+      deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
       
       connection.commit
@@ -142,88 +173,90 @@ object IncomeSource {
     }
   }
   
+  def loadIncomesByAirline(airlineId : Int) : List[AirlineIncome] = {
+    loadIncomeByCriteria(List(("airline", airlineId)))
+  }
+  
   
   def loadIncomeByCriteria(criteria : List[(String, Any)]) = {
     val connection = Meta.getConnection()
-    val balances = ListBuffer[AirlineIncome]()  
+    val incomes = ListBuffer[AirlineIncome]()  
     try {
-      var preparedStatement = getBalanceStatement(connection, INCOME_TABLE, criteria)
-      var resultSet = preparedStatement.executeQuery()
+      val incomeStatement = getIncomeStatement(connection, criteria)
+      val resultSet = incomeStatement.executeQuery()
       
-      if (resultSet.next()) {
-          val airlineId = resultSet.getInt("airline")
-          val totalProfit = resultSet.getLong("profit")
-          val totalRevenue = resultSet.getLong("revenue") 
-          val totalExpense = resultSet.getLong("expense")
-          val period = Period(resultSet.getInt("period"))
-          val cycle = resultSet.getInt("cycle")
+      while (resultSet.next()) {
+          val airlineId = resultSet.getInt("i.airline")
+          val totalProfit = resultSet.getLong("i.profit")
+          val totalRevenue = resultSet.getLong("i.revenue") 
+          val totalExpense = resultSet.getLong("i.expense")
+          val period = Period(resultSet.getInt("i.period"))
+          val cycle = resultSet.getInt("i.cycle")
            
-          preparedStatement = getBalanceStatement(connection, LINKS_INCOME_TABLE, criteria)
-          resultSet = preparedStatement.executeQuery()
-          resultSet.next()
-          val linksBalance = LinksIncome(airlineId = resultSet.getInt("airline"),
-                         profit = resultSet.getLong("profit"),
-                         revenue = resultSet.getLong("revenue"), 
-                         expense = resultSet.getLong("expense"), 
-                         ticketRevenue = resultSet.getLong("ticket_revenue"), 
-                         airportFee = resultSet.getLong("airport_fee"), 
-                         fuelCost = resultSet.getLong("fuel_cost"), 
-                         crewCost = resultSet.getLong("crew_cost"), 
-                         inflightCost = resultSet.getLong("inflight_cost"), 
-                         maintenanceCost= resultSet.getLong("maintenance_cost"),
-                         period = Period(resultSet.getInt("period")),
-                         cycle = resultSet.getInt("cycle"))
+          //should need that many queries...
+          val linksBalance = LinksIncome(airlineId = resultSet.getInt("l.airline"),
+                         profit = resultSet.getLong("l.profit"),
+                         revenue = resultSet.getLong("l.revenue"), 
+                         expense = resultSet.getLong("l.expense"), 
+                         ticketRevenue = resultSet.getLong("l.ticket_revenue"), 
+                         airportFee = resultSet.getLong("l.airport_fee"), 
+                         fuelCost = resultSet.getLong("l.fuel_cost"), 
+                         crewCost = resultSet.getLong("l.crew_cost"), 
+                         inflightCost = resultSet.getLong("l.inflight_cost"), 
+                         maintenanceCost= resultSet.getLong("l.maintenance_cost"),
+                         period = Period(resultSet.getInt("l.period")),
+                         cycle = resultSet.getInt("l.cycle"))
                          
-          preparedStatement = getBalanceStatement(connection, TRANSACTIONS_INCOME_TABLE, criteria)
-          resultSet = preparedStatement.executeQuery()
-          resultSet.next()
             
           val transactionsBalance = TransactionsIncome(airlineId,
-                         profit = resultSet.getLong("profit"),
-                         revenue = resultSet.getLong("revenue"), 
-                         expense = resultSet.getLong("expense"), 
-                         capitalGain = resultSet.getLong("capital_gain"), 
-                         createLink = resultSet.getLong("create_link"), 
-                         period = Period(resultSet.getInt("period")),
-                         cycle = resultSet.getInt("cycle"))
+                         profit = resultSet.getLong("t.profit"),
+                         revenue = resultSet.getLong("t.revenue"), 
+                         expense = resultSet.getLong("t.expense"), 
+                         capitalGain = resultSet.getLong("t.capital_gain"), 
+                         createLink = resultSet.getLong("t.create_link"), 
+                         period = Period(resultSet.getInt("t.period")),
+                         cycle = resultSet.getInt("t.cycle"))
               
           
-          preparedStatement = getBalanceStatement(connection, OTHERS_INCOME_TABLE, criteria)
-          resultSet = preparedStatement.executeQuery()
-          resultSet.next()
           val othersBalance = OthersIncome(airlineId,
-                         profit = resultSet.getLong("profit"),
-                         revenue = resultSet.getLong("revenue"), 
-                         expense = resultSet.getLong("expense"), 
-                         loanInterest = resultSet.getLong("loan_interest"), 
-                         baseUpkeep = resultSet.getLong("base_upkeep"), 
-                         serviceInvestment = resultSet.getLong("service_investment"), 
-                         maintenanceInvestment = resultSet.getLong("maintenance_investment"),
-                         advertisement = resultSet.getLong("advertisement"), 
-                         depreciation = resultSet.getLong("depreciation"),
-                         period = Period(resultSet.getInt("period")),
-                         cycle = resultSet.getInt("cycle"))
+                         profit = resultSet.getLong("o.profit"),
+                         revenue = resultSet.getLong("o.revenue"), 
+                         expense = resultSet.getLong("o.expense"), 
+                         loanInterest = resultSet.getLong("o.loan_interest"), 
+                         baseUpkeep = resultSet.getLong("o.base_upkeep"), 
+                         serviceInvestment = resultSet.getLong("o.service_investment"), 
+                         maintenanceInvestment = resultSet.getLong("o.maintenance_investment"),
+                         advertisement = resultSet.getLong("o.advertisement"), 
+                         depreciation = resultSet.getLong("o.depreciation"),
+                         period = Period(resultSet.getInt("o.period")),
+                         cycle = resultSet.getInt("o.cycle"))
           
-          balances += AirlineIncome(airlineId, totalProfit, totalRevenue, totalExpense, linksBalance, transactionsBalance, othersBalance, period, cycle)
+          incomes += AirlineIncome(airlineId, totalProfit, totalRevenue, totalExpense, linksBalance, transactionsBalance, othersBalance, period, cycle)
       }
        
-       balances.toList
+       incomes.toList
     } finally {
       connection.close()
     }
   }
   
-  def getBalanceStatement(connection: Connection, tableName : String, criteria : List[(String, Any)]) = {
-    val queryString = new StringBuilder("SELECT * FROM " + tableName)
+  def getIncomeStatement(connection: Connection, criteria : List[(String, Any)]) = {
+    val queryString = new StringBuilder("SELECT i.*, l.*, t.*, o.* FROM " + INCOME_TABLE + " i")
       
+    val onClause = new StringBuilder()
     if (!criteria.isEmpty) {
-      queryString.append(" WHERE ") 
-      for (i <- 0 until criteria.size - 1) {
-        queryString.append(criteria(i)._1 + " = ? AND ")
+      for (i <- 0 until criteria.size) {
+        onClause.append("i." + criteria(i)._1 + " = ? AND ")
       }
-      queryString.append(criteria.last._1 + " = ?")
     }
-     
+    
+    queryString.append(" JOIN " + LINKS_INCOME_TABLE + " l ON " + onClause + " i.airline = l.airline AND i.period = l.period AND i.cycle = l.cycle" +
+                       " JOIN " + TRANSACTIONS_INCOME_TABLE + " t ON i.airline = t.airline AND i.period = t.period AND i.cycle = t.cycle" +
+                       " JOIN " + OTHERS_INCOME_TABLE + " o ON i.airline = o.airline AND i.period = o.period AND i.cycle = o.cycle")
+                       
+     println(queryString.toString())
+                       
+                       
     val preparedStatement = connection.prepareStatement(queryString.toString())
     
     for (i <- 0 until criteria.size) {

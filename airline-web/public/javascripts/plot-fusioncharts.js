@@ -454,3 +454,55 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 	})
 }
 
+function plotIncomeChart(airlineIncomes, period, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
+	var data = {}
+	data["total"] = []
+	data["links"] = []
+	data["transactions"] = []
+	data["others"] = []
+	var category = []
+	 
+	var profitByMonth = {}
+	var monthOrder = []
+	
+	$.each(airlineIncomes, function(key, airlineIncome) {
+		data["total"].push({ value : airlineIncome.totalProfit })
+		data["links"].push({ value : airlineIncome.linksProfit })
+		data["transactions"].push({ value : airlineIncome.transactionsProfit })
+		data["others"].push({ value : airlineIncome.othersProfit })
+		category.push({ "label" : airlineIncome.cycle.toString() })
+	})
+	
+	var chart = container.insertFusionCharts({
+		type: 'msline',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": period,
+	    		"yAxisName": "Profit",
+	    		"numberPrefix": "$",
+	    		"useroundedges": "1",
+	    		"animation": "0",
+	    		"showBorder":"0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "bgAlpha":"0",
+                "showValues":"0"
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : [ 
+				{ "seriesname": "Total Income", "data" : data["total"]},
+				{ "seriesname": "Flight Income", "data" : data["links"]},
+				{ "seriesname": "Transaction Income", "data" : data["transactions"]},
+				{ "seriesname": "Other Income", "data" : data["others"]}]
+	    	            
+	    }
+	})
+}
+
