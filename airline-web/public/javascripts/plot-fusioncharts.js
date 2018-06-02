@@ -484,11 +484,11 @@ function plotIncomeChart(airlineIncomes, period, container) {
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": period,
+	    		"xAxisname": "Week",
 	    		"yAxisName": "Profit",
 	    		"numberPrefix": "$",
 	    		"useroundedges": "1",
-	    		"animation": "0",
+	    		"animation": "1",
 	    		"showBorder":"0",
                 "toolTipBorderRadius": "2",
                 "toolTipPadding": "5",
