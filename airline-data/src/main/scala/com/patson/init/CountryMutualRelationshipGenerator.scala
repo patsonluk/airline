@@ -45,6 +45,11 @@ object CountryMutualRelationshipGenerator extends App {
         }
       }
     }
+    
+    nameToCode.values.foreach { countryCode =>
+      mutualRelationshipMap.put((countryCode, countryCode), 5) //country with itself is 5 HomeCountry
+    }
+    
     mutualRelationshipMap
   }
 
