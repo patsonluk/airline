@@ -21,6 +21,7 @@ object AirlineSimulation {
     AirlineSource.deleteTransactions(cycle - 1)
     val linkResultByAirline = linkResult.groupBy { _.airlineId }
     val airplanesByAirline = airplanes.groupBy(_.owner.id)
+    val allCountries = CountrySource.loadAllCountries().map( country => (country.countryCode, country)).toMap
     
     val allIncomes = ListBuffer[AirlineIncome]()
     allAirlines.foreach { airline =>
@@ -64,7 +65,9 @@ object AirlineSimulation {
         val othersSummary = Map[OtherIncomeItemType.Value, Long]()
         othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, airline.getServiceFunding() * -1)
         othersSummary.put(OtherIncomeItemType.BASE_UPKEEP, airline.bases.foldLeft(0L)((upkeep, base) => {
-          upkeep - (if (base.headquarter) 100000 else 50000)
+          val countryIncome = allCountries(base.countryCode).income
+          val baseUpkeep =  (10 * countryIncome * base.scale / 52)  / (if (base.headquarter) 1 else 2)//assume scale 1 HQ is 10 people's annual salary, other base half 
+          upkeep - baseUpkeep //negative number 
         }))
         othersSummary.put(OtherIncomeItemType.DEPRECIATION, airplanesByAirline.getOrElse(airline.id, List.empty).foldLeft(0L) {
           case(depreciation, airplane) => (depreciation - airplane.depreciationRate) 
