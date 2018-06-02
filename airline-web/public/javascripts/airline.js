@@ -22,9 +22,6 @@ function updateAirlineInfo(airlineId) {
 	    	} else {
 	    		$("#currentAirlineCountry").empty()
 	    	}
-	    	$("#serviceFunding").val(airline.serviceFunding)
-			$("#maintenanceQuality").val(airline.maintenanceQuality)
-			plotMaintenanceQualityGauge($("#maintenanceQualityGauge"), $("#maintenanceQuality"))
 	    	activeAirline = airline
 	    	updateLinksInfo()
 	    	updateAirportMarkers(airline)
@@ -1256,44 +1253,6 @@ function removeTempPath() {
 //		}, (i + 1) * 200, i)
 //	}
 //}
-
-function updateServiceFunding() {
-	var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/serviceFunding"
-    var data = { "serviceFunding" : parseInt($("#serviceFunding").val()) }
-	$.ajax({
-		type: 'PUT',
-		url: url,
-	    data: JSON.stringify(data),
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function() {
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
-}
-
-function updateMaintenanceQuality() {
-	var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/maintenanceQuality"
-    var data = { "maintenanceQuality" : parseInt($("#maintenanceQuality").val()) }
-	$.ajax({
-		type: 'PUT',
-		url: url,
-	    data: JSON.stringify(data),
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function() {
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
-}
 
 function showLinksDetails() {
 	selectedLink = undefined

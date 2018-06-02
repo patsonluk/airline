@@ -1,4 +1,4 @@
-function plotMaintenanceQualityGauge(container, currentQualityInput) {
+function plotMaintenanceLevelGauge(container, maintenanceLevelInput, onchangeFunction) {
 	container.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
@@ -31,7 +31,7 @@ function plotMaintenanceQualityGauge(container, currentQualityInput) {
 		                "sides" : "3",
 		                "borderColor": "#FFE62B",
 		                "borderAlpha": "20",
-		                "value" : currentQualityInput.val()
+		                "value" : maintenanceLevelInput.val()
 		            }
 		        ]
 		    },
@@ -40,7 +40,7 @@ function plotMaintenanceQualityGauge(container, currentQualityInput) {
                       {
                     	  "minValue": "0",
                           "maxValue": "100",
-                          "label": currentQualityInput.val() + "%",
+                          "label": maintenanceLevelInput.val() + "%",
                           "code": "#6baa01"
                       }]
 		    }
@@ -48,23 +48,24 @@ function plotMaintenanceQualityGauge(container, currentQualityInput) {
 	var chart = container.insertFusionCharts(
 			{	
 				type: 'hlineargauge',
-		        width: '200',
-		        height: '25',
+				width: '100%',
+		        height: '40px',
 		        dataFormat: 'json',
 			    dataSource: dataSource,
 				events: {
 		            //Event is raised when a real-time gauge or chart completes updating data.
 		            //Where we can get the updated data and display the same.
 		            "realTimeUpdateComplete" : function (evt, arg){
-		                var newQuality = evt.sender.getData(1)
+		                var newLevel = evt.sender.getData(1)
 		                //take the floor
-		                newQuality = Math.floor(newQuality)
-		                dataSource["pointers"]["pointer"][0].value = newQuality
-		                dataSource["colorRange"]["color"][0].label = newQuality + "%"
-		                currentQualityInput.val(newQuality)
+		                newLevel = Math.floor(newLevel)
+		                dataSource["pointers"]["pointer"][0].value = newLevel
+		                dataSource["colorRange"]["color"][0].label = newLevel + "%"
+		                maintenanceLevelInput.val(newLevel)
 		                container.updateFusionCharts({
 		                	"dataSource": dataSource
 		                });
+		                onchangeFunction(newLevel)
 		            }
 		        }
 			})
@@ -498,9 +499,9 @@ function plotIncomeChart(airlineIncomes, period, container) {
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [ 
 				{ "seriesname": "Total Income", "data" : data["total"]},
-				{ "seriesname": "Flight Income", "data" : data["links"]},
-				{ "seriesname": "Transaction Income", "data" : data["transactions"]},
-				{ "seriesname": "Other Income", "data" : data["others"]}]
+				{ "seriesname": "Flight Income", "data" : data["links"], "visible" : "0"},
+				{ "seriesname": "Transaction Income", "data" : data["transactions"], "visible" : "0"},
+				{ "seriesname": "Other Income", "data" : data["others"], "visible" : "0"}]
 	    	            
 	    }
 	})

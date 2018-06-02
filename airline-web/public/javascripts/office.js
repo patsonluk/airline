@@ -7,6 +7,8 @@ function showOfficeCanvas() {
 	highlightTab($('#officeCanvasTab'))
 	
 	loadIncomeSheet();
+	updateServiceFundingDetails()
+	updateMaintenanceLevelDetails()
 }
 
 function loadIncomeSheet() {
@@ -121,4 +123,82 @@ function updateIncomeSheet(airlineIncome) {
         $("#othersDepreciation").text('$' + commaSeparateNumber(airlineIncome.othersDepreciation))
 	}
 }
+
+function setServiceFunding(funding) {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/serviceFunding"
+    var data = { "serviceFunding" : parseInt(funding) }
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function() {
+	    	activeAirline.serviceFunding = funding
+	    	updateServiceFundingDetails()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function editServiceFunding() {
+	$('#serviceFundingDisplaySpan').hide()
+	$('#serviceFundingInputSpan').show()
+}
+
+function updateServiceFundingDetails() {
+	$('#currentServiceQuality').text(activeAirline.serviceQuality)
+	
+	$('#serviceFunding').text('$' + commaSeparateNumber(activeAirline.serviceFunding))
+	$('#serviceFundingInput').val(activeAirline.serviceFunding)
+	
+	$('#serviceFundingDisplaySpan').show()
+	$('#serviceFundingInputSpan').hide()
+	
+	$('#servicePrediction').text('-')
+}
+
+
+function setMaintenanceLevel(maintenanceLevel) {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/maintenanceQuality"
+    var data = { "maintenanceQuality" : parseInt(maintenanceLevel) }
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function() {
+	    	activeAirline.maintenanceQuality = maintenanceLevel
+	    	updateMaintenanceLevelDetails()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function editMaintenanceLevel() {
+	$('#maintenanceLevelDisplaySpan').hide()
+	$('#maintenanceLevelInputSpan').show()
+}
+
+function updateMaintenanceLevelDetails() {
+	$('#maintenanceLevel').text(activeAirline.maintenanceQuality + "%")
+	$('#maintenanceLevelInput').val(activeAirline.maintenanceQuality)
+	$("#maintenanceLevelGauge").empty()
+	$('#maintenanceLevelDisplaySpan').show()
+	$('#maintenanceLevelInputSpan').hide()
+	plotMaintenanceLevelGauge($("#maintenanceLevelGauge"), $("#maintenanceLevelInput"), function(newLevel) {
+		setMaintenanceLevel(newLevel)
+	})
+}
+
+
 

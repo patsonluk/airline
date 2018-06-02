@@ -43,11 +43,6 @@
   			Balance: $<span id="balance" class="label"></span> 
   			Reputation: <span id="reputation" class="label"></span> <span id="reputationLevel" class="label"></span>
   			Service Quality: <span id="serviceQuality" class="label"></span>
-  			Service Funding: <input type="text" id="serviceFunding"/>
-  			<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="updateServiceFunding()"/>
-  			Maintenance Quality: <span id="maintenanceQualityGauge"></span>
-  			<input type="hidden" id="maintenanceQuality"/>
-  			<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="updateMaintenanceQuality()"/>
   		</div>
   		<div style="float: right;">
   			<div style="display: hidden;" id="loginDiv">
@@ -488,162 +483,211 @@
   			</div>
 <!--   			end airplane canvas -->
 			<div id="officeCanvas" style="height: 100%; display: none;">
-				<div style="width : 50%; float: left; overflow: auto;" class="section">
-					<h4>Balance Sheet</h4>
-					<div>
-						<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="incomeHistoryStep(-1)"/>
-						<span id="incomeCycleText"></span>
-						<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"'/>
-					</div>
-					<div>
-						<select id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
-	  						<option value="WEEKLY" selected="selected">Week</option>
-	  						<option value="MONTHLY">Month</option>
-	  						<option value="YEARLY">Year</option>
-	  					</select>
-					</div>
-					
-					<div id="totalProfitChart" style="width: 90%; height: 170px; margin: 0 auto;"></div>
-<!-- 					left column -->
-					<div style="height: 100%; width: 50%; float: left;">
-						<div class="table section" style="width: 90%;">
-							<h4>Total Income</h4>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Total Revenue:</div>
-		 	  					<div id="totalRevenue" class="cell" style="text-align: right;"></div>
+				<div style="width : 70%; float: left;">
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Income Sheet</h4>
+						<div>
+							<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="incomeHistoryStep(-1)"/>
+							<span id="incomeCycleText"></span>
+							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"'/>
+						</div>
+						<div>
+							<select id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
+		  						<option value="WEEKLY" selected="selected">Week</option>
+		  						<option value="MONTHLY">Month</option>
+		  						<option value="YEARLY">Year</option>
+		  					</select>
+						</div>
+						
+						<div id="totalProfitChart" style="width: 90%; height: 170px; margin: 0 auto;"></div>
+	<!-- 					left column -->
+						<div style="height: 100%; width: 50%; float: left;">
+							<div class="table section" style="width: 90%;">
+								<h4>Total Income</h4>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Total Revenue:</div>
+			 	  					<div id="totalRevenue" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Total Expense:</div>
+			 	  					<div id="totalExpense" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Total Profit:</div>
+			 	  					<div id="totalProfit" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			         		</div>
+							<div class="table section" style="width: 90%;">
+								<h4>Flights Income</h4>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Ticket Revenue:</div>
+			 	  					<div id="linksTicketRevenue" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Airport Fee:</div>
+			 	  					<div id="linksAirportFee" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Fuel:</div>
+			 	  					<div id="linksFuelCost" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Crew:</div>
+			 	  					<div id="linksCrewCost" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Flight Supplies:</div>
+			 	  					<div id="linksInflightCost" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Airplane Maintenance:</div>
+			 	  					<div id="linksMaintenance" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+				 	  				<div class="divider cell"></div>
+				 	  				<div class="divider cell"></div>
+				 	  			</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Flight Revenue:</div>
+			 	  					<div id="linksRevenue" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Flight Expense:</div>
+			 	  					<div id="linksExpense" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Flight Profit:</div>
+			 	  					<div id="linksProfit" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			         		</div>
+						</div>
+	<!-- 					right column -->
+						<div style="height: 100%; width: 50%; float: right;">
+							<div class="table section" style="width: 90%;">
+								<h4>Transactions</h4>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Capital Gain/Lost:</div>
+			 	  					<div id="transactionsCapitalGain" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Setup New Flight Route:</div>
+			 	  					<div id="transactionsCreateLink" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+				 	  				<div class="divider cell"></div>
+				 	  				<div class="divider cell"></div>
+				 	  			</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Transactions Revenue:</div>
+			 	  					<div id="transactionsRevenue" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Transactions Expense:</div>
+			 	  					<div id="transactionsExpense" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Transactions Profit:</div>
+			 	  					<div id="transactionsProfit" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			         		</div>
+			         		
+			         		<div class="table section" style="width: 90%;">
+								<h4>Other Income</h4>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Loan Interest:</div>
+			 	  					<div id="othersLoanInterest" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Office Upkeep:</div>
+			 	  					<div id="othersBaseUpkeep" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Service Investment:</div>
+			 	  					<div id="othersServiceInvestment" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Maintenance Investment:</div>
+			 	  					<div id="othersMaintenanceInvestment" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Advertisement:</div>
+			 	  					<div id="othersAdvertisement" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Depreciation:</div>
+			 	  					<div id="othersDepreciation" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+				 	  				<div class="divider cell"></div>
+				 	  				<div class="divider cell"></div>
+				 	  			</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Others Revenue:</div>
+			 	  					<div id="othersRevenue" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Others Expense:</div>
+			 	  					<div id="othersExpense" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Others Profit:</div>
+			 	  					<div id="othersProfit" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			         		</div>  
+						</div>
+	<!-- 					end right side -->
+	         		</div>		
+	<!--          		end income statement -->
+				</div>
+<!-- 				end left section  -->
+				<div style="width : 30%; float: left;">
+	  				<div class="section" style="width: 90%;">
+	  					<h4>Service Investment</h4>
+	  					<div class="table" style="width: 100%;">
+							<div class="table-row">
+		 	  					<div class="cell label">Current Service Quality:</div>
+		 	  					<div id="currentServiceQuality" class="cell value"></div>
 		 	  				</div>
 		 	  				<div class="table-row">
-		 	  					<div class="cell">Total Expense:</div>
-		 	  					<div id="totalExpense" class="cell" style="text-align: right;"></div>
+		 	  					<div class="cell label">Service Funding:</div>
+		 	  					<div class="cell value">
+		 	  						<span id="serviceFundingDisplaySpan">
+		 	  							<span id="serviceFunding"></span>
+		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editServiceFunding()"/>	
+		 	  						</span>
+		 	  						<span id="serviceFundingInputSpan">
+		 	  							<input id="serviceFundingInput" type="text"/>
+		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setServiceFunding($('#serviceFundingInput').val())"/>
+		 	  						</span>
+		 	  					</div>
 		 	  				</div>
 		 	  				<div class="table-row">
-		 	  					<div class="cell">Total Profit:</div>
-		 	  					<div id="totalProfit" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		         		</div>
-						<div class="table section" style="width: 90%;">
-							<h4>Flights Income</h4>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Ticket Revenue:</div>
-		 	  					<div id="linksTicketRevenue" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Airport Fee:</div>
-		 	  					<div id="linksAirportFee" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Fuel:</div>
-		 	  					<div id="linksFuelCost" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Crew:</div>
-		 	  					<div id="linksCrewCost" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Flight Supplies:</div>
-		 	  					<div id="linksInflightCost" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Airplane Maintenance:</div>
-		 	  					<div id="linksMaintenance" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-			 	  				<div class="divider cell"></div>
-			 	  				<div class="divider cell"></div>
-			 	  			</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Flight Revenue:</div>
-		 	  					<div id="linksRevenue" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Flight Expense:</div>
-		 	  					<div id="linksExpense" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Flight Profit:</div>
-		 	  					<div id="linksProfit" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		         		</div>
-					</div>
-<!-- 					right column -->
-					<div style="height: 100%; width: 50%; float: right;">
-						<div class="table section" style="width: 90%;">
-							<h4>Transactions</h4>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Capital Gain/Lost:</div>
-		 	  					<div id="transactionsCapitalGain" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Setup New Flight Route:</div>
-		 	  					<div id="transactionsCreateLink" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-			 	  				<div class="divider cell"></div>
-			 	  				<div class="divider cell"></div>
-			 	  			</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Transactions Revenue:</div>
-		 	  					<div id="transactionsRevenue" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Transactions Expense:</div>
-		 	  					<div id="transactionsExpense" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Transactions Profit:</div>
-		 	  					<div id="transactionsProfit" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		         		</div>
-		         		
-		         		<div class="table section" style="width: 90%;">
-							<h4>Other Income</h4>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Loan Interest:</div>
-		 	  					<div id="othersLoanInterest" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Office Upkeep:</div>
-		 	  					<div id="othersBaseUpkeep" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Service Investment:</div>
-		 	  					<div id="othersServiceInvestment" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Maintenance Investment:</div>
-		 	  					<div id="othersMaintenanceInvestment" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Advertisement:</div>
-		 	  					<div id="othersAdvertisement" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Depreciation:</div>
-		 	  					<div id="othersDepreciation" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-			 	  				<div class="divider cell"></div>
-			 	  				<div class="divider cell"></div>
-			 	  			</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Others Revenue:</div>
-		 	  					<div id="othersRevenue" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Others Expense:</div>
-		 	  					<div id="othersExpense" class="cell" style="text-align: right;"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell">Others Profit:</div>
-		 	  					<div id="othersProfit" class="cell" style="text-align: right;"></div>
+		 	  					<div class="cell label">Change Prediction:</div>
+		 	  					<div id="servicePrediction" class="cell value"></div>
 		 	  				</div>
 		         		</div>  
-					</div>
-<!-- 					end right side -->
-         		</div>		
-  				<div id="others" class="section" style="width: 35%; float:right;">
-  					
-	    		</div>
+		    		</div>
+		    		<div class="section" style="width: 90%;">
+	  					<h4>Maintenance Investment</h4>
+	  					<div class="table" style="width: 100%;">
+							<div class="table-row">
+								<div class="cell label" style="width: 35%">Current Maintenance Level:</div>
+								<div class="cell value" style="width: 65%">
+									<span id="maintenanceLevelDisplaySpan">
+		 	  							<span id="maintenanceLevel"></span>
+		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editMaintenanceLevel()"/>	
+		 	  						</span>
+		 	  						<span id="maintenanceLevelInputSpan" style="display: none;">
+		 	  							<input type="hidden" id="maintenanceLevelInput"/>
+		 	  							<div id="maintenanceLevelGauge" style="width: 90%; float: left;"></div>
+<!-- 		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle; float: left;" onclick=")"/> -->
+		 	  						</span>
+								</div>
+		 	  				</div>
+		         		</div>  
+		    		</div>
+		    	</div>
+<!-- 		    	end right section -->
   			</div>
   		</div>
   	<!-- main canvas end -->
