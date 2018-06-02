@@ -455,7 +455,7 @@ function loadAirportStatistics(airport) {
 
 
 function getAirports() {
-	$.getJSON( "airports?count=2000", function( data ) {
+	$.getJSON( "airports?count=4000", function( data ) {
 		  addMarkers(data)
 	});
 }

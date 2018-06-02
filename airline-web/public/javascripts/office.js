@@ -74,7 +74,24 @@ function changeIncomePeriod(period) {
 
 function updateIncomeSheet(airlineIncome) {
 	if (airlineIncome) {
-		var cycleText = airlineIncome.period + " " + airlineIncome.cycle
+		var periodText
+		var periodCount
+		var inProgress
+		if (airlineIncome.period == "WEEKLY") {
+			periodText = "Week"
+			periodCount= airlineIncome.cycle
+		} else if (airlineIncome.period == "MONTHLY") {
+			periodText = "Month"
+			periodCount = Math.ceil(airlineIncome.cycle / 4)
+			inProgress = (airlineIncome.cycle + 1) % 4
+		} else if (airlineIncome.period == "YEARLY") {
+			periodText = "Year"
+			periodCount = Math.ceil(airlineIncome.cycle / 52)
+			inProgress = (airlineIncome.cycle + 1) % 52
+		}
+		
+		var cycleText = periodText + " " + periodCount + (inProgress ? " (In Progress)" : "")
+		
 		$("#incomeCycleText").text(cycleText)
 		$("#totalProfit").text('$' + commaSeparateNumber(airlineIncome.totalProfit))
         $("#totalRevenue").text('$' + commaSeparateNumber(airlineIncome.totalRevenue))

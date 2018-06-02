@@ -4,6 +4,7 @@ var activeAirline
 var activeUser
 var selectedLink
 var currentTime
+var currentCycle
 
 $( document ).ready(function() {
 	if ($.cookie('sessionActive')) {
@@ -558,6 +559,7 @@ var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 
 function updateTime(cycle, fraction) {
+	currrentCycle = cycle
 	currentTime = (cycle + fraction) * totalmillisecPerWeek 
 	if (!refreshIntervalId) { //start incrementing
 		refreshIntervalId = setInterval( function() {
