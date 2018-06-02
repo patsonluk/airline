@@ -80,9 +80,9 @@ object HistoryUtil {
     val currentCycle = CycleSource.loadCycle()
     synchronized {
       if (currentCycle != loadedCycle) {
-        println("Updating link history cache on cycle " + loadedCycle)
+        println("Updating link history cache on cycle " + currentCycle)
         allConsumptions = ConsumptionHistorySource.loadAllConsumptions
-        println("Updated link history cache on cycle " + loadedCycle)
+        println("Updated link history cache on cycle " + currentCycle)
       }
       loadedCycle = currentCycle
     }

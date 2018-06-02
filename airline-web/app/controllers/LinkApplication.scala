@@ -27,7 +27,6 @@ import com.patson.data.airplane.ModelSource
 import play.api.mvc.Security.AuthenticatedRequest
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.RouteHistorySource
-import com.patson.data.LinkHistorySource
 import com.patson.DemandGenerator
 import com.patson.data.ConsumptionHistorySource
 import com.patson.data.CountrySource
@@ -80,7 +79,6 @@ class LinkApplication extends Controller {
       "crewCost" -> JsNumber(linkConsumption.crewCost),
       "airportFees" -> JsNumber(linkConsumption.airportFees),
       "maintenanceCost" -> JsNumber(linkConsumption.maintenanceCost),
-      "depreciation" -> JsNumber(linkConsumption.depreciation),
       "inflightCost" -> JsNumber(linkConsumption.inflightCost),
       "capacity" -> Json.toJson(linkConsumption.capacity),
       "soldSeats" -> Json.toJson(linkConsumption.soldSeats),
@@ -511,18 +509,6 @@ class LinkApplication extends Controller {
     Ok(Json.toJson(RouteHistorySource.loadVipRoutes()))
   }
   
-  def setWatchedLink(airlineId : Int, linkId : Int) = AuthenticatedAirline(airlineId) {
-    LinkHistorySource.updateWatchedLinkId(airlineId, linkId)
-    Ok(Json.toJson(linkId))
-  }
-  
-  def getWatchedLink(airlineId : Int) = AuthenticatedAirline(airlineId) {
-    Ok(LinkHistorySource.loadWatchedLinkIdByAirline(airlineId) match {
-      case Some(watchedLinkId) => Json.toJson(watchedLinkId)
-      case None => Json.obj()
-    })
-  }
-  
   def getRelatedLinkConsumption(airlineId : Int, linkId : Int, selfOnly : Boolean) =  AuthenticatedAirline(airlineId) {
     LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
       case Some(link) => {
@@ -538,16 +524,16 @@ class LinkApplication extends Controller {
   
   
   
-  def getLinkHistory(airlineId : Int) = AuthenticatedAirline(airlineId) {
-    LinkHistorySource.loadWatchedLinkIdByAirline(airlineId) match {
-      case Some(watchedLinkId) =>
-        LinkHistorySource.loadLinkHistoryByWatchedLinkId(watchedLinkId) match {
-          case Some(linkHistory) => Ok(Json.toJson(linkHistory))
-          case None => Ok(Json.obj())
-        }
-      case None => Ok(Json.obj())
-    }
-  }
+//  def getLinkHistory(airlineId : Int) = AuthenticatedAirline(airlineId) {
+//    LinkHistorySource.loadWatchedLinkIdByAirline(airlineId) match {
+//      case Some(watchedLinkId) =>
+//        LinkHistorySource.loadLinkHistoryByWatchedLinkId(watchedLinkId) match {
+//          case Some(linkHistory) => Ok(Json.toJson(linkHistory))
+//          case None => Ok(Json.obj())
+//        }
+//      case None => Ok(Json.obj())
+//    }
+//  }
   
   def updateServiceFunding(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {

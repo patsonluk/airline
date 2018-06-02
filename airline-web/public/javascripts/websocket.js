@@ -1,4 +1,4 @@
-var wsUri = "ws://localhost:9000/wsWithActor"; 
+var wsUri = "ws://" +  window.location.hostname + ":9000/wsWithActor";
 var websocket;
 var selectedAirlineId
 

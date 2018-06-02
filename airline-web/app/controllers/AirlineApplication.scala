@@ -15,6 +15,12 @@ import com.patson.model.AirlineBase
 import com.patson.model.AirlineBase
 import controllers.AuthenticationObject.Authenticated
 import controllers.AuthenticationObject.AuthenticatedAirline
+import com.patson.data.IncomeSource
+import com.patson.model.Period
+import com.patson.model.AirlineIncome
+import com.patson.model.LinksIncome
+import com.patson.model.TransactionsIncome
+import com.patson.model.OthersIncome
 
 
 class AirlineApplication extends Controller {
@@ -115,5 +121,11 @@ class AirlineApplication extends Controller {
     } else {
       BadRequest("Cannot insert base")
     }
+  }
+  
+  def getAirlineIncomes(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+     val airline = request.user
+     val incomes = IncomeSource.loadIncomesByAirline(airlineId)   
+     Ok(Json.toJson(incomes))
   }
 }

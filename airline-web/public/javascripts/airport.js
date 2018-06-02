@@ -455,7 +455,7 @@ function loadAirportStatistics(airport) {
 
 
 function getAirports() {
-	$.getJSON( "airports?count=2000", function( data ) {
+	$.getJSON( "airports?count=4000", function( data ) {
 		  addMarkers(data)
 	});
 }
@@ -526,10 +526,16 @@ function addMarkers(airports) {
 			  infoWindow.setContent($("#airportPopup").html())
 			  infoWindow.open(map, this);
 			  
-			  $("#planToAirportButton").click(function() {
-				  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
-				  infoWindow.close();
-			  });
+			  if (this.airportId == activeAirline.headquarterAirport.airportId) {
+				  $("#planToAirportButton").hide()
+			  } else {
+				  $("#planToAirportButton").click(function() {
+					  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
+					  infoWindow.close();
+				  });
+				  $("#planToAirportButton").show()
+			  }
+			  
 		  });
 		  marker.setVisible(isShowMarker(marker, currentZoom))
 		  resultMarkers[airportInfo.id] = marker

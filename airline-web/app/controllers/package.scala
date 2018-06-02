@@ -14,6 +14,8 @@ import com.patson.Util
 import play.api.libs.json.JsSuccess
 import play.api.libs.json.Json
 import play.api.libs.json.JsBoolean
+import com.patson.model.AirlineIncome
+import com.patson.model.AirlineIncome
 
 
 
@@ -57,7 +59,8 @@ package object controllers {
       "price" -> JsNumber(airplane.model.price),
       "condition" -> JsNumber(airplane.condition),
       "age" -> JsNumber(Computation.calculateAge(airplane.constructedCycle)),
-      "value" -> JsNumber(airplane.value)))
+      "value" -> JsNumber(airplane.value),
+      "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane))))
     }
   }
   
@@ -181,5 +184,40 @@ package object controllers {
       "scale" -> JsNumber(base.scale),
       "headquarter" -> JsBoolean(base.headquarter),
       "foundedCycle" -> JsNumber(base.foundedCycle)))
+  }
+  
+  implicit object AirlineIncomeWrite extends Writes[AirlineIncome] {
+     def writes(airlineIncome : AirlineIncome): JsValue = {
+      JsObject(List(
+        "airlineId" -> JsNumber(airlineIncome.airlineId),
+        "totalProfit" -> JsNumber(airlineIncome.profit),
+        "totalRevenue" -> JsNumber(airlineIncome.revenue),
+        "totalExpense" -> JsNumber(airlineIncome.expense),
+        "linksProfit" -> JsNumber(airlineIncome.links.profit),
+        "linksRevenue" -> JsNumber(airlineIncome.links.revenue),
+        "linksExpense" -> JsNumber(airlineIncome.links.expense),
+        "linksTicketRevenue" -> JsNumber(airlineIncome.links.ticketRevenue),
+        "linksAirportFee" -> JsNumber(airlineIncome.links.airportFee),
+        "linksFuelCost" -> JsNumber(airlineIncome.links.fuelCost),
+        "linksCrewCost" -> JsNumber(airlineIncome.links.crewCost),
+        "linksInflightCost" -> JsNumber(airlineIncome.links.inflightCost),
+        "linksMaintenanceCost" -> JsNumber(airlineIncome.links.maintenanceCost),
+        "transactionsProfit" -> JsNumber(airlineIncome.transactions.profit),
+        "transactionsRevenue" -> JsNumber(airlineIncome.transactions.revenue),
+        "transactionsExpense" -> JsNumber(airlineIncome.transactions.expense),
+        "transactionsCapitalGain" -> JsNumber(airlineIncome.transactions.capitalGain),
+        "transactionsCreateLink" -> JsNumber(airlineIncome.transactions.createLink),
+        "othersProfit" -> JsNumber(airlineIncome.others.profit),
+        "othersRevenue" -> JsNumber(airlineIncome.others.revenue),
+        "othersExpense" -> JsNumber(airlineIncome.others.expense),
+        "othersLoanInterest" -> JsNumber(airlineIncome.others.loanInterest),
+        "othersBaseUpkeep" -> JsNumber(airlineIncome.others.baseUpkeep),
+        "othersServiceInvestment" -> JsNumber(airlineIncome.others.serviceInvestment),
+        "othersMaintenanceInvestment" -> JsNumber(airlineIncome.others.maintenanceInvestment),
+        "othersAdvertisement" -> JsNumber(airlineIncome.others.advertisement),
+        "othersDepreciation" -> JsNumber(airlineIncome.others.depreciation),
+        "period" -> JsString(airlineIncome.period.toString()),
+        "cycle" -> JsNumber(airlineIncome.cycle)))
+    }
   }
 }
