@@ -254,9 +254,6 @@ object IncomeSource {
                        " JOIN " + TRANSACTIONS_INCOME_TABLE + " t ON i.airline = t.airline AND i.period = t.period AND i.cycle = t.cycle" +
                        " JOIN " + OTHERS_INCOME_TABLE + " o ON i.airline = o.airline AND i.period = o.period AND i.cycle = o.cycle")
                        
-     println(queryString.toString())
-                       
-                       
     val preparedStatement = connection.prepareStatement(queryString.toString())
     
     for (i <- 0 until criteria.size) {
