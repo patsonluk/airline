@@ -494,7 +494,10 @@ function plotIncomeChart(airlineIncomes, period, container) {
                 "toolTipBorderRadius": "2",
                 "toolTipPadding": "5",
                 "bgAlpha":"0",
-                "showValues":"0"
+                "showValues":"1",
+                "showZeroPlane": "1",
+                "zeroPlaneColor": "#222222",
+                "zeroPlaneThickness": "2",
 	    	},
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [ 
