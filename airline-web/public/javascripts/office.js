@@ -158,9 +158,25 @@ function updateServiceFundingDetails() {
 	
 	$('#serviceFundingDisplaySpan').show()
 	$('#serviceFundingInputSpan').hide()
+
+	$('#servicePrediction').text('...')
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/servicePrediction",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(servicePrediction) {
+	    	$('#servicePrediction').text(servicePrediction.prediction)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 	
-	$('#servicePrediction').text('-')
 }
+
+
 
 
 function setMaintenanceLevel(maintenanceLevel) {

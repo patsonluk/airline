@@ -21,6 +21,7 @@ import com.patson.model.AirlineIncome
 import com.patson.model.LinksIncome
 import com.patson.model.TransactionsIncome
 import com.patson.model.OthersIncome
+import com.patson.AirlineSimulation
 
 
 class AirlineApplication extends Controller {
@@ -127,5 +128,32 @@ class AirlineApplication extends Controller {
      val airline = request.user
      val incomes = IncomeSource.loadIncomesByAirline(airlineId)   
      Ok(Json.toJson(incomes))
+  }
+  
+  def getServicePrediction(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+     val airline = request.user
+     val capacity = LinkSource.loadLinksByAirlineId(airlineId).map(_.capacity.total).sum
+     val targetQuality = AirlineSimulation.getTargetQuality(airline.getServiceFunding(), capacity)
+     
+     val delta = targetQuality - airline.getServiceQuality()
+     val prediction =  
+       if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT) {
+         "Increase rapidly"
+       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / 2) {
+         "Increase steadily"
+       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / 5) {
+         "Increase slightly"
+       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / -5) {
+         "Steady"
+       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / -2) {
+         "Decrease slightly"
+       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT * -1) {
+         "Decrease steadily"
+       } else {
+         "Decrease rapidly"
+       }
+     
+     
+     Ok(JsObject(List("prediction" -> JsString(prediction))))
   }
 }

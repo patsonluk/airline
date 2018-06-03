@@ -10,7 +10,7 @@ import com.patson.model.airplane.Airplane
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
   private val REPUTATION_INCREMENT = 0.5 
-  private[patson] val MAX_SERVICE_QUALITY_INCREMENT : Double = 1
+  val MAX_SERVICE_QUALITY_INCREMENT : Double = 1
   
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
