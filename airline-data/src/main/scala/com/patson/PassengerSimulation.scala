@@ -17,6 +17,8 @@ import com.patson.data.AirportSource
 import com.patson.data.LinkSource
 import com.patson.model._
 import scala.collection.mutable.ArrayBuffer
+import scala.util.control.Breaks._
+import com.patson.data.CountrySource
 
 object PassengerSimulation extends App {
 
@@ -25,6 +27,8 @@ object PassengerSimulation extends App {
 //  import actorSystem.dispatcher
 
 //  implicit val materializer = FlowMaterializer()
+  
+  val countryOpenness : Map[String, Int] = CountrySource.loadAllCountries().map( country => (country.countryCode, country.openness)).toMap
   
   testFlow
   
@@ -240,7 +244,7 @@ object PassengerSimulation extends App {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int]) : Future[Map[PassengerGroup, Map[Airport, Route]]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Future[Map[PassengerGroup, Map[Airport, Route]]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
@@ -259,8 +263,9 @@ object PassengerSimulation extends App {
         while (walker < links.length) {
           val link = links(walker)
           walker += 1
-            //see if there are any seats for that class (or lower) left
-            link.availableSeatsAtOrBelowClass(linkClass).foreach { 
+          
+          //see if there are any seats for that class (or lower) left
+          link.availableSeatsAtOrBelowClass(linkClass).foreach { 
             case(matchingLinkClass, seatsLeft) =>
               //from the perspective of the passenger group, how well does it know each link
               val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
@@ -270,10 +275,18 @@ object PassengerSimulation extends App {
               
               if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
                 var cost = passengerGroup.preference.computeCost(link) //cost should NOT be lower if seats available are lower than requested class, this reflect the unwillingness to downgrade
-                linkConsiderations += LinkConsideration(link, cost, matchingLinkClass, false)
-                linkConsiderations += LinkConsideration(link, cost, matchingLinkClass, true) //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly! 
+                //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
+                val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)
+                val linkConsideration2 = LinkConsideration(link, cost, matchingLinkClass, true)
+                if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
+                  linkConsiderations += linkConsideration1
+                }
+                if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
+                  linkConsiderations += linkConsideration2
+                }
               }
-           }
+          }
+          
         }
         
         //then find the shortest route based on the cost
@@ -305,7 +318,19 @@ object PassengerSimulation extends App {
     materializedFlow.get(resultSink)
   }
   
-  
+  def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int]) : Boolean = {
+    val SIX_FREEDOM_OPENNESS = 8 //need at least this opennes to grant sixth freedom to foreign airlines
+    
+    if (linkConsideration.from.countryCode == linkConsideration.to.countryCode) { //domestic flight is always ok
+      true
+    } else if (linkConsideration.from.countryCode == originatingAirport.countryCode) { //always ok if link flying out from same country as the originate airport
+      true
+    } else if (linkConsideration.from.countryCode == linkConsideration.link.airline.getCountryCode.get) { //always ok for home country airline flying out
+      true
+    } else { //a foreign airline flying out carrying passengers originating from a foreign airport 
+      countryOpenness(linkConsideration.from.countryCode) >= SIX_FREEDOM_OPENNESS
+    }
+  }
   
   
   def getAirportGroups(airportSource : List[Airport]) = {

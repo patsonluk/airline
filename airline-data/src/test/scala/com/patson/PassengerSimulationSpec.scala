@@ -254,6 +254,255 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       result(economyPassengerGroup).isEmpty.shouldBe(true) //no awareness
     }
+    
+    "find routes if there're valid links with sufficient country openness".in {
+      val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2 = Airport("", "", "Airport 2", 0, 60, "C2", "", "", 1, 0, 0, 0, id = 2)
+      val airport3 = Airport("", "", "Airport 3", 0, 90, "C3", "", "", 1, 0, 0, 0, id = 3)
+      val airport4 = Airport("", "", "Airport 4", 0, 120, "C4", "", "", 1, 0, 0, 0, id = 4)
+      
+      val airline1 = Airline("airline 1", 1)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport4, "C4", 1, 1, headquarter = true)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+          
+      val links = List(Link(airport1, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1), 
+                      Link(airport3, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, BUSINESS, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, FIRST, 0), PassengerType.BUSINESS)
+
+      val toAirports = Set[Airport]()
+      toAirports += airport2
+      toAirports += airport3
+      toAirports += airport4
+      
+      val countryOpenness = Map[String, Int](
+        "C1" -> 10,
+        "C2" -> 10,
+        "C3" -> 10,
+        "C4" -> 10
+      )
+      
+      val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports),
+              links, 
+              activeAirports,
+              countryOpenness = countryOpenness),
+            Duration.Inf)
+      
+      result.isDefinedAt(economyPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(economyPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+      result.isDefinedAt(businessPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(businessPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+      result.isDefinedAt(firstPassengerGroup).shouldBe(true)
+      toAirports.foreach { toAirport =>
+        result(firstPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+      }
+    }
+    
+    "find only routes with sufficient country openness".in {
+      val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2 = Airport("", "", "Airport 2", 0, 60, "C2", "", "", 1, 0, 0, 0, id = 2)
+      val airport3 = Airport("", "", "Airport 3", 0, 90, "C3", "", "", 1, 0, 0, 0, id = 3)
+      val airport4 = Airport("", "", "Airport 4", 0, 120, "C4", "", "", 1, 0, 0, 0, id = 4)
+      
+      val airline1 = Airline("airline 1", 1)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport4, "C4", 1, 1, headquarter = true)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+          
+      val links = List(Link(airport1, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1), 
+                      Link(airport3, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      
+      val toAirports = Set[Airport]()
+      toAirports += airport2
+      toAirports += airport3
+      toAirports += airport4
+      
+      val countryOpenness = Map[String, Int](
+        "C1" -> 10,
+        "C2" -> 10,
+        "C3" -> 5,
+        "C4" -> 10
+      )
+      
+      val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports),
+              links, 
+              activeAirports,
+              countryOpenness = countryOpenness),
+            Duration.Inf)
+      
+      result.isDefinedAt(economyPassengerGroup).shouldBe(true)
+      result(economyPassengerGroup).isDefinedAt(airport2).shouldBe(true)
+      result(economyPassengerGroup).isDefinedAt(airport3).shouldBe(true)
+      result(economyPassengerGroup).isDefinedAt(airport4).shouldBe(false) //cannot goto airport4 as C3 will block it
+    }
+    
+    "find routes with low country openness if the airline is based on that country".in {
+      val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2 = Airport("", "", "Airport 2", 0, 60, "C2", "", "", 1, 0, 0, 0, id = 2)
+      val airport3 = Airport("", "", "Airport 3", 0, 90, "C3", "", "", 1, 0, 0, 0, id = 3)
+      val airport4 = Airport("", "", "Airport 4", 0, 120, "C4", "", "", 1, 0, 0, 0, id = 4)
+      
+      val airline1 = Airline("airline 1", 1)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport3, "C3", 1, 1, headquarter = true)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+          
+      val links = List(Link(airport1, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1), 
+                      Link(airport3, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      
+      val toAirports = Set[Airport]()
+      toAirports += airport2
+      toAirports += airport3
+      toAirports += airport4
+      
+      val countryOpenness = Map[String, Int](
+        "C1" -> 10,
+        "C2" -> 10,
+        "C3" -> 5,
+        "C4" -> 10
+      )
+      
+      val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports),
+              links, 
+              activeAirports,
+              countryOpenness = countryOpenness),
+            Duration.Inf)
+      
+      result.isDefinedAt(economyPassengerGroup).shouldBe(true)
+      result(economyPassengerGroup).isDefinedAt(airport2).shouldBe(true)
+      result(economyPassengerGroup).isDefinedAt(airport3).shouldBe(true)
+      result(economyPassengerGroup).isDefinedAt(airport4).shouldBe(true) //can goto airport4 as C3 will not block home airline
+    }
+    
+    "find routes with low country openness if the original passenger is domestic or it's a domestic connection flight".in {
+      val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2 = Airport("", "", "Airport 2", 0, 60, "C1", "", "", 1, 0, 0, 0, id = 2)
+      val airport3 = Airport("", "", "Airport 3", 0, 90, "C2", "", "", 1, 0, 0, 0, id = 3)
+      val airport4 = Airport("", "", "Airport 4", 0, 120, "C2", "", "", 1, 0, 0, 0, id = 4)
+      val airport5 = Airport("", "", "Airport 5", 0, 150, "C3", "", "", 1, 0, 0, 0, id = 5)
+      
+      val airline1 = Airline("airline 1", 1)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport5, "C3", 1, 1, headquarter = true)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport5.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+          
+      val links = List(Link(airport1, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1), 
+                      Link(airport3, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(airport4, airport5, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      
+      val toAirports = Set[Airport]()
+      toAirports += airport2
+      toAirports += airport3
+      toAirports += airport4
+      toAirports += airport5
+      
+      val countryOpenness = Map[String, Int](
+        "C1" -> 5,
+        "C2" -> 5,
+        "C3" -> 10
+      )
+      
+      val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports),
+              links, 
+              activeAirports,
+              countryOpenness = countryOpenness),
+            Duration.Inf)
+      
+      result.isDefinedAt(economyPassengerGroup).shouldBe(true)
+      result(economyPassengerGroup).isDefinedAt(airport2).shouldBe(true) //ok domestic flight
+      result(economyPassengerGroup).isDefinedAt(airport3).shouldBe(true) //ok originate passenger is domestic
+      result(economyPassengerGroup).isDefinedAt(airport4).shouldBe(true) //ok domestic connection flight
+      result(economyPassengerGroup).isDefinedAt(airport5).shouldBe(false) //nope, C2 would block it as it needs 6th freedom here
+    }
+    
+    "find routes (inversed Links) with low country openness if the original passenger is domestic or it's a domestic connection flight".in {
+      val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2 = Airport("", "", "Airport 2", 0, 60, "C1", "", "", 1, 0, 0, 0, id = 2)
+      val airport3 = Airport("", "", "Airport 3", 0, 90, "C2", "", "", 1, 0, 0, 0, id = 3)
+      val airport4 = Airport("", "", "Airport 4", 0, 120, "C2", "", "", 1, 0, 0, 0, id = 4)
+      val airport5 = Airport("", "", "Airport 5", 0, 150, "C3", "", "", 1, 0, 0, 0, id = 5)
+      
+      val airline1 = Airline("airline 1", 1)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport5, "C3", 1, 1, headquarter = true)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport5.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+          
+      val links = List(Link(airport5, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(airport4, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1), 
+                      Link(airport3, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1),
+                      Link(airport2, airport1, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1))
+      
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      
+      val toAirports = Set[Airport]()
+      toAirports += airport2
+      toAirports += airport3
+      toAirports += airport4
+      toAirports += airport5
+      
+      val countryOpenness = Map[String, Int](
+        "C1" -> 5,
+        "C2" -> 5,
+        "C3" -> 10
+      )
+      
+      val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports),
+              links, 
+              activeAirports,
+              countryOpenness = countryOpenness),
+            Duration.Inf)
+      
+      result.isDefinedAt(economyPassengerGroup).shouldBe(true)
+      result(economyPassengerGroup).isDefinedAt(airport2).shouldBe(true) //ok domestic flight
+      result(economyPassengerGroup).isDefinedAt(airport3).shouldBe(true) //ok originate passenger is domestic
+      result(economyPassengerGroup).isDefinedAt(airport4).shouldBe(true) //ok domestic connection flight
+      result(economyPassengerGroup).isDefinedAt(airport5).shouldBe(false) //nope, C2 would block it as it needs 6th freedom here
+    }
+    
   }
   
   
