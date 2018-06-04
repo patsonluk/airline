@@ -20,7 +20,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.control.Breaks._
 import com.patson.data.CountrySource
 
-object PassengerSimulation extends App {
+object PassengerSimulation {
 
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 
@@ -29,8 +29,7 @@ object PassengerSimulation extends App {
 //  implicit val materializer = FlowMaterializer()
   
   val countryOpenness : Map[String, Int] = CountrySource.loadAllCountries().map( country => (country.countryCode, country.openness)).toMap
-  
-  testFlow
+  val SIX_FREEDOM_OPENNESS = 8 //need at least this opennes to grant sixth freedom to foreign airlines
   
   def testFlow() = {
 
@@ -319,15 +318,11 @@ object PassengerSimulation extends App {
   }
   
   def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int]) : Boolean = {
-    val SIX_FREEDOM_OPENNESS = 8 //need at least this opennes to grant sixth freedom to foreign airlines
-    
     if (linkConsideration.from.countryCode == linkConsideration.to.countryCode) { //domestic flight is always ok
       true
     } else if (linkConsideration.from.countryCode == originatingAirport.countryCode) { //always ok if link flying out from same country as the originate airport
       true
-    } else if (linkConsideration.from.countryCode == linkConsideration.link.airline.getCountryCode.get) { //always ok for home country airline flying out
-      true
-    } else { //a foreign airline flying out carrying passengers originating from a foreign airport 
+    } else { //a foreign airline flying out carrying passengers originating from a foreign airport, decide base on openness
       countryOpenness(linkConsideration.from.countryCode) >= SIX_FREEDOM_OPENNESS
     }
   }
