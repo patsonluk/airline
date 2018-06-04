@@ -281,6 +281,12 @@ class LinkApplication extends Controller {
         return BadRequest("Same from and to airport!")
       }
       
+      //valid freedom and mutual relationship
+      val rejectionReason = getRejectionReason(airlineCountryCode = request.user.getCountryCode().get, toCountryCode = incomingLink.to.countryCode)
+      if (rejectionReason.isDefined) {
+        return BadRequest("Link is rejected: " + rejectionReason.get);
+      }
+      
       println("PUT " + incomingLink)
             
       if (existingLink.isEmpty) {
@@ -403,15 +409,8 @@ class LinkApplication extends Controller {
             
             //check relationship
             val airlineCountryCode = request.user.getCountryCode().get
-            val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toAirport.countryCode)
-            val rejectionReason =
-              if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
-                Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
-              } else if (toAirport.countryCode != airlineCountryCode && CountrySource.loadCountryByCode(toAirport.countryCode).get.openness < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
-                Some("This country does not want to open their airports to foreign airline") 
-              } else {
-                None
-              }
+            val rejectionReason = getRejectionReason(airlineCountryCode, toAirport.countryCode)
+              
             
             //group airplanes by model, also add boolean to indicated whether the airplane is assigned to this link
             val availableAirplanesByModel = Map[Model, ListBuffer[(Airplane, Boolean)]]()
@@ -518,6 +517,17 @@ class LinkApplication extends Controller {
         }
         case None => BadRequest("unknown toAirport")
     }
+  }
+  
+  def getRejectionReason(airlineCountryCode : String, toCountryCode : String) : Option[String]= {
+    val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toCountryCode)
+    if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
+                Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
+              } else if (toCountryCode != airlineCountryCode && CountrySource.loadCountryByCode(toCountryCode).get.openness < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
+                Some("This country does not want to open their airports to foreign airline") 
+              } else {
+                None
+              }
   }
   
   def getVipRoutes() = Action {
