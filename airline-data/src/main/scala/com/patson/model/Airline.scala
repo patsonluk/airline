@@ -23,8 +23,8 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   }
   
   def getBases() = bases
-  def getHeadQuarter() = bases.find( _.headquarter ).get
-  def getCountryCode() = getHeadQuarter().countryCode
+  def getHeadQuarter() = bases.find( _.headquarter )
+  def getCountryCode() = getHeadQuarter().map( _.countryCode)
   def getBalance() = airlineInfo.balance
   def getServiceQuality() = airlineInfo.serviceQuality
   def getServiceFunding() = airlineInfo.serviceFunding

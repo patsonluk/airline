@@ -29,6 +29,7 @@
     <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/country.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/office.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
   </head>
@@ -73,6 +74,7 @@
 			  <li class="button" id="countryCanvasTab" onclick="showCountryView();"><span>Country</span></li>
 			  <li class="button" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
 			  <li class="button" id="officeCanvasTab" onclick="showOfficeCanvas();"><span>Office</span></li>
+			  <li class="button" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
 			</ul>
 		</div>
 		
@@ -689,6 +691,54 @@
 		    	</div>
 <!-- 		    	end right section -->
   			</div>
+<!--   			end office canvas -->
+			<div id="rankingCanvas" style="height: 100%; display: none;">
+  				<div style="width : 50%; float: left;"> 
+	  	  			<div class="table section" id="passengerRank" style="width: 90%">
+	 	  				<div class="table-header">
+	 	  					<div class="cell" style="width: 10%">Rank</div>
+	 	  					<div class="cell" style="width: 10%">Movement</div>
+	 	  					<div class="cell" style="width: 50%">Airline</div>
+	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger</div>
+						</div>
+         			</div>
+         			<div class="table section" id="reputationRank" style="width: 90%">
+	 	  				<div class="table-header">
+	 	  					<div class="cell" style="width: 10%">Rank</div>
+	 	  					<div class="cell" style="width: 10%">Movement</div>
+	 	  					<div class="cell" style="width: 50%">Airline</div>
+	 	  					<div class="cell" style="width: 30%" align="right">Airline Reputation</div>
+						</div>
+         			</div>
+         			<div class="table section" id="linkCountRank" style="width: 90%">
+	 	  				<div class="table-header">
+	 	  					<div class="cell" style="width: 10%">Rank</div>
+	 	  					<div class="cell" style="width: 10%">Movement</div>
+	 	  					<div class="cell" style="width: 50%">Airline</div>
+	 	  					<div class="cell" style="width: 30%" align="right">Total Flight Routes</div>
+						</div>
+         			</div>
+				</div>		
+				<div style="width : 50%; float: right;"> 
+	  	  			<div class="table section" id="passengerMileRank" style="width: 90%">
+	 	  				<div class="table-header">
+	 	  					<div class="cell" style="width: 10%">Rank</div>
+	 	  					<div class="cell" style="width: 10%">Movement</div>
+	 	  					<div class="cell" style="width: 50%">Airline</div>
+	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger Miles</div>
+						</div>
+         			</div>
+         			<div class="table section" id="serviceQualityRank" style="width: 90%">
+	 	  				<div class="table-header">
+	 	  					<div class="cell" style="width: 10%">Rank</div>
+	 	  					<div class="cell" style="width: 10%">Movement</div>
+	 	  					<div class="cell" style="width: 50%">Airline</div>
+	 	  					<div class="cell" style="width: 30%" align="right">Service Quality</div>
+						</div>
+         			</div>
+				</div>
+  			</div>
+<!--   			end ranking canvas -->
   		</div>
   	<!-- main canvas end -->
 		<div style="clear:both"/>
