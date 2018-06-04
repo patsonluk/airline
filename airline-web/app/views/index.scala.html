@@ -223,7 +223,12 @@
 					    				</div>			    			
 					    			</div> 
 			    				</div>
-					    		<div class="table-row">
+			    				<div class="table-row" id="linkRejectionRow">
+					    			<div class="label"></div>
+					    			<div class="value"><img src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")'><span id="linkRejectionReason" class="warning"></span></div>
+					    		</div>
+			    				
+					    		<div class="table-row" id="planLinkModelRow">
 					    			<div class="label"><h5>Aircraft Model:</h5></div>
 					    			<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
 					    		</div>

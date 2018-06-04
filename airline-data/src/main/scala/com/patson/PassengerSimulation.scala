@@ -29,7 +29,6 @@ object PassengerSimulation {
 //  implicit val materializer = FlowMaterializer()
   
   val countryOpenness : Map[String, Int] = CountrySource.loadAllCountries().map( country => (country.countryCode, country.openness)).toMap
-  val SIX_FREEDOM_OPENNESS = 8 //need at least this opennes to grant sixth freedom to foreign airlines
   
   def testFlow() = {
 
@@ -323,7 +322,7 @@ object PassengerSimulation {
     } else if (linkConsideration.from.countryCode == originatingAirport.countryCode) { //always ok if link flying out from same country as the originate airport
       true
     } else { //a foreign airline flying out carrying passengers originating from a foreign airport, decide base on openness
-      countryOpenness(linkConsideration.from.countryCode) >= SIX_FREEDOM_OPENNESS
+      countryOpenness(linkConsideration.from.countryCode) >= Country.SIXTH_FREEDOM_MIN_OPENNESS
     }
   }
   

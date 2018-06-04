@@ -855,6 +855,20 @@ function updatePlanLinkInfo(linkInfo) {
 		removeTempPath()
 	}
 	
+	if (linkInfo.rejection) {
+		$('#linkRejectionRow #linkRejectionReason').text(linkInfo.rejection)
+		$('#linkRejectionRow').show()
+		$('#addLinkButton').hide()
+		$('#updateLinkButton').hide()
+		$('#planLinkExtendedDetails').hide()
+		$('#planLinkModelRow').hide()
+		$('#extendedPanel').hide()
+		return
+	} else {
+		$('#linkRejectionRow').hide()
+		$('#planLinkModelRow').show()
+	}
+	
 	if (!linkInfo.existingLink) {
 		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)
 		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)

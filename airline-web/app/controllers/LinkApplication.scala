@@ -390,7 +390,7 @@ class LinkApplication extends Controller {
 
 
   
-  def planLink(airlineId : Int) = Action { implicit request =>
+  def planLink(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
     val PlanLinkData(fromAirportId, toAirportId) = planLinkForm.bindFromRequest.get
     AirportSource.loadAirportById(fromAirportId, true) match {
       case Some(fromAirport) =>
@@ -401,6 +401,17 @@ class LinkApplication extends Controller {
             val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
             val (maxFrequencyFromAirport, maxFrequencyToAirport) = getMaxFrequencyByAirports(fromAirport, toAirport, Airline.fromId(airlineId), existingLink)
             
+            //check relationship
+            val airlineCountryCode = request.user.getCountryCode().get
+            val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toAirport.countryCode)
+            val rejectionReason =
+              if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
+                Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
+              } else if (toAirport.countryCode != airlineCountryCode && CountrySource.loadCountryByCode(toAirport.countryCode).get.openness < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
+                Some("This country does not want to open their airports to foreign airline") 
+              } else {
+                None
+              }
             
             //group airplanes by model, also add boolean to indicated whether the airplane is assigned to this link
             val availableAirplanesByModel = Map[Model, ListBuffer[(Airplane, Boolean)]]()
@@ -496,6 +507,10 @@ class LinkApplication extends Controller {
                                         
             if (existingLink.isDefined) {
               resultObject = resultObject + ("existingLink", Json.toJson(existingLink))
+            }
+            
+            if (rejectionReason.isDefined) {
+              resultObject = resultObject + ("rejection", Json.toJson(rejectionReason.get))
             }
             
             Ok(resultObject)

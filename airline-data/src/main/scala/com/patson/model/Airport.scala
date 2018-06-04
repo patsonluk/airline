@@ -20,9 +20,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   
   private[model] var country : Option[Country] = None
   
-  val HOSTILE_RELATIONSHIP_THRESHOLD = -2
-  
-
   val income = if (population > 0) (power / population).toInt  else 0
   
   def availableSlots : Int = {
@@ -116,7 +113,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     
     val countryRelationship = CountrySource.getCountryMutualRelationship(airlineFromCountry.get, countryCode)
     
-    if (countryRelationship <= HOSTILE_RELATIONSHIP_THRESHOLD) {
+    if (countryRelationship <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
       return 0
     }
     
