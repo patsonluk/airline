@@ -1,4 +1,3 @@
-var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
 var loadedCountries = []
 var loadedCountriesByCode = {}
 
@@ -49,12 +48,12 @@ function updateCountryTable(sortProperty, sortOrder) {
 	
 	$.each(loadedCountries, function(index, country) {
 		var row = $("<div class='table-row clickable' data-country-code='" + country.countryCode + "' onclick=\"loadCountryDetails('" + country.countryCode + "')\"></div>")
-		if ($.inArray(country.countryCode, noFlags) != -1) {
-			row.append("<div class='cell'></div>")
+		var countryFlagUrl = getCountryFlagUrl(country.countryCode)
+		if (countryFlagUrl) {
+			row.append("<div class='cell'><img src='" + countryFlagUrl + "'/></div>")
 		} else {
-			row.append("<div class='cell'><img src='assets/images/flags/" + country.countryCode + ".png'/></div>")
+			row.append("<div class='cell'></div>")
 		}
-		
 		row.append("<div class='cell'>" + country.name + "</div>")
 		row.append("<div class='cell' align='right'>" + country.airportPopulation + "</div>")
 		row.append("<div class='cell' align='right'>" + country.incomeLevel + "</div>")

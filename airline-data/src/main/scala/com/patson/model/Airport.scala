@@ -110,7 +110,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     //find out the country where this airline is from
     val airlineFromCountry = airline.getCountryCode()
     
-    val countryRelationship = CountrySource.getCountryMutualRelationship(airlineFromCountry, countryCode)
+    if (airlineFromCountry.isEmpty) {
+      return 0
+    }
+    
+    val countryRelationship = CountrySource.getCountryMutualRelationship(airlineFromCountry.get, countryCode)
     
     if (countryRelationship <= HOSTILE_RELATIONSHIP_THRESHOLD) {
       return 0

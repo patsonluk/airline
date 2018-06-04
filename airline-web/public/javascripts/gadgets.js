@@ -1,3 +1,5 @@
+var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
+
 function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, callback) {
 	containerDiv.empty()
 	var images = []
@@ -153,6 +155,14 @@ function commaSeparateNumber(val){
       val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
     }
     return val;
+}
+
+function getCountryFlagUrl(countryCode) {
+	if ($.inArray(countryCode, noFlags) != -1) {
+		return '';
+	} else {
+		return "assets/images/flags/" + countryCode + ".png"
+	}
 }
 
 function sortByProperty(property, ascending = true) {
