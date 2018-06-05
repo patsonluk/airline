@@ -33,7 +33,8 @@ class AirlineApplication extends Controller {
       "reputation" -> JsNumber(BigDecimal(airline.airlineInfo.reputation).setScale(2, BigDecimal.RoundingMode.HALF_EVEN)),
       "serviceQuality" -> JsNumber(airline.airlineInfo.serviceQuality),
       "serviceFunding" -> JsNumber(airline.airlineInfo.serviceFunding),
-      "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality)))
+      "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
+      "gradeDescription" -> JsString(airline.airlineGrade.description)))
   }
   
   def getAllAirlines() = Authenticated { implicit request =>
@@ -58,10 +59,58 @@ class AirlineApplication extends Controller {
   def getBases(airlineId : Int) = AuthenticatedAirline(airlineId) {
     Ok(Json.toJson(AirlineSource.loadAirlineBasesByAirline(airlineId)))
   }
-  def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
+  def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
       case Some(base) => Ok(Json.toJson(base))
-      case None => NotFound
+      case None => { //create a base of scale 0 to indicate it's an non-existent base
+        AirportSource.loadAirportById(airportId) match {
+          case Some(airport) => {
+            val emptyBase = AirlineBase(airline = request.user, airport = airport, countryCode = airport.countryCode, scale = 0, foundedCycle = 0, headquarter = false)
+            val baseRejection = getBaseRejection(request.user, airport)
+            var emptyBaseJson = Json.toJson(emptyBase).asInstanceOf[JsObject]
+            baseRejection.foreach { rejection =>
+              emptyBaseJson = emptyBaseJson. + ("rejection" -> JsString(rejection))
+            }
+              
+            Ok(emptyBaseJson)
+          }
+          case None => NotFound
+        }
+      }
+    }
+  }
+  
+  def getBaseRejection(airline : Airline, airport : Airport) : Option[String] = {
+    //it should first has link to it
+    if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
+      return Some("No active flight route operated by your airline flying to this city yet")
+    }
+    
+    val airlineCountryCode = airline.getCountryCode()
+    if (airlineCountryCode == airport.countryCode) { //domestic airline
+      val existingBaseCount = airline.getBases().filter(_.countryCode == airlineCountryCode).length
+      val allowedBaseCount = airline.airlineGrade.value / 2 //up to 5 base max
+      if (existingBaseCount >= allowedBaseCount) {
+        Some("Only allow up to " + allowedBaseCount + " base(s) in home country with your current airline grade \"" + airline.airlineGrade.description + "\"")
+      } else {
+        None
+      }
+    } else { //foreign airline
+      if (airline.getHeadQuarter().isEmpty) {
+        return Some("Cannot build bases when there is no headquarter!")
+      }
+      val airlineZone = airline.getHeadQuarter().get.airport.zone
+      if (airlineZone == airport.zone) { //no multiple bases in the same zone
+        Some("No base allowed in foreign country of your home zone " + airlineZone); 
+      } else { 
+        val existingBaseCount = airline.getBases().filter(_.airport.zone == airport.zone).length
+        val allowedBaseCount = airline.airlineGrade.value / 3; //max 3 bases per other zone
+        if (existingBaseCount >= allowedBaseCount) {
+          Some("Only allow up to " + allowedBaseCount + " base(s) in this zone " + airport.zone + " with your current airline grade \"" + airline.airlineGrade.description + "\"")
+        } else {
+          None
+        } 
+      }
     }
   }
   def deleteBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
@@ -103,21 +152,28 @@ class AirlineApplication extends Controller {
              }
           }
       } else {
-        //TODO validations
-        AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
-        case Some(base) => //updating
-          val updateBase = base.copy(scale = inputBase.scale)
-          AirlineSource.saveAirlineBase(updateBase)
-          Created(Json.toJson(updateBase))
-        case None => //ok to add
-          AirportSource.loadAirportById(inputBase.airport.id, true).fold {
-               BadRequest("airport id " +  inputBase.airport.id + " not found!")
-          } { airport =>
-            val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
-            AirlineSource.saveAirlineBase(newBase)
-            Created(Json.toJson(newBase))
+        AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+          BadRequest("airport id " +  inputBase.airport.id + " not found!")
+        } { airport =>
+          getBaseRejection(request.user, airport) match {
+            case Some(rejection) => BadRequest("Building base failed validation : " + rejection)
+            case None =>
+              AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
+              case Some(base) => //updating
+                val updateBase = base.copy(scale = inputBase.scale)
+                AirlineSource.saveAirlineBase(updateBase)
+                Created(Json.toJson(updateBase))
+              case None => //ok to add
+                AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+                     BadRequest("airport id " +  inputBase.airport.id + " not found!")
+                } { airport =>
+                  val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
+                  AirlineSource.saveAirlineBase(newBase)
+                  Created(Json.toJson(newBase))
+                }
+            }
           }
-        } 
+        }
       }
     } else {
       BadRequest("Cannot insert base")

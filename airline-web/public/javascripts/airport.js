@@ -12,9 +12,79 @@ function showAirportDetails(airportId) {
 	    dataType: 'json',
 	    success: function(airport) {
 	    	if (airport) {
-	    		populateAirportDetails(airport)
+	    		populateAirportDetails(airport) //update left panel
 //	    		$("#floatBackButton").show()
 //	    		shimmeringDiv($("#floatBackButton"))
+	    		updateAirportDetails(airport) //update right panel
+	    	}
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function updateAirportDetails(airport) {
+	$('#airportDetailsName').text(airport.name)
+	if (airport.iata) { 
+		$('#airportDetailsIata').text(airport.iata)
+	} else {
+		$('#airportDetailsIata').text('-')
+	}
+	
+	if (airport.icao) { 
+		$('#airportDetailsIcao').text(airport.icao)
+	} else {
+		$('#airportDetailsIcao').text('-')
+	}
+	
+	$('#airportDetailsPopulationCoverage').text(commaSeparateNumber(airport.population))
+	
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/bases/" + airport.id,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(airportBase) {
+	    	if (airportBase) {
+	    		if (airportBase.scale == 0) {
+	    			$('#airportDetailsBaseType').text('-')
+	    			$('#airportDetailsBaseScale').text('-')
+	    		} else {
+	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
+	    			$('#airportDetailsBaseScale').text(airportBase.scale)
+	    		}
+	    		$('#airportDetailsBaseUpkeep').text('-') //TODO
+	    		$('#airportDetailsBaseCost').text('-') //TODO
+	    		
+
+	    		//update buttons and reject reasons
+	    		if (airportBase.rejection) {
+	    			$('#baseRejectionReason').text(airportBase.rejection)
+	    			$('#baseRejection').show()
+	    			$('#buildHeadquarterButton').hide()
+	    			$('#buildBaseButton').hide()
+	    			$('#upgradeBaseButton').hide()
+	    		} else{
+	    			$('#baseRejection').hide()
+	    			if (airportBase.scale == 0) {
+	    				if (activeAirline.headquarterAirport) {
+		    				$('#buildHeadquarterButton').hide()
+		    				$('#buildBaseButton').show()
+	    				} else {
+	    					$('#buildHeadquarterButton').show()
+		    				$('#buildBaseButton').hide()
+	    				}
+	    				$('#upgradeBaseButton').hide()
+	    			} else {
+	    				$('#buildHeadquarterButton').hide()
+	    				$('#buildBaseButton').hide()
+	    				$('#upgradeBaseButton').show()
+	    			}
+	    			
+	    		}
+	    		
 	    	}
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -362,7 +432,7 @@ function populateAirportDetails(airport) {
 		        fillOpacity: 0.3,
 		        map: airportMap
 		    });
-		loadAirportSchedule(airport)
+		//loadAirportSchedule(airport)
 		loadAirportStatistics(airport)
 	}
 }
@@ -702,7 +772,7 @@ function updatePopupDetails(airportId) {
 function updateBuildBaseButton(airportZone) { //check if the zone already has base
 	for (i = 0; i < activeAirline.baseAirports.length; i++) {
 	  if (activeAirline.baseAirports[i].airportZone == airportZone) {
-		  return //no 2nd basein the zone for now
+		  return //no 2nd base in the zone but different country for now
 	  }
 	}
 	

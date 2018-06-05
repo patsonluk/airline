@@ -23,6 +23,45 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
     this.bases = bases
   }
   
+  val airlineGrade : AirlineGrade = {
+    val reputation = airlineInfo.reputation
+  	if (reputation < 10) {
+  		AirlineGrade.NEW
+  	} else if (reputation < 20) {
+  	  AirlineGrade.LOCAL  
+  	} else if (reputation < 30) {
+  		AirlineGrade.MUNICIPAL
+  	} else if (reputation < 40) {
+  		AirlineGrade.REGIONAL
+  	} else if (reputation < 50) {
+  		AirlineGrade.CONTINENTAL
+  	} else if (reputation < 60) {
+  		AirlineGrade.LESSER_INTERNATIONAL
+  	} else if (reputation < 70) {
+  		AirlineGrade.THIRD_INTERNATIONAL
+  	} else if (reputation < 80) {
+  		AirlineGrade.SECOND_INTERNATIONAL
+  	} else if (reputation < 90) {
+  		AirlineGrade.MAJOR_INTERNATIONAL
+  	} else {
+  		AirlineGrade.TOP_INTERNATIONAL
+  	}
+  }
+  
+  case class AirlineGrade(value : Int, description: String)
+  object AirlineGrade {
+    val NEW = AirlineGrade(1, "New Airline")
+    val LOCAL = AirlineGrade(2, "Local Airline")
+    val MUNICIPAL = AirlineGrade(3, "Municipal Airline")
+    val REGIONAL = AirlineGrade(4, "Regional Airline")
+    val CONTINENTAL = AirlineGrade(5, "Continental Airline")
+    val LESSER_INTERNATIONAL = AirlineGrade(6, "Lesser International Airline")
+    val THIRD_INTERNATIONAL = AirlineGrade(7, "Third-class International Airline")
+    val SECOND_INTERNATIONAL = AirlineGrade(8, "Second-class International Airline")
+    val MAJOR_INTERNATIONAL = AirlineGrade(9, "Major International Airline")
+    val TOP_INTERNATIONAL = AirlineGrade(10, "Top International Airline")
+  }
+  
   def getBases() = bases
   def getHeadQuarter() = bases.find( _.headquarter )
   def getCountryCode() = {

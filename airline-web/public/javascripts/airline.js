@@ -39,7 +39,7 @@ function refreshTopBar(airline) {
 	changeColoredElementValue($("#balance"), airline.balance)
 	changeColoredElementValue($("#reputation"), airline.reputation)
 	changeColoredElementValue($("#serviceQuality"), airline.serviceQuality)
-	$("#reputationLevel").text("(" + getAirlineCategory(airline.reputation) + ")")
+	$("#reputationLevel").text("(" + airline.gradeDescription + ")")
 }
 
 function loadAirlines() {

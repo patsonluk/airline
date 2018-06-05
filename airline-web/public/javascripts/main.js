@@ -527,30 +527,6 @@ function refreshPanels(airlineId) {
 	});
 }
 
-function getAirlineCategory(reputation) {
-	if (reputation < 10) {
-		return "New Airline"
-	} else if (reputation < 20) {
-		return "Local Airline"
-	} else if (reputation < 30) {
-		return "Municipal Airline"
-	} else if (reputation < 40) {
-		return "Regional Airline"
-	} else if (reputation < 50) {
-		return "Continental Airline"
-	} else if (reputation < 60) {
-		return "Lesser International Airline"
-	} else if (reputation < 70) {
-		return "Third-class International Airline"
-	} else if (reputation < 80) {
-		return "Second-class International Airline"
-	} else if (reputation < 90) {
-		return "Major Internation Airline"
-	} else {
-		return "Top Internation Airline"
-	}
-}
-
 var totalmillisecPerWeek = 7 * 24 * 60 * 60 * 1000
 var refreshInterval = 100 //100 millsec
 var incrementPerInterval = totalmillisecPerWeek / (4 * 60 * 1000) * refreshInterval //current 4 minutes per week

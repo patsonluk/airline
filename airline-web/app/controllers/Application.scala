@@ -42,6 +42,7 @@ class Application extends Controller {
       "id" -> JsNumber(airport.id),
       "name" -> JsString(airport.name),
       "iata" -> JsString(airport.iata),
+      "icao" -> JsString(airport.icao),
       "city" -> JsString(airport.city),
       "size" -> JsNumber(airport.size),
       "latitude" -> JsNumber(airport.latitude),
