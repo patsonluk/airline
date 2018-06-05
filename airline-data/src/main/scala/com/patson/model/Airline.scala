@@ -23,9 +23,9 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
     this.bases = bases
   }
   
-  val airlineGrade : AirlineGrade = {
+  def airlineGrade : AirlineGrade = {
     val reputation = airlineInfo.reputation
-  	if (reputation < 10) {
+    if (reputation < 10) {
   		AirlineGrade.NEW
   	} else if (reputation < 20) {
   	  AirlineGrade.LOCAL  
