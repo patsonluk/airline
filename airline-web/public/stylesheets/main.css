@@ -286,6 +286,10 @@ li.row, div.table-row {
 	padding: 3px 0px;
 }
 
+.warning {
+	color: #D46A6A;	
+}
+
 .marquee span {
     display: inline-block;
     padding-left: 100%;

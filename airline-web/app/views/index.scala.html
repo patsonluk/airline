@@ -124,9 +124,7 @@
 					    		
 					    		<div class="divider"></div>
 					    		<div class="table" id="linkHistoryDetails" style="width: 100%">
-				    				<h4>
-				    					History
-				    				</h4>	
+				    				<h4>History</h4>	
 					    			<div class="table-row">
 					    				<div class="label"><h5>Price:</h5></div>
 					    				<div class="value" id="linkHistoryPrice"></div>
@@ -225,7 +223,12 @@
 					    				</div>			    			
 					    			</div> 
 			    				</div>
-					    		<div class="table-row">
+			    				<div class="table-row" id="linkRejectionRow">
+					    			<div class="label"></div>
+					    			<div class="value"><img src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")'><span id="linkRejectionReason" class="warning"></span></div>
+					    		</div>
+			    				
+					    		<div class="table-row" id="planLinkModelRow">
 					    			<div class="label"><h5>Aircraft Model:</h5></div>
 					    			<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
 					    		</div>
@@ -694,23 +697,23 @@
 <!--   			end office canvas -->
 			<div id="rankingCanvas" style="height: 100%; display: none;">
   				<div style="width : 50%; float: left;"> 
-	  	  			<div class="table section" id="passengerRank" style="width: 90%">
-	 	  				<div class="table-header">
+	  	  			<div class="table section" id="passengerRank" style="width: 95%">
+	  	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
 	 	  					<div class="cell" style="width: 50%">Airline</div>
 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger</div>
 						</div>
          			</div>
-         			<div class="table section" id="reputationRank" style="width: 90%">
-	 	  				<div class="table-header">
+         			<div class="table section" id="reputationRank" style="width: 95%">
+         				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
 	 	  					<div class="cell" style="width: 50%">Airline</div>
 	 	  					<div class="cell" style="width: 30%" align="right">Airline Reputation</div>
 						</div>
          			</div>
-         			<div class="table section" id="linkCountRank" style="width: 90%">
+         			<div class="table section" id="linkCountRank" style="width: 95%">
 	 	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
@@ -720,7 +723,7 @@
          			</div>
 				</div>		
 				<div style="width : 50%; float: right;"> 
-	  	  			<div class="table section" id="passengerMileRank" style="width: 90%">
+	  	  			<div class="table section" id="passengerMileRank" style="width: 95%">
 	 	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
@@ -728,7 +731,7 @@
 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger Miles</div>
 						</div>
          			</div>
-         			<div class="table section" id="serviceQualityRank" style="width: 90%">
+         			<div class="table section" id="serviceQualityRank" style="width: 95%">
 	 	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
