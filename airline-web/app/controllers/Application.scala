@@ -251,8 +251,11 @@ class Application extends Controller {
         links.foreach { link =>
           servedCountries.add(link.from.countryCode)
           servedCountries.add(link.to.countryCode)
-          servedAirports.add(link.from)
-          servedAirports.add(link.to)
+          if (link.from.id != airportId) {
+            servedAirports.add(link.from)
+          } else {
+            servedAirports.add(link.to)
+          }
           airlines.add(link.airline)
           flightFrequency = flightFrequency + link.frequency
         }
@@ -260,7 +263,7 @@ class Application extends Controller {
         
         
         Ok(Json.obj("connectedCountryCount" -> servedCountries.size,
-                    "connectedAirportCount" -> (servedAirports.size - 1), //do not count itself
+                    "connectedAirportCount" -> (servedAirports.size), //do not count itself
                     "airlineCount" -> airlines.size,
                     "linkCount" -> links.size,
                     "linkCountByAirline" -> linkCountByAirline.foldLeft(Json.arr()) {

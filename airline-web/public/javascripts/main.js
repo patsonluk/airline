@@ -497,7 +497,7 @@ function updateAllPanels(airlineId) {
 	
 	if (activeAirline) {
 		if (!activeAirline.headquarterAirport) {
-			printConsole("Zoom into the map and select an airport and click 'Build Headquarter' to select your headquarter. Smaller airports will only show when you zoom close enough")
+			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough")
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget")
 		}

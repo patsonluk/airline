@@ -354,16 +354,55 @@
   				</div>
   				<div style="overflow:hidden;">
   					<div id="airportDetails" class="section" style="width: 90%; float:left;">
-  						<div class="table">
+  						<h4>Airport Details</h4>
+  						<div class="table" style="width: 50%; float: left">
   							<div class="table-row">
 			    				<div class="label" style="width:50%;"><h5>Airport:</h5></div>
 			    				<div class="value" id="airportDetailsName" style="width:50%;"></div>
 			    			</div>
-			    			<div class="table-row">
-			    				<div class="label"><h5>Population Coverage:</h5></div>
-			    				<div class="value" id="airportDetailsPopulationCoverage"></div>
-			    			</div>
-			    			<div class="table-row">
+			    			<div class="table-row">			    		
+				   				<div class="label"><h5>City:</h5></div>
+				   				<div class="value" id="airportDetailsCity"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Country:</h5></div>
+				   				<div class="value"><span id="airportDetailsCountry"></span></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Zone:</h5></div>
+				   				<div class="value"><span id="airportDetailsZone"></span></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Airport scale:</h5></div>
+				   				<div class="value" id="airportDetailsSize"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Average income level:</h5></div>
+				   				<div class="value" id="airportDetailsIncomeLevel"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Slots available (airport total):</h5></div>
+				   				<div class="value airportSlots" id="airportDetailsSlots"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Slots held by your airline (max possible):</h5></div>
+				   				<div class="value airportAssignedSlots" id="airportDetailsAssignedSlots"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Awareness of your airline:</h5></div>
+				   				<div class="value airportAwareness" id="airportDetailsAwareness"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Loyalty to your airline:</h5></div>
+				   				<div class="value airportLoyalty" id="airportDetailsLoyalty"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Relationship with your country:</h5></div>
+				   				<div class="value airportRelationship" id="airportDetailsRelationship"></div>
+				   			</div>
+		    			</div>
+		    			<div class="table" style="width: 50%; float: left">
+  							<div class="table-row">
 			    				<div class="label"><h5>Weekly Passengers:</h5></div>
 			    				<div class="value" id="airportDetailsPassengerCount"></div>
 			    			</div>
@@ -384,10 +423,6 @@
 			    				<div class="value" id="airportDetailsConnectedCountryCount"></div>
 			    			</div>
 			    			<div class="table-row">
-			    				<div class="label"><h5>Population Coverage:</h5></div>
-			    				<div class="value" id="airportDetailsPopulationCoverage"></div>
-			    			</div>
-			    			<div class="table-row">
 			    				<div class="label"><h5>IATA:</h5></div>
 			    				<div class="value" id="airportDetailsIata"></div>
 			    			</div>
@@ -395,13 +430,14 @@
 			    				<div class="label"><h5>ICAO:</h5></div>
 			    				<div class="value" id="airportDetailsIcao"></div>
 			    			</div>
-  						</div>
-  					</div>
+		    			</div>
+		    		</div>
   					<div id="airportBaseDetails" class="section" style="width: 90%; float:left;">
-						<div class="table">
+  						<h4>Your Airline Headquarter/Base</h4>
+						<div class="table" style="width: 50%">
 							<div class="table-row">
-			    				<div class="label"><h5>Base Type:</h5></div>
-			    				<div class="value" id="airportDetailsBaseType"></div>
+			    				<div class="label" style="width: 50%"><h5>Base Type:</h5></div>
+			    				<div class="value" id="airportDetailsBaseType" style="width: 50%"></div>
 			    			</div>
 							<div class="table-row">
 		    					<div class="label"><h5>Base Scale:</h5></div>
@@ -850,14 +886,12 @@
     <div style="display: none; width: 100%;" id="airportPopup">
     	<input type="hidden" id="airportPopupId"></input>
     	<div>
-    		<span id="airportPopupName" class="header"></span><img title="View Airport Details" src='@routes.Assets.versioned("images/icons/information-24.png")' class="button" onclick="showAirportDetails($('#airportPopupId').val())">
+    		<span id="airportPopupName" class="header"></span>
     	</div>
     	<div id="airportIcons">
     		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon">
     		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon">
     	</div>
-    	<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), true)">Build Headquarter</div>
-    	<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Build Base</div>
     	<div class="table" style="width: 100%">
    			<div class="table-row">
    				<div class="label"><h5>IATA code:</h5></div>
@@ -870,6 +904,10 @@
    			<div class="table-row">
    				<div class="label"><h5>Country code:</h5></div>
    				<div class="value"><span id="airportPopupCountryCode"></span></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Zone:</h5></div>
+   				<div class="value" id="airportPopupZone"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Airport scale:</h5></div>
@@ -885,26 +923,27 @@
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Slots available (airport total):</h5></div>
-   				<div class="value" id="airportPopupSlots"></div>
+   				<div class="value airportSlots" id="airportPopupSlots"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Slots held by your airline (max possible):</h5></div>
-   				<div class="value" id="airportPopupAssignedSlots"></div>
+   				<div class="value airportAssignedSlots" id="airportPopupAssignedSlots"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Awareness of your airline:</h5></div>
-   				<div class="value" id="airportPopupAwareness"></div>
+   				<div class="value airportAwareness" id="airportPopupAwareness"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Loyalty to your airline:</h5></div>
-   				<div class="value" id="airportPopupLoyalty"></div>
+   				<div class="value airportLoyalty" id="airportPopupLoyalty"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Relationship with your country:</h5></div>
-   				<div class="value" id="airportPopupRelationship"></div>
+   				<div class="value airportRelationship" id="airportPopupRelationship"></div>
    			</div>
 		</div>
 		<div class="button" id="planToAirportButton">Plan Flight</div>
+		<div class="button" id="viewAirportButton" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
     </div>
     
      <div style="display: none; width: 100%;" id="cityPopup">

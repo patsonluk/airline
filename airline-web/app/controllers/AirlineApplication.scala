@@ -81,12 +81,17 @@ class AirlineApplication extends Controller {
   }
   
   def getBaseRejection(airline : Airline, airport : Airport) : Option[String] = {
+    val airlineCountryCodeOption = airline.getCountryCode()
+    if (airlineCountryCodeOption.isEmpty) { //ok, building first HQ
+      return None
+    }
+    
     //it should first has link to it
     if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
       return Some("No active flight route operated by your airline flying to this city yet")
     }
     
-    val airlineCountryCode = airline.getCountryCode()
+    val airlineCountryCode = airlineCountryCodeOption.get
     if (airlineCountryCode == airport.countryCode) { //domestic airline
       val existingBaseCount = airline.getBases().filter(_.countryCode == airlineCountryCode).length
       val allowedBaseCount = airline.airlineGrade.value / 2 //up to 5 base max

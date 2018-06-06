@@ -86,6 +86,7 @@ function buildBase(airportId, isHeadquarter) {
 	    dataType: 'json',
 	    success: function() {
 	    	updateAllPanels(activeAirline.id)
+	    	showWorldMap()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

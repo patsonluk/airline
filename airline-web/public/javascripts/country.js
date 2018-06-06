@@ -1,5 +1,6 @@
 var loadedCountries = []
 var loadedCountriesByCode = {}
+var zoneById = { "AS" : "Asia", "NA" : "North America", "SA" : "South America", "AF" : "Africa", "OC" : "Oceania", "EU" : "Europe" }
 
 function showCountryView() {
 	setActiveDiv($("#countryCanvas"))
