@@ -123,7 +123,7 @@ object AirportSource {
           val airlineBaseResultSet = airlineBaseStatement.executeQuery()
           val airlineBases = ListBuffer[AirlineBase]()
           while (airlineBaseResultSet.next()) {
-             val airline = Airline.fromId(airlineBaseResultSet.getInt("airline"))
+             val airline = AirlineSource.loadAirlineById(airlineBaseResultSet.getInt("airline")).get
              val scale = airlineBaseResultSet.getInt("scale")
              val foundedCycle = airlineBaseResultSet.getInt("founded_cycle")
              val headquarter = airlineBaseResultSet.getBoolean("headquarter")

@@ -356,8 +356,36 @@
   					<div id="airportDetails" class="section" style="width: 90%; float:left;">
   						<div class="table">
   							<div class="table-row">
-			    				<div class="label"><h5>Airport:</h5></div>
-			    				<div class="value" id="airportDetailsName"></div>
+			    				<div class="label" style="width:50%;"><h5>Airport:</h5></div>
+			    				<div class="value" id="airportDetailsName" style="width:50%;"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Population Coverage:</h5></div>
+			    				<div class="value" id="airportDetailsPopulationCoverage"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Weekly Passengers:</h5></div>
+			    				<div class="value" id="airportDetailsPassengerCount"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Total Flight Routes:</h5></div>
+			    				<div class="value" id="airportDetailsLinkCount"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Weekly Flight Movements:</h5></div>
+			    				<div class="value" id="airportDetailsFlightFrequency"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Connected Airports:</h5></div>
+			    				<div class="value" id="airportDetailsConnectedAirportCount"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Connected Countries:</h5></div>
+			    				<div class="value" id="airportDetailsConnectedCountryCount"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Population Coverage:</h5></div>
+			    				<div class="value" id="airportDetailsPopulationCoverage"></div>
 			    			</div>
 			    			<div class="table-row">
 			    				<div class="label"><h5>IATA:</h5></div>
@@ -367,44 +395,58 @@
 			    				<div class="label"><h5>ICAO:</h5></div>
 			    				<div class="value" id="airportDetailsIcao"></div>
 			    			</div>
-			    			<div class="table-row">
-			    				<div class="label"><h5>Population Coverage:</h5></div>
-			    				<div class="value" id="airportDetailsPopulationCoverage"></div>
-			    			</div>
   						</div>
-  						<div id="airportBaseDetails">
-  							<div class="table">
-  								<div class="table-row">
-				    				<div class="label"><h5>Base Type:</h5></div>
-				    				<div class="value" id="airportDetailsBaseType"></div>
-				    			</div>
-  								<div class="table-row">
-				    				<div class="label"><h5>Base Scale:</h5></div>
-				    				<div class="value" id="airportDetailsBaseScale"></div>
-				    			</div>
-				    			<div class="table-row">
-				    				<div class="label"><h5>Base Upkeep:</h5></div>
-				    				<div class="value" id="airportDetailsBaseUpkeep"></div>
-				    			</div>
-				    			<div class="table-row">
-				    				<div class="label"><h5>Build/Upgrade Cost:</h5></div>
-				    				<div class="value" id="airportDetailsBaseCost"></div>
-				    			</div>
-  							</div>
-	  						<div id="baseRejection" style="display:none;">
-				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="baseRejectionReason" class="warning"></span>
-				    		</div>
-				    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), true)">Build Headquarter</div>
-	    					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Build Base</div>
-	    					<div class="button" id="upgradeBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Upgrade Base</div>
-	    					<div class="button" onclick="setActiveDiv($('#airportDetails'))">Cancel</div>
-	  					</div>
   					</div>
-  					
-  					
-  					
+  					<div id="airportBaseDetails" class="section" style="width: 90%; float:left;">
+						<div class="table">
+							<div class="table-row">
+			    				<div class="label"><h5>Base Type:</h5></div>
+			    				<div class="value" id="airportDetailsBaseType"></div>
+			    			</div>
+							<div class="table-row">
+		    					<div class="label"><h5>Base Scale:</h5></div>
+		    					<div class="value" id="airportDetailsBaseScale"></div>
+		    				</div>
+		    				<div class="table-row">
+			    				<div class="label"><h5>Base Upkeep:</h5></div>
+			    				<div class="value" id="airportDetailsBaseUpkeep"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Build/Upgrade Cost:</h5></div>
+			    				<div class="value" id="airportDetailsBaseCost"></div>
+			    			</div>
+						</div>
+  						<div id="baseRejection" style="display:none;">
+			    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="baseRejectionReason" class="warning"></span>
+			    		</div>
+			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), true)">Build Headquarter</div>
+    					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Build Base</div>
+    					<div class="button" id="upgradeBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Upgrade Base</div>
+    					<div class="button" onclick="showWorldMap()">Cancel</div>
+  					</div>
+  					<div class="section" style="width: 90%; float:left;">
+						<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
+						<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table">
+							<div class="table-header">
+		 	  					<div class="cell" style="width: 50%">Airline</div>
+		 	  					<div class="cell" style="width: 10%; text-align: right;">Office Scale</div>
+		 	  					<div class="cell" style="width: 10%; text-align: right;">Flight Routes</div>
+		 	  					<div class="cell" style="width: 30%; text-align: right;">Weekly Passengers</div>
+							</div>
+						</div>
+						<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-low.png")'></div><div style="float: left;"><h4>Airline Bases</h4></div>
+						<div id="airportDetailsBaseList" style="width: 100%;" class="table">
+							<div class="table-header">
+		 	  					<div class="cell" style="width: 50%">Airline</div>
+		 	  					<div class="cell" style="width: 10%; text-align: right;">Office Scale</div>
+		 	  					<div class="cell" style="width: 10%; text-align: right;">Flight Routes</div>
+		 	  					<div class="cell" style="width: 30%; text-align: right;">Weekly Passengers</div>
+							</div>
+						</div>
+  					</div>
   				</div>
   			</div>
+<!--   			end airport canvas -->
   			<div id="countryCanvas" style="height: 100%; display: none;">
   				<div style="width : 40%; float: left; overflow: auto;" class="section"> 
 	  	  			<div class="table data" id="countryTable" style="height: 100%; width: 100%">
@@ -457,6 +499,7 @@
 	    			</div>
 	    		</div>
   			</div>
+<!--   			end country canvas -->
   			<div id="airplaneCanvas" style="height: 100%; display: none;">
   				<div class="section" style="height: 90% ; width : 35%; float: left;"> 
 	  				<div id="airplaneModelSort" style="height: 35px ; width : 100%;">

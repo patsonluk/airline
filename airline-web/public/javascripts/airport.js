@@ -515,12 +515,92 @@ function loadAirportStatistics(airport) {
 	    	plotPie(transitTypeData, null , $("#transitTypePie"), "transitType", "passengers")
 	    	plotPie(airportStatistics.airlineDeparture, activeAirline.name, $("#airlineDeparturePie"), "airlineName", "passengers")
 	    	plotPie(airportStatistics.airlineArrival, activeAirline.name, $("#airlineArrivalPie"), "airlineName", "passengers")
+	    	
+	    	$('#airportDetailsPassengerCount').text(airportStatistics.departureOrArrivalPassengers)
+	    	$('#airportDetailsConnectedCountryCount').text(airportStatistics.connectedCountryCount)
+	    	$('#airportDetailsConnectedAirportCount').text(airportStatistics.connectedAirportCount)
+	    	$('#airportDetailsLinkCount').text(airportStatistics.linkCount)
+	    	$('#airportDetailsFlightFrequency').text(airportStatistics.connectedCountryCount)
+	    	$('#airportDetailsConnectedCountryCount').text(airportStatistics.connectedCountryCount)
+	    	$('#airportDetailsConnectedCountryCount').text(airportStatistics.connectedCountryCount)
+	    	
+	    	updateBaseList(airportStatistics)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function updateBaseList(statistics) {
+	$('#airportDetailsHeadquarterList').children('.table-row').remove()
+	$('#airportDetailsBaseList').children('.table-row').remove()
+	
+	var hasHeadquarters = false
+	var hasBases = false
+	$.each(statistics.bases, function(index, base) {
+		var row = $("<div class='table-row'></div>")
+		var countryFlagUrl = getCountryFlagUrl(base.countryCode)
+		if (countryFlagUrl) {
+			row.append("<div class='cell'><img src='" + countryFlagUrl + "'/>" + base.airlineName + "</div>")
+		} else {
+			row.append("<div class='cell'>" + base.airlineName + "</div>")
+		}
+		row.append("<div class='cell' style='text-align: right;'>" + base.scale + "</div>")
+		
+		var linkCount = 0;
+		$.each(statistics.linkCountByAirline, function(index, entry) {
+			if (entry.airlineId == base.airlineId) {
+				linkCount = entry.linkCount;
+				return false; //break
+			}
+		});
+		var passengers = 0
+		$.each(statistics.airlineDeparture, function(index, entry) {
+			if (entry.airlineId == base.airlineId) {
+				passengers += entry.passengers;
+				return false; //break
+			}
+		});
+		$.each(statistics.airlineArrival, function(index, entry) {
+			if (entry.airlineId == base.airlineId) {
+				passengers += entry.passengers;
+				return false; //break
+			}
+		});
+		
+		row.append("<div class='cell' style='text-align: right;'>" + linkCount + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(passengers) + "</div>")
+		
+		if (base.headquarter) {
+			$('#airportDetailsHeadquarterList').append(row)
+			hasHeadquarters = true
+		} else {
+			$('#airportDetailsBaseList').append(row)
+			hasBases = true
+		}
+	})
+	
+	if (!hasHeadquarters) {
+		var emtpyRow = $("<div class='table-row'></div>")
+		emtpyRow.append("<div class='cell'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		$('#airportDetailsHeadquarterList').append(emtpyRow)
+	}
+	if (!hasBases) {
+		var emtpyRow = $("<div class='table-row'></div>")
+		emtpyRow.append("<div class='cell'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		$('#airportDetailsBaseList').append(emtpyRow)
+	}
+
+	
+
 }
 
 
