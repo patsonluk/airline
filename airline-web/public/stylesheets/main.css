@@ -195,10 +195,9 @@ div.googleMapButton {
 	border-radius: 2px;
 	cursor: pointer;
 	background-color: rgb(255, 255, 255);
-	width: 28px;
 	height: 28px;
 	margin-right: 10px;
-	font: 11px;
+	font-size: 11px;
 }
 
 div.googleMapPanel {
