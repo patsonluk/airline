@@ -4,6 +4,7 @@ function showAirportDetails(airportId) {
 	
 	if (!airportId) {
 		airportId = activeAirline.headquarterAirport.airportId
+		$('#airportPopupId').val(airportId)
 	}
 	$.ajax({
 		type: 'GET',
@@ -63,14 +64,15 @@ function updateAirportDetails(airport) {
 	    		if (airportBase.scale == 0) {
 	    			$('#airportDetailsBaseType').text('-')
 	    			$('#airportDetailsBaseScale').text('-')
+	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep) + '(if built)')
+	    			$('#airportDetailsBaseCost').text('$' + commaSeparateNumber(airportBase.upgradeCost))
 	    		} else {
 	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
 	    			$('#airportDetailsBaseScale').text(airportBase.scale)
+	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
+	    			$('#airportDetailsBaseCost').text('$' + commaSeparateNumber(airportBase.upgradeCost))
 	    		}
-	    		$('#airportDetailsBaseUpkeep').text('-') //TODO
-	    		$('#airportDetailsBaseCost').text('-') //TODO
 	    		
-
 	    		//update buttons and reject reasons
 	    		if (airportBase.rejection) {
 	    			$('#baseRejectionReason').text(airportBase.rejection)

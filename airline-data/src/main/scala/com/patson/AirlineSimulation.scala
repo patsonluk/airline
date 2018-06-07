@@ -67,9 +67,7 @@ object AirlineSimulation {
         val othersSummary = Map[OtherIncomeItemType.Value, Long]()
         othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, airline.getServiceFunding() * -1)
         othersSummary.put(OtherIncomeItemType.BASE_UPKEEP, airline.bases.foldLeft(0L)((upkeep, base) => {
-          val countryIncome = allCountries(base.countryCode).income
-          val baseUpkeep =  (10 * countryIncome * base.scale / 52)  / (if (base.headquarter) 1 else 2)//assume scale 1 HQ is 10 people's annual salary, other base half 
-          upkeep - baseUpkeep //negative number 
+          upkeep - base.getUpkeep //negative number 
         }))
         othersSummary.put(OtherIncomeItemType.DEPRECIATION, airplanesByAirline.getOrElse(airline.id, List.empty).foldLeft(0L) {
           case(depreciation, airplane) => (depreciation - airplane.depreciationRate) 

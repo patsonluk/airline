@@ -48,7 +48,40 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   	}
   }
   
-  case class AirlineGrade(value : Int, description: String)
+  case class AirlineGrade(value : Int, description: String) {
+    val getLinkLimit = (fromBase : AirlineBase, toAirport : Airport) => {
+      val fromCountryCode = fromBase.countryCode
+      val fromZone = fromBase.airport.zone
+      
+      val toCountryCode = toAirport.countryCode
+      val toZone = toAirport.zone
+      
+      if (fromCountryCode == toCountryCode) { //domestic flight
+        value * 10
+      } else if (fromZone == toZone) { //same continent international flight
+        value * 4
+      } else { //intercontinental flight
+        if (value <= 4) {
+          0
+        } else {
+          (value - 4) * 3
+        }
+      }
+    }
+    
+    val getBaseLimit = {
+      if (value <= 3) {
+        1
+      } else {
+        value - 2
+      }
+      
+    }
+    
+    val regionalLinkLimit = value * 2
+    val intercontinentalLinkLimit = if (value <= 4) 0 else (value - 4) * 2 
+  }
+  
   object AirlineGrade {
     val NEW = AirlineGrade(1, "New Airline")
     val LOCAL = AirlineGrade(2, "Local Airline")

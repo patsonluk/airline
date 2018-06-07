@@ -71,12 +71,12 @@ function selectAirline(airlineId) {
 	updateAllPanels(airlineId)
 }
 
-function buildBase(airportId, isHeadquarter) {
+function buildBase(airportId, isHeadquarter, scale = 1) {
 	var url = "airlines/" + activeAirline.id + "/bases/" + $("#airportPopupId").val() 
 	var baseData = { 
 			"airportId" : parseInt($("#airportPopupId").val()),
 			"airlineId" : activeAirline.id,
-			"scale" : 1,
+			"scale" : scale,
 			"headquarter" : isHeadquarter}
 	$.ajax({
 		type: 'PUT',
@@ -856,6 +856,8 @@ function updatePlanLinkInfo(linkInfo) {
 		removeTempPath()
 	}
 	
+	$('#planLinkCost').text('$' + commaSeparateNumber(linkInfo.cost))
+	
 	if (linkInfo.rejection) {
 		$('#linkRejectionRow #linkRejectionReason').text(linkInfo.rejection)
 		$('#linkRejectionRow').show()
@@ -1082,9 +1084,12 @@ function createLink() {
 		    			//draw flight path
 		    			var newPath = drawFlightPath(savedLink)
 		    			selectLinkFromMap(savedLink.id, false)
+		    			refreshPanels(airlineId)
 		    		}
 		    		//refreshPanels(activeAirline.id)
 		    		refreshLinkDetails(savedLink.id)
+		    		
+			    	
 		    		setActiveDiv($('#linkDetails'))
 		    		hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
 		    				    				    		

@@ -223,6 +223,10 @@
 					    				</div>			    			
 					    			</div> 
 			    				</div>
+			    				<div class="table-row">
+					    			<div class="label"><h5>Setup Cost:</h5></div>
+					    			<div class="value" id="planLinkCost"></div>
+					    		</div>
 			    				<div class="table-row" id="linkRejectionRow">
 					    			<div class="label"></div>
 					    			<div class="value"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason" class="warning"></span></div>
@@ -457,7 +461,7 @@
 			    		</div>
 			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), true)">Build Headquarter</div>
     					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Build Base</div>
-    					<div class="button" id="upgradeBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Upgrade Base</div>
+    					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false, parseInt($('#airportDetailsBaseScale').text()) + 1)">Upgrade Base</div>
     					<div class="button" onclick="showWorldMap()">Cancel</div>
   					</div>
   					<div class="section" style="width: 90%; float:left;">
