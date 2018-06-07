@@ -531,40 +531,41 @@ class LinkApplication extends Controller {
       case None => return Some("Airline has no HQ!")
     }
     val toCountryCode = toAirport.countryCode
-    
-    //validate from airport is a base
-    val base = fromAirport.getAirlineBase(airline.id) match {
-      case None => return Some("Cannot fly from this airport, this is not a base!")
-      case Some(base) => base
-    } 
-    
-    //check mutualRelationship
-    val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toCountryCode)
-    if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
-      return Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
-    } else if (toCountryCode != airlineCountryCode && CountrySource.loadCountryByCode(toCountryCode).get.openness < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
-      return Some("This country does not want to open their airports to foreign airline") 
-    }
-    
-    //check base airport credit
-    val credit = base.getAirportCredits
-    val usedCredits = Computation.getAirportCredits(LinkSource.loadLinksByFromAirport(fromAirport.id).filter( _.airline.id == base.airline.id))
-    val availableCredits = credit - usedCredits
-    
-    val requiredCredits = Computation.getAirportCredits(fromAirport, toAirport)
-    if (availableCredits < requiredCredits) {
-      return Some("Not enough airport credit left, require " + requiredCredits + " but only " + availableCredits + " left")
-    }
-    
-    //check balance
-    if (newLink) {
+   
+    if (newLink) { //only check new links for now
+      //validate from airport is a base
+      val base = fromAirport.getAirlineBase(airline.id) match {
+        case None => return Some("Cannot fly from this airport, this is not a base!")
+        case Some(base) => base
+      } 
+      
+      //check mutualRelationship
+      val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toCountryCode)
+      if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
+        return Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
+      } else if (toCountryCode != airlineCountryCode && CountrySource.loadCountryByCode(toCountryCode).get.openness < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
+        return Some("This country does not want to open their airports to foreign airline") 
+      }
+      
+      //check base airport credit
+      val credit = base.getAirportCredits
+      val usedCredits = Computation.getAirportCredits(LinkSource.loadLinksByFromAirport(fromAirport.id).filter( _.airline.id == base.airline.id))
+      val availableCredits = credit - usedCredits
+      
+      val requiredCredits = Computation.getAirportCredits(fromAirport, toAirport)
+      if (availableCredits < requiredCredits) {
+        return Some("Not enough airport credit left, require " + requiredCredits + " but only " + availableCredits + " left")
+      }
+      
+      //check balance
+      
       val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
       if (airline.getBalance() < cost) {
         return Some("Not enough cash to establish this route")
       }
-    }
+    }  
     
-    None
+    return None
   }
   
   def getVipRoutes() = Action {
