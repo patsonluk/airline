@@ -857,6 +857,16 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	
 	$('#planLinkCost').text('$' + commaSeparateNumber(linkInfo.cost))
+
+	if (!linkInfo.existingLink) { //new link
+		//deselect the existing path if any
+		deselectLink()
+		//create a temp path
+		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
+		//set the temp path
+		tempPath = drawFlightPath(tempLink, '#2658d3')
+		highlightPath(tempPath.path)
+	}
 	
 	if (linkInfo.rejection) {
 		$('#linkRejectionRow #linkRejectionReason').text(linkInfo.rejection)
@@ -879,14 +889,6 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#addLinkButton').show()
 		$('#deleteLinkButton').hide()
 		$('#updateLinkButton').hide()
-		
-		//deselect the existing path if any
-		deselectLink()
-		//create a temp path
-		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
-		//set the temp path
-		tempPath = drawFlightPath(tempLink, '#2658d3')
-		highlightPath(tempPath.path)
 	} else {
 		$('#planLinkEconomyPrice').val(linkInfo.existingLink.price.economy)
 		$('#planLinkBusinessPrice').val(linkInfo.existingLink.price.business)
