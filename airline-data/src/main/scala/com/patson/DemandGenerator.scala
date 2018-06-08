@@ -25,10 +25,10 @@ object DemandGenerator {
 //  import actorSystem.dispatcher
 //
 //  implicit val materializer = FlowMaterializer()
-  private[this] val FIRST_CLASS_INCOME_MIN = 25000
+  private[this] val FIRST_CLASS_INCOME_MIN = 15000
   private[this] val FIRST_CLASS_INCOME_MAX = 100000
   private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02) //max 8% first (Business passenger), 2% first (Tourist)
-  private[this] val BUSINESS_CLASS_INCOME_MIN = 10000
+  private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.30, PassengerType.TOURIST -> 0.10) //max 30% business (Business passenger), 10% business (Tourist) 
   
@@ -170,8 +170,8 @@ object DemandGenerator {
       
       //bonus for domestic and short-haul flight
       adjustedDemand += baseDemand * (flightType match {
-        case SHORT_HAUL_DOMESTIC => 10
-        case LONG_HAUL_DOMESTIC => 7
+        case SHORT_HAUL_DOMESTIC => 4 //people would just drive or take other transit
+        case LONG_HAUL_DOMESTIC => 7 
         case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
         case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.5
         case ULTRA_LONG_HAUL_INTERCONTINENTAL => -0.75
@@ -209,7 +209,7 @@ object DemandGenerator {
       val income = fromAirport.income
 
       val firstClassPercentage : Double = 
-        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
+        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL) {
           if (income <= FIRST_CLASS_INCOME_MIN) {
             0 
           } else if (income >= FIRST_CLASS_INCOME_MAX) {
