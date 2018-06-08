@@ -877,6 +877,7 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)
 		$('#planLinkFirstPrice').val(linkInfo.suggestedPrice.first)
 		$('#addLinkButton').show()
+		$('#deleteLinkButton').hide()
 		$('#updateLinkButton').hide()
 		
 		//deselect the existing path if any
@@ -891,6 +892,11 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#planLinkBusinessPrice').val(linkInfo.existingLink.price.business)
 		$('#planLinkFirstPrice').val(linkInfo.existingLink.price.first)
 		$('#addLinkButton').hide()
+		if (linkInfo.deleteRejection) {
+			$('#deleteLinkButton').hide()
+		} else {
+			$('#deleteLinkButton').show()
+		}
 		$('#updateLinkButton').show()
 	}
 	//populate airplane model drop down

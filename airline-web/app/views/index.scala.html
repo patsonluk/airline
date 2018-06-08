@@ -119,7 +119,6 @@
 				    			<input type="hidden" id="linkFromAirportId"></input>
 				    			<input type="hidden" id="linkToAirportId"></input>
 				    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
-				    			<div class="button" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
 				    			<div class="button" onclick="deselectLink()">Cancel</div>
 					    		
 					    		<div class="divider"></div>
@@ -277,6 +276,7 @@
 				    		</div>
 				    		<div class="button" id="addLinkButton" onclick="createLink()">Create</div>
 				    		<div class="button" id="updateLinkButton" onclick="createLink()">Update</div>
+				    		<div class="button" id="deleteLinkButton" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
 				    		<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 				    	</div>
 			    	</div>

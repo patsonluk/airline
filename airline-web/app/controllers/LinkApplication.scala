@@ -358,16 +358,25 @@ class LinkApplication extends Controller {
     Ok(Json.obj("count" -> count))
   }
   
-  def deleteLink(airlineId : Int, linkId: Int) = AuthenticatedAirline(airlineId) {
+  def deleteLink(airlineId : Int, linkId: Int) = AuthenticatedAirline(airlineId) { request =>
     //verify the airline indeed has that link
     LinkSource.loadLinkById(linkId) match {
       case Some(link) =>
-        if (link.airline.id != airlineId) {
-        Forbidden
-      } else {
-        val count = LinkSource.deleteLink(linkId)  
-        Ok(Json.obj("count" -> count))    
-      }
+        if (link.airline.id != request.user.id) {
+          Forbidden
+        } else {
+          getDeleteLinkRejection(link, request.user) match {
+            case Some(reason) => {
+              println("cannot delete this link: " + reason)
+              BadRequest(reason)
+            }
+            case None => {
+              val count = LinkSource.deleteLink(linkId)  
+              Ok(Json.obj("count" -> count))
+            }
+          }
+
+        }
       case None =>
         NotFound
     }
@@ -512,6 +521,10 @@ class LinkApplication extends Controller {
                                         
             if (existingLink.isDefined) {
               resultObject = resultObject + ("existingLink", Json.toJson(existingLink))
+              val deleteRejection = getDeleteLinkRejection(existingLink.get, request.user)
+              if (deleteRejection.isDefined) {
+                resultObject = resultObject + ("deleteRejection", Json.toJson(deleteRejection.get))
+              }
             }
             
             if (rejectionReason.isDefined) {
@@ -522,6 +535,14 @@ class LinkApplication extends Controller {
           case None => BadRequest("unknown toAirport")
         }
         case None => BadRequest("unknown toAirport")
+    }
+  }
+  
+  def getDeleteLinkRejection(link : Link, airline : Airline) : Option[String] = {
+    if (airline.getBases().map { _.airport.id}.contains(link.to.id)) {
+      Some("Cannot delete this route as this flies to a base. Must remove the base before this can be deleted")
+    } else {
+      None
     }
   }
   
