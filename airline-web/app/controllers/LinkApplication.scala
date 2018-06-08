@@ -578,8 +578,16 @@ class LinkApplication extends Controller {
         return Some("Not enough airport credit left, require " + requiredCredits + " but only " + availableCredits + " left")
       }
       
-      //check balance
+      //check airline grade limit
+      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).mapValues(_.size)
+      val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
+      val limit = airline.airlineGrade.getLinkLimit(flightCategory)
+      if (limit <= existingFlightCategoryCounts(flightCategory)) {
+        return Some("Cannot create more route of category " + flightCategory + " until your airline reaches next grade")  
+      }
       
+      
+      //check balance
       val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
       if (airline.getBalance() < cost) {
         return Some("Not enough cash to establish this route")

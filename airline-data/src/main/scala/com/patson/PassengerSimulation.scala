@@ -207,7 +207,13 @@ object PassengerSimulation {
   }
   
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, linkClass: LinkClass) : Boolean = {
+    val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2.5
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+    val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
+    if (routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR <= routeDistance) { //a route that distance is too long (too indirect)
+      return false
+    }
+    
     val ROUTE_COST_TOLERANCE_FACTOR = 1.75
     val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement.toInt, Computation.getFlightType(fromAirport, toAirport), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
 
@@ -223,9 +229,9 @@ object PassengerSimulation {
           linkConsideration.cost > linkAffordableCost
         }
       }
-      unaffordableLink.isEmpty
+      return unaffordableLink.isEmpty
     } else {
-      false 
+      return false 
     }
   }
   

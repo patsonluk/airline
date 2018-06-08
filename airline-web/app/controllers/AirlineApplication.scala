@@ -103,28 +103,11 @@ class AirlineApplication extends Controller {
         return Some("No active flight route operated by your airline flying to this city yet")
       }
       
-      val airlineCountryCode = airlineCountryCodeOption.get
-      if (airlineCountryCode == airport.countryCode) { //domestic airline
-        val existingBaseCount = airline.getBases().filter(_.countryCode == airlineCountryCode).length
-        val allowedBaseCount = airline.airlineGrade.value / 2 //up to 5 base max
-        if (existingBaseCount >= allowedBaseCount) {
-          return Some("Only allow up to " + allowedBaseCount + " base(s) in home country with your current airline grade \"" + airline.airlineGrade.description + "\"")
-        } 
-      } else { //foreign airline
-        if (airline.getHeadQuarter().isEmpty) {
-          return Some("Cannot build bases when there is no headquarter!")
-        }
-        val airlineZone = airline.getHeadQuarter().get.airport.zone
-        if (airlineZone == airport.zone) { //no multiple bases in the same zone
-          return Some("No base allowed in foreign country of your home zone " + airlineZone); 
-        } else { 
-          val existingBaseCount = airline.getBases().filter(_.airport.zone == airport.zone).length
-          val allowedBaseCount = airline.airlineGrade.value / 3; //max 3 bases per other zone
-          if (existingBaseCount >= allowedBaseCount) {
-            return Some("Only allow up to " + allowedBaseCount + " base(s) in this zone " + airport.zone + " with your current airline grade \"" + airline.airlineGrade.description + "\"")
-          } 
-        }
-      }
+      val existingBaseCount = airline.getBases().length
+      val allowedBaseCount = airline.airlineGrade.getBaseLimit
+      if (existingBaseCount >= allowedBaseCount) {
+        return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description + "\"")
+      } 
     }
 
     

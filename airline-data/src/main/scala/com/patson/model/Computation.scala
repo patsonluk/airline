@@ -81,6 +81,17 @@ object Computation {
       }
     }
   }
+  
+  import FlightCategory._
+  def getFlightCategory(fromAirport : Airport, toAirport : Airport) : FlightCategory.Value = {
+    if (fromAirport.countryCode == toAirport.countryCode) {
+      DOMESTIC
+    } else if (fromAirport.zone == toAirport.zone) {
+      REGIONAL
+    } else {
+      INTERCONTINENTAL
+    }
+  }
 
   /**
    * Returns a normalized income level, should be greater than 0
