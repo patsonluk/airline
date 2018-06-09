@@ -80,6 +80,7 @@ class LinkApplication extends Controller {
       "airportFees" -> JsNumber(linkConsumption.airportFees),
       "maintenanceCost" -> JsNumber(linkConsumption.maintenanceCost),
       "inflightCost" -> JsNumber(linkConsumption.inflightCost),
+      "depreciation" -> JsNumber(linkConsumption.depreciation),
       "capacity" -> Json.toJson(linkConsumption.capacity),
       "soldSeats" -> Json.toJson(linkConsumption.soldSeats),
       "cycle" -> JsNumber(linkConsumption.cycle)))

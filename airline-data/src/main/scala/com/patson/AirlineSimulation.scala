@@ -87,7 +87,7 @@ object AirlineSimulation {
         }
         
         val unassignedAirplanesDepreciation = allAirplanesDepreciation - linksDepreciation //account depreciation on planes that are without assigned links
-        othersSummary.put(OtherIncomeItemType.DEPRECIATION, unassignedAirplanesDepreciation) //not a cash expense
+        othersSummary.put(OtherIncomeItemType.DEPRECIATION, -1 * unassignedAirplanesDepreciation) //not a cash expense
         
         var othersRevenue = 0L
         var othersExpense = 0L
