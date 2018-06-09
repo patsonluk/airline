@@ -101,7 +101,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
    */
   def getMaxSlotAssignment(airline : Airline) : Int = {
     val airlineId = airline.id
-    val reservedSlots = (slots * 0.1).toInt //airport always keep 10% spare
+    val reservedSlots = (slots * 0.2).toInt //airport always keep 20% spare
     val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airlineId)
     
     //find out the country where this airline is from
@@ -151,11 +151,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       
       
        //if it's not a base, give it 50 slots max
-      //if it's a base (not HQ), give it 20% max
-      //if it's a base (HQ), give it 50% max
+      //if it's a base (not HQ), give it 1/10 max
+      //if it's a base (HQ), give it 1/3 max
       val maxSlotsByBase =
         getAirlineBase(airlineId) match {
-          case Some(base) if (base.headquarter) => slots / 2
+          case Some(base) if (base.headquarter) => slots / 3
           case Some(base) if (!base.headquarter) => slots / 10
           case None => 50  
           

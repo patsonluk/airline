@@ -207,7 +207,7 @@ object PassengerSimulation {
   }
   
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, linkClass: LinkClass) : Boolean = {
-    val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2.5
+    val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
     val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
     if (routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR <= routeDistance) { //a route that distance is too long (too indirect)
