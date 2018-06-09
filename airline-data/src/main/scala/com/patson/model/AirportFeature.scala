@@ -23,6 +23,7 @@ object AirportFeature {
       case VACATION_HUB => VacationHubFeature(strength)
       case FINANCIAL_HUB => FinancialHubFeature(strength)
       case DOMESTIC_AIRPORT => DomesticAirportFeature(strength)
+      case ISOLATED_TOWN => IsolatedTownFeature(strength)
     }
   }
 }
@@ -100,15 +101,43 @@ sealed case class DomesticAirportFeature(strength : Int) extends AirportFeature 
   }
 }
 
+sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
+  val featureType = AirportFeatureType.ISOLATED_TOWN
+  val HUB_MIN_POPULATION = 100000 // 
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport) : Double = {
+    val flightType = Computation.getFlightType(fromAirport, toAirport)
+    if (flightType == SHORT_HAUL_DOMESTIC && toAirport.population >= HUB_MIN_POPULATION) {
+      if (rawDemand < 0.01) { //up to 10 
+        rawDemand * 1000 
+      } else if (rawDemand <= 0.1) { //up to 20
+        rawDemand * 200 
+      } else if (rawDemand <= 0.5) { //up to 30
+        rawDemand * 60
+      } else if (rawDemand <= 2) { //up to 40
+        rawDemand * 20
+      } else if (rawDemand <= 5) { //up to 50
+        rawDemand * 10
+      } else if (rawDemand <= 10) { //up to 60
+        rawDemand * 6
+      } else {
+        rawDemand * 2
+      }
+    } else {
+      0
+    }
+  }
+}
+
 object AirportFeatureType extends Enumeration {
     type AirportFeatureType = Value
-    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, UNKNOWN = Value
+    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, ISOLATED_TOWN, UNKNOWN = Value
     def getDescription(featureType : AirportFeatureType) = {
       featureType match {
         case INTERNATIONAL_HUB => "Internation Hub"
         case VACATION_HUB => "Vacation Hub"
         case FINANCIAL_HUB => "Financial Hub"
         case DOMESTIC_AIRPORT => "Domestic Airport"
+        case ISOLATED_TOWN => "Isolated Town"
         case UNKNOWN => "Unknown"
       }
     }
