@@ -113,7 +113,7 @@ function populateAirportDetails(airport) {
 	 
 	var airportMap = new google.maps.Map(document.getElementById('airportMap'), {
 		//center: {lat: airport.latitude, lng: airport.longitude},
-	   	zoom : 7,
+	   	zoom : 6,
 	   	minZoom : 6,
 	   	maxZoom : 9,
 //	   	scrollwheel: false,
