@@ -203,17 +203,17 @@ class AirlineApplication extends Controller {
      
      val delta = targetQuality - airline.getServiceQuality()
      val prediction =  
-       if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT) {
+       if (delta >= 20) {
          "Increase rapidly"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / 2) {
+       } else if (delta >= 10) {
          "Increase steadily"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / 5) {
+       } else if (delta >= 5) {
          "Increase slightly"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / -5) {
+       } else if (delta >= -5) {
          "Steady"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / -2) {
+       } else if (delta >= -10) {
          "Decrease slightly"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT * -1) {
+       } else if (delta >= -20) {
          "Decrease steadily"
        } else {
          "Decrease rapidly"
