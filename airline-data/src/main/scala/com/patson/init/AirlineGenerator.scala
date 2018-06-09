@@ -99,8 +99,8 @@ object AirlineGenerator extends App {
             if (frequency == 0) {
               frequency = 1
             }
-            val availableSlots = Math.min(fromAirport.availableSlots, toAirport.availableSlots)
-            frequency = Math.min(frequency, availableSlots)
+//            val availableSlots = Math.min(fromAirport.availableSlots, toAirport.availableSlots) //don't care about slots, as reputation/loyalty is too low might always be 1
+//            frequency = Math.min(frequency, availableSlots)
             
             if (frequency > 0) {
               val airplanes = ListBuffer[Airplane]()
