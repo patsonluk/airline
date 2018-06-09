@@ -624,7 +624,7 @@ function getAirports() {
 
 function addMarkers(airports) {
 	var infoWindow = new google.maps.InfoWindow({
-		maxWidth : 500
+		maxWidth : 450
 	})
 	currentZoom = map.getZoom()
 	var largeAirportMarkerIcon = $("#map").data("largeAirportMarker")

@@ -106,7 +106,7 @@ class AirlineApplication extends Controller {
       val existingBaseCount = airline.getBases().length
       val allowedBaseCount = airline.airlineGrade.getBaseLimit
       if (existingBaseCount >= allowedBaseCount) {
-        return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description + "\"")
+        return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
       } 
     }
 
