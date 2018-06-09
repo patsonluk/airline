@@ -96,7 +96,7 @@ function loadCountryDetails(countryId) {
 	    success: function(country) {
 	    	$("#countryDetailsName").text(country.name)
 	    	$("#countryDetailsIncomeLevel").text(country.incomeLevel)
-	    	$("#countryDetailsOpenness").text(country.openness)
+	    	$("#countryDetailsOpenness").html(getOpennessSpan(country.openness))
 	    	
 	    	var loadedCountry = loadedCountries.filter(function(obj) {
 	    		  return obj.countryCode == countryId;

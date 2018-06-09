@@ -157,12 +157,38 @@ function commaSeparateNumber(val){
     return val;
 }
 
+function getCountryFlagImg(countryCode) {
+	var url = "assets/images/flags/" + countryCode + ".png"
+	var countryName = loadedCountriesByCode[countryCode].name
+	return "<img src='" + url + "' title='" + countryName +"'/>"
+}
+
 function getCountryFlagUrl(countryCode) {
 	if ($.inArray(countryCode, noFlags) != -1) {
 		return '';
 	} else {
 		return "assets/images/flags/" + countryCode + ".png"
 	}
+}
+
+function getOpennessSpan(openness) {
+	var description
+	var icon
+	if (openness >= 8) {
+		description = "Opened Market"
+		icon = "globe--plus.png"
+	} else if (openness >= 6) {
+		description = "No International Connection"
+		icon = "globe--exclamation.png"
+	} else if (openness >= 4) { 
+		description = "No Foreign Airline Base"
+		icon = "globe--minus.png"
+	} else {
+		description = "No Foreign Airline"
+		icon = "prohibition.png"
+	}
+	return "<span>" + description + "(" + openness + ")&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
+	
 }
 
 function sortByProperty(property, ascending = true) {

@@ -40,10 +40,10 @@ function updateAirportDetails(airport) {
 		$('#airportDetailsIcao').text('-')
 	}
 	
-	$('#airportDetailsPopulationCoverage').text(commaSeparateNumber(airport.population))
+	$('#airportDetailsPopulation').text(commaSeparateNumber(airport.population))
     $("#airportDetailsCity").text(airport.city)
     $("#airportDetailsSize").text(airport.size)
-	$("#airportDetailsIncomeLevel").text(airport.incomeLevel)
+    $("#airportDetailsIncomeLevel").text(airport.incomeLevel)
 	$("#airportDetailsCountry").text(loadedCountriesByCode[airport.countryCode].name)
 	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
 	if (countryFlagUrl) {
@@ -676,13 +676,11 @@ function addMarkers(airports) {
 			  var isBase = updateBaseInfo(this.airportId)
 			  $("#airportPopupName").text(this.airportName)
 			  $("#airportPopupIata").text(this.airportCode)
-			  $("#airportPopupCity").text(this.airportCity)
+			  $("#airportPopupCity").html(this.airportCity + "&nbsp;" + getCountryFlagImg(this.airportCountryCode))
 			  $("#airportPopupZone").text(zoneById[this.airportZone])
 			  $("#airportPopupSize").text(this.airportSize)
-			  $("#airportPopupPopulation").text(this.airportPopulation)
+			  $("#airportPopupPopulation").text(commaSeparateNumber(this.airportPopulation))
 			  $("#airportPopupIncomeLevel").text(this.airportIncomeLevel)
-			  $("#airportPopupCountryCode").text(this.airportCountryCode)
-			  $("#airportPopupCountryCode").append("<img src='assets/images/flags/" + this.airportCountryCode + ".png' />")
 			  updateAirportExtendedDetails(this.airportId)
 			  updateAirportSlots(this.airportId)
 			  
@@ -822,6 +820,7 @@ function updateAirportExtendedDetails(airportId) {
 	$(".airportAwareness").text('-')
 	$(".airportLoyalty").text('-')
 	$(".airportRelationship").text('-')
+	$(".airportOpenness").text('-')
 	$("#airportIcons .feature").hide()
 	
 	var airlineId = activeAirline.id
@@ -848,6 +847,7 @@ function updateAirportExtendedDetails(airportId) {
 		    	relationship = getRelationshipDescription(loadedCountriesByCode[airport.countryCode].mutualRelationship)
 		    	
 		    	$(".airportRelationship").text(relationship)
+		    	$(".airportOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness))
 	    	}
 	    	
 	    	$(".airportSlots").text(airport.availableSlots + " (" + airport.slots + ")")
