@@ -113,18 +113,18 @@ function populateAirportDetails(airport) {
 	 
 	var airportMap = new google.maps.Map(document.getElementById('airportMap'), {
 		//center: {lat: airport.latitude, lng: airport.longitude},
-	   	zoom : 6,
+	   	zoom : 7,
 	   	minZoom : 6,
+	   	maxZoom : 9,
 //	   	scrollwheel: false,
 //	    navigationControl: false,
 //	    mapTypeControl: false,
 //	    scaleControl: false,
 //	    draggable: false,
 	   	gestureHandling: 'greedy',
-	   	gestureHandling: 'none',
 	   	fullscreenControl: false,
 	   	streetViewControl: false,
-        zoomControl: false,
+        zoomControl: true,
 	   	styles: 
 	   		[
 	   		  {
@@ -724,7 +724,13 @@ function addCityMarkers(airportMap, airport) {
 	var townMarkerIcon = $("#airportMap").data("townMarker")
 	var villageMarkerIcon = $("#airportMap").data("villageMarker")
 	
+
+	cities.sort(sortByProperty("population", false))
+	var count = 0
 	$.each(cities, function( key, city ) {
+		if (++ count > 20) { //do it for top 20 cities only
+			return false
+		}	
 		var icon
 		if (city.population >= 500000) {
 			icon = cityMarkerIcon
