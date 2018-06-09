@@ -151,6 +151,24 @@ object AirportSource {
           }
           featureStatement.close()
           airport.initFeatures(features.toList)
+          
+          //load profile pics
+           val imageStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_IMAGE_TABLE + " WHERE airport = ?")
+          imageStatement.setInt(1, airport.id)
+          
+          val imageResultSet = imageStatement.executeQuery()
+          if (imageResultSet.next()) {
+            val airportUrl = imageResultSet.getString("airport_url")
+            val cityUrl = imageResultSet.getString("city_url")
+            if (airportUrl != null) {
+              airport.setAirportImageUrl(airportUrl)
+            }
+            if (cityUrl != null) {
+              airport.setCityImageUrl(cityUrl)
+            }
+          }
+          imageStatement.close()
+          
         }
       }
       
@@ -320,6 +338,30 @@ object AirportSource {
           featureStatement.setInt(3, feature.strength)
           featureStatement.executeUpdate()
         }
+        featureStatement.close()
+      }
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def updateAirportImages(airports : List[Airport]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      airports.foreach { airport =>
+        val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_IMAGE_TABLE + " WHERE airport = ?")
+        purgeStatement.setInt(1, airport.id)
+        purgeStatement.executeUpdate()
+        purgeStatement.close()
+
+        val featureStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_IMAGE_TABLE + "(airport, city_url, airport_url) VALUES(?,?,?)")
+        featureStatement.setInt(1, airport.id)
+        featureStatement.setString(2, airport.getCityImageUrl().getOrElse(null))
+        featureStatement.setString(3, airport.getAirportImageUrl().getOrElse(null))
+        featureStatement.executeUpdate()
+        
         featureStatement.close()
       }
       connection.commit()

@@ -18,6 +18,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] val features = ListBuffer[AirportFeature]()
   private[this] var featuresLoaded = false
   
+  private[this] var airportImageUrl : Option[String] = None
+  private[this] var cityImageUrl : Option[String] = None
+  
   private[model] var country : Option[Country] = None
   
   val income = if (population > 0) (power / population).toInt  else 0
@@ -77,6 +80,23 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       0
     }
   }
+  
+  def getAirportImageUrl() : Option[String] = {
+    airportImageUrl
+  }
+  
+  def getCityImageUrl() : Option[String] = {
+    cityImageUrl
+  }
+  
+  def setAirportImageUrl(imageUrl : String) = {
+    airportImageUrl = Some(imageUrl)
+  }
+  
+  def setCityImageUrl(imageUrl : String) = {
+    cityImageUrl = Some(imageUrl)
+  }
+  
   
   def isAirlineAppealsInitialized = airlineAppealsLoaded
   def isSlotAssignmentsInitialized = slotAssignmentsLoaded

@@ -27,6 +27,16 @@ function showAirportDetails(airportId) {
 }
 
 function updateAirportDetails(airport) {
+	$('#airportDetailsAirportImage').empty()
+	$('#airportDetailsCityImage').empty()
+	if (airport.airportImageUrl) {
+		$('#airportDetailsAirportImage').append('<img src="' + airport.airportImageUrl + '" style="width:100%;"/>')
+	}
+	if (airport.cityImageUrl) {
+		$('#airportDetailsCityImage').append('<img src="' + airport.cityImageUrl + '" style="width:100%;"/>')
+	}
+	
+	
 	$('#airportDetailsName').text(airport.name)
 	if (airport.iata) { 
 		$('#airportDetailsIata').text(airport.iata)

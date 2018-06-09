@@ -654,6 +654,22 @@ object Meta {
     statement.execute()
     statement.close()
   }
+  
+  def createAirportImage(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_IMAGE_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_IMAGE_TABLE + "(" +
+      "airport INTEGER, " +
+      "city_url VARCHAR(1024), " +
+      "airport_url  VARCHAR(1024), " +
+      "PRIMARY KEY (airport)," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
 }
 
 

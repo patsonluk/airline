@@ -75,6 +75,12 @@ class Application extends Controller {
           }
         ))
       }
+      if (airport.getAirportImageUrl.isDefined) {
+        airportObject = airportObject + ("airportImageUrl" -> JsString(airport.getAirportImageUrl.get))
+      }
+      if (airport.getCityImageUrl.isDefined) {
+        airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
+      }
       
       airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.toList.map(_._1)))
       
