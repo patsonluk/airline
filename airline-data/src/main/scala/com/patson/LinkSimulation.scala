@@ -81,7 +81,7 @@ object LinkSimulation {
       case None => 0 
     }
     
-    //val depreciation = link.getAssignedAirplanes().foldLeft(0)(_ + _.depreciationRate)
+    val depreciation = link.getAssignedAirplanes().foldLeft(0)(_ + _.depreciationRate)
     
     var inflightCost, crewCost, revenue = 0 
     link.capacity.map.keys.foreach { linkClass =>
@@ -93,9 +93,9 @@ object LinkSimulation {
       revenue += soldSeats * link.price(linkClass)
     }
     
-    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost
+    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - depreciation
 
-    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, maintenanceCost, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
+    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, maintenanceCost, depreciation = depreciation, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
     //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     result
   }
