@@ -97,18 +97,21 @@ class AirlineApplication extends Controller {
       return Some("Not enough cash to build the base")
     }
     
-    if (airlineCountryCodeOption.isDefined) { //building non-HQ
-          //it should first has link to it
-      if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
-        return Some("No active flight route operated by your airline flying to this city yet")
-      }
-      
-      val existingBaseCount = airline.getBases().length
-      val allowedBaseCount = airline.airlineGrade.getBaseLimit
-      if (existingBaseCount >= allowedBaseCount) {
-        return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
-      } 
+    if (toScale == 1) { //building something new
+      if (airlineCountryCodeOption.isDefined) { //building non-HQ
+            //it should first has link to it
+        if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
+          return Some("No active flight route operated by your airline flying to this city yet")
+        }
+        
+        val existingBaseCount = airline.getBases().length
+        val allowedBaseCount = airline.airlineGrade.getBaseLimit
+        if (existingBaseCount >= allowedBaseCount) {
+          return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
+        } 
+      }  
     }
+    
 
     
     return None
