@@ -76,7 +76,7 @@ object AirlineGenerator extends App {
 //        Random.shuffle(topToAirports).take(linkCount)
 //      }
     val airplaneModelsByRange = airplaneModels.sortBy { _.range }
-    val airplaneModelsByCapacity = airplaneModels.sortBy { _.capacity } (Ordering[Int].reverse)
+    val airplaneModelsByCapacity = airplaneModels.sortBy { _.capacity }
     val newLinks = ListBuffer[Link]()
     val countryRelationships = CountrySource.getCountryMutualRelationShips()
     pickedToAirports.foreach { toAirport =>
@@ -86,7 +86,7 @@ object AirlineGenerator extends App {
       
       if (targetSeats > 0) {
         val distance = Computation.calculateDistance(fromAirport, toAirport)
-        var pickedModel = airplaneModelsByCapacity.find { model => model.capacity < targetSeats && model.range >= distance}
+        var pickedModel = airplaneModelsByCapacity.find { model => model.capacity * Computation.calculateMaxFrequency(model, distance) >= targetSeats && model.range >= distance} //find smallest model that can cover all demand
         
         if (pickedModel.isEmpty) { //find the one with lowest range that can cover it
           pickedModel = airplaneModelsByRange.find { model => model.range >= distance}
