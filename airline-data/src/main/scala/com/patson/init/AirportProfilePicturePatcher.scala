@@ -3,44 +3,52 @@ package com.patson.init
 import com.patson.data.AirportSource
 
 object AirportProfilePicturePatcher {
+  val cityPreferredWords = List("montage", "montaje", "downtown", "skyline")  
+  val airportPreferredWords = List("concourse", "terminal")
   
   def patchProfilePictures() = {
     AirportSource.loadAllAirports().sortBy(_.power).reverse.foreach { airport =>
       var cityUrl : Option[String] = None
       if (!"".equals(airport.city)) {
-        cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode)
+        cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode, cityPreferredWords)
         if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryOtherPicture(airport.city + " city," + airport.countryCode)
+          cityUrl = WikiUtil.queryOtherPicture(airport.city + " city," + airport.countryCode, cityPreferredWords)
         }
         if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + airport.countryCode)
+          cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + airport.countryCode, cityPreferredWords)
         }
         if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryOtherPicture(airport.city + "," + airport.countryCode)
+          cityUrl = WikiUtil.queryOtherPicture(airport.city + "," + airport.countryCode, cityPreferredWords)
         }
         if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city)
+          cityUrl = WikiUtil.queryProfilePicture(airport.city, cityPreferredWords)
         }
         if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryOtherPicture(airport.city)
+          cityUrl = WikiUtil.queryOtherPicture(airport.city, cityPreferredWords)
         }
         
         //no preferred pic, just get profile one
         if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode, matchPreferredWords = false)
+          cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode, List.empty)
         }
         if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + airport.countryCode, matchPreferredWords = false)
+          cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + airport.countryCode, List.empty)
         }
         if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city, matchPreferredWords = false)
+          cityUrl = WikiUtil.queryProfilePicture(airport.city, List.empty)
         }
         
         println(airport.city + " => " + cityUrl)
       }
       
       var airportUrl : Option[String] = None
-      airportUrl = WikiUtil.queryProfilePicture(airport.name, matchPreferredWords = false)
+      airportUrl = WikiUtil.queryProfilePicture(airport.name, List.empty)
+      if (airportUrl.isEmpty) {
+        airportUrl = WikiUtil.queryOtherPicture(airport.name, airportPreferredWords)
+      }
+//      if (airportUrl.isEmpty) {
+//        airportUrl = WikiUtil.queryProfilePicture(airport.name, List.empty)
+//      }
       println(airport.city + " (airport) => " + airportUrl)
       
       if (cityUrl.isDefined || airportUrl.isDefined) {

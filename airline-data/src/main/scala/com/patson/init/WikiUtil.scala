@@ -7,9 +7,7 @@ import play.api.libs.json.JsArray
 import java.util.NoSuchElementException
 
 object WikiUtil {
-  val preferredWords = List("montage", "downtown", "skyline")
-  
-  def queryProfilePicture(searchItem : String, matchPreferredWords : Boolean = true) : Option[String] = {
+  def queryProfilePicture(searchItem : String, preferredWords : List[String]) : Option[String] = {
     try {
       queryTitle(searchItem) match { 
         case Some(title) => {
@@ -20,12 +18,11 @@ object WikiUtil {
           
           var isMatch = false
           preferredWords.foreach{ preferredWord =>
-            if (pageImage.toLowerCase().contains(preferredWord) && pageImage.toLowerCase().endsWith(".jpg")) {
+            if (pageImage.toLowerCase().contains(preferredWord)) {
               isMatch = true
             }
           }
-          
-          if (!matchPreferredWords || isMatch) {
+          if (isValidExtension(pageImage) && (preferredWords.isEmpty || isMatch)) {
             val imageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles=Image:" + pageImage + "&format=json&prop=imageinfo&iiprop=url&utf8="
             val pageImageUrl = Json.parse(get(imageUrl)).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("imageinfo").asInstanceOf[JsArray].apply(0).get.asInstanceOf[JsObject].value("url").as[String]
             Some(pageImageUrl)
@@ -43,7 +40,7 @@ object WikiUtil {
     }
   }
   
-  def queryOtherPicture(searchItem : String) : Option[String] = {
+  def queryOtherPicture(searchItem : String, preferredWords : List[String]) : Option[String] = {
     try {
       queryTitle(searchItem) match { 
         case Some(title) =>
@@ -52,19 +49,10 @@ object WikiUtil {
           //println(url)
           val responseString = get(url)
           val images : JsArray = Json.parse(responseString).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("images").asInstanceOf[JsArray]
-          val preferredImage = images.\\("title").find  { value =>
-            var isMatch = false
-            preferredWords.foreach{ preferredWord =>
-              if (value.as[String].toLowerCase().contains(preferredWord) && value.as[String].toLowerCase().endsWith(".jpg")) {
-                isMatch = true
-              }
-            }
-            isMatch
-          }
           
+          val imageTitles = images.\\("title").map(_.as[String])
           
-          
-          var imageTitle = preferredImage.getOrElse(return None).as[String]
+          var imageTitle = findMatchingTitle(imageTitles, preferredWords).getOrElse(return None)
           if (imageTitle.startsWith("File:")) {
             imageTitle = imageTitle.substring("File:".length())
           }
@@ -83,6 +71,21 @@ object WikiUtil {
           None 
         }
     }
+  }
+  
+  def findMatchingTitle(titles : Seq[String], preferredWords : List[String]) : Option[String] = {
+    preferredWords.foreach { preferredWord =>
+      titles.foreach { title =>  
+        if (title.toLowerCase().contains(preferredWord) && isValidExtension(title)) {
+           return Some(title) 
+        }
+      }
+    }
+    return None
+  }
+  
+  def isValidExtension(title : String) = {
+    title.toLowerCase().endsWith(".png") || title.toLowerCase().endsWith(".jpg")
   }
   
 
