@@ -606,6 +606,7 @@ object Meta {
       "crew_cost LONG," +
       "inflight_cost LONG," +
       "maintenance_cost LONG," +
+      "depreciation LONG," +
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +
