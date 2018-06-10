@@ -127,7 +127,7 @@ object Computation {
     
     val airportSizeMultiplier = Math.pow(1.5, minAirportSize) 
     val distance = calculateDistance(from, to)
-    val distanceMultiplier = distance.toDouble / 1000
+    val distanceMultiplier = distance.toDouble / 200
     val internationalMultiplier = if (from.countryCode == to.countryCode) 1 else 3
     
     (baseCost * airportSizeMultiplier * distanceMultiplier * internationalMultiplier).toInt 
