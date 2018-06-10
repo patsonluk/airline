@@ -7,17 +7,75 @@ import play.api.libs.json.JsArray
 import java.util.NoSuchElementException
 
 object WikiUtil {
-  def queryProfilePicture(searchItem : String) : Option[String] = {
+  val preferredWords = List("montage", "downtown", "skyline")
+  
+  def queryProfilePicture(searchItem : String, matchPreferredWords : Boolean = true) : Option[String] = {
     try {
-      queryTitle(searchItem).map { title =>
+      queryTitle(searchItem) match { 
+        case Some(title) => {
           val url = "https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=name&titles=" + URLEncoder.encode(title, "UTF-8") + "&utf8="
           //println(url)
           val responseString = get(url)
           val pageImage = Json.parse(responseString).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("pageimage").as[String]
-          //println(pageImage)
-          val imageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles=Image:" + pageImage + "&format=json&prop=imageinfo&iiprop=url&utf8="
+          
+          var isMatch = false
+          preferredWords.foreach{ preferredWord =>
+            if (pageImage.toLowerCase().contains(preferredWord) && pageImage.toLowerCase().endsWith(".jpg")) {
+              isMatch = true
+            }
+          }
+          
+          if (!matchPreferredWords || isMatch) {
+            val imageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles=Image:" + pageImage + "&format=json&prop=imageinfo&iiprop=url&utf8="
+            val pageImageUrl = Json.parse(get(imageUrl)).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("imageinfo").asInstanceOf[JsArray].apply(0).get.asInstanceOf[JsObject].value("url").as[String]
+            Some(pageImageUrl)
+          } else {
+            None
+          }
+        }
+        case None => None
+      }
+    } catch {
+        case e:NoSuchElementException => {
+          //e.printStackTrace()
+          None 
+        }
+    }
+  }
+  
+  def queryOtherPicture(searchItem : String) : Option[String] = {
+    try {
+      queryTitle(searchItem) match { 
+        case Some(title) =>
+        
+          val url = "https://en.wikipedia.org/w/api.php?action=query&titles=" + URLEncoder.encode(title, "UTF-8") + "&prop=images&format=json&imlimit=300&utf8="
+          //println(url)
+          val responseString = get(url)
+          val images : JsArray = Json.parse(responseString).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("images").asInstanceOf[JsArray]
+          val preferredImage = images.\\("title").find  { value =>
+            var isMatch = false
+            preferredWords.foreach{ preferredWord =>
+              if (value.as[String].toLowerCase().contains(preferredWord) && value.as[String].toLowerCase().endsWith(".jpg")) {
+                isMatch = true
+              }
+            }
+            isMatch
+          }
+          
+          
+          
+          var imageTitle = preferredImage.getOrElse(return None).as[String]
+          if (imageTitle.startsWith("File:")) {
+            imageTitle = imageTitle.substring("File:".length())
+          }
+          
+          imageTitle = URLEncoder.encode(imageTitle, "UTF-8")
+           
+          val imageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles=Image:" + imageTitle + "&format=json&prop=imageinfo&iiprop=url&utf8="
+          //println(imageUrl)
           val pageImageUrl = Json.parse(get(imageUrl)).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("imageinfo").asInstanceOf[JsArray].apply(0).get.asInstanceOf[JsObject].value("url").as[String]
-          pageImageUrl
+          return Some(pageImageUrl)
+        case None => None
       }
     } catch {
         case e:NoSuchElementException => {

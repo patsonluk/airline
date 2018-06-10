@@ -8,19 +8,39 @@ object AirportProfilePicturePatcher {
     AirportSource.loadAllAirports().sortBy(_.power).reverse.foreach { airport =>
       var cityUrl : Option[String] = None
       if (!"".equals(airport.city)) {
-        cityUrl = getMontageUrl(airport.city + " city," + airport.countryCode)
+        cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode)
         if (cityUrl.isEmpty) {
-          cityUrl = getMontageUrl(airport.city + "," + airport.countryCode)
+          cityUrl = WikiUtil.queryOtherPicture(airport.city + " city," + airport.countryCode)
         }
         if (cityUrl.isEmpty) {
-          cityUrl = getMontageUrl(airport.city)
+          cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + airport.countryCode)
+        }
+        if (cityUrl.isEmpty) {
+          cityUrl = WikiUtil.queryOtherPicture(airport.city + "," + airport.countryCode)
+        }
+        if (cityUrl.isEmpty) {
+          cityUrl = WikiUtil.queryProfilePicture(airport.city)
+        }
+        if (cityUrl.isEmpty) {
+          cityUrl = WikiUtil.queryOtherPicture(airport.city)
+        }
+        
+        //no preferred pic, just get profile one
+        if (cityUrl.isEmpty) {
+          cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode, matchPreferredWords = false)
+        }
+        if (cityUrl.isEmpty) {
+          cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + airport.countryCode, matchPreferredWords = false)
+        }
+        if (cityUrl.isEmpty) {
+          cityUrl = WikiUtil.queryProfilePicture(airport.city, matchPreferredWords = false)
         }
         
         println(airport.city + " => " + cityUrl)
       }
       
       var airportUrl : Option[String] = None
-      airportUrl = getMontageUrl(airport.name)
+      airportUrl = WikiUtil.queryProfilePicture(airport.name, matchPreferredWords = false)
       println(airport.city + " (airport) => " + airportUrl)
       
       if (cityUrl.isDefined || airportUrl.isDefined) {
@@ -33,13 +53,5 @@ object AirportProfilePicturePatcher {
         AirportSource.updateAirportImages(List(airport))              
       }
     }
-  }
-  
-  def getMontageUrl(queryValue : String) : Option[String] = {
-//    WikiUtil.queryProfilePicture(queryValue) match {
-//      case Some(profileUrl) => if (profileUrl.toLowerCase.contains("montage")) Some(profileUrl) else None
-//      case None => None
-//    }
-    WikiUtil.queryProfilePicture(queryValue)
   }
 }
