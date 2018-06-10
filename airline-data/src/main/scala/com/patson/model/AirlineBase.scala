@@ -1,7 +1,7 @@
 package com.patson.model
 
 case class AirlineBase(airline : Airline, airport : Airport, countryCode : String, scale : Int, foundedCycle : Int, headquarter : Boolean = false) {
-  val getAirportCredits = scale * 50  * (if (headquarter) 2 else 1) 
+  val getAirportCredits = scale * 75  * (if (headquarter) 2 else 1) 
   def getUpgradeCost(scale : Int) : Long = {
     val baseCost = (200000 + airport.income * 30) * airport.size //for a airport size 7, income 50k city, it will be 12 million base
     
