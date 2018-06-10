@@ -190,9 +190,8 @@
 				    			<input type="hidden" id="planLinkToAirportId"/>
 					    		<div class="table-row">
 					    			<div class="label"><h5>From:</h5></div>
-				    				<div class="value" id="planLinkFromAirportName">
-				    					<span class="text-value"></span>
-				    					<span class="flag"></span>
+				    				<div class="value">
+				    					<span id="planLinkFromAirportName"></span>
 				    					<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/globe--pencil.png")' class='button' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
 				    					<div class="value"><select id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 				    				</div>
