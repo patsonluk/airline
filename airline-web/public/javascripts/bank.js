@@ -57,12 +57,12 @@ function updateNewLoanOptionsTable(loanOptions) {
 	optionsTable.children("div.table-row").remove()
 	
 	$.each(loanOptions, function(index, loanOption) {
-		var monthlyPayment = Math.ceil((loanOption.borrowedAmount + loanOption.interest) / loanOption.loanTerm)
+		var weeklyPayment = Math.ceil((loanOption.borrowedAmount + loanOption.interest) / loanOption.loanTerm)
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.borrowedAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.interest) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.remainingAmount) + "</div>")
-		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(monthlyPayment) + " for " + loanOption.loanTerm + " months</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(weeklyPayment) + " for " + loanOption.loanTerm + " weeks</div>")
 		row.append("<div class='cell'><img src='assets/images/icons/money--plus.png' title='Borrow with this Term' class='button' onclick='takeoutLoan(" + loanOption.borrowedAmount + "," + loanOption.loanTerm + ")'/></div>")
 		
 		
@@ -125,13 +125,13 @@ function updateOutstandingLoansTable() {
 	loansTable.children("div.table-row").remove()
 	
 	$.each(loadedLoans, function(index, loan) {
-		var monthlyPayment = Math.ceil((loan.borrowedAmount + loan.interest) / loan.loanTerm)
+		var weeklyPayment = Math.ceil((loan.borrowedAmount + loan.interest) / loan.loanTerm)
+		var remainingTerm = Math.ceil(loan.remainingAmount / weeklyPayment)
 		var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell'>" + loan.creationCycle + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.borrowedAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.interest) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.remainingAmount) + "</div>")
-		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(monthlyPayment) + " for " + loan.loanTerm + " months</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(weeklyPayment) + " remaining " + remainingTerm + " week(s)</div>")
 		if (loan.remainingAmount <= activeAirline.balance) {
 			row.append("<div class='cell'><img src='assets/images/icons/money--minus.png' title='Pay off early' class='button' onclick='repayLoan(" + loan.id + ")'/></div>")
 		} else {
