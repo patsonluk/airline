@@ -262,6 +262,8 @@ object Meta {
       
     createAirlineTransaction(connection)  
     createIncome(connection)
+    createAirportImage(connection)
+    createLoan(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -667,6 +669,25 @@ object Meta {
       "airport_url  VARCHAR(1024), " +
       "PRIMARY KEY (airport)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+  
+   def createLoan(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOAN_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + LOAN_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airline INTEGER, " +
+      "borrowed_amount LONG, " +
+      "interest LONG, " +
+      "remaining_amount LONG," +
+      "creation_cycle INTEGER," +
+      "loan_term LONG," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

@@ -30,6 +30,7 @@
     <script src="@routes.Assets.versioned("javascripts/country.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/office.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/bank.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
@@ -75,6 +76,7 @@
 			  <li class="button" id="countryCanvasTab" onclick="showCountryView();"><span>Country</span></li>
 			  <li class="button" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
 			  <li class="button" id="officeCanvasTab" onclick="showOfficeCanvas();"><span>Office</span></li>
+			  <li class="button" id="bankCanvasTab" onclick="showBankCanvas();"><span>Bank</span></li>
 			  <li class="button" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
 			</ul>
 		</div>
@@ -856,6 +858,50 @@
 <!-- 		    	end right section -->
   			</div>
 <!--   			end office canvas -->
+
+			<div id="bankCanvas" style="height: 100%; display: none;">
+				<div style="width : 70%; float: left;">
+				<!--  new loan -->
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Take out new Loan</h4>
+						<div class="table" style="width: 100%">
+				   			<div class="table-row">
+				   				<div class="label"><h5>Available Loan:</h5></div>
+				   				<div class="value" id="newLoanMaxAmount"></div>
+				   			</div>
+			   				<div class="table-row">
+				   				<div class="label"><h5>Borrow Amount:</h5></div>
+				   				<div class="value"><input type="text" id="newLoanAmount" oninput="loadLoanOptions($(this).val())"/></div>
+				   			</div>
+				   		</div>
+				   		<div class="table data" id="newLoanOptionsTable" style="height: 100%; width: 100%">
+		 	  				<div class="table-header">
+		 	  					<div class="cell" style="width: 20%" align="right">Principle Amount</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Interest</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Total Payment</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Monthly Payment</div>
+		 	  					<div class="cell" style="width: 20%"></div>
+							</div>
+		   				</div>
+					</div>
+				</div>
+				<div style="width : 70%; float: left;">
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Outstanding Loans</h4>
+						<div class="table data" id="outstandingLoansTable" style="height: 100%; width: 100%">
+	 	  				<div class="table-header">
+	 	  					<div class="cell" style="width: 10%">Loan Borrow Cycle</div>
+	 	  					<div class="cell" style="width: 20%" align="right">Principle Amount</div>
+	 	  					<div class="cell" style="width: 20%" align="right">Interest</div>
+	 	  					<div class="cell" style="width: 20%" align="right">Remaining Payment</div>
+	 	  					<div class="cell" style="width: 20%" align="right">Monthly Payment</div>
+	 	  					<div class="cell" style="width: 10%"></div>
+						</div>
+         			</div>
+         		</div>		
+	<!--          end loan list -->
+  			</div>
+<!--   			end bank canvas -->
 			<div id="rankingCanvas" style="height: 100%; display: none;">
   				<div style="width : 50%; float: left;"> 
 	  	  			<div class="table section" id="passengerRank" style="width: 95%">
