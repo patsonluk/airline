@@ -703,7 +703,7 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 			$("#linkHistoryOtherAirlinePassengers").text(this.otherAirlinePassengers)
 			infowindow = new google.maps.InfoWindow({
 	             content: $("#linkHistoryPopup").html(),
-	             maxWidth : 300});
+	             maxWidth : 600});
 			
 			infowindow.setPosition(event.latLng);
 			infowindow.open(map);
@@ -736,7 +736,7 @@ function showLinkHistoryPaths(state) {
 			} else if (totalPassengers > 2000) {
 				historyPath.setOptions({strokeWeight : 4})
 			} else if (totalPassengers < 100) {
-				var newOpacity = 0.1 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.1)
+				var newOpacity = 0.2 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.2)
 				if (!historyPath.watched) {
 					historyPath.setOptions({strokeOpacity : newOpacity})
 				}
@@ -753,6 +753,7 @@ function showLinkHistoryPaths(state) {
 		}
 	})
 }
+
 
 
 function planToAirport(toAirportId, toAirportName) {

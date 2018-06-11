@@ -87,6 +87,21 @@ class Application extends Controller {
       airportObject
     }
   }
+ 
+  object AirportSimpleWrites extends Writes[Airport] {
+    def writes(airport: Airport): JsValue = {
+      JsObject(List(
+      "id" -> JsNumber(airport.id),
+      "name" -> JsString(airport.name),
+      "city" -> JsString(airport.city),
+      "latitude" -> JsNumber(airport.latitude),
+      "longitude" -> JsNumber(airport.longitude),
+      "countryCode" -> JsString(airport.countryCode),
+      "zone" -> JsString(airport.zone)))
+      
+    }
+  }
+ 
   implicit object CityWrites extends Writes[City] {
     def writes(city: City): JsValue = {
       val averageIncome = city.income
@@ -314,6 +329,13 @@ class Application extends Controller {
       LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
     }
     Ok(Json.toJson(competitorLinkConsumptions.map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq))
+  }
+  
+  def getLinkConsumptionsByAirport(airportId : Int) = Action {
+    val passengersByRemoteAirport : Map[Airport, Int] = HistoryUtil.loadConsumptionByAirport(airportId)
+    Ok(Json.toJson(passengersByRemoteAirport.map {
+      case (remoteAirport, passengers) => Json.obj("remoteAirport" -> Json.toJson(remoteAirport)(AirportSimpleWrites), ("passengers" -> JsNumber(passengers)))
+    }))
   }
   
   def getAirportProjects(airportId : Int) = Action {

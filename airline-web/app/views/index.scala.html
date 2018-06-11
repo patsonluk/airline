@@ -905,6 +905,7 @@
     
     <!-- popups and overlay buttons below. Hidden by default -->
 	<div id="hideLinkHistoryButton" class="googleMapButton button" onclick="hideLinkHistoryView()" style="display: none;" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-return.png")' style="vertical-align: middle; padding-right: 5px"/>Exit route history view</div>
+	<div id="hideAirportLinksButton" class="googleMapButton button" onclick="hideAirportLinksView()" style="display: none;" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-return.png")' style="vertical-align: middle; padding-right: 5px"/>Exit airport flight map</div>
     <div style="display: none; width: 100%;" id="airportPopup">
     	<input type="hidden" id="airportPopupId"></input>
     	<div>
@@ -966,6 +967,7 @@
 		</div>
 		<div class="button" id="planToAirportButton">Plan Flight</div>
 		<div class="button" id="viewAirportButton" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
+		<div class="button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
     </div>
     
      <div style="display: none; width: 100%;" id="cityPopup">
@@ -992,7 +994,7 @@
 		<div id="cityPie" style="height: 200px; width: 350px;"></div>
     </div>
     
-    <div style="display: none; width: 100%;" id="linkHistoryPopup">
+    <div style="display: none; width: 400px;" id="linkHistoryPopup">
     	<input type="hidden" id="linkHistoryPopupId"></input>
     	<div class="table" style="width: 100%">
    			<div class="table-row">
@@ -1010,6 +1012,24 @@
    			<div class="table-row">
    				<div class="label"><h5>Passengers of other airline:</h5></div>
    				<div class="value" id="linkHistoryOtherAirlinePassengers"></div>
+   			</div>
+		</div>
+    </div>
+    
+    <div style="display: none; width: 100%;" id="airportLinkPopup">
+    	<input type="hidden" id="airportLinkPopupId"></input>
+    	<div class="table" style="width: 100%">
+   			<div class="table-row">
+   				<div class="label"><h5>From :</h5></div>
+   				<div class="value" id="airportLinkPopupFrom"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>To:</h5></div>
+   				<div class="value" id="airportLinkPopupTo"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Passengers:</h5></div>
+   				<div class="value" id="airportLinkPopupPassengers"></div>
    			</div>
 		</div>
     </div>
