@@ -94,7 +94,7 @@ class AirlineApplication extends Controller {
     
     val cost = base.getUpgradeCost(toScale)
     if (cost > airline.getBalance) {
-      return Some("Not enough cash to build the base")
+      return Some("Not enough cash to build/upgrade the base")
     }
     
     if (toScale == 1) { //building something new
