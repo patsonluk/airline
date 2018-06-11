@@ -948,10 +948,15 @@ function updateAirportMarkers(airline) { //set different markers for head quarte
 //airport links view
 
 function toggleAirportLinksView() {
-	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) { //push here otherwise it's not centered
-		map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideAirportLinksButton")[0]);
+	clearAirportLinkPaths() //clear previous ones if exist
+	deselectLink()
+	
+	//push here otherwise it's not centered
+	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
+		map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Airport Flight Map', 'hideAirportLinksView()', 'hideAirportLinksButton')[0]);
 	}
-	$("#hideAirportLinksButton").fadeIn(200)
+	
+	
 	
 	toggleAirportLinks(activeAirport)
 }
@@ -960,6 +965,7 @@ function toggleAirportLinksView() {
 function toggleAirportLinks(airport) {
 	clearAllPaths()
 	activeAirportPopupInfoWindow.close(map)
+	activeAirportPopupInfoWindow = undefined
 	$.ajax({
 		type: 'GET',
 		url: "airports/" + airport.id + "/link-consumptions",
@@ -1068,10 +1074,11 @@ function hideAirportLinksView() {
 	printConsole('')
 	clearAirportLinkPaths()
 	updateLinksInfo() //redraw all flight paths
-	activeAirportPopupInfoWindow.open(map) //reopen the airport dialog
-	
+		
 //	$("#linkHistoryPanel").fadeOut(200);
-	$("#hideAirportLinksButton").fadeOut(200);
+//	$("#hideAirportLinksButton").hide()
+	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+	
 //	map.controls[google.maps.ControlPosition.TOP_CENTER].clear();
 //	map.controls[google.maps.ControlPosition.RIGHT_TOP].clear();
 	

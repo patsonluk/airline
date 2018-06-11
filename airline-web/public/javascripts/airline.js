@@ -420,7 +420,7 @@ function deselectLink() {
 		unhighlightLink(selectedLink)
 		selectedLink = undefined
 	}
-	
+	removeTempPath()
 	$("#sidePanel").fadeOut(200)
 }
 
@@ -1145,9 +1145,11 @@ function cancelPlanLink() {
 }
 
 function removeTempPath() {
-	unhighlightPath(tempPath.path)
-	clearPathEntry(tempPath)
-	tempPath = undefined
+	if (tempPath) {
+		unhighlightPath(tempPath.path)
+		clearPathEntry(tempPath)
+		tempPath = undefined
+	}
 }
 
 
@@ -1395,10 +1397,12 @@ function toggleLinkHistoryView() {
 		showWorldMap()
 	}
 	
-	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) { //push here otherwise it's not centered
-		map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
+	 //push here otherwise it's not centered
+	$("#hideLinkHistoryButton").show()
+	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
+		map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Route Passenger Map', 'hideLinkHistoryView()', 'hideLinkHistoryButton')[0]);
 	}
-	$("#hideLinkHistoryButton").fadeIn(200)
+	
 	
 //	var linkControlDiv = document.createElement('div');
 //	linkControlDiv.id = 'linkControlDiv';
@@ -1417,11 +1421,7 @@ function hideLinkHistoryView() {
 	historyPaths = {}
 	updateLinksInfo() //redraw all flight paths
 	
-//	$("#linkHistoryPanel").fadeOut(200);
-	$("#hideLinkHistoryButton").fadeOut(200);
-//	map.controls[google.maps.ControlPosition.TOP_CENTER].clear();
-//	map.controls[google.maps.ControlPosition.RIGHT_TOP].clear();
-	
+ 	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
 }
 
 function updateLoadedLinks(links) {

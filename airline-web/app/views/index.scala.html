@@ -31,6 +31,7 @@
     <script src="@routes.Assets.versioned("javascripts/office.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
   </head>
   <body>
@@ -904,8 +905,6 @@
     </div>
     
     <!-- popups and overlay buttons below. Hidden by default -->
-	<div id="hideLinkHistoryButton" class="googleMapButton button" onclick="hideLinkHistoryView()" style="display: none;" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-return.png")' style="vertical-align: middle; padding-right: 5px"/>Exit route history view</div>
-	<div id="hideAirportLinksButton" class="googleMapButton button" onclick="hideAirportLinksView()" style="display: none;" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-return.png")' style="vertical-align: middle; padding-right: 5px"/>Exit airport flight map</div>
     <div style="display: none; width: 100%;" id="airportPopup">
     	<input type="hidden" id="airportPopupId"></input>
     	<div>
