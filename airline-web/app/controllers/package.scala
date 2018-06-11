@@ -166,7 +166,7 @@ package object controllers {
   
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {
-      val airport = Airport.fromId((json \ "airportId").as[Int])
+      val airport = AirportSource.loadAirportById((json \ "airportId").as[Int]).get
       val airline = Airline.fromId((json \ "airlineId").as[Int])
       val scale = (json \ "scale").as[Int]
       val headquarter = (json \ "headquarter").as[Boolean]
@@ -182,6 +182,8 @@ package object controllers {
       "airlineId" -> JsNumber(base.airline.id),
       "airlineName" -> JsString(base.airline.name),
       "scale" -> JsNumber(base.scale),
+      "upkeep" -> JsNumber(base.getUpkeep),
+      "upgradeCost" -> JsNumber(base.getUpgradeCost(base.scale + 1)),
       "headquarter" -> JsBoolean(base.headquarter),
       "foundedCycle" -> JsNumber(base.foundedCycle)))
   }
@@ -202,6 +204,7 @@ package object controllers {
         "linksCrewCost" -> JsNumber(airlineIncome.links.crewCost),
         "linksInflightCost" -> JsNumber(airlineIncome.links.inflightCost),
         "linksMaintenanceCost" -> JsNumber(airlineIncome.links.maintenanceCost),
+        "linksDepreciation" -> JsNumber(airlineIncome.links.depreciation),
         "transactionsProfit" -> JsNumber(airlineIncome.transactions.profit),
         "transactionsRevenue" -> JsNumber(airlineIncome.transactions.revenue),
         "transactionsExpense" -> JsNumber(airlineIncome.transactions.expense),

@@ -1,5 +1,6 @@
 var loadedCountries = []
 var loadedCountriesByCode = {}
+var zoneById = { "AS" : "Asia", "NA" : "North America", "SA" : "South America", "AF" : "Africa", "OC" : "Oceania", "EU" : "Europe" }
 
 function showCountryView() {
 	setActiveDiv($("#countryCanvas"))
@@ -95,7 +96,7 @@ function loadCountryDetails(countryId) {
 	    success: function(country) {
 	    	$("#countryDetailsName").text(country.name)
 	    	$("#countryDetailsIncomeLevel").text(country.incomeLevel)
-	    	$("#countryDetailsOpenness").text(country.openness)
+	    	$("#countryDetailsOpenness").html(getOpennessSpan(country.openness))
 	    	
 	    	var loadedCountry = loadedCountries.filter(function(obj) {
 	    		  return obj.countryCode == countryId;

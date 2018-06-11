@@ -430,7 +430,7 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 	})
 	var ref = container.insertFusionCharts({
 		type: 'pie2d',
-	    width: '300px',
+	    width: '100%',
 	    height: '160px',
 	    dataFormat: 'json',
 		dataSource: {

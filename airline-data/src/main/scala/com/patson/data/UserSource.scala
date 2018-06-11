@@ -17,9 +17,10 @@ object UserSource {
   def loadUserSecret(userName : String) : Option[UserSecret] = {
     val connection = Meta.getConnection() 
     try {  
-      var queryString = "SELECT * FROM " + USER_SECRET_TABLE
+      var queryString = "SELECT * FROM " + USER_SECRET_TABLE + " WHERE user_name = ?"
       
       val preparedStatement = connection.prepareStatement(queryString)
+      preparedStatement.setString(1, userName)
       val resultSet = preparedStatement.executeQuery()
       
       val userSecret = if (resultSet.next()) { 

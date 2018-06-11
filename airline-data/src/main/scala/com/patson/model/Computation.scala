@@ -81,6 +81,17 @@ object Computation {
       }
     }
   }
+  
+  import FlightCategory._
+  def getFlightCategory(fromAirport : Airport, toAirport : Airport) : FlightCategory.Value = {
+    if (fromAirport.countryCode == toAirport.countryCode) {
+      DOMESTIC
+    } else if (fromAirport.zone == toAirport.zone) {
+      REGIONAL
+    } else {
+      INTERCONTINENTAL
+    }
+  }
 
   /**
    * Returns a normalized income level, should be greater than 0
@@ -92,5 +103,33 @@ object Computation {
     } else {
       incomeLevel
     }
+  }
+  
+  def getAirportCredits(links : List[Link]) : Int = {
+    var credits = 0
+    links.foreach { link =>
+      credits += link.from.size + link.to.size
+    }
+    
+    credits
+  }
+    
+  
+  def getAirportCredits(from : Airport, to : Airport) : Int = {
+    from.size + to.size
+  }
+  
+  def getLinkCreationCost(from : Airport, to : Airport) : Int = {
+    
+    val baseCost = 100000 + (from.income + to.income)
+      
+    val minAirportSize = Math.min(from.size, to.size) //encourage links for smaller airport
+    
+    val airportSizeMultiplier = Math.pow(1.5, minAirportSize) 
+    val distance = calculateDistance(from, to)
+    val distanceMultiplier = distance.toDouble / 5000
+    val internationalMultiplier = if (from.countryCode == to.countryCode) 1 else 3
+    
+    (baseCost * airportSizeMultiplier * distanceMultiplier * internationalMultiplier).toInt 
   }
 }

@@ -364,6 +364,7 @@ object Meta {
       "airport_fees INTEGER, " +
       "inflight_cost INTEGER, " +
       "maintenance_cost INTEGER, " +
+      "depreciation INTEGER, " +
       "revenue INTEGER, " +
       "profit INTEGER, " +
       "from_airport INTEGER, " +
@@ -605,6 +606,7 @@ object Meta {
       "crew_cost LONG," +
       "inflight_cost LONG," +
       "maintenance_cost LONG," +
+      "depreciation LONG," +
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +
@@ -649,6 +651,22 @@ object Meta {
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createAirportImage(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_IMAGE_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_IMAGE_TABLE + "(" +
+      "airport INTEGER, " +
+      "city_url VARCHAR(1024), " +
+      "airport_url  VARCHAR(1024), " +
+      "PRIMARY KEY (airport)," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

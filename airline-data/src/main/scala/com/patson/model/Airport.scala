@@ -18,6 +18,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] val features = ListBuffer[AirportFeature]()
   private[this] var featuresLoaded = false
   
+  private[this] var airportImageUrl : Option[String] = None
+  private[this] var cityImageUrl : Option[String] = None
+  
   private[model] var country : Option[Country] = None
   
   val income = if (population > 0) (power / population).toInt  else 0
@@ -78,6 +81,23 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     }
   }
   
+  def getAirportImageUrl() : Option[String] = {
+    airportImageUrl
+  }
+  
+  def getCityImageUrl() : Option[String] = {
+    cityImageUrl
+  }
+  
+  def setAirportImageUrl(imageUrl : String) = {
+    airportImageUrl = Some(imageUrl)
+  }
+  
+  def setCityImageUrl(imageUrl : String) = {
+    cityImageUrl = Some(imageUrl)
+  }
+  
+  
   def isAirlineAppealsInitialized = airlineAppealsLoaded
   def isSlotAssignmentsInitialized = slotAssignmentsLoaded
   
@@ -101,17 +121,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
    */
   def getMaxSlotAssignment(airline : Airline) : Int = {
     val airlineId = airline.id
-    val reservedSlots = (slots * 0.1).toInt //airport always keep 10% spare
+    val reservedSlots = (slots * 0.2).toInt //airport always keep 20% spare
     val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airlineId)
     
     //find out the country where this airline is from
-    val airlineFromCountry = airline.getCountryCode()
-    
-    if (airlineFromCountry.isEmpty) {
-      return 0
+    val airlineFromCountry = airline.getCountryCode() match {
+      case Some(country) => country
+      case None => return 0
     }
     
-    val countryRelationship = CountrySource.getCountryMutualRelationship(airlineFromCountry.get, countryCode)
+    val countryRelationship = CountrySource.getCountryMutualRelationship(airlineFromCountry, countryCode)
     
     if (countryRelationship <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
       return 0
@@ -122,13 +141,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       if (currentAssignedSlotToThisAirline > 0) {
         currentAssignedSlotToThisAirline
       } else if (availableSlots > 0) { //some hope for new airline...
-        if (airlineFromCountry == countryCode) {
-          1
-        } else if (airline.getReputation() >= Airline.MAX_REPUTATION * 0.4) {
-          1
-        } else {
-          0
-        }
+        getGuaranteedSlots(airlineFromCountry, countryRelationship)
       } else { //sry all full
         0
       } 
@@ -139,23 +152,17 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       //calculate guaranteed slots
       val guaranteedSlots = airlineBaseAtThisAirportOption match {
         case Some(base) if (base.headquarter) => 10 //at least 10 slots for HQ
-        case Some(base) if (!base.headquarter) => 3 //at least 5 slots for base
-        case None => if (countryRelationship < 0) {
-          0
-        } else if (getCountry.openness >= 5) {
-          1
-        } else {
-          0
-        }
+        case Some(base) if (!base.headquarter) => 5 //at least 5 slots for base
+        case None => getGuaranteedSlots(airlineFromCountry, countryRelationship)
       }
       
       
        //if it's not a base, give it 50 slots max
-      //if it's a base (not HQ), give it 20% max
-      //if it's a base (HQ), give it 50% max
+      //if it's a base (not HQ), give it 1/10 max
+      //if it's a base (HQ), give it 1/3 max
       val maxSlotsByBase =
         getAirlineBase(airlineId) match {
-          case Some(base) if (base.headquarter) => slots / 2
+          case Some(base) if (base.headquarter) => slots / 3
           case Some(base) if (!base.headquarter) => slots / 10
           case None => 50  
           
@@ -188,6 +195,18 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
         }
         currentAssignedSlotToThisAirline + increment
       }
+    }
+  }
+  
+  def getGuaranteedSlots(airlineFromCountryCode : String, countryMutualRelationship: Int) : Int = {
+    if (airlineFromCountryCode == this.countryCode) { //always at least 2 slots for home country airline
+      2
+    } else if (countryMutualRelationship < 0) {
+      0
+    } else if (getCountry.openness >= Country.SIXTH_FREEDOM_MIN_OPENNESS) { //only very free country will open up slots for ANY airline
+      1
+    } else {
+      0
     }
   }
   

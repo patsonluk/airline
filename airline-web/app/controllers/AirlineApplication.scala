@@ -22,6 +22,7 @@ import com.patson.model.LinksIncome
 import com.patson.model.TransactionsIncome
 import com.patson.model.OthersIncome
 import com.patson.AirlineSimulation
+import play.api.mvc.Security.AuthenticatedRequest
 
 
 class AirlineApplication extends Controller {
@@ -33,7 +34,8 @@ class AirlineApplication extends Controller {
       "reputation" -> JsNumber(BigDecimal(airline.airlineInfo.reputation).setScale(2, BigDecimal.RoundingMode.HALF_EVEN)),
       "serviceQuality" -> JsNumber(airline.airlineInfo.serviceQuality),
       "serviceFunding" -> JsNumber(airline.airlineInfo.serviceFunding),
-      "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality)))
+      "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
+      "gradeDescription" -> JsString(airline.airlineGrade.description)))
   }
   
   def getAllAirlines() = Authenticated { implicit request =>
@@ -58,11 +60,61 @@ class AirlineApplication extends Controller {
   def getBases(airlineId : Int) = AuthenticatedAirline(airlineId) {
     Ok(Json.toJson(AirlineSource.loadAirlineBasesByAirline(airlineId)))
   }
-  def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
+  def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
-      case Some(base) => Ok(Json.toJson(base))
-      case None => NotFound
+      case Some(base) => {
+        val baseRejection = getBaseRejection(request.user, base, base.scale + 1)
+        if (baseRejection.isDefined) {
+          Ok(Json.toJson(base).asInstanceOf[JsObject] + ("rejection" -> JsString(baseRejection.get)))
+        } else {
+          Ok(Json.toJson(base))          
+        }
+      }
+      case None => { //create a base of scale 0 to indicate it's an non-existent base
+        AirportSource.loadAirportById(airportId) match {
+          case Some(airport) => {
+            val emptyBase = AirlineBase(airline = request.user, airport = airport, countryCode = airport.countryCode, scale = 0, foundedCycle = 0, headquarter = false)
+            val baseRejection = getBaseRejection(request.user, emptyBase, 1)
+            var emptyBaseJson = Json.toJson(emptyBase).asInstanceOf[JsObject]
+            baseRejection.foreach { rejection =>
+              emptyBaseJson = emptyBaseJson. + ("rejection" -> JsString(rejection))
+            }
+              
+            Ok(emptyBaseJson)
+          }
+          case None => NotFound
+        }
+      }
     }
+  }
+  
+  def getBaseRejection(airline : Airline, base : AirlineBase, toScale : Int) : Option[String] = {
+    val airport : Airport = base.airport
+    val airlineCountryCodeOption = airline.getCountryCode()
+    
+    val cost = base.getUpgradeCost(toScale)
+    if (cost > airline.getBalance) {
+      return Some("Not enough cash to build the base")
+    }
+    
+    if (toScale == 1) { //building something new
+      if (airlineCountryCodeOption.isDefined) { //building non-HQ
+            //it should first has link to it
+        if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
+          return Some("No active flight route operated by your airline flying to this city yet")
+        }
+        
+        val existingBaseCount = airline.getBases().length
+        val allowedBaseCount = airline.airlineGrade.getBaseLimit
+        if (existingBaseCount >= allowedBaseCount) {
+          return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
+        } 
+      }  
+    }
+    
+
+    
+    return None
   }
   def deleteBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
@@ -78,46 +130,60 @@ class AirlineApplication extends Controller {
   def putBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
       val inputBase = request.body.asInstanceOf[AnyContentAsJson].json.as[AirlineBase]
-      //TODO validations
-      if (inputBase.headquarter) {
-         AirlineSource.loadAirlineHeadquarter(airlineId) match {
-           case Some(headquarter) =>
-           if (headquarter.airport.id != airportId) {
-             BadRequest("Not allowed to change headquarter for now")
-           } else {
-             val updateBase = headquarter.copy(scale = inputBase.scale)
-             AirlineSource.saveAirlineBase(updateBase)
-             Created(Json.toJson(updateBase))
-           }
-           case None => //ok to add then
-             AirportSource.loadAirportById(inputBase.airport.id, true).fold {
-               BadRequest("airport id " +  inputBase.airport.id + " not found!")
-             } { airport =>//TODO for now. Maybe update to Ad event later on
-               val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
-               AirlineSource.saveAirlineBase(newBase)
-               if (airport.getAirlineAwareness(airlineId) < 10) { //update to 10 for hq
-                 airport.setAirlineAwareness(airlineId, 10)
-                 AirportSource.updateAirlineAppeal(List(airport))
-               }
-               Created(Json.toJson(newBase))
-             }
-          }
+      //todo validate the user is the same
+      val baseRejection = getBaseRejection(request.user, inputBase, inputBase.scale)
+      val cost = inputBase.getUpgradeCost(inputBase.scale)
+      
+      if (baseRejection.isDefined) {
+        BadRequest("base request rejected: " + baseRejection.get)
       } else {
-        //TODO validations
-        AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
-        case Some(base) => //updating
-          val updateBase = base.copy(scale = inputBase.scale)
-          AirlineSource.saveAirlineBase(updateBase)
-          Created(Json.toJson(updateBase))
-        case None => //ok to add
+        if (inputBase.headquarter) {
+           AirlineSource.loadAirlineHeadquarter(airlineId) match {
+             case Some(headquarter) =>
+             if (headquarter.airport.id != airportId) {
+               BadRequest("Not allowed to change headquarter for now")
+             } else {
+               val updateBase = headquarter.copy(scale = inputBase.scale)
+               AirlineSource.saveAirlineBase(updateBase)
+               AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+               Created(Json.toJson(updateBase))
+             }
+             case None => //ok to add then
+               AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+                 BadRequest("airport id " +  inputBase.airport.id + " not found!")
+               } { airport =>//TODO for now. Maybe update to Ad event later on
+                 val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
+                 AirlineSource.saveAirlineBase(newBase)
+                 if (airport.getAirlineAwareness(airlineId) < 10) { //update to 10 for hq
+                   airport.setAirlineAwareness(airlineId, 10)
+                   AirportSource.updateAirlineAppeal(List(airport))
+                 }
+                 AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                 Created(Json.toJson(newBase))
+               }
+            }
+        } else {
           AirportSource.loadAirportById(inputBase.airport.id, true).fold {
-               BadRequest("airport id " +  inputBase.airport.id + " not found!")
+            BadRequest("airport id " +  inputBase.airport.id + " not found!")
           } { airport =>
-            val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
-            AirlineSource.saveAirlineBase(newBase)
-            Created(Json.toJson(newBase))
+                AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
+                case Some(base) => //updating
+                  val updateBase = base.copy(scale = inputBase.scale)
+                  AirlineSource.saveAirlineBase(updateBase)
+                  AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                  Created(Json.toJson(updateBase))
+                case None => //ok to add
+                  AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+                       BadRequest("airport id " +  inputBase.airport.id + " not found!")
+                  } { airport =>
+                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
+                    AirlineSource.saveAirlineBase(newBase)
+                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                    Created(Json.toJson(newBase))
+                  }
+              }
           }
-        } 
+        }
       }
     } else {
       BadRequest("Cannot insert base")
@@ -137,17 +203,17 @@ class AirlineApplication extends Controller {
      
      val delta = targetQuality - airline.getServiceQuality()
      val prediction =  
-       if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT) {
+       if (delta >= 20) {
          "Increase rapidly"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / 2) {
+       } else if (delta >= 10) {
          "Increase steadily"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / 5) {
+       } else if (delta >= 5) {
          "Increase slightly"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / -5) {
+       } else if (delta >= -5) {
          "Steady"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT / -2) {
+       } else if (delta >= -10) {
          "Decrease slightly"
-       } else if (delta >= AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT * -1) {
+       } else if (delta >= -20) {
          "Decrease steadily"
        } else {
          "Decrease rapidly"

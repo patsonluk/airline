@@ -15,7 +15,7 @@ import com.patson.model.airplane._
 import com.patson.data.LinkSource
  
 class AirportSimulationSpec extends WordSpecLike with Matchers {
-  val sampleConsumption = LinkConsumptionDetails(linkId = 1, price = LinkClassValues.getInstance(0, 0, 0), capacity = LinkClassValues.getInstance(0, 0, 0), soldSeats = LinkClassValues.getInstance(0, 0, 0), quality = 0, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, maintenanceCost = 0, revenue = 0, profit = 0, fromAirportId = 0, toAirportId = 0, airlineId = 0, distance = 0, cycle = 0)
+  val sampleConsumption = LinkConsumptionDetails(linkId = 1, price = LinkClassValues.getInstance(0, 0, 0), capacity = LinkClassValues.getInstance(0, 0, 0), soldSeats = LinkClassValues.getInstance(0, 0, 0), quality = 0, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, maintenanceCost = 0, depreciation = 0, revenue = 0, profit = 0, fromAirportId = 0, toAirportId = 0, airlineId = 0, distance = 0, cycle = 0)
   "getTargetLoyalty".must {
     "get target loyalty based on average quality link consumption if volume is huge".in {
        assert(AirportSimulation.getTargetLoyalty(List.empty, 1000000) == 0) //0

@@ -43,6 +43,7 @@ object AirlineGenerator extends App {
       val newAirline = Airline("Air " + baseAirport.city + " - " + baseAirport.iata)
       newAirline.setBalance(0)
       newAirline.setMaintainenceQuality(100)
+      newAirline.setServiceFunding(100000)
       
       val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 1, 1, true)
       //airlines.put(newAirline, airlineBase)
@@ -76,7 +77,7 @@ object AirlineGenerator extends App {
 //        Random.shuffle(topToAirports).take(linkCount)
 //      }
     val airplaneModelsByRange = airplaneModels.sortBy { _.range }
-    val airplaneModelsByCapacity = airplaneModels.sortBy { _.capacity } (Ordering[Int].reverse)
+    val airplaneModelsByCapacity = airplaneModels.sortBy { _.capacity }
     val newLinks = ListBuffer[Link]()
     val countryRelationships = CountrySource.getCountryMutualRelationShips()
     pickedToAirports.foreach { toAirport =>
@@ -86,7 +87,7 @@ object AirlineGenerator extends App {
       
       if (targetSeats > 0) {
         val distance = Computation.calculateDistance(fromAirport, toAirport)
-        var pickedModel = airplaneModelsByCapacity.find { model => model.capacity < targetSeats && model.range >= distance}
+        var pickedModel = airplaneModelsByCapacity.find { model => model.capacity * Computation.calculateMaxFrequency(model, distance) >= targetSeats && model.range >= distance} //find smallest model that can cover all demand
         
         if (pickedModel.isEmpty) { //find the one with lowest range that can cover it
           pickedModel = airplaneModelsByRange.find { model => model.range >= distance}
@@ -99,8 +100,8 @@ object AirlineGenerator extends App {
             if (frequency == 0) {
               frequency = 1
             }
-            val availableSlots = Math.min(fromAirport.availableSlots, toAirport.availableSlots)
-            frequency = Math.min(frequency, availableSlots)
+//            val availableSlots = Math.min(fromAirport.availableSlots, toAirport.availableSlots) //don't care about slots, as reputation/loyalty is too low might always be 1
+//            frequency = Math.min(frequency, availableSlots)
             
             if (frequency > 0) {
               val airplanes = ListBuffer[Airplane]()

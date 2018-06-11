@@ -39,7 +39,7 @@ function refreshTopBar(airline) {
 	changeColoredElementValue($("#balance"), airline.balance)
 	changeColoredElementValue($("#reputation"), airline.reputation)
 	changeColoredElementValue($("#serviceQuality"), airline.serviceQuality)
-	$("#reputationLevel").text("(" + getAirlineCategory(airline.reputation) + ")")
+	$("#reputationLevel").text("(" + airline.gradeDescription + ")")
 }
 
 function loadAirlines() {
@@ -71,12 +71,12 @@ function selectAirline(airlineId) {
 	updateAllPanels(airlineId)
 }
 
-function buildBase(airportId, isHeadquarter) {
+function buildBase(airportId, isHeadquarter, scale = 1) {
 	var url = "airlines/" + activeAirline.id + "/bases/" + $("#airportPopupId").val() 
 	var baseData = { 
 			"airportId" : parseInt($("#airportPopupId").val()),
 			"airlineId" : activeAirline.id,
-			"scale" : 1,
+			"scale" : scale,
 			"headquarter" : isHeadquarter}
 	$.ajax({
 		type: 'PUT',
@@ -86,6 +86,7 @@ function buildBase(airportId, isHeadquarter) {
 	    dataType: 'json',
 	    success: function() {
 	    	updateAllPanels(activeAirline.id)
+	    	showWorldMap()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -419,7 +420,7 @@ function deselectLink() {
 		unhighlightLink(selectedLink)
 		selectedLink = undefined
 	}
-	
+	removeTempPath()
 	$("#sidePanel").fadeOut(200)
 }
 
@@ -471,10 +472,8 @@ function refreshLinkDetails(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	$("#linkFromAirport").text(getAirportText(link.fromAirportCity, link.fromAirportName))
-	    	$("#linkFromAirport").append("<img src='assets/images/flags/" + link.fromCountryCode + ".png' />")
-	    	$("#linkToAirport").text(getAirportText(link.toAirportCity, link.toAirportName))
-	    	$("#linkToAirport").append("<img src='assets/images/flags/" + link.toCountryCode + ".png' />")
+	    	$("#linkFromAirport").html(getAirportText(link.fromAirportCity, link.fromAirportName) + "&nbsp;" + getCountryFlagImg(link.fromCountryCode))
+	    	$("#linkToAirport").html(getAirportText(link.toAirportCity, link.toAirportName) + "&nbsp;" + getCountryFlagImg(link.toCountryCode))
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
 	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").text(link.computedQuality)
@@ -533,6 +532,7 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkFuelCost").text("-")
 		    	$("#linkCrewCost").text("-")
 		    	$("#linkAirportFees").text("-")
+		    	$("#linkDepreciation").text("-")
 		    	$("#linkOtherCosts").text("-")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
@@ -553,6 +553,7 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkFuelCost").text("$" + commaSeparateNumber(linkConsumption.fuelCost))
 		    	$("#linkCrewCost").text("$" + commaSeparateNumber(linkConsumption.crewCost))
 		    	$("#linkAirportFees").text("$" + commaSeparateNumber(linkConsumption.airportFees))
+		    	$("#linkDepreciation").text("$" + commaSeparateNumber(linkConsumption.depreciation))
 		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost))
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
@@ -702,7 +703,7 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 			$("#linkHistoryOtherAirlinePassengers").text(this.otherAirlinePassengers)
 			infowindow = new google.maps.InfoWindow({
 	             content: $("#linkHistoryPopup").html(),
-	             maxWidth : 300});
+	             maxWidth : 600});
 			
 			infowindow.setPosition(event.latLng);
 			infowindow.open(map);
@@ -735,7 +736,7 @@ function showLinkHistoryPaths(state) {
 			} else if (totalPassengers > 2000) {
 				historyPath.setOptions({strokeWeight : 4})
 			} else if (totalPassengers < 100) {
-				var newOpacity = 0.1 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.1)
+				var newOpacity = 0.2 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.2)
 				if (!historyPath.watched) {
 					historyPath.setOptions({strokeOpacity : newOpacity})
 				}
@@ -752,6 +753,7 @@ function showLinkHistoryPaths(state) {
 		}
 	})
 }
+
 
 
 function planToAirport(toAirportId, toAirportName) {
@@ -805,9 +807,7 @@ var planLinkInfoByModel = {}
 var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
-	$('#planLinkFromAirportName .text-value').text(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName))
-	$('#planLinkFromAirportName .flag').html("<img src='assets/images/flags/" + linkInfo.fromCountryCode + ".png' />")
-	
+	$('#planLinkFromAirportName').html(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.fromCountryCode))
 	if (!linkInfo.existingLink && activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
@@ -828,8 +828,7 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	
-	$('#planLinkToAirportName').text(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName))
-	$('#planLinkToAirportName').append("<img src='assets/images/flags/" + linkInfo.toCountryCode + ".png' />")
+	$('#planLinkToAirportName').html(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.toCountryCode))
 	
 	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
 	
@@ -855,6 +854,18 @@ function updatePlanLinkInfo(linkInfo) {
 		removeTempPath()
 	}
 	
+	$('#planLinkCost').text('$' + commaSeparateNumber(linkInfo.cost))
+
+	if (!linkInfo.existingLink) { //new link
+		//deselect the existing path if any
+		deselectLink()
+		//create a temp path
+		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
+		//set the temp path
+		tempPath = drawFlightPath(tempLink, '#2658d3')
+		highlightPath(tempPath.path)
+	}
+	
 	if (linkInfo.rejection) {
 		$('#linkRejectionRow #linkRejectionReason').text(linkInfo.rejection)
 		$('#linkRejectionRow').show()
@@ -874,20 +885,18 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)
 		$('#planLinkFirstPrice').val(linkInfo.suggestedPrice.first)
 		$('#addLinkButton').show()
+		$('#deleteLinkButton').hide()
 		$('#updateLinkButton').hide()
-		
-		//deselect the existing path if any
-		deselectLink()
-		//create a temp path
-		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
-		//set the temp path
-		tempPath = drawFlightPath(tempLink, '#2658d3')
-		highlightPath(tempPath.path)
 	} else {
 		$('#planLinkEconomyPrice').val(linkInfo.existingLink.price.economy)
 		$('#planLinkBusinessPrice').val(linkInfo.existingLink.price.business)
 		$('#planLinkFirstPrice').val(linkInfo.existingLink.price.first)
 		$('#addLinkButton').hide()
+		if (linkInfo.deleteRejection) {
+			$('#deleteLinkButton').hide()
+		} else {
+			$('#deleteLinkButton').show()
+		}
 		$('#updateLinkButton').show()
 	}
 	//populate airplane model drop down
@@ -1081,9 +1090,12 @@ function createLink() {
 		    			//draw flight path
 		    			var newPath = drawFlightPath(savedLink)
 		    			selectLinkFromMap(savedLink.id, false)
+		    			refreshPanels(airlineId)
 		    		}
 		    		//refreshPanels(activeAirline.id)
 		    		refreshLinkDetails(savedLink.id)
+		    		
+			    	
 		    		setActiveDiv($('#linkDetails'))
 		    		hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
 		    				    				    		
@@ -1133,9 +1145,11 @@ function cancelPlanLink() {
 }
 
 function removeTempPath() {
-	unhighlightPath(tempPath.path)
-	clearPathEntry(tempPath)
-	tempPath = undefined
+	if (tempPath) {
+		unhighlightPath(tempPath.path)
+		clearPathEntry(tempPath)
+		tempPath = undefined
+	}
 }
 
 
@@ -1383,10 +1397,12 @@ function toggleLinkHistoryView() {
 		showWorldMap()
 	}
 	
-	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) { //push here otherwise it's not centered
-		map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
+	 //push here otherwise it's not centered
+	$("#hideLinkHistoryButton").show()
+	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
+		map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Route Passenger Map', 'hideLinkHistoryView()', 'hideLinkHistoryButton')[0]);
 	}
-	$("#hideLinkHistoryButton").fadeIn(200)
+	
 	
 //	var linkControlDiv = document.createElement('div');
 //	linkControlDiv.id = 'linkControlDiv';
@@ -1405,11 +1421,7 @@ function hideLinkHistoryView() {
 	historyPaths = {}
 	updateLinksInfo() //redraw all flight paths
 	
-//	$("#linkHistoryPanel").fadeOut(200);
-	$("#hideLinkHistoryButton").fadeOut(200);
-//	map.controls[google.maps.ControlPosition.TOP_CENTER].clear();
-//	map.controls[google.maps.ControlPosition.RIGHT_TOP].clear();
-	
+ 	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
 }
 
 function updateLoadedLinks(links) {

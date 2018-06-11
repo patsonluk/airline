@@ -112,7 +112,7 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
        closeDemand.total.should(be > farDemand.total)
        closeDemand(ECONOMY).should(be > farDemand(ECONOMY))
        closeDemand(BUSINESS).should(be > farDemand(BUSINESS))
-       closeDemand(FIRST).should(be < farDemand(FIRST)) //only long routes have first class demand
+       closeDemand(FIRST).should(be > farDemand(FIRST))
     }
     "Generate more passenger for domestic routes".in {
       val population = 10000000

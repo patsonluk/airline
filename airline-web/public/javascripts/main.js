@@ -497,7 +497,7 @@ function updateAllPanels(airlineId) {
 	
 	if (activeAirline) {
 		if (!activeAirline.headquarterAirport) {
-			printConsole("Zoom into the map and select an airport and click 'Build Headquarter' to select your headquarter. Smaller airports will only show when you zoom close enough")
+			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough")
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget")
 		}
@@ -525,30 +525,6 @@ function refreshPanels(airlineId) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
-}
-
-function getAirlineCategory(reputation) {
-	if (reputation < 10) {
-		return "New Airline"
-	} else if (reputation < 20) {
-		return "Local Airline"
-	} else if (reputation < 30) {
-		return "Municipal Airline"
-	} else if (reputation < 40) {
-		return "Regional Airline"
-	} else if (reputation < 50) {
-		return "Continental Airline"
-	} else if (reputation < 60) {
-		return "Lesser International Airline"
-	} else if (reputation < 70) {
-		return "Third-class International Airline"
-	} else if (reputation < 80) {
-		return "Second-class International Airline"
-	} else if (reputation < 90) {
-		return "Major Internation Airline"
-	} else {
-		return "Top Internation Airline"
-	}
 }
 
 var totalmillisecPerWeek = 7 * 24 * 60 * 60 * 1000

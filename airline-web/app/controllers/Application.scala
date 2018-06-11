@@ -19,6 +19,7 @@ import scala.collection.mutable.LinkedHashMap
 import scala.collection.mutable.ListBuffer
 import com.patson.model.Scheduling.TimeSlot
 import controllers.AuthenticationObject.AuthenticatedAirline
+import scala.collection.mutable.Set
 
 
 class Application extends Controller {
@@ -42,6 +43,7 @@ class Application extends Controller {
       "id" -> JsNumber(airport.id),
       "name" -> JsString(airport.name),
       "iata" -> JsString(airport.iata),
+      "icao" -> JsString(airport.icao),
       "city" -> JsString(airport.city),
       "size" -> JsNumber(airport.size),
       "latitude" -> JsNumber(airport.latitude),
@@ -73,12 +75,33 @@ class Application extends Controller {
           }
         ))
       }
+      if (airport.getAirportImageUrl.isDefined) {
+        airportObject = airportObject + ("airportImageUrl" -> JsString(airport.getAirportImageUrl.get))
+      }
+      if (airport.getCityImageUrl.isDefined) {
+        airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
+      }
       
       airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.toList.map(_._1)))
       
       airportObject
     }
   }
+ 
+  object AirportSimpleWrites extends Writes[Airport] {
+    def writes(airport: Airport): JsValue = {
+      JsObject(List(
+      "id" -> JsNumber(airport.id),
+      "name" -> JsString(airport.name),
+      "city" -> JsString(airport.city),
+      "latitude" -> JsNumber(airport.latitude),
+      "longitude" -> JsNumber(airport.longitude),
+      "countryCode" -> JsString(airport.countryCode),
+      "zone" -> JsString(airport.zone)))
+      
+    }
+  }
+ 
   implicit object CityWrites extends Writes[City] {
     def writes(city: City): JsValue = {
       val averageIncome = city.income
@@ -206,58 +229,77 @@ class Application extends Controller {
        case None => NotFound
      }
   }
+  
   def getAirportSharesOnCity(cityId : Int) = Action {
     Ok(Json.toJson(AirportSource.loadAirportSharesOnCity(cityId)))
   }
   
   def getAirportLinkStatistics(airportId : Int) = Action {
-    //group things up
-    val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId)
-    val flightsToThisAirport = LinkStatisticsSource.loadLinkStatisticsByToAirport(airportId)
-//    val (flightsInitialDeparture, flightsConnectionFrom) = flightsFromThisAirport.partition { _.key.isDeparture }
-//    val (flightsFinalDestination, flightsConnectionTo) = flightsToThisAirport.partition { _.key.isDestination }
-    val departureOrArrivalFlights = flightsFromThisAirport.filter { _.key.isDeparture} ++ flightsToThisAirport.filter { _.key.isDestination }
-    val connectionFlights = flightsFromThisAirport.filterNot { _.key.isDeparture} ++ flightsToThisAirport.filterNot { _.key.isDestination }
-    
-    val flightDepartureByAirline = flightsFromThisAirport.groupBy { _.key.airline }
-    val flightDestinationByAirline = flightsToThisAirport.groupBy { _.key.airline }
-    
-    
-    //fold them to get total numbers
-//    val statisticsInitialDeparture : Map[Airport, Int] = flightsInitialDeparture.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
-//      val airport = linkStatisticsEntry.key.toAirport
-//      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
-//    }
-//    val statisticsFinalDestination : Map[Airport, Int] = flightsFinalDestination.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
-//      val airport = linkStatisticsEntry.key.fromAirport
-//      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
-//    }
-//    val statisticsConnectionFrom : Map[Airport, Int] = flightsConnectionFrom.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
-//      val airport = linkStatisticsEntry.key.toAirport
-//      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
-//    }
-//    val statisticsConnectionTo :Map[Airport, Int] = flightsConnectionTo.foldRight(Map[Airport, Int]()) { (linkStatisticsEntry, foldMap) =>
-//      val airport = linkStatisticsEntry.key.fromAirport
-//      foldMap + (airport -> (foldMap.getOrElse(airport, 0) + linkStatisticsEntry.passengers))
-//    }
-    val departureOrArrivalPassengers = departureOrArrivalFlights.map{ _.passengers }.sum
-    val transitPassengers = connectionFlights.map{ _.passengers }.sum
-      
-    
-    val statisticsDepartureByAirline : List[(Airline, Int)] = flightDepartureByAirline.foldRight(List[(Airline, Int)]()) { 
-      case ((airline, statistics), foldList) =>
-        val totalPassengersOfThisAirline = statistics.foldLeft(0)( _ + _.passengers) //all the passengers of this airline
-        (airline, totalPassengersOfThisAirline) :: foldList
+    AirportSource.loadAirportById(airportId, true) match {
+      case Some(airport) => { 
+        //group things up
+        val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId)
+        val flightsToThisAirport = LinkStatisticsSource.loadLinkStatisticsByToAirport(airportId)
+        val departureOrArrivalFlights = flightsFromThisAirport.filter { _.key.isDeparture} ++ flightsToThisAirport.filter { _.key.isDestination }
+        val connectionFlights = flightsFromThisAirport.filterNot { _.key.isDeparture} ++ flightsToThisAirport.filterNot { _.key.isDestination }
+        
+        val flightDepartureByAirline = flightsFromThisAirport.groupBy { _.key.airline }
+        val flightDestinationByAirline = flightsToThisAirport.groupBy { _.key.airline }
+        
+        val departureOrArrivalPassengers = departureOrArrivalFlights.map{ _.passengers }.sum
+        val transitPassengers = connectionFlights.map{ _.passengers }.sum
+          
+        
+        val statisticsDepartureByAirline : List[(Airline, Int)] = flightDepartureByAirline.foldRight(List[(Airline, Int)]()) { 
+          case ((airline, statistics), foldList) =>
+            val totalPassengersOfThisAirline = statistics.foldLeft(0)( _ + _.passengers) //all the passengers of this airline
+            (airline, totalPassengersOfThisAirline) :: foldList
+        }
+        val statisticsArrivalByAirline : List[(Airline, Int)] = flightDestinationByAirline.foldRight(List[(Airline, Int)]()) { 
+          case ((airline, statistics), foldList) =>
+            val totalPassengersOfThisAirline = statistics.foldLeft(0)( _ + _.passengers) //all the passengers of this airline
+            (airline, totalPassengersOfThisAirline) :: foldList
+        }
+        
+        val links = LinkSource.loadLinksByFromAirport(airportId) ++ LinkSource.loadLinksByToAirport(airportId)
+        
+        val servedCountries = Set[String]()
+        val servedAirports = Set[Airport]()
+        val airlines = Set[Airline]()
+        var flightFrequency = 0;
+        val linkCountByAirline = links.groupBy(_.airline.id).mapValues(_.size)
+        
+        links.foreach { link =>
+          servedCountries.add(link.from.countryCode)
+          servedCountries.add(link.to.countryCode)
+          if (link.from.id != airportId) {
+            servedAirports.add(link.from)
+          } else {
+            servedAirports.add(link.to)
+          }
+          airlines.add(link.airline)
+          flightFrequency = flightFrequency + link.frequency
+        }
+        
+        
+        
+        Ok(Json.obj("connectedCountryCount" -> servedCountries.size,
+                    "connectedAirportCount" -> (servedAirports.size), //do not count itself
+                    "airlineCount" -> airlines.size,
+                    "linkCount" -> links.size,
+                    "linkCountByAirline" -> linkCountByAirline.foldLeft(Json.arr()) {
+                      case(jsonArray, (airlineId, linkCount)) => jsonArray :+ Json.obj("airlineId" -> JsNumber(airlineId), "linkCount"-> JsNumber(linkCount))
+                    },
+                    "flightFrequency" -> flightFrequency,
+                    "bases" -> Json.toJson(airport.getAirlineBases().values),
+                    "departureOrArrivalPassengers" -> departureOrArrivalPassengers, 
+                    "transitPassengers" -> transitPassengers,
+                    "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),
+                    "airlineArrival" -> Json.toJson(statisticsArrivalByAirline)))
+      }
+      case None => NotFound
     }
-    val statisticsArrivalByAirline : List[(Airline, Int)] = flightDestinationByAirline.foldRight(List[(Airline, Int)]()) { 
-      case ((airline, statistics), foldList) =>
-        val totalPassengersOfThisAirline = statistics.foldLeft(0)( _ + _.passengers) //all the passengers of this airline
-        (airline, totalPassengersOfThisAirline) :: foldList
-    }
-    Ok(Json.obj("departureOrArrivalPassengers" -> departureOrArrivalPassengers, 
-                "transitPassengers" -> transitPassengers,
-                "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),
-                "airlineArrival" -> Json.toJson(statisticsArrivalByAirline)))
+    
   }
   
   def getAirportLinkSchedule(airportId : Int, dayOfWeek : Int, hour : Int) = Action {
@@ -287,6 +329,13 @@ class Application extends Controller {
       LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
     }
     Ok(Json.toJson(competitorLinkConsumptions.map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq))
+  }
+  
+  def getLinkConsumptionsByAirport(airportId : Int) = Action {
+    val passengersByRemoteAirport : Map[Airport, Int] = HistoryUtil.loadConsumptionByAirport(airportId)
+    Ok(Json.toJson(passengersByRemoteAirport.map {
+      case (remoteAirport, passengers) => Json.obj("remoteAirport" -> Json.toJson(remoteAirport)(AirportSimpleWrites), ("passengers" -> JsNumber(passengers)))
+    }))
   }
   
   def getAirportProjects(airportId : Int) = Action {

@@ -23,6 +23,67 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
     this.bases = bases
   }
   
+  def airlineGrade : AirlineGrade = {
+    val reputation = airlineInfo.reputation
+    if (reputation < 10) {
+  		AirlineGrade.NEW
+  	} else if (reputation < 20) {
+  	  AirlineGrade.LOCAL  
+  	} else if (reputation < 30) {
+  		AirlineGrade.MUNICIPAL
+  	} else if (reputation < 40) {
+  		AirlineGrade.REGIONAL
+  	} else if (reputation < 50) {
+  		AirlineGrade.CONTINENTAL
+  	} else if (reputation < 60) {
+  		AirlineGrade.LESSER_INTERNATIONAL
+  	} else if (reputation < 70) {
+  		AirlineGrade.THIRD_INTERNATIONAL
+  	} else if (reputation < 80) {
+  		AirlineGrade.SECOND_INTERNATIONAL
+  	} else if (reputation < 90) {
+  		AirlineGrade.MAJOR_INTERNATIONAL
+  	} else {
+  		AirlineGrade.TOP_INTERNATIONAL
+  	}
+  }
+  
+  import FlightCategory._
+  case class AirlineGrade(value : Int, description: String) {
+    val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
+      case DOMESTIC =>  value * 10
+      case REGIONAL => value * 4
+      case INTERCONTINENTAL =>
+        if (value <= 4) {
+         0
+        } else {
+          (value - 4) * 3
+        }
+    }
+    
+    val getBaseLimit = {
+      if (value <= 2) {
+        1
+      } else {
+        value - 1
+      }
+      
+    }
+  }
+  
+  object AirlineGrade {
+    val NEW = AirlineGrade(1, "New Airline")
+    val LOCAL = AirlineGrade(2, "Local Airline")
+    val MUNICIPAL = AirlineGrade(3, "Municipal Airline")
+    val REGIONAL = AirlineGrade(4, "Regional Airline")
+    val CONTINENTAL = AirlineGrade(5, "Continental Airline")
+    val LESSER_INTERNATIONAL = AirlineGrade(6, "Lesser International Airline")
+    val THIRD_INTERNATIONAL = AirlineGrade(7, "Third-class International Airline")
+    val SECOND_INTERNATIONAL = AirlineGrade(8, "Second-class International Airline")
+    val MAJOR_INTERNATIONAL = AirlineGrade(9, "Major International Airline")
+    val TOP_INTERNATIONAL = AirlineGrade(10, "Top International Airline")
+  }
+  
   def getBases() = bases
   def getHeadQuarter() = bases.find( _.headquarter )
   def getCountryCode() = {
@@ -81,7 +142,7 @@ case class AirlineIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, 
         cycle = income2.cycle)
   }
 }
-case class LinksIncome(airlineId : Int, profit : Long = 0, revenue : Long = 0, expense : Long = 0, ticketRevenue: Long = 0, airportFee : Long = 0, fuelCost : Long = 0, crewCost : Long = 0, inflightCost : Long = 0, maintenanceCost: Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
+case class LinksIncome(airlineId : Int, profit : Long = 0, revenue : Long = 0, expense : Long = 0, ticketRevenue: Long = 0, airportFee : Long = 0, fuelCost : Long = 0, crewCost : Long = 0, inflightCost : Long = 0, maintenanceCost: Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
   def update(income2 : LinksIncome) : LinksIncome = {
     LinksIncome(airlineId, 
         profit = profit + income2.profit,
@@ -93,6 +154,7 @@ case class LinksIncome(airlineId : Int, profit : Long = 0, revenue : Long = 0, e
         crewCost = crewCost + income2.crewCost,
         inflightCost = inflightCost + income2.inflightCost,
         maintenanceCost = maintenanceCost + income2.maintenanceCost,
+        depreciation = depreciation + income2.depreciation,
         period = period,
         cycle = income2.cycle)
   }

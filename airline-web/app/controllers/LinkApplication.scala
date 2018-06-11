@@ -80,6 +80,7 @@ class LinkApplication extends Controller {
       "airportFees" -> JsNumber(linkConsumption.airportFees),
       "maintenanceCost" -> JsNumber(linkConsumption.maintenanceCost),
       "inflightCost" -> JsNumber(linkConsumption.inflightCost),
+      "depreciation" -> JsNumber(linkConsumption.depreciation),
       "capacity" -> Json.toJson(linkConsumption.capacity),
       "soldSeats" -> Json.toJson(linkConsumption.soldSeats),
       "cycle" -> JsNumber(linkConsumption.cycle)))
@@ -214,6 +215,7 @@ class LinkApplication extends Controller {
       if (existingLink.isDefined) {
         incomingLink.id = existingLink.get.id
       }
+
       
       //validate frequency by duration
       val maxFrequency = incomingLink.getAssignedModel().fold(0)(assignedModel => Computation.calculateMaxFrequency(assignedModel, incomingLink.distance))
@@ -273,16 +275,13 @@ class LinkApplication extends Controller {
         return BadRequest("Requested capacity exceed the allowed limit, invalid configuration!")
       }
       
-      //valid from airport is a base
-      if (incomingLink.from.getAirlineBase(airlineId).isEmpty) {
-        return BadRequest("Cannot fly from this airport, this is not a base!")
-      }
       if (incomingLink.from.id == incomingLink.to.id) {
         return BadRequest("Same from and to airport!")
       }
       
-      //valid freedom and mutual relationship
-      val rejectionReason = getRejectionReason(airlineCountryCode = request.user.getCountryCode().get, toCountryCode = incomingLink.to.countryCode)
+      
+      //validate based on existing user parameters
+      val rejectionReason = getRejectionReason(request.user, fromAirport = incomingLink.from, toAirport = incomingLink.to, existingLink.isEmpty)
       if (rejectionReason.isDefined) {
         return BadRequest("Link is rejected: " + rejectionReason.get);
       }
@@ -291,7 +290,11 @@ class LinkApplication extends Controller {
             
       if (existingLink.isEmpty) {
         LinkSource.saveLink(incomingLink) match {
-          case Some(link) => Created(Json.toJson(link))      
+          case Some(link) =>  {
+            val cost = Computation.getLinkCreationCost(incomingLink.from, incomingLink.to)
+            AirlineSource.adjustAirlineBalance(request.user.id, cost * -1)
+            Created(Json.toJson(link))
+          }
           case None => UnprocessableEntity("Cannot insert link")
         }
       } else {
@@ -356,16 +359,25 @@ class LinkApplication extends Controller {
     Ok(Json.obj("count" -> count))
   }
   
-  def deleteLink(airlineId : Int, linkId: Int) = AuthenticatedAirline(airlineId) {
+  def deleteLink(airlineId : Int, linkId: Int) = AuthenticatedAirline(airlineId) { request =>
     //verify the airline indeed has that link
     LinkSource.loadLinkById(linkId) match {
       case Some(link) =>
-        if (link.airline.id != airlineId) {
-        Forbidden
-      } else {
-        val count = LinkSource.deleteLink(linkId)  
-        Ok(Json.obj("count" -> count))    
-      }
+        if (link.airline.id != request.user.id) {
+          Forbidden
+        } else {
+          getDeleteLinkRejection(link, request.user) match {
+            case Some(reason) => {
+              println("cannot delete this link: " + reason)
+              BadRequest(reason)
+            }
+            case None => {
+              val count = LinkSource.deleteLink(linkId)  
+              Ok(Json.obj("count" -> count))
+            }
+          }
+
+        }
       case None =>
         NotFound
     }
@@ -409,7 +421,7 @@ class LinkApplication extends Controller {
             
             //check relationship
             val airlineCountryCode = request.user.getCountryCode().get
-            val rejectionReason = getRejectionReason(airlineCountryCode, toAirport.countryCode)
+            val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink.isEmpty)
               
             
             //group airplanes by model, also add boolean to indicated whether the airplane is assigned to this link
@@ -475,7 +487,9 @@ class LinkApplication extends Controller {
             
             val directDemand = directBusinessDemand + directTouristDemand
             //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum 
-                                                                   
+            
+            val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
+            
             var resultObject = Json.obj("fromAirportName" -> fromAirport.name,
                                         "fromAirportCity" -> fromAirport.city,
                                         "fromAirportLatitude" -> fromAirport.latitude,
@@ -496,7 +510,9 @@ class LinkApplication extends Controller {
                                         "maxFrequencyToAirport" -> maxFrequencyToAirport,
                                         "directDemand" -> directDemand,
                                         "businessPassengers" -> directBusinessDemand.total,
-                                        "touristPassengers" -> directTouristDemand.total).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
+                                        "touristPassengers" -> directTouristDemand.total,
+                                        "cost" -> cost).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
+                                                  
             
             val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
               LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
@@ -506,6 +522,10 @@ class LinkApplication extends Controller {
                                         
             if (existingLink.isDefined) {
               resultObject = resultObject + ("existingLink", Json.toJson(existingLink))
+              val deleteRejection = getDeleteLinkRejection(existingLink.get, request.user)
+              if (deleteRejection.isDefined) {
+                resultObject = resultObject + ("deleteRejection", Json.toJson(deleteRejection.get))
+              }
             }
             
             if (rejectionReason.isDefined) {
@@ -519,15 +539,63 @@ class LinkApplication extends Controller {
     }
   }
   
-  def getRejectionReason(airlineCountryCode : String, toCountryCode : String) : Option[String]= {
-    val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toCountryCode)
-    if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
-                Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
-              } else if (toCountryCode != airlineCountryCode && CountrySource.loadCountryByCode(toCountryCode).get.openness < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
-                Some("This country does not want to open their airports to foreign airline") 
-              } else {
-                None
-              }
+  def getDeleteLinkRejection(link : Link, airline : Airline) : Option[String] = {
+    if (airline.getBases().map { _.airport.id}.contains(link.to.id)) {
+      Some("Cannot delete this route as this flies to a base. Must remove the base before this can be deleted")
+    } else {
+      None
+    }
+  }
+  
+  def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, newLink : Boolean) : Option[String]= {
+    val airlineCountryCode = airline.getCountryCode match {
+      case Some(countryCode) => countryCode
+      case None => return Some("Airline has no HQ!")
+    }
+    val toCountryCode = toAirport.countryCode
+   
+    if (newLink) { //only check new links for now
+      //validate from airport is a base
+      val base = fromAirport.getAirlineBase(airline.id) match {
+        case None => return Some("Cannot fly from this airport, this is not a base!")
+        case Some(base) => base
+      } 
+      
+      //check mutualRelationship
+      val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toCountryCode)
+      if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
+        return Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
+      } else if (toCountryCode != airlineCountryCode && CountrySource.loadCountryByCode(toCountryCode).get.openness < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
+        return Some("This country does not want to open their airports to foreign airline") 
+      }
+      
+      //check base airport credit
+      val credit = base.getAirportCredits
+      val usedCredits = Computation.getAirportCredits(LinkSource.loadLinksByFromAirport(fromAirport.id).filter( _.airline.id == base.airline.id))
+      val availableCredits = credit - usedCredits
+      
+      val requiredCredits = Computation.getAirportCredits(fromAirport, toAirport)
+      if (availableCredits < requiredCredits) {
+        return Some("Not enough airport credit left, require " + requiredCredits + " but only " + availableCredits + " left")
+      }
+      
+      //check airline grade limit
+      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).mapValues(_.size)
+      val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
+      val limit = airline.airlineGrade.getLinkLimit(flightCategory)
+      if (limit <= existingFlightCategoryCounts.getOrElse(flightCategory, 0)) {
+        return Some("Cannot create more route of category " + flightCategory + " until your airline reaches next grade")  
+      }
+      
+      
+      //check balance
+      val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
+      if (airline.getBalance() < cost) {
+        return Some("Not enough cash to establish this route")
+      }
+    }  
+    
+    return None
   }
   
   def getVipRoutes() = Action {

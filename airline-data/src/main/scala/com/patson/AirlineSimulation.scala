@@ -27,6 +27,9 @@ object AirlineSimulation {
      
     val currentCycle = MainSimulation.currentWeek
     allAirlines.foreach { airline =>
+        var totalCashRevenue = 0L
+        var totalCashExpense = 0L
+        var linksDepreciation = 0L
         val linksIncome = linkResultByAirline.get(airline.id) match { 
           case Some(linkConsumptions) => {
             val linksProfit = linkConsumptions.foldLeft(0L)(_ + _.profit)
@@ -35,9 +38,13 @@ object AirlineSimulation {
             val linksFuelCost = linkConsumptions.foldLeft(0L)(_ + _.fuelCost)
             val linksInflightCost = linkConsumptions.foldLeft(0L)(_ + _.inflightCost)
             val linksMaintenanceCost = linkConsumptions.foldLeft(0L)(_ + _.maintenanceCost)
+            linksDepreciation = linkConsumptions.foldLeft(0L)(_ + _.depreciation)
             val linksRevenue = linkConsumptions.foldLeft(0L)(_ + _.revenue)
-            val linksExpense = linksAirportFee + linksCrewCost + linksFuelCost + linksInflightCost + linksMaintenanceCost
-            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, maintenanceCost= -1 * linksMaintenanceCost, cycle = currentCycle)
+            val linksExpense = linksAirportFee + linksCrewCost + linksFuelCost + linksInflightCost + linksMaintenanceCost + linksDepreciation
+            
+            totalCashRevenue += linksRevenue
+            totalCashExpense += linksExpense - linksDepreciation //airplane depreciation is already deducted on the plane, not a cash expense
+            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, maintenanceCost= -1 * linksMaintenanceCost, depreciation = -1 * linksDepreciation, cycle = currentCycle)
           }
           case None => LinksIncome(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle = currentCycle)
         }
@@ -66,14 +73,21 @@ object AirlineSimulation {
         
         val othersSummary = Map[OtherIncomeItemType.Value, Long]()
         othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, airline.getServiceFunding() * -1)
-        othersSummary.put(OtherIncomeItemType.BASE_UPKEEP, airline.bases.foldLeft(0L)((upkeep, base) => {
-          val countryIncome = allCountries(base.countryCode).income
-          val baseUpkeep =  (10 * countryIncome * base.scale / 52)  / (if (base.headquarter) 1 else 2)//assume scale 1 HQ is 10 people's annual salary, other base half 
-          upkeep - baseUpkeep //negative number 
-        }))
-        othersSummary.put(OtherIncomeItemType.DEPRECIATION, airplanesByAirline.getOrElse(airline.id, List.empty).foldLeft(0L) {
-          case(depreciation, airplane) => (depreciation - airplane.depreciationRate) 
+        totalCashExpense += airline.getServiceFunding()
+        
+        val baseUpkeep = airline.bases.foldLeft(0L)((upkeep, base) => {
+          upkeep + base.getUpkeep 
         })
+        
+        othersSummary.put(OtherIncomeItemType.BASE_UPKEEP, -1 * baseUpkeep) //negative number
+        totalCashExpense += baseUpkeep
+        
+        val allAirplanesDepreciation = airplanesByAirline.getOrElse(airline.id, List.empty).foldLeft(0L) {
+          case(depreciation, airplane) => (depreciation + airplane.depreciationRate)  
+        }
+        
+        val unassignedAirplanesDepreciation = allAirplanesDepreciation - linksDepreciation //account depreciation on planes that are without assigned links
+        othersSummary.put(OtherIncomeItemType.DEPRECIATION, -1 * unassignedAirplanesDepreciation) //not a cash expense
         
         var othersRevenue = 0L
         var othersExpense = 0L
@@ -105,7 +119,8 @@ object AirlineSimulation {
         allIncomes += airlineWeeklyIncome
         allIncomes ++= computeAccumulateIncome(airlineWeeklyIncome)
         
-        airline.setBalance(airline.getBalance() + linksIncome.profit + othersIncome.profit) //do NOT use airlineProfit here directly as transactionProfit has already been updated immediately back then
+        val totalCashFlow = totalCashRevenue - totalCashExpense
+        airline.setBalance(airline.getBalance() + totalCashFlow) 
           
         //update reputation
         linkResultByAirline.get(airline.id).foreach { linkConsumptions =>

@@ -8,6 +8,7 @@ import com.patson.model.Link
 import com.patson.model.LinkHistory
 import com.patson.model.LinkConsideration
 import com.patson.model.RelatedLink
+import com.patson.model.Airport
 
 object HistoryUtil {
   var loadedCycle = 0
@@ -38,6 +39,31 @@ object HistoryUtil {
     )
        
     LinkHistory(0, relatedFowardLinks.toSet, relatedReverseLinks.toSet)
+  }
+  
+  def loadConsumptionByAirport(airportId : Int) : Map[Airport, Int] = {
+    checkCache()
+    val linksWithPassengers = allConsumptions.flatMap {
+      case(_, passengers, route) => {
+        val activeLinks = route.links.filter( linkConsideration => linkConsideration.from.id == airportId || linkConsideration.to.id == airportId).map(_.link)
+        activeLinks.map((_, passengers))
+      }
+    }
+    //find all the "other" airport and sum up passenger count
+    val passengersByOtherAirport = scala.collection.mutable.Map[Airport, Int]()
+    linksWithPassengers.foreach {
+      case (link, passengers) => {
+        val otherAirport = if (link.from.id == airportId) {
+          link.to
+        } else {
+          link.from
+        }
+        
+        val sum = passengersByOtherAirport.getOrElse(otherAirport, 0)
+        passengersByOtherAirport.put(otherAirport, sum + passengers)
+      }
+    }
+    passengersByOtherAirport.toMap
   }
   
   private def computeRelatedLinks(relatedConsumption : List[(PassengerType.Value, Int, Route)], airlineId : Int, selfOnly : Boolean) : List[RelatedLink] = {
