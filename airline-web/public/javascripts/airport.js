@@ -548,6 +548,7 @@ function loadAirportStatistics(airport) {
 	    	$('#airportDetailsPassengerCount').text(airportStatistics.departureOrArrivalPassengers)
 	    	$('#airportDetailsConnectedCountryCount').text(airportStatistics.connectedCountryCount)
 	    	$('#airportDetailsConnectedAirportCount').text(airportStatistics.connectedAirportCount)
+	    	$('#airportDetailsAirlineCount').text(airportStatistics.airlineCount)
 	    	$('#airportDetailsLinkCount').text(airportStatistics.linkCount)
 	    	$('#airportDetailsFlightFrequency').text(airportStatistics.flightFrequency)
 	    	
