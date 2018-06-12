@@ -7,7 +7,11 @@ object AirportProfilePicturePatcher {
   val airportPreferredWords = List("concourse", "terminal")
   
   def patchProfilePictures() = {
-    AirportSource.loadAllAirports().sortBy(_.power).reverse.foreach { airport =>
+    val airportParList = AirportSource.loadAllAirports().par
+    
+    println("parallelism level: " + airportParList.tasksupport.parallelismLevel)
+    
+    airportParList.foreach { airport =>
       var cityUrl : Option[String] = None
       if (!"".equals(airport.city)) {
         cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode, cityPreferredWords)
