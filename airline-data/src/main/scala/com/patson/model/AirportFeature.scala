@@ -6,7 +6,7 @@ import FlightType._
 
 
 abstract class AirportFeature {
-  val MAX_STREGTH = 10
+  val MAX_STREGTH = 100
   def strength : Int
   //def airportId : Int
   def featureType : AirportFeatureType.Value

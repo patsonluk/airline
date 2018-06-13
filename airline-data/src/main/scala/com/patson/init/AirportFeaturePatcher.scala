@@ -8,86 +8,86 @@ object AirportFeaturePatcher {
   import AirportFeatureType._
   val featureList = Map(
     INTERNATIONAL_HUB -> Map[String, Int](
-        "JFK" -> 8,
-        "LHR" -> 8,
-        "HKG" -> 7,
-        "SIN" -> 7,
-        "HND" -> 6,
-        "CDG" -> 6,
-        "PVG" -> 4,
-        "PEK" -> 2,
-        "SYD" -> 5,
-        "AUH" -> 5,
-        "EZE" -> 2,
-        "BOM" -> 1,
-        "MXP" -> 3,
-        "GRU" -> 2,
-        "FRA" -> 4,
-        "YYZ" -> 3,
-        "LAX" -> 4,
-        "MAD" -> 2,
-        "AMS" -> 2,
-        "KUL" -> 2,
-        "FCO" -> 3,
-        "BRU" -> 1,
-        "ICN" -> 3,
-        "JNB" -> 2,
-        "SFO" -> 4,
-        "ZRH" -> 4,
-        "IAD" -> 2,
-        "MIA" -> 2,
-        "YVR" -> 2,
-        "BKK" -> 2,
-        "BOS" -> 2,
-        "CGK" -> 2,
-        "TPE" -> 3,
-        "KIX" -> 2,
-        "ARN" -> 2
+        "JFK" -> 80,
+        "LHR" -> 80,
+        "HKG" -> 70,
+        "SIN" -> 70,
+        "HND" -> 60,
+        "CDG" -> 60,
+        "PVG" -> 40,
+        "PEK" -> 20,
+        "SYD" -> 50,
+        "AUH" -> 50,
+        "EZE" -> 20,
+        "BOM" -> 10,
+        "MXP" -> 30,
+        "GRU" -> 20,
+        "FRA" -> 40,
+        "YYZ" -> 30,
+        "LAX" -> 40,
+        "MAD" -> 20,
+        "AMS" -> 20,
+        "KUL" -> 20,
+        "FCO" -> 30,
+        "BRU" -> 10,
+        "ICN" -> 30,
+        "JNB" -> 20,
+        "SFO" -> 40,
+        "ZRH" -> 40,
+        "IAD" -> 20,
+        "MIA" -> 20,
+        "YVR" -> 20,
+        "BKK" -> 20,
+        "BOS" -> 20,
+        "CGK" -> 20,
+        "TPE" -> 30,
+        "KIX" -> 20,
+        "ARN" -> 20
       ),
     VACATION_HUB -> Map[String, Int](
-        "CDG" -> 5, //paris
-        "FCO" -> 3,
-        "VCE" -> 4, //venice
-        "VIE" -> 2, //vienna
-        "CAI" -> 2,
-        "IST" -> 2,
-        "ATH" -> 4,
-        "LHR" -> 2,
-        "BOM" -> 2,
-        "KIX" -> 3,
-        "PEK" -> 2,
-        "BKK" -> 2, //bangkok
-        "HNL" -> 8, //honolulu
-        "LAX" -> 2,
-        "YVR" -> 2,
-        "LAS" -> 3,
-        "IAD" -> 2, //washington
-        "MIA" -> 3,
-        "MCO" -> 4,
-        "HND" -> 3, //Tokyo
-        "SJU" -> 2, //San Juan
-        "GRU" -> 2, //Sao Paulo
-        "BNE" -> 2, //brisbane
-        "AKL" -> 2, //auckland
-        "PRG" -> 2, //prague
-        "GUM" -> 4, //Guam
-        "OKA" -> 2, //Okinawa
-        "MLE" -> 6, //Maldives
-        "SFO" -> 2
+        "CDG" -> 50, //paris
+        "FCO" -> 30,
+        "VCE" -> 40, //venice
+        "VIE" -> 20, //vienna
+        "CAI" -> 20,
+        "IST" -> 20,
+        "ATH" -> 40,
+        "LHR" -> 20,
+        "BOM" -> 20,
+        "KIX" -> 30,
+        "PEK" -> 20,
+        "BKK" -> 20, //bangkok
+        "HNL" -> 80, //honolulu
+        "LAX" -> 20,
+        "YVR" -> 20,
+        "LAS" -> 30,
+        "IAD" -> 20, //washington
+        "MIA" -> 30,
+        "MCO" -> 40,
+        "HND" -> 30, //Tokyo
+        "SJU" -> 20, //San Juan
+        "GRU" -> 20, //Sao Paulo
+        "BNE" -> 20, //brisbane
+        "AKL" -> 20, //auckland
+        "PRG" -> 20, //prague
+        "GUM" -> 40, //Guam
+        "OKA" -> 20, //Okinawa
+        "MLE" -> 60, //Maldives
+        "SFO" -> 20
       ),
     FINANCIAL_HUB -> Map[String, Int](
-        "LHR" -> 9,
-        "JFK" -> 8,
-        "HKG" -> 7,
-        "SIN" -> 7,
-        "HND" -> 7,
-        "ICN" -> 5,
-        "PVG" -> 5,
-        "ZRH" -> 4,
-        "YYZ" -> 2,
-        "SFO" -> 2,
-        "CDG" -> 3, //paris
-        "FRA" -> 5
+        "LHR" -> 80,
+        "JFK" -> 80,
+        "HKG" -> 70,
+        "SIN" -> 70,
+        "HND" -> 70,
+        "ICN" -> 50,
+        "PVG" -> 50,
+        "ZRH" -> 40,
+        "YYZ" -> 20,
+        "SFO" -> 20,
+        "CDG" -> 30, //paris
+        "FRA" -> 50
       ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()
   )
