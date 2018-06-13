@@ -45,35 +45,50 @@ object AirportFeaturePatcher {
         "ARN" -> 20
       ),
     VACATION_HUB -> Map[String, Int](
-        "CDG" -> 50, //paris
-        "FCO" -> 30,
+        "HNL" -> 80, //honolulu
+        "CDG" -> 65, //paris
+        "MCO" -> 58, //Orlando
+        "BKK" -> 56, //bangkok
+        "PEK" -> 44, //Beijin
         "VCE" -> 40, //venice
+        "ATH" -> 40, //Athens
+        "MLE" -> 38, //Maldives
+        "OKA" -> 32, //Okinawa
+        "FCO" -> 30, //Rome
+        "KIX" -> 30,
+        "LAS" -> 30, //Vegas
+        "MIA" -> 30,
+        "HND" -> 30, //Tokyo
+        "GUM" -> 28, //Guam
+        "KOA" -> 25, //Kailua Hawaii
         "VIE" -> 20, //vienna
         "CAI" -> 20,
         "IST" -> 20,
-        "ATH" -> 40,
         "LHR" -> 20,
         "BOM" -> 20,
-        "KIX" -> 30,
-        "PEK" -> 20,
-        "BKK" -> 20, //bangkok
-        "HNL" -> 80, //honolulu
+        
         "LAX" -> 20,
         "YVR" -> 20,
-        "LAS" -> 30,
         "IAD" -> 20, //washington
-        "MIA" -> 30,
-        "MCO" -> 40,
-        "HND" -> 30, //Tokyo
         "SJU" -> 20, //San Juan
         "GRU" -> 20, //Sao Paulo
         "BNE" -> 20, //brisbane
         "AKL" -> 20, //auckland
         "PRG" -> 20, //prague
-        "GUM" -> 40, //Guam
-        "OKA" -> 20, //Okinawa
-        "MLE" -> 60, //Maldives
-        "SFO" -> 20
+        "HKG" -> 28, //hong kong
+        "SFO" -> 20,
+        "OGG" -> 18, //	Kahului, Hawaii
+        "SYX" -> 18, //Sanya China
+        "XIY" -> 18, //Xian china
+        "PVG" -> 18, //Shanghai
+        "HGH" -> 17, //Hangzhou china
+        "LIH" -> 16, //Lihue, Hawaii
+        "ITO" -> 15, //Hilo hawaii
+        "KWL" -> 15, //Guilin China
+        "LXA" -> 12, //Lhasa China
+        "TAO" -> 10 //Qingdao China
+        
+        
       ),
     FINANCIAL_HUB -> Map[String, Int](
         "LHR" -> 80,
