@@ -37,6 +37,10 @@ object WikiUtil {
           //e.printStackTrace()
           None 
         }
+        case e:java.io.IOException => {
+          e.printStackTrace()
+          None
+        }
     }
   }
   
@@ -69,6 +73,10 @@ object WikiUtil {
         case e:NoSuchElementException => {
           //e.printStackTrace()
           None 
+        }
+        case e:java.io.IOException => {
+          e.printStackTrace()
+          None
         }
     }
   }
