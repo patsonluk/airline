@@ -145,7 +145,7 @@ object DemandGenerator {
       val fromAirportIncome = fromAirport.power / fromAirport.population
       val fromAirportAdjustedPower = if (fromAirportIncome < 50000) fromAirport.power else fromAirport.population * 50000 //to make high income airport a little bit less overpowered for base
       
-      var baseDemand = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 25) * (passengerType match {
+      var baseDemand = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
         case PassengerType.BUSINESS => 6
         case PassengerType.TOURIST => 1
       })
