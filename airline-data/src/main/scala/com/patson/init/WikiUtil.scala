@@ -99,8 +99,6 @@ object WikiUtil {
     val response : JsObject = Json.parse(responseString).asInstanceOf[JsObject]
     val queryResponse = response.value.get("query").getOrElse(return None)
     
-    //println(queryResponse)
-    
     val pagesResponse = queryResponse.asInstanceOf[JsObject].value.get("pages").getOrElse(return None)
     
     //println(pagesResponse)
