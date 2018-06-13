@@ -221,7 +221,7 @@ object AirportSizeAdjust {
         //https://en.wikipedia.org/wiki/List_of_airports_in_Zimbabwe
         "HRE" -> 4,
        //below manual adjustment
-        
+        "KOA" -> 4, //Kailua hawaii
         "BFI" -> 3
       )
       
