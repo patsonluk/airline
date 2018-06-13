@@ -1,45 +1,23 @@
 package com.patson.init
 
 import com.patson.data.AirportSource
+import com.patson.model.Airport
+import com.patson.data.CountrySource
 
 object AirportProfilePicturePatcher {
   val cityPreferredWords = List("montage", "montaje", "downtown", "skyline")  
   val airportPreferredWords = List("concourse", "terminal")
+  val countriesByCode = CountrySource.loadAllCountries().map { country => (country.countryCode, country) }.toMap
   
   def patchProfilePictures() = {
-    AirportSource.loadAllAirports().sortBy(_.power).reverse.foreach { airport =>
-      var cityUrl : Option[String] = None
-      if (!"".equals(airport.city)) {
-        cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode, cityPreferredWords)
-        if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryOtherPicture(airport.city + " city," + airport.countryCode, cityPreferredWords)
-        }
-        if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + airport.countryCode, cityPreferredWords)
-        }
-        if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryOtherPicture(airport.city + "," + airport.countryCode, cityPreferredWords)
-        }
-        if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city, cityPreferredWords)
-        }
-        if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryOtherPicture(airport.city, cityPreferredWords)
-        }
-        
-        //no preferred pic, just get profile one
-        if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + airport.countryCode, List.empty)
-        }
-        if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + airport.countryCode, List.empty)
-        }
-        if (cityUrl.isEmpty) {
-          cityUrl = WikiUtil.queryProfilePicture(airport.city, List.empty)
-        }
-        
-        println(airport.city + " => " + cityUrl)
-      }
+    val airportParList = AirportSource.loadAllAirports().par
+    
+    println("parallelism level: " + airportParList.tasksupport.parallelismLevel)
+    
+    airportParList.foreach { airport =>
+      var cityUrl : Option[String] = getCityProfilePictureUrl(airport)
+       
+      println(airport.city + " => " + cityUrl)
       
       var airportUrl : Option[String] = None
       airportUrl = WikiUtil.queryProfilePicture(airport.name, List.empty)
@@ -62,4 +40,41 @@ object AirportProfilePicturePatcher {
       }
     }
   }
+  
+  def getCityProfilePictureUrl(airport : Airport) : Option[String] = {
+    var cityUrl : Option[String] = None
+    if (!"".equals(airport.city)) {
+      val countryName = countriesByCode(airport.countryCode).name
+      cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + countryName, cityPreferredWords)
+      if (cityUrl.isEmpty) {
+        cityUrl = WikiUtil.queryOtherPicture(airport.city + " city," + countryName, cityPreferredWords)
+      }
+      if (cityUrl.isEmpty) {
+        cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + countryName, cityPreferredWords)
+      }
+      if (cityUrl.isEmpty) {
+        cityUrl = WikiUtil.queryOtherPicture(airport.city + "," + countryName, cityPreferredWords)
+      }
+      if (cityUrl.isEmpty) {
+        cityUrl = WikiUtil.queryProfilePicture(airport.city, cityPreferredWords)
+      }
+      if (cityUrl.isEmpty) {
+        cityUrl = WikiUtil.queryOtherPicture(airport.city, cityPreferredWords)
+      }
+      
+      //no preferred pic, just get profile one
+      if (cityUrl.isEmpty) {
+        cityUrl = WikiUtil.queryProfilePicture(airport.city + " city," + countryName, List.empty)
+      }
+      if (cityUrl.isEmpty) {
+        cityUrl = WikiUtil.queryProfilePicture(airport.city + "," + countryName, List.empty)
+      }
+      if (cityUrl.isEmpty) {
+        cityUrl = WikiUtil.queryProfilePicture(airport.city, List.empty)
+      }
+    }
+    
+    cityUrl
+  }
+  
 }

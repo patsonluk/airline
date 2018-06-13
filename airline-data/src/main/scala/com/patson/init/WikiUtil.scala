@@ -37,6 +37,10 @@ object WikiUtil {
           //e.printStackTrace()
           None 
         }
+        case e:java.io.IOException => {
+          e.printStackTrace()
+          None
+        }
     }
   }
   
@@ -70,6 +74,10 @@ object WikiUtil {
           //e.printStackTrace()
           None 
         }
+        case e:java.io.IOException => {
+          e.printStackTrace()
+          None
+        }
     }
   }
   
@@ -99,8 +107,6 @@ object WikiUtil {
     val response : JsObject = Json.parse(responseString).asInstanceOf[JsObject]
     val queryResponse = response.value.get("query").getOrElse(return None)
     
-    //println(queryResponse)
-    
     val pagesResponse = queryResponse.asInstanceOf[JsObject].value.get("pages").getOrElse(return None)
     
     //println(pagesResponse)
@@ -116,8 +122,8 @@ object WikiUtil {
   @throws(classOf[java.net.SocketTimeoutException])
   def get(
     url:            String,
-    connectTimeout: Int    = 5000,
-    readTimeout:    Int    = 5000,
+    connectTimeout: Int    = 20000,
+    readTimeout:    Int    = 20000,
     requestMethod:  String = "GET") =
     {
       import java.net.{ URL, HttpURLConnection }

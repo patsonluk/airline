@@ -40,6 +40,23 @@ function refreshTopBar(airline) {
 	changeColoredElementValue($("#reputation"), airline.reputation)
 	changeColoredElementValue($("#serviceQuality"), airline.serviceQuality)
 	$("#reputationLevel").text("(" + airline.gradeDescription + ")")
+	$("#reputationStars").html(getGradeStarsImgs(airline.gradeValue))
+}
+
+function getGradeStarsImgs(gradeValue) {
+	var fullStars = Math.floor(gradeValue / 2)
+	var halfStar = gradeValue % 2
+	var html = ""
+	for (i = 0 ; i < fullStars; i ++) {
+		html += "<img src='assets/images/icons/star.png'/>"
+	}
+	if (halfStar) {
+		html += "<img src='assets/images/icons/star-half.png'/>"
+	}
+	for (i = 0 ; i < 5 - fullStars - halfStar; i ++) {
+		html += "<img src='assets/images/icons/star-empty.png'/>"
+	}
+	return html
 }
 
 function loadAirlines() {

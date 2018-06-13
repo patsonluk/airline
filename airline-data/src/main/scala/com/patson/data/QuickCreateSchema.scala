@@ -44,6 +44,6 @@ object QuickCreateSchema extends App {
   }
   
   def createSchema(connection : Connection) = {
-    Meta.createAirportImage(connection)
+    Meta.createLoan(connection)
   }
 }

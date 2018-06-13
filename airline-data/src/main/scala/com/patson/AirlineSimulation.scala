@@ -89,6 +89,10 @@ object AirlineSimulation {
         val unassignedAirplanesDepreciation = allAirplanesDepreciation - linksDepreciation //account depreciation on planes that are without assigned links
         othersSummary.put(OtherIncomeItemType.DEPRECIATION, -1 * unassignedAirplanesDepreciation) //not a cash expense
         
+        val (loanPayment, interestPayment) = updateLoans(airline)
+        othersSummary.put(OtherIncomeItemType.LOAN_INTEREST, -1 * interestPayment)
+        totalCashExpense += loanPayment //paying both principle + interest
+        
         var othersRevenue = 0L
         var othersExpense = 0L
         othersSummary.foreach { 
@@ -205,6 +209,29 @@ object AirlineSimulation {
     }
     
     List[AirlineIncome](updatedMonthIncome, updatedYearIncome)
+  }
+  
+  /**
+   * Returns a tuple of (totalLoanRepayment, totalLoanInterest)
+   */
+  def updateLoans(airline : Airline) : (Long, Long) = {
+    val loans = BankSource.loadLoansByAirline(airline.id)
+    var totalPrinciplePayment = 0L
+    var totalLoanInterest = 0L
+    loans.foreach { loan => 
+      val principlePayment = Math.ceil(loan.borrowedAmount.toDouble / loan.loanTerm).toLong
+      val interestPayment = Math.ceil(loan.interest.toDouble / loan.loanTerm).toLong
+      totalLoanInterest = totalLoanInterest + interestPayment
+      totalPrinciplePayment = totalPrinciplePayment + principlePayment
+      loan.remainingAmount = loan.remainingAmount - interestPayment - principlePayment 
+      if (loan.remainingAmount <= 0) {
+        BankSource.deleteLoan(loan.id)
+      } else {
+        BankSource.updateLoan(loan)
+      }
+    }
+    
+    (totalPrinciplePayment + totalLoanInterest, totalLoanInterest)
   }
   
   val getTargetQuality : (Int, Int) => Double = (funding : Int, capacity :Int) => {

@@ -25,6 +25,8 @@ class SignUp extends Controller {
     // Define a mapping that will handle User values
     mapping(
       "username" -> text(minLength = 4).verifying(
+        "username can only contain alphanumeric characters",
+        userName => userName.forall(_.isLetterOrDigit)).verifying(
         "This username is not available",
         userName => !UserSource.loadUsersByCriteria(List.empty).map { _.userName.toLowerCase() }.contains(userName.toLowerCase())    
       ),
@@ -37,7 +39,10 @@ class SignUp extends Controller {
         // Add an additional constraint: both passwords must match
         "Passwords don't match", passwords => passwords._1 == passwords._2
       ),
-      "airlineName" -> text(minLength = 1).verifying( "This airline name  is not available",  
+      "airlineName" -> text(minLength = 1).verifying(
+        "Airline name can only contain space and characters",
+        airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
+        "This airline name  is not available",  
         airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase() }.contains(airlineName.toLowerCase())
       )
     )
@@ -45,7 +50,7 @@ class SignUp extends Controller {
     // so we have to define custom binding/unbinding functions
     {
       // Binding: Create a User from the mapping result (ignore the second password and the accept field)
-      (username, email, passwords, airlineName) => NewUser(username, passwords._1, email, airlineName) 
+      (username, email, passwords, airlineName) => NewUser(username.trim, passwords._1, email.trim, airlineName.trim) 
     } 
     {
       // Unbinding: Create the mapping values from an existing User value

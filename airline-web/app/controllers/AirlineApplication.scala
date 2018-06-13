@@ -35,7 +35,8 @@ class AirlineApplication extends Controller {
       "serviceQuality" -> JsNumber(airline.airlineInfo.serviceQuality),
       "serviceFunding" -> JsNumber(airline.airlineInfo.serviceFunding),
       "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
-      "gradeDescription" -> JsString(airline.airlineGrade.description)))
+      "gradeDescription" -> JsString(airline.airlineGrade.description),
+      "gradeValue" -> JsNumber(airline.airlineGrade.value)))
   }
   
   def getAllAirlines() = Authenticated { implicit request =>

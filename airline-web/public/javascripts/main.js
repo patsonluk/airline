@@ -497,9 +497,9 @@ function updateAllPanels(airlineId) {
 	
 	if (activeAirline) {
 		if (!activeAirline.headquarterAirport) {
-			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough")
+			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough", 1, true, true)
 		} else if ($.isEmptyObject(flightPaths)) {
-			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget")
+			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
 		}
 		
 	}
@@ -547,15 +547,24 @@ function updateTime(cycle, fraction) {
 }
 
 
-function printConsole(message, messageLevel = 1, activateConsole = false) {
+function printConsole(message, messageLevel = 1, activateConsole = false, persistMessage = false) {
 	var messageClass
 	if (messageLevel == 1) {
 		messageClass = 'actionMessage'
 	} else {
 		messageClass = 'errorMessage'
 	}
+
+	if (message == '') { //try to clear message, check if there was a persistent message
+		var previousMessage = $('#console #consoleMessage').data('persistentMessage')
+		if (previousMessage) {
+			message = previousMessage
+		}
+	}
 	
-	
+	if (persistMessage) {
+		$('#console #consoleMessage').data('persistentMessage', message)
+	}
 	var consoleVisible = $('#console #consoleMessage').is(':visible')
 	
 	if (consoleVisible) {

@@ -6,7 +6,7 @@ import FlightType._
 
 
 abstract class AirportFeature {
-  val MAX_STREGTH = 10
+  val MAX_STREGTH = 100
   def strength : Int
   //def airportId : Int
   def featureType : AirportFeatureType.Value
@@ -59,13 +59,13 @@ sealed case class VacationHubFeature(strength : Int) extends AirportFeature {
     if (toAirport.id == airportId && passengerType == PassengerType.TOURIST) { //only affect if as a destination and tourists
       val goFactor = { //out of how many people, will there be 1 going to this spot per year
         if (flightType == SHORT_HAUL_DOMESTIC) {
-          100
+          50
         } else if (flightType == LONG_HAUL_DOMESTIC) {
-          300  
+          150  
         } else if (flightType == SHORT_HAUL_INTERNATIONAL) {
-          200
+          100
         } else {
-          500
+          250
         }
       }
       (fromAirport.population / goFactor / 52 * fromAirport.income / 50000  * strengthFactor).toInt //assume in a city of 50k income out of goFactor people, 1 will visit this spot at full strength (10)
