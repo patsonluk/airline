@@ -114,8 +114,8 @@ object WikiUtil {
   @throws(classOf[java.net.SocketTimeoutException])
   def get(
     url:            String,
-    connectTimeout: Int    = 5000,
-    readTimeout:    Int    = 5000,
+    connectTimeout: Int    = 20000,
+    readTimeout:    Int    = 20000,
     requestMethod:  String = "GET") =
     {
       import java.net.{ URL, HttpURLConnection }
