@@ -94,11 +94,11 @@
 			    					<h4>Current Details</h4>
 				    				<div class="table-row">
 					    				<div class="label"><h5>From:</h5></div>
-					    				<div class="value" id="linkFromAirport"></div>
+					    				<div class="value clickable" id="linkFromAirport"></div>
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>To:</h5></div>
-					    				<div class="value" id="linkToAirport"></div>
+					    				<div class="value clickable" id="linkToAirport"></div>
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>Distance:</h5></div>
@@ -193,14 +193,14 @@
 					    		<div class="table-row">
 					    			<div class="label"><h5>From:</h5></div>
 				    				<div class="value">
-				    					<span id="planLinkFromAirportName"></span>
+				    					<span id="planLinkFromAirportName" class="clickable"></span>
 				    					<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/globe--pencil.png")' class='button' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
 				    					<div class="value"><select id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 				    				</div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>To:</h5></div>
-					    			<div class="value" id="planLinkToAirportName"></div>
+					    			<div class="value clickable" id="planLinkToAirportName"></div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Mutual Relationship:</h5></div>
@@ -376,7 +376,7 @@
 			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), true)">Build Headquarter</div>
     					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Build Base</div>
     					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false, parseInt($('#airportDetailsBaseScale').text()) + 1)">Upgrade Base</div>
-    					<div class="button" onclick="showWorldMap()">Cancel</div>
+<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
   					</div>
   					<div id="airportDetails" class="section" style="width: 90%; float:left;">
   						<h4>Airport Details</h4>

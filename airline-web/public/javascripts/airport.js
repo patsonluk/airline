@@ -5,7 +5,7 @@ var activeAirportPopupInfoWindow
 function showAirportDetails(airportId) {
 	setActiveDiv($("#airportCanvas"))
 	highlightTab($('#airportCanvasTab'))
-	deselectLink()
+	//deselectLink()
 	
 	if (!airportId) {
 		airportId = activeAirline.headquarterAirport.airportId

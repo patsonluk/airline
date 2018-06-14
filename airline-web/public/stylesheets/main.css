@@ -231,7 +231,7 @@ a.selected, a:hover, span.selected, .table .table-row.clickable:hover, .table .t
 	background-color: #A1D490;
 }
 
-a:hover, .table .table-row.clickable:hover, .table .cell.clickable:hover, li.clickable:hover {
+a:hover, .clickable:hover {
 	cursor: pointer;
 }
 

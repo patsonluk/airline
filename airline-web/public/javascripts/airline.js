@@ -489,8 +489,8 @@ function refreshLinkDetails(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	$("#linkFromAirport").html(getAirportText(link.fromAirportCity, link.fromAirportName) + "&nbsp;" + getCountryFlagImg(link.fromCountryCode))
-	    	$("#linkToAirport").html(getAirportText(link.toAirportCity, link.toAirportName) + "&nbsp;" + getCountryFlagImg(link.toCountryCode))
+	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getAirportText(link.fromAirportCity, link.fromAirportName) + "&nbsp;" + getCountryFlagImg(link.fromCountryCode))
+	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getAirportText(link.toAirportCity, link.toAirportName) + "&nbsp;" + getCountryFlagImg(link.toCountryCode))
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
 	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").text(link.computedQuality)
@@ -824,7 +824,7 @@ var planLinkInfoByModel = {}
 var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
-	$('#planLinkFromAirportName').html(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.fromCountryCode))
+	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.fromCountryCode))
 	if (!linkInfo.existingLink && activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
@@ -845,7 +845,7 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	
-	$('#planLinkToAirportName').html(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.toCountryCode))
+	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.toCountryCode))
 	
 	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
 	
