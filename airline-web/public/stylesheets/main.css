@@ -5,7 +5,6 @@ body {
 	background: #abbaab;  /* fallback for old browsers */
 	background: -webkit-linear-gradient(to bottom, #ffffff, #abbaab);  /* Chrome 10-25, Safari 5.1-6 */
 	background: linear-gradient(to bottom, #ffffff, #abbaab); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-
 	background-repeat: no-repeat;
     background-attachment: fixed;
 }
@@ -26,9 +25,6 @@ body {
 	z-index: 999;
 	background-color: #FFF;
 	/* 	margin-top: -80px; */
-	-moz-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-	-webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
 }
 
 .table {
@@ -109,7 +105,7 @@ img.button {
 	border-radius: 10px 0px 0px 10px;
 	background-color: #ebebeb;
 	width: 100%;
-	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
+	box-shadow: inset 0 0 2px white, -2px 0 3px rgba(0, 0, 0, 0.3);
 	box-sizing: border-box;
 }
 }
@@ -337,8 +333,17 @@ div#canvas {
     height: -webkit-calc(100vh - 70px); 
     height: -moz-calc(100vh - 70px);
     height: calc(100vh - 70px);
-
 //	background-image:url("../../assets/images/background/brushedsteel.jpg");
+}
+
+#main-tabs {
+	height: 100vh;
+	background: #023d5d;  /* fallback for old browsers */
+	background: -webkit-linear-gradient(to bottom, #ffffff, #023d5d);  /* Chrome 10-25, Safari 5.1-6 */
+	background: linear-gradient(to bottom, #ffffff, #023d5d); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+	background-repeat: no-repeat;
+    background-attachment: fixed;
+    box-shadow: inset -2px 0 3px rgba(0, 0, 0, 0.2);
 }
 
 
