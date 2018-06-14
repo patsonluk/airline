@@ -489,8 +489,8 @@ function refreshLinkDetails(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getAirportText(link.fromAirportCity, link.fromAirportName) + "&nbsp;" + getCountryFlagImg(link.fromCountryCode))
-	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getAirportText(link.toAirportCity, link.toAirportName) + "&nbsp;" + getCountryFlagImg(link.toCountryCode))
+	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportName))
+	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportName))
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
 	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").text(link.computedQuality)
@@ -831,7 +831,7 @@ function updatePlanLinkInfo(linkInfo) {
 		availableToSlot -= linkInfo.existingLink.frequency
 	}
 	
-	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.fromCountryCode) + " " + availableFromSlot + " available slot(s)")
+	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + availableFromSlot + " available slot(s)")
 	if (!linkInfo.existingLink && activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
@@ -852,7 +852,7 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	
-	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.toCountryCode) + " " + availableToSlot + " available slot(s)")
+	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + availableToSlot + " available slot(s)")
 	
 	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
 	
@@ -1362,8 +1362,8 @@ function updateLinksTable(sortProperty, sortOrder) {
 	$.each(loadedLinks, function(index, link) {
 		var row = $("<div class='table-row clickable' onclick='selectLinkFromTable($(this), " + link.id + ")'></div>")
 		
-		row.append("<div class='cell'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "</div>")
-		row.append("<div class='cell'>" + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+		row.append("<div class='cell'>" + getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode) + "</div>")
+		row.append("<div class='cell'>" + getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
 		row.append("<div class='cell' align='right'>" + link.distance + "km</div>")
 		row.append("<div class='cell' align='right'>" + link.totalCapacity + "</div>")
 		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
