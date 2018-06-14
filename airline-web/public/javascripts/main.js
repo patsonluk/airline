@@ -75,6 +75,7 @@ function loadUser(isLogin) {
 			  refreshLoginBar()
 			  printConsole('') //clear console
 			  getAirports();
+			  showTabs();
 		  }
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
@@ -116,6 +117,7 @@ function logout() {
 	    	console.log(message)
 	    	activeUser = null
 	    	activeAirline = null
+	    	hideTabs()
 	    	$.removeCookie('sessionActive')
 	    	//refreshLoginBar()
 	    	//showFloatMessage("Successfully logged out")
@@ -128,6 +130,14 @@ function logout() {
 	});
 	
 	removeMarkers()
+}
+
+function showTabs() {
+	$('#main-tabs').show()
+}
+
+function hideTabs() {
+	$('#main-tabs').hide()
 }
 
 

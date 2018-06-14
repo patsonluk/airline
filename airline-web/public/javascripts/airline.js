@@ -824,7 +824,14 @@ var planLinkInfoByModel = {}
 var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
-	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.fromCountryCode))
+	var availableFromSlot = linkInfo.maxFrequencyFromAirport
+	var availableToSlot = linkInfo.maxFrequencyToAirport
+	if (linkInfo.existingLink) {
+		availableFromSlot -= linkInfo.existingLink.frequency
+		availableToSlot -= linkInfo.existingLink.frequency
+	}
+	
+	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.fromCountryCode) + " " + availableFromSlot + " available slot(s)")
 	if (!linkInfo.existingLink && activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
@@ -845,7 +852,7 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	
-	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.toCountryCode))
+	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + getCountryFlagImg(linkInfo.toCountryCode) + " " + availableToSlot + " available slot(s)")
 	
 	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
 	

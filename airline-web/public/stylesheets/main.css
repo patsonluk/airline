@@ -84,7 +84,7 @@ div.button {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	color: #454544;
-	background-color: #ddd;
+	background-color: #ebebeb;
 	text-decoration: none;
 	font-size: 12px;
 	display: inline-block;
@@ -94,6 +94,7 @@ div.button {
 	padding: 5px 15px;
 	border-radius: 3px;
 	margin: 5px 5px;
+	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
 }
 
 div.button.selected {
@@ -103,6 +104,16 @@ div.button.selected {
 img.button {
 	cursor: pointer
 }
+
+.left-tab {
+	border-radius: 10px 0px 0px 10px;
+	background-color: #ebebeb;
+	width: 100%;
+	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
+	box-sizing: border-box;
+}
+}
+
 
 .gm-style-iw {
 	overflow: hidden !important;
@@ -249,11 +260,11 @@ a:hover, .clickable:hover {
 	list-style: none;
 	position: relative;
 } 
+
 .tabs li { 
 	float : left;
 	display: block;
 	padding: 10px 10px;
-	border-radius: 3px 3px 0 0;
 	cursor: pointer;
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
