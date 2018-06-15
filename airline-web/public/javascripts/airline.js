@@ -489,8 +489,13 @@ function refreshLinkDetails(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportName))
-	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportName))
+	    	var availableFromSlot = link.maxFrequencyFromAirport
+	    	var availableToSlot = link.maxFrequencyToAirport
+	    	availableFromSlot -= link.frequency
+	    	availableToSlot -= link.frequency
+	    	
+	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportName) + '&nbsp;' + availableFromSlot + " available slot(s)")
+	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportName)+ '&nbsp;' + availableToSlot + " available slot(s)")
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
 	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").text(link.computedQuality)

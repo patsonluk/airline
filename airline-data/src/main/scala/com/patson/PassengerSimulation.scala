@@ -19,6 +19,7 @@ import com.patson.model._
 import scala.collection.mutable.ArrayBuffer
 import scala.util.control.Breaks._
 import com.patson.data.CountrySource
+import java.util.concurrent.atomic.AtomicInteger
 
 object PassengerSimulation {
 
@@ -110,8 +111,9 @@ object PassengerSimulation {
        
        println("Available links: " + availableLinks.length)
        
-       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
-       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
+//       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
+//       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
+       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
        
        //start consuming routes
        println()
@@ -237,7 +239,82 @@ object PassengerSimulation {
   
   
    
-  /**
+ 
+//  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Future[Map[PassengerGroup, Map[Airport, Route]]] = {
+//    val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
+//    
+//    println("Total routes to compute : " + totalRequiredRoutes)
+//    println("Total passenger groups : " + requiredRoutes.size)
+//    
+//    val links = linksList.toArray
+//    
+//    val demandSource = Source(requiredRoutes.iterator)
+//    val computeFlow: Flow[(PassengerGroup, Set[Airport]), (PassengerGroup, Map[Airport, Route])] = Flow[(PassengerGroup, Set[Airport])].map {
+//      case(passengerGroup, toAirports) =>
+//        val linkClass = passengerGroup.preference.linkClass
+//        //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
+//        val linkConsiderations = ArrayBuffer[LinkConsideration]()
+//        
+//        var walker = 0
+//        while (walker < links.length) {
+//          val link = links(walker)
+//          walker += 1
+//          
+//          //see if there are any seats for that class (or lower) left
+//          link.availableSeatsAtOrBelowClass(linkClass).foreach { 
+//            case(matchingLinkClass, seatsLeft) =>
+//              //from the perspective of the passenger group, how well does it know each link
+//              val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
+//              val airlineAwarenessFromReputation = link.airline.getReputation() / 2 
+//              //println("Awareness from reputation " + airlineAwarenessFromReputation)
+//              val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
+//              
+//              if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
+//                var cost = passengerGroup.preference.computeCost(link) //cost should NOT be lower if seats available are lower than requested class, this reflect the unwillingness to downgrade
+//                //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
+//                val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)
+//                val linkConsideration2 = LinkConsideration(link, cost, matchingLinkClass, true)
+//                if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
+//                  linkConsiderations += linkConsideration1
+//                }
+//                if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
+//                  linkConsiderations += linkConsideration2
+//                }
+//              }
+//          }
+//          
+//        }
+//        
+//        //then find the shortest route based on the cost
+//        
+//        val routeMap = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, 4)
+//        //if (!routeMap.isEmpty) { println(routeMap) }
+//        (passengerGroup, routeMap)
+//    }
+//    //val resultSink = Sink.foreach { demandInfo : (Airport, Map[Airport, Int]) => println() }
+//    var counter = 0
+//    var progressCount = 0
+//    val progressChunk = requiredRoutes.size / 100
+//    
+//    val resultSink = Sink.fold(Map[PassengerGroup, Map[Airport, Route]]()) {
+//      (map, demandInfo : (PassengerGroup, Map[Airport, Route])) =>
+//         counter += 1
+//          if (progressChunk == 0 || counter % progressChunk == 0) {
+//            progressCount += 1;
+//            print(".")
+//            if (progressCount % 10 == 0) {
+//              print(progressCount + "% ")
+//            }
+//          }
+//        map + demandInfo
+//    }
+//    
+//    val completeFlow = demandSource.via(computeFlow).to(resultSink)
+//    val materializedFlow = completeFlow.run()
+//    materializedFlow.get(resultSink)
+//  }
+  
+   /**
    * Return all routes if available, with destination defined in the input Map's value, the Input map key indicates various Passenger Group
    * 
    * Returned value is in form of Future[Map[PassengerGroup, Map[Airport, Route]]], which the Map key should always present even if no valid route is found at all
@@ -248,7 +325,7 @@ object PassengerSimulation {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Future[Map[PassengerGroup, Map[Airport, Route]]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Map[PassengerGroup, Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
@@ -256,9 +333,12 @@ object PassengerSimulation {
     
     val links = linksList.toArray
     
-    val demandSource = Source(requiredRoutes.iterator)
-    val computeFlow: Flow[(PassengerGroup, Set[Airport]), (PassengerGroup, Map[Airport, Route])] = Flow[(PassengerGroup, Set[Airport])].map {
-      case(passengerGroup, toAirports) =>
+    val counter = new AtomicInteger(0)
+    val progressCount = new AtomicInteger(0)
+    val progressChunk = requiredRoutes.size / 100
+    
+    val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.par.map {
+      case(passengerGroup, toAirports) => {
         val linkClass = passengerGroup.preference.linkClass
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
         val linkConsiderations = ArrayBuffer[LinkConsideration]()
@@ -290,36 +370,23 @@ object PassengerSimulation {
                 }
               }
           }
-          
         }
         
         //then find the shortest route based on the cost
         
-        val routeMap = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, 4)
+        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, 4)
+        if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
+          print(".")
+          if (progressCount.incrementAndGet() % 10 == 0) {
+            print(progressCount.get + "% ")
+          }
+        }
         //if (!routeMap.isEmpty) { println(routeMap) }
         (passengerGroup, routeMap)
-    }
-    //val resultSink = Sink.foreach { demandInfo : (Airport, Map[Airport, Int]) => println() }
-    var counter = 0
-    var progressCount = 0
-    val progressChunk = requiredRoutes.size / 100
+      }
+    }.toMap.seq
     
-    val resultSink = Sink.fold(Map[PassengerGroup, Map[Airport, Route]]()) {
-      (map, demandInfo : (PassengerGroup, Map[Airport, Route])) =>
-         counter += 1
-          if (progressChunk == 0 || counter % progressChunk == 0) {
-            progressCount += 1;
-            print(".")
-            if (progressCount % 10 == 0) {
-              print(progressCount + "% ")
-            }
-          }
-        map + demandInfo
-    }
-    
-    val completeFlow = demandSource.via(computeFlow).to(resultSink)
-    val materializedFlow = completeFlow.run()
-    materializedFlow.get(resultSink)
+    routeMaps  
   }
   
   def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int]) : Boolean = {

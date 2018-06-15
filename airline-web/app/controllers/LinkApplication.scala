@@ -311,10 +311,13 @@ class LinkApplication extends Controller {
   def addLink(airlineId : Int) = AuthenticatedAirline(airlineId) { request => addLinkBlock(request) }
   
   def getLink(airlineId : Int, linkId : Int) = AuthenticatedAirline(airlineId) { request =>
-    LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
+    LinkSource.loadLinkById(linkId, LinkSource.FULL_LOAD) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
-          Ok(Json.toJson(link))
+          val (maxFrequencyFromAirport, maxFrequencyToAirport) = getMaxFrequencyByAirports(link.from, link.to, link.airline, Some(link))
+          Ok(Json.toJson(link).asInstanceOf[JsObject] + 
+             ("maxFrequencyFromAirport" -> JsNumber(maxFrequencyFromAirport)) +
+             ("maxFrequencyToAirport" -> JsNumber(maxFrequencyToAirport)))
         } else {
           Forbidden
         }
