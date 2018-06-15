@@ -181,6 +181,7 @@ package object controllers {
       "city" -> JsString(base.airport.city),
       "airlineId" -> JsNumber(base.airline.id),
       "airlineName" -> JsString(base.airline.name),
+      "airlineCountryCode" -> JsString(base.airline.getCountryCode().get),
       "scale" -> JsNumber(base.scale),
       "upkeep" -> JsNumber(base.getUpkeep),
       "upgradeCost" -> JsNumber(base.getUpgradeCost(base.scale + 1)),

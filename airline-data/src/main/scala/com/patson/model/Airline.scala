@@ -3,7 +3,7 @@ package com.patson.model
 case class Airline(name: String, var id : Int = 0) extends IdObject {
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
   var bases : List[AirlineBase] = List.empty
-  var countryCode : Option[String] = None
+  
   def setBalance(balance : Long) = { 
     airlineInfo.balance = balance 
   }
@@ -19,6 +19,13 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   def setMaintainenceQuality(maintainenceQuality : Double) {
     airlineInfo.maintenanceQuality = maintainenceQuality
   }
+  def setCountryCode(countryCode : String) = {
+    airlineInfo.countryCode = Some(countryCode)
+  }
+  def getCountryCode() = {
+    airlineInfo.countryCode
+  }
+  
   def setBases(bases : List[AirlineBase]) {
     this.bases = bases
   }
@@ -86,12 +93,7 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   
   def getBases() = bases
   def getHeadQuarter() = bases.find( _.headquarter )
-  def getCountryCode() = {
-    if (countryCode.isEmpty) {
-      countryCode = getHeadQuarter().map( _.countryCode)
-    }
-    countryCode
-  }
+  
   def getBalance() = airlineInfo.balance
   def getServiceQuality() = airlineInfo.serviceQuality
   def getServiceFunding() = airlineInfo.serviceFunding
@@ -107,7 +109,7 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   }
 }
 
-case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double)
+case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double, var countryCode : Option[String] = None)
 
 object TransactionType extends Enumeration {
   type TransactionType = Value

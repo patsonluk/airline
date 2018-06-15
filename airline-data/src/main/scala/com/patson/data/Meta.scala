@@ -209,6 +209,7 @@ object Meta {
       "service_funding INTEGER," +
       "maintenance_quality DECIMAL(5,2)," +
       "reputation DECIMAL(5,2)," +
+      "country_code CHAR(2)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
 

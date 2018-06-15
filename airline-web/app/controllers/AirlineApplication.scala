@@ -27,7 +27,8 @@ import play.api.mvc.Security.AuthenticatedRequest
 
 class AirlineApplication extends Controller {
   object OwnedAirlineWrites extends Writes[Airline] {
-    def writes(airline: Airline): JsValue = JsObject(List(
+    def writes(airline: Airline): JsValue =  {
+      var values = List(
       "id" -> JsNumber(airline.id),
       "name" -> JsString(airline.name),
       "balance" -> JsNumber(airline.airlineInfo.balance),
@@ -36,7 +37,14 @@ class AirlineApplication extends Controller {
       "serviceFunding" -> JsNumber(airline.airlineInfo.serviceFunding),
       "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
-      "gradeValue" -> JsNumber(airline.airlineGrade.value)))
+      "gradeValue" -> JsNumber(airline.airlineGrade.value))
+      
+      airline.getCountryCode.foreach { countryCode =>
+        values = values :+ ("countryCode" -> JsString(countryCode))
+      }
+      
+      JsObject(values)
+    }
   }
   
   def getAllAirlines() = Authenticated { implicit request =>
@@ -132,57 +140,65 @@ class AirlineApplication extends Controller {
     if (request.body.isInstanceOf[AnyContentAsJson]) {
       val inputBase = request.body.asInstanceOf[AnyContentAsJson].json.as[AirlineBase]
       //todo validate the user is the same
-      val baseRejection = getBaseRejection(request.user, inputBase, inputBase.scale)
-      val cost = inputBase.getUpgradeCost(inputBase.scale)
+      val airline = request.user
       
-      if (baseRejection.isDefined) {
-        BadRequest("base request rejected: " + baseRejection.get)
+      if (inputBase.airline.id != airline.id) {
+        BadRequest("not the same user!")
       } else {
-        if (inputBase.headquarter) {
-           AirlineSource.loadAirlineHeadquarter(airlineId) match {
-             case Some(headquarter) =>
-             if (headquarter.airport.id != airportId) {
-               BadRequest("Not allowed to change headquarter for now")
-             } else {
-               val updateBase = headquarter.copy(scale = inputBase.scale)
-               AirlineSource.saveAirlineBase(updateBase)
-               AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
-               Created(Json.toJson(updateBase))
-             }
-             case None => //ok to add then
-               AirportSource.loadAirportById(inputBase.airport.id, true).fold {
-                 BadRequest("airport id " +  inputBase.airport.id + " not found!")
-               } { airport =>//TODO for now. Maybe update to Ad event later on
-                 val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
-                 AirlineSource.saveAirlineBase(newBase)
-                 if (airport.getAirlineAwareness(airlineId) < 10) { //update to 10 for hq
-                   airport.setAirlineAwareness(airlineId, 10)
-                   AirportSource.updateAirlineAppeal(List(airport))
-                 }
-                 AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
-                 Created(Json.toJson(newBase))
-               }
-            }
+        val baseRejection = getBaseRejection(airline, inputBase, inputBase.scale)
+        val cost = inputBase.getUpgradeCost(inputBase.scale)
+        
+        if (baseRejection.isDefined) {
+          BadRequest("base request rejected: " + baseRejection.get)
         } else {
-          AirportSource.loadAirportById(inputBase.airport.id, true).fold {
-            BadRequest("airport id " +  inputBase.airport.id + " not found!")
-          } { airport =>
-                AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
-                case Some(base) => //updating
-                  val updateBase = base.copy(scale = inputBase.scale)
-                  AirlineSource.saveAirlineBase(updateBase)
-                  AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
-                  Created(Json.toJson(updateBase))
-                case None => //ok to add
-                  AirportSource.loadAirportById(inputBase.airport.id, true).fold {
-                       BadRequest("airport id " +  inputBase.airport.id + " not found!")
-                  } { airport =>
-                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
-                    AirlineSource.saveAirlineBase(newBase)
-                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
-                    Created(Json.toJson(newBase))
-                  }
+          if (inputBase.headquarter) {
+             AirlineSource.loadAirlineHeadquarter(airlineId) match {
+               case Some(headquarter) =>
+               if (headquarter.airport.id != airportId) {
+                 BadRequest("Not allowed to change headquarter for now")
+               } else {
+                 val updateBase = headquarter.copy(scale = inputBase.scale)
+                 AirlineSource.saveAirlineBase(updateBase)
+                 airline.setCountryCode(updateBase.countryCode)
+                 AirlineSource.saveAirlineInfo(airline)
+                 AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                 Created(Json.toJson(updateBase))
+               }
+               case None => //ok to add then
+                 AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+                   BadRequest("airport id " +  inputBase.airport.id + " not found!")
+                 } { airport =>//TODO for now. Maybe update to Ad event later on
+                   val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
+                   AirlineSource.saveAirlineBase(newBase)
+                   if (airport.getAirlineAwareness(airlineId) < 10) { //update to 10 for hq
+                     airport.setAirlineAwareness(airlineId, 10)
+                     AirportSource.updateAirlineAppeal(List(airport))
+                   }
+                   AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                   Created(Json.toJson(newBase))
+                 }
               }
+          } else {
+            AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+              BadRequest("airport id " +  inputBase.airport.id + " not found!")
+            } { airport =>
+                  AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
+                  case Some(base) => //updating
+                    val updateBase = base.copy(scale = inputBase.scale)
+                    AirlineSource.saveAirlineBase(updateBase)
+                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                    Created(Json.toJson(updateBase))
+                  case None => //ok to add
+                    AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+                         BadRequest("airport id " +  inputBase.airport.id + " not found!")
+                    } { airport =>
+                      val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
+                      AirlineSource.saveAirlineBase(newBase)
+                      AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                      Created(Json.toJson(newBase))
+                    }
+                }
+            }
           }
         }
       }

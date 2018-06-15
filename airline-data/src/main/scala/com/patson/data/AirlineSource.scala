@@ -63,6 +63,10 @@ object AirlineSource {
           airline.setServiceQuality(resultSet.getDouble("service_quality"))
           airline.setServiceFunding(resultSet.getInt("service_funding"))
           airline.setMaintainenceQuality(resultSet.getDouble("maintenance_quality"))
+          val countryCode = resultSet.getString("country_code")
+          if (countryCode != null) {
+            airline.setCountryCode(countryCode)
+          }
           
           if (fullLoad) {
             airline.setBases(loadAirlineBasesByAirline(airline.id))
@@ -108,13 +112,14 @@ object AirlineSource {
             airline.id = generatedId
             
             //insert airline info too
-            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, service_funding, maintenance_quality, reputation) VALUES(?,?,?,?,?,?)")
+            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, service_funding, maintenance_quality, reputation, country_code) VALUES(?,?,?,?,?,?,?)")
             infoStatement.setInt(1, airline.id)
             infoStatement.setLong(2, airline.getBalance())
             infoStatement.setDouble(3, airline.getServiceQuality())
             infoStatement.setInt(4, airline.getServiceFunding())
             infoStatement.setDouble(5, airline.getMaintenanceQuality())
             infoStatement.setDouble(6, airline.getReputation())
+            infoStatement.setString(7, airline.getCountryCode().getOrElse(null))
             infoStatement.executeUpdate()
           } 
       }
@@ -148,13 +153,14 @@ object AirlineSource {
     this.synchronized {
       val connection = Meta.getConnection()
       try {
-        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ? WHERE airline = ?")
+        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ? WHERE airline = ?")
         updateStatement.setLong(1, airline.getBalance())
         updateStatement.setDouble(2, airline.getServiceQuality())
         updateStatement.setInt(3, airline.getServiceFunding())
         updateStatement.setDouble(4, airline.getMaintenanceQuality())
         updateStatement.setDouble(5, airline.getReputation())
-        updateStatement.setInt(6, airline.id)
+        updateStatement.setString(6, airline.getCountryCode().getOrElse(null))
+        updateStatement.setInt(7, airline.id)
         updateStatement.executeUpdate()
         updateStatement.close()
       } finally {
@@ -169,7 +175,7 @@ object AirlineSource {
       
       try {
         connection.setAutoCommit(false)
-        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ? WHERE airline = ?")
+        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ? WHERE airline = ?")
           
         airlines.foreach { airline =>
           updateStatement.setLong(1, airline.getBalance())
@@ -177,7 +183,9 @@ object AirlineSource {
           updateStatement.setInt(3, airline.getServiceFunding())
           updateStatement.setDouble(4, airline.getMaintenanceQuality())
           updateStatement.setDouble(5, airline.getReputation())
-          updateStatement.setInt(6, airline.id)
+          updateStatement.setString(6, airline.getCountryCode().getOrElse(null))
+          updateStatement.setInt(7, airline.id)
+          
           //updateStatement.executeUpdate()
           updateStatement.addBatch()
         }
@@ -189,8 +197,6 @@ object AirlineSource {
       }
     }
   }
-  
-  
   
   def deleteAirline(airlineId : Int) = {
     deleteAirlinesByCriteria(List(("id", airlineId)))

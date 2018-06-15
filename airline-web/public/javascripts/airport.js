@@ -569,7 +569,7 @@ function updateBaseList(statistics) {
 	var hasBases = false
 	$.each(statistics.bases, function(index, base) {
 		var row = $("<div class='table-row'></div>")
-		var countryFlagUrl = getCountryFlagUrl(base.countryCode)
+		var countryFlagUrl = getCountryFlagUrl(base.airlineCountryCode)
 		if (countryFlagUrl) {
 			row.append("<div class='cell'><img src='" + countryFlagUrl + "'/>" + base.airlineName + "</div>")
 		} else {
