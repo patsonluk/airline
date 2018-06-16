@@ -878,7 +878,7 @@ function updateAirportExtendedDetails(airportId) {
 		    	$(".airportOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness))
 	    	}
 	    	
-	    	$(".airportSlots").text(airport.availableSlots + " (" + airport.slots + ")")
+	    	$(".airportSlots").text(airport.availableSlots + " / " + airport.slots)
 	    	
 //	    	$.each(airport.linkCounts, function(withLinksAirlineId, linkCount) {
 //	    		if (airlineId == withLinksAirlineId) {
@@ -909,7 +909,7 @@ function updateAirportExtendedDetails(airportId) {
 
 function updateAirportSlots(airportId) {
 	//clear the old ones
-	$(".airportPopupAssignedSlots").text()
+	$(".airportAssignedSlots").text()
 	
 	var airlineId = activeAirline.id
 	$.ajax({
@@ -917,7 +917,8 @@ function updateAirportSlots(airportId) {
 		url: "airports/" + airportId + "/slots?airlineId=" + airlineId,
 	    dataType: 'json',
 	    success: function(slotInfo) {
-    		$(".airportAssignedSlots").text(slotInfo.assignedSlots + " (" + slotInfo.maxSlots + ")")
+	    	var availableSlots = slotInfo.maxSlots - slotInfo.assignedSlots 
+    		$(".airportAssignedSlots").text(availableSlots + " / " + slotInfo.maxSlots)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
