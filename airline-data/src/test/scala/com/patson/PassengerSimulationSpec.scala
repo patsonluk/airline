@@ -147,7 +147,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
       val toAirports = Set[Airport]()
       toAirports ++= toAirportsList
-      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds), Duration.Inf)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds)
       
       result.isDefinedAt(economyPassengerGroup).shouldBe(true)
       toAirports.foreach { toAirport =>
@@ -173,7 +173,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
       val toAirports = Set[Airport]()
       toAirports ++= toAirportsList
-      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds), Duration.Inf)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds)
       
       toAirports.foreach { toAirport =>
         val route = result(economyPassengerGroup)(toAirport)
@@ -208,7 +208,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
       val toAirports = Set[Airport]()
       toAirports ++= toAirportsList
-      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds), Duration.Inf)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds)
       
       //for economy class it should only be able to find routes to 1st and 2nd airports
       //1st airport 
@@ -250,7 +250,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirports = Set[Airport]()
       toAirports ++= toAirportsList
-      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports), links, allAirportIds), Duration.Inf)
+      val result : Map[PassengerGroup, Map[Airport, Route]] = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports), links, allAirportIds)
       
       result(economyPassengerGroup).isEmpty.shouldBe(true) //no awareness
     }
@@ -289,13 +289,13 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       )
       
       val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
-      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+      val result : Map[PassengerGroup, Map[Airport, Route]] = 
           PassengerSimulation.findAllRoutes(
             Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports),
               links, 
               activeAirports,
-              countryOpenness = countryOpenness),
-            Duration.Inf)
+              countryOpenness = countryOpenness)
+            
       
       result.isDefinedAt(economyPassengerGroup).shouldBe(true)
       toAirports.foreach { toAirport =>
@@ -343,13 +343,13 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       )
       
       val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
-      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+      val result : Map[PassengerGroup, Map[Airport, Route]] =
           PassengerSimulation.findAllRoutes(
             Map(economyPassengerGroup -> toAirports),
               links, 
               activeAirports,
-              countryOpenness = countryOpenness),
-            Duration.Inf)
+              countryOpenness = countryOpenness)
+            
       
       result.isDefinedAt(economyPassengerGroup).shouldBe(true)
       result(economyPassengerGroup).isDefinedAt(airport2).shouldBe(true)
@@ -392,13 +392,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       )
       
       val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
-      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+      val result : Map[PassengerGroup, Map[Airport, Route]] =
           PassengerSimulation.findAllRoutes(
             Map(economyPassengerGroup -> toAirports),
               links, 
               activeAirports,
-              countryOpenness = countryOpenness),
-            Duration.Inf)
+              countryOpenness = countryOpenness)
       
       result.isDefinedAt(economyPassengerGroup).shouldBe(true)
       result(economyPassengerGroup).isDefinedAt(airport2).shouldBe(true) //ok domestic flight
@@ -442,13 +441,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       )
       
       val activeAirports = scala.collection.mutable.Set(List.range(1, 5) : _*)
-      val result : Map[PassengerGroup, Map[Airport, Route]] = Await.result(
+      val result : Map[PassengerGroup, Map[Airport, Route]] =
           PassengerSimulation.findAllRoutes(
             Map(economyPassengerGroup -> toAirports),
               links, 
               activeAirports,
-              countryOpenness = countryOpenness),
-            Duration.Inf)
+              countryOpenness = countryOpenness)
       
       result.isDefinedAt(economyPassengerGroup).shouldBe(true)
       result(economyPassengerGroup).isDefinedAt(airport2).shouldBe(true) //ok domestic flight
