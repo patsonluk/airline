@@ -159,8 +159,6 @@ class AirlineApplication extends Controller {
                } else {
                  val updateBase = headquarter.copy(scale = inputBase.scale)
                  AirlineSource.saveAirlineBase(updateBase)
-                 airline.setCountryCode(updateBase.countryCode)
-                 AirlineSource.saveAirlineInfo(airline)
                  AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
                  Created(Json.toJson(updateBase))
                }
@@ -174,6 +172,9 @@ class AirlineApplication extends Controller {
                      airport.setAirlineAwareness(airlineId, 10)
                      AirportSource.updateAirlineAppeal(List(airport))
                    }
+                   
+                   airline.setCountryCode(newBase.countryCode)
+                   AirlineSource.saveAirlineInfo(airline)
                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
                    Created(Json.toJson(newBase))
                  }
