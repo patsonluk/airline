@@ -9,8 +9,9 @@ function showAirportDetails(airportId) {
 	
 	if (!airportId) {
 		airportId = activeAirline.headquarterAirport.airportId
-		$('#airportPopupId').val(airportId)
 	}
+	$('#airportPopupId').val(airportId)
+	
 	$.ajax({
 		type: 'GET',
 		url: "airports/" + airportId,
