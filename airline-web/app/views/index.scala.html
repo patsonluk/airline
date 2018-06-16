@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+<!--   	<meta name="google-signin-client_id" content="526466847284-mmk6qg2bc4su9ihgqippccaha28edn81.apps.googleusercontent.com"> -->
     <style type="text/css">
       html, body { height: 100%; margin: 0; padding: 0; }
       #map { height: 100%; }
@@ -40,11 +41,13 @@
   	<div id="floatMessageBox" style="height: 30px; width: 400px; display: none;"></div>
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div style="float: left;">
-  			<span id="currentTime" class="label" style="margin: 0px 10px"></span>
-  			<span id="currentAirline" class="label" style="margin: 0px 10px; font-weight: bold"></span> 
-  			<span style="margin: 0px 10px">Balance: $<span id="balance" class="label"></span></span> 
-  			<span style="margin: 0px 10px">Reputation: <span id="reputation" class="label"></span> <span id="reputationLevel" class="label"></span> <span id="reputationStars"></span></span></span>
-  			<span style="margin: 0px 10px">Service Quality: <span id="serviceQuality" class="label"></span></span>
+  			<span id="topBarDetails" style="display: none;">
+	  			<span id="currentTime" class="label" style="margin: 0px 10px"></span>
+	  			<span id="currentAirline" class="label" style="margin: 0px 10px; font-weight: bold"></span> 
+	  			<span style="margin: 0px 10px">Balance: $<span id="balance" class="label"></span></span> 
+	  			<span style="margin: 0px 10px">Reputation: <span id="reputation" class="label"></span> <span id="reputationLevel" class="label"></span> <span id="reputationStars"></span></span>
+	  			<span style="margin: 0px 10px">Service Quality: <span id="serviceQuality" class="label"></span></span>
+  			</span>
   		</div>
   		<div style="float: right;">
   			<div style="display: hidden;" id="loginDiv">
@@ -53,6 +56,7 @@
 	  			<span class="label">Password</span>
 	  			<input type="password" id="loginPassword"/>
 	  			<div class="button" onclick="login()">Login</div>
+<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
 	  			<a href="signup"><div class="button" onclick="">Sign Up</div></a>
   			</div>
   			<div style="float: right; display: hidden;" id="logoutDiv">
@@ -1085,6 +1089,7 @@
 	 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
 	</script>
+<!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->
 	 
   </body>
 </html>

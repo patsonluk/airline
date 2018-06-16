@@ -75,7 +75,7 @@ function loadUser(isLogin) {
 			  refreshLoginBar()
 			  printConsole('') //clear console
 			  getAirports();
-			  showTabs();
+			  showUserSpecificElements();
 		  }
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
@@ -94,9 +94,9 @@ function loadUser(isLogin) {
 	if (isLogin) {
 		var userName = $("#loginUserName").val()
 		var password = $("#loginPassword").val()
-		 ajaxCall.headers = {
+		ajaxCall.headers = {
 			    "Authorization": "Basic " + btoa(userName + ":" + password)
-			  }
+		}
 
 	}
 	
@@ -105,6 +105,15 @@ function loadUser(isLogin) {
 
 function login()  {
 	loadUser(true)
+}
+
+function onGoogleLogin(googleUser) {
+	var profile = googleUser.getBasicProfile();
+    console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+	console.log('Name: ' + profile.getName());
+	console.log('Image URL: ' + profile.getImageUrl());
+	console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+	loginType='plain'
 }
 
 function logout() {
@@ -117,7 +126,7 @@ function logout() {
 	    	console.log(message)
 	    	activeUser = null
 	    	activeAirline = null
-	    	hideTabs()
+	    	hideUserSpecficElements()
 	    	$.removeCookie('sessionActive')
 	    	//refreshLoginBar()
 	    	//showFloatMessage("Successfully logged out")
@@ -132,12 +141,14 @@ function logout() {
 	removeMarkers()
 }
 
-function showTabs() {
+function showUserSpecificElements() {
 	$('#main-tabs').show()
+	$('#topBarDetails').show()
 }
 
-function hideTabs() {
+function hideUserSpecficElements() {
 	$('#main-tabs').hide()
+	$('#topBarDetails').hide()
 }
 
 
