@@ -173,7 +173,8 @@ package object controllers {
       JsSuccess(AirlineBase(airline, airport, "", scale, 0, headquarter))
     }
     
-    def writes(base: AirlineBase): JsValue = JsObject(List(
+    def writes(base: AirlineBase): JsValue = {
+      var jsObject = JsObject(List(
       "airportId" -> JsNumber(base.airport.id),
       "airportName" -> JsString(base.airport.name),
       "countryCode" -> JsString(base.airport.countryCode),
@@ -181,12 +182,19 @@ package object controllers {
       "city" -> JsString(base.airport.city),
       "airlineId" -> JsNumber(base.airline.id),
       "airlineName" -> JsString(base.airline.name),
-      "airlineCountryCode" -> JsString(base.airline.getCountryCode().get),
       "scale" -> JsNumber(base.scale),
       "upkeep" -> JsNumber(base.getUpkeep),
       "upgradeCost" -> JsNumber(base.getUpgradeCost(base.scale + 1)),
       "headquarter" -> JsBoolean(base.headquarter),
       "foundedCycle" -> JsNumber(base.foundedCycle)))
+      
+      base.airline.getCountryCode().foreach { countryCode =>
+        jsObject = jsObject + ("airlineCountryCode" -> JsString(countryCode))
+      }
+      
+      jsObject
+    }
+        
   }
   
   implicit object AirlineIncomeWrite extends Writes[AirlineIncome] {
