@@ -228,8 +228,11 @@ function getAirportText(city, airportName) {
 }
 
 function setActiveDiv(activeDiv) {
-	if (activeDiv.siblings(":visible").length){
-		activeDiv.siblings(":visible").fadeOut(200, function() { activeDiv.fadeIn(200) })
+	var existingActiveDiv = activeDiv.siblings(":visible").filter(function (index) {
+		return $(this).css("clear") != "both"
+	})
+	if (existingActiveDiv){
+		existingActiveDiv.fadeOut(200, function() { activeDiv.fadeIn(200) })
 	} else {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
 			return false;

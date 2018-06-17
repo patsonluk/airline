@@ -65,7 +65,7 @@
   			</div>
 		</div>
   	</div>
-  	<div id="main" style="width: 100%" >
+  	<div id="main" style="width: 100%;" >
   		<div id="console" class="marquee" style="width: 100%; position: relative; float: left;" align="center">
   			<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
   			<span id="consoleMessage"/>
@@ -87,7 +87,7 @@
 <!--   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
 <!-- 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
   	<!-- main canvas start -->
-  		<div id="canvas" style="float: left;" >
+  		<div id="canvas" style="float: left; overflow: auto;" >
   			<div id="worldMapCanvas" style="height: 100%;">
   				<div id="map" style="height: 100%; width: 60%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
 				<div id="sidePanel" style="width: 35% ; float: left; display:none;" >
@@ -350,8 +350,9 @@
   				<div style="width: 30%; float: left;">
 	  				<div id="airportMap" style="width: 100%; padding-top: 100%; postition: relative;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
 	<!--   				<div id="airportSchedule" style="width: 900px; height: 400px; float: left;"></div> -->
-					<div id="airportDetailsCityImage" style="width: 50%; min-height:600px; float:left;"></div>
+					<div id="airportDetailsCityImage" style="width: 50%; float:left;"></div>
 					<div id="airportDetailsAirportImage" style="width: 50%;  float:left;"></div>
+					<div style="clear: both;"></div>
   				</div>
   				<div style="width: 70%; float: right;"> <!-- take up whatever is left -->
   					<div id="airportBaseDetails" class="section" style="width: 90%; float:left;">
@@ -509,6 +510,7 @@
 						</div>
   					</div>
   				</div>
+  				<div style="clear: both;"></div>
   			</div>
 <!--   			end airport canvas -->
   			<div id="countryCanvas" style="height: 100%; display: none;">
@@ -953,9 +955,10 @@
 				</div>
   			</div>
 <!--   			end ranking canvas -->
+			<div style="clear: both;"></div>
   		</div>
   	<!-- main canvas end -->
-		<div style="clear:both"/>
+		<div style="clear: both;"></div>
     </div>
     
     <!-- popups and overlay buttons below. Hidden by default -->
