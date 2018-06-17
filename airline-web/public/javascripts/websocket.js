@@ -1,4 +1,8 @@
-var wsUri = "ws://" +  window.location.hostname + ":" + window.location.port + "/wsWithActor";
+var port = window.location.port
+if (!port) {
+	port = 80
+}
+var wsUri = "ws://" +  window.location.hostname + ":" + port + "/wsWithActor";
 var websocket;
 var selectedAirlineId
 
