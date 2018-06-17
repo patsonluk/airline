@@ -337,7 +337,7 @@ div#canvas {
 }
 
 #main-tabs {
-	height: 100vh;
+	height: calc(100vh - 70px);
 	background: #023d5d;  /* fallback for old browsers */
 	background: -webkit-linear-gradient(to bottom, #ffffff, #023d5d);  /* Chrome 10-25, Safari 5.1-6 */
 	background: linear-gradient(to bottom, #ffffff, #023d5d); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
