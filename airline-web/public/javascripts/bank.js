@@ -16,8 +16,7 @@ function loadNewLoanDetails() {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
-	    	var optionsTable = $("#newLoanOptionsTable")
-	    	optionsTable.children("div.table-row").remove()
+	    	$("#newLoanOptionsTable").children("div.table-row").remove()
 	    	
 	    	if (result.maxAmount == 0) {
 		    	$('#newLoanMaxAmount').text('$' + commaSeparateNumber(result.maxAmount))
@@ -56,6 +55,7 @@ function loadLoanOptions(amount) {
 }
 
 function updateNewLoanOptionsTable(loanOptions) {
+	var optionsTable = $("#newLoanOptionsTable")
 	$.each(loanOptions, function(index, loanOption) {
 		var weeklyPayment = Math.ceil((loanOption.borrowedAmount + loanOption.interest) / loanOption.loanTerm)
 		var row = $("<div class='table-row'></div>")
