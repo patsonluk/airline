@@ -15,6 +15,8 @@ function showAirportDetails(airportId) {
 	} else if (!activeAirportId){
 		airportId = activeAirline.headquarterAirport.airportId
 		activeAirportId = airportId
+	} else {
+		airportId = activeAirportId
 	}
 	
 	$.ajax({
