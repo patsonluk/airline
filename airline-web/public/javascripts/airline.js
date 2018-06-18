@@ -89,9 +89,9 @@ function selectAirline(airlineId) {
 }
 
 function buildBase(airportId, isHeadquarter, scale = 1) {
-	var url = "airlines/" + activeAirline.id + "/bases/" + $("#airportPopupId").val() 
+	var url = "airlines/" + activeAirline.id + "/bases/" + activeAirportId 
 	var baseData = { 
-			"airportId" : parseInt($("#airportPopupId").val()),
+			"airportId" : parseInt(activeAirportId),
 			"airlineId" : activeAirline.id,
 			"scale" : scale,
 			"headquarter" : isHeadquarter}

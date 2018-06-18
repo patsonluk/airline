@@ -1,34 +1,43 @@
 var airportLinkPaths = {}
 var activeAirport
+var activeAirportId
 var activeAirportPopupInfoWindow
 
 function showAirportDetails(airportId) {
 	setActiveDiv($("#airportCanvas"))
 	highlightTab($('#airportCanvasTab'))
 	//deselectLink()
-	
-	if (!airportId) {
+	var reload = false
+	if (airportId) {
+		if (airportId != activeAirportId) {
+			activeAirportId = airportId
+			reload = true
+		}
+	} else if (!activeAirportId){
 		airportId = activeAirline.headquarterAirport.airportId
+		activeAirportId = airportId
+		reload = true
 	}
-	$('#airportPopupId').val(airportId)
 	
-	$.ajax({
-		type: 'GET',
-		url: "airports/" + airportId,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(airport) {
-    		populateAirportDetails(airport) //update left panel
-//	    		$("#floatBackButton").show()
-//	    		shimmeringDiv($("#floatBackButton"))
-    		updateAirportDetails(airport) //update right panel
-    		activeAirport = airport
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+	if (reload) {
+		$.ajax({
+			type: 'GET',
+			url: "airports/" + airportId,
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
+		    success: function(airport) {
+	    		populateAirportDetails(airport) //update left panel
+	//	    		$("#floatBackButton").show()
+	//	    		shimmeringDiv($("#floatBackButton"))
+	    		updateAirportDetails(airport) //update right panel
+	    		activeAirport = airport
+		    },
+		    error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	}
 }
 
 function updateAirportDetails(airport) {
