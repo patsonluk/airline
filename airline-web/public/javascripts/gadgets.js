@@ -231,7 +231,7 @@ function setActiveDiv(activeDiv) {
 	var existingActiveDiv = activeDiv.siblings(":visible").filter(function (index) {
 		return $(this).css("clear") != "both"
 	})
-	if (existingActiveDiv){
+	if (existingActiveDiv.length > 0){
 		existingActiveDiv.fadeOut(200, function() { activeDiv.fadeIn(200) })
 	} else {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before

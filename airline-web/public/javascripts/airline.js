@@ -900,6 +900,7 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#linkRejectionRow').show()
 		$('#addLinkButton').hide()
 		$('#updateLinkButton').hide()
+		$('#deleteLinkButton').hide()
 		$('#planLinkExtendedDetails').hide()
 		$('#planLinkModelRow').hide()
 		$('#extendedPanel').hide()
