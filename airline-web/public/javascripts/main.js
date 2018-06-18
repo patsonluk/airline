@@ -1,5 +1,6 @@
 var map
 var markers
+var baseMarkers = []
 var activeAirline
 var activeUser
 var selectedLink

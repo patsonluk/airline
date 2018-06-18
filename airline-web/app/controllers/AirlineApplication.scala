@@ -23,6 +23,8 @@ import com.patson.model.TransactionsIncome
 import com.patson.model.OthersIncome
 import com.patson.AirlineSimulation
 import play.api.mvc.Security.AuthenticatedRequest
+import com.patson.data.CountrySource
+import com.patson.model.Country
 
 
 class AirlineApplication extends Controller {
@@ -113,6 +115,12 @@ class AirlineApplication extends Controller {
           return Some("No active flight route operated by your airline flying to this city yet")
         }
         
+        CountrySource.loadCountryByCode(airport.countryCode) match {
+          case Some(country) => if (country.openness < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
+            return Some("This country does not allow foreign airline base")
+          }
+        }
+        
         val existingBaseCount = airline.getBases().length
         val allowedBaseCount = airline.airlineGrade.getBaseLimit
         if (existingBaseCount >= allowedBaseCount) {
@@ -125,11 +133,17 @@ class AirlineApplication extends Controller {
     
     return None
   }
-  def deleteBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) {
+  def deleteBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
       case Some(base) if base.headquarter => //no deleting head quarter for now
         BadRequest("Not allowed to delete headquarter for now")
       case Some(base) =>
+        //remove all links from that base
+        val linksFromThisAirport = LinkSource.loadLinksByAirlineId(airlineId).filter(_.from.id == airportId)
+        linksFromThisAirport.foreach { link =>
+          LinkSource.deleteLink(link.id)
+        }
+        
         AirlineSource.deleteAirlineBase(base)
         Ok(Json.toJson(base))
       case None => //

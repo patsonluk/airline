@@ -378,9 +378,10 @@
   						<div id="baseRejection" style="display:none;">
 			    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="baseRejectionReason" class="warning"></span>
 			    		</div>
-			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), true)">Build Headquarter</div>
-    					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false)">Build Base</div>
-    					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick="buildBase($('#airportPopupId').val(), false, parseInt($('#airportDetailsBaseScale').text()) + 1)">Upgrade Base</div>
+			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase(true)">Build Headquarter</div>
+    					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase(false)">Build Base</div>
+    					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick="buildBase(false, parseInt($('#airportDetailsBaseScale').text()) + 1)">Upgrade Base</div>
+    					<div class="button" id="deleteBaseButton" style="display: none;" onclick="deleteBase()">Delete Base</div>
 <!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
   					</div>
   					<div id="airportDetails" class="section" style="width: 90%; float:left;">

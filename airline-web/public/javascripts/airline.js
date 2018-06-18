@@ -88,7 +88,7 @@ function selectAirline(airlineId) {
 	updateAllPanels(airlineId)
 }
 
-function buildBase(airportId, isHeadquarter, scale = 1) {
+function buildBase(isHeadquarter, scale = 1) {
 	var url = "airlines/" + activeAirline.id + "/bases/" + activeAirportId 
 	var baseData = { 
 			"airportId" : parseInt(activeAirportId),
@@ -100,6 +100,25 @@ function buildBase(airportId, isHeadquarter, scale = 1) {
 		url: url,
 	    contentType: 'application/json; charset=utf-8',
 	    data: JSON.stringify(baseData),
+	    dataType: 'json',
+	    success: function() {
+	    	updateAllPanels(activeAirline.id)
+	    	showWorldMap()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function deleteBase() {
+	var url = "airlines/" + activeAirline.id + "/bases/" + activeAirportId 
+	
+	$.ajax({
+		type: 'DELETE',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function() {
 	    	updateAllPanels(activeAirline.id)
