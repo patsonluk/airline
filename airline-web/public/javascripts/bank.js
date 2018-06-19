@@ -56,6 +56,7 @@ function loadLoanOptions(amount) {
 
 function updateNewLoanOptionsTable(loanOptions) {
 	var optionsTable = $("#newLoanOptionsTable")
+	optionsTable.children(".table-row").remove()
 	$.each(loanOptions, function(index, loanOption) {
 		var weeklyPayment = Math.ceil((loanOption.borrowedAmount + loanOption.interest) / loanOption.loanTerm)
 		var row = $("<div class='table-row'></div>")
