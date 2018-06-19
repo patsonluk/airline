@@ -1107,7 +1107,10 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 		updateFrequencyBar(selectedModelId, function(oldFrequency, newFrequency) {
 			console.log("frequency from " + oldFrequency + " to " + newFrequency)
 			console.log(thisModelPlanLinkInfo.configuration)
+			updateCapacity(thisModelPlanLinkInfo.configuration, newFrequency)
 		})
+		
+		updateCapacity(thisModelPlanLinkInfo.configuration, $("#planLinkFrequency").val())
 		
 		var spaceMultipliers = {
 			economy : planLinkInfo.economySpaceMultiplier,
@@ -1123,6 +1126,10 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 	} else {
 		$("#planLinkExtendedDetails").hide()
 	}
+}
+
+function updateCapacity(configuration, frequency) {
+	$('#planLinkCapacity').text(configuration.economy * frequency + "/" + configuration.business * frequency + "/" + configuration.first * frequency)
 }
 
 function getAssignedAirplaneIcon(airplane) {
