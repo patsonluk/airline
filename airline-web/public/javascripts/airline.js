@@ -845,7 +845,7 @@ function planLink(fromAirport, toAirport) {
 
 var planLinkInfo = null
 var planLinkInfoByModel = {}
-var existingLinkModelId = 0
+//var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
 	var availableFromSlot = linkInfo.maxFrequencyFromAirport
@@ -949,18 +949,29 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#updateLinkButton').show()
 	}
 	//populate airplane model drop down
-	$("#planLinkModelSelect").find('option').remove()
+	var explicitlySelectedModelId = $("#planLinkModelSelect").data('explicitId')
+	$("#planLinkModelSelect").children('option').remove()
 
 	planLinkInfo = linkInfo
 	planLinkInfoByModel = {}
-	existingLinkModelId = 0
+	//existingLinkModelId = 0
+
+	//find which model is assigned to the existing link (if exist)
+	var assignedModelId
 	
-	//find the selected model
-	var selectedModelId
+	if (linkInfo.existingLink) {
+		$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
+			if (modelPlanLinkInfo.isAssigned) { //higher precedence
+				assignedModelId = modelPlanLinkInfo.modelId
+				return false
+			}
+		});
+	}	
+		
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		if (linkInfo.existingLink) {
-			if (modelPlanLinkInfo.isAssigned) { //highest precedence
-				selectedModelId = modelPlanLinkInfo.modelId
+			if (modelPlanLinkInfo.isAssigned) { //higher precedence
+				assignedModelId = modelPlanLinkInfo.modelId
 				return false
 			}
 		} else {
@@ -971,22 +982,25 @@ function updatePlanLinkInfo(linkInfo) {
 		}
 	})
 	
-	if (!selectedModelId && linkInfo.modelPlanLinkInfo.length > 0) {
+	//find the model to select 
+	var selectedModelId
+	if (explicitlySelectedModelId) { //if there was a explicitly selected model, for example from buying a new plane
+		selectedModelId = explicitlySelectedModelId;
+	} else if (assignedModelId) {
+		selectedModelId = assignedModelId;
+	} else if (linkInfo.modelPlanLinkInfo.length > 0) { //probably new link
 		selectedModelId = linkInfo.modelPlanLinkInfo[0].modelId
 	}
-	
 	
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		var modelId = modelPlanLinkInfo.modelId
 		var modelname = modelPlanLinkInfo.modelName
+		
 		var option = $("<option></option>").attr("value", modelId).text(modelname + " (" + modelPlanLinkInfo.airplanes.length + ")")
 		option.appendTo($("#planLinkModelSelect"))
 		
 		if (selectedModelId == modelId) {
 			option.prop("selected", true)
-			if (linkInfo.existingLink) {
-				existingLinkModelId = modelId
-			}
 			updateModelInfo(modelId)
 		}
 		
@@ -1006,7 +1020,7 @@ function updatePlanLinkInfo(linkInfo) {
 		setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 	}
 	
-	updatePlanLinkInfoWithModelSelected($("#planLinkModelSelect").val())
+	updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId)
 	$("#planLinkDetails div.value").show()
 }
 
@@ -1018,12 +1032,8 @@ function resetPrice() {
 
 function updateFrequencyBar(airplaneModelId, callback) {
 	var frequencyBar = $("#frequencyBar")
-	var selectedCount
-	if ($("#planLinkAirplaneSelect").val()) { 
-		selectedCount = $("#planLinkAirplaneSelect").val().length 
-	} else { 
-		selectedCount = 0 
-	}
+	var selectedCount = getAssignedAirplanes().length
+	
 	var maxFrequencyByAirplanes = planLinkInfoByModel[airplaneModelId].maxFrequency * selectedCount
 	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
 	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
@@ -1052,24 +1062,29 @@ function updateFrequencyBar(airplaneModelId, callback) {
 	}
 }
 
-function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
-	if (airplaneModelId) {
-		var existingLink = planLinkInfo.existingLink
+function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
+	if (selectedModelId) {
+		var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
 		
-		var isCurrentlyAssigned = existingLink && existingLinkModelId == airplaneModelId
-		var thisModelPlanLinkInfo = planLinkInfoByModel[airplaneModelId]
+		$('#planLinkAirplaneSelect').empty()
 		
-		$('#planLinkAirplaneSelect').find('option').remove()
-		
+		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('isAssigned', false))
 		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplane) {
-			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
-			option.appendTo($("#planLinkAirplaneSelect"))
-			if (airplane.isAssigned) {
-				option.prop("selected", true)
-			}
+//			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
+//			option.appendTo($("#planLinkAirplaneSelect"))
+			var span =  $('<span class="button airplaneButton" onclick="toggleAssignedAirplane(this)"><img src="' + getAssignedAirplaneIcon(airplane) +  '" title="' + airplane.airplaneId + '"></span>')
+			span.data('airplane', airplane)
+			
+			$('#planLinkAirplaneSelect').append(span)
 		})
 		
+		if (thisModelPlanLinkInfo.airplanes.length > 0 && getAssignedAirplanes().length == 0) { //then highlight first one
+			toggleAssignedAirplane($('#planLinkAirplaneSelect span.airplaneButton:first-child'))
+		}
+		
 		$('#planLinkDuration').text(thisModelPlanLinkInfo.duration + " mins")
+		
+		var existingLink = planLinkInfo.existingLink
 		
 		if (existingLink) {
 			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
@@ -1077,18 +1092,18 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 			$("#planLinkServiceLevel").val(1)
 		}
 		
-		if (isCurrentlyAssigned) {
+		if (selectedModelId == assignedModelId) {
 			$("#planLinkFrequency").val(existingLink.frequency)
 			thisModelPlanLinkInfo.configuration = { "economy" : existingLink.capacity.economy / existingLink.frequency, 
 													"business" : existingLink.capacity.business / existingLink.frequency, 
 													"first" : existingLink.capacity.first / existingLink.frequency}
 		} else {
 			$("#planLinkFrequency").val(1)
-			$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
+			//$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
 			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
 		}
 		 
-		updateFrequencyBar(airplaneModelId, function(oldFrequency, newFrequency) {
+		updateFrequencyBar(selectedModelId, function(oldFrequency, newFrequency) {
 			console.log("frequency from " + oldFrequency + " to " + newFrequency)
 			console.log(thisModelPlanLinkInfo.configuration)
 		})
@@ -1109,16 +1124,50 @@ function updatePlanLinkInfoWithModelSelected(airplaneModelId) {
 	}
 }
 
+function getAssignedAirplaneIcon(airplane) {
+	if (airplane.isAssigned) {
+		return "assets/images/icons/airplane.png"
+	} else {
+		return "assets/images/icons/airplane-empty.png"
+	}
+}
+
+
+function toggleAssignedAirplane(iconSpan) {
+	var airplane = $(iconSpan).data('airplane')
+	if (airplane.isAssigned) {
+		airplane.isAssigned = false
+	} else {
+		airplane.isAssigned = true
+	}
+	$(iconSpan).children('img').attr('src', getAssignedAirplaneIcon(airplane))
+	
+	updateFrequencyBar($('#planLinkModelSelect').val())
+}
+
+function getAssignedAirplanes() {
+	var assignedAirplanes = []
+	$('#planLinkAirplaneSelect').children('span.airplaneButton').each(function(index) {
+		var airplane = $(this).data('airplane')
+		if (airplane.isAssigned) {
+			assignedAirplanes.push(airplane.airplaneId)
+		}
+	})
+	
+	return assignedAirplanes
+}
+
 function createLink() {
 	if ($("#planLinkFromAirportId").val() && $("#planLinkToAirportId").val()) {
 		var airlineId = activeAirline.id
 		var url = "airlines/" + airlineId + "/links"
-	    console.log("selected " + $("#planLinkAirplaneSelect").val())
+	    //console.log("selected " + $("#planLinkAirplaneSelect").val())
 	    var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
 	    var linkData = { 
 			"fromAirportId" : parseInt($("#planLinkFromAirportId").val()), 
 			"toAirportId" : parseInt($("#planLinkToAirportId").val()),
-			"airplanes" : $("#planLinkAirplaneSelect").val().map(Number),
+			//"airplanes" : $("#planLinkAirplaneSelect").val().map(Number),
+			airplanes : getAssignedAirplanes(),
 			"airlineId" : airlineId,
 			"configuration" : { "economy" : configuration.economy, "business" : configuration.business, "first" : configuration.first},
 			"price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},

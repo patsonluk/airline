@@ -39,6 +39,7 @@ function addAirplane(modelId, quantity, fromPlanLink = false) {
 	    	refreshPanels(airlineId)
 	    	if (fromPlanLink) {
 	    		planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+	    		$("#planLinkModelSelect").data('explicitId', modelId) //force the plan link to use this value after buying a plane
 	    	} else {
 	    		showAirplaneCanvas()
 	    	}
