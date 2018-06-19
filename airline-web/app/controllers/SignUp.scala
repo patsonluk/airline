@@ -4,6 +4,7 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
+import javax.inject._
 import views._
 import models._
 import com.patson.data.UserSource
@@ -11,9 +12,17 @@ import com.patson.model._
 import com.patson.Authentication
 import java.util.Calendar
 import com.patson.data.AirlineSource
+import play.api.libs.ws.WS
+import play.api.libs.ws.WSClient
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
+import scala.concurrent.Await
 
-class SignUp extends Controller {
-  
+class SignUp @Inject() (ws: WSClient) extends Controller {
+  private[this] val recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify"
+  private[this] val recaptchaAction = "signup"
+  private[this] val recaptchaSecret = "6LespV8UAAAAAErZ7LWP51SWmYaYrnAz6Z61jKBC"
+  private[this] val recaptchaScoreThreshold = 0.5
   /**
    * Sign Up Form definition.
    *
@@ -39,6 +48,7 @@ class SignUp extends Controller {
         // Add an additional constraint: both passwords must match
         "Passwords don't match", passwords => passwords._1 == passwords._2
       ),
+      "recaptchaToken" -> text,
       "airlineName" -> text(minLength = 1).verifying(
         "Airline name can only contain space and characters",
         airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
@@ -50,11 +60,11 @@ class SignUp extends Controller {
     // so we have to define custom binding/unbinding functions
     {
       // Binding: Create a User from the mapping result (ignore the second password and the accept field)
-      (username, email, passwords, airlineName) => NewUser(username.trim, passwords._1, email.trim, airlineName.trim) 
+      (username, email, passwords, recaptureToken, airlineName) => NewUser(username.trim, passwords._1, email.trim, recaptureToken, airlineName.trim) 
     } 
     {
       // Unbinding: Create the mapping values from an existing User value
-      user => Some(user.username, user.email, (user.password, ""), user.airlineName)
+      user => Some(user.username, user.email, (user.password, ""), "", user.airlineName)
     }
   )
   
@@ -79,22 +89,50 @@ class SignUp extends Controller {
   def submit = Action { implicit request =>
     signupForm.bindFromRequest.fold(
       // Form has errors, redisplay it
-      errors => BadRequest(html.signup(errors)), { userInput =>// We got a valid User value, display the summary
-        val user = User(userInput.username, userInput.email, Calendar.getInstance, UserStatus.ACTIVE)
-        UserSource.saveUser(user)
-        Authentication.createUserSecret(userInput.username, userInput.password)
+      errors => BadRequest(html.signup(errors)), { userInput =>
         
-        val newAirline = Airline(userInput.airlineName)
-        newAirline.setBalance(50000000) //initial balance 50 million
-        newAirline.setMaintainenceQuality(100)
-        AirlineSource.saveAirlines(List(newAirline))
-        
-        UserSource.setUserAirline(user, newAirline)
-        
-        Redirect("/")
+        if (isValidRecaptcha(userInput.recaptchaToken)) {
+          // We got a valid User value, display the summary
+          val user = User(userInput.username, userInput.email, Calendar.getInstance, UserStatus.ACTIVE)
+          UserSource.saveUser(user)
+          Authentication.createUserSecret(userInput.username, userInput.password)
+          
+          val newAirline = Airline(userInput.airlineName)
+          newAirline.setBalance(50000000) //initial balance 50 million
+          newAirline.setMaintainenceQuality(100)
+          AirlineSource.saveAirlines(List(newAirline))
+          
+          UserSource.setUserAirline(user, newAirline)
+          
+          Redirect("/")
+        } else {
+          BadRequest("Recaptcha check failed!")
+        }
         //Ok(html.index("User " + user.userName + " created! Please log in"))
       }
     )
   }
   
+  implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
+  
+  def isValidRecaptcha(recaptchaToken: String) : Boolean = {
+    println("checking token " + recaptchaToken)
+    val request = ws.url(recaptchaUrl).withQueryString("secret" -> recaptchaSecret, "response" -> recaptchaToken)
+    
+    val (successJs, scoreJs, actionJs, responseBody) = Await.result(request.get().map { response =>
+      ((response.json \ "success"), (response.json \ "score"), (response.json \ "action"), response.body)
+    }, Duration(10, TimeUnit.SECONDS))
+    
+    if (!successJs.as[Boolean]) {
+      println("recaptcha response with success as false")
+      return false;  
+    }
+    
+    val score = scoreJs.as[Double]
+    val action = actionJs.as[String]
+    
+    println("recaptcha score " + score + " action " + action)
+    
+    return action == recaptchaAction && score >= recaptchaScoreThreshold
+  }
 }

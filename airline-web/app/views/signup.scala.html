@@ -14,6 +14,8 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
+    <script src='https://www.google.com/recaptcha/api.js?render=6LespV8UAAAAAJkCUpR8_uNC3P-wZGq7vnTNKEZe'></script>
+    <script src="@routes.Assets.versioned("javascripts/signup.js")"></script>
   </head>
   <body>
 
@@ -60,7 +62,7 @@
             </div>
         </fieldset>
         <div class="actions">
-        	<div class="button" onclick="$(this).parents('form:first').submit()">Sign Up</div>
+        	<div class="button" onclick="signup($(this).parents('form:first'))">Sign Up</div>
             <!--  <input type="submit" class="button" value="Sign Up"> -->
             <a href="@routes.Application.index" class="btn">Cancel</a>
         </div>
