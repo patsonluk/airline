@@ -1092,14 +1092,18 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 		} else {
 			$("#planLinkServiceLevel").val(1)
 		}
-		
+	
 		if (selectedModelId == assignedModelId) {
 			$("#planLinkFrequency").val(existingLink.frequency)
 			thisModelPlanLinkInfo.configuration = { "economy" : existingLink.capacity.economy / existingLink.frequency, 
 													"business" : existingLink.capacity.business / existingLink.frequency, 
 													"first" : existingLink.capacity.first / existingLink.frequency}
 		} else {
-			$("#planLinkFrequency").val(1)
+			if (thisModelPlanLinkInfo.airplanes.length > 0){
+				$("#planLinkFrequency").val(1)
+			} else {
+				$("#planLinkFrequency").val(0)
+			}
 			//$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
 			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
 		}
