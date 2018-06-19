@@ -171,6 +171,16 @@ function getCountryFlagUrl(countryCode) {
 	}
 }
 
+function getDurationText(duration) {
+	var hour = Math.floor(duration / 60)
+	var minute = duration % 60
+	if (hour > 0) {
+		return hour + " h " + minute + "m"
+	} else {
+		return minute + " m"
+	}
+}
+
 function getOpennessSpan(openness) {
 	var description
 	var icon

@@ -1083,7 +1083,7 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 			toggleAssignedAirplane($('#planLinkAirplaneSelect span.airplaneButton:first-child'))
 		}
 		
-		$('#planLinkDuration').text(thisModelPlanLinkInfo.duration + " mins")
+		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))
 		
 		var existingLink = planLinkInfo.existingLink
 		
