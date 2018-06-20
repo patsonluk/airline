@@ -180,8 +180,8 @@ class AirlineApplication extends Controller {
                  } { airport =>//TODO for now. Maybe update to Ad event later on
                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
                    AirlineSource.saveAirlineBase(newBase)
-                   if (airport.getAirlineAwareness(airlineId) < 10) { //update to 10 for hq
-                     airport.setAirlineAwareness(airlineId, 10)
+                   if (airport.getAirlineAwareness(airlineId) < 20) { //update to 10 for hq
+                     airport.setAirlineAwareness(airlineId, 20)
                      AirportSource.updateAirlineAppeal(List(airport))
                    }
                    

@@ -20,9 +20,9 @@ import java.util.concurrent.TimeUnit
 
 object AirportSimulation {
   val AWARENESS_DECAY = 0.1
-  val AWARENESS_INCREMENT_WITH_LINKS = 0.2
-  val AWARENESS_INCREMENT_WITH_HQ = 0.3
-  val AWARENESS_INCREMENT_WITH_BASE = 0.1
+  val AWARENESS_INCREMENT_WITH_LINKS = 0.5
+  val AWARENESS_INCREMENT_WITH_HQ = 1.0
+  val AWARENESS_INCREMENT_WITH_BASE = 0.5
   val AWARENESS_INCREMENT_MAX_WITH_HQ = 50 //how much awareness will increment to just because of being a HQ
   val AWARENESS_INCREMENT_MAX_WITH_BASE = 30 //how much awareness will increment to just because of being a HQ
   val LOYALTY_DECAY = 0.01
