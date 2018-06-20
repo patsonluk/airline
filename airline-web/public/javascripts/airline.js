@@ -854,8 +854,21 @@ function updatePlanLinkInfo(linkInfo) {
 		availableFromSlot -= linkInfo.existingLink.frequency
 		availableToSlot -= linkInfo.existingLink.frequency
 	}
+	var availableFromSlotText
+	if (availableFromSlot == 0) {
+		availableFromSlotText = '<span class="warning">' + availableFromSlot + ' available slot(s)</span>'
+	} else {
+		availableFromSlotText = '<span>' + availableFromSlot + ' available slot(s)</span>'
+	}
 	
-	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + availableFromSlot + " available slot(s)")
+	var availableToSlotText
+	if (availableToSlot == 0) {
+		availableToSlotText = '<span class="warning">' + availableToSlot + ' available slot(s)</span>'
+	} else {
+		availableToSlotText = '<span>' + availableToSlot + ' available slot(s)</span>'
+	}
+	
+	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + availableFromSlotText)
 	if (!linkInfo.existingLink && activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
@@ -876,7 +889,7 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	
-	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + availableToSlot + " available slot(s)")
+	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + availableToSlotText)
 	
 	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
 	
@@ -1026,9 +1039,32 @@ function updatePlanLinkInfo(linkInfo) {
 }
 
 function resetPrice() {
-	$('#planLinkEconomyPrice').val(planLinkInfo.suggestedPrice.economy)
-	$('#planLinkBusinessPrice').val(planLinkInfo.suggestedPrice.business)
-	$('#planLinkFirstPrice').val(planLinkInfo.suggestedPrice.first)
+	updatePrice(1)
+	$('#planLinkPricePercentage').val(1)
+}
+
+function increasePrice() {
+	var currentPercentage = parseFloat($('#planLinkPricePercentage').val())
+	var newPercentage = currentPercentage + 0.1
+	updatePrice(newPercentage)
+	$('#planLinkPricePercentage').val(newPercentage)
+}
+
+function decreasePrice() {
+	var currentPercentage = parseFloat($('#planLinkPricePercentage').val())
+	var newPercentage = currentPercentage
+	if (currentPercentage > 0) {
+		newPercentage -= 0.1
+	}
+	updatePrice(newPercentage)
+	
+	$('#planLinkPricePercentage').val(newPercentage)
+}
+
+function updatePrice(percentage) {
+	$('#planLinkEconomyPrice').val(Math.round(planLinkInfo.suggestedPrice.economy * percentage))
+	$('#planLinkBusinessPrice').val(Math.round(planLinkInfo.suggestedPrice.business * percentage))
+	$('#planLinkFirstPrice').val(Math.round(planLinkInfo.suggestedPrice.first * percentage))
 }
 
 function updateFrequencyBar(airplaneModelId, callback) {
@@ -1045,21 +1081,21 @@ function updateFrequencyBar(airplaneModelId, callback) {
 		} else {
 			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyFromAirport, frequencyBar, $("#planLinkFrequency"), null, null, callback)
 		}
-		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by Departure Airport")
+		$("#planLinkLimitingFactor").text("Limited by slots offered by Departure Airport")
 	} else if (maxFrequencyToAirport <= maxFrequencyFromAirport && maxFrequencyToAirport <= maxFrequencyByAirplanes) { //limited by to airport 
 		if (maxFrequencyToAirport == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {
 			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyToAirport, frequencyBar, $("#planLinkFrequency"), null, null, callback)
 		}
-		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by Destination Airport")
+		$("#planLinkLimitingFactor").text("Limited by slots offered by Destination Airport")
 	} else { //limited by airplanes
 		if (maxFrequencyByAirplanes == 0) {
 			frequencyBar.text("No routing allowed, reason: ")
 		} else {
 			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"), null, null, callback)
 		}
-		$("#planLinkLimitingFactor").html("<h6></h6><br/><br/>").text("Limited by airplanes")
+		$("#planLinkLimitingFactor").text("Limited by number of airplanes assigned")
 	}
 }
 

@@ -278,6 +278,9 @@
 					    				<input type="text" id="planLinkEconomyPrice"/>
 					    				<input type="text" id="planLinkBusinessPrice"/>
 					    				<input type="text" id="planLinkFirstPrice"/>
+					    				<input type="hidden" id="planLinkPricePercentage" value="1"/>
+					    				<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class='button' onclick='increasePrice()'  title="Increase all price by 10% of Default">
+					    				<img src='@routes.Assets.versioned("images/icons/minus-button.png")' class='button' onclick='decreasePrice()'  title="Decrease all price by 10% of Default">
 					    				<img src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' class='button' onclick='resetPrice()'  title="Reset to Default Ticket Prices">
 					    			</div>
 					    		</div>
@@ -288,12 +291,12 @@
 					    			<input type="hidden" id="planLinkFrequency" value="1"/></div>
 					    		</div>
 					    		<div class="table-row">
-					    			<div class="label"><h5>Capacity (Y/J/F):</h5></div>
-					    			<div class="value" id="planLinkCapacity"></div>
+					    			<div class="label"></div>
+					    			<div class="value" style="padding-bottom: 15px"><h6><span id="planLinkLimitingFactor" class='warning'></span></h6></div>
 					    		</div>
 					    		<div class="table-row">
-					    			<div class="label"></div>
-					    			<div class="value" style="padding-bottom: 15px"><h6><span id="planLinkLimitingFactor"></span></h6></div>
+					    			<div class="label"><h5>Capacity (Y/J/F):</h5></div>
+					    			<div class="value" id="planLinkCapacity"></div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Seat Configurations:</h5></div>
