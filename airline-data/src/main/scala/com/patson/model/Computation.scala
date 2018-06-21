@@ -53,28 +53,26 @@ object Computation {
     Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   }
   
-  def getFlightType(fromAirport : Airport, toAirport : Airport) = { //need quick calculation
-    var longitudeDelta = Math.abs(fromAirport.longitude - toAirport.longitude)
-    if (longitudeDelta >= 180) { longitudeDelta = 360 - longitudeDelta } //wraps around
-    var latitudeDelta = Math.abs(fromAirport.latitude - toAirport.latitude)
+  def getFlightType(fromAirport : Airport, toAirport : Airport) = { 
+    val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
     
     import FlightType._
     if (fromAirport.countryCode == toAirport.countryCode) { //domestic
-      if (longitudeDelta <= 20 && latitudeDelta <= 15) {
+      if (distance <= 1000) {
         SHORT_HAUL_DOMESTIC
       } else {
         LONG_HAUL_DOMESTIC
       }
     } else if (fromAirport.zone == toAirport.zone) { //international but same continent
-      if (longitudeDelta <= 20 && latitudeDelta <= 20) {
+      if (distance <= 2000) {
         SHORT_HAUL_INTERNATIONAL
       } else {
         LONG_HAUL_INTERNATIONAL
       }
     } else {
-      if (longitudeDelta <= 20 && latitudeDelta <= 20) {
+      if (distance <= 4000) {
         SHORT_HAUL_INTERCONTINENTAL
-      } else if (longitudeDelta <= 50 && latitudeDelta <= 30) {
+      } else if (distance <= 14000) {
         LONG_HAUL_INTERCONTINENTAL
       } else {
         ULTRA_LONG_HAUL_INTERCONTINENTAL
