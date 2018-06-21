@@ -961,6 +961,8 @@ function updatePlanLinkInfo(linkInfo) {
 		}
 		$('#updateLinkButton').show()
 	}
+	$('#planLinkPricePercentage').val(1)
+	
 	//populate airplane model drop down
 	var explicitlySelectedModelId = $("#planLinkModelSelect").data('explicitId')
 	$("#planLinkModelSelect").removeData('explicitId')
