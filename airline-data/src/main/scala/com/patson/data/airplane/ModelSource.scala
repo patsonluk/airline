@@ -104,6 +104,27 @@ object ModelSource {
       deletedCount
   }
   
+  def updateModels(models : List[Model]) = {
+    val connection = Meta.getConnection()
+        
+    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ? WHERE name = ?")
+    
+    connection.setAutoCommit(false)
+    models.foreach { 
+      model =>
+        preparedStatement.setString(6, model.name)
+        preparedStatement.setInt(1, model.capacity)
+        preparedStatement.setInt(2, model.fuelBurn)
+        preparedStatement.setInt(3, model.speed)
+        preparedStatement.setInt(4, model.range)
+        preparedStatement.setInt(5, model.price)
+        preparedStatement.executeUpdate()
+    }
+    connection.commit()
+    
+    connection.close()
+  }
+  
   
   def saveModels(models : List[Model]) = {
     val connection = Meta.getConnection()

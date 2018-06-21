@@ -6,6 +6,9 @@ import com.patson.init.AirportProfilePicturePatcher
 import com.patson.model.Bank
 import com.patson.model.Airport
 import com.patson.init.AirportFeaturePatcher
+import com.patson.Util
+import com.patson.data.airplane.ModelSource
+import com.patson.model.airplane.Model
 
 object Test extends App {
      
@@ -24,8 +27,8 @@ object Test extends App {
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
        //AirportFeaturePatcher.patchFeatures()
 //  Bank.getMaxLoan(252)
-  Patchers.patchHomeCountry()
-
+  //Patchers.patchHomeCountry()
+  ModelSource.updateModels(Model.models)  
        
   
 }
