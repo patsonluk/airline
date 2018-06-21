@@ -72,7 +72,7 @@ object Computation {
     } else {
       if (distance <= 4000) {
         SHORT_HAUL_INTERCONTINENTAL
-      } else if (distance <= 14000) {
+      } else if (distance <= 12000) {
         LONG_HAUL_INTERCONTINENTAL
       } else {
         ULTRA_LONG_HAUL_INTERCONTINENTAL
