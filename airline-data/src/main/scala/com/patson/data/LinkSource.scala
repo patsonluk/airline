@@ -295,7 +295,7 @@ object LinkSource {
   def updateLink(link : Link) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ? WHERE id = ?")
 
     try {
       preparedStatement.setInt(1, link.price(ECONOMY))
@@ -307,7 +307,8 @@ object LinkSource {
       preparedStatement.setInt(7, link.rawQuality)
       preparedStatement.setInt(8, link.duration)
       preparedStatement.setInt(9, link.frequency)
-      preparedStatement.setInt(10, link.id)
+      preparedStatement.setInt(10, link.flightType.id)
+      preparedStatement.setInt(11, link.id)
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
@@ -322,6 +323,37 @@ object LinkSource {
       preparedStatement.close()
       connection.close()
     }
+  }
+  
+  def updateLinks(links : List[Link]) = {
+    //open the hsqldb
+    val connection = Meta.getConnection()
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ? WHERE id = ?")
+
+    connection.setAutoCommit(false)
+    try {
+      links.foreach { link =>
+        preparedStatement.setInt(1, link.price(ECONOMY))
+        preparedStatement.setInt(2, link.price(BUSINESS))
+        preparedStatement.setInt(3, link.price(FIRST))
+        preparedStatement.setInt(4, link.capacity(ECONOMY))
+        preparedStatement.setInt(5, link.capacity(BUSINESS))
+        preparedStatement.setInt(6, link.capacity(FIRST))
+        preparedStatement.setInt(7, link.rawQuality)
+        preparedStatement.setInt(8, link.duration)
+        preparedStatement.setInt(9, link.frequency)
+        preparedStatement.setInt(10, link.flightType.id)
+        preparedStatement.setInt(11, link.id)
+        preparedStatement.addBatch()
+      }
+      
+      preparedStatement.executeBatch()
+      connection.commit()
+    } finally {
+      preparedStatement.close()
+      connection.close()
+    }
+    
   }
   
   

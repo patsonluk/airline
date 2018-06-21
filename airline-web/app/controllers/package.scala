@@ -82,6 +82,7 @@ package object controllers {
       val toAirport = AirportSource.loadAirportById(toAirportId, true).get
       val airline = AirlineSource.loadAirlineById(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
+      val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
       val airplaneIds = json.\("airplanes").as[List[Int]]
       val frequency = json.\("frequency").as[Int]
       val modelId = json.\("model").as[Int]
@@ -109,7 +110,7 @@ package object controllers {
         rawQuality = 0
       }
          
-      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency)
+      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency, flightType)
       link.setAssignedAirplanes(airplanes)
       //(json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
@@ -141,6 +142,7 @@ package object controllers {
       "fromLongitude" -> JsNumber(link.from.longitude),
       "toLatitude" -> JsNumber(link.to.latitude),
       "toLongitude" -> JsNumber(link.to.longitude),
+      "flightType" -> JsString(link.flightType.toString()),
       "assignedAirplanes" -> Json.toJson(link.getAssignedAirplanes())))
       
       link.getAssignedModel().foreach { model =>

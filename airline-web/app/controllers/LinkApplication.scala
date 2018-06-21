@@ -26,7 +26,6 @@ import play.api.mvc._
 import com.patson.data.airplane.ModelSource
 import play.api.mvc.Security.AuthenticatedRequest
 import controllers.AuthenticationObject.AuthenticatedAirline
-import com.patson.data.RouteHistorySource
 import com.patson.DemandGenerator
 import com.patson.data.ConsumptionHistorySource
 import com.patson.data.CountrySource
@@ -44,10 +43,11 @@ class LinkApplication extends Controller {
       val fromAirport = AirportSource.loadAirportById(fromAirportId).get
       val toAirport = AirportSource.loadAirportById(toAirportId).get
       val airline = AirlineSource.loadAirlineById(airlineId).get
-      val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+      val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val rawQuality = json.\("quality").as[Int]
+      val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
       
-      val link = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(price), distance.toInt, LinkClassValues.getInstance(capacity), rawQuality, distance.toInt * 60 / 800, 1)
+      val link = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(price), distance, LinkClassValues.getInstance(capacity), rawQuality, distance.toInt * 60 / 800, 1, flightType)
       (json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
@@ -489,9 +489,9 @@ class LinkApplication extends Controller {
             }
             
             
-            val suggestedPrice : LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), ECONOMY),
-                                                                   Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), BUSINESS),
-                                                                   Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), FIRST))
+            val suggestedPrice : LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), ECONOMY),
+                                                                   Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), BUSINESS),
+                                                                   Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), FIRST))
             val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
             val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.BUSINESS)
             val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.TOURIST)
@@ -609,9 +609,9 @@ class LinkApplication extends Controller {
     return None
   }
   
-  def getVipRoutes() = Action {
-    Ok(Json.toJson(RouteHistorySource.loadVipRoutes()))
-  }
+//  def getVipRoutes() = Action {
+//    Ok(Json.toJson(RouteHistorySource.loadVipRoutes()))
+//  }
   
   def getRelatedLinkConsumption(airlineId : Int, linkId : Int, selfOnly : Boolean) =  AuthenticatedAirline(airlineId) {
     LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {

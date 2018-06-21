@@ -27,8 +27,8 @@ object Test extends App {
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
        //AirportFeaturePatcher.patchFeatures()
 //  Bank.getMaxLoan(252)
-  //Patchers.patchHomeCountry()
-  ModelSource.updateModels(Model.models)  
+  Patchers.patchFlightType
+    
        
   
 }
