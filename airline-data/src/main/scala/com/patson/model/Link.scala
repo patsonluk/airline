@@ -8,7 +8,7 @@ import com.patson.model.Scheduling.TimeSlot
  * 
  * Frequency sum of all assigned plane
  */
-case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, var id : Int = 0) extends IdObject{
+case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, flightType : FlightType.Value, var id : Int = 0) extends IdObject{
   var availableSeats : LinkClassValues = capacity.copy()
   private var assignedAirplanes : List[Airplane] = List.empty
   private var assignedModel : Option[Model] = None
@@ -91,7 +91,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   //println("neutral quality : " + neutralQuality + " distance : " + distance)
   def computeQualityPriceAdjust(linkClass : LinkClass) : Double = {
     if (!computedQualityPriceAdjust.isDefinedAt(linkClass)) {
-      val neutralQuality = Link.neutralQualityOfClass(linkClass, from, to)
+      val neutralQuality = Link.neutralQualityOfClass(linkClass, from, to, flightType)
       computedQualityPriceAdjust.put(linkClass, 1 + ((neutralQuality - computedQuality).toDouble / Link.MAX_QUALITY) * 0.5) //if neutral is at 50, 0 quality yields 1.25, max quality yields 0.75
     }
     computedQualityPriceAdjust(linkClass)
@@ -103,14 +103,14 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 object Link {
   val MAX_QUALITY = 100
   def fromId(id : Int) : Link = {
-    Link(from = Airport.fromId(0), to = Airport.fromId(0), Airline.fromId(0), price = LinkClassValues.getInstance(), distance = 0, capacity = LinkClassValues.getInstance(), rawQuality = 0, duration = 0, frequency = 0, id = id)
+    Link(from = Airport.fromId(0), to = Airport.fromId(0), Airline.fromId(0), price = LinkClassValues.getInstance(), distance = 0, capacity = LinkClassValues.getInstance(), rawQuality = 0, duration = 0, frequency = 0, flightType = FlightType.SHORT_HAUL_DOMESTIC, id = id)
   }
   
    //adjust by quality
   import FlightType._
-  val neutralQualityOfClass = (linkClass : LinkClass, from : Airport, to : Airport) => {
+  val neutralQualityOfClass = (linkClass : LinkClass, from : Airport, to : Airport, flightType : FlightType.Value) => {
     val linkClassMultiplier = linkClass.level - 1
-    Computation.getFlightType(from, to) match {
+    flightType match {
       case SHORT_HAUL_DOMESTIC => 30 + linkClassMultiplier * 15
       case SHORT_HAUL_INTERNATIONAL => 35 + linkClassMultiplier * 15
       case SHORT_HAUL_INTERCONTINENTAL => 40 + linkClassMultiplier * 15

@@ -136,7 +136,7 @@ object DemandGenerator {
       LinkClassValues.getInstance(0, 0, 0)
     } else {
       import FlightType._
-      val flightType = Computation.getFlightType(fromAirport, toAirport)
+      val flightType = Computation.getFlightType(fromAirport, toAirport, Computation.calculateDistance(fromAirport, toAirport))
       
       //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
       //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
@@ -197,11 +197,11 @@ object DemandGenerator {
       
       //adjust by features
       fromAirport.getFeatures().foreach { feature =>
-        val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport)
+        val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType)
         adjustedDemand += adjustment
       }
       toAirport.getFeatures().foreach { feature => 
-        val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport)
+        val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType)
         adjustedDemand += adjustment
       }
       

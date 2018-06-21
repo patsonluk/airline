@@ -15,7 +15,7 @@ object Pricing {
   val INTERCONTINENTAL_PRICE_MULTIPLIER = 1.5
   
   def computeStandardPrice(link : Link, linkClass : LinkClass) : Int = {
-    computeStandardPrice(link.distance, Computation.getFlightType(link.from, link.to), linkClass)
+    computeStandardPrice(link.distance, link.flightType, linkClass)
   }
   def computeStandardPrice(distance : Int, flightType : FlightType, linkClass : LinkClass) : Int = {
     var remainDistance = distance
@@ -38,7 +38,7 @@ object Pricing {
   
   def computeStandardPriceForAllClass(distance : Int, fromAirport : Airport, toAirport : Airport) : LinkClassValues = {
     LinkClassValues(LinkClass.values.map { linkClass =>
-      (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport), linkClass))
+      (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), linkClass))
     }.toMap)
   }
 }

@@ -210,14 +210,14 @@ object PassengerSimulation {
   
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, linkClass: LinkClass) : Boolean = {
     val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
-    val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+    val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
     val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
     if (routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR <= routeDistance) { //a route that distance is too long (too indirect)
       return false
     }
     
     val ROUTE_COST_TOLERANCE_FACTOR = 1.75
-    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement.toInt, Computation.getFlightType(fromAirport, toAirport), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
+    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
 
 //    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute) 
     
@@ -225,7 +225,7 @@ object PassengerSimulation {
       val LINK_COST_TOLERANCE_FACTOR = 2.5;
       val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
           val link = linkConsideration.link
-          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, Computation.getFlightType(link.from, link.to), linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
+          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
           
 //          println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link)
           linkConsideration.cost > linkAffordableCost
@@ -417,27 +417,27 @@ object PassengerSimulation {
     airportGroups
   }
   
-  def generateFlightLinks(airports : List[Airport]) = {
-      val dummyAirline = Airline("dummy")
-      val distinationCount = 100
-      val sourcePermutation = (0 until airports.size).foldLeft(List[Int]())((list, integer) => integer :: list) //for random number
-      val validFromAirportCount = 200
-      airports.takeRight(validFromAirportCount).map { fromAirport =>
-        val randomArray = Random.shuffle(sourcePermutation).take(distinationCount)
-        randomArray.foldLeft(List[Link]()) { 
-          case (list, randomNumber) => 
-            val toAirport = airports(randomNumber)
-            if (fromAirport != toAirport) {
-              val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
-              val price = computePrice(distance)
-              //println(distance + " km, $" + price)
-              Link(fromAirport, toAirport, dummyAirline, LinkClassValues(Map(ECONOMY -> price)), distance.toInt, LinkClassValues(Map(ECONOMY -> 100)), 10, distance.toInt * 60 / 500, 1) :: list  
-            } else {
-              list
-            }
-        }
-      }.flatten
-  }
+//  def generateFlightLinks(airports : List[Airport]) = {
+//      val dummyAirline = Airline("dummy")
+//      val distinationCount = 100
+//      val sourcePermutation = (0 until airports.size).foldLeft(List[Int]())((list, integer) => integer :: list) //for random number
+//      val validFromAirportCount = 200
+//      airports.takeRight(validFromAirportCount).map { fromAirport =>
+//        val randomArray = Random.shuffle(sourcePermutation).take(distinationCount)
+//        randomArray.foldLeft(List[Link]()) { 
+//          case (list, randomNumber) => 
+//            val toAirport = airports(randomNumber)
+//            if (fromAirport != toAirport) {
+//              val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude)
+//              val price = computePrice(distance)
+//              //println(distance + " km, $" + price)
+//              Link(fromAirport, toAirport, dummyAirline, LinkClassValues(Map(ECONOMY -> price)), distance.toInt, LinkClassValues(Map(ECONOMY -> 100)), 10, distance.toInt * 60 / 500, 1) :: list  
+//            } else {
+//              list
+//            }
+//        }
+//      }.flatten
+//  }
   
   def computePrice(distance : Double) = {
     val priceBracket = 2000

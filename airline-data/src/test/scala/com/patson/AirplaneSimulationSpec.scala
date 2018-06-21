@@ -24,8 +24,8 @@ class AirplaneSimulationSpec extends WordSpecLike with Matchers {
   val airplane2 = Airplane(model, airline2, 0, 100, 0, model.price)
   val airport1 = Airport.fromId(1)
   val airport2 = Airport.fromId(2)
-  val link1 = Link(airport1, airport2, airline1, LinkClassValues.getInstance(), 0, LinkClassValues.getInstance(), 0, 0, 1)
-  val link2 = Link(airport1, airport2, airline2, LinkClassValues.getInstance(), 0, LinkClassValues.getInstance(), 0, 0, 1)  
+  val link1 = Link(airport1, airport2, airline1, LinkClassValues.getInstance(), 0, LinkClassValues.getInstance(), 0, 0, 1, FlightType.SHORT_HAUL_DOMESTIC)
+  val link2 = Link(airport1, airport2, airline2, LinkClassValues.getInstance(), 0, LinkClassValues.getInstance(), 0, 0, 1, FlightType.SHORT_HAUL_DOMESTIC)  
   
   "decayAirplanesByAirline".must {
     "decay airplane according to airline maintenance quality".in {

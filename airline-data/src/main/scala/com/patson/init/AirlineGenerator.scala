@@ -118,11 +118,11 @@ object AirlineGenerator extends App {
                 airplanes += newAirplane
               }
               
-              val flightType = Computation.getFlightType(fromAirport, toAirport)
+              val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
               val price = Pricing.computeStandardPrice(distance, flightType, ECONOMY)
               val capacity = frequency * model.capacity
               val duration = Computation.calculateDuration(model, distance)
-              val newLink = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(price), distance, LinkClassValues.getInstance(capacity), rawQuality = 40, duration = duration, frequency = frequency)
+              val newLink = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(price), distance, LinkClassValues.getInstance(capacity), rawQuality = 40, duration = duration, frequency = frequency, flightType = flightType)
               
               newLink.setAssignedAirplanes(airplanes.toList)
               newLinks += newLink

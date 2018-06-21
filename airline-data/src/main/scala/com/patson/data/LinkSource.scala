@@ -95,7 +95,8 @@ object LinkSource {
             LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
             resultSet.getInt("quality"),
             resultSet.getInt("duration"),
-            resultSet.getInt("frequency"))
+            resultSet.getInt("frequency"),
+            FlightType(resultSet.getInt("flight_type")))
           link.id = resultSet.getInt("id")
           
           assignedAirplaneCache.get(link.id).foreach {
@@ -196,7 +197,7 @@ object LinkSource {
   }
   
   def saveLink(link : Link) : Option[Link] = {
-     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.getAssignedAirplanes) match { 
+     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.flightType, link.getAssignedAirplanes) match { 
        case Some(generatedId) => 
          link.id = generatedId
          Some(link)
@@ -205,10 +206,10 @@ object LinkSource {
      }
   }
   
-  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
+  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, airplanes : List[Airplane] = List.empty) : Option[Int] = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
     try {
       preparedStatement.setInt(1, fromAirportId)
@@ -224,6 +225,7 @@ object LinkSource {
       preparedStatement.setInt(11, rawQuality)
       preparedStatement.setInt(12, duration)
       preparedStatement.setInt(13, frequency)
+      preparedStatement.setInt(14, flightType.id)
       
       val updateCount = preparedStatement.executeUpdate()
       //println("Saved " + updateCount + " link!")
@@ -248,7 +250,7 @@ object LinkSource {
   def saveLinks(links : List[Link]) : Int = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     var updateCount = 0
     connection.setAutoCommit(false)
     try {
@@ -266,6 +268,7 @@ object LinkSource {
         preparedStatement.setInt(11, link.rawQuality)
         preparedStatement.setInt(12, link.duration)
         preparedStatement.setInt(13, link.frequency)
+        preparedStatement.setInt(14, link.flightType.id)
         
         updateCount += preparedStatement.executeUpdate()
         //println("Saved " + updateCount + " link!")

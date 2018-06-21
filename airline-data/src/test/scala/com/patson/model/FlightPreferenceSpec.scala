@@ -36,9 +36,10 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   
   fromAirport.initAirlineAppeals(scala.collection.immutable.Map.empty)
   toAirport.initAirlineAppeals(scala.collection.immutable.Map.empty)
-  val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport), 600, 1)  //make the quality a bit higher
-  val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport), 600, 1)  //make the quality a bit higher 
-  val topAirlineLink = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 100, 600, 1) 
+  val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
+  val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport, flightType), 600, 1, flightType)  //make the quality a bit higher
+  val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport, flightType), 600, 1, flightType)  //make the quality a bit higher 
+  val topAirlineLink = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 100, 600, 1, flightType) 
   airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline1, 0, 100, 0, 0)))
   airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline2, 0, 100, 0, 0)))
   topAirlineLink.setAssignedAirplanes(List(Airplane(Model.fromId(0), topAirline, 0, 100, 0, 0)))
@@ -67,8 +68,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 50)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1005), 10000, defaultCapacity, 0, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1005), 10000, defaultCapacity, 0, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -87,8 +88,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 50)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -105,8 +106,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 50)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 51, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 1000, defaultCapacity, 50, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 51, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 1000, defaultCapacity, 50, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -123,8 +124,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 50)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 51, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10100, defaultCapacity, 50, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 51, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10100, defaultCapacity, 50, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -143,8 +144,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 10)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -161,8 +162,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 0)
       fromAirport.setAirlineLoyalty(testAirline2.id, 100)
-      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -179,8 +180,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 50)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1300), 10000, defaultCapacity, 0, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1300), 10000, defaultCapacity, 0, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -197,8 +198,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 50)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(5000), 10000, defaultCapacity, 0, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(5000), 10000, defaultCapacity, 0, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -217,8 +218,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(adjustedAirline1.id, 50)
       fromAirport.setAirlineLoyalty(adjustedAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, defaultPrice, 10000, defaultCapacity, 60, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 10, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, defaultPrice, 10000, defaultCapacity, 60, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 10, 600, 1, flightType)
       airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100, 0, 0)))
       airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100, 0, 0)))
        
@@ -242,8 +243,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(adjustedAirline1.id, 50)
       fromAirport.setAirlineLoyalty(adjustedAirline2.id, 50)
-      val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, defaultPrice, 10000, defaultCapacity, 100, 600, 1)
-      val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1)
+      val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, defaultPrice, 10000, defaultCapacity, 100, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100, 0, 0)))
       airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 0, 0, 0)))
        
