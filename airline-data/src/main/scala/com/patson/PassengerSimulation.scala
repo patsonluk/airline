@@ -353,7 +353,7 @@ object PassengerSimulation {
             case(matchingLinkClass, seatsLeft) =>
               //from the perspective of the passenger group, how well does it know each link
               val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
-              val airlineAwarenessFromReputation = link.airline.getReputation() / 2 
+              val airlineAwarenessFromReputation = if (link.airline.getReputation() > Airline.MAX_REPUTATION / 2) AirlineAppeal.MAX_AWARENESS else link.airline.getReputation() * 2 //if reputation is 50+ then everyone will see it, otherwise reputation * 2
               //println("Awareness from reputation " + airlineAwarenessFromReputation)
               val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
               
