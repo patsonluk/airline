@@ -93,9 +93,6 @@ object DemandGenerator {
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
                 val baseDemandChunkSize = if (remainingDemand / maxChunkCount > defaultDemandChunkSize) remainingDemand / maxChunkCount else defaultDemandChunkSize
-                if (baseDemandChunkSize != defaultDemandChunkSize) {
-                  println(remainingDemand + " -> " + baseDemandChunkSize)
-                }
                 var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
                 while (remainingDemand > demandChunkSize) {
                   passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
