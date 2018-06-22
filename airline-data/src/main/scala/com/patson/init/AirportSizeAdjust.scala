@@ -148,6 +148,8 @@ object AirportSizeAdjust {
         "ABJ" -> 5,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Cameroon
         "DLA" -> 4,
+        //costa rica
+        "SJO" -> 5,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Guinea
         "CKY" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Guatemala

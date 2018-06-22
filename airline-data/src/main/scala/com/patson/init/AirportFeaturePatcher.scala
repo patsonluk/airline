@@ -82,6 +82,7 @@ object AirportFeaturePatcher {
         "XIY" -> 18, //Xian china
         "PVG" -> 18, //Shanghai
         "HGH" -> 17, //Hangzhou china
+        "SJO" -> 17, //Costa Rica
         "LIH" -> 16, //Lihue, Hawaii
         "ITO" -> 15, //Hilo hawaii
         "KWL" -> 15, //Guilin China
