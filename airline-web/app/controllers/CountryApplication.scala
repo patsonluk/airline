@@ -21,32 +21,6 @@ import com.patson.data.AirportSource
 
 
 class CountryApplication extends Controller {
-  implicit object CountryWrites extends Writes[Country] {
-    def writes(country : Country): JsValue = {
-      Json.obj(
-        "countryCode" -> country.countryCode,
-        "name" -> country.name,
-        "airportPopulation" -> country.airportPopulation,
-        "incomeLevel" -> Computation.getIncomeLevel(country.income),
-        "openness" ->  country.openness
-      )
-    }
-  }
-  
-  implicit object CountryWithMutualRelationshipWrites extends Writes[(Country, Int)] {
-    def writes(countryWithMutualRelationship : (Country, Int)): JsValue = {
-      val (country, mutualRelationship) = countryWithMutualRelationship
-      Json.obj(
-        "countryCode" -> country.countryCode,
-        "name" -> country.name,
-        "airportPopulation" -> country.airportPopulation,
-        "incomeLevel" -> Computation.getIncomeLevel(country.income),
-        "openness" ->  country.openness,
-        "mutualRelationship" -> mutualRelationship
-      )
-    }
-  }
-
   def getAllCountries(homeCountryCode : Option[String]) = Action {
     val countries = CountrySource.loadAllCountries()
     

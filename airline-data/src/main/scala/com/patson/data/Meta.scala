@@ -701,7 +701,7 @@ object Meta {
     statement.execute()
     statement.close()
    
-    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_MARKET_SHARE_TABLE + "(country CHAR(2), airline INTEGER, passenger_count LONG," +
+    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_MARKET_SHARE_TABLE + "(country CHAR(2), airline INTEGER, passenger_count BIGINT(20)," +
                                             "PRIMARY KEY (country, airline)," +
                                             "FOREIGN KEY(country) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE," +
                                             "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")

@@ -241,4 +241,30 @@ package object controllers {
         "cycle" -> JsNumber(airlineIncome.cycle)))
     }
   }
+  
+  implicit object CountryWrites extends Writes[Country] {
+    def writes(country : Country): JsValue = {
+      Json.obj(
+        "countryCode" -> country.countryCode,
+        "name" -> country.name,
+        "airportPopulation" -> country.airportPopulation,
+        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "openness" ->  country.openness
+      )
+    }
+  }
+  
+  implicit object CountryWithMutualRelationshipWrites extends Writes[(Country, Int)] {
+    def writes(countryWithMutualRelationship : (Country, Int)): JsValue = {
+      val (country, mutualRelationship) = countryWithMutualRelationship
+      Json.obj(
+        "countryCode" -> country.countryCode,
+        "name" -> country.name,
+        "airportPopulation" -> country.airportPopulation,
+        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "openness" ->  country.openness,
+        "mutualRelationship" -> mutualRelationship
+      )
+    }
+  }
 }

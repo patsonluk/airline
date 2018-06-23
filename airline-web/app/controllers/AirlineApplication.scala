@@ -252,4 +252,9 @@ class AirlineApplication extends Controller {
      
      Ok(JsObject(List("prediction" -> JsString(prediction))))
   }
+  
+  def getChampionedCountries(airlineId : Int) = AuthenticatedAirline(airlineId) { request => 
+    Ok(Json.toJson(CountrySource.loadCountryChampionsByAirline(airlineId).keys.toSeq))
+  }
+  
 }
