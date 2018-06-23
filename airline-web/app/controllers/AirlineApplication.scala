@@ -84,7 +84,7 @@ class AirlineApplication extends Controller {
       case None => { //create a base of scale 0 to indicate it's an non-existent base
         AirportSource.loadAirportById(airportId) match {
           case Some(airport) => {
-            val emptyBase = AirlineBase(airline = request.user, airport = airport, countryCode = airport.countryCode, scale = 0, foundedCycle = 0, headquarter = false)
+            val emptyBase = AirlineBase(airline = request.user, airport = airport, countryCode = airport.countryCode, scale = 0, foundedCycle = 0, headquarter = request.user.getHeadQuarter.isEmpty)
             val baseRejection = getBaseRejection(request.user, emptyBase, 1)
             var emptyBaseJson = Json.toJson(emptyBase).asInstanceOf[JsObject]
             baseRejection.foreach { rejection =>
