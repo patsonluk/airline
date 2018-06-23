@@ -541,6 +541,9 @@ function refreshPanels(airlineId) {
 	    	if ($("#linkDetails").is(":visible")) {
 	    		refreshLinkDetails(selectedLink)
 	    	}
+	    	if ($("#linksCanvas").is(":visible")) {
+	    		loadLinksTable()
+	    	}
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
