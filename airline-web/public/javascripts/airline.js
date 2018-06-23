@@ -1069,36 +1069,43 @@ function updatePrice(percentage) {
 	$('#planLinkFirstPrice').val(Math.round(planLinkInfo.suggestedPrice.first * percentage))
 }
 
-function updateFrequencyBar(airplaneModelId, callback) {
+function updateFrequencyBar(airplaneModelId, configuration) {
 	var frequencyBar = $("#frequencyBar")
 	var selectedCount = getAssignedAirplanes().length
 	
 	var maxFrequencyByAirplanes = planLinkInfoByModel[airplaneModelId].maxFrequency * selectedCount
 	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
 	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
+	var maxFrequency
+	var limitingFactor
 	
-	if (maxFrequencyFromAirport <= maxFrequencyToAirport && maxFrequencyFromAirport <= maxFrequencyByAirplanes) { //limited by from airport 
-		if (maxFrequencyFromAirport == 0) {
-			frequencyBar.text("No routing allowed, reason: ")
-		} else {
-			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyFromAirport, frequencyBar, $("#planLinkFrequency"), null, null, callback)
-		}
-		$("#planLinkLimitingFactor").text("Limited by slots offered by Departure Airport")
-	} else if (maxFrequencyToAirport <= maxFrequencyFromAirport && maxFrequencyToAirport <= maxFrequencyByAirplanes) { //limited by to airport 
-		if (maxFrequencyToAirport == 0) {
-			frequencyBar.text("No routing allowed, reason: ")
-		} else {
-			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyToAirport, frequencyBar, $("#planLinkFrequency"), null, null, callback)
-		}
-		$("#planLinkLimitingFactor").text("Limited by slots offered by Destination Airport")
+	if (maxFrequencyFromAirport <= maxFrequencyToAirport && maxFrequencyFromAirport <= maxFrequencyByAirplanes) { //limited by from airport
+		maxFrequency = maxFrequencyFromAirport
+		limitingFactor = "Limited by slots offered by Departure Airport"
+	} else if (maxFrequencyToAirport <= maxFrequencyFromAirport && maxFrequencyToAirport <= maxFrequencyByAirplanes) { //limited by to airport
+		maxFrequency = maxFrequencyToAirport
+		limitingFactor = "Limited by slots offered by Destination Airport"
 	} else { //limited by airplanes
-		if (maxFrequencyByAirplanes == 0) {
-			frequencyBar.text("No routing allowed, reason: ")
-		} else {
-			generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"), null, null, callback)
-		}
-		$("#planLinkLimitingFactor").text("Limited by number of airplanes assigned")
+		maxFrequency = maxFrequencyByAirplanes
+		limitingFactor = "Limited by number of airplanes assigned. Purchase more of this airplane to increase frequency"
 	}
+	
+	if (maxFrequencyByAirplanes == 0) {
+		frequencyBar.text("No routing allowed, reason: ")
+	} else {
+		generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"), null, null, function(oldFrequency, newFrequency) {
+//			console.log("frequency from " + oldFrequency + " to " + newFrequency)
+//			console.log(thisModelPlanLinkInfo.configuration)
+			updateCapacity(configuration, newFrequency)
+			if (newFrequency == maxFrequency) {
+				$("#planLinkLimitingFactor").show()
+			} else {
+				$("#planLinkLimitingFactor").hide()
+			}
+		})
+	}
+	$("#planLinkLimitingFactor").text(limitingFactor)
+	$("#planLinkLimitingFactor").data('maxFrequency', maxFrequency)
 }
 
 function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
@@ -1146,11 +1153,7 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
 		}
 		 
-		updateFrequencyBar(selectedModelId, function(oldFrequency, newFrequency) {
-			console.log("frequency from " + oldFrequency + " to " + newFrequency)
-			console.log(thisModelPlanLinkInfo.configuration)
-			updateCapacity(thisModelPlanLinkInfo.configuration, newFrequency)
-		})
+		updateFrequencyBar(selectedModelId, thisModelPlanLinkInfo.configuration)
 		
 		updateCapacity(thisModelPlanLinkInfo.configuration, $("#planLinkFrequency").val())
 		
@@ -1192,7 +1195,8 @@ function toggleAssignedAirplane(iconSpan) {
 	}
 	$(iconSpan).children('img').attr('src', getAssignedAirplaneIcon(airplane))
 	
-	updateFrequencyBar($('#planLinkModelSelect').val())
+	var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
+	updateFrequencyBar($('#planLinkModelSelect').val(), configuration)
 }
 
 function getAssignedAirplanes() {
