@@ -748,6 +748,8 @@ function addMarkers(airports) {
 					  });
 					  $("#planToAirportButton").show()
 				  }
+			  } else {
+				  $("#planToAirportButton").hide()
 			  }
 			  
 		  });
