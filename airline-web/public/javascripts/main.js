@@ -130,7 +130,7 @@ function logout() {
 	    	console.log(message)
 	    	activeUser = null
 	    	activeAirline = null
-	    	hideUserSpecficElements()
+	    	hideUserSpecificElements()
 	    	$.removeCookie('sessionActive')
 	    	//refreshLoginBar()
 	    	//showFloatMessage("Successfully logged out")

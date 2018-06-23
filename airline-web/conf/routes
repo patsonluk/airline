@@ -69,6 +69,7 @@ GET		 /rankings  		  		      controllers.RankingApplication.getRankings()
 
 # Signup
 GET     /signup                     controllers.SignUp.form
+GET		/signup/profiles            controllers.SignUp.profiles
 #GET     /editUser/fakeuser             controllers.SignUp.editForm
 POST    /signup                     controllers.SignUp.submit
 

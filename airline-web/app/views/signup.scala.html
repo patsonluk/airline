@@ -37,53 +37,58 @@
   <body>
 
     @helper.form(action = routes.SignUp.submit) {
-        
-        <fieldset>
-            <h3>Account informations</h3>
-            <div style="padding: 10px;">
-            @inputText(
-                signupForm("username"),
-                '_label -> <h4>Username</h4>, 
-                '_help -> "Please choose a valid username.",
-                '_error -> signupForm.error("username")
-            )
-            </div>
-            <div style="padding: 10px;">
-            @inputText(
-                signupForm("email"), '_label -> <h4>Email</h4>,
-                '_help -> "Enter a valid email address."
-            )
-            </div>
-            <div style="padding: 10px;">
-            @inputPassword(
-                signupForm("password.main"), 
-                '_label -> <h4>Password</h4>,
-                '_help -> "A password must be at least 6 characters. "
-            )
-            </div>
-            <div style="padding: 10px;">
-            @inputPassword(
-                signupForm("password.confirm"), 
-                '_label -> <h4>Repeat password</h4>,
-                '_help -> "Please repeat your password again.",
-                '_error -> signupForm.error("password")
-            )
-            </div>
-            <div style="padding: 10px;">
-            @inputText(
-                signupForm("airlineName"),
-                '_label -> <h4>Airline name</h4>, 
-                '_help -> "Please enter your airline name.",
-                '_error -> signupForm.error("airlineName")
-            )
-            </div>
-        </fieldset>
-        <div class="actions">
-        	<div class="button" onclick="signup($(this).parents('form:first'))">Sign Up</div>
-            <!--  <input type="submit" class="button" value="Sign Up"> -->
-            <a href="@routes.Application.index" class="btn">Cancel</a>
+        <div class="section">
+        	<h1>New Airline Sign-up</h1>
+	        <fieldset>
+	            <div style="padding: 10px;">
+	            @inputText(
+	                signupForm("username"),
+	                '_label -> <h4>Username</h4>, 
+	                '_help -> "Please choose a valid username.",
+	                '_error -> signupForm.error("username")
+	            )
+	            </div>
+	            <div style="padding: 10px;">
+	            @inputText(
+	                signupForm("email"), '_label -> <h4>Email</h4>,
+	                '_help -> "Enter a valid email address."
+	            )
+	            </div>
+	            <div style="padding: 10px;">
+	            @inputPassword(
+	                signupForm("password.main"), 
+	                '_label -> <h4>Password</h4>,
+	                '_help -> "A password must be at least 6 characters. "
+	            )
+	            </div>
+	            <div style="padding: 10px;">
+	            @inputPassword(
+	                signupForm("password.confirm"), 
+	                '_label -> <h4>Repeat password</h4>,
+	                '_help -> "Please repeat your password again.",
+	                '_error -> signupForm.error("password")
+	            )
+	            </div>
+	            <div style="padding: 10px;">
+	            @inputText(
+	                signupForm("airlineName"),
+	                '_label -> <h4>Airline name</h4>, 
+	                '_help -> "Please enter your airline name.",
+	                '_error -> signupForm.error("airlineName")
+	            )
+	            </div>
+	        </fieldset>
+	        <input type="hidden" id="profileId" name="profileId" value="1"/>
+	        <div id ="profiles" style="padding: 10px;">
+	        	<h4>Pick your airline:</h4>
+	        </div>
+	        <div style="clear: both;"></div>
+	        <div class="actions">
+	        	<div class="button" onclick="signup($(this).parents('form:first'))">Sign Up</div>
+	            <!--  <input type="submit" class="button" value="Sign Up"> -->
+	            <a href="@routes.Application.index" class="btn">Cancel</a>
+	        </div>
         </div>
-        
     }
 </body>    
 </html>

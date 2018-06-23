@@ -17,6 +17,12 @@ import play.api.libs.ws.WSClient
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Await
+import play.api.libs.json.Writes
+import play.api.libs.json.Json
+import play.api.libs.json.JsValue
+import play.api.libs.json.JsObject
+import play.api.libs.json.JsNumber
+import play.api.libs.json.JsString
 
 class SignUp @Inject() (ws: WSClient) extends Controller {
   private[this] val recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify"
@@ -54,17 +60,18 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
         airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
         "This airline name  is not available",  
         airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase() }.contains(airlineName.toLowerCase())
-      )
+      ),
+      "profileId" -> number
     )
     // The mapping signature doesn't match the User case class signature,
     // so we have to define custom binding/unbinding functions
     {
       // Binding: Create a User from the mapping result (ignore the second password and the accept field)
-      (username, email, passwords, recaptureToken, airlineName) => NewUser(username.trim, passwords._1, email.trim, recaptureToken, airlineName.trim) 
+      (username, email, passwords, recaptureToken, airlineName, profileId) => NewUser(username.trim, passwords._1, email.trim, recaptureToken, airlineName.trim, profileId) 
     } 
     {
       // Unbinding: Create the mapping values from an existing User value
-      user => Some(user.username, user.email, (user.password, ""), "", user.airlineName)
+      user => Some(user.username, user.email, (user.password, ""), "", user.airlineName, 1)
     }
   )
   
@@ -83,6 +90,20 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
 //    Ok(html.signup(signupForm.fill(existingUser)))
 //  }
   
+  implicit object ProfileWrites extends Writes[StartupProfile] {
+    def writes(profile: StartupProfile): JsValue = {
+          JsObject(List(
+      "id" -> JsNumber(profile.id),
+      "title" -> JsString(profile.title),
+      "description" -> JsString(profile.description),
+      "outlines" -> Json.toJson(profile.outlines)))
+    }
+  }
+  
+  def profiles = Action {
+    Ok(Json.toJson(StartupProfile.profiles))
+  }
+  
   /**
    * Handle form submission.
    */
@@ -98,11 +119,13 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
           Authentication.createUserSecret(userInput.username, userInput.password)
           
           val newAirline = Airline(userInput.airlineName)
-          newAirline.setBalance(50000000) //initial balance 50 million
+//          newAirline.setBalance(50000000) //initial balance 50 million
           newAirline.setMaintainenceQuality(100)
           AirlineSource.saveAirlines(List(newAirline))
-          
           UserSource.setUserAirline(user, newAirline)
+          
+          val profile = StartupProfile.profilesById(userInput.profileId)
+          profile.initializeAirline(newAirline)
           
           Redirect("/")
         } else {
