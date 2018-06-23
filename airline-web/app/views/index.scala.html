@@ -198,11 +198,11 @@
 				    			<div class="divider"></div>
 				    			<div class="table" id="linkCompetitons" style="width: 100%">
 			    					<h4>Direct Competitions</h4>
-			    					<div class='table-row'>
-			    						<div style="display: table-cell;"><h5>Airline</h5></div>
-			    						<div style="display: table-cell;"><h5>Price</h5></div>
-			    						<div style="display: table-cell;"><h5>Capacity</h5></div>
-			    						<div style="display: table-cell;"><h5>Quality</h5></div>
+			    					<div class='table-header'>
+			    						<div class="cell" style="width: 40%;"><h5>Airline</h5></div>
+			    						<div class="cell" style="width: 30%;"><h5>Price</h5></div>
+			    						<div class="cell" style="width: 15%;"><h5>Capacity</h5></div>
+			    						<div class="cell" style="width: 15%;"><h5>Quality</h5></div>
 			    					</div>
 			    				</div>
 			    				<div id=linkCompetitionsPie align="center"></div>
@@ -546,8 +546,8 @@
   			</div>
 <!--   			end airport canvas -->
   			<div id="countryCanvas" style="height: 100%; display: none;">
-  				<div style="width : 40%; float: left; overflow: auto;" class="section"> 
-	  	  			<div class="table data" id="countryTable" style="height: 100%; width: 100%">
+  				<div style="width : 40%; float: left; height: 100%" class="section"> 
+	  	  			<div class="table data" style="width: 100%">
 	 	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 5%"></div>
 	 	  					<div class="cell clickable" style="width: 19%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
@@ -557,6 +557,16 @@
 	 	  					<div class="cell clickable" style="width: 19%" align="right" data-sort-property="mutualRelationship" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Relationship</div>
 						</div>
          			</div>
+         			<div id="countryTable" class="table data"  style="height: 100%; width: 100%; overflow: auto;">
+         			 	<div class="table-header">
+	 	  					<div class="cell" style="width: 5%; border-bottom: none;"></div>
+	 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+	 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+	 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+	 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+	 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+						</div>
+        			</div>
 				</div>		
   				<div id="countryDetails" class="table section" style="width: 50%; float: left;">
   					<div class="table-row">
@@ -599,88 +609,95 @@
   			</div>
 <!--   			end country canvas -->
   			<div id="airplaneCanvas" style="height: 100%; display: none;">
-  				<div class="section" style="height: 90% ; width : 35%; float: left;"> 
-	  				<div id="airplaneModelSort" style="height: 35px ; width : 100%;">
-	  					<span class="label">Sort:</span>
-		  					<select id="airplaneSortSelect" onchange="updateAirplaneModelList($('#airplaneSortSelect').val(), $('#airplaneSortOrderSelect').val())">
-		  						<option value="capacity" selected="selected">Max Capacity</option>
-		  						<option value="range">Max Flying Range</option>
-		  						<option value="price">Purchase Price</option>
-		  						<option value="assignedAirplanes">Owned (Assigned)</option>
-		  						<option value="freeAirplanes">Owned (Unassigned)</option>
-		  						<option value="name">Model Name</option>
-		  						<option value="speed">Speed</option>
-		  						<option value="fuelBurn">Fuel Burn</option>
-		  					</select>
-		  					<select id="airplaneSortOrderSelect" onchange="updateAirplaneModelList($('#airplaneSortSelect').val(), $('#airplaneSortOrderSelect').val())">
-		  						<option value="ascending" selected="selected">Ascending</option>
-		  						<option value="descending">Descending</option>
-		  					</select>
-	  					
+  				<div style="height: 90% ; width : 35%; float: left;">
+  					<div class="section" style="height: 100%"> 
+		  				<div id="airplaneModelSort" style="height: 35px ; width : 100%;">
+		  					<span class="label">Sort:</span>
+			  					<select id="airplaneSortSelect" onchange="updateAirplaneModelList($('#airplaneSortSelect').val(), $('#airplaneSortOrderSelect').val())">
+			  						<option value="capacity" selected="selected">Max Capacity</option>
+			  						<option value="range">Max Flying Range</option>
+			  						<option value="price">Purchase Price</option>
+			  						<option value="assignedAirplanes">Owned (Assigned)</option>
+			  						<option value="freeAirplanes">Owned (Unassigned)</option>
+			  						<option value="name">Model Name</option>
+			  						<option value="speed">Speed</option>
+			  						<option value="fuelBurn">Fuel Burn</option>
+			  					</select>
+			  					<select id="airplaneSortOrderSelect" onchange="updateAirplaneModelList($('#airplaneSortSelect').val(), $('#airplaneSortOrderSelect').val())">
+			  						<option value="ascending" selected="selected">Ascending</option>
+			  						<option value="descending">Descending</option>
+			  					</select>
+		  					
+		  				</div>
+		 	  			<div class="section" style="height: 90%; width : 50%; float: left; overflow: auto; padding: 10px 0px 10px 10px; margin: 0px; border-radius: 5px 0px 0px 5px;">
+		 	  				<h4>Airplane Models</h4>
+		 	  				<ul id="airplaneModelList"></ul>
+		 	  			</div>
+		  				<div class="section" style="height: 90% ; width : 50%; float: left; overflow: auto; padding: 10px 10px 10px 0px; margin: 0px; border-radius: 0px 5px 5px 0px;">
+		  					<div style="padding-left: 10px;">
+			  					<h4>Inventory</h4>
+			  					<ul id="airplaneInventoryList"></ul>
+		  					</div>
+		  				</div>
 	  				</div>
-	 	  			<div class="section" style="height: 90%; width : 50%; float: left; overflow: auto; margin: 10px 0px 10px 10px; border-radius: 5px 0px 0px 5px;">
-	 	  				<h4>Airplane Models</h4>
-	 	  				<ul id="airplaneModelList"></ul>
-	 	  			</div>
-	  				<div class="section" style="height: 90% ; width : 40%; float: left; overflow: auto; margin: 10px 10px 10px 0px; border-radius: 0px 5px 5px 0px;">
-	  					<h4>Inventory</h4>
-	  					<ul id="airplaneInventoryList"></ul>
-	  				</div>
-				</div>					  				
-  				<div id="airplaneModelDetail" class="table section" style="width: 60%; float: left; display: none;">
-  					<h4>Airplane Model Details</h4>
-					<div class="table-row">
-		    			<div class="label"><h5>Model:</h5></div>
-		    			<div class="value" id="modelName"></div>
-			    	</div>
-			    	<div class="table-row">
-		    			<div class="label"><h5>Max Capacity:</h5></div>
-		    			<div class="value" id="capacity"></div>
-			    	</div>
-			    	<div class="table-row">
-		    			<div class="label"><h5>Fuel Burn:</h5></div>
-		    			<div class="value" id="fuelBurn"></div>
-			    	</div>
-			    	<div class="table-row">
-		    			<div class="label"><h5>Speed:</h5></div>
-		    			<div class="value" id="speed"></div>
-			    	</div>
-			    	<div class="table-row">
-		    			<div class="label"><h5>Max Flying Range:</h5></div>
-		    			<div class="value" id="range"></div>
-			    	</div>
-			    	<div class="table-row">
-		    			<div class="label"><h5>Purchase Price:</h5></div>
-		    			<div class="value" id="price"></div>
-			    	</div>
-			    	<div class="button" onclick="addAirplane($('#airplaneCanvas #selectedModel').val(), 1, false)">Purchase</div>
-			    	<input type="hidden" id="selectedModel"/>
-	    		</div>
-	    		<div id="ownedAirplaneDetail" class="table section" style="width: 60%; float: left; display: none">
-	    			<h4>Owned Airplane Details</h4>
-	    			<div class="table-row">
-		    			<div class="label"><h5>Airplane ID:</h5></div>
-		    			<div class="value" id="airplaneDetailsId"></div>
-			    	</div>
-    				<div class="table-row">
-		    			<div class="label"><h5>Condition:</h5></div>
-		    			<div class="value" id="airplaneDetailsCondition"></div>
-			    	</div>
-			    	<div class="table-row">
-		    			<div class="label"><h5>Age:</h5></div>
-		    			<div class="value" id="airplaneDetailsAge"></div>
-			    	</div>
-			    	<div class="table-row">
-		    			<div class="label"><h5>Selling Value:</h5></div>
-		    			<div class="value" id="airplaneDetailsSellValue"></div>
-			    	</div>
-			    	<div class="table-row">
-		    			<div class="label"><h5>Assigned Route:</h5></div>
-		    			<div class="value" id="airplaneDetailsLink"></div>
-			    	</div>
-			    	<input type="hidden" id="actionAirplaneId"></input>
-	   				<div class="button" id ="sellAirplaneButton" onclick="sellAirplane($('#actionAirplaneId').val())">Sell</div>
-	    		</div>
+				</div>	
+<!-- 				end left panel				  				 -->
+				<div id="airplaneModelDetail" style="width: 60%; float: left; display: none;">
+					<div class="table section" style="width: 100%;">
+						<h4>Airplane Model Details</h4>
+						<div class="table-row">
+			    			<div class="label"><h5>Model:</h5></div>
+			    			<div class="value" id="modelName"></div>
+				    	</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Max Capacity:</h5></div>
+			    			<div class="value" id="capacity"></div>
+				    	</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Fuel Burn:</h5></div>
+			    			<div class="value" id="fuelBurn"></div>
+				    	</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Speed:</h5></div>
+			    			<div class="value" id="speed"></div>
+				    	</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Max Flying Range:</h5></div>
+			    			<div class="value" id="range"></div>
+				    	</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Purchase Price:</h5></div>
+			    			<div class="value" id="price"></div>
+				    	</div>
+				    	<div class="button" onclick="addAirplane($('#airplaneCanvas #selectedModel').val(), 1, false)">Purchase</div>
+				    	<input type="hidden" id="selectedModel"/>
+		    		</div>
+		    		<div id="ownedAirplaneDetail" class="table section" style="width: 100%; display: none;">
+		    			<h4>Owned Airplane Details</h4>
+		    			<div class="table-row">
+			    			<div class="label"><h5>Airplane ID:</h5></div>
+			    			<div class="value" id="airplaneDetailsId"></div>
+				    	</div>
+	    				<div class="table-row">
+			    			<div class="label"><h5>Condition:</h5></div>
+			    			<div class="value" id="airplaneDetailsCondition"></div>
+				    	</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Age:</h5></div>
+			    			<div class="value" id="airplaneDetailsAge"></div>
+				    	</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Selling Value:</h5></div>
+			    			<div class="value" id="airplaneDetailsSellValue"></div>
+				    	</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Assigned Route:</h5></div>
+			    			<div class="value" id="airplaneDetailsLink"></div>
+				    	</div>
+				    	<input type="hidden" id="actionAirplaneId"></input>
+		   				<div class="button" id ="sellAirplaneButton" onclick="sellAirplane($('#actionAirplaneId').val())">Sell</div>
+		    		</div>
+		    	</div>
   			</div>
 <!--   			end airplane canvas -->
 			<div id="officeCanvas" style="height: 100%; display: none;">

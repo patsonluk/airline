@@ -28,7 +28,8 @@ body {
 }
 
 .table {
-	display: table;
+	//display: table;
+	display: block;
 }
 
 .table .label {
@@ -194,6 +195,7 @@ div.section, div.selectedSection {
     border-radius: 0.5em 0.5em 0.5em 0.5em;
     margin: 10px;
     padding: 10px 10px 20px 10px;
+    box-sizing:border-box;
     //display: block;
     //position: relative;
 }
