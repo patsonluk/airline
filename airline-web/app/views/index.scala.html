@@ -93,14 +93,16 @@
   		</div>
   		 
   		<div style="width: 80px; float: left;">
-	  		<ul class="tabs" id="main-tabs" style="display: none;'">
+<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
+	  		<ul class="tabs" id="main-tabs">
+	  		
 			  <li class="button left-tab" id="worldMapCanvasTab" onclick="showWorldMap();"><span class="selected">Map</span></li>
-			  <li class="button left-tab" id="linksCanvasTab" onclick="showLinksDetails();"><span>Routes</span></li>
+			  <li class="button left-tab user-specific-tab" id="linksCanvasTab" onclick="showLinksDetails();"><span>Routes</span></li>
 			  <li class="button left-tab" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li>
-			  <li class="button left-tab" id="countryCanvasTab" onclick="showCountryView();"><span>Country</span></li>
-			  <li class="button left-tab" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
-			  <li class="button left-tab" id="officeCanvasTab" onclick="showOfficeCanvas();"><span>Office</span></li>
-			  <li class="button left-tab" id="bankCanvasTab" onclick="showBankCanvas();"><span>Bank</span></li>
+			  <li class="button left-tab user-specific-tab" id="countryCanvasTab" onclick="showCountryView();"><span>Country</span></li>
+			  <li class="button left-tab user-specific-tab" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
+			  <li class="button left-tab user-specific-tab" id="officeCanvasTab" onclick="showOfficeCanvas();"><span>Office</span></li>
+			  <li class="button left-tab user-specific-tab" id="bankCanvasTab" onclick="showBankCanvas();"><span>Bank</span></li>
 			  <li class="button left-tab" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
 			</ul>
 		</div>
@@ -458,7 +460,7 @@
 				   			</div>
 				   			<div class="table-row">
 				   				<div class="label"><h5>Country market openness:</h5></div>
-				   				<div class="value airportOpenness" id="airportDetailsOpenness"></div>
+				   				<div class="value" id="airportDetailsOpenness"></div>
 				   			</div>
 		    			</div>
 		    			<div class="table" style="width: 50%; float: left">
@@ -998,8 +1000,8 @@
     		<span id="airportPopupName" class="header"></span>
     	</div>
     	<div id="airportIcons">
-    		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon">
-    		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon">
+    		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon" style="display: none">
+    		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon" style="display:none">
     	</div>
     	<div class="table" style="width: 100%">
    			<div class="table-row">
@@ -1028,7 +1030,7 @@
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Country market openness:</h5></div>
-   				<div class="value airportOpenness"></div>
+   				<div class="value" id="airportPopupOpenness"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Slots (available / total):</h5></div>

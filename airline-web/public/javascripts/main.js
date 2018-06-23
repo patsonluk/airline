@@ -11,9 +11,12 @@ $( document ).ready(function() {
 	if ($.cookie('sessionActive')) {
 		loadUser(false)
 	} else {
+		hideUserSpecificElements()
 		refreshLoginBar()
+		getAirports();
 		printConsole("Please log in")
 	}
+	loadAllCountries()
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())
 	}
@@ -143,12 +146,12 @@ function logout() {
 }
 
 function showUserSpecificElements() {
-	$('#main-tabs').show()
+	$('.user-specific-tab').show()
 	$('#topBarDetails').show()
 }
 
-function hideUserSpecficElements() {
-	$('#main-tabs').hide()
+function hideUserSpecificElements() {
+	$('.user-specific-tab').hide()
 	$('#topBarDetails').hide()
 }
 
@@ -515,7 +518,6 @@ function LinkHistoryControl(controlDiv, map) {
 
 function updateAllPanels(airlineId) {
 	updateAirlineInfo(airlineId)
-	loadAllCountries()
 	
 	if (activeAirline) {
 		if (!activeAirline.headquarterAirport) {

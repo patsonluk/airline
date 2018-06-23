@@ -3,12 +3,10 @@ function showRankingCanvas() {
 	highlightTab($('#rankingCanvasTab'))
 	
 	loadRanking()
-	updateServiceFundingDetails()
-	updateMaintenanceLevelDetails()
 }
 
 function loadRanking() {
-	var airlineId = activeAirline.id
+	var airlineId = activeAirline ? activeAirline.id : null
 	$('#rankingCanvas .table').hide() //hide all tables until they are loaded
 	$.ajax({
 		type: 'GET',
@@ -53,7 +51,7 @@ function updateRankingTable(rankingType, rankings) {
 			if (index < maxEntry) {
 				rankingTable.append(getRankingRow(ranking))
 			}
-			if (ranking.airlineId == activeAirline.id) {
+			if (activeAirline && ranking.airlineId == activeAirline.id) {
 				currentAirlineRanking = ranking
 			}
 		})

@@ -73,70 +73,76 @@ function updateAirportDetails(airport) {
 		$("#airportDetailsCountry").append("<img src='" + countryFlagUrl + "' />")
 	}
 	$("#airportDetailsZone").text(zoneById[airport.zone])
+	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness))
 	
 	updateAirportExtendedDetails(airport.id)
 	updateAirportSlots(airport.id)
 	
-	$.ajax({
-		type: 'GET',
-		url: "airlines/" + activeAirline.id + "/bases/" + airport.id,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(airportBase) {
-	    	var newBase = airportBase.scale == 0
-	    	if (airportBase) {
-	    		if (newBase) {
-	    			$('#airportDetailsBaseType').text('-')
-	    			$('#airportDetailsBaseScale').text('-')
-	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep) + '(if built)')
-	    			$('#airportDetailsBaseCost').text('$' + commaSeparateNumber(airportBase.upgradeCost))
-	    		} else {
-	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
-	    			$('#airportDetailsBaseScale').text(airportBase.scale)
-	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
-	    			$('#airportDetailsBaseCost').text('$' + commaSeparateNumber(airportBase.upgradeCost))
-	    		}
-	    		
-	    		//update buttons and reject reasons
-	    		if (airportBase.rejection) {
-	    			$('#baseRejectionReason').text(airportBase.rejection)
-	    			$('#baseRejection').show()
-	    			$('#buildHeadquarterButton').hide()
-	    			$('#buildBaseButton').hide()
-	    			$('#upgradeBaseButton').hide()
-	    		} else{
-	    			$('#baseRejection').hide()
-	    			if (newBase) {
-	    				if (activeAirline.headquarterAirport) {
+	if (activeAirline) {
+		$('#airportBaseDetails').show()
+		$.ajax({
+			type: 'GET',
+			url: "airlines/" + activeAirline.id + "/bases/" + airport.id,
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
+		    success: function(airportBase) {
+		    	var newBase = airportBase.scale == 0
+		    	if (airportBase) {
+		    		if (newBase) {
+		    			$('#airportDetailsBaseType').text('-')
+		    			$('#airportDetailsBaseScale').text('-')
+		    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep) + '(if built)')
+		    			$('#airportDetailsBaseCost').text('$' + commaSeparateNumber(airportBase.upgradeCost))
+		    		} else {
+		    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
+		    			$('#airportDetailsBaseScale').text(airportBase.scale)
+		    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
+		    			$('#airportDetailsBaseCost').text('$' + commaSeparateNumber(airportBase.upgradeCost))
+		    		}
+		    		
+		    		//update buttons and reject reasons
+		    		if (airportBase.rejection) {
+		    			$('#baseRejectionReason').text(airportBase.rejection)
+		    			$('#baseRejection').show()
+		    			$('#buildHeadquarterButton').hide()
+		    			$('#buildBaseButton').hide()
+		    			$('#upgradeBaseButton').hide()
+		    		} else{
+		    			$('#baseRejection').hide()
+		    			if (newBase) {
+		    				if (activeAirline.headquarterAirport) {
+			    				$('#buildHeadquarterButton').hide()
+			    				$('#buildBaseButton').show()
+		    				} else {
+		    					$('#buildHeadquarterButton').show()
+			    				$('#buildBaseButton').hide()
+		    				}
+		    				$('#upgradeBaseButton').hide()
+		    			} else {
 		    				$('#buildHeadquarterButton').hide()
-		    				$('#buildBaseButton').show()
-	    				} else {
-	    					$('#buildHeadquarterButton').show()
 		    				$('#buildBaseButton').hide()
-	    				}
-	    				$('#upgradeBaseButton').hide()
-	    			} else {
-	    				$('#buildHeadquarterButton').hide()
-	    				$('#buildBaseButton').hide()
-	    				$('#upgradeBaseButton').show()
-	    			}
-	    		}
-	    		
-	    		if (newBase || airportBase.headquarter) {
-	    			$('#deleteBaseButton').hide()
-	    		} else {
-	    			$('#deleteBaseButton').show()
-	    		}
-	    		
-	    		
-	    		
-	    	}
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+		    				$('#upgradeBaseButton').show()
+		    			}
+		    		}
+		    		
+		    		if (newBase || airportBase.headquarter) {
+		    			$('#deleteBaseButton').hide()
+		    		} else {
+		    			$('#deleteBaseButton').show()
+		    		}
+		    		
+		    		
+		    		
+		    	}
+		    },
+		    error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	} else {
+		$('#airportBaseDetails').hide()
+	}
 }
 
 
@@ -558,8 +564,8 @@ function loadAirportStatistics(airport) {
 	    	 {"transitType" : "transit passengers", "passengers" : airportStatistics.transitPassengers}
 	    	 ]
 	    	plotPie(transitTypeData, null , $("#transitTypePie"), "transitType", "passengers")
-	    	plotPie(airportStatistics.airlineDeparture, activeAirline.name, $("#airlineDeparturePie"), "airlineName", "passengers")
-	    	plotPie(airportStatistics.airlineArrival, activeAirline.name, $("#airlineArrivalPie"), "airlineName", "passengers")
+	    	plotPie(airportStatistics.airlineDeparture, activeAirline ? activeAirline.name : null , $("#airlineDeparturePie"), "airlineName", "passengers")
+	    	plotPie(airportStatistics.airlineArrival, activeAirline ? activeAirline.name : null, $("#airlineArrivalPie"), "airlineName", "passengers")
 	    	
 	    	$('#airportDetailsPassengerCount').text(airportStatistics.departureOrArrivalPassengers)
 	    	$('#airportDetailsConnectedCountryCount').text(airportStatistics.connectedCountryCount)
@@ -708,7 +714,11 @@ function addMarkers(airports) {
 			  
 			  activeAirport = this.airport
 			  
-			  var isBase = updateBaseInfo(this.airport.id)
+			  var isBase = false;
+			  
+			  if (activeAirline) {
+				  updateBaseInfo(this.airport.id)
+			  }
 			  $("#airportPopupName").text(this.airport.name)
 			  $("#airportPopupIata").text(this.airport.iata)
 			  $("#airportPopupCity").html(this.airport.city + "&nbsp;" + getCountryFlagImg(this.airport.countryCode))
@@ -716,6 +726,7 @@ function addMarkers(airports) {
 			  $("#airportPopupSize").text(this.airport.size)
 			  $("#airportPopupPopulation").text(commaSeparateNumber(this.airport.population))
 			  $("#airportPopupIncomeLevel").text(this.airport.incomeLevel)
+			  $("#airportPopupOpenness").html(getOpennessSpan(loadedCountriesByCode[this.airport.countryCode].openness))
 			  updateAirportExtendedDetails(this.airport.id)
 			  updateAirportSlots(this.airport.id)
 			  
@@ -725,16 +736,18 @@ function addMarkers(airports) {
 			  
 			  activeAirportPopupInfoWindow = infoWindow
 			  
-			  if (!activeAirline.headquarterAirport) {
-				  $("#planToAirportButton").hide()
-			  } else if (this.airport.id == activeAirline.headquarterAirport.airportId) {
-				  $("#planToAirportButton").hide()
-			  } else {
-				  $("#planToAirportButton").click(function() {
-					  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
-					  infoWindow.close();
-				  });
-				  $("#planToAirportButton").show()
+			  if (activeAirline) {
+				  if (!activeAirline.headquarterAirport) {
+					  $("#planToAirportButton").hide()
+				  } else if (this.airport.id == activeAirline.headquarterAirport.airportId) {
+					  $("#planToAirportButton").hide()
+				  } else {
+					  $("#planToAirportButton").click(function() {
+						  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
+						  infoWindow.close();
+					  });
+					  $("#planToAirportButton").show()
+				  }
 			  }
 			  
 		  });
@@ -854,7 +867,6 @@ function updateBaseInfo(airportId) {
 		  }
 		}
 	}
-	return baseAirport
 }
 
 function updateAirportExtendedDetails(airportId) {
@@ -863,53 +875,53 @@ function updateAirportExtendedDetails(airportId) {
 	$(".airportAwareness").text('-')
 	$(".airportLoyalty").text('-')
 	$(".airportRelationship").text('-')
-	$(".airportOpenness").text('-')
 	$("#airportIcons .feature").hide()
-	
-	var airlineId = activeAirline.id
-	$.ajax({
-		type: 'GET',
-		url: "airports/" + airportId,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(airport) {
-	    	if (activeAirline.headquarterAirport) { //if this airline has picked headquarter
-	    		var hasMatch = false
-		    	$.each(airport.appealList, function( key, appeal ) {
-		    		if (appeal.airlineId == airlineId) {
-		    			$(".airportAwareness").text(appeal.awareness)
-		    			$(".airportLoyalty").text(appeal.loyalty)
-		    			hasMatch = true
-		    		}
-		  		});
-		    	if (!hasMatch) {
-		    		$(".airportAwareness").text("0")
-		    		$(".airportLoyalty").text("0")
+
+	if (activeAirline) {
+		var airlineId = activeAirline.id
+		$.ajax({
+			type: 'GET',
+			url: "airports/" + airportId,
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
+		    success: function(airport) {
+		    	if (activeAirline.headquarterAirport) { //if this airline has picked headquarter
+		    		var hasMatch = false
+			    	$.each(airport.appealList, function( key, appeal ) {
+			    		if (appeal.airlineId == airlineId) {
+			    			$(".airportAwareness").text(appeal.awareness)
+			    			$(".airportLoyalty").text(appeal.loyalty)
+			    			hasMatch = true
+			    		}
+			  		});
+			    	if (!hasMatch) {
+			    		$(".airportAwareness").text("0")
+			    		$(".airportLoyalty").text("0")
+			    	}
+			    	
+			    	relationship = getRelationshipDescription(loadedCountriesByCode[airport.countryCode].mutualRelationship)
+			    	
+			    	$(".airportRelationship").text(relationship)
 		    	}
 		    	
-		    	relationship = getRelationshipDescription(loadedCountriesByCode[airport.countryCode].mutualRelationship)
+		    	$(".airportSlots").text(airport.availableSlots + " / " + airport.slots)
 		    	
-		    	$(".airportRelationship").text(relationship)
-		    	$(".airportOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness))
-	    	}
-	    	
-	    	$(".airportSlots").text(airport.availableSlots + " / " + airport.slots)
-	    	
-//	    	$.each(airport.linkCounts, function(withLinksAirlineId, linkCount) {
-//	    		if (airlineId == withLinksAirlineId) {
-//	    			updateBuildBaseButton(airport.zone)
-//	    		}
-//	  		});
-	    	
-	    	$.each(airport.features, function(index, feature) {
-	    		$("#airportIcons").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'><span class='label'>" +  feature.strength + "</span></div>")
-	    	})
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+	//	    	$.each(airport.linkCounts, function(withLinksAirlineId, linkCount) {
+	//	    		if (airlineId == withLinksAirlineId) {
+	//	    			updateBuildBaseButton(airport.zone)
+	//	    		}
+	//	  		});
+		    	
+		    	$.each(airport.features, function(index, feature) {
+		    		$("#airportIcons").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'><span class='label'>" +  feature.strength + "</span></div>")
+		    	})
+		    },
+		    error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	}
 }
 
 //function updateBuildBaseButton(airportZone) { //check if the zone already has base
@@ -926,20 +938,22 @@ function updateAirportSlots(airportId) {
 	//clear the old ones
 	$(".airportAssignedSlots").text()
 	
-	var airlineId = activeAirline.id
-	$.ajax({
-		type: 'GET',
-		url: "airports/" + airportId + "/slots?airlineId=" + airlineId,
-	    dataType: 'json',
-	    success: function(slotInfo) {
-	    	var availableSlots = slotInfo.maxSlots - slotInfo.assignedSlots 
-    		$(".airportAssignedSlots").text(availableSlots + " / " + slotInfo.maxSlots)
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+	if (activeAirline) {
+		var airlineId = activeAirline.id
+		$.ajax({
+			type: 'GET',
+			url: "airports/" + airportId + "/slots?airlineId=" + airlineId,
+		    dataType: 'json',
+		    success: function(slotInfo) {
+		    	var availableSlots = slotInfo.maxSlots - slotInfo.assignedSlots 
+	    		$(".airportAssignedSlots").text(availableSlots + " / " + slotInfo.maxSlots)
+		    },
+		    error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	}
 }
 
 
