@@ -28,8 +28,8 @@ body {
 }
 
 .table {
-	//display: table;
-	display: block;
+	display: table;
+	//display: block;
 }
 
 .table .label {
