@@ -1093,7 +1093,7 @@ function updateFrequencyBar(airplaneModelId, configuration) {
 	if (maxFrequencyByAirplanes == 0) {
 		frequencyBar.text("No routing allowed, reason: ")
 	} else {
-		generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequencyByAirplanes, frequencyBar, $("#planLinkFrequency"), null, null, function(oldFrequency, newFrequency) {
+		generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequency, frequencyBar, $("#planLinkFrequency"), null, null, function(oldFrequency, newFrequency) {
 //			console.log("frequency from " + oldFrequency + " to " + newFrequency)
 //			console.log(thisModelPlanLinkInfo.configuration)
 			updateCapacity(configuration, newFrequency)
@@ -1106,6 +1106,12 @@ function updateFrequencyBar(airplaneModelId, configuration) {
 	}
 	$("#planLinkLimitingFactor").text(limitingFactor)
 	$("#planLinkLimitingFactor").data('maxFrequency', maxFrequency)
+	
+	if ($("#planLinkFrequency").val() == maxFrequency) {
+		$("#planLinkLimitingFactor").show()
+	} else {
+		$("#planLinkLimitingFactor").hide()
+	}
 }
 
 function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
