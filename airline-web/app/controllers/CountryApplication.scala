@@ -79,17 +79,39 @@ class CountryApplication extends Controller {
         
         val (headquarters, bases) = allBases.partition { _.headquarter }
         
-        val headquartersJson =  
-        
         jsonObject = jsonObject.asInstanceOf[JsObject] ++ 
           Json.obj("smallAirportCount" -> smallAirportCount,
                    "mediumAirportCount" -> mediumAirportCount,
                    "largeAirportCount" -> largeAirportCount,
                    "headquarters" -> Json.toJson(headquarters),
                    "bases" -> Json.toJson(bases))
-                   
+        val allAirlines = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
+        CountrySource.loadMarketSharesByCountryCode(countryCode).foreach { marketShares => //if it has market share data
+          
+          val champion = marketShares.airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse)(0)
+          jsonObject = jsonObject.asInstanceOf[JsObject] + ("championAirline" -> Json.toJson(allAirlines(champion._1))) + ("championAirlinePassengerCount" -> JsNumber(champion._2))
+          
+          jsonObject = jsonObject.asInstanceOf[JsObject] + ("marketShares" -> Json.toJson(marketShares.airlineShares.map { 
+              case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
+            }.toList)(AirlineSharesWrites))
+          }
+          
         Ok(jsonObject)
       case None => NotFound
     } 
+  }
+  
+  object AirlineSharesWrites extends Writes[List[(Airline, Long)]] {
+    def writes(shares: List[(Airline, Long)]): JsValue = {
+      var jsonArray = Json.arr()
+      shares.foreach { share =>
+        jsonArray = jsonArray :+ JsObject(List(
+        "airlineId" -> JsNumber(share._1.id),
+        "airlineName" -> JsString(share._1.name),
+        "passengerCount" -> JsNumber(share._2)
+        ))
+      }
+      jsonArray
+    }
   }
 }

@@ -26,9 +26,16 @@ package object controllers {
       JsSuccess(airline)
     }
     
-    def writes(airline: Airline): JsValue = JsObject(List(
+    def writes(airline: Airline): JsValue = {
+      var result = JsObject(List(
       "id" -> JsNumber(airline.id),
       "name" -> JsString(airline.name)))
+      
+      if (airline.getCountryCode.isDefined) {
+        result = result.asInstanceOf[JsObject] + ("countryCode" -> JsString(airline.getCountryCode.get))
+      }
+      result
+    }
   }
   
   implicit object AirplaneModelWrites extends Writes[Model] {

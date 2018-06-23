@@ -260,4 +260,81 @@ object CountrySource {
       airlineToRelationship.toIterable.head._2
     }
   }
+  
+  def saveMarketShares(marketShares : List[CountryMarketShare]) = {
+     val connection = Meta.getConnection()
+     try {  
+       connection.setAutoCommit(false)
+       val replaceStatement = connection.prepareStatement("REPLACE INTO " + COUNTRY_MARKET_SHARE_TABLE + "(country, airline, passenger_count) VALUES (?,?,?)")
+       marketShares.foreach { marketShare =>
+           replaceStatement.setString(1, marketShare.countryCode)
+           marketShare.airlineShares.foreach { 
+             case((airline, passenger_count)) =>
+               replaceStatement.setInt(2, airline)
+               replaceStatement.setDouble(3, passenger_count)
+               replaceStatement.addBatch()
+           }
+           
+       }
+       
+       replaceStatement.executeBatch()
+       connection.commit()
+       replaceStatement.close()
+     } finally {
+       connection.close()
+     }
+  }
+  def loadMarketSharesByCountryCode(country : String) : Option[CountryMarketShare] = {
+    val result = loadMarketSharesByCriteria(List(("country", country)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+  
+  def loadMarketSharesByCriteria(criteria : List[(String, Any)]) : List[CountryMarketShare] = {
+    val connection = Meta.getConnection()
+    try {  
+      var queryString = "SELECT * FROM " + COUNTRY_MARKET_SHARE_TABLE
+      
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+      
+      val preparedStatement = connection.prepareStatement(queryString)
+      
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+      
+      
+      val resultSet = preparedStatement.executeQuery()
+      
+      val countryMarketShares = ListBuffer[CountryMarketShare]()
+      
+      val resultMap = Map[String, Map[Int, Long]]()
+      while (resultSet.next()) {
+        val countryCode = resultSet.getString("country")
+        val airlineId = resultSet.getInt("airline")
+        val passengerCount = resultSet.getLong("passenger_count")
+        
+        val airlinePassengers = resultMap.getOrElseUpdate(countryCode, Map[Int, Long]())
+        airlinePassengers.put(airlineId, passengerCount)
+      }    
+      resultSet.close()
+      preparedStatement.close()
+      
+      resultMap.map {
+        case ((countryCode, airlinePassengers)) => CountryMarketShare(countryCode, airlinePassengers.toMap)
+      }.toList
+    } finally {
+      connection.close()
+    }  
+  }
 }
+

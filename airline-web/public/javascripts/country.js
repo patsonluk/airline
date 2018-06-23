@@ -88,6 +88,7 @@ function toggleCountryTableSortOrder(sortHeader) {
 
 function loadCountryDetails(countryId) {
 	$("#countryDetails .value").empty()
+	$("#countryDetailsSharesChart").hide()
 	$.ajax({
 		type: 'GET',
 		url: "countries/" + countryId,
@@ -129,6 +130,14 @@ function loadCountryDetails(countryId) {
 	    	} else {
 	    		$("#countryDetailsAirlineBases").text("-")
 	    	}
+	    	if (country.championAirline) {
+	    		$("#countryDetailsChampion").html(getCountryFlagImg(country.championAirline.countryCode) + "&nbsp;<span style='font-weight: bold;'>" + country.championAirline.name + "(" + country.championAirlinePassengerCount + " passengers)</span>")
+	    	} else {
+	    		$("#countryDetailsChampion").text("-")
+	    	}
+	    	plotCountryMarketShare(country.marketShares, $("#countryDetailsSharesChart"))
+	    	$("#countryDetailsSharesChart").show()
+	    	
 	    	$("#countryDetails").fadeIn(200);
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
