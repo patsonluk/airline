@@ -525,7 +525,7 @@ function updateAllPanels(airlineId) {
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
 		} else {
-			printConsole("Special Announcement: The algorithm has been adjusted to make virtual passenger more senitive to extremly high ticket price. This will drive down demand on overpriced ticket significantly. However, world demand has been doubled to compensate that. Thanks for playing again!")
+			printConsole("Special Announcement: Experimenting new algorithm to make virtual passengers more senitive to extremly high ticket price. This will drive down demand on overpriced ticket significantly. However, world demand has been doubled to compensate that. Thanks for playing again!")
 		}
 		
 	}
