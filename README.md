@@ -6,7 +6,8 @@ Live at http://www.airline-club.com/
 
 A gif of earlier release:
 
-https://www.dropbox.com/s/imza96m4jr9nidh/airline-management-project-clip-1.gif?raw=1
+![Screenshot](https://www.dropbox.com/s/imza96m4jr9nidh/airline-management-project-clip-1.gif?raw=1)
+
 
 
 
