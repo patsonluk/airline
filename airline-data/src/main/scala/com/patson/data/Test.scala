@@ -11,6 +11,7 @@ import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.Model
 import com.patson.model.CountryMarketShare
 import com.patson.model.Country
+import com.patson.model.Computation
 
 object Test extends App {
      
@@ -28,23 +29,8 @@ object Test extends App {
      
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
 //       AirportFeaturePatcher.patchFeatures()
-    val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
-      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
-    }
     
-    val championedCountryByThisAirline: List[(Country, Int, Long)] = topChampionsByCountryCode.map { //(country, ranking, passengerCount)
-      case (countryCode, championAirlines) => (countryCode, championAirlines.find {
-        case((airlineId, passengerCount), ranking) => airlineId == airlineId
-      })
-    }.filter {
-      case (countryCode, thisAirlineRankingOption) => thisAirlineRankingOption.isDefined
-    }.map {
-      case (countryCode, thisAirlineRankingOption) => (CountrySource.loadCountryByCode(countryCode).get, thisAirlineRankingOption.get._2 + 1, thisAirlineRankingOption.get._1._2)
-    }.sortBy {
-      case (countryCode, ranking, passengerCount) => ranking
-    }
-    
-    println(championedCountryByThisAirline)
+  println(Computation.computeReputationBoost(CountrySource.loadCountryByCode("CN").get, 1))
        
   
 }

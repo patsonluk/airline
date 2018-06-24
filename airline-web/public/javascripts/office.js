@@ -205,7 +205,7 @@ function updateChampionedCountriesDetails() {
 	    		row.append("<div class='cell'><img src='" + rankingIcon + "' title='" + rankingTitle + "'/></div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + "</div>")
 	    		row.append("<div class='cell'>" + country.name + "</div>")
-	    		row.append("<div class='cell'>" + "</div>") //TODO
+	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
 	    		$('#championedCountriesList').append(row)
 	    	})
 	    	
