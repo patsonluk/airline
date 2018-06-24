@@ -37,14 +37,14 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
-  val maxReduceFactorAtMaxLoyalty = 2.5
+  val maxReduceFactorAtMaxLoyalty = 2
   //at min loyalty (0), passenger can perceive the ticket price down to actual price / maxReduceFactorAtMinLoyalty.  
-  val maxReduceFactorAtMinLoyalty = 1.25
+  val maxReduceFactorAtMinLoyalty = 1.2
   
   //at max loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty.
   val minReduceFactorAtMaxLoyalty = 1.25
-  //at min loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty. (at 1, means no reduction)
-  val minReduceFactorAtMinLoyalty = 1
+  //at min loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty. (at 0.8 means increasing perceieved price)
+  val minReduceFactorAtMinLoyalty = 0.9 
   //val drawPool = new DrawPool(appealList)
   
   def computeCost(link : Link) = {
@@ -52,17 +52,16 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     
     var perceivedPrice = link.price(linkClass);
     val loyalty = appeal.loyalty
-    if (loyalty != 0) {
-      //the maxReduceFactorForThisAirline, if at max loyalty, it is the same as maxReduceFactorAtMaxLoyalty, at 0 loyalty, this is at maxReduceFactorAtMinLoyalty
-      val maxReduceFactorForThisAirline = maxReduceFactorAtMinLoyalty + (maxReduceFactorAtMaxLoyalty - 1) * (loyalty.toDouble / maxLoyalty)
-      //the minReduceFactorForThisAirline, if at max loyalty, it is the same as minReduceFactorAtMaxLoyalty. at 0 loyalty, this is 1 (no reduction)
-      val minReduceFactorForThisAirline = minReduceFactorAtMinLoyalty + (minReduceFactorAtMaxLoyalty - 1) * (loyalty.toDouble / maxLoyalty)
-      
-      //the actualReduceFactor is random number (linear distribution) from minReduceFactorForThisAirline up to the maxReduceFactorForThisAirline. 
-      val actualReduceFactor = minReduceFactorForThisAirline + (maxReduceFactorForThisAirline - minReduceFactorForThisAirline) * Math.random()
-      
-      perceivedPrice = (perceivedPrice / actualReduceFactor).toInt
-    }
+    //the maxReduceFactorForThisAirline, if at max loyalty, it is the same as maxReduceFactorAtMaxLoyalty, at 0 loyalty, this is at maxReduceFactorAtMinLoyalty
+    val maxReduceFactorForThisAirline = maxReduceFactorAtMinLoyalty + (maxReduceFactorAtMaxLoyalty - 1) * (loyalty.toDouble / maxLoyalty)
+    //the minReduceFactorForThisAirline, if at max loyalty, it is the same as minReduceFactorAtMaxLoyalty. at 0 loyalty, this is 1 (no reduction)
+    val minReduceFactorForThisAirline = minReduceFactorAtMinLoyalty + (minReduceFactorAtMaxLoyalty - 1) * (loyalty.toDouble / maxLoyalty)
+    
+    //the actualReduceFactor is random number (linear distribution) from minReduceFactorForThisAirline up to the maxReduceFactorForThisAirline. 
+    val actualReduceFactor = minReduceFactorForThisAirline + (maxReduceFactorForThisAirline - minReduceFactorForThisAirline) * Math.random()
+    
+    perceivedPrice = (perceivedPrice / actualReduceFactor).toInt
+    
     
     //adjust by quality  
     perceivedPrice = (perceivedPrice * link.computeQualityPriceAdjust(linkClass)).toInt
