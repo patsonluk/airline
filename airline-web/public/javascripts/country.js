@@ -146,7 +146,7 @@ function loadCountryDetails(countryId) {
 		    			rankingIcon = "assets/images/icons/crown-bronze.png"
 				    	rankingTitle = "3rd place"
 		    		}
-    				championDivs += "<div><img src='" + rankingIcon + "' title='" + rankingTitle + "'/>" + getCountryFlagImg(champion.airline.countryCode) + "&nbsp;<span style='font-weight: bold;'>" + champion.airline.name + "(" + champion.passengerCount + " passengers)</span></div>"
+    				championDivs += "<div><img src='" + rankingIcon + "' title='" + rankingTitle + "'/>" + getCountryFlagImg(champion.airline.countryCode) + "&nbsp;<span style='font-weight: bold;'>" + champion.airline.name + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
     			})
 	    		
 	    		$("#countryDetailsChampion").html(championDivs)

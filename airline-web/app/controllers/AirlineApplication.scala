@@ -26,6 +26,7 @@ import play.api.mvc.Security.AuthenticatedRequest
 import com.patson.data.CountrySource
 import com.patson.model.Country
 import com.patson.model.CountryMarketShare
+import com.patson.model.Computation
 
 
 class AirlineApplication extends Controller {
@@ -259,30 +260,36 @@ class AirlineApplication extends Controller {
       case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
     }
     
-    val championedCountryByThisAirline: List[(Country, Int, Long)] = topChampionsByCountryCode.map { //(country, ranking, passengerCount)
+    val championedCountryByThisAirline: List[(Country, Int, Long, Double)] = topChampionsByCountryCode.map { //(country, ranking, passengerCount, reputation boost)
       case (countryCode, championAirlines) => (countryCode, championAirlines.find {
         case((championAirlineId, passengerCount), ranking) => championAirlineId == airlineId
       })
     }.filter {
       case (countryCode, thisAirlineRankingOption) => thisAirlineRankingOption.isDefined
     }.map {
-      case (countryCode, thisAirlineRankingOption) => (CountrySource.loadCountryByCode(countryCode).get, thisAirlineRankingOption.get._2 + 1, thisAirlineRankingOption.get._1._2)
+      case (countryCode, thisAirlineRankingOption) => {
+        val country = CountrySource.loadCountryByCode(countryCode).get
+        val ranking = thisAirlineRankingOption.get._2 + 1
+        val passengerCount = thisAirlineRankingOption.get._1._2 
+        (country, ranking, passengerCount, Computation.computeReputationBoost(country, ranking))
+      }
     }.sortBy {
-      case (countryCode, ranking, passengerCount) => ranking
+      case (countryCode, ranking, passengerCount, reputationBoost) => ranking
     }
     
     Ok(Json.toJson(championedCountryByThisAirline)(ChampionedCountriesWrites))
   }
   
-  object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long)]] {
-    def writes(championedCountries : List[(Country, Int, Long)]): JsValue = {
+  object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {
+    def writes(championedCountries : List[(Country, Int, Long, Double)]): JsValue = {
       var arr = Json.arr()
       championedCountries.foreach {
-        case (country, ranking, passengerCount) =>
+        case (country, ranking, passengerCount, reputationBoost) =>
           arr = arr :+ Json.obj(
               "country" -> Json.toJson(country),
               "ranking" -> JsNumber(ranking),
-              "passengerCount" -> JsNumber(passengerCount))
+              "passengerCount" -> JsNumber(passengerCount),
+              "reputationBoost" -> JsNumber(reputationBoost))
       }
       arr
     }
