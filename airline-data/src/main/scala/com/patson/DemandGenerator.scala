@@ -78,8 +78,7 @@ object DemandGenerator {
 	    }
 	  }
 	  
-	  val defaultDemandChunkSize = 10
-	  val maxChunkCount = 100 //to prevent too many chunks for a demand...100 chunks probably good enough for randomness
+	  val baseDemandChunkSize = 5
 	  
 	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])].map {
 	    case (fromAirport, toAirportsWithDemand) =>
@@ -92,7 +91,6 @@ object DemandGenerator {
             LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
-                val baseDemandChunkSize = if (remainingDemand / maxChunkCount > defaultDemandChunkSize) remainingDemand / maxChunkCount else defaultDemandChunkSize
                 var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
                 while (remainingDemand > demandChunkSize) {
                   passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
