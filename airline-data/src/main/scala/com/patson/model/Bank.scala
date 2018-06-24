@@ -7,17 +7,25 @@ import com.patson.data.AirlineSource
 import com.patson.data.AirplaneSource
 
 object Bank {
-  val LOAN_TERMS = Map(52 -> 0.2 , 2 * 52 -> 0.18, 3 *52 -> 0.16, 5 * 52 -> 0.14)
+  val LOAN_TERMS = Map(52 -> 0.25 , 2 * 52 -> 0.28, 3 *52 -> 0.32, 5 * 52 -> 0.35)
   val MAX_LOANS = 10
   val MIN_LOAN_AMOUNT = 10000
-  def getMaxLoan(airlineId : Int) : Long = {
+  val LOAN_REAPPLY_MIN_INTERVAL = 13 //only every quarter
+  def getMaxLoan(airlineId : Int) : LoanReply = {
     val existingLoans = BankSource.loadLoansByAirline(airlineId)
     
     if (existingLoans.size >= MAX_LOANS) {
-      return 0
+      return LoanReply(0, Some("Only up to " + MAX_LOANS + " loans are allowed"))
     }
     
     val currentCycle = CycleSource.loadCycle()
+    
+    existingLoans.sortBy(_.creationCycle).lastOption.foreach { previousLoan =>//check the last loan if there's one
+      val weeksFromLastLoan = currentCycle - previousLoan.creationCycle
+      if (weeksFromLastLoan < LOAN_REAPPLY_MIN_INTERVAL) {
+        return LoanReply(0, Some("Can only apply next loan in " + (LOAN_REAPPLY_MIN_INTERVAL - weeksFromLastLoan) + " weeks"))
+      }
+    }
     
     //base on previous month
     val previousMonthCycle = currentCycle - currentCycle % 4 - 1
@@ -33,8 +41,8 @@ object Bank {
       totalAssets = totalAssets + airplane.value
     }
     
-    //offer 50% of the assets as credit
-    val creditFromAssets = (totalAssets * 0.5).toLong
+    //offer 20% of the assets as credit
+    val creditFromAssets = (totalAssets * 0.2).toLong
     
     val totalCredit = creditFromAssets + creditFromProfit.getOrElse(0L)
     
@@ -42,9 +50,9 @@ object Bank {
     
     val availableLoanAmount = totalCredit - liability 
     if (availableLoanAmount >= MIN_LOAN_AMOUNT) {
-      return availableLoanAmount
+      return LoanReply(availableLoanAmount, None)
     } else {
-      return 0
+      return LoanReply(0, Some("The bank does not want to provide you any loan at this moment. Try to improve your profit."))
     }
   }
  
@@ -58,5 +66,5 @@ object Bank {
     }.toList
   }
   
-  
+  case class LoanReply(maxLoan : Long, rejectionOption : Option[String])
 }

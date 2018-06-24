@@ -18,15 +18,21 @@ function loadNewLoanDetails() {
 	    success: function(result) {
 	    	$("#newLoanOptionsTable").children("div.table-row").remove()
 	    	
-	    	if (result.maxAmount == 0) {
-		    	$('#newLoanMaxAmount').text('$' + commaSeparateNumber(result.maxAmount))
-		    	$("#newLoanAmount").prop("disabled", true);
-		    	$('#newLoanAmount').val(result.maxAmount)
+	    	if (result.rejection) {
+		    	$('#newLoanMaxAmount').text('$0')
+		    	$("#newLoanAmountRow").hide()
+		    	$('#newLoanAmount').val(0)
+		    	$("#newLoanRejection").text(result.rejection)
+		    	$("#newLoanRejectionSpan").show()
+		    	$("#newLoanOptions").hide()
 	    	} else {
 	    		$('#newLoanMaxAmount').text('$' + commaSeparateNumber(result.maxAmount))
-	    		$("#newLoanAmount").prop("disabled", false);
+	    		$("#newLoanAmountRow").show()
 		    	$('#newLoanAmount').val(result.maxAmount)
-	    		loadLoanOptions(result.maxAmount)	
+		    	$("#newLoanRejection").text("")
+		    	$("#newLoanRejectionSpan").hide()
+		    	loadLoanOptions(result.maxAmount)
+		    	$("#newLoanOptions").show()
 	    	}
 	    	
 	    },
@@ -59,8 +65,10 @@ function updateNewLoanOptionsTable(loanOptions) {
 	optionsTable.children(".table-row").remove()
 	$.each(loanOptions, function(index, loanOption) {
 		var weeklyPayment = Math.ceil((loanOption.borrowedAmount + loanOption.interest) / loanOption.loanTerm)
+		var interestRate = Math.round(loanOption.interest / loanOption.borrowedAmount * 100)
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.borrowedAmount) + "</div>")
+		row.append("<div class='cell' align='right'>" + interestRate  + "%</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.interest) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.remainingAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(weeklyPayment) + " for " + loanOption.loanTerm + " weeks</div>")

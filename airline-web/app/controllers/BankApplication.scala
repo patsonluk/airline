@@ -56,33 +56,42 @@ class BankApplication extends Controller {
   
   def takeOutLoan(airlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
     val LoanRequest(requestedAmount, requestedTerm) = loanForm.bindFromRequest.get
-    val maxLoan = Bank.getMaxLoan(airlineId)
-    if (requestedAmount > maxLoan) {
-      BadRequest("Borrowing [" + requestedAmount + "] which is above limit [" + maxLoan + "]")
+    val loanReply = Bank.getMaxLoan(airlineId)
+    if (loanReply.rejectionOption.isDefined) {
+      BadRequest("Loan rejected [" + requestedAmount + "] reason [" + loanReply.rejectionOption.get + "]")
     } else {
-      Bank.getLoanOptions(requestedAmount).find( loanOption => loanOption.loanTerm == requestedTerm) match {
-        case Some(loan) =>
-          BankSource.saveLoan(loan.copy(airlineId = request.user.id, creationCycle = CycleSource.loadCycle()))
-          AirlineSource.adjustAirlineBalance(request.user.id, loan.borrowedAmount)
-          Ok(Json.toJson(loan))
-        case None => BadRequest("Bad loan term [" + requestedTerm + "]")
+      if (requestedAmount > loanReply.maxLoan) {
+        BadRequest("Borrowing [" + requestedAmount + "] which is above limit [" + loanReply.maxLoan + "]")
+      } else {
+        Bank.getLoanOptions(requestedAmount).find( loanOption => loanOption.loanTerm == requestedTerm) match {
+          case Some(loan) =>
+            BankSource.saveLoan(loan.copy(airlineId = request.user.id, creationCycle = CycleSource.loadCycle()))
+            AirlineSource.adjustAirlineBalance(request.user.id, loan.borrowedAmount)
+            Ok(Json.toJson(loan))
+          case None => BadRequest("Bad loan term [" + requestedTerm + "]")
+        }
       }
     }
   }
   
   def getLoanOptions(airlineId : Int, loanAmount : Long) = AuthenticatedAirline(airlineId) { request =>
-    val maxLoan = Bank.getMaxLoan(request.user.id)
-    if (loanAmount <= maxLoan) {
+    val loanReply = Bank.getMaxLoan(request.user.id)
+    if (loanAmount <= loanReply.maxLoan) {
       val options = Bank.getLoanOptions(loanAmount)
       Ok(Json.toJson(options))  
     } else {
-      BadRequest("Borrowing [" + loanAmount + "] which is above limit [" + maxLoan + "]")
+      BadRequest("Borrowing [" + loanAmount + "] which is above limit [" + loanReply.maxLoan + "]")
     }
     
   }
   
   def getMaxLoan(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    Ok(Json.obj("maxAmount" -> JsNumber(Bank.getMaxLoan(request.user.id))))
+    val loanReply = Bank.getMaxLoan(request.user.id)
+    var result = Json.obj("maxAmount" -> JsNumber(loanReply.maxLoan)).asInstanceOf[JsObject]
+    loanReply.rejectionOption.foreach { rejection =>
+      result = result + ("rejection" -> JsString(rejection))
+    }
+    Ok(result)
   }
   
   def repayLoan(airlineId : Int, loanId : Int) = AuthenticatedAirline(airlineId) { request =>
@@ -104,5 +113,7 @@ class BankApplication extends Controller {
       case None => NotFound
     }
   }
+  
+
   
 }
