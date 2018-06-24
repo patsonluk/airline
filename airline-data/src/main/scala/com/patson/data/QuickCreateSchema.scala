@@ -44,6 +44,7 @@ object QuickCreateSchema extends App {
   }
   
   def createSchema(connection : Connection) = {
-    Meta.createLoan(connection)
+    //Meta.createLoan(connection)
+    Meta.createCountryMarketShare(connection)
   }
 }

@@ -9,7 +9,6 @@ import com.patson.model.airplane.Airplane
 
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
-  private val REPUTATION_INCREMENT = 0.5 
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 1
   
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], airplanes : List[Airplane]) = {
@@ -26,6 +25,8 @@ object AirlineSimulation {
     val allIncomes = ListBuffer[AirlineIncome]()
      
     val currentCycle = MainSimulation.currentWeek
+    val champions : scala.collection.immutable.Map[Airline, List[(Country, Int)]] = getChampions(allAirlines.map( airline => (airline.id, airline)).toMap, allCountries)
+    
     allAirlines.foreach { airline =>
         var totalCashRevenue = 0L
         var totalCashExpense = 0L
@@ -134,20 +135,23 @@ object AirlineSimulation {
           
           //https://en.wikipedia.org/wiki/World%27s_largest_airlines
           var targetReputation = Math.log(totalPassengerKilometers / 5000) / Math.log(1.2)
-          if (targetReputation > Airline.MAX_REPUTATION) {
-            targetReputation = Airline.MAX_REPUTATION
+          if (targetReputation > Airline.MAX_REPUTATION_BY_PASSENGERS) {
+            targetReputation = Airline.MAX_REPUTATION_BY_PASSENGERS
           } else if (targetReputation < 10) {
             targetReputation = 10
           }
           
-          val currentReputation = airline.getReputation() 
-          if (currentReputation < targetReputation) {
-            if (currentReputation + REPUTATION_INCREMENT >= targetReputation) {
-              airline.setReputation(targetReputation)  
-            } else {
-              airline.setReputation(currentReputation + REPUTATION_INCREMENT)
+          champions.get(airline).foreach { //if this airline championed anything
+            _.foreach {
+              case(country, ranking) => { 
+                val boost = Computation.computeReputationBoost(country, ranking)
+                targetReputation = targetReputation + boost
+              }
             }
           }
+          
+          
+          airline.setReputation(targetReputation)
         }
         
         //calculate service quality
@@ -182,6 +186,28 @@ object AirlineSimulation {
     IncomeSource.deleteIncomesBefore(currentCycle - 10 * 4, Period.MONTHLY);
     IncomeSource.deleteIncomesBefore(currentCycle - 10 * 52, Period.YEARLY);
   }
+  
+  def getChampionReputationBoost(airlineId : Int) : Double = {
+    val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
+      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
+    }
+    
+    val championedCountryByThisAirline: List[(Country, Int)] = topChampionsByCountryCode.map { //(country, ranking)
+      case (countryCode, championAirlines) => (countryCode, championAirlines.find {
+        case((championAirlineId, passengerCount), ranking) => championAirlineId == airlineId
+      })
+    }.filter {
+      case (countryCode, thisAirlineRankingOption) => thisAirlineRankingOption.isDefined
+    }.map {
+      case (countryCode, thisAirlineRankingOption) => (CountrySource.loadCountryByCode(countryCode).get, thisAirlineRankingOption.get._2 + 1)
+    }
+    
+    championedCountryByThisAirline.foldLeft(0.0) {
+      case(sum, (country, ranking)) => sum + Computation.computeReputationBoost(country, ranking)
+    }
+  }
+  
+  
   
   /**
    * compute monthly and yearly income 
@@ -263,5 +289,22 @@ object AirlineSimulation {
         currentQuality + adjustment
       }
     } 
+  }
+  
+  def getChampions(allAirlines : scala.collection.immutable.Map[Int, Airline], allCountries : scala.collection.immutable.Map[String, Country]) : scala.collection.immutable.Map[Airline, List[(Country, Int)]] = {
+    val champions = Map[Airline, ListBuffer[(Country, Int)]]()
+     CountrySource.loadMarketSharesByCriteria(List.empty).foreach { 
+       case CountryMarketShare(countryCode : String, airlineShares) => {
+         val championsForThisCountry = airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(3)
+         for (x <- 0 until championsForThisCountry.size) {
+            val airline = allAirlines((championsForThisCountry(x)._1))
+            val ranking = x + 1
+            val airlineChampionedCountries = champions.getOrElseUpdate(airline, ListBuffer[(Country, Int)]())
+            airlineChampionedCountries += ((allCountries(countryCode), ranking))
+         }
+       }
+     }
+    
+    champions.mapValues(_.toList).toMap
   }
 }

@@ -30,6 +30,12 @@ object LinkSimulation {
     LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
     
+    //generate country market share
+    println("Generating country market share")
+    val countryMarketShares = generateCountryMarketShares(consumptionResult)
+    println("Saving country market share to DB")
+    CountrySource.saveMarketShares(countryMarketShares)
+    
     //save all consumptions
     println("Saving " + consumptionResult.size +  " consumptions")
     ConsumptionHistorySource.updateConsumptions(consumptionResult)
@@ -131,14 +137,27 @@ object LinkSimulation {
     
   }
   
-  def generateVipRoutes(consumptionResult: List[(PassengerGroup, Airport, Int, Route)]) : List[Route] = {
-    //simply take the first VIP_COUNT records for now
-    (if (consumptionResult.length < VIP_COUNT) {
-      consumptionResult
-    } else {
-      consumptionResult.take(VIP_COUNT)
-    }).map{ 
-        case (_, _, _, route) => route
+  def generateCountryMarketShares(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int]) : List[CountryMarketShare] = {
+    val countryAirlinePassengers = Map[String, Map[Int, Long]]()
+    consumptionResult.foreach {
+      case ((_, _, route), passengerCount) =>
+        for (i <- 0 until route.links.size) {
+          val link = route.links(i) 
+          val airline = link.link.airline
+          val country = link.from.countryCode
+          val airlinePassengers = countryAirlinePassengers.getOrElseUpdate(country, Map[Int, Long]())
+          val currentSum : Long = airlinePassengers.getOrElse(airline.id, 0L)
+          airlinePassengers.put(airline.id, currentSum + passengerCount)
+        }
+    }
+    
+    
+    
+    countryAirlinePassengers.map {
+      case ((countryCode, airlinePassengers)) => { 
+        CountryMarketShare(countryCode, airlinePassengers.toMap)
       }
+    }.toList
+    
   }
 }

@@ -130,4 +130,19 @@ object Computation {
     
     (baseCost * airportSizeMultiplier * distanceMultiplier * internationalMultiplier).toInt 
   }
+  
+  def computeReputationBoost(country : Country, ranking : Int) : Double = {
+    //US gives 30 boost if 1st rank, 20 if 2nd and 10 if 3rd  pop 97499995 income 54629
+    
+    val modelPower = 97499995L * 54629L
+    val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
+    
+    val boost = math.log10(ratioToModelPower * 100) / 2 * 10 * (4 - ranking)
+    
+    if (boost < 1) {
+      1
+    } else {
+      BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+    }
+  }
 }

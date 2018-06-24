@@ -39,7 +39,7 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
     
     // Define a mapping that will handle User values
     mapping(
-      "username" -> text(minLength = 4).verifying(
+      "username" -> text(minLength = 4, maxLength = 20).verifying(
         "username can only contain alphanumeric characters",
         userName => userName.forall(_.isLetterOrDigit)).verifying(
         "This username is not available",
@@ -55,7 +55,7 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
         "Passwords don't match", passwords => passwords._1 == passwords._2
       ),
       "recaptchaToken" -> text,
-      "airlineName" -> text(minLength = 1).verifying(
+      "airlineName" -> text(minLength = 1, maxLength = 50).verifying(
         "Airline name can only contain space and characters",
         airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
         "This airline name  is not available",  

@@ -198,5 +198,6 @@ object Airline {
   }
   val MAX_SERVICE_QUALITY : Double = 100
   val MAX_MAINTENANCE_QUALITY : Double = 100
+  val MAX_REPUTATION_BY_PASSENGERS : Double = 50
   val MAX_REPUTATION : Double = 100
 }

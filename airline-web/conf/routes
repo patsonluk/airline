@@ -53,6 +53,7 @@ POST	 /airlines/:airlineId/loans  controllers.BankApplication.takeOutLoan(airlin
 DELETE   /airlines/:airlineId/loans/:loanId	  controllers.BankApplication.repayLoan(airlineId : Int, loanId : Int)
 GET		 /airlines/:airlineId/loan-options  controllers.BankApplication.getLoanOptions(airlineId : Int, loanAmount : Long)
 GET		 /airlines/:airlineId/max-loan  controllers.BankApplication.getMaxLoan(airlineId : Int)
+GET		 /airlines/:airlineId/championed-countries  controllers.AirlineApplication.getChampionedCountries(airlineId : Int)
 GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
 

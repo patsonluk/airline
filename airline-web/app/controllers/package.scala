@@ -26,9 +26,16 @@ package object controllers {
       JsSuccess(airline)
     }
     
-    def writes(airline: Airline): JsValue = JsObject(List(
+    def writes(airline: Airline): JsValue = {
+      var result = JsObject(List(
       "id" -> JsNumber(airline.id),
       "name" -> JsString(airline.name)))
+      
+      if (airline.getCountryCode.isDefined) {
+        result = result.asInstanceOf[JsObject] + ("countryCode" -> JsString(airline.getCountryCode.get))
+      }
+      result
+    }
   }
   
   implicit object AirplaneModelWrites extends Writes[Model] {
@@ -232,6 +239,32 @@ package object controllers {
         "othersDepreciation" -> JsNumber(airlineIncome.others.depreciation),
         "period" -> JsString(airlineIncome.period.toString()),
         "cycle" -> JsNumber(airlineIncome.cycle)))
+    }
+  }
+  
+  implicit object CountryWrites extends Writes[Country] {
+    def writes(country : Country): JsValue = {
+      Json.obj(
+        "countryCode" -> country.countryCode,
+        "name" -> country.name,
+        "airportPopulation" -> country.airportPopulation,
+        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "openness" ->  country.openness
+      )
+    }
+  }
+  
+  implicit object CountryWithMutualRelationshipWrites extends Writes[(Country, Int)] {
+    def writes(countryWithMutualRelationship : (Country, Int)): JsValue = {
+      val (country, mutualRelationship) = countryWithMutualRelationship
+      Json.obj(
+        "countryCode" -> country.countryCode,
+        "name" -> country.name,
+        "airportPopulation" -> country.airportPopulation,
+        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "openness" ->  country.openness,
+        "mutualRelationship" -> mutualRelationship
+      )
     }
   }
 }

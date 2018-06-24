@@ -7,6 +7,7 @@ function showOfficeCanvas() {
 	highlightTab($('#officeCanvasTab'))
 	
 	loadIncomeSheet();
+	updateChampionedCountriesDetails()
 	updateServiceFundingDetails()
 	updateMaintenanceLevelDetails()
 }
@@ -177,6 +178,52 @@ function updateServiceFundingDetails() {
 	
 }
 
+function updateChampionedCountriesDetails() {
+	$('#championedCountriesList').children('div.table-row').remove()
+	
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/championed-countries",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(championedCountries) {
+	    	$(championedCountries).each(function(index, championDetails) {
+	    		var country = championDetails.country
+	    		var rankingIcon
+	    		var rankingTitle
+	    		if (championDetails.ranking == 1) {
+	    			rankingIcon = "assets/images/icons/crown.png"
+	    			rankingTitle = "1st place"
+	    		} else if (championDetails.ranking == 2) {
+	    			rankingIcon = "assets/images/icons/crown-silver.png"
+		    		rankingTitle = "2nd place"
+	    		} else if (championDetails.ranking == 3) {
+	    			rankingIcon = "assets/images/icons/crown-bronze.png"
+			    	rankingTitle = "3rd place"
+	    		}
+	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
+	    		row.append("<div class='cell'><img src='" + rankingIcon + "' title='" + rankingTitle + "'/></div>")
+	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + "</div>")
+	    		row.append("<div class='cell'>" + country.name + "</div>")
+	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
+	    		$('#championedCountriesList').append(row)
+	    	})
+	    	
+	    	if ($(championedCountries).length == 0) {
+	    		var row = $("<div class='table-row'></div>")
+	    		row.append("<div class='cell'></div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		$('#championedCountriesList').append(row)
+	    	}
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+	
+}
 
 
 

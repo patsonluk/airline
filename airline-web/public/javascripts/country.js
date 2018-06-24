@@ -88,6 +88,7 @@ function toggleCountryTableSortOrder(sortHeader) {
 
 function loadCountryDetails(countryId) {
 	$("#countryDetails .value").empty()
+	$("#countryDetailsSharesChart").hide()
 	$.ajax({
 		type: 'GET',
 		url: "countries/" + countryId,
@@ -129,6 +130,32 @@ function loadCountryDetails(countryId) {
 	    	} else {
 	    		$("#countryDetailsAirlineBases").text("-")
 	    	}
+	    	if (country.champions) {
+	    		var championDivs = ""
+	    			
+    			$.each(country.champions, function(index, champion) {
+    				var rankingIcon
+		    		var rankingTitle
+		    		if (champion.ranking == 1) {
+		    			rankingIcon = "assets/images/icons/crown.png"
+		    			rankingTitle = "1st place"
+		    		} else if (champion.ranking == 2) {
+		    			rankingIcon = "assets/images/icons/crown-silver.png"
+			    		rankingTitle = "2nd place"
+		    		} else if (champion.ranking == 3) {
+		    			rankingIcon = "assets/images/icons/crown-bronze.png"
+				    	rankingTitle = "3rd place"
+		    		}
+    				championDivs += "<div><img src='" + rankingIcon + "' title='" + rankingTitle + "'/>" + getCountryFlagImg(champion.airline.countryCode) + "&nbsp;<span style='font-weight: bold;'>" + champion.airline.name + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
+    			})
+	    		
+	    		$("#countryDetailsChampion").html(championDivs)
+	    	} else {
+	    		$("#countryDetailsChampion").text("-")
+	    	}
+	    	plotCountryMarketShare(country.marketShares, $("#countryDetailsSharesChart"))
+	    	$("#countryDetailsSharesChart").show()
+	    	
 	    	$("#countryDetails").fadeIn(200);
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {

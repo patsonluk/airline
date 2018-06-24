@@ -9,6 +9,9 @@ import com.patson.init.AirportFeaturePatcher
 import com.patson.Util
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.Model
+import com.patson.model.CountryMarketShare
+import com.patson.model.Country
+import com.patson.model.Computation
 
 object Test extends App {
      
@@ -25,11 +28,9 @@ object Test extends App {
 //     println(WikiUtil.queryOtherPicture("Vancouver"))
      
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
-       AirportFeaturePatcher.patchFeatures()
-//  Bank.getMaxLoan(252)
-//  System.out.println(ConsumptionHistorySource.loadAllConsumptions().length)
-  
+//       AirportFeaturePatcher.patchFeatures()
     
+  println(Computation.computeReputationBoost(CountrySource.loadCountryByCode("CN").get, 1))
        
   
 }
