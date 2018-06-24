@@ -337,49 +337,49 @@ object CountrySource {
     }  
   }
   
-  def loadCountryChampionsByAirline(airlineId : Int) : scala.collection.immutable.Map[Country, (Airline, Long)] = {
-    loadCountryChampions(List(("airline", airlineId)))
-  }
-  
-  def loadCountryChampions(criteria : List[(String, Any)]) : scala.collection.immutable.Map[Country, (Airline, Long)]= {
-    val connection = Meta.getConnection()
-    try {  
-      var queryString = "SELECT country_market_share.* FROM country_market_share JOIN (SELECT country, MAX(passenger_count) AS passenger_count FROM country_market_share GROUP BY country) max_passenger ON country_market_share.country = max_passenger.country  AND country_market_share.passenger_count = max_passenger.passenger_count"
-  
-      
-      if (!criteria.isEmpty) {
-        queryString += " WHERE "
-        for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
-        }
-        queryString += criteria.last._1 + " = ?"
-      }
-      
-      val preparedStatement = connection.prepareStatement(queryString)
-      
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
-      }
-      
-      
-      val resultSet = preparedStatement.executeQuery()
-      
-      val countryMarketShares = ListBuffer[CountryMarketShare]()
-      
-      val resultMap = Map[Country, (Airline, Long)]()
-      while (resultSet.next()) {
-        val country = loadCountryByCode(resultSet.getString("country")).get
-        val airlineId = resultSet.getInt("airline")
-        val passengerCount = resultSet.getLong("passenger_count")
-        resultMap.put(country, (Airline.fromId(airlineId), passengerCount))
-      }    
-      resultSet.close()
-      preparedStatement.close()
-      resultMap.toMap
-    } finally {
-      connection.close()
-    }
-  }
+//  def loadCountryChampionsByAirline(airlineId : Int) : scala.collection.immutable.Map[Country, (Airline, Long)] = {
+//    loadCountryChampions(List(("airline", airlineId)))
+//  }
+//  
+//  def loadCountryChampions(criteria : List[(String, Any)]) : scala.collection.immutable.Map[Country, (Airline, Long)]= {
+//    val connection = Meta.getConnection()
+//    try {  
+//      var queryString = "SELECT country_market_share.* FROM country_market_share JOIN (SELECT country, MAX(passenger_count) AS passenger_count FROM country_market_share GROUP BY country) max_passenger ON country_market_share.country = max_passenger.country  AND country_market_share.passenger_count = max_passenger.passenger_count"
+//  
+//      
+//      if (!criteria.isEmpty) {
+//        queryString += " WHERE "
+//        for (i <- 0 until criteria.size - 1) {
+//          queryString += criteria(i)._1 + " = ? AND "
+//        }
+//        queryString += criteria.last._1 + " = ?"
+//      }
+//      
+//      val preparedStatement = connection.prepareStatement(queryString)
+//      
+//      for (i <- 0 until criteria.size) {
+//        preparedStatement.setObject(i + 1, criteria(i)._2)
+//      }
+//      
+//      
+//      val resultSet = preparedStatement.executeQuery()
+//      
+//      val countryMarketShares = ListBuffer[CountryMarketShare]()
+//      
+//      val resultMap = Map[Country, (Airline, Long)]()
+//      while (resultSet.next()) {
+//        val country = loadCountryByCode(resultSet.getString("country")).get
+//        val airlineId = resultSet.getInt("airline")
+//        val passengerCount = resultSet.getLong("passenger_count")
+//        resultMap.put(country, (Airline.fromId(airlineId), passengerCount))
+//      }    
+//      resultSet.close()
+//      preparedStatement.close()
+//      resultMap.toMap
+//    } finally {
+//      connection.close()
+//    }
+//  }
     
 }
 

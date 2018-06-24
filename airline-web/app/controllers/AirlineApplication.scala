@@ -25,6 +25,7 @@ import com.patson.AirlineSimulation
 import play.api.mvc.Security.AuthenticatedRequest
 import com.patson.data.CountrySource
 import com.patson.model.Country
+import com.patson.model.CountryMarketShare
 
 
 class AirlineApplication extends Controller {
@@ -253,8 +254,38 @@ class AirlineApplication extends Controller {
      Ok(JsObject(List("prediction" -> JsString(prediction))))
   }
   
-  def getChampionedCountries(airlineId : Int) = AuthenticatedAirline(airlineId) { request => 
-    Ok(Json.toJson(CountrySource.loadCountryChampionsByAirline(airlineId).keys.toSeq))
+  def getChampionedCountries(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
+      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
+    }
+    
+    val championedCountryByThisAirline: List[(Country, Int, Long)] = topChampionsByCountryCode.map { //(country, ranking, passengerCount)
+      case (countryCode, championAirlines) => (countryCode, championAirlines.find {
+        case((championAirlineId, passengerCount), ranking) => championAirlineId == airlineId
+      })
+    }.filter {
+      case (countryCode, thisAirlineRankingOption) => thisAirlineRankingOption.isDefined
+    }.map {
+      case (countryCode, thisAirlineRankingOption) => (CountrySource.loadCountryByCode(countryCode).get, thisAirlineRankingOption.get._2 + 1, thisAirlineRankingOption.get._1._2)
+    }.sortBy {
+      case (countryCode, ranking, passengerCount) => ranking
+    }
+    
+    Ok(Json.toJson(championedCountryByThisAirline)(ChampionedCountriesWrites))
+  }
+  
+  object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long)]] {
+    def writes(championedCountries : List[(Country, Int, Long)]): JsValue = {
+      var arr = Json.arr()
+      championedCountries.foreach {
+        case (country, ranking, passengerCount) =>
+          arr = arr :+ Json.obj(
+              "country" -> Json.toJson(country),
+              "ranking" -> JsNumber(ranking),
+              "passengerCount" -> JsNumber(passengerCount))
+      }
+      arr
+    }
   }
   
 }
