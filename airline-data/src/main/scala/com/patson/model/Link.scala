@@ -92,7 +92,15 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   def computeQualityPriceAdjust(linkClass : LinkClass) : Double = {
     if (!computedQualityPriceAdjust.isDefinedAt(linkClass)) {
       val neutralQuality = Link.neutralQualityOfClass(linkClass, from, to, flightType)
-      computedQualityPriceAdjust.put(linkClass, 1 + ((neutralQuality - computedQuality).toDouble / Link.MAX_QUALITY) * 0.5) //if neutral is at 50, 0 quality yields 1.25, max quality yields 0.75
+      val qualityDelta = computedQuality - neutralQuality.toDouble
+      
+      val multiplier =
+        if (qualityDelta < 0) { //neutral at 50, quality 0 yields 2.0 (heavy penalty)
+          2
+        } else { //neutral at 50, quality 100 yields 0.75 (slight advantage)
+          0.5
+        }
+      computedQualityPriceAdjust.put(linkClass, 1 - (qualityDelta / Link.MAX_QUALITY) * multiplier)
     }
     computedQualityPriceAdjust(linkClass)
   }

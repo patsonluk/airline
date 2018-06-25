@@ -1463,7 +1463,7 @@ function loadLinksTable() {
 				link.totalPassengers = link.passengers.economy + link.passengers.business + link.passengers.first
 			})
 	    	
-			var selectedSortHeader = $('#linksTable .table-header .cell.selected') 
+			var selectedSortHeader = $('#linksTableSortHeader .cell.selected') 
 		    updateLinksTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

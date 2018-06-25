@@ -524,6 +524,8 @@ function updateAllPanels(airlineId) {
 			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough", 1, true, true)
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
+		} else {
+			printConsole("Special Announcement: Experimenting new algorithm to make virtual passengers more senitive to extremly high ticket price. This will drive down demand on overpriced ticket significantly. Thanks for playing again!")
 		}
 		
 	}
