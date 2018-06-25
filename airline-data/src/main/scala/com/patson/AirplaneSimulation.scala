@@ -37,7 +37,8 @@ object AirplaneSimulation {
       case (owner, airplanes) => {
         AirlineSource.loadAirlineById(owner.id, true) match {
           case Some(airline) =>
-            updatingAirplanes ++= decayAirplanesByAirline(airplanes, airline)
+            val readyAirplanes = airplanes.filter(_._1.isReady(cycle))
+            updatingAirplanes ++= decayAirplanesByAirline(readyAirplanes, airline)
           case None => println("airline " + owner.id + " has airplanes but the airline cannot be loaded!")//invalid airline?
         }
       }

@@ -8,6 +8,7 @@ import com.patson.model.Loan
 import com.patson.data.AirlineSource
 import com.patson.data.AirplaneSource
 import com.patson.data.airplane.ModelSource
+import com.patson.data.CycleSource
 
 abstract class StartupProfile(val title : String, val description : String, val outlines : List[String], val id : Int) {
   def initializeAirline(airline : Airline) : Unit
@@ -26,11 +27,12 @@ class RevivalProfile extends StartupProfile(title = "Revival of past glory",
 		  airline.setBalance(20000000)
 		  airline.setReputation(25)
 		  AirlineSource.saveAirlineInfo(airline)
+		  val cycle = CycleSource.loadCycle - 15 * 52 //15 years old
 		  
 		  val model = ModelSource.loadModelsByCriteria(List(("name", "Boeing 737-700C")))(0)
 		  val airplanes = List(
-		      Airplane(model, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION / 2, depreciationRate = 0, value = model.price / 2),
-		      Airplane(model, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION / 2, depreciationRate = 0, value = model.price / 2))
+		      Airplane(model, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION / 2, depreciationRate = 0, value = model.price / 2),
+		      Airplane(model, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION / 2, depreciationRate = 0, value = model.price / 2))
 		  AirplaneSource.saveAirplanes(airplanes)
 		  val loan = Loan(airline.id, borrowedAmount = 200000000, interest = 0, remainingAmount = 200000000, creationCycle = 0, loanTerm = 10 * 52)
 		  BankSource.saveLoan(loan)
@@ -51,22 +53,23 @@ class CommuterProfile extends StartupProfile(title = "A humble beginning",
 		  airline.setBalance(30000000)
 		  airline.setReputation(15)
 		  AirlineSource.saveAirlineInfo(airline)
+		  val cycle = CycleSource.loadCycle - 4 * 52 // 4 years old
 		  
 		  val cessnaModel = ModelSource.loadModelsByCriteria(List(("name", "Cessna 421")))(0)
 		  val erjModel = ModelSource.loadModelsByCriteria(List(("name", "Embraer ERJ 140")))(0)
 		  val airplanes = List(
-		      Airplane(cessnaModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
-		      Airplane(cessnaModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
-		      Airplane(cessnaModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
-		      Airplane(cessnaModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
-		      Airplane(cessnaModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
-		      Airplane(cessnaModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
-		      Airplane(cessnaModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
-		      Airplane(cessnaModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
-		      Airplane(erjModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (erjModel.price * 0.8).toInt),
-		      Airplane(erjModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (erjModel.price * 0.8).toInt),
-		      Airplane(erjModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (erjModel.price * 0.8).toInt),
-		      Airplane(erjModel, owner = airline, constructedCycle = 0, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (erjModel.price * 0.8).toInt))
+		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
+		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
+		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
+		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
+		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
+		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
+		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
+		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
+		      Airplane(erjModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (erjModel.price * 0.8).toInt),
+		      Airplane(erjModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (erjModel.price * 0.8).toInt),
+		      Airplane(erjModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (erjModel.price * 0.8).toInt),
+		      Airplane(erjModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (erjModel.price * 0.8).toInt))
 		      
 		  AirplaneSource.saveAirplanes(airplanes)
 		  val loan = Loan(airline.id, borrowedAmount = 50000000, interest = 0, remainingAmount = 50000000, creationCycle = 0, loanTerm = 10 * 52)

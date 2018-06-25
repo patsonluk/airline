@@ -21,10 +21,10 @@ class ComputationSpec(_system: ActorSystem) extends TestKit(_system) with Implic
   }
  
   import FlightType._
-  val smallAirplaneModel = Model("Cessna Caravan", capacity = 14, fuelBurn = 15, speed = 344, range = 2400, price = 1600000)
-  val mediumAirplaneModel = Model("Bombardier CS100", capacity = 133, fuelBurn = 267, speed = 828, range = 5741, price = 71800000)
-  val largeAirplaneModel = Model("Boeing 787-8 Dreamliner", capacity = 250, fuelBurn = 274, speed = 907, range = 13621, price = 225000000)
-  val extraLargeAirplaneModel = Model("Boeing 777-300", capacity = 550, fuelBurn = 451, speed = 945, range = 11121, price = 250000000)
+  val smallAirplaneModel = Model.modelByName("Cessna Caravan")
+  val mediumAirplaneModel = Model.modelByName("Bombardier CS100")
+  val largeAirplaneModel = Model.modelByName("Boeing 787-8 Dreamliner")
+  val extraLargeAirplaneModel = Model.modelByName("Boeing 777-300")
   
   "calculateDuration".must {
     "returns longer duration for slower speed craft".in {

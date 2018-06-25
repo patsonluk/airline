@@ -349,7 +349,11 @@
 				    			<div class="label"><h5>Purchase Price:</h5></div>
 				    			<div class="value" id="price"></div>
 					    	</div>
-					    	<div class="button" onclick="addAirplane($('#airplaneModelDetails #selectedModel').val(), 1, true)">Purchase</div>
+					    	<div class="table-row">
+				    			<div class="label"><h5>Delivery Time:</h5></div>
+				    			<div class="value delivery"></div>
+					    	</div>
+					    	<div class="button add" onclick="addAirplane($('#airplaneModelDetails #selectedModel').val(), 1, true)">Purchase</div>
 					    	<input type="hidden" id="selectedModel"/>
 						</div>
 					</div>
@@ -640,7 +644,8 @@
 			  						<option value="range">Max Flying Range</option>
 			  						<option value="price">Purchase Price</option>
 			  						<option value="assignedAirplanes">Owned (Assigned)</option>
-			  						<option value="freeAirplanes">Owned (Unassigned)</option>
+			  						<option value="availableAirplanes">Owned (Unassigned)</option>
+			  						<option value="constructingAirplanes">Owned (Under Construction)</option>
 			  						<option value="name">Model Name</option>
 			  						<option value="speed">Speed</option>
 			  						<option value="fuelBurn">Fuel Burn</option>
@@ -691,7 +696,11 @@
 			    			<div class="label"><h5>Purchase Price:</h5></div>
 			    			<div class="value" id="price"></div>
 				    	</div>
-				    	<div class="button" onclick="addAirplane($('#airplaneCanvas #selectedModel').val(), 1, false)">Purchase</div>
+				    	<div class="table-row">
+			    			<div class="label"><h5>Delivery Time:</h5></div>
+			    			<div class="value delivery"></div>
+				    	</div>
+				    	<div class="button add" onclick="addAirplane($('#airplaneCanvas #selectedModel').val(), 1, false)">Purchase</div>
 				    	<input type="hidden" id="selectedModel"/>
 		    		</div>
 		    		<div id="ownedAirplaneDetail" class="table section" style="width: 100%; display: none;">
@@ -704,9 +713,13 @@
 			    			<div class="label"><h5>Condition:</h5></div>
 			    			<div class="value" id="airplaneDetailsCondition"></div>
 				    	</div>
-				    	<div class="table-row">
+				    	<div class="table-row" id="airplaneDetailsAgeRow">
 			    			<div class="label"><h5>Age:</h5></div>
 			    			<div class="value" id="airplaneDetailsAge"></div>
+				    	</div>
+				    	<div class="table-row" id="airplaneDetailsDeliveryRow">
+			    			<div class="label"><h5>Deliver in:</h5></div>
+			    			<div class="value" id="airplaneDetailsDelivery" style="font-weight: bold;"></div>
 				    	</div>
 				    	<div class="table-row">
 			    			<div class="label"><h5>Selling Value:</h5></div>

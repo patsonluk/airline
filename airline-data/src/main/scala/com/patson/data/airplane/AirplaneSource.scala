@@ -17,6 +17,8 @@ object AirplaneSource {
   
   private[this] val BASE_QUERY = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, airplane_condition, a.depreciation_rate, a.value FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id" 
   
+  val allModels = ModelSource.loadAllModels().map(model => (model.id, model)).toMap
+  
   def loadAirplanesCriteria(criteria : List[(String, Any)]) = {
     var queryString = BASE_QUERY
     
@@ -31,6 +33,11 @@ object AirplaneSource {
     loadAirplanesByQueryString(queryString, criteria.map(_._2))
   }
   
+  def loadConstructingAirplanes() : List[Airplane] = {
+    val queryString = BASE_QUERY + " WHERE constructed_cycle > ?"
+    loadAirplanesByQueryString(queryString, List(CycleSource.loadCycle()))
+  }
+  
   def loadAirplanesByQueryString(queryString : String, parameters : List[Any]) = {
       val connection = Meta.getConnection()
       
@@ -43,17 +50,11 @@ object AirplaneSource {
       val resultSet = preparedStatement.executeQuery()
       
       val airplanes = new ListBuffer[Airplane]()
+      
+      
       while (resultSet.next()) {
-        val model = Model( 
-          resultSet.getString("name"),
-          resultSet.getInt("capacity"),
-          resultSet.getInt("fuel_burn"),
-          resultSet.getInt("speed"),
-          resultSet.getInt("fly_range"),
-          resultSet.getInt("price"),
-          resultSet.getInt("model")
-          )
-        val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
+        
+        val airplane = Airplane(allModels(resultSet.getInt("model")), Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
         airplane.id = resultSet.getInt("id")
         airplanes.append(airplane)
       }
@@ -65,6 +66,8 @@ object AirplaneSource {
       //println("Loaded " + airplanes.length + " airplane records")
       airplanes.toList
   }
+  
+   
   def loadAllAirplanes() = {
     loadAirplanesCriteria(List.empty)
   }
@@ -143,19 +146,7 @@ object AirplaneSource {
       
       val airplanesWithAssignedLink = new ListBuffer[(Airplane, Option[Link])]()
       while (resultSet.next()) {
-        val model = Model( 
-          resultSet.getString("name"),
-          resultSet.getInt("capacity"),
-          resultSet.getInt("fuel_burn"),
-          resultSet.getInt("speed"),
-          resultSet.getInt("fly_range"),
-          resultSet.getInt("price"),
-          resultSet.getInt("model")
-          )
-          
-      
-
-        val airplane = Airplane(model, Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
+        val airplane = Airplane(allModels(resultSet.getInt("model")), Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
         airplane.id = resultSet.getInt("id")
         if (resultSet.getObject("link") != null) {
           val linkId = resultSet.getInt("link")

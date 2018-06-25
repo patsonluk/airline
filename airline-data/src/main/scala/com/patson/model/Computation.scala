@@ -131,4 +131,8 @@ object Computation {
       BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
     }
   }
+  
+//  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
+//    model.constructionTime + (existingConstruction / 5) * model.constructionTime / 4 
+//  }
 }

@@ -47,7 +47,8 @@ package object controllers {
       "fuelBurn" -> JsNumber(airplaneModel.fuelBurn),
       "speed" -> JsNumber(airplaneModel.speed),
       "range" -> JsNumber(airplaneModel.range),
-      "price" -> JsNumber(airplaneModel.price)))
+      "price" -> JsNumber(airplaneModel.price),
+      "constructionTime" -> JsNumber(airplaneModel.constructionTime)))
       
     }
   }

@@ -78,6 +78,17 @@ function updateModelInfo(modelId) {
 	$('#airplaneModelDetails #range').text(model.range + "km")
 	$('#airplaneModelDetails #speed').text(model.speed + "km/h")
 	$('#airplaneModelDetails #price').text("$" + commaSeparateNumber(model.price))
+	
+	if (model.constructionTime == 0) {
+		$('#airplaneModelDetails .delivery').text("immediate")
+		$('#airplaneModelDetails .delivery').removeClass('warning')
+		$('#airplaneModelDetails .add').text('Purchase')
+	} else {
+		$('#airplaneModelDetails .delivery').text(model.constructionTime + " weeks")
+		$('#airplaneModelDetails .delivery').addClass('warning')
+		$('#airplaneModelDetails .add').text('Place Order')
+	}
+	
 }
 
 function selectAirplaneModel(model) {
@@ -96,6 +107,16 @@ function selectAirplaneModel(model) {
 	$('#airplaneCanvas #range').text(model.range + " km")
 	$('#airplaneCanvas #speed').text(model.speed + " km/h")
 	$('#airplaneCanvas #price').text("$" + commaSeparateNumber(model.price))
+	if (model.constructionTime == 0) {
+		$('#airplaneCanvas .delivery').text("immediate")
+		$('#airplaneCanvas .delivery').removeClass('warning')
+		$('#airplaneCanvas .add').text('Purchase')
+	} else {
+		$('#airplaneCanvas .delivery').text(model.constructionTime + " weeks")
+		$('#airplaneCanvas .delivery').addClass('warning')
+		$('#airplaneCanvas .add').text('Place Order')
+	}
+	
 	$('#airplaneCanvas #airplaneModelDetail').fadeIn(200)
 	//hide owned model details
 	$('#airplaneCanvas #ownedAirplaneDetail').fadeOut(200)
@@ -104,13 +125,17 @@ function selectAirplaneModel(model) {
 function showAirplaneInventory(modelInfo) {
 	var airplaneInventoryList = $("#airplaneCanvas #airplaneInventoryList")
 	airplaneInventoryList.empty()
-	if (modelInfo.assignedAirplanes || modelInfo.freeAirplanes) {
+	if (modelInfo.assignedAirplanes || modelInfo.availableAirplanes || modelInfo.constructingAirplanes) {
 		$.each(modelInfo.assignedAirplanes, function( key, airplaneId ) {
 			$("<li class='row clickable' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'>" + modelInfo.name + " (id " + airplaneId + ")</li>").appendTo(airplaneInventoryList)
 		});
 		
-		$.each(modelInfo.freeAirplanes, function( key, airplaneId ) {
-			$("<li class='row clickable' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'>" + modelInfo.name + " (id " + airplaneId + ")</li>").appendTo(airplaneInventoryList)
+		$.each(modelInfo.availableAirplanes, function( key, airplaneId ) {
+			$("<li style='color: #2988c3;' class='row clickable' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'>" + modelInfo.name + " (id " + airplaneId + ")</li>").appendTo(airplaneInventoryList)
+		});
+		
+		$.each(modelInfo.constructingAirplanes, function( key, airplaneId ) {
+			$("<li style='color: #ee9a29;' class='row clickable' data-airplane-id='" + airplaneId +  "' onclick='loadOwnedAirplaneDetails(" + airplaneId + ")'>" + modelInfo.name + " (id " + airplaneId + ")</li>").appendTo(airplaneInventoryList)
 		});
 	}
 }
@@ -131,7 +156,15 @@ function loadOwnedAirplaneDetails(airplaneId) {
 	    success: function(airplane) {
 	    	$("#airplaneDetailsId").text(airplane.id)
     		$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
-	    	$("#airplaneDetailsAge").text(airplane.age + "week(s)")
+    		if (airplane.age >= 0) {
+    			$("#airplaneDetailsAge").text(airplane.age + "week(s)")
+    			$("#airplaneDetailsAgeRow").show()
+    			$("#airplaneDetailsDeliveryRow").hide()
+    		} else {
+    			$("#airplaneDetailsDelivery").text(airplane.age * -1 + "week(s)")
+    			$("#airplaneDetailsAgeRow").hide()
+    			$("#airplaneDetailsDeliveryRow").show()
+    		}
 	    	$("#airplaneDetailsSellValue").text("$" + commaSeparateNumber(airplane.sellValue))
 	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.link) {
@@ -139,7 +172,12 @@ function loadOwnedAirplaneDetails(airplaneId) {
 	    		$("#sellAirplaneButton").hide()
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
-	    		$("#sellAirplaneButton").show()
+	    		if (airplane.age >= 0) {
+	    			$("#sellAirplaneButton").show()
+	    		} else {
+	    			$("#sellAirplaneButton").hide()
+	    		}
+	    		
 	    	}
 	    	$("#airplaneCanvas #ownedAirplaneDetail").fadeIn(200)
 	    	
@@ -152,6 +190,7 @@ function loadOwnedAirplaneDetails(airplaneId) {
 }
 
 function showAirplaneCanvas() {
+	loadAirplaneModels()
 	setActiveDiv($("#airplaneCanvas"))
 	highlightTab($('#airplaneCanvasTab'))
 	
@@ -177,7 +216,8 @@ function showAirplaneCanvas() {
 	    	$.each(loadedModels, function(modelId, model) {
 	    		if (!ownedModelIds.includes(model.id)) {
 	    			model.assignedAirplanes = []
-	    			model.freeAirplanes = []
+	    			model.availableAirplanes = []
+	    			model.constructingAirplanes = []
 	    			sortedModels.push(model)
 	    		}
 	    	})
@@ -199,7 +239,7 @@ function updateAirplaneModelList(sortingProperty, ascending) {
 	sortedModels.sort(sortByProperty(sortingProperty, ascending == "ascending"))
 	
 	$.each(sortedModels, function(index, model) {
-		var label = model.name + " (assigned: " + model.assignedAirplanes.length + " free: " + model.freeAirplanes.length + ")"
+		var label = model.name + " (" + model.assignedAirplanes.length + " / " + model.availableAirplanes.length + " / " + model.constructingAirplanes.length + ")"
 		var item = $("<li class='row clickable' data-model-id='" + model.id + "' onclick='selectAirplaneModel(this.modelInfo)'>" + label + "</li>").appendTo(airplaneModelList)
 		item.get(0).modelInfo = model //tag the info to the element
 		

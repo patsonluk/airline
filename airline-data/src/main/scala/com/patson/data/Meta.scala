@@ -486,7 +486,8 @@ object Meta {
       "fuel_burn INTEGER, " +
       "speed INTEGER, " +
       "fly_range INTEGER, " +
-      "price INTEGER)")
+      "price INTEGER, " +
+      "construction_time INTEGER)")
     statement.execute()
     statement.close()
 

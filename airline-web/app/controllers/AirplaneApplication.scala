@@ -32,9 +32,10 @@ class AirplaneApplication extends Controller {
   
   implicit object AirplanesByModelWrites extends Writes[AirplanesByModel] {
     def writes(airplanesByModel: AirplanesByModel): JsValue = {
-      Json.toJson(airplanesByModel.model).asInstanceOf[JsObject] + (
-          "assignedAirplanes" -> Json.toJson(airplanesByModel.assignedAirplanes.map { _.id })) + (
-          "freeAirplanes" -> Json.toJson(airplanesByModel.freeAirplanes.map {_.id})) 
+      Json.toJson(airplanesByModel.model).asInstanceOf[JsObject] + 
+        ("assignedAirplanes" -> Json.toJson(airplanesByModel.assignedAirplanes.map { _.id })) + 
+        ("availableAirplanes" -> Json.toJson(airplanesByModel.availableAirplanes.map {_.id})) +
+        ("constructingAirplanes" -> Json.toJson(airplanesByModel.constructingAirplanes.map {_.id}))
     }
   }
   
@@ -43,6 +44,9 @@ class AirplaneApplication extends Controller {
   
   def getAirplaneModels() = Action {
     val models = ModelSource.loadAllModels()
+    
+    val constructingAirplaneCounts : Map[Int, Int] = AirplaneSource.loadConstructingAirplanes.groupBy(_.model.id).mapValues(_.size) 
+    
     Ok(Json.toJson(models))
   }
   
@@ -59,8 +63,10 @@ class AirplaneApplication extends Controller {
           (assignedAirplanes.map(_._1), freeAirplanes.map(_._1)) //get rid of the Option[Link] now as we have 2 lists already
       }
       
+      val currentCycle = CycleSource.loadCycle()
+      
       val airplanesByModelList = airplanesByModel.map {
-        case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, freeAirplanes)
+        case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, availableAirplanes = freeAirplanes.filter(_.isReady(currentCycle)), constructingAirplanes=freeAirplanes.filter(!_.isReady(currentCycle)))
       }
       Ok(Json.toJson(airplanesByModelList))
     } else {
@@ -88,14 +94,18 @@ class AirplaneApplication extends Controller {
         BadRequest("airplane still assigned to link " + link)
       case Some((airplane, None)) =>
         if (airplane.owner.id == airlineId) {
-          val sellValue = Computation.calculateAirplaneSellValue(airplane)
-          if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
-            AirlineSource.adjustAirlineBalance(airlineId, sellValue)
-            AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
-            
-            Ok(Json.toJson(airplane))
+          if (!airplane.isReady(CycleSource.loadCycle)) {
+            BadRequest("airplane is not yet constructed")
           } else {
-            NotFound
+            val sellValue = Computation.calculateAirplaneSellValue(airplane)
+            if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
+              AirlineSource.adjustAirlineBalance(airlineId, sellValue)
+              AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
+              
+              Ok(Json.toJson(airplane))
+            } else {
+              NotFound
+            }
           }
         } else {
           Forbidden
@@ -111,7 +121,10 @@ class AirplaneApplication extends Controller {
       BadRequest("unknown model or airline")
     } else {
       val airline = request.user
-      val airplane = Airplane(modelGet.get, airline, CycleSource.loadCycle(), Airplane.MAX_CONDITION, depreciationRate = 0, value = modelGet.get.price)
+      val currentCycle = CycleSource.loadCycle()
+      val constructedCycle = currentCycle + modelGet.get.constructionTime
+      
+      val airplane = Airplane(modelGet.get, airline, constructedCycle = constructedCycle , Airplane.MAX_CONDITION, depreciationRate = 0, value = modelGet.get.price)
       if (airline.airlineInfo.balance < (airplane.model.price * quantity)) { //not enough money!
         BadRequest("Not enough money")   
       } else {
@@ -134,5 +147,5 @@ class AirplaneApplication extends Controller {
     }
   }
 
-  sealed case class AirplanesByModel(model : Model, assignedAirplanes : List[Airplane], freeAirplanes : List[Airplane]) 
+  sealed case class AirplanesByModel(model : Model, assignedAirplanes : List[Airplane], availableAirplanes : List[Airplane], constructingAirplanes: List[Airplane]) 
 }

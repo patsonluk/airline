@@ -1,6 +1,8 @@
 package com.patson.data
 
 import com.patson.model.Computation
+import com.patson.data.airplane.ModelSource
+import com.patson.model.airplane.Model
 
 object Patchers {
   def patchHomeCountry() {
@@ -24,5 +26,9 @@ object Patchers {
     }
     
     LinkSource.updateLinks(updatingLinks)
+  }
+  
+  def airplaneModelPatcher() {
+     ModelSource.updateModels(Model.models)
   }
 }

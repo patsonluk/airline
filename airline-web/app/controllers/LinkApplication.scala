@@ -31,6 +31,7 @@ import com.patson.data.ConsumptionHistorySource
 import com.patson.data.CountrySource
 import scala.collection.SortedMap
 import scala.collection.immutable.ListMap
+import com.patson.data.CycleSource
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -254,18 +255,20 @@ class LinkApplication extends Controller {
         return BadRequest("Cannot insert link - airport size does not allow that!")
       }
       
+      val currentCycle = CycleSource.loadCycle()
+      
       //check if the assigned planes are either previously unassigned or assigned to this link
-      val occupiedAirplanes = airplanesForThisLink.flatMap { airplaneForThisLink => 
-        val assignedLink = AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneForThisLink.id, AirplaneSource.LINK_SIMPLE_LOAD).get._2
-        if (assignedLink.isDefined && assignedLink.get.id != incomingLink.id) {
+      val violatingAirplanes = airplanesForThisLink.flatMap { airplaneForThisLink => 
+        val (airplane, assignedLink) = AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneForThisLink.id, AirplaneSource.LINK_SIMPLE_LOAD).get
+        if ((assignedLink.isDefined && assignedLink.get.id != incomingLink.id) || !airplane.isReady(currentCycle)) {
             List(airplaneForThisLink)
         } else {
             List.empty
         }
       }
         
-      if (!occupiedAirplanes.isEmpty) {
-        return BadRequest("Cannot insert link - some airplanes already occupied " + occupiedAirplanes)
+      if (!violatingAirplanes.isEmpty) {
+        return BadRequest("Cannot insert link - some airplanes are either occupied with other routes or not ready for deployment " + violatingAirplanes)
       }
       
       //valid configuration is valid
@@ -446,8 +449,9 @@ class LinkApplication extends Controller {
             
             val airplanesWithAssignedLinks : List[(Airplane, Option[Link])] = AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
             
+            val currentCycle = CycleSource.loadCycle
             //val airplaneModelsWithinRange = AirplaneSource.load
-            val freeAirplanes = airplanesWithAssignedLinks.filter {
+            val availableAirplanes = airplanesWithAssignedLinks.filter(_._1.isReady(currentCycle)).filter {
               case (_ , Some(_)) => false
               case (airplane, None) => 
                 airplane.model.range >= distance
@@ -467,8 +471,8 @@ class LinkApplication extends Controller {
               case None => None
             }
             
-            freeAirplanes.foreach { freeAirplane => 
-              availableAirplanesByModel(freeAirplane.model).append((freeAirplane, false)) 
+            availableAirplanes.foreach { availableAirplane => 
+              availableAirplanesByModel(availableAirplane.model).append((availableAirplane, false)) 
             }
             assignedToThisLinkAirplanes.foreach { assignedAirplane => 
               availableAirplanesByModel(assignedAirplane.model).append((assignedAirplane, true))

@@ -14,7 +14,7 @@ import scala.concurrent.duration.Duration
 import com.patson.model.airplane._
  
 class AirplaneSimulationSpec extends WordSpecLike with Matchers {
-  private[this] val model = Model("Cessna 421", capacity = 7, fuelBurn = 6, speed = 300, range = 1555, price = 550000)
+  private[this] val model = Model.modelByName("Cessna 421")
   val airline1 = Airline("test-1")
   airline1.setMaintainenceQuality(80)
   val airline2 = Airline("test-2")
