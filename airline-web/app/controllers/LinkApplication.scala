@@ -580,15 +580,6 @@ class LinkApplication extends Controller {
         return Some("This country does not want to open their airports to foreign airline") 
       }
       
-      //check base airport credit
-      val credit = base.getAirportCredits
-      val usedCredits = Computation.getAirportCredits(LinkSource.loadLinksByFromAirport(fromAirport.id).filter( _.airline.id == base.airline.id))
-      val availableCredits = credit - usedCredits
-      
-      val requiredCredits = Computation.getAirportCredits(fromAirport, toAirport)
-      if (availableCredits < requiredCredits) {
-        return Some("Not enough airport credit left, require " + requiredCredits + " but only " + availableCredits + " left")
-      }
       
       //check airline grade limit
       val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).mapValues(_.size)

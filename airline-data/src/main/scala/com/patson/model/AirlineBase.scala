@@ -1,7 +1,6 @@
 package com.patson.model
 
 case class AirlineBase(airline : Airline, airport : Airport, countryCode : String, scale : Int, foundedCycle : Int, headquarter : Boolean = false) {
-  val getAirportCredits = scale * 75  * (if (headquarter) 2 else 1) 
   def getUpgradeCost(scale : Int) : Long = {
     if (headquarter && scale == 1) { //free to start HQ
       0

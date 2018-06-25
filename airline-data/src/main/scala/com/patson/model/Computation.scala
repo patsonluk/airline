@@ -103,20 +103,6 @@ object Computation {
     }
   }
   
-  def getAirportCredits(links : List[Link]) : Int = {
-    var credits = 0
-    links.foreach { link =>
-      credits += link.from.size + link.to.size
-    }
-    
-    credits
-  }
-    
-  
-  def getAirportCredits(from : Airport, to : Airport) : Int = {
-    from.size + to.size
-  }
-  
   def getLinkCreationCost(from : Airport, to : Airport) : Int = {
     
     val baseCost = 100000 + (from.income + to.income)
