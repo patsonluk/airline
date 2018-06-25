@@ -216,13 +216,13 @@ object PassengerSimulation {
       return false
     }
     
-    val ROUTE_COST_TOLERANCE_FACTOR = 1.75
-    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
+//    val ROUTE_COST_TOLERANCE_FACTOR = 1.4
+//    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
 
 //    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute) 
     
-    if (pickedRoute.totalCost < routeAffordableCost) { //total cost okay, now look at individual cost to avoid extreme profit
-      val LINK_COST_TOLERANCE_FACTOR = 2.5;
+//    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individula ones for now
+      val LINK_COST_TOLERANCE_FACTOR = 1.4;
       val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
           val link = linkConsideration.link
           val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
@@ -232,9 +232,7 @@ object PassengerSimulation {
         }
       }
       return unaffordableLink.isEmpty
-    } else {
-      return false 
-    }
+//    }  
   }
   
   
