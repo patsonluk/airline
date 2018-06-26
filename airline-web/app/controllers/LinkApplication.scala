@@ -34,7 +34,7 @@ import scala.collection.immutable.ListMap
 import com.patson.data.CycleSource
 
 class LinkApplication extends Controller {
-  private[this] val maxFrequencyAbsolute = 20
+  private[this] val maxFrequencyAbsolute = 30
   
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
