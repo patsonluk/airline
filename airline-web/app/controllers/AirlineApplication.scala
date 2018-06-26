@@ -74,43 +74,40 @@ class AirlineApplication extends Controller {
     Ok(Json.toJson(AirlineSource.loadAirlineBasesByAirline(airlineId)))
   }
   def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
-    AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
-      case Some(base) => {
-        val baseRejection = getBaseRejection(request.user, base, base.scale + 1)
-        if (baseRejection.isDefined) {
-          Ok(Json.toJson(base).asInstanceOf[JsObject] + ("rejection" -> JsString(baseRejection.get)))
-        } else {
-          Ok(Json.toJson(base))          
+    var result = Json.obj().asInstanceOf[JsObject]
+    AirportSource.loadAirportById(airportId) match {
+      case Some(airport) => {
+        val existingBase = AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId)
+        if (existingBase.isDefined) {
+          result = result + ("base" -> Json.toJson(existingBase)) 
         }
-      }
-      case None => { //create a base of scale 0 to indicate it's an non-existent base
-        AirportSource.loadAirportById(airportId) match {
-          case Some(airport) => {
-            val emptyBase = AirlineBase(airline = request.user, airport = airport, countryCode = airport.countryCode, scale = 0, foundedCycle = 0, headquarter = request.user.getHeadQuarter.isEmpty)
-            val baseRejection = getBaseRejection(request.user, emptyBase, 1)
-            var emptyBaseJson = Json.toJson(emptyBase).asInstanceOf[JsObject]
-            baseRejection.foreach { rejection =>
-              emptyBaseJson = emptyBaseJson. + ("rejection" -> JsString(rejection))
-            }
-              
-            Ok(emptyBaseJson)
-          }
-          case None => NotFound
+       
+        val targetBase = existingBase match {
+          case Some(base) => base.copy(scale = base.scale + 1)
+          case None => AirlineBase(airline = request.user, airport = airport, countryCode = airport.countryCode, scale = 1, foundedCycle = CycleSource.loadCycle(), headquarter = request.user.getHeadQuarter.isEmpty)
         }
+        
+        result = result + ("targetBase" -> Json.toJson(targetBase))
+        val baseRejection = getBaseRejection(request.user, targetBase)
+        baseRejection.foreach { rejection => 
+          result = result + ("rejection" -> JsString(rejection))
+        }
+        
+        Ok(result)
       }
+      case None => NotFound
     }
   }
   
-  def getBaseRejection(airline : Airline, base : AirlineBase, toScale : Int) : Option[String] = {
-    val airport : Airport = base.airport
+  def getBaseRejection(airline : Airline, targetBase : AirlineBase) : Option[String] = {
     val airlineCountryCodeOption = airline.getCountryCode()
-    
-    val cost = base.getUpgradeCost(toScale)
+    val airport = targetBase.airport
+    val cost = targetBase.getValue
     if (cost > airline.getBalance) {
       return Some("Not enough cash to build/upgrade the base")
     }
     
-    if (toScale == 1) { //building something new
+    if (targetBase.scale == 1) { //building something new
       if (airlineCountryCodeOption.isDefined) { //building non-HQ
             //it should first has link to it
         if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
@@ -159,8 +156,8 @@ class AirlineApplication extends Controller {
       if (inputBase.airline.id != airline.id) {
         BadRequest("not the same user!")
       } else {
-        val baseRejection = getBaseRejection(airline, inputBase, inputBase.scale)
-        val cost = inputBase.getUpgradeCost(inputBase.scale)
+        val baseRejection = getBaseRejection(airline, inputBase)
+        val cost = inputBase.getValue
         
         if (baseRejection.isDefined) {
           BadRequest("base request rejected: " + baseRejection.get)

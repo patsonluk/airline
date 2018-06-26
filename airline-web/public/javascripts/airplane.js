@@ -89,6 +89,14 @@ function updateModelInfo(modelId) {
 		$('#airplaneModelDetails .add').text('Place Order')
 	}
 	
+	if (activeAirline.balance < model.price) {
+		$('#airplaneModelDetails .rejection').show()
+		$('#airplaneModelDetails .add').hide()
+	} else {
+		$('#airplaneModelDetails .rejection').hide()
+		$('#airplaneModelDetails .add').show()
+	}
+	
 }
 
 function selectAirplaneModel(model) {
@@ -115,6 +123,13 @@ function selectAirplaneModel(model) {
 		$('#airplaneCanvas .delivery').text(model.constructionTime + " weeks")
 		$('#airplaneCanvas .delivery').addClass('warning')
 		$('#airplaneCanvas .add').text('Place Order')
+	}
+	if (activeAirline.balance < model.price) {
+		$('#airplaneCanvas .rejection').show()
+		$('#airplaneCanvas .add').hide()
+	} else {
+		$('#airplaneCanvas .rejection').hide()
+		$('#airplaneCanvas .add').show()
 	}
 	
 	$('#airplaneCanvas #airplaneModelDetail').fadeIn(200)

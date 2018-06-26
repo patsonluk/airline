@@ -194,7 +194,7 @@ package object controllers {
       "airlineName" -> JsString(base.airline.name),
       "scale" -> JsNumber(base.scale),
       "upkeep" -> JsNumber(base.getUpkeep),
-      "upgradeCost" -> JsNumber(base.getUpgradeCost(base.scale + 1)),
+      "value" -> JsNumber(base.getValue),
       "headquarter" -> JsBoolean(base.headquarter),
       "foundedCycle" -> JsNumber(base.foundedCycle)))
       

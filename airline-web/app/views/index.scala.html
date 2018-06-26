@@ -96,9 +96,9 @@
 <!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
 	  		<ul class="tabs" id="main-tabs">
 	  		
-			  <li class="button left-tab" id="worldMapCanvasTab" onclick="showWorldMap();"><span class="selected">Map</span></li>
+			  <li class="button left-tab" id="worldMapCanvasTab" onclick="showWorldMap();"><span class="selected">World</span></li>
 			  <li class="button left-tab user-specific-tab" id="linksCanvasTab" onclick="showLinksDetails();"><span>Routes</span></li>
-			  <li class="button left-tab" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li>
+<!-- 			  <li class="button left-tab" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li> -->
 			  <li class="button left-tab user-specific-tab" id="countryCanvasTab" onclick="showCountryView();"><span>Country</span></li>
 			  <li class="button left-tab user-specific-tab" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
 			  <li class="button left-tab user-specific-tab" id="officeCanvasTab" onclick="showOfficeCanvas();"><span>Office</span></li>
@@ -353,6 +353,9 @@
 				    			<div class="label"><h5>Delivery Time:</h5></div>
 				    			<div class="value delivery"></div>
 					    	</div>
+					    	<div class="rejection">
+				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning">Not enough cash to purchase this model</span>
+					    	</div>
 					    	<div class="button add" onclick="addAirplane($('#airplaneModelDetails #selectedModel').val(), 1, true)">Purchase</div>
 					    	<input type="hidden" id="selectedModel"/>
 						</div>
@@ -420,7 +423,11 @@
 			    			</div>
 			    			<div class="table-row">
 			    				<div class="label"><h5>Build/Upgrade Cost:</h5></div>
-			    				<div class="value" id="airportDetailsBaseCost"></div>
+			    				<div class="value" id="airportDetailsBaseUpgradeCost"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Base Upkeep after upgrade:</h5></div>
+			    				<div class="value" id="airportDetailsBaseUpgradeUpkeep"></div>
 			    			</div>
 						</div>
   						<div id="baseRejection" style="display:none;">
@@ -699,6 +706,9 @@
 				    	<div class="table-row">
 			    			<div class="label"><h5>Delivery Time:</h5></div>
 			    			<div class="value delivery"></div>
+				    	</div>
+				    	<div class="rejection">
+			    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning">Not enough cash to purchase this model</span>
 				    	</div>
 				    	<div class="button add" onclick="addAirplane($('#airplaneCanvas #selectedModel').val(), 1, false)">Purchase</div>
 				    	<input type="hidden" id="selectedModel"/>

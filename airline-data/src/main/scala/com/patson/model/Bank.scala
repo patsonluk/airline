@@ -34,7 +34,7 @@ object Bank {
     
     var totalAssets = 0L
     AirlineSource.loadAirlineBasesByAirline(airlineId).foreach { base =>
-      totalAssets = totalAssets + base.getUpgradeCost(base.scale) //take the upgrade to current base as the assets value
+      totalAssets = totalAssets + base.getValue 
     }
     
     AirplaneSource.loadAirplanesByOwner(airlineId).foreach { airplane =>

@@ -16,7 +16,9 @@ $( document ).ready(function() {
 		getAirports();
 		printConsole("Please log in")
 	}
+	
 	loadAllCountries()
+	
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())
 	}
@@ -75,14 +77,14 @@ function loadUser(isLogin) {
 			  if (isLogin) {
 				  showFloatMessage("Successfully logged in")
 			  }
-			  
-			  refreshLoginBar()
+    		  refreshLoginBar()
 			  printConsole('') //clear console
 			  getAirports();
 			  showUserSpecificElements();
 		  }
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
+			  loadAllCountries() //load country again for relationship
 		  }
 		  
 	  },
@@ -525,7 +527,7 @@ function updateAllPanels(airlineId) {
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
 		} else {
-			printConsole("Special Announcement: Experimenting with new algorithm to make virtual passengers more senitive to high ticket prices. This will significantly reduce demand on overpriced tickets. Thank you for playing again!")
+			printConsole("Special Announcement: Airport slots are harder to acquire now. To compensate that, airport HQ/base upgrade and upkeep cost have been reduced. Make sure your 'Service Investment' in Office View is set in order to improve your company wide Service Quality!")
 		}
 		
 	}
@@ -540,6 +542,7 @@ function refreshPanels(airlineId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airline) {
+	    	activeAirline = airline
 	    	refreshTopBar(airline)
 	    	refreshLinks()
 	    	if ($("#linkDetails").is(":visible")) {

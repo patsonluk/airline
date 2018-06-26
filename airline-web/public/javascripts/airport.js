@@ -5,19 +5,12 @@ var activeAirportPopupInfoWindow
 
 function showAirportDetails(airportId) {
 	setActiveDiv($("#airportCanvas"))
-	highlightTab($('#airportCanvasTab'))
+	//highlightTab($('#airportCanvasTab'))
+	
+	$('#main-tabs').children('.left-tab').children('span').removeClass('selected')
 	//deselectLink()
 	
-	if (airportId) {
-		if (airportId != activeAirportId) {
-			activeAirportId = airportId
-		}
-	} else if (!activeAirportId){
-		airportId = activeAirline.headquarterAirport.airportId
-		activeAirportId = airportId
-	} else {
-		airportId = activeAirportId
-	}
+	activeAirportId = airportId
 	
 	$.ajax({
 		type: 'GET',
@@ -85,55 +78,53 @@ function updateAirportDetails(airport) {
 			url: "airlines/" + activeAirline.id + "/bases/" + airport.id,
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
-		    success: function(airportBase) {
-		    	var newBase = airportBase.scale == 0
-		    	if (airportBase) {
-		    		if (newBase) {
-		    			$('#airportDetailsBaseType').text('-')
-		    			$('#airportDetailsBaseScale').text('-')
-		    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep) + '(if built)')
-		    			$('#airportDetailsBaseCost').text('$' + commaSeparateNumber(airportBase.upgradeCost))
-		    		} else {
-		    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
-		    			$('#airportDetailsBaseScale').text(airportBase.scale)
-		    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
-		    			$('#airportDetailsBaseCost').text('$' + commaSeparateNumber(airportBase.upgradeCost))
-		    		}
-		    		
-		    		//update buttons and reject reasons
-		    		if (airportBase.rejection) {
-		    			$('#baseRejectionReason').text(airportBase.rejection)
-		    			$('#baseRejection').show()
-		    			$('#buildHeadquarterButton').hide()
-		    			$('#buildBaseButton').hide()
-		    			$('#upgradeBaseButton').hide()
-		    		} else{
-		    			$('#baseRejection').hide()
-		    			if (newBase) {
-		    				if (activeAirline.headquarterAirport) {
-			    				$('#buildHeadquarterButton').hide()
-			    				$('#buildBaseButton').show()
-		    				} else {
-		    					$('#buildHeadquarterButton').show()
-			    				$('#buildBaseButton').hide()
-		    				}
-		    				$('#upgradeBaseButton').hide()
-		    			} else {
+		    success: function(baseDetails) {
+		    	var airportBase = baseDetails.base
+		    	if (!airportBase) { //new base
+	    			$('#airportDetailsBaseType').text('-')
+	    			$('#airportDetailsBaseScale').text('-')
+	    			$('#airportDetailsBaseUpkeep').text('-')
+	    		} else {
+	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
+	    			$('#airportDetailsBaseScale').text(airportBase.scale)
+	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
+	    		}
+		    	var targetBase = baseDetails.targetBase
+    			$('#airportDetailsBaseUpgradeCost').text('$' + commaSeparateNumber(targetBase.value))
+    			$('#airportDetailsBaseUpgradeUpkeep').text('$' + commaSeparateNumber(targetBase.upkeep))
+
+	    		
+	    		//update buttons and reject reasons
+	    		if (baseDetails.rejection) {
+	    			$('#baseRejectionReason').text(baseDetails.rejection)
+	    			$('#baseRejection').show()
+	    			$('#buildHeadquarterButton').hide()
+	    			$('#buildBaseButton').hide()
+	    			$('#upgradeBaseButton').hide()
+	    		} else{
+	    			$('#baseRejection').hide()
+	    			if (!airportBase) {
+	    				if (activeAirline.headquarterAirport) {
 		    				$('#buildHeadquarterButton').hide()
+		    				$('#buildBaseButton').show()
+	    				} else {
+	    					$('#buildHeadquarterButton').show()
 		    				$('#buildBaseButton').hide()
-		    				$('#upgradeBaseButton').show()
-		    			}
-		    		}
-		    		
-		    		if (newBase || airportBase.headquarter) {
-		    			$('#deleteBaseButton').hide()
-		    		} else {
-		    			$('#deleteBaseButton').show()
-		    		}
-		    		
-		    		
-		    		
-		    	}
+	    				}
+	    				$('#upgradeBaseButton').hide()
+	    			} else {
+	    				$('#buildHeadquarterButton').hide()
+	    				$('#buildBaseButton').hide()
+	    				$('#upgradeBaseButton').show()
+	    			}
+	    		}
+	    		
+	    		if (!airportBase || airportBase.headquarter) {
+	    			$('#deleteBaseButton').hide()
+	    		} else {
+	    			$('#deleteBaseButton').show()
+	    		}
+		    	
 		    },
 		    error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));
