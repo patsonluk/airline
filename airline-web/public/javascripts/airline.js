@@ -1076,19 +1076,25 @@ function updateFrequencyBar(airplaneModelId, configuration) {
 	var maxFrequencyByAirplanes = planLinkInfoByModel[airplaneModelId].maxFrequency * selectedCount
 	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
 	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
-	var maxFrequency
-	var limitingFactor
+	var maxFrequency = planLinkInfo.maxFrequencyAbsolute
+	var limitingFactor = "Limited by max frequency allowed for route"
 	
-	if (maxFrequencyFromAirport <= maxFrequencyToAirport && maxFrequencyFromAirport <= maxFrequencyByAirplanes) { //limited by from airport
+	
+	if (maxFrequencyFromAirport < maxFrequency) { //limited by from airport
 		maxFrequency = maxFrequencyFromAirport
 		limitingFactor = "Limited by slots offered by Departure Airport"
-	} else if (maxFrequencyToAirport <= maxFrequencyFromAirport && maxFrequencyToAirport <= maxFrequencyByAirplanes) { //limited by to airport
+	}
+	
+	if (maxFrequencyToAirport < maxFrequency) { //limited by to airport
 		maxFrequency = maxFrequencyToAirport
 		limitingFactor = "Limited by slots offered by Destination Airport"
-	} else { //limited by airplanes
+	}
+	
+	if (maxFrequencyByAirplanes < maxFrequency) { //limited by airplanes
 		maxFrequency = maxFrequencyByAirplanes
 		limitingFactor = "Limited by number of airplanes assigned. Purchase more of this airplane to increase frequency"
 	}
+	
 	
 	if (maxFrequencyByAirplanes == 0) {
 		frequencyBar.text("No routing allowed, reason: ")

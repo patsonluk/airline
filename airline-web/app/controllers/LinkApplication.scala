@@ -34,6 +34,8 @@ import scala.collection.immutable.ListMap
 import com.patson.data.CycleSource
 
 class LinkApplication extends Controller {
+  private[this] val maxFrequencyAbsolute = 20
+  
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -235,6 +237,10 @@ class LinkApplication extends Controller {
       if ((incomingLink.to.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.to.getMaxSlotAssignment(airlineId)) {
         println("max slot exceeded, tried to add " + frequencyChange + " but to airport slot at " + incomingLink.to.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.to.getMaxSlotAssignment(airlineId))
         return BadRequest("Cannot insert link - frequency exceeded limit - to airport does not have enough slots")
+      }
+      
+      if (incomingLink.frequency > maxFrequencyAbsolute) {
+        return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
       }
       
       val airplanesForThisLink = incomingLink.getAssignedAirplanes
@@ -523,6 +529,7 @@ class LinkApplication extends Controller {
                                         "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
                                         "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
                                         "maxFrequencyToAirport" -> maxFrequencyToAirport,
+                                        "maxFrequencyAbsolute" -> maxFrequencyAbsolute,
                                         "directDemand" -> directDemand,
                                         "businessPassengers" -> directBusinessDemand.total,
                                         "touristPassengers" -> directTouristDemand.total,
