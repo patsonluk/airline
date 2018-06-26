@@ -511,11 +511,13 @@ class LinkApplication extends Controller {
             
             val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
             
-            var resultObject = Json.obj("fromAirportName" -> fromAirport.name,
+            var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
+                                        "fromAirportName" -> fromAirport.name,
                                         "fromAirportCity" -> fromAirport.city,
                                         "fromAirportLatitude" -> fromAirport.latitude,
                                         "fromAirportLongitude" -> fromAirport.longitude,
                                         "fromCountryCode" -> fromAirport.countryCode,
+                                        "toAirportId" -> toAirport.id,
                                         "toAirportName" -> toAirport.name,
                                         "toAirportCity" -> toAirport.city,
                                         "toAirportLatitude" -> toAirport.latitude,
