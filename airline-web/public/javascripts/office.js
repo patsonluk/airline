@@ -203,15 +203,14 @@ function updateChampionedCountriesDetails() {
 	    		}
 	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
 	    		row.append("<div class='cell'><img src='" + rankingIcon + "' title='" + rankingTitle + "'/></div>")
-	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + "</div>")
-	    		row.append("<div class='cell'>" + country.name + "</div>")
+	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
 	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
 	    		$('#championedCountriesList').append(row)
 	    	})
 	    	
 	    	if ($(championedCountries).length == 0) {
 	    		var row = $("<div class='table-row'></div>")
-	    		row.append("<div class='cell'></div>")
+	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		$('#championedCountriesList').append(row)

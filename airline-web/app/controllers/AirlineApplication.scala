@@ -52,7 +52,7 @@ class AirlineApplication extends Controller {
   }
   
   def getAllAirlines() = Authenticated { implicit request =>
-     val airlines = AirlineSource.loadAllAirlines()
+     val airlines = AirlineSource.loadAllAirlines(fullLoad = true)
     Ok(Json.toJson(airlines)).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"
@@ -70,7 +70,7 @@ class AirlineApplication extends Controller {
      
      Ok(airlineJson)
   }
-  def getBases(airlineId : Int) = AuthenticatedAirline(airlineId) {
+  def getBases(airlineId : Int) = Authenticated { implicit request =>
     Ok(Json.toJson(AirlineSource.loadAirlineBasesByAirline(airlineId)))
   }
   def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
@@ -252,7 +252,7 @@ class AirlineApplication extends Controller {
      Ok(JsObject(List("prediction" -> JsString(prediction))))
   }
   
-  def getChampionedCountries(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def getChampionedCountries(airlineId : Int) = Authenticated { implicit request =>
     val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
       case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
     }

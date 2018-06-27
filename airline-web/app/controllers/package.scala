@@ -29,11 +29,20 @@ package object controllers {
     def writes(airline: Airline): JsValue = {
       var result = JsObject(List(
       "id" -> JsNumber(airline.id),
-      "name" -> JsString(airline.name)))
+      "name" -> JsString(airline.name),
+      "reputation" -> JsNumber(airline.getReputation()),
+      "baseCount" -> JsNumber(airline.getBases().size)))
       
       if (airline.getCountryCode.isDefined) {
         result = result.asInstanceOf[JsObject] + ("countryCode" -> JsString(airline.getCountryCode.get))
       }
+      airline.getHeadQuarter().foreach { headquarters =>
+        result = result.asInstanceOf[JsObject] + 
+        ("headquartersAirportName" -> JsString(headquarters.airport.name)) + 
+        ("headquartersCity" -> JsString(headquarters.airport.city)) + 
+        ("headquartersAirportIata" -> JsString(headquarters.airport.iata))
+      }
+      
       result
     }
   }
