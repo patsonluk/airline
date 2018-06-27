@@ -212,18 +212,16 @@ function updateRivalBaseList(airlineId) {
 	    			$('#rivalBases').append(row)
 	    			hasBases = true
 	    		}
-	    		
-	    		var emtpyRow = $("<div class='table-row'></div>")
-    			emtpyRow.append("<div class='cell'>-</div>")
-    			emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-    			
-    			if (!hasHeadquarters) {
-	    			$('#rivalHeadquarters').append(emtpyRow)
-	    		}
-	    		if (!hasBases) {
-	    			$('#rivalBases').append(emtpyRow)
-	    		}
 	    	})
+	    	var emtpyRow = $("<div class='table-row'></div>")
+			emtpyRow.append("<div class='cell'>-</div>")
+			
+			if (!hasHeadquarters) {
+    			$('#rivalHeadquarters').append(emtpyRow)
+    		}
+    		if (!hasBases) {
+    			$('#rivalBases').append(emtpyRow)
+    		}
 	    	
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
