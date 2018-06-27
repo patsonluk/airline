@@ -162,32 +162,28 @@ function clearAllPaths() {
 //remove and re-add all the links
 function updateLinksInfo() {
 	clearAllPaths()
-	
-	//remove from link list
-	$('#linkList').empty()
 
-	//remove link details
-	//$("#linkDetails").hide()
-	
-	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
-	
-	$.ajax({
-		type: 'GET',
-		url: url,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    async: false,
-	    success: function(links) {
-	    	$.each(links, function( key, link ) {
-	    		drawFlightPath(link)
-	  		});
-	    	updateLoadedLinks(links);
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+	if (activeAirline) {
+		var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
+		
+		$.ajax({
+			type: 'GET',
+			url: url,
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
+		    async: false,
+		    success: function(links) {
+		    	$.each(links, function( key, link ) {
+		    		drawFlightPath(link)
+		  		});
+		    	updateLoadedLinks(links);
+		    },
+	        error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+	}
 }
 
 //refresh links without removal/addition
