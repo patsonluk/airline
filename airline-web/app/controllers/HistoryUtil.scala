@@ -66,6 +66,13 @@ object HistoryUtil {
     passengersByOtherAirport.toMap
   }
   
+  def loadRouteHistory(fromAirportId : Int, toAirportId : Int) : List[(PassengerType.Value, Int, Route)] = {
+    checkCache()
+    allConsumptions.filter {
+      case(passengerType, passengerCount, route) => (route.links(0).from.id == fromAirportId && route.links.last.to.id == toAirportId) || (route.links(0).from.id == toAirportId && route.links.last.to.id == fromAirportId) 
+    }
+  }
+  
   private def computeRelatedLinks(relatedConsumption : List[(PassengerType.Value, Int, Route)], airlineId : Int, selfOnly : Boolean) : List[RelatedLink] = {
     val relatedLinkConsumptions : List[(PassengerType.Value, Int, LinkConsideration)] = relatedConsumption.flatMap {
       case(passengerType, passengerCount, route) => route.links.map { (passengerType, passengerCount, _) }.filter {

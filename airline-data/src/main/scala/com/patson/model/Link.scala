@@ -138,7 +138,7 @@ case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, 
     def to : Airport = if (inverted) link.from else link.to
     
     override def toString() : String = {
-      this.getClass.getSimpleName + "(" + from.name + " => " + to.name + " " + linkClass + " (inverted?) " + inverted + ")"
+      this.getClass.getSimpleName + "(" + from.name + " => " + to.name + " " + linkClass + " (inverted?) " + inverted + " " + link.airline.name + ":" + link.airline.id + ")"
     }
 }
 

@@ -323,6 +323,27 @@
 				    		<div class="button" id="deleteLinkButton" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
 				    		<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 				    	</div>
+				    	<div id="airportPassengerDetails" style="width: 100%; display: none;">
+		    				<h4>Passenger Details</h4>
+				    		<div class="table" style="width: 100%">
+				    			<div class="table-row">
+					    			<div class="label"><h5>From:</h5></div>
+				    				<div class="value">
+				    					<span id="passengerFrom" class="clickable"></span>
+				    				</div>
+					    		</div>
+					    		<div class="table-row">
+					    			<div class="label"><h5>To:</h5></div>
+					    			<div class="value">
+				    					<span id="passengerTo" class="clickable"></span>
+				    				</div>
+					    			<div class="value clickable" id="planLinkToAirportName"></div>
+					    		</div>
+					    	</div>
+					    	<div id="passengerRoutes">
+					    		<span class="warning">No passengers flew between these 2 cities in last week</span>
+					    	</div>
+				    	</div>
 			    	</div>
 	<!-- 		    	end details panel -->
 		   			<div id="extendedPanel" class="section" style="width: 100%; float: left; display: none;">

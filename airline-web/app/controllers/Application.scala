@@ -20,6 +20,7 @@ import scala.collection.mutable.ListBuffer
 import com.patson.model.Scheduling.TimeSlot
 import controllers.AuthenticationObject.AuthenticatedAirline
 import scala.collection.mutable.Set
+import scala.math.Ordering
 
 
 class Application extends Controller {
@@ -336,6 +337,32 @@ class Application extends Controller {
     Ok(Json.toJson(passengersByRemoteAirport.map {
       case (remoteAirport, passengers) => Json.obj("remoteAirport" -> Json.toJson(remoteAirport)(AirportSimpleWrites), ("passengers" -> JsNumber(passengers)))
     }))
+  }
+  
+  def getRouteHistory(fromAirportId : Int, toAirportId : Int) = Action {
+    val routeHistory : List[(PassengerType.Value, Int, Route)] = HistoryUtil.loadRouteHistory(fromAirportId, toAirportId)
+    
+    val normalizedRouteHistory : List[(List[(Airport, Airport, Airline)], Int)] = routeHistory.map { //List(List(fromAirport, toAirport, airline), passengerCount))
+      case (passengerType, passengerCount, route) =>
+        (route.links.map(linkConsideration => (linkConsideration.from, linkConsideration.to, linkConsideration.link.airline)), passengerCount)
+    }
+
+    
+    val flattenedRouteHistory : Map[List[(Airport, Airport, Airline)], Int] = normalizedRouteHistory.groupBy(_._1).mapValues( _.map(_._2).sum)
+    val sortedRouteHistory : List[(List[(Airport, Airport, Airline)], Int)] = flattenedRouteHistory.toList.sortBy(_._2)(Ordering.Int.reverse)
+  
+    
+    Ok(Json.toJson(sortedRouteHistory.map {
+      case (route, passengers) => Json.obj(("route" -> route.map {
+          case (fromAirport, toAirport, airline) => {
+            Json.obj("fromAirport" -> Json.toJson(fromAirport)(AirportSimpleWrites),
+                     "toAirport" -> Json.toJson(toAirport)(AirportSimpleWrites),
+                     "airline" -> JsString(airline.name))
+          }
+        })
+        , ("passengers" -> JsNumber(passengers)))
+      }
+    ))
   }
   
   def getAirportProjects(airportId : Int) = Action {
