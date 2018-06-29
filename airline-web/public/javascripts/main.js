@@ -30,7 +30,8 @@ $( document ).ready(function() {
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
-function showFloatMessage(message, timeout = 3000) {
+function showFloatMessage(message, timeout) {
+	timeout = timeout || 3000
 	$("#floatMessageBox").text(message)
 	var centerX = $("#floatMessageBox").parent().width() / 2 - $("#floatMessageBox").width() / 2 
 	$("#floatMessageBox").css({ top:"-=20px", left: centerX, opacity:100})
@@ -579,7 +580,10 @@ function updateTime(cycle, fraction) {
 }
 
 
-function printConsole(message, messageLevel = 1, activateConsole = false, persistMessage = false) {
+function printConsole(message, messageLevel, activateConsole, persistMessage) {
+	messageLevel = messageLevel || 1
+	activateConsole = activateConsole || false
+	persistMessage = persistMessage || false
 	var messageClass
 	if (messageLevel == 1) {
 		messageClass = 'actionMessage'

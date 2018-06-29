@@ -201,7 +201,10 @@ function getOpennessSpan(openness) {
 	
 }
 
-function sortByProperty(property, ascending = true) {
+function sortByProperty(property, ascending) {
+	if (ascending == undefined) {
+		ascending = true
+	}
     var sortOrder = 1;
     
     if(!ascending) {

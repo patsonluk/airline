@@ -26,7 +26,8 @@ function loadAirplaneModels() {
 }
 
 
-function addAirplane(modelId, quantity, fromPlanLink = false) {
+function addAirplane(modelId, quantity, fromPlanLink) {
+	fromPlanLink = fromPlanLink || false
 	var airlineId = activeAirline.id
 	var url = "airlines/" + airlineId + "/airplanes?model=" + modelId + "&quantity=" + quantity + "&airlineId=" + airlineId 
 	$.ajax({
