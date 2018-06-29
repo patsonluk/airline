@@ -18,7 +18,7 @@ object AirlineSimulation {
     val allTransactions = AirlineSource.loadTransactions(cycle).groupBy { _.airlineId }
     //purge the older transactions
     AirlineSource.deleteTransactions(cycle - 1)
-    val linkResultByAirline = linkResult.groupBy { _.airlineId }
+    val linkResultByAirline = linkResult.groupBy { _.link.airline.id }
     val airplanesByAirline = airplanes.groupBy(_.owner.id)
     val allCountries = CountrySource.loadAllCountries().map( country => (country.countryCode, country)).toMap
     
@@ -38,6 +38,7 @@ object AirlineSimulation {
             val linksCrewCost = linkConsumptions.foldLeft(0L)(_ + _.crewCost)
             val linksFuelCost = linkConsumptions.foldLeft(0L)(_ + _.fuelCost)
             val linksInflightCost = linkConsumptions.foldLeft(0L)(_ + _.inflightCost)
+            val linksDelayCompensation = linkConsumptions.foldLeft(0L)(_ + _.delayCompensation)
             val linksMaintenanceCost = linkConsumptions.foldLeft(0L)(_ + _.maintenanceCost)
             linksDepreciation = linkConsumptions.foldLeft(0L)(_ + _.depreciation)
             val linksRevenue = linkConsumptions.foldLeft(0L)(_ + _.revenue)
@@ -45,9 +46,9 @@ object AirlineSimulation {
             
             totalCashRevenue += linksRevenue
             totalCashExpense += linksExpense - linksDepreciation //airplane depreciation is already deducted on the plane, not a cash expense
-            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, maintenanceCost= -1 * linksMaintenanceCost, depreciation = -1 * linksDepreciation, cycle = currentCycle)
+            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, delayCompensation = -1 * linksDelayCompensation, maintenanceCost= -1 * linksMaintenanceCost, depreciation = -1 * linksDepreciation, cycle = currentCycle)
           }
-          case None => LinksIncome(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle = currentCycle)
+          case None => LinksIncome(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle = currentCycle)
         }
         
         val transactionsIncome = allTransactions.get(airline.id) match {
@@ -130,7 +131,7 @@ object AirlineSimulation {
         //update reputation
         linkResultByAirline.get(airline.id).foreach { linkConsumptions =>
           val totalPassengerKilometers = linkConsumptions.foldLeft(0L) { (foldLong, linkConsumption) =>
-            foldLong + linkConsumption.soldSeats.total * linkConsumption.distance
+            foldLong + linkConsumption.link.soldSeats.total * linkConsumption.link.distance
           }
           
           //https://en.wikipedia.org/wiki/World%27s_largest_airlines

@@ -5,6 +5,8 @@ import com.patson.data._
 import scala.collection.mutable._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import com.patson.model.airplane.Airplane
+import scala.util.Random
 
 object LinkSimulation {
   private val FUEL_UNIT_COST = 0.08//for now...
@@ -22,6 +24,9 @@ object LinkSimulation {
         holder + demandValue
     })
 
+    
+    simulateLinkError(links)
+    
     val consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int] = PassengerSimulation.passengerConsume(demand, links)
     //generate statistic 
     println("Generating stats")
@@ -63,6 +68,61 @@ object LinkSimulation {
     linkConsumptionDetails
   }
   
+  val minorDelayNormalThreshold = 0.4  // so it's around 24% at 40% condition (multiplier at 0.6) to run into minor delay OR worse
+  val majorDelayNormalThreshold = 0.1 // so it's around 6% at 40% condition (multiplier at 0.6) to run into major delay OR worse    
+  val cancellationNormalThreshold = 0.03 // so it's around 1.8% at 40% condition (multiplier at 0.6) to run into cancellation
+  val minorDelayBadThreshold = 0.5  // so it's around 40% at 20% condition (multiplier at 0.8) to run into minor delay OR worse
+  val majorDelayBadThreshold = 0.2 // so it's around 16% at 20% condition (multiplier at 0.8) to run into major delay OR worse    
+  val cancellationBadThreshold = 0.1 // so it's around 8% at 20% condition (multiplier at 0.8) to run into cancellation
+  val minorDelayCriticalThreshold = 1  // so it's around 100% at 0% condition (multiplier at 1) to run into minor delay OR worse
+  val majorDelayCriticalThreshold = 0.5 // so it's around 50% at 0% condition (multiplier at 1) to run into major delay OR worse    
+  val cancellationCriticalThreshold = 0.3 // so it's around 30% at 0% condition (multiplier at 1) to run into cancellation
+  
+  def simulateLinkError(links : List[Link]) = {
+    links.foreach {
+      link => {
+        var i = 0
+        for ( i <- 0 until link.frequency) {
+          var airplaneCount = link.getAssignedAirplanes().length
+          val airplane = link.getAssignedAirplanes()(i % airplaneCount)           //round robin
+          val errorValue = Random.nextDouble()
+          val conditionMultipler = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
+          var minorDelayThreshold : Double = 0
+          var majorDelayThreshold : Double = 0
+          var cancellationThreshold : Double = 0
+          if (airplane.condition > Airplane.BAD_CONDITION) { //small chance of delay and cancellation
+            if (errorValue < cancellationNormalThreshold * conditionMultipler) {
+              link.cancellationCount = link.cancellationCount + 1
+            } else if (errorValue < majorDelayNormalThreshold * conditionMultipler) {
+              link.majorDelayCount = link.majorDelayCount + 1
+            } else if (errorValue < minorDelayNormalThreshold * conditionMultipler) {
+              link.minorDelayCount = link.minorDelayCount + 1
+            }
+          } else if (airplane.condition > Airplane.CRITICAL_CONDITION) {
+            if (errorValue < cancellationBadThreshold * conditionMultipler) {
+              link.cancellationCount = link.cancellationCount + 1
+            } else if (errorValue < majorDelayBadThreshold * conditionMultipler) {
+              link.majorDelayCount = link.majorDelayCount + 1
+            } else if (errorValue < minorDelayBadThreshold * conditionMultipler) {
+              link.minorDelayCount = link.minorDelayCount + 1
+            }
+          } else { 
+            if (errorValue < cancellationCriticalThreshold * conditionMultipler) {
+              link.cancellationCount = link.cancellationCount + 1
+            } else if (errorValue < majorDelayCriticalThreshold * conditionMultipler) {
+              link.majorDelayCount = link.majorDelayCount + 1
+            } else if (errorValue < minorDelayCriticalThreshold * conditionMultipler) {
+              link.minorDelayCount = link.minorDelayCount + 1
+            }         
+          }
+        }
+      }
+      if (link.cancellationCount > 0) {
+        link.addCancelledSeats(link.capacityPerFlight() * link.cancellationCount)
+      }
+    }
+  }
+  
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
     
     val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
@@ -92,16 +152,23 @@ object LinkSimulation {
     var inflightCost, crewCost, revenue = 0 
     link.capacity.map.keys.foreach { linkClass =>
       val capacity = link.capacity(linkClass)
-      val soldSeats = capacity - link.availableSeats(linkClass)
+      val soldSeats = link.soldSeats(linkClass)
       
       inflightCost += (linkClass.resourceMultiplier * (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2).toInt //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost . Roundtrip X 2
       crewCost += (linkClass.resourceMultiplier * capacity * link.duration / 60 * CREW_UNIT_COST).toInt 
       revenue += soldSeats * link.price(linkClass)
     }
     
+    // delays incur extra cost
+    var delayCompensation = 0
+    val soldSeatsPerFlight = link.soldSeats.total / link.frequency
+    delayCompensation = delayCompensation + link.majorDelayCount * 200 * soldSeatsPerFlight //200 per passenger 
+    delayCompensation = delayCompensation + link.minorDelayCount * 50 * soldSeatsPerFlight //50 per passenger
+    
     val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - depreciation
 
-    val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, maintenanceCost, depreciation = depreciation, revenue, profit, link.from.id, link.to.id, link.airline.id, link.distance, cycle)
+    //val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, link.cancellationCount, linklink.from.id, link.to.id, link.airline.id, link.distance, cycle)
+    val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, cycle)
     //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     result
   }

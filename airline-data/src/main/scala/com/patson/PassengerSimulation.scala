@@ -152,9 +152,10 @@ object PassengerSimulation {
                    if (consumptionSize > 0) {
                      pickedRoute.links.foreach { linkConsideration =>
                        val actualLinkClass = linkConsideration.linkClass
-                       val newAvailableSeats = linkConsideration.link.availableSeats(actualLinkClass) - consumptionSize
+                       //val newAvailableSeats = linkConsideration.link.availableSeats(actualLinkClass) - consumptionSize
                        
-                       linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(actualLinkClass -> newAvailableSeats))
+                       linkConsideration.link.addSoldSeatsByClass(actualLinkClass, consumptionSize)
+                       //linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(actualLinkClass -> newAvailableSeats))
     //                   if (link.availableSeats == 0) {
     //                     println("EXHAUSED!! = " + link)
     //                   }

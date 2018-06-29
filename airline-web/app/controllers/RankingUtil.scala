@@ -36,7 +36,7 @@ object RankingUtil {
   }
   
   private[this] def updateRankings() = {
-    val linkConsumptions = LinkSource.loadLinkConsumptions().groupBy(_.airlineId)
+    val linkConsumptions = LinkSource.loadLinkConsumptions().groupBy(_.link.airline.id)
     val links = LinkSource.loadAllLinks().groupBy(_.airline.id)
     val airlinesById = AirlineSource.loadAllAirlines(fullLoad = true).map( airline => (airline.id, airline)).toMap
     
@@ -53,7 +53,7 @@ object RankingUtil {
   }
   
   private[this] def getPassengerRanking(linkConsumptions : Map[Int, List[LinkConsumptionDetails]], airlinesById : Map[Int, Airline]) : List[Ranking] = {
-    val passengersByAirline : Map[Int, Long] = linkConsumptions.mapValues(_.map(_.soldSeats.total).sum)
+    val passengersByAirline : Map[Int, Long] = linkConsumptions.mapValues(_.map(_.link.soldSeats.total).sum)
     val sortedPassengersByAirline = passengersByAirline.toList.sortBy(_._2)(Ordering[Long].reverse)  //sort by total passengers of each airline
     
     sortedPassengersByAirline.zipWithIndex.map {
@@ -65,7 +65,7 @@ object RankingUtil {
   }
   private[this] def getPassengerMileRanking(linkConsumptions : Map[Int, List[LinkConsumptionDetails]], airlinesById : Map[Int, Airline]) : List[Ranking] = {
     val passengerMileByAirline : Map[Int, Long] = linkConsumptions.mapValues(_.map { linkConsumption => 
-        linkConsumption.soldSeats.total * linkConsumption.distance
+        linkConsumption.link.soldSeats.total * linkConsumption.link.distance
       }.sum)
     
     val sortedPassengerMileByAirline= passengerMileByAirline.toList.sortBy(_._2)(Ordering[Long].reverse)  //sort by total passengers of each airline

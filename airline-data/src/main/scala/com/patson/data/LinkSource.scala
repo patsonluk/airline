@@ -426,35 +426,39 @@ object LinkSource {
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, maintenance_cost, depreciation, revenue, profit, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, delay_compensation, maintenance_cost, depreciation, revenue, profit, minor_delay_count, major_delay_count, cancellation_count, from_airport, to_airport, airline, distance, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       connection.setAutoCommit(false)
       linkConsumptions.foreach { linkConsumption =>
-          preparedStatement.setInt(1, linkConsumption.linkId)
-          preparedStatement.setInt(2, linkConsumption.price(ECONOMY))
-          preparedStatement.setInt(3, linkConsumption.price(BUSINESS))
-          preparedStatement.setInt(4, linkConsumption.price(FIRST))
-          preparedStatement.setInt(5, linkConsumption.capacity(ECONOMY))
-          preparedStatement.setInt(6, linkConsumption.capacity(BUSINESS))
-          preparedStatement.setInt(7, linkConsumption.capacity(FIRST))
-          preparedStatement.setInt(8, linkConsumption.soldSeats(ECONOMY))
-          preparedStatement.setInt(9, linkConsumption.soldSeats(BUSINESS))
-          preparedStatement.setInt(10, linkConsumption.soldSeats(FIRST))
-          preparedStatement.setInt(11, linkConsumption.quality)
+          preparedStatement.setInt(1, linkConsumption.link.id)
+          preparedStatement.setInt(2, linkConsumption.link.price(ECONOMY))
+          preparedStatement.setInt(3, linkConsumption.link.price(BUSINESS))
+          preparedStatement.setInt(4, linkConsumption.link.price(FIRST))
+          preparedStatement.setInt(5, linkConsumption.link.capacity(ECONOMY))
+          preparedStatement.setInt(6, linkConsumption.link.capacity(BUSINESS))
+          preparedStatement.setInt(7, linkConsumption.link.capacity(FIRST))
+          preparedStatement.setInt(8, linkConsumption.link.soldSeats(ECONOMY))
+          preparedStatement.setInt(9, linkConsumption.link.soldSeats(BUSINESS))
+          preparedStatement.setInt(10, linkConsumption.link.soldSeats(FIRST))
+          preparedStatement.setInt(11, linkConsumption.link.computedQuality)
           preparedStatement.setInt(12, linkConsumption.fuelCost)
           preparedStatement.setInt(13, linkConsumption.crewCost)
           preparedStatement.setInt(14, linkConsumption.airportFees)
           preparedStatement.setInt(15, linkConsumption.inflightCost)
-          preparedStatement.setInt(16, linkConsumption.maintenanceCost)
-          preparedStatement.setInt(17, linkConsumption.depreciation)
-          preparedStatement.setInt(18, linkConsumption.revenue)
-          preparedStatement.setInt(19, linkConsumption.profit)
-          preparedStatement.setInt(20, linkConsumption.fromAirportId)
-          preparedStatement.setInt(21, linkConsumption.toAirportId)
-          preparedStatement.setInt(22, linkConsumption.airlineId)
-          preparedStatement.setInt(23, linkConsumption.distance)
-          preparedStatement.setInt(24, linkConsumption.cycle)
+          preparedStatement.setInt(16, linkConsumption.delayCompensation)
+          preparedStatement.setInt(17, linkConsumption.maintenanceCost)
+          preparedStatement.setInt(18, linkConsumption.depreciation)
+          preparedStatement.setInt(19, linkConsumption.revenue)
+          preparedStatement.setInt(20, linkConsumption.profit)
+          preparedStatement.setInt(21, linkConsumption.link.minorDelayCount)
+          preparedStatement.setInt(22, linkConsumption.link.majorDelayCount)
+          preparedStatement.setInt(23, linkConsumption.link.cancellationCount)
+          preparedStatement.setInt(24, linkConsumption.link.from.id)
+          preparedStatement.setInt(25, linkConsumption.link.to.id)
+          preparedStatement.setInt(26, linkConsumption.link.airline.id)
+          preparedStatement.setInt(27, linkConsumption.link.distance)
+          preparedStatement.setInt(28, linkConsumption.cycle)
           preparedStatement.executeUpdate()
         }
       preparedStatement.close()
@@ -529,25 +533,35 @@ object LinkSource {
       
       val linkConsumptions = new ListBuffer[LinkConsumptionDetails]()
       while (resultSet.next()) {
+          val link = Link(from = Airport.fromId(resultSet.getInt("from_airport")), 
+                          to = Airport.fromId(resultSet.getInt("to_airport")), 
+                          airline = Airline.fromId(resultSet.getInt("airline")), 
+                          price = LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))), 
+                          distance = resultSet.getInt("distance"),
+                          capacity = LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
+                          rawQuality = 0, 
+                          duration = 0, 
+                          frequency = 0, 
+                          flightType = FlightType.SHORT_HAUL_DOMESTIC, 
+                          id = resultSet.getInt("link")) //yike yike yike
+          link.addSoldSeats(LinkClassValues(Map(ECONOMY -> resultSet.getInt("sold_seats_economy"), BUSINESS -> resultSet.getInt("sold_seats_business"), FIRST -> resultSet.getInt("sold_seats_first"))))
+          link.minorDelayCount = resultSet.getInt("minor_delay_count")
+          link.majorDelayCount = resultSet.getInt("major_delay_count")
+          link.cancellationCount = resultSet.getInt("cancellation_count")
+                          
+                          
           linkConsumptions.append(LinkConsumptionDetails(
-          resultSet.getInt("link"),
-          LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
-          LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
-          LinkClassValues(Map(ECONOMY -> resultSet.getInt("sold_seats_economy"), BUSINESS -> resultSet.getInt("sold_seats_business"), FIRST -> resultSet.getInt("sold_seats_first"))),
-          resultSet.getInt("quality"),
-          resultSet.getInt("fuel_cost"),
-          resultSet.getInt("crew_cost"),
-          resultSet.getInt("airport_fees"),
-          resultSet.getInt("inflight_cost"),
-          resultSet.getInt("maintenance_cost"),
-          resultSet.getInt("depreciation"),
-          resultSet.getInt("revenue"),
-          resultSet.getInt("profit"),
-          resultSet.getInt("from_airport"),
-          resultSet.getInt("to_airport"),
-          resultSet.getInt("airline"),
-          resultSet.getInt("distance"),
-          resultSet.getInt("cycle")))
+          link = link,
+          fuelCost = resultSet.getInt("fuel_cost"),
+          crewCost = resultSet.getInt("crew_cost"),
+          airportFees = resultSet.getInt("airport_fees"),
+          inflightCost = resultSet.getInt("inflight_cost"),
+          delayCompensation = resultSet.getInt("delay_compensation"),
+          maintenanceCost = resultSet.getInt("maintenance_cost"),
+          depreciation = resultSet.getInt("depreciation"),
+          revenue = resultSet.getInt("revenue"),
+          profit = resultSet.getInt("profit"),
+          cycle = resultSet.getInt("cycle")))
       }
       
       resultSet.close()

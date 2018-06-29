@@ -571,6 +571,8 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkAirportFees").text("-")
 		    	$("#linkDepreciation").text("-")
 		    	$("#linkOtherCosts").text("-")
+		    	$("#linkDelays").text("-")
+		    	$("#linkCancellations").text("-")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
 	    		$("#linkHistoryPrice").text(toLinkClassValueString(linkConsumption.price, "$"))
@@ -591,7 +593,22 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkCrewCost").text("$" + commaSeparateNumber(linkConsumption.crewCost))
 		    	$("#linkAirportFees").text("$" + commaSeparateNumber(linkConsumption.airportFees))
 		    	$("#linkDepreciation").text("$" + commaSeparateNumber(linkConsumption.depreciation))
-		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost))
+		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost + linkConsumption.delayCompensation))
+		    	if (linkConsumption.minorDelayCount == 0 && linkConsumption.majorDelayCount == 0) {
+		    		$("#linkDelays").removeClass("warning")
+		    		$("#linkDelays").text("-")
+		    	} else {
+		    		$("#linkDelays").addClass("warning")
+		    		$("#linkDelays").text(linkConsumption.minorDelayCount + " minor " + linkConsumption.majorDelayCount + " major")
+		    	}
+	    		
+	    		if (linkConsumption.cancellationCount == 0) {
+		    		$("#linkCancellations").removeClass("warning")
+		    		$("#linkCancellations").text("-")
+		    	} else {
+		    		$("#linkCancellations").addClass("warning")
+		    		$("#linkCancellations").text(linkConsumption.cancellationCount)
+		    	}
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
 	    	plotLinkConsumption(linkConsumptions, $("#linkRidershipChart"), $("#linkRevenueChart"))

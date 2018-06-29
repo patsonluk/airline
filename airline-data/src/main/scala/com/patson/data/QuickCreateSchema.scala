@@ -7,6 +7,7 @@ import com.patson.model.airplane.Airplane
 import com.patson.data.airplane.ModelSource
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import java.sql.Connection
+import java.sql.PreparedStatement
 
 object QuickCreateSchema extends App {
   Class.forName(DB_DRIVER)
@@ -47,4 +48,6 @@ object QuickCreateSchema extends App {
     //Meta.createLoan(connection)
     Meta.createCountryMarketShare(connection)
   }
+  
+  
 }

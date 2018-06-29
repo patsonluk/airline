@@ -3,19 +3,23 @@ package com.patson.data
 import com.patson.model.Computation
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.Model
+import java.sql.PreparedStatement
+import java.sql.Connection
+import com.patson.data.Constants._
+import com.mchange.v2.c3p0.ComboPooledDataSource
 
 object Patchers {
   def patchHomeCountry() {
     AirlineSource.loadAllAirlines(true).foreach { airline =>
-      airline.bases.find( _.headquarter ).foreach { headquarter =>
+      airline.bases.find(_.headquarter).foreach { headquarter =>
         airline.setCountryCode(headquarter.countryCode)
         AirlineSource.saveAirlineInfo(airline)
       }
     }
   }
-  
-//  ALTER TABLE `airline`.`link` 
-//ADD COLUMN `flight_type` INT(2) NULL AFTER `frequency`;
+
+  //  ALTER TABLE `airline`.`link`
+  //ADD COLUMN `flight_type` INT(2) NULL AFTER `frequency`;
 
   def patchFlightType() {
     val updatingLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).map { link =>
@@ -24,11 +28,42 @@ object Patchers {
       link.copy(flightType = flightType)
       //LinkSource.updateLink(link)
     }
-    
+
     LinkSource.updateLinks(updatingLinks)
   }
-  
+
   def airplaneModelPatcher() {
-     ModelSource.updateModels(Model.models)
+    ModelSource.updateModels(Model.models)
   }
+
+  def patchDelaySchema() = {
+    Class.forName(DB_DRIVER)
+    val dataSource = new ComboPooledDataSource()
+    //    val properties = new Properties()
+    //    properties.put("user", DATABASE_USER);
+    //    properties.put("password", "admin");
+    //DriverManager.getConnection(DATABASE_CONNECTION, properties);
+    //mysql end
+
+    //dataSource.setProperties(properties)
+    dataSource.setUser(DATABASE_USER)
+    dataSource.setPassword(DATABASE_PASSWORD)
+    dataSource.setJdbcUrl(DATABASE_CONNECTION)
+    dataSource.setMaxPoolSize(100)
+    val connection = dataSource.getConnection()
+    
+    var statement: PreparedStatement = null
+
+    statement = connection.prepareStatement("ALTER TABLE `airline`.`links_income` ADD COLUMN `delay_compensation` BIGINT(20) NULL DEFAULT 0 AFTER `inflight_cost`;")
+    statement.execute()
+
+    statement = connection.prepareStatement("ALTER TABLE `airline`.`link_consumption` ADD COLUMN `delay_compensation` INT(11) NULL DEFAULT 0 AFTER `inflight_cost`, ADD COLUMN `minor_delay_count` INT(4) NULL DEFAULT 0 AFTER `profit`, ADD COLUMN `major_delay_count` INT(4) NULL DEFAULT 0 AFTER `minor_delay_count`, ADD COLUMN `cancellation_count` INT(4) NULL DEFAULT 0 AFTER `major_delay_count`;")
+    statement.execute()
+    statement.close()
+    
+    connection.close
+  }
+  //
 }
+
+ 

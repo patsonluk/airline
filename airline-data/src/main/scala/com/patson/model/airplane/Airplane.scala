@@ -9,4 +9,6 @@ case class Airplane(model : Model, owner : Airline, constructedCycle : Int, cond
 
 object Airplane {
   val MAX_CONDITION = 100
+  val BAD_CONDITION = 40
+  val CRITICAL_CONDITION = 20
 }

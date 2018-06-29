@@ -368,10 +368,14 @@ object Meta {
       "crew_cost INTEGER, " +
       "airport_fees INTEGER, " +
       "inflight_cost INTEGER, " +
+      "delay_compensation INTEGER, " +
       "maintenance_cost INTEGER, " +
       "depreciation INTEGER, " +
       "revenue INTEGER, " +
       "profit INTEGER, " +
+      "minor_delay_count INTEGER, " +
+      "major_delay_count INTEGER, " +
+      "cancellation_count INTEGER, " +
       "from_airport INTEGER, " +
       "to_airport INTEGER, " +
       "airline INTEGER, " +
@@ -611,6 +615,7 @@ object Meta {
       "fuel_cost LONG," +
       "crew_cost LONG," +
       "inflight_cost LONG," +
+      "delay_compensation LONG," +
       "maintenance_cost LONG," +
       "depreciation LONG," +
       "period INTEGER," +

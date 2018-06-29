@@ -173,13 +173,13 @@ package object controllers {
      def writes(linkConsumption : LinkConsumptionDetails): JsValue = {
        
       JsObject(List(
-        "linkId" -> JsNumber(linkConsumption.linkId),
-        "airlineId" -> JsNumber(linkConsumption.airlineId),
-        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.airlineId).fold("<unknown airline>") { _.name }),
-        "price" -> Json.toJson(linkConsumption.price),
-        "capacity" -> JsNumber(linkConsumption.capacity.total),
-        "soldSeats" -> JsNumber(linkConsumption.soldSeats.total),
-        "quality" -> JsNumber(linkConsumption.quality)))
+        "linkId" -> JsNumber(linkConsumption.link.id),
+        "airlineId" -> JsNumber(linkConsumption.link.airline.id),
+        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
+        "price" -> Json.toJson(linkConsumption.link.price),
+        "capacity" -> JsNumber(linkConsumption.link.capacity.total),
+        "soldSeats" -> JsNumber(linkConsumption.link.soldSeats.total),
+        "quality" -> JsNumber(linkConsumption.link.computedQuality)))
     }
   }
   
