@@ -528,7 +528,7 @@ function updateAllPanels(airlineId) {
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
 		} else {
-			printConsole("Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number. Hopefully get them done over this weekend!")
+			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
 		}
 		
 	}
