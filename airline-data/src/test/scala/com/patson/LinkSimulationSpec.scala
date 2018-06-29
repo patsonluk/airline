@@ -46,7 +46,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   import Model.Type._
   //LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO
   private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.3, SMALL -> 0.28, MEDIUM -> 0.25, LARGE -> 0.20, JUMBO -> 0.15)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.5, SMALL -> 0.45, MEDIUM -> 0.4, LARGE -> 0.4, JUMBO -> 0.4)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.45, MEDIUM -> 0.4, LARGE -> 0.4, JUMBO -> 0.4)
   
   "Compute profit".must {
     "More profitable with more frequency flight (max LF)".in {
