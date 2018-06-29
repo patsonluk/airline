@@ -45,8 +45,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   
   import Model.Type._
   //LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.3, SMALL -> 0.28, MEDIUM -> 0.25, LARGE -> 0.20, JUMBO -> 0.15)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.45, MEDIUM -> 0.4, LARGE -> 0.4, JUMBO -> 0.4)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.28, SMALL -> 0.2, MEDIUM -> 0.1, LARGE -> 0.05, JUMBO -> 0.05)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, JUMBO -> 0.2)
   
   "Compute profit".must {
     "More profitable with more frequency flight (max LF)".in {
@@ -120,22 +120,23 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       profits += consumptionResult.profit
       profitMargins += getProfitMargin(consumptionResult)
       
-      airplane = mediumAirplane
-      consumptionResult = simulateStandard(8000, airplane, LONG_HAUL_INTERCONTINENTAL, 0.7, 5)
-      consumptionResult.profit.should(be > 0)
-      verfiyProfitMargin(consumptionResult, airplane.model, false)
-      profits += consumptionResult.profit
-      profitMargins += getProfitMargin(consumptionResult)
+      //medium and large airplanes need full load to be profitable
+//      airplane = mediumAirplane
+//      consumptionResult = simulateStandard(8000, airplane, LONG_HAUL_INTERCONTINENTAL, 0.7, 5)
+//      consumptionResult.profit.should(be > 0)
+//      verfiyProfitMargin(consumptionResult, airplane.model, false)
+//      profits += consumptionResult.profit
+//      profitMargins += getProfitMargin(consumptionResult)
+//      
+//      airplane = largeAirplane
+//      consumptionResult = simulateStandard(13000, airplane, ULTRA_LONG_HAUL_INTERCONTINENTAL, 0.7, 6)
+//      consumptionResult.profit.should(be > 0)
+//      verfiyProfitMargin(consumptionResult, airplane.model, false)
+//      profits += consumptionResult.profit
+//      profitMargins += getProfitMargin(consumptionResult)
       
-      airplane = largeAirplane
-      consumptionResult = simulateStandard(13000, airplane, ULTRA_LONG_HAUL_INTERCONTINENTAL, 0.7, 6)
-      consumptionResult.profit.should(be > 0)
-      verfiyProfitMargin(consumptionResult, airplane.model, false)
-      profits += consumptionResult.profit
-      profitMargins += getProfitMargin(consumptionResult)
-      
-      //larger plane should make more profit
-      verifyInAscendingOrder(profits.toList)
+      //larger plane should make more profit (not necessary now, i want to make large plane hard
+//      verifyInAscendingOrder(profits.toList)
       //but larger plan should make less profit Margin
       verifyInDescendingOrder(profitMargins.toList)
     }

@@ -222,7 +222,7 @@ object PassengerSimulation {
 //    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute) 
     
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individula ones for now
-      val LINK_COST_TOLERANCE_FACTOR = 1.4;
+      val LINK_COST_TOLERANCE_FACTOR = 1.3;
       val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
           val link = linkConsideration.link
           val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
