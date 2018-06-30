@@ -36,7 +36,8 @@ object PassengerSimulation {
     //val airportGroups = getAirportGroups(airportData)
     //println("Using " + airportData.size + " airport data");
     
-    val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
+    //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
+    val demand = DemandGenerator.computeDemand()
     println("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
         holder + demandValue
@@ -221,14 +222,21 @@ object PassengerSimulation {
 
 //    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute) 
     
-//    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individula ones for now
+//    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
+    
       val LINK_COST_TOLERANCE_FACTOR = 1.3;
       val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
           val link = linkConsideration.link
+          
+          
           val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
           
-//          println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link)
+          if (linkConsideration.linkClass == BUSINESS) {
+            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 
+          }
           linkConsideration.cost > linkAffordableCost
+          
+          
         }
       }
       return unaffordableLink.isEmpty

@@ -153,14 +153,27 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       result.isDefinedAt(economyPassengerGroup).shouldBe(true)
       toAirports.foreach { toAirport =>
         result(economyPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+        
+        //should be the right class
+        result(economyPassengerGroup)(toAirport).links.foreach { linkConsideration =>
+          assert(linkConsideration.linkClass == ECONOMY)          
+        }
       }
       result.isDefinedAt(businessPassengerGroup).shouldBe(true)
       toAirports.foreach { toAirport =>
         result(businessPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+        //should be the right class
+        result(businessPassengerGroup)(toAirport).links.foreach { linkConsideration =>
+          assert(linkConsideration.linkClass == BUSINESS)          
+        }
       }
       result.isDefinedAt(firstPassengerGroup).shouldBe(true)
       toAirports.foreach { toAirport =>
         result(firstPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
+        //should be the right class
+        result(firstPassengerGroup)(toAirport).links.foreach { linkConsideration =>
+          assert(linkConsideration.linkClass == FIRST)          
+        }
       }
     }
     "find routes if there're valid links (from and to inverse)".in {
@@ -599,6 +612,13 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, linkClass)) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
+                if (linkClass == BUSINESS) {
+                  println("ACCEPTED " + linkClass)
+                }
+              } else {
+                if (linkClass == BUSINESS) {
+                  println("REJECTED" + linkClass)
+                }
               }
               totalRoutes = totalRoutes + 1
             }
