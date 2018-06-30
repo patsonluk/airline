@@ -10,6 +10,7 @@ object Bank {
   val LOAN_TERMS = Map(52 -> 0.25 , 2 * 52 -> 0.28, 3 *52 -> 0.32, 5 * 52 -> 0.35)
   val MAX_LOANS = 10
   val MIN_LOAN_AMOUNT = 10000
+  val MAX_LOAN_AMOUNT = 500000000 //500 million as max
   val LOAN_REAPPLY_MIN_INTERVAL = 13 //only every quarter
   def getMaxLoan(airlineId : Int) : LoanReply = {
     val existingLoans = BankSource.loadLoansByAirline(airlineId)
@@ -48,7 +49,12 @@ object Bank {
     
     val liability = existingLoans.map(_.remainingAmount).sum
     
-    val availableLoanAmount = totalCredit - liability 
+    var availableLoanAmount = totalCredit - liability
+    
+    if (availableLoanAmount >= MAX_LOAN_AMOUNT) {
+      availableLoanAmount = MAX_LOAN_AMOUNT
+    }
+    
     if (availableLoanAmount >= MIN_LOAN_AMOUNT) {
       return LoanReply(availableLoanAmount, None)
     } else {
