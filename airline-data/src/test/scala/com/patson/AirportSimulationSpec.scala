@@ -69,6 +69,25 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        link.soldSeats = LinkClassValues.getInstance(100000, 0, 0) //hit ceiling
        assert(AirportSimulation.getTargetLoyalty(List(sampleConsumption.copy(link = link)), 1000000) == 100)
     }
+    "get target loyalty with delay/cancellation penalty".in {
+       val link = sampleLink.copy()
+       link.setQuality(100)
+       
+       //no penalty
+       link.soldSeats = LinkClassValues.getInstance(100000, 0, 0) //hit ceiling
+       assert(AirportSimulation.getTargetLoyalty(List(sampleConsumption.copy(link = link)), 1000000) == 100)
+       
+       link.minorDelayCount = 1
+       assert(AirportSimulation.getTargetLoyalty(List(sampleConsumption.copy(link = link)), 1000000) == 100 - 1 * AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
+       assert(AirportSimulation.getTargetLoyalty(List(sampleConsumption.copy(link = link), sampleConsumption.copy(link = link)), 1000000) == 100 - 2 * AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
+       
+       link.minorDelayCount = 3
+       assert(AirportSimulation.getTargetLoyalty(List(sampleConsumption.copy(link = link), sampleConsumption.copy(link = link)), 1000000) == 100 - 6 * AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
+       
+       link.majorDelayCount = 2
+       link.cancellationCount = 3
+       assert(AirportSimulation.getTargetLoyalty(List(sampleConsumption.copy(link = link)), 1000000) == 100 - 3 * AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY - 2 * AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY - 3 * AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
+    }
   }
   "getNewLoyalty".must {
     "increment loyalty correctly".in {

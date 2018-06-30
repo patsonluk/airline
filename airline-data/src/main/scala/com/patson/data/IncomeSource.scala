@@ -29,7 +29,7 @@ object IncomeSource {
      //open the hsqldb
     val connection = Meta.getConnection()
     val incomePreparedStatement = connection.prepareStatement("REPLACE INTO " + INCOME_TABLE + "(airline, profit, revenue, expense, period, cycle) VALUES(?,?,?,?,?,?)")
-    val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, maintenance_cost, depreciation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, delay_compensation, maintenance_cost, depreciation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     val transactionsPreparedStatement = connection.prepareStatement("REPLACE INTO " + TRANSACTIONS_INCOME_TABLE + "(airline, profit, revenue, expense, capital_gain, create_link, period, cycle) VALUES(?,?,?,?,?,?,?,?)")
     val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, maintenance_investment, advertisement, depreciation,  period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
     
@@ -54,10 +54,11 @@ object IncomeSource {
           linksPreparedStatement.setLong(7, income.links.fuelCost)
           linksPreparedStatement.setLong(8, income.links.crewCost)
           linksPreparedStatement.setLong(9, income.links.inflightCost)
-          linksPreparedStatement.setLong(10, income.links.maintenanceCost)
-          linksPreparedStatement.setLong(11, income.links.depreciation)
-          linksPreparedStatement.setInt(12, period.id)
-          linksPreparedStatement.setInt(13, income.cycle)
+          linksPreparedStatement.setLong(10, income.links.delayCompensation)
+          linksPreparedStatement.setLong(11, income.links.maintenanceCost)
+          linksPreparedStatement.setLong(12, income.links.depreciation)
+          linksPreparedStatement.setInt(13, period.id)
+          linksPreparedStatement.setInt(14, income.cycle)
           linksPreparedStatement.addBatch()
           
           

@@ -161,12 +161,9 @@ object LinkSimulation {
     }
     
     // delays incur extra cost
-    var delayCompensation = 0
-    val soldSeatsPerFlight = link.soldSeats.total / link.frequency
-    delayCompensation = delayCompensation + link.majorDelayCount * 200 * soldSeatsPerFlight //200 per passenger 
-    delayCompensation = delayCompensation + link.minorDelayCount * 50 * soldSeatsPerFlight //50 per passenger
+    var delayCompensation = Computation.computeDelayCompensation(link)
     
-    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - depreciation
+    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - delayCompensation - depreciation
 
     //val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, link.cancellationCount, linklink.from.id, link.to.id, link.airline.id, link.distance, cycle)
     val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, cycle)

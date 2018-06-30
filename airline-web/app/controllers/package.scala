@@ -231,6 +231,7 @@ package object controllers {
         "linksFuelCost" -> JsNumber(airlineIncome.links.fuelCost),
         "linksCrewCost" -> JsNumber(airlineIncome.links.crewCost),
         "linksInflightCost" -> JsNumber(airlineIncome.links.inflightCost),
+        "linksDelayCompensation" -> JsNumber(airlineIncome.links.delayCompensation),
         "linksMaintenanceCost" -> JsNumber(airlineIncome.links.maintenanceCost),
         "linksDepreciation" -> JsNumber(airlineIncome.links.depreciation),
         "transactionsProfit" -> JsNumber(airlineIncome.transactions.profit),

@@ -341,6 +341,56 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))
       //(firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType)) OK to make good profit if it fills 
     }
+    
+    "reduce profit on delays".in {
+      val distance = 8000
+      val airplane = largeAirplane
+      val duration = Computation.calculateDuration(airplane.model, distance)
+      val price = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, ECONOMY)
+      
+      val frequency = Computation.calculateMaxFrequency(airplane.model, distance)
+      val capacity = frequency * airplane.model.capacity
+      
+      var link = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> price)), distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, FlightType.LONG_HAUL_INTERCONTINENTAL)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
+      link.setAssignedAirplanes(List(airplane))
+      val consumptionResultNoDelays = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
+      link.setAssignedAirplanes(List(airplane))
+      link.minorDelayCount = 1
+      val consumptionResultSingleDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
+      link.setAssignedAirplanes(List(airplane))
+      link.minorDelayCount = frequency 
+      val consumptionResultAllMinorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
+      link.setAssignedAirplanes(List(airplane))
+      link.majorDelayCount = frequency 
+      val consumptionResultAllMajorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      //link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity))) no sold seats
+      link.setAssignedAirplanes(List(airplane))
+      link.cancellationCount = frequency 
+      val consumptionResultAllCancelled = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      assert(consumptionResultNoDelays.profit > consumptionResultSingleDelay.profit)
+      assert(consumptionResultSingleDelay.profit > consumptionResultAllMinorDelay.profit)
+      assert(consumptionResultAllMinorDelay.profit > consumptionResultAllMajorDelay.profit)
+      assert(consumptionResultAllMajorDelay.profit > consumptionResultAllCancelled.profit)
+      
+      assert(consumptionResultNoDelays.profit > 0)
+      assert(consumptionResultSingleDelay.profit > 0)
+//      assert(consumptionResultAllMinorDelay.profit < 0) all minor delays..hmm not sure
+      assert(consumptionResultAllMajorDelay.profit < 0)
+      assert(consumptionResultAllCancelled.profit < 0)
+    }
   }
   
   def getProfitMargin(consumptionResult : LinkConsumptionDetails) = consumptionResult.profit.toDouble / consumptionResult.revenue.toDouble

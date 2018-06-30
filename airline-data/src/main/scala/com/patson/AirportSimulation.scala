@@ -30,9 +30,12 @@ object AirportSimulation {
   val LOYALTY_AUTO_INCREMENT_WITH_BASE = 0.02
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE = 15 //how much loyalty will increment to just because of being a HQ
+  val LOYALTY_DECREMENT_BY_MINOR_DELAY = 0.02
+  val LOYALTY_DECREMENT_BY_MAJOR_DELAY = 0.05
+  val LOYALTY_DECREMENT_BY_CANCELLATION = 0.2
   
   private[patson] val LOYALTY_INCREMENT_BY_FLIGHTS = 1.0
-  private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 0.5
+  private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 1.0
   
   
   
@@ -222,7 +225,15 @@ object AirportSimulation {
       }
       
       val targetLoyaltyBypassengerVolume = estLoyalty
-      Math.min(targetLoyaltyByQuality, targetLoyaltyBypassengerVolume)
+      var targetLoyalty = Math.min(targetLoyaltyByQuality, targetLoyaltyBypassengerVolume).doubleValue()
+      
+      //add penalty for delays and cancellation
+      val totalMinorDelayCounts = consumptionDetails.map { _.link.minorDelayCount }.sum
+      val totalMajorDelayCounts = consumptionDetails.map { _.link.majorDelayCount }.sum
+      val totalCancellationCounts = consumptionDetails.map { _.link.cancellationCount }.sum
+      
+      targetLoyalty = targetLoyalty - totalMinorDelayCounts * LOYALTY_DECREMENT_BY_MINOR_DELAY - totalMajorDelayCounts * LOYALTY_DECREMENT_BY_MAJOR_DELAY - totalCancellationCounts * LOYALTY_DECREMENT_BY_CANCELLATION
+      targetLoyalty
     }
   }
   

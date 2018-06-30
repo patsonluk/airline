@@ -42,7 +42,7 @@ object AirlineSimulation {
             val linksMaintenanceCost = linkConsumptions.foldLeft(0L)(_ + _.maintenanceCost)
             linksDepreciation = linkConsumptions.foldLeft(0L)(_ + _.depreciation)
             val linksRevenue = linkConsumptions.foldLeft(0L)(_ + _.revenue)
-            val linksExpense = linksAirportFee + linksCrewCost + linksFuelCost + linksInflightCost + linksMaintenanceCost + linksDepreciation
+            val linksExpense = linksAirportFee + linksCrewCost + linksFuelCost + linksInflightCost + linksDelayCompensation + linksMaintenanceCost + linksDepreciation
             
             totalCashRevenue += linksRevenue
             totalCashExpense += linksExpense - linksDepreciation //airplane depreciation is already deducted on the plane, not a cash expense

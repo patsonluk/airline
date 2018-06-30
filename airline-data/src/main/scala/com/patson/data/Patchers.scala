@@ -57,7 +57,7 @@ object Patchers {
     statement = connection.prepareStatement("ALTER TABLE `airline`.`links_income` ADD COLUMN `delay_compensation` BIGINT(20) NULL DEFAULT 0 AFTER `inflight_cost`;")
     statement.execute()
 
-    statement = connection.prepareStatement("ALTER TABLE `airline`.`link_consumption` ADD COLUMN `delay_compensation` INT(11) NULL DEFAULT 0 AFTER `inflight_cost`, ADD COLUMN `minor_delay_count` INT(4) NULL DEFAULT 0 AFTER `profit`, ADD COLUMN `major_delay_count` INT(4) NULL DEFAULT 0 AFTER `minor_delay_count`, ADD COLUMN `cancellation_count` INT(4) NULL DEFAULT 0 AFTER `major_delay_count`;")
+    statement = connection.prepareStatement("ALTER TABLE `airline`.`link_consumption` ADD COLUMN `delay_compensation` INT(11) NULL DEFAULT 0 AFTER `inflight_cost`, ADD COLUMN `minor_delay_count` INT(4) NULL DEFAULT 0 AFTER `profit`, ADD COLUMN `major_delay_count` INT(4) NULL DEFAULT 0 AFTER `minor_delay_count`, ADD COLUMN `cancellation_count` INT(4) NULL DEFAULT 0 AFTER `major_delay_count`, ADD COLUMN `frequency` INT(4) NULL AFTER `distance`;")
     statement.execute()
     statement.close()
     
