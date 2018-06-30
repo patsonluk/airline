@@ -38,19 +38,27 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   /**
-   * Find seats at or below the requestedLinkClass
+   * Find seats at or below the requestedLinkClass (can only downgrade 1 level)
    * 
    * Returns the tuple of the matching class and seats available for that class
    */
   def availableSeatsAtOrBelowClass(targetLinkClass : LinkClass) : Option[(LinkClass, Int)] = {
-    for (level <- targetLinkClass.level to ECONOMY.level by -1) {
-      val linkClass = LinkClass.fromLevel(level)
-      val availableSeatsByClass = availableSeats(linkClass)
-      if (availableSeatsByClass > 0) {
-        return Some(linkClass, availableSeatsByClass)
+    if (targetLinkClass == ECONOMY) {
+      if (availableSeats(ECONOMY) > 0) {
+        return Some(ECONOMY, availableSeats(ECONOMY))
+      }
+    } else {
+      if (availableSeats(targetLinkClass) > 0) {
+        return Some(targetLinkClass, availableSeats(targetLinkClass))
+      } else  {
+        val lowerClass = LinkClass.fromLevel(targetLinkClass.level - 1)
+        if (availableSeats(lowerClass) > 0) {
+          return Some(lowerClass, availableSeats(lowerClass))
+        } 
       }
     }
-    None
+    
+    return None
   }
   
   def computedQuality : Int= {
