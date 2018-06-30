@@ -88,7 +88,8 @@ function selectAirline(airlineId) {
 	updateAllPanels(airlineId)
 }
 
-function buildBase(isHeadquarter, scale = 1) {
+function buildBase(isHeadquarter, scale) {
+	scale = scale || 1
 	var url = "airlines/" + activeAirline.id + "/bases/" + activeAirportId 
 	var baseData = { 
 			"airportId" : parseInt(activeAirportId),
@@ -1531,7 +1532,8 @@ function updateLinksTable(sortProperty, sortOrder) {
 	});
 }
 
-function selectLinkFromMap(linkId, refocus=false) {
+function selectLinkFromMap(linkId, refocus) {
+	refocus = refocus || false
 	unhighlightLink(selectedLink)
 	selectedLink = linkId
 	highlightLink(linkId, refocus)

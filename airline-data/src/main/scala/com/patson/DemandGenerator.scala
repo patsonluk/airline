@@ -16,6 +16,8 @@ import com.patson.model._
 import com.patson.model.PassengerType
 import scala.util.Random
 import com.patson.data.CountrySource
+import java.util.ArrayList
+import java.util.Collections
 
 
 object DemandGenerator {
@@ -43,47 +45,43 @@ object DemandGenerator {
 //    
 //    actorSystem.shutdown()
 //  }
+  import scala.collection.JavaConverters._
   
   def computeDemand() = {
     println("Loading airports")
     //val allAirports = AirportSource.loadAllAirports(true)
-    val airports = AirportSource.loadAllAirports(true).filter { _.iata != ""  }
+    val airports = AirportSource.loadAllAirports(true).filter { airport => airport.iata != "" && airport.power > 0 }
     println("Loaded " + airports.size + " airports")
     
-    val airportSource = Source(airports)
+    val allDemands = new ArrayList[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
 	  
-	  val computeFlow: Flow[Airport, (Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])] = Flow[Airport].filter { _.power > 0 }.mapAsync { 
-	    fromAirport : Airport => {
-	      Future {
-	        val demandList = ListBuffer[(Airport, (PassengerType.Value, LinkClassValues))]() 
-	        val countryRelationships = CountrySource.getCountryMutualRelationShips()
-	        airports.foreach { toAirport => 
-	          val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-	          val businessDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
-	          val touristDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
-	          
-//	          if (businessDemand.total > 0 && touristDemand.total > 0) {
-//	            println(businessDemand + " : " + touristDemand)
-//	          }
-//	          
-	          if (businessDemand.total > 0) {
-	            demandList.append((toAirport, (PassengerType.BUSINESS, businessDemand)))
-	          } 
-	          if (touristDemand.total > 0) {
-	            demandList.append((toAirport, (PassengerType.TOURIST, touristDemand)))
-	          }
-	        } 
-	        (fromAirport, demandList.toList)
-	      }
+	  val countryRelationships = CountrySource.getCountryMutualRelationShips()
+	  airports.foreach {  fromAirport =>
+	    val demandList = Collections.synchronizedList(new ArrayList[(Airport, (PassengerType.Value, LinkClassValues))]())
+	    airports.par.foreach { toAirport =>
+//	      if (fromAirport != toAirport) {
+          val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
+          val businessDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
+          val touristDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
+    	          
+          if (businessDemand.total > 0) {
+            demandList.add((toAirport, (PassengerType.BUSINESS, businessDemand)))
+          } 
+          if (touristDemand.total > 0) {
+            demandList.add((toAirport, (PassengerType.TOURIST, touristDemand)))
+          }
+//	      }
 	    }
-	  }
+	    allDemands.add((fromAirport, demandList.asScala.toList))
+    }
 	  
 	  val baseDemandChunkSize = 20
 	  
-	  val toPassengerGroupFlow: Flow[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))]), List[(PassengerGroup, Airport, Int)]] = Flow[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])].map {
+	  
+	  val allDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
+	  allDemands.asScala.foreach {
 	    case (fromAirport, toAirportsWithDemand) =>
-	      val passangerGroupDemand = ListBuffer[(PassengerGroup, Airport, Int)]() 
-        //for each city generate different preferences
+	      //for each city generate different preferences
         val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
 
         val demandListFromThisAiport = toAirportsWithDemand.foreach {
@@ -93,43 +91,19 @@ object DemandGenerator {
                 var remainingDemand = demand(linkClass)
                 var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
                 while (remainingDemand > demandChunkSize) {
-                  passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
+                  allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
                   remainingDemand -= demandChunkSize
                   demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
                 }
-                passangerGroupDemand.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
+                allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
               }
             }
         }
-	      passangerGroupDemand.toList
+	      
 	  }
 	  
 	  
-    //val resultSink = Sink.foreach { demandInfo : (Airport, Map[Airport, Int]) => println() }
-    var counter = 0
-    val progressChunk = airports.length / 100
-    
-//    val resultSink = Sink.fold(List[(PassengerGroup, Airport, Int)]()) {
-//      (holder, demandInfo : List[(PassengerGroup, Airport, Int)]) =>
-//        val resultFoldStart = System.nanoTime()
-//        val newHolder = holder ++ demandInfo 
-//        val resultFoldEnd = System.nanoTime()
-//        println("Result fold took " + (resultFoldEnd - resultFoldStart))
-//        newHolder
-//    }
-    val resultSink = Sink.fold(ListBuffer[(PassengerGroup, Airport, Int)]()) {
-      (holder, demandInfo : List[(PassengerGroup, Airport, Int)]) =>
-        counter += 1
-        if (progressChunk == 0 || counter % progressChunk == 0) {
-          print(".")
-        }
-        holder.appendAll(demandInfo) 
-        holder
-    }
-    
-    val completeFlow = airportSource.via(computeFlow).via(toPassengerGroupFlow).to(resultSink)
-    val materializedFlow = completeFlow.run()
-    materializedFlow.get(resultSink).map(_.toList)
+    allDemandChunks.toList
   }
   
   def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {

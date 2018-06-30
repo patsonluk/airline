@@ -30,7 +30,8 @@ $( document ).ready(function() {
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
-function showFloatMessage(message, timeout = 3000) {
+function showFloatMessage(message, timeout) {
+	timeout = timeout || 3000
 	$("#floatMessageBox").text(message)
 	var centerX = $("#floatMessageBox").parent().width() / 2 - $("#floatMessageBox").width() / 2 
 	$("#floatMessageBox").css({ top:"-=20px", left: centerX, opacity:100})
@@ -527,7 +528,7 @@ function updateAllPanels(airlineId) {
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
 		} else {
-			printConsole("Special Announcement: Airport slots are harder to acquire now. To compensate that, airport HQ/base upgrade and upkeep cost have been reduced (upgrade base to get more slots). Make sure your 'Service Investment' in Office View is set in order to improve your company wide Service Quality!")
+			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
 		}
 		
 	}
@@ -579,7 +580,10 @@ function updateTime(cycle, fraction) {
 }
 
 
-function printConsole(message, messageLevel = 1, activateConsole = false, persistMessage = false) {
+function printConsole(message, messageLevel, activateConsole, persistMessage) {
+	messageLevel = messageLevel || 1
+	activateConsole = activateConsole || false
+	persistMessage = persistMessage || false
 	var messageClass
 	if (messageLevel == 1) {
 		messageClass = 'actionMessage'

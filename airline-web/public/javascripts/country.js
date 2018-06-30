@@ -27,9 +27,8 @@ function loadAllCountries() {
 	    success: function(countries) {
 	    	$.each(countries, function(index, country) {
 	    		loadedCountriesByCode[country.countryCode] = country
+	    		loadedCountries.push(country)
 	    	});
-	    	
-	    	loadedCountries = Object.values(loadedCountriesByCode);
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

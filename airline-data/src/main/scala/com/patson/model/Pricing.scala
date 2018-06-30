@@ -12,7 +12,7 @@ object Pricing {
   //10000 km = 350 + 400 = 750 (8000 * 0.05)
   val modifierBrackets = List((200, 0.25),(800, 0.125),(1000, 0.1),(Int.MaxValue, 0.05))
   val INTERNATIONAL_PRICE_MULTIPLIER = 1.25
-  val INTERCONTINENTAL_PRICE_MULTIPLIER = 1.5
+  val INTERCONTINENTAL_PRICE_MULTIPLIER = 1.3
   
   def computeStandardPrice(link : Link, linkClass : LinkClass) : Int = {
     computeStandardPrice(link.distance, link.flightType, linkClass)
@@ -41,5 +41,18 @@ object Pricing {
       (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), linkClass))
     }
     LinkClassValues(priceByLinkClass.toMap)
+  }
+  
+  /**
+   * Get a normalized priced link based on the referencing Link class, and multiply the price with a multiplier 
+   */
+  def getNormalizedPrice(referencePrice : Int, referenceClass : LinkClass, multiplier : Double) = {
+    val unitPrice = referencePrice / referenceClass.priceMultiplier
+    val normalizedPrice = LinkClassValues.getInstance((unitPrice * ECONOMY.priceMultiplier * multiplier).toInt,
+        (unitPrice * BUSINESS.priceMultiplier * multiplier).toInt,
+        (unitPrice * FIRST.priceMultiplier * multiplier).toInt)
+        
+    normalizedPrice
+        
   }
 }

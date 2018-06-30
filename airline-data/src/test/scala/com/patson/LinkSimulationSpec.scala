@@ -45,8 +45,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   
   import Model.Type._
   //LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.3, SMALL -> 0.28, MEDIUM -> 0.25, LARGE -> 0.20, JUMBO -> 0.15)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.45, MEDIUM -> 0.4, LARGE -> 0.4, JUMBO -> 0.4)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.28, SMALL -> 0.2, MEDIUM -> 0.1, LARGE -> 0.05, JUMBO -> 0.05)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, JUMBO -> 0.2)
   
   "Compute profit".must {
     "More profitable with more frequency flight (max LF)".in {
@@ -120,22 +120,23 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       profits += consumptionResult.profit
       profitMargins += getProfitMargin(consumptionResult)
       
-      airplane = mediumAirplane
-      consumptionResult = simulateStandard(8000, airplane, LONG_HAUL_INTERCONTINENTAL, 0.7, 5)
-      consumptionResult.profit.should(be > 0)
-      verfiyProfitMargin(consumptionResult, airplane.model, false)
-      profits += consumptionResult.profit
-      profitMargins += getProfitMargin(consumptionResult)
+      //medium and large airplanes need full load to be profitable
+//      airplane = mediumAirplane
+//      consumptionResult = simulateStandard(8000, airplane, LONG_HAUL_INTERCONTINENTAL, 0.7, 5)
+//      consumptionResult.profit.should(be > 0)
+//      verfiyProfitMargin(consumptionResult, airplane.model, false)
+//      profits += consumptionResult.profit
+//      profitMargins += getProfitMargin(consumptionResult)
+//      
+//      airplane = largeAirplane
+//      consumptionResult = simulateStandard(13000, airplane, ULTRA_LONG_HAUL_INTERCONTINENTAL, 0.7, 6)
+//      consumptionResult.profit.should(be > 0)
+//      verfiyProfitMargin(consumptionResult, airplane.model, false)
+//      profits += consumptionResult.profit
+//      profitMargins += getProfitMargin(consumptionResult)
       
-      airplane = largeAirplane
-      consumptionResult = simulateStandard(13000, airplane, ULTRA_LONG_HAUL_INTERCONTINENTAL, 0.7, 6)
-      consumptionResult.profit.should(be > 0)
-      verfiyProfitMargin(consumptionResult, airplane.model, false)
-      profits += consumptionResult.profit
-      profitMargins += getProfitMargin(consumptionResult)
-      
-      //larger plane should make more profit
-      //verifyInAscendingOrder(profits.toList) //not really. kinda want jumbo jet to be less profitable here. As one can jet up price and get more profit
+      //larger plane should make more profit (not necessary now, i want to make large plane hard
+//      verifyInAscendingOrder(profits.toList)
       //but larger plan should make less profit Margin
       verifyInDescendingOrder(profitMargins.toList)
     }
@@ -163,7 +164,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       
       airplane = largeAirplane
       consumptionResult = simulateStandard(10000, airplane, ULTRA_LONG_HAUL_INTERCONTINENTAL, 1, 6)
-      consumptionResult.profit.should(be > 0)
+      //consumptionResult.profit.should(be > 0) //need higher price and loyalty to be profitable
 //      verfiyReturnRate(consumptionResult, airplane.model, false)
     }
     
@@ -308,13 +309,13 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val allBusinessCapacity : LinkClassValues = LinkClassValues.getInstance(0, maxBusinessCapacity, 0)
       val allFirstCapacity : LinkClassValues = LinkClassValues.getInstance(0, 0, maxFirstCapacity)
       
-      val economyPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, ECONOMY)
-      val businessPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, BUSINESS)
-      val firstPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, FIRST)
+      val economyPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, ECONOMY) * 1.2
+      val businessPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, BUSINESS) * 1.2
+      val firstPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, FIRST) * 1.2
     
-      val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
-      val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice)), distance = distance, allBusinessCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
-      val firstLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(FIRST -> firstPrice)), distance = distance, allFirstCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
+      val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice.toInt)), distance = distance, allEconomyCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
+      val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice.toInt)), distance = distance, allBusinessCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
+      val firstLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(FIRST -> firstPrice.toInt)), distance = distance, allFirstCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
     
       economylink.addSoldSeats(allEconomyCapacity) //all consumed
       businessLink.addSoldSeats(allBusinessCapacity) //all consumed
