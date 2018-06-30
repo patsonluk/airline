@@ -571,7 +571,10 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkCrewCost").text("-")
 		    	$("#linkAirportFees").text("-")
 		    	$("#linkDepreciation").text("-")
+		    	$("#linkCompensation").text("-")
 		    	$("#linkOtherCosts").text("-")
+		    	$("#linkDelays").text("-")
+		    	$("#linkCancellations").text("-")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
 	    		$("#linkHistoryPrice").text(toLinkClassValueString(linkConsumption.price, "$"))
@@ -592,7 +595,23 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkCrewCost").text("$" + commaSeparateNumber(linkConsumption.crewCost))
 		    	$("#linkAirportFees").text("$" + commaSeparateNumber(linkConsumption.airportFees))
 		    	$("#linkDepreciation").text("$" + commaSeparateNumber(linkConsumption.depreciation))
+		    	$("#linkCompensation").text("$" + commaSeparateNumber(linkConsumption.delayCompensation))
 		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost))
+		    	if (linkConsumption.minorDelayCount == 0 && linkConsumption.majorDelayCount == 0) {
+		    		$("#linkDelays").removeClass("warning")
+		    		$("#linkDelays").text("-")
+		    	} else {
+		    		$("#linkDelays").addClass("warning")
+		    		$("#linkDelays").text(linkConsumption.minorDelayCount + " minor " + linkConsumption.majorDelayCount + " major")
+		    	}
+	    		
+	    		if (linkConsumption.cancellationCount == 0) {
+		    		$("#linkCancellations").removeClass("warning")
+		    		$("#linkCancellations").text("-")
+		    	} else {
+		    		$("#linkCancellations").addClass("warning")
+		    		$("#linkCancellations").text(linkConsumption.cancellationCount)
+		    	}
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
 	    	plotLinkConsumption(linkConsumptions, $("#linkRidershipChart"), $("#linkRevenueChart"))
@@ -1124,10 +1143,12 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 		$('#planLinkAirplaneSelect').empty()
 		
 		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('isAssigned', false))
+		$('#planLinkAirplaneSelect').data('badConditionThreshold', thisModelPlanLinkInfo.badConditionThreshold)
 		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplane) {
 //			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
 //			option.appendTo($("#planLinkAirplaneSelect"))
-			var span =  $('<span class="button airplaneButton" onclick="toggleAssignedAirplane(this)"><img src="' + getAssignedAirplaneIcon(airplane) +  '" title="' + airplane.airplaneId + '"></span>')
+			
+			var span =  $('<span class="button airplaneButton" onclick="toggleAssignedAirplane(this)"><img src="' + getAssignedAirplaneIcon(airplane) +  '" title="#' + airplane.airplaneId + ' condition ' + airplane.condition + '%"></span>')
 			span.data('airplane', airplane)
 			
 			$('#planLinkAirplaneSelect').append(span)
@@ -1187,11 +1208,21 @@ function updateCapacity(configuration, frequency) {
 }
 
 function getAssignedAirplaneIcon(airplane) {
+	var badConditionThreshold = $('#planLinkAirplaneSelect').data('badConditionThreshold')
 	if (airplane.isAssigned) {
-		return "assets/images/icons/airplane.png"
+		if (airplane.condition < badConditionThreshold) {
+			return "assets/images/icons/airplane-exclamation.png"
+		} else {
+			return "assets/images/icons/airplane.png"
+		}
 	} else {
-		return "assets/images/icons/airplane-empty.png"
+		if (airplane.condition < badConditionThreshold) {
+			return "assets/images/icons/airplane-empty-exclamation.png"
+		} else { 
+			return "assets/images/icons/airplane-empty.png"
+		}
 	}
+	
 }
 
 
@@ -1516,7 +1547,7 @@ function updateLinksTable(sortProperty, sortOrder) {
 }
 
 function selectLinkFromMap(linkId, refocus) {
-	refocus = refocus || false
+	refocus = refocus || false 
 	unhighlightLink(selectedLink)
 	selectedLink = linkId
 	highlightLink(linkId, refocus)

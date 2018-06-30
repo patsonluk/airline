@@ -343,6 +343,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	}))
 	
 	var emptySeatsData = []
+	var cancelledSeatsData = []
 	var soldSeatsData = {
 			economy : [],
 			business : [],
@@ -363,7 +364,9 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 		$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
 			var capacity = linkConsumption.capacity.economy + linkConsumption.capacity.business + linkConsumption.capacity.first
 			var soldSeats = linkConsumption.soldSeats.economy + linkConsumption.soldSeats.business + linkConsumption.soldSeats.first
-			emptySeatsData.push({ value : capacity - soldSeats  })
+			var cancelledSeats = linkConsumption.cancelledSeats.economy + linkConsumption.cancelledSeats.business + linkConsumption.cancelledSeats.first
+			emptySeatsData.push({ value : capacity - soldSeats - cancelledSeats  })
+			cancelledSeatsData.push({ value : cancelledSeats  })
 			
 			soldSeatsData.economy.push({ value : linkConsumption.soldSeats.economy })
 			soldSeatsData.business.push({ value : linkConsumption.soldSeats.business })
@@ -398,7 +401,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
                 "toolTipPadding": "5",
                 "plotBorderAlpha": "10",
                 "usePlotGradientColor": "0",
-                "paletteColors": "#007849,#0375b4,#ffce00,#bbbbbb",
+                "paletteColors": "#007849,#0375b4,#ffce00,#D46A6A,#bbbbbb",
                 "bgAlpha":"0",
                 "showValues":"0",
                 "canvasPadding":"0",
@@ -410,6 +413,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 			              {"seriesName": "Sold Seats (Economy)", "data" : soldSeatsData.economy}
 						 ,{"seriesName": "Sold Seats (Business)","data" : soldSeatsData.business}
 						 ,{"seriesName": "Sold Seats (First)", "data" : soldSeatsData.first}
+						 ,{ "seriesName": "Cancelled Seats", "data" : cancelledSeatsData}
 						 ,{ "seriesName": "Empty Seats", "data" : emptySeatsData}			              
 			            //, {"seriesName": "Load Factor", "renderAs" : "line", "parentYAxis": "S", "data" : loadFactorData} 
 			            ]

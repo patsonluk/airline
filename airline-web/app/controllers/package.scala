@@ -57,6 +57,8 @@ package object controllers {
       "speed" -> JsNumber(airplaneModel.speed),
       "range" -> JsNumber(airplaneModel.range),
       "price" -> JsNumber(airplaneModel.price),
+      "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION), //same for all models for now
+      "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now
       "constructionTime" -> JsNumber(airplaneModel.constructionTime)))
       
     }
@@ -173,13 +175,13 @@ package object controllers {
      def writes(linkConsumption : LinkConsumptionDetails): JsValue = {
        
       JsObject(List(
-        "linkId" -> JsNumber(linkConsumption.linkId),
-        "airlineId" -> JsNumber(linkConsumption.airlineId),
-        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.airlineId).fold("<unknown airline>") { _.name }),
-        "price" -> Json.toJson(linkConsumption.price),
-        "capacity" -> JsNumber(linkConsumption.capacity.total),
-        "soldSeats" -> JsNumber(linkConsumption.soldSeats.total),
-        "quality" -> JsNumber(linkConsumption.quality)))
+        "linkId" -> JsNumber(linkConsumption.link.id),
+        "airlineId" -> JsNumber(linkConsumption.link.airline.id),
+        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
+        "price" -> Json.toJson(linkConsumption.link.price),
+        "capacity" -> JsNumber(linkConsumption.link.capacity.total),
+        "soldSeats" -> JsNumber(linkConsumption.link.soldSeats.total),
+        "quality" -> JsNumber(linkConsumption.link.computedQuality)))
     }
   }
   
@@ -231,6 +233,7 @@ package object controllers {
         "linksFuelCost" -> JsNumber(airlineIncome.links.fuelCost),
         "linksCrewCost" -> JsNumber(airlineIncome.links.crewCost),
         "linksInflightCost" -> JsNumber(airlineIncome.links.inflightCost),
+        "linksDelayCompensation" -> JsNumber(airlineIncome.links.delayCompensation),
         "linksMaintenanceCost" -> JsNumber(airlineIncome.links.maintenanceCost),
         "linksDepreciation" -> JsNumber(airlineIncome.links.depreciation),
         "transactionsProfit" -> JsNumber(airlineIncome.transactions.profit),

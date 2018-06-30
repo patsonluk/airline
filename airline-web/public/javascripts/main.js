@@ -77,11 +77,15 @@ function loadUser(isLogin) {
 			  
 			  if (isLogin) {
 				  showFloatMessage("Successfully logged in")
+				  if (user.annoucements) {
+					  showAnnoucement(user.annoucements)
+				  }
 			  }
     		  refreshLoginBar()
 			  printConsole('') //clear console
 			  getAirports();
 			  showUserSpecificElements();
+			  
 		  }
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
@@ -527,8 +531,8 @@ function updateAllPanels(airlineId) {
 			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough", 1, true, true)
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
-		} else {
-			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
+//		} else {
+//			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
 		}
 		
 	}
@@ -638,4 +642,18 @@ function showWorldMap() {
 	}
 }
 
+function showAnnoucement(annoucements) {
+	// Get the modal
+	var modal = $('#annoucementModal')
+	// Get the <span> element that closes the modal
+	var closeButton = $('#annoucementModal .close')
+	
+	$('#annoucementList').children().remove()
+	
+	$.each(annoucements, function(index, annoucementItem) {
+		$('<li class="label" style="padding: 5px;">' + annoucementItem + '</li>').appendTo($('#annoucementList'))
+	})
+
+	modal.fadeIn(1000)
+}
 

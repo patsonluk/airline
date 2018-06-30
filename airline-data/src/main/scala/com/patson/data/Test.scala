@@ -30,7 +30,7 @@ object Test extends App {
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
 //       AirportFeaturePatcher.patchFeatures()
     
-    Patchers.airplaneModelPatcher()
+    Patchers.patchDelaySchema()
        
   
 }

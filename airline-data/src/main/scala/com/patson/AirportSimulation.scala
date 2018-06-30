@@ -30,9 +30,12 @@ object AirportSimulation {
   val LOYALTY_AUTO_INCREMENT_WITH_BASE = 0.02
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE = 15 //how much loyalty will increment to just because of being a HQ
+  val LOYALTY_DECREMENT_BY_MINOR_DELAY = 0.02
+  val LOYALTY_DECREMENT_BY_MAJOR_DELAY = 0.05
+  val LOYALTY_DECREMENT_BY_CANCELLATION = 0.2
   
   private[patson] val LOYALTY_INCREMENT_BY_FLIGHTS = 1.0
-  private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 0.5
+  private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 1.0
   
   
   
@@ -118,8 +121,8 @@ object AirportSimulation {
     
     //update the loyalty on airports based on link consumption
     println("start updating loyalty")
-    val toAirportSoldLinks = linkConsumptions.groupBy { _.toAirportId } //Map[(airportId, airlineId), links] //cannot use Airport instance directly as they are not the same instance 
-    val fromAirportSoldLinks = linkConsumptions.groupBy { _.fromAirportId }
+    val toAirportSoldLinks = linkConsumptions.groupBy { _.link.to.id } //Map[(airportId, airlineId), links] //cannot use Airport instance directly as they are not the same instance 
+    val fromAirportSoldLinks = linkConsumptions.groupBy { _.link.from.id }
     val airportSoldLinks: scala.collection.immutable.Map[Int, Seq[LinkConsumptionDetails]] = 
       (toAirportSoldLinks.toSeq ++ fromAirportSoldLinks.toSeq).groupBy(_._1).mapValues { linkConsumptions =>
         linkConsumptions.map { 
@@ -148,7 +151,7 @@ object AirportSimulation {
   }
   
   private def updateAirportBySoldLinks(airport : Airport, soldLinksForThisAirport : Seq[LinkConsumptionDetails]) = {
-    soldLinksForThisAirport.groupBy { _.airlineId }.foreach {
+    soldLinksForThisAirport.groupBy { _.link.airline.id }.foreach {
       case(airlineId, soldLinksByAirline) => {
         val targetLoyalty = getTargetLoyalty(soldLinksByAirline, airport.population)
         val currentLoyalty = airport.getAirlineLoyalty(airlineId)
@@ -160,9 +163,9 @@ object AirportSimulation {
     }
   }
   
-  private[patson] val getTargetLoyalty : (Seq[LinkConsumptionDetails], Long) => Double = (soldLinks, population) => {
-    val totalTransportedPassengers = soldLinks.map { _.soldSeats.total }.sum 
-    val totalQualityProduct = soldLinks.map { soldLink => soldLink.soldSeats.total.toLong * soldLink.quality }.sum
+  private[patson] val getTargetLoyalty : (Seq[LinkConsumptionDetails], Long) => Double = (consumptionDetails, population) => {
+    val totalTransportedPassengers = consumptionDetails.map { _.link.soldSeats.total }.sum 
+    val totalQualityProduct = consumptionDetails.map { consumptionDetailsEntry => consumptionDetailsEntry.link.soldSeats.total * consumptionDetailsEntry.link.computedQuality }.sum
     val averageQuality = if (totalTransportedPassengers == 0) 0 else totalQualityProduct / totalTransportedPassengers
     val targetLoyaltyByQuality = averageQuality 
 //    //to attain MAX loyalty requires transporting everyone (1 X pop) once per year, the increment in on power to MAX loyalty = weekly passenger
@@ -222,7 +225,15 @@ object AirportSimulation {
       }
       
       val targetLoyaltyBypassengerVolume = estLoyalty
-      Math.min(targetLoyaltyByQuality, targetLoyaltyBypassengerVolume)
+      var targetLoyalty = Math.min(targetLoyaltyByQuality, targetLoyaltyBypassengerVolume).doubleValue()
+      
+      //add penalty for delays and cancellation
+      val totalMinorDelayCounts = consumptionDetails.map { _.link.minorDelayCount }.sum
+      val totalMajorDelayCounts = consumptionDetails.map { _.link.majorDelayCount }.sum
+      val totalCancellationCounts = consumptionDetails.map { _.link.cancellationCount }.sum
+      
+      targetLoyalty = targetLoyalty - totalMinorDelayCounts * LOYALTY_DECREMENT_BY_MINOR_DELAY - totalMajorDelayCounts * LOYALTY_DECREMENT_BY_MAJOR_DELAY - totalCancellationCounts * LOYALTY_DECREMENT_BY_CANCELLATION
+      targetLoyalty
     }
   }
   

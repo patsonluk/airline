@@ -612,13 +612,6 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, linkClass)) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
-                if (linkClass == BUSINESS) {
-                  println("ACCEPTED " + linkClass)
-                }
-              } else {
-                if (linkClass == BUSINESS) {
-                  println("REJECTED" + linkClass)
-                }
               }
               totalRoutes = totalRoutes + 1
             }

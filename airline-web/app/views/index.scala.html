@@ -190,12 +190,24 @@
 					    				<div class="value" id="linkAirportFees"></div>
 					    			</div>
 					    			<div class="table-row">
-					    				<div class="label"><h5>Airplane Depreication:</h5></div>
+					    				<div class="label"><h5>Depreciation:</h5></div>
 					    				<div class="value" id="linkDepreciation"></div>
+					    			</div>
+					    			<div class="table-row">
+					    				<div class="label"><h5>Compensation:</h5></div>
+					    				<div class="value" id="linkCompensation"></div>
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>Other Costs:</h5></div>
 					    				<div class="value" id="linkOtherCosts"></div>
+					    			</div>
+					    			<div class="table-row">
+					    				<div class="label"><h5>Flight Delays:</h5></div>
+					    				<div class="value" id="linkDelays"></div>
+					    			</div>
+					    			<div class="table-row">
+					    				<div class="label"><h5>Flight Cancellation:</h5></div>
+					    				<div class="value" id="linkCancellations"></div>
 					    			</div>
 				    			</div>
 				    			<div class="button" id="toggleLinkHistoryButton" onclick="toggleLinkHistoryView()">View Passenger Map</div>
@@ -740,11 +752,19 @@
 			    			<div class="value" id="airplaneDetailsSellValue"></div>
 				    	</div>
 				    	<div class="table-row">
+			    			<div class="label"><h5>Replace Cost:</h5></div>
+			    			<div class="value" id="airplaneDetailsReplaceCost"></div>
+				    	</div>
+				    	<div class="table-row">
 			    			<div class="label"><h5>Assigned Route:</h5></div>
 			    			<div class="value" id="airplaneDetailsLink"></div>
 				    	</div>
 				    	<input type="hidden" id="actionAirplaneId"></input>
+				    	<div class="rejection">
+			    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning">Not enough cash to replace this airplane</span>
+				    	</div>
 		   				<div class="button" id ="sellAirplaneButton" onclick="sellAirplane($('#actionAirplaneId').val())">Sell</div>
+		   				<div class="button" id ="replaceAirplaneButton" onclick="replaceAirplane($('#actionAirplaneId').val())">Replace</div>
 		    		</div>
 		    	</div>
   			</div>
@@ -813,6 +833,10 @@
 			 	  				<div class="table-row">
 			 	  					<div class="cell">Airplane Depreciation:</div>
 			 	  					<div id="linksDepreciation" class="cell" style="text-align: right;"></div>
+			 	  				</div>
+			 	  				<div class="table-row">
+			 	  					<div class="cell">Delay Compensation:</div>
+			 	  					<div id="delayCompensation" class="cell" style="text-align: right;"></div>
 			 	  				</div>
 			 	  				<div class="table-row">
 				 	  				<div class="divider cell"></div>
@@ -1276,6 +1300,19 @@
    			</div>
 		</div>
     </div>
+    
+    <!-- The Annoucement Modal -->
+	<div id="annoucementModal" class="modal">
+	  <div class="modal-content">
+	    <span class="close" onclick="$('#annoucementModal').fadeOut(200)">&times;</span>
+	    <div style="margin-bottom: 10px;">
+	    	<span style="font-size: 20px;">Annoucements</span><img src='@routes.Assets.versioned("images/icons/32px/balloon.png")'>
+	    </div>
+	    <ul id="annoucementList">
+	    </ul>
+	  </div>
+	
+	</div>
 	 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
 	</script>

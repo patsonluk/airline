@@ -23,10 +23,22 @@ class UserApplication extends Controller {
   }
   // then in a controller
   def login = Authenticated { implicit request =>
-    Ok(Json.toJson(request.user)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userId" -> String.valueOf(request.user.id))
+    var result = Json.toJson(request.user).asInstanceOf[JsObject]
+    result = result + ("annoucements" -> JsArray(getAnnoucements().map(JsString(_)))) 
+    Ok(result).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userId" -> String.valueOf(request.user.id))
   }
   
   def logout = Authenticated { implicit request =>
     Ok("logged out for " + request.user.id).withNewSession 
+  }
+  
+  def getAnnoucements() : List[String] = {
+    List("- Introducing flight delays and cancellations! Airplane with low condition will trigger delays and cancellation, they could reduce your profit and also loyalty. Old airplanes can be replaced in the airplane tab",
+         "- Passengers are more sensitive to high ticket price - reduced demand on overly expensive tickets",
+         "- Bigger airplane models now consume more fuels - only profitable for longer routes",
+         "- Reduced profit margin for intercontinental routes for game balance",
+         "- Max loan at 500,000,000 now",
+         "Next up: Light/Dark theme, Departures screen, Option to restart an airline, Airline Code and Flight Number!",
+         "<b>Many thanks for playing again! Please leave your feedback and suggestions in FAQ/Forum</b>")
   }
 }

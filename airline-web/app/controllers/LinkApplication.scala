@@ -65,27 +65,33 @@ class LinkApplication extends Controller {
 //      val toAirport = AirportSource.loadAirportById(linkConsumption.toAirportId)
 //      val airline = AirlineSource.loadAirlineById(linkConsumption.airlineId)
           JsObject(List(
-      "linkId" -> JsNumber(linkConsumption.linkId),
+      "linkId" -> JsNumber(linkConsumption.link.id),
 //      "fromAirportCode" -> JsString(fromAirport.map(_.iata).getOrElse("XXX")),
 //      "fromAirportName" -> JsString(fromAirport.map(_.name).getOrElse("<unknown>")),
 //      "toAirportCode" -> JsString(toAirport.map(_.iata).getOrElse("XXX")),
 //      "toAirportName" -> JsString(toAirport.map(_.name).getOrElse("<unknown>")),
 //      "airlineName" -> JsString(airline.map(_.name).getOrElse("<unknown>")),
-      "fromAirportId" -> JsNumber(linkConsumption.fromAirportId),
-      "toAirportId" -> JsNumber(linkConsumption.toAirportId),
-      "airlineId" -> JsNumber(linkConsumption.airlineId),
-      "price" -> Json.toJson(linkConsumption.price),
-      "distance" -> JsNumber(linkConsumption.distance),
+      "fromAirportId" -> JsNumber(linkConsumption.link.from.id),
+      "toAirportId" -> JsNumber(linkConsumption.link.to.id),
+      "airlineId" -> JsNumber(linkConsumption.link.airline.id),
+      "price" -> Json.toJson(linkConsumption.link.price),
+      "distance" -> JsNumber(linkConsumption.link.distance),
       "profit" -> JsNumber(linkConsumption.profit),
       "revenue" -> JsNumber(linkConsumption.revenue),
       "fuelCost" -> JsNumber(linkConsumption.fuelCost),
       "crewCost" -> JsNumber(linkConsumption.crewCost),
       "airportFees" -> JsNumber(linkConsumption.airportFees),
+      "delayCompensation" -> JsNumber(linkConsumption.delayCompensation),
       "maintenanceCost" -> JsNumber(linkConsumption.maintenanceCost),
       "inflightCost" -> JsNumber(linkConsumption.inflightCost),
       "depreciation" -> JsNumber(linkConsumption.depreciation),
-      "capacity" -> Json.toJson(linkConsumption.capacity),
-      "soldSeats" -> Json.toJson(linkConsumption.soldSeats),
+      "capacity" -> Json.toJson(linkConsumption.link.capacity),
+      "soldSeats" -> Json.toJson(linkConsumption.link.soldSeats),
+      "cancelledSeats" -> Json.toJson(linkConsumption.link.cancelledSeats),
+      "minorDelayCount" -> JsNumber(linkConsumption.link.minorDelayCount),
+      "majorDelayCount" -> JsNumber(linkConsumption.link.majorDelayCount),
+      "cancellationCount" -> JsNumber(linkConsumption.link.cancellationCount),
+      
       "cycle" -> JsNumber(linkConsumption.cycle)))
       
     }
@@ -127,6 +133,8 @@ class LinkApplication extends Controller {
       val jsObject = JsObject(List(
       "modelId" -> JsNumber(modelPlanLinkInfo.model.id), 
       "modelName" -> JsString(modelPlanLinkInfo.model.name),
+      "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
+      "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION),
       "capacity" -> JsNumber(modelPlanLinkInfo.model.capacity),
       "duration" -> JsNumber(modelPlanLinkInfo.duration), 
       "maxFrequency" -> JsNumber(modelPlanLinkInfo.maxFrequency),
@@ -135,7 +143,7 @@ class LinkApplication extends Controller {
       var airplaneArray = JsArray()
       modelPlanLinkInfo.airplanes.foreach {
         case(airplane, isAssigned) => 
-          airplaneArray = airplaneArray.append(JsObject(List("airplaneId" -> JsNumber(airplane.id), "isAssigned" -> JsBoolean(isAssigned))))
+          airplaneArray = airplaneArray.append(JsObject(List("airplaneId" -> JsNumber(airplane.id), "isAssigned" -> JsBoolean(isAssigned), "condition" -> JsNumber(airplane.condition))))
       }
       jsObject + ("airplanes" -> airplaneArray)
     }
@@ -362,10 +370,10 @@ class LinkApplication extends Controller {
       )
     } else {
       val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
-        foldMap + (linkConsumptionDetails.linkId -> linkConsumptionDetails)
+        foldMap + (linkConsumptionDetails.link.id -> linkConsumptionDetails)
       }
       val linksWithProfit = links.map { link =>  
-        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.soldSeats))  
+        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats))  
       }
       Ok(Json.toJson(linksWithProfit)).withHeaders(
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"

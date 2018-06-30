@@ -10,6 +10,11 @@ import com.patson.model.Scheduling.TimeSlot
  */
 case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, flightType : FlightType.Value, var id : Int = 0) extends IdObject{
   var availableSeats : LinkClassValues = capacity.copy()
+  var soldSeats : LinkClassValues = LinkClassValues.getInstance()
+  var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
+  var cancellationCount = 0
+  var majorDelayCount = 0
+  var minorDelayCount = 0
   private var assignedAirplanes : List[Airplane] = List.empty
   private var assignedModel : Option[Model] = None
   
@@ -71,6 +76,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     }
   }
   
+  def setQuality(quality : Int) = {
+    hasComputedQuality = true
+    computedQualityStore = quality
+  }
+  
   def getTotalCapacity : Int = {
     capacity.total
   }
@@ -80,18 +90,31 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   def getTotalSoldSeats : Int = {
-    getTotalCapacity - getTotalAvailableSeats 
+    soldSeats.total 
   }
   
   
+  def addSoldSeats(soldSeats : LinkClassValues) = {
+    this.soldSeats = this.soldSeats + soldSeats;
+    this.availableSeats = this.availableSeats - soldSeats;
+  }
   
-  def soldSeats : LinkClassValues = {
-    LinkClassValues(
-      capacity.map.map { 
-        case (linkClass, capacity) =>
-        (linkClass, capacity - availableSeats(linkClass))
-      }
-    )
+  def addSoldSeatsByClass(linkClass : LinkClass, soldSeats : Int) = {
+    val soldSeatsClassValues = LinkClassValues(Map(linkClass -> soldSeats)) 
+    addSoldSeats(soldSeatsClassValues) 
+  }
+  
+  def addCancelledSeats(cancelledSeats : LinkClassValues) = {
+    this.cancelledSeats = this.cancelledSeats + cancelledSeats;
+    this.availableSeats = this.availableSeats - cancelledSeats;
+  }
+  
+  def capacityPerFlight() = {
+    if (frequency > 0) {
+      capacity / frequency
+    } else { //error 
+      LinkClassValues.getInstance()
+    }
   }
   
   
