@@ -368,7 +368,7 @@ object PassengerSimulation {
                   if (matchingLinkClass == linkClass) {
                     passengerGroup.preference.computeCost(link)
                   } else { //cannot pass the link as is, cause it might have really cheap higher class but sold out/not available
-                    passengerGroup.preference.computeCost(link.copy(price = Pricing.getNormalizedPrice(link.price(matchingLinkClass), matchingLinkClass, 1.5))) //1.5 multipler to indicate unwillingless to downgrade
+                    passengerGroup.preference.computeCost(link.copy(price = Pricing.getNormalizedPrice(link.price(matchingLinkClass), matchingLinkClass, 2))) //2 multiplier to indicate unwillingness to downgrade
                   }
                 
                 
