@@ -1300,6 +1300,19 @@
    			</div>
 		</div>
     </div>
+    
+    <!-- The Annoucement Modal -->
+	<div id="annoucementModal" class="modal">
+	  <div class="modal-content">
+	    <span class="close" onclick="$('#annoucementModal').fadeOut(200)">&times;</span>
+	    <div style="margin-bottom: 10px;">
+	    	<span style="font-size: 20px;">Annoucements</span><img src='@routes.Assets.versioned("images/icons/32px/balloon.png")'>
+	    </div>
+	    <ul id="annoucementList">
+	    </ul>
+	  </div>
+	
+	</div>
 	 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
 	</script>
