@@ -298,9 +298,14 @@ li.row, div.table-row {
 	padding: 3px 0px;
 }
 
-.warning {
+.warning, .fatal {
 	color: #D46A6A;
 }
+.fatal {
+	font-weight: bold;
+}
+
+
 
 .marquee span {
     display: inline-block;

@@ -33,9 +33,9 @@ class AirplaneApplication extends Controller {
   implicit object AirplanesByModelWrites extends Writes[AirplanesByModel] {
     def writes(airplanesByModel: AirplanesByModel): JsValue = {
       Json.toJson(airplanesByModel.model).asInstanceOf[JsObject] + 
-        ("assignedAirplanes" -> Json.toJson(airplanesByModel.assignedAirplanes.map { _.id })) + 
-        ("availableAirplanes" -> Json.toJson(airplanesByModel.availableAirplanes.map {_.id})) +
-        ("constructingAirplanes" -> Json.toJson(airplanesByModel.constructingAirplanes.map {_.id}))
+        ("assignedAirplanes" -> Json.toJson(airplanesByModel.assignedAirplanes)) + 
+        ("availableAirplanes" -> Json.toJson(airplanesByModel.availableAirplanes)) +
+        ("constructingAirplanes" -> Json.toJson(airplanesByModel.constructingAirplanes))
     }
   }
   
@@ -100,11 +100,41 @@ class AirplaneApplication extends Controller {
             val sellValue = Computation.calculateAirplaneSellValue(airplane)
             if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
               AirlineSource.adjustAirlineBalance(airlineId, sellValue)
+              
               AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
               
               Ok(Json.toJson(airplane))
             } else {
               NotFound
+            }
+          }
+        } else {
+          Forbidden
+        }
+      case None =>
+        BadRequest("airplane not found")
+    }
+  }
+  
+  def replaceAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) { request =>
+    AirplaneSource.loadAirplaneById(airplaneId) match {
+      case Some(airplane) => 
+        if (airplane.owner.id == airlineId) {
+          if (!airplane.isReady(CycleSource.loadCycle)) {
+            BadRequest("airplane is not yet constructed")
+          } else {
+            val sellValue = Computation.calculateAirplaneSellValue(airplane)
+            val replaceCost = airplane.model.price - sellValue
+            if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
+              BadRequest("Not enough money")   
+            } else {
+              val replacingAirplane = airplane.copy(constructedCycle = CycleSource.loadCycle(), condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+              
+              AirplaneSource.updateAirplanes(List(replacingAirplane)) //TODO MAKE SURE SYNCHONRIZE WITH AIRPLANE UPDATE SIMULATION
+              AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
+              AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
+                
+              Ok(Json.toJson(airplane))
             }
           }
         } else {

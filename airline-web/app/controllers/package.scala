@@ -57,6 +57,8 @@ package object controllers {
       "speed" -> JsNumber(airplaneModel.speed),
       "range" -> JsNumber(airplaneModel.range),
       "price" -> JsNumber(airplaneModel.price),
+      "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION), //same for all models for now
+      "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now
       "constructionTime" -> JsNumber(airplaneModel.constructionTime)))
       
     }

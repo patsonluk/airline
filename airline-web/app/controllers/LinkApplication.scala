@@ -133,6 +133,8 @@ class LinkApplication extends Controller {
       val jsObject = JsObject(List(
       "modelId" -> JsNumber(modelPlanLinkInfo.model.id), 
       "modelName" -> JsString(modelPlanLinkInfo.model.name),
+      "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
+      "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION),
       "capacity" -> JsNumber(modelPlanLinkInfo.model.capacity),
       "duration" -> JsNumber(modelPlanLinkInfo.duration), 
       "maxFrequency" -> JsNumber(modelPlanLinkInfo.maxFrequency),
@@ -141,7 +143,7 @@ class LinkApplication extends Controller {
       var airplaneArray = JsArray()
       modelPlanLinkInfo.airplanes.foreach {
         case(airplane, isAssigned) => 
-          airplaneArray = airplaneArray.append(JsObject(List("airplaneId" -> JsNumber(airplane.id), "isAssigned" -> JsBoolean(isAssigned))))
+          airplaneArray = airplaneArray.append(JsObject(List("airplaneId" -> JsNumber(airplane.id), "isAssigned" -> JsBoolean(isAssigned), "condition" -> JsNumber(airplane.condition))))
       }
       jsObject + ("airplanes" -> airplaneArray)
     }
