@@ -364,7 +364,15 @@ object PassengerSimulation {
               val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
               
               if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
-                var cost = passengerGroup.preference.computeCost(link) //cost should NOT be lower if seats available are lower than requested class, this reflect the unwillingness to downgrade
+                var cost =
+                  if (matchingLinkClass == linkClass) {
+                    passengerGroup.preference.computeCost(link)
+                  } else { //cannot pass the link as is, cause it might have really cheap higher class but sold out/not available
+                    passengerGroup.preference.computeCost(link.copy(price = Pricing.getNormalizedPrice(link.price(matchingLinkClass), matchingLinkClass, 1.5))) //1.5 multipler to indicate unwillingless to downgrade
+                  }
+                
+                
+                
                 //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
                 val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)
                 val linkConsideration2 = LinkConsideration(link, cost, matchingLinkClass, true)
@@ -394,6 +402,8 @@ object PassengerSimulation {
     
     routeMaps  
   }
+  
+  
   
   def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int]) : Boolean = {
     if (linkConsideration.from.countryCode == linkConsideration.to.countryCode) { //domestic flight is always ok

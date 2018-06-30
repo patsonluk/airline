@@ -41,4 +41,17 @@ object Pricing {
       (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), linkClass))
     }.toMap)
   }
+  
+  /**
+   * Get a normalized priced link based on the referencing Link class, and multiply the price with a multiplier 
+   */
+  def getNormalizedPrice(referencePrice : Int, referenceClass : LinkClass, multiplier : Double) = {
+    val unitPrice = referencePrice / referenceClass.priceMultiplier
+    val normalizedPrice = LinkClassValues.getInstance((unitPrice * ECONOMY.priceMultiplier * multiplier).toInt,
+        (unitPrice * BUSINESS.priceMultiplier * multiplier).toInt,
+        (unitPrice * FIRST.priceMultiplier * multiplier).toInt)
+        
+    normalizedPrice
+        
+  }
 }
