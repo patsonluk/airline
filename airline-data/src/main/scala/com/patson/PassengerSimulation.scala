@@ -231,9 +231,9 @@ object PassengerSimulation {
           
           val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
           
-          if (linkConsideration.linkClass == BUSINESS) {
-            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 
-          }
+//          if (linkConsideration.linkClass == BUSINESS) {
+//            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 
+//          }
           linkConsideration.cost > linkAffordableCost
           
           
