@@ -26,6 +26,7 @@ object AirlineSimulation {
      
     val currentCycle = MainSimulation.currentWeek
     val champions : scala.collection.immutable.Map[Airline, List[(Country, Int)]] = getChampions(allAirlines.map( airline => (airline.id, airline)).toMap, allCountries)
+    val cashFlows = Map[Airline, Long]()
     
     allAirlines.foreach { airline =>
         var totalCashRevenue = 0L
@@ -126,8 +127,9 @@ object AirlineSimulation {
         allIncomes ++= computeAccumulateIncome(airlineWeeklyIncome)
         
         val totalCashFlow = totalCashRevenue - totalCashExpense
-        airline.setBalance(airline.getBalance() + totalCashFlow) 
-          
+        //airline.setBalance(airline.getBalance() + totalCashFlow)
+        cashFlows.put(airline, totalCashFlow)
+        
         //update reputation
         linkResultByAirline.get(airline.id).foreach { linkConsumptions =>
           val totalPassengerKilometers = linkConsumptions.foldLeft(0L) { (foldLong, linkConsumption) =>
@@ -168,10 +170,13 @@ object AirlineSimulation {
         
         
         
-        println(airline + " profit is: " + airlineProfit + " new balance is " + airline.getBalance() + " reputation " +  airline.getReputation())
+        println(airline + " profit is: " + airlineProfit + " new balance is " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
     }
     
     AirlineSource.saveAirlineInfo(allAirlines)
+    cashFlows.foreach { //for balance it's safer to use adjust instead of setting it directly
+      case(airline, cashFlow) => AirlineSource.adjustAirlineBalance(airline.id, cashFlow)
+    }
     IncomeSource.saveIncomes(allIncomes.toList);
     
     //purge previous entry of current year/month
