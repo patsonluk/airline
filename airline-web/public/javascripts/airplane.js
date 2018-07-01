@@ -99,6 +99,7 @@ function updateModelInfo(modelId) {
 	$('#airplaneModelDetails #fuelBurn').text(model.fuelBurn)
 	$('#airplaneModelDetails #range').text(model.range + "km")
 	$('#airplaneModelDetails #speed').text(model.speed + "km/h")
+	$('#airplaneModelDetails #lifespan').text(model.lifespan / 52 + "years")
 	$('#airplaneModelDetails #price').text("$" + commaSeparateNumber(model.price))
 	
 	if (model.constructionTime == 0) {
@@ -137,7 +138,9 @@ function selectAirplaneModel(model) {
 	$('#airplaneCanvas #fuelBurn').text(model.fuelBurn)
 	$('#airplaneCanvas #range').text(model.range + " km")
 	$('#airplaneCanvas #speed').text(model.speed + " km/h")
+	$('#airplaneCanvas #lifespan').text(model.lifespan / 52 + "years")
 	$('#airplaneCanvas #price').text("$" + commaSeparateNumber(model.price))
+	
 	if (model.constructionTime == 0) {
 		$('#airplaneCanvas .delivery').text("immediate")
 		$('#airplaneCanvas .delivery').removeClass('warning')
