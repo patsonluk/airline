@@ -9,7 +9,7 @@ import com.patson.model.airplane.Airplane
 
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
-  val MAX_SERVICE_QUALITY_INCREMENT : Double = 1
+  val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
   
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
@@ -170,7 +170,7 @@ object AirlineSimulation {
         
         
         
-        println(airline + " profit is: " + airlineProfit + " new balance is " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
+        println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
     }
     
     AirlineSource.saveAirlineInfo(allAirlines)
