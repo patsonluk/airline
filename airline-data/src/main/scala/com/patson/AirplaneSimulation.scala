@@ -20,10 +20,6 @@ import akka.actor.Props
 import java.util.concurrent.TimeUnit
 
 object AirplaneSimulation {
-  val LIFE_SPAN = 35 * 52 //in unit of weeks, lifespan with best maintenance
-  val MAX_DECAY = 200.toDouble / LIFE_SPAN //assume decay to double with worse maintenance
-  val MIN_DECAY = 100.toDouble / LIFE_SPAN 
-  
   def airplaneSimulation(cycle: Int) : List[Airplane] = {
     println("starting airplane simulation")
     println("loading all airplanes")
@@ -57,9 +53,13 @@ object AirplaneSimulation {
   
   def decayAirplanesByAirline(airplanesWithAssignedLink : List[(Airplane, Option[Link])], airline : Airline) : List[Airplane] = {
     val updatingAirplanes = ListBuffer[Airplane]()
-    val baseDecayRate = MAX_DECAY - (MAX_DECAY - MIN_DECAY) * (airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
+    
+    
     airplanesWithAssignedLink.foreach { 
       case(airplane, assignedLink) =>
+        val minDecay = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
+        val maxDecay = minDecay * 2
+        val baseDecayRate = maxDecay - (maxDecay - minDecay) * (airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
         var decayRate =
           if (assignedLink.isEmpty) { //not assigned to any links, decay slower
             baseDecayRate / 3 

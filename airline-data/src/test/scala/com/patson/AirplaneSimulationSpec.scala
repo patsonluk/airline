@@ -46,7 +46,7 @@ class AirplaneSimulationSpec extends WordSpecLike with Matchers {
        var airplane = airplane1.copy(owner = badAirline)
        val link = link1.copy(airline = badAirline)
        
-       for (i <- 0 until AirplaneSimulation.LIFE_SPAN) {
+       for (i <- 0 until airplane.model.lifespan) {
          airplane = AirplaneSimulation.decayAirplanesByAirline(List((airplane, Some(link))), badAirline)(0)
        }
        

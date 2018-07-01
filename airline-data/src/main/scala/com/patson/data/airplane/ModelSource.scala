@@ -66,6 +66,7 @@ object ModelSource {
           resultSet.getInt("speed"),
           resultSet.getInt("fly_range"),
           resultSet.getInt("price"),
+          resultSet.getInt("lifespan"),
           resultSet.getInt("construction_time")
           )
      model.id = resultSet.getInt("id")
@@ -108,18 +109,19 @@ object ModelSource {
   def updateModels(models : List[Model]) = {
     val connection = Meta.getConnection()
         
-    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ?, construction_time = ? WHERE name = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ?, lifespan = ?, construction_time = ? WHERE name = ?")
     
     connection.setAutoCommit(false)
     models.foreach { 
       model =>
-        preparedStatement.setString(7, model.name)
+        preparedStatement.setString(8, model.name)
         preparedStatement.setInt(1, model.capacity)
         preparedStatement.setInt(2, model.fuelBurn)
         preparedStatement.setInt(3, model.speed)
         preparedStatement.setInt(4, model.range)
         preparedStatement.setInt(5, model.price)
-        preparedStatement.setInt(6, model.constructionTime)
+        preparedStatement.setInt(6, model.lifespan)
+        preparedStatement.setInt(7, model.constructionTime)
         preparedStatement.executeUpdate()
     }
     connection.commit()
@@ -131,7 +133,7 @@ object ModelSource {
   def saveModels(models : List[Model]) = {
     val connection = Meta.getConnection()
         
-        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_MODEL_TABLE + "(name, capacity, fuel_burn, speed, fly_range, price, construction_time) VALUES(?,?,?,?,?,?,?)")
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_MODEL_TABLE + "(name, capacity, fuel_burn, speed, fly_range, price, lifespan, construction_time) VALUES(?,?,?,?,?,?,?,?)")
         
         connection.setAutoCommit(false)
         models.foreach { 
@@ -142,7 +144,8 @@ object ModelSource {
             preparedStatement.setInt(4, model.speed)
             preparedStatement.setInt(5, model.range)
             preparedStatement.setInt(6, model.price)
-            preparedStatement.setInt(7, model.constructionTime)
+            preparedStatement.setInt(7, model.lifespan)
+            preparedStatement.setInt(8, model.constructionTime)
             preparedStatement.executeUpdate()
         }
         connection.commit()

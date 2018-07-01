@@ -43,6 +43,13 @@ object Pricing {
     LinkClassValues(priceByLinkClass.toMap)
   }
   
+  def computeStandardPriceForAllClass(distance : Int, flightType : FlightType.Value) : LinkClassValues = {
+    val priceByLinkClass : List[(LinkClass, Int)] = LinkClass.values.map { linkClass =>
+      (linkClass, computeStandardPrice(distance, flightType, linkClass))
+    }
+    LinkClassValues(priceByLinkClass.toMap)
+  }
+  
   /**
    * Get a normalized priced link based on the referencing Link class, and multiply the price with a multiplier 
    */
