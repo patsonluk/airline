@@ -19,6 +19,11 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   def setMaintainenceQuality(maintainenceQuality : Double) {
     airlineInfo.maintenanceQuality = maintainenceQuality
   }
+  
+  def removeCountryCode() = {
+    airlineInfo.countryCode = None
+  }
+  
   def setCountryCode(countryCode : String) = {
     airlineInfo.countryCode = Some(countryCode)
   }
