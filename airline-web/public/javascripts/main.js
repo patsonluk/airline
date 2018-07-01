@@ -352,10 +352,20 @@ function showAnnoucement() {
 	// Get the modal
 	var modal = $('#annoucementModal')
 	// Get the <span> element that closes the modal
-	var closeButton = $('#annoucementModal .close')
 	$('#annoucementContainer').empty()
 	$('#annoucementContainer').load('assets/html/annoucement.html')
 
 	modal.fadeIn(1000)
+}
+
+function promptConfirm(prompt, targetFunction) {
+	$('#confirmationModal .confirmationButton').data('targetFunction', targetFunction)
+	$('#confirmationPrompt').text(prompt)
+	$('#confirmationModal').fadeIn(1000)
+}
+
+function executeConfirmationTarget() {
+	var targetFunction = $('#confirmationModal .confirmationButton').data('targetFunction')
+	targetFunction()
 }
 

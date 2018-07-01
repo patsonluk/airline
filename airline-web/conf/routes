@@ -55,6 +55,7 @@ DELETE   /airlines/:airlineId/loans/:loanId	  controllers.BankApplication.repayL
 GET		 /airlines/:airlineId/loan-options  controllers.BankApplication.getLoanOptions(airlineId : Int, loanAmount : Long)
 GET		 /airlines/:airlineId/max-loan  controllers.BankApplication.getMaxLoan(airlineId : Int)
 GET		 /airlines/:airlineId/championed-countries  controllers.AirlineApplication.getChampionedCountries(airlineId : Int)
+GET		 /airlines/:airlineId/reset	   controllers.AirlineApplication.resetAirline(airlineId : Int)
 GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
 

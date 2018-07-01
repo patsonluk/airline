@@ -27,7 +27,9 @@ import com.patson.data.CountrySource
 import com.patson.model.Country
 import com.patson.model.CountryMarketShare
 import com.patson.model.Computation
-
+import com.patson.data.BankSource
+import models.EntrepreneurProfile
+import com.patson.data.AirplaneSource
 
 class AirlineApplication extends Controller {
   object OwnedAirlineWrites extends Writes[Airline] {
@@ -275,6 +277,31 @@ class AirlineApplication extends Controller {
     }
     
     Ok(Json.toJson(championedCountryByThisAirline)(ChampionedCountriesWrites))
+  }
+  
+  def resetAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (airlineId != request.user.id) {
+      Forbidden
+    } else {
+      //remove all links
+      LinkSource.loadLinksByAirlineId(airlineId).foreach { link =>
+        LinkSource.deleteLink(link.id)
+      }
+      //remove all airplanes
+      AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
+      //remove all bases
+      AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
+      //remove all loans
+      BankSource.loadLoansByAirline(airlineId).foreach { loan =>
+        BankSource.deleteLoan(loan.id)
+      }
+      //reset balance
+      val airline : Airline = request.user
+      airline.setBalance(EntrepreneurProfile.INITIAL_BALANCE)
+      
+      AirlineSource.saveAirlineInfo(airline)
+      Ok(Json.toJson(airline))
+    }
   }
   
   object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {

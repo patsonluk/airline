@@ -84,12 +84,15 @@ class EntrepreneurProfile extends StartupProfile(title = "Entrepreneurial spirit
 					  "0 airline reputation"),
 			3) {
 	
-		override def initializeAirline(airline : Airline) : Unit = {
+ 		override def initializeAirline(airline : Airline) : Unit = {
 		  //condition
-		  airline.setBalance(50000000)
+		  airline.setBalance(EntrepreneurProfile.INITIAL_BALANCE)
 		  airline.setReputation(0)
 		  AirlineSource.saveAirlineInfo(airline)
 		}
+}
+object EntrepreneurProfile {
+  	val INITIAL_BALANCE = 50000000  
 }
 
 object StartupProfile {

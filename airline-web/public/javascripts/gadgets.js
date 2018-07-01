@@ -289,3 +289,7 @@ function highlightSwitch(selectedSwitch) {
 	selectedSwitch.siblings().removeClass("selected")
 	selectedSwitch.addClass("selected")
 }
+
+function closeModal(modal) {
+	modal.fadeOut(200)
+}

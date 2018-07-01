@@ -83,7 +83,7 @@
 <!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
 	  			<a href="signup"><div class="button" onclick="">Sign Up</div></a>
   			</div>
-  			<div style="float: right; display: hidden;" id="logoutDiv">
+  			<div style="float: right; display: none;" id="logoutDiv">
   				<span id="currentUserName" class="label"></span>
   				<div class="button" onclick="logout()">Logout</div> 
   			</div>
@@ -976,23 +976,32 @@
 		         		</div>  
 		    		</div>
 		    		<div class="section" style="width: 90%;">
-	  					<h4>Maintenance Investment</h4>
-	  					<div class="table" style="width: 100%;">
-							<div class="table-row">
-								<div class="cell label" style="width: 35%">Current Maintenance Level:</div>
-								<div class="cell value" style="width: 65%">
-									<span id="maintenanceLevelDisplaySpan">
-		 	  							<span id="maintenanceLevel"></span>
-		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editMaintenanceLevel()"/>	
-		 	  						</span>
-		 	  						<span id="maintenanceLevelInputSpan" style="display: none;">
-		 	  							<input type="hidden" id="maintenanceLevelInput"/>
-		 	  							<div id="maintenanceLevelGauge" style="width: 90%; float: left;"></div>
-<!-- 		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle; float: left;" onclick=")"/> -->
-		 	  						</span>
-								</div>
-		 	  				</div>
-		         		</div>  
+	  					<h4>Declare bankruptcy and seek new investment&nbsp;<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
+	  						<ul>
+	  							<li class="label" style="padding: 5px">- All of the airplanes will be removed</li>
+	  							<li class="label" style="padding: 5px">- Headquarters and bases will be removed</li>
+	  							<li class="label" style="padding: 5px">- All routes will be cancelled</li>
+	  							<li class="label" style="padding: 5px">- All loans cancelled<li>
+	  							<li class="label" style="padding: 5px">- Reputation will be kept</li>
+	  							<li class="label" style="padding: 5px">- Balance reset to 50,000,000</li>
+	  						</ul>
+	  						<div class='button' onclick='promptConfirm("Declare bankruptcy?", resetAirline)'>Declare Bankruptcy</div>
+	  						 
+<!-- 	  					<div class="table" style="width: 100%;"> -->
+<!-- 							<div class="table-row"> -->
+<!-- 								<div class="cell label" style="width: 35%">Current Maintenance Level:</div> -->
+<!-- 								<div class="cell value" style="width: 65%"> -->
+<!-- 									<span id="maintenanceLevelDisplaySpan"> -->
+<!-- 		 	  							<span id="maintenanceLevel"></span> -->
+<!-- 		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editMaintenanceLevel()"/>	 -->
+<!-- 		 	  						</span> -->
+<!-- 		 	  						<span id="maintenanceLevelInputSpan" style="display: none;"> -->
+<!-- 		 	  							<input type="hidden" id="maintenanceLevelInput"/> -->
+<!-- 		 	  							<div id="maintenanceLevelGauge" style="width: 90%; float: left;"></div> -->
+<!-- 		 	  						</span> -->
+<!-- 								</div> -->
+<!-- 		 	  				</div> -->
+<!-- 		         		</div>   -->
 		    		</div>
 		    	</div>
 <!-- 		    	end right section -->
@@ -1306,14 +1315,25 @@
     <!-- The Annoucement Modal -->
 	<div id="annoucementModal" class="modal">
 	  <div class="modal-content">
-	    <span class="close" onclick="$('#annoucementModal').fadeOut(200)">&times;</span>
+	    <span class="close" onclick="closeModal($('#annoucementModal'))">&times;</span>
 	    <div style="margin-bottom: 10px;">
-	    	<span style="font-size: 20px;">Annoucements</span><img src='@routes.Assets.versioned("images/icons/32px/balloon.png")'>
+	    	<img src='@routes.Assets.versioned("images/icons/32px/balloon.png")'><span style="font-size: 20px;">Annoucements</span>
 	    </div>
 	    <div id="annoucementContainer">
 	    </div>
 	  </div>
-	
+	</div>
+	<!-- Confirmation Modal -->
+	<div id="confirmationModal" class="modal">
+	  <div class="modal-content"  style="width : 400px;">
+	    <span class="close" onclick="closeModal($('#confirmationModal'))">&times;</span>
+	    <div style="margin-bottom: 10px;">
+	    	<img src='@routes.Assets.versioned("images/icons/32px/question.png")'><span style="font-size: 20px;">Confirmation</span>
+	    </div>
+	    <h3 id="confirmationPrompt" style="margin-bottom: 10px;"></h3>
+	    <div class="button confirmationButton" onclick="closeModal($('#confirmationModal')); executeConfirmationTarget();">Confirm</div>
+	    <div class="button" onclick="closeModal($('#confirmationModal'))">Cancel</div>
+	  </div>
 	</div>
 	 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
