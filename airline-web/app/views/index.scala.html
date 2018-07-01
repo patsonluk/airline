@@ -40,6 +40,7 @@
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
     <script>
 		window['_fs_debug'] = false;
 		window['_fs_host'] = 'fullstory.com';
@@ -113,6 +114,7 @@
 		
 <!--   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
 <!-- 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
+		<div id="toggleMapLightButton" class="googleMapButton" onclick="toggleMapLight()" align="center" style="width: 28px; height: 28px; display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' style="vertical-align: middle;"/></div>
   	<!-- main canvas start -->
   		<div id="canvas" style="float: left; overflow: auto;" >
   			<div id="worldMapCanvas" style="height: 100%;">
