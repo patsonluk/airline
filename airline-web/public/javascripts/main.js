@@ -77,9 +77,7 @@ function loadUser(isLogin) {
 			  
 			  if (isLogin) {
 				  showFloatMessage("Successfully logged in")
-				  if (user.annoucements) {
-					  showAnnoucement(user.annoucements)
-				  }
+				  showAnnoucement()
 			  }
     		  refreshLoginBar()
 			  printConsole('') //clear console
@@ -350,17 +348,13 @@ function showWorldMap() {
 	}
 }
 
-function showAnnoucement(annoucements) {
+function showAnnoucement() {
 	// Get the modal
 	var modal = $('#annoucementModal')
 	// Get the <span> element that closes the modal
 	var closeButton = $('#annoucementModal .close')
-	
-	$('#annoucementList').children().remove()
-	
-	$.each(annoucements, function(index, annoucementItem) {
-		$('<li class="label" style="padding: 5px;">' + annoucementItem + '</li>').appendTo($('#annoucementList'))
-	})
+	$('#annoucementContainer').empty()
+	$('#annoucementContainer').load('assets/html/annoucement.html')
 
 	modal.fadeIn(1000)
 }
