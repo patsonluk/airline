@@ -31,7 +31,7 @@ object Test extends App {
 //       AirportFeaturePatcher.patchFeatures()
     
     //Patchers.patchDelaySchema()
-  
+  Patchers.airplaneModelPatcher()
   
 }
 
