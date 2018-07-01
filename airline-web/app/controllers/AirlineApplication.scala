@@ -102,7 +102,6 @@ class AirlineApplication extends Controller {
   }
   
   def getBaseRejection(airline : Airline, targetBase : AirlineBase) : Option[String] = {
-    val airlineCountryCodeOption = airline.getCountryCode()
     val airport = targetBase.airport
     val cost = targetBase.getValue
     if (cost > airline.getBalance) {
@@ -110,7 +109,7 @@ class AirlineApplication extends Controller {
     }
     
     if (targetBase.scale == 1) { //building something new
-      if (airlineCountryCodeOption.isDefined) { //building non-HQ
+      if (airline.getHeadQuarter().isDefined) { //building non-HQ
             //it should first has link to it
         if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
           return Some("No active flight route operated by your airline flying to this city yet")
