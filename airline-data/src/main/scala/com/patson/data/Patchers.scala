@@ -7,6 +7,7 @@ import java.sql.PreparedStatement
 import java.sql.Connection
 import com.patson.data.Constants._
 import com.mchange.v2.c3p0.ComboPooledDataSource
+import scala.collection.mutable.ListBuffer
 
 object Patchers {
   def patchHomeCountry() {
@@ -34,6 +35,17 @@ object Patchers {
 
   def airplaneModelPatcher() {
     ModelSource.updateModels(Model.models)
+    
+    val existingModelNames = ModelSource.loadAllModels().map(_.name)
+    
+    val newModels = ListBuffer[Model]()
+    Model.models.foreach { model =>
+      if (!existingModelNames.contains(model.name)) {
+        newModels.append(model)
+      }
+    }
+    
+    ModelSource.saveModels(newModels.toList)
   }
 
   def patchDelaySchema() = {
