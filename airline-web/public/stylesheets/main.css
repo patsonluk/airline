@@ -3,8 +3,8 @@ body {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	
 	background: #abbaab;  /* fallback for old browsers */
-	background: -webkit-linear-gradient(to bottom, #ffffff, #abbaab);  /* Chrome 10-25, Safari 5.1-6 */
-	background: linear-gradient(to bottom, #ffffff, #abbaab); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+	background: -webkit-linear-gradient(to bottom, #ffffff, #b8d5b8);  /* Chrome 10-25, Safari 5.1-6 */
+	background: linear-gradient(to bottom, #ffffff, #b8d5b8); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 	background-repeat: no-repeat;
     background-attachment: fixed;
 }
@@ -197,8 +197,9 @@ div.section, div.selectedSection, .modal-content {
 }
 
 div.section, .modal-content {
-	background-image: -webkit-gradient(linear, 0% 100%, 0% 90%, from(#EAE8E8), to(#FFFFFF));
-    background-image: -moz-linear-gradient(90deg, #EAE8E8 0%, #FFFFFF 10%);
+	background-image: -webkit-gradient(linear, 0% 100%, 0% 90%, from(#e8e8d8), to(#FFFFFF));
+    background-image: -moz-linear-gradient(90deg, #e8e8d8 0%, #FFFFFF 10%);
+    background-image: linear-gradient(to bottom, #FFFFFF, #FFFFFF 90%, #e8e8d8);
 }
 	
 	

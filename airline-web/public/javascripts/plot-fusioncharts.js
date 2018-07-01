@@ -14,6 +14,7 @@ function plotMaintenanceLevelGauge(container, maintenanceLevelInput, onchangeFun
 		        "showtooltip": "0",
 		        "chartBottomMargin": "0",
 		        "bgAlpha":"0",
+		        containerBackgroundOpacity :'0',
 		        "valueFontSize": "11",  
 		        "valueFontBold": "0",
 		        "animation": "0",
@@ -93,6 +94,7 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	        "valueFontBold": "0",
 	        "animation": "0",
 	        "editMode": "1",
+	        containerBackgroundOpacity :'0',
 	        "baseFontColor": "#FFFFFF"
 	    },
 	    "pointers": {
@@ -214,6 +216,7 @@ function plotAirportShares(airportShares, currentAirportId, container) {
 	    width: '100%',
 	    height: '195',
 	    dataFormat: 'json',
+	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
 	    		"animation": "0",
@@ -257,6 +260,7 @@ function plotCountryMarketShare(shares, container) {
 		type: 'pie2d',
 	    width: '100%',
 	    height: '195',
+	    containerBackgroundOpacity :'0',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
@@ -312,6 +316,7 @@ function plotLinkProfit(linkConsumptions, container) {
 		type: 'mscombi2d',
 	    width: '100%',
 	    height: '100%',
+	    containerBackgroundOpacity :'0',
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
@@ -387,6 +392,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    width: '100%',
 	    height: '100%',
 	    dataFormat: 'json',
+	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
 	    		"xAxisname": "Month",
@@ -425,6 +431,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    width: '100%',
 	    height: '100%',
 	    dataFormat: 'json',
+	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
 	    		"xAxisname": "Month",
@@ -483,6 +490,7 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 	    width: '100%',
 	    height: '160px',
 	    dataFormat: 'json',
+	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
 	    		"animation": "0",
