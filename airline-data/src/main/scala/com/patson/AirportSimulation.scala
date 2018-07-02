@@ -241,9 +241,9 @@ object AirportSimulation {
       //add penalty for delays and cancellation
       val totalCapacity = consumptionDetails.map { _.link.capacity.total }.sum
       if (totalCapacity > 0) {
-        val totalMinorDelayCapacity = consumptionDetails.map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.minorDelayCount / linkConsumption.link.frequency }.sum
-        val totalMajorDelayCapacity = consumptionDetails.map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.majorDelayCount / linkConsumption.link.frequency}.sum
-        val totalCancellationCapacity = consumptionDetails.map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.cancellationCount / linkConsumption.link.frequency}.sum
+        val totalMinorDelayCapacity = consumptionDetails.filter(_.link.frequency > 0).map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.minorDelayCount / linkConsumption.link.frequency }.sum
+        val totalMajorDelayCapacity = consumptionDetails.filter(_.link.frequency > 0).map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.majorDelayCount / linkConsumption.link.frequency}.sum
+        val totalCancellationCapacity = consumptionDetails.filter(_.link.frequency > 0).map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.cancellationCount / linkConsumption.link.frequency}.sum
       
         val minorDelayPercentage = totalMinorDelayCapacity.toDouble / totalCapacity
         val majorDelayPercentage = totalMajorDelayCapacity.toDouble / totalCapacity
