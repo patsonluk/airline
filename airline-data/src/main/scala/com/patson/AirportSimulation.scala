@@ -30,9 +30,9 @@ object AirportSimulation {
   val LOYALTY_AUTO_INCREMENT_WITH_BASE = 0.02
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE = 15 //how much loyalty will increment to just because of being a HQ
-  val LOYALTY_DECREMENT_BY_MINOR_DELAY = 1 //if all flights have minor delay
-  val LOYALTY_DECREMENT_BY_MAJOR_DELAY = 5 //if all flights have major delay
-  val LOYALTY_DECREMENT_BY_CANCELLATION = 10 //if all flights are cancelled
+  val LOYALTY_DECREMENT_BY_MINOR_DELAY = 0.5 //if all flights have minor delay
+  val LOYALTY_DECREMENT_BY_MAJOR_DELAY = 2 //if all flights have major delay
+  val LOYALTY_DECREMENT_BY_CANCELLATION = 4 //if all flights are cancelled
   
   private[patson] val LOYALTY_INCREMENT_BY_FLIGHTS = 1.0
   private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 1.0
