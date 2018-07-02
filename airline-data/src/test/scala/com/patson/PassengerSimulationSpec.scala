@@ -212,9 +212,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     }
     "find route only if there's link with capacity left for class lower than or equal to specified class".in {
       //only business class left on first link
-      val links = List(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(100, 0, 0), 0, 600, 1, SHORT_HAUL_DOMESTIC),
-                      Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(100, 100, 0), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
-                      Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(0, 0, 100), 0, 600, 1, SHORT_HAUL_DOMESTIC))
+      val links = List(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(100, 100, 100), 0, 600, 1, SHORT_HAUL_DOMESTIC),
+                      Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(0, 100, 0), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
+                      Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(100, 0, 0), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
       val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
       val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, 0), PassengerType.BUSINESS)
@@ -224,34 +224,34 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       toAirports ++= toAirportsList
       val result : Map[PassengerGroup, Map[Airport, Route]] = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds)
       
-      //for economy class it should only be able to find routes to 1st and 2nd airports
+      //for economy class it should only be able to find routes to 1st airports
       //1st airport 
       assert(result(economyPassengerGroup)(toAirportsList(0)).links(0).linkClass == ECONOMY)
-      //2nd airport
-      assert(result(economyPassengerGroup)(toAirportsList(1)).links(0).linkClass == ECONOMY)
-      assert(result(economyPassengerGroup)(toAirportsList(1)).links(1).linkClass == ECONOMY)
-      //should not have route to 3rd airport
-      assert(!result(economyPassengerGroup).contains(toAirportsList(2))) 
+      //2nd airport, 3rd airport - no route as 2nd link only have business class available
+      assert(!result(economyPassengerGroup).contains(toAirportsList(1)))
+      assert(!result(economyPassengerGroup).contains(toAirportsList(2)))
+       
       
-      //for business class it should only be able to find routes to 1st and 2nd airports
-      //1st airport downgrade to economy
-      assert(result(businessPassengerGroup)(toAirportsList(0)).links(0).linkClass == ECONOMY)
-      //2nd airport, first link downgraded to economy, second link business
-      assert(result(businessPassengerGroup)(toAirportsList(1)).links(0).linkClass == ECONOMY)
+      //for business class it should only able to find routes to all airpots
+      //1st airport no downgrade
+      assert(result(businessPassengerGroup)(toAirportsList(0)).links(0).linkClass == BUSINESS)
+      //2nd airport no downgrade
+      assert(result(businessPassengerGroup)(toAirportsList(1)).links(0).linkClass == BUSINESS)
       assert(result(businessPassengerGroup)(toAirportsList(1)).links(1).linkClass == BUSINESS)
-      //should not have route to 3rd airport
-      assert(!result(businessPassengerGroup).contains(toAirportsList(2)))
+      //3rd airport last link downgrade to ECONOMY
+      assert(result(businessPassengerGroup)(toAirportsList(2)).links(0).linkClass == BUSINESS)
+      assert(result(businessPassengerGroup)(toAirportsList(2)).links(1).linkClass == BUSINESS)
+      assert(result(businessPassengerGroup)(toAirportsList(2)).links(2).linkClass == ECONOMY)
       
-      //for first class it should be able to find routes to all airports
-      //1st airport downgrade to economy
-      assert(result(firstPassengerGroup)(toAirportsList(0)).links(0).linkClass == ECONOMY)
-      //2nd airport, first link downgraded to economy, second link downgraded to business
-      assert(result(firstPassengerGroup)(toAirportsList(1)).links(0).linkClass == ECONOMY)
+      
+      //for first class it should be able to find routes to 1st and 2nd airport. Last airport is not reachable as it requires downgrade of 2 classes
+      //1st airport no downgrade
+      assert(result(firstPassengerGroup)(toAirportsList(0)).links(0).linkClass == FIRST)
+      //2nd airport, second link downgraded to business
+      assert(result(firstPassengerGroup)(toAirportsList(1)).links(0).linkClass == FIRST)
       assert(result(firstPassengerGroup)(toAirportsList(1)).links(1).linkClass == BUSINESS)
-      //2nd airport, first link downgraded to economy, second link downgraded to business, 3rd link first
-      assert(result(firstPassengerGroup)(toAirportsList(2)).links(0).linkClass == ECONOMY)
-      assert(result(firstPassengerGroup)(toAirportsList(2)).links(1).linkClass == BUSINESS)
-      assert(result(firstPassengerGroup)(toAirportsList(2)).links(2).linkClass == FIRST)
+      //3rd airport, no link as last link only has economy (downgrade 2 classes - forbidden)
+      assert(!result(economyPassengerGroup).contains(toAirportsList(2)))
     }
     "find no route if the airline has no awareness at the fromAirport".in {
       val clonedFromAirport = fromAirport.copy()
