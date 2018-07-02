@@ -239,7 +239,7 @@ div.divider {
 	margin-bottom: 5px;
 }
 
-a.selected, a:hover, span.selected, .table .table-row.clickable:hover, .table .table-row.clickable.selected, .table .cell.clickable.selected, li.clickable:hover, li.clickable.selected{
+a.selected, a:hover, span.selected, .clickable:hover, .clickable.selected {
 	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;
 }
