@@ -251,6 +251,10 @@ class LinkApplication extends Controller {
         return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
       }
       
+      if (incomingLink.frequency == 0) {
+        return BadRequest("Cannot insert link - frequency is 0")
+      }
+      
       val airplanesForThisLink = incomingLink.getAssignedAirplanes
       //validate all airplanes are same model
       val airplaneModels = airplanesForThisLink.foldLeft(Set[Model]())(_ + _.model) //should be just one element
