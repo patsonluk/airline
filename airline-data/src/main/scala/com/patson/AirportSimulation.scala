@@ -157,9 +157,9 @@ object AirportSimulation {
         val currentLoyalty = airport.getAirlineLoyalty(airlineId)
         var newLoyalty = getNewLoyalty(currentLoyalty, targetLoyalty)
         val penalty = getPenalty(soldLinksByAirline)
-        if (penalty > 0) {
-          println("penalty for " + airlineId + " at airport " + airport + " is " + penalty)
-        }
+//        if (penalty > 0) {
+//          println("penalty for " + airlineId + " at airport " + airport + " is " + penalty)
+//        }
         newLoyalty = newLoyalty - penalty 
         
         airport.setAirlineLoyalty(airlineId, newLoyalty)
