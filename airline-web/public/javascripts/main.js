@@ -252,6 +252,7 @@ function refreshPanels(airlineId) {
 		url: "airlines/" + airlineId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
+	    async: false,
 	    success: function(airline) {
 	    	activeAirline = airline
 	    	refreshTopBar(airline)
