@@ -60,7 +60,9 @@ package object controllers {
       "lifespan" -> JsNumber(airplaneModel.lifespan),
       "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION), //same for all models for now
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now
-      "constructionTime" -> JsNumber(airplaneModel.constructionTime)))
+      "constructionTime" -> JsNumber(airplaneModel.constructionTime),
+      "countryCode" -> JsString(airplaneModel.countryCode)
+          ))
       
     }
   }

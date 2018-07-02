@@ -492,7 +492,8 @@ object Meta {
       "fly_range INTEGER, " +
       "price INTEGER, " +
       "lifespan INTEGER, " +
-      "construction_time INTEGER)")
+      "construction_time INTEGER, " +
+      "country_code CHAR(2))")
     statement.execute()
     statement.close()
 
