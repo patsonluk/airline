@@ -344,49 +344,94 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     "reduce profit on delays".in {
       val distance = 8000
       val airplane = largeAirplane
+      var airplanes = List(airplane, airplane, airplane) //3 airplanes
       val duration = Computation.calculateDuration(airplane.model, distance)
       val price = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, ECONOMY)
       
-      val frequency = Computation.calculateMaxFrequency(airplane.model, distance)
+      val frequency = Computation.calculateMaxFrequency(airplane.model, distance) * airplanes.size
       val capacity = frequency * airplane.model.capacity
       
+      
       var link = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> price)), distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, FlightType.LONG_HAUL_INTERCONTINENTAL)
+      println("delay link " + link)
       link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(List(airplane))
+      link.setAssignedAirplanes(airplanes)
       val consumptionResultNoDelays = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(List(airplane))
+      link.setAssignedAirplanes(airplanes)
       link.minorDelayCount = 1
-      val consumptionResultSingleDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      val consumptionResultSingleMinorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(List(airplane))
+      link.setAssignedAirplanes(airplanes)
+      link.majorDelayCount = 1
+      val consumptionResultSingleMajorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> (capacity - airplane.model.capacity * 1))))
+      link.setAssignedAirplanes(airplanes)
+      link.cancellationCount = 1
+      val consumptionResultSingleCancellation = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
+      link.setAssignedAirplanes(airplanes)
+      link.minorDelayCount = frequency / 2
+      val consumptionResultHalfMinorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
+      link.setAssignedAirplanes(airplanes)
+      link.majorDelayCount = frequency / 2
+      val consumptionResultHalfMajorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> (capacity / 2))))
+      link.setAssignedAirplanes(airplanes)
+      link.cancellationCount = frequency / 2 
+      val consumptionResultHalfCancellation = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+      
+      link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
+      link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
+      link.setAssignedAirplanes(airplanes)
       link.minorDelayCount = frequency 
       val consumptionResultAllMinorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(List(airplane))
+      link.setAssignedAirplanes(airplanes)
       link.majorDelayCount = frequency 
       val consumptionResultAllMajorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues(Map(ECONOMY -> capacity)), frequency = frequency)
       //link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity))) no sold seats
-      link.setAssignedAirplanes(List(airplane))
+      link.setAssignedAirplanes(airplanes)
       link.cancellationCount = frequency 
       val consumptionResultAllCancelled = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
-      assert(consumptionResultNoDelays.profit > consumptionResultSingleDelay.profit)
-      assert(consumptionResultSingleDelay.profit > consumptionResultAllMinorDelay.profit)
-      assert(consumptionResultAllMinorDelay.profit > consumptionResultAllMajorDelay.profit)
-      assert(consumptionResultAllMajorDelay.profit > consumptionResultAllCancelled.profit)
-      
       assert(consumptionResultNoDelays.profit > 0)
-      assert(consumptionResultSingleDelay.profit > 0)
-//      assert(consumptionResultAllMinorDelay.profit < 0) all minor delays..hmm not sure
+      
+      //single incident should not make it negative
+      assert(consumptionResultSingleMinorDelay.profit > 0)
+      assert(consumptionResultSingleMajorDelay.profit > 0)
+      assert(consumptionResultSingleCancellation.profit > 0)
+      
+      //more severe the incident, the less profit
+      assert(consumptionResultNoDelays.profit > consumptionResultSingleMinorDelay.profit)
+      assert(consumptionResultSingleMinorDelay.profit > consumptionResultSingleMajorDelay.profit)
+      assert(consumptionResultSingleMajorDelay.profit > consumptionResultSingleCancellation.profit)
+      
+      //at half the incident, it should not be profitable for more severe incidents
+      assert(consumptionResultHalfMinorDelay.profit > 0)
+      assert(consumptionResultHalfMajorDelay.profit < 0)
+      assert(consumptionResultHalfCancellation.profit < 0)
+      
+      //at full incident, it should not be profitable in any cases      
+      assert(consumptionResultAllMinorDelay.profit < 0) 
       assert(consumptionResultAllMajorDelay.profit < 0)
       assert(consumptionResultAllCancelled.profit < 0)
     }

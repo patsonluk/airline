@@ -161,7 +161,7 @@ object LinkSimulation {
     }
     
     // delays incur extra cost
-    var delayCompensation = Computation.computeDelayCompensation(link)
+    var delayCompensation = Computation.computeCompensation(link)
     
     val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - delayCompensation - depreciation
 

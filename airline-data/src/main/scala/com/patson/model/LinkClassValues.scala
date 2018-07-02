@@ -25,6 +25,16 @@ case class LinkClassValues(map : Map[LinkClass, Int]) {
     })
   }
   
+  def *(otherValue : LinkClassValues) : LinkClassValues = {
+//    map.foreach {
+//      case (key, value) => map.update(key, (map(key) * multiplier).toInt) 
+//    }
+//    this
+    LinkClassValues(map.map { 
+      case (key, value) => (key, value * otherValue(key)) 
+    })
+  }
+  
   def *(multiplier : Double) : LinkClassValues = {
 //    map.foreach {
 //      case (key, value) => map.update(key, (map(key) * multiplier).toInt) 

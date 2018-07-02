@@ -30,9 +30,9 @@ object AirportSimulation {
   val LOYALTY_AUTO_INCREMENT_WITH_BASE = 0.02
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE = 15 //how much loyalty will increment to just because of being a HQ
-  val LOYALTY_DECREMENT_BY_MINOR_DELAY = 0.02
-  val LOYALTY_DECREMENT_BY_MAJOR_DELAY = 0.05
-  val LOYALTY_DECREMENT_BY_CANCELLATION = 0.2
+  val LOYALTY_DECREMENT_BY_MINOR_DELAY = 1 //if all flights have minor delay
+  val LOYALTY_DECREMENT_BY_MAJOR_DELAY = 5 //if all flights have major delay
+  val LOYALTY_DECREMENT_BY_CANCELLATION = 10 //if all flights are cancelled
   
   private[patson] val LOYALTY_INCREMENT_BY_FLIGHTS = 1.0
   private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 1.0
@@ -155,7 +155,13 @@ object AirportSimulation {
       case(airlineId, soldLinksByAirline) => {
         val targetLoyalty = getTargetLoyalty(soldLinksByAirline, airport.population)
         val currentLoyalty = airport.getAirlineLoyalty(airlineId)
-        val newLoyalty = getNewLoyalty(currentLoyalty, targetLoyalty)  
+        var newLoyalty = getNewLoyalty(currentLoyalty, targetLoyalty)
+        val penalty = getPenalty(soldLinksByAirline)
+        if (penalty > 0) {
+          println("penalty for " + airlineId + " at airport " + airport + " is " + penalty)
+        }
+        newLoyalty = newLoyalty - penalty 
+        
         airport.setAirlineLoyalty(airlineId, newLoyalty)
         
         //println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
@@ -227,14 +233,22 @@ object AirportSimulation {
       val targetLoyaltyBypassengerVolume = estLoyalty
       var targetLoyalty = Math.min(targetLoyaltyByQuality, targetLoyaltyBypassengerVolume).doubleValue()
       
-      //add penalty for delays and cancellation
-      val totalMinorDelayCounts = consumptionDetails.map { _.link.minorDelayCount }.sum
-      val totalMajorDelayCounts = consumptionDetails.map { _.link.majorDelayCount }.sum
-      val totalCancellationCounts = consumptionDetails.map { _.link.cancellationCount }.sum
-      
-      targetLoyalty = targetLoyalty - totalMinorDelayCounts * LOYALTY_DECREMENT_BY_MINOR_DELAY - totalMajorDelayCounts * LOYALTY_DECREMENT_BY_MAJOR_DELAY - totalCancellationCounts * LOYALTY_DECREMENT_BY_CANCELLATION
       targetLoyalty
     }
+  }
+  
+  private[patson] val getPenalty : Seq[LinkConsumptionDetails] => Double = consumptionDetails => {
+      //add penalty for delays and cancellation
+      val totalCapacity = consumptionDetails.map { _.link.capacity.total }.sum
+      val totalMinorDelayCapacity = consumptionDetails.map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.minorDelayCount / linkConsumption.link.frequency }.sum
+      val totalMajorDelayCapacity = consumptionDetails.map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.majorDelayCount / linkConsumption.link.frequency}.sum
+      val totalCancellationCapacity = consumptionDetails.map { linkConsumption => linkConsumption.link.capacity.total * linkConsumption.link.cancellationCount / linkConsumption.link.frequency}.sum
+      
+      val minorDelayPercentage = totalMinorDelayCapacity.toDouble / totalCapacity
+      val majorDelayPercentage = totalMajorDelayCapacity.toDouble / totalCapacity
+      val cancellationPercentage = totalCancellationCapacity.toDouble / totalCapacity
+      
+      minorDelayPercentage * LOYALTY_DECREMENT_BY_MINOR_DELAY + majorDelayPercentage * LOYALTY_DECREMENT_BY_MAJOR_DELAY + cancellationPercentage * LOYALTY_DECREMENT_BY_CANCELLATION
   }
   
   private[patson] val LOYALTY_TO_PASSENGER_VOLUME : Array[Int] = { //array that lists required passenger to reach certain loyalty, the index is the Loyalty

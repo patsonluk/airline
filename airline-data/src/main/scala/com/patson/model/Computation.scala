@@ -133,22 +133,17 @@ object Computation {
   }
   
   
-  def computeDelayCompensation(link : Link) : Int = {
+  def computeCompensation(link : Link) : Int = {
     if (link.majorDelayCount > 0 || link.minorDelayCount > 0) {
-      val soldSeatsPerFlight = link.soldSeats.total / link.frequency
-      val compensationMultiplier = link.flightType match {
-        case FlightType.SHORT_HAUL_DOMESTIC => 1
-        case FlightType.SHORT_HAUL_INTERNATIONAL => 1.5
-        case FlightType.SHORT_HAUL_INTERCONTINENTAL => 2
-        case FlightType.LONG_HAUL_DOMESTIC => 1.5
-        case FlightType.LONG_HAUL_INTERNATIONAL => 2.5
-        case FlightType.LONG_HAUL_INTERCONTINENTAL => 2.5
-        case FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL => 2.5
-      }
+      val soldSeatsPerFlight = link.soldSeats / link.frequency
+      val halfCapacityPerFlight = link.capacity / link.frequency * 0.5
       
-      var delayCompensation = link.majorDelayCount * 200 * compensationMultiplier * soldSeatsPerFlight //200 per passenger 
-      delayCompensation = delayCompensation + link.minorDelayCount * 50 * compensationMultiplier * soldSeatsPerFlight //50 per passenger
-      delayCompensation.toInt
+      val affectedSeatsPerFlight = if (soldSeatsPerFlight.total > halfCapacityPerFlight.total) soldSeatsPerFlight else halfCapacityPerFlight //if less than 50% LF, considered that as 50% LF
+      var compensation = (affectedSeatsPerFlight * link.cancellationCount * 0.5 * link.price).total  //50% of ticket price, as there's some penalty for that already
+      compensation = compensation + (affectedSeatsPerFlight * link.majorDelayCount * 0.5 * link.price).total //50% of ticket price
+      compensation = compensation + (affectedSeatsPerFlight * link.minorDelayCount * 0.2 * link.price).total //20% of ticket price
+      
+      compensation.toInt
     } else {
       0
     }
