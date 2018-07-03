@@ -256,7 +256,9 @@ function refreshPanels(airlineId) {
 	    success: function(airline) {
 	    	activeAirline = airline
 	    	refreshTopBar(airline)
-	    	refreshLinks()
+	    	if ($("#worldMapCanvas").is(":visible")) {
+	    		refreshLinks()
+	    	}
 	    	if ($("#linkDetails").is(":visible")) {
 	    		refreshLinkDetails(selectedLink)
 	    	}
