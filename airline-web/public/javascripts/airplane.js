@@ -44,6 +44,9 @@ function loadAirplaneModelOwnerInfo() {
 	    	$.each(ownedModels, function(key, model) {
 	    		ownedModelIds.push(model.id)
 	    		loadedModelsOwnerInfo.push(model)
+	    		model.assignedAirplanes.sort(sortByProperty('condition'))
+	    		model.availableAirplanes.sort(sortByProperty('condition'))
+	    		
 	    		model.totalOwned = model.assignedAirplanes.length + model.availableAirplanes.length + model.constructingAirplanes.length
 	    		model.rejection = loadedModelsById[model.id].rejection
 	  		});
