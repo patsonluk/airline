@@ -160,7 +160,10 @@ object AirportSimulation {
 //        if (penalty > 0) {
 //          println("penalty for " + airlineId + " at airport " + airport + " is " + penalty)
 //        }
-        newLoyalty = newLoyalty - penalty 
+        newLoyalty = newLoyalty - penalty
+        if (newLoyalty <= 0) {
+          newLoyalty = 0
+        }
         
         airport.setAirlineLoyalty(airlineId, newLoyalty)
         
