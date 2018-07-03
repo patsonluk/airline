@@ -53,7 +53,6 @@ object AirplaneSource {
       
       
       while (resultSet.next()) {
-        
         val airplane = Airplane(allModels(resultSet.getInt("model")), Airline.fromId(resultSet.getInt("owner")), resultSet.getInt("constructed_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"))
         airplane.id = resultSet.getInt("id")
         airplanes.append(airplane)

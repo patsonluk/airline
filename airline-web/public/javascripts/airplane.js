@@ -3,17 +3,14 @@ var loadedModelsOwnerInfo = {}
 var selectedModelId
 var selectedModel
 
-$( document ).ready(function() {
-	loadAirplaneModels()
-})
-
 function loadAirplaneModels() {
 	loadedModelsById = {}
 	$.ajax({
 		type: 'GET',
-		url: "airplane-models",
+		url: "airlines/" + activeAirline.id + "/airplane-models",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
+	    async: false,
 	    success: function(models) {
 	    	$.each(models, function( key, model ) {
 	    		loadedModelsById[model.id] = model
@@ -48,6 +45,7 @@ function loadAirplaneModelOwnerInfo() {
 	    		ownedModelIds.push(model.id)
 	    		loadedModelsOwnerInfo.push(model)
 	    		model.totalOwned = model.assignedAirplanes.length + model.availableAirplanes.length + model.constructingAirplanes.length
+	    		model.rejection = loadedModelsById[model.id].rejection
 	  		});
 	    	
 	    	//now add all the models that the airline does not own
@@ -176,6 +174,7 @@ function replaceAirplane(airplaneId) {
 
 
 function updateModelInfo(modelId) {
+	loadAirplaneModels()
 	model = loadedModelsById[modelId]
 	$('#airplaneModelDetails #selectedModel').val(modelId)
 	$('#airplaneModelDetails #modelName').text(model.name)
@@ -197,14 +196,15 @@ function updateModelInfo(modelId) {
 		$('#airplaneModelDetails .add').text('Place Order')
 	}
 	
-	if (activeAirline.balance < model.price) {
+	if (model.rejection) {
+		$('#airplaneModelDetails .rejectionSpan').text(model.rejection)
 		$('#airplaneModelDetails .rejection').show()
 		$('#airplaneModelDetails .add').hide()
 	} else {
+		$('#airplaneModelDetails .rejectionSpan').text('')
 		$('#airplaneModelDetails .rejection').hide()
 		$('#airplaneModelDetails .add').show()
 	}
-	
 }
 
 function selectAirplaneModel(model) {
@@ -236,10 +236,12 @@ function selectAirplaneModel(model) {
 		$('#airplaneCanvas .delivery').addClass('warning')
 		$('#airplaneCanvas .add').text('Place Order')
 	}
-	if (activeAirline.balance < model.price) {
+	if (model.rejection) {
+		$('#airplaneCanvas .rejectionSpan').text(model.rejection)
 		$('#airplaneCanvas .rejection').show()
 		$('#airplaneCanvas .add').hide()
 	} else {
+		$('#airplaneCanvas .rejectionSpan').text('')
 		$('#airplaneCanvas .rejection').hide()
 		$('#airplaneCanvas .add').show()
 	}
@@ -368,7 +370,8 @@ function showAirplaneCanvas() {
 	setActiveDiv($("#airplaneCanvas"))
 	highlightTab($('#airplaneCanvasTab'))
 	
-	var selectedSortHeader = $('#airplaneModelSortHeader .cell.selected') 
+	var selectedSortHeader = $('#airplaneModelSortHeader .cell.selected')
+	loadAirplaneModels()
     loadAirplaneModelOwnerInfo()
     updateAirplaneModelTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
 }

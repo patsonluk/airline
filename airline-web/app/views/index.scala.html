@@ -340,51 +340,53 @@
 			    	</div>
 	<!-- 		    	end details panel -->
 		   			<div id="extendedPanel" class="section" style="width: 100%; float: left; display: none;">
-						<div class="table" id="airplaneModelDetails" style="width: 100%; display: none;">
-							<h4>Airplane Model Details</h4>
-		<!-- 					Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/> -->
-							<div class="table-row">
-				    			<div class="label"><h5>Model:</h5></div>
-				    			<div class="value" id="modelName"></div>
+		   				<div id="airplaneModelDetails" style="width: 100%; display: none;">
+							<div class="table">
+								<h4>Airplane Model Details</h4>
+			<!-- 					Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/> -->
+								<div class="table-row">
+					    			<div class="label"><h5>Model:</h5></div>
+					    			<div class="value" id="modelName"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Max Capacity:</h5></div>
+					    			<div class="value" id="capacity"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Max Flying Range:</h5></div>
+					    			<div class="value" id="range"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Fuel Burn:</h5></div>
+					    			<div class="value" id="fuelBurn"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Speed:</h5></div>
+					    			<div class="value" id="speed"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Max Lifespan:</h5></div>
+					    			<div class="value" id="lifespan"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Country:</h5></div>
+					    			<div class="value" id="airplaneCountry"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Purchase Price:</h5></div>
+					    			<div class="value" id="price"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Delivery Time:</h5></div>
+					    			<div class="value delivery"></div>
+						    	</div>
+						    	<div class="button add" onclick="addAirplane($('#airplaneModelDetails #selectedModel').val(), 1, true)">Purchase</div>
+						    	<input type="hidden" id="selectedModel"/>
+							</div>
+							<div class="rejection">
+				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
 					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Max Capacity:</h5></div>
-				    			<div class="value" id="capacity"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Max Flying Range:</h5></div>
-				    			<div class="value" id="range"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Fuel Burn:</h5></div>
-				    			<div class="value" id="fuelBurn"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Speed:</h5></div>
-				    			<div class="value" id="speed"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Max Lifespan:</h5></div>
-				    			<div class="value" id="lifespan"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Country:</h5></div>
-				    			<div class="value" id="airplaneCountry"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Purchase Price:</h5></div>
-				    			<div class="value" id="price"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Delivery Time:</h5></div>
-				    			<div class="value delivery"></div>
-					    	</div>
-					    	<div class="rejection">
-				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning">Not enough cash to purchase this model</span>
-					    	</div>
-					    	<div class="button add" onclick="addAirplane($('#airplaneModelDetails #selectedModel').val(), 1, true)">Purchase</div>
-					    	<input type="hidden" id="selectedModel"/>
-						</div>
+					    </div>
 					</div>
 <!-- 				end extended panel -->
 	    	   </div>
@@ -668,7 +670,7 @@
   			</div>
 <!--   			end country canvas -->
   			<div id="airplaneCanvas" style="height: 100%; display: none;">
-  				<div style="height: 90% ; width : 65%; float: left;">
+  				<div id="airplaneModelDetails" style="height: 90% ; width : 65%; float: left;">
   					<div style="height: 95% ; width : 95%; float: left;" class="section"> 
 		  	  			<div class="table data" style="height: 20px; width: 100%">
 		 	  				<div class="table-header" id="airplaneModelSortHeader">
@@ -701,50 +703,52 @@
 <!-- 				end left panel				  				 -->
 				<div style="width: 35%; float: left">
 					<div id="airplaneModelDetail" style="width: 100%; float: left; display: none;">
-						<div class="table section" style="width: 95%;">
-							<h4>Airplane Model Details</h4>
-							<div class="table-row">
-				    			<div class="label"><h5>Model:</h5></div>
-				    			<div class="value" id="modelName"></div>
+						<div class="section" style="width: 95%;"/>
+							<div class="table" style="width: 100%;">
+								<h4>Airplane Model Details</h4>
+								<div class="table-row">
+					    			<div class="label"><h5>Model:</h5></div>
+					    			<div class="value" id="modelName"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Max Capacity:</h5></div>
+					    			<div class="value" id="capacity"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Max Flying Range:</h5></div>
+					    			<div class="value" id="range"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Fuel Burn:</h5></div>
+					    			<div class="value" id="fuelBurn"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Speed:</h5></div>
+					    			<div class="value" id="speed"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Max Lifespan:</h5></div>
+					    			<div class="value" id="lifespan"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Country:</h5></div>
+					    			<div class="value" id="airplaneCountry"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Purchase Price:</h5></div>
+					    			<div class="value" id="price"></div>
+						    	</div>
+						    	<div class="table-row">
+					    			<div class="label"><h5>Delivery Time:</h5></div>
+					    			<div class="value delivery"></div>
+						    	</div>
+						    	<div class="button add" onclick="addAirplane($('#airplaneCanvas #selectedModel').val(), 1, false)">Purchase</div>
+						    	<input type="hidden" id="selectedModel"/>
+				    		</div>
+				    		<div class="rejection">
+				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
 					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Max Capacity:</h5></div>
-				    			<div class="value" id="capacity"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Max Flying Range:</h5></div>
-				    			<div class="value" id="range"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Fuel Burn:</h5></div>
-				    			<div class="value" id="fuelBurn"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Speed:</h5></div>
-				    			<div class="value" id="speed"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Max Lifespan:</h5></div>
-				    			<div class="value" id="lifespan"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Country:</h5></div>
-				    			<div class="value" id="airplaneCountry"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Purchase Price:</h5></div>
-				    			<div class="value" id="price"></div>
-					    	</div>
-					    	<div class="table-row">
-				    			<div class="label"><h5>Delivery Time:</h5></div>
-				    			<div class="value delivery"></div>
-					    	</div>
-					    	<div class="rejection">
-				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning">Not enough cash to purchase this model</span>
-					    	</div>
-					    	<div class="button add" onclick="addAirplane($('#airplaneCanvas #selectedModel').val(), 1, false)">Purchase</div>
-					    	<input type="hidden" id="selectedModel"/>
-			    		</div>
+					    </div>
 			    		<div class="section" style="width : 95%; float: left; overflow: auto;"">
 		  					<h4>Inventory</h4>
 					  		<div id="airplaneInventoryList"></div>

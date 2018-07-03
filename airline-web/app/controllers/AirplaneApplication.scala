@@ -17,9 +17,12 @@ import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.model.AirlineTransaction
+import com.patson.data.CountrySource
 
 
 class AirplaneApplication extends Controller {
+  val BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD = 0
+  
   implicit object AirplaneWithAssignedLinkWrites extends Writes[(Airplane, Option[Link])] {
     def writes(airplaneWithAssignedLink : (Airplane, Option[Link])): JsValue = {
       val airplane = airplaneWithAssignedLink._1
@@ -40,15 +43,70 @@ class AirplaneApplication extends Controller {
   }
   
   
-  
-  
   def getAirplaneModels() = Action {
     val models = ModelSource.loadAllModels()
     
-    val constructingAirplaneCounts : Map[Int, Int] = AirplaneSource.loadConstructingAirplanes.groupBy(_.model.id).mapValues(_.size) 
-    
     Ok(Json.toJson(models))
   }
+  
+  def getAirplaneModelsByAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val models = ModelSource.loadAllModels()
+    
+    val modelWithRejections : Map[Model, Option[String]]= getRejections(models, request.user)
+    
+    Ok(Json.toJson(modelWithRejections.toList.map {
+      case(model, rejectionOption) => {
+        rejectionOption match {
+          case Some(rejection) => Json.toJson(model).asInstanceOf[JsObject] + ("rejection" -> JsString(rejection))
+          case None => Json.toJson(model)
+        }
+      }
+    }))
+  }
+  
+  def getRejections(models : List[Model], airline : Airline) : Map[Model, Option[String]] = {
+     
+    val countryRelations : Map[String, Int] = airline.getCountryCode() match {
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationShips(homeCountry).map {
+        case ((homeCountry, otherCountry), relationship) => (otherCountry, relationship)
+      }.toMap
+      case None => Map.empty
+    }    
+    
+    val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
+    models.map { model =>
+      (model, getRejection(model, countryRelations.getOrElse(model.countryCode, 0), ownedModels, airline))
+    }.toMap
+    
+  }
+  
+  def getRejection(model: Model, airline : Airline) : Option[String] = {
+    val countryRelation = airline.getCountryCode() match {
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationship(homeCountry, model.countryCode)
+      case None => 0
+    }
+    
+    val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
+    getRejection(model, countryRelation, ownedModels, airline)
+  }
+  
+  def getRejection(model: Model, countryRelationship : Int, ownedModels : Set[Model], airline : Airline) : Option[String]= {
+    if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
+      return Some("The company refuses to sell " + model.name + " to your airline due to bad country relationship")
+    }
+    
+    if (!ownedModels.contains(model) && ownedModels.size >= airline.airlineGrade.getModelsLimit) {
+      return Some("Can only own up to " + airline.airlineGrade.getModelsLimit + " different airplane model(s) at current airline grade")
+    }
+    
+    if (model.price > airline.getBalance()) {
+      return Some("Not enough cash to purchase this airplane model")
+    }
+    
+    return None
+  }
+  
+  
   
   def getAirplanes(airlineId : Int, simpleResult : Boolean) = AuthenticatedAirline(airlineId) {
     if (simpleResult) {
@@ -155,8 +213,10 @@ class AirplaneApplication extends Controller {
       val constructedCycle = currentCycle + modelGet.get.constructionTime
       
       val airplane = Airplane(modelGet.get, airline, constructedCycle = constructedCycle , Airplane.MAX_CONDITION, depreciationRate = 0, value = modelGet.get.price)
-      if (airline.airlineInfo.balance < (airplane.model.price * quantity)) { //not enough money!
-        BadRequest("Not enough money")   
+      
+      val rejectionOption = getRejection(modelGet.get, airline)
+      if (rejectionOption.isDefined) {
+        BadRequest(rejectionOption.get)   
       } else {
         
         val amount = -1 * airplane.model.price * quantity

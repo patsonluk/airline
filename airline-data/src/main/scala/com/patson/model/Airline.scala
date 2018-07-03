@@ -81,6 +81,10 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
       }
       
     }
+    
+    val getModelsLimit =  {
+      value 
+    }
   }
   
   object AirlineGrade {
