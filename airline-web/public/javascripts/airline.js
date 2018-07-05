@@ -1025,6 +1025,17 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
+		if (modelPlanLinkInfo.airplanes.length > 0) {
+			modelPlanLinkInfo.owned = true
+		} else {
+			modelPlanLinkInfo.owned = false
+		}
+	})
+	
+	linkInfo.modelPlanLinkInfo = sortPreserveOrder(linkInfo.modelPlanLinkInfo, "capacity", true)
+	linkInfo.modelPlanLinkInfo = sortPreserveOrder(linkInfo.modelPlanLinkInfo, "owned", false)
+	
+	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		var modelId = modelPlanLinkInfo.modelId
 		var modelname = modelPlanLinkInfo.modelName
 		

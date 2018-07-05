@@ -201,6 +201,44 @@ function getOpennessSpan(openness) {
 	
 }
 
+function sortPreserveOrder(array, property, ascending) {
+	if (ascending == undefined) {
+		ascending = true
+	}
+    var sortOrder = 1;
+    
+    if(!ascending) {
+        sortOrder = -1;
+    }
+    
+	var sortArray = array.map(function(data, idx){
+	    return {idx:idx, data:data}
+	})
+
+	sortArray.sort(function(a, b) {
+		var aVal = a.data[property]
+    	var bVal = b.data[property]
+    	if (Array.isArray(aVal) && Array.isArray(bVal)) {
+    		aVal = aVal.length
+    		bVal = bVal.length
+    	}
+    	var result = (aVal < bVal) ? -1 : (aVal > bVal) ? 1 : 0;
+    	if (result == 0) {
+    		return a.idx - b.idx
+    	} else {
+    		return result * sortOrder;
+    	}
+	});
+
+	var result = sortArray.map(function(val){
+	    return val.data
+	});
+	
+	console.log(result)
+	
+	return result;
+}
+
 function sortByProperty(property, ascending) {
 	if (ascending == undefined) {
 		ascending = true
