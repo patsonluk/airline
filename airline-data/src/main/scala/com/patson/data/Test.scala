@@ -28,10 +28,10 @@ object Test extends App {
 //     println(WikiUtil.queryOtherPicture("Vancouver"))
      
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
-//       AirportFeaturePatcher.patchFeatures()
+       AirportFeaturePatcher.patchFeatures()
     
-    Patchers.patchAirlineCode()
-    Patchers.patchFlightNumber()
+//    Patchers.patchAirlineCode()
+//    Patchers.patchFlightNumber()
 //  Patchers.airplaneModelPatcher()
   
 }
