@@ -468,7 +468,8 @@
 			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase(true)">Build Headquarter</div>
     					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase(false)">Build Base</div>
     					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick="buildBase(false, parseInt($('#airportDetailsBaseScale').text()) + 1)">Upgrade Base</div>
-    					<div class="button" id="deleteBaseButton" style="display: none;" onclick="deleteBase()">Delete Base</div>
+    					<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed.", deleteBase)'>Remove Base</div>
+    					
 <!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
   					</div>
   					<div id="airportDetails" class="section" style="width: 90%; float:left;">
