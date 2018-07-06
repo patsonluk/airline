@@ -275,7 +275,7 @@ function refreshPanels(airlineId) {
 
 var totalmillisecPerWeek = 7 * 24 * 60 * 60 * 1000
 var refreshInterval = 100 //100 millsec
-var incrementPerInterval = totalmillisecPerWeek / (4 * 60 * 1000) * refreshInterval //current 4 minutes per week
+var incrementPerInterval = totalmillisecPerWeek / (10 * 60 * 1000) * refreshInterval //current 10 minutes per week
 var refreshIntervalId
 var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -287,7 +287,7 @@ function updateTime(cycle, fraction) {
 		refreshIntervalId = setInterval( function() {
 			currentTime += incrementPerInterval
 			var date = new Date(currentTime)
-			$("#currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) + '/' +  date.getFullYear() + " " + padBefore(date.getHours(), "0", 2) + ":00")
+			$("#currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) +  " " + padBefore(date.getHours(), "0", 2) + ":00")
 		}, refreshInterval);
 	}
 }
