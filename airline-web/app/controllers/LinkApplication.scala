@@ -307,6 +307,12 @@ class LinkApplication extends Controller {
         return BadRequest("Link is rejected: " + rejectionReason.get);
       }
       
+      if (existingLink.isEmpty) {
+        incomingLink.flightNumber = LinkApplication.getNextAvailableFlightNumber(request.user)
+      } else {
+        incomingLink.flightNumber = existingLink.get.flightNumber
+      }
+      
       println("PUT " + incomingLink)
             
       if (existingLink.isEmpty) {
@@ -522,6 +528,9 @@ class LinkApplication extends Controller {
             //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum 
             
             val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
+            val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
+            val flightCode = LinkApplication.getFlightCode(request.user, flightNumber)
+            
             
             var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
                                         "fromAirportName" -> fromAirport.name,
@@ -535,6 +544,7 @@ class LinkApplication extends Controller {
                                         "toAirportLatitude" -> toAirport.latitude,
                                         "toAirportLongitude" -> toAirport.longitude,
                                         "toCountryCode" -> toAirport.countryCode,
+                                        "flightCode" -> flightCode,
                                         "mutualRelationship" -> relationship,
                                         "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,
@@ -695,10 +705,32 @@ class LinkApplication extends Controller {
     
     (maxFrequencyFromAirport, maxFrequencyToAirport)
   }
+  
+  
 }
 
 object LinkApplication {
+  def getFlightCode(airline : Airline, flightNumber : Int) = {
+    airline.getAirlineCode + " " + (1000 + flightNumber).toString.substring(1, 4)
+  }
   
+  
+  def getNextAvailableFlightNumber(airline : Airline) : Int = {
+    val flightNumbers = LinkSource.loadFlightNumbers(airline.id)
+    
+    val sortedFlightNumbers = flightNumbers.sorted
+    
+    println("existing " + sortedFlightNumbers)
+    var candidate = 1
+    sortedFlightNumbers.foreach { existingNumber =>
+      if (candidate < existingNumber) {
+        return candidate
+      }
+      candidate = existingNumber + 1
+    }
+    
+    return candidate
+  }
 
   
 }

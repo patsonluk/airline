@@ -31,6 +31,13 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
     airlineInfo.countryCode
   }
   
+  def setAirlineCode(airlineCode : String) = {
+    airlineInfo.airlineCode = airlineCode
+  }
+  def getAirlineCode() = {
+    airlineInfo.airlineCode
+  }
+  
   def setBases(bases : List[AirlineBase]) {
     this.bases = bases
   }
@@ -117,17 +124,27 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   def getServiceFunding() = airlineInfo.serviceFunding
   def getReputation() = airlineInfo.reputation
   def getMaintenanceQuality() = airlineInfo.maintenanceQuality
-  def getAirlineCode() = {
-    var code = name.split("\\s+").foldLeft("")( (foldString, nameToken) => foldString + nameToken.charAt(0).toUpper)
+  
+  def getDefaultAirlineCode() : String = {
+    var code = name.split("\\s+").foldLeft("")( (foldString, nameToken) => {
+      val firstCharacter = nameToken.charAt(0)
+      if (Character.isLetter(firstCharacter)) {
+        foldString + firstCharacter.toUpper
+      } else {
+        foldString
+      }
+    })
+      
     if (code.length() > 2) {
-      code.substring(0, 2)
-    } else {
-      code
+      code = code.substring(0, 2)
+    } else if (code.length() < 2) {
+      code = name.substring(0, 2).toUpperCase()
     }
+    code
   }
 }
 
-case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double, var countryCode : Option[String] = None)
+case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "")
 
 object TransactionType extends Enumeration {
   type TransactionType = Value

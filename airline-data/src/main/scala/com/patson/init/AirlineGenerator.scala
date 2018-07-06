@@ -45,6 +45,7 @@ object AirlineGenerator extends App {
       newAirline.setMaintainenceQuality(100)
       newAirline.setServiceFunding(100000)
       newAirline.setCountryCode(baseAirport.countryCode)
+      newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
       
       val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 1, 1, true)
       //airlines.put(newAirline, airlineBase)
@@ -63,8 +64,9 @@ object AirlineGenerator extends App {
       generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 150, 50, models)
       //generate Inter-zone links
       generateLinks(newAirline, baseAirport, airports.filter { airport => airport.zone != baseAirport.zone }, 50, 5, models)
-      
     }
+    
+    Patchers.patchFlightNumber()
   }
   
   def generateLinks(airline : Airline, fromAirport : Airport,  toAirports : List[Airport], poolSize: Int, linkCount : Int, airplaneModels : List[Model]) {

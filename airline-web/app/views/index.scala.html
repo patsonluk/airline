@@ -138,6 +138,10 @@
 					    				<div class="value clickable" id="linkToAirport"></div>
 					    			</div>
 					    			<div class="table-row">
+					    				<div class="label"><h5>Flight Code:</h5></div>
+					    				<div class="value" id="linkFlightCode"></div>
+					    			</div>
+					    			<div class="table-row">
 					    				<div class="label"><h5>Distance:</h5></div>
 					    				<div class="value" id="linkDistance"></div>
 					    			</div>
@@ -250,6 +254,10 @@
 					    		<div class="table-row">
 					    			<div class="label"><h5>To:</h5></div>
 					    			<div class="value clickable" id="planLinkToAirportName"></div>
+					    		</div>
+					    		<div class="table-row">
+					    			<div class="label"><h5>To:</h5></div>
+					    			<div class="value clickable" id="planLinkFlightCode"></div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Mutual Relationship:</h5></div>
@@ -810,11 +818,12 @@
 		 	  					<div class="cell value">
 		 	  						<span id="airlineCodeDisplaySpan">
 		 	  							<span id="airlineCode"></span>
-		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editFlightCode()"/>	
+		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineCode()"/>	
 		 	  						</span>
 		 	  						<span id="airlineCodeInputSpan" style="display: none;">
-		 	  							<input id="airlineCodeInput" type="text"/>
-		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setFlightCode($('#airlineCodeInput').val())"/>
+		 	  							<input id="airlineCodeInput" type="text" onkeyup="validateAirlineCode($(this).val())"/>
+		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setAirlineCode($('#airlineCodeInput').val())"/>
+		 	  							<span class="warning" style="display:none;">Code should be exactly 2 letters</span>
 		 	  						</span>
 		 	  					</div>
 		 	  				</div>

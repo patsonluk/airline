@@ -44,7 +44,8 @@ class AirlineApplication extends Controller {
       "serviceFunding" -> JsNumber(airline.airlineInfo.serviceFunding),
       "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
-      "gradeValue" -> JsNumber(airline.airlineGrade.value))
+      "gradeValue" -> JsNumber(airline.airlineGrade.value),
+      "airlineCode" -> JsString(airline.getAirlineCode()))
       
       airline.getCountryCode.foreach { countryCode =>
         values = values :+ ("countryCode" -> JsString(countryCode))
@@ -321,6 +322,27 @@ class AirlineApplication extends Controller {
       
       AirlineSource.saveAirlineInfo(airline)
       Ok(Json.toJson(airline))
+    }
+  }
+    
+ def setAirlineCode(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.body.isInstanceOf[AnyContentAsJson]) {
+      var airlineCode = request.body.asInstanceOf[AnyContentAsJson].json.\("airlineCode").as[String]
+      
+      if (airlineCode.length != 2) {
+        BadRequest("Should be 2 characters") 
+      } else if (airlineCode.filter(Character.isLetter(_)).length != 2) {
+        BadRequest("Should be all letters")
+      } 
+      
+      airlineCode = airlineCode.toUpperCase()
+      
+      val airline = request.user
+      airline.setAirlineCode(airlineCode)
+      AirlineSource.saveAirlineCode(airlineId, airlineCode)
+      Ok(Json.toJson(airline))
+    } else {
+      BadRequest("Cannot Set airline Code")
     }
   }
   

@@ -210,6 +210,7 @@ object Meta {
       "maintenance_quality DECIMAL(5,2)," +
       "reputation DECIMAL(5,2)," +
       "country_code CHAR(2)," +
+      "airline_code CHAR(2)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
 
@@ -332,6 +333,7 @@ object Meta {
       "duration INTEGER, " +
       "frequency INTEGER," +
       "flight_type INTEGER," + 
+      "flight_number INTEGER," +
       "FOREIGN KEY(from_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(to_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +

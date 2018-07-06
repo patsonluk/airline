@@ -22,6 +22,8 @@ function updateAirlineDetails() {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airline) {
+	    	$('#airlineCode').text(airline.airlineCode)
+	    	$('#airlineCodeInput').val(airline.airlineCode)
 	    	$('#destinations').text(airline.destinations)
 	    	$('#fleetSize').text(airline.fleetSize)
 	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
@@ -170,10 +172,47 @@ function setServiceFunding(funding) {
 	});
 }
 
+function editAirlineCode() {
+	$('#airlineCodeDisplaySpan').hide()
+	$('#airlineCodeInputSpan').show()
+}
+
+function validateAirlineCode(airlineCode) {
+	if (/[^a-zA-Z]/.test(airlineCode) || airlineCode.length != 2) {
+		$('#airlineCodeInputSpan .warning').show()
+	} else {
+		$('#airlineCodeInputSpan .warning').hide()
+	}
+}
+
+function setAirlineCode(airlineCode) {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/airline-code"
+    var data = { "airlineCode" : airlineCode }
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(airline) {
+	    	activeAirline = airline
+	    	$('#airlineCode').text(airline.airlineCode)
+	    	$('#airlineCodeInputSpan').hide()
+	    	$('#airlineCodeDisplaySpan').show()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 function editServiceFunding() {
 	$('#serviceFundingDisplaySpan').hide()
 	$('#serviceFundingInputSpan').show()
 }
+
 
 function updateServiceFundingDetails() {
 	$('#currentServiceQuality').text(activeAirline.serviceQuality)

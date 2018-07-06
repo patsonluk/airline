@@ -75,6 +75,24 @@ object Patchers {
     
     connection.close
   }
+  
+  def patchAirlineCode() = {
+    AirlineSource.loadAllAirlines(false).foreach { airline =>
+      val code = airline.getDefaultAirlineCode
+      println(code)
+      AirlineSource.saveAirlineCode(airline.id, code)
+    }
+  }
+  
+  def patchFlightNumber() = {
+    AirlineSource.loadAllAirlines(false).foreach { airline =>
+      var counter = 0
+      LinkSource.updateLinks(LinkSource.loadLinksByAirlineId(airline.id).map { link =>
+        counter = counter + 1
+        link.copy(flightNumber = counter)
+      })
+    }
+  }
   //
 }
 

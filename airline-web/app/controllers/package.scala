@@ -31,6 +31,7 @@ package object controllers {
       "id" -> JsNumber(airline.id),
       "name" -> JsString(airline.name),
       "reputation" -> JsNumber(airline.getReputation()),
+      "airlineCode" -> JsString(airline.getAirlineCode()),
       "baseCount" -> JsNumber(airline.getBases().size)))
       
       if (airline.getCountryCode.isDefined) {
@@ -165,6 +166,7 @@ package object controllers {
       "toLatitude" -> JsNumber(link.to.latitude),
       "toLongitude" -> JsNumber(link.to.longitude),
       "flightType" -> JsString(link.flightType.toString()),
+      "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber)),
       "assignedAirplanes" -> Json.toJson(link.getAssignedAirplanes())))
       
       link.getAssignedModel().foreach { model =>

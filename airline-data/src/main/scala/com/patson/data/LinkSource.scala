@@ -116,7 +116,8 @@ object LinkSource {
             resultSet.getInt("quality"),
             resultSet.getInt("duration"),
             resultSet.getInt("frequency"),
-            FlightType(resultSet.getInt("flight_type")))
+            FlightType(resultSet.getInt("flight_type")),
+            resultSet.getInt("flight_number"))
           link.id = resultSet.getInt("id")
           
           assignedAirplaneCache.get(link.id).foreach {
@@ -132,6 +133,28 @@ object LinkSource {
       resultSet.close()
       preparedStatement.close()
       links.toList
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def loadFlightNumbers(airlineId : Int) : List[Int] = {
+    val connection = Meta.getConnection()
+    
+    try {  
+      val preparedStatement = connection.prepareStatement("SELECT flight_number FROM " + LINK_TABLE + " WHERE airline = ?")
+      
+      preparedStatement.setInt(1, airlineId)
+      
+      val resultSet = preparedStatement.executeQuery()
+      
+      val flightNumbers = ListBuffer[Int]() 
+      while (resultSet.next()) {
+        flightNumbers.append(resultSet.getInt("flight_number"))
+      } 
+      resultSet.close()
+      preparedStatement.close()
+      flightNumbers.toList
     } finally {
       connection.close()
     }
@@ -217,7 +240,7 @@ object LinkSource {
   }
   
   def saveLink(link : Link) : Option[Link] = {
-     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.flightType, link.getAssignedAirplanes) match { 
+     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.flightType, link.flightNumber, link.getAssignedAirplanes) match { 
        case Some(generatedId) => 
          link.id = generatedId
          Some(link)
@@ -226,10 +249,10 @@ object LinkSource {
      }
   }
   
-  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, airplanes : List[Airplane] = List.empty) : Option[Int] = {
+  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, flightNumber : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
     try {
       preparedStatement.setInt(1, fromAirportId)
@@ -246,6 +269,7 @@ object LinkSource {
       preparedStatement.setInt(12, duration)
       preparedStatement.setInt(13, frequency)
       preparedStatement.setInt(14, flightType.id)
+      preparedStatement.setInt(15, flightNumber)
       
       val updateCount = preparedStatement.executeUpdate()
       //println("Saved " + updateCount + " link!")
@@ -270,7 +294,7 @@ object LinkSource {
   def saveLinks(links : List[Link]) : Int = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     var updateCount = 0
     connection.setAutoCommit(false)
     try {
@@ -289,6 +313,7 @@ object LinkSource {
         preparedStatement.setInt(12, link.duration)
         preparedStatement.setInt(13, link.frequency)
         preparedStatement.setInt(14, link.flightType.id)
+        preparedStatement.setInt(15, link.flightNumber)
         
         updateCount += preparedStatement.executeUpdate()
         //println("Saved " + updateCount + " link!")
@@ -315,7 +340,7 @@ object LinkSource {
   def updateLink(link : Link) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ? WHERE id = ?")
 
     try {
       preparedStatement.setInt(1, link.price(ECONOMY))
@@ -328,7 +353,8 @@ object LinkSource {
       preparedStatement.setInt(8, link.duration)
       preparedStatement.setInt(9, link.frequency)
       preparedStatement.setInt(10, link.flightType.id)
-      preparedStatement.setInt(11, link.id)
+      preparedStatement.setInt(11, link.flightNumber)
+      preparedStatement.setInt(12, link.id)
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
@@ -348,7 +374,7 @@ object LinkSource {
   def updateLinks(links : List[Link]) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ? WHERE id = ?")
 
     connection.setAutoCommit(false)
     try {
@@ -363,7 +389,8 @@ object LinkSource {
         preparedStatement.setInt(8, link.duration)
         preparedStatement.setInt(9, link.frequency)
         preparedStatement.setInt(10, link.flightType.id)
-        preparedStatement.setInt(11, link.id)
+        preparedStatement.setInt(11, link.flightNumber)
+        preparedStatement.setInt(12, link.id)
         preparedStatement.addBatch()
       }
       
