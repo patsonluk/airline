@@ -96,7 +96,7 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
     }
     
     val getModelsLimit =  {
-      value 
+      if (value >= 10) 10 else value 
     }
   }
   
