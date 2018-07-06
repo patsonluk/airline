@@ -56,7 +56,7 @@ object Model {
                       Model("Airbus A318", capacity = 132, fuelBurn = (132 * 3).toInt, speed = 829, range = 7800, price = 90000000, lifespan = 35 * 52, constructionTime = 8, countryCode = "NL"),
                       Model("Bombardier CS100", capacity = 133, fuelBurn = (133 * 3.5).toInt, speed = 828, range = 5741, price = 80000000, lifespan = 35 * 52, constructionTime = 8, countryCode = "CA"),
                       Model("Boeing 737-700C", capacity = 140, fuelBurn = (140 * 3.5).toInt, speed = 825, range = 6083, price = 85000000, lifespan = 35 * 52, constructionTime = 12, countryCode = "US"),
-                      Model("Boeing 737-800", capacity = 184, fuelBurn = (184 * 4.0).toInt, speed = 825, range = 5436, price = 100000000, lifespan = 35 * 52, constructionTime = 24, countryCode = "US"),
+                      Model("Boeing 737-800", capacity = 184, fuelBurn = (184 * 3.8).toInt, speed = 825, range = 5436, price = 100000000, lifespan = 35 * 52, constructionTime = 24, countryCode = "US"),
                       Model("Tupolev Tu-204", capacity = 210, fuelBurn = (210 * 4.5).toInt, speed = 810, range = 4300, price = 50000000, lifespan = 25 * 52, constructionTime = 24, countryCode = "RU"),
                       Model("Boeing 787-8 Dreamliner", capacity = 250, fuelBurn = (250 * 4.5).toInt, speed = 907, range = 13621, price = 125000000, lifespan = 35 * 52, constructionTime = 36, countryCode = "US"),
                       Model("Ilyushin Il-96-300", capacity = 300, fuelBurn = (300 * 5).toInt, speed = 850, range = 11500, price = 60000000, lifespan = 25 * 52, constructionTime = 36, countryCode = "RU"),
