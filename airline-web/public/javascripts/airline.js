@@ -105,6 +105,10 @@ function buildBase(isHeadquarter, scale) {
 	    success: function() {
 	    	updateAllPanels(activeAirline.id)
 	    	showWorldMap()
+	    	if (scale == 1 && isHeadquarter) {
+	    		$('#planLinkFromAirportId').val(activeAirline.headquarterAirport.airportId)
+	    	}
+	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
