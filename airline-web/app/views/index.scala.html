@@ -802,6 +802,60 @@
 <!--   			end airplane canvas -->
 			<div id="officeCanvas" style="height: 100%; display: none;">
 				<div style="width : 70%; float: left;">
+					<div class="section" style="width: 95%; float: left;">
+						<h4>Airline Details</h4>
+						<div class="table" style="width: 50%; float: left;">
+							<div class="table-row">
+		 	  					<div class="cell label">Airline Code:</div>
+		 	  					<div class="cell value">
+		 	  						<span id="airlineCodeDisplaySpan">
+		 	  							<span id="airlineCode"></span>
+		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editFlightCode()"/>	
+		 	  						</span>
+		 	  						<span id="airlineCodeInputSpan" style="display: none;">
+		 	  							<input id="airlineCodeInput" type="text"/>
+		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setFlightCode($('#airlineCodeInput').val())"/>
+		 	  						</span>
+		 	  					</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Destinations:</div>
+		 	  					<div id="destinations" class="cell value"></div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Fleet Size:</div>
+		 	  					<div id="fleetSize" class="cell value"></div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Assets:</div>
+		 	  					<div id="assets" class="cell value"></div>
+		 	  				</div>
+		         		</div>
+	  					<div class="table" style="width: 50%; float: left;">
+							<div class="table-row">
+		 	  					<div class="cell label">Current Service Quality:</div>
+		 	  					<div id="currentServiceQuality" class="cell value"></div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Service Funding (weekly):</div>
+		 	  					<div class="cell value">
+		 	  						<span id="serviceFundingDisplaySpan">
+		 	  							<span id="serviceFunding"></span>
+		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editServiceFunding()"/>	
+		 	  						</span>
+		 	  						<span id="serviceFundingInputSpan">
+		 	  							<input id="serviceFundingInput" type="text"/>
+		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setServiceFunding($('#serviceFundingInput').val())"/>
+		 	  						</span>
+		 	  					</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Change Prediction:</div>
+		 	  					<div id="servicePrediction" class="cell value"></div>
+		 	  				</div>
+		         		</div>  
+		         		<div style="clear: both;"></div>
+		    		</div>
 					<div style="width : 95%; float: left;" class="section">
 						<h4>Income Sheet</h4>
 						<div>
@@ -979,32 +1033,6 @@
          			</div>
 	  					
 	  				<div class="section" style="width: 90%;">
-	  					<h4>Service Investment</h4>
-	  					<div class="table" style="width: 100%;">
-							<div class="table-row">
-		 	  					<div class="cell label">Current Service Quality:</div>
-		 	  					<div id="currentServiceQuality" class="cell value"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell label">Service Funding:</div>
-		 	  					<div class="cell value">
-		 	  						<span id="serviceFundingDisplaySpan">
-		 	  							<span id="serviceFunding"></span>
-		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editServiceFunding()"/>	
-		 	  						</span>
-		 	  						<span id="serviceFundingInputSpan">
-		 	  							<input id="serviceFundingInput" type="text"/>
-		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setServiceFunding($('#serviceFundingInput').val())"/>
-		 	  						</span>
-		 	  					</div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell label">Change Prediction:</div>
-		 	  					<div id="servicePrediction" class="cell value"></div>
-		 	  				</div>
-		         		</div>  
-		    		</div>
-		    		<div class="section" style="width: 90%;">
 	  					<h4>Declare bankruptcy and seek new investment&nbsp;<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
 	  						<ul>
 	  							<li class="label" style="padding: 5px">- All of the airplanes will be removed</li>

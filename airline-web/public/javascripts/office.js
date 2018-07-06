@@ -6,11 +6,33 @@ function showOfficeCanvas() {
 	setActiveDiv($("#officeCanvas"))
 	highlightTab($('#officeCanvasTab'))
 	
+	updateAirlineDetails()
 	loadIncomeSheet();
 	updateChampionedCountriesDetails()
 	updateServiceFundingDetails()
 	updateMaintenanceLevelDetails()
 }
+
+function updateAirlineDetails() {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "?extendedInfo=true"
+    $.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(airline) {
+	    	$('#destinations').text(airline.destinations)
+	    	$('#fleetSize').text(airline.fleetSize)
+	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 
 function loadIncomeSheet() {
 	var airlineId = activeAirline.id
