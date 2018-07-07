@@ -56,7 +56,7 @@ class CommuterProfile extends StartupProfile(title = "A humble beginning",
 		  val cycle = CycleSource.loadCycle - 4 * 52 // 4 years old
 		  
 		  val cessnaModel = ModelSource.loadModelsByCriteria(List(("name", "Cessna 421")))(0)
-		  val erjModel = ModelSource.loadModelsByCriteria(List(("name", "Embraer ERJ 140")))(0)
+		  val erjModel = ModelSource.loadModelsByCriteria(List(("name", "Embraer ERJ140")))(0)
 		  val airplanes = List(
 		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
 		      Airplane(cessnaModel, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION * 0.8, depreciationRate = 0, value = (cessnaModel.price * 0.8).toInt),
