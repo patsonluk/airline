@@ -4,18 +4,21 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.ArrayBuffer
 
 object Scheduling {
-  private[this] val DEFAULT_TIME_SLOT_RESTRICTION : TimeSlotRetriction = TimeSlotRetriction(6, 23)
   private[this] val MAX_MINUTE = 60
   private[this] val MAX_HOUR = 24
   private[this] val MAX_DAY_OF_WEEK = 7
   private[this] val TIME_SLOT_INCREMENT = 5 //5 minutes
   
-  private[this] val indexedTimeSlots = getAllAvailableTimeSlots(Some(DEFAULT_TIME_SLOT_RESTRICTION)).toIndexedSeq
-  private[this] val slotCount = indexedTimeSlots.length
+  private[this] val smallAirportTimeSlots = getAllAvailableTimeSlots(Some(TimeSlotRetriction(6, 23))).toIndexedSeq
+  private[this] val largeAirportTimeSlots = getAllAvailableTimeSlots(None).toIndexedSeq
+  
   
   
   
   def getLinkSchedule(link : Link) : Array[TimeSlot] = {
+    val airportTimeslots = if (link.from.size >= Airport.MAJOR_AIRPORT_LOWER_THRESHOLD) largeAirportTimeSlots else smallAirportTimeSlots  
+    
+    val slotCount = airportTimeslots.size
     val pseudoRandomOffset= (link.distance + link.airline.id) % slotCount //just want to create a pseudo random number
     
     //start from the offset, find all the index
@@ -25,7 +28,7 @@ object Scheduling {
   
       val timeSlots = ArrayBuffer[TimeSlot]()
       for (i <- 0 until link.frequency) {
-         var targetTimeSlot = indexedTimeSlots((pseudoRandomOffset + i * interval) % slotCount)
+         var targetTimeSlot = airportTimeslots((pseudoRandomOffset + i * interval) % slotCount)
          timeSlots += targetTimeSlot
       }
       
@@ -36,10 +39,7 @@ object Scheduling {
     }
   }
   
-  
-  
-  
-  private[this] def getAllAvailableTimeSlots(restriction : Some[TimeSlotRetriction]) : List[TimeSlot] = {
+  private[this] def getAllAvailableTimeSlots(restriction : Option[TimeSlotRetriction]) : List[TimeSlot] = {
     val fromHour = restriction.fold(0)(_.fromHour)
     val toHour = restriction.fold(MAX_HOUR)(_.toHour)
     
@@ -95,4 +95,6 @@ object Scheduling {
       
       lazy val totalMinutes = dayOfWeek * MAX_HOUR * MAX_MINUTE + hour * MAX_MINUTE + minute 
   }
+  
+  case class TimeSlotStatus(code : String, text : String)
 }
