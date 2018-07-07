@@ -7,6 +7,12 @@
 	font-size: 20px;
 	font-weight: bolder;
 	color: #dd8;
+	height: 25px;
+}
+
+.departures div.table-header {
+	font-weight: bolder;
+	height: 25px;
 }
 
 .departures div.table-row {

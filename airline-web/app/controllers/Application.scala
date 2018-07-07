@@ -319,19 +319,19 @@ class Application extends Controller {
     
     val linkConsumptions : Map[Int, LinkConsumptionDetails] = LinkSource.loadLinkConsumptionsByLinksId(links.map(_.id)).map( linkConsumption => (linkConsumption.link.id, linkConsumption)).toMap 
     
-    val timeSlotLinkList : List[(TimeSlot, Link, TimeSlotStatus)] = links.flatMap { link => link.schedule.map { scheduledTimeSlot => (scheduledTimeSlot, link, getTimeSlotStatus(linkConsumptions.get(link.id), scheduledTimeSlot, currentTime)) }}.sortBy {
-      case (timeslot, link, _) => timeslot.totalMinutes
+    val timeSlotLinkList : List[(TimeSlot, Link, TimeSlotStatus)] = links.flatMap { link => link.schedule.map { scheduledTimeSlot => (scheduledTimeSlot, link) }}.map {
+      case (timeslot, link) => (timeslot, link, if (dayOfWeek == 6 && timeslot.dayOfWeek == 0) { timeslot.totalMinutes + 7 * 24 * 60 } else { timeslot.totalMinutes })
+    }.filter {
+      case(timeslot, _, wrappedMinutes) => wrappedMinutes >= currentTime.totalMinutes && wrappedMinutes <= currentTime.totalMinutes + 24 * 60   
+    }.map {
+      case (timeslot, link, wrappedMinutes) => (timeslot, link, getTimeSlotStatus(linkConsumptions.get(link.id), timeslot, currentTime), wrappedMinutes)
+    }.sortBy {
+      case (timeslot, _, _, wrappedMinutes) => wrappedMinutes 
+    }.map {
+      case (timeslot, link, status, wrappedMinutes) => (timeslot, link, status) 
     }
     
-    //TODO delays/cancellation ...load from link history
-    
-    val filteredList = timeSlotLinkList.dropWhile {
-      case(timeslot, _, _) => currentTime.totalMinutes > timeslot.totalMinutes 
-    }.takeWhile {
-      case(timeslot, _, _) => timeslot.dayOfWeek == dayOfWeek //TODO take next day too?
-    }
-    
-    Ok(Json.toJson(filteredList))
+    Ok(Json.toJson(timeSlotLinkList))
   }
   
   def getTimeSlotStatus(linkConsumptionOption : Option[LinkConsumptionDetails], scheduledTime : TimeSlot, currentTime : TimeSlot) : TimeSlotStatus = {
@@ -371,6 +371,8 @@ class Application extends Controller {
     } else if (isMajorDelay || isMinorDelay) {
       val newTime = scheduledTime.increment(delayAmount)
       TimeSlotStatus("DELAY", "Delayed " + "%02d".format(newTime.hour) + ":" + "%02d".format(newTime.minute)) 
+    } else if (scheduledTime.totalMinutes - currentTime.totalMinutes < 0) { // wrap around time, thats ok 
+      TimeSlotStatus("ON_TIME", "On Time")
     } else if (scheduledTime.totalMinutes - currentTime.totalMinutes <= 10) {
       TimeSlotStatus("GATE_CLOSED", "Gate Closed") 
     } else if (scheduledTime.totalMinutes - currentTime.totalMinutes <= 20) {
