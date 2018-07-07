@@ -14,6 +14,7 @@
     </style>
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link href="assets/flapper/css/flapper.css" type="text/css" rel="stylesheet" />
     <link rel="icon" type="image/png"  href='@routes.Assets.versioned("images/icons/globe-green.png")'>
     
@@ -39,6 +40,7 @@
     <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/bank.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
@@ -610,6 +612,44 @@
   				<div style="clear: both;"></div>
   			</div>
 <!--   			end airport canvas -->
+			<div id="departuresCanvas" style="display: none; height: 100%">
+  				<div style="height: 600px ; width : 1200px; float: left;" class="section"> 
+					<div class="title">Departures</div>
+					<div style="float: left; width:33%;">
+						<div id="departures1" class="table departures" style="width: 100%;">
+							<div class="table-header">
+		 	  					<div class="cell" style="width: 15%">Sch.</div>
+		 	  					<div class="cell" style="width: 15%">Flight</div>
+		 	  					<div class="cell" style="width: 45%">Destination</div>
+		 	  					<div class="cell" style="width: 25%">Status</div>
+	 	  					</div>
+						</div>			
+					</div>		  	  			
+					<div style="float: left; width:33%;">
+						<div id="departures2" class="table departures" style="width: 100%;">
+							<div class="table-header">
+		 	  					<div class="cell" style="width: 15%">Sch.</div>
+		 	  					<div class="cell" style="width: 15%">Flight</div>
+		 	  					<div class="cell" style="width: 45%">Destination</div>
+		 	  					<div class="cell" style="width: 25%">Status</div>
+	 	  					</div>
+						</div>
+					</div>
+					<div style="float: left; width:34%;">
+						<div id="departures3" class="table departures" style="width: 100%;">
+							<div class="table-header">
+		 	  					<div class="cell" style="width: 15%">Sch.</div>
+		 	  					<div class="cell" style="width: 15%">Flight</div>
+		 	  					<div class="cell" style="width: 45%">Destination</div>
+		 	  					<div class="cell" style="width: 25%">Status</div>
+	 	  					</div>
+						</div>
+					</div>
+					
+				</div>					  				
+  			</div>
+  			<!--  end departures canvas -->
+  			
   			<div id="countryCanvas" style="height: 100%; display: none;">
   				<div style="width : 40%; float: left; height: 95%" class="section"> 
 	  	  			<div class="table data" style="width: 100%; height: 20px;">
@@ -1318,6 +1358,7 @@
 		<div class="button" id="planToAirportButton">Plan Flight</div>
 		<div class="button" id="viewAirportButton" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
 		<div class="button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
+		<div class="button" id="toggleDeparturesButton" onclick="showDeparturesCanvas()">Departures</div>
     </div>
     
      <div style="display: none; width: 100%;" id="cityPopup">

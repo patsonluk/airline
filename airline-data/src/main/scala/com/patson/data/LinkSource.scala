@@ -544,12 +544,41 @@ object LinkSource {
     loadLinkConsumptionsByCriteria(List(("link", linkId)), cycleCount)
   }
   
+  def loadLinkConsumptionsByLinksId(linkIds : List[Int], cycleCount : Int = 1) = {
+    
+    if (linkIds.isEmpty) {
+      List.empty
+    } else {
+      val queryString = new StringBuilder("SELECT * FROM link_consumption WHERE cycle > ? AND link IN (");
+      for (i <- 0 until linkIds.size - 1) {
+            queryString.append("?,")
+      }
+      
+      queryString.append("?)")
+      loadLinkConsumptionsByQuery(queryString.toString(), linkIds, cycleCount)
+    }
+  }
+  
   def loadLinkConsumptionsByAirline(airlineId : Int, cycleCount : Int = 1) = {
     loadLinkConsumptionsByCriteria(List(("airline", airlineId)), cycleCount)
   }
   
+   def loadLinkConsumptionsByCriteria(criteria : List[(String, Any)], cycleCount : Int) = {
+    var queryString = "SELECT * FROM link_consumption WHERE cycle > ?" 
+      
+    if (!criteria.isEmpty) {
+      queryString += " AND "
+      for (i <- 0 until criteria.size - 1) {
+        queryString += criteria(i)._1 + " = ? AND "
+      }
+      queryString += criteria.last._1 + " = ?"
+    }
+    queryString += " ORDER BY cycle DESC"
+    
+    loadLinkConsumptionsByQuery(queryString, criteria.map(_._2), cycleCount)
+  }
   
-  def loadLinkConsumptionsByCriteria(criteria : List[(String, Any)], cycleCount : Int) = {
+  def loadLinkConsumptionsByQuery(queryString: String, parameters : List[Any], cycleCount : Int) = {
     val connection = Meta.getConnection()
       
     try {
@@ -558,23 +587,11 @@ object LinkSource {
       val latestCycle = if (latestCycleResultSet.next()) { latestCycleResultSet.getInt(1) } else 0
       latestCycleStatement.close()
       
-      var queryString = "SELECT * FROM link_consumption WHERE cycle > ?"
-      
-      if (!criteria.isEmpty) {
-        queryString += " AND "
-        for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
-        }
-        queryString += criteria.last._1 + " = ?"
-      }
-    
-      queryString += " ORDER BY cycle DESC"
-      
       val preparedStatement = connection.prepareStatement(queryString)
       
       preparedStatement.setInt(1, latestCycle - cycleCount)
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 2, criteria(i)._2)
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 2, parameters(i))
       }
       
       val resultSet = preparedStatement.executeQuery()

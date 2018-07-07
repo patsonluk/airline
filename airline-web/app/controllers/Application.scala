@@ -20,6 +20,13 @@ import scala.collection.mutable.ListBuffer
 import com.patson.model.Scheduling.TimeSlot
 import controllers.AuthenticationObject.AuthenticatedAirline
 import scala.collection.mutable.Set
+import com.patson.model.Scheduling.TimeSlot
+import com.patson.model.Scheduling.TimeSlotStatus
+import com.patson.model.Scheduling.TimeSlot
+import com.patson.model.Scheduling.TimeSlotStatus
+import java.util.Random
+import com.patson.model.Scheduling.TimeSlot
+import com.patson.model.Scheduling.TimeSlotStatus
 
 
 class Application extends Controller {
@@ -143,16 +150,17 @@ class Application extends Controller {
     }
   }
    
-  implicit object TimeSlotAssignmentWrites extends Writes[(TimeSlot, List[Link])] {
-     def writes(timeSlotAssignment: (TimeSlot, List[Link])): JsValue = {
-      val linksObj = timeSlotAssignment._2.foldLeft(JsArray()){ (foldArray, link) =>
-        foldArray.append(Json.obj("linkCode" -> (link.airline.getAirlineCode() + link.id), "destination" -> (if (!link.to.city.isEmpty()) { link.to.city } else { link.to.name })))
-      }
-       
+  implicit object TimeSlotAssignmentWrites extends Writes[(TimeSlot, Link, TimeSlotStatus)] {
+     def writes(timeSlotAssignment: (TimeSlot, Link, TimeSlotStatus)): JsValue = {
+      val link = timeSlotAssignment._2 
       JsObject(List(
       "timeSlotDay" -> JsNumber(timeSlotAssignment._1.dayOfWeek),    
       "timeSlotTime" -> JsString("%02d".format(timeSlotAssignment._1.hour) + ":" + "%02d".format(timeSlotAssignment._1.minute)),
-      "links" -> linksObj
+      "airline" -> JsString(link.airline.name),
+      "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber)),
+      "destination" -> JsString(if (!link.to.city.isEmpty()) { link.to.city } else { link.to.name }),
+      "statusCode" -> JsString(timeSlotAssignment._3.code),
+      "statusText" -> JsString(timeSlotAssignment._3.text)
       ))
     }
   }
@@ -302,26 +310,77 @@ class Application extends Controller {
     
   }
   
-  def getAirportLinkSchedule(airportId : Int, dayOfWeek : Int, hour : Int) = Action {
+  def getDepartures(airportId : Int, dayOfWeek : Int, hour : Int, minute : Int) = Action {
     val links = LinkSource.loadLinksByFromAirport(airportId, LinkSource.SIMPLE_LOAD) ++ (LinkSource.loadLinksByToAirport(airportId, LinkSource.SIMPLE_LOAD).map { link => link.copy(from = link.to, to = link.from) })
     
     val map = Map[Int, String]()
     
-    val timeSlotLinkList : List[(TimeSlot, List[Link])] = links.flatMap { link => link.schedule.map { scheduledTimeSlot => (link, scheduledTimeSlot) }}.groupBy {
-      case(link, timeSlot) => timeSlot
-    }.mapValues {
-      linkWithTimeSlot => linkWithTimeSlot.map { _._1} 
-    }.toList.sortBy {
-      case(timeSlot, _) => timeSlot.totalMinutes
+    val currentTime = TimeSlot(dayOfWeek = dayOfWeek, hour = hour, minute = minute)
+    
+    val linkConsumptions : Map[Int, LinkConsumptionDetails] = LinkSource.loadLinkConsumptionsByLinksId(links.map(_.id)).map( linkConsumption => (linkConsumption.link.id, linkConsumption)).toMap 
+    
+    val timeSlotLinkList : List[(TimeSlot, Link, TimeSlotStatus)] = links.flatMap { link => link.schedule.map { scheduledTimeSlot => (scheduledTimeSlot, link, getTimeSlotStatus(linkConsumptions.get(link.id), scheduledTimeSlot, currentTime)) }}.sortBy {
+      case (timeslot, link, _) => timeslot.totalMinutes
     }
     
+    //TODO delays/cancellation ...load from link history
+    
     val filteredList = timeSlotLinkList.dropWhile {
-      case(timeslot, _) => timeslot.dayOfWeek < dayOfWeek || (timeslot.dayOfWeek == dayOfWeek && timeslot.hour < hour) 
+      case(timeslot, _, _) => currentTime.totalMinutes > timeslot.totalMinutes 
     }.takeWhile {
-      case(timeslot, _) => timeslot.dayOfWeek == dayOfWeek
+      case(timeslot, _, _) => timeslot.dayOfWeek == dayOfWeek //TODO take next day too?
     }
     
     Ok(Json.toJson(filteredList))
+  }
+  
+  def getTimeSlotStatus(linkConsumptionOption : Option[LinkConsumptionDetails], scheduledTime : TimeSlot, currentTime : TimeSlot) : TimeSlotStatus = {
+    var isMinorDelay = false
+    var isMajorDelay = false
+    var isCancelled = false
+    var delayAmount = 0
+    
+    linkConsumptionOption.map { linkConsumption =>
+      val cancellationMarker = linkConsumption.link.cancellationCount
+      val majorDelayMarker = cancellationMarker + linkConsumption.link.majorDelayCount
+      val minorDelayMarker = majorDelayMarker +  linkConsumption.link.minorDelayCount
+
+      val flightInterval = 60 * 24 * 7 / linkConsumption.link.frequency 
+      val flightIndex = currentTime.totalMinutes / flightInterval  //nth flight on this route within this week
+      
+      val randnum = new Random();
+      randnum.setSeed(linkConsumption.id); // want pseudo random that gives same result every time!
+      
+      val randomizedFlightIndex = (flightIndex + randnum.nextInt(linkConsumption.link.frequency)) % linkConsumption.link.frequency
+      
+      //println(cancellationMarker + "|" + majorDelayMarker + "|" + minorDelayMarker + " RI " + randomizedFlightIndex)
+      //if u r unlucky enough to be smaller or equal to marker than BOOM!
+      if (randomizedFlightIndex < cancellationMarker) {
+        isCancelled = true
+      } else if  (randomizedFlightIndex < majorDelayMarker) {
+        isMajorDelay = true
+        delayAmount = 5 * 60 + randomizedFlightIndex * 30
+      } else if  (randomizedFlightIndex < minorDelayMarker) {
+        isMinorDelay = true
+        delayAmount =  20 + 100 / (randomizedFlightIndex + 1) //within 2 hours
+      }
+    }
+    
+    if (isCancelled) {
+      TimeSlotStatus("CANCELLED", "Cancelled")
+    } else if (isMajorDelay || isMinorDelay) {
+      val newTime = scheduledTime.increment(delayAmount)
+      TimeSlotStatus("DELAY", "Delayed " + "%02d".format(newTime.hour) + ":" + "%02d".format(newTime.minute)) 
+    } else if (scheduledTime.totalMinutes - currentTime.totalMinutes <= 10) {
+      TimeSlotStatus("GATE_CLOSED", "Gate Closed") 
+    } else if (scheduledTime.totalMinutes - currentTime.totalMinutes <= 20) {
+      TimeSlotStatus("FINAL_CALL", "Final Call")
+    } else if (scheduledTime.totalMinutes - currentTime.totalMinutes <= 30) {
+      TimeSlotStatus("BOARDING", "Boarding")
+    } else {
+      TimeSlotStatus("ON_TIME", "On Time")
+    }
+     
   }
   
   def getAirportLinkConsumptions(fromAirportId : Int, toAirportId : Int) = Action {

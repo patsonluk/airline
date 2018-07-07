@@ -351,6 +351,8 @@ object Airport {
     airportWithJustId.id = id
     airportWithJustId
   }
+  
+  val MAJOR_AIRPORT_LOWER_THRESHOLD = 5
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)
