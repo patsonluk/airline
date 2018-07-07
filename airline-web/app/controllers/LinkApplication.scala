@@ -720,7 +720,6 @@ object LinkApplication {
     
     val sortedFlightNumbers = flightNumbers.sorted
     
-    println("existing " + sortedFlightNumbers)
     var candidate = 1
     sortedFlightNumbers.foreach { existingNumber =>
       if (candidate < existingNumber) {
