@@ -495,7 +495,8 @@ object Meta {
       "price INTEGER, " +
       "lifespan INTEGER, " +
       "construction_time INTEGER, " +
-      "country_code CHAR(2))")
+      "country_code CHAR(2), " +
+      "image_url VARCHAR(256))")
     statement.execute()
     statement.close()
 

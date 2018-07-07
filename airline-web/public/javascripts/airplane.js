@@ -220,6 +220,15 @@ function selectAirplaneModel(model) {
 	showAirplaneInventory(model)
 	//show basic airplane model details
 	//model = loadedModels[modelId]
+	if (model.imageUrl) {
+		var imageLocation = 'assets/images/airplanes/' + model.name.replace(/\s+/g, '-').toLowerCase() + '.png'
+		$('#modelIllustration img').attr('src', imageLocation)
+		$('#modelIllustration a').attr('href', model.imageUrl)
+		$('#modelIllustration').show()
+	} else {
+		$('#modelIllustration').hide()
+	}
+	
 	$('#airplaneCanvas #selectedModel').val(model.id)
 	$('#airplaneCanvas #modelName').text(model.name)
 	$('#airplaneCanvas #capacity').text(model.capacity)
