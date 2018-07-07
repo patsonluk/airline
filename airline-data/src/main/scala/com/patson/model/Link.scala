@@ -8,7 +8,7 @@ import com.patson.model.Scheduling.TimeSlot
  * 
  * Frequency sum of all assigned plane
  */
-case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, flightType : FlightType.Value, var id : Int = 0) extends IdObject{
+case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends IdObject{
   var availableSeats : LinkClassValues = capacity.copy()
   var soldSeats : LinkClassValues = LinkClassValues.getInstance()
   var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()

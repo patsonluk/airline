@@ -31,6 +31,13 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
     airlineInfo.countryCode
   }
   
+  def setAirlineCode(airlineCode : String) = {
+    airlineInfo.airlineCode = airlineCode
+  }
+  def getAirlineCode() = {
+    airlineInfo.airlineCode
+  }
+  
   def setBases(bases : List[AirlineBase]) {
     this.bases = bases
   }
@@ -55,8 +62,14 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   		AirlineGrade.SECOND_INTERNATIONAL
   	} else if (reputation < 90) {
   		AirlineGrade.MAJOR_INTERNATIONAL
-  	} else {
+  	} else if (reputation < 100) {
   		AirlineGrade.TOP_INTERNATIONAL
+  	} else if (reputation < 125) {
+  	  AirlineGrade.TOP_INTERNATIONAL_2
+  	} else if (reputation < 150) {
+  	  AirlineGrade.TOP_INTERNATIONAL_3
+  	} else {
+  	  AirlineGrade.TOP_INTERNATIONAL_4
   	}
   }
   
@@ -83,7 +96,7 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
     }
     
     val getModelsLimit =  {
-      value 
+      if (value >= 10) 10 else value 
     }
   }
   
@@ -98,6 +111,9 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
     val SECOND_INTERNATIONAL = AirlineGrade(8, "Second-class International Airline")
     val MAJOR_INTERNATIONAL = AirlineGrade(9, "Major International Airline")
     val TOP_INTERNATIONAL = AirlineGrade(10, "Top International Airline")
+    val TOP_INTERNATIONAL_2 = AirlineGrade(11, "Top International Airline +")
+    val TOP_INTERNATIONAL_3 = AirlineGrade(12, "Top International Airline ++")
+    val TOP_INTERNATIONAL_4 = AirlineGrade(13, "Top International Airline +++")
   }
   
   def getBases() = bases
@@ -108,17 +124,27 @@ case class Airline(name: String, var id : Int = 0) extends IdObject {
   def getServiceFunding() = airlineInfo.serviceFunding
   def getReputation() = airlineInfo.reputation
   def getMaintenanceQuality() = airlineInfo.maintenanceQuality
-  def getAirlineCode() = {
-    var code = name.split("\\s+").foldLeft("")( (foldString, nameToken) => foldString + nameToken.charAt(0).toUpper)
+  
+  def getDefaultAirlineCode() : String = {
+    var code = name.split("\\s+").foldLeft("")( (foldString, nameToken) => {
+      val firstCharacter = nameToken.charAt(0)
+      if (Character.isLetter(firstCharacter)) {
+        foldString + firstCharacter.toUpper
+      } else {
+        foldString
+      }
+    })
+      
     if (code.length() > 2) {
-      code.substring(0, 2)
-    } else {
-      code
+      code = code.substring(0, 2)
+    } else if (code.length() < 2) {
+      code = name.substring(0, 2).toUpperCase()
     }
+    code
   }
 }
 
-case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double, var countryCode : Option[String] = None)
+case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "")
 
 object TransactionType extends Enumeration {
   type TransactionType = Value

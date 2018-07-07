@@ -44,21 +44,23 @@
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
     <script>
-		window['_fs_debug'] = false;
-		window['_fs_host'] = 'fullstory.com';
-		window['_fs_org'] = 'CVSY5';
-		window['_fs_namespace'] = 'FS';
-		(function(m,n,e,t,l,o,g,y){
-		    if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
-		    g=m[e]=function(a,b){g.q?g.q.push([a,b]):g._api(a,b);};g.q=[];
-		    o=n.createElement(t);o.async=1;o.src='https://'+_fs_host+'/s/fs.js';
-		    y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
-		    g.identify=function(i,v){g(l,{uid:i});if(v)g(l,v)};g.setUserVars=function(v){g(l,v)};
-		    g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
-		    g.consent=function(a){g("consent",!arguments.length||a)};
-		    g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
-		    g.clearUserCookie=function(){};
-		})(window,document,window['_fs_namespace'],'script','user');
+    	if (window.location.hostname != 'localhost') {
+			window['_fs_debug'] = false;
+			window['_fs_host'] = 'fullstory.com';
+			window['_fs_org'] = 'CVSY5';
+			window['_fs_namespace'] = 'FS';
+			(function(m,n,e,t,l,o,g,y){
+			    if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
+			    g=m[e]=function(a,b){g.q?g.q.push([a,b]):g._api(a,b);};g.q=[];
+			    o=n.createElement(t);o.async=1;o.src='https://'+_fs_host+'/s/fs.js';
+			    y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
+			    g.identify=function(i,v){g(l,{uid:i});if(v)g(l,v)};g.setUserVars=function(v){g(l,v)};
+			    g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
+			    g.consent=function(a){g("consent",!arguments.length||a)};
+			    g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
+			    g.clearUserCookie=function(){};
+			})(window,document,window['_fs_namespace'],'script','user');
+    	}
 	</script>
   </head>
   <body>
@@ -134,6 +136,10 @@
 					    			<div class="table-row">
 					    				<div class="label"><h5>To:</h5></div>
 					    				<div class="value clickable" id="linkToAirport"></div>
+					    			</div>
+					    			<div class="table-row">
+					    				<div class="label"><h5>Flight Code:</h5></div>
+					    				<div class="value" id="linkFlightCode"></div>
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>Distance:</h5></div>
@@ -248,6 +254,10 @@
 					    		<div class="table-row">
 					    			<div class="label"><h5>To:</h5></div>
 					    			<div class="value clickable" id="planLinkToAirportName"></div>
+					    		</div>
+					    		<div class="table-row">
+					    			<div class="label"><h5>Flight Code:</h5></div>
+					    			<div class="value clickable" id="planLinkFlightCode"></div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Mutual Relationship:</h5></div>
@@ -466,7 +476,8 @@
 			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase(true)">Build Headquarter</div>
     					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase(false)">Build Base</div>
     					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick="buildBase(false, parseInt($('#airportDetailsBaseScale').text()) + 1)">Upgrade Base</div>
-    					<div class="button" id="deleteBaseButton" style="display: none;" onclick="deleteBase()">Delete Base</div>
+    					<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed.", deleteBase)'>Remove Base</div>
+    					
 <!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
   					</div>
   					<div id="airportDetails" class="section" style="width: 90%; float:left;">
@@ -804,6 +815,61 @@
 <!--   			end airplane canvas -->
 			<div id="officeCanvas" style="height: 100%; display: none;">
 				<div style="width : 70%; float: left;">
+					<div class="section" style="width: 95%; float: left;">
+						<h4>Airline Details</h4>
+						<div class="table" style="width: 50%; float: left;">
+							<div class="table-row">
+		 	  					<div class="cell label">Airline Code:</div>
+		 	  					<div class="cell value">
+		 	  						<span id="airlineCodeDisplaySpan">
+		 	  							<span id="airlineCode"></span>
+		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineCode()"/>	
+		 	  						</span>
+		 	  						<span id="airlineCodeInputSpan" style="display: none;">
+		 	  							<input id="airlineCodeInput" type="text" onkeyup="validateAirlineCode($(this).val())"/>
+		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setAirlineCode($('#airlineCodeInput').val())"/>
+		 	  							<span class="warning" style="display:none;">Code should be exactly 2 letters</span>
+		 	  						</span>
+		 	  					</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Destinations:</div>
+		 	  					<div id="destinations" class="cell value"></div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Fleet Size:</div>
+		 	  					<div id="fleetSize" class="cell value"></div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Assets:</div>
+		 	  					<div id="assets" class="cell value"></div>
+		 	  				</div>
+		         		</div>
+	  					<div class="table" style="width: 50%; float: left;">
+							<div class="table-row">
+		 	  					<div class="cell label">Current Service Quality:</div>
+		 	  					<div id="currentServiceQuality" class="cell value"></div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Service Funding (weekly):</div>
+		 	  					<div class="cell value">
+		 	  						<span id="serviceFundingDisplaySpan">
+		 	  							<span id="serviceFunding"></span>
+		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editServiceFunding()"/>	
+		 	  						</span>
+		 	  						<span id="serviceFundingInputSpan">
+		 	  							<input id="serviceFundingInput" type="text"/>
+		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setServiceFunding($('#serviceFundingInput').val())"/>
+		 	  						</span>
+		 	  					</div>
+		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Change Prediction:</div>
+		 	  					<div id="servicePrediction" class="cell value"></div>
+		 	  				</div>
+		         		</div>  
+		         		<div style="clear: both;"></div>
+		    		</div>
 					<div style="width : 95%; float: left;" class="section">
 						<h4>Income Sheet</h4>
 						<div>
@@ -981,32 +1047,6 @@
          			</div>
 	  					
 	  				<div class="section" style="width: 90%;">
-	  					<h4>Service Investment</h4>
-	  					<div class="table" style="width: 100%;">
-							<div class="table-row">
-		 	  					<div class="cell label">Current Service Quality:</div>
-		 	  					<div id="currentServiceQuality" class="cell value"></div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell label">Service Funding:</div>
-		 	  					<div class="cell value">
-		 	  						<span id="serviceFundingDisplaySpan">
-		 	  							<span id="serviceFunding"></span>
-		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editServiceFunding()"/>	
-		 	  						</span>
-		 	  						<span id="serviceFundingInputSpan">
-		 	  							<input id="serviceFundingInput" type="text"/>
-		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setServiceFunding($('#serviceFundingInput').val())"/>
-		 	  						</span>
-		 	  					</div>
-		 	  				</div>
-		 	  				<div class="table-row">
-		 	  					<div class="cell label">Change Prediction:</div>
-		 	  					<div id="servicePrediction" class="cell value"></div>
-		 	  				</div>
-		         		</div>  
-		    		</div>
-		    		<div class="section" style="width: 90%;">
 	  					<h4>Declare bankruptcy and seek new investment&nbsp;<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
 	  						<ul>
 	  							<li class="label" style="padding: 5px">- All of the airplanes will be removed</li>

@@ -63,6 +63,7 @@ object AirlineSource {
           airline.setServiceQuality(resultSet.getDouble("service_quality"))
           airline.setServiceFunding(resultSet.getInt("service_funding"))
           airline.setMaintainenceQuality(resultSet.getDouble("maintenance_quality"))
+          airline.setAirlineCode(resultSet.getString("airline_code"))
           val countryCode = resultSet.getString("country_code")
           if (countryCode != null) {
             airline.setCountryCode(countryCode)
@@ -112,7 +113,7 @@ object AirlineSource {
             airline.id = generatedId
             
             //insert airline info too
-            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, service_funding, maintenance_quality, reputation, country_code) VALUES(?,?,?,?,?,?,?)")
+            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, service_funding, maintenance_quality, reputation, country_code, airline_code) VALUES(?,?,?,?,?,?,?,?)")
             infoStatement.setInt(1, airline.id)
             infoStatement.setLong(2, airline.getBalance())
             infoStatement.setDouble(3, airline.getServiceQuality())
@@ -120,6 +121,7 @@ object AirlineSource {
             infoStatement.setDouble(5, airline.getMaintenanceQuality())
             infoStatement.setDouble(6, airline.getReputation())
             infoStatement.setString(7, airline.getCountryCode().getOrElse(null))
+            infoStatement.setString(8, airline.getAirlineCode())
             infoStatement.executeUpdate()
           } 
       }
@@ -153,14 +155,30 @@ object AirlineSource {
     this.synchronized {
       val connection = Meta.getConnection()
       try {
-        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ? WHERE airline = ?")
+        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?")
         updateStatement.setLong(1, airline.getBalance())
         updateStatement.setDouble(2, airline.getServiceQuality())
         updateStatement.setInt(3, airline.getServiceFunding())
         updateStatement.setDouble(4, airline.getMaintenanceQuality())
         updateStatement.setDouble(5, airline.getReputation())
         updateStatement.setString(6, airline.getCountryCode().getOrElse(null))
-        updateStatement.setInt(7, airline.id)
+        updateStatement.setString(7, airline.getAirlineCode())
+        updateStatement.setInt(8, airline.id)
+        updateStatement.executeUpdate()
+        updateStatement.close()
+      } finally {
+        connection.close()
+      }
+    }
+  }
+  
+  def saveAirlineCode(airlineId : Int, airlineCode : String) = {
+    this.synchronized {
+      val connection = Meta.getConnection()
+      try {
+        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET airline_code = ? WHERE airline = ?")
+        updateStatement.setString(1, airlineCode)
+        updateStatement.setInt(2, airlineId)
         updateStatement.executeUpdate()
         updateStatement.close()
       } finally {
@@ -175,7 +193,7 @@ object AirlineSource {
       
       try {
         connection.setAutoCommit(false)
-        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ? WHERE airline = ?")
+        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?")
           
         airlines.foreach { airline =>
           updateStatement.setLong(1, airline.getBalance())
@@ -184,7 +202,8 @@ object AirlineSource {
           updateStatement.setDouble(4, airline.getMaintenanceQuality())
           updateStatement.setDouble(5, airline.getReputation())
           updateStatement.setString(6, airline.getCountryCode().getOrElse(null))
-          updateStatement.setInt(7, airline.id)
+          updateStatement.setString(7, airline.getAirlineCode())
+          updateStatement.setInt(8, airline.id)
           
           //updateStatement.executeUpdate()
           updateStatement.addBatch()

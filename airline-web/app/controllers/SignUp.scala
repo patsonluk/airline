@@ -121,6 +121,7 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
           val newAirline = Airline(userInput.airlineName)
 //          newAirline.setBalance(50000000) //initial balance 50 million
           newAirline.setMaintainenceQuality(100)
+          newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
           AirlineSource.saveAirlines(List(newAirline))
           UserSource.setUserAirline(user, newAirline)
           

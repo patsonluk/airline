@@ -33,14 +33,7 @@ object Bank {
     
     val creditFromProfit : Option[Long] = IncomeSource.loadIncomeByAirline(airlineId, previousMonthCycle, Period.MONTHLY).map(_.profit * 13 * 2)  //2 * yearly profit  
     
-    var totalAssets = 0L
-    AirlineSource.loadAirlineBasesByAirline(airlineId).foreach { base =>
-      totalAssets = totalAssets + base.getValue 
-    }
-    
-    AirplaneSource.loadAirplanesByOwner(airlineId).foreach { airplane =>
-      totalAssets = totalAssets + airplane.value
-    }
+    val totalAssets = getAssets(airlineId)
     
     //offer 20% of the assets as credit
     val creditFromAssets = (totalAssets * 0.2).toLong
@@ -70,6 +63,19 @@ object Bank {
         Loan(airlineId = 0, borrowedAmount = loanAmount, interest = interest, remainingAmount = total, creationCycle = 0, loanTerm = term)   
       }
     }.toList
+  }
+  
+  def getAssets(airlineId : Int) : Long = {
+    var totalAssets = 0L
+    AirlineSource.loadAirlineBasesByAirline(airlineId).foreach { base =>
+      totalAssets = totalAssets + base.getValue 
+    }
+    
+    AirplaneSource.loadAirplanesByOwner(airlineId).foreach { airplane =>
+      totalAssets = totalAssets + airplane.value
+    }
+    
+    totalAssets
   }
   
   case class LoanReply(maxLoan : Long, rejectionOption : Option[String])

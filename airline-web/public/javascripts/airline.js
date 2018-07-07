@@ -105,6 +105,10 @@ function buildBase(isHeadquarter, scale) {
 	    success: function() {
 	    	updateAllPanels(activeAirline.id)
 	    	showWorldMap()
+	    	if (scale == 1 && isHeadquarter) {
+	    		$('#planLinkFromAirportId').val(activeAirline.headquarterAirport.airportId)
+	    	}
+	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -512,6 +516,7 @@ function refreshLinkDetails(linkId) {
 	    	
 	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportName) + '&nbsp;' + availableFromSlot + " available slot(s)&nbsp;<img src='assets/images/icons/magnifier--arrow.png'/>")
 	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportName)+ '&nbsp;' + availableToSlot + " available slot(s)&nbsp;<img src='assets/images/icons/magnifier--arrow.png'/>")
+	    	$("#linkFlightCode").text(link.flightCode)
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
 	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").text(link.computedQuality)
@@ -906,7 +911,7 @@ function updatePlanLinkInfo(linkInfo) {
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	
 	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + availableToSlotText + "&nbsp;<img src='assets/images/icons/magnifier--arrow.png'/>")
-	
+	$('#planLinkFlightCode').text(linkInfo.flightCode)
 	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
 	
 	$('#planLinkDistance').text(linkInfo.distance + " km")

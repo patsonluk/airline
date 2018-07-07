@@ -25,7 +25,7 @@ GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportPro
 PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
 GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
 GET		 /airlines						  controllers.AirlineApplication.getAllAirlines
-GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int)
+GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int, extendedInfo : Boolean ?= false)
 GET		 /airlines/:airlineId/airplane-models	  controllers.AirplaneApplication.getAirplaneModelsByAirline(airlineId : Int)
 GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int, simpleResult : Boolean ?= false)
 GET		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.getAirplane(airlineId : Int, airplaneId : Int)
@@ -57,6 +57,7 @@ GET		 /airlines/:airlineId/loan-options  controllers.BankApplication.getLoanOpti
 GET		 /airlines/:airlineId/max-loan  controllers.BankApplication.getMaxLoan(airlineId : Int)
 GET		 /airlines/:airlineId/championed-countries  controllers.AirlineApplication.getChampionedCountries(airlineId : Int)
 GET		 /airlines/:airlineId/reset	   controllers.AirlineApplication.resetAirline(airlineId : Int)
+PUT		 /airlines/:airlineId/airline-code	   controllers.AirlineApplication.setAirlineCode(airlineId : Int)
 GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
 
