@@ -45,12 +45,12 @@ object Model {
   //https://en.wikipedia.org/wiki/List_of_jet_airliners
   val models = List(Model("Cessna 421", capacity = 7, fuelBurn = (7 * 1).toInt, speed = 300, range = 1555, price = 550000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US"),
                       Model("Cessna Caravan", capacity = 14, fuelBurn = (14 * 1).toInt, speed = 344, range = 2400, price = 2500000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US"),
-                      Model("Embraer EMB 120 Brasilia", capacity = 30, fuelBurn = (30 * 1.9).toInt, speed = 552, range = 1750, price = 8000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "BR"),
-                      Model("Embraer ERJ 140", capacity = 44, fuelBurn = (44 * 2.5).toInt, speed = 828, range = 2315, price = 15000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "BR"),
-                      Model("Bombardier CRJ 200", capacity = 50, fuelBurn = (50 * 1.6).toInt, speed = 830, range = 3150, price = 30000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "CA"),
+                      Model("Embraer EMB120 Brasilia", capacity = 30, fuelBurn = (30 * 1.9).toInt, speed = 552, range = 1750, price = 8000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "BR"),
+                      Model("Embraer ERJ140", capacity = 44, fuelBurn = (44 * 2.5).toInt, speed = 828, range = 2315, price = 15000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "BR"),
+                      Model("Bombardier CRJ200", capacity = 50, fuelBurn = (50 * 1.6).toInt, speed = 830, range = 3150, price = 30000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "CA"),
                       Model("Bombardier CRJ700", capacity = 78, fuelBurn = (78 * 3).toInt, speed = 828, range = 3045, price = 42000000, lifespan = 35 * 52, constructionTime = 4, countryCode = "CA"),
                       Model("Antonov An148", capacity = 85, fuelBurn = (85 * 3.8).toInt, speed = 835, range = 3500, price = 30000000, lifespan = 20 * 52, constructionTime = 4, countryCode = "UA"),
-                      Model("Embrarer EMB 170-200", capacity = 88, fuelBurn = (88 * 3).toInt, speed = 871, range = 2200, price = 50000000, lifespan = 30 * 52, constructionTime = 4, countryCode = "BR"),
+                      Model("Embraer EMB170-200", capacity = 88, fuelBurn = (88 * 3).toInt, speed = 871, range = 2200, price = 50000000, lifespan = 30 * 52, constructionTime = 4, countryCode = "BR"),
                       Model("Comac ARJ21", capacity = 90, fuelBurn = (90 * 3.5).toInt, speed = 828, range = 2200, price = 45000000, lifespan = 25 * 52, constructionTime = 8, countryCode = "CN"),
                       Model("Sukhoi Superjet 100", capacity = 108, fuelBurn = (108 * 4.1).toInt, speed = 828, range = 4578, price = 40000000, lifespan = 30 * 52, constructionTime = 8, countryCode = "RU"),
                       Model("Airbus A318", capacity = 132, fuelBurn = (132 * 3).toInt, speed = 829, range = 7800, price = 90000000, lifespan = 35 * 52, constructionTime = 8, countryCode = "NL"),
@@ -65,8 +65,8 @@ object Model {
                       Model("Airbus A330-300", capacity = 440, fuelBurn = (440 * 5).toInt, speed = 871, range = 11300, price = 250000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "NL"),
                       Model("Airbus A350-900", capacity = 440, fuelBurn = (440 * 5).toInt, speed = 903, range = 15000, price = 280000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "NL"),
                       Model("Boeing 777-300", capacity = 550, fuelBurn = (550 * 5.5).toInt, speed = 945, range = 11121, price = 300000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US"),
-                      Model("Boeing 747-400", capacity = 524, fuelBurn = (524 * 5.5).toInt, speed = 907, range = 13446, price = 280000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US"),
-                      Model("Airbus A380-900", capacity = 853, fuelBurn = (853 * 6).toInt, speed = 945, range = 15700, price = 420000000, lifespan = 35 * 52, constructionTime = 54, countryCode = "NL"))
+                      Model("Boeing 747-400", capacity = 660, fuelBurn = (660 * 5.7).toInt, speed = 945, range = 13446, price = 350000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US"),
+                      Model("Airbus A380-800", capacity = 853, fuelBurn = (853 * 6).toInt, speed = 945, range = 15700, price = 450000000, lifespan = 35 * 52, constructionTime = 54, countryCode = "NL"))
                       
   val modelByName = models.map { model => (model.name, model) }.toMap 
 }
