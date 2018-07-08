@@ -254,9 +254,6 @@ a:hover, .clickable:hover {
 	margin-right: 2px;
 }
 
-#airportSchedule {
-	background-image: url(../flapper/img/brushed.png);
-}
 
 .tabs {
 	list-style: none;

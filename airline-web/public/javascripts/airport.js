@@ -181,72 +181,8 @@ function populateAirportDetails(airport) {
 		        fillOpacity: 0.3,
 		        map: airportMap
 		    });
-		//loadAirportSchedule(airport)
 		loadAirportStatistics(airport)
 	}
-}
-
-var flapperOptions = {
-		  width: 30,             // number of digits
-		  align: 'left',       // aligns values to the left or right of display
-		  chars: null,          // array of characters that Flapper can display
-		  chars_preset: 'alphanum',  // 'num', 'hexnum', 'alpha' or 'alphanum'
-		  timing: 250,          // the maximum timing for digit animation
-		  min_timing: 10,       // the minimum timing for digit animation
-		  transform: true,       // Flapper automatically detects the jquery.transform
-		  on_anim_start: null,   // Callback for start of animation
-		  on_anim_end: null,     // Callback for end of animation
-		}
-
-function loadAirportSchedule(airport) {
-	var lineCount = 17
-	var date = new Date(currentTime)
-	$.ajax({
-		type: 'GET',
-		url: "airports/" + airport.id + "/link-schedule/" + date.getDay() + "/" + date.getHours(),
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(linkSchedules) {
-	    	$('#airportSchedule').empty()
-	    	//var board = new DepartureBoard(document.getElementById('airportSchedule'), { rowCount: 16, letterCount: 40 });
-	    	//var boardValues = []
-	    	var counter = 0
-	    	var departureBoardLines = []
-	    	$.each(linkSchedules, function(index, entry) {
-	    		$.each(entry.links, function(index, link) {
-	    			counter ++
-	    			if (counter < lineCount) {
-		    			var text = (entry.timeSlotTime + "  " + padAfter(link.linkCode, " ", 7) + " " + link.destination).toUpperCase()
-		    			//departureBoardLines.push($("<input class='XXS'/>").appendTo('#airportSchedule').flapper(flapperOptions).val(text))
-		    			departureBoardLines.push({ input : $("<input class='XXS'/>").appendTo('#airportSchedule').flapper(flapperOptions), text : text})
-	    			}
-	    		})
-	    	})
-	    	
-	    	
-	    	for (var i = 0 ; i < (lineCount - counter - 1); i++) { //pad extra lines
-	    		console.log(i + " and " + (lineCount - counter))
-	    		$("<input class='XXS'/>").appendTo('#airportSchedule').flapper(flapperOptions)
-	    	}
-	    	
-	    	function animateLines() {
-	    		if (departureBoardLines.length > 0) {
-	    			//departureBoardLines.shift().change()
-	    			var element = departureBoardLines.shift()
-	    			element.input.val(element.text).change()
-		    		setTimeout(function() {
-			    		animateLines()
-			    	}, 2000)
-	    		}
-	    	}
-	    	animateLines()
-	    	//board.setValue(boardValues)
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
 }
 
 
