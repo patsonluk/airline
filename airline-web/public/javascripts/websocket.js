@@ -1,8 +1,22 @@
 var port = window.location.port
-if (!port) {
-	port = 80
+
+alert(window.location.protocol)
+
+var wsProtocol
+
+if (window.location.protocol == "https:"){
+	wsProtocol = "wss:"
+	if (!port) {
+		port = 443
+	}
+} else {
+	wsProtocol = "ws:"
+	if (!port) {
+		port = 80
+	}
 }
-var wsUri = "ws://" +  window.location.hostname + ":" + port + "/wsWithActor";
+
+var wsUri = wsProtocol + "//" +  window.location.hostname + ":" + port + "/wsWithActor";
 var websocket;
 var selectedAirlineId
 
