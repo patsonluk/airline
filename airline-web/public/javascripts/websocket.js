@@ -1,7 +1,5 @@
 var port = window.location.port
 
-alert(window.location.protocol)
-
 var wsProtocol
 
 if (window.location.protocol == "https:"){
