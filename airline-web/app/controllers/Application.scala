@@ -349,7 +349,7 @@ class Application extends Controller {
       val flightIndex = scheduledTime.totalMinutes / flightInterval  //nth flight on this route within this week
       
       val randnum = new Random();
-      randnum.setSeed(linkConsumption.id); // want pseudo random that gives same result every time!
+      randnum.setSeed(linkConsumption.id + flightIndex); // want pseudo random that gives same result every time!
       
       val randomizedFlightIndex = (flightIndex + randnum.nextInt(linkConsumption.link.frequency)) % linkConsumption.link.frequency
       
