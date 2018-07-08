@@ -107,6 +107,7 @@ function buildBase(isHeadquarter, scale) {
 	    	showWorldMap()
 	    	if (scale == 1 && isHeadquarter) {
 	    		$('#planLinkFromAirportId').val(activeAirline.headquarterAirport.airportId)
+	    		loadAllCountries() //has a home country now, reload country info
 	    	}
 	    	
 	    },
