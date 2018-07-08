@@ -346,7 +346,7 @@ class Application extends Controller {
       val minorDelayMarker = majorDelayMarker +  linkConsumption.link.minorDelayCount
 
       val flightInterval = 60 * 24 * 7 / linkConsumption.link.frequency 
-      val flightIndex = currentTime.totalMinutes / flightInterval  //nth flight on this route within this week
+      val flightIndex = scheduledTime.totalMinutes / flightInterval  //nth flight on this route within this week
       
       val randnum = new Random();
       randnum.setSeed(linkConsumption.id); // want pseudo random that gives same result every time!
