@@ -158,13 +158,19 @@ function commaSeparateNumber(val){
 }
 
 function getCountryFlagImg(countryCode) {
-	var url = "assets/images/flags/" + countryCode + ".png"
+	var countryFlagUrl = getCountryFlagUrl(countryCode);
 	var countryName = loadedCountriesByCode[countryCode].name
-	return "<img src='" + url + "' title='" + countryName +"'/>"
+	if (countryFlagUrl) {
+		return "<img src='" + countryFlagUrl + "' title='" + countryName +"'/>"
+	} else {
+		return ""
+	}
 }
 
 function getCountryFlagUrl(countryCode) {
-	if ($.inArray(countryCode, noFlags) != -1) {
+	if (!countryCode) {
+		return '';
+	} if ($.inArray(countryCode, noFlags) != -1) {
 		return '';
 	} else {
 		return "assets/images/flags/" + countryCode + ".png"

@@ -68,12 +68,7 @@ function getRankingRow(ranking) {
 	var row = $("<div class='table-row'></div>")
 	row.append("<div class='cell'>" + ranking.rank + "</div>")
 	row.append("<div class='cell'>" + getMovementLabel(ranking.movement) + "</div>")
-	var countryFlagUrl = getCountryFlagUrl(ranking.airlineCountryCode)
-	if (countryFlagUrl) {
-		row.append("<div class='cell'><img src='" + countryFlagUrl + "'/>" + ranking.airlineName + "</div>")
-	} else {
-		row.append("<div class='cell'>" + ranking.airlineName + "</div>")
-	}
+	row.append("<div class='cell'>" + getCountryFlagImg(ranking.airlineCountryCode) + ranking.airlineName + "</div>")
 	row.append("<div class='cell' style='text-align: right;'>" + ranking.rankedValue + "</div>")
 	
 	
