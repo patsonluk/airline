@@ -6,6 +6,8 @@ import com.patson.data.Constants._
 import com.patson.model._
 import com.patson.MainSimulation
 import java.sql.Statement
+import java.io.ByteArrayInputStream
+import java.sql.Blob
 
 
 object AirlineSource {
@@ -462,4 +464,44 @@ object AirlineSource {
       connection.close()
     }
   }
+  
+  def saveLogo(airlineId : Int, airlineLogo : Array[Byte]) = {
+    val connection = Meta.getConnection()
+    val logoStream = new ByteArrayInputStream(airlineLogo)
+    try {    
+        val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_LOGO_TABLE + " VALUES(?, ?)")
+        preparedStatement.setInt(1, airlineId)
+        preparedStatement.setBlob(2, logoStream)
+        preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+      logoStream.close()
+    }
+  }
+  
+  def loadLogos() : scala.collection.immutable.Map[Int, Array[Byte]] = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_LOGO_TABLE)
+        val resultSet = preparedStatement.executeQuery()
+        val logos = new ListBuffer[(Int, Array[Byte])]()
+        
+        while (resultSet.next()) {
+          val blob = resultSet.getBlob("logo")
+          logos += Tuple2(resultSet.getInt("airline"), blob.getBytes(1, blob.length.toInt))
+          blob.free()
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        logos.toMap
+    } finally {
+      connection.close()
+    }
+  }
+  
+  
 }

@@ -31,6 +31,9 @@ import com.patson.data.BankSource
 import models.EntrepreneurProfile
 import com.patson.data.AirplaneSource
 import com.patson.model.Bank
+import java.awt.Color
+import com.patson.util.LogoGenerator
+
 
 class AirlineApplication extends Controller {
   object OwnedAirlineWrites extends Writes[Airline] {
@@ -347,6 +350,10 @@ class AirlineApplication extends Controller {
       BadRequest("Cannot Set airline Code")
     }
   }
+ def getLogo(airlineId : Int) = Action {
+   Ok(LogoUtil.getLogo(airlineId)).as("image/png")
+   //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
+ }
   
   object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {
     def writes(championedCountries : List[(Country, Int, Long, Double)]): JsValue = {

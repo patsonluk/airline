@@ -51,6 +51,7 @@ object Constants {
   val AIRLINE_TRANSACTION_INDEX_1 = "airline_transaction_index_1"
   val AIRLINE_TRANSACTION_INDEX_2 = "airline_transaction_index_2"
   val INCOME_TABLE = "income"
+  val AIRLINE_LOGO_TABLE = "airline_logo"
   val LINKS_INCOME_TABLE = "links_income"
   val TRANSACTIONS_INCOME_TABLE = "transactions_income"
   val OTHERS_INCOME_TABLE = "others_income"

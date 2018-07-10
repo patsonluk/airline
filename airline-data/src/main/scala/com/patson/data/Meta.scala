@@ -267,6 +267,7 @@ object Meta {
     createAirportImage(connection)
     createLoan(connection)
     createCountryMarketShare(connection)
+    createAirlineLogo(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -586,6 +587,20 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_TRANSACTION_INDEX_2 + " ON " + AIRLINE_TRANSACTION_TABLE + "(cycle)")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createAirlineLogo(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_LOGO_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_LOGO_TABLE + "(" +
+      "airline INTEGER, " +
+      "logo BLOB, " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
     statement.execute()
     statement.close()
   }

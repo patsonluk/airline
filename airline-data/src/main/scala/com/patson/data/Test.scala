@@ -12,6 +12,8 @@ import com.patson.model.airplane.Model
 import com.patson.model.CountryMarketShare
 import com.patson.model.Country
 import com.patson.model.Computation
+import java.awt.Color
+import com.patson.util.LogoGenerator
 
 object Test extends App {
      
@@ -32,7 +34,10 @@ object Test extends App {
     
 //    Patchers.patchAirlineCode()
 //    Patchers.patchFlightNumber()
-  Patchers.airplaneModelPatcher()
+//  Patchers.airplaneModelPatcher()
+  Patchers.patchAirlineLogos()
+  
+  
   
 }
 

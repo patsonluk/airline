@@ -57,6 +57,7 @@ GET		 /airlines/:airlineId/loan-options  controllers.BankApplication.getLoanOpti
 GET		 /airlines/:airlineId/max-loan  controllers.BankApplication.getMaxLoan(airlineId : Int)
 GET		 /airlines/:airlineId/championed-countries  controllers.AirlineApplication.getChampionedCountries(airlineId : Int)
 GET		 /airlines/:airlineId/reset	   controllers.AirlineApplication.resetAirline(airlineId : Int)
+GET		 /airlines/:airlineId/logo	controllers.AirlineApplication.getLogo(airlineId : Int)
 PUT		 /airlines/:airlineId/airline-code	   controllers.AirlineApplication.setAirlineCode(airlineId : Int)
 GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)

@@ -12,11 +12,18 @@ import com.patson.data.LinkSource
 import com.patson.model.Airline
 import com.patson.model.LinkConsumptionDetails
 import com.patson.data.AirlineSource
+import java.io.File
+import java.awt.Color
  
 
 object RankingUtil {
   var loadedCycle = 0
   var cachedRankings : Map[RankingType.Value, List[Ranking]] = Map.empty
+  
+//  val generatedLogo = ImageUtil.generateLogo("logo/star.bmp", Color.CYAN.getRGB, Color.RED.getRGB)
+//  LogoUtil.saveLogo(1, generatedLogo)
+  
+  
   
   def getRankings() : Map[RankingType.Value, List[Ranking]] = {
     checkCache()
