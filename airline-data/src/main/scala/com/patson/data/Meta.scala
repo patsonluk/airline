@@ -382,6 +382,7 @@ object Meta {
       "to_airport INTEGER, " +
       "airline INTEGER, " +
       "distance INTEGER, " +
+      "frequency INTEGER, " +
       "cycle INTEGER, " +
       "PRIMARY KEY (cycle, link))")
 
