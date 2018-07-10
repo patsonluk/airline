@@ -265,6 +265,10 @@ object CountrySource {
      val connection = Meta.getConnection()
      try {  
        connection.setAutoCommit(false)
+       //purge existing ones
+       val truncateStatement = connection.prepareStatement("TRUNCATE TABLE "+ COUNTRY_MARKET_SHARE_TABLE);
+       truncateStatement.executeUpdate()       
+       
        val replaceStatement = connection.prepareStatement("REPLACE INTO " + COUNTRY_MARKET_SHARE_TABLE + "(country, airline, passenger_count) VALUES (?,?,?)")
        marketShares.foreach { marketShare =>
            replaceStatement.setString(1, marketShare.countryCode)
@@ -279,6 +283,7 @@ object CountrySource {
        
        replaceStatement.executeBatch()
        connection.commit()
+       truncateStatement.close()
        replaceStatement.close()
      } finally {
        connection.close()
