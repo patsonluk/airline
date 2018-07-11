@@ -131,7 +131,9 @@ object AirlineSimulation {
         //airline.setBalance(airline.getBalance() + totalCashFlow)
         cashFlows.put(airline, totalCashFlow)
         
+        
         //update reputation
+        var targetReputation = 0.0
         linkResultByAirline.get(airline.id) match { 
           case Some(linkConsumptions) =>
             val totalPassengerKilometers = linkConsumptions.foldLeft(0L) { (foldLong, linkConsumption) =>
@@ -139,32 +141,33 @@ object AirlineSimulation {
             }
             
             //https://en.wikipedia.org/wiki/World%27s_largest_airlines
-            var targetReputation = Math.log(totalPassengerKilometers / 5000) / Math.log(1.2)
+            targetReputation = Math.log(totalPassengerKilometers / 5000) / Math.log(1.2)
             if (targetReputation > Airline.MAX_REPUTATION_BY_PASSENGERS) {
               targetReputation = Airline.MAX_REPUTATION_BY_PASSENGERS
             } else if (targetReputation < 10) {
               targetReputation = 10
             }
-            
-            val currentReputation = airline.getReputation()
-            if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUATION_DELTA) {
-              targetReputation = currentReputation + MAX_REPUATION_DELTA
-            } else if (targetReputation <  currentReputation && currentReputation - targetReputation > MAX_REPUATION_DELTA) {
-              targetReputation = currentReputation - MAX_REPUATION_DELTA
-            }
-            
-            champions.get(airline).foreach { //if this airline championed anything
-              _.foreach {
-                case(country, ranking) => { 
-                  val boost = Computation.computeReputationBoost(country, ranking)
-                  targetReputation = targetReputation + boost
-                }
-              }
-            }
-            airline.setReputation(targetReputation)
           case None =>
-            airline.setReputation(0)
+            targetReputation = 0
         }
+        
+        val currentReputation = airline.getReputation()
+        //make sure it increases/decreases gradually based on passenger volume
+        if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUATION_DELTA) {
+          targetReputation = currentReputation + MAX_REPUATION_DELTA
+        } else if (targetReputation <  currentReputation && currentReputation - targetReputation > MAX_REPUATION_DELTA) {
+          targetReputation = currentReputation - MAX_REPUATION_DELTA
+        }
+        
+        champions.get(airline).foreach { //if this airline championed anything
+          _.foreach {
+            case(country, ranking) => { 
+              val boost = Computation.computeReputationBoost(country, ranking)
+              targetReputation = targetReputation + boost
+            }
+          }
+        }
+        airline.setReputation(targetReputation)
         
         //calculate service quality
         allLinks.get(airline.id).foreach {  links =>
