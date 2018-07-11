@@ -319,8 +319,6 @@ class AirlineApplication extends Controller {
       //unset service investment
       airline.setServiceFunding(0)
       airline.setServiceQuality(0)
-      //reset reputation
-      airline.setReputation(0)
       
       AirlineSource.saveAirlineInfo(airline)
       Ok(Json.toJson(airline))

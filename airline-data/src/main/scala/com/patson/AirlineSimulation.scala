@@ -10,6 +10,7 @@ import com.patson.model.airplane.Airplane
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
+  val MAX_REPUATION_DELTA = 0.5
   
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
@@ -143,6 +144,13 @@ object AirlineSimulation {
               targetReputation = Airline.MAX_REPUTATION_BY_PASSENGERS
             } else if (targetReputation < 10) {
               targetReputation = 10
+            }
+            
+            val currentReputation = airline.getReputation()
+            if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUATION_DELTA) {
+              targetReputation = currentReputation + MAX_REPUATION_DELTA
+            } else if (targetReputation <  currentReputation && currentReputation - targetReputation > MAX_REPUATION_DELTA) {
+              targetReputation = currentReputation - MAX_REPUATION_DELTA
             }
             
             champions.get(airline).foreach { //if this airline championed anything
