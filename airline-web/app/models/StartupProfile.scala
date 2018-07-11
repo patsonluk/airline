@@ -18,7 +18,7 @@ class RevivalProfile extends StartupProfile(title = "Revival of past glory",
       description = "An airline that has previously over-expanded by mismanagement of now retired CEO. It is left with 2 aging Boeing 737-700C and heavy debt. Can you turn this airline around?", 
       List("Own 2 X 50% condition Boeing 737-700C",
 					  "20,000,000 cash",
-					  "200,000,000 debt (10 years term)",
+					  "100,000,000 debt (10 years term)",
 					  "25 airline reputation"),
 		  1) {
 	
@@ -34,7 +34,7 @@ class RevivalProfile extends StartupProfile(title = "Revival of past glory",
 		      Airplane(model, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION / 2, depreciationRate = 0, value = model.price / 2),
 		      Airplane(model, owner = airline, constructedCycle = cycle, condition = Airplane.MAX_CONDITION / 2, depreciationRate = 0, value = model.price / 2))
 		  AirplaneSource.saveAirplanes(airplanes)
-		  val loan = Loan(airline.id, borrowedAmount = 200000000, interest = 0, remainingAmount = 200000000, creationCycle = 0, loanTerm = 10 * 52)
+		  val loan = Loan(airline.id, borrowedAmount = 100000000, interest = 0, remainingAmount = 100000000, creationCycle = 0, loanTerm = 10 * 52)
 		  BankSource.saveLoan(loan)
 		}
 }
