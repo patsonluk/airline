@@ -1026,8 +1026,6 @@ function updatePlanLinkInfo(linkInfo) {
 		selectedModelId = explicitlySelectedModelId;
 	} else if (assignedModelId) {
 		selectedModelId = assignedModelId;
-	} else if (linkInfo.modelPlanLinkInfo.length > 0) { //probably new link
-		selectedModelId = linkInfo.modelPlanLinkInfo[0].modelId
 	}
 	
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {

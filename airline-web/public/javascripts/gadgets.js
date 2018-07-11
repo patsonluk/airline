@@ -244,8 +244,6 @@ function sortPreserveOrder(array, property, ascending) {
 	    return val.data
 	});
 	
-	console.log(result)
-	
 	return result;
 }
 
