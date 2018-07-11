@@ -599,6 +599,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_LOGO_TABLE + "(" +
       "airline INTEGER, " +
       "logo BLOB, " +
+      "PRIMARY KEY (airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()

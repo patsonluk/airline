@@ -42,8 +42,38 @@ public class LogoGenerator {
 	}
 
 	public static byte[] generateRandomLogo() throws IOException {
-		Color color1 = new Color(random.nextInt(80), random.nextInt(80), random.nextInt(80));
-		Color color2 = new Color(180 + random.nextInt(76), 180 + random.nextInt(76), 180 + random.nextInt(76));
+		Color color1;
+		
+		if (random.nextBoolean()) {
+			color1 = new Color(random.nextInt(80), random.nextInt(80), random.nextInt(80)); //darker color
+		} else {
+			color1 = new Color(176 + random.nextInt(80), 176 + random.nextInt(80), 176 + random.nextInt(80)); //brighter color
+		}
+		
+		
+		byte accentValue = (byte) (1 + random.nextInt(7));//byte mask RGB, + 1 to make sure there's at least always have one accent color
+		
+		byte redAccentMask = 0x4;
+		byte greenAccentMask = 0x2;
+		byte blueAccentMask = 0x1;
+		
+		Color color2 = new Color(getColorValue(isAccentColor(accentValue, redAccentMask)),
+								 getColorValue(isAccentColor(accentValue, greenAccentMask)),
+								 getColorValue(isAccentColor(accentValue, blueAccentMask)));
+				                             
 		return generateLogo(random.nextInt(), color1.getRGB(), color2.getRGB());
 	}
+	
+	private static boolean isAccentColor(byte accentValue, byte mask) {
+		return (accentValue & mask) == mask;
+	}
+	
+	private static int getColorValue(boolean isAccent) {
+		System.out.println(isAccent);
+		if (isAccent) {
+			return 180 + random.nextInt(76);
+		} else {
+			return 40 + random.nextInt(76);
+		}
+ 	}
 }

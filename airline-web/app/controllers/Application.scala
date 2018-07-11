@@ -157,6 +157,7 @@ class Application extends Controller {
       "timeSlotDay" -> JsNumber(timeSlotAssignment._1.dayOfWeek),    
       "timeSlotTime" -> JsString("%02d".format(timeSlotAssignment._1.hour) + ":" + "%02d".format(timeSlotAssignment._1.minute)),
       "airline" -> JsString(link.airline.name),
+      "airlineId" -> JsNumber(link.airline.id),
       "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber)),
       "destination" -> JsString(if (!link.to.city.isEmpty()) { link.to.city } else { link.to.name }),
       "statusCode" -> JsString(timeSlotAssignment._3.code),
