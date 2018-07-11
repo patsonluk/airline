@@ -151,14 +151,6 @@ object AirlineSimulation {
             targetReputation = 0
         }
         
-        val currentReputation = airline.getReputation()
-        //make sure it increases/decreases gradually based on passenger volume
-        if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUATION_DELTA) {
-          targetReputation = currentReputation + MAX_REPUATION_DELTA
-        } else if (targetReputation <  currentReputation && currentReputation - targetReputation > MAX_REPUATION_DELTA) {
-          targetReputation = currentReputation - MAX_REPUATION_DELTA
-        }
-        
         champions.get(airline).foreach { //if this airline championed anything
           _.foreach {
             case(country, ranking) => { 
@@ -167,6 +159,15 @@ object AirlineSimulation {
             }
           }
         }
+        
+        val currentReputation = airline.getReputation()
+        //make sure it increases/decreases gradually based on passenger volume
+        if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUATION_DELTA) {
+          targetReputation = currentReputation + MAX_REPUATION_DELTA
+        } else if (targetReputation <  currentReputation && currentReputation - targetReputation > MAX_REPUATION_DELTA) {
+          targetReputation = currentReputation - MAX_REPUATION_DELTA
+        }
+        
         airline.setReputation(targetReputation)
         
         //calculate service quality
