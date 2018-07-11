@@ -4,16 +4,21 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+import com.google.common.io.ByteStreams;
+
 public class LogoGenerator {
-	private static final int patternCount = 18;
+	public static final int TEMPLATE_COUNT = 18;
 	private static final Random random = new Random();
 
 	public static byte[] generateLogo(int patternIndex, int color1, int color2) throws IOException {
-		String fileName = "/logo/p" + Math.abs(patternIndex % patternCount) + ".bmp";
+		String fileName = "/logo/p" + Math.abs(patternIndex % TEMPLATE_COUNT) + ".bmp";
 		BufferedImage image = ImageIO.read(LogoGenerator.class.getResourceAsStream(fileName));
 
 		int[][] array2D = new int[image.getWidth()][image.getHeight()];
@@ -34,11 +39,29 @@ public class LogoGenerator {
 			}
 			System.out.println();
 		}
-
+		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ImageIO.write(image, "png", baos);
 		baos.flush();
 		return baos.toByteArray();
+	}
+	
+	/**
+	 * 
+	 * @return a map of template index with the corresponding byte bmp image
+	 */
+	public static Map<Integer, byte[]> getTemplates() {
+		Map<Integer, byte[]> templates = new HashMap<Integer, byte[]>();
+		for (int i = 0 ; i < TEMPLATE_COUNT; i ++) {
+			String fileName = "/logo/p" + i + ".bmp";
+			
+			try (InputStream in = LogoGenerator.class.getResourceAsStream(fileName)) {
+				templates.put(i, ByteStreams.toByteArray(in));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return templates;
 	}
 
 	public static byte[] generateRandomLogo() throws IOException {

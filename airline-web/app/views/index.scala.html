@@ -26,6 +26,8 @@
 	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/plot-fusioncharts.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.versioned("farbtastic/farbtastic.js")"></script>
+	<link rel="stylesheet" href="@routes.Assets.versioned("farbtastic/farbtastic.css")" type="text/css" />
 	
 	<script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
@@ -869,6 +871,13 @@
 		 	  					</div>
 		 	  				</div>
 		 	  				<div class="table-row">
+		 	  					<div class="cell label">Airline Logo:</div>
+		 	  					<div class="cell value">
+		 	  						<img class="airlineLogo" src='#'>
+		 	  						<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineLogo()"/>
+		 	  					</div>
+		 	  				</div>
+		 	  				<div class="table-row">
 		 	  					<div class="cell label">Destinations:</div>
 		 	  					<div id="destinations" class="cell value"></div>
 		 	  				</div>
@@ -1447,6 +1456,31 @@
 	    <h3 id="confirmationPrompt" style="margin-bottom: 10px;"></h3>
 	    <div class="button confirmationButton" onclick="closeModal($('#confirmationModal')); executeConfirmationTarget();">Confirm</div>
 	    <div class="button" onclick="closeModal($('#confirmationModal'))">Cancel</div>
+	  </div>
+	</div>
+	
+	<!-- Logo Modal -->
+	
+	<div id="logoModal" class="modal">
+	  <div class="modal-content"  style="width : 800px;">
+	    <span class="close" onclick="closeModal($('#logoModal'))">&times;</span>
+	    <h3>Logo Templates</h3>
+	    <div id="logoTemplates"></div>
+	    <div class="table" style="width: 100%">
+   			<div class="table-row">
+   				<div class="cell label">Color 1:</div>
+   				<div class="cell value .clickable-no-highlight" onclick="activateColorPicker($('#colorpicker1'), $('#logoColor1'))"><form><input type="text" id="logoColor1" name="color" value="#123456" /></form></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="cell label">Color 2:</div>
+   				<div class="cell value .clickable-no-highlight" onclick="activateColorPicker($('#colorpicker2'), $('#logoColor2'))"><form><input type="text" id="logoColor2" name="color" value="#123456" /></form></div>
+   			</div>
+		</div>
+
+		<div id="colorpicker1" class="colorpicker" style="width: 100px; height: 100px;"></div>
+		<div id="colorpicker2" class="colorpicker"></div>
+	    <div class="button confirmationButton" onclick="closeModal($('#logoModal')); setAirlineLogo();">Confirm</div>
+	    <div class="button" onclick="closeModal($('#logoModal'))">Cancel</div>
 	  </div>
 	</div>
 	 

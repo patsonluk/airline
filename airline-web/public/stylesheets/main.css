@@ -244,7 +244,7 @@ a.selected, a:hover, span.selected, .clickable:hover, .clickable.selected {
 	background-color: #A1D490;
 }
 
-a:hover, .clickable:hover {
+a:hover, .clickable:hover, .clickable-no-highlight:hover {
 	cursor: pointer;
 }
 

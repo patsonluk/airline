@@ -2,6 +2,12 @@ var loadedIncomes = {}
 var incomePage = 0;
 var incomePeriod;
 
+$( document ).ready(function() {
+	loadLogoTemplates()
+	$('#colorpicker1').farbtastic($('#logoColor1'));
+	$('#colorpicker2').farbtastic($('#logoColor2'));
+})
+
 function showOfficeCanvas() {
 	setActiveDiv($("#officeCanvas"))
 	highlightTab($('#officeCanvasTab'))
@@ -207,6 +213,46 @@ function setAirlineCode(airlineCode) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function loadLogoTemplates() {
+	$('#logoTemplates').empty()
+	$.ajax({
+		type: 'GET',
+		url: "logos/templates",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(templates) {
+	    	//group by period
+	    	$.each(templates, function(index, templateIndex) {
+	    		$('#logoTemplates').append('<div style="padding: 3px; margin: 3px; float: left;" class="clickable" onclick="selectLogoTemplate(' + templateIndex + ')"><img src="logos/templates/' + templateIndex + '"></div>')
+	    	})
+	    	
+	    	
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+            console.log(JSON.stringify(jqXHR));
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function editAirlineLogo() {
+	var modal = $('#logoModal')
+	// Get the <span> element that closes the modal
+	
+	
+
+
+	modal.fadeIn(200)
+}
+
+function activateColorPicker(colorpicker, input) {
+	
+}
+
+function selectLogoTemplate(templateIndex) {
+	
 }
 
 function editServiceFunding() {

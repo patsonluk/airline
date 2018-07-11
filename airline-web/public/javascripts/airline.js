@@ -25,6 +25,7 @@ function updateAirlineInfo(airlineId) {
 	    	activeAirline = airline
 	    	updateLinksInfo()
 	    	updateAirportMarkers(airline)
+	    	$('.airlineLogo').attr('src', '/airlines/' + airlineId + "/logo")
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

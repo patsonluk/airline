@@ -70,8 +70,9 @@ DELETE   /links							  controllers.LinkApplication.deleteAllLinks
 #GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels
-GET		 /rankings  		  		      controllers.RankingApplication.getRankings()	
-
+GET		 /rankings  		  		      controllers.RankingApplication.getRankings()
+GET		 /logos/templates 				  controllers.LogoApplication.getTemplates()	
+GET		 /logos/templates/:id			  controllers.LogoApplication.getTemplate(id : Int)	
 
 # Signup
 GET     /signup                     controllers.SignUp.form
