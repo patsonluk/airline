@@ -107,7 +107,7 @@ object DemandGenerator {
   }
   
   def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {
-    if (fromAirport == toAirport) {
+    if (fromAirport == toAirport || fromAirport.population == 0 || toAirport.population == 0) {
       LinkClassValues.getInstance(0, 0, 0)
     } else {
       import FlightType._
@@ -117,6 +117,7 @@ object DemandGenerator {
       //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
       //we are using income level for to airport as destination income difference should have less impact on demand compared to origination airport (and income level is log(income))
       val toAirportIncomeLevel = Computation.getIncomeLevel(toAirport.income)
+      
       val fromAirportIncome = fromAirport.power / fromAirport.population
       val fromAirportAdjustedPower = if (fromAirportIncome < 50000) fromAirport.power else fromAirport.population * 50000 //to make high income airport a little bit less overpowered for base
       
