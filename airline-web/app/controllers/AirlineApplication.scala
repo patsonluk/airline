@@ -82,11 +82,15 @@ class AirlineApplication extends Controller {
        }.toSet.size
        
        val destinations = if (airportsServed > 0) airportsServed - 1 else 0 //minus home base
-              
-       val fleetSize = AirplaneSource.loadAirplanesByOwner(airlineId).length
+       
+       val currentCycle = CycleSource.loadCycle()
+       val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId).filter(_.isReady(currentCycle))
+       
+       val fleetSize = airplanes.length
+       val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
        val assets = Bank.getAssets(airlineId)
        
-       airlineJson = airlineJson + ("destinations"-> JsNumber(destinations)) + ("fleetSize"-> JsNumber(fleetSize)) + ("assets"-> JsNumber(assets))
+       airlineJson = airlineJson + ("destinations"-> JsNumber(destinations)) + ("fleetSize"-> JsNumber(fleetSize)) + ("fleetAge"-> JsNumber(fleetAge)) + ("assets"-> JsNumber(assets))
      }
      
      Ok(airlineJson)

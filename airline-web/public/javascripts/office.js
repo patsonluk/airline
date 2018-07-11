@@ -26,6 +26,7 @@ function updateAirlineDetails() {
 	    	$('#airlineCodeInput').val(airline.airlineCode)
 	    	$('#destinations').text(airline.destinations)
 	    	$('#fleetSize').text(airline.fleetSize)
+	    	$('#fleetAge').text(getYearMonthText(airline.fleetAge))
 	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

@@ -191,6 +191,17 @@ function getDurationText(duration) {
 	}
 }
 
+function getYearMonthText(weekDuration) {
+	var year = Math.floor(weekDuration / 52)
+	var month = Math.floor(weekDuration / 4) % 12
+	if (year > 0) {
+		return year + " year(s) " + month + " month(s)"
+	} else {
+		return month + " month(s)"
+	}
+}
+
+
 function getOpennessSpan(openness) {
 	var description
 	var icon
