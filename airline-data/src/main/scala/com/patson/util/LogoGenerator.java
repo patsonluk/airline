@@ -17,28 +17,28 @@ public class LogoGenerator {
 	public static final int TEMPLATE_COUNT = 18;
 	private static final Random random = new Random();
 
-	public static byte[] generateLogo(int patternIndex, int color1, int color2) throws IOException {
+	public static byte[] generateLogo(int patternIndex, int color1Rgb, int color2Rgb) throws IOException {
 		String fileName = "/logo/p" + Math.abs(patternIndex % TEMPLATE_COUNT) + ".bmp";
 		BufferedImage image = ImageIO.read(LogoGenerator.class.getResourceAsStream(fileName));
 
-		int[][] array2D = new int[image.getWidth()][image.getHeight()];
-
+		
 		for (int yPixel = 0; yPixel < image.getHeight(); yPixel++) {
 			for (int xPixel = 0; xPixel < image.getWidth(); xPixel++) {
 				int color = image.getRGB(xPixel, yPixel);
-				if (color == Color.BLACK.getRGB()) {
-					array2D[xPixel][yPixel] = 1;
-					System.out.print("X");
-
-					image.setRGB(xPixel, yPixel, color1);
-				} else {
-					array2D[xPixel][yPixel] = 0; // ?
-					System.out.print(" ");
-					image.setRGB(xPixel, yPixel, color2);
-				}
+				double alpha = ((double)new Color(color).getRed()) / 255;
+				Color color1 = new Color(color1Rgb);
+				Color color2 = new Color(color2Rgb);
+				Color finalColor = new Color((int)(color2.getRed() * alpha + color1.getRed() * (1 - alpha)),
+						(int)(color2.getGreen() * alpha + color1.getGreen() * (1 - alpha)),
+						(int)(color2.getBlue() * alpha + color1.getBlue() * (1 - alpha)));
+				
+				
+				image.setRGB(xPixel, yPixel, finalColor.getRGB());
+				
 			}
 			System.out.println();
 		}
+
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ImageIO.write(image, "png", baos);
