@@ -25,7 +25,7 @@ function updateAirlineInfo(airlineId) {
 	    	activeAirline = airline
 	    	updateLinksInfo()
 	    	updateAirportMarkers(airline)
-	    	$('.airlineLogo').attr('src', '/airlines/' + airlineId + "/logo")
+	    	updateAirlineLogo()
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -33,7 +33,10 @@ function updateAirlineInfo(airlineId) {
 	    }
 	});
 }
-	
+
+function updateAirlineLogo() {
+	$('.airlineLogo').attr('src', '/airlines/' + activeAirline.id + "/logo?dummy=" + Math.random())
+}
 	
 	
 function refreshTopBar(airline) {

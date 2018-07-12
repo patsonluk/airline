@@ -358,6 +358,13 @@ class AirlineApplication extends Controller {
    Ok(LogoUtil.getLogo(airlineId)).as("image/png")
    //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
  }
+ 
+ def setLogo(airlineId : Int, templateIndex : Int, color1 : String, color2 : String) = AuthenticatedAirline(airlineId) { request =>
+   val logo = LogoGenerator.generateLogo(templateIndex, Color.decode(color1).getRGB, Color.decode(color2).getRGB)
+   LogoUtil.saveLogo(airlineId, logo)
+   println("Updated logo for airline " + request.user)
+   Ok(Json.obj())
+ }	 
   
   object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {
     def writes(championedCountries : List[(Country, Int, Long, Double)]): JsValue = {

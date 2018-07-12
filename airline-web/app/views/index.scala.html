@@ -26,8 +26,9 @@
 	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/plot-fusioncharts.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.versioned("farbtastic/farbtastic.js")"></script>
-	<link rel="stylesheet" href="@routes.Assets.versioned("farbtastic/farbtastic.css")" type="text/css" />
+	
+	<script type="text/javascript" src="@routes.Assets.versioned("tinycolorpicker/jquery.tinycolorpicker.js")"></script>
+	<link rel="stylesheet" href="@routes.Assets.versioned("tinycolorpicker/tinycolorpicker.css")" type="text/css" />
 	
 	<script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
@@ -1462,24 +1463,28 @@
 	<!-- Logo Modal -->
 	
 	<div id="logoModal" class="modal">
-	  <div class="modal-content"  style="width : 800px;">
+	  <div class="modal-content"  style="width : 400px;">
 	    <span class="close" onclick="closeModal($('#logoModal'))">&times;</span>
 	    <h3>Logo Templates</h3>
 	    <div id="logoTemplates"></div>
-	    <div class="table" style="width: 100%">
-   			<div class="table-row">
-   				<div class="cell label">Color 1:</div>
-   				<div class="cell value .clickable-no-highlight" onclick="activateColorPicker($('#colorpicker1'), $('#logoColor1'))"><form><input type="text" id="logoColor1" name="color" value="#123456" /></form></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="cell label">Color 2:</div>
-   				<div class="cell value .clickable-no-highlight" onclick="activateColorPicker($('#colorpicker2'), $('#logoColor2'))"><form><input type="text" id="logoColor2" name="color" value="#123456" /></form></div>
-   			</div>
-		</div>
-
-		<div id="colorpicker1" class="colorpicker" style="width: 100px; height: 100px;"></div>
-		<div id="colorpicker2" class="colorpicker"></div>
-	    <div class="button confirmationButton" onclick="closeModal($('#logoModal')); setAirlineLogo();">Confirm</div>
+	    <input type="hidden" id="logoTemplateIndex"/>
+	    <div id="colorPicker1">
+	        <a class="color">Color 1:<div class="colorInner"></div></a>
+	        <div class="track" onclick="generateLogoPreview()"></div>
+	        <ul class="dropdown"><li></li></ul>
+	        <input type="hidden" class="colorInput">
+	    </div>
+		<div id="colorPicker2">
+	        <a class="color">Color 2:<div class="colorInner"></div></a>
+	        <div class="track" onclick="generateLogoPreview()"></div>
+	        <ul class="dropdown"><li></li></ul>
+	        <input type="hidden" class="colorInput"/>
+	    </div>
+	    <h3>Preview</h3>
+	    <div id="logoPreview" style="height: 30px">
+	    
+	    </div>
+		<div class="button confirmationButton" onclick="closeModal($('#logoModal')); setAirlineLogo();">Confirm</div>
 	    <div class="button" onclick="closeModal($('#logoModal'))">Cancel</div>
 	  </div>
 	</div>

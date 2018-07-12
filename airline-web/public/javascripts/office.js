@@ -4,8 +4,18 @@ var incomePeriod;
 
 $( document ).ready(function() {
 	loadLogoTemplates()
-	$('#colorpicker1').farbtastic($('#logoColor1'));
-	$('#colorpicker2').farbtastic($('#logoColor2'));
+//	$('#colorpicker1').farbtastic($('#logoColor1'));
+//	$('#colorpicker2').farbtastic($('#logoColor2'));
+	
+	var $box = $('#colorPicker1');
+    $box.tinycolorpicker();
+    var picker = $('#colorPicker1').data("plugin_tinycolorpicker");
+    picker.setColor("#000000");
+    
+    $box = $('#colorPicker2');
+    $box.tinycolorpicker();
+    picker = $('#colorPicker2').data("plugin_tinycolorpicker");
+    picker.setColor("#FFFFFF");
 })
 
 function showOfficeCanvas() {
@@ -239,20 +249,45 @@ function loadLogoTemplates() {
 
 function editAirlineLogo() {
 	var modal = $('#logoModal')
-	// Get the <span> element that closes the modal
-	
-	
-
-
+	$('#logoTemplateIndex').val(0)
+	generateLogoPreview()
 	modal.fadeIn(200)
 }
 
-function activateColorPicker(colorpicker, input) {
-	
+function selectLogoTemplate(templateIndex) {
+	$('#logoTemplateIndex').val(templateIndex)
+	generateLogoPreview()
 }
 
-function selectLogoTemplate(templateIndex) {
+function generateLogoPreview() {
+	var logoTemplate = $('#logoTemplateIndex').val() 
+	var color1 = $('#colorPicker1 .colorInput').val()
+	var color2 = $('#colorPicker2 .colorInput').val()
 	
+	var url = "logos/preview?templateIndex=" + logoTemplate + "&color1=" + encodeURIComponent(color1) + "&color2=" + encodeURIComponent(color2)
+	$('#logoPreview').empty();
+	$('#logoPreview').append('<img src="' + url + '">')
+}
+
+function setAirlineLogo() {
+	var logoTemplate = $('#logoTemplateIndex').val() 
+	var color1 = $('#colorPicker1 .colorInput').val()
+	var color2 = $('#colorPicker2 .colorInput').val()
+	
+	var url = "airlines/" + activeAirline.id + "/set-logo?templateIndex=" + logoTemplate + "&color1=" + encodeURIComponent(color1) + "&color2=" + encodeURIComponent(color2)
+    $.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(dummy) {
+	    	updateAirlineLogo()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function editServiceFunding() {

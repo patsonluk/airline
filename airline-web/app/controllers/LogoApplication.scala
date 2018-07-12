@@ -19,6 +19,7 @@ import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.CountrySource
 import com.patson.data.AirportSource
 import com.patson.util.LogoGenerator
+import java.awt.Color
 
 
 class LogoApplication extends Controller {
@@ -33,4 +34,8 @@ class LogoApplication extends Controller {
   def getTemplate(id : Int) = Action {
      Ok(templates(id)).as("image/bmp")
   }
+  
+  def getPreview(templateIndex : Int, color1 : String, color2 : String) = Action {
+     Ok(LogoGenerator.generateLogo(templateIndex, Color.decode(color1).getRGB, Color.decode(color2).getRGB)).as("img/png")
+  }	 
 }

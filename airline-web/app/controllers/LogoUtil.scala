@@ -13,7 +13,7 @@ import com.patson.data.AirlineSource
 import java.io.ByteArrayOutputStream
 
 object LogoUtil {
-  val logos : Map[Int, Array[Byte]] = AirlineSource.loadLogos()
+  val logos : scala.collection.mutable.Map[Int, Array[Byte]] = collection.mutable.Map(AirlineSource.loadLogos().toSeq: _*) 
   val blank = getBlankLogo
   
   def getLogo(airlineId : Int) : Array[Byte]= {
@@ -25,6 +25,7 @@ object LogoUtil {
   
   def saveLogo(airlineId : Int, logo : Array[Byte]) = {
     AirlineSource.saveLogo(airlineId, logo)
+    logos.put(airlineId, logo) //update cache
   }
   
   def getBlankLogo() = {
