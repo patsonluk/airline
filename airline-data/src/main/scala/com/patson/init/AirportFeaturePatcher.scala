@@ -65,6 +65,7 @@ object AirportFeaturePatcher {
         "KOA" -> 25, //Kailua Hawaii
         "CUN" -> 24, //Cancun
         "BCN" -> 22, //Barcelona
+        "AMS" -> 21, //Amsterdam
         "VIE" -> 20, //vienna
         "CAI" -> 20,
         "LHR" -> 20,
