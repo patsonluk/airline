@@ -72,7 +72,7 @@ object RankingUtil {
   }
   private[this] def getPassengerMileRanking(linkConsumptions : Map[Int, List[LinkConsumptionDetails]], airlinesById : Map[Int, Airline]) : List[Ranking] = {
     val passengerMileByAirline : Map[Int, Long] = linkConsumptions.mapValues(_.map { linkConsumption => 
-        linkConsumption.link.soldSeats.total * linkConsumption.link.distance
+        linkConsumption.link.soldSeats.total.toLong * linkConsumption.link.distance
       }.sum)
     
     val sortedPassengerMileByAirline= passengerMileByAirline.toList.sortBy(_._2)(Ordering[Long].reverse)  //sort by total passengers of each airline
