@@ -14,7 +14,7 @@ import javax.imageio.ImageIO;
 import com.google.common.io.ByteStreams;
 
 public class LogoGenerator {
-	public static final int TEMPLATE_COUNT = 28;
+	public static final int TEMPLATE_COUNT = 36;
 	private static final Random random = new Random();
 
 	public static byte[] generateLogo(int patternIndex, int color1Rgb, int color2Rgb) throws IOException {
