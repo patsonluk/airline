@@ -354,7 +354,9 @@ class AirlineApplication extends Controller {
     }
   }
  def getLogo(airlineId : Int) = Action {
-   Ok(LogoUtil.getLogo(airlineId)).as("image/png")
+   Ok(LogoUtil.getLogo(airlineId)).as("image/png").withHeaders(
+    CACHE_CONTROL -> "max-age=3600"
+   )
    //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
  }
  
