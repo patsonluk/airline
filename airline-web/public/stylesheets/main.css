@@ -73,7 +73,7 @@ div.header, span.header {
 	font-size: 18px;
 }
 
-div.button {
+div.button, .ajax-file-upload {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	color: #454544;
@@ -98,7 +98,7 @@ div.selectedSection {
 	background-image: none;
 }
 
-.button {
+.button, .ajax-file-upload {
 	cursor: pointer
 }
 

@@ -59,6 +59,7 @@ GET		 /airlines/:airlineId/championed-countries  controllers.AirlineApplication.
 GET		 /airlines/:airlineId/reset	   controllers.AirlineApplication.resetAirline(airlineId : Int)
 GET		 /airlines/:airlineId/logo	controllers.AirlineApplication.getLogo(airlineId : Int)
 GET		 /airlines/:airlineId/set-logo	controllers.AirlineApplication.setLogo(airlineId : Int, templateIndex : Int, color1 : String, color2 : String)
+POST	 /airlines/:airlineId/logo	controllers.AirlineApplication.uploadLogo(airlineId : Int)
 PUT		 /airlines/:airlineId/airline-code	   controllers.AirlineApplication.setAirlineCode(airlineId : Int)
 GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)

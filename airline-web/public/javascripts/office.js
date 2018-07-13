@@ -1,6 +1,7 @@
 var loadedIncomes = {}
 var incomePage = 0;
 var incomePeriod;
+var fileuploaderObj;
 
 $( document ).ready(function() {
 	loadLogoTemplates()
@@ -287,6 +288,48 @@ function setAirlineLogo() {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
+	});
+}
+
+function showUploadLogo() {
+	if (activeAirline.reputation >= 50) {
+		updateLogoUpload()
+		$('#uploadLogoPanelForbidden').hide()
+		$('#uploadLogoPanel').show()
+	} else {
+		$('#uploadLogoPanelForbidden .warning').text('You may only upload airline banner at Reputation 50 or above')
+		$('#uploadLogoPanelForbidden').show()
+		$('#uploadLogoPanel').hide()
+	}
+	
+	$('#uploadLogoModal').fadeIn(200)
+}
+
+function updateLogoUpload() {
+	$('#uploadLogoPanel .warning').hide()
+	if (fileuploaderObj) {
+		fileuploaderObj.reset()
+	}
+	
+	fileuploaderObj = $("#fileuploader").uploadFile({
+		url:"airlines/" + activeAirline.id + "/logo",
+		multiple:false,
+		dragDrop:false,
+		acceptFiles:"image/png",
+		fileName:"logoFile",
+		maxFileSize:100*1024,
+		onSuccess:function(files,data,xhr,pd)
+		{
+			if (data.success) {
+				$('#uploadLogoPanel .warning').hide()
+				closeModal($('#uploadLogoModal'))
+				updateAirlineLogo()
+			} else if (data.error) {
+				$('#uploadLogoPanel .warning').text(data.error)	
+				$('#uploadLogoPanel .warning').show()
+			}
+			
+		}
 	});
 }
 

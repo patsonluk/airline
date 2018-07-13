@@ -30,6 +30,9 @@
 	<script type="text/javascript" src="@routes.Assets.versioned("tinycolorpicker/jquery.tinycolorpicker.js")"></script>
 	<link rel="stylesheet" href="@routes.Assets.versioned("tinycolorpicker/tinycolorpicker.css")" type="text/css" />
 	
+	<script type="text/javascript" src="@routes.Assets.versioned("jquery-upload-file/jquery.uploadfile.min.js")"></script>
+	<link rel="stylesheet" href="@routes.Assets.versioned("jquery-upload-file/uploadfile.css")" type="text/css" />
+	
 	<script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
@@ -876,6 +879,7 @@
 		 	  					<div class="cell value">
 		 	  						<img class="airlineLogo" src='#'>
 		 	  						<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineLogo()"/>
+		 	  						<img src='@routes.Assets.versioned("images/icons/picture--plus.png")' class='button' style="vertical-align: middle;" onclick="showUploadLogo()"/>
 		 	  					</div>
 		 	  				</div>
 		 	  				<div class="table-row">
@@ -1482,13 +1486,26 @@
 	    </div>
 	    <h3>Preview</h3>
 	    <div id="logoPreview" style="height: 30px">
-	    
 	    </div>
-		<div class="button confirmationButton" onclick="closeModal($('#logoModal')); setAirlineLogo();">Confirm</div>
+	    
+	    <div class="button confirmationButton" onclick="closeModal($('#logoModal')); setAirlineLogo();">Confirm</div>
 	    <div class="button" onclick="closeModal($('#logoModal'))">Cancel</div>
 	  </div>
 	</div>
-	 
+	
+	<div id="uploadLogoModal" class="modal">
+		<div class="modal-content"  style="width : 400px;">
+			<span class="close" onclick="closeModal($('#uploadLogoModal'))">&times;</span>
+			<h3>Upload Own Logo</h3>
+			<div id="uploadLogoPanel" style="display:none" >
+		    	<div id="fileuploader">Upload</div>
+		    	<div class="warning" style="display:none;"></div>
+		    </div>
+		    <div id="uploadLogoPanelForbidden" style="display:none" >
+		    	<div class="warning"></div>
+		    </div>
+	    </div>
+	</div>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->

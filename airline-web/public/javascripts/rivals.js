@@ -41,12 +41,12 @@ function updateRivalsTable(sortProperty, sortOrder) {
 	
 	$.each(loadedRivals, function(index, airline) {
 		var row = $("<div class='table-row clickable' data-airline-id='" + airline.id + "' onclick=\"loadRivalDetails($(this), '" + airline.id + "')\"></div>")
-		var countryFlagImg = ""
-		if (airline.countryCode) {
-			countryFlagImg = getCountryFlagImg(airline.countryCode)
-		}
+//		var countryFlagImg = ""
+//		if (airline.countryCode) {
+//			countryFlagImg = getCountryFlagImg(airline.countryCode)
+//		}
 		
-		row.append("<div class='cell'>" + countryFlagImg + airline.name + "</div>")
+		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) + airline.name + "</div>")
 		if (airline.headquartersAirportName) {
 			row.append("<div class='cell'>" + getAirportText(airline.headquartersCity, airline.headquartersAirportName) + "</div>")
 		} else {

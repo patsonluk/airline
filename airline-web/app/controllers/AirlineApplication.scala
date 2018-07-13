@@ -33,6 +33,7 @@ import com.patson.data.AirplaneSource
 import com.patson.model.Bank
 import java.awt.Color
 import com.patson.util.LogoGenerator
+import java.nio.file.Files
 
 
 class AirlineApplication extends Controller {
@@ -365,6 +366,31 @@ class AirlineApplication extends Controller {
    println("Updated logo for airline " + request.user)
    Ok(Json.obj())
  }	 
+ 
+  def uploadLogo(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.user.getReputation < 50) {
+      Ok(Json.obj("error" -> JsString("Cannot upload img at current reputation"))) //have to send ok as the jquery plugin's error cannot read the response
+    } else {
+      request.body.asMultipartFormData.map { data =>
+        import java.io.File
+        val logoFile = data.file("logoFile").get.ref.file
+        LogoUtil.validateUpload(logoFile) match {
+          case Some(rejection) =>
+            Ok(Json.obj("error" -> JsString(rejection))) //have to send ok as the jquery plugin's error cannot read the response
+          case None =>
+            val data =Files.readAllBytes(logoFile.toPath)
+            LogoUtil.saveLogo(airlineId, data)
+            
+            println("Uploaded logo for airline " + request.user)
+            Ok(Json.obj("success" -> JsString("File uploaded")))
+        }
+      }.getOrElse {
+            Ok(Json.obj("error" -> JsString("Cannot find uploaded contents"))) //have to send ok as the jquery plugin's error cannot read the response
+      }
+    }
+  }
+ 
+ 
   
   object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {
     def writes(championedCountries : List[(Country, Int, Long, Double)]): JsValue = {

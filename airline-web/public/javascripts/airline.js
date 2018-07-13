@@ -26,6 +26,7 @@ function updateAirlineInfo(airlineId) {
 	    	updateLinksInfo()
 	    	updateAirportMarkers(airline)
 	    	updateAirlineLogo()
+	    	updateLogoUpload()
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
