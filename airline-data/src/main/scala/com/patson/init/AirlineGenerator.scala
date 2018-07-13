@@ -13,6 +13,8 @@ import com.patson.DemandGenerator
 import com.patson.data._
 import com.patson.data.airplane._
 import scala.collection.mutable.ArrayBuffer
+import com.patson.util.LogoGenerator
+import java.awt.Color
 
 
 object AirlineGenerator extends App {
@@ -51,6 +53,8 @@ object AirlineGenerator extends App {
       //airlines.put(newAirline, airlineBase)
       
       AirlineSource.saveAirlines(List(newAirline))
+      
+      AirlineSource.saveLogo(newAirline.id, LogoGenerator.generateRandomLogo())
       UserSource.setUserAirline(user, newAirline)
       AirlineSource.saveAirlineBase(airlineBase)
       
@@ -59,7 +63,7 @@ object AirlineGenerator extends App {
       AirportSource.updateAirlineAppeal(airports)
       
       println(i + " generated user " + user.userName)
-      
+                  
       //generate Local Links
       generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 150, 50, models)
       //generate Inter-zone links

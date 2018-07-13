@@ -181,6 +181,10 @@ function getCountryFlagUrl(countryCode) {
 	}
 }
 
+function getAirlineLogoImg(airlineId) {
+	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo?dummy=" + Math.random() + "' style='vertical-align:middle;'/>"
+}
+
 function getDurationText(duration) {
 	var hour = Math.floor(duration / 60)
 	var minute = duration % 60
@@ -190,6 +194,17 @@ function getDurationText(duration) {
 		return minute + " m"
 	}
 }
+
+function getYearMonthText(weekDuration) {
+	var year = Math.floor(weekDuration / 52)
+	var month = Math.floor(weekDuration / 4) % 12
+	if (year > 0) {
+		return year + " year(s) " + month + " month(s)"
+	} else {
+		return month + " month(s)"
+	}
+}
+
 
 function getOpennessSpan(openness) {
 	var description

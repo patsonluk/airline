@@ -8,6 +8,7 @@ import java.sql.Connection
 import com.patson.data.Constants._
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import scala.collection.mutable.ListBuffer
+import com.patson.util.LogoGenerator
 
 object Patchers {
   def patchHomeCountry() {
@@ -91,6 +92,14 @@ object Patchers {
         counter = counter + 1
         link.copy(flightNumber = counter)
       })
+    }
+  }
+  
+  def patchAirlineLogos() {
+    AirlineSource.loadAllAirlines(false).foreach { airline =>
+      if (airline.id <= 250) {
+        AirlineSource.saveLogo(airline.id, LogoGenerator.generateRandomLogo())
+      }
     }
   }
   //

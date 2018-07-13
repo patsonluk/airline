@@ -31,6 +31,10 @@ import com.patson.data.BankSource
 import models.EntrepreneurProfile
 import com.patson.data.AirplaneSource
 import com.patson.model.Bank
+import java.awt.Color
+import com.patson.util.LogoGenerator
+import java.nio.file.Files
+
 
 class AirlineApplication extends Controller {
   object OwnedAirlineWrites extends Writes[Airline] {
@@ -79,11 +83,15 @@ class AirlineApplication extends Controller {
        }.toSet.size
        
        val destinations = if (airportsServed > 0) airportsServed - 1 else 0 //minus home base
-              
-       val fleetSize = AirplaneSource.loadAirplanesByOwner(airlineId).length
+       
+       val currentCycle = CycleSource.loadCycle()
+       val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId).filter(_.isReady(currentCycle))
+       
+       val fleetSize = airplanes.length
+       val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
        val assets = Bank.getAssets(airlineId)
        
-       airlineJson = airlineJson + ("destinations"-> JsNumber(destinations)) + ("fleetSize"-> JsNumber(fleetSize)) + ("assets"-> JsNumber(assets))
+       airlineJson = airlineJson + ("destinations"-> JsNumber(destinations)) + ("fleetSize"-> JsNumber(fleetSize)) + ("fleetAge"-> JsNumber(fleetAge)) + ("assets"-> JsNumber(assets))
      }
      
      Ok(airlineJson)
@@ -345,6 +353,42 @@ class AirlineApplication extends Controller {
       BadRequest("Cannot Set airline Code")
     }
   }
+ def getLogo(airlineId : Int) = Action {
+   Ok(LogoUtil.getLogo(airlineId)).as("image/png")
+   //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
+ }
+ 
+ def setLogo(airlineId : Int, templateIndex : Int, color1 : String, color2 : String) = AuthenticatedAirline(airlineId) { request =>
+   val logo = LogoGenerator.generateLogo(templateIndex, Color.decode(color1).getRGB, Color.decode(color2).getRGB)
+   LogoUtil.saveLogo(airlineId, logo)
+   println("Updated logo for airline " + request.user)
+   Ok(Json.obj())
+ }	 
+ 
+  def uploadLogo(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.user.getReputation < 50) {
+      Ok(Json.obj("error" -> JsString("Cannot upload img at current reputation"))) //have to send ok as the jquery plugin's error cannot read the response
+    } else {
+      request.body.asMultipartFormData.map { data =>
+        import java.io.File
+        val logoFile = data.file("logoFile").get.ref.file
+        LogoUtil.validateUpload(logoFile) match {
+          case Some(rejection) =>
+            Ok(Json.obj("error" -> JsString(rejection))) //have to send ok as the jquery plugin's error cannot read the response
+          case None =>
+            val data =Files.readAllBytes(logoFile.toPath)
+            LogoUtil.saveLogo(airlineId, data)
+            
+            println("Uploaded logo for airline " + request.user)
+            Ok(Json.obj("success" -> JsString("File uploaded")))
+        }
+      }.getOrElse {
+            Ok(Json.obj("error" -> JsString("Cannot find uploaded contents"))) //have to send ok as the jquery plugin's error cannot read the response
+      }
+    }
+  }
+ 
+ 
   
   object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {
     def writes(championedCountries : List[(Country, Int, Long, Double)]): JsValue = {

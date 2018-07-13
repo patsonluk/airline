@@ -332,7 +332,7 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
     		}
     		
     		if (airplane.age >= 0) {
-    			$("#airplaneDetailsAge").text(airplane.age + "week(s)")
+    			$("#airplaneDetailsAge").text(getYearMonthText(airplane.age))
     			$("#airplaneDetailsAgeRow").show()
     			$("#airplaneDetailsDeliveryRow").hide()
     		} else {

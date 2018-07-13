@@ -1,6 +1,23 @@
 var loadedIncomes = {}
 var incomePage = 0;
 var incomePeriod;
+var fileuploaderObj;
+
+$( document ).ready(function() {
+	loadLogoTemplates()
+//	$('#colorpicker1').farbtastic($('#logoColor1'));
+//	$('#colorpicker2').farbtastic($('#logoColor2'));
+	
+	var $box = $('#colorPicker1');
+    $box.tinycolorpicker();
+    var picker = $('#colorPicker1').data("plugin_tinycolorpicker");
+    picker.setColor("#000000");
+    
+    $box = $('#colorPicker2');
+    $box.tinycolorpicker();
+    picker = $('#colorPicker2').data("plugin_tinycolorpicker");
+    picker.setColor("#FFFFFF");
+})
 
 function showOfficeCanvas() {
 	setActiveDiv($("#officeCanvas"))
@@ -26,6 +43,7 @@ function updateAirlineDetails() {
 	    	$('#airlineCodeInput').val(airline.airlineCode)
 	    	$('#destinations').text(airline.destinations)
 	    	$('#fleetSize').text(airline.fleetSize)
+	    	$('#fleetAge').text(getYearMonthText(airline.fleetAge))
 	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -205,6 +223,113 @@ function setAirlineCode(airlineCode) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
+	});
+}
+
+function loadLogoTemplates() {
+	$('#logoTemplates').empty()
+	$.ajax({
+		type: 'GET',
+		url: "logos/templates",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(templates) {
+	    	//group by period
+	    	$.each(templates, function(index, templateIndex) {
+	    		$('#logoTemplates').append('<div style="padding: 3px; margin: 3px; float: left;" class="clickable" onclick="selectLogoTemplate(' + templateIndex + ')"><img src="logos/templates/' + templateIndex + '"></div>')
+	    	})
+	    	
+	    	
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+            console.log(JSON.stringify(jqXHR));
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function editAirlineLogo() {
+	var modal = $('#logoModal')
+	$('#logoTemplateIndex').val(0)
+	generateLogoPreview()
+	modal.fadeIn(200)
+}
+
+function selectLogoTemplate(templateIndex) {
+	$('#logoTemplateIndex').val(templateIndex)
+	generateLogoPreview()
+}
+
+function generateLogoPreview() {
+	var logoTemplate = $('#logoTemplateIndex').val() 
+	var color1 = $('#colorPicker1 .colorInput').val()
+	var color2 = $('#colorPicker2 .colorInput').val()
+	
+	var url = "logos/preview?templateIndex=" + logoTemplate + "&color1=" + encodeURIComponent(color1) + "&color2=" + encodeURIComponent(color2)
+	$('#logoPreview').empty();
+	$('#logoPreview').append('<img src="' + url + '">')
+}
+
+function setAirlineLogo() {
+	var logoTemplate = $('#logoTemplateIndex').val() 
+	var color1 = $('#colorPicker1 .colorInput').val()
+	var color2 = $('#colorPicker2 .colorInput').val()
+	
+	var url = "airlines/" + activeAirline.id + "/set-logo?templateIndex=" + logoTemplate + "&color1=" + encodeURIComponent(color1) + "&color2=" + encodeURIComponent(color2)
+    $.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(dummy) {
+	    	updateAirlineLogo()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function showUploadLogo() {
+	if (activeAirline.reputation >= 50) {
+		updateLogoUpload()
+		$('#uploadLogoPanelForbidden').hide()
+		$('#uploadLogoPanel').show()
+	} else {
+		$('#uploadLogoPanelForbidden .warning').text('You may only upload airline banner at Reputation 50 or above')
+		$('#uploadLogoPanelForbidden').show()
+		$('#uploadLogoPanel').hide()
+	}
+	
+	$('#uploadLogoModal').fadeIn(200)
+}
+
+function updateLogoUpload() {
+	$('#uploadLogoPanel .warning').hide()
+	if (fileuploaderObj) {
+		fileuploaderObj.reset()
+	}
+	
+	fileuploaderObj = $("#fileuploader").uploadFile({
+		url:"airlines/" + activeAirline.id + "/logo",
+		multiple:false,
+		dragDrop:false,
+		acceptFiles:"image/png",
+		fileName:"logoFile",
+		maxFileSize:100*1024,
+		onSuccess:function(files,data,xhr,pd)
+		{
+			if (data.success) {
+				$('#uploadLogoPanel .warning').hide()
+				closeModal($('#uploadLogoModal'))
+				updateAirlineLogo()
+			} else if (data.error) {
+				$('#uploadLogoPanel .warning').text(data.error)	
+				$('#uploadLogoPanel .warning').show()
+			}
+			
+		}
 	});
 }
 

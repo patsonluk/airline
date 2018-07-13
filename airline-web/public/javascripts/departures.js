@@ -38,13 +38,14 @@ function updateDepartures(allDepartures) {
 		var filledRows = departures.length
 		$.each(departures, function(index, departure){
 			var row = $("<div class='table-row' style='position:relative;'></div>")
-			row.append("<div class='cell'>" + departure.timeSlotTime + "</div>")
-			row.append("<div class='cell'>" + departure.flightCode + "</div>")
-			//row.append("<div class='cell' style='width:50%'>" + departure.destination + "</div>")
-			row.append("<div class='cell' style='overflow:hidden; float:left; text-overflow: clip; white-space: nowrap;'>" + departure.destination + "</div>")
-			var statusDiv = $("<div class='cell'>" + departure.statusText + "</div>")
+			row.append("<div class='cell' style='vertical-align:middle;'>" + departure.timeSlotTime + "</div>")
+			row.append("<div class='cell' style='vertical-align:middle;'>" + getAirlineLogoImg(departure.airlineId) + "&nbsp;" +  departure.flightCode + "</div>")
+		    row.append("<div class='cell' style='vertical-align:middle;'>" + departure.destination + "</div>")
+			//row.append("<div class='cell' style='overflow:hidden; float:left; text-overflow: clip; white-space: nowrap; height: 100%;'>" + departure.destination + "</div>")
+			var statusDiv = $("<div class='cell' style='vertical-align:middle;'><span>" + departure.statusText + "" +
+					"</span></div>")
 			if (departure.statusCode == 'FINAL_CALL') {
-				 statusDiv.addClass('blink')
+				 statusDiv.children('span').addClass('blink')
 			}
 			row.append(statusDiv) 
 			
