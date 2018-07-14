@@ -126,9 +126,9 @@
   	<!-- main canvas start -->
   		<div id="canvas" style="float: left; overflow: auto;" >
   			<div id="worldMapCanvas" style="height: 100%;">
-  				<div id="map" style="height: 100%; width: 60%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
-				<div id="sidePanel" style="width: 35% ; float: left; display:none;" >
-			    	<div id="detailsPanel" class="section" style="width: 100% ; float: left;">
+  				<div id="map" class="mainPanel" style="height: 100%; width: 50%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
+				<div id="sidePanel" class="sidePanel" style="width: 50% ; float: left; display:none;" >
+			    	<div id="detailsPanel" class="section" style="width: 95% ; float: left;">
 			    		<div id="linkDetails" style="width: 100%; display: none;">
 			    			<div style="width: 50%; float: left">
 				    			<div class="table" id="linkCurrentDetails" style="width: 100%">
@@ -409,31 +409,33 @@
   			</div>
 <!--   			end world map canvas -->
 			<div id="linksCanvas" style="display: none; height: 100%">
-  				<div style="height: 95% ; width : 50%; float: left;" class="section"> 
-	  	  			<div class="table data" style="height: 20px; width: 100%">
-	 	  				<div class="table-header" id="linksTableSortHeader">
-	 	  					<div class="cell clickable selected" style="width: 20%" data-sort-property="fromAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
-	 	  					<div class="cell clickable" style="width: 20%" data-sort-property="toAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
-	 	  					<div class="cell clickable" style="width: 9%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
-	 	  					<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity</div>
-	 	  					<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Passenger</div>
-	 	  					<div class="cell clickable" style="width: 15%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
-	 	  					<div class="cell clickable" style="width: 15%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
-						</div>
-         			</div>
-         			<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
-	         			<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
-		 	  				<div class="table-header">
-		 	  					<div class="cell" style="width: 20%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 20%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 9%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 9%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 9%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 15%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 15%; border-bottom: none;"></div>
+				<div style="height: 90% ; width : 50%; float: left;" class="mainPanel">
+  					<div class="section" style="height: 95% ; width : 95%; float: left;"> 
+		  	  			<div class="table data" style="height: 20px; width: 100%">
+		 	  				<div class="table-header" id="linksTableSortHeader">
+		 	  					<div class="cell clickable selected" style="width: 20%" data-sort-property="fromAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
+		 	  					<div class="cell clickable" style="width: 20%" data-sort-property="toAirportCity" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
+		 	  					<div class="cell clickable" style="width: 9%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
+		 	  					<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity</div>
+		 	  					<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Passenger</div>
+		 	  					<div class="cell clickable" style="width: 15%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
+		 	  					<div class="cell clickable" style="width: 15%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 							</div>
 	         			</div>
-         			</div>
+	         			<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+		         			<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
+			 	  				<div class="table-header">
+			 	  					<div class="cell" style="width: 20%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 20%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 9%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 9%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 9%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 15%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 15%; border-bottom: none;"></div>
+								</div>
+		         			</div>
+	         			</div>
+	         		</div>
 				</div>					  				
   				<!--  Link details here -->
   			</div>
@@ -651,31 +653,33 @@
   			</div>
   			<!--  end departures canvas -->
   			<div id="countryCanvas" style="height: 100%; display: none;">
-  				<div style="width : 40%; float: left; height: 95%" class="section"> 
-	  	  			<div id="countryTableHeader" class="table data" style="width: 100%; height: 20px;">
-	 	  				<div class="table-header">
-	 	  					<div class="cell" style="width: 5%"></div>
-	 	  					<div class="cell clickable" style="width: 19%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
-	 	  					<div class="cell clickable selected" style="width: 19%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Population Coverage</div>
-	 	  					<div class="cell clickable" style="width: 19%" align="right" data-sort-property="incomeLevel" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Income Level</div>
-	 	  					<div class="cell clickable" style="width: 19%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
-	 	  					<div class="cell clickable" style="width: 19%" align="right" data-sort-property="mutualRelationship" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Relationship</div>
-						</div>
-         			</div>
-         			<div style="height:  calc(100% - 20px); width: 100%; overflow: auto;">
-	         			<div id="countryTable" class="table data" style="height: 100%; width: 100%;">
-	         			 	<div class="table-header">
-		 	  					<div class="cell" style="width: 5%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
-		 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+  				<div class="mainPanel" style="width : 40%; float: left; height: 95%">
+  					<div style="height: 95% ; width : 95%; float: left;" class="section"> 
+	  	  				<div id="countryTableHeader" class="table data" style="width: 100%; height: 20px;">
+	 	  					<div class="table-header">
+	 	  						<div class="cell" style="width: 5%"></div>
+	 	  						<div class="cell clickable" style="width: 19%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
+	 	  						<div class="cell clickable selected" style="width: 19%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Population Coverage</div>
+	 	  						<div class="cell clickable" style="width: 19%" align="right" data-sort-property="incomeLevel" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Income Level</div>
+		 	  					<div class="cell clickable" style="width: 19%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
+	 	  						<div class="cell clickable" style="width: 19%" align="right" data-sort-property="mutualRelationship" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Relationship</div>
 							</div>
-	        			</div>
+        	 			</div>
+         				<div style="height:  calc(100% - 20px); width: 100%; overflow: auto;">
+	         				<div id="countryTable" class="table data" style="height: 100%; width: 100%;">
+	         				 	<div class="table-header">
+		 	  						<div class="cell" style="width: 5%; border-bottom: none;"></div>
+		 	  						<div class="cell" style="width: 19%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 19%; border-bottom: none;"></div>
+		 	  						<div class="cell" style="width: 19%; border-bottom: none;"></div>
+								</div>
+	        				</div>
+        				</div>
         			</div>
 				</div>		
-				<div class="section" style="width: 50%; float: left;">
+				<div class="section sidePanel" style="width: 50%; float: left;">
 	  				<div id="countryDetails" class="table" style="width: 100%;">
 	  					<div class="table-row">
 		    				<div class="label"><h5>Country:</h5></div>
@@ -723,7 +727,7 @@
   			</div>
 <!--   			end country canvas -->
   			<div id="airplaneCanvas" style="height: 100%; display: none;">
-  				<div style="height: 90% ; width : 65%; float: left;">
+  				<div style="height: 90% ; width : 65%; float: left;" class="mainPanel">
   					<div style="height: 95% ; width : 95%; float: left;" class="section"> 
 		  	  			<div class="table data" style="height: 20px; width: 100%">
 		 	  				<div class="table-header" id="airplaneModelSortHeader">
@@ -754,7 +758,7 @@
 	         		</div>	
 				</div>
 <!-- 				end left panel				  				 -->
-				<div style="width: 35%; float: left">
+				<div style="width: 35%; float: left" class="sidePanel">
 					<div id="airplaneModelDetail" style="width: 100%; float: left; display: none;">
 						<div class="section" style="width: 95%;">
 							<div id="modelIllustration" style="width:100%; position: relative; max-width: 500px;">
@@ -1235,7 +1239,7 @@
   			</div>
 <!--   			end ranking canvas -->
 			<div id="rivalsCanvas" style="height: 100%; display: none;">
-				<div style="float: left; width : 50%; height : 100%">
+				<div style="float: left; width : 50%; height : 100%" class="mainPanel">
 	  				<div style="width : 95%; height: 95%" class="section"> 
 		  	  			<div id = "rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 		 	  				<div class="table-header">
@@ -1257,7 +1261,7 @@
 	        			</div>
 					</div>
 				</div>
-				<div id="rivalDetails" style="float: left; width : 50%; height : 100%; display: none;">
+				<div id="rivalDetails" class="sidePanel" style="float: left; width : 50%; height : 100%; display: none;">
 					<div class="section" style="width: 95%; height: 20%;  overflow: auto;">
 						<h4>Airline Heaquarters</h4> 
 						<div id="rivalHeadquarters" style="width: 100%; margin-bottom: 15px;" class="table">

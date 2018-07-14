@@ -27,8 +27,22 @@ $( document ).ready(function() {
   		$('#floatBackButton').animate({top: ($(window).scrollTop() + 100) + "px" },{queue: false, duration: 350});
 	});
 	
+	
+	screenWidthCheck()
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
+
+function screenWidthCheck() {
+	if (window.screen.availWidth < 1024) { //assume it's a less powerful device
+		$('.mainPanel').width('100%')
+		$('.mainPanel').height('60%')
+		
+		$('.sidePanel').width('100%')
+		
+		$('.button, .button a').css('fontSize', 16)
+		$('input').css('fontSize', 16)
+	}
+}
 
 function showFloatMessage(message, timeout) {
 	timeout = timeout || 3000
