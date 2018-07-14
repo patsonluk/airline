@@ -8,6 +8,8 @@ var currentTime
 var currentCycle
 
 $( document ).ready(function() {
+	mobileCheck()
+	
 	if ($.cookie('sessionActive')) {
 		loadUser(false)
 	} else {
@@ -27,12 +29,10 @@ $( document ).ready(function() {
   		$('#floatBackButton').animate({top: ($(window).scrollTop() + 100) + "px" },{queue: false, duration: 350});
 	});
 	
-	
-	screenWidthCheck()
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
-function screenWidthCheck() {
+function mobileCheck() {
 	if (window.screen.availWidth < 1024) { //assume it's a less powerful device
 		$('.mainPanel').width('100%')
 		$('.mainPanel').height('60%')
@@ -41,6 +41,9 @@ function screenWidthCheck() {
 		
 		$('.button, .button a').css('fontSize', 16)
 		$('input').css('fontSize', 16)
+		
+		//turn off animation by default
+		currentAnimationStatus = false
 	}
 }
 
@@ -195,6 +198,10 @@ function initMap() {
   $("#toggleMapLightButton").index = 1
   map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapLightButton")[0]);
   $("#toggleMapLightButton").show()
+  
+  $("#toggleMapAnimationButton").index = 2
+  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapAnimationButton")[0]);
+  $("#toggleMapAnimationButton").show()
   
 //  $("#linkHistoryButton").index = 2
 //  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);

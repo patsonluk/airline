@@ -6,6 +6,7 @@ var linkHistoryState = "hidden"
 var tempPath //temp path for new link creation
 var loadedLinks = []
 var loadedLinksById = {}
+var currentAnimationStatus = true
 	
 function updateAirlineInfo(airlineId) {
 	$.ajax({
@@ -198,7 +199,7 @@ function updateLinksInfo() {
 }
 
 //refresh links without removal/addition
-function refreshLinks() {
+function refreshLinks(forceRedraw) {
 	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
 	
 	$.ajax({
@@ -208,7 +209,7 @@ function refreshLinks() {
 	    dataType: 'json',
 	    success: function(links) {
 	    	$.each(links, function( key, link ) {
-	    		refreshFlightPath(link)
+	    		refreshFlightPath(link, forceRedraw)
 	  		});
 	    	updateLoadedLinks(links);
 	    },
@@ -263,10 +264,10 @@ function drawFlightPath(link, linkColor) {
    return resultPath
 }
 
-function refreshFlightPath(link) {
+function refreshFlightPath(link, forceRedraw) {
 	if (flightPaths[link.id]) {
 		var path = flightPaths[link.id].path
-		if (path.frequency != link.frequency || path.modelId != link.modelId) { //require marker change
+		if (forceRedraw || path.frequency != link.frequency || path.modelId != link.modelId) { //require marker change
 			path.frequency = link.frequency
 			path.modelId = link.modelId
 			
@@ -370,7 +371,14 @@ function unhighlightPath(path) {
 	delete path.highlighted
 }
 
-
+function toggleMapAnimation() {
+	if (currentAnimationStatus) {
+		currentAnimationStatus = false
+	} else {
+		currentAnimationStatus = true
+	}
+	refreshLinks(true)	
+}
 
 //Use the DOM setInterval() function to change the offset of the symbol
 //at fixed intervals.
@@ -383,7 +391,7 @@ function drawFlightMarker(line, link) {
 		clearMarkerEntry(oldMarkerEntry)
 	}
 	
-	if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
+	if (currentAnimationStatus && link.assignedAirplanes && link.assignedAirplanes.length > 0) {
 		var from = line.getPath().getAt(0)
 		var to = line.getPath().getAt(1)
 		var image = {
