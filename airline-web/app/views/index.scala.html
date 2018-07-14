@@ -130,7 +130,7 @@
   				<div id="map" class="mainPanel" style="height: 100%; width: 50%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
 				<div id="sidePanel" class="sidePanel" style="width: 50% ; float: left; display:none;" >
 			    	<div id="detailsPanel" class="section" style="width: 95% ; float: left;">
-			    		<div id="linkDetails" style="width: 100%; display: none;">
+			    		<div id="linkDetails" style="width: 100%;;">
 			    			<div style="width: 50%; float: left">
 				    			<div class="table" id="linkCurrentDetails" style="width: 100%">
 			    					<h4>Current Details</h4>
@@ -680,50 +680,52 @@
         				</div>
         			</div>
 				</div>		
-				<div class="section sidePanel" style="width: 50%; float: left;">
-	  				<div id="countryDetails" class="table" style="width: 100%;">
-	  					<div class="table-row">
-		    				<div class="label"><h5>Country:</h5></div>
-		    				<div class="value" id="countryDetailsName"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Income Level:</h5></div>
-		    				<div class="value" id="countryDetailsIncomeLevel"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Market Openness:</h5></div>
-		    				<div class="value" id="countryDetailsOpenness"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Relationship with your home country:</h5></div>
-		    				<div class="value" id="countryDetailsMutualRelationship"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Large Airports:</h5></div>
-		    				<div class="value" id="countryDetailsLargeAirportCount"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Medium Airports:</h5></div>
-		    				<div class="value" id="countryDetailsMediumAirportCount"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Small Airports:</h5></div>
-		    				<div class="value" id="countryDetailsSmallAirportCount"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Airline Headquarters:</h5></div>
-		    				<div class="value" id="countryDetailsAirlineHeadquarters"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Airline Bases:</h5></div>
-		    				<div class="value" id="countryDetailsAirlineBases"></div>
-		    			</div>
-		    			<div class="table-row">
-		    				<div class="label"><h5>Champion Airline:</h5></div>
-		    				<div class="value" id="countryDetailsChampion"></div>
-		    			</div>
+				<div class="sidePanel" style="width: 50%; float: left;">
+					<div class="section" style="width: 95%; float: left;"> 
+		  				<div id="countryDetails" class="table" style="width: 100%;">
+		  					<div class="table-row">
+			    				<div class="label"><h5>Country:</h5></div>
+			    				<div class="value" id="countryDetailsName"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Income Level:</h5></div>
+			    				<div class="value" id="countryDetailsIncomeLevel"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Market Openness:</h5></div>
+			    				<div class="value" id="countryDetailsOpenness"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Relationship with your home country:</h5></div>
+			    				<div class="value" id="countryDetailsMutualRelationship"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Large Airports:</h5></div>
+			    				<div class="value" id="countryDetailsLargeAirportCount"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Medium Airports:</h5></div>
+			    				<div class="value" id="countryDetailsMediumAirportCount"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Small Airports:</h5></div>
+			    				<div class="value" id="countryDetailsSmallAirportCount"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Airline Headquarters:</h5></div>
+			    				<div class="value" id="countryDetailsAirlineHeadquarters"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Airline Bases:</h5></div>
+			    				<div class="value" id="countryDetailsAirlineBases"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Champion Airline:</h5></div>
+			    				<div class="value" id="countryDetailsChampion"></div>
+			    			</div>
+			    		</div>
+		    			<div id="countryDetailsSharesChart" style="height: 170px;"></div>
 		    		</div>
-	    			<div id="countryDetailsSharesChart" style="height: 170px;"></div>
 	    		</div>
   			</div>
 <!--   			end country canvas -->

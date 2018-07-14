@@ -8,7 +8,9 @@ var currentTime
 var currentCycle
 
 $( document ).ready(function() {
+	recordDimensions()
 	mobileCheck()
+	window.addEventListener('orientationchange', refreshMobileLayout)
 	
 	if ($.cookie('sessionActive')) {
 		loadUser(false)
@@ -32,18 +34,49 @@ $( document ).ready(function() {
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
+function recordDimensions() {
+	$('.mainPanel').each(function(index, panel) {
+		$(panel).data("old-width", $(panel).css('width'))
+		$(panel).data("old-height", $(panel).css('height'))
+	})
+	
+	$('.sidePanel').each(function(index, panel) {
+		$(panel).data("old-width", $(panel).css('width'))
+	})
+	
+	//workaround, hardcode % for id sidePanel for now, for some unknown(?) reason, it returns 512px instead of 50%
+	$('#sidePanel').data("old-width", '50%')
+}
+
 function mobileCheck() {
 	if (window.screen.availWidth < 1024) { //assume it's a less powerful device
-		$('.mainPanel').width('100%')
-		$('.mainPanel').height('60%')
-		
-		$('.sidePanel').width('100%')
-		
+		refreshMobileLayout()
 		$('.button, .button a').css('fontSize', 16)
 		$('input').css('fontSize', 16)
 		
 		//turn off animation by default
 		currentAnimationStatus = false
+	}
+}
+
+function refreshMobileLayout() {
+	if (window.screen.availWidth < window.screen.availHeight) { //only toggle layout change if it's landscape
+		$('.mainPanel').css('width', '100%')
+		$('.mainPanel').css('max-width', '100%')
+		$('.mainPanel').css('height', '35%')
+		$('.sidePanel').css('width', '100%')
+		$('.sidePanel').css('max-width', '100%')
+	} else {
+		$('.mainPanel').each(function(index, panel) {
+			$(panel).css('width', $(panel).data("old-width"))
+			$(panel).css('max-width', $(panel).data("old-width"))
+			$(panel).css('height', $(panel).data("old-height"))
+		})
+		
+		$('.sidePanel').each(function(index, panel) {
+			$(panel).css('width', $(panel).data("old-width"))
+			$(panel).css('max-width', $(panel).data("old-width"))
+		})
 	}
 }
 
