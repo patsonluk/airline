@@ -988,7 +988,6 @@ function updatePlanLinkInfo(linkInfo) {
 		}
 		$('#updateLinkButton').show()
 	}
-	$('#planLinkPricePercentage').val(1)
 	
 	//populate airplane model drop down
 	var explicitlySelectedModelId = $("#planLinkModelSelect").data('explicitId')
@@ -1078,18 +1077,19 @@ function updatePlanLinkInfo(linkInfo) {
 
 function resetPrice() {
 	updatePrice(1)
-	$('#planLinkPricePercentage').val(1)
 }
 
 function increasePrice() {
-	var currentPercentage = parseFloat($('#planLinkPricePercentage').val())
+	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 10
+	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 10
 	var newPercentage = currentPercentage + 0.1
 	updatePrice(newPercentage)
 	$('#planLinkPricePercentage').val(newPercentage)
 }
 
 function decreasePrice() {
-	var currentPercentage = parseFloat($('#planLinkPricePercentage').val())
+	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 10
+	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 10
 	var newPercentage = currentPercentage
 	if (currentPercentage > 0) {
 		newPercentage -= 0.1
