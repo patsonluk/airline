@@ -55,7 +55,7 @@ function updateRivalsTable(sortProperty, sortOrder) {
 		row.append("<div class='cell' align='right'>" + airline.reputation + "</div>")
 		row.append("<div class='cell' align='right'>" + airline.baseCount + "</div>")
 		
-		if (selectedAirline == airline.countryCode) {
+		if (selectedAirline == airline.id) {
 			row.addClass("selected")
 		}
 		
