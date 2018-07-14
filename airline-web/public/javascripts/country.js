@@ -7,7 +7,7 @@ function showCountryView() {
 	highlightTab($('#countryCanvasTab'))
 	
 	$("#countryList").empty()
-   	var selectedSortHeader = $('#countryTable .table-header .cell.selected') 
+   	var selectedSortHeader = $('#countryTableHeader .table-header .cell.selected') 
     updateCountryTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
 }
 
