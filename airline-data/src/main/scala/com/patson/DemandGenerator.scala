@@ -217,11 +217,11 @@ object DemandGenerator {
   
   def getFlightPreferencePoolOnAirport(fromAirport : Airport) : FlightPreferencePool = {
     val flightPreferences = ListBuffer[(FlightPreference, Int)]()
-    flightPreferences.append((SimplePreference(0.5, ECONOMY), 1)) //someone that does not care much
-    flightPreferences.append((SimplePreference(0.8, ECONOMY), 3))
-    flightPreferences.append((SimplePreference(1, ECONOMY), 5)) //average sensitivity
-    flightPreferences.append((SimplePreference(2, ECONOMY), 3)) //quite sensitive to price
-    flightPreferences.append((SimplePreference(5, ECONOMY), 1)) //very sensitive to price
+    flightPreferences.append((SimplePreference(0.7, ECONOMY), 1)) //someone that does not care much
+    flightPreferences.append((SimplePreference(0.9, ECONOMY), 3))
+    flightPreferences.append((SimplePreference(1, ECONOMY), 4)) //average sensitivity
+    flightPreferences.append((SimplePreference(2, ECONOMY), 4)) //quite sensitive to price
+    flightPreferences.append((SimplePreference(5, ECONOMY), 2)) //very sensitive to price
 
         
     //for now 5 * 3 loyalty preferences per airport
