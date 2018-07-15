@@ -131,7 +131,13 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
         } else { //neutral at 50, quality 100 yields 0.75 (slight advantage)
           0.5
         }
-      computedQualityPriceAdjust.put(linkClass, 1 - (qualityDelta / Link.MAX_QUALITY) * multiplier)
+      
+        var priceAdjust = 1 - (qualityDelta / Link.MAX_QUALITY) * multiplier
+        if (priceAdjust < 0.75) { //don't reduce too much
+          priceAdjust = 0.75
+        }
+      
+      computedQualityPriceAdjust.put(linkClass, priceAdjust)
     }
     computedQualityPriceAdjust(linkClass)
   }
