@@ -338,12 +338,16 @@ function plotLinkProfit(linkConsumptions, container) {
 	})
 }
 
-function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer) {
+function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer, priceContainer) {
 	ridershipContainer.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
 	
 	revenueContainer.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
+	priceContainer.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
 	
@@ -358,6 +362,12 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 			economy : [],
 			business : [],
 	        first : []
+	}
+	
+	var priceByClass = {
+		economy : [],
+		business : [],
+        first : []
 	}
 		
 	var category = []
@@ -380,6 +390,10 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 			revenueByClass.economy.push({ value : linkConsumption.price.economy * linkConsumption.soldSeats.economy })
 			revenueByClass.business.push({ value : linkConsumption.price.business * linkConsumption.soldSeats.business })
 			revenueByClass.first.push({ value : linkConsumption.price.first * linkConsumption.soldSeats.first })
+			
+			priceByClass.economy.push({ value : linkConsumption.price.economy })
+			priceByClass.business.push({ value : linkConsumption.price.business })
+			priceByClass.first.push({ value : linkConsumption.price.first })
 			
 			var month = Math.floor(linkConsumption.cycle / 4)
 			//var week = linkConsumption.cycle % 4 + 1
@@ -437,9 +451,9 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    		"xAxisname": "Month",
 	    		"YAxisName": "Revenue",
 	    		//"sYAxisName": "Load Factor %",
-	    		"sNumberSuffix" : "%",
-	            "sYAxisMaxValue" : "100",
+	    		"sYAxisMaxValue" : "100",
 	    		"useroundedges": "1",
+	    		"numberPrefix": "$",
 	    		"animation": "0",
 	    		"showBorder":"0",
                 "toolTipBorderRadius": "2",
@@ -458,6 +472,40 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 			              {"seriesName": "Revenue (Economy)", "data" : revenueByClass.economy}
 						 ,{"seriesName": "Revenue (Business)","data" : revenueByClass.business}
 						 ,{"seriesName": "Revenue (First)", "data" : revenueByClass.first}
+			            ]
+	   }	
+	})
+	
+	var priceChart = priceContainer.insertFusionCharts( {
+    	type: 'msline',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+	    containerBackgroundOpacity :'0',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": "Month",
+	    		"YAxisName": "Ticket Price",
+	    		//"sYAxisName": "Load Factor %",
+	    		"numberPrefix": "$",
+	    		"sYAxisMaxValue" : "100",
+	    		"useroundedges": "1",
+	    		"animation": "0",
+	    		"showBorder":"0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "paletteColors": "#007849,#0375b4,#ffce00",
+                "bgAlpha":"0",
+                "showValues":"0",
+                "canvasPadding":"0",
+                "labelDisplay":"wrap",
+	            "labelStep": "4"
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : [
+			              {"seriesName": "Price (Economy)", "data" : priceByClass.economy}
+						 ,{"seriesName": "Price (Business)","data" : priceByClass.business}
+						 ,{"seriesName": "Price (First)", "data" : priceByClass.first}
 			            ]
 	   }	
 	})

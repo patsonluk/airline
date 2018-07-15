@@ -633,7 +633,7 @@ function refreshLinkDetails(linkId) {
 		    	}
 	    	}
 	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
-	    	plotLinkConsumption(linkConsumptions, $("#linkRidershipChart"), $("#linkRevenueChart"))
+	    	plotLinkConsumption(linkConsumptions, $("#linkRidershipChart"), $("#linkRevenueChart"), $("#linkPriceChart"))
 	    	$("#linkHistoryDetails").show()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
