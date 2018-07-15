@@ -46,24 +46,34 @@ object AirportFeaturePatcher {
       ),
     VACATION_HUB -> Map[String, Int](
         "HNL" -> 80, //honolulu
+        "BKK" -> 70, //bangkok
         "CDG" -> 65, //paris
         "MCO" -> 58, //Orlando
-        "BKK" -> 56, //bangkok
-        "PEK" -> 44, //Beijin
+        "MLE" -> 55, //Maldives
+        "PEK" -> 44, //Beijing
+        "DPS" -> 43, //Bali
+        "NAN" -> 41, //Fiji
         "VCE" -> 40, //venice
         "ATH" -> 40, //Athens
         "DXB" -> 39, //Dubai
-        "MLE" -> 38, //Maldives
+        "PRG" -> 38, //Prague
+        "LPA" -> 38, //Gran Canaria 
         "IST" -> 35, //Istanbul
+        "TFS" -> 34, //Tenerife
+        "PPT" -> 34, //Pape'ete
+        "CNS" -> 33, //Cairns Australia
+        "PUJ" -> 33, //Puna cana
         "OKA" -> 32, //Okinawa
+        "CUN" -> 32, //Cancun
+        "GUM" -> 31, //Guam
         "FCO" -> 30, //Rome
         "KIX" -> 30,
         "LAS" -> 30, //Vegas
         "MIA" -> 30,
         "HND" -> 30, //Tokyo
-        "GUM" -> 28, //Guam
+        "GIG" -> 26, //Rio
         "KOA" -> 25, //Kailua Hawaii
-        "CUN" -> 24, //Cancun
+        "KEF" -> 24, //Reykjavik
         "BCN" -> 22, //Barcelona
         "AMS" -> 21, //Amsterdam
         "VIE" -> 20, //vienna
@@ -77,7 +87,6 @@ object AirportFeaturePatcher {
         "GRU" -> 20, //Sao Paulo
         "BNE" -> 20, //brisbane
         "AKL" -> 20, //auckland
-        "PRG" -> 20, //prague
         "SIN" -> 29, //Singapore
         "HKG" -> 28, //hong kong
         "SFO" -> 20,
@@ -87,14 +96,20 @@ object AirportFeaturePatcher {
         "SYX" -> 18, //Sanya China
         "XIY" -> 18, //Xian china
         "PVG" -> 18, //Shanghai
+        "PER" -> 18, //Perth
         "HGH" -> 17, //Hangzhou china
         "SJO" -> 17, //Costa Rica
         "LIH" -> 16, //Lihue, Hawaii
-        "GIG" -> 16, //Rio
         "ITO" -> 15, //Hilo hawaii
         "KWL" -> 15, //Guilin China
+        "MBJ" -> 13, //Montego bay
         "LXA" -> 12, //Lhasa China
-        "TAO" -> 10 //Qingdao China
+        "AUA" -> 11, //Aruba
+        "BGI" -> 11, //Barbados
+        "TAO" -> 10, //Qingdao China
+        "GEA" -> 10,
+        "CUR" -> 10 //Curacao
+         
         
         
       ),
