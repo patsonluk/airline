@@ -35,14 +35,14 @@ case class SimplePreference(priceSensitivity : Double, linkClass: LinkClass) ext
 
 case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, id : Int)  extends FlightPreference{
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
-  val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
+  //val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
-  val maxReduceFactorAtMaxLoyalty = 2
+  val maxReduceFactorAtMaxLoyalty = 1.7
   //at min loyalty (0), passenger can perceive the ticket price down to actual price / maxReduceFactorAtMinLoyalty.  
   val maxReduceFactorAtMinLoyalty = 1.2
   
   //at max loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty.
-  val minReduceFactorAtMaxLoyalty = 1.25
+  val minReduceFactorAtMaxLoyalty = 1.1
   //at min loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty. (at 0.8 means increasing perceieved price)
   val minReduceFactorAtMinLoyalty = 0.9 
   //val drawPool = new DrawPool(appealList)

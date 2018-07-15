@@ -15,7 +15,7 @@ import com.patson.model.airplane._
 import Model.Type._
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.2, SMALL -> 0.2, MEDIUM -> 0.05, LARGE -> 0.0, JUMBO -> 0.0)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.2, SMALL -> 0.05, MEDIUM -> -0.1, LARGE -> -0.15, JUMBO -> -0.2)
   private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.4, REGIONAL -> 0.4, SMALL -> 0.4, MEDIUM -> 0.2, LARGE -> 0.15, JUMBO -> 0.1)
   
   "all airplane models".must {
