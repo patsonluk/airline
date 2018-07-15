@@ -28,7 +28,7 @@ class LogoApplication extends Controller {
   
 
   def getTemplates() = Action {
-     Ok(Json.toJson(templates.keySet.toList))
+     Ok(Json.toJson(templates.keySet.toList.sorted))
   }
   
   def getTemplate(id : Int) = Action {
