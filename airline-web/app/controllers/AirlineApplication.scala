@@ -139,7 +139,7 @@ class AirlineApplication extends Controller {
           return Some("No active flight route operated by your airline flying to this city yet")
         }
         
-        if (CountrySource.loadCountryByCode(airport.countryCode).get.openness < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
+        if (airport.countryCode != airline.getCountryCode().get && CountrySource.loadCountryByCode(airport.countryCode).get.openness < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
           return Some("This country does not allow foreign airline base")
         }
         
