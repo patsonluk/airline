@@ -60,7 +60,9 @@ class BankApplication extends Controller {
     if (loanReply.rejectionOption.isDefined) {
       BadRequest("Loan rejected [" + requestedAmount + "] reason [" + loanReply.rejectionOption.get + "]")
     } else {
-      if (requestedAmount > loanReply.maxLoan) {
+      if (requestedAmount < Bank.MIN_LOAN_AMOUNT) {
+        BadRequest("Borrowing [" + requestedAmount + "] which is invalid")
+      } else if (requestedAmount > loanReply.maxLoan) {
         BadRequest("Borrowing [" + requestedAmount + "] which is above limit [" + loanReply.maxLoan + "]")
       } else {
         Bank.getLoanOptions(requestedAmount).find( loanOption => loanOption.loanTerm == requestedTerm) match {
