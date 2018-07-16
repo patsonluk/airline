@@ -1332,7 +1332,8 @@ function createLink() {
 	}
 }
 
-function deleteLink(linkId) {
+function deleteLink() {
+	var linkId = $('#actionLinkId').val()
 	$.ajax({
 		type: 'DELETE',
 		url: "airlines/" + activeAirline.id + "/links/" + linkId,

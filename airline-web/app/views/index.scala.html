@@ -351,7 +351,7 @@
 				    		</div>
 				    		<div class="button" id="addLinkButton" onclick="createLink()">Create</div>
 				    		<div class="button" id="updateLinkButton" onclick="createLink()">Update</div>
-				    		<div class="button" id="deleteLinkButton" onclick="deleteLink($('#actionLinkId').val())">Delete</div>
+				    		<div class="button" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</div>
 				    		<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 				    	</div>
 			    	</div>
