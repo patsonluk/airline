@@ -224,6 +224,7 @@ object AirportSizeAdjust {
         "HRE" -> 4,
        //below manual adjustment
         "KOA" -> 4, //Kailua hawaii
+        "MRU" -> 4, //Mauritius
         "BFI" -> 3
       )
       
