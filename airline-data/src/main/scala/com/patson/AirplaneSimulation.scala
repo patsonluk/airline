@@ -120,7 +120,6 @@ object AirplaneSimulation {
             val depreciationRate = computeDepreciationRate(airplane.model, decayRate)
             val newValue = airplane.value - depreciationRate
             
-            println("decaying: " + airplane.owner)
             updatingAirplanes.append(airplane.copy(condition = newCondition, depreciationRate = depreciationRate, value = newValue))
           }
         }
