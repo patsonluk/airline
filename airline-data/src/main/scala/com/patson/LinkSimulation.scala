@@ -14,10 +14,7 @@ object LinkSimulation {
   
   private[this] val VIP_COUNT = 5
   
-  def linkSimulation(cycle: Int) : List[LinkConsumptionDetails] = {
-    println("Loading all links")
-    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
-    println("Finished loading all links")
+  def linkSimulation(cycle: Int, links : List[Link]) : List[LinkConsumptionDetails] = {
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
     val demand = DemandGenerator.computeDemand()
     println("DONE with demand total demand: " + demand.foldLeft(0) {
@@ -25,7 +22,6 @@ object LinkSimulation {
         holder + demandValue
     })
 
-    
     simulateLinkError(links)
     
     val consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int] = PassengerSimulation.passengerConsume(demand, links)
@@ -85,36 +81,38 @@ object LinkSimulation {
         var i = 0
         for ( i <- 0 until link.frequency) {
           var airplaneCount = link.getAssignedAirplanes().length
-          val airplane = link.getAssignedAirplanes()(i % airplaneCount)           //round robin
-          val errorValue = Random.nextDouble()
-          val conditionMultipler = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
-          var minorDelayThreshold : Double = 0
-          var majorDelayThreshold : Double = 0
-          var cancellationThreshold : Double = 0
-          if (airplane.condition > Airplane.BAD_CONDITION) { //small chance of delay and cancellation
-            if (errorValue < cancellationNormalThreshold * conditionMultipler) {
-              link.cancellationCount = link.cancellationCount + 1
-            } else if (errorValue < majorDelayNormalThreshold * conditionMultipler) {
-              link.majorDelayCount = link.majorDelayCount + 1
-            } else if (errorValue < minorDelayNormalThreshold * conditionMultipler) {
-              link.minorDelayCount = link.minorDelayCount + 1
+          if (airplaneCount > 0) {
+            val airplane = link.getAssignedAirplanes()(i % airplaneCount)           //round robin
+            val errorValue = Random.nextDouble()
+            val conditionMultipler = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
+            var minorDelayThreshold : Double = 0
+            var majorDelayThreshold : Double = 0
+            var cancellationThreshold : Double = 0
+            if (airplane.condition > Airplane.BAD_CONDITION) { //small chance of delay and cancellation
+              if (errorValue < cancellationNormalThreshold * conditionMultipler) {
+                link.cancellationCount = link.cancellationCount + 1
+              } else if (errorValue < majorDelayNormalThreshold * conditionMultipler) {
+                link.majorDelayCount = link.majorDelayCount + 1
+              } else if (errorValue < minorDelayNormalThreshold * conditionMultipler) {
+                link.minorDelayCount = link.minorDelayCount + 1
+              }
+            } else if (airplane.condition > Airplane.CRITICAL_CONDITION) {
+              if (errorValue < cancellationBadThreshold * conditionMultipler) {
+                link.cancellationCount = link.cancellationCount + 1
+              } else if (errorValue < majorDelayBadThreshold * conditionMultipler) {
+                link.majorDelayCount = link.majorDelayCount + 1
+              } else if (errorValue < minorDelayBadThreshold * conditionMultipler) {
+                link.minorDelayCount = link.minorDelayCount + 1
+              }
+            } else { 
+              if (errorValue < cancellationCriticalThreshold * conditionMultipler) {
+                link.cancellationCount = link.cancellationCount + 1
+              } else if (errorValue < majorDelayCriticalThreshold * conditionMultipler) {
+                link.majorDelayCount = link.majorDelayCount + 1
+              } else if (errorValue < minorDelayCriticalThreshold * conditionMultipler) {
+                link.minorDelayCount = link.minorDelayCount + 1
+              }         
             }
-          } else if (airplane.condition > Airplane.CRITICAL_CONDITION) {
-            if (errorValue < cancellationBadThreshold * conditionMultipler) {
-              link.cancellationCount = link.cancellationCount + 1
-            } else if (errorValue < majorDelayBadThreshold * conditionMultipler) {
-              link.majorDelayCount = link.majorDelayCount + 1
-            } else if (errorValue < minorDelayBadThreshold * conditionMultipler) {
-              link.minorDelayCount = link.minorDelayCount + 1
-            }
-          } else { 
-            if (errorValue < cancellationCriticalThreshold * conditionMultipler) {
-              link.cancellationCount = link.cancellationCount + 1
-            } else if (errorValue < majorDelayCriticalThreshold * conditionMultipler) {
-              link.majorDelayCount = link.majorDelayCount + 1
-            } else if (errorValue < minorDelayCriticalThreshold * conditionMultipler) {
-              link.minorDelayCount = link.minorDelayCount + 1
-            }         
           }
         }
       }

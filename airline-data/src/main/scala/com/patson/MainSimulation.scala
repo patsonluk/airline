@@ -45,9 +45,13 @@ object MainSimulation extends App {
       val cycleStart = System.currentTimeMillis()
       println("cycle " + cycle + " starting!")
       SimulationEventStream.publish(CycleStart(cycle), None)
-      val linkResult : List[LinkConsumptionDetails] = LinkSimulation.linkSimulation(cycle)
+      
+      println("Loading all links")
+      val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
+      println("Finished loading all links")
+      val linkResult : List[LinkConsumptionDetails] = LinkSimulation.linkSimulation(cycle, links)
       AirportSimulation.airportSimulation(cycle, linkResult)
-      val airplanes = AirplaneSimulation.airplaneSimulation(cycle)
+      val airplanes = AirplaneSimulation.airplaneSimulation(cycle, links)
       AirlineSimulation.airlineSimulation(cycle, linkResult, airplanes)
       //notify the websockets via EventStream
       SimulationEventStream.publish(CycleCompleted(cycle), None)

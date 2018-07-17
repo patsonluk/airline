@@ -1008,38 +1008,31 @@ function updatePlanLinkInfo(linkInfo) {
 
 	//find which model is assigned to the existing link (if exist)
 	var assignedModelId
+	var selectedModelId
 	
-	if (linkInfo.existingLink) {
+	if (explicitlySelectedModelId) { //if there was a explicitly selected model, for example from buying a new plane
+		selectedModelId = explicitlySelectedModelId;
+	}
+	
+	if (!selectedModelId && linkInfo.existingLink) {
 		$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 			if (modelPlanLinkInfo.isAssigned) { //higher precedence
 				assignedModelId = modelPlanLinkInfo.modelId
+				selectedModelId = assignedModelId
 				return false
 			}
 		});
-	}	
-		
-	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
-		if (linkInfo.existingLink) {
-			if (modelPlanLinkInfo.isAssigned) { //higher precedence
-				assignedModelId = modelPlanLinkInfo.modelId
-				return false
-			}
-		} else {
+	}
+	
+	if (!selectedModelId) {
+		$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 			if (modelPlanLinkInfo.airplanes.length > 0) { //select the first one with available planes
 				selectedModelId = modelPlanLinkInfo.modelId
 				return false
 			}  
-		}
-	})
-	
-	//find the model to select 
-	var selectedModelId
-	if (explicitlySelectedModelId) { //if there was a explicitly selected model, for example from buying a new plane
-		selectedModelId = explicitlySelectedModelId;
-	} else if (assignedModelId) {
-		selectedModelId = assignedModelId;
+		})
 	}
-	
+		
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		if (modelPlanLinkInfo.airplanes.length > 0) {
 			modelPlanLinkInfo.owned = true

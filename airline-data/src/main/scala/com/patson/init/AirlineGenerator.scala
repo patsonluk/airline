@@ -42,7 +42,7 @@ object AirlineGenerator extends App {
       UserSource.saveUser(user)
       Authentication.createUserSecret(baseAirport.iata, "1234")
       
-      val newAirline = Airline("Air " + baseAirport.city + " - " + baseAirport.iata)
+      val newAirline = Airline("Air " + baseAirport.city + " - " + baseAirport.iata, isGenerated = true)
       newAirline.setBalance(0)
       newAirline.setMaintainenceQuality(100)
       newAirline.setServiceFunding(100000)

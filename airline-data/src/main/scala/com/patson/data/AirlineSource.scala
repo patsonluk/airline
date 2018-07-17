@@ -11,7 +11,7 @@ import java.sql.Blob
 
 
 object AirlineSource {
-  private[this] val BASE_QUERY = "SELECT a.id AS id, a.name AS name, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
+  private[this] val BASE_QUERY = "SELECT a.id AS id, a.name AS name, a.is_generated AS is_generated, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
   def loadAllAirlines(fullLoad : Boolean = false) = {
       loadAirlinesByCriteria(List.empty, fullLoad)
   }
@@ -58,7 +58,7 @@ object AirlineSource {
         val airlines = new ListBuffer[Airline]()
         
         while (resultSet.next()) {
-          val airline = Airline(resultSet.getString("name"))
+          val airline = Airline(resultSet.getString("name"), isGenerated = resultSet.getBoolean("is_generated"))
           airline.id = resultSet.getInt("id")
           airline.setBalance(resultSet.getLong("balance"))
           airline.setReputation(resultSet.getDouble("reputation"))
@@ -102,11 +102,12 @@ object AirlineSource {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_TABLE + "(name) VALUES(?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_TABLE + "(name, is_generated) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
           
       airlines.foreach { 
         airline =>
           preparedStatement.setString(1, airline.name)
+          preparedStatement.setBoolean(2, airline.isGenerated)
           preparedStatement.executeUpdate()
           val generatedKeys = preparedStatement.getGeneratedKeys
           if (generatedKeys.next()) {

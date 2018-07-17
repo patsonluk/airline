@@ -20,7 +20,7 @@ import akka.actor.Props
 import java.util.concurrent.TimeUnit
 
 object AirplaneSimulation {
-  def airplaneSimulation(cycle: Int) : List[Airplane] = {
+  def airplaneSimulation(cycle: Int, links : List[Link]) : List[Airplane] = {
     println("starting airplane simulation")
     println("loading all airplanes")
     //do decay
@@ -43,7 +43,50 @@ object AirplaneSimulation {
     AirplaneSource.updateAirplanes(updatingAirplanes.toList)
     println("Finished updating all airplanes")
     
+    
+    println("Start retiring airplanes")
+    removeAgingAirplaneFromLinks(links)
+    retireAgingAirplanes(updatingAirplanes.toList)
+    println("Finished retiring airplanes")
+    
     updatingAirplanes.toList
+  }
+  
+   def removeAgingAirplaneFromLinks(links : List[Link]) = {
+    val updatingLinks = ListBuffer[Link]()
+    links.foreach {
+      link => {
+        val okAirplanes : List[Airplane] = link.getAssignedAirplanes().filter( _.condition > 0)
+        
+        val retiringAirplanesCount = link.getAssignedAirplanes().size - okAirplanes.size
+        if (retiringAirplanesCount > 0) {
+           println("retiring " + retiringAirplanesCount + " airplanes for link " + link)
+           //now see if frequency should be reduced
+           val maxFrequency = okAirplanes.foldLeft(0) {
+             case (x, airplane) => x + Computation.calculateMaxFrequency(airplane.model, link.distance)
+           }
+           val updatingLink = 
+             if (maxFrequency < link.frequency) {
+               val capacityPerFlight = link.capacity / link.frequency
+               link.copy(capacity = capacityPerFlight * maxFrequency, frequency = maxFrequency)
+             } else {
+               link
+             }
+          
+           updatingLink.setAssignedAirplanes(okAirplanes)
+           updatingLinks.append(updatingLink)
+        }
+      }
+    }
+    
+    LinkSource.updateLinks(updatingLinks.toList)
+  }
+   
+  def retireAgingAirplanes(airplanes : List[Airplane]) {
+    airplanes.filter(_.condition == 0).foreach { airplane =>
+      println("Deleting airplane " + airplane)
+      AirplaneSource.deleteAirplane(airplane.id)
+    }
   }
   
   def computeDepreciationRate(model : Model, decayRate : Double) = {
@@ -57,23 +100,30 @@ object AirplaneSimulation {
     
     airplanesWithAssignedLink.foreach { 
       case(airplane, assignedLink) =>
-        val minDecay = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
-        val maxDecay = minDecay * 2
-        val baseDecayRate = maxDecay - (maxDecay - minDecay) * (airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
-        var decayRate =
-          if (assignedLink.isEmpty) { //not assigned to any links, decay slower
-            baseDecayRate / 3 
-          } else {
-            baseDecayRate
+        val ownerOption = AirlineSource.loadAirlineById(airplane.owner.id, false)
+        ownerOption.foreach { owner =>
+          if (!owner.isGenerated) {
+            val minDecay = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
+            val maxDecay = minDecay * 2
+            val baseDecayRate = maxDecay - (maxDecay - minDecay) * (airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
+            var decayRate =
+              if (assignedLink.isEmpty) { //not assigned to any links, decay slower
+                baseDecayRate / 3 
+              } else {
+                baseDecayRate
+              }
+            if (decayRate > airplane.condition) {
+              decayRate = airplane.condition
+            }
+            
+            val newCondition = airplane.condition - decayRate
+            val depreciationRate = computeDepreciationRate(airplane.model, decayRate)
+            val newValue = airplane.value - depreciationRate
+            
+            println("decaying: " + airplane.owner)
+            updatingAirplanes.append(airplane.copy(condition = newCondition, depreciationRate = depreciationRate, value = newValue))
           }
-        if (decayRate > airplane.condition) {
-          decayRate = airplane.condition
         }
-        
-        val newCondition = airplane.condition - decayRate
-        val depreciationRate = computeDepreciationRate(airplane.model, decayRate)
-        val newValue = airplane.value - depreciationRate 
-        updatingAirplanes.append(airplane.copy(condition = newCondition, depreciationRate = depreciationRate, value = newValue))
     }
     updatingAirplanes.toList
   }
