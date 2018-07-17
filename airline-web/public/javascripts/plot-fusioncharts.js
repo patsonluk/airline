@@ -73,7 +73,7 @@ function plotMaintenanceLevelGauge(container, maintenanceLevelInput, onchangeFun
 	
 }
 
-function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMultipliers) {
+function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMultipliers, callback) {
 	container.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
@@ -182,9 +182,10 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
                 }
                 
                 
-                console.log(configuration)
+                //console.log(configuration)
                 
                 updateDataSource(configuration)
+                callback(configuration)
                 
                 container.updateFusionCharts({
                 	"dataSource": dataSource

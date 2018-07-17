@@ -1213,7 +1213,7 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 		 
 		updateFrequencyBar(selectedModelId, thisModelPlanLinkInfo.configuration)
 		
-		updateCapacity(thisModelPlanLinkInfo.configuration, $("#planLinkFrequency").val())
+		updateCapacity(thisModelPlanLinkInfo.configuration)
 		
 		var spaceMultipliers = {
 			economy : planLinkInfo.economySpaceMultiplier,
@@ -1221,7 +1221,7 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 			first : planLinkInfo.firstSpaceMultiplier
 		}
 		
-		plotSeatConfigurationGauge($("#seatConfigurationGauge"), thisModelPlanLinkInfo.configuration, thisModelPlanLinkInfo.capacity, spaceMultipliers)
+		plotSeatConfigurationGauge($("#seatConfigurationGauge"), thisModelPlanLinkInfo.configuration, thisModelPlanLinkInfo.capacity, spaceMultipliers, updateCapacity)
 			
 		var serviceLevelBar = $("#serviceLevelBar")
 		generateImageBar(serviceLevelBar.data("emptyIcon"), serviceLevelBar.data("fillIcon"), 5, serviceLevelBar, $("#planLinkServiceLevel"))
@@ -1232,6 +1232,9 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 }
 
 function updateCapacity(configuration, frequency) {
+	if (!frequency) {
+		frequency = $("#planLinkFrequency").val()
+	} 
 	$('#planLinkCapacity').text(configuration.economy * frequency + "/" + configuration.business * frequency + "/" + configuration.first * frequency)
 }
 
