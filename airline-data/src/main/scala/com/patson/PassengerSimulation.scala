@@ -519,7 +519,7 @@ object PassengerSimulation {
 //               distance[v] := distance[u] + w
 //               predecessor[v] := u
     for (i <- 0 until maxHop) {
-      val updatingLinks = ArrayBuffer[LinkConsideration]()
+      //val updatingLinks = ArrayBuffer[LinkConsideration]()
       var linkWalker = 0
       while (linkWalker < linkConsiderations.length) {
         val linkConsideration = linkConsiderations(linkWalker)
@@ -546,6 +546,7 @@ object PassengerSimulation {
       }
     }
     
+    //TODO change to mutable map perhaps
     //println("cost found : " + distanceMap(to))
     toAirports.foldLeft(Map[Airport, Route]()){ (map, to) =>  
       var walker = to.id
