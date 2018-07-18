@@ -520,11 +520,7 @@ object PassengerSimulation {
 //               predecessor[v] := u
     for (i <- 0 until maxHop) {
       //val updatingLinks = ArrayBuffer[LinkConsideration]()
-      var linkWalker = 0
-      while (linkWalker < linkConsiderations.length) {
-        val linkConsideration = linkConsiderations(linkWalker)
-        linkWalker += 1
-        
+      linkConsiderations.foreach { linkConsideration =>
         if (linkConsideration.from.id == from.id || predecessorMap.containsKey(linkConsideration.from.id)) {
           var connectionCost = 0.0
           if (linkConsideration.from.id != from.id) { //then it should be a connection flight
@@ -546,9 +542,10 @@ object PassengerSimulation {
       }
     }
     
-    //TODO change to mutable map perhaps
     //println("cost found : " + distanceMap(to))
-    toAirports.foldLeft(Map[Airport, Route]()){ (map, to) =>  
+    
+    val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]() 
+    toAirports.foreach{ to =>  
       var walker = to.id
       var noSolution = false;
       var foundSolution = false
@@ -568,11 +565,11 @@ object PassengerSimulation {
         hopCounter += 1        
       }
       if (foundSolution) {
-        map + Tuple2(to, Route(route.toList, distanceMap.get(to.id)))
-      } else {
-        map
+        resultMap.put(to, Route(route.toList, distanceMap.get(to.id)))
       }  
     }
+    
+    resultMap.toMap
   }
   
   
