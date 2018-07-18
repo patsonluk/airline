@@ -338,7 +338,7 @@ object PassengerSimulation {
     println("Total routes to compute : " + totalRequiredRoutes)
     println("Total passenger groups : " + requiredRoutes.size)
     
-    val links = linksList.toArray
+    //val links = linksList.toArray
     
     val counter = new AtomicInteger(0)
     val progressCount = new AtomicInteger(0)
@@ -351,9 +351,7 @@ object PassengerSimulation {
         val linkConsiderations = ArrayBuffer[LinkConsideration]()
         
         var walker = 0
-        while (walker < links.length) {
-          val link = links(walker)
-          walker += 1
+        linksList.foreach { link =>
           
           //see if there are any seats for that class (or lower) left
           link.availableSeatsAtOrBelowClass(linkClass).foreach { 
