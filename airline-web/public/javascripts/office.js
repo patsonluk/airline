@@ -179,8 +179,8 @@ function setServiceFunding(funding) {
 	    data: JSON.stringify(data),
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function() {
-	    	activeAirline.serviceFunding = funding
+	    success: function(result) {
+	    	activeAirline.serviceFunding = result.serviceFunding
 	    	updateServiceFundingDetails()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

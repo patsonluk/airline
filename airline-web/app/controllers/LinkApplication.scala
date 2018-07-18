@@ -32,6 +32,9 @@ import com.patson.data.CountrySource
 import scala.collection.SortedMap
 import scala.collection.immutable.ListMap
 import com.patson.data.CycleSource
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 class LinkApplication extends Controller {
   private[this] val maxFrequencyAbsolute = 30
@@ -667,12 +670,18 @@ class LinkApplication extends Controller {
   
   def updateServiceFunding(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
-      val serviceFunding = request.body.asInstanceOf[AnyContentAsJson].json.\("serviceFunding").as[Int]
+      val serviceFundingTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("serviceFunding").as[Int])
       
-      val airline = request.user
-      airline.setServiceFunding(serviceFunding)
-      AirlineSource.saveAirlineInfo(airline)
-      Ok(Json.obj())
+      serviceFundingTry match {
+        case Success(serviceFunding) =>
+          val airline = request.user
+          airline.setServiceFunding(serviceFunding)
+          AirlineSource.saveAirlineInfo(airline)
+          Ok(Json.obj("serviceFunding" -> JsNumber(serviceFunding)))
+        case Failure(_) =>
+          BadRequest("Cannot Update service funding")
+      }
+      
     } else {
       BadRequest("Cannot Update service funding")
     }
@@ -680,12 +689,17 @@ class LinkApplication extends Controller {
   
   def updateMaintenanceQuality(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
-      val maintenanceQuality = request.body.asInstanceOf[AnyContentAsJson].json.\("maintenanceQuality").as[Int]
+      val maintenanceQualityTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("maintenanceQuality").as[Int])
+      maintenanceQualityTry match {
+        case Success(maintenanceQuality) =>
+          val airline = request.user
+          airline.setMaintainenceQuality(maintenanceQuality)
+          AirlineSource.saveAirlineInfo(airline)
+          Ok(Json.obj("serviceFunding" -> JsNumber(maintenanceQuality)))
+        case Failure(_) =>
+          BadRequest("Cannot Update maintenance quality")
+      }
       
-      val airline = request.user
-      airline.setMaintainenceQuality(maintenanceQuality)
-      AirlineSource.saveAirlineInfo(airline)
-      Ok(Json.obj())
     } else {
       BadRequest("Cannot Update maintenance quality")
     }
