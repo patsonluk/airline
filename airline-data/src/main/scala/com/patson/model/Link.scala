@@ -3,6 +3,7 @@ package com.patson.model
 import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
 import com.patson.model.Scheduling.TimeSlot
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 
@@ -20,7 +21,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   
   private var hasComputedQuality = false
   private var computedQualityStore : Int = 0
-  private var computedQualityPriceAdjust : collection.mutable.Map[LinkClass, Double] = collection.mutable.Map[LinkClass, Double]()
+  private var computedQualityPriceAdjust : ConcurrentHashMap[LinkClass, Double] = new ConcurrentHashMap[LinkClass, Double]()
   
   def setAssignedAirplanes(assignedAirplanes : List[Airplane]) = {
     this.assignedAirplanes = assignedAirplanes
@@ -66,9 +67,10 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       if (assignedAirplanes.isEmpty) {
         0
       } else {
-        hasComputedQuality = true
+        
         computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.serviceQuality.toDouble / Airline.MAX_SERVICE_QUALITY * 50 + (assignedAirplanes.foldLeft(0.0)( _ + _.condition.toDouble)) / assignedAirplanes.size / Airplane.MAX_CONDITION * 20).toInt
 //        println("computed quality " + computedQualityStore)
+        hasComputedQuality = true
         computedQualityStore
       }
     } else {
@@ -77,8 +79,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   def setQuality(quality : Int) = {
-    hasComputedQuality = true
     computedQualityStore = quality
+    hasComputedQuality = true
   }
   
   def getTotalCapacity : Int = {
@@ -121,7 +123,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     
   //println("neutral quality : " + neutralQuality + " distance : " + distance)
   def computeQualityPriceAdjust(linkClass : LinkClass) : Double = {
-    if (!computedQualityPriceAdjust.isDefinedAt(linkClass)) {
+    if (!computedQualityPriceAdjust.containsKey(linkClass)) {
       val neutralQuality = Link.neutralQualityOfClass(linkClass, from, to, flightType)
       val qualityDelta = computedQuality - neutralQuality.toDouble
       
@@ -139,7 +141,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       
       computedQualityPriceAdjust.put(linkClass, priceAdjust)
     }
-    computedQualityPriceAdjust(linkClass)
+    computedQualityPriceAdjust.get(linkClass)
   }
   
   lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
