@@ -12,11 +12,18 @@ $( document ).ready(function() {
     $box.tinycolorpicker();
     var picker = $('#colorPicker1').data("plugin_tinycolorpicker");
     picker.setColor("#000000");
+    $box.bind("change", function() {
+    			generateLogoPreview()
+    	    });
     
     $box = $('#colorPicker2');
     $box.tinycolorpicker();
     picker = $('#colorPicker2').data("plugin_tinycolorpicker");
     picker.setColor("#FFFFFF");
+    
+    $box.bind("change", function() {
+		generateLogoPreview()
+    });
 })
 
 function showOfficeCanvas() {
