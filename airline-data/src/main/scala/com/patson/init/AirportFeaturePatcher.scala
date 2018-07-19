@@ -122,16 +122,26 @@ object AirportFeaturePatcher {
         "ICN" -> 50,
         "PVG" -> 50,
         "ZRH" -> 40,
+        "BOS" -> 39,
+        "SFO" -> 38,
+        "DFW" -> 37,
         "ORD" -> 35,
+        "DEN" -> 34,
+        "EWR" -> 33,
+        "CLT" -> 28,
+        "PHX" -> 22,
+        "IAH" -> 21,
         "YYZ" -> 20,
-        "SFO" -> 24,
+        "MSP" -> 19,
+        "LGA" -> 19,
         "DUS" -> 18,
         "CGN" -> 18,
+        "PHL" -> 17,
         "SEA" -> 22,
         "ATL" -> 18,
-        "BOS" -> 15,
-        "CDG" -> 30, //paris
-        "FRA" -> 50,
+        "FLL" -> 15,
+        "CDG" -> 38, //paris
+        "FRA" -> 54,
         "ARN" -> 17
       ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()
