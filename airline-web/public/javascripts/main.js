@@ -162,6 +162,12 @@ function loadUser(isLogin) {
 	$.ajax(ajaxCall);
 }
 
+function passwordLogin(e) {
+	if (e.keyCode === 13) {  //checks whether the pressed key is "Enter"
+		login()
+	}
+}
+
 function login()  {
 	loadUser(true)
 }
