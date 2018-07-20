@@ -1014,11 +1014,13 @@ function updatePlanLinkInfo(linkInfo) {
 		selectedModelId = explicitlySelectedModelId;
 	}
 	
-	if (!selectedModelId && linkInfo.existingLink) {
+	if (linkInfo.existingLink) {
 		$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 			if (modelPlanLinkInfo.isAssigned) { //higher precedence
 				assignedModelId = modelPlanLinkInfo.modelId
-				selectedModelId = assignedModelId
+				if (!selectedModelId) {
+					selectedModelId = assignedModelId
+				}
 				return false
 			}
 		});
