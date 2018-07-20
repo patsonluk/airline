@@ -10,18 +10,18 @@ import java.util.concurrent.ConcurrentHashMap
  * Frequency sum of all assigned plane
  */
 case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends IdObject{
-  var availableSeats : LinkClassValues = capacity.copy()
-  var soldSeats : LinkClassValues = LinkClassValues.getInstance()
-  var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
-  var cancellationCount = 0
-  var majorDelayCount = 0
-  var minorDelayCount = 0
-  private var assignedAirplanes : List[Airplane] = List.empty
-  private var assignedModel : Option[Model] = None
+  @volatile var availableSeats : LinkClassValues = capacity.copy()
+  @volatile var soldSeats : LinkClassValues = LinkClassValues.getInstance()
+  @volatile var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
+  @volatile var cancellationCount = 0
+  @volatile var majorDelayCount = 0
+  @volatile var minorDelayCount = 0
+  @volatile private var assignedAirplanes : List[Airplane] = List.empty
+  @volatile private var assignedModel : Option[Model] = None
   
-  private var hasComputedQuality = false
-  private var computedQualityStore : Int = 0
-  private var computedQualityPriceAdjust : ConcurrentHashMap[LinkClass, Double] = new ConcurrentHashMap[LinkClass, Double]()
+  @volatile private var hasComputedQuality = false
+  @volatile private var computedQualityStore : Int = 0
+  @volatile private var computedQualityPriceAdjust : ConcurrentHashMap[LinkClass, Double] = new ConcurrentHashMap[LinkClass, Double]()
   
   def setAssignedAirplanes(assignedAirplanes : List[Airplane]) = {
     this.assignedAirplanes = assignedAirplanes
