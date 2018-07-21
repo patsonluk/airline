@@ -77,12 +77,12 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   case class AirlineGrade(value : Int, description: String) {
     val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
       case DOMESTIC =>  value * 8
-      case REGIONAL => value * 4
+      case REGIONAL => value * 6
       case INTERCONTINENTAL =>
         if (value <= 4) {
          0
         } else {
-          (value - 4) * 2
+          (value - 4) * 3
         }
     }
     
