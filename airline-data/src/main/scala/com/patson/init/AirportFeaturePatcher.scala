@@ -12,7 +12,7 @@ object AirportFeaturePatcher {
         "LHR" -> 80,
         "HKG" -> 70,
         "SIN" -> 70,
-        "HND" -> 60,
+        "NRT" -> 65,
         "CDG" -> 60,
         "PVG" -> 40,
         "PEK" -> 20,
@@ -70,7 +70,8 @@ object AirportFeaturePatcher {
         "KIX" -> 30,
         "LAS" -> 30, //Vegas
         "MIA" -> 30,
-        "HND" -> 30, //Tokyo
+        "NRT" -> 28, //Tokyo
+        "HND" -> 28, //Tokyo
         "GIG" -> 26, //Rio
         "KOA" -> 25, //Kailua Hawaii
         "KEF" -> 24, //Reykjavik
@@ -106,6 +107,7 @@ object AirportFeaturePatcher {
         "LXA" -> 12, //Lhasa China
         "AUA" -> 11, //Aruba
         "BGI" -> 11, //Barbados
+        "IBZ" -> 11, //Ibiza
         "TAO" -> 10, //Qingdao China
         "GEA" -> 10,
         "CUR" -> 10 //Curacao
@@ -116,9 +118,9 @@ object AirportFeaturePatcher {
     FINANCIAL_HUB -> Map[String, Int](
         "LHR" -> 80,
         "JFK" -> 80,
+        "HND" -> 75,
         "HKG" -> 70,
         "SIN" -> 70,
-        "HND" -> 70,
         "ICN" -> 50,
         "PVG" -> 50,
         "ZRH" -> 40,
