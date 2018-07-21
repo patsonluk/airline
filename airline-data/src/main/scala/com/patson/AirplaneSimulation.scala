@@ -45,20 +45,24 @@ object AirplaneSimulation {
     
     
     println("Start retiring airplanes")
-    removeAgingAirplaneFromLinks(links)
+    removeAgingAirplaneFromLinks(links, updatingAirplanes.toList) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
     retireAgingAirplanes(updatingAirplanes.toList)
     println("Finished retiring airplanes")
     
     updatingAirplanes.toList
   }
   
-   def removeAgingAirplaneFromLinks(links : List[Link]) = {
+   def removeAgingAirplaneFromLinks(links : List[Link], airplanes : List[Airplane]) = {
     val updatingLinks = ListBuffer[Link]()
+    val updatedAirplanesById = airplanes.map( airplane => (airplane.id, airplane)).toMap
     links.foreach {
       link => {
-        val okAirplanes : List[Airplane] = link.getAssignedAirplanes().filter( _.condition > 0)
+        val updatedAssignedAirplanes : List[Airplane] = link.getAssignedAirplanes().map( airplane => updatedAirplanesById.getOrElse(airplane.id, airplane)) //update the list of assigned airplanes
         
-        val retiringAirplanesCount = link.getAssignedAirplanes().size - okAirplanes.size
+        val okAirplanes : List[Airplane] = updatedAssignedAirplanes.filter( _.condition > 0)
+        
+        val retiringAirplanesCount = updatedAssignedAirplanes.size - okAirplanes.size
+        
         if (retiringAirplanesCount > 0) {
            println("retiring " + retiringAirplanesCount + " airplanes for link " + link)
            //now see if frequency should be reduced
@@ -73,7 +77,6 @@ object AirplaneSimulation {
                link
              }
           
-           updatingLink.setAssignedAirplanes(okAirplanes)
            updatingLinks.append(updatingLink)
         }
       }
@@ -83,7 +86,7 @@ object AirplaneSimulation {
   }
    
   def retireAgingAirplanes(airplanes : List[Airplane]) {
-    airplanes.filter(_.condition == 0).foreach { airplane =>
+    airplanes.filter(_.condition <= 0).foreach { airplane =>
       println("Deleting airplane " + airplane)
       AirplaneSource.deleteAirplane(airplane.id)
     }

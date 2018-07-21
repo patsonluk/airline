@@ -390,7 +390,7 @@ class Application extends Controller {
     val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
       LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
     }
-    Ok(Json.toJson(competitorLinkConsumptions.map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq))
+    Ok(Json.toJson(competitorLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq))
   }
   
   def getLinkConsumptionsByAirport(airportId : Int) = Action {
