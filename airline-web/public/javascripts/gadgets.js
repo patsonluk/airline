@@ -209,13 +209,13 @@ function getYearMonthText(weekDuration) {
 function getOpennessSpan(openness) {
 	var description
 	var icon
-	if (openness >= 8) {
+	if (openness >= 7) {
 		description = "Opened Market"
 		icon = "globe--plus.png"
-	} else if (openness >= 6) {
+	} else if (openness >= 4) {
 		description = "No International Connection"
 		icon = "globe--exclamation.png"
-	} else if (openness >= 4) { 
+	} else if (openness >= 2) { 
 		description = "No Foreign Airline Base"
 		icon = "globe--minus.png"
 	} else {
