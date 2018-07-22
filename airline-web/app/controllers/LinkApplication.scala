@@ -674,10 +674,14 @@ class LinkApplication extends Controller {
       
       serviceFundingTry match {
         case Success(serviceFunding) =>
-          val airline = request.user
-          airline.setServiceFunding(serviceFunding)
-          AirlineSource.saveAirlineInfo(airline)
-          Ok(Json.obj("serviceFunding" -> JsNumber(serviceFunding)))
+          if (serviceFunding < 0) {
+            BadRequest("Cannot have negative service funding")
+          } else {
+            val airline = request.user
+            airline.setServiceFunding(serviceFunding)
+            AirlineSource.saveAirlineInfo(airline)
+            Ok(Json.obj("serviceFunding" -> JsNumber(serviceFunding)))
+          }
         case Failure(_) =>
           BadRequest("Cannot Update service funding")
       }
