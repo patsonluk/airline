@@ -560,6 +560,7 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
                 "canvasBgAlpha" : "0",
                 "showLabels":"0",
                 "showValues":"0",
+                "showPlotBorder":"0",
                 "plottooltext": "$label - Passengers : $datavalue ($percentValue)"
 	    	},
 			"data" : data
