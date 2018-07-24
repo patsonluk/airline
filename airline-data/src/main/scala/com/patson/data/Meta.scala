@@ -211,6 +211,7 @@ object Meta {
       "reputation DECIMAL(5,2)," +
       "country_code CHAR(2)," +
       "airline_code CHAR(2)," +
+      "color CHAR(7)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
 

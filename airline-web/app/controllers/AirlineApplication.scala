@@ -391,6 +391,24 @@ class AirlineApplication extends Controller {
   }
  
  
+  def setColor(airlineId : Int, color : String) = AuthenticatedAirline(airlineId) { request =>
+   val decodedColor = Color.decode(color) //just for validation
+   AirlineSource.saveColor(airlineId, color)
+   println("Updated color for airline " + request.user)
+   Ok(Json.obj())
+  }
+  
+  def getColors() = Action {
+   val colors : Map[Int, String] =  AirlineSource.getColors()
+   var result = Json.obj()
+      colors.foreach {
+        case (airlineId, color) =>
+          result = result + (airlineId.toString -> JsString(color))
+      }
+   
+   Ok(result)
+   //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
+ } 
   
   object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {
     def writes(championedCountries : List[(Country, Int, Long, Double)]): JsValue = {

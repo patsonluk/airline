@@ -524,6 +524,11 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 			label : dataEntry[keyName],
 			value : dataEntry[valueName]
 		}
+		
+		if (dataEntry.color) {
+			entry.color = dataEntry.color
+		}
+		
 		if (currentKey && dataEntry[keyName] == currentKey) {
 			entry.issliced = "1"
 		}

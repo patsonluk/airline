@@ -2,6 +2,7 @@ var loadedIncomes = {}
 var incomePage = 0;
 var incomePeriod;
 var fileuploaderObj;
+var airlineColorPicker;
 
 $( document ).ready(function() {
 	loadLogoTemplates()
@@ -24,6 +25,15 @@ $( document ).ready(function() {
     $box.bind("change", function() {
 		generateLogoPreview()
     });
+    
+    
+    $box = $('#colorPicker3');
+    $box.tinycolorpicker();
+    airlineColorPicker = $('#colorPicker3').data("plugin_tinycolorpicker");
+     
+    $box.bind("change", function() {
+		setAirlineColor()
+    });
 })
 
 function showOfficeCanvas() {
@@ -35,6 +45,15 @@ function showOfficeCanvas() {
 	updateChampionedCountriesDetails()
 	updateServiceFundingDetails()
 	updateMaintenanceLevelDetails()
+	updateAirlineColorPicker()
+}
+
+function updateAirlineColorPicker() {
+	if (airlineColors[activeAirline.id]) {
+		airlineColorPicker.setColor(airlineColors[activeAirline.id]);
+    } else {
+    	airlineColorPicker.setColor("#FFFFFF");
+	}
 }
 
 function updateAirlineDetails() {
@@ -290,6 +309,25 @@ function setAirlineLogo() {
 	    dataType: 'json',
 	    success: function(dummy) {
 	    	updateAirlineLogo()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function setAirlineColor() {
+	var color = $('#colorPicker3 .colorInput').val()
+	
+	var url = "airlines/" + activeAirline.id + "/set-color?color=" + encodeURIComponent(color)
+    $.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(dummy) {
+	    	updateAirlineColors()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

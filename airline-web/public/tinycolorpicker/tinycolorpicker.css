@@ -137,3 +137,66 @@
     cursor: pointer;
 }
 
+
+
+
+#colorPicker3
+{
+    position: relative;
+    clear: both;
+}
+
+#colorPicker3 .track {
+    background:     #EFEFEF url(images/color-palette.png) no-repeat 50% 50%;
+    height:         53px;
+    width:          255px;
+    //padding:        10px;
+    position:       absolute;
+    cursor:         crosshair;
+    float:          left;
+    left:           35px;
+    top:            -31px;
+    display:        none;
+    border:         1px solid #ccc;
+    z-index:        11;
+
+}
+
+#colorPicker3 .color {
+    width:          15px;
+    height:         15px;
+    padding:        1px;
+    border:         1px solid #ccc;
+    display:        block;
+    position:       relative;
+    z-index:        11;
+    background-color: #EFEFEF;
+    -webkit-border-radius: 17px;
+    -moz-border-radius: 17px;
+    border-radius: 17px;
+    cursor: pointer;
+}
+
+#colorPicker3 .colorInner {
+    width:          15px;
+    height:         15px;
+    -webkit-border-radius: 17px;
+    -moz-border-radius: 17px;
+    border-radius: 17px;
+}
+
+#colorPicker3 .dropdown {
+    list-style: none;
+    display: none;
+    width: 27px;
+    position: absolute;
+    top: 28px;
+    border: 1px solid #ccc;
+    left: 0;
+    z-index: 1000;
+}
+
+#colorPicker3 .dropdown li{
+    height: 25px;
+    cursor: pointer;
+}

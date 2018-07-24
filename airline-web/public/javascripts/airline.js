@@ -564,6 +564,7 @@ function refreshLinkDetails(linkId) {
 	    	    	}
 	    	    	$("#linkCompetitons").show()
 	    	    	
+	    	    	assignAirlineColors(linkConsumptions, "airlineId")
 	    	    	plotPie(linkConsumptions, null, $("#linkCompetitionsPie"), "airlineName", "soldSeats")
 	    	    },
 	            error: function(jqXHR, textStatus, errorThrown) {

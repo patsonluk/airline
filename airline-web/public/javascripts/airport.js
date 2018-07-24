@@ -198,6 +198,10 @@ function loadAirportStatistics(airport) {
 	    	 {"transitType" : "transit passengers", "passengers" : airportStatistics.transitPassengers}
 	    	 ]
 	    	plotPie(transitTypeData, null , $("#transitTypePie"), "transitType", "passengers")
+	    	
+	    	assignAirlineColors(airportStatistics.airlineDeparture, "airlineId")
+	    	assignAirlineColors(airportStatistics.airlineArrival, "airlineId")
+	    	
 	    	plotPie(airportStatistics.airlineDeparture, activeAirline ? activeAirline.name : null , $("#airlineDeparturePie"), "airlineName", "passengers")
 	    	plotPie(airportStatistics.airlineArrival, activeAirline ? activeAirline.name : null, $("#airlineArrivalPie"), "airlineName", "passengers")
 	    	

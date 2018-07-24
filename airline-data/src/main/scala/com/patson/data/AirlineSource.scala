@@ -504,5 +504,41 @@ object AirlineSource {
     }
   }
   
+  def saveColor(airlineId : Int, color : String) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET color = ? WHERE airline = ?")
+        preparedStatement.setString(1, color)
+        preparedStatement.setInt(2, airlineId)
+        
+        preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def getColors() = {
+   val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("SELECT airline, color FROM " + AIRLINE_INFO_TABLE + " WHERE color IS NOT NULL")
+        val resultSet = preparedStatement.executeQuery()
+        val colors = scala.collection.mutable.Map[Int, String]()
+        
+        while (resultSet.next()) {
+          colors.put(resultSet.getInt("airline"), resultSet.getString("color"))
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        colors.toMap
+    } finally {
+      connection.close()
+    }
+    
+  }
+  
   
 }

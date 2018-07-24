@@ -6,6 +6,7 @@ var activeUser
 var selectedLink
 var currentTime
 var currentCycle
+var airlineColors = {}
 
 $( document ).ready(function() {
 	recordDimensions()
@@ -22,6 +23,7 @@ $( document ).ready(function() {
 	}
 	
 	loadAllCountries()
+	updateAirlineColors()
 	
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())
@@ -430,5 +432,33 @@ function promptConfirm(prompt, targetFunction) {
 function executeConfirmationTarget() {
 	var targetFunction = $('#confirmationModal .confirmationButton').data('targetFunction')
 	targetFunction()
+}
+
+function updateAirlineColors() {
+	var url = "colors"
+    $.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	airlineColors = result
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function assignAirlineColors(dataSet, colorProperty) {
+	$.each(dataSet, function(index, entry) {
+		if (entry[colorProperty]) {
+			var airlineColor = airlineColors[entry[colorProperty]]
+			if (airlineColor) {
+				entry.color = airlineColor
+			}
+		}
+	})
 }
 
