@@ -393,6 +393,19 @@ img.logo {
 	box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.2);
 }
 
+.airlineColorDot {
+	width:          15px;
+    height:         15px;
+    padding:        1px;
+    border:         1px solid #ccc;
+    display:        inline-block;
+    background-color: #EFEFEF;
+    -webkit-border-radius: 17px;
+    -moz-border-radius: 17px;
+    border-radius: 17px;
+    cursor: pointer;
+}
+
 
 /* Make it move */
 @keyframes marquee {

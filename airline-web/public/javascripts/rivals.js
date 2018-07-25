@@ -1,4 +1,5 @@
 var loadedRivals = []
+var loadedRivalsById = {}
 var loadedRivalLinks = []
 
 function showRivalsCanvas() {
@@ -12,7 +13,7 @@ function loadAllRivals() {
 	var getUrl = "airlines"
 	
 	loadedRivals = []
-	
+	loadedRivalsById = {}
 	$.ajax({
 		type: 'GET',
 		url: getUrl,
@@ -20,6 +21,10 @@ function loadAllRivals() {
 	    dataType: 'json',
 	    success: function(airlines) {
 	    	loadedRivals = airlines
+	    	$.each(airlines, function(index, airline) {
+	    		loadedRivalsById[airline.id] = airline
+	    	})
+	    	
 	    	var selectedSortHeader = $('#rivalsTableSortHeader .table-header .cell.selected')
 	    	updateRivalsTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
 	    },
@@ -81,6 +86,8 @@ function loadRivalDetails(row, airlineId) {
 	row.siblings().removeClass("selected")
 	row.addClass("selected")
 	
+	
+	updateRivalBasicsDetails(airlineId)
 	updateRivalChampionedCountriesDetails(airlineId)
 	loadRivalLinks(airlineId)
 	
@@ -144,6 +151,19 @@ function toggleRivalLinksTableSortOrder(sortHeader) {
 	updateRivalLinksTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
+function updateRivalBasicsDetails(airlineId) {
+	var rival = loadedRivalsById[airlineId]
+	$("#rivalsCanvas .airlineName").text(rival.name)
+	$("#rivalsCanvas .airlineCode").text(rival.airlineCode)
+	var color = airlineColors[airlineId]
+	if (!color) {
+		$("#rivalsCanvas .airlineColorDot").hide()
+	} else {
+		$("#rivalsCanvas .airlineColorDot").css('background-color', color);
+		$("#rivalsCanvas .airlineColorDot").show()
+	}
+}
+
 function updateRivalChampionedCountriesDetails(airlineId) {
 	$('#rivalChampionedCountriesList').children('div.table-row').remove()
 	
@@ -203,23 +223,19 @@ function updateRivalBaseList(airlineId) {
 	    	var hasBases = false
 	    	$(bases).each(function(index, base) {
 	    		var row = $("<div class='table-row'></div>")
-	    		row.append("<div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportName) + "</div>")
-	    		
+	    		hasBases = true
 	    		if (base.headquarter) {
-	    			$('#rivalHeadquarters').append(row)
-	    			hasHeadquarters = true
+	    			row.append("<div class='cell'><img src='assets/images/icons/building-hedge.png'></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportName) + "</div>")
 	    		} else {
-	    			$('#rivalBases').append(row)
-	    			hasBases = true
+	    			row.append("<div class='cell'><img src='assets/images/icons/building-low.png'></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportName) + "</div>")
 	    		}
+	    		
+	    		$('#rivalBases').append(row)
 	    	})
 	    	var emtpyRow = $("<div class='table-row'></div>")
 			emtpyRow.append("<div class='cell'>-</div>")
 			
-			if (!hasHeadquarters) {
-    			$('#rivalHeadquarters').append(emtpyRow)
-    		}
-    		if (!hasBases) {
+			if (!hasBases) {
     			$('#rivalBases').append(emtpyRow)
     		}
 	    	
