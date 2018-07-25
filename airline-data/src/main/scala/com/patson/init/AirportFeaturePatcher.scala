@@ -66,19 +66,23 @@ object AirportFeaturePatcher {
         "OKA" -> 32, //Okinawa
         "CUN" -> 32, //Cancun
         "GUM" -> 31, //Guam
-        "FCO" -> 30, //Rome
+        "FCO" -> 38, //Rome
         "KIX" -> 30,
         "LAS" -> 30, //Vegas
         "MIA" -> 30,
         "NRT" -> 28, //Tokyo
         "HND" -> 28, //Tokyo
+        "VIE" -> 28, //vienna
+        "BCN" -> 28, //Barcelona
+        "MRS" -> 27,
+        "MXP" -> 27,
         "GIG" -> 26, //Rio
         "KOA" -> 25, //Kailua Hawaii
         "KEF" -> 24, //Reykjavik
-        "BCN" -> 22, //Barcelona
         "AMS" -> 21, //Amsterdam
-        "VIE" -> 20, //vienna
+        "TLV" -> 21,
         "CAI" -> 20,
+        "NCE" -> 22,
         "LHR" -> 20,
         "BOM" -> 20,
         "LAX" -> 20,
@@ -90,7 +94,12 @@ object AirportFeaturePatcher {
         "AKL" -> 20, //auckland
         "SIN" -> 29, //Singapore
         "HKG" -> 28, //hong kong
+        "PSA" -> 22,
         "SFO" -> 20,
+        "BWN" -> 19, //Brunei
+        "MFM" -> 19, //Macau
+        "CTS" -> 19, //Chitose Sapporo
+        "HKT" -> 19, //Phuket
         "PMI" -> 19, //Palma De Mallorca
         "OGG" -> 18, //	Kahului, Hawaii
         "KUL" -> 19, //	Kuala Lumpur
@@ -98,9 +107,12 @@ object AirportFeaturePatcher {
         "XIY" -> 18, //Xian china
         "PVG" -> 18, //Shanghai
         "PER" -> 18, //Perth
+        "NAP" -> 18,  
+        "CJU" -> 17, //Jeju
         "HGH" -> 17, //Hangzhou china
         "SJO" -> 17, //Costa Rica
         "LIH" -> 16, //Lihue, Hawaii
+        "CEB" -> 16, //Cebu
         "ITO" -> 15, //Hilo hawaii
         "KWL" -> 15, //Guilin China
         "MBJ" -> 13, //Montego bay
@@ -130,7 +142,10 @@ object AirportFeaturePatcher {
         "ORD" -> 35,
         "DEN" -> 34,
         "EWR" -> 33,
+        "SHA" -> 33, //Shanghai Hongqiao
+        "ITM" -> 28,
         "CLT" -> 28,
+        "DXB" -> 25,
         "PHX" -> 22,
         "IAH" -> 21,
         "YYZ" -> 20,
@@ -139,12 +154,24 @@ object AirportFeaturePatcher {
         "DUS" -> 18,
         "CGN" -> 18,
         "PHL" -> 17,
+        "MUC" -> 23,
         "SEA" -> 22,
+        "CPT" -> 19,
+        "CAN" -> 18, //Guangzhou
+        "MAA" -> 17, //Chennai
+        "SZX" -> 15, //Shenzhen
+        "FUK" -> 20,
         "ATL" -> 18,
+        "PUS" -> 22, //Busan
         "FLL" -> 15,
         "CDG" -> 38, //paris
         "FRA" -> 54,
-        "ARN" -> 17
+        "NGO" -> 18,
+        "MAN" -> 18,
+        "HAM" -> 18,
+        "TXL" -> 16,
+        "ARN" -> 17,
+        "MNL" -> 13 //Manila
       ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()
   )
