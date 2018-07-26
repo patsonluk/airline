@@ -44,6 +44,7 @@ function showOfficeCanvas() {
 	loadIncomeSheet();
 	updateChampionedCountriesDetails()
 	updateServiceFundingDetails()
+	updateAirplaneRenewalDetails()
 	updateMaintenanceLevelDetails()
 	updateAirlineColorPicker()
 }
@@ -208,6 +209,34 @@ function setServiceFunding(funding) {
 	    success: function(result) {
 	    	activeAirline.serviceFunding = result.serviceFunding
 	    	updateServiceFundingDetails()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function setAirplaneRenewal(threshold) {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/airplane-renewal"
+	var data
+	if (threshold) {
+		data = { "threshold" : parseInt(threshold) }
+	} else {
+		data = { "threshold" : -1 } //disable
+	} 
+		
+	
+		
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	updateAirplaneRenewalDetails()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -409,6 +438,37 @@ function updateServiceFundingDetails() {
 	});
 	
 }
+
+function editAirplaneRenewal() {
+	$('#airplaneRenewalDisplaySpan').hide()
+	$('#airplaneRenewalInputSpan').show()
+}
+
+
+function updateAirplaneRenewalDetails() {
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/airplane-renewal",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(airplaneRenewal) {
+	    	if (airplaneRenewal.threshold) {
+	    		$('#airplaneRenewal').text('Below ' + airplaneRenewal.threshold + "%")
+	    		$('#airplaneRenewalInput').val(airplaneRenewal.threshold)
+	    	} else {
+	    		$('#airplaneRenewal').text('-')
+	    		$('#airplaneRenewalInput').val(40)
+	    	}
+	    	$('#airplaneRenewalDisplaySpan').show()
+	    	$('#airplaneRenewalInputSpan').hide()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 
 function updateChampionedCountriesDetails() {
 	$('#championedCountriesList').children('div.table-row').remove()

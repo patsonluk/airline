@@ -28,28 +28,78 @@ object AirplaneSimulation {
     
     println("finished loading all airplanes")
     
-    val updatingAirplanes = ListBuffer[Airplane]()
+    val updatingAirplanesListBuffer = ListBuffer[Airplane]()
     allAirplanes.groupBy { _._1.owner }.foreach {
       case (owner, airplanes) => {
         AirlineSource.loadAirlineById(owner.id, true) match {
           case Some(airline) =>
             val readyAirplanes = airplanes.filter(_._1.isReady(cycle))
-            updatingAirplanes ++= decayAirplanesByAirline(readyAirplanes, airline)
+            updatingAirplanesListBuffer ++= decayAirplanesByAirline(readyAirplanes, airline)
           case None => println("airline " + owner.id + " has airplanes but the airline cannot be loaded!")//invalid airline?
         }
       }
     }
     
-    AirplaneSource.updateAirplanes(updatingAirplanes.toList)
+    var updatingAirplanes = updatingAirplanesListBuffer.toList 
+    AirplaneSource.updateAirplanes(updatingAirplanes)
     println("Finished updating all airplanes")
     
+    println("Start renewing airplanes")
+    updatingAirplanes = renewAirplanes(updatingAirplanes)
+    println("Finished renewing airplanes")
     
     println("Start retiring airplanes")
-    removeAgingAirplaneFromLinks(links, updatingAirplanes.toList) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
+    removeAgingAirplaneFromLinks(links, updatingAirplanes) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
     retireAgingAirplanes(updatingAirplanes.toList)
     println("Finished retiring airplanes")
     
     updatingAirplanes.toList
+  }
+  
+  def renewAirplanes(airplanes : List[Airplane]) : List[Airplane] = {
+    val renewalThresholdsByAirline : scala.collection.immutable.Map[Int, Int] = AirlineSource.loadAirplaneRenewals()
+    val costsByAirline : Map[Int, Long] = Map[Int, Long]()
+    val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
+    val renewedAirplanes : ListBuffer[Airplane] = ListBuffer[Airplane]() 
+    
+    val updatingAirplanes = airplanes.map { airplane => 
+      renewalThresholdsByAirline.get(airplane.owner.id) match {
+        case Some(threshold) =>
+          if (airplane.condition < threshold ) {
+             val airlineId = airplane.owner.id 
+             val existingCost : Long = costsByAirline.getOrElse(airlineId, 0)
+             val sellValue = Computation.calculateAirplaneSellValue(airplane)
+             val renewCost = airplane.model.price - sellValue
+             
+             val newCost = existingCost + renewCost
+             if (newCost <= airlinesByid(airplane.owner.id).getBalance()) {
+               println("auto renewing " + airplane)
+               costsByAirline.put(airlineId, newCost)
+               val renewedAirplane = airplane.copy(constructedCycle = MainSimulation.currentWeek, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+               renewedAirplanes.append(renewedAirplane)
+               renewedAirplane
+             } else { //not enough fund
+               airplane
+             }
+          } else {
+            airplane
+          }
+        case None => airplane
+      }
+    }
+    
+    //now deduct money
+    costsByAirline.foreach {
+      case(airlineId, cost) => {
+        println("Deducting " + cost + " from " + airlinesByid(airlineId) + " for renewal")
+        AirlineSource.adjustAirlineBalance(airlineId, cost * -1)
+      }
+    }
+    
+    //save the renewed airplanes
+    AirplaneSource.updateAirplanes(renewedAirplanes.toList)
+      
+    updatingAirplanes
   }
   
    def removeAgingAirplaneFromLinks(links : List[Link], airplanes : List[Airplane]) = {

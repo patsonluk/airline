@@ -46,7 +46,8 @@ object QuickCreateSchema extends App {
   
   def createSchema(connection : Connection) = {
     //Meta.createLoan(connection)
-    Meta.createAirlineLogo(connection)
+    //Meta.createAirlineLogo(connection)
+    Meta.createAirplaneRenewal(connection)
   }
   
   

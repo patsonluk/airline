@@ -942,6 +942,20 @@
 		 	  					<div class="cell label">Change Prediction:</div>
 		 	  					<div id="servicePrediction" class="cell value"></div>
 		 	  				</div>
+		 	  				<div class="table-row">
+		 	  					<div class="cell label">Auto Airplane Renewal:</div>
+		 	  					<div class="cell value">
+		 	  						<span id="airplaneRenewalDisplaySpan">
+		 	  							<span id="airplaneRenewal"></span>
+		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirplaneRenewal()"/>	
+		 	  						</span>
+		 	  						<span id="airplaneRenewalInputSpan" style="display:none;">
+		 	  							Below&nbsp;<input id="airplaneRenwalInput" type="text" maxlength="2" size="2"/>%
+		 	  							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setAirplaneRenewal($('#airplaneRenwalInput').val())"/>
+		 	  							<img src='@routes.Assets.versioned("images/icons/cross.png")' class='button' style="vertical-align: middle;" onclick="setAirplaneRenewal()"/>
+		 	  						</span>
+		 	  					</div>
+		 	  				</div>
 		         		</div>  
 		         		<div style="clear: both;"></div>
 		    		</div>

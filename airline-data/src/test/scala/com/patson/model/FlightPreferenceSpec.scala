@@ -24,9 +24,9 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
  
   val defaultCapacity = LinkClassValues.getInstance(10000, 10000, 10000)
   
-  val testAirline1 = Airline("airline 1", 1)
-  val testAirline2 = Airline("airline 2", 2)
-  val topAirline = Airline("top airline", 3)
+  val testAirline1 = Airline("airline 1", id = 1)
+  val testAirline2 = Airline("airline 2", id = 2)
+  val topAirline = Airline("top airline", id = 3)
   val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, 0, 0, 0, 0)
   val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, 0, 0, 0, 0)
   

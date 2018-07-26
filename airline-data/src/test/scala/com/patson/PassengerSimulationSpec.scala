@@ -22,8 +22,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     TestKit.shutdownActorSystem(system)
   }
  
-  val testAirline1 = Airline("airline 1", 1)
-  val testAirline2 = Airline("airline 2", 2)
+  val testAirline1 = Airline("airline 1", id = 1)
+  val testAirline2 = Airline("airline 2", id = 2)
   val fromAirport = Airport.fromId(1)
   val airlineAppeal = AirlineAppeal(0, 100)
   fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
@@ -275,7 +275,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val airport3 = Airport("", "", "Airport 3", 0, 90, "C3", "", "", 1, 0, 0, 0, id = 3)
       val airport4 = Airport("", "", "Airport 4", 0, 120, "C4", "", "", 1, 0, 0, 0, id = 4)
       
-      val airline1 = Airline("airline 1", 1)
+      val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport4, "C4", 1, 1, headquarter = true)))
       airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
       airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
@@ -331,7 +331,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val airport3 = Airport("", "", "Airport 3", 0, 90, "C3", "", "", 1, 0, 0, 0, id = 3)
       val airport4 = Airport("", "", "Airport 4", 0, 120, "C4", "", "", 1, 0, 0, 0, id = 4)
       
-      val airline1 = Airline("airline 1", 1)
+      val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport4, "C4", 1, 1, headquarter = true)))
       airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
       airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
@@ -378,7 +378,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val airport4 = Airport("", "", "Airport 4", 0, 120, "C2", "", "", 1, 0, 0, 0, id = 4)
       val airport5 = Airport("", "", "Airport 5", 0, 150, "C3", "", "", 1, 0, 0, 0, id = 5)
       
-      val airline1 = Airline("airline 1", 1)
+      val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport5, "C3", 1, 1, headquarter = true)))
       airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
       airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
@@ -427,7 +427,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val airport4 = Airport("", "", "Airport 4", 0, 120, "C2", "", "", 1, 0, 0, 0, id = 4)
       val airport5 = Airport("", "", "Airport 5", 0, 150, "C3", "", "", 1, 0, 0, 0, id = 5)
       
-      val airline1 = Airline("airline 1", 1)
+      val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport5, "C3", 1, 1, headquarter = true)))
       airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
       airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))

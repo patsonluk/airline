@@ -269,6 +269,7 @@ object Meta {
     createLoan(connection)
     createCountryMarketShare(connection)
     createAirlineLogo(connection)
+    createAirplaneRenewal(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -734,6 +735,17 @@ object Meta {
                                             "PRIMARY KEY (country, airline)," +
                                             "FOREIGN KEY(country) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE," +
                                             "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createAirplaneRenewal(connection : Connection) {
+    var statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_RENEWAL_TABLE + "(" +
+      "airline INTEGER, " +
+      "threshold INTEGER, " +
+      "PRIMARY KEY (airline)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
     statement.execute()
     statement.close()
   }

@@ -537,8 +537,76 @@ object AirlineSource {
     } finally {
       connection.close()
     }
-    
   }
   
+  def deleteAirplaneRenewal(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRPLANE_RENEWAL_TABLE + " WHERE airline = ?")
+        preparedStatement.setInt(1, airlineId)
+        
+        preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
   
+  def saveAirplaneRenewal(airlineId : Int, threshold : Int) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_RENEWAL_TABLE + "(airline, threshold) VALUES(?, ?)")
+        preparedStatement.setInt(1, airlineId)
+        preparedStatement.setInt(2, threshold)
+                
+        preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def loadAirplaneRenewal(airlineId : Int) : Option[Int] = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("SELECT threshold FROM " + AIRPLANE_RENEWAL_TABLE + " WHERE airline = ?")
+        preparedStatement.setInt(1, airlineId)
+        val resultSet = preparedStatement.executeQuery()
+        val result : Option[Int] = 
+          if (resultSet.next()) {
+            Some(resultSet.getInt("threshold"))
+          } else {
+            None
+          }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        result
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def loadAirplaneRenewals() : scala.collection.immutable.Map[Int, Int] = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRPLANE_RENEWAL_TABLE)
+        
+        val resultSet = preparedStatement.executeQuery()
+        val result : Map[Int, Int] = Map[Int, Int]() 
+          while (resultSet.next()) {
+            result.put(resultSet.getInt("airline"), resultSet.getInt("threshold"))
+          }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        result.toMap
+    } finally {
+      connection.close()
+    }
+  }
 }

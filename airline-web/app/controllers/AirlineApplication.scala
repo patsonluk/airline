@@ -34,6 +34,9 @@ import com.patson.model.Bank
 import java.awt.Color
 import com.patson.util.LogoGenerator
 import java.nio.file.Files
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 
 class AirlineApplication extends Controller {
@@ -409,6 +412,39 @@ class AirlineApplication extends Controller {
    Ok(result)
    //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
  } 
+  
+  def updateAirplaneRenewal(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.body.isInstanceOf[AnyContentAsJson]) {
+      val thresholdTry : Try[Int] = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("threshold").as[Int])
+      
+      thresholdTry match {
+        case Success(threshold) =>
+          if (threshold < 0) { //disable
+            AirlineSource.deleteAirplaneRenewal(airlineId)
+            Ok(Json.obj())
+          } else if (threshold >= 100) {
+            BadRequest("Cannot set threshold to >= 100")
+          } else {
+            AirlineSource.saveAirplaneRenewal(airlineId, threshold)
+            Ok(Json.obj("threshold" -> JsNumber(threshold)))
+          }
+        case Failure(_) =>
+          BadRequest("Cannot Update airplane renewal")
+      }
+      
+    } else {
+      BadRequest("Cannot Update airplane renewal")
+    }
+  }
+  
+  def getAirplaneRenewal(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+     val threshold : Option[Int] = AirlineSource.loadAirplaneRenewal(airlineId)
+     threshold match {
+       case Some(threshold) => Ok(Json.obj("threshold" -> JsNumber(threshold)))
+       case None => Ok(Json.obj())
+     } 
+     
+  }
   
   object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {
     def writes(championedCountries : List[(Country, Int, Long, Double)]): JsValue = {
