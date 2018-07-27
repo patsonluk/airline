@@ -226,7 +226,8 @@ object AirportSizeAdjust {
         "KOA" -> 4, //Kailua hawaii
         "MRU" -> 4, //Mauritius
         "IBZ" -> 4, //Ibiza Spain 
-        "BFI" -> 3
+        "BFI" -> 3,
+        "DRW" -> 5 //Darwin
       )
       
   

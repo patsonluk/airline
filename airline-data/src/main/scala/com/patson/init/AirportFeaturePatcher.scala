@@ -115,6 +115,7 @@ object AirportFeaturePatcher {
         "CEB" -> 16, //Cebu
         "ITO" -> 15, //Hilo hawaii
         "KWL" -> 15, //Guilin China
+        "DRW" -> 14, //Darwin Australia
         "MBJ" -> 13, //Montego bay
         "LXA" -> 12, //Lhasa China
         "AUA" -> 11, //Aruba
