@@ -227,7 +227,11 @@ object AirportSizeAdjust {
         "MRU" -> 4, //Mauritius
         "IBZ" -> 4, //Ibiza Spain 
         "BFI" -> 3,
-        "DRW" -> 5 //Darwin
+        "DRW" -> 5, //Darwin
+        "CLO" -> 4,
+        "GYE" -> 4,
+        "UIO" -> 4
+        
       )
       
   
