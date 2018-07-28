@@ -172,7 +172,8 @@ object AirportFeaturePatcher {
         "HAM" -> 18,
         "TXL" -> 16,
         "ARN" -> 17,
-        "MNL" -> 13 //Manila
+        "MNL" -> 13, //Manila
+        "KHH" -> 11 //Kaohsiung
       ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()
   )
