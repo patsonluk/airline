@@ -18,13 +18,20 @@ function loadDepartures(airportId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(departures) {
-	    	updateDepartures(departures)
+	    	updateWeather(departures.weatherIcon, departures.temperature, departures.weatherDescription)
+	    	updateDepartures(departures.timeslots)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
             console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function updateWeather(weatherIcon, temperature, weatherDescription) {
+	$('#weatherIcon').attr('src', weatherIcon)
+	$('#temperature').html(temperature + ' &#8451;')
+	$('#weatherDescription').text(weatherDescription)
 }
 
 function updateDepartures(allDepartures) {
@@ -40,7 +47,8 @@ function updateDepartures(allDepartures) {
 			var row = $("<div class='table-row' style='position:relative;'></div>")
 			row.append("<div class='cell' style='vertical-align:middle;'>" + departure.timeSlotTime + "</div>")
 			row.append("<div class='cell' style='vertical-align:middle;'>" + getAirlineLogoImg(departure.airlineId) + "&nbsp;" +  departure.flightCode + "</div>")
-		    row.append("<div class='cell' style='vertical-align:middle;'>" + departure.destination + "</div>")
+		    row.append("<div class='cell' style='vertical-align:middle;'><div style=' white-space: nowrap;  text-overflow: ellipsis; display: block; overflow: hidden;  width: 155px;'>" + departure.destination + "</div></div>")
+		    
 			//row.append("<div class='cell' style='overflow:hidden; float:left; text-overflow: clip; white-space: nowrap; height: 100%;'>" + departure.destination + "</div>")
 			var statusDiv = $("<div class='cell' style='vertical-align:middle;'><span>" + departure.statusText + "" +
 					"</span></div>")
