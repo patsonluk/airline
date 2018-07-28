@@ -238,53 +238,6 @@ function plotAirportShares(airportShares, currentAirportId, container) {
 	})
 }
 
-function plotCountryMarketShare(shares, container) {
-	container.children(':FusionCharts').each((function(i) {
-		  $(this)[0].dispose();
-	}))
-	
-	var data = []
-	if (shares) {
-		$.each(shares, function(key, share) {
-			var entry = {
-				label : share.airlineName,
-				value : share.passengerCount
-			}
-			
-			if (activeAirline && activeAirline.id == share.airlineId) {
-				entry.issliced = "1"
-			}
-			data.push(entry)
-		})
-	}
-	container.insertFusionCharts({
-		type: 'pie2d',
-	    width: '100%',
-	    height: '195',
-	    containerBackgroundOpacity :'0',
-	    dataFormat: 'json',
-		dataSource: {
-	    	"chart": {
-	    		"animation": "0",
-	    		"pieRadius": "70",
-	    		"showBorder":"0",
-                "use3DLighting": "1",
-                "showPercentInTooltip": "1",
-                "decimals": "2",
-                "toolTipBorderRadius": "2",
-                "toolTipPadding": "5",
-                "showHoverEffect":"1",
-                "bgAlpha":"0",
-                "showLabels":"0",
-                "showValues":"0"
-	    	},
-			"data" : data
-	    }
-	})
-}
-
-
-
 function plotLinkProfit(linkConsumptions, container) {
 	container.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
@@ -563,7 +516,6 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
                 "canvasBgAlpha" : "0",
                 "showLabels":"0",
                 "showValues":"0",
-                "showPlotBorder":"0",
                 "plottooltext": "$label - Passengers : $datavalue ($percentValue)"
 	    	},
 			"data" : data

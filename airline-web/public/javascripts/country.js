@@ -146,14 +146,15 @@ function loadCountryDetails(countryId) {
 		    			rankingIcon = "assets/images/icons/crown-bronze.png"
 				    	rankingTitle = "3rd place"
 		    		}
-    				championDivs += "<div><img src='" + rankingIcon + "' title='" + rankingTitle + "'/>" + getCountryFlagImg(champion.airline.countryCode) + "&nbsp;<span style='font-weight: bold;'>" + champion.airline.name + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
+    				championDivs += "<div><img src='" + rankingIcon + "' title='" + rankingTitle + "' style='vertical-align:middle;'/>" + getAirlineLogoImg(champion.airline.id) + "&nbsp;<span style='font-weight: bold;'>" + champion.airline.name + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
     			})
 	    		
 	    		$("#countryDetailsChampion").html(championDivs)
 	    	} else {
 	    		$("#countryDetailsChampion").text("-")
 	    	}
-	    	plotCountryMarketShare(country.marketShares, $("#countryDetailsSharesChart"))
+	    	assignAirlineColors(country.marketShares, "airlineId")
+	    	plotPie(country.marketShares, activeAirline ? activeAirline.name : null , $("#countryDetailsSharesChart"), "airlineName", "passengerCount")
 	    	$("#countryDetailsSharesChart").show()
 	    	
 	    	$("#countryDetails").fadeIn(200);
