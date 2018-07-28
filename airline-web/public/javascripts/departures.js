@@ -7,6 +7,7 @@ function showDeparturesCanvas() {
 function loadDepartures(airportId) {
 	//$('#rankingCanvas .table').hide() //hide all tables until they are loaded
 	$('.departures').children('div.table-row').remove()
+	$('#weather').hide()
 	var currentTime = new Date()
 	currentMinute =  currentTime.getMinutes()
 	currentHour = currentTime.getHours()
@@ -32,6 +33,7 @@ function updateWeather(weatherIcon, temperature, weatherDescription) {
 	$('#weatherIcon').attr('src', weatherIcon)
 	$('#temperature').html(temperature + ' &#8451;')
 	$('#weatherDescription').text(weatherDescription)
+	$('#weather').show()
 }
 
 function updateDepartures(allDepartures) {
