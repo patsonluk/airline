@@ -49,7 +49,7 @@ function updateDepartures(allDepartures) {
 			var row = $("<div class='table-row' style='position:relative;'></div>")
 			row.append("<div class='cell' style='vertical-align:middle;'>" + departure.timeSlotTime + "</div>")
 			row.append("<div class='cell' style='vertical-align:middle;'>" + getAirlineLogoImg(departure.airlineId) + "&nbsp;" +  departure.flightCode + "</div>")
-		    row.append("<div class='cell' style='vertical-align:middle;'><div style=' white-space: nowrap;  text-overflow: ellipsis; display: block; overflow: hidden;  width: 155px;'>" + departure.destination + "</div></div>")
+		    row.append("<div class='cell' style='vertical-align:middle;'><div style=' white-space: nowrap;  text-overflow: ellipsis; display: block; overflow: hidden; width: 155px; height: 14px;'>" + departure.destination + "</div></div>")
 		    
 			//row.append("<div class='cell' style='overflow:hidden; float:left; text-overflow: clip; white-space: nowrap; height: 100%;'>" + departure.destination + "</div>")
 			var statusDiv = $("<div class='cell' style='vertical-align:middle;'><span>" + departure.statusText + "" +
