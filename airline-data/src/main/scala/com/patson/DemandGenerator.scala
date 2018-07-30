@@ -33,7 +33,7 @@ object DemandGenerator {
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.30, PassengerType.TOURIST -> 0.10) //max 30% business (Business passenger), 10% business (Tourist) 
-  
+  val MIN_DISTANCE = 50
   
   val defaultTotalWorldPower = {
     AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
@@ -107,11 +107,12 @@ object DemandGenerator {
   }
   
   def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {
-    if (fromAirport == toAirport || fromAirport.population == 0 || toAirport.population == 0) {
+    val distance = Computation.calculateDistance(fromAirport, toAirport)
+    if (fromAirport == toAirport || fromAirport.population == 0 || toAirport.population == 0 || distance <= MIN_DISTANCE) {
       LinkClassValues.getInstance(0, 0, 0)
     } else {
       import FlightType._
-      val flightType = Computation.getFlightType(fromAirport, toAirport, Computation.calculateDistance(fromAirport, toAirport))
+      val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
       
       //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
       //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)

@@ -627,6 +627,11 @@ class LinkApplication extends Controller {
         return Some("Cannot create more route of category " + flightCategory + " until your airline reaches next grade")  
       }
       
+      //check distance
+      val distance = Computation.calculateDistance(fromAirport, toAirport)
+      if (distance <= DemandGenerator.MIN_DISTANCE) {
+        return Some("Route must be longer than " + DemandGenerator.MIN_DISTANCE + " kms")
+      }
       
       //check balance
       val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
