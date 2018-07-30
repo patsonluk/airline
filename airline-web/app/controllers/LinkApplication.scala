@@ -630,7 +630,7 @@ class LinkApplication extends Controller {
       //check distance
       val distance = Computation.calculateDistance(fromAirport, toAirport)
       if (distance <= DemandGenerator.MIN_DISTANCE) {
-        return Some("Route must be longer than " + DemandGenerator.MIN_DISTANCE + " kms")
+        return Some("Route must be longer than " + DemandGenerator.MIN_DISTANCE + " km")
       }
       
       //check balance
