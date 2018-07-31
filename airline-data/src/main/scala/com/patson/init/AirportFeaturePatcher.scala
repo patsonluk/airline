@@ -94,7 +94,9 @@ object AirportFeaturePatcher {
         "AKL" -> 20, //auckland
         "SIN" -> 29, //Singapore
         "HKG" -> 28, //hong kong
+        "BUD" -> 24, //Budapest
         "PSA" -> 22,
+        "OSL" -> 22, //Oslo
         "SFO" -> 20,
         "BWN" -> 19, //Brunei
         "MFM" -> 19, //Macau
@@ -103,17 +105,22 @@ object AirportFeaturePatcher {
         "PMI" -> 19, //Palma De Mallorca
         "OGG" -> 18, //	Kahului, Hawaii
         "KUL" -> 19, //	Kuala Lumpur
+        "LIS" -> 19, //Lisbon
         "SYX" -> 18, //Sanya China
         "XIY" -> 18, //Xian china
         "PVG" -> 18, //Shanghai
         "PER" -> 18, //Perth
-        "NAP" -> 18,  
+        "NAP" -> 18,
+        "KRK" -> 18,
+        "HEL" -> 17, //Helsinki 
+        "LED" -> 17, //St Petersburg
         "CJU" -> 17, //Jeju
         "HGH" -> 17, //Hangzhou china
         "SJO" -> 17, //Costa Rica
         "LIH" -> 16, //Lihue, Hawaii
         "CEB" -> 16, //Cebu
         "ITO" -> 15, //Hilo hawaii
+        "WAW" -> 15, //Warsaw
         "KWL" -> 15, //Guilin China
         "DRW" -> 14, //Darwin Australia
         "MBJ" -> 13, //Montego bay
@@ -123,8 +130,8 @@ object AirportFeaturePatcher {
         "IBZ" -> 11, //Ibiza
         "TAO" -> 10, //Qingdao China
         "GEA" -> 10,
+        "YZF" -> 10, //Yellowknife
         "CUR" -> 10 //Curacao
-         
         
         
       ),
