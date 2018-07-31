@@ -320,7 +320,13 @@ function getLinkColor(profit, revenue) {
    }
 }
 
-function highlightPath(path) {
+function highlightPath(path, refocus) {
+	refocus = refocus || false
+	//focus to the from airport
+	if (refocus) {
+		map.setCenter(path.getPath().getAt(0))
+	}
+	
 	if (!path.highlighted) { //only highlight again if it's not already done so
 		var originalColorString = path.strokeColor
 		path.originalColor = originalColorString
@@ -498,12 +504,7 @@ function highlightLink(linkId, refocus) {
 	}
 	
 	//highlight the selected link's flight path
-	highlightPath(flightPaths[linkId].path)
-	
-	//focus to the from airport
-	if (refocus) {
-		map.setCenter(flightPaths[linkId].path.getPath().getAt(0))
-	}
+	highlightPath(flightPaths[linkId].path, refocus)
 	
 	//highlight the corresponding list item
 //	var selectedListItem = $("#linkList a[data-link-id='" + linkId + "']")
@@ -910,7 +911,7 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	
 	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + availableFromSlotText + "&nbsp;<img src='assets/images/icons/magnifier--arrow.png'/>")
-	if (!linkInfo.existingLink && activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
+	if (activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
 		$('#planLinkFromAirportSelect').empty()
@@ -957,15 +958,18 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	
 	$('#planLinkCost').text('$' + commaSeparateNumber(linkInfo.cost))
-
+    
+	//deselect the existing path if any
+	deselectLink()
 	if (!linkInfo.existingLink) { //new link
-		//deselect the existing path if any
-		deselectLink()
 		//create a temp path
 		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
 		//set the temp path
 		tempPath = drawFlightPath(tempLink, '#2658d3')
-		highlightPath(tempPath.path)
+		highlightPath(tempPath.path, true)
+	} else {
+		//selectLinkFromMap(linkInfo.existingLink.id, true)
+		highlightLink(linkInfo.existingLink.id, true)
 	}
 	
 	if (linkInfo.rejection) {
