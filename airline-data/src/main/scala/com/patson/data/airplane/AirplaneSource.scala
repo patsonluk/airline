@@ -177,23 +177,30 @@ object AirplaneSource {
  def deleteAirplanesByCriteria (criteria : List[(String, Any)]) = {
     val connection = Meta.getConnection()
     
-    var queryString = "DELETE FROM  " + AIRPLANE_TABLE 
-    
-    if (!criteria.isEmpty) {
-      queryString += " WHERE "
-      for (i <- 0 until criteria.size - 1) {
-        queryString += criteria(i)._1 + " = ? AND "
+    var deleteCount = 0
+    try {
+      var queryString = "DELETE FROM  " + AIRPLANE_TABLE 
+      
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
       }
-      queryString += criteria.last._1 + " = ?"
+      
+      val preparedStatement = connection.prepareStatement(queryString)
+      
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+      
+      deleteCount = preparedStatement.executeUpdate()
+      
+      preparedStatement.close()
+    } finally {
+      connection.close()
     }
-    
-    val preparedStatement = connection.prepareStatement(queryString)
-    
-    for (i <- 0 until criteria.size) {
-      preparedStatement.setObject(i + 1, criteria(i)._2)
-    }
-    
-    val deleteCount = preparedStatement.executeUpdate()
 
     deleteCount
   }
