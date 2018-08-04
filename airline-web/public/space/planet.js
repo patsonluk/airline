@@ -145,7 +145,7 @@ function renderPlanet() {
     gl.uniform1f(uTime, t * 0.001); // qqDPS
     gl.uniform1f(uLeft, -10);
     gl.uniform1f(uTop, -10);
-    gl.uniform2f(uResolution, 380, 380);
+    gl.uniform2f(uResolution, 80, 80);
     gl.uniform1f(uAngle, vAngle);
     gl.uniform1f(uRotspeed, vRotspeed);
     gl.uniform1f(uLight, vLight);
