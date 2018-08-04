@@ -6,6 +6,7 @@ import scala.collection.mutable.ListBuffer
 import java.util.Calendar
 import java.text.SimpleDateFormat
 import java.sql.Statement
+import java.util.Date
 
 object UserSource {
   val dateFormat = new ThreadLocal[SimpleDateFormat]() {
@@ -167,6 +168,20 @@ object UserSource {
       connection.close()
     }        
   } 
+  
+  def updateUserLastActive(user: User) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("UPDATE " + USER_TABLE + " SET last_active = ? WHERE id = ?")
+        preparedStatement.setTimestamp(1, new java.sql.Timestamp(new Date().getTime()))
+        preparedStatement.setInt(2, user.id)
+        val updateCount = preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
   
   def setUserAirline(user: User, airline : Airline) = {
     val connection = Meta.getConnection()
