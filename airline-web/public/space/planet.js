@@ -287,19 +287,36 @@ function doDisplay(result) {
     vHaze = eval(doExpand(result.struct.vals["hazeC"], result)) || [0.15, 0.15, 0.2];
     
     vCloudiness = Math.min(1.5, Math.max(0, eval(doExpand(result.struct.vals["clouds"], result))));
-    vClouds = eval(doExpand(result.struct.vals["cloudC"], result)) || [0.9, 0.9, 0.9];
+    vClouds = eval(doExpand(result.struct.vals["cloudC"], result)) || [0.9, 0.9, 0.9]; //cloud color
     vAngle = 0.6 * Math.random();
     vRotspeed = (0.005 + Math.random() * 0.01) * (Math.random() < 0.3 ? -1 : 1) * eval(doExpand(result.struct.vals["rotspeedMult"], result));;
     vLight = 4 * Math.random();
     vZLight = 0.2 + Math.random();
     vModValue = 17 + Math.ceil(Math.random() * 20);
+    if (vModValue == 34) { //34 is bad, it gives uniform cloud pattern
+    	vModValue = 37
+    }
+    
     vNoiseOffset = [Math.ceil(Math.random() * 100), Math.ceil(Math.random() * 100)];
     vNoiseScale = [7 + Math.ceil(Math.random() * 10), 5 + Math.ceil(Math.random() * 7)];
     var sc = 80 + Math.ceil(Math.random() * 220);
     vNoiseScale2 = [sc, sc];
     sc = 20 + Math.ceil(Math.random() * 80);
     vNoiseScale3 = [sc, sc];
-    vCloudNoise = [4 + Math.ceil(Math.random() * 9), 20 + Math.ceil(Math.random() * 20)];
+    if (vCloudiness > 0) {
+    	vCloudNoise = [4 + Math.ceil(Math.random() * 9), 20 + Math.ceil(Math.random() * 20)];
+    } else {
+    	vCloudNoise = [0, 0]
+    }
+    
+    
+    console.debug('vCloudiness ' + vCloudiness + ' vModValue: ' + vModValue +  ' vNoiseOffset: ' + vNoiseOffset + ' vNoiseScale: ' + vNoiseScale + ' vNoiseScale2: ' + vNoiseScale2 + ' vNoiseScale3: ' + vNoiseScale3 + ' vCloudNoise: ' + vCloudNoise)
+    
+    //vCloudiness 0.28 vModValue: 34 vNoiseOffset: 18,65 vNoiseScale: 12,11 vNoiseScale2: 252,252 vNoiseScale3: 22,22 vCloudNoise: 9,33
+     
+    //vModValue = 37
+    
+    //18 34 35
 }
 
 function doExpand(txt, context) {
