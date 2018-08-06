@@ -292,7 +292,7 @@ class LinkApplication extends Controller {
         return BadRequest("Cannot insert link - some airplanes are either occupied with other routes or not ready for deployment " + violatingAirplanes)
       }
       
-      //valid configuration is valid
+      //validate configuration is valid
       if ((incomingLink.capacity(ECONOMY) * ECONOMY.spaceMultiplier + 
            incomingLink.capacity(BUSINESS) * BUSINESS.spaceMultiplier + 
            incomingLink.capacity(FIRST) * FIRST.spaceMultiplier) > incomingLink.frequency * model.capacity) {
@@ -301,6 +301,12 @@ class LinkApplication extends Controller {
       
       if (incomingLink.from.id == incomingLink.to.id) {
         return BadRequest("Same from and to airport!")
+      }
+      //validate price
+      if (incomingLink.price(ECONOMY) < 0 || 
+           incomingLink.price(BUSINESS) < 0 || 
+           incomingLink.price(FIRST) < 0) {
+        return BadRequest("negative ticket price not allowed")
       }
       
       

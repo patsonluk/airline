@@ -8,6 +8,7 @@ import play.api.libs.json.Writes
 import com.patson.model.User
 import com.patson.model.Airline
 import play.api.libs.json._
+import com.patson.data.UserSource
 
 class UserApplication extends Controller {
   implicit object UserWrites extends Writes[User] {
@@ -23,6 +24,7 @@ class UserApplication extends Controller {
   }
   // then in a controller
   def login = Authenticated { implicit request =>
+    UserSource.updateUserLastActive(request.user)
     Ok(Json.toJson(request.user)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userId" -> String.valueOf(request.user.id))
   }
   

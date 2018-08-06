@@ -37,6 +37,7 @@ import java.nio.file.Files
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import com.patson.model.FlightCategory
 
 
 class AirlineApplication extends Controller {
@@ -84,6 +85,21 @@ class AirlineApplication extends Controller {
        val airportsServed = links.flatMap {
          link => List(link.from, link.to)
        }.toSet.size
+       
+       val linkFlightCategories = links.map {
+         link => Computation.getFlightCategory(link.from, link.to)
+       }
+       
+       val airlineGrade = airline.airlineGrade
+       airlineJson = airlineJson + 
+       ("domesticLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.DOMESTIC))) +
+       ("regionalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.REGIONAL))) +
+       ("intercontinentalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.INTERCONTINENTAL))) +
+       ("domesticLinkMax" -> JsNumber(airlineGrade.getLinkLimit(FlightCategory.DOMESTIC))) +
+       ("regionalLinkMax" -> JsNumber(airlineGrade.getLinkLimit(FlightCategory.REGIONAL))) +
+       ("intercontinentalLinkMax" -> JsNumber(airlineGrade.getLinkLimit(FlightCategory.INTERCONTINENTAL)))  
+              
+       
        
        val destinations = if (airportsServed > 0) airportsServed - 1 else 0 //minus home base
        

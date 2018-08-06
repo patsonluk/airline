@@ -532,7 +532,8 @@ object Meta {
       "user_name VARCHAR(100) UNIQUE, " +
       "email VARCHAR(256) NOT NULL, " +
       "status  VARCHAR(256) NOT NULL, " +
-      "creation_time DATETIME DEFAULT CURRENT_TIMESTAMP)")
+      "creation_time DATETIME DEFAULT CURRENT_TIMESTAMP, " + 
+      "last_active DATETIME DEFAULT CURRENT_TIMESTAMP)")
     statement.execute()
     statement.close()
 
