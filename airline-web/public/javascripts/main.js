@@ -136,6 +136,13 @@ function loadUser(isLogin) {
 			  getAirports();
 			  showUserSpecificElements();
 			  
+			  if (window.location.hostname != 'localhost') {
+				  FS.identify(user.id, {
+					  displayName: user.userName,
+					  email: user.email
+					 });
+		      }
+			  
 		  }
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
