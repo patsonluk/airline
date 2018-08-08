@@ -303,6 +303,7 @@ function updateAllPanels(airlineId) {
 	
 	if (activeAirline) {
 		if (!activeAirline.headquarterAirport) {
+			showTutorial()
 			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough", 1, true, true)
 		} else if ($.isEmptyObject(flightPaths)) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
@@ -427,6 +428,12 @@ function showAnnoucement() {
 	$('#annoucementContainer').empty()
 	$('#annoucementContainer').load('assets/html/annoucement.html')
 
+	modal.fadeIn(1000)
+}
+
+function showTutorial() {
+	// Get the modal
+	var modal = $('#tutorialModal')
 	modal.fadeIn(1000)
 }
 

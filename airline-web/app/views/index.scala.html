@@ -1584,6 +1584,21 @@
 	    </div>
 	  </div>
 	</div>
+	<!-- The Annoucement Modal -->
+	<div id="tutorialModal" class="modal">
+	  <div class="modal-content" style="width: 540px;">
+	    <span class="close" onclick="closeModal($('#tutorialModal'))">&times;</span>
+	    <div style="margin-bottom: 10px;">
+	    	<img src='@routes.Assets.versioned("images/icons/32px/balloon.png")'><span style="font-size: 20px;">Tutorial</span>
+	    </div>
+	    <ul>
+			<li class="label" style="padding: 5px;">1. Build your headquarters in an airport</li>
+			<li class="label" style="padding: 5px;">2. Select another airport to fly to</li>
+			<li class="label" style="padding: 5px;">3. Establish the route</li>
+		</ul>
+	    <img src='@routes.Assets.versioned("images/clips/tutorial.gif")'>
+	  </div>
+	</div>
 	<!-- Confirmation Modal -->
 	<div id="confirmationModal" class="modal">
 	  <div class="modal-content"  style="width : 400px;">

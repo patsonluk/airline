@@ -1044,7 +1044,7 @@ function updatePlanLinkInfo(linkInfo) {
 			}  
 		})
 	}
-		
+	
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		if (modelPlanLinkInfo.airplanes.length > 0) {
 			modelPlanLinkInfo.owned = true
@@ -1055,6 +1055,12 @@ function updatePlanLinkInfo(linkInfo) {
 	
 	linkInfo.modelPlanLinkInfo = sortPreserveOrder(linkInfo.modelPlanLinkInfo, "capacity", true)
 	linkInfo.modelPlanLinkInfo = sortPreserveOrder(linkInfo.modelPlanLinkInfo, "owned", false)
+	
+	if (!selectedModelId) { //nothing available, select the first one in the list
+		if (linkInfo.modelPlanLinkInfo.length > 0) { //select the first one with available planes
+			selectedModelId = linkInfo.modelPlanLinkInfo[0].modelId
+		}
+	}
 	
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		var modelId = modelPlanLinkInfo.modelId
