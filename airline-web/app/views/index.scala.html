@@ -15,6 +15,7 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
     <link rel="icon" type="image/png"  href='@routes.Assets.versioned("images/icons/globe-green.png")'>
     
     <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
@@ -330,7 +331,23 @@
 					    			</div>
 					    		</div>
 					    		<div class="table-row">
-					    			<div class="label"><h5>Flight Frequency:</h5></div>
+					    			<div class="label">
+					    				<h5>
+					    					<span>Flight Frequency:</span>
+						    				<div class="tooltip">
+						    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+						    					<span class="tooltiptext">
+							    					Increase/decrease the flight frequency by selecting/deselecting the airplane icons. <br/>
+							    					<br/>
+							    					Take note that the max frequency is limited by airplanes assigned and time slots allocated by both the departure and destination airports.<br/>
+							    					<br/>
+							    					Once flight service is established, airports will eventually open up more slots. Check regularly to increase flight frequency<br/>
+							    					<br/>
+						    						<img src='@routes.Assets.versioned("images/clips/flight-frequency.gif")'> 
+						    					</span>
+						    				</div>
+					    				</h5>
+					    			</div>
 					    			<!--  <div class="value"><input type="text" id="planLinkFrequency"/></div> -->
 					    			<div class="value"><div id="frequencyBar" data-empty-icon='@routes.Assets.versioned("images/icons/airplane-empty.png")' data-fill-icon='@routes.Assets.versioned("images/icons/airplane.png")'></div>
 					    			<input type="hidden" id="planLinkFrequency" value="1"/></div>
@@ -344,7 +361,23 @@
 					    			<div class="value" id="planLinkCapacity"></div>
 					    		</div>
 					    		<div class="table-row">
-					    			<div class="label"><h5>Seat Configurations:</h5></div>
+					    			<div class="label">
+					    				<h5>
+					    					<span>Seat Configurations:</span>
+					    					<div class="tooltip">
+						    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+						    					<span class="tooltiptext">
+							    					Change class configuration of the cabin<br/>
+							    					<br/>
+							    					Y - Economy class<br/>
+							    					J - Business class<br/>
+							    					F - First class<br/>
+							    					<br/>
+							    					<img src='@routes.Assets.versioned("images/clips/seat-configuration.gif")'> 
+						    					</span>
+						    				</div>
+					    				</h5>
+					    			</div>
 					    			<div class="value"><div id="seatConfigurationGauge"></div></div>
 					    		</div>
 					    		<div class="table-row">
@@ -519,15 +552,64 @@
 				   				<div class="value airportSlots" id="airportDetailsSlots"></div>
 				   			</div>
 				   			<div class="table-row">
-				   				<div class="label"><h5>Slots for your airline (available / offered):</h5></div>
+				   				<div class="label">
+				   					<h5>
+				   						<span>Slots for your airline (available / offered):</span>
+				   						<div class="tooltip">
+					    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+					    					<span class="tooltiptext" style="width: 400px;">
+						    					Airport allocates time slots to your airline based on:<br/>
+						    					- Base size in this airport if present<br/>
+						    					- Loyalty to your airline<br/>
+						    					- Awareness of your airline<br/>
+						    					- Airline Reputation<br/>
+												- Relationship with your home country<br/>
+												- Country Openness<br/>
+					    					</span>
+					    				</div>
+				   					</h5>
+				   				</div>
 				   				<div class="value airportAssignedSlots" id="airportDetailsAssignedSlots"></div>
 				   			</div>
 				   			<div class="table-row">
-				   				<div class="label"><h5>Awareness of your airline:</h5></div>
+				   				<div class="label">
+				   					<h5>
+				   						<span>Awareness of your airline:</span>
+				   						<div class="tooltip">
+					    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+					    					<span class="tooltiptext" style="width: 400px;">
+					    						Airport awareness affects:</br>
+					    						- How likely a passenger from this airport will consider your route for his trip<br/>
+					    						- How many time slots will this airport offer to your airline initially (at 0 loyalty)<br/>
+					    						<br/>
+						    					Airport awareness builds up slowly by:<br/>
+						    					- Routes serving this airport offered by your airline<br/>
+						    					- Airline base in this airport if present 
+					    					</span>
+					    				</div>
+				   					</h5>
+				   				</div>
 				   				<div class="value airportAwareness" id="airportDetailsAwareness"></div>
 				   			</div>
 				   			<div class="table-row">
-				   				<div class="label"><h5>Loyalty to your airline:</h5></div>
+				   				<div class="label">
+				   					<h5>
+				   						<span>Loyalty to your airline:</span>
+				   						<div class="tooltip">
+					    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+					    					<span class="tooltiptext" style="width: 400px;">
+					    						Airport loyalty affects:</br>
+					    						- How likely a passenger from this airport would choose your airline<br/>
+					    						- How many time slots will this airport offer to your airline<br/>
+					    						<br/>
+						    					Airport loyalty builds up slowly by:<br/>
+						    					- Passenger volume of your airline in this airport<br/>
+						    					- Overall flight quality of routes serving this airport offered by your airline<br/>
+						    					- Airline base in this airport if present 
+					    					</span>
+					    				</div>
+				   					</h5>
+				   				</div>
 				   				<div class="value airportLoyalty" id="airportDetailsLoyalty"></div>
 				   			</div>
 				   			<div class="table-row">
