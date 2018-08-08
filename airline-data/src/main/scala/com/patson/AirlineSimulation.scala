@@ -76,7 +76,8 @@ object AirlineSimulation {
         
         
         val othersSummary = Map[OtherIncomeItemType.Value, Long]()
-        othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, airline.getServiceFunding() * -1)
+        val serviceFunding = if (airline.getBalance() > 0) airline.getServiceFunding() else 0
+        othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, serviceFunding * -1)
         totalCashExpense += airline.getServiceFunding()
         
         val baseUpkeep = airline.bases.foldLeft(0L)((upkeep, base) => {
@@ -175,7 +176,7 @@ object AirlineSimulation {
           
            val totalCapacity = links.map { _.capacity.total }.sum
            if (totalCapacity > 0) {
-             val targetServiceQuality = getTargetQuality(airline.getServiceFunding(), totalCapacity) //50x to get 50 target quality, 200x to get max 100 target quality
+             val targetServiceQuality = getTargetQuality(serviceFunding, totalCapacity) //50x to get 50 target quality, 200x to get max 100 target quality
              val currentServiceQuality = airline.getServiceQuality()
              airline.setServiceQuality(getNewQuality(currentServiceQuality, targetServiceQuality)) 
            } 
