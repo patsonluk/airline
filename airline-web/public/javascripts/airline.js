@@ -959,8 +959,11 @@ function updatePlanLinkInfo(linkInfo) {
 	
 	$('#planLinkCost').text('$' + commaSeparateNumber(linkInfo.cost))
     
-	//deselect the existing path if any
-	deselectLink()
+	//unhighlight the existing path if any
+	if (selectedLink) {
+		unhighlightLink(selectedLink)
+	}
+	
 	if (!linkInfo.existingLink) { //new link
 		//create a temp path
 		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
