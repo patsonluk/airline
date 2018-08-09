@@ -174,12 +174,13 @@ object AirlineSimulation {
         //calculate service quality
         allLinks.get(airline.id).foreach {  links =>
           
-           val totalCapacity = links.map { _.capacity.total }.sum
-           if (totalCapacity > 0) {
-             val targetServiceQuality = getTargetQuality(serviceFunding, totalCapacity) //50x to get 50 target quality, 200x to get max 100 target quality
-             val currentServiceQuality = airline.getServiceQuality()
-             airline.setServiceQuality(getNewQuality(currentServiceQuality, targetServiceQuality)) 
-           } 
+           var totalCapacity = links.map { _.capacity.total }.sum
+           if (totalCapacity < 1000) {
+             totalCapacity = 1000
+           }
+           val targetServiceQuality = getTargetQuality(serviceFunding, totalCapacity) //50x to get 50 target quality, 200x to get max 100 target quality
+           val currentServiceQuality = airline.getServiceQuality()
+           airline.setServiceQuality(getNewQuality(currentServiceQuality, targetServiceQuality)) 
         }
         
         
