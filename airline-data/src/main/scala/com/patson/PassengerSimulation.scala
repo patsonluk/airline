@@ -526,18 +526,18 @@ object PassengerSimulation {
         if (linkConsideration.from.id == from.id || predecessorMap.containsKey(linkConsideration.from.id)) {
           var connectionCost = 0.0
           if (linkConsideration.from.id != from.id) { //then it should be a connection flight
-              connectionCost += 50
+              connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
               val predecessorLink = predecessorMap.get(linkConsideration.from.id).link
               
               val frequency = Math.max(predecessorLink.frequency, linkConsideration.link.frequency)
               //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
               if (frequency < 42) {
-                connectionCost += (3.5 * 24 * 10) / frequency //each extra hour wait is like $10 more
+                connectionCost += (3.5 * 24 * 5) / frequency //each extra hour wait is like $5 more
               }
               
               if (predecessorLink.airline.id != linkConsideration.link.airline.id) { //switch airline, impose extra cost
-                connectionCost += 100 
+                connectionCost += 50 
               }
           }
           
