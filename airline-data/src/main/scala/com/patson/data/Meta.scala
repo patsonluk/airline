@@ -270,6 +270,7 @@ object Meta {
     createCountryMarketShare(connection)
     createAirlineLogo(connection)
     createAirplaneRenewal(connection)
+    createAlliance(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -748,6 +749,45 @@ object Meta {
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
+    statement.close()
+  }
+  
+  def createAlliance(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "name VARCHAR(256), " +
+      "status VARCHAR(256), " +
+      "creation_cycle INTEGER" + 
+      ")")
+    statement.execute()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MEMBER_TABLE + "(" +
+      "alliance INTEGER," +
+      "airline INTEGER, " +
+      "role VARCHAR(256), " +
+      "joined_cycle INTEGER, " + 
+      "PRIMARY KEY (alliance, airline)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_HISTORY_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "cycle INTEGER," +
+      "airline INTEGER, " +
+      "alliance_name VARCHAR(256)," +
+      "event VARCHAR(256), " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    
+    
+    
     statement.close()
   }
    
