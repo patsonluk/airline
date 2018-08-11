@@ -43,6 +43,7 @@
     <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/bank.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
@@ -117,6 +118,7 @@
 			  <li class="button left-tab user-specific-tab" id="bankCanvasTab" onclick="showBankCanvas();"><span>Bank</span></li>
 			  <li class="button left-tab user-specific-tab" id="rivalsCanvasTab" onclick="showRivalsCanvas();"><span>Rivals</span></li>
 			  <li class="button left-tab" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
+			  <li class="button left-tab" id="allianceCanvasTab" onclick="showAllianceCanvas();"><span>Alliance</span></li>
 			  
 			</ul>
 		</div>
@@ -1435,7 +1437,62 @@
 				</div>
 				<div style="clear: both;"></div>
   			</div>
-<!--   			end rivals canvas -->
+<!--   			end rival canvas -->
+			<div id="allianceCanvas" style="height: 100%; display: none;">
+				<div style="float: left; width : 30%; height : 100%" class="mainPanel">
+					<div id="allianceMemberAction" style="width : 95%" class="section">
+						<div class="table" style="width: 100%; margin-bottom: 15px">
+							<div class="table-row">
+			 	  				<div class="cell label">Airline Code:</div>
+			 	  				<div class="cell value"></div>
+			 	  			</div>
+		 	  			</div>
+		    		</div>
+				
+				
+	  				<div style="width : 95%; height: 95%" class="section">
+	  					<div style="width: 100%;">
+	  					</div>
+		  	  			<div id = "allianceTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+		 	  				<div class="table-header">
+		 	  					<div class="cell clickable" style="width: 40%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAllianceTableSortOrder($(this))">Alliance Name</div>
+		 	  					<div class="cell clickable" style="width: 40%" data-sort-property="leaderAirline" data-sort-order="ascending" onclick="toggleAllianceTableSortOrder($(this))">Leader Airline</div>
+		 	  					<div class="cell clickable" style="width: 10%" align="right" data-sort-property="memberCount" data-sort-order="descending" onclick="toggleAllianceTableSortOrder($(this))">Airline Member</div>
+		 	  					<div class="cell clickable selected" style="width: 10%" align="right" data-sort-property="championPoints" data-sort-order="descending" onclick="toggleAllianceTableSortOrder($(this))">Champion Points</div>
+							</div>
+	         			</div>
+	         			<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+		         			<div id="allianceTable" class="table data" style="height: 100%; width: 100%;">
+		         			 	<div class="table-header">
+			 	  					<div class="cell" style="width: 40%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 40%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 10%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								</div>
+		        			</div>
+	        			</div>
+					</div>
+				</div>
+				<div id="allianceDetails" class="sidePanel" style="float: left; width : 70%; height : 100%; display: none;">
+					<div class="section" style="width: 95%; height: 20%;  overflow: auto;">
+						<div class="table" style="width: 100%;">
+							<div class="table-row">
+			 	  				<div class="cell label">Alliance Name:</div>
+			 	  				<div class="cell value"></div>
+			 	  			</div>
+		 	  			</div>
+         			</div>
+					<div class="section" style="width: 95%; height: 20%;  overflow: auto;">
+						<h4>Championed Countries</h4>
+         			</div>
+	  				<div style="width: 95%; height: 50%" class="section"  overflow: auto;">
+	  					<h4>Alliance History</h4> 
+					</div>
+				</div>
+				<div style="clear: both;"></div>
+  			</div>
+	<!-- end alliance canvas -->
+
 			<div style="clear: both;"></div>
   		</div>
   	<!-- main canvas end -->
