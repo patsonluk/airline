@@ -115,7 +115,7 @@ object AllianceSource {
   def loadAllianceMemberByAirline(airline : Airline) : Option[AllianceMember] = {
     val connection = Meta.getConnection()
     try {
-        val preparedStatement = connection.prepareStatement("SELECT a.*, am.* FROM " + ALLIANCE_TABLE + " a JOIN " + ALLIANCE_MEMBER_TABLE + " ON a.id = am.alliance WHERE am.airline = ? ")
+        val preparedStatement = connection.prepareStatement("SELECT a.*, am.* FROM " + ALLIANCE_TABLE + " a JOIN " + ALLIANCE_MEMBER_TABLE + " am ON a.id = am.alliance WHERE am.airline = ? ")
         
         preparedStatement.setObject(1, airline.id)
         

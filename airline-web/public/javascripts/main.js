@@ -437,15 +437,23 @@ function showTutorial() {
 	modal.fadeIn(1000)
 }
 
-function promptConfirm(prompt, targetFunction) {
+function promptConfirm(prompt, targetFunction, param) {
 	$('#confirmationModal .confirmationButton').data('targetFunction', targetFunction)
+	if (typeof param != 'undefined') {
+		$('#confirmationModal .confirmationButton').data('targetFunctionParam', param)
+	}
 	$('#confirmationPrompt').text(prompt)
 	$('#confirmationModal').fadeIn(1000)
 }
 
 function executeConfirmationTarget() {
 	var targetFunction = $('#confirmationModal .confirmationButton').data('targetFunction')
-	targetFunction()
+	var targetFunctionParam = $('#confirmationModal .confirmationButton').data('targetFunctionParam')
+	if (typeof targetFunctionParam != 'undefined') {
+		targetFunction(targetFunctionParam) 
+	} else {
+		targetFunction()
+	}
 }
 
 function updateAirlineColors() {

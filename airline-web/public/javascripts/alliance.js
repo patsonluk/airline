@@ -5,19 +5,63 @@ function showAllianceCanvas() {
 	setActiveDiv($("#allianceCanvas"))
 	highlightTab($('#allianceCanvasTab'))
 	if (!activeAirline) {
-		$('#allianceMemberAction').hide()
+		$('#currentAirlineMemberDetails').hide()
 	} else {
-		$('#allianceMemberAction').show()
+		loadCurrentAirlineMemberDetails()
+		$('#currentAirlineMemberDetails').show()
 	}
-	$('#allainceDetails').hide()
+	$('#allianceDetails').hide()
 	loadAllAlliances()
+}
+
+function loadCurrentAirlineMemberDetails() {
+	$('#currentAirlineMemberDetails .allianceName').show()
+	$('#toggleFormAllianceButton').hide()
+	$('#formAllianceSpan').hide()
+	
+	var getUrl = "airlines/" + activeAirline.id + "/alliance-details"
+	$('#currentAirlineAllianceHistory').empty()
+	$.ajax({
+		type: 'GET',
+		url: getUrl,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(allianceDetails) {
+	    	if (allianceDetails.alliance) {
+	    		$('#currentAirlineMemberDetails .allianceName').text(allianceDetails.alliance.name)
+	    		$('#currentAirlineMemberDetails .allianceRole').text(allianceDetails.allianceRole)
+	    		$('#currentAirlineMemberDetails .allianceStatus').text(allianceDetails.alliance.status)
+	    		$('#toggleFormAllianceButton').hide()
+	    	} else {
+	    		$('#currentAirlineMemberDetails .allianceName').text('-')
+	    		$('#currentAirlineMemberDetails .allianceRole').text('-')
+	    		$('#currentAirlineMemberDetails .allianceStatus').text('-')
+	    		$('#toggleFormAllianceButton').show()
+	    	}
+	    	
+	    
+	    	if (allianceDetails.history) {
+	    		$.each(allianceDetails.history, function(index, entry) {
+	    			var row = $("<div class='table-row'><div class='cell value' style='width: 30%;'>Week " + entry.cycle + "</div><div class='cell value' style='width: 70%;'>" + entry.description + "</div></div>")
+	    			$('#currentAirlineAllianceHistory').append(row)
+	    		})
+	    	} else {
+	    		var row = $("<div class='table-row'><div class='cell value' style='width: 30%;'>-</div><div class='cell value' style='width: 70%;'>-</div></div>")
+	    		$('#currentAirlineAllianceHistory').append(row)
+	    	}
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function loadAllAlliances() {
 	var getUrl = "alliances"
 	
-	loadedRivals = []
-	loadedRivalsById = {}
+	loadedAlliances = []
+	loadedAlliancesById = {}
 	$.ajax({
 		type: 'GET',
 		url: getUrl,
@@ -41,7 +85,7 @@ function loadAllAlliances() {
 
 function updateAllianceTable(sortProperty, sortOrder) {
 	var selectedAlliance = $("#allianceCanvas #allianceTable div.table-row.selected").data('alliance-id')
-	var allianceTable = $("#allinaceCanvas #allianceTable")
+	var allianceTable = $("#allianceCanvas #allianceTable")
 	
 	allianceTable.children("div.table-row").remove()
 	
@@ -57,8 +101,13 @@ function updateAllianceTable(sortProperty, sortOrder) {
 		
 		row.append("<div class='cell'>" + alliance.name + "</div>")
 		row.append("<div class='cell'>" + getAirlineLogoImg(alliance.leader.id) + alliance.leader.name + "</div>")
-		row.append("<div class='cell' align='right'>" + alliance.members.size + "</div>")
-		row.append("<div class='cell' align='right'>" + alliance.championedPoints + "</div>")
+		row.append("<div class='cell' align='right'>" + alliance.members.length + "</div>")
+		
+		if (typeof alliance.championedPoints != 'undefined') {
+			row.append("<div class='cell' align='right'>" + alliance.championedPoints + "</div>")
+		} else {
+			row.append("<div class='cell' align='right'>-</div>")
+		}
 		
 		if (selectedAlliance == alliance.id) {
 			row.addClass("selected")
@@ -89,7 +138,7 @@ function loadAllianceDetails(row, allianceId) {
 	
 	updateAllianceBasicsDetails(allianceId)
 	updateAllianceChampionedCountriesDetails(allianceId)
-	updateAllianceHistory(airlineId)
+	updateAllianceHistory(allianceId)
 	$('#allianceDetails').fadeIn(200)
 }
 
@@ -97,6 +146,22 @@ function loadAllianceDetails(row, allianceId) {
 function updateAllianceBasicsDetails(allianceId) {
 	var alliance = loadedAlliancesById[allianceId]
 	$("#allianceCanvas .allianceName").text(alliance.name)
+	$("#allianceCanvas .allianceStatus").text(alliance.status)
+	$("#allianceMemberList").children("div.table-row").remove()
+	
+	$.each(alliance.members, function(index, member) {
+		if (member.allianceRole != "Applicant") {
+			var row = $("<div class='table-row'></div>")
+			row.append("<div class='cell'>" + getAirlineLogoImg(member.airlineId) + member.airlineName + "</div>")
+			row.append("<div class='cell'>" + member.allianceRole + "</div>")
+			if (member.airlineId == activeAirline.id) {
+				row.append("<div class='cell'><img src='assets/images/icons/cross.png' class='button' title='Leave Alliance' onclick='promptConfirm(\"Leave Alliance?\", removeAllianceMember, " + activeAirline.id + ")'></div>")
+			} else if (alliance.leader.id == activeAirline.id) {
+				row.append("<div class='cell'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"Remove " + member.airlineName + " from Alliance?\", removeAllianceMember, " + member.airlineId + ")'></div>")
+			}
+			$("#allianceMemberList").append(row)
+		}
+	});
 }
 
 function updateAllianceChampionedCountriesDetails(allianceId) {
@@ -145,4 +210,51 @@ function updateAllianceChampionedCountriesDetails(allianceId) {
 }
 
 function updateAllianceHistory(allianceId) {
+}
+
+
+function toggleFormAlliance() {
+	$('#currentAirlineMemberDetails .allianceName').hide()
+	$('#toggleFormAllianceButton').hide()
+	$('#formAllianceWarning').hide()
+	$('#formAllianceSpan').show()
+}
+
+function formAlliance(allianceName) {
+	var url = "airlines/" + activeAirline.id + "/form-alliance"
+	$.ajax({
+		type: 'POST',
+		url: url,
+		data: { 'allianceName' : allianceName } ,
+	    dataType: 'json',
+	    success: function(newAlliance) {
+	    	if (!newAlliance.rejection) {
+	    		showAllianceCanvas()
+	    	} else {
+	    		$('#formAllianceWarning').text(newAlliance.rejection)
+	    		$('#formAllianceWarning').show()
+	    	}
+	    	
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(JSON.stringify(jqXHR));
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function removeAllianceMember(removeAirlineId) {
+	var url = "airlines/" + activeAirline.id + "/remove-alliance-member/" + removeAirlineId
+	$.ajax({
+		type: 'DELETE',
+		url: url,
+		contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(JSON.stringify(jqXHR));
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
