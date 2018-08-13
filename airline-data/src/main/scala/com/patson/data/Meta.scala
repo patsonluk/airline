@@ -21,6 +21,7 @@ object Meta {
   dataSource.setPassword(DATABASE_PASSWORD)
   dataSource.setJdbcUrl(DATABASE_CONNECTION)
   dataSource.setMaxPoolSize(100)
+  dataSource.setTestConnectionOnCheckout(true)
 
   def getConnection(enforceForeignKey: Boolean = true) = {
 

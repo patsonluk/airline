@@ -140,8 +140,8 @@ object Computation {
       
       val affectedSeatsPerFlight = if (soldSeatsPerFlight.total > halfCapacityPerFlight.total) soldSeatsPerFlight else halfCapacityPerFlight //if less than 50% LF, considered that as 50% LF
       var compensation = (affectedSeatsPerFlight * link.cancellationCount * 0.5 * link.price).total  //50% of ticket price, as there's some penalty for that already
-      compensation = compensation + (affectedSeatsPerFlight * link.majorDelayCount * 0.5 * link.price).total //50% of ticket price
-      compensation = compensation + (affectedSeatsPerFlight * link.minorDelayCount * 0.2 * link.price).total //20% of ticket price
+      compensation = compensation + (affectedSeatsPerFlight * link.majorDelayCount * 0.3 * link.price).total //30% of ticket price
+      compensation = compensation + (affectedSeatsPerFlight * link.minorDelayCount * 0.05 * link.price).total //5% of ticket price
       
       compensation.toInt
     } else {

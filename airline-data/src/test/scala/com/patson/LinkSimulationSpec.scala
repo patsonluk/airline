@@ -31,7 +31,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   toAirport.initAirlineBases(List.empty)
   
   val lightModel = Model.modelByName("Cessna Caravan")
-  val regionalModel = Model.modelByName("Embraer ERJ 140")
+  val regionalModel = Model.modelByName("Embraer ERJ140")
   val smallModel = Model.modelByName("Bombardier CS100")
   val mediumModel = Model.modelByName("Boeing 787-8 Dreamliner")
   val largeAirplaneModel = Model.modelByName("Boeing 747-400")
@@ -44,8 +44,10 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   
   import Model.Type._
   //LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.35, REGIONAL -> 0.28, SMALL -> 0.2, MEDIUM -> 0.1, LARGE -> 0.05, JUMBO -> 0.05)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, JUMBO -> 0.2)
+//  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.35, REGIONAL -> 0.28, SMALL -> 0.2, MEDIUM -> 0.1, LARGE -> 0.05, JUMBO -> 0.05)
+//  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, JUMBO -> 0.2)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.2, SMALL -> 0.05, MEDIUM -> -0.1, LARGE -> -0.15, JUMBO -> -0.25)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.2, LARGE -> 0.15, JUMBO -> 0.1)
   
   "Compute profit".must {
     "More profitable with more frequency flight (max LF)".in {
@@ -114,7 +116,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       
       airplane = smallAirplane
       consumptionResult = simulateStandard(4000, airplane, LONG_HAUL_INTERNATIONAL, 0.7, 4)
-      consumptionResult.profit.should(be > 0)
+      //consumptionResult.profit.should(be > 0) //need higher price and loyalty to be profitable
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       profits += consumptionResult.profit
       profitMargins += getProfitMargin(consumptionResult)
@@ -158,7 +160,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       
       airplane = mediumAirplane
       consumptionResult = simulateStandard(8000, airplane, LONG_HAUL_INTERNATIONAL, 1, 5)
-      consumptionResult.profit.should(be > 0)
+      //consumptionResult.profit.should(be > 0) //need higher price and loyalty to be profitable
 //      verfiyReturnRate(consumptionResult, airplane.model, true)
       
       airplane = largeAirplane
@@ -169,20 +171,21 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     
     
     "Not profitable at all on very short route < 200 km at large airport (max LF)".in {
-      var airplane = lightAirplane
+      //exempt smaller models for check...okay to make profit
+//      airplane = lightAirplane
+//      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, 8)
+//      verfiyProfitMargin(consumptionResult, airplane.model, false)
+//      
+//      airplane = regionalAirplane
+//      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, 8)
+//      verfiyProfitMargin(consumptionResult, airplane.model, false)
+//      
+//      airplane = smallAirplane
+//      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, 8)
+//      verfiyProfitMargin(consumptionResult, airplane.model, false)
+      
+      var airplane = mediumAirplane
       var consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, 8)
-      verfiyProfitMargin(consumptionResult, airplane.model, false)
-      
-      airplane = regionalAirplane
-      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, 8)
-      verfiyProfitMargin(consumptionResult, airplane.model, false)
-      
-      airplane = smallAirplane
-      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, 8)
-      verfiyProfitMargin(consumptionResult, airplane.model, false)
-      
-      airplane = mediumAirplane
-      consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, 8)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       
       airplane = largeAirplane
@@ -263,9 +266,9 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val allBusinessCapacity : LinkClassValues = LinkClassValues.getInstance(0, maxBusinessCapacity, 0)
       val allFirstCapacity : LinkClassValues = LinkClassValues.getInstance(0, 0, maxFirstCapacity)
       
-      val economyPrice = Pricing.computeStandardPrice(distance, SHORT_HAUL_INTERNATIONAL, ECONOMY)
-      val businessPrice = Pricing.computeStandardPrice(distance, SHORT_HAUL_INTERNATIONAL, BUSINESS)
-      val firstPrice = Pricing.computeStandardPrice(distance, SHORT_HAUL_INTERNATIONAL, FIRST)
+      val economyPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERNATIONAL, ECONOMY)
+      val businessPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERNATIONAL, BUSINESS)
+      val firstPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERNATIONAL, FIRST)
     
       val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = 60, duration, frequency, SHORT_HAUL_INTERNATIONAL)
       val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice)), distance = distance, allBusinessCapacity, rawQuality = 60, duration, frequency, SHORT_HAUL_INTERNATIONAL)
@@ -415,17 +418,17 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       
       assert(consumptionResultNoDelays.profit > 0)
       
-      //single incident should not make it negative
+      //single minor incident should not make it negative
       assert(consumptionResultSingleMinorDelay.profit > 0)
-      assert(consumptionResultSingleMajorDelay.profit > 0)
-      assert(consumptionResultSingleCancellation.profit > 0)
+      //assert(consumptionResultSingleMajorDelay.profit > 0)
+      //assert(consumptionResultSingleCancellation.profit > 0)
       
       //more severe the incident, the less profit
       assert(consumptionResultNoDelays.profit > consumptionResultSingleMinorDelay.profit)
       assert(consumptionResultSingleMinorDelay.profit > consumptionResultSingleMajorDelay.profit)
       assert(consumptionResultSingleMajorDelay.profit > consumptionResultSingleCancellation.profit)
       
-      //at half the incident, it should not be profitable for more severe incidents
+      //at half the incident, it should not be profitable in more severe cases
       assert(consumptionResultHalfMinorDelay.profit > 0)
       assert(consumptionResultHalfMajorDelay.profit < 0)
       assert(consumptionResultHalfCancellation.profit < 0)

@@ -469,6 +469,51 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       result(economyPassengerGroup).isDefinedAt(airport5).shouldBe(false) //nope, C2 would block it as it needs 6th freedom here
     }
     
+    "prefer routes with flights with same airline if available".in {
+      val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2 = Airport("", "", "Airport 2", 0, 60, "C1", "", "", 1, 0, 0, 0, id = 2)
+      val airport3 = Airport("", "", "Airport 3", 0, 90, "C2", "", "", 1, 0, 0, 0, id = 3)
+      
+      val airline1 = Airline("airline 1", id = 1)
+      val airline2 = Airline("airline 2", id = 2)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport1, "C1", 1, 1, headquarter = true)))
+      airline2.setBases(List[AirlineBase](AirlineBase(airline2, airport1, "C1", 1, 1, headquarter = true)))
+      
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100), airline2.id -> AirlineAppeal(0, 100)))
+      
+      val countryOpenness = Map[String, Int](
+        "C1" -> 10,
+        "C2" -> 10)
+      
+      
+      val links = List(Link(airport1, airport2, airline1, price = LinkClassValues.getInstance(100, 100, 100), 10000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
+                      Link(airport2, airport3, airline1, price = LinkClassValues.getInstance(100, 100, 100), 10000, capacity = LinkClassValues.getInstance(10000, 0, 0), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
+                      Link(airport2, airport3, airline2, price = LinkClassValues.getInstance(100, 100, 100), 10000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
+                      
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)              
+      val businessPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, BUSINESS, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, FIRST, 0), PassengerType.BUSINESS)
+    
+      val toAirports = Set[Airport](airport3)
+      
+      val activeAirports = scala.collection.mutable.Set(List.range(1, 4) : _*)
+      val result : Map[PassengerGroup, Map[Airport, Route]] =
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports,
+                businessPassengerGroup -> toAirports,
+                firstPassengerGroup -> toAirports),
+              links, 
+              activeAirports,
+              countryOpenness = countryOpenness)
+              
+      assert(result(economyPassengerGroup)(airport3).links(0).link.airline == airline1)
+      assert(result(economyPassengerGroup)(airport3).links(1).link.airline == airline1) //should use airline 1
+      assert(result(businessPassengerGroup)(airport3).links(0).link.airline == airline1)
+      assert(result(businessPassengerGroup)(airport3).links(1).link.airline == airline2) //use airline 2 as airline 1 has no business class offered
+      assert(result(firstPassengerGroup)(airport3).links(0).link.airline == airline1)
+      assert(result(firstPassengerGroup)(airport3).links(1).link.airline == airline2) //use airline 2 as airline 1 has no first class offered
+    }
+    
   }
   
   
