@@ -32,6 +32,8 @@ import com.patson.model.AllianceRole._
 import com.patson.model.AllianceEvent._
 import com.patson.model.AllianceStatus._
 import com.patson.data.AllianceSource
+import com.patson.data.AllianceSource
+import com.patson.model.AllianceHistory
 
 
 class AllianceApplication extends Controller {
@@ -144,22 +146,68 @@ class AllianceApplication extends Controller {
     
     var result = Json.arr()
     
+    val countryChampionsByAirline : Map[Int, List[(Country, Double)]] = getCountryChampions()
     alliances.foreach {
       case(alliance, allianceMembers) => 
-        var allianceJson = Json.toJson(alliance)
+        var allianceJson = Json.toJson(alliance).asInstanceOf[JsObject]
         var allianceMemberJson = Json.arr()
+        var allianceChampionPoints = 0.0
         allianceMembers.foreach { allianceMember =>
           allianceMemberJson = allianceMemberJson.append(Json.toJson(allianceMember))
+          val memberChampiontPoints : Double = countryChampionsByAirline.get(allianceMember.airline.id) match {
+            case Some(championedCountries) => championedCountries.map(_._2).sum
+            case None => 0
+          }
+          allianceChampionPoints += memberChampiontPoints
           if (allianceMember.role == LEADER) {
             allianceJson = allianceJson.asInstanceOf[JsObject] + ("leader" -> Json.toJson(allianceMember.airline))
           }
         }
-        allianceJson = allianceJson.asInstanceOf[JsObject] + ("members" -> allianceMemberJson)
+        allianceJson = allianceJson + ("members" -> allianceMemberJson)
+        allianceJson = allianceJson + ("championPoints" -> JsNumber(allianceChampionPoints))
         
+        val historyEntries : List[AllianceHistory] = AllianceSource.loadAllianceHistoryByAllianceName(alliance.name)
+        allianceJson = allianceJson + ("history" -> Json.toJson(historyEntries))
         result = result.append(allianceJson)
     }
     
     Ok(result)
+  }
+  
+  /**
+   * returns Map[AirlineId, List[CountryCode, ReputationBoost]]
+   */
+  def getCountryChampions() : Map[Int, List[(Country, Double)]] = {
+    val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
+      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
+    }
+    
+    val championedCountryByAirline: scala.collection.mutable.Map[Int, ListBuffer[(Country, Double)]] = scala.collection.mutable.Map[Int, ListBuffer[(Country, Double)]]()  
+      
+    val countriesByCode = CountrySource.loadAllCountries().map(country => (country.countryCode, country)).toMap
+    topChampionsByCountryCode.foreach { //(country, reputation boost)
+      case (countryCode, champions) => champions.foreach {
+        case ((championAirlineId, passengerCount), ranking) =>
+          val country = countriesByCode(countryCode)
+          val reputationBoost = Computation.computeReputationBoost(country, ranking)
+          val existingBoosts : ListBuffer[(Country, Double)] = championedCountryByAirline.getOrElseUpdate(championAirlineId, ListBuffer[(Country, Double)]())
+          existingBoosts.append((country, reputationBoost))
+      }
+    }
+    
+    championedCountryByAirline.mapValues( _.toList).toMap
+//    .filter {
+//      case (countryCode, thisAirlineRankingOption) => thisAirlineRankingOption.isDefined
+//    }.map {
+//      case (countryCode, thisAirlineRankingOption) => {
+//        val country = CountrySource.loadCountryByCode(countryCode).get
+//        val ranking = thisAirlineRankingOption.get._2 + 1
+//        val passengerCount = thisAirlineRankingOption.get._1._2 
+//        (country, ranking, passengerCount, Computation.computeReputationBoost(country, ranking))
+//      }
+//    }.sortBy {
+//      case (countryCode, ranking, passengerCount, reputationBoost) => ranking
+//    }
   }
   
  

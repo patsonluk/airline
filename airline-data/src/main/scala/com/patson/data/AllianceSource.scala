@@ -141,8 +141,8 @@ object AllianceSource {
     loadAllianceHistoryByCriteria(List(("airline", airlineId)))
   }
   
-  def loadAllianceHistoryByAlliance(allianceId : Int) : List[AllianceHistory] = {
-    loadAllianceHistoryByCriteria(List(("alliance", allianceId)))
+  def loadAllianceHistoryByAllianceName(allianceName : String) : List[AllianceHistory] = {
+    loadAllianceHistoryByCriteria(List(("alliance_name", allianceName)))
   }
   
   def loadAllianceHistoryByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
