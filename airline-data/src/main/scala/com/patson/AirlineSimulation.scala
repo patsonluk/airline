@@ -78,7 +78,7 @@ object AirlineSimulation {
         val othersSummary = Map[OtherIncomeItemType.Value, Long]()
         val serviceFunding = if (airline.getBalance() > 0) airline.getServiceFunding() else 0
         othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, serviceFunding * -1)
-        totalCashExpense += airline.getServiceFunding()
+        totalCashExpense += serviceFunding
         
         val baseUpkeep = airline.bases.foldLeft(0L)((upkeep, base) => {
           upkeep + base.getUpkeep 
