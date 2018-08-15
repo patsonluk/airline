@@ -695,7 +695,7 @@ class LinkApplication extends Controller {
           } else {
             val airline = request.user
             airline.setServiceFunding(serviceFunding)
-            AirlineSource.saveAirlineInfo(airline)
+            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
             Ok(Json.obj("serviceFunding" -> JsNumber(serviceFunding)))
           }
         case Failure(_) =>
@@ -714,7 +714,7 @@ class LinkApplication extends Controller {
         case Success(maintenanceQuality) =>
           val airline = request.user
           airline.setMaintainenceQuality(maintenanceQuality)
-          AirlineSource.saveAirlineInfo(airline)
+          AirlineSource.saveAirlineInfo(airline, updateBalance = false)
           Ok(Json.obj("serviceFunding" -> JsNumber(maintenanceQuality)))
         case Failure(_) =>
           BadRequest("Cannot Update maintenance quality")

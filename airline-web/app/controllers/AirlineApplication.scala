@@ -229,7 +229,7 @@ class AirlineApplication extends Controller {
                    }
                    
                    airline.setCountryCode(newBase.countryCode)
-                   AirlineSource.saveAirlineInfo(airline)
+                   AirlineSource.saveAirlineInfo(airline, updateBalance = false)
                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
                    Created(Json.toJson(newBase))
                  }

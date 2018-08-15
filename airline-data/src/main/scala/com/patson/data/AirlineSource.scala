@@ -154,19 +154,37 @@ object AirlineSource {
 	  }
   
   
-  def saveAirlineInfo(airline : Airline) = {
+  def saveAirlineInfo(airline : Airline, updateBalance : Boolean = true) = {
     this.synchronized {
       val connection = Meta.getConnection()
+      var query = "UPDATE " + AIRLINE_INFO_TABLE + " SET "
+      if (updateBalance) {
+        query += "balance = ?, "
+      }
+      query += "service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
+      
       try {
-        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?")
-        updateStatement.setLong(1, airline.getBalance())
-        updateStatement.setDouble(2, airline.getServiceQuality())
-        updateStatement.setInt(3, airline.getServiceFunding())
-        updateStatement.setDouble(4, airline.getMaintenanceQuality())
-        updateStatement.setDouble(5, airline.getReputation())
-        updateStatement.setString(6, airline.getCountryCode().getOrElse(null))
-        updateStatement.setString(7, airline.getAirlineCode())
-        updateStatement.setInt(8, airline.id)
+        val updateStatement = connection.prepareStatement(query)
+        var index = 0
+          
+        if (updateBalance) {
+          index += 1
+          updateStatement.setLong(index, airline.getBalance())
+        }
+        index += 1
+        updateStatement.setDouble(index, airline.getServiceQuality())
+        index += 1
+        updateStatement.setInt(index, airline.getServiceFunding())
+        index += 1
+        updateStatement.setDouble(index, airline.getMaintenanceQuality())
+        index += 1
+        updateStatement.setDouble(index, airline.getReputation())
+        index += 1
+        updateStatement.setString(index, airline.getCountryCode().getOrElse(null))
+        index += 1
+        updateStatement.setString(index, airline.getAirlineCode())
+        index += 1
+        updateStatement.setInt(index, airline.id)
         updateStatement.executeUpdate()
         updateStatement.close()
       } finally {
@@ -190,23 +208,42 @@ object AirlineSource {
     }
   }
   
-  def saveAirlineInfo(airlines : List[Airline]) = {
+  def saveAirlinesInfo(airlines : List[Airline], updateBalance : Boolean = true) = {
     this.synchronized {
       val connection = Meta.getConnection()
       
+      var query = "UPDATE " + AIRLINE_INFO_TABLE + " SET "
+      if (updateBalance) {
+        query += "balance = ?, "
+      }
+      query += "service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
+      
+      
       try {
         connection.setAutoCommit(false)
-        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET balance = ?, service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?")
+        val updateStatement = connection.prepareStatement(query)
           
         airlines.foreach { airline =>
-          updateStatement.setLong(1, airline.getBalance())
-          updateStatement.setDouble(2, airline.getServiceQuality())
-          updateStatement.setInt(3, airline.getServiceFunding())
-          updateStatement.setDouble(4, airline.getMaintenanceQuality())
-          updateStatement.setDouble(5, airline.getReputation())
-          updateStatement.setString(6, airline.getCountryCode().getOrElse(null))
-          updateStatement.setString(7, airline.getAirlineCode())
-          updateStatement.setInt(8, airline.id)
+          var index = 0
+          
+          if (updateBalance) {
+            index += 1
+            updateStatement.setLong(index, airline.getBalance())
+          }
+          index += 1
+          updateStatement.setDouble(index, airline.getServiceQuality())
+          index += 1
+          updateStatement.setInt(index, airline.getServiceFunding())
+          index += 1
+          updateStatement.setDouble(index, airline.getMaintenanceQuality())
+          index += 1
+          updateStatement.setDouble(index, airline.getReputation())
+          index += 1
+          updateStatement.setString(index, airline.getCountryCode().getOrElse(null))
+          index += 1
+          updateStatement.setString(index, airline.getAirlineCode())
+          index += 1
+          updateStatement.setInt(index, airline.id)
           
           //updateStatement.executeUpdate()
           updateStatement.addBatch()
