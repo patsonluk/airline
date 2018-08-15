@@ -147,18 +147,21 @@ class AllianceApplication extends Controller {
     var result = Json.arr()
     
     val countryChampionsByAirline : Map[Int, List[(Country, Double)]] = getCountryChampions()
+    
     alliances.foreach {
       case(alliance, allianceMembers) => 
         var allianceJson = Json.toJson(alliance).asInstanceOf[JsObject]
         var allianceMemberJson = Json.arr()
-        var allianceChampionPoints = 0.0
+        var allianceChampionPoints : BigDecimal = 0.0
         allianceMembers.foreach { allianceMember =>
           allianceMemberJson = allianceMemberJson.append(Json.toJson(allianceMember))
-          val memberChampiontPoints : Double = countryChampionsByAirline.get(allianceMember.airline.id) match {
-            case Some(championedCountries) => championedCountries.map(_._2).sum
+          val memberChampiontPoints : BigDecimal = countryChampionsByAirline.get(allianceMember.airline.id) match {
+            case Some(championedCountries) => {
+              championedCountries.map(boostEntry => BigDecimal.valueOf(boostEntry._2)).sum
+            }
             case None => 0
           }
-          allianceChampionPoints += memberChampiontPoints
+          allianceChampionPoints = allianceChampionPoints + memberChampiontPoints 
           if (allianceMember.role == LEADER) {
             allianceJson = allianceJson.asInstanceOf[JsObject] + ("leader" -> Json.toJson(allianceMember.airline))
           }
@@ -187,8 +190,9 @@ class AllianceApplication extends Controller {
     val countriesByCode = CountrySource.loadAllCountries().map(country => (country.countryCode, country)).toMap
     topChampionsByCountryCode.foreach { //(country, reputation boost)
       case (countryCode, champions) => champions.foreach {
-        case ((championAirlineId, passengerCount), ranking) =>
+        case ((championAirlineId, passengerCount), rankingIndex) =>
           val country = countriesByCode(countryCode)
+          val ranking = rankingIndex + 1
           val reputationBoost = Computation.computeReputationBoost(country, ranking)
           val existingBoosts : ListBuffer[(Country, Double)] = championedCountryByAirline.getOrElseUpdate(championAirlineId, ListBuffer[(Country, Double)]())
           existingBoosts.append((country, reputationBoost))
