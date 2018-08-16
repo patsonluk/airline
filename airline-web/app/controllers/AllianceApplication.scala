@@ -34,6 +34,7 @@ import com.patson.model.AllianceStatus._
 import com.patson.data.AllianceSource
 import com.patson.data.AllianceSource
 import com.patson.model.AllianceHistory
+import play.api.libs.json.JsBoolean
 
 
 class AllianceApplication extends Controller {
@@ -175,6 +176,92 @@ class AllianceApplication extends Controller {
     }
     
     Ok(result)
+  }
+  
+  def evaluateAlliance(airlineId : Int, allianceId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
+    AllianceSource.loadAllianceById(allianceId, true) match {
+      case None => NotFound("Alliance with id " + allianceId + " is not found")
+      case Some(allianceInfo) =>
+        var result = Json.obj() 
+        allianceInfo._2.find( _.airline.id == airlineId) match {
+          case Some(_) => result = result + ("isMember" -> JsBoolean(true)) //already a member
+          case None => getApplyRejection(request.user, allianceInfo) match {
+            case Some(rejection) => result = result + ("rejection" -> JsString(rejection))
+            case None =>
+              //nothing
+          }
+            
+        }
+        
+        Ok(result)
+    }
+  }
+  
+   def applyForAlliance(airlineId : Int, allianceId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
+    AllianceSource.loadAllianceById(allianceId, true) match {
+      case None => NotFound("Alliance with id " + allianceId + " is not found")
+      case Some(allianceInfo) =>
+        getApplyRejection(request.user, allianceInfo) match {
+            case Some(rejection) => BadRequest(rejection)
+            case None => //ok
+              val currentCycle = CycleSource.loadCycle
+              val newMember = AllianceMember(alliance = allianceInfo._1, airline = request.user, role = APPLICANT, joinedCycle = currentCycle)
+              AllianceSource.saveAllianceMember(newMember)
+              val history = AllianceHistory(allianceName = allianceInfo._1.name, airline = request.user, event = APPLY_ALLIANCE, cycle = currentCycle)
+              AllianceSource.saveAllianceHistory(history)
+              Ok(Json.toJson(newMember))
+        }
+    }
+  }
+  
+  def getApplyRejection(airline : Airline, allianceInfo : (Alliance, List[AllianceMember])) : Option[String] = {
+    val allianceMembers = allianceInfo._2
+    
+    if (airline.getHeadQuarter.isEmpty) { 
+      return Some("Cannot join an alliance without headquarters for your airline")
+    }
+    
+    if (allianceMembers.size >= Alliance.MAX_MEMBER_COUNT) {
+      return Some("Alliance has reached max member size " + Alliance.MAX_MEMBER_COUNT + " already")
+    }
+    
+    
+    val allAllianceHeadquarters = allianceMembers.flatMap(_.airline.getHeadQuarter).map(_.airport)
+    
+   
+    
+    val airlineHeadquarters = airline.getHeadQuarter.get.airport
+    
+    if (allAllianceHeadquarters.contains(airlineHeadquarters)) {
+      return Some("One of the alliance members has Headquarters at " + getAirportText(airlineHeadquarters) + " which is same as your airline's headquarters")  
+    }
+    
+    val allAllianceBases = allianceMembers.flatMap { _.airline.getBases().filter( !_.headquarter) }.map(_.airport)
+    val airlineBases = airline.getBases.filter(!_.headquarter).map(_.airport) 
+    val overlappingBases = allAllianceBases.filter(allianceBase => airlineBases.contains(allianceBase))
+   
+     println("ALL " + allAllianceBases)
+     println("YOURS " + airlineHeadquarters)
+    
+    if (!overlappingBases.isEmpty) {
+      var message = "Alliance members overlap with your airport bases: "
+      overlappingBases.foreach { overlappingBase =>
+        message += getAirportText(overlappingBase) + "; "
+      }
+       
+      return Some(message)
+    }
+    
+     AllianceSource.loadAllianceMemberByAirline(airline) match {
+       case Some(allianceMember) =>
+         return Some("Airline is already member of alliance " + allianceMember.alliance.name)
+       case None =>
+         return None
+     }
+  }
+  
+  def getAirportText(airport : Airport) = {
+    airport.city + " - " + airport.name
   }
   
   /**

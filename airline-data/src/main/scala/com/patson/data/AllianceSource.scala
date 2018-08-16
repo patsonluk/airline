@@ -20,6 +20,15 @@ object AllianceSource {
       loadAlliancesByCriteria(List.empty, fullLoad)
   }
   
+  def loadAllianceById(allianceId : Int, fullLoad : Boolean = false) : Option[(Alliance, List[AllianceMember])] = {
+    val result = loadAlliancesByCriteria(List(("id", allianceId)), fullLoad)
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result.toList.apply(0))
+    }
+  }
+  
   def loadAlliancesByIds(ids : List[Int], fullLoad : Boolean = false) = {
     if (ids.isEmpty) {
       List.empty
@@ -183,7 +192,7 @@ object AllianceSource {
         resultSet.beforeFirst()
         
         while (resultSet.next()) {
-          val allianceHistoryEntry = AllianceHistory(allianceName = resultSet.getString("alliance_name"), airline = airlinesById(resultSet.getInt("airline")), event = AllianceEvent.withName(resultSet.getString("status")), cycle = resultSet.getInt("cycle"))
+          val allianceHistoryEntry = AllianceHistory(allianceName = resultSet.getString("alliance_name"), airline = airlinesById(resultSet.getInt("airline")), event = AllianceEvent.withName(resultSet.getString("event")), cycle = resultSet.getInt("cycle"))
           allianceHistoryEntries.append(allianceHistoryEntry)
         }
         

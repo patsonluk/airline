@@ -21,3 +21,7 @@ object AllianceEvent extends Enumeration {
   type AllianceEvent = Value
   val FOUND_ALLIANCE, APPLY_ALLIANCE, JOIN_ALLIANCE, REJECT_ALLIANCE, LEAVE_ALLIANCE = Value
 }
+
+object Alliance {
+  val MAX_MEMBER_COUNT = 10
+}
