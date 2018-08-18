@@ -102,7 +102,7 @@
   	<div id="main" style="width: 100%;" >
   		<div id="console" class="marquee" style="width: 100%; position: relative; float: left;" align="center">
   			<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
-  			<span id="consoleMessage"/>
+  			<span id="consoleMessage"></span>
   		</div>
   		 
   		<div style="width: 80px; float: left;">
@@ -170,9 +170,9 @@
 					    				<div class="value" id="linkCurrentCapacity"></div>
 					    			</div>
 					    		</div>
-					    		<input type="hidden" id="actionLinkId"></input>
-				    			<input type="hidden" id="linkFromAirportId"></input>
-				    			<input type="hidden" id="linkToAirportId"></input>
+					    		<input type="hidden" id="actionLinkId">
+				    			<input type="hidden" id="linkFromAirportId">
+				    			<input type="hidden" id="linkToAirportId">
 				    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
 				    			<div class="button" onclick="deselectLink()">Cancel</div>
 					    		
@@ -579,7 +579,7 @@
 				   						<div class="tooltip">
 					    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
 					    					<span class="tooltiptext" style="width: 400px;">
-					    						Airport awareness affects:</br>
+					    						Airport awareness affects:<br/>
 					    						- How likely a passenger from this airport will consider your route for his trip<br/>
 					    						- How many time slots will this airport offer to your airline initially (at 0 loyalty)<br/>
 					    						<br/>
@@ -599,7 +599,7 @@
 				   						<div class="tooltip">
 					    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
 					    					<span class="tooltiptext" style="width: 400px;">
-					    						Airport loyalty affects:</br>
+					    						Airport loyalty affects:<br/>
 					    						- How likely a passenger from this airport would choose your airline<br/>
 					    						- How many time slots will this airport offer to your airline<br/>
 					    						<br/>
@@ -910,7 +910,7 @@
 				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
 					    	</div>
 					    </div>
-			    		<div class="section" style="width : 95%; float: left; overflow: auto;"">
+			    		<div class="section" style="width : 95%; float: left; overflow: auto;">
 		  					<h4>Inventory</h4>
 					  		<div id="airplaneInventoryList"></div>
 		  				</div>
@@ -944,7 +944,7 @@
 				    			<div class="label"><h5>Assigned Route:</h5></div>
 				    			<div class="value" id="airplaneDetailsLink"></div>
 					    	</div>
-					    	<input type="hidden" id="actionAirplaneId"></input>
+					    	<input type="hidden" id="actionAirplaneId">
 					    	<div class="rejection">
 				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning">Not enough cash to replace this airplane</span>
 					    	</div>
@@ -1067,7 +1067,7 @@
 						<div>
 							<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="incomeHistoryStep(-1)"/>
 							<span id="incomeCycleText"></span>
-							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"'/>
+							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"/>
 						</div>
 						<div>
 							<select id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
@@ -1545,7 +1545,7 @@
     
     <!-- popups and overlay buttons below. Hidden by default -->
     <div style="display: none; width: 100%;" id="airportPopup">
-    	<input type="hidden" id="airportPopupId"></input>
+    	<input type="hidden" id="airportPopupId">
     	<div>
     		<span id="airportPopupName" class="header"></span>
     	</div>
@@ -1610,7 +1610,7 @@
     </div>
     
      <div style="display: none; width: 100%;" id="cityPopup">
-    	<input type="hidden" id="cityPopupId"></input>
+    	<input type="hidden" id="cityPopupId">
     	<div id="cityPopupName" class="header"></div>
     	<div id="cityIcons">
     		<!-- <img alt="Your Headquarter" title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon"><img alt="Your Base" title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon">  -->
@@ -1634,7 +1634,7 @@
     </div>
     
     <div style="display: none; width: 400px;" id="linkHistoryPopup">
-    	<input type="hidden" id="linkHistoryPopupId"></input>
+    	<input type="hidden" id="linkHistoryPopupId">
     	<div class="table" style="width: 100%">
    			<div class="table-row">
    				<div class="label"><h5>From :</h5></div>
@@ -1656,7 +1656,7 @@
     </div>
     
     <div style="display: none; width: 100%;" id="airportLinkPopup">
-    	<input type="hidden" id="airportLinkPopupId"></input>
+    	<input type="hidden" id="airportLinkPopupId">
     	<div class="table" style="width: 100%">
    			<div class="table-row">
    				<div class="label"><h5>From :</h5></div>
