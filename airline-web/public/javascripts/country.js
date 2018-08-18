@@ -134,19 +134,7 @@ function loadCountryDetails(countryId) {
 	    		var championDivs = ""
 	    			
     			$.each(country.champions, function(index, champion) {
-    				var rankingIcon
-		    		var rankingTitle
-		    		if (champion.ranking == 1) {
-		    			rankingIcon = "assets/images/icons/crown.png"
-		    			rankingTitle = "1st place"
-		    		} else if (champion.ranking == 2) {
-		    			rankingIcon = "assets/images/icons/crown-silver.png"
-			    		rankingTitle = "2nd place"
-		    		} else if (champion.ranking == 3) {
-		    			rankingIcon = "assets/images/icons/crown-bronze.png"
-				    	rankingTitle = "3rd place"
-		    		}
-    				championDivs += "<div><img src='" + rankingIcon + "' title='" + rankingTitle + "' style='vertical-align:middle;'/>" + getAirlineLogoImg(champion.airline.id) + "&nbsp;<span style='font-weight: bold;'>" + champion.airline.name + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
+    				championDivs += "<div>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airline.id) + "&nbsp;<span style='font-weight: bold;'>" + champion.airline.name + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
     			})
 	    		
 	    		$("#countryDetailsChampion").html(championDivs)
