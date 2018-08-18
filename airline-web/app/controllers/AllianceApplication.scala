@@ -161,11 +161,16 @@ class AllianceApplication extends Controller {
           }
         }
         allianceJson = allianceJson + ("members" -> allianceMemberJson)
-        val ranking = alliancesWithRanking(alliance)._1
-        allianceJson = allianceJson + ("ranking" -> JsNumber(ranking))
-        allianceJson = allianceJson + ("championPoints" -> JsNumber(alliancesWithRanking(alliance)._2))
-        allianceJson = allianceJson + ("reputationBonus" -> JsNumber(Alliance.getReputationBonus(ranking)))
-        allianceJson = allianceJson + ("maxFrequencyBonus" -> JsNumber(Alliance.getMaxFrequencyBonus(ranking)))
+        alliancesWithRanking.get(alliance).foreach { 
+          case((ranking, championPoints)) => {
+            allianceJson = allianceJson + ("ranking" -> JsNumber(ranking))
+            allianceJson = allianceJson + ("championPoints" -> JsNumber(championPoints))
+            allianceJson = allianceJson + ("reputationBonus" -> JsNumber(Alliance.getReputationBonus(ranking)))
+            allianceJson = allianceJson + ("maxFrequencyBonus" -> JsNumber(Alliance.getMaxFrequencyBonus(ranking)))
+          }
+        }
+        
+        
         
         val historyEntries : List[AllianceHistory] = AllianceSource.loadAllianceHistoryByAllianceName(alliance.name)
         allianceJson = allianceJson + ("history" -> Json.toJson(historyEntries))

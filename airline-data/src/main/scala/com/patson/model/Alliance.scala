@@ -48,7 +48,7 @@ object Alliance {
     }
   }
 
-  val getMaxFrequencyBonus: (Int => Double) = { (ranking: Int) =>
+  val getMaxFrequencyBonus: (Int => Int) = { (ranking: Int) =>
     if (ranking == 1) {
       15
     } else if (ranking == 2) {
@@ -62,7 +62,7 @@ object Alliance {
 
   def getRankings(alliances: List[Alliance]): Map[Alliance, (Int, BigDecimal)] = {
     val countryChampionsByAirline: Map[Int, List[(Country, Double)]] = getCountryChampions()
-    val alliancesWithChampionPoints: List[(Alliance, BigDecimal)] = alliances.map {
+    val alliancesWithChampionPoints: List[(Alliance, BigDecimal)] = alliances.filter(_.status == AllianceStatus.ESTABLISHED).map {
       alliance =>
         var allianceChampionPoints: BigDecimal = 0.0
         alliance.members.foreach { allianceMember =>

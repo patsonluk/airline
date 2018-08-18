@@ -3,6 +3,7 @@ package com.patson.model
 import com.patson.model.airplane._
 import com.patson.data.CycleSource
 import com.patson.Util
+import com.patson.data.AllianceSource
 
 object Computation {
   //distance vs max speed
@@ -147,6 +148,28 @@ object Computation {
     } else {
       0
     }
+  }
+  
+  val MAX_FREQUENCY_ABSOLUTE_BASE = 30
+  def getMaxFrequencyAbsolute(airline : Airline) : Int = {
+     AllianceSource.loadAllianceMemberByAirline(airline) match {
+       case Some(allianceMember) => {
+         if (allianceMember.role != AllianceRole.APPLICANT) {
+           val alliances = AllianceSource.loadAllAlliances(false)
+           val alliance = alliances.find( allianceMember.allianceId == _.id).get
+           Alliance.getRankings(alliances).get(alliance) match {
+             case Some((ranking, _)) => {
+               val maxFrequencyBonus = Alliance.getMaxFrequencyBonus(ranking)
+               MAX_FREQUENCY_ABSOLUTE_BASE + maxFrequencyBonus
+             }
+             case None => MAX_FREQUENCY_ABSOLUTE_BASE
+           }
+         } else {
+           MAX_FREQUENCY_ABSOLUTE_BASE
+         }
+       }
+       case None => MAX_FREQUENCY_ABSOLUTE_BASE
+     }
   }
   
 //  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
