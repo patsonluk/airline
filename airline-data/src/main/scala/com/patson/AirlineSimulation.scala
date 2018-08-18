@@ -165,14 +165,6 @@ object AirlineSimulation {
           }
         }
         
-        val currentReputation = airline.getReputation()
-        //make sure it increases/decreases gradually based on passenger volume
-        if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUATION_DELTA) {
-          targetReputation = currentReputation + MAX_REPUATION_DELTA
-        } else if (targetReputation <  currentReputation && currentReputation - targetReputation > MAX_REPUATION_DELTA) {
-          targetReputation = currentReputation - MAX_REPUATION_DELTA
-        }
-        
         val reputationBonusFromAlliance : Double = allianceByAirlineId.get(airline.id) match {
           case Some(alliance) => allianceRankings.get(alliance) match {
             case Some((ranking, _)) => Alliance.getReputationBonus(ranking)
@@ -184,6 +176,14 @@ object AirlineSimulation {
         println(airline + " get " + reputationBonusFromAlliance + " from alliance ") //TODO
         
         targetReputation = targetReputation + reputationBonusFromAlliance
+        
+        val currentReputation = airline.getReputation()
+        //make sure it increases/decreases gradually based on passenger volume
+        if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUATION_DELTA) {
+          targetReputation = currentReputation + MAX_REPUATION_DELTA
+        } else if (targetReputation <  currentReputation && currentReputation - targetReputation > MAX_REPUATION_DELTA) {
+          targetReputation = currentReputation - MAX_REPUATION_DELTA
+        }
         
         airline.setReputation(targetReputation)
         
