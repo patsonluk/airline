@@ -185,6 +185,27 @@ function getAirlineLogoImg(airlineId) {
 	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo' style='vertical-align:middle;'/>"
 }
 
+function getRankingImg(ranking) {
+	var rankingIcon
+	var rankingTitle
+	if (ranking == 1) {
+		rankingIcon = "assets/images/icons/crown.png"
+		rankingTitle = "1st place"
+	} else if (ranking == 2) {
+		rankingIcon = "assets/images/icons/crown-silver.png"
+		rankingTitle = "2nd place"
+	} else if (ranking == 3) {
+		rankingIcon = "assets/images/icons/crown-bronze.png"
+    	rankingTitle = "3rd place"
+	}
+	
+	if (rankingIcon) {
+		return "<img src='" + rankingIcon + "' title='" + rankingTitle + "' style='vertical-align:middle;'/>"
+	} else {
+		return ""
+	}
+}
+
 function getDurationText(duration) {
 	var hour = Math.floor(duration / 60)
 	var minute = duration % 60

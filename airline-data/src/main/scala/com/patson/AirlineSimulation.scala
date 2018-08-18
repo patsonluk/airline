@@ -29,6 +29,10 @@ object AirlineSimulation {
     val champions : scala.collection.immutable.Map[Airline, List[(Country, Int)]] = getChampions(allAirlines.map( airline => (airline.id, airline)).toMap, allCountries)
     val cashFlows = Map[Airline, Long]()
     
+    val alliances = AllianceSource.loadAllAlliances()
+    val allianceByAirlineId :scala.collection.immutable.Map[Int, Alliance] = alliances.flatMap { alliance => (alliance.members.filter(_.role != AllianceRole.APPLICANT).map(member => (member.airline.id, alliance))) }.toMap
+    val allianceRankings = Alliance.getRankings(alliances)
+    
     allAirlines.foreach { airline =>
         var totalCashRevenue = 0L
         var totalCashExpense = 0L
@@ -161,6 +165,16 @@ object AirlineSimulation {
           }
         }
         
+        val reputationBonusFromAlliance : Double = allianceByAirlineId.get(airline.id) match {
+          case Some(alliance) => allianceRankings.get(alliance) match {
+            case Some((ranking, _)) => Alliance.getReputationBonus(ranking)
+            case None => 0.0
+          }
+          case None => 0.0
+        }
+        
+        targetReputation = targetReputation + reputationBonusFromAlliance
+        
         val currentReputation = airline.getReputation()
         //make sure it increases/decreases gradually based on passenger volume
         if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUATION_DELTA) {
@@ -208,25 +222,25 @@ object AirlineSimulation {
     IncomeSource.deleteIncomesBefore(currentCycle - 10 * 52, Period.YEARLY);
   }
   
-  def getChampionReputationBoost(airlineId : Int) : Double = {
-    val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
-      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
-    }
-    
-    val championedCountryByThisAirline: List[(Country, Int)] = topChampionsByCountryCode.map { //(country, ranking)
-      case (countryCode, championAirlines) => (countryCode, championAirlines.find {
-        case((championAirlineId, passengerCount), ranking) => championAirlineId == airlineId
-      })
-    }.filter {
-      case (countryCode, thisAirlineRankingOption) => thisAirlineRankingOption.isDefined
-    }.map {
-      case (countryCode, thisAirlineRankingOption) => (CountrySource.loadCountryByCode(countryCode).get, thisAirlineRankingOption.get._2 + 1)
-    }
-    
-    championedCountryByThisAirline.foldLeft(0.0) {
-      case(sum, (country, ranking)) => sum + Computation.computeReputationBoost(country, ranking)
-    }
-  }
+//  def getChampionReputationBoost(airlineId : Int) : Double = {
+//    val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
+//      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
+//    }
+//    
+//    val championedCountryByThisAirline: List[(Country, Int)] = topChampionsByCountryCode.map { //(country, ranking)
+//      case (countryCode, championAirlines) => (countryCode, championAirlines.find {
+//        case((championAirlineId, passengerCount), ranking) => championAirlineId == airlineId
+//      })
+//    }.filter {
+//      case (countryCode, thisAirlineRankingOption) => thisAirlineRankingOption.isDefined
+//    }.map {
+//      case (countryCode, thisAirlineRankingOption) => (CountrySource.loadCountryByCode(countryCode).get, thisAirlineRankingOption.get._2 + 1)
+//    }
+//    
+//    championedCountryByThisAirline.foldLeft(0.0) {
+//      case(sum, (country, ranking)) => sum + Computation.computeReputationBoost(country, ranking)
+//    }
+//  }
   
   
   

@@ -61,6 +61,19 @@ body {
 	border-bottom: 1px solid #6093e7;	
 }
 
+.table.data div.table-row:nth-child(even) {
+	background: #FFF
+}
+
+.table.data div.table-row.selected:nth-child(even), .table.data div.table-row.selected:nth-child(odd), .table.data div.table-row.clickable:hover:nth-child(even), .table.data div.table-row.clickable:hover:nth-child(odd) {
+	border-radius: 3px 3px 3px 3px;
+	background-color: #A1D490;
+}
+
+.table.data div.table-row:nth-child(odd) {
+	background: #DDD
+}
+ 
 .label, div.header, span.header {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;

@@ -484,20 +484,8 @@ function updateChampionedCountriesDetails() {
 	    success: function(championedCountries) {
 	    	$(championedCountries).each(function(index, championDetails) {
 	    		var country = championDetails.country
-	    		var rankingIcon
-	    		var rankingTitle
-	    		if (championDetails.ranking == 1) {
-	    			rankingIcon = "assets/images/icons/crown.png"
-	    			rankingTitle = "1st place"
-	    		} else if (championDetails.ranking == 2) {
-	    			rankingIcon = "assets/images/icons/crown-silver.png"
-		    		rankingTitle = "2nd place"
-	    		} else if (championDetails.ranking == 3) {
-	    			rankingIcon = "assets/images/icons/crown-bronze.png"
-			    	rankingTitle = "3rd place"
-	    		}
 	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
-	    		row.append("<div class='cell'><img src='" + rankingIcon + "' title='" + rankingTitle + "'/></div>")
+	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
 	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
 	    		$('#championedCountriesList').append(row)

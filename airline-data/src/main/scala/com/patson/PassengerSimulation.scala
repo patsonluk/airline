@@ -20,6 +20,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.control.Breaks._
 import com.patson.data.CountrySource
 import java.util.concurrent.atomic.AtomicInteger
+import com.patson.data.AllianceSource
 
 object PassengerSimulation {
 
@@ -344,6 +345,9 @@ object PassengerSimulation {
     val progressCount = new AtomicInteger(0)
     val progressChunk = requiredRoutes.size / 100
     
+    val establishedAlliances = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED)
+    val establishedAllianceIdByAirlineId :scala.collection.immutable.Map[Int, Int] = establishedAlliances.flatMap { alliance => (alliance.members.filter(_.role != AllianceRole.APPLICANT).map(member => (member.airline.id, alliance.id))) }.toMap
+    
     val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.par.map {
       case(passengerGroup, toAirports) => {
         val linkClass = passengerGroup.preference.linkClass
@@ -389,7 +393,7 @@ object PassengerSimulation {
         
         //then find the shortest route based on the cost
         
-        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, 4)
+        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
         if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
           print(".")
           if (progressCount.incrementAndGet() % 10 == 0) {
@@ -494,7 +498,7 @@ object PassengerSimulation {
    * Returns a map with valid route in format of
    * Map[toAiport, Route]
    */
-  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : Seq[LinkConsideration], maxHop : Int) : Map[Airport, Route] = {
+  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : Seq[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxHop : Int) : Map[Airport, Route] = {
    
 
     //     // Step 1: initialize graph
@@ -536,7 +540,9 @@ object PassengerSimulation {
                 connectionCost += (3.5 * 24 * 5) / frequency //each extra hour wait is like $5 more
               }
               
-              if (predecessorLink.airline.id != linkConsideration.link.airline.id) { //switch airline, impose extra cost
+              val previousLinkAirlineId = predecessorLink.airline.id
+              val currentLinkAirlineId = linkConsideration.link.airline.id
+              if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == None || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
                 connectionCost += 50 
               }
           }

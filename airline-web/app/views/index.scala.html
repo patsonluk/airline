@@ -43,6 +43,7 @@
     <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/bank.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
@@ -101,7 +102,7 @@
   	<div id="main" style="width: 100%;" >
   		<div id="console" class="marquee" style="width: 100%; position: relative; float: left;" align="center">
   			<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
-  			<span id="consoleMessage"/>
+  			<span id="consoleMessage"></span>
   		</div>
   		 
   		<div style="width: 80px; float: left;">
@@ -117,6 +118,7 @@
 			  <li class="button left-tab user-specific-tab" id="bankCanvasTab" onclick="showBankCanvas();"><span>Bank</span></li>
 			  <li class="button left-tab user-specific-tab" id="rivalsCanvasTab" onclick="showRivalsCanvas();"><span>Rivals</span></li>
 			  <li class="button left-tab" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
+			  <li class="button left-tab" id="allianceCanvasTab" onclick="showAllianceCanvas();"><span>Alliance</span></li>
 			  
 			</ul>
 		</div>
@@ -126,7 +128,7 @@
 		<div id="toggleMapAnimationButton" class="googleMapButton" onclick="toggleMapAnimation()" align="center" style="width: 28px; height: 28px; display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>
 		<div id="toggleMapLightButton" class="googleMapButton" onclick="toggleMapLight()" align="center" style="width: 28px; height: 28px; display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>
   	<!-- main canvas start -->
-  		<div id="canvas" style="float: left; overflow: auto;" >
+  		<div id="canvas" style="float: left; overflow-x: auto; overflow-y: scroll;" >
   			<div id="worldMapCanvas" style="height: 100%;">
   				<div id="map" class="mainPanel" style="height: 100%; width: 50%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
 				<div id="sidePanel" class="sidePanel" style="width: 50% ; float: left; display:none;" >
@@ -168,9 +170,9 @@
 					    				<div class="value" id="linkCurrentCapacity"></div>
 					    			</div>
 					    		</div>
-					    		<input type="hidden" id="actionLinkId"></input>
-				    			<input type="hidden" id="linkFromAirportId"></input>
-				    			<input type="hidden" id="linkToAirportId"></input>
+					    		<input type="hidden" id="actionLinkId">
+				    			<input type="hidden" id="linkFromAirportId">
+				    			<input type="hidden" id="linkToAirportId">
 				    			<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
 				    			<div class="button" onclick="deselectLink()">Cancel</div>
 					    		
@@ -577,7 +579,7 @@
 				   						<div class="tooltip">
 					    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
 					    					<span class="tooltiptext" style="width: 400px;">
-					    						Airport awareness affects:</br>
+					    						Airport awareness affects:<br/>
 					    						- How likely a passenger from this airport will consider your route for his trip<br/>
 					    						- How many time slots will this airport offer to your airline initially (at 0 loyalty)<br/>
 					    						<br/>
@@ -597,7 +599,7 @@
 				   						<div class="tooltip">
 					    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
 					    					<span class="tooltiptext" style="width: 400px;">
-					    						Airport loyalty affects:</br>
+					    						Airport loyalty affects:<br/>
 					    						- How likely a passenger from this airport would choose your airline<br/>
 					    						- How many time slots will this airport offer to your airline<br/>
 					    						<br/>
@@ -908,7 +910,7 @@
 				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
 					    	</div>
 					    </div>
-			    		<div class="section" style="width : 95%; float: left; overflow: auto;"">
+			    		<div class="section" style="width : 95%; float: left; overflow: auto;">
 		  					<h4>Inventory</h4>
 					  		<div id="airplaneInventoryList"></div>
 		  				</div>
@@ -942,7 +944,7 @@
 				    			<div class="label"><h5>Assigned Route:</h5></div>
 				    			<div class="value" id="airplaneDetailsLink"></div>
 					    	</div>
-					    	<input type="hidden" id="actionAirplaneId"></input>
+					    	<input type="hidden" id="actionAirplaneId">
 					    	<div class="rejection">
 				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning">Not enough cash to replace this airplane</span>
 					    	</div>
@@ -1065,7 +1067,7 @@
 						<div>
 							<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="incomeHistoryStep(-1)"/>
 							<span id="incomeCycleText"></span>
-							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"'/>
+							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"/>
 						</div>
 						<div>
 							<select id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
@@ -1327,7 +1329,7 @@
 
 			<div id="rankingCanvas" style="height: 100%; display: none;">
   				<div style="width : 50%; float: left;"> 
-	  	  			<div class="table section" id="passengerRank" style="width: 95%">
+	  	  			<div class="table data section" id="passengerRank" style="width: 95%">
 	  	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
@@ -1335,7 +1337,7 @@
 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger</div>
 						</div>
          			</div>
-         			<div class="table section" id="reputationRank" style="width: 95%">
+         			<div class="table data section" id="reputationRank" style="width: 95%">
          				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
@@ -1343,7 +1345,7 @@
 	 	  					<div class="cell" style="width: 30%" align="right">Airline Reputation</div>
 						</div>
          			</div>
-         			<div class="table section" id="linkCountRank" style="width: 95%">
+         			<div class="table data section" id="linkCountRank" style="width: 95%">
 	 	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
@@ -1353,7 +1355,7 @@
          			</div>
 				</div>		
 				<div style="width : 50%; float: right;"> 
-	  	  			<div class="table section" id="passengerMileRank" style="width: 95%">
+	  	  			<div class="table data section" id="passengerMileRank" style="width: 95%">
 	 	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
@@ -1361,7 +1363,7 @@
 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger Miles</div>
 						</div>
          			</div>
-         			<div class="table section" id="serviceQualityRank" style="width: 95%">
+         			<div class="table data section" id="serviceQualityRank" style="width: 95%">
 	 	  				<div class="table-header">
 	 	  					<div class="cell" style="width: 10%">Rank</div>
 	 	  					<div class="cell" style="width: 10%">Movement</div>
@@ -1435,7 +1437,128 @@
 				</div>
 				<div style="clear: both;"></div>
   			</div>
-<!--   			end rivals canvas -->
+<!--   			end rival canvas -->
+			<div id="allianceCanvas" style="height: 100%; display: none;">
+				<div style="float: left; width : 50%; height : 100%" class="mainPanel">
+					<div id="currentAirlineMemberDetails" style="width : 95%;" class="section">
+						<div style="width: 50%; margin-bottom: 15px; float: left;">
+							<h4>Your Airline Alliance</h4>
+							<div class="table" style="width: 100%;">
+								<div class="table-row">
+				 	  				<div class="cell label">Alliance Name:</div>
+				 	  				<div class="cell value">
+				 	  					<span class="allianceName"></span>
+				 	  					<span id="formAllianceSpan" style="display:none;">
+				 	  						<input type="text" id="inputAllianceName"/>
+				 	  						<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="formAlliance($('#inputAllianceName').val())"/>
+				 	  						<div class="warning" id="formAllianceWarning" style="display:none;"></div>
+				 	  					</span>
+				 	  					<img id="toggleFormAllianceButton" src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle; display: none;" onclick="toggleFormAlliance()"/>
+				 	  				</div>
+				 	  			</div>
+				 	  			<div class="table-row">
+				 	  				<div class="cell label">Role:</div>
+				 	  				<div class="cell value allianceRole"></div>
+				 	  			</div>
+				 	  			<div class="table-row">
+				 	  				<div class="cell label">Ranking:</div>
+				 	  				<div class="cell value allianceRanking"></div>
+				 	  			</div>
+				 	  			<div class="table-row">
+				 	  				<div class="cell label">Status:</div>
+				 	  				<div class="cell value allianceStatus"></div>
+				 	  			</div>
+			 	  			</div>
+			 	  		</div>
+		 	  			
+		 	  			<div style="width: 50%; margin-bottom: 15px; max-height: 250px; float: right; overflow: auto;">
+		 	  				<h4>Your Alliance History</h4>
+		 	  				<div class="table" id="currentAirlineAllianceHistory" style="width: 100%;">
+								<div class="table-row">
+				 	  			</div>
+		 	  				</div>
+	 	  			  	</div>
+		 	  			<div style="clear: both;"></div>
+		    		</div>
+				
+				
+	  				<div style="width : 95%; height: 70%" class="section">
+	  					<div id = "allianceTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+		 	  				<div class="table-header">
+		 	  					<div class="cell clickable" style="width: 40%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAllianceTableSortOrder($(this))">Alliance Name</div>
+		 	  					<div class="cell clickable" style="width: 40%" data-sort-property="leaderAirlineName" data-sort-order="ascending" onclick="toggleAllianceTableSortOrder($(this))">Leader Airline</div>
+		 	  					<div class="cell clickable" style="width: 10%" align="right" data-sort-property="memberCount" data-sort-order="descending" onclick="toggleAllianceTableSortOrder($(this))">Airline Member</div>
+		 	  					<div class="cell clickable selected" style="width: 10%" align="right" data-sort-property="championPointsValue" data-sort-order="descending" onclick="toggleAllianceTableSortOrder($(this))">Champion Points</div>
+							</div>
+	         			</div>
+	         			<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+		         			<div id="allianceTable" class="table data" style="width: 100%;">
+		         			 	<div class="table-header">
+			 	  					<div class="cell" style="width: 40%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 40%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 10%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								</div>
+		        			</div>
+	        			</div>
+					</div>
+				</div>
+				<div id="allianceDetails" class="sidePanel" style="float: left; width : 50%; height : 100%; display: none;">
+					<div class="section" style="width: 95%;">
+						<div>
+							<h4>Alliance Details</h4>
+							<div class="table" style="width: 100%;">
+								<div class="table-row">
+				 	  				<div class="cell label">Name:</div>
+				 	  				<div class="cell value allianceName"></div>
+				 	  			</div>
+				 	  			<div class="table-row">
+				 	  				<div class="cell label">Ranking:</div>
+				 	  				<div class="cell value allianceRanking"></div>
+				 	  			</div>
+				 	  			<div class="table-row">
+				 	  				<div class="cell label">Status:</div>
+				 	  				<div class="cell value allianceStatus"></div>
+				 	  			</div>
+			 	  			</div>
+			 	  			<h4 style="margin-top: 10px">Members</h4>
+			 	  			<div id="allianceMemberList" class="table data" style="width: 100%;">
+			 	  			</div>
+			 	  			<div class="button" id="applyForAllianceButton" onclick="applyForAlliance()">Apply</div>
+			 	  			<span id="applyForAllianceRejectionSpan" style="display: none;">
+			 	  				<img src='@routes.Assets.versioned("images/icons/prohibition.png")'>
+			 	  				<span class="warning">Cannot join alliance</span>&nbsp;
+			 	  				<span id="applyForAllianceRejection" class="warning"></span>
+			 	  			</span>
+		 	  			</div>
+		 	  		</div>
+		 	  		<div class="section" style="width: 95%;">
+		 	  			<h4 style="margin-top: 10px">Alliance Bonus</h4>
+		 	  			<div style="width: 100%;">
+		 	  				<ul id="allianceBonusList">
+		 	  					<li class="label" id ="allianceNoneBonus" style="display:none; padding: 5px;">- None</li>
+		 	  					<li class="label" id ="allianceCodeShareBonus" style="display:none; padding: 5px;">- Flight Code sharing - passengers are more willing to take connection flights from the same alliance</li>
+								<li class="label" id="allianceReputationBonus" style="display:none; padding: 5px;">- Reputation increased by <span id="allianceReputationBonusValue"></span></li>
+			 	  				<li class="label" id="allianceMaxFrequencyBonus" style="display:none; padding: 5px;">- Max Flight Frequency increased by <span id="allianceMaxFrequencyBonusValue"></span></li>
+		 	  				</ul>
+						</div>
+					</div>
+		 	  		<div class="section" style="width: 95%;">						
+						<h4>Alliance History</h4>
+         				<div style="width: 100%;">
+	  						<div class="table" id="allianceHistory" style="width: 100%;">
+								<div class="table-row">
+				 	  			</div>
+		 	  				</div>
+						</div>
+         			</div>
+					
+	  				
+				</div>
+				<div style="clear: both;"></div>
+  			</div>
+	<!-- end alliance canvas -->
+
 			<div style="clear: both;"></div>
   		</div>
   	<!-- main canvas end -->
@@ -1444,7 +1567,7 @@
     
     <!-- popups and overlay buttons below. Hidden by default -->
     <div style="display: none; width: 100%;" id="airportPopup">
-    	<input type="hidden" id="airportPopupId"></input>
+    	<input type="hidden" id="airportPopupId">
     	<div>
     		<span id="airportPopupName" class="header"></span>
     	</div>
@@ -1509,7 +1632,7 @@
     </div>
     
      <div style="display: none; width: 100%;" id="cityPopup">
-    	<input type="hidden" id="cityPopupId"></input>
+    	<input type="hidden" id="cityPopupId">
     	<div id="cityPopupName" class="header"></div>
     	<div id="cityIcons">
     		<!-- <img alt="Your Headquarter" title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon"><img alt="Your Base" title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon">  -->
@@ -1533,7 +1656,7 @@
     </div>
     
     <div style="display: none; width: 400px;" id="linkHistoryPopup">
-    	<input type="hidden" id="linkHistoryPopupId"></input>
+    	<input type="hidden" id="linkHistoryPopupId">
     	<div class="table" style="width: 100%">
    			<div class="table-row">
    				<div class="label"><h5>From :</h5></div>
@@ -1555,7 +1678,7 @@
     </div>
     
     <div style="display: none; width: 100%;" id="airportLinkPopup">
-    	<input type="hidden" id="airportLinkPopupId"></input>
+    	<input type="hidden" id="airportLinkPopupId">
     	<div class="table" style="width: 100%">
    			<div class="table-row">
    				<div class="label"><h5>From :</h5></div>

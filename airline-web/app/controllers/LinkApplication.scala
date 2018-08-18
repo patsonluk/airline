@@ -37,8 +37,6 @@ import scala.util.Success
 import scala.util.Failure
 
 class LinkApplication extends Controller {
-  private[this] val maxFrequencyAbsolute = 30
-  
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -250,6 +248,7 @@ class LinkApplication extends Controller {
         return BadRequest("Cannot insert link - frequency exceeded limit - to airport does not have enough slots")
       }
       
+      val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
       if (incomingLink.frequency > maxFrequencyAbsolute) {
         return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
       }
@@ -539,7 +538,7 @@ class LinkApplication extends Controller {
             val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
             val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
             val flightCode = LinkApplication.getFlightCode(request.user, flightNumber)
-            
+            val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
             
             var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
                                         "fromAirportName" -> fromAirport.name,

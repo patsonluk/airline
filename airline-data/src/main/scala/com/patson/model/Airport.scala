@@ -157,13 +157,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       }
       
       
-       //if it's not a base, give it 50 slots max
       val maxSlotsByBase =
         getAirlineBase(airlineId) match {
           case Some(base) if (base.headquarter) => 100 + 100 * (base.scale)
           case Some(base) if (!base.headquarter) => 50 + 50 * (base.scale)
-          case None => 50  
-          
+          case None => 70  
         }
       
       val maxSlotsByLoyalty = (maxSlotsByBase * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at full loyalty get 100% of max slot available
