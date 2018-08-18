@@ -31,11 +31,13 @@ function loadCurrentAirlineMemberDetails() {
 	    		var alliance = loadedAlliancesById[allianceDetails.allianceId]
 	    		$('#currentAirlineMemberDetails .allianceName').text(alliance.name)
 	    		$('#currentAirlineMemberDetails .allianceRole').text(allianceDetails.allianceRole)
+	    		$('#currentAirlineMemberDetails .allianceRanking').text(alliance.ranking)
 	    		$('#currentAirlineMemberDetails .allianceStatus').text(alliance.status)
 	    		$('#toggleFormAllianceButton').hide()
 	    	} else {
 	    		$('#currentAirlineMemberDetails .allianceName').text('-')
 	    		$('#currentAirlineMemberDetails .allianceRole').text('-')
+	    		$('#currentAirlineMemberDetails .allianceRanking').text('-')
 	    		$('#currentAirlineMemberDetails .allianceStatus').text('-')
 	    		$('#toggleFormAllianceButton').show()
 	    	}
@@ -146,7 +148,7 @@ function selectAlliance(row, allianceId) {
 
 function loadAllianceDetails(allianceId) {
 	updateAllianceBasicsDetails(allianceId)
-	updateAllianceChampionedCountriesDetails(allianceId)
+	updateAllianceBonus(allianceId)
 	updateAllianceHistory(allianceId)
 	$('#allianceDetails').fadeIn(200)
 }
@@ -157,6 +159,7 @@ function updateAllianceBasicsDetails(allianceId) {
 	selectedAlliance = alliance
 	$("#allianceCanvas .allianceName").text(alliance.name)
 	$("#allianceCanvas .allianceStatus").text(alliance.status)
+	$("#allianceCanvas .allianceRanking").text(alliance.ranking)
 	$("#allianceMemberList").children("div.table-row").remove()
 	
 	$.each(alliance.members, function(index, member) {
@@ -213,8 +216,21 @@ function updateAllianceBasicsDetails(allianceId) {
 		
 }
 
-function updateAllianceChampionedCountriesDetails(allianceId) {
-
+function updateAllianceBonus(allianceId) {
+	var alliance = loadedAlliancesById[allianceId]
+	if (alliance.maxFrequencyBonus) {
+		$('#allianceMaxFrequencyBonusValue').text(alliance.maxFrequencyBonus)
+		$('#allianceMaxFrequencyBonus').show();
+	} else {
+		$('#allianceMaxFrequencyBonus').hide();
+	}
+	
+	if (alliance.reputationBonus) {
+		$('#allianceReputationBonusValue').text(alliance.reputationBonus)
+		$('#allianceReputationBonus').show();
+	} else {
+		$('#allianceReputationBonus').hide();
+	}
 }
 
 function updateAllianceHistory(allianceId) {
