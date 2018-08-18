@@ -157,11 +157,16 @@ class AllianceApplication extends Controller {
         var allianceChampionPoints : BigDecimal = 0.0
         alliance.members.foreach { allianceMember =>
           allianceMemberJson = allianceMemberJson.append(Json.toJson(allianceMember))
-          val memberChampiontPoints : BigDecimal = countryChampionsByAirline.get(allianceMember.airline.id) match {
-            case Some(championedCountries) => {
-              championedCountries.map(boostEntry => BigDecimal.valueOf(boostEntry._2)).sum
-            }
-            case None => 0
+          val memberChampiontPoints : BigDecimal = 
+            if (allianceMember.role == APPLICANT) { //do not add champion points from applicant
+              0
+            } else {
+              countryChampionsByAirline.get(allianceMember.airline.id) match {
+              case Some(championedCountries) => {
+                championedCountries.map(boostEntry => BigDecimal.valueOf(boostEntry._2)).sum
+              }
+              case None => 0
+             }
           }
           allianceChampionPoints = allianceChampionPoints + memberChampiontPoints 
           if (allianceMember.role == LEADER) {
