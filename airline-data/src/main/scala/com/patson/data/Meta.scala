@@ -761,7 +761,6 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "name VARCHAR(256), " +
-      "status VARCHAR(256), " +
       "creation_cycle INTEGER" + 
       ")")
     statement.execute()

@@ -38,6 +38,7 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 import com.patson.model.FlightCategory
+import com.patson.data.AllianceSource
 
 
 class AirlineApplication extends Controller {
@@ -337,6 +338,11 @@ class AirlineApplication extends Controller {
       BankSource.loadLoansByAirline(airlineId).foreach { loan =>
         BankSource.deleteLoan(loan.id)
       }
+      
+      AllianceSource.loadAllianceMemberByAirline(request.user).foreach { allianceMember =>
+        AllianceSource.deleteAllianceMember(airlineId)
+      }  
+      
       //reset balance
       val airline : Airline = request.user
       airline.setBalance(EntrepreneurProfile.INITIAL_BALANCE)

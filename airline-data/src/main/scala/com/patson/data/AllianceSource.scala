@@ -20,7 +20,7 @@ object AllianceSource {
       loadAlliancesByCriteria(List.empty, fullLoad)
   }
   
-  def loadAllianceById(allianceId : Int, fullLoad : Boolean = false) : Option[(Alliance, List[AllianceMember])] = {
+  def loadAllianceById(allianceId : Int, fullLoad : Boolean = false) : Option[Alliance] = {
     val result = loadAlliancesByCriteria(List(("id", allianceId)), fullLoad)
     if (result.isEmpty) {
       None
@@ -56,7 +56,7 @@ object AllianceSource {
       loadAlliancesByQueryString(queryString, criteria.map(_._2), fullLoad)
   }
   
-  private def loadAlliancesByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) : scala.collection.immutable.Map[Alliance, List[AllianceMember]] = {
+  private def loadAlliancesByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) : List[Alliance] = {
     val connection = Meta.getConnection()
     try {
         val preparedStatement = connection.prepareStatement(queryString)
@@ -68,20 +68,18 @@ object AllianceSource {
         
         val resultSet = preparedStatement.executeQuery()
         
-        val alliances = Map[Alliance, List[AllianceMember]]()
+        val alliances = ListBuffer[Alliance]()
         
         while (resultSet.next()) {
-          val alliance = Alliance(name = resultSet.getString("name"), status = AllianceStatus.withName(resultSet.getString("status")), creationCycle = resultSet.getInt("creation_cycle"))
-          alliance.id = resultSet.getInt("id")
-          
-          
-          alliances.put(alliance, loadAllianceMembersByAlliance(alliance, fullLoad))
+          val allianceId = resultSet.getInt("id")
+          val alliance = Alliance(name = resultSet.getString("name"), creationCycle = resultSet.getInt("creation_cycle"), members = loadAllianceMembersByAllianceId(allianceId, fullLoad), id = allianceId)
+          alliances.append(alliance)
         }
         
         resultSet.close()
         preparedStatement.close()
         
-        alliances.toMap
+        alliances.toList
       } finally {
         connection.close()
       }
@@ -89,12 +87,12 @@ object AllianceSource {
 
   
   
-  private def loadAllianceMembersByAlliance(alliance : Alliance, fullLoad : Boolean = false) : List[AllianceMember] = {
+  private def loadAllianceMembersByAllianceId(allianceId : Int, fullLoad : Boolean = false) : List[AllianceMember] = {
     val connection = Meta.getConnection()
     try {
         val preparedStatement = connection.prepareStatement(BASE_ALLIANCE_MEMBER_QUERY + " WHERE alliance = ? ")
         
-        preparedStatement.setObject(1, alliance.id)
+        preparedStatement.setObject(1, allianceId)
         
         val resultSet = preparedStatement.executeQuery()
         
@@ -109,7 +107,7 @@ object AllianceSource {
         
         resultSet.beforeFirst()
         while (resultSet.next()) {
-          val allianceMember = AllianceMember(alliance, airlinesById(resultSet.getInt("airline")), AllianceRole.withName(resultSet.getString("role")), joinedCycle = resultSet.getInt("joined_cycle"))
+          val allianceMember = AllianceMember(allianceId, airlinesById(resultSet.getInt("airline")), AllianceRole.withName(resultSet.getString("role")), joinedCycle = resultSet.getInt("joined_cycle"))
           allianceMembers.append(allianceMember)    
         }
         resultSet.close()
@@ -124,15 +122,14 @@ object AllianceSource {
   def loadAllianceMemberByAirline(airline : Airline) : Option[AllianceMember] = {
     val connection = Meta.getConnection()
     try {
-        val preparedStatement = connection.prepareStatement("SELECT a.*, am.* FROM " + ALLIANCE_TABLE + " a JOIN " + ALLIANCE_MEMBER_TABLE + " am ON a.id = am.alliance WHERE am.airline = ? ")
+        val preparedStatement = connection.prepareStatement("SELECT * FROM " + ALLIANCE_MEMBER_TABLE + " WHERE airline = ? ")
         
         preparedStatement.setObject(1, airline.id)
         
         val resultSet = preparedStatement.executeQuery()
         
         val result = if (resultSet.next()) {
-          val alliance = Alliance(name = resultSet.getString("a.name"), status = AllianceStatus.withName(resultSet.getString("a.status")), creationCycle = resultSet.getInt("a.creation_cycle"), id = resultSet.getInt("a.id"))
-          val allianceMember = AllianceMember(alliance, airline, role = AllianceRole.withName(resultSet.getString("am.role")), joinedCycle = resultSet.getInt("am.joined_cycle"))
+          val allianceMember = AllianceMember(resultSet.getInt("alliance"), airline, role = AllianceRole.withName(resultSet.getString("role")), joinedCycle = resultSet.getInt("joined_cycle"))
           Some(allianceMember)
         } else {
           None
@@ -210,11 +207,10 @@ object AllianceSource {
   def saveAlliance(alliance : Alliance) : Int = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + ALLIANCE_TABLE + "(name, status, creation_cycle) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + ALLIANCE_TABLE + "(name, creation_cycle) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
           
       preparedStatement.setString(1, alliance.name)
-      preparedStatement.setString(2, alliance.status.toString)
-      preparedStatement.setInt(3, alliance.creationCycle)
+      preparedStatement.setInt(2, alliance.creationCycle)
       preparedStatement.executeUpdate()
       val generatedKeys = preparedStatement.getGeneratedKeys
       if (generatedKeys.next()) {
@@ -230,19 +226,19 @@ object AllianceSource {
     }
   }
   
-  def updateAlliance(alliance : Alliance) = {
-    val connection = Meta.getConnection()
-    try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + ALLIANCE_TABLE + " SET status = ? WHERE id = ?")
-          
-      preparedStatement.setString(1, alliance.status.toString)
-      preparedStatement.setInt(2, alliance.id)
-      preparedStatement.executeUpdate()
-      preparedStatement.close()
-    } finally {
-      connection.close()
-    }
-  }
+//  def updateAlliance(alliance : Alliance) = {
+//    val connection = Meta.getConnection()
+//    try {
+//      val preparedStatement = connection.prepareStatement("UPDATE " + ALLIANCE_TABLE + " SET status = ? WHERE id = ?")
+//          
+//      preparedStatement.setString(1, alliance.status.toString)
+//      preparedStatement.setInt(2, alliance.id)
+//      preparedStatement.executeUpdate()
+//      preparedStatement.close()
+//    } finally {
+//      connection.close()
+//    }
+//  }
 
   def deleteAlliance(allianceId : Int) = {
     deleteAllianceByCriteria(List(("id", allianceId)))
@@ -285,7 +281,7 @@ object AllianceSource {
     try {
       val preparedStatement = connection.prepareStatement("REPLACE INTO " + ALLIANCE_MEMBER_TABLE + "(alliance, airline, role, joined_cycle) VALUES(?,?,?,?)")
           
-      preparedStatement.setInt(1, allianceMember.alliance.id)
+      preparedStatement.setInt(1, allianceMember.allianceId)
       preparedStatement.setInt(2, allianceMember.airline.id)
       preparedStatement.setString(3, allianceMember.role.toString)
       preparedStatement.setInt(4, allianceMember.joinedCycle)

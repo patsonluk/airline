@@ -61,7 +61,7 @@ class AllianceApplication extends Controller {
         case MEMBER => "Member"
         case APPLICANT => "Applicant"
       }),
-      "alliance" -> Json.toJson(allianceMember.alliance)))
+      "allianceId" -> JsNumber(allianceMember.allianceId)))
   }
   
   
@@ -80,6 +80,7 @@ class AllianceApplication extends Controller {
         case JOIN_ALLIANCE => "joined alliance"
         case REJECT_ALLIANCE => "was rejected by alliance"
         case LEAVE_ALLIANCE => "left alliance"
+        case BOOT_ALLIANCE => "was removed from alliance"
       }
       history.airline.name + " " + eventAction + " " + history.allianceName
     }
@@ -94,7 +95,7 @@ class AllianceApplication extends Controller {
         "Alliance name can only contain space and characters",
         allianceName => allianceName.forall(char => char.isLetter || char == ' ') && !"".equals(allianceName.trim())).verifying(
         "This Alliance name  is not available",  
-        allianceName => !AllianceSource.loadAllAlliances(false).keySet.map { _.name.toLowerCase() }.contains(allianceName.toLowerCase())
+        allianceName => !AllianceSource.loadAllAlliances(false).map { _.name.toLowerCase() }.contains(allianceName.toLowerCase())
       )
     )
     { //binding
@@ -127,34 +128,34 @@ class AllianceApplication extends Controller {
       erroredForm => Ok(Json.obj("rejection" -> JsString(erroredForm.error("allianceName").get.message))), { formAllianceInput =>
         val allianceName = formAllianceInput.allianceName
         val currentCycle = CycleSource.loadCycle()
-        val newAlliance = Alliance(name = allianceName, status = AllianceStatus.FORMING, creationCycle = currentCycle)
+        val newAlliance = Alliance(name = allianceName, creationCycle = currentCycle, members = List())
         AllianceSource.saveAlliance(newAlliance)
         
-        val allianceMember = AllianceMember(alliance = newAlliance, airline = request.user, role = LEADER, joinedCycle = currentCycle)
+        val allianceMember = AllianceMember(allianceId = newAlliance.id, airline = request.user, role = LEADER, joinedCycle = currentCycle)
         AllianceSource.saveAllianceMember(allianceMember)
         
         val history = AllianceHistory(allianceName = newAlliance.name, airline = request.user, event = FOUND_ALLIANCE, cycle = currentCycle)
         AllianceSource.saveAllianceHistory(history)
         
-        Ok(Json.toJson(newAlliance))
+        Ok(Json.toJson(newAlliance.copy(members = List(allianceMember))))
       }
     )
   }
   
   
   def getAlliances() = Action { request =>
-    val alliances : Map[Alliance, List[AllianceMember]] = AllianceSource.loadAllAlliances(true)
+    val alliances : List[Alliance] = AllianceSource.loadAllAlliances(true)
     
     var result = Json.arr()
     
     val countryChampionsByAirline : Map[Int, List[(Country, Double)]] = getCountryChampions()
     
     alliances.foreach {
-      case(alliance, allianceMembers) => 
+      alliance => 
         var allianceJson = Json.toJson(alliance).asInstanceOf[JsObject]
         var allianceMemberJson = Json.arr()
         var allianceChampionPoints : BigDecimal = 0.0
-        allianceMembers.foreach { allianceMember =>
+        alliance.members.foreach { allianceMember =>
           allianceMemberJson = allianceMemberJson.append(Json.toJson(allianceMember))
           val memberChampiontPoints : BigDecimal = countryChampionsByAirline.get(allianceMember.airline.id) match {
             case Some(championedCountries) => {
@@ -181,11 +182,11 @@ class AllianceApplication extends Controller {
   def evaluateAlliance(airlineId : Int, allianceId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
     AllianceSource.loadAllianceById(allianceId, true) match {
       case None => NotFound("Alliance with id " + allianceId + " is not found")
-      case Some(allianceInfo) =>
+      case Some(alliance) =>
         var result = Json.obj() 
-        allianceInfo._2.find( _.airline.id == airlineId) match {
+        alliance.members.find( _.airline.id == airlineId) match {
           case Some(_) => result = result + ("isMember" -> JsBoolean(true)) //already a member
-          case None => getApplyRejection(request.user, allianceInfo) match {
+          case None => getApplyRejection(request.user, alliance) match {
             case Some(rejection) => result = result + ("rejection" -> JsString(rejection))
             case None =>
               //nothing
@@ -200,22 +201,97 @@ class AllianceApplication extends Controller {
    def applyForAlliance(airlineId : Int, allianceId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
     AllianceSource.loadAllianceById(allianceId, true) match {
       case None => NotFound("Alliance with id " + allianceId + " is not found")
-      case Some(allianceInfo) =>
-        getApplyRejection(request.user, allianceInfo) match {
+      case Some(alliance) =>
+        getApplyRejection(request.user, alliance) match {
             case Some(rejection) => BadRequest(rejection)
             case None => //ok
               val currentCycle = CycleSource.loadCycle
-              val newMember = AllianceMember(alliance = allianceInfo._1, airline = request.user, role = APPLICANT, joinedCycle = currentCycle)
+              val newMember = AllianceMember(allianceId = alliance.id, airline = request.user, role = APPLICANT, joinedCycle = currentCycle)
               AllianceSource.saveAllianceMember(newMember)
-              val history = AllianceHistory(allianceName = allianceInfo._1.name, airline = request.user, event = APPLY_ALLIANCE, cycle = currentCycle)
+              val history = AllianceHistory(allianceName = alliance.name, airline = request.user, event = APPLY_ALLIANCE, cycle = currentCycle)
               AllianceSource.saveAllianceHistory(history)
               Ok(Json.toJson(newMember))
         }
     }
   }
+   
+  def removeFromAlliance(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
+       val currentCycle = CycleSource.loadCycle
+       AllianceSource.loadAllianceMemberByAirline(request.user) match {
+          case None => BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline does not belong to any alliance")
+          case Some(currentAirlineAllianceMember) =>
+            val alliance = AllianceSource.loadAllianceById(currentAirlineAllianceMember.allianceId, false).get
+            if (airlineId == targetAirlineId) { //removing itself, ok!
+             AllianceSource.deleteAllianceMember(targetAirlineId)
+             AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = request.user, event = LEAVE_ALLIANCE, cycle = currentCycle))
+             if (currentAirlineAllianceMember.role == LEADER) { //remove the alliance
+               AllianceSource.deleteAlliance(currentAirlineAllianceMember.allianceId)
+             }
+             
+             Ok(Json.toJson(currentAirlineAllianceMember))
+           } else { //check if current airline is leader and the target airline is within this alliance
+             if (currentAirlineAllianceMember.role != LEADER) {
+               BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline is not leader")
+             } else {
+               AirlineSource.loadAirlineById(targetAirlineId) match {
+                 case None => NotFound("Airline with id " + targetAirlineId + " not found")
+                 case Some(targetAirline) =>
+                   AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
+                     case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
+                     case Some(allianceMember) =>
+                       if (allianceMember.allianceId != currentAirlineAllianceMember.allianceId) {
+                         BadRequest("Airline " + targetAirline + " does not belong to alliance " + alliance)
+                       } else { //OK ..removing
+                         AllianceSource.deleteAllianceMember(targetAirlineId)
+                         if (allianceMember.role == APPLICANT) {
+                           AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = REJECT_ALLIANCE, cycle = currentCycle))  
+                         } else {
+                           AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = BOOT_ALLIANCE, cycle = currentCycle))
+                         }
+                         
+                         Ok(Json.toJson(allianceMember))
+                       }
+                    }
+               }
+             }
+          }
+    }
+  }
+ 
+  def addToAlliance(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
+       val currentCycle = CycleSource.loadCycle
+       AllianceSource.loadAllianceMemberByAirline(request.user) match {
+          case None => BadRequest("Current airline " + request.user + " cannot add airline id "+ targetAirlineId + " to alliance as current airline does not belong to any alliance")
+          case Some(currentAirlineAllianceMember) =>
+            //check if current airline is leader and the target airline has applied to this alliance
+           if (currentAirlineAllianceMember.role != LEADER) {
+             BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline is not leader")
+           } else {
+             val alliance = AllianceSource.loadAllianceById(currentAirlineAllianceMember.allianceId, false).get 
+             AirlineSource.loadAirlineById(targetAirlineId) match {
+               case None => NotFound("Airline with id " + targetAirlineId + " not found")
+               case Some(targetAirline) =>
+                 AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
+                   case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
+                   case Some(allianceMember) =>
+                     if (allianceMember.allianceId != currentAirlineAllianceMember.allianceId) {
+                       BadRequest("Airline " + targetAirline + " does not belong to alliance " + alliance)
+                     } else if (allianceMember.role != APPLICANT) {
+                       BadRequest("Airline " + targetAirline + " is not applicant of " + alliance)
+                     } else { //OK ..adding
+                       AllianceSource.saveAllianceMember(allianceMember.copy(role = MEMBER))
+                       AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = JOIN_ALLIANCE, cycle = currentCycle))
+                       
+                       Ok(Json.toJson(allianceMember))
+                     }
+                  }
+             }
+           }
+    }
+  }
   
-  def getApplyRejection(airline : Airline, allianceInfo : (Alliance, List[AllianceMember])) : Option[String] = {
-    val allianceMembers = allianceInfo._2
+  def getApplyRejection(airline : Airline, alliance : Alliance) : Option[String] = {
+    val allianceMembers = alliance.members
     
     if (airline.getHeadQuarter.isEmpty) { 
       return Some("Cannot join an alliance without headquarters for your airline")
@@ -254,7 +330,7 @@ class AllianceApplication extends Controller {
     
      AllianceSource.loadAllianceMemberByAirline(airline) match {
        case Some(allianceMember) =>
-         return Some("Airline is already member of alliance " + allianceMember.alliance.name)
+         return Some("Airline is already member of alliance " + alliance.name)
        case None =>
          return None
      }
