@@ -173,8 +173,6 @@ object AirlineSimulation {
           case None => 0.0
         }
         
-        println(airline + " get " + reputationBonusFromAlliance + " from alliance ") //TODO
-        
         targetReputation = targetReputation + reputationBonusFromAlliance
         
         val currentReputation = airline.getReputation()
