@@ -188,22 +188,22 @@ function loadAllianceDetails(allianceId) {
 function updateAllianceBasicsDetails(allianceId) {
 	var alliance = loadedAlliancesById[allianceId]
 	selectedAlliance = alliance
-	$("#allianceCanvas .allianceName").text(alliance.name)
+	$("#allianceDetails .allianceName").text(alliance.name)
 	if (alliance.status == 'Forming') {
-		$("#allianceCanvas .allianceStatus").text(alliance.status + " - need 3 approved members")
+		$("#allianceDetails .allianceStatus").text(alliance.status + " - need 3 approved members")
 	} else {
-		$("#allianceCanvas .allianceStatus").text(alliance.status)
+		$("#allianceDetails .allianceStatus").text(alliance.status)
 	}
 	
 	if (alliance.ranking) {
 		var rankingImg = getRankingImg(alliance.ranking)
 		if (rankingImg) {
-			$('#allianceCanvas .allianceRanking').html(rankingImg)
+			$('#allianceDetails .allianceRanking').html(rankingImg)
 		} else {
-			$('#allianceCanvas .allianceRanking').text(alliance.ranking)
+			$('#allianceDetails .allianceRanking').text(alliance.ranking)
 		}
 	} else {
-		$('#allianceCanvas .allianceRanking').text('-')
+		$('#allianceDetails .allianceRanking').text('-')
 	}
 	$("#allianceMemberList").children("div.table-row").remove()
 	
