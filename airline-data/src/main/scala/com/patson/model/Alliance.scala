@@ -38,11 +38,15 @@ object Alliance {
 
   val getReputationBonus: (Int => Double) = { (ranking: Int) =>
     if (ranking == 1) {
-      15
+      20
     } else if (ranking == 2) {
-      10
+      12
     } else if (ranking == 3) {
-      5
+      8
+    } else if (ranking == 4) {
+      6
+    } else if (ranking == 5) {
+      4
     } else {
       2
     }
@@ -95,7 +99,7 @@ object Alliance {
    */
   def getCountryChampions() : Map[Int, List[(Country, Double)]] = {
     val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
-      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(3).zipWithIndex)
+      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(5).zipWithIndex)
     }
     
     val championedCountryByAirline: scala.collection.mutable.Map[Int, ListBuffer[(Country, Double)]] = scala.collection.mutable.Map[Int, ListBuffer[(Country, Double)]]()  

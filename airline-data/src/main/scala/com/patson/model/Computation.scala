@@ -124,10 +124,17 @@ object Computation {
     val modelPower = 97499995L * 54629L
     val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
     
-    val boost = math.log10(ratioToModelPower * 100) / 2 * 10 * (4 - ranking)
+    val boost = 
+      if (ranking <= 3) { //top 3
+        math.log10(ratioToModelPower * 100) / 2 * 10 * (4 - ranking)
+      } else {
+        math.log10(ratioToModelPower * 100) / 2 * 5 / (ranking - 3)
+      }
     
-    if (boost < 1) {
+    if (boost < 1 && ranking <= 3) {
       1
+    } else if (boost < 0.5) {
+      0.5
     } else {
       BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
     }

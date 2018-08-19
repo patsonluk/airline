@@ -197,6 +197,9 @@ function getRankingImg(ranking) {
 	} else if (ranking == 3) {
 		rankingIcon = "assets/images/icons/crown-bronze.png"
     	rankingTitle = "3rd place"
+	} else if (ranking <= 5) {
+		rankingIcon = "assets/images/icons/trophy-" + ranking + ".png"
+		rankingTitle = ranking + "th place"
 	}
 	
 	if (rankingIcon) {

@@ -62,7 +62,7 @@ class CountryApplication extends Controller {
         val allAirlines = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
         CountrySource.loadMarketSharesByCountryCode(countryCode).foreach { marketShares => //if it has market share data
           
-        val champions = marketShares.airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(3)
+        val champions = marketShares.airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(5)
         var championsJson = Json.arr()
         var x = 0
         for (x <- 0 until champions.size) {

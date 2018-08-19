@@ -31,6 +31,7 @@ package object controllers {
       "id" -> JsNumber(airline.id),
       "name" -> JsString(airline.name),
       "reputation" -> JsNumber(airline.getReputation()),
+      "gradeValue" -> JsNumber(airline.airlineGrade.value),
       "airlineCode" -> JsString(airline.getAirlineCode()),
       "baseCount" -> JsNumber(airline.getBases().size)))
       

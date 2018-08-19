@@ -115,21 +115,23 @@ function loadCountryDetails(countryId) {
 	    	$("#countryDetailsMediumAirportCount").text(country.mediumAirportCount)
 	    	$("#countryDetailsSmallAirportCount").text(country.smallAirportCount)
 	    	
-	    	if (country.headquarters.length > 0) {
-		    	$.each(country.headquarters, function(index, headquarter) {
-		    		$("#countryDetailsAirlineHeadquarters").append("<div>" + headquarter.airlineName + "(" + getAirportText(headquarter.city, headquarter.airportName) + ")</div>")
-		    	})
-	    	} else {
-	    		$("#countryDetailsAirlineHeadquarters").text("-")
-	    	}
+//	    	if (country.headquarters.length > 0) {
+//		    	$.each(country.headquarters, function(index, headquarter) {
+//		    		$("#countryDetailsAirlineHeadquarters").append("<div>" + headquarter.airlineName + "(" + getAirportText(headquarter.city, headquarter.airportName) + ")</div>")
+//		    	})
+	    		$("#countryDetailsAirlineHeadquarters").text(country.headquarters.length)
+//	    	} else {
+//	    		$("#countryDetailsAirlineHeadquarters").text("-")
+//	    	}
 	    	
-	    	if (country.bases.length > 0) {
-		    	$.each(country.bases, function(index, base) {
-		    		$("#countryDetailsAirlineBases").append("<div>" + base.airlineName + "(" + getAirportText(base.city, base.airportName) + ")</div>")
-		    	})
-	    	} else {
-	    		$("#countryDetailsAirlineBases").text("-")
-	    	}
+//	    	if (country.bases.length > 0) {
+//		    	$.each(country.bases, function(index, base) {
+//		    		$("#countryDetailsAirlineBases").append("<div>" + base.airlineName + "(" + getAirportText(base.city, base.airportName) + ")</div>")
+//		    	})
+	    		$("#countryDetailsAirlineBases").text(country.bases.length)
+//	    	} else {
+//	    		$("#countryDetailsAirlineBases").text("-")
+//	    	}
 	    	if (country.champions) {
 	    		var championDivs = ""
 	    			

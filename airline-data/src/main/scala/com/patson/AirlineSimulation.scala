@@ -330,7 +330,7 @@ object AirlineSimulation {
     val champions = Map[Airline, ListBuffer[(Country, Int)]]()
      CountrySource.loadMarketSharesByCriteria(List.empty).foreach { 
        case CountryMarketShare(countryCode : String, airlineShares) => {
-         val championsForThisCountry = airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(3)
+         val championsForThisCountry = airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(5)
          for (x <- 0 until championsForThisCountry.size) {
             val airline = allAirlines((championsForThisCountry(x)._1))
             val ranking = x + 1

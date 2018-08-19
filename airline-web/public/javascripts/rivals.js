@@ -170,6 +170,8 @@ function updateRivalBasicsDetails(airlineId) {
 		$("#rivalsCanvas .airlineColorDot").css('background-color', color);
 		$("#rivalsCanvas .airlineColorDot").show()
 	}
+	
+	$("#rivalsCanvas .airlineGrade").html(getGradeStarsImgs(rival.gradeValue))
 }
 
 function updateRivalChampionedCountriesDetails(airlineId) {
