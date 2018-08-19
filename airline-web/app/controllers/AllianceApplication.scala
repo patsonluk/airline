@@ -317,8 +317,8 @@ class AllianceApplication extends Controller {
     val airlineBases = airline.getBases.filter(!_.headquarter).map(_.airport) 
     val overlappingBases = allAllianceBases.filter(allianceBase => airlineBases.contains(allianceBase))
    
-     println("ALL " + allAllianceBases)
-     println("YOURS " + airlineHeadquarters)
+//     println("ALL " + allAllianceBases)
+//     println("YOURS " + airlineHeadquarters)
     
     if (!overlappingBases.isEmpty) {
       var message = "Alliance members overlap with your airport bases: "

@@ -39,6 +39,7 @@ import scala.util.Success
 import scala.util.Failure
 import com.patson.model.FlightCategory
 import com.patson.data.AllianceSource
+import com.patson.model.AllianceMember
 
 
 class AirlineApplication extends Controller {
@@ -154,7 +155,20 @@ class AirlineApplication extends Controller {
     
     if (targetBase.scale == 1) { //building something new
       if (airline.getHeadQuarter().isDefined) { //building non-HQ
-            //it should first has link to it
+        AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
+          AllianceSource.loadAllianceById(allianceMember.allianceId, true).foreach { alliance =>
+            val allAllianceBaseAirports : List[(Airport, Airline)] = alliance.members.flatMap { allianceMember =>
+              allianceMember.airline.getBases().filter( !_.headquarter).map { base =>
+                (base.airport, allianceMember.airline)
+              }
+            }
+            
+            allAllianceBaseAirports.find(_._1.id == targetBase.airport.id).foreach { 
+              case (overlappingAirport, allianceAirline) => return Some("Alliance member " + allianceAirline.name + " already has a base in this airport")
+            }
+          }
+        }
+        //it should first has link to it
         if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
           return Some("No active flight route operated by your airline flying to this city yet")
         }
@@ -168,7 +182,7 @@ class AirlineApplication extends Controller {
         if (existingBaseCount >= allowedBaseCount) {
           return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
         } 
-      }  
+      }
     }
     
 
