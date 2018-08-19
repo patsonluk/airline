@@ -5,7 +5,7 @@ import com.patson.data.CountrySource
 
 case class Alliance(name: String, creationCycle: Int, members: List[AllianceMember], var id: Int = 0) {
   val status = {
-    if (members.length < Alliance.ESTABLISH_MIN_MEMBER_COUNT) {
+    if (members.filter(_.role != AllianceRole.APPLICANT).length < Alliance.ESTABLISH_MIN_MEMBER_COUNT) {
       AllianceStatus.FORMING
     } else {
       AllianceStatus.ESTABLISHED
