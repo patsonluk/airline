@@ -169,6 +169,16 @@ function clearAllPaths() {
 	
 	flightPaths = {}
 	flightMarkers = {}
+	
+	$.each(polylines, function(index, polyline) {
+		if (polyline.getMap() != null) {
+			polyline.setMap(null)
+		}
+	})
+	
+	polylines = polylines.filter(function(polyline) { 
+	    return polyline.getMap() != null
+	})
 }
 
 //remove and re-add all the links
@@ -241,6 +251,7 @@ function drawFlightPath(link, linkColor) {
    var icon = "assets/images/icons/airplane.png"
    
    flightPath.setMap(map)
+   polylines.push(flightPath)
    
    var shadowPath = new google.maps.Polyline({
 	     path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}],
@@ -830,6 +841,8 @@ function showLinkHistoryPaths(state) {
 			
 			historyPath.setMap(map)
 			historyPath.shadowPath.setMap(map)
+			polylines.push(historyPath)
+			polylines.push(historyPath.shadowPath)
 		} else {
 			historyPath.setMap(null)
 			historyPath.shadowPath.setMap(null)

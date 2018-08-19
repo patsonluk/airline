@@ -380,3 +380,106 @@ function applyForAlliance() {
 	    }
 	});
 }
+
+
+function showAllianceMap() {
+	clearAllPaths()
+	deselectLink()
+	
+	$.ajax({
+		type: 'GET',
+		url: "alliances/" + selectedAlliance.id + "/links",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(links) {
+				$.each(links, function(index, link) {
+					drawAllianceLink(link)
+				})
+				showWorldMap();
+				window.setTimeout(addExitButton , 1000); //delay otherwise it doesn't push to center
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function addExitButton() {
+	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
+		map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Alliance Flight Map', 'hideAllianceMap()', 'hideAllianceMapButton')[0]);
+	}
+}
+
+function drawAllianceLink(link) {
+	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
+	var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
+	//var pathKey = link.id
+	
+	var strokeColor = airlineColors[link.airlineId]
+	if (!strokeColor) {
+		strokeColor = "#DC83FC"
+	}
+		
+		
+	var linkPath = new google.maps.Polyline({
+			 geodesic: true,
+		     strokeColor: strokeColor,
+		     strokeOpacity: 0.8,
+		     strokeWeight: 2,
+		     path: [from, to],
+		     zIndex : 1100,
+		});
+		
+	var fromAirport = getAirportText(link.fromAirportCity, link.fromAirportName)
+	var toAirport = getAirportText(link.toAirportCity, link.toAirportName)
+	
+	
+	shadowPath = new google.maps.Polyline({
+		 geodesic: true,
+	     strokeColor: strokeColor,
+	     strokeOpacity: 0.0001,
+	     strokeWeight: 25,
+	     path: [from, to],
+	     zIndex : 401,
+	     fromAirport : fromAirport,
+	     fromCountry : link.fromCountryCode, 
+	     toAirport : toAirport,
+	     toCountry : link.toCountryCode,
+	     airlineName : link.airlineName,
+	     airlineId : link.airlineId
+	});
+	
+	linkPath.shadowPath = shadowPath
+	
+	var infowindow; 
+	shadowPath.addListener('mouseover', function(event) {
+		$("#allianceLinkPopupFrom").html(this.fromAirport + "&nbsp;" + getCountryFlagImg(this.fromCountry))
+		$("#allianceLinkPopupTo").html(this.toAirport + "&nbsp;" + getCountryFlagImg(this.toCountry))
+		$("#allianceLinkPopupAirline").html(getAirlineLogoImg(this.airlineId) + "&nbsp;" + this.airlineName)
+		
+		
+		infowindow = new google.maps.InfoWindow({
+             content: $("#allianceLinkPopup").html(),
+             maxWidth : 600});
+		
+		infowindow.setPosition(event.latLng);
+		infowindow.open(map);
+	})		
+	shadowPath.addListener('mouseout', function(event) {
+		infowindow.close()
+	})
+	
+	linkPath.setMap(map)
+	linkPath.shadowPath.setMap(map)
+	polylines.push(linkPath)
+	polylines.push(linkPath.shadowPath)
+}
+
+
+function hideAllianceMap() {
+	clearAllPaths()
+	updateLinksInfo() //redraw all flight paths
+		
+	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+}

@@ -736,6 +736,8 @@ function showAirportLinkPaths() {
 			
 		airportLinkPath.setMap(map)
 		airportLinkPath.shadowPath.setMap(map)
+		polylines.push(airportLinkPath)
+		polylines.push(airportLinkPath.shadowPath)
 	})
 }
 	

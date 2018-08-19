@@ -35,6 +35,7 @@ import com.patson.data.AllianceSource
 import com.patson.data.AllianceSource
 import com.patson.model.AllianceHistory
 import play.api.libs.json.JsBoolean
+import com.patson.data.LinkSource
 
 
 class AllianceApplication extends Controller {
@@ -178,6 +179,51 @@ class AllianceApplication extends Controller {
     }
     
     Ok(result)
+  }
+  
+  object SimpleLinkWrites extends Writes[List[Link]] {
+    def writes(links: List[Link]): JsValue =  {
+      var result = Json.arr()
+      
+      links.foreach { link =>
+        var linkJson = JsObject(List(
+        "id" -> JsNumber(link.id),
+        "fromAirportId" -> JsNumber(link.from.id),
+        "toAirportId" -> JsNumber(link.to.id),
+        "fromAirportCode" -> JsString(link.from.iata),
+        "toAirportCode" -> JsString(link.to.iata),
+        "fromAirportName" -> JsString(link.from.name),
+        "toAirportName" -> JsString(link.to.name),
+        "fromAirportCity" -> JsString(link.from.city),
+        "toAirportCity" -> JsString(link.to.city),
+        "fromCountryCode" -> JsString(link.from.countryCode),
+        "toCountryCode" -> JsString(link.to.countryCode),
+        "airlineId" -> JsNumber(link.airline.id),
+        "airlineName" -> JsString(link.airline.name),
+        "frequency" -> JsNumber(link.frequency),
+        "fromLatitude" -> JsNumber(link.from.latitude),
+        "fromLongitude" -> JsNumber(link.from.longitude),
+        "toLatitude" -> JsNumber(link.to.latitude),
+        "toLongitude" -> JsNumber(link.to.longitude),
+        "flightType" -> JsString(link.flightType.toString()),
+        "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber))))
+        result = result.append(linkJson) 
+      }
+      result
+    }
+  }
+  
+  def getAllianceLinks(allianceId : Int) = Action { request =>
+    AllianceSource.loadAllianceById(allianceId, true) match {
+      case None => NotFound("Alliance with " + allianceId + " is not found")
+      case Some(alliance) => {
+        val links = alliance.members.flatMap { allianceMember =>
+          LinkSource.loadLinksByAirlineId(allianceMember.airline.id)
+        }
+        
+        Ok(Json.toJson(links)(SimpleLinkWrites))
+      }
+    }
   }
   
   def evaluateAlliance(airlineId : Int, allianceId : Int) = AuthenticatedAirline(airlineId) { implicit request =>

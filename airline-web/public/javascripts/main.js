@@ -7,6 +7,7 @@ var selectedLink
 var currentTime
 var currentCycle
 var airlineColors = {}
+var polylines = []
 
 $( document ).ready(function() {
 	recordDimensions()
@@ -235,6 +236,7 @@ function initMap() {
    	gestureHandling: 'greedy',
    	styles: getMapStyles() 
   });
+	
   google.maps.event.addListener(map, 'zoom_changed', function() {
 	    var zoom = map.getZoom();
 	    // iterate over markers and call setVisible
@@ -242,7 +244,7 @@ function initMap() {
 	        marker.setVisible(isShowMarker(marker, zoom));
 	    })
   });  
-  
+
   $("#toggleMapLightButton").index = 1
   map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapLightButton")[0]);
   $("#toggleMapLightButton").show()

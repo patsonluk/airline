@@ -1521,6 +1521,7 @@
 				 	  				<div class="cell value allianceStatus"></div>
 				 	  			</div>
 			 	  			</div>
+			 	  			<div class="button" onclick="showAllianceMap()">Flight Map</div>
 			 	  			<h4 style="margin-top: 10px">Members</h4>
 			 	  			<div id="allianceMemberList" class="table data" style="width: 100%;">
 			 	  			</div>
@@ -1695,6 +1696,24 @@
 		</div>
     </div>
     
+    <div style="display: none; width: 100%;" id="allianceLinkPopup">
+    	<input type="hidden" id="airportLinkPopupId">
+    	<div class="table" style="width: 100%">
+   			<div class="table-row">
+   				<div class="label"><h5>From :</h5></div>
+   				<div class="value" id="allianceLinkPopupFrom"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>To:</h5></div>
+   				<div class="value" id="allianceLinkPopupTo"></div>
+   			</div>
+   			<div class="table-row">
+   				<div class="label"><h5>Airline:</h5></div>
+   				<div class="value" id="allianceLinkPopupAirline"></div>
+   			</div>
+		</div>
+    </div>
+    
     <!-- The Annoucement Modal -->
 	<div id="annoucementModal" class="modal">
 	  <div class="modal-content">
@@ -1780,7 +1799,7 @@
 		    </div>
 	    </div>
 	</div>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry&callback=initMap">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry,drawing&callback=initMap">
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->
 	 
