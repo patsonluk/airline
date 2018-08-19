@@ -2,14 +2,14 @@ var loadedRivals = []
 var loadedRivalsById = {}
 var loadedRivalLinks = []
 
-function showRivalsCanvas() {
+function showRivalsCanvas(selectedAirline) {
 	setActiveDiv($("#rivalsCanvas"))
 	highlightTab($('#rivalsCanvasTab'))
 	$('#rivalDetails').hide()
-	loadAllRivals()
+	loadAllRivals(selectedAirline)
 }
 
-function loadAllRivals() {
+function loadAllRivals(selectedAirline) {
 	var getUrl = "airlines"
 	
 	loadedRivals = []
@@ -26,7 +26,7 @@ function loadAllRivals() {
 	    	})
 	    	
 	    	var selectedSortHeader = $('#rivalsTableSortHeader .table-header .cell.selected')
-	    	updateRivalsTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
+	    	updateRivalsTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'), selectedAirline)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -35,8 +35,10 @@ function loadAllRivals() {
 	});
 }
 
-function updateRivalsTable(sortProperty, sortOrder) {
-	var selectedAirline = $("#rivalsCanvas #rivalsTable div.table-row.selected").data('airline-id')
+function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
+	if (!selectedAirline) {
+		selectedAirline = $("#rivalsCanvas #rivalsTable div.table-row.selected").data('airline-id')
+	}
 	var rivalsTable = $("#rivalsCanvas #rivalsTable")
 	
 	rivalsTable.children("div.table-row").remove()
@@ -44,6 +46,7 @@ function updateRivalsTable(sortProperty, sortOrder) {
 	//sort the list
 	loadedRivals.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
 	
+	var selectedRow
 	$.each(loadedRivals, function(index, airline) {
 		var row = $("<div class='table-row clickable' data-airline-id='" + airline.id + "' onclick=\"loadRivalDetails($(this), '" + airline.id + "')\"></div>")
 //		var countryFlagImg = ""
@@ -62,10 +65,15 @@ function updateRivalsTable(sortProperty, sortOrder) {
 		
 		if (selectedAirline == airline.id) {
 			row.addClass("selected")
+			selectedRow = row
 		}
 		
 		rivalsTable.append(row)
 	});
+	
+	if (selectedRow) {
+		loadRivalDetails(selectedRow, selectedAirline)
+	}
 }
 
 function toggleRivalsTableSortOrder(sortHeader) {

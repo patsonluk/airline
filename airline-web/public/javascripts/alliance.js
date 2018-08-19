@@ -208,7 +208,7 @@ function updateAllianceBasicsDetails(allianceId) {
 	$("#allianceMemberList").children("div.table-row").remove()
 	
 	$.each(alliance.members, function(index, member) {
-		var row = $("<div class='table-row' style='height: 20px;'></div>")
+		var row = $("<div class='table-row clickable' style='height: 20px;' onclick='showRivalsCanvas(" + member.airlineId + ")'></div>")
 		row.append("<div class='cell' style='vertical-align: middle;'>" + getAirlineLogoImg(member.airlineId) + member.airlineName + "</div>")
 		row.append("<div class='cell' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
 		if (activeAirline) {
