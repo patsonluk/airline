@@ -425,7 +425,7 @@ function drawAllianceLink(link) {
 	var linkPath = new google.maps.Polyline({
 			 geodesic: true,
 		     strokeColor: strokeColor,
-		     strokeOpacity: 0.8,
+		     strokeOpacity: 0.6,
 		     strokeWeight: 2,
 		     path: [from, to],
 		     zIndex : 1100,
