@@ -21,6 +21,7 @@ import scala.util.control.Breaks._
 import com.patson.data.CountrySource
 import java.util.concurrent.atomic.AtomicInteger
 import com.patson.data.AllianceSource
+import java.util.ArrayList
 
 object PassengerSimulation {
 
@@ -352,7 +353,7 @@ object PassengerSimulation {
       case(passengerGroup, toAirports) => {
         val linkClass = passengerGroup.preference.linkClass
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
-        val linkConsiderations = ArrayBuffer[LinkConsideration]()
+        val linkConsiderations = new ArrayList[LinkConsideration]()
         
         var walker = 0
         linksList.foreach { link =>
@@ -382,10 +383,10 @@ object PassengerSimulation {
                 val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)
                 val linkConsideration2 = LinkConsideration(link, cost, matchingLinkClass, true)
                 if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
-                  linkConsiderations += linkConsideration1
+                  linkConsiderations.add(linkConsideration1)
                 }
                 if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
-                  linkConsiderations += linkConsideration2
+                  linkConsiderations.add(linkConsideration2)
                 }
               }
           }
@@ -498,7 +499,7 @@ object PassengerSimulation {
    * Returns a map with valid route in format of
    * Map[toAiport, Route]
    */
-  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : Seq[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxHop : Int) : Map[Airport, Route] = {
+  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxHop : Int) : Map[Airport, Route] = {
    
 
     //     // Step 1: initialize graph
@@ -526,7 +527,8 @@ object PassengerSimulation {
 //               predecessor[v] := u
     for (i <- 0 until maxHop) {
       //val updatingLinks = ArrayBuffer[LinkConsideration]()
-      linkConsiderations.foreach { linkConsideration =>
+      for (j <- 0 until linkConsiderations.size()) {
+        val linkConsideration = linkConsiderations.get(j)
         if (linkConsideration.from.id == from.id || predecessorMap.containsKey(linkConsideration.from.id)) {
           var connectionCost = 0.0
           if (linkConsideration.from.id != from.id) { //then it should be a connection flight
