@@ -47,7 +47,7 @@ object DemandGenerator {
 //  }
   import scala.collection.JavaConverters._
   
-  def computeDemand() = {
+  def computeDemand() : java.util.List[(PassengerGroup, Airport, Int)] = {
     println("Loading airports")
     //val allAirports = AirportSource.loadAllAirports(true)
     val airports = AirportSource.loadAllAirports(true).filter { airport => airport.iata != "" && airport.power > 0 }
@@ -78,32 +78,32 @@ object DemandGenerator {
 	  val baseDemandChunkSize = 20
 	  
 	  
-	  val allDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
-	  allDemands.asScala.foreach {
-	    case (fromAirport, toAirportsWithDemand) =>
-	      //for each city generate different preferences
-        val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
+	  val allDemandChunks = new ArrayList[(PassengerGroup, Airport, Int)]()
+	  for (i <- 0 until allDemands.size()) {
+	    val (fromAirport, toAirportsWithDemand) = allDemands.get(i)
+      //for each city generate different preferences
+      val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
 
-        val demandListFromThisAiport = toAirportsWithDemand.foreach {
-          case (toAirport, (passengerType, demand)) =>
-            LinkClass.values.foreach { linkClass =>
-              if (demand(linkClass) > 0) {
-                var remainingDemand = demand(linkClass)
-                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
-                while (remainingDemand > demandChunkSize) {
-                  allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
-                  remainingDemand -= demandChunkSize
-                  demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
-                }
-                allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
+      val demandListFromThisAiport = toAirportsWithDemand.foreach {
+        case (toAirport, (passengerType, demand)) =>
+          LinkClass.values.foreach { linkClass =>
+            if (demand(linkClass) > 0) {
+              var remainingDemand = demand(linkClass)
+              var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
+              while (remainingDemand > demandChunkSize) {
+                allDemandChunks.add((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
+                remainingDemand -= demandChunkSize
+                demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
               }
+              allDemandChunks.add((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
             }
-        }
+          }
+      }
 	      
 	  }
 	  
 	  
-    allDemandChunks.toList
+    allDemandChunks
   }
   
   def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {

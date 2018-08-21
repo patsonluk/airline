@@ -16,11 +16,18 @@ object LinkSimulation {
   
   def linkSimulation(cycle: Int, links : List[Link]) : List[LinkConsumptionDetails] = {
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
-    val demand = DemandGenerator.computeDemand()
-    println("DONE with demand total demand: " + demand.foldLeft(0) {
-      case(holder, (_, _, demandValue)) =>  
-        holder + demandValue
-    })
+    val demand : java.util.List[(PassengerGroup, Airport, Int)] = DemandGenerator.computeDemand()
+//    println("DONE with demand total demand: " + demand.foldLeft(0) {
+//      case(holder, (_, _, demandValue)) =>  
+//        holder + demandValue
+//    })
+    
+    var totalDemand = 0
+    for (i <- 0 until demand.size()) {
+      totalDemand += demand.get(i)._3
+    }
+    println("DONE with demand total demand: " + totalDemand)
+    
 
     simulateLinkError(links)
     

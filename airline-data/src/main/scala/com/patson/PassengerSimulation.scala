@@ -21,6 +21,10 @@ import scala.util.control.Breaks._
 import com.patson.data.CountrySource
 import java.util.concurrent.atomic.AtomicInteger
 import com.patson.data.AllianceSource
+import java.util.ArrayList
+import scala.collection.JavaConverters._
+import akka.util.Collections
+import java.util.Collections
 
 object PassengerSimulation {
 
@@ -39,10 +43,10 @@ object PassengerSimulation {
     
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     val demand = DemandGenerator.computeDemand()
-    println("DONE with demand total demand: " + demand.foldLeft(0) {
-      case(holder, (_, _, demandValue)) =>  
-        holder + demandValue
-    })
+//    println("DONE with demand total demand: " + demand.foldLeft(0) {
+//      case(holder, (_, _, demandValue)) =>  
+//        holder + demandValue
+//    })
 
 //    val airportData = AirportSource.loadAllAirports().filter( _.size >= 2)
 //    val links = generateFlightLinks(airportData)
@@ -71,7 +75,7 @@ object PassengerSimulation {
     //findRandomRoutes(airportGroups(0)(0), airportGroups(4)(0), links.toList, 10)
   }
   
-  def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : Map[(PassengerGroup, Airport, Route), Int] = {
+  def passengerConsume(demand : java.util.List[(PassengerGroup, Airport, Int)], links : List[Link]) : Map[(PassengerGroup, Airport, Route), Int] = {
      val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
      val consumptionCycleMax = 10; //try and rebuild routes 10 times
      var consumptionCycleCount = 0;
@@ -88,23 +92,43 @@ object PassengerSimulation {
      println("Remove demand that is not covered by active airports, before " + demand.size);
      
      //randomize the demand chunks so later on it's consumed in a random (relatively even) manner
-     var demandChunks = Random.shuffle(demand.filter {
-       case(passengerGroup, toAirport, _) => activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
-     })
+//     var demandChunks = Random.shuffle(demand.filter {
+//       case(passengerGroup, toAirport, _) => activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
+//     })
      
-     println("After pruning : " + demandChunks.size);
+     var demandIter = demand.iterator()
+     var demandChunks = new ArrayList[(PassengerGroup, Airport, Int)]()
+     while (demandIter.hasNext()) {
+     //val removingIndexes = new ArrayList[Int]()
+     //for (i <- 0 until demand.size) {
+       val demandChunk = demandIter.next()
+       val (passengerGroup, toAirport, _) = demandChunk
+       if (activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)) {
+         demandChunks.add(demandChunk)
+       }
+     }
+          
+     Collections.shuffle(demandChunks)
+     
+     println("After pruning : " + demandChunks.size());
      
      while (consumptionCycleCount < consumptionCycleMax) {
-       println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
+       println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size())
        println("links: " + links.size)
        
        //find out required routes - which "to airports" does each passengerGroup has
        print("Find required routes...")
-       val requiredRoutes = scala.collection.mutable.Map[PassengerGroup, Set[Airport]]()
-       demandChunks.foreach {
-         case (passengerGroup, toAirport, _) =>
-           var toAirports : Set[Airport] = requiredRoutes.getOrElseUpdate(passengerGroup, scala.collection.mutable.Set[Airport]())
-           toAirports.add(toAirport)
+       val requiredRoutes = new java.util.HashMap[PassengerGroup, java.util.Set[Airport]]()
+       
+       demandIter = demandChunks.iterator()
+       while (demandIter.hasNext()) {
+         val (passengerGroup, toAirport, _) = demandIter.next()
+         var toAirports : java.util.Set[Airport] = requiredRoutes.get(passengerGroup)
+         if (toAirports == null) {
+           toAirports = new java.util.HashSet[Airport]()
+           requiredRoutes.put(passengerGroup, toAirports)
+         }
+         toAirports.add(toAirport)
        }
        println("Done!")
        
@@ -115,73 +139,74 @@ object PassengerSimulation {
        
 //       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
 //       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
-       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
+       val allRoutesMap : Map[PassengerGroup, java.util.Map[Airport, Route]] = findAllRoutes(requiredRoutes.asScala.toMap, availableLinks, activeAirportIds)
        
        //start consuming routes
        println()
        print("Start to go through demand chunks and comsume...nom nom nom...")
        
        //we want to randomize the order and go chunk by chunk as we want to evenly/randomly distribute seats to each PassengerGroup
-       val remainingDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
-       demandChunks.foreach {
-         case (passengerGroup, toAirport, chunkSize) => 
-           allRoutesMap.get(passengerGroup).foreach { toAirportRouteMap =>
+       val remainingDemandChunks = new ArrayList[(PassengerGroup, Airport, Int)]()
+       
+       demandIter = demandChunks.iterator()
+       while (demandIter.hasNext()) {
+         val (passengerGroup, toAirport, chunkSize) = demandIter.next() 
+         allRoutesMap.get(passengerGroup).foreach { toAirportRouteMap =>
 //             if (!toAirportRouteMap.isEmpty) {
 //               println("to airport route map" + toAirportRouteMap)
 //             }
-             
-             toAirportRouteMap.get(toAirport) match { 
-               case Some(pickedRoute) =>
-                 //println("picked route info" + passengerGroup + " " + pickedRoute.links(0).airline)
-                 //val totalDistance = pickedRoute.links.foldLeft(0.0)(_ + _.link.distance)
-                 val fromAirport = passengerGroup.fromAirport 
-                 
-                 
-                 //println("RecommendedPrice  " +  Pricing.computeStandardPrice(totalDistance))
-                 //add some randomness here
-                 //val affordableCost = totalDistance * (1.25 - Random.nextFloat() / 2)
-                 //val affordableCost = totalDistance * (Util.getBellRandom(1))
-                 //val MIN_AIPLANE_SPEED = 300.0
-                 val linkClass = passengerGroup.preference.linkClass
-                 
-                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport, linkClass)) {
-                   val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
-                     val actualLinkClass = linkConsideration.linkClass
-                     val availableSeats = linkConsideration.link.availableSeats(actualLinkClass) 
-                     if (availableSeats < foldInt) { availableSeats } else { foldInt }
-                   }
-                   //some capacity available on all the links, consume them NOMNOM NOM!
-                   if (consumptionSize > 0) {
-                     pickedRoute.links.foreach { linkConsideration =>
-                       val actualLinkClass = linkConsideration.linkClass
-                       //val newAvailableSeats = linkConsideration.link.availableSeats(actualLinkClass) - consumptionSize
-                       
-                       linkConsideration.link.addSoldSeatsByClass(actualLinkClass, consumptionSize)
-                       //linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(actualLinkClass -> newAvailableSeats))
-    //                   if (link.availableSeats == 0) {
-    //                     println("EXHAUSED!! = " + link)
-    //                   }
-                     }
-                     consumptionResult.append((passengerGroup, toAirport, consumptionSize, pickedRoute))
-                   }
-                   //update the remaining demand chunk list
-                   if (consumptionSize < chunkSize) { //not totally satisfied 
-                     //put a updated demand chunk
-                     remainingDemandChunks.append((passengerGroup, toAirport, chunkSize - consumptionSize));
-                   }
-                 } else { //try next time!???
-                   //println("rejected! affordableCost: " + affordableCost + " cost: " + pickedRoute.cost + " pref: " + passengerGroup.preference);
-                   //remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
+           
+           val pickedRoute = toAirportRouteMap.get(toAirport)
+           if (pickedRoute != null) {
+               //println("picked route info" + passengerGroup + " " + pickedRoute.links(0).airline)
+               //val totalDistance = pickedRoute.links.foldLeft(0.0)(_ + _.link.distance)
+               val fromAirport = passengerGroup.fromAirport 
+               
+               
+               //println("RecommendedPrice  " +  Pricing.computeStandardPrice(totalDistance))
+               //add some randomness here
+               //val affordableCost = totalDistance * (1.25 - Random.nextFloat() / 2)
+               //val affordableCost = totalDistance * (Util.getBellRandom(1))
+               //val MIN_AIPLANE_SPEED = 300.0
+               val linkClass = passengerGroup.preference.linkClass
+               
+               if (isRouteAffordable(pickedRoute, fromAirport, toAirport, linkClass)) {
+                 val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
+                   val actualLinkClass = linkConsideration.linkClass
+                   val availableSeats = linkConsideration.link.availableSeats(actualLinkClass) 
+                   if (availableSeats < foldInt) { availableSeats } else { foldInt }
                  }
-               case None => //no route
-
+                 //some capacity available on all the links, consume them NOMNOM NOM!
+                 if (consumptionSize > 0) {
+                   pickedRoute.links.foreach { linkConsideration =>
+                     val actualLinkClass = linkConsideration.linkClass
+                     //val newAvailableSeats = linkConsideration.link.availableSeats(actualLinkClass) - consumptionSize
+                     
+                     linkConsideration.link.addSoldSeatsByClass(actualLinkClass, consumptionSize)
+                     //linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(actualLinkClass -> newAvailableSeats))
+  //                   if (link.availableSeats == 0) {
+  //                     println("EXHAUSED!! = " + link)
+  //                   }
+                   }
+                   consumptionResult.append((passengerGroup, toAirport, consumptionSize, pickedRoute))
+                 }
+                 //update the remaining demand chunk list
+                 if (consumptionSize < chunkSize) { //not totally satisfied 
+                   //put a updated demand chunk
+                   remainingDemandChunks.add((passengerGroup, toAirport, chunkSize - consumptionSize));
+                 }
+               } else { //try next time!???
+                 //println("rejected! affordableCost: " + affordableCost + " cost: " + pickedRoute.cost + " pref: " + passengerGroup.preference);
+                 //remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
+               }
+//               case None => //no route
              }
            }
         }
        println("Done!")
        
        //now process the remainingDemandChunks in next cycle 
-       demandChunks = remainingDemandChunks.toList     
+       demandChunks = remainingDemandChunks     
        consumptionCycleCount += 1
      }
      
@@ -333,7 +358,7 @@ object PassengerSimulation {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Map[PassengerGroup, Map[Airport, Route]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, java.util.Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Map[PassengerGroup, java.util.Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
@@ -348,11 +373,12 @@ object PassengerSimulation {
     val establishedAlliances = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED)
     val establishedAllianceIdByAirlineId :scala.collection.immutable.Map[Int, Int] = establishedAlliances.flatMap { alliance => (alliance.members.filter(_.role != AllianceRole.APPLICANT).map(member => (member.airline.id, alliance.id))) }.toMap
     
-    val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.par.map {
+    val routeMaps : Map[PassengerGroup, java.util.Map[Airport, Route]] = requiredRoutes.par.map {
       case(passengerGroup, toAirports) => {
         val linkClass = passengerGroup.preference.linkClass
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
-        val linkConsiderations = ArrayBuffer[LinkConsideration]()
+        //val linkConsiderations = ArrayBuffer[LinkConsideration]()
+        val linkConsiderations = new java.util.ArrayList[LinkConsideration]()
         
         var walker = 0
         linksList.foreach { link =>
@@ -382,10 +408,10 @@ object PassengerSimulation {
                 val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)
                 val linkConsideration2 = LinkConsideration(link, cost, matchingLinkClass, true)
                 if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
-                  linkConsiderations += linkConsideration1
+                  linkConsiderations.add(linkConsideration1)
                 }
                 if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
-                  linkConsiderations += linkConsideration2
+                  linkConsiderations.add(linkConsideration2)
                 }
               }
           }
@@ -393,7 +419,7 @@ object PassengerSimulation {
         
         //then find the shortest route based on the cost
         
-        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
+        val routeMap : java.util.Map[Airport, Route] = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
         if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
           print(".")
           if (progressCount.incrementAndGet() % 10 == 0) {
@@ -498,7 +524,7 @@ object PassengerSimulation {
    * Returns a map with valid route in format of
    * Map[toAiport, Route]
    */
-  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : Seq[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxHop : Int) : Map[Airport, Route] = {
+  def findShortestRoute(from : Airport, toAirports : java.util.Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxHop : Int) : java.util.Map[Airport, Route] = {
    
 
     //     // Step 1: initialize graph
@@ -526,7 +552,9 @@ object PassengerSimulation {
 //               predecessor[v] := u
     for (i <- 0 until maxHop) {
       //val updatingLinks = ArrayBuffer[LinkConsideration]()
-      linkConsiderations.foreach { linkConsideration =>
+      for (j <- 0 until linkConsiderations.size()) {
+        val linkConsideration = linkConsiderations.get(j)
+      //linkConsiderations.foreach { linkConsideration =>
         if (linkConsideration.from.id == from.id || predecessorMap.containsKey(linkConsideration.from.id)) {
           var connectionCost = 0.0
           if (linkConsideration.from.id != from.id) { //then it should be a connection flight
@@ -559,8 +587,11 @@ object PassengerSimulation {
     
     //println("cost found : " + distanceMap(to))
     
-    val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]() 
-    toAirports.foreach{ to =>  
+    val resultMap : java.util.Map[Airport, Route] = new java.util.HashMap[Airport, Route]()
+    
+    val toAirportsIter = toAirports.iterator()
+    while (toAirportsIter.hasNext()) {
+      val to = toAirportsIter.next()   
       var walker = to.id
       var noSolution = false;
       var foundSolution = false
@@ -584,7 +615,7 @@ object PassengerSimulation {
       }  
     }
     
-    resultMap.toMap
+    resultMap
   }
   
   
