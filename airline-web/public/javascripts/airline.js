@@ -1591,6 +1591,14 @@ function updateLinksTable(sortProperty, sortOrder) {
 		
 		row.append("<div class='cell'>" + getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode) + "</div>")
 		row.append("<div class='cell'>" + getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+		var assignedModel 
+		if (link.assignedAirplanes) {
+			assignedModel = link.assignedAirplanes[0].name
+		} else {
+			assignedModel = "-"
+		}
+		link.model = assignedModel //so this can be sorted
+		row.append("<div class='cell'>" + assignedModel + "</div>")
 		row.append("<div class='cell' align='right'>" + link.distance + "km</div>")
 		row.append("<div class='cell' align='right'>" + link.totalCapacity + "</div>")
 		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
