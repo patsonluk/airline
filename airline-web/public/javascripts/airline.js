@@ -853,7 +853,7 @@ function showLinkHistoryPaths(state) {
 		    (state == "showAlliance" && !historyPath.inverted && (historyPath.shadowPath.thisAlliancePassengers > 0 || historyPath.shadowPath.thisAirlinePassengers > 0)) ||
 		    (state == "showInvertedSelf" && historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0) ||
 		    (state == "showSelf" && !historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0)) {
-			var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers
+			var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.thisAlliancePassengers + historyPath.shadowPath.otherAirlinePassengers
 			if (totalPassengers > 1000) {
 				historyPath.setOptions({strokeWeight : 3})
 			} else if (totalPassengers > 2000) {
