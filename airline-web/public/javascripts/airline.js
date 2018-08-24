@@ -1340,10 +1340,10 @@ function createLink() {
 		    			//draw flight path
 		    			var newPath = drawFlightPath(savedLink)
 		    			selectLinkFromMap(savedLink.id, false)
-		    			refreshPanels(airlineId)
+		    			refreshPanels(airlineId) //refresh panels would update link details
+		    		} else {
+		    			refreshLinkDetails(savedLink.id)
 		    		}
-		    		//refreshPanels(activeAirline.id)
-		    		refreshLinkDetails(savedLink.id)
 		    		
 			    	
 		    		setActiveDiv($('#linkDetails'))
