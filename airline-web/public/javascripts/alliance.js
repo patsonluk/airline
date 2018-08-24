@@ -2,6 +2,10 @@ var loadedAlliances = []
 var loadedAlliancesById = {}
 var selectedAlliance
 
+$( document ).ready(function() {
+	loadAllAlliances()
+})
+
 function showAllianceCanvas() {
 	setActiveDiv($("#allianceCanvas"))
 	highlightTab($('#allianceCanvasTab'))
@@ -14,70 +18,78 @@ function showAllianceCanvas() {
 	}
 }
 
-function loadCurrentAirlineMemberDetails() {
-	$('#currentAirlineMemberDetails .allianceName').show()
-	$('#toggleFormAllianceButton').hide()
-	$('#formAllianceSpan').hide()
-	
+function loadCurrentAirlineAlliance(callback) {
 	var getUrl = "airlines/" + activeAirline.id + "/alliance-details"
-	$('#currentAirlineAllianceHistory').empty()
 	$.ajax({
 		type: 'GET',
 		url: getUrl,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
+	    async: false,
 	    success: function(allianceDetails) {
-	    	if (allianceDetails.allianceId) {
-	    		var alliance = loadedAlliancesById[allianceDetails.allianceId]
-	    		$('#currentAirlineMemberDetails .allianceName').text(alliance.name)
-	    		$('#currentAirlineMemberDetails .allianceRole').text(allianceDetails.allianceRole)
-	    		if (alliance.ranking) {
-		    		var rankingImg = getRankingImg(alliance.ranking)
-		    		if (rankingImg) {
-		    			$('#currentAirlineMemberDetails .allianceRanking').html(rankingImg)
-		    		} else {
-		    			$('#currentAirlineMemberDetails .allianceRanking').text(alliance.ranking)
-		    		}
-	    		} else {
-	    			$('#currentAirlineMemberDetails .allianceRanking').text('-')
-	    		}
-	    		
-	    		if (alliance.status == 'Forming') {
-					$("#currentAirlineMemberDetails .allianceStatus").text(alliance.status + " - need 3 approved members")
-				} else {
-					$("#currentAirlineMemberDetails .allianceStatus").text(alliance.status)
-				}
-	    		
-	    		
-	    		$('#toggleFormAllianceButton').hide()
-	    	} else {
-	    		$('#currentAirlineMemberDetails .allianceName').text('-')
-	    		$('#currentAirlineMemberDetails .allianceRole').text('-')
-	    		$('#currentAirlineMemberDetails .allianceRanking').text('-')
-	    		$('#currentAirlineMemberDetails .allianceStatus').text('-')
-	    		if (activeAirline.headquarterAirport) {
-	    			$('#toggleFormAllianceButton').show()
-	    		} else {
-	    			$('#toggleFormAllianceButton').hide()
-	    		}
-	    	}
-	    	
-	    	$('#currentAirlineAllianceHistory').children("div.table-row").remove()
-	    	if (allianceDetails.history) {
-	    		$.each(allianceDetails.history, function(index, entry) {
-	    			var row = $("<div class='table-row'><div class='cell value' style='width: 30%;'>Week " + entry.cycle + "</div><div class='cell value' style='width: 70%;'>" + entry.description + "</div></div>")
-	    			$('#currentAirlineAllianceHistory').append(row)
-	    		})
-	    	} else {
-	    		var row = $("<div class='table-row'><div class='cell value' style='width: 30%;'>-</div><div class='cell value' style='width: 70%;'>-</div></div>")
-	    		$('#currentAirlineAllianceHistory').append(row)
-	    	}
+	    	callback(allianceDetails)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function loadCurrentAirlineMemberDetails() {
+	$('#currentAirlineMemberDetails .allianceName').show()
+	$('#toggleFormAllianceButton').hide()
+	$('#formAllianceSpan').hide()
+	
+	
+	$('#currentAirlineAllianceHistory').empty()
+	loadCurrentAirlineAlliance(function(allianceDetails) {
+		if (allianceDetails.allianceId) {
+    		var alliance = loadedAlliancesById[allianceDetails.allianceId]
+    		$('#currentAirlineMemberDetails .allianceName').text(alliance.name)
+    		$('#currentAirlineMemberDetails .allianceRole').text(allianceDetails.allianceRole)
+    		if (alliance.ranking) {
+	    		var rankingImg = getRankingImg(alliance.ranking)
+	    		if (rankingImg) {
+	    			$('#currentAirlineMemberDetails .allianceRanking').html(rankingImg)
+	    		} else {
+	    			$('#currentAirlineMemberDetails .allianceRanking').text(alliance.ranking)
+	    		}
+    		} else {
+    			$('#currentAirlineMemberDetails .allianceRanking').text('-')
+    		}
+    		
+    		if (alliance.status == 'Forming') {
+				$("#currentAirlineMemberDetails .allianceStatus").text(alliance.status + " - need 3 approved members")
+			} else {
+				$("#currentAirlineMemberDetails .allianceStatus").text(alliance.status)
+			}
+    		
+    		
+    		$('#toggleFormAllianceButton').hide()
+    	} else {
+    		$('#currentAirlineMemberDetails .allianceName').text('-')
+    		$('#currentAirlineMemberDetails .allianceRole').text('-')
+    		$('#currentAirlineMemberDetails .allianceRanking').text('-')
+    		$('#currentAirlineMemberDetails .allianceStatus').text('-')
+    		if (activeAirline.headquarterAirport) {
+    			$('#toggleFormAllianceButton').show()
+    		} else {
+    			$('#toggleFormAllianceButton').hide()
+    		}
+    	}
+    	
+    	$('#currentAirlineAllianceHistory').children("div.table-row").remove()
+    	if (allianceDetails.history) {
+    		$.each(allianceDetails.history, function(index, entry) {
+    			var row = $("<div class='table-row'><div class='cell value' style='width: 30%;'>Week " + entry.cycle + "</div><div class='cell value' style='width: 70%;'>" + entry.description + "</div></div>")
+    			$('#currentAirlineAllianceHistory').append(row)
+    		})
+    	} else {
+    		var row = $("<div class='table-row'><div class='cell value' style='width: 30%;'>-</div><div class='cell value' style='width: 70%;'>-</div></div>")
+    		$('#currentAirlineAllianceHistory').append(row)
+    	}
+	})
 }
 
 function loadAllAlliances() {

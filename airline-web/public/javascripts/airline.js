@@ -7,6 +7,7 @@ var tempPath //temp path for new link creation
 var loadedLinks = []
 var loadedLinksById = {}
 var currentAnimationStatus = true
+var currentAirlineAllianceMembers = []
 	
 function updateAirlineInfo(airlineId) {
 	$.ajax({
@@ -691,6 +692,7 @@ function toggleLinkHistory(linkId) {
 			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId,
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
+		    async: false,
 		    success: function(linkHistory) {
 		    	if (!jQuery.isEmptyObject(linkHistory)) {
 		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
@@ -699,9 +701,6 @@ function toggleLinkHistory(linkId) {
 		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
 		    			drawLinkHistoryPath(relatedLink, true, linkId)
 		    		})
-		    		printConsole("Passengers using this flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route. Click on 'View Passenger Map' again to see more...", 1, true);
-		    		linkHistoryState = "show"
-		    		showLinkHistoryPaths(linkHistoryState)
 		    	}
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
@@ -709,26 +708,51 @@ function toggleLinkHistory(linkId) {
 		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 		    }
 		});
+	}
+	
+	toggleLinkHistoryState()
+	if (linkHistoryState == "show") {
+		printConsole("Showing all passengers that took flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route. Click on 'View Passenger Map' to see more...", 1);
+	} else if (linkHistoryState == "showInverted") {
+		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route. Click on 'View Passenger Map' again to see more...", 1);
+	} else if (linkHistoryState == "showAlliance") {
+		printConsole("Passengers using this flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route, showing only flights operated by your alliance. Click on 'View Passenger Map' again to see more...", 1);
+	} else if (linkHistoryState == "showInvertedAlliance") {
+		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route, showing only flights operated by your alliance. Click on 'View Passenger Map' again to see more...", 1);
+	} else if (linkHistoryState == "showSelf") {
+		printConsole("Showing all passengers that took flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' to see more...", 1);
+	} else if (linkHistoryState == "showInvertedSelf") {
+		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' again to see more...", 1);
+	}
+	
+	showLinkHistoryPaths(linkHistoryState)
+}
+
+
+function toggleLinkHistoryState() {
+	if (linkHistoryState == "hidden") {
+		linkHistoryState = "show"
 	} else if (linkHistoryState == "show") {
 		linkHistoryState = "showInverted"
-		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route. Click on 'View Passenger Map' again to see more...", 1);
-		showLinkHistoryPaths(linkHistoryState)
 	} else if (linkHistoryState == "showInverted") {
+		if (currentAirlineAllianceMembers.length > 0) {
+			linkHistoryState = "showAlliance"
+		} else {
+			linkHistoryState = "showSelf"
+		}
+	} else if (linkHistoryState == "showAlliance") {
+		linkHistoryState = "showInvertedAlliance"
+	} else if (linkHistoryState == "showInvertedAlliance") {
 		linkHistoryState = "showSelf"
-		showLinkHistoryPaths(linkHistoryState)
-		printConsole("Passengers using this flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' again to see more...", 1);
 	} else if (linkHistoryState == "showSelf") {
 		linkHistoryState = "showInvertedSelf"
-		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' again to see more...", 1);
-		showLinkHistoryPaths(linkHistoryState)
 	} else if (linkHistoryState == "showInvertedSelf") {
-		printConsole("Showing all passengers that took flight from " + linkInfo.fromAirportCity + " to " + linkInfo.toAirportCity + " as a part of their route. Click on 'View Passenger Map' to see more...", 1);
 		linkHistoryState = "show"
-		showLinkHistoryPaths(linkHistoryState)
 	} else {
 		console.log("unknown linkHistoryState " + linkHistoryState)
 	}
 }
+
 
 
 function drawLinkHistoryPath(link, inverted, watchedLinkId) {
@@ -775,7 +799,6 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 		
 		shadowPath = new google.maps.Polyline({
 			 geodesic: true,
-		     strokeColor: "#DC83FC",
 		     strokeOpacity: 0.0001,
 		     strokeWeight: 25,
 		     path: [from, to],
@@ -784,6 +807,7 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 		     fromAirport : fromAirport,
 		     toAirport : toAirport,
 		     thisAirlinePassengers : 0,
+		     thisAlliancePassengers : 0,
 		     otherAirlinePassengers : 0
 		});
 		
@@ -794,6 +818,7 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 			$("#linkHistoryPopupFrom").text(this.fromAirport)
 			$("#linkHistoryPopupTo").text(this.toAirport)
 			$("#linkHistoryThisAirlinePassengers").text(this.thisAirlinePassengers)
+			$("#linkHistoryThisAlliancePassengers").text(this.thisAlliancePassengers)
 			$("#linkHistoryOtherAirlinePassengers").text(this.otherAirlinePassengers)
 			infowindow = new google.maps.InfoWindow({
 	             content: $("#linkHistoryPopup").html(),
@@ -813,7 +838,9 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 	
 	if (link.airlineId == activeAirline.id) {
 		relatedPath.shadowPath.thisAirlinePassengers += link.passenger
-	} else {
+	} else if (currentAirlineAllianceMembers.length > 0 && $.inArray(link.airlineId, currentAirlineAllianceMembers) != -1) {
+		relatedPath.shadowPath.thisAlliancePassengers += link.passenger
+	} else { 
 		relatedPath.shadowPath.otherAirlinePassengers += link.passenger
 	}
 }
@@ -822,6 +849,8 @@ function showLinkHistoryPaths(state) {
 	$.each(historyPaths, function(key, historyPath) {
 		if ((state == "showInverted" && historyPath.inverted) || 
 		    (state == "show" && !historyPath.inverted) ||
+		    (state == "showInvertedAlliance" && historyPath.inverted && (historyPath.shadowPath.thisAlliancePassengers > 0 || historyPath.shadowPath.thisAirlinePassengers > 0)) ||
+		    (state == "showAlliance" && !historyPath.inverted && (historyPath.shadowPath.thisAlliancePassengers > 0 || historyPath.shadowPath.thisAirlinePassengers > 0)) ||
 		    (state == "showInvertedSelf" && historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0) ||
 		    (state == "showSelf" && !historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0)) {
 			var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.otherAirlinePassengers
@@ -835,6 +864,17 @@ function showLinkHistoryPaths(state) {
 					historyPath.setOptions({strokeOpacity : newOpacity})
 				}
 			}
+			
+			
+			if (historyPath.shadowPath.thisAirlinePassengers > 0) {
+				historyPath.setOptions({strokeColor: "#DC83FC"})
+			} else if (historyPath.shadowPath.thisAlliancePassengers > 0) {
+				historyPath.setOptions({strokeColor: "#E28413"})
+			} else {
+				historyPath.setOptions({strokeColor: "#888888"})
+			}
+			
+			
 			if (historyPath.watched) {
 				highlightPath(historyPath)
 			}
@@ -1659,9 +1699,12 @@ function toggleLinkHistoryView() {
 	
 	 //push here otherwise it's not centered
 	$("#hideLinkHistoryButton").show()
-	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
-		map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Route Passenger Map', 'hideLinkHistoryView()', 'hideLinkHistoryButton')[0]);
-	}
+	window.setTimeout(function() {
+		if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
+			map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Route Passenger Map', 'hideLinkHistoryView()', 'hideLinkHistoryButton')[0]);
+		}
+	} , 1000); //delay otherwise it doesn't push to center
+	
 	
 	
 //	var linkControlDiv = document.createElement('div');
@@ -1670,6 +1713,17 @@ function toggleLinkHistoryView() {
 //	linkControlDiv.index = 1;
 //	map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
 //	map.controls[google.maps.ControlPosition.RIGHT_TOP].push($("#hideLinkHistoryButton")[0]);
+	loadCurrentAirlineAlliance(function(allianceDetails) {
+		currentAirlineAllianceMembers = []
+		if (allianceDetails.allianceId) {
+			var alliance = loadedAlliancesById[allianceDetails.allianceId]
+			if (alliance) {
+				$.each(alliance.members, function(index, member) {
+					currentAirlineAllianceMembers.push(member.airlineId)
+				})
+			} 
+		}
+	})
 	
 	toggleLinkHistory(selectedLink)
 }
