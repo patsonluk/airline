@@ -151,8 +151,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       
       //calculate guaranteed slots
       val guaranteedSlots = airlineBaseAtThisAirportOption match {
-        case Some(base) if (base.headquarter) => 10 //at least 10 slots for HQ
-        case Some(base) if (!base.headquarter) => 5 //at least 5 slots for base
+        case Some(base) if (base.headquarter) => 20 //at least 20 slots for HQ
+        case Some(base) if (!base.headquarter) => 10 //at least 10 slots for base
         case None => getGuaranteedSlots(airlineFromCountry, countryRelationship)
       }
       
@@ -195,14 +195,14 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   
   def getGuaranteedSlots(airlineFromCountryCode : String, countryMutualRelationship: Int) : Int = {
-    if (airlineFromCountryCode == this.countryCode) { //always at least 2 slots for home country airline
-      2
+    if (airlineFromCountryCode == this.countryCode) { //always at least 7 slots for home country airline
+      7
     } else if (countryMutualRelationship < 0) {
       0
     } else if (getCountry.openness >= Country.SIXTH_FREEDOM_MIN_OPENNESS) { //only very free country will open up slots for ANY airline
-      1
+      5
     } else {
-      0
+      3
     }
   }
   
