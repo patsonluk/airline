@@ -58,7 +58,7 @@ object AirplaneSimulation {
   
   def renewAirplanes(airplanes : List[Airplane]) : List[Airplane] = {
     val renewalThresholdsByAirline : scala.collection.immutable.Map[Int, Int] = AirlineSource.loadAirplaneRenewals()
-    val costsByAirline : Map[Int, Long] = Map[Int, Long]()
+    val costsByAirline : Map[Int, (Long, Long)] = Map[Int, (Long, Long)]()
     val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
     val renewedAirplanes : ListBuffer[Airplane] = ListBuffer[Airplane]() 
     
@@ -67,14 +67,15 @@ object AirplaneSimulation {
         case Some(threshold) =>
           if (airplane.condition < threshold ) {
              val airlineId = airplane.owner.id 
-             val existingCost : Long = costsByAirline.getOrElse(airlineId, 0)
+             val (existingCost, existingCapitalLost) : (Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0))
              val sellValue = Computation.calculateAirplaneSellValue(airplane)
              val renewCost = airplane.model.price - sellValue
              
              val newCost = existingCost + renewCost
              if (newCost <= airlinesByid(airplane.owner.id).getBalance()) {
                println("auto renewing " + airplane)
-               costsByAirline.put(airlineId, newCost)
+               val newCapitalLost = existingCapitalLost + (airplane.value - sellValue)
+               costsByAirline.put(airlineId, (newCost, newCapitalLost))
                val renewedAirplane = airplane.copy(constructedCycle = MainSimulation.currentWeek, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
                renewedAirplanes.append(renewedAirplane)
                renewedAirplane
@@ -90,10 +91,10 @@ object AirplaneSimulation {
     
     //now deduct money
     costsByAirline.foreach {
-      case(airlineId, cost) => {
+      case(airlineId, (cost, captialLoss)) => {
         println("Deducting " + cost + " from " + airlinesByid(airlineId) + " for renewal")
         AirlineSource.adjustAirlineBalance(airlineId, cost * -1)
-        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, cost * -1))
+        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, captialLoss * -1))
       }
       
     }
