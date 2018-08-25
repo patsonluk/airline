@@ -93,7 +93,9 @@ object AirplaneSimulation {
       case(airlineId, cost) => {
         println("Deducting " + cost + " from " + airlinesByid(airlineId) + " for renewal")
         AirlineSource.adjustAirlineBalance(airlineId, cost * -1)
+        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, cost * -1))
       }
+      
     }
     
     //save the renewed airplanes

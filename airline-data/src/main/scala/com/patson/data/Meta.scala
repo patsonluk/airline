@@ -511,7 +511,7 @@ object Meta {
       "model INTEGER, " +
       "owner INTEGER, " +
       "constructed_cycle INTEGER, " +
-      "airplane_condition DECIMAL(5,2), " +
+      "airplane_condition DECIMAL(7,4), " +
       "depreciation_rate INTEGER, " +
       "value INTEGER," +
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
