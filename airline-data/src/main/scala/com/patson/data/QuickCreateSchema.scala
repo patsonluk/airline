@@ -45,7 +45,7 @@ object QuickCreateSchema extends App {
   }
   
   def createSchema(connection : Connection) = {
-    Meta.createAlliance(connection)
+    Meta.createResetUser(connection)
   }
   
   

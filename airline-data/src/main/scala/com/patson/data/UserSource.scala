@@ -210,4 +210,59 @@ object UserSource {
       connection.close()
     }
   }
+  
+  def saveResetUser(username : String, resetToken : String) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("REPLACE INTO " + RESET_USER_TABLE + "(user_name, token) VALUES(?,?)")
+        preparedStatement.setString(1, username)
+        preparedStatement.setString(2, resetToken)
+        val updateCount = preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+        updateCount == 1
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def loadResetUser(resetToken : String) : Option[String] = {
+    val connection = Meta.getConnection()
+    
+    try {  
+      var queryString = "SELECT * FROM " +  RESET_USER_TABLE + " WHERE token = ?" 
+      val preparedStatement = connection.prepareStatement(queryString)
+      
+      preparedStatement.setString(1, resetToken)
+      
+      val resultSet = preparedStatement.executeQuery()
+      
+      val result =
+        if (resultSet.next()) {
+          Some(resultSet.getString("user_name"))
+        } else {
+          None 
+        }
+      
+      resultSet.close()
+      preparedStatement.close()
+      result
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def deleteResetUser(resetToken : String) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("DELETE FROM " + RESET_USER_TABLE + " WHERE token = ?")
+        preparedStatement.setString(1, resetToken)
+        val updateCount = preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+        updateCount == 1
+    } finally {
+      connection.close()
+    }
+  }
 }

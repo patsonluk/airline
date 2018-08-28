@@ -65,6 +65,7 @@ object Constants {
   val AIRPLANE_INDEX_2 = "airplane_index_2"
   val USER_TABLE = "user"
   val USER_SECRET_TABLE = "user_secret"
+  val RESET_USER_TABLE = "reset_user"
   val USER_AIRLINE_TABLE = "user_airline"
   val VIP_ROUTE_TABLE = "vip_route"
   val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"

@@ -96,6 +96,10 @@ GET		/signup/profiles            controllers.SignUp.profiles
 #GET     /editUser/fakeuser             controllers.SignUp.editForm
 POST    /signup                     controllers.SignUp.submit
 
+# PasswordReset
+GET    /password-reset				controllers.AccountApplication.passwordResetForm(resetToken : String)
+POST   /password-reset				controllers.AccountApplication.passwordResetSubmit
+
 
 
 OPTIONS    /*path     controllers.Application.options(path)
