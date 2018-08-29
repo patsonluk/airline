@@ -15,8 +15,8 @@ import com.patson.model.airplane._
 import Model.Type._
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.2, SMALL -> 0.05, MEDIUM -> -0.1, LARGE -> -0.15, JUMBO -> -0.25)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.2, LARGE -> 0.15, JUMBO -> 0.1)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.2, SMALL -> 0.05, MEDIUM -> -0.1, LARGE -> -0.15, X_LARGE -> -0.20, JUMBO -> -0.25)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.2, LARGE -> 0.15, X_LARGE -> 0.1, JUMBO -> 0.1)
   
   "all airplane models".must {
     "Generate good profit at MAX LF at suitable range".in {
@@ -43,6 +43,7 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
       case SMALL => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
       case MEDIUM => (FlightType.LONG_HAUL_INTERCONTINENTAL, 7)
       case LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
+      case X_LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
       case JUMBO => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
     }
     val duration = Computation.calculateDuration(airplaneModel, distance)

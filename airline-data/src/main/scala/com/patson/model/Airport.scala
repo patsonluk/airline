@@ -280,9 +280,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case LIGHT => 1
       case REGIONAL => 1
       case SMALL => 3
-      case MEDIUM => 15
-      case LARGE => 20
-      case JUMBO => 25
+      case MEDIUM => 8
+      case LARGE => 12
+      case X_LARGE => 15
+      case JUMBO => 18
     }
     
     //apply discount if it's a base
@@ -308,16 +309,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   
   def allowsModel(airplaneModel : Model) : Boolean = {
-    import Model.Type._
-    airplaneModel.airplaneType match {
-      case LIGHT => true   
-      case REGIONAL => true
-      case SMALL => size >= 2
-      case MEDIUM => size >= 3
-      case LARGE => size >= 4
-      case JUMBO => size >= 5
-    }
-    
+    size >= airplaneModel.minAirportSize
   }
   
   private[this] def getCountry() : Country = {

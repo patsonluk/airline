@@ -12,6 +12,7 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
       case x if (x <= 150) => SMALL 
       case x if (x <= 250) => MEDIUM
       case x if (x <= 350) => LARGE
+      case x if (x <= 500) => X_LARGE
       case _ => JUMBO
     }
   }
@@ -22,7 +23,32 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
       case SMALL => 100 
       case MEDIUM => 140
       case LARGE => 180
+      case X_LARGE => 200
       case JUMBO => 220 
+    }
+  }
+  
+  val minAirportSize : Int = {
+    airplaneType match {
+      case LIGHT => 1   
+      case REGIONAL => 1
+      case SMALL => 2
+      case MEDIUM => 3
+      case LARGE => 4
+      case X_LARGE => 5
+      case JUMBO => 5
+    }
+  }
+  
+  val airplaneTypeLabel : String = {
+    airplaneType match {
+      case LIGHT => "Light"
+      case REGIONAL => "Regional"
+      case SMALL => "Small" 
+      case MEDIUM => "Medium"
+      case LARGE => "Large"
+      case X_LARGE => "Extra large"
+      case JUMBO => "Jumbo"
     }
   }
   
@@ -40,7 +66,7 @@ object Model {
   }
   object Type extends Enumeration {
     type Type = Value
-    val LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO = Value
+    val LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, X_LARGE, JUMBO = Value
   }
   //https://en.wikipedia.org/wiki/List_of_jet_airliners
   val models = List(Model("Cessna 421", capacity = 7, fuelBurn = (7 * 1).toInt, speed = 300, range = 1555, price = 550000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US"),
@@ -66,7 +92,7 @@ object Model {
                       Model("Boeing 787-8 Dreamliner", capacity = 250, fuelBurn = (250 * 4.5).toInt, speed = 907, range = 13621, price = 125000000, lifespan = 35 * 52, constructionTime = 36, countryCode = "US", imageUrl = "https://www.norebbo.com/2013/02/boeing-787-8-blank-illustration-templates/"),
                       Model("Ilyushin Il-96-300", capacity = 300, fuelBurn = (300 * 5).toInt, speed = 850, range = 11500, price = 60000000, lifespan = 25 * 52, constructionTime = 36, countryCode = "RU"),
                       Model("Boeing 767-300ER", capacity = 350, fuelBurn = (350 * 4.5).toInt, speed = 913, range = 11093, price = 181000000, lifespan = 35 * 52, constructionTime = 36, countryCode = "US", imageUrl = "https://www.norebbo.com/2014/07/boeing-767-300-blank-illustration-templates/"),
-                      Model("Airbus A340-500", capacity = 375, fuelBurn = (375 * 4.8).toInt, speed = 871, range = 17000, price = 300000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "NL", imageUrl = "https://www.norebbo.com/2016/08/airbus-a340-500-blank-illustration-templates/"),
+                      Model("Airbus A340-500", capacity = 375, fuelBurn = (375 * 4.7).toInt, speed = 871, range = 17000, price = 300000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "NL", imageUrl = "https://www.norebbo.com/2016/08/airbus-a340-500-blank-illustration-templates/"),
                       Model("Airbus A330-300", capacity = 380, fuelBurn = (380 * 4.7).toInt, speed = 871, range = 11300, price = 220000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "NL", imageUrl = "https://www.norebbo.com/2016/02/airbus-a330-300-blank-illustration-templates-with-all-three-engine-options/"),
                       Model("Ilyushin 96-400", capacity = 436, fuelBurn = (436 * 6.4).toInt, speed = 870, range = 10000, price = 50000000, lifespan = 30 * 52, constructionTime = 48, countryCode = "RU"),
                       Model("Airbus A350-900", capacity = 440, fuelBurn = (440 * 5).toInt, speed = 903, range = 15000, price = 280000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "NL", imageUrl = "https://www.norebbo.com/2013/07/airbus-a350-900-blank-illustration-templates/"),
