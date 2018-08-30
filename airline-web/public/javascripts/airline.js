@@ -1631,7 +1631,8 @@ function updateLinksTable(sortProperty, sortOrder) {
 	linksTable.children("div.table-row").remove()
 	
 	//sort the list
-	loadedLinks.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
+	//loadedLinks.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
+	loadedLinks = sortPreserveOrder(loadedLinks, sortProperty, sortOrder == "ascending")
 	
 	$.each(loadedLinks, function(index, link) {
 		var row = $("<div class='table-row clickable' onclick='selectLinkFromTable($(this), " + link.id + ")'></div>")
@@ -1739,7 +1740,21 @@ function hideLinkHistoryView() {
 }
 
 function updateLoadedLinks(links) {
-	loadedLinks = links;
+	var previousOrder = {}
+	if (loadedLinks) {
+		$.each(loadedLinks, function(index, link) {
+			previousOrder[link.id] = index
+		})
+		$.each(links, function(index, link) {
+			link.previousOrder = previousOrder[link.id]
+		})
+		loadedLinks = links;
+		loadedLinks.sort(sortByProperty("previousOrder"), true)
+	} else {
+		loadedLinks = links;
+	}
+	
+	
 	loadedLinksById = {}
 	$.each(links, function(index, link) {
 		loadedLinksById[link.id] = link
