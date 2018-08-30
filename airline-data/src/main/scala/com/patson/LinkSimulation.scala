@@ -174,7 +174,7 @@ object LinkSimulation {
     consumptionResult.foreach {
       case ((_, _, route), passengerCount) =>
         for (i <- 0 until route.links.size) {
-          val link = route.links(i) 
+          val link = route.links(i)._1 
           val airline = link.link.airline
           val key = 
             if (i == 0) {
@@ -205,7 +205,7 @@ object LinkSimulation {
     consumptionResult.foreach {
       case ((_, _, route), passengerCount) =>
         for (i <- 0 until route.links.size) {
-          val link = route.links(i) 
+          val link = route.links(i)._1 
           val airline = link.link.airline
           val country = link.from.countryCode
           val airlinePassengers = countryAirlinePassengers.getOrElseUpdate(country, Map[Int, Long]())

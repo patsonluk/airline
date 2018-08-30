@@ -146,14 +146,16 @@ object PassengerSimulation {
                  val linkClass = passengerGroup.preference.linkClass
                  
                  if (isRouteAffordable(pickedRoute, fromAirport, toAirport, linkClass)) {
-                   val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
+                   val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, entry) =>
+                     val (linkConsideration, _) = entry
                      val actualLinkClass = linkConsideration.linkClass
                      val availableSeats = linkConsideration.link.availableSeats(actualLinkClass) 
                      if (availableSeats < foldInt) { availableSeats } else { foldInt }
                    }
                    //some capacity available on all the links, consume them NOMNOM NOM!
                    if (consumptionSize > 0) {
-                     pickedRoute.links.foreach { linkConsideration =>
+                     pickedRoute.links.foreach { entry =>
+                       val (linkConsideration, _) = entry
                        val actualLinkClass = linkConsideration.linkClass
                        //val newAvailableSeats = linkConsideration.link.availableSeats(actualLinkClass) - consumptionSize
                        
@@ -215,7 +217,7 @@ object PassengerSimulation {
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, linkClass: LinkClass) : Boolean = {
     val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
-    val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
+    val routeDistance = pickedRoute.links.foldLeft(0)(_ + _._1.link.distance)
     if (routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR <= routeDistance) { //a route that distance is too long (too indirect)
       return false
     }
@@ -228,7 +230,8 @@ object PassengerSimulation {
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
     
       val LINK_COST_TOLERANCE_FACTOR = 1.3;
-      val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
+      val unaffordableLink = pickedRoute.links.find { entry => {//find links that are too expensive
+          val (linkConsideration, finalCost) = entry
           val link = linkConsideration.link
           
           
@@ -237,7 +240,7 @@ object PassengerSimulation {
 //          if (linkConsideration.linkClass == BUSINESS) {
 //            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 
 //          }
-          linkConsideration.cost > linkAffordableCost
+          finalCost > linkAffordableCost
           
           
         }
@@ -510,7 +513,7 @@ object PassengerSimulation {
     //val allVertices = allVerticesSource.map { _.id }
     
     val distanceMap = new java.util.HashMap[Int, Double]()
-    val predecessorMap = new java.util.HashMap[Int, LinkConsideration]()
+    val predecessorMap = new java.util.HashMap[Int, (LinkConsideration, Double)]()
     allVertices.foreach { vertex => 
       if (vertex == from.id) {
         distanceMap.put(vertex, 0)
@@ -534,7 +537,7 @@ object PassengerSimulation {
           if (linkConsideration.from.id != from.id) { //then it should be a connection flight
               connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
-              val predecessorLink = predecessorMap.get(linkConsideration.from.id).link
+              val predecessorLink = predecessorMap.get(linkConsideration.from.id)._1.link
               
               val frequency = Math.max(predecessorLink.frequency, linkConsideration.link.frequency)
               //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
@@ -553,7 +556,7 @@ object PassengerSimulation {
           val cost = linkConsideration.cost + connectionCost
           if (distanceMap.get(linkConsideration.from.id) + cost < distanceMap.get(linkConsideration.to.id)) {
             distanceMap.put(linkConsideration.to.id, distanceMap.get(linkConsideration.from.id) + cost)
-            predecessorMap.put(linkConsideration.to.id, linkConsideration.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
+            predecessorMap.put(linkConsideration.to.id, (linkConsideration, cost)) //tuple to keep track of the computed cost
           }  
         }
       }
@@ -566,12 +569,12 @@ object PassengerSimulation {
       var walker = to.id
       var noSolution = false;
       var foundSolution = false
-      var route = ListBuffer[LinkConsideration]()
+      var route = ListBuffer[(LinkConsideration, Double)]()
       var hopCounter = 0
       while (!foundSolution && !noSolution && hopCounter < maxHop) {
         if (predecessorMap.containsKey(walker)) {
-          val link = predecessorMap.get(walker)
-          route.prepend(link)
+          val (link, finalCost) = predecessorMap.get(walker)
+          route.prepend((link, finalCost))
           walker = link.from.id
           if (walker == from.id) {
             foundSolution = true

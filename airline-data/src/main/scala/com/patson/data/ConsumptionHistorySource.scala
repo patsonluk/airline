@@ -27,7 +27,7 @@ object ConsumptionHistorySource {
           passengerHistoryStatement.setInt(1, passengerGroup.passengerType.id)
           passengerHistoryStatement.setInt(2, passengerCount)
           passengerHistoryStatement.setInt(3, routeId)          
-          route.links.foreach { linkConsideration =>  
+          route.links.foreach { case(linkConsideration, _) =>  
             passengerHistoryStatement.setInt(4, linkConsideration.link.id)
             passengerHistoryStatement.setString(5, linkConsideration.linkClass.code)
             passengerHistoryStatement.setBoolean(6, linkConsideration.inverted)
@@ -68,7 +68,9 @@ object ConsumptionHistorySource {
       }
       
       val allRoutes = linkConsiderations.groupBy(_._1).map {
-        case (routeId, linkConsiderationsByRoute) => new Route(linkConsiderationsByRoute.map(_._2).toList, 0, routeId)
+        case (routeId, linkConsiderationsByRoute) => new Route(linkConsiderationsByRoute.map {
+         case (_, linkConsideration) => (linkConsideration, 0.0) 
+        }.toList, 0, routeId)
       }
       
       allRoutes.map { route => 

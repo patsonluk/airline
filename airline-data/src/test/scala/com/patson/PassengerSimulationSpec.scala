@@ -156,7 +156,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
         result(economyPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
         
         //should be the right class
-        result(economyPassengerGroup)(toAirport).links.foreach { linkConsideration =>
+        result(economyPassengerGroup)(toAirport).links.foreach { case (linkConsideration, _) =>
           assert(linkConsideration.linkClass == ECONOMY)          
         }
       }
@@ -164,7 +164,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       toAirports.foreach { toAirport =>
         result(businessPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
         //should be the right class
-        result(businessPassengerGroup)(toAirport).links.foreach { linkConsideration =>
+        result(businessPassengerGroup)(toAirport).links.foreach { case (linkConsideration, _) =>
           assert(linkConsideration.linkClass == BUSINESS)          
         }
       }
@@ -172,7 +172,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       toAirports.foreach { toAirport =>
         result(firstPassengerGroup).isDefinedAt(toAirport).shouldBe(true)
         //should be the right class
-        result(firstPassengerGroup)(toAirport).links.foreach { linkConsideration =>
+        result(firstPassengerGroup)(toAirport).links.foreach { case (linkConsideration, _) =>
           assert(linkConsideration.linkClass == FIRST)          
         }
       }
@@ -192,21 +192,21 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       toAirports.foreach { toAirport =>
         val route = result(economyPassengerGroup)(toAirport)
-        route.links.foreach { linkConsideration =>
+        route.links.foreach { case (linkConsideration, _) =>
           assert(linkConsideration.linkClass == ECONOMY)
         }
       }
       
       toAirports.foreach { toAirport =>
         val route = result(businessPassengerGroup)(toAirport)
-        route.links.foreach { linkConsideration =>
+        route.links.foreach { case (linkConsideration, _) =>
           assert(linkConsideration.linkClass == BUSINESS)
         }
       }
       
       toAirports.foreach { toAirport =>
         val route = result(firstPassengerGroup)(toAirport)
-        route.links.foreach { linkConsideration =>
+        route.links.foreach { case (linkConsideration, _) =>
           assert(linkConsideration.linkClass == FIRST)
         }
       }
@@ -227,7 +227,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       //for economy class it should only be able to find routes to 1st airports
       //1st airport 
-      assert(result(economyPassengerGroup)(toAirportsList(0)).links(0).linkClass == ECONOMY)
+      assert(result(economyPassengerGroup)(toAirportsList(0)).links(0)._1.linkClass == ECONOMY)
       //2nd airport, 3rd airport - no route as 2nd link only have business class available
       assert(!result(economyPassengerGroup).contains(toAirportsList(1)))
       assert(!result(economyPassengerGroup).contains(toAirportsList(2)))
@@ -235,22 +235,22 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       //for business class it should only able to find routes to all airpots
       //1st airport no downgrade
-      assert(result(businessPassengerGroup)(toAirportsList(0)).links(0).linkClass == BUSINESS)
+      assert(result(businessPassengerGroup)(toAirportsList(0)).links(0)._1.linkClass == BUSINESS)
       //2nd airport no downgrade
-      assert(result(businessPassengerGroup)(toAirportsList(1)).links(0).linkClass == BUSINESS)
-      assert(result(businessPassengerGroup)(toAirportsList(1)).links(1).linkClass == BUSINESS)
+      assert(result(businessPassengerGroup)(toAirportsList(1)).links(0)._1.linkClass == BUSINESS)
+      assert(result(businessPassengerGroup)(toAirportsList(1)).links(1)._1.linkClass == BUSINESS)
       //3rd airport last link downgrade to ECONOMY
-      assert(result(businessPassengerGroup)(toAirportsList(2)).links(0).linkClass == BUSINESS)
-      assert(result(businessPassengerGroup)(toAirportsList(2)).links(1).linkClass == BUSINESS)
-      assert(result(businessPassengerGroup)(toAirportsList(2)).links(2).linkClass == ECONOMY)
+      assert(result(businessPassengerGroup)(toAirportsList(2)).links(0)._1.linkClass == BUSINESS)
+      assert(result(businessPassengerGroup)(toAirportsList(2)).links(1)._1.linkClass == BUSINESS)
+      assert(result(businessPassengerGroup)(toAirportsList(2)).links(2)._1.linkClass == ECONOMY)
       
       
       //for first class it should be able to find routes to 1st and 2nd airport. Last airport is not reachable as it requires downgrade of 2 classes
       //1st airport no downgrade
-      assert(result(firstPassengerGroup)(toAirportsList(0)).links(0).linkClass == FIRST)
+      assert(result(firstPassengerGroup)(toAirportsList(0)).links(0)._1.linkClass == FIRST)
       //2nd airport, second link downgraded to business
-      assert(result(firstPassengerGroup)(toAirportsList(1)).links(0).linkClass == FIRST)
-      assert(result(firstPassengerGroup)(toAirportsList(1)).links(1).linkClass == BUSINESS)
+      assert(result(firstPassengerGroup)(toAirportsList(1)).links(0)._1.linkClass == FIRST)
+      assert(result(firstPassengerGroup)(toAirportsList(1)).links(1)._1.linkClass == BUSINESS)
       //3rd airport, no link as last link only has economy (downgrade 2 classes - forbidden)
       assert(!result(economyPassengerGroup).contains(toAirportsList(2)))
     }
@@ -507,12 +507,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               activeAirports,
               countryOpenness = countryOpenness)
               
-      assert(result(economyPassengerGroup)(airport3).links(0).link.airline == airline1)
-      assert(result(economyPassengerGroup)(airport3).links(1).link.airline == airline1) //should use airline 1
-      assert(result(businessPassengerGroup)(airport3).links(0).link.airline == airline1)
-      assert(result(businessPassengerGroup)(airport3).links(1).link.airline == airline2) //use airline 2 as airline 1 has no business class offered
-      assert(result(firstPassengerGroup)(airport3).links(0).link.airline == airline1)
-      assert(result(firstPassengerGroup)(airport3).links(1).link.airline == airline2) //use airline 2 as airline 1 has no first class offered
+      assert(result(economyPassengerGroup)(airport3).links(0)._1.link.airline == airline1)
+      assert(result(economyPassengerGroup)(airport3).links(1)._1.link.airline == airline1) //should use airline 1
+      assert(result(businessPassengerGroup)(airport3).links(0)._1.link.airline == airline1)
+      assert(result(businessPassengerGroup)(airport3).links(1)._1.link.airline == airline2) //use airline 2 as airline 1 has no business class offered
+      assert(result(firstPassengerGroup)(airport3).links(0)._1.link.airline == airline1)
+      assert(result(firstPassengerGroup)(airport3).links(1)._1.link.airline == airline2) //use airline 2 as airline 1 has no first class offered
     }
     
   }
