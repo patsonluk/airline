@@ -404,6 +404,7 @@ div#canvas {
 
 img.logo {
     box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.2);
+    margin-right: 3px;
 }
 
 .airlineColorDot {
