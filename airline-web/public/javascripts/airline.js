@@ -20,9 +20,9 @@ function updateAirlineInfo(airlineId) {
 	    	refreshTopBar(airline)
 	    	$("#currentAirline").text(airline.name)
 	    	if (airline.headquarterAirport) {
-	    		$("#currentAirlineCountry").html("<img src='assets/images/flags/" + airline.headquarterAirport.countryCode + ".png' />")
+                        $("#currentAirlineCountry").html("<img class='flag' src='assets/images/flags/" + airline.headquarterAirport.countryCode + ".png' />")
 	    	} else {
-	    		$("#currentAirlineCountry").empty()
+                        $("#currentAirlineCountry").empty()
 	    	}
 	    	activeAirline = airline
 	    	updateLinksInfo()
@@ -1761,4 +1761,4 @@ function updateLoadedLinks(links) {
 	});
 }
 
-	
+
