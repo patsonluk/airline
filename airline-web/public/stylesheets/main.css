@@ -403,11 +403,11 @@ div#canvas {
 }
 
 img.logo {
-	box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.2);
 }
 
 .airlineColorDot {
-	width:          15px;
+    width:          15px;
     height:         15px;
     padding:        1px;
     border:         1px solid #ccc;
