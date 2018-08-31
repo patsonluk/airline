@@ -302,7 +302,7 @@ li.row, div.table-row {
 }
 
 .table.data .table-row div {
-	padding: 3px 0px;
+	padding: 3px;
 }
 
 .warning, .fatal {
