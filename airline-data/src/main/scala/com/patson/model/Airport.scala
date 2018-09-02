@@ -116,6 +116,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     }
     
   }
+  
   /**
    * Get max slots that can be assigned to this airline (including existing ones)
    */
@@ -151,8 +152,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       
       //calculate guaranteed slots
       val guaranteedSlots = airlineBaseAtThisAirportOption match {
-        case Some(base) if (base.headquarter) => 20 //at least 20 slots for HQ
-        case Some(base) if (!base.headquarter) => 10 //at least 10 slots for base
+        case Some(base) if (base.headquarter) => Airport.HQ_GUARANTEED_SLOTS 
+        case Some(base) if (!base.headquarter) => Airport.BASE_GUARANTEED_SLOTS 
         case None => getGuaranteedSlots(airlineFromCountry, countryRelationship)
       }
       
@@ -161,7 +162,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
         getAirlineBase(airlineId) match {
           case Some(base) if (base.headquarter) => 100 + 100 * (base.scale)
           case Some(base) if (!base.headquarter) => 50 + 50 * (base.scale)
-          case None => 70  
+          case None => Airport.NON_BASE_MAX_SLOT  
         }
       
       val maxSlotsByLoyalty = (maxSlotsByBase * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at full loyalty get 100% of max slot available
@@ -343,6 +344,9 @@ object Airport {
   }
   
   val MAJOR_AIRPORT_LOWER_THRESHOLD = 5
+  val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
+  val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
+  val NON_BASE_MAX_SLOT = 70
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)
