@@ -19,19 +19,26 @@ import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.CountrySource
 import com.patson.data.AirportSource
 
-
 class RankingApplication extends Controller {
   implicit object RankingWrites extends Writes[Ranking] {
     def writes(ranking : Ranking): JsValue = {
-      val countryCode : String = ranking.airline.getCountryCode().getOrElse("")
-      Json.obj(
+      //val countryCode : String = ranking.airline.getCountryCode().getOrElse("")
+      var result = Json.obj(
         "rank" -> ranking.ranking,
-        "airlineName" -> ranking.airline.name,
-        "airlineId" -> ranking.airline.id,
-        "airlineCountryCode" -> countryCode,
+        //"airlineCountryCode" -> countryCode,
         "rankedValue" -> ranking.rankedValue.toString,
         "movement" ->  ranking.movement
       )
+      
+      if (ranking.entry.isInstanceOf[Airline]) { 
+        val airline = ranking.entry.asInstanceOf[Airline]
+        result = result + ("airlineName" -> JsString(airline.name)) + ("airlineId" -> JsNumber(airline.id))
+      } else if (ranking.entry.isInstanceOf[Link]) {
+        val link = ranking.entry.asInstanceOf[Link]
+        result = result + ("airlineName" -> JsString(link.airline.name)) + ("airlineId" -> JsNumber(link.airline.id)) + ("rankInfo" -> JsString(getLinkDescription(link)))
+      }
+      
+      result
     }
   }
   
@@ -41,6 +48,10 @@ class RankingApplication extends Controller {
         "rankingType" -> rankingType.toString
       )
     }
+  }
+  
+  def getLinkDescription(link : Link) = {
+    link.from.city + "(" + link.from.iata + ") <=> " + link.to.city + "(" + link.to.iata + ")" 
   }
   
   

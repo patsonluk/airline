@@ -39,6 +39,20 @@ function updateRankingTable(rankingType, rankings) {
 		rankingTable = $('#serviceQualityRank')
 	} else if (rankingType == "LINK_COUNT") {
 		rankingTable = $('#linkCountRank')
+	} else if (rankingType == "LINK_PROFIT") {
+		rankingTable = $('#linkProfitRank')
+	} else if (rankingType == "PASSENGER_AS") {
+		rankingTable = $('#passengerRankAs')
+	} else if (rankingType == "PASSENGER_AF") {
+		rankingTable = $('#passengerRankAf')
+	} else if (rankingType == "PASSENGER_OC") {
+		rankingTable = $('#passengerRankOc')
+	} else if (rankingType == "PASSENGER_EU") {
+		rankingTable = $('#passengerRankEu')
+	} else if (rankingType == "PASSENGER_NA") {
+		rankingTable = $('#passengerRankNa')
+	} else if (rankingType == "PASSENGER_SA") {
+		rankingTable = $('#passengerRankSa')
 	} else {
 		console.log("Unknown ranking type " + rankingType)
 	}
@@ -51,7 +65,7 @@ function updateRankingTable(rankingType, rankings) {
 			if (index < maxEntry) {
 				rankingTable.append(getRankingRow(ranking))
 			}
-			if (activeAirline && ranking.airlineId == activeAirline.id) {
+			if (activeAirline && !currentAirlineRanking && ranking.airlineId == activeAirline.id) {
 				currentAirlineRanking = ranking
 			}
 		})
@@ -68,8 +82,12 @@ function getRankingRow(ranking) {
 	var row = $("<div class='table-row'></div>")
 	row.append("<div class='cell'>" + ranking.rank + "</div>")
 	row.append("<div class='cell'>" + getMovementLabel(ranking.movement) + "</div>")
-	row.append("<div class='cell'>" + getAirlineLogoImg(ranking.airlineId) + ranking.airlineName + "</div>")
-	row.append("<div class='cell' style='text-align: right;'>" + ranking.rankedValue + "</div>")
+	var entry = getAirlineLogoImg(ranking.airlineId) + ranking.airlineName
+	if (ranking.rankInfo) {
+		entry += ' : ' + ranking.rankInfo
+	}
+	row.append("<div class='cell'>" + entry + "</div>")
+	row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(ranking.rankedValue) + "</div>")
 	
 	
 	return row
