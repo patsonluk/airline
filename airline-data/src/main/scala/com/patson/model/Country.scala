@@ -20,11 +20,11 @@ object Country {
       val decentAirportCount = AirportSource.loadAirportsByCountry(countryCode).count(_.size >= 3)
       if (decentAirportCount <= 2) {
         FlightCateogryLimits(1, 12)
-      } else if (decentAirportCount <= 5) {
+      } else if (decentAirportCount <= 4) {
         FlightCateogryLimits(3, 10)
-      } else if (decentAirportCount <= 10) { 
+      } else if (decentAirportCount <= 8) { 
         FlightCateogryLimits(6, 8)
-      } else if (decentAirportCount <= 20) {
+      } else if (decentAirportCount <= 10) {
         FlightCateogryLimits(9, 6)
       } else {
         FlightCateogryLimits(12, 4)
