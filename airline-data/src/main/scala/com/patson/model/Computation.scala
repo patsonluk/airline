@@ -83,9 +83,10 @@ object Computation {
   
   import FlightCategory._
   def getFlightCategory(fromAirport : Airport, toAirport : Airport) : FlightCategory.Value = {
+    val distance = calculateDistance(fromAirport, toAirport)
     if (fromAirport.countryCode == toAirport.countryCode) {
       DOMESTIC
-    } else if (fromAirport.zone == toAirport.zone) {
+    } else if (fromAirport.zone == toAirport.zone || distance <= 1000) {
       REGIONAL
     } else {
       INTERCONTINENTAL
