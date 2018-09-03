@@ -7,10 +7,10 @@ object FlightCategory extends Enumeration {
 
 case class FlightCateogryLimits(domestic : Int, regional : Int) {
   def +(otherValue : FlightCateogryLimits) : FlightCateogryLimits = {
-//    map.foreach {
-//      case (key, value) => map.update(key, map(key) + otherValue(key)) 
-//    }
-//    this
     FlightCateogryLimits(domestic + otherValue.domestic, regional + otherValue.regional)
+  }
+  
+  def *(multiplier : Int) : FlightCateogryLimits = {
+    FlightCateogryLimits(domestic * multiplier, regional * multiplier)
   }
 }

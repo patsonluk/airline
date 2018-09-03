@@ -56,7 +56,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   
   private[this] val getLinkLimitByBase : ( () => FlightCateogryLimits) = () => {
     bases.foldLeft(FlightCateogryLimits(0, 0))((accumulator, base) => {
-      accumulator + Country.getLimitByCountryCode(base.countryCode)  
+      accumulator + (Country.getLimitByCountryCode(base.countryCode) * (if (base.headquarter) 2 else 1))
     })
   }
   
