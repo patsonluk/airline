@@ -26,10 +26,8 @@ object Country {
         FlightCateogryLimits(6, 8)
       } else if (decentAirportCount <= 10) {
         FlightCateogryLimits(9, 6)
-      } else if (decentAirportCount <= 20) {
-        FlightCateogryLimits(12, 4)
       } else {
-        FlightCateogryLimits(15, 2)
+        FlightCateogryLimits(12, 4)
       }
     })
   }
