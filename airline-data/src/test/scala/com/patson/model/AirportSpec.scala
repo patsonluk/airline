@@ -122,7 +122,9 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
       airport.initAirlineAppeals(Map())
       airport.setAirlineLoyalty(highReputationLocalHqAirline.id, 100)
       airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(50) //no change, into reserved range
+      airport.getPreferredSlotAssignment(highReputationLocalHqAirline).shouldBe(35) //airport want to reduce it to 20% empty so 45 + 35 = 80 = 80% of 100
       airport.getMaxSlotAssignment(lowReputationLocalHqAirline).shouldBe(45) //no change, into reserved range
+      airport.getPreferredSlotAssignment(lowReputationLocalHqAirline).shouldBe(20) //HQ guaranteed slots
       airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe(5) //new airline in open country
       airport.getMaxSlotAssignment(lowReputationForeignHqAirline).shouldBe(5) //new airline in open country
     }
@@ -130,8 +132,10 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
       airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 5, lowReputationLocalHqAirline.id -> 70))
       airport.initAirlineAppeals(Map())
       airport.setAirlineLoyalty(highReputationLocalHqAirline.id, 100)
-      airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(10) //can only give 5 more  
+      airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(20) //HQ always get 20 at least  
+      airport.getPreferredSlotAssignment(highReputationLocalHqAirline).shouldBe(20) //HQ always get 20 at least
       airport.getMaxSlotAssignment(lowReputationLocalHqAirline).shouldBe(70) //keep what u had...
+      airport.getPreferredSlotAssignment(lowReputationLocalHqAirline).shouldBe(20) 
       airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe(5) //new airline in open country
       airport.getMaxSlotAssignment(lowReputationForeignHqAirline).shouldBe(5) //new airline in open country
     }

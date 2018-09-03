@@ -585,8 +585,13 @@ function updateAirportSlots(airportId) {
 			url: "airports/" + airportId + "/slots?airlineId=" + airlineId,
 		    dataType: 'json',
 		    success: function(slotInfo) {
-		    	var availableSlots = slotInfo.maxSlots - slotInfo.assignedSlots 
+		    	var availableSlots = slotInfo.preferredSlots - slotInfo.assignedSlots 
 	    		$(".airportAssignedSlots").text(availableSlots + " / " + slotInfo.maxSlots)
+	    		if (availableSlots < 0) {
+	    			$(".airportAssignedSlots").addClass("warning")
+	    		} else {
+	    			$(".airportAssignedSlots").removeClass("warning")
+	    		}
 		    },
 		    error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));

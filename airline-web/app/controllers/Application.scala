@@ -236,7 +236,8 @@ class Application extends Controller {
        case Some(airport) =>  
          val maxSlots = airport.getMaxSlotAssignment(airlineId)
          val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
-         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots)))
+         val preferredSlots = airport.getPreferredSlotAssignment(airlineId)
+         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots), "preferredSlots" -> JsNumber(preferredSlots)))
        case None => NotFound
      }
   }
