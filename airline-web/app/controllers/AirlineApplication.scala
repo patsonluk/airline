@@ -140,6 +140,9 @@ class AirlineApplication extends Controller {
           result = result + ("rejection" -> JsString(rejection))
         }
         
+        val baseLinkLimit = Country.getLimitByCountryCode(airport.countryCode)
+        result = result ++ Json.obj("linkLimitDomestic" -> baseLinkLimit.domestic, "linkLimitRegional" -> baseLinkLimit.regional)
+        
         Ok(result)
       }
       case None => NotFound

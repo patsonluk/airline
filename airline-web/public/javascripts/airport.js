@@ -89,8 +89,9 @@ function updateAirportDetails(airport) {
 	    			$('#airportDetailsBaseScale').text(airportBase.scale)
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
 	    		}
+		    	$('#airportDetailsLinkLimitBoost').text(baseDetails.linkLimitDomestic + " / " + baseDetails.linkLimitRegional)
 		    	var targetBase = baseDetails.targetBase
-    			$('#airportDetailsBaseUpgradeCost').text('$' + commaSeparateNumber(targetBase.value))
+		    	$('#airportDetailsBaseUpgradeCost').text('$' + commaSeparateNumber(targetBase.value))
     			$('#airportDetailsBaseUpgradeUpkeep').text('$' + commaSeparateNumber(targetBase.upkeep))
 
 	    		
