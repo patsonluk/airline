@@ -97,9 +97,9 @@ class AirlineApplication extends Controller {
        ("domesticLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.DOMESTIC))) +
        ("regionalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.REGIONAL))) +
        ("intercontinentalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.INTERCONTINENTAL))) +
-       ("domesticLinkMax" -> JsNumber(airlineGrade.getLinkLimit(FlightCategory.DOMESTIC))) +
-       ("regionalLinkMax" -> JsNumber(airlineGrade.getLinkLimit(FlightCategory.REGIONAL))) +
-       ("intercontinentalLinkMax" -> JsNumber(airlineGrade.getLinkLimit(FlightCategory.INTERCONTINENTAL)))  
+       ("domesticLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.DOMESTIC))) +
+       ("regionalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.REGIONAL))) +
+       ("intercontinentalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.INTERCONTINENTAL)))  
               
        
        

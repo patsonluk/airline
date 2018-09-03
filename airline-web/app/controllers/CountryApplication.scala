@@ -43,7 +43,7 @@ class CountryApplication extends Controller {
   def getCountry(countryCode : String) = Action {
     CountrySource.loadCountryByCode(countryCode) match {
       case Some(country) =>
-        var jsonObject= Json.toJson(country)
+        var jsonObject : JsObject = Json.toJson(country).asInstanceOf[JsObject]
         val airports = AirportSource.loadAirportsByCountry(countryCode)
         val smallAirportCount = airports.count { airport => airport.size <= 2 }
         val mediumAirportCount = airports.count { airport => airport.size >= 3 && airport.size <= 4 }
@@ -79,6 +79,9 @@ class CountryApplication extends Controller {
             case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
           }.toList)(AirlineSharesWrites))
         }
+        
+        val baseLinkLimit = Country.getLimitByCountryCode(countryCode)
+        jsonObject = jsonObject ++ Json.obj("linkLimitDomestic" -> baseLinkLimit.domestic, "linkLimitRegional" -> baseLinkLimit.regional) 
           
         Ok(jsonObject)
       case None => NotFound
