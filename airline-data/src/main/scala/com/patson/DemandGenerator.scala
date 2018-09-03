@@ -75,7 +75,7 @@ object DemandGenerator {
 	    allDemands.add((fromAirport, demandList.asScala.toList))
     }
 	  
-	  val baseDemandChunkSize = 30
+	  val baseDemandChunkSize = 10
 	  
 	  
 	  val allDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
