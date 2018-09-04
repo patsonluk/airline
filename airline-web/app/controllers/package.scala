@@ -16,6 +16,7 @@ import play.api.libs.json.Json
 import play.api.libs.json.JsBoolean
 import com.patson.model.AirlineIncome
 import com.patson.model.AirlineIncome
+import com.patson.model.AirlineCashFlow
 
 
 
@@ -261,6 +262,23 @@ package object controllers {
         "othersDepreciation" -> JsNumber(airlineIncome.others.depreciation),
         "period" -> JsString(airlineIncome.period.toString()),
         "cycle" -> JsNumber(airlineIncome.cycle)))
+    }
+  }
+
+  implicit object AirlineCashFlowWrite extends Writes[AirlineCashFlow] {
+     def writes(airlineCashFlow : AirlineCashFlow): JsValue = {
+      JsObject(List(
+        "airlineId" -> JsNumber(airlineCashFlow.airlineId),
+        "totalCashFlow" -> JsNumber(airlineCashFlow.cashFlow),
+        "operation" -> JsNumber(airlineCashFlow.operation),
+        "loanInterest" -> JsNumber(airlineCashFlow.loanInterest),
+        "loanPrinciple" -> JsNumber(airlineCashFlow.loanPrinciple),
+        "baseConstruction" -> JsNumber(airlineCashFlow.baseConstruction),
+        "buyAirplane" -> JsNumber(airlineCashFlow.buyAirplane),
+        "sellAirplane" -> JsNumber(airlineCashFlow.sellAirplane),
+        "createLink" -> JsNumber(airlineCashFlow.createLink),
+        "period" -> JsString(airlineCashFlow.period.toString()),
+        "cycle" -> JsNumber(airlineCashFlow.cycle)))
     }
   }
   

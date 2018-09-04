@@ -490,6 +490,65 @@ object AirlineSource {
     }
   }
   
+  
+  def saveCashFlowItem(cashFlowItem : AirlineCashFlowItem) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_CASH_FLOW_ITEM_TABLE + " VALUES(?, ?, ?, ?)")
+        preparedStatement.setInt(1, cashFlowItem.airlineId)
+        preparedStatement.setInt(2, cashFlowItem.cashFlowType.id)
+        preparedStatement.setDouble(3, cashFlowItem.amount)
+        //cannot use MainSimulation.currentWeek as this could be called from other projects apart from simulation
+        preparedStatement.setInt(4,CycleSource.loadCycle())
+        
+        preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def loadCashFlowItems(cycle : Int) : List[AirlineCashFlowItem] = {
+    val connection = Meta.getConnection()
+    try {
+        val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_CASH_FLOW_ITEM_TABLE + " WHERE cycle = ?")
+        
+        preparedStatement.setInt(1, cycle)
+        
+        val resultSet = preparedStatement.executeQuery()
+        
+        val transactions = new ListBuffer[AirlineCashFlowItem]()
+        
+        while (resultSet.next()) {
+          transactions += AirlineCashFlowItem(resultSet.getInt("airline"), CashFlowType(resultSet.getInt("cash_flow_type")), resultSet.getLong("amount"))
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        transactions.toList
+      } finally {
+        connection.close()
+      }
+  }
+  
+  def deleteCashFlowItems(cycleAndBefore : Int) = {
+    val connection = Meta.getConnection()
+    try {    
+        val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_CASH_FLOW_ITEM_TABLE + " WHERE cycle <= ?")
+        preparedStatement.setInt(1, cycleAndBefore)
+        
+        preparedStatement.executeUpdate()
+        
+        preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  
+  
   def deleteGeneratedAirlines(fromId : Int) = {
     val connection = Meta.getConnection()
     try {    

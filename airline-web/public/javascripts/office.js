@@ -1,6 +1,11 @@
 var loadedIncomes = {}
 var incomePage = 0;
 var incomePeriod;
+
+var loadedCashFlows = {}
+var cashFlowPage = 0;
+var cashFlowPeriod;
+
 var fileuploaderObj;
 var airlineColorPicker;
 
@@ -41,7 +46,7 @@ function showOfficeCanvas() {
 	highlightTab($('#officeCanvasTab'))
 	
 	updateAirlineDetails()
-	loadIncomeSheet();
+	loadSheets();
 	updateChampionedCountriesDetails()
 	updateServiceFundingDetails()
 	updateAirplaneRenewalDetails()
@@ -84,7 +89,7 @@ function updateAirlineDetails() {
 }
 
 
-function loadIncomeSheet() {
+function loadSheets() {
 	var airlineId = activeAirline.id
 	//reset values
 	loadedIncomes = {}
@@ -93,12 +98,21 @@ function loadIncomeSheet() {
 	loadedIncomes['YEARLY'] = []
 	incomePage = 0 
 	incomePeriod = 'WEEKLY'
+		
+	loadedCashFlows = {}
+	loadedCashFlows['WEEKLY'] = []
+	loadedCashFlows['MONTHLY'] = []
+	loadedCashFlows['YEARLY'] = []
+	cashFlowPage = 0 
+	cashFlowPeriod = 'WEEKLY'
+		
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + airlineId + "/incomes",
+		url: "airlines/" + airlineId + "/finances",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(airlineIncomes) {
+	    success: function(data) {
+	    	var airlineIncomes = data.incomes
 	    	//group by period
 	    	$.each(airlineIncomes, function(index, airlineIncome) {
 	    		loadedIncomes[airlineIncome.period].push(airlineIncome)
@@ -111,6 +125,20 @@ function loadIncomeSheet() {
 	    	}
 	    	
 	    	updateIncomeChart()
+	    	
+	    	var airlineCashFlows = data.cashFlows
+	    	//group by period
+	    	$.each(airlineCashFlows, function(index, airlineCashFlow) {
+	    		loadedCashFlows[airlineCashFlow.period].push(airlineCashFlow)
+	    	})
+	    	
+	    	totalPages = loadedCashFlows[cashFlowPeriod].length
+	    	if (totalPages > 0) {
+	    		cashFlowPage = totalPages - 1
+	    		updateCashFlowSheet(loadedCashFlows[cashFlowPeriod][cashFlowPage])
+	    	}
+	    	
+	    	updateCashFlowChart()
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
@@ -121,6 +149,10 @@ function loadIncomeSheet() {
 
 function updateIncomeChart() {
 	plotIncomeChart(loadedIncomes[incomePeriod], incomePeriod, $("#officeCanvas #totalProfitChart"))
+}
+
+function updateCashFlowChart() {
+	plotCashFlowChart(loadedCashFlows[cashFlowPeriod], cashFlowPeriod, $("#officeCanvas #totalCashFlowChart"))
 }
 
 
@@ -196,6 +228,61 @@ function updateIncomeSheet(airlineIncome) {
         $("#othersMaintenanceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersMaintenanceInvestment))
         $("#othersAdvertisement").text('$' + commaSeparateNumber(airlineIncome.othersAdvertisement))
         $("#othersDepreciation").text('$' + commaSeparateNumber(airlineIncome.othersDepreciation))
+	}
+}
+
+function cashFlowHistoryStep(step) {
+	var totalPages = loadedCashFlows[cashFlowPeriod].length
+	
+	if (cashFlowPage + step < 0) {
+		cashFlowPage = 0
+	} else if (cashFlowPage + step >= totalPages) {
+		cashFlowPage = totalPages - 1
+	} else {
+		cashFlowPage = cashFlowPage + step
+	}
+	
+	updateCashFlowSheet(loadedCashFlows[cashFlowPeriod][cashFlowPage])
+}
+
+function changeCashFlowPeriod(period) {
+	cashFlowPeriod = period
+	var totalPages = loadedCashFlows[cashFlowPeriod].length
+	cashFlowPage = totalPages - 1
+	updateCashFlowSheet(loadedCashFlows[cashFlowPeriod][cashFlowPage])
+	updateCashFlowChart()
+}
+
+
+function updateCashFlowSheet(airlineCashFlow) {
+	if (airlineCashFlow) {
+		var periodText
+		var periodCount
+		var inProgress
+		if (airlineCashFlow.period == "WEEKLY") {
+			periodText = "Week"
+			periodCount= airlineCashFlow.cycle
+		} else if (airlineCashFlow.period == "MONTHLY") {
+			periodText = "Month"
+			periodCount = Math.ceil(airlineCashFlow.cycle / 4)
+			inProgress = (airlineCashFlow.cycle + 1) % 4
+		} else if (airlineCashFlow.period == "YEARLY") {
+			periodText = "Year"
+			periodCount = Math.ceil(airlineCashFlow.cycle / 52)
+			inProgress = (airlineCashFlow.cycle + 1) % 52
+		}
+		
+		var cycleText = periodText + " " + periodCount + (inProgress ? " (In Progress)" : "")
+		
+		$("#cashFlowCycleText").text(cycleText)
+		$("#cashFlowSheet .totalCashFlow").text('$' + commaSeparateNumber(airlineCashFlow.totalCashFlow))
+        $("#cashFlowSheet .operation").text('$' + commaSeparateNumber(airlineCashFlow.operation))
+        $("#cashFlowSheet .loanInterest").text('$' + commaSeparateNumber(airlineCashFlow.loanInterest))
+        $("#cashFlowSheet .loanPrinciple").text('$' + commaSeparateNumber(airlineCashFlow.loanPrinciple))
+        $("#cashFlowSheet .baseConstruction").text('$' + commaSeparateNumber(airlineCashFlow.baseConstruction))
+        $("#cashFlowSheet .buyAirplane").text('$' + commaSeparateNumber(airlineCashFlow.buyAirplane))
+        $("#cashFlowSheet .sellAirplane").text('$' + commaSeparateNumber(airlineCashFlow.sellAirplane))
+        $("#cashFlowSheet .createLink").text('$' + commaSeparateNumber(airlineCashFlow.createLink))
 	}
 }
 
@@ -505,6 +592,14 @@ function updateChampionedCountriesDetails() {
 	    }
 	});
 	
+}
+
+
+function selectSheet(tab, sheet) {
+	tab.siblings(".selection").removeClass("selected")
+	tab.addClass("selected")
+	sheet.siblings(".sheet").hide()
+	sheet.show()
 }
 
 

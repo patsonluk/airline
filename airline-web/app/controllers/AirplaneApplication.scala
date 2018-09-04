@@ -18,6 +18,11 @@ import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.model.AirlineTransaction
 import com.patson.data.CountrySource
+import com.patson.data.CashFlowSource
+import com.patson.model.AirlineCashFlow
+import com.patson.model.CashFlowType
+import com.patson.model.CashFlowType
+import com.patson.model.AirlineCashFlowItem
 
 
 class AirplaneApplication extends Controller {
@@ -160,6 +165,8 @@ class AirplaneApplication extends Controller {
               AirlineSource.adjustAirlineBalance(airlineId, sellValue)
               
               AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
+              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellValue))
+              
               
               Ok(Json.toJson(airplane))
             } else {
@@ -191,6 +198,9 @@ class AirplaneApplication extends Controller {
               AirplaneSource.updateAirplanes(List(replacingAirplane)) //TODO MAKE SURE SYNCHONRIZE WITH AIRPLANE UPDATE SIMULATION
               AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
               AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
+              
+              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellValue))
+              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, airplane.model.price * -1))
                 
               Ok(Json.toJson(airplane))
             }
@@ -221,6 +231,7 @@ class AirplaneApplication extends Controller {
         
         val amount = -1 * airplane.model.price * quantity
         AirlineSource.adjustAirlineBalance(airlineId, amount)
+        AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, amount))
         
         val airplanes = ListBuffer[Airplane]()
         for (i <- 0 until quantity) {
