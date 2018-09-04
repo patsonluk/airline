@@ -591,7 +591,7 @@ function plotCashFlowChart(airlineCashFlows, period, container) {
 	var monthOrder = []
 	
 	$.each(airlineCashFlows, function(key, airlineCashFlow) {
-		data["cashFlow"].push({ value : airlineCashFlow.cashFlow })
+		data["cashFlow"].push({ value : airlineCashFlow.totalCashFlow })
 		category.push({ "label" : airlineCashFlow.cycle.toString() })
 	})
 	
