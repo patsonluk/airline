@@ -328,6 +328,7 @@ class LinkApplication extends Controller {
           case Some(link) =>  {
             val cost = Computation.getLinkCreationCost(incomingLink.from, incomingLink.to)
             AirlineSource.adjustAirlineBalance(request.user.id, cost * -1)
+            AirlineSource.saveCashFlowItem(AirlineCashFlowItem(request.user.id, CashFlowType.CREATE_LINK, cost * -1))
             
             val toAirport = incomingLink.to
             if (toAirport.getAirlineAwareness(airlineId) < 5) { //update to 5 for link creation

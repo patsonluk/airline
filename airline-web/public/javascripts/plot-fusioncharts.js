@@ -578,3 +578,49 @@ function plotIncomeChart(airlineIncomes, period, container) {
 	})
 }
 
+function plotCashFlowChart(airlineCashFlows, period, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
+	var data = {}
+	data["cashFlow"] = []
+	var category = []
+	 
+	var profitByMonth = {}
+	var monthOrder = []
+	
+	$.each(airlineCashFlows, function(key, airlineCashFlow) {
+		data["cashFlow"].push({ value : airlineCashFlow.cashFlow })
+		category.push({ "label" : airlineCashFlow.cycle.toString() })
+	})
+	
+	var chart = container.insertFusionCharts({
+		type: 'msline',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": "Week",
+	    		"yAxisName": "Profit",
+	    		"numberPrefix": "$",
+	    		"useroundedges": "1",
+	    		"animation": "1",
+	    		"showBorder":"0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "bgAlpha":"0",
+                "showValues":"1",
+                "showZeroPlane": "1",
+                "zeroPlaneColor": "#222222",
+                "zeroPlaneThickness": "2",
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : [ 
+				{ "seriesname": "Total CashFlow", "data" : data["cashFlow"] }
+			]
+	    }
+	})
+}
+

@@ -40,6 +40,10 @@ import scala.util.Failure
 import com.patson.model.FlightCategory
 import com.patson.data.AllianceSource
 import com.patson.model.AllianceMember
+import com.patson.model.AirlineCashFlowItem
+import com.patson.model.CashFlowType
+import com.patson.data.CashFlowSource
+import com.patson.data.CashFlowSource
 
 
 class AirlineApplication extends Controller {
@@ -233,6 +237,7 @@ class AirlineApplication extends Controller {
                  val updateBase = headquarter.copy(scale = inputBase.scale)
                  AirlineSource.saveAirlineBase(updateBase)
                  AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                 AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
                  Created(Json.toJson(updateBase))
                }
                case None => //ok to add then
@@ -249,6 +254,7 @@ class AirlineApplication extends Controller {
                    airline.setCountryCode(newBase.countryCode)
                    AirlineSource.saveAirlineInfo(airline, updateBalance = false)
                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                   AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
                    Created(Json.toJson(newBase))
                  }
               }
@@ -261,6 +267,7 @@ class AirlineApplication extends Controller {
                     val updateBase = base.copy(scale = inputBase.scale)
                     AirlineSource.saveAirlineBase(updateBase)
                     AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                    AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
                     Created(Json.toJson(updateBase))
                   case None => //ok to add
                     AirportSource.loadAirportById(inputBase.airport.id, true).fold {
@@ -269,6 +276,7 @@ class AirlineApplication extends Controller {
                       val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
                       AirlineSource.saveAirlineBase(newBase)
                       AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                      AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
                       Created(Json.toJson(newBase))
                     }
                 }
@@ -281,10 +289,11 @@ class AirlineApplication extends Controller {
     }
   }
   
-  def getAirlineIncomes(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def getAirlineFinances(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
      val airline = request.user
-     val incomes = IncomeSource.loadIncomesByAirline(airlineId)   
-     Ok(Json.toJson(incomes))
+     val incomes = IncomeSource.loadIncomesByAirline(airlineId)
+     val cashFlows = CashFlowSource.loadCashFlowsByAirline(airlineId)
+     Ok(Json.obj("incomes" -> Json.toJson(incomes), "cashFlows" -> Json.toJson(cashFlows)))
   }
   
   def getServicePrediction(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>

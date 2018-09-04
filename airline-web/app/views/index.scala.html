@@ -1096,168 +1096,234 @@
 		         		</div>  
 		         		<div style="clear: both;"></div>
 		    		</div>
-					<div style="width : 95%; float: left;" class="section">
-						<h4>Income Sheet</h4>
-						<div>
-							<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="incomeHistoryStep(-1)"/>
-							<span id="incomeCycleText"></span>
-							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"/>
-						</div>
-						<div>
-							<select id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
-		  						<option value="WEEKLY" selected="selected">Week</option>
-		  						<option value="MONTHLY">Month</option>
-		  						<option value="YEARLY">Year</option>
-		  					</select>
-						</div>
-						
-						<div id="totalProfitChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
-	<!-- 					left column -->
-						<div style="height: 100%; width: 50%; float: left;">
-							<div class="table section" style="width: 90%;">
-								<h4>Total Income</h4>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Total Revenue:</div>
-			 	  					<div id="totalRevenue" class="cell" style="text-align: right;"></div>
+		    		
+		    		<div style="width : 95%; float: left;" class="section">
+		    			<div style="float: left;" class="clickable selected selection" onclick="selectSheet($(this), $('#incomeSheet'))"><h4>Income Sheet</h4></div>
+		    			<div style="float: left;"><h4>&nbsp;|&nbsp;</h4></div> 
+		    			<div style="float: left;" class="clickable selection" onclick="selectSheet($(this), $('#cashFlowSheet'))"><h4>Cash Flow Sheet</h4></div>
+		    			<div style="clear: both;"></div>
+						<div style="width : 100%;" id="incomeSheet" class="sheet">
+							<div>
+								<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="incomeHistoryStep(-1)"/>
+								<span id="incomeCycleText"></span>
+								<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"/>
+							</div>
+							<div>
+								<select id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
+			  						<option value="WEEKLY" selected="selected">Week</option>
+			  						<option value="MONTHLY">Month</option>
+			  						<option value="YEARLY">Year</option>
+			  					</select>
+							</div>
+							
+							<div id="totalProfitChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
+		<!-- 					left column -->
+							<div style="height: 100%; width: 50%; float: left;">
+								<div class="table section" style="width: 90%;">
+									<h4>Total Income</h4>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Total Revenue:</div>
+				 	  					<div id="totalRevenue" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Total Expense:</div>
+				 	  					<div id="totalExpense" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Total Profit:</div>
+				 	  					<div id="totalProfit" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				         		</div>
+								<div class="table section" style="width: 90%;">
+									<h4>Flights Income</h4>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Ticket Revenue:</div>
+				 	  					<div id="linksTicketRevenue" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Airport Fee:</div>
+				 	  					<div id="linksAirportFee" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Fuel:</div>
+				 	  					<div id="linksFuelCost" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Crew:</div>
+				 	  					<div id="linksCrewCost" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Flight Supplies:</div>
+				 	  					<div id="linksInflightCost" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Airplane Maintenance:</div>
+				 	  					<div id="linksMaintenance" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Airplane Depreciation:</div>
+				 	  					<div id="linksDepreciation" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Delay Compensation:</div>
+				 	  					<div id="linksDelayCompensation" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+					 	  				<div class="divider cell"></div>
+					 	  				<div class="divider cell"></div>
+					 	  			</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Flight Revenue:</div>
+				 	  					<div id="linksRevenue" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Flight Expense:</div>
+				 	  					<div id="linksExpense" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Flight Profit:</div>
+				 	  					<div id="linksProfit" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				         		</div>
+							</div>
+		<!-- 					right column -->
+							<div style="height: 100%; width: 50%; float: right;">
+								<div class="table section" style="width: 90%;">
+									<h4>Transactions</h4>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Capital Gain/Lost:</div>
+				 	  					<div id="transactionsCapitalGain" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Setup New Flight Route:</div>
+				 	  					<div id="transactionsCreateLink" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+					 	  				<div class="divider cell"></div>
+					 	  				<div class="divider cell"></div>
+					 	  			</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Transactions Revenue:</div>
+				 	  					<div id="transactionsRevenue" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Transactions Expense:</div>
+				 	  					<div id="transactionsExpense" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Transactions Profit:</div>
+				 	  					<div id="transactionsProfit" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				         		</div>
+				         		
+				         		<div class="table section" style="width: 90%;">
+									<h4>Other Income</h4>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Loan Interest:</div>
+				 	  					<div id="othersLoanInterest" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Office Upkeep:</div>
+				 	  					<div id="othersBaseUpkeep" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Service Investment:</div>
+				 	  					<div id="othersServiceInvestment" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Maintenance Investment:</div>
+				 	  					<div id="othersMaintenanceInvestment" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Advertisement:</div>
+				 	  					<div id="othersAdvertisement" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Depreciation:</div>
+				 	  					<div id="othersDepreciation" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+					 	  				<div class="divider cell"></div>
+					 	  				<div class="divider cell"></div>
+					 	  			</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Others Revenue:</div>
+				 	  					<div id="othersRevenue" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Others Expense:</div>
+				 	  					<div id="othersExpense" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Others Profit:</div>
+				 	  					<div id="othersProfit" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				         		</div>  
+							</div>
+		<!-- 					end right side -->
+		         		</div>		
+		<!--          		end income statement -->
+						<div style="width : 100%; display: hidden;" id="cashFlowSheet" class="sheet">
+							<div>
+								<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="cashFlowHistoryStep(-1)"/>
+								<span id="cashFlowCycleText"></span>
+								<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="cashFlowHistoryStep(1)"/>
+							</div>
+							<div>
+								<select id="cashFlowPeriodSelect" onchange="changeCashFlowPeriod($(this).val())">
+			  						<option value="WEEKLY" selected="selected">Week</option>
+			  						<option value="MONTHLY">Month</option>
+			  						<option value="YEARLY">Year</option>
+			  					</select>
+							</div>
+							
+							<div id="totalCashFlowChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
+		<!-- 					left column -->
+							<div style="height: 100%; width: 100%; float: left;">
+								<div style="float: left; width: 50%">
+									<h4>Total Cash Flow</h4>
+									<div class="table section" style="width: 90%;"> 
+										<div class="table-row">
+					 	  					<div class="cell">Total Cash Flow:</div>
+					 	  					<div class="totalCashFlow cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  			</div>
 			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Total Expense:</div>
-			 	  					<div id="totalExpense" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Total Profit:</div>
-			 	  					<div id="totalProfit" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			         		</div>
-							<div class="table section" style="width: 90%;">
-								<h4>Flights Income</h4>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Ticket Revenue:</div>
-			 	  					<div id="linksTicketRevenue" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Airport Fee:</div>
-			 	  					<div id="linksAirportFee" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Fuel:</div>
-			 	  					<div id="linksFuelCost" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Crew:</div>
-			 	  					<div id="linksCrewCost" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Flight Supplies:</div>
-			 	  					<div id="linksInflightCost" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Airplane Maintenance:</div>
-			 	  					<div id="linksMaintenance" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Airplane Depreciation:</div>
-			 	  					<div id="linksDepreciation" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Delay Compensation:</div>
-			 	  					<div id="linksDelayCompensation" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-				 	  				<div class="divider cell"></div>
-				 	  				<div class="divider cell"></div>
-				 	  			</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Flight Revenue:</div>
-			 	  					<div id="linksRevenue" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Flight Expense:</div>
-			 	  					<div id="linksExpense" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Flight Profit:</div>
-			 	  					<div id="linksProfit" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			         		</div>
-						</div>
-	<!-- 					right column -->
-						<div style="height: 100%; width: 50%; float: right;">
-							<div class="table section" style="width: 90%;">
-								<h4>Transactions</h4>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Capital Gain/Lost:</div>
-			 	  					<div id="transactionsCapitalGain" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Setup New Flight Route:</div>
-			 	  					<div id="transactionsCreateLink" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-				 	  				<div class="divider cell"></div>
-				 	  				<div class="divider cell"></div>
-				 	  			</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Transactions Revenue:</div>
-			 	  					<div id="transactionsRevenue" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Transactions Expense:</div>
-			 	  					<div id="transactionsExpense" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Transactions Profit:</div>
-			 	  					<div id="transactionsProfit" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			         		</div>
-			         		
-			         		<div class="table section" style="width: 90%;">
-								<h4>Other Income</h4>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Loan Interest:</div>
-			 	  					<div id="othersLoanInterest" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Office Upkeep:</div>
-			 	  					<div id="othersBaseUpkeep" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Service Investment:</div>
-			 	  					<div id="othersServiceInvestment" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Maintenance Investment:</div>
-			 	  					<div id="othersMaintenanceInvestment" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Advertisement:</div>
-			 	  					<div id="othersAdvertisement" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Depreciation:</div>
-			 	  					<div id="othersDepreciation" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-				 	  				<div class="divider cell"></div>
-				 	  				<div class="divider cell"></div>
-				 	  			</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Others Revenue:</div>
-			 	  					<div id="othersRevenue" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Others Expense:</div>
-			 	  					<div id="othersExpense" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			 	  				<div class="table-row">
-			 	  					<div class="cell">Others Profit:</div>
-			 	  					<div id="othersProfit" class="cell" style="text-align: right;"></div>
-			 	  				</div>
-			         		</div>  
-						</div>
-	<!-- 					end right side -->
-	         		</div>		
-	<!--          		end income statement -->
+			 	  				<div style="float: left; width: 50%">
+			 	  					<h4>Cash Flow Details</h4>
+									<div class="table section" style="width: 90%;"> 
+										<div class="table-row">
+					 	  					<div class="cell">Operation Cash Flow:</div>
+					 	  					<div class="operation cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  				<div class="table-row">
+					 	  					<div class="cell">Loan Interest:</div>
+					 	  					<div class="loanInterest cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  				<div class="table-row">
+					 	  					<div class="cell">Loan Principle Repayment:</div>
+					 	  					<div class="loanPrinciple cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  				<div class="table-row">
+					 	  					<div class="cell">Base Construction:</div>
+					 	  					<div class="baseConstruction cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  				<div class="table-row">
+					 	  					<div class="cell">Airplane Purchase:</div>
+					 	  					<div class="buyAirplane cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  				<div class="table-row">
+					 	  					<div class="cell">Airplane Sold:</div>
+					 	  					<div class="sellAirplane cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  				
+					 	  			</div>
+				         		</div>
+							</div>	
+		         		</div>		
+	<!--          		end cashflow sheet -->
+					</div> 
+<!-- 					end statements -->
 				</div>
 <!-- 				end left section  -->
 				<div style="width : 30%; float: left;">

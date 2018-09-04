@@ -19,6 +19,9 @@ import akka.actor.Actor
 import akka.actor.Props
 import java.util.concurrent.TimeUnit
 
+
+import com.patson.model.CashFlowType.CashFlowType
+
 object AirplaneSimulation {
   def airplaneSimulation(cycle: Int, links : List[Link]) : List[Airplane] = {
     println("starting airplane simulation")
@@ -58,7 +61,7 @@ object AirplaneSimulation {
   
   def renewAirplanes(airplanes : List[Airplane]) : List[Airplane] = {
     val renewalThresholdsByAirline : scala.collection.immutable.Map[Int, Int] = AirlineSource.loadAirplaneRenewals()
-    val costsByAirline : Map[Int, (Long, Long)] = Map[Int, (Long, Long)]()
+    val costsByAirline : Map[Int, (Long, Long, Long, Long)] = Map[Int, (Long, Long, Long, Long)]()
     val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
     val renewedAirplanes : ListBuffer[Airplane] = ListBuffer[Airplane]() 
     
@@ -67,15 +70,17 @@ object AirplaneSimulation {
         case Some(threshold) =>
           if (airplane.condition < threshold ) {
              val airlineId = airplane.owner.id 
-             val (existingCost, existingCapitalLost) : (Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0))
+             val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalLost) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
              val sellValue = Computation.calculateAirplaneSellValue(airplane)
              val renewCost = airplane.model.price - sellValue
-             
              val newCost = existingCost + renewCost
+             val newBuyPlane = existingBuyPlane + airplane.model.price
+             val newSellPlane = existingSellPlane + sellValue 
+             
              if (newCost <= airlinesByid(airplane.owner.id).getBalance()) {
                println("auto renewing " + airplane)
                val newCapitalLost = existingCapitalLost + (airplane.value - sellValue)
-               costsByAirline.put(airlineId, (newCost, newCapitalLost))
+               costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalLost))
                val renewedAirplane = airplane.copy(constructedCycle = MainSimulation.currentWeek, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
                renewedAirplanes.append(renewedAirplane)
                renewedAirplane
@@ -91,10 +96,12 @@ object AirplaneSimulation {
     
     //now deduct money
     costsByAirline.foreach {
-      case(airlineId, (cost, captialLoss)) => {
+      case(airlineId, (cost, buyAirplane, sellAirplane, captialLoss)) => {
         println("Deducting " + cost + " from " + airlinesByid(airlineId) + " for renewal")
         AirlineSource.adjustAirlineBalance(airlineId, cost * -1)
         AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, captialLoss * -1))
+        AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellAirplane))
+        AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, buyAirplane * -1))
       }
       
     }

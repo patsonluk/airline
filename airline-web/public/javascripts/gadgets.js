@@ -151,10 +151,12 @@ function changeColoredElementValue(element, newValue) {
 }
 
 function commaSeparateNumber(val){
+	var isNegative = val < 0
+	val = Math.abs(val)
     while (/(\d+)(\d{3})/.test(val.toString())){
       val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
     }
-    return val;
+    return isNegative ? ('(' + val + ')') : val;
 }
 
 function getCountryFlagImg(countryCode) {
