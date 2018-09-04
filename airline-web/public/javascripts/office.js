@@ -218,7 +218,7 @@ function updateIncomeSheet(airlineIncome) {
         $("#transactionsRevenue").text('$' + commaSeparateNumber(airlineIncome.transactionsRevenue))
         $("#transactionsExpense").text('$' + commaSeparateNumber(airlineIncome.transactionsExpense))
         $("#transactionsCapitalGain").text('$' + commaSeparateNumber(airlineIncome.transactionsCapitalGain))
-        $("#transactionsCreateLink").text('$' + commaSeparateNumber(airlineIncome.transactionsCreateLink))
+        //$("#transactionsCreateLink").text('$' + commaSeparateNumber(airlineIncome.transactionsCreateLink))
         $("#othersProfit").text('$' + commaSeparateNumber(airlineIncome.othersProfit))
         $("#othersRevenue").text('$' + commaSeparateNumber(airlineIncome.othersRevenue))
         $("#othersExpense").text('$' + commaSeparateNumber(airlineIncome.othersExpense))
