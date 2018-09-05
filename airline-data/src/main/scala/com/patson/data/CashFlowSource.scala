@@ -28,7 +28,7 @@ object CashFlowSource {
           cashFlowPreparedStatement.setLong(2, cashFlow.cashFlow)
           cashFlowPreparedStatement.setLong(3, cashFlow.operation)
           cashFlowPreparedStatement.setLong(4, cashFlow.loanInterest)
-          cashFlowPreparedStatement.setLong(5, cashFlow.loanPrinciple)
+          cashFlowPreparedStatement.setLong(5, cashFlow.loanPrincipal)
           cashFlowPreparedStatement.setLong(6, cashFlow.baseConstruction)
           cashFlowPreparedStatement.setLong(7, cashFlow.buyAirplane)
           cashFlowPreparedStatement.setLong(8, cashFlow.sellAirplane)
@@ -103,7 +103,7 @@ object CashFlowSource {
           val cashFlow = resultSet.getLong("i.cash_flow")
           val operation = resultSet.getLong("i.operation") 
           val loanInterest = resultSet.getLong("i.loan_interest")
-          val loanPrinciple = resultSet.getLong("i.loan_principle")
+          val loanPrincipal = resultSet.getLong("i.loan_principle")
           val baseConstruction = resultSet.getLong("i.base_construction")
           val buyAirplane = resultSet.getLong("i.buy_airplane")
           val sellAirplane = resultSet.getLong("i.sell_airplane")
@@ -112,7 +112,7 @@ object CashFlowSource {
           val cycle = resultSet.getInt("i.cycle")
            
             //case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Long = 0, loanInterest : Long = 0, loanPrinciple : Long = 0, baseConstruction : Long = 0, buyAirplane : Long = 0, sellAirplane : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
-          cashFlows += AirlineCashFlow(airlineId, cashFlow, operation, loanInterest, loanPrinciple, baseConstruction, buyAirplane, sellAirplane, createLink, period, cycle)
+          cashFlows += AirlineCashFlow(airlineId, cashFlow, operation, loanInterest, loanPrincipal, baseConstruction, buyAirplane, sellAirplane, createLink, period, cycle)
       }
        
        cashFlows.toList

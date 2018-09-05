@@ -155,8 +155,8 @@ object AirlineSimulation {
         val createLink = transactionalCashFlowItems.getOrElse(CashFlowType.CREATE_LINK, 0L)
         val accountingCashFlow = totalCashFlow + baseConstruction + buyAirplane + sellAirplane    
         
-        val loanPrinciple = loanPayment - interestPayment
-        val airlineWeeklyCashFlow = AirlineCashFlow(airline.id, cashFlow = accountingCashFlow, operation = operationCashFlow, loanInterest = interestPayment * -1, loanPrinciple = loanPrinciple * -1, baseConstruction = baseConstruction, buyAirplane = buyAirplane, sellAirplane = sellAirplane, createLink = createLink, cycle = currentCycle)
+        val loanPrincipal = loanPayment - interestPayment
+        val airlineWeeklyCashFlow = AirlineCashFlow(airline.id, cashFlow = accountingCashFlow, operation = operationCashFlow, loanInterest = interestPayment * -1, loanPrincipal = loanPrincipal * -1, baseConstruction = baseConstruction, buyAirplane = buyAirplane, sellAirplane = sellAirplane, createLink = createLink, cycle = currentCycle)
         allCashFlows += airlineWeeklyCashFlow
         allCashFlows ++= computeAccumulateCashFlow(airlineWeeklyCashFlow)         
         
@@ -343,13 +343,13 @@ object AirlineSimulation {
    */
   def updateLoans(airline : Airline) : (Long, Long) = {
     val loans = BankSource.loadLoansByAirline(airline.id)
-    var totalPrinciplePayment = 0L
+    var totalPrincipalPayment = 0L
     var totalLoanInterest = 0L
     loans.foreach { loan => 
       val principlePayment = Math.ceil(loan.borrowedAmount.toDouble / loan.loanTerm).toLong
       val interestPayment = Math.ceil(loan.interest.toDouble / loan.loanTerm).toLong
       totalLoanInterest = totalLoanInterest + interestPayment
-      totalPrinciplePayment = totalPrinciplePayment + principlePayment
+      totalPrincipalPayment = totalPrincipalPayment + principlePayment
       loan.remainingAmount = loan.remainingAmount - interestPayment - principlePayment 
       if (loan.remainingAmount <= 0) {
         BankSource.deleteLoan(loan.id)
@@ -358,7 +358,7 @@ object AirlineSimulation {
       }
     }
     
-    (totalPrinciplePayment + totalLoanInterest, totalLoanInterest)
+    (totalPrincipalPayment + totalLoanInterest, totalLoanInterest)
   }
   
   val getTargetQuality : (Int, Int) => Double = (funding : Int, capacity :Int) => {

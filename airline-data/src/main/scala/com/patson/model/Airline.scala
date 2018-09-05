@@ -245,7 +245,7 @@ case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, e
 
 
 case class AirlineCashFlowItem(airlineId : Int, cashFlowType : CashFlowType.Value, amount : Long, var cycle : Int = 0)
-case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Long = 0, loanInterest : Long = 0, loanPrinciple : Long = 0, baseConstruction : Long = 0, buyAirplane : Long = 0, sellAirplane : Long = 0,  createLink : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
+case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Long = 0, loanInterest : Long = 0, loanPrincipal : Long = 0, baseConstruction : Long = 0, buyAirplane : Long = 0, sellAirplane : Long = 0,  createLink : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
 /**
    * Current income is expected to be MONTHLY/YEARLY. Adds parameter (WEEKLY income) to this current income object and return a new Airline income with period same as this object but cycle as the parameter
    */
@@ -254,7 +254,7 @@ case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Lon
         cashFlow = cashFlow + cashFlow2.cashFlow,
         operation = operation + cashFlow2.operation,
         loanInterest = loanInterest + cashFlow2.loanInterest,
-        loanPrinciple = loanPrinciple + cashFlow2.loanPrinciple,
+        loanPrincipal = loanPrincipal + cashFlow2.loanPrincipal,
         baseConstruction = baseConstruction + cashFlow2.baseConstruction,
         buyAirplane = buyAirplane + cashFlow2.buyAirplane,
         sellAirplane = sellAirplane + cashFlow2.sellAirplane,
