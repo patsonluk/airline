@@ -272,7 +272,7 @@ package object controllers {
         "totalCashFlow" -> JsNumber(airlineCashFlow.cashFlow),
         "operation" -> JsNumber(airlineCashFlow.operation),
         "loanInterest" -> JsNumber(airlineCashFlow.loanInterest),
-        "loanPrinciple" -> JsNumber(airlineCashFlow.loanPrinciple),
+        "loanPrincipal" -> JsNumber(airlineCashFlow.loanPrincipal),
         "baseConstruction" -> JsNumber(airlineCashFlow.baseConstruction),
         "buyAirplane" -> JsNumber(airlineCashFlow.buyAirplane),
         "sellAirplane" -> JsNumber(airlineCashFlow.sellAirplane),

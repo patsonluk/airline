@@ -278,7 +278,7 @@ function updateCashFlowSheet(airlineCashFlow) {
 		$("#cashFlowSheet .totalCashFlow").text('$' + commaSeparateNumber(airlineCashFlow.totalCashFlow))
         $("#cashFlowSheet .operation").text('$' + commaSeparateNumber(airlineCashFlow.operation))
         $("#cashFlowSheet .loanInterest").text('$' + commaSeparateNumber(airlineCashFlow.loanInterest))
-        $("#cashFlowSheet .loanPrinciple").text('$' + commaSeparateNumber(airlineCashFlow.loanPrinciple))
+        $("#cashFlowSheet .loanPrincipal").text('$' + commaSeparateNumber(airlineCashFlow.loanPrincipal))
         $("#cashFlowSheet .baseConstruction").text('$' + commaSeparateNumber(airlineCashFlow.baseConstruction))
         $("#cashFlowSheet .buyAirplane").text('$' + commaSeparateNumber(airlineCashFlow.buyAirplane))
         $("#cashFlowSheet .sellAirplane").text('$' + commaSeparateNumber(airlineCashFlow.sellAirplane))
