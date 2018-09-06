@@ -26,6 +26,9 @@ object AirplaneSimulation {
   def airplaneSimulation(cycle: Int, links : List[Link]) : List[Airplane] = {
     println("starting airplane simulation")
     println("loading all airplanes")
+    //do 2nd hand market adjustment
+    secondHandAirplaneSimulate(cycle)
+    
     //do decay
     val allAirplanes = AirplaneSource.loadAirplanesWithAssignedLinkByCriteria(List.empty)
     
@@ -59,11 +62,37 @@ object AirplaneSimulation {
     updatingAirplanes.toList
   }
   
+  def secondHandAirplaneSimulate(cycle : Int) = {
+    var secondHandAirplanes = AirplaneSource.loadAirplanesCriteria(List(("is_sold", true)))
+    secondHandAirplanes = secondHandAirplanes.map(airplane => airplane.copy(dealerRatio = airplane.dealerRatio - DEALER_RATIO_DROP_RATE))
+    
+    val updatingAirplanes = ListBuffer[Airplane]()
+    val removingAirplanes = ListBuffer[Airplane]()
+    secondHandAirplanes.foreach { airplane =>
+      airplane.dealerRatio = airplane.dealerRatio - DEALER_RATIO_DROP_RATE
+      if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THERSHOLD) {
+        updatingAirplanes.append(airplane)
+      } else {
+        removingAirplanes.append(airplane)
+      }
+    }
+    AirplaneSource.updateAirplanes(updatingAirplanes.toList)
+    removingAirplanes.foreach { airplane =>
+      AirplaneSource.deleteAirplanesByCriteria(List(("id", airplane.id), ("is_sold", true))) //need to be careful here, make sure it is still in 2nd hand market
+    }
+    
+  }
+  
+  val DEALER_RATIO_DROP_RATE = 0.0025
+  val DEALER_RATIO_LOWER_THERSHOLD = 0.7 //at this ratio, the dealer would just scrap the airplane
+  
+  
   def renewAirplanes(airplanes : List[Airplane]) : List[Airplane] = {
     val renewalThresholdsByAirline : scala.collection.immutable.Map[Int, Int] = AirlineSource.loadAirplaneRenewals()
     val costsByAirline : Map[Int, (Long, Long, Long, Long)] = Map[Int, (Long, Long, Long, Long)]()
     val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
     val renewedAirplanes : ListBuffer[Airplane] = ListBuffer[Airplane]() 
+    val secondHandAirplanes  = ListBuffer[Airplane]()
     
     val updatingAirplanes = airplanes.map { airplane => 
       renewalThresholdsByAirline.get(airplane.owner.id) match {
@@ -81,6 +110,9 @@ object AirplaneSimulation {
                println("auto renewing " + airplane)
                val newCapitalLost = existingCapitalLost + (airplane.value - sellValue)
                costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalLost))
+               if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
+                 secondHandAirplanes.append(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0))
+               }
                val renewedAirplane = airplane.copy(constructedCycle = MainSimulation.currentWeek, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
                renewedAirplanes.append(renewedAirplane)
                renewedAirplane
@@ -105,7 +137,8 @@ object AirplaneSimulation {
       }
       
     }
-    
+    //save the 2nd hand airplanes
+    AirplaneSource.saveAirplanes(secondHandAirplanes.toList)
     //save the renewed airplanes
     AirplaneSource.updateAirplanes(renewedAirplanes.toList)
       

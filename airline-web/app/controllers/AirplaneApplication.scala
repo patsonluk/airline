@@ -158,10 +158,20 @@ class AirplaneApplication extends Controller {
       case Some((airplane, None)) =>
         if (airplane.owner.id == airlineId) {
           if (!airplane.isReady(CycleSource.loadCycle)) {
-            BadRequest("airplane is not yet constructed")
+            BadRequest("airplane is not yet constructed or is sold")
           } else {
             val sellValue = Computation.calculateAirplaneSellValue(airplane)
-            if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
+            
+            val updateCount = 
+              if (airplane.condition >= Airplane.BAD_CONDITION) { //then put in 2nd handmarket
+                airplane.is_sold = true
+                airplane.dealerRatio = Airplane.DEFAULT_DEALER_RATIO
+                AirplaneSource.updateAirplanes(List(airplane))
+              } else {
+                AirplaneSource.deleteAirplane(airplaneId)
+              }
+            
+            if (updateCount == 1) {
               AirlineSource.adjustAirlineBalance(airlineId, sellValue)
               
               AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
@@ -193,8 +203,12 @@ class AirplaneApplication extends Controller {
             if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
               BadRequest("Not enough money")   
             } else {
-              val replacingAirplane = airplane.copy(constructedCycle = CycleSource.loadCycle(), condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+              if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
+                 AirplaneSource.saveAirplanes(List(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0)))
+              }
               
+              val replacingAirplane = airplane.copy(constructedCycle = CycleSource.loadCycle(), condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+               
               AirplaneSource.updateAirplanes(List(replacingAirplane)) //TODO MAKE SURE SYNCHONRIZE WITH AIRPLANE UPDATE SIMULATION
               AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
               AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
