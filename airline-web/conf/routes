@@ -73,7 +73,7 @@ GET		 /airlines/:airlineId/evaluate-alliance/:allianceId  controllers.AllianceAp
 GET		 /airlines/:airlineId/apply-for-alliance/:allianceId  controllers.AllianceApplication.applyForAlliance(airlineId : Int, allianceId : Int)
 GET		 /airlines/:airlineId/remove-alliance-member/:targetAirlineId  controllers.AllianceApplication.removeFromAlliance(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/accept-alliance-member/:targetAirlineId  controllers.AllianceApplication.addToAlliance(airlineId : Int, targetAirlineId : Int)
-GET		 /used-airplanes	controllers.AirplaneApplication.getUsedAirplanes(model : Int)
+GET		 /airlines/:airlineId/used-airplanes/:modelId	controllers.AirplaneApplication.getUsedAirplanes(airlineId : Int, modelId : Int)
 
 GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)

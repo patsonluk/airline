@@ -944,6 +944,27 @@
 				    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
 					    	</div>
 					    </div>
+					    <div class="section" style="width : 95%; float: left; overflow: auto;">
+		  					<h4>Used Airplane Market</h4>
+					  		<div class="table data" style="height: 20px; width: 100%">
+			 	  				<div class="table-header" id="usedAirplaneSortHeader">
+			 	  					<div class="cell clickable" style="width: 30%" data-sort-property="id" data-sort-order="ascending" onclick="toggleUsedAirplaneTableSortOrder($(this))">Airplane ID</div>
+			 	  					<div class="cell clickable" style="width: 30%" align="right" data-sort-property="dealerValue" data-sort-order="ascending" onclick="toggleUsedAirplaneTableSortOrder($(this))">Price</div>
+			 	  					<div class="cell clickable" style="width: 20%" align="right" data-sort-property="condition" data-sort-order="ascending" onclick="toggleUsedAirplaneTableSortOrder($(this))">Condition</div>
+			 	  					<div class="cell" style="width: 20%" align="right">Purchase</div>
+								</div>
+		         			</div>
+		         			<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+			         			<div class="table data" id="usedAirplaneTable" style="max-height: 100%; width: 100%">
+				         			<div class="table-header">
+				         				<div class="cell" style="width: 30%; border-bottom: none;"></div>
+				 	  					<div class="cell" style="width: 30%; border-bottom: none;"></div>
+				 	  					<div class="cell" style="width: 20%; border-bottom: none;"></div>
+				 	  					<div class="cell" style="width: 20%; border-bottom: none;"></div>
+									</div>
+			         			</div>
+		         			</div>
+		  				</div>
 			    		<div class="section" style="width : 95%; float: left; overflow: auto;">
 		  					<h4>Inventory</h4>
 					  		<div id="airplaneInventoryList"></div>

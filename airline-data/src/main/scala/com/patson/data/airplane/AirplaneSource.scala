@@ -39,6 +39,10 @@ object AirplaneSource {
     loadAirplanesByQueryString(queryString, List(CycleSource.loadCycle()))
   }
   
+  def loadUsedAirplanes(): List[Airplane] = {
+    loadAirplanesCriteria(List(("is_sold", true)))
+  }
+  
   def loadAirplanesByQueryString(queryString : String, parameters : List[Any]) = {
       val connection = Meta.getConnection()
       
@@ -116,7 +120,7 @@ object AirplaneSource {
   
   def loadAirplanesWithAssignedLinkByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = LINK_ID_LOAD) : List[(Airplane, Option[Link])]= {
     val connection = Meta.getConnection()
-      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, airplane_condition, depreciation_rate, value, is_sold, dealer_ration, la.link  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + LINK_ASSIGNMENT_TABLE + " la ON a.id = la.airplane"  
+      var queryString = "SELECT owner, a.id as id, model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, airplane_condition, depreciation_rate, value, is_sold, dealer_ratio, la.link  FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + LINK_ASSIGNMENT_TABLE + " la ON a.id = la.airplane"  
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -257,9 +261,9 @@ object AirplaneSource {
           preparedStatement.setInt(3, airplane.depreciationRate)
           preparedStatement.setInt(4, airplane.value)
           preparedStatement.setInt(5, airplane.constructedCycle)
-          preparedStatement.setInt(6, airplane.id)
-          preparedStatement.setBoolean(7, airplane.isSold)
-          preparedStatement.setDouble(8, airplane.dealerRatio)
+          preparedStatement.setBoolean(6, airplane.isSold)
+          preparedStatement.setDouble(7, airplane.dealerRatio)
+          preparedStatement.setInt(8, airplane.id)
           updateCount += preparedStatement.executeUpdate()
       }
       

@@ -50,6 +50,10 @@ object Computation {
     if (value < 0) 0 else value.toInt
   }
   
+  def calculateAirplaneDealerValue(airplane : Airplane) : Int = {
+    (airplane.value * airplane.dealerRatio).toInt
+  }
+  
   def calculateDistance(fromAirport : Airport, toAirport : Airport) : Int = {
     Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   }

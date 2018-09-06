@@ -1,5 +1,6 @@
 var loadedModelsById = {}
 var loadedModelsOwnerInfo = {}
+var loadedUsedAirplanes = []
 var selectedModelId
 var selectedModel
 
@@ -99,6 +100,23 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 	
 }
 
+function updateUsedAirplaneTable(sortProperty, sortOrder) {
+	var usedAirplaneTable = $("#airplaneCanvas #usedAirplaneTable")
+	usedAirplaneTable.children("div.table-row").remove()
+	
+	//sort the list
+	loadedUsedAirplanes.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
+	
+	$.each(loadedUsedAirplanes, function(index, usedAirplane) {
+		var row = $("<div class='table-row'></div>")
+		row.append("<div class='cell'>" + usedAirplane.id + "</div>")
+		row.append("<div class='cell' align='right'>$" + commaSeparateNumber(usedAirplane.dealerValue) + "</div>")
+		row.append("<div class='cell' align='right'>" + usedAirplane.condition.toFixed(2) + "%</div>")
+		usedAirplaneTable.append(row)
+	});
+	
+}
+
 function toggleAirplaneModelTableSortOrder(sortHeader) {
 	if (sortHeader.data("sort-order") == "ascending") {
 		sortHeader.data("sort-order", "descending")
@@ -111,6 +129,20 @@ function toggleAirplaneModelTableSortOrder(sortHeader) {
 	
 	updateAirplaneModelTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
+
+function toggleUsedAirplaneTableSortOrder(sortHeader) {
+	if (sortHeader.data("sort-order") == "ascending") {
+		sortHeader.data("sort-order", "descending")
+	} else {
+		sortHeader.data("sort-order", "ascending")
+	}
+	
+	sortHeader.siblings().removeClass("selected")
+	sortHeader.addClass("selected")
+	
+	updateUsedAirplaneTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
+}
+
 
 function addAirplane(modelId, quantity, fromPlanLink) {
 	fromPlanLink = fromPlanLink || false
@@ -218,6 +250,7 @@ function selectAirplaneModel(model) {
 	//highlight the selected model
 	$("#airplaneCanvas #airplaneModelTable div[data-model-id='" + model.id +"']").addClass("selected")
 	
+	loadUsedAirplanes(model)
 	//expand the airplane list under this model
 	showAirplaneInventory(model)
 	//show basic airplane model details
@@ -266,6 +299,24 @@ function selectAirplaneModel(model) {
 	//hide owned model details
 	$('#airplaneCanvas #ownedAirplaneDetail').fadeOut(200)
 }
+
+function loadUsedAirplanes(modelInfo) {
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/used-airplanes/" + modelInfo.id,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(usedAirplanes) { 
+	    	loadedUsedAirplanes = usedAirplanes.airplanes
+	    	updateUsedAirplaneTable()
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 
 function showAirplaneInventory(modelInfo) {
 	var airplaneInventoryList = $("#airplaneCanvas #airplaneInventoryList")

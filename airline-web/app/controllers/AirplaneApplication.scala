@@ -138,6 +138,21 @@ class AirplaneApplication extends Controller {
     }
   }
   
+  def getUsedAirplanes(airlineId : Int, modelId : Int) = AuthenticatedAirline(airlineId) { request =>
+      ModelSource.loadModelById(modelId) match {
+        case Some(model) => 
+          val usedAirplanes = AirplaneSource.loadAirplanesCriteria(List(("model", modelId), ("is_sold", true)))
+          var result =  Json.obj("airplanes" -> Json.toJson(usedAirplanes)).asInstanceOf[JsObject]
+          getRejection(model, request.user).foreach { rejection =>
+            result = result + ("rejection" -> JsString(rejection))
+          }
+          Ok(result)
+        case None => BadRequest("model not found")
+      }
+    
+      
+  }
+  
   def getAirplane(airlineId : Int, airplaneId : Int) =  AuthenticatedAirline(airlineId) {
     AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId, AirplaneSource.LINK_FULL_LOAD) match {
       case Some(airplaneWithLink) =>
@@ -164,7 +179,7 @@ class AirplaneApplication extends Controller {
             
             val updateCount = 
               if (airplane.condition >= Airplane.BAD_CONDITION) { //then put in 2nd handmarket
-                airplane.is_sold = true
+                airplane.isSold = true
                 airplane.dealerRatio = Airplane.DEFAULT_DEALER_RATIO
                 AirplaneSource.updateAirplanes(List(airplane))
               } else {
