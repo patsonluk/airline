@@ -89,7 +89,7 @@ package object controllers {
       "age" -> JsNumber(Computation.calculateAge(airplane.constructedCycle)),
       "value" -> JsNumber(airplane.value),
       "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane)),
-      "dealerValue" -> JsNumber(Computation.calculateAirplaneDealerValue(airplane))
+      "dealerValue" -> JsNumber(airplane.dealerValue)
       ))
     }
   }

@@ -111,6 +111,32 @@ class AirplaneApplication extends Controller {
     return None
   }
   
+  def getUsedRejections(usedAirplanes : List[Airplane], model : Model, airline : Airline) : Map[Airplane, String] = {
+    val countryRelationship = airline.getCountryCode() match {
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationship(homeCountry, model.countryCode)
+      case None => 0
+    }
+    
+    if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
+      val rejection = "Cannot buy used airplane of " + model.name + " as your home country has bad relationship with manufacturer's country"
+      return usedAirplanes.map((_, rejection)).toMap
+    }
+    
+    val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
+    if (!ownedModels.contains(model) && ownedModels.size >= airline.airlineGrade.getModelsLimit) {
+      val rejection = "Can only own up to " + airline.airlineGrade.getModelsLimit + " different airplane model(s) at current airline grade"
+      return usedAirplanes.map((_, rejection)).toMap
+    }
+    
+    val rejections = scala.collection.mutable.Map[Airplane, String]()
+    usedAirplanes.foreach { airplane =>
+      if (airplane.dealerValue > airline.getBalance()) {
+         rejections.put(airplane, "Not enough cash to purchase this airplane")  
+      }
+    }
+    return rejections.toMap
+  }
+  
   
   
   def getAirplanes(airlineId : Int, simpleResult : Boolean) = AuthenticatedAirline(airlineId) {
@@ -142,16 +168,52 @@ class AirplaneApplication extends Controller {
       ModelSource.loadModelById(modelId) match {
         case Some(model) => 
           val usedAirplanes = AirplaneSource.loadAirplanesCriteria(List(("model", modelId), ("is_sold", true)))
-          var result =  Json.obj("airplanes" -> Json.toJson(usedAirplanes)).asInstanceOf[JsObject]
-          getRejection(model, request.user).foreach { rejection =>
-            result = result + ("rejection" -> JsString(rejection))
+          
+          val rejections = getUsedRejections(usedAirplanes, model, request.user)
+          var result = Json.arr()
+          usedAirplanes.foreach { airplane =>
+            var airplaneJson = Json.toJson(airplane).asInstanceOf[JsObject]
+            if (rejections.contains(airplane)) {
+              airplaneJson = airplaneJson + ("rejection" -> JsString(rejections(airplane)))
+            }
+            result = result :+ airplaneJson
           }
           Ok(result)
         case None => BadRequest("model not found")
       }
-    
-      
   }
+  
+  def buyUsedAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) { request =>
+      AirplaneSource.loadAirplaneById(airplaneId) match {
+        case Some(airplane) => 
+          val airline = request.user
+          getUsedRejections(List(airplane), airplane.model, airline).get(airplane) match {
+            case Some(rejection) => BadRequest(rejection)
+            case None => 
+              if (!airplane.isSold) {
+                BadRequest("Airplane is no longer for sale " + airlineId)
+              } else {
+                val dealerValue = airplane.dealerValue
+                val actualValue = airplane.value
+                airplane.buyFromDealer(airline)
+                if (AirplaneSource.updateAirplanes(List(airplane)) == 1) {
+                  val capitalGain = actualValue - dealerValue 
+                  AirlineSource.adjustAirlineBalance(airline.id, dealerValue * -1)
+                  AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = capitalGain))
+                  AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, dealerValue))
+                  Ok(Json.obj())
+                } else {
+                  BadRequest("Failed to buy used airplane " + airlineId)
+                }
+                
+              }
+          }
+          
+        case None => BadRequest("airplane not found")
+      }
+  }
+  
+  
   
   def getAirplane(airlineId : Int, airplaneId : Int) =  AuthenticatedAirline(airlineId) {
     AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId, AirplaneSource.LINK_FULL_LOAD) match {

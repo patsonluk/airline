@@ -44,14 +44,12 @@ object Computation {
     currentCycle - fromCycle 
   }
   
+  val SELL_RATE = 0.8
+  
   def calculateAirplaneSellValue(airplane : Airplane) : Int = {
     //80% off
-    val value = airplane.value * 0.8
+    val value = airplane.value * SELL_RATE
     if (value < 0) 0 else value.toInt
-  }
-  
-  def calculateAirplaneDealerValue(airplane : Airplane) : Int = {
-    (airplane.value * airplane.dealerRatio).toInt
   }
   
   def calculateDistance(fromAirport : Airport, toAirport : Airport) : Int = {

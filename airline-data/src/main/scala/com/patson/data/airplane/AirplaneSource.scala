@@ -219,7 +219,7 @@ object AirplaneSource {
       
     try {
       connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, airplane_condition, depreciation_rate, value, is_sold, dealerRatio) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, airplane_condition, depreciation_rate, value, is_sold, dealer_ratio) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       
       airplanes.foreach { 
         airplane =>
@@ -229,6 +229,8 @@ object AirplaneSource {
           preparedStatement.setDouble(4, airplane.condition)
           preparedStatement.setInt(5, airplane.depreciationRate)
           preparedStatement.setInt(6, airplane.value)
+          preparedStatement.setBoolean(7, airplane.isSold)
+          preparedStatement.setDouble(8, airplane.dealerRatio)
           updateCount += preparedStatement.executeUpdate()
           
           val generatedKeys = preparedStatement.getGeneratedKeys

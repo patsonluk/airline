@@ -112,8 +112,22 @@ function updateUsedAirplaneTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + usedAirplane.id + "</div>")
 		row.append("<div class='cell' align='right'>$" + commaSeparateNumber(usedAirplane.dealerValue) + "</div>")
 		row.append("<div class='cell' align='right'>" + usedAirplane.condition.toFixed(2) + "%</div>")
+		if (!usedAirplane.rejection) {
+			row.append("<div class='cell' align='right'><img class='clickable' src='assets/images/icons/airplane-plus.png' title='Purchase this airplane' onclick='buyUsedAirplane(" + usedAirplane.id + ")'></div>")
+		} else {
+			row.append("<div class='cell' align='right'><img src='assets/images/icons/prohibition.png' title='" + usedAirplane.rejection + "'/></div>")
+		}
 		usedAirplaneTable.append(row)
 	});
+	
+	if (loadedUsedAirplanes.length == 0 ) {
+		var row = $("<div class='table-row'></div>")
+		row.append("<div class='cell'>-</div>")
+		row.append("<div class='cell' align='right'>-</div>")
+		row.append("<div class='cell' align='right'>-</div>")
+		row.append("<div class='cell' align='right'></div>")
+		usedAirplaneTable.append(row)
+	}
 	
 }
 
@@ -190,6 +204,26 @@ function sellAirplane(airplaneId) {
 function replaceAirplane(airplaneId) {
 	var airlineId = activeAirline.id
 	var url = "airlines/" + airlineId + "/airplanes/" + airplaneId 
+	$.ajax({
+		type: 'PUT',
+		data: JSON.stringify({}),
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(response) {
+	    	refreshPanels(airlineId)
+	    	showAirplaneCanvas()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function buyUsedAirplane(airplaneId) {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/used-airplanes/airplanes/" + airplaneId 
 	$.ajax({
 		type: 'PUT',
 		data: JSON.stringify({}),
@@ -303,11 +337,11 @@ function selectAirplaneModel(model) {
 function loadUsedAirplanes(modelInfo) {
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + activeAirline.id + "/used-airplanes/" + modelInfo.id,
+		url: "airlines/" + activeAirline.id + "/used-airplanes/models/" + modelInfo.id,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(usedAirplanes) { 
-	    	loadedUsedAirplanes = usedAirplanes.airplanes
+	    	loadedUsedAirplanes = usedAirplanes
 	    	updateUsedAirplaneTable()
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
