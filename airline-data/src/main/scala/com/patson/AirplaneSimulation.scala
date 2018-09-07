@@ -83,7 +83,7 @@ object AirplaneSimulation {
     
   }
   
-  val DEALER_RATIO_DROP_RATE = 0.0025
+  val DEALER_RATIO_DROP_RATE = 0.005
   val DEALER_RATIO_LOWER_THERSHOLD = Computation.SELL_RATE //at this ratio, the dealer would just scrap the airplane
   
   
