@@ -200,7 +200,7 @@ class AirplaneApplication extends Controller {
                   val capitalGain = actualValue - dealerValue 
                   AirlineSource.adjustAirlineBalance(airline.id, dealerValue * -1)
                   AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = capitalGain))
-                  AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, dealerValue))
+                  AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, dealerValue * -1))
                   Ok(Json.obj())
                 } else {
                   BadRequest("Failed to buy used airplane " + airlineId)
