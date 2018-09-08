@@ -164,7 +164,7 @@ function getCountryFlagImg(countryCode) {
 		var countryFlagUrl = getCountryFlagUrl(countryCode);
 		var countryName = loadedCountriesByCode[countryCode].name
 		if (countryFlagUrl) {
-			return "<img src='" + countryFlagUrl + "' title='" + countryName +"'/>"
+			return "<img class='flag' src='" + countryFlagUrl + "' title='" + countryName +"'/>"
 		} else {
 			return ""
 		}

@@ -446,7 +446,7 @@ function addCityMarkers(airportMap, airport) {
 			  $("#cityPopupPopulation").text(city.population)
 			  $("#cityPopupIncomeLevel").text(city.incomeLevel)
 			  $("#cityPopupCountryCode").text(city.countryCode)
-			  $("#cityPopupCountryCode").append("<img src='assets/images/flags/" + city.countryCode + ".png' />")
+			  $("#cityPopupCountryCode").append("<img class='flag' src='assets/images/flags/" + city.countryCode + ".png' />")
 			  $("#cityPopupId").val(city.id)
 			   
 			  
