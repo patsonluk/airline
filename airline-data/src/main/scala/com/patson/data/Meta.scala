@@ -266,6 +266,8 @@ object Meta {
       
     createAirlineTransaction(connection)  
     createIncome(connection)
+    createAirlineCashFlowItem(connection)
+    createCashFlow(connection)
     createAirportImage(connection)
     createLoan(connection)
     createCountryMarketShare(connection)
@@ -515,6 +517,8 @@ object Meta {
       "airplane_condition DECIMAL(7,4), " +
       "depreciation_rate INTEGER, " +
       "value INTEGER," +
+      "is_sold TINYINT(1)," + 
+      "dealer_ratio DECIMAL(3,2)," + 
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(owner) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -593,6 +597,22 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + AIRLINE_TRANSACTION_INDEX_2 + " ON " + AIRLINE_TRANSACTION_TABLE + "(cycle)")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createAirlineCashFlowItem(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_CASH_FLOW_ITEM_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_CASH_FLOW_ITEM_TABLE + "(" +
+      "airline INTEGER, " +
+      "cash_flow_type INTEGER, " +
+      "amount BIGINT(20)," +
+      "cycle INTEGER," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
     statement.execute()
     statement.close()
   }
@@ -687,6 +707,29 @@ object Meta {
       "maintenance_investment LONG," +
       "advertisement LONG," +
       "depreciation LONG," +
+      "period INTEGER," +
+      "cycle INTEGER," +
+      "PRIMARY KEY (airline, period, cycle)" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createCashFlow(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + CASH_FLOW_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + CASH_FLOW_TABLE + "(" +
+      "airline INTEGER, " +
+      "cash_flow BIGINT(20), " +
+      "operation BIGINT(20), " +
+      "loan_interest BIGINT(20), " +
+      "loan_principle BIGINT(20)," +
+      "base_construction BIGINT(20), " +
+      "buy_airplane BIGINT(20), " +
+      "sell_airplane BIGINT(20)," +
+      "create_link BIGINT(20), " + 
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +

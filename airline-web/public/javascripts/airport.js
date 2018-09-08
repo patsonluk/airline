@@ -89,8 +89,9 @@ function updateAirportDetails(airport) {
 	    			$('#airportDetailsBaseScale').text(airportBase.scale)
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
 	    		}
+		    	$('#airportDetailsLinkLimitBoost').text(baseDetails.linkLimitDomestic + " / " + baseDetails.linkLimitRegional)
 		    	var targetBase = baseDetails.targetBase
-    			$('#airportDetailsBaseUpgradeCost').text('$' + commaSeparateNumber(targetBase.value))
+		    	$('#airportDetailsBaseUpgradeCost').text('$' + commaSeparateNumber(targetBase.value))
     			$('#airportDetailsBaseUpgradeUpkeep').text('$' + commaSeparateNumber(targetBase.upkeep))
 
 	    		
@@ -585,8 +586,13 @@ function updateAirportSlots(airportId) {
 			url: "airports/" + airportId + "/slots?airlineId=" + airlineId,
 		    dataType: 'json',
 		    success: function(slotInfo) {
-		    	var availableSlots = slotInfo.maxSlots - slotInfo.assignedSlots 
+		    	var availableSlots = slotInfo.preferredSlots - slotInfo.assignedSlots 
 	    		$(".airportAssignedSlots").text(availableSlots + " / " + slotInfo.maxSlots)
+	    		if (availableSlots < 0) {
+	    			$(".airportAssignedSlots").addClass("warning")
+	    		} else {
+	    			$(".airportAssignedSlots").removeClass("warning")
+	    		}
 		    },
 		    error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));

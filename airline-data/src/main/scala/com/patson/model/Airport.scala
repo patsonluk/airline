@@ -7,6 +7,7 @@ import scala.collection.JavaConversions._
 import com.patson.data.AirlineSource
 import com.patson.data.CountrySource
 
+
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
   val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
   private[this] val airlineAppeals = new java.util.HashMap[Int, AirlineAppeal]()//scala.collection.mutable.Map[Int, AirlineAppeal]()
@@ -116,13 +117,18 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     }
     
   }
+  def getPreferredSlotAssignment(airlineId : Int) : Int = {
+     AirlineSource.loadAirlineById(airlineId, true) match {
+      case Some(airline) => getPreferredSlotAssignment(airline)
+      case None => 0
+    }
+  }
+  
   /**
-   * Get max slots that can be assigned to this airline (including existing ones)
+   * Get slots that an airport would have offered without consideration of existing assignment
    */
-  def getMaxSlotAssignment(airline : Airline) : Int = {
+  def getPreferredSlotAssignment(airline : Airline) : Int = {
     val airlineId = airline.id
-    val reservedSlots = (slots * 0.2).toInt //airport always keep 20% spare
-    val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airlineId)
     
     //find out the country where this airline is from
     val airlineFromCountry = airline.getCountryCode() match {
@@ -136,62 +142,79 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       return 0
     }
     
+    val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airlineId)
     
-    if (availableSlots < reservedSlots) { //at reserved range already...cannot assign any new slots to existing airline
-      if (currentAssignedSlotToThisAirline > 0) {
-        currentAssignedSlotToThisAirline
-      } else if (availableSlots > 0) { //some hope for new airline...
-        getGuaranteedSlots(airlineFromCountry, countryRelationship)
-      } else { //sry all full
-        0
-      } 
-    } else { //calculate how many can be assigned
-      val airlineBaseAtThisAirportOption = getAirlineBase(airlineId)
-      
-      
-      //calculate guaranteed slots
-      val guaranteedSlots = airlineBaseAtThisAirportOption match {
-        case Some(base) if (base.headquarter) => 20 //at least 20 slots for HQ
-        case Some(base) if (!base.headquarter) => 10 //at least 10 slots for base
-        case None => getGuaranteedSlots(airlineFromCountry, countryRelationship)
+    
+    val airlineBaseAtThisAirportOption = getAirlineBase(airlineId)
+    
+    
+    val maxSlotsByBase =
+      getAirlineBase(airlineId) match {
+        case Some(base) if (base.headquarter) => 100 + 100 * (base.scale)
+        case Some(base) if (!base.headquarter) => 50 + 50 * (base.scale)
+        case None => Airport.NON_BASE_MAX_SLOT  
       }
-      
-      
-      val maxSlotsByBase =
-        getAirlineBase(airlineId) match {
-          case Some(base) if (base.headquarter) => 100 + 100 * (base.scale)
-          case Some(base) if (!base.headquarter) => 50 + 50 * (base.scale)
-          case None => 70  
-        }
-      
-      val maxSlotsByLoyalty = (maxSlotsByBase * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at full loyalty get 100% of max slot available
+    
+    val maxSlotsByLoyalty = (maxSlotsByBase * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at full loyalty get 100% of max slot available
 //      val maxSlotsByAwareness = (getAirlineAwareness(airlineId) * 30 / AirlineAppeal.MAX_AWARENESS).toInt + minSlots// +30 at max awareness
-      var maxSlotsByReputation : Int = (airline.getReputation() / Airline.MAX_REPUTATION * 9).toInt + 1 //max 10 with 100% reputation
-      if (airlineFromCountry != countryCode) { //from a foreign country, openness affects slots by reputation
-        //max openness 100 %, min openness 20 %
-        maxSlotsByReputation = (maxSlotsByReputation * (0.2 + (getCountry().openness.toDouble / Country.MAX_OPENNESS * 0.8))).toInt 
-      }
-      
-      
-      var maxSlots = Math.max(maxSlotsByLoyalty, maxSlotsByReputation)
-      
-      if (maxSlots > 1 && countryRelationship < 0) {
-        maxSlots /= 2
-      }
-      
-      maxSlots = Math.max(maxSlots, guaranteedSlots)
-      
-      //now see whether this new max slot would violate anything
-      if (maxSlots <= currentAssignedSlotToThisAirline) { //you can keep what you have but we cannot give u more as we don't like you anymore than before
-        currentAssignedSlotToThisAirline
-      } else {
-        var increment = maxSlots - currentAssignedSlotToThisAirline
-        if (availableSlots - increment < reservedSlots) { //nah cannot assign into the reserved range
-           increment = availableSlots - reservedSlots  //can give u what is left before reserved range at most   
-        }
-        currentAssignedSlotToThisAirline + increment
-      }
+    var maxSlotsByReputation : Int = (airline.getReputation() / Airline.MAX_REPUTATION * 9).toInt + 1 //max 10 with 100% reputation
+    if (airlineFromCountry != countryCode) { //from a foreign country, openness affects slots by reputation
+      //max openness 100 %, min openness 20 %
+      maxSlotsByReputation = (maxSlotsByReputation * (0.2 + (getCountry().openness.toDouble / Country.MAX_OPENNESS * 0.8))).toInt 
     }
+    
+    var maxSlots = Math.max(maxSlotsByLoyalty, maxSlotsByReputation)
+    
+    if (maxSlots > 1 && countryRelationship < 0) {
+      maxSlots /= 2
+    }
+    
+    //maxSlots = Math.max(maxSlots, guaranteedSlots)
+    
+    
+    //now see whether this new max slot would violate reserved slots
+    var increment = maxSlots - currentAssignedSlotToThisAirline
+    val reservedSlots = (slots * 0.2).toInt //airport always keep 20% spare
+    
+    if (availableSlots - increment < reservedSlots) { //at reserved range
+      increment =  availableSlots - reservedSlots
+    } 
+    
+    maxSlots = currentAssignedSlotToThisAirline + increment
+    
+     //calculate guaranteed slots
+    val guaranteedSlots = airlineBaseAtThisAirportOption match {
+      case Some(base) if (base.headquarter) => Airport.HQ_GUARANTEED_SLOTS 
+      case Some(base) if (!base.headquarter) => Airport.BASE_GUARANTEED_SLOTS 
+      case None => getGuaranteedSlots(airlineFromCountry, countryRelationship)
+    }
+    
+    maxSlots = Math.max(maxSlots, guaranteedSlots)
+    
+    //now double check if it violated limit
+    increment = maxSlots - currentAssignedSlotToThisAirline
+    
+    if (increment > availableSlots) {
+      increment = availableSlots
+    }
+    
+    currentAssignedSlotToThisAirline + increment
+  }
+  
+  /**
+   * Get max slots that can be assigned to this airline (including existing ones)
+   */
+  def getMaxSlotAssignment(airline : Airline) : Int = {
+    val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airline.id)
+    
+    val preferredSlots = getPreferredSlotAssignment(airline)
+      
+    if (preferredSlots <= currentAssignedSlotToThisAirline) { //you can keep what you have but we cannot give u more as we don't like you like before :<
+      currentAssignedSlotToThisAirline
+    } else {
+      preferredSlots
+    }
+   
   }
   
   def getGuaranteedSlots(airlineFromCountryCode : String, countryMutualRelationship: Int) : Int = {
@@ -343,6 +366,9 @@ object Airport {
   }
   
   val MAJOR_AIRPORT_LOWER_THRESHOLD = 5
+  val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
+  val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
+  val NON_BASE_MAX_SLOT = 70
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)

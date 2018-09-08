@@ -346,8 +346,8 @@ function refreshPanels(airlineId) {
 }
 
 var totalmillisecPerWeek = 7 * 24 * 60 * 60 * 1000
-var refreshInterval = 100 //100 millsec
-var incrementPerInterval = totalmillisecPerWeek / (10 * 60 * 1000) * refreshInterval //current 10 minutes per week
+var refreshInterval = 1000 //every second
+var incrementPerInterval = totalmillisecPerWeek / (15 * 60 * 1000) * refreshInterval //current 15 minutes per week
 var refreshIntervalId
 var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 

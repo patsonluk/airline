@@ -17,17 +17,20 @@ object AirlineSimulation {
     val allAirlines = AirlineSource.loadAllAirlines(true)
     val allLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD).groupBy { _.airline.id }
     val allTransactions = AirlineSource.loadTransactions(cycle).groupBy { _.airlineId }
+    val allTransactionalCashFlowItems: scala.collection.immutable.Map[Int, List[AirlineCashFlowItem]] = AirlineSource.loadCashFlowItems(cycle).groupBy { _.airlineId }
     //purge the older transactions
     AirlineSource.deleteTransactions(cycle - 1)
+    AirlineSource.deleteCashFlowItems(cycle - 1)
     val linkResultByAirline = linkResult.groupBy { _.link.airline.id }
     val airplanesByAirline = airplanes.groupBy(_.owner.id)
     val allCountries = CountrySource.loadAllCountries().map( country => (country.countryCode, country)).toMap
     
     val allIncomes = ListBuffer[AirlineIncome]()
+    val allCashFlows = ListBuffer[AirlineCashFlow]() //cash flow for accounting purpose
      
     val currentCycle = MainSimulation.currentWeek
     val champions : scala.collection.immutable.Map[Airline, List[(Country, Int)]] = getChampions(allAirlines.map( airline => (airline.id, airline)).toMap, allCountries)
-    val cashFlows = Map[Airline, Long]()
+    val cashFlows = Map[Airline, Long]() //cash flow for actual deduction
     
     val alliances = AllianceSource.loadAllAlliances()
     val allianceByAirlineId :scala.collection.immutable.Map[Int, Alliance] = alliances.flatMap { alliance => (alliance.members.filter(_.role != AllianceRole.APPLICANT).map(member => (member.airline.id, alliance))) }.toMap
@@ -122,19 +125,40 @@ object AirlineSimulation {
             , advertisement = othersSummary.getOrElse(OtherIncomeItemType.ADVERTISEMENT, 0)
             , depreciation = othersSummary.getOrElse(OtherIncomeItemType.DEPRECIATION, 0)
             , cycle = currentCycle
-        )
+        )      
+        
         
         val airlineRevenue = linksIncome.revenue + transactionsIncome.revenue + othersIncome.revenue
         val airlineExpense = linksIncome.expense + transactionsIncome.expense + othersIncome.expense
         val airlineProfit = airlineRevenue - airlineExpense
         val airlineWeeklyIncome = AirlineIncome(airline.id, airlineProfit, airlineRevenue, airlineExpense, linksIncome, transactionsIncome, othersIncome, cycle = currentCycle)
-        
         allIncomes += airlineWeeklyIncome
         allIncomes ++= computeAccumulateIncome(airlineWeeklyIncome)
         
+        //cash flow computation
         val totalCashFlow = totalCashRevenue - totalCashExpense
-        //airline.setBalance(airline.getBalance() + totalCashFlow)
-        cashFlows.put(airline, totalCashFlow)
+        
+        val operationCashFlow = totalCashFlow + loanPayment //include both interest and principle here
+        cashFlows.put(airline, totalCashFlow) //this is week end flow, used for actual adjustment
+        
+        //below is for accounting purpose
+        //cash flow item that is already applied during this week, still need to load them for accounting purpose
+        val transactionalCashFlowItems : scala.collection.immutable.Map[CashFlowType.Value, Long] = allTransactionalCashFlowItems.get(airline.id) match {
+          case Some(items) => items.groupBy(_.cashFlowType).mapValues( itemsByType => itemsByType.map(_.amount).sum)
+          case None => scala.collection.immutable.Map.empty
+        }
+        
+        //include cash flow during the week, only use for accounting purpose here
+        val baseConstruction = transactionalCashFlowItems.getOrElse(CashFlowType.BASE_CONSTRUCTION, 0L)  
+        val buyAirplane = transactionalCashFlowItems.getOrElse(CashFlowType.BUY_AIRPLANE, 0L)
+        val sellAirplane = transactionalCashFlowItems.getOrElse(CashFlowType.SELL_AIRPLANE, 0L)
+        val createLink = transactionalCashFlowItems.getOrElse(CashFlowType.CREATE_LINK, 0L)
+        val accountingCashFlow = totalCashFlow + baseConstruction + buyAirplane + sellAirplane    
+        
+        val loanPrincipal = loanPayment - interestPayment
+        val airlineWeeklyCashFlow = AirlineCashFlow(airline.id, cashFlow = accountingCashFlow, operation = operationCashFlow, loanInterest = interestPayment * -1, loanPrincipal = loanPrincipal * -1, baseConstruction = baseConstruction, buyAirplane = buyAirplane, sellAirplane = sellAirplane, createLink = createLink, cycle = currentCycle)
+        allCashFlows += airlineWeeklyCashFlow
+        allCashFlows ++= computeAccumulateCashFlow(airlineWeeklyCashFlow)         
         
         
         //update reputation
@@ -206,7 +230,7 @@ object AirlineSimulation {
     cashFlows.foreach { //for balance it's safer to use adjust instead of setting it directly
       case(airline, cashFlow) => AirlineSource.adjustAirlineBalance(airline.id, cashFlow)
     }
-    IncomeSource.saveIncomes(allIncomes.toList);
+    IncomeSource.saveIncomes(allIncomes.toList)
     
     //purge previous entry of current year/month
     if (currentCycle % 4 != 0) { //clear previous entry for current month, if currentCycle % 4 == 0, it starts a new entry, so no previous entry for the same month to clear
@@ -220,6 +244,20 @@ object AirlineSimulation {
     IncomeSource.deleteIncomesBefore(currentCycle - 10, Period.WEEKLY);
     IncomeSource.deleteIncomesBefore(currentCycle - 10 * 4, Period.MONTHLY);
     IncomeSource.deleteIncomesBefore(currentCycle - 10 * 52, Period.YEARLY);
+    
+    CashFlowSource.saveCashFlows(allCashFlows.toList)
+    //purge previous entry of current year/month
+    if (currentCycle % 4 != 0) { //clear previous entry for current month, if currentCycle % 4 == 0, it starts a new entry, so no previous entry for the same month to clear
+      CashFlowSource.deleteCashFlows(currentCycle - 1, Period.MONTHLY)
+    }
+    if (currentCycle % 52 != 0) { //clear previous entry for current year, if currentCycle % 52 == 0, it starts a new entry, so no previous entry for the same years to clear
+      CashFlowSource.deleteCashFlows(currentCycle - 1, Period.YEARLY)
+    }
+    
+    //purge old entries, keep 10 entries of each Period
+    CashFlowSource.deleteCashFlowsBefore(currentCycle - 10, Period.WEEKLY);
+    CashFlowSource.deleteCashFlowsBefore(currentCycle - 10 * 4, Period.MONTHLY);
+    CashFlowSource.deleteCashFlowsBefore(currentCycle - 10 * 52, Period.YEARLY);
   }
   
 //  def getChampionReputationBoost(airlineId : Int) : Double = {
@@ -273,17 +311,45 @@ object AirlineSimulation {
   }
   
   /**
+   * compute monthly and yearly cash flow 
+   * 
+   * Returns Updating cash flow entries
+   */
+  def computeAccumulateCashFlow(weeklyCashFlow : AirlineCashFlow) : List[AirlineCashFlow] = {
+    //get existing entry
+    val currentWeek = MainSimulation.currentWeek
+    val airlineId = weeklyCashFlow.airlineId
+    val currentMonthCashFlowOption = if (currentWeek % 4 == 0) None else CashFlowSource.loadCashFlowByAirline(airlineId, currentWeek - 1, Period.MONTHLY)
+    
+    val updatedMonthCashFlow = currentMonthCashFlowOption match {
+      case Some(cashFlow) => {
+        cashFlow.update(weeklyCashFlow)
+      }
+      case None => weeklyCashFlow.copy(period = Period.MONTHLY)//new month
+    }
+    val currentYearCashFlowOption = if (currentWeek % 52 == 0) None else CashFlowSource.loadCashFlowByAirline(airlineId, currentWeek - 1, Period.YEARLY)
+    val updatedYearCashFlow = currentYearCashFlowOption match {
+      case Some(cashFlow) => {
+        cashFlow.update(weeklyCashFlow)
+      }
+      case None => weeklyCashFlow.copy(period = Period.YEARLY)//new year
+    }
+    
+    List[AirlineCashFlow](updatedMonthCashFlow, updatedYearCashFlow)
+  }
+  
+  /**
    * Returns a tuple of (totalLoanRepayment, totalLoanInterest)
    */
   def updateLoans(airline : Airline) : (Long, Long) = {
     val loans = BankSource.loadLoansByAirline(airline.id)
-    var totalPrinciplePayment = 0L
+    var totalPrincipalPayment = 0L
     var totalLoanInterest = 0L
     loans.foreach { loan => 
       val principlePayment = Math.ceil(loan.borrowedAmount.toDouble / loan.loanTerm).toLong
       val interestPayment = Math.ceil(loan.interest.toDouble / loan.loanTerm).toLong
       totalLoanInterest = totalLoanInterest + interestPayment
-      totalPrinciplePayment = totalPrinciplePayment + principlePayment
+      totalPrincipalPayment = totalPrincipalPayment + principlePayment
       loan.remainingAmount = loan.remainingAmount - interestPayment - principlePayment 
       if (loan.remainingAmount <= 0) {
         BankSource.deleteLoan(loan.id)
@@ -292,7 +358,7 @@ object AirlineSimulation {
       }
     }
     
-    (totalPrinciplePayment + totalLoanInterest, totalLoanInterest)
+    (totalPrincipalPayment + totalLoanInterest, totalLoanInterest)
   }
   
   val getTargetQuality : (Int, Int) => Double = (funding : Int, capacity :Int) => {

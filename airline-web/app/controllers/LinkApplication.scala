@@ -328,6 +328,7 @@ class LinkApplication extends Controller {
           case Some(link) =>  {
             val cost = Computation.getLinkCreationCost(incomingLink.from, incomingLink.to)
             AirlineSource.adjustAirlineBalance(request.user.id, cost * -1)
+            AirlineSource.saveCashFlowItem(AirlineCashFlowItem(request.user.id, CashFlowType.CREATE_LINK, cost * -1))
             
             val toAirport = incomingLink.to
             if (toAirport.getAirlineAwareness(airlineId) < 5) { //update to 5 for link creation
@@ -632,7 +633,7 @@ class LinkApplication extends Controller {
       //check airline grade limit
       val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).mapValues(_.size)
       val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
-      val limit = airline.airlineGrade.getLinkLimit(flightCategory)
+      val limit = airline.getLinkLimit(flightCategory)
       if (limit <= existingFlightCategoryCounts.getOrElse(flightCategory, 0)) {
         return Some("Cannot create more route of category " + flightCategory + " until your airline reaches next grade")  
       }
