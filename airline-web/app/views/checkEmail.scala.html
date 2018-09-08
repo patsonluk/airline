@@ -1,0 +1,23 @@
+@import helper._
+@import play.api.Play.current
+@import play.api.i18n.Messages.Implicits._
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      html, body { height: 100%; margin: 0; padding: 0; }
+      #map { height: 100%; }
+    </style>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
+    
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
+  </head>
+  <body>
+	<div class="section">
+	    <h1>Email sent!</h1>
+		<div class="label">Help Instructions have been sent to the registered email address! Please make sure emails sent from info@@airline-club.com is not blocked by the your spam filter.</div>
+	</div>        
+</body>    
+</html>

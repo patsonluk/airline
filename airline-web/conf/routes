@@ -101,9 +101,9 @@ POST    /signup                     controllers.SignUp.submit
 # PasswordReset
 GET    /password-reset				controllers.AccountApplication.passwordResetForm(resetToken : String)
 POST   /password-reset				controllers.AccountApplication.passwordResetSubmit
-GET   /forgot-password				controllers.AccountApplication.forgotPasswordForm
+GET   /forgot-password				controllers.AccountApplication.forgotPassword
 POST   /forgot-password				controllers.AccountApplication.forgotPasswordSubmit
-GET   /forgot-id				controllers.AccountApplication.forgotIdForm
+GET   /forgot-id				controllers.AccountApplication.forgotId
 POST   /forgot-id				controllers.AccountApplication.forgotIdSubmit
 GET   /send-email				controllers.AccountApplication.sendEmail
 

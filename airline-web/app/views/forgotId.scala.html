@@ -1,4 +1,4 @@
-@(forgotForm: Form[Forgot])
+@(forgotForm: Form[ForgotId])
 
 @import helper._
 @import play.api.Play.current
@@ -20,7 +20,7 @@
 
     @helper.form(action = routes.AccountApplication.forgotIdSubmit) {
         <div class="section">
-        	<h1>Forgot User ID</h1>
+        	<h1>Forgot User Name</h1>
 	        <fieldset>
 	            <div style="padding: 10px;">
 	             @inputText(
