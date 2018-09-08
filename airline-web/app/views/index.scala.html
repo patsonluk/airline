@@ -85,15 +85,21 @@
   		<div style="float: right; margin: 5px;">
   			<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
   				<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px;" title="Become a Patreon to support this project!">
-  			</</a>
+  			</a>
   		</div>
   		<div style="float: right" class="button"><a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a></div>
   		<div style="float: right;">
   			<div style="display: hidden;" id="loginDiv">
 	  			<span class="label">User Name</span>
 	  			<input type="text" id="loginUserName"/>
+	  			<a href="/forgot-id"  target="_blank">
+	  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
+	  			</a> 
 	  			<span class="label">Password</span>
 	  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)"/>
+	  			<a href="/forgot-password"  target="_blank">
+	  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
+	  			</a>
 	  			<div class="button" onclick="login()">Login</div>
 <!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
 	  			<a href="signup"><div class="button" onclick="">Sign Up</div></a>

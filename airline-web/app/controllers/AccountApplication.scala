@@ -23,6 +23,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.JsObject
 import play.api.libs.json.JsNumber
 import play.api.libs.json.JsString
+import java.util.UUID
 
 class AccountApplication extends Controller {
   /**
@@ -56,10 +57,54 @@ class AccountApplication extends Controller {
     }
   )
   
+  val forgotIdForm : Form[ForgotId] = Form(
+    
+    // Define a mapping that will handle User values
+    mapping(
+      "email" -> text/*.verifying(
+        "Email address is not found",  
+        email => !(UserSource.loadUsersByCriteria(List(("email", email))).isEmpty)
+      )*/
+    )
+    // The mapping signature doesn't match the User case class signature,
+    // so we have to define custom binding/unbinding functions
+    {
+      // Binding: Create a User from the mapping result (ignore the second password and the accept field)
+      (email) => ForgotId(email) 
+    } 
+    {
+      // Unbinding: Create the mapping values from an existing User value
+      forgotId => Some(forgotId.email)
+    }
+  )
+  
+  val forgotPasswordForm : Form[ForgotPassword] = Form(
+    
+    // Define a mapping that will handle User values
+    mapping(
+      "userName" -> text.verifying(
+        "User Name is not found",  
+        userName => UserSource.loadUserByUserName(userName).isDefined
+      ),
+      "email" -> text
+    )
+    // The mapping signature doesn't match the User case class signature,
+    // so we have to define custom binding/unbinding functions
+    {
+      // Binding: Create a User from the mapping result (ignore the second password and the accept field)
+      (userName, email) => ForgotPassword(userName, email) 
+    } 
+    {
+      // Unbinding: Create the mapping values from an existing User value
+      forgotPassword => Some(forgotPassword.userName, forgotPassword.email)
+    }
+  )
+  
   /**
    * Display an empty form.
    */
   def passwordResetForm(resetToken : String) = Action {
+    println("token is " + resetToken)
     UserSource.loadResetUser(resetToken) match {
     case Some(username) => {
       Ok(html.passwordReset(form.fill(PasswordReset(resetToken, ""))))
@@ -68,6 +113,19 @@ class AccountApplication extends Controller {
     }
     
     
+  }
+  
+  def forgotId() = Action {
+    Ok(html.forgotId(forgotIdForm.fill(ForgotId(""))))
+  }
+  
+  def forgotPassword() = Action {
+    Ok(html.forgotPassword(forgotPasswordForm.fill(ForgotPassword("", ""))))
+  }
+  
+  def sendEmail() = Action {
+    EmailUtil.sendEmail("patson_luk@hotmail.com", "info@airline-club.com", "testing", "testing");
+    Ok(Json.obj())
   }
   
   
@@ -97,5 +155,70 @@ class AccountApplication extends Controller {
           }
       }
     )
+  }
+  
+  /**
+   * Handle form submission.
+   */
+  def forgotIdSubmit = Action { implicit request =>
+    forgotIdForm.bindFromRequest.fold(
+      // Form has errors, redisplay it
+      errors => {
+        println(errors)
+        BadRequest(html.forgotId(errors))
+      }, 
+      userInput => {
+          val users = UserSource.loadUsersByCriteria(List(("email", userInput.email)))
+          if (users.size > 0) {
+            println("Sending email for forgot ID " + users)
+            EmailUtil.sendEmail(userInput.email, "info@airline-club.com", "Forgot User Name from airline-club.com", getForgotIdMessage(users))
+          } else {
+            println("Sending email for forgot ID but email " + userInput.email + " has no account!")
+          }
+          Ok(html.checkEmail())
+      }
+    )
+  }
+  
+   def forgotPasswordSubmit = Action { implicit request =>
+    forgotPasswordForm.bindFromRequest.fold(
+      // Form has errors, redisplay it
+      errors => {
+        println(errors)
+        BadRequest(html.forgotPassword(errors))
+      }, 
+      userInput => {
+          val user = UserSource.loadUserByUserName(userInput.userName).get
+          if (user.email == userInput.email) {
+            println("Sending email for reset password " + user)
+            EmailUtil.sendEmail(user.email, "info@airline-club.com", "Reset password for airline-club.com", getResetPasswordMessage(user))  
+          } else {
+            println("Want to reset password for " + user.userName + " but email does not match!")
+          }
+          
+          Ok(html.checkEmail())
+      }
+    )
+  }
+  
+  def getForgotIdMessage(users : List[User]) = {
+     val message =  new StringBuilder("Your User Name(s) registered with this email address : \r\n")
+     users.foreach { user =>
+       message ++= (user.userName + "\r\n")
+     }
+    
+    message.toString()
+  }
+  
+  def getResetPasswordMessage(user : User) = {
+    val resetLink = generateResetLink(user)
+    "Please follow this link \r\n" + resetLink + "\r\nto reset your password."
+  }
+  
+  def generateResetLink(user : User) = {
+    val resetToken = UUID.randomUUID().toString()
+    
+    UserSource.saveResetUser(user.userName, resetToken)    
+    "https://www.airline-club.com/password-reset?resetToken=" + resetToken
   }
 }
