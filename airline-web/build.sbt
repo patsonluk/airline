@@ -15,7 +15,9 @@ libraryDependencies ++= Seq(
   "default" %% "airline-data" % "1.1-SNAPSHOT",
   "com.google.api-client" % "google-api-client" % "1.23.0",
   "com.google.oauth-client" % "google-oauth-client-jetty" % "1.23.0",
-  "com.google.apis" % "google-api-services-gmail" % "v1-rev83-1.23.0"
+  "com.google.apis" % "google-api-services-gmail" % "v1-rev83-1.23.0",
+  "javax.mail" % "javax.mail-api" % "1.6.2",
+  "com.sun.mail" % "javax.mail" % "1.6.2"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"

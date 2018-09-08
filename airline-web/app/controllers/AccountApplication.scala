@@ -56,6 +56,27 @@ class AccountApplication extends Controller {
     }
   )
   
+  val forgotForm : Form[Forgot] =  Form(
+    
+    // Define a mapping that will handle User values
+    mapping(
+      "email" -> text.verifying(
+        "Email address is not found",  
+        email => !(UserSource.loadUsersByCriteria(List(("email", email))).isEmpty)
+      )
+    )
+    // The mapping signature doesn't match the User case class signature,
+    // so we have to define custom binding/unbinding functions
+    {
+      // Binding: Create a User from the mapping result (ignore the second password and the accept field)
+      (email) => Forgot(email) 
+    } 
+    {
+      // Unbinding: Create the mapping values from an existing User value
+      forgot => Some(forgot.email)
+    }
+  )
+  
   /**
    * Display an empty form.
    */
@@ -68,6 +89,19 @@ class AccountApplication extends Controller {
     }
     
     
+  }
+  
+  def forgotIdForm() = Action {
+    Ok(html.forgotId(forgotForm.fill(Forgot(""))))
+  }
+  
+  def forgotPasswordForm() = Action {
+    Ok(html.forgotPassword(forgotForm.fill(Forgot(""))))
+  }
+  
+  def sendEmail() = Action {
+    EmailUtil.sendEmail("patson_luk@hotmail.com", "info@airline-club.com", "testing", "testing");
+    Ok(Json.obj())
   }
   
   
@@ -97,5 +131,55 @@ class AccountApplication extends Controller {
           }
       }
     )
+  }
+  
+  /**
+   * Handle form submission.
+   */
+  def forgotIdSubmit = Action { implicit request =>
+    forgotForm.bindFromRequest.fold(
+      // Form has errors, redisplay it
+      errors => {
+        println(errors)
+        BadRequest(html.forgotId(errors))
+      }, 
+      userInput => {
+          val users = UserSource.loadUsersByCriteria(List(("email", userInput.email)))
+          val user = users(0)
+          println("Sending email for forgot ID " + user)
+          EmailUtil.sendEmail(user.email, "info@airline-club.com", "Forgot User ID from airline-club.com", getForgotIdMessage(user))
+          Redirect("/")
+      }
+    )
+  }
+  
+   def forgotPasswordSubmit = Action { implicit request =>
+    forgotForm.bindFromRequest.fold(
+      // Form has errors, redisplay it
+      errors => {
+        println(errors)
+        BadRequest(html.forgotId(errors))
+      }, 
+      userInput => {
+          val users = UserSource.loadUsersByCriteria(List(("email", userInput.email)))
+          val user = users(0)
+          println("Sending email for reset password " + user)
+          EmailUtil.sendEmail(user.email, "info@airline-club.com", "Reset password for airline-club.com", getResetPasswordMessage(user))
+          Redirect("/")
+      }
+    )
+  }
+  
+  def getForgotIdMessage(user : User) = {
+    "Your user ID registered with this email address is : " + user.id
+  }
+  
+  def getResetPasswordMessage(user : User) = {
+    val resetLink = generateResetLink(user)
+    "Please follow this link " + resetLink + " to reset your password."
+  }
+  
+  def generateResetLink(user : User) = {
+    "https://www.airline-club.com/password-reset?resetToken=123"
   }
 }
