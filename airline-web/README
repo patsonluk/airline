@@ -1,4 +1,3 @@
-This is your new Play application
-=================================
+To properly setup emails need to download the gmail credentials json and authorize the account locally first
 
-This file will be packaged with your application, when using `activator dist`.
+Then copy the credentials json and put it to `conf` folder with name `gmail-credentials.json` and copy the `tokens` to the app directory
