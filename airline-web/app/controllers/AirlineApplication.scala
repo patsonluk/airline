@@ -180,8 +180,11 @@ class AirlineApplication extends Controller {
           return Some("No active flight route operated by your airline flying to this city yet")
         }
         
-        if (airport.countryCode != airline.getCountryCode().get && CountrySource.loadCountryByCode(airport.countryCode).get.openness < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
-          return Some("This country does not allow foreign airline base")
+        if (airport.countryCode != airline.getCountryCode().get) {
+          val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airline.getCountryCode().get, airport.countryCode)
+          if (CountrySource.loadCountryByCode(airport.countryCode).get.openness + mutalRelationshipToAirlineCountry < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
+            return Some("This country does not allow airline base from your country")
+          }
         }
         
         val existingBaseCount = airline.getBases().length

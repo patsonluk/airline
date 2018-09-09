@@ -625,8 +625,8 @@ class LinkApplication extends Controller {
       val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toCountryCode)
       if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
         return Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
-      } else if (toCountryCode != airlineCountryCode && CountrySource.loadCountryByCode(toCountryCode).get.openness < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
-        return Some("This country does not want to open their airports to foreign airline") 
+      } else if (toCountryCode != airlineCountryCode && CountrySource.loadCountryByCode(toCountryCode).get.openness + mutalRelationshipToAirlineCountry < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
+        return Some("This country does not want to open their airports to your country") 
       }
       
       
