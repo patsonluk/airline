@@ -343,6 +343,8 @@ object GeoDataPatcher extends App {
     //patch features
     AirportFeaturePatcher.patchFeatures()
     
+    IsolatedAirportPatcher.patchIsolatedAirports()
+    
     airports
   }
   
