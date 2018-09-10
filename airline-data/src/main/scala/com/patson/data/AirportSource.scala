@@ -304,6 +304,8 @@ object AirportSource {
       val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, power = ?, population = ?, slots = ?  WHERE id = ?")
       
       connection.setAutoCommit(false)
+      
+      
       airports.foreach { 
         airport =>
           preparedStatement.setInt(1, airport.size)
@@ -313,6 +315,36 @@ object AirportSource {
           preparedStatement.setInt(5, airport.id)
           preparedStatement.addBatch()
           //preparedStatement.executeUpdate()
+          
+          
+          val purgeCityShareStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_CITY_SHARE_TABLE + " WHERE airport = ?");
+          purgeCityShareStatement.setInt(1, airport.id)
+          purgeCityShareStatement.executeUpdate()
+          purgeCityShareStatement.close()
+          val purgeFeatureStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?");
+          purgeFeatureStatement.setInt(1, airport.id)
+          purgeFeatureStatement.executeUpdate()
+          purgeFeatureStatement.close()
+          
+          //update airline info too
+          airport.citiesServed.foreach { 
+            case (city, share) =>
+            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_CITY_SHARE_TABLE + "(airport, city, share) VALUES(?,?,?)")
+            infoStatement.setInt(1, airport.id)
+            infoStatement.setInt(2, city.id)
+            infoStatement.setDouble(3, share)
+            infoStatement.executeUpdate()
+            infoStatement.close()
+          }
+          //insert features
+          airport.getFeatures().foreach { feature =>
+            val featureStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_FEATURE_TABLE + "(airport, feature_type, strength) VALUES(?,?,?)")
+            featureStatement.setInt(1, airport.id)
+            featureStatement.setString(2, feature.featureType.toString())
+            featureStatement.setInt(3, feature.strength)
+            featureStatement.executeUpdate()
+            featureStatement.close()
+          }
       }
       preparedStatement.executeBatch()
       preparedStatement.close()

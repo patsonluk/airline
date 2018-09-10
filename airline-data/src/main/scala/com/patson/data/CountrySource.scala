@@ -69,7 +69,7 @@ object CountrySource {
   def saveCountries(countries : List[Country]) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("REPLACE INTO " + COUNTRY_TABLE + "(code, name, airport_population, income, openness) VALUES (?,?,?,?,?)")
+      val preparedStatement = connection.prepareStatement("INESRT INTO " + COUNTRY_TABLE + "(code, name, airport_population, income, openness) VALUES (?,?,?,?,?)")
     
       connection.setAutoCommit(false)
       countries.foreach { 
@@ -87,6 +87,30 @@ object CountrySource {
       connection.close()
     }
   }
+  
+  def updateCountries(countries : List[Country]) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("UPDATE " + COUNTRY_TABLE + " SET name = ?, airport_population = ?,  income = ?,  openness = ? WHERE code = ?")
+    
+      connection.setAutoCommit(false)
+      countries.foreach { 
+        country =>
+          preparedStatement.setString(1, country.name)
+          preparedStatement.setInt(2, country.airportPopulation)
+          preparedStatement.setInt(3, country.income)
+          preparedStatement.setInt(4, country.openness)
+          preparedStatement.setString(5, country.countryCode)
+          preparedStatement.executeUpdate()
+      }
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  
   
   def saveCountryRelationships(relationships : Map[Country, Map[Airline, Int]]) = {
      val connection = Meta.getConnection()
