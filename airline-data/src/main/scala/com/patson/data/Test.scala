@@ -34,8 +34,9 @@ object Test extends App {
     
 //    Patchers.patchAirlineCode()
 //    Patchers.patchFlightNumber()
-  Patchers.airplaneModelPatcher()
+  //Patchers.airplaneModelPatcher()
 //  Patchers.patchAirlineLogos()
+  IsolatedAirportPatcher.patchIsolatedAirports()
   
   
   
