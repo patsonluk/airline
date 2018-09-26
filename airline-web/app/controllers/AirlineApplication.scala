@@ -44,6 +44,7 @@ import com.patson.model.AirlineCashFlowItem
 import com.patson.model.CashFlowType
 import com.patson.data.CashFlowSource
 import com.patson.data.CashFlowSource
+import com.patson.model.AllianceRole
 
 
 class AirlineApplication extends Controller {
@@ -370,7 +371,7 @@ class AirlineApplication extends Controller {
       
       AllianceSource.loadAllianceMemberByAirline(request.user).foreach { allianceMember =>
         AllianceSource.deleteAllianceMember(airlineId)
-        if (allianceMember.role == LEADER) { //remove the alliance
+        if (allianceMember.role == AllianceRole.LEADER) { //remove the alliance
            AllianceSource.deleteAlliance(allianceMember.allianceId)
         }
       }  
