@@ -370,6 +370,9 @@ class AirlineApplication extends Controller {
       
       AllianceSource.loadAllianceMemberByAirline(request.user).foreach { allianceMember =>
         AllianceSource.deleteAllianceMember(airlineId)
+        if (allianceMember.role == LEADER) { //remove the alliance
+           AllianceSource.deleteAlliance(allianceMember.allianceId)
+        }
       }  
       
       //reset balance
