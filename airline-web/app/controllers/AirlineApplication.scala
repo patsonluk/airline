@@ -302,8 +302,7 @@ class AirlineApplication extends Controller {
   
   def getServicePrediction(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
      val airline = request.user
-     val capacity = LinkSource.loadLinksByAirlineId(airlineId).map(_.capacity.total).sum
-     val targetQuality = AirlineSimulation.getTargetQuality(airline.getServiceFunding(), capacity)
+     val targetQuality = AirlineSimulation.getTargetQuality(airline.getServiceFunding(), LinkSource.loadLinksByAirlineId(airlineId, LinkSource.FULL_LOAD))
      
      val delta = targetQuality - airline.getServiceQuality()
      val prediction =  
