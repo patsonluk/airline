@@ -1594,6 +1594,7 @@ function loadLinksTable() {
 	    	$.each(links, function(key, link) {
 				link.totalCapacity = link.capacity.economy + link.capacity.business + link.capacity.first
 				link.totalPassengers = link.passengers.economy + link.passengers.business + link.passengers.first
+				link.totalLoadFactor = Math.round(link.totalPassengers / link.totalCapacity * 100)
 				var assignedModel 
 				if (link.assignedAirplanes) {
 					assignedModel = link.assignedAirplanes[0].name
@@ -1643,6 +1644,7 @@ function updateLinksTable(sortProperty, sortOrder) {
 		row.append("<div class='cell' align='right'>" + link.distance + "km</div>")
 		row.append("<div class='cell' align='right'>" + link.totalCapacity + "</div>")
 		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
+		row.append("<div class='cell' align='right'>" + link.totalLoadFactor + '%' + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.revenue) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.profit) + "</div>")
 		
