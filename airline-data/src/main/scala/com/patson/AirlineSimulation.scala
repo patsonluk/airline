@@ -15,7 +15,7 @@ object AirlineSimulation {
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
     val allAirlines = AirlineSource.loadAllAirlines(true)
-    val allLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD).groupBy { _.airline.id }
+    val allLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).groupBy { _.airline.id }
     val allTransactions = AirlineSource.loadTransactions(cycle).groupBy { _.airlineId }
     val allTransactionalCashFlowItems: scala.collection.immutable.Map[Int, List[AirlineCashFlowItem]] = AirlineSource.loadCashFlowItems(cycle).groupBy { _.airlineId }
     //purge the older transactions
@@ -211,12 +211,11 @@ object AirlineSimulation {
         
         //calculate service quality
         allLinks.get(airline.id).foreach {  links =>
-          
-           var totalCapacity = links.map { _.capacity.total }.sum
-           if (totalCapacity < 1000) {
-             totalCapacity = 1000
-           }
-           val targetServiceQuality = getTargetQuality(serviceFunding, totalCapacity) //50x to get 50 target quality, 200x to get max 100 target quality
+           var totalPassengerMileCapacity = links.map { link => link.frequency * link.getAssignedModel().fold(0L)(_.capacity.toLong) * link.distance }.sum
+           val MIN_PASSENGER_MILE_CAPACITY = 1000 * 1000
+           totalPassengerMileCapacity = Math.max(totalPassengerMileCapacity, MIN_PASSENGER_MILE_CAPACITY) 
+           
+           val targetServiceQuality = getTargetQuality(serviceFunding, totalPassengerMileCapacity) //50x to get 50 target quality, 200x to get max 100 target quality
            val currentServiceQuality = airline.getServiceQuality()
            airline.setServiceQuality(getNewQuality(currentServiceQuality, targetServiceQuality)) 
         }
@@ -361,7 +360,16 @@ object AirlineSimulation {
     (totalPrincipalPayment + totalLoanInterest, totalLoanInterest)
   }
   
-  val getTargetQuality : (Int, Int) => Double = (funding : Int, capacity :Int) => {
+  val getTargetQuality : (Int, Long) => Double = (funding : Int, totalPassengerMileCapacity : Long) => {
+    val computedQuality = Math.pow(funding.toDouble / (totalPassengerMileCapacity / 4000) / 30, 1 / 2.5) * 40  //40x capacity (assume average 4k distance) to get 50 target quality, 200x capacity to get max 100 target quality
+    if (computedQuality >= Airline.MAX_SERVICE_QUALITY) {
+      Airline.MAX_MAINTENANCE_QUALITY
+    } else {
+      computedQuality
+    }
+  }
+  
+  val getTargetQuality2 : (Int, Int) => Double = (funding : Int, capacity :Int) => {
     val computedQuality = Math.sqrt(funding.toDouble / capacity / 50 ) * 50  //50x capacity to get 50 target quality, 200x capacity to get max 100 target quality
     if (computedQuality >= Airline.MAX_SERVICE_QUALITY) {
       Airline.MAX_MAINTENANCE_QUALITY
@@ -369,6 +377,7 @@ object AirlineSimulation {
       computedQuality
     }
   }
+  
   val getNewQuality : (Double, Double) => Double = (currentQuality, targetQuality) =>  {
     val delta = targetQuality - currentQuality
     val adjustment = 
