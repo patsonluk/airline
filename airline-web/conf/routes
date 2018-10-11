@@ -40,6 +40,7 @@ GET		 /airlines/:airlineId/bases		  controllers.AirlineApplication.getBases(airl
 GET		 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.getBase(airlineId : Int, airportId : Int)
 DELETE	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.deleteBase(airlineId : Int, airportId : Int)
 PUT	 	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.putBase(airlineId : Int, airportId : Int)
+GET		 /airlines/:airlineId/downgradeBase/:airportId  controllers.AirlineApplication.downgradeBase(airlineId : Int, airportId : Int)
 GET		 /airlines/:airlineId/link-consumptions/:linkId	  controllers.LinkApplication.getLinkConsumption(airlineId : Int, linkId: Int, cycleCount : Int ?= 1)
 #PUT		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.setWatchedLink(airlineId: Int, linkId: Int)
 #GET		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.getWatchedLink(airlineId: Int)

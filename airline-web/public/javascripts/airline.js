@@ -144,6 +144,24 @@ function deleteBase() {
 	});
 }
 
+function downgradeBase() {
+	var url = "airlines/" + activeAirline.id + "/downgradeBase/" + activeAirportId 
+	
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    success: function() {
+	    	updateAllPanels(activeAirline.id)
+	    	showWorldMap()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 function clearMarkerEntry(markerEntry) {
 	//remove all animation intervals
 	window.clearInterval(markerEntry.animation)

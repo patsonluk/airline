@@ -145,6 +145,14 @@ class AirlineApplication extends Controller {
           result = result + ("rejection" -> JsString(rejection))
         }
         
+        if (existingBase.isDefined) {
+          val downgradeRejection = getDowngradeRejection(existingBase.get)
+          downgradeRejection.foreach{ rejection =>
+            result = result + ("downgradeRejection" -> JsString(rejection))
+          }
+        }
+        
+        
         val baseLinkLimit = Country.getLimitByCountryCode(airport.countryCode)
         result = result ++ Json.obj("linkLimitDomestic" -> baseLinkLimit.domestic, "linkLimitRegional" -> baseLinkLimit.regional)
         
@@ -200,6 +208,22 @@ class AirlineApplication extends Controller {
     
     return None
   }
+  
+   def getDowngradeRejection(base : AirlineBase) : Option[String] = {
+     if (base.scale == 1) { //cannot downgrade any further
+       return Some("Cannot downgrade this base any further")
+     }
+     val airport = AirportSource.loadAirportById(base.airport.id, true).get
+     val assignedSlots = airport.getAirlineSlotAssignment(base.airline.id)
+     val preferredSlots = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = 0)
+     val preferredSlotsAfterDowngrade = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = -1)
+     if (assignedSlots > preferredSlotsAfterDowngrade) {
+       return Some("This base can only be downgraded if there are " + (preferredSlots - preferredSlotsAfterDowngrade)  + " free slots")
+     } else {
+       return None
+     }
+  }
+  
   def deleteBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
       case Some(base) if base.headquarter => //no deleting head quarter for now
@@ -292,6 +316,23 @@ class AirlineApplication extends Controller {
       BadRequest("Cannot insert base")
     }
   }
+  
+  def downgradeBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
+      AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
+          case Some(base) => //updating
+            getDowngradeRejection(base) match {
+              case Some(rejection) =>
+                BadRequest("cannot downgrade this base: " + rejection)
+              case None =>
+                val updateBase = base.copy(scale = base.scale - 1)
+                AirlineSource.saveAirlineBase(updateBase)
+                Ok("Base downgraded")
+            }
+          case None =>
+            NotFound("Cannot downgrade base in airport id " + airportId + " . Base not found")
+      }
+  }    
+  
   
   def getAirlineFinances(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
      val airline = request.user

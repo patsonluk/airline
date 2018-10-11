@@ -127,7 +127,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   /**
    * Get slots that an airport would have offered without consideration of existing assignment
    */
-  def getPreferredSlotAssignment(airline : Airline) : Int = {
+  def getPreferredSlotAssignment(airline : Airline, scaleAdjustment : Int = 0) : Int = {
     val airlineId = airline.id
     
     //find out the country where this airline is from
@@ -150,8 +150,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     
     val maxSlotsByBase =
       getAirlineBase(airlineId) match {
-        case Some(base) if (base.headquarter) => 100 + 100 * (base.scale)
-        case Some(base) if (!base.headquarter) => 50 + 50 * (base.scale)
+        case Some(base) if (base.headquarter) => 100 + 100 * (base.scale + scaleAdjustment)
+        case Some(base) if (!base.headquarter) => 50 + 50 * (base.scale + scaleAdjustment)
         case None => Airport.NON_BASE_MAX_SLOT  
       }
     

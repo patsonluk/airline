@@ -119,6 +119,20 @@ function updateAirportDetails(airport) {
 	    				$('#upgradeBaseButton').show()
 	    			}
 	    		}
+		    	
+		    	if (baseDetails.downgradeRejection) {
+		    		$('#downgradeRejectionReason').text(baseDetails.downgradeRejection)
+	    			$('#downgradeRejection').show()
+	    			$('#downgradeBaseButton').hide()
+		    	} else {
+		    		$('#downgradeRejection').hide()
+		    		if (airportBase) {
+		    			$('#downgradeBaseButton').show()
+		    		} else {
+		    			$('#downgradeBaseButton').hide()
+		    		}
+		    	}
+		    	
 	    		
 	    		if (!airportBase || airportBase.headquarter) {
 	    			$('#deleteBaseButton').hide()

@@ -479,7 +479,7 @@
 		 	  					<div class="cell clickable" style="width: 8%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
 		 	  					<div class="cell clickable" style="width: 7%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity</div>
 		 	  					<div class="cell clickable" style="width: 7%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Passenger</div>
-		 	  					<div class="cell clickable" style="width: 3%" align="right" data-sort-property="totalLoadFactor" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Load Factor</div>
+		 	  					<div class="cell clickable" style="width: 3%" align="right" data-sort-property="upgradeBaseButton" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Load Factor</div>
 		 	  					<div class="cell clickable" style="width: 11%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
 		 	  					<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 							</div>
@@ -546,9 +546,13 @@
   						<div id="baseRejection" style="display:none;">
 			    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="baseRejectionReason" class="warning"></span>
 			    		</div>
+			    		<div id="downgradeRejection" style="display:none;">
+			    			<img src='@routes.Assets.versioned("images/icons/information.png")'><span id="downgradeRejectionReason"></span>
+			    		</div>
 			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase(true)">Build Headquarter</div>
     					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase(false)">Build Base</div>
     					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick="buildBase(false, parseInt($('#airportDetailsBaseScale').text()) + 1)">Upgrade Base</div>
+    					<div class="button" id="downgradeBaseButton" style="display: none;" onclick="downgradeBase()">Downgrade Base</div>
     					<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed.", deleteBase)'>Remove Base</div>
     					
 <!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
