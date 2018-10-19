@@ -33,8 +33,10 @@ object IsolatedAirportPatcher {
         
         if (hubWithinRange.isEmpty) { //then it is indeed isolated
           val existingFeatures = airport.getFeatures()
-          airport.initFeatures(existingFeatures :+ AirportFeature(AirportFeatureType.ISOLATED_TOWN, 1))
-          isolatedAirports += airport
+          if (!existingFeatures.map(_.featureType).contains(AirportFeatureType.ISOLATED_TOWN)) {
+            airport.initFeatures(existingFeatures :+ AirportFeature(AirportFeatureType.ISOLATED_TOWN, 1))
+            isolatedAirports += airport
+          }
         }
       }
     }
