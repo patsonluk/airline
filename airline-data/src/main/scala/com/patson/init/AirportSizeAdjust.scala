@@ -235,7 +235,8 @@ object AirportSizeAdjust {
         "DRW" -> 5, //Darwin
         "CLO" -> 4,
         "GYE" -> 4,
-        "UIO" -> 4
+        "UIO" -> 4,
+        "JTR" -> 3 //Santorini
         
       )
       

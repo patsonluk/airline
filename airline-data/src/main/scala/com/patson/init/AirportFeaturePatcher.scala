@@ -50,17 +50,20 @@ object AirportFeaturePatcher {
         "CDG" -> 65, //paris
         "MCO" -> 58, //Orlando
         "MLE" -> 55, //Maldives
+        "JTR" -> 46, //Santorini
         "PEK" -> 44, //Beijing
         "DPS" -> 43, //Bali
         "NAN" -> 41, //Fiji
         "VCE" -> 40, //venice
         "ATH" -> 40, //Athens
         "DXB" -> 39, //Dubai
+        "MLA" -> 39, //Malta
         "PRG" -> 38, //Prague
         "LPA" -> 38, //Gran Canaria 
         "IST" -> 35, //Istanbul
         "TFS" -> 34, //Tenerife
         "PPT" -> 34, //Pape'ete
+        "HER" -> 33, //Crete
         "CNS" -> 33, //Cairns Australia
         "PUJ" -> 33, //Puna cana
         "OKA" -> 32, //Okinawa
@@ -76,9 +79,12 @@ object AirportFeaturePatcher {
         "BCN" -> 28, //Barcelona
         "MRS" -> 27,
         "MXP" -> 27,
+        "SJD" -> 26, //Los Cabos
         "GIG" -> 26, //Rio
         "KOA" -> 25, //Kailua Hawaii
+        "NAS" -> 25, //Bahamas (nassau)
         "KEF" -> 24, //Reykjavik
+        "FLL" -> 22, //Fort Lauderdale
         "AMS" -> 21, //Amsterdam
         "TLV" -> 21,
         "CAI" -> 20,
@@ -110,6 +116,7 @@ object AirportFeaturePatcher {
         "XIY" -> 18, //Xian china
         "PVG" -> 18, //Shanghai
         "PER" -> 18, //Perth
+        "FLN" -> 18,
         "NAP" -> 18,
         "KRK" -> 18,
         "HEL" -> 17, //Helsinki 
@@ -125,6 +132,7 @@ object AirportFeaturePatcher {
         "DRW" -> 14, //Darwin Australia
         "MBJ" -> 13, //Montego bay
         "LXA" -> 12, //Lhasa China
+        "MYR" -> 12,
         "AUA" -> 11, //Aruba
         "BGI" -> 11, //Barbados
         "IBZ" -> 11, //Ibiza
@@ -172,6 +180,7 @@ object AirportFeaturePatcher {
         "ATL" -> 18,
         "PUS" -> 22, //Busan
         "FLL" -> 15,
+        "BSB" -> 18, //Brazilia
         "CDG" -> 38, //paris
         "FRA" -> 54,
         "NGO" -> 18,
