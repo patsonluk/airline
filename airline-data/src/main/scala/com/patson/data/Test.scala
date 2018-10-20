@@ -31,12 +31,13 @@ object Test extends App {
      
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
 //       AirportFeaturePatcher.patchFeatures()
+  AirportProfilePicturePatcher.patchProfilePictures()
     
 //    Patchers.patchAirlineCode()
 //    Patchers.patchFlightNumber()
   //Patchers.airplaneModelPatcher()
 //  Patchers.patchAirlineLogos()
-  IsolatedAirportPatcher.patchIsolatedAirports()
+//  IsolatedAirportPatcher.patchIsolatedAirports()
   
   
   
