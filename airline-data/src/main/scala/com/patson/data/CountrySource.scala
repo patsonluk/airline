@@ -69,7 +69,7 @@ object CountrySource {
   def saveCountries(countries : List[Country]) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INESRT INTO " + COUNTRY_TABLE + "(code, name, airport_population, income, openness) VALUES (?,?,?,?,?)")
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + COUNTRY_TABLE + "(code, name, airport_population, income, openness) VALUES (?,?,?,?,?)")
     
       connection.setAutoCommit(false)
       countries.foreach { 
