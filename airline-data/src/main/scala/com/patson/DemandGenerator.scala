@@ -209,9 +209,14 @@ object DemandGenerator {
         } else {
          0 
         }
-      val firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
-      val businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
+      var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
+      var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
       val economyClassDemand = adjustedDemand.toInt - firstClassDemand - businessClassDemand
+      
+      //add extra business and first class demand from lounge
+      firstClassDemand *= 2
+      businessClassDemand *= 2
+      
       LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
     }
   }
@@ -228,11 +233,16 @@ object DemandGenerator {
     //for now 5 * 3 loyalty preferences per airport
     val loyaltyPreferenceCount = 5;
     for (i <- 0 until loyaltyPreferenceCount) {
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), ECONOMY), 10)) 
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS), 2))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), ECONOMY, loungeLevelRequired = 0), 10)) 
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS, loungeLevelRequired = 0), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST, loungeLevelRequired = 0), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS, loungeLevelRequired = 1), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST, loungeLevelRequired = 1), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS, loungeLevelRequired = 2), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST, loungeLevelRequired = 2), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS, loungeLevelRequired = 3), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST, loungeLevelRequired = 3), 1))
     }
-    
     
     new FlightPreferencePool(flightPreferences.toList)
   }

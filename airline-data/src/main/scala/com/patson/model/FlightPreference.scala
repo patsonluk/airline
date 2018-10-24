@@ -33,7 +33,7 @@ case class SimplePreference(priceSensitivity : Double, linkClass: LinkClass) ext
   }
 }
 
-case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, id : Int)  extends FlightPreference{
+case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, loungeLevelRequired : Int, id : Int)  extends FlightPreference{
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   //val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
@@ -68,6 +68,22 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
         
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
+    //adjust by lounge
+    if (linkClass.level >= BUSINESS.level) {
+      val fromLounge = link.airline.getAllianceId match {
+        case Some(allianceId) => link.from.getLoungeByAlliance(allianceId)
+        case None => link.from.getLoungeByAirline(link.airline.id)
+      }
+      
+      val toLounge = link.airline.getAllianceId match {
+        case Some(allianceId) => link.from.getLoungeByAlliance(allianceId)
+        case None => link.from.getLoungeByAirline(link.airline.id)
+      }
+      
+      fromLounge.foreach { lounge => perceivedPrice = perceivedPrice - 50 * lounge.level }
+      toLounge.foreach { lounge => perceivedPrice = perceivedPrice - 50 * lounge.level }
+    }
+    
     //cost is in terms of flight duration
     val baseCost = perceivedPrice//link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, linkClass, perceivedPrice)
     
@@ -86,11 +102,12 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
 
 object AppealPreference {
   var count: Int = 0
-  def getAppealPreferenceWithId(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass) = {
+  def getAppealPreferenceWithId(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, loungeLevelRequired : Int) = {
     count += 1
-    AppealPreference(appealList, linkClass, count)
+    AppealPreference(appealList, linkClass, loungeLevelRequired = loungeLevelRequired, count)
   }
 }
+
 
 //class DrawPool(appealList : Map[Airline, AirlineAppeal]) {
 //  val asList = appealList.toList.map(_._1)

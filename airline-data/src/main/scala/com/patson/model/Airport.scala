@@ -18,6 +18,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var airlineBasesLoaded = false
   private[this] val features = ListBuffer[AirportFeature]()
   private[this] var featuresLoaded = false
+  private[this] val loungesByAirline = scala.collection.mutable.Map[Int, Lounge]()
+  private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
+  private[this] var loungesLoaded = false
+  
   
   private[this] var airportImageUrl : Option[String] = None
   private[this] var cityImageUrl : Option[String] = None
@@ -258,6 +262,20 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     airlineBases.toMap
   }
   
+  def getLoungeByAirline(airlineId : Int) : Option[Lounge] = {
+    if (!loungesLoaded) {
+      throw new IllegalStateException("airport Lounge is not properly initialized! If loaded from DB, please use fullload")
+    }
+    loungesByAirline.get(airlineId)
+  }
+  
+  def getLoungeByAlliance(alliance : Int) : Option[Lounge] = {
+    if (!loungesLoaded) {
+      throw new IllegalStateException("airport Lounge is not properly initialized! If loaded from DB, please use fullload")
+    }
+    loungesByAlliance.get(alliance)
+  }
+  
   def isFeaturesLoaded = featuresLoaded
   
   def getFeatures() : List[AirportFeature] = {
@@ -285,6 +303,17 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     this.features.clear()
     this.features ++= features
     featuresLoaded = true
+  }
+  
+  def initLounges(lounges : List[Lounge]) = {
+    this.loungesByAirline.clear()
+    lounges.foreach { lounge =>
+      this.loungesByAirline.put(lounge.airline.id, lounge)
+      lounge.alliance.foreach {
+         alliance => this.loungesByAlliance.put(alliance.id, lounge)  
+      }
+    }
+    loungesLoaded = true
   }
   
   def slotFee(airplaneModel : Model, airline : Airline) : Int = { 

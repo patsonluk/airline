@@ -73,6 +73,9 @@ object AirlineSource {
           
           if (fullLoad) {
             airline.setBases(loadAirlineBasesByAirline(airline.id))
+            AllianceSource.loadAllianceMemberByAirline(airline).foreach {
+              thisAirlineAsAllianceMember => airline.setAllianceId(thisAirlineAsAllianceMember.allianceId)
+            }
           }
           
           airlines += airline

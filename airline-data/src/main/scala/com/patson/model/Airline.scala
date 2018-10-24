@@ -2,6 +2,7 @@ package com.patson.model
 
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
+  var allianceId : Option[Int] = None
   var bases : List[AirlineBase] = List.empty
   
   def setBalance(balance : Long) = { 
@@ -37,6 +38,16 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def getAirlineCode() = {
     airlineInfo.airlineCode
   }
+
+  def setAllianceId(allianceId : Int) = {
+    this.allianceId = Some(allianceId)
+  }
+  
+  def getAllianceId() : Option[Int] = {
+    allianceId
+  }
+  
+  
   
   def setBases(bases : List[AirlineBase]) {
     this.bases = bases
