@@ -30,8 +30,28 @@ import com.patson.model.Scheduling.TimeSlotStatus
 import controllers.WeatherUtil.Coordinates
 import controllers.WeatherUtil.Weather
 
+import javax.inject._
+import akka.actor._
+import play.api.Play.current
 
-class Application extends Controller {
+import models._
+
+class Application @Inject()(actorSystem: ActorSystem) extends Controller {
+  
+  // creates actor of type chat described above
+  val chat = actorSystem.actorOf(Props[Chat], "chat")
+
+  /*
+   Specifies how to wrap an out-actor that will represent
+   WebSocket connection for a given request.
+  */
+  def chatSocket = WebSocket.acceptWithActor[String, String] {
+    (request: RequestHeader) =>
+    (out: ActorRef) =>
+    Props(new ClientActor(out, chat))
+  }
+
+
  implicit object AirportFormat extends Format[Airport] {
     def reads(json: JsValue): JsResult[Airport] = {
       val airport = Airport.fromId((json \ "id").as[Int])

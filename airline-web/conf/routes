@@ -5,6 +5,7 @@
 # Home page
 GET     /                           controllers.Application.index
 GET     /test                       controllers.Application.test
+GET     /chat                       controllers.Application.chatSocket
 
 #Web Socket management
 GET		/wsWithActor						controllers.WebsocketApplication.wsWithActor

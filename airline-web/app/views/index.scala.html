@@ -16,11 +16,21 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
     <link rel="icon" type="image/png"  href='@routes.Assets.versioned("images/icons/globe-green.png")'>
     
-    <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/libs/jquery-ui.min.js")"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+			  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+			  crossorigin="anonymous"></script>
+			  
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+			  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+			  crossorigin="anonymous"></script>
+			  
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/chat.js")"></script>
+
     <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")"></script>
@@ -70,6 +80,7 @@
 	</script>
   </head>
   <body>
+  
   	<input type="hidden" id="floatMessage" value="@message"/>
   	<div id="floatMessageBox" style="height: 30px; width: 400px; display: none;"></div>
   	<div id="topBar" data-scroll="false" class="menubar">
@@ -117,6 +128,41 @@
   			<span id="consoleMessage"></span>
   		</div>
   		 
+	<!-- Chat Window -->
+	<div id="live-chat" class="user-specific-tab">
+	<div ng-app="ChatApp">
+	<div ng-controller="ChatController as chat">
+	
+		<header class="clearfix">
+			
+			<h4>Game Chat</h4>
+			
+		</header>
+
+		<div class="chat" style="display: none;">
+			
+			<div class="chat-history">
+						<ul>
+							<li ng-repeat="msg in chat.messages track by $index">
+								{{msg}}
+							</li>
+						</ul>
+	
+			</div> <!-- end chat-history -->
+				<form>
+							<input type="text" placeholder="Enter message..."
+								   ng-model="chat.currentMessage">
+							<input type="submit" value="Send"
+								   ng-click="chat.sendMessage()">
+						</form>
+
+		</div> <!-- end chat -->
+	</div>
+	</div>
+	</div> 
+    <!-- end live-chat -->
+		 
+		 
   		<div style="width: 80px; float: left;">
 <!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
 	  		<ul class="tabs" id="main-tabs">
@@ -1751,7 +1797,31 @@
 				<div style="clear: both;"></div>
   			</div>
 	<!-- end alliance canvas -->
+				<div id="chatCanvas" style="display: none; height: 100%">
+				<div style="height: 90% ; width : 50%; float: left;" class="mainPanel">
+  					<div class="section" style="height: 95% ; width : 95%; float: left;"> 
+					    <div ng-app="ChatApp">
+							<div ng-controller="ChatController as chat">
+								<form>
+									<input type="text" placeholder="Enter name..."
+										   ng-model="chat.username">
+									<input type="text" placeholder="Enter message..."
+										   ng-model="chat.currentMessage">
+									<input type="submit" value="Send"
+										   ng-click="chat.sendMessage()">
+								</form>
 
+								<ul>
+									<li ng-repeat="msg in chat.messages track by $index">
+										{{msg}}
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				<div style="clear: both;"></div>
+  			</div>
+	<!-- end chat canvas -->
 			<div style="clear: both;"></div>
   		</div>
   	<!-- main canvas end -->
@@ -1995,6 +2065,9 @@
 		    </div>
 	    </div>
 	</div>
+	
+	
+	<script src="@routes.Assets.versioned("javascripts/chat-popup.js")"></script>	
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry,drawing&callback=initMap">
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->
