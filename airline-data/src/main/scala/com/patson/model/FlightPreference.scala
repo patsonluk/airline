@@ -47,7 +47,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
   val minReduceFactorAtMinLoyalty = 0.9 
   //val drawPool = new DrawPool(appealList)
   
-  def computeCost(link : Link) = {
+  def computeCost(link : Link) : Double = {
     val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
     
     var perceivedPrice = link.price(linkClass);
@@ -80,8 +80,21 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
         case None => link.from.getLoungeByAirline(link.airline.id)
       }
       
-      fromLounge.foreach { lounge => perceivedPrice = perceivedPrice - 50 * lounge.level }
-      toLounge.foreach { lounge => perceivedPrice = perceivedPrice - 50 * lounge.level }
+      val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
+      val toLoungeLevel = toLounge.map(_.level).getOrElse(0)
+      
+       
+      if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
+        perceivedPrice = perceivedPrice + 500 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
+      } else {
+        perceivedPrice = perceivedPrice - 100 * ((fromLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
+      }
+      
+      if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
+        perceivedPrice = perceivedPrice + 500 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
+      } else {
+        perceivedPrice = perceivedPrice - 100 * ((toLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
+      }
     }
     
     //cost is in terms of flight duration
@@ -96,7 +109,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     //NOISE?
     val finalCost = baseCost * noise
     
-    finalCost
+    return finalCost
   }
 }
 

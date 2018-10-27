@@ -143,9 +143,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
                       Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
-      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
-      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, 0), PassengerType.BUSINESS)
-      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
 
       val toAirports = Set[Airport]()
       toAirports ++= toAirportsList
@@ -182,9 +182,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(toAirportsList(1), toAirportsList(0), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
                       Link(toAirportsList(0), fromAirport, testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
-      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
-      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, 0), PassengerType.BUSINESS)
-      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
 
       val toAirports = Set[Airport]()
       toAirports ++= toAirportsList
@@ -217,9 +217,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(0, 100, 0), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
                       Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(100, 0, 0), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
-      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
-      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, 0), PassengerType.BUSINESS)
-      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, BUSINESS, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(fromAirport, AppealPreference(Map.empty, FIRST, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
 
       val toAirports = Set[Airport]()
       toAirports ++= toAirportsList
@@ -261,7 +261,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
                       Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
-      val economyPassengerGroup = PassengerGroup(clonedFromAirport, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(clonedFromAirport, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
       
       val toAirports = Set[Airport]()
       toAirports ++= toAirportsList
@@ -287,9 +287,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
                       Link(airport3, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
-      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
-      val businessPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, BUSINESS, 0), PassengerType.BUSINESS)
-      val firstPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, FIRST, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, BUSINESS, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, FIRST, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
 
       val toAirports = Set[Airport]()
       toAirports += airport2
@@ -343,7 +343,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
                       Link(airport3, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
-      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
       
       val toAirports = Set[Airport]()
       toAirports += airport2
@@ -392,7 +392,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(airport3, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
                       Link(airport4, airport5, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
-      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
       
       val toAirports = Set[Airport]()
       toAirports += airport2
@@ -441,7 +441,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(airport3, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
                       Link(airport2, airport1, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
       
-      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
       
       val toAirports = Set[Airport]()
       toAirports += airport2
@@ -491,9 +491,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
                       Link(airport2, airport3, airline1, price = LinkClassValues.getInstance(100, 100, 100), 10000, capacity = LinkClassValues.getInstance(10000, 0, 0), 0, 600, 1, SHORT_HAUL_DOMESTIC), 
                       Link(airport2, airport3, airline2, price = LinkClassValues.getInstance(100, 100, 100), 10000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
                       
-      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, 0), PassengerType.BUSINESS)              
-      val businessPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, BUSINESS, 0), PassengerType.BUSINESS)
-      val firstPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, FIRST, 0), PassengerType.BUSINESS)
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, ECONOMY, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)              
+      val businessPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, BUSINESS, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(airport1, AppealPreference(Map.empty, FIRST, loungeLevelRequired = 0, 0), PassengerType.BUSINESS)
     
       val toAirports = Set[Airport](airport3)
       
