@@ -18,7 +18,7 @@ class AirlineSimulationSpec extends WordSpecLike with Matchers {
     "50x capacity to get 50 target quality, 200x capacity to get max 100 target quality".in {
        assert(AirlineSimulation.getTargetQuality(0, 1000) == 0) //X0 capacity funding
        assert(AirlineSimulation.getTargetQuality(5000, 1000) > 0) //X5 capacity funding
-       assert(AirlineSimulation.getTargetQuality(50000, 1000) == 50) //X50 capacity funding
+       assert(AirlineSimulation.getTargetQuality(50000, 1000) == 100) 
        assert(AirlineSimulation.getTargetQuality(200000, 1000) == 100) //X200 capacity funding
        assert(AirlineSimulation.getTargetQuality(300000, 1000) == 100) //X300 hit max
     }

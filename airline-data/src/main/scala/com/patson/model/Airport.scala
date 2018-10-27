@@ -20,7 +20,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var featuresLoaded = false
   private[this] val loungesByAirline = scala.collection.mutable.Map[Int, Lounge]()
   private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
-  private[this] var loungesLoaded = false
+  //private[this] var loungesLoaded = false
   
   
   private[this] var airportImageUrl : Option[String] = None
@@ -263,16 +263,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   
   def getLoungeByAirline(airlineId : Int) : Option[Lounge] = {
-    if (!loungesLoaded) {
-      throw new IllegalStateException("airport Lounge is not properly initialized! If loaded from DB, please use fullload")
-    }
     loungesByAirline.get(airlineId)
   }
   
   def getLoungeByAlliance(alliance : Int) : Option[Lounge] = {
-    if (!loungesLoaded) {
-      throw new IllegalStateException("airport Lounge is not properly initialized! If loaded from DB, please use fullload")
-    }
     loungesByAlliance.get(alliance)
   }
   
@@ -313,7 +307,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
          alliance => this.loungesByAlliance.put(alliance.id, lounge)  
       }
     }
-    loungesLoaded = true
   }
   
   def slotFee(airplaneModel : Model, airline : Airline) : Int = { 

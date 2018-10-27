@@ -28,14 +28,16 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
   val fromAirport = Airport.fromId(1)
   val airlineAppeal = AirlineAppeal(0, 100)
   fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
+  fromAirport.initLounges(List.empty)
   val toAirportsList = List(
       Airport("", "", "To Airport", 0, 30, "", "", "", 1, 0, 0, 0, id = 2),
       Airport("", "", "To Airport", 0, 60, "", "", "", 1, 0, 0, 0, id = 3),
       Airport("", "", "To Airport", 0, 90, "", "", "", 1, 0, 0, 0, id = 4))
   
   
-  toAirportsList.foreach {
-    _.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
+  toAirportsList.foreach { airport =>
+    airport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
+    airport.initLounges(List.empty)
   }
   val toAirports = Set(toAirportsList  : _*)
   
@@ -524,6 +526,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
   
   val LOOP_COUNT = 10000
   
+  def isLoungePreference(preference: FlightPreference) : Boolean = {
+    preference.isInstanceOf[AppealPreference] && preference.asInstanceOf[AppealPreference].loungeLevelRequired > 0
+  }
+  
   "IsLinkAffordable".must {
     "accept almost all route (single link) at 60% of suggested price and neutral quality and 50 loyalty".in { 
       val clonedFromAirport  = fromAirport.copy()
@@ -544,7 +550,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -577,7 +583,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -613,7 +619,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -650,7 +656,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -687,7 +693,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -724,7 +730,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -761,7 +767,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -798,7 +804,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -835,7 +841,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
               
@@ -874,7 +880,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link)
                 new LinkConsideration(link, cost, linkClass, false)
@@ -919,7 +925,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link)
                 new LinkConsideration(link, cost, linkClass, false)
@@ -962,7 +968,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link)
                 new LinkConsideration(link, cost, linkClass, false)
@@ -1001,7 +1007,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link)
                 new LinkConsideration(link, cost, linkClass, false)
@@ -1040,7 +1046,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) { 
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link)
                 new LinkConsideration(link, cost, linkClass, false)
@@ -1081,7 +1087,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(linkClass, flightPreference) => {
-            flightPreference.foreach {  flightPreference =>
+            flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link)
                 new LinkConsideration(link, cost, linkClass, false)
