@@ -1,6 +1,6 @@
 This is the fork for working on integrated game chat
 
-![Screenshot 1a](https://i.imgur.com/kH3cGPA.png)
+![Screenshot 1](https://i.imgur.com/kH3cGPA.png)
 
 An opensource airline game. 
 
