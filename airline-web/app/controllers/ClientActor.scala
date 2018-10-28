@@ -15,9 +15,13 @@ class ClientActor(out: ActorRef, chat: ActorRef) extends Actor {
     // this handles messages from the websocket
     case text: String =>
 	  val sdf = new SimpleDateFormat("hh:mm:ss")
-      chat ! ClientSentMessage("[" + sdf.format(Calendar.getInstance().getTime())+ "] " + text)
-
+      if (text.indexOf("[LOGGED]") > -1) {
+	   chat ! ClientSentMessage(text)
+	  } else {
+	  chat ! ClientSentMessage("[" + sdf.format(Calendar.getInstance().getTime())+ "] " + text)
+	  }
+	   
     case ClientSentMessage(text) =>
-      out ! text
+      out ! text.replaceFirst("\\W*(\\[LOGGED\\])","")
   }
 }

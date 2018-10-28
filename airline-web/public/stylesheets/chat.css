@@ -47,7 +47,7 @@
 	border-radius: 3px;
 	padding: 8px;
 	outline: none;
-	width: 234px;
+	width: 95%;
 }
 
 .chat-message-counter {
@@ -89,7 +89,11 @@
 	height: 252px;
 	padding: 8px 24px;
 	overflow-y: scroll;
+	line-height: 20px;
 }
+
+.chat-history li:nth-child(even) {background: #EEE}
+.chat-history li:nth-child(odd) {background: #FFF}
 
 .chat-message {
 	margin: 16px 0;

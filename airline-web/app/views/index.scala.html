@@ -151,9 +151,9 @@
 			</div> <!-- end chat-history -->
 				<form>
 							<input type="text" placeholder="Enter message..."
-								   ng-model="chat.currentMessage">
-							<input type="submit" value="Send"
-								   ng-click="chat.sendMessage()">
+								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()"/>
+								   
+							
 						</form>
 
 		</div> <!-- end chat -->
