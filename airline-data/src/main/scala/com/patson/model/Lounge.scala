@@ -1,6 +1,6 @@
 package com.patson.model
 
-case class Lounge(airline : Airline, alliance : Option[Alliance], airport : Airport, countryCode : String, level : Int, foundedCycle : Int) {
+case class Lounge(airline : Airline, alliance : Option[Alliance], airport : Airport, level : Int, foundedCycle : Int) {
   def getValue : Long = {
     level * 200000000 
   }

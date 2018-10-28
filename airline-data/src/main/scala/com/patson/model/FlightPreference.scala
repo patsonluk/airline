@@ -62,7 +62,6 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     
     perceivedPrice = (perceivedPrice / actualReduceFactor).toInt
     
-    
     //adjust by quality  
     perceivedPrice = (perceivedPrice * link.computeQualityPriceAdjust(linkClass)).toInt
         
@@ -76,8 +75,8 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
       }
       
       val toLounge = link.airline.getAllianceId match {
-        case Some(allianceId) => link.from.getLoungeByAlliance(allianceId)
-        case None => link.from.getLoungeByAirline(link.airline.id)
+        case Some(allianceId) => link.to.getLoungeByAlliance(allianceId)
+        case None => link.to.getLoungeByAirline(link.airline.id)
       }
       
       val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
@@ -85,17 +84,19 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
       
        
       if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
-        perceivedPrice = perceivedPrice + 500 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
+        perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
       } else {
         perceivedPrice = perceivedPrice - 100 * ((fromLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
       }
       
       if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
-        perceivedPrice = perceivedPrice + 500 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
+        perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
       } else {
         perceivedPrice = perceivedPrice - 100 * ((toLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
       }
     }
+    
+//    println(link.price(linkClass) + " vs " + perceivedPrice + " from " + this)
     
     //cost is in terms of flight duration
     val baseCost = perceivedPrice//link.distance * Pricing.standardCostAdjustmentRatioFromPrice(link, linkClass, perceivedPrice)
