@@ -303,8 +303,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     this.loungesByAirline.clear()
     lounges.foreach { lounge =>
       this.loungesByAirline.put(lounge.airline.id, lounge)
-      lounge.alliance.foreach {
-         alliance => this.loungesByAlliance.put(alliance.id, lounge)  
+      lounge.allianceId.foreach {
+         allianceId => this.loungesByAlliance.put(allianceId, lounge)  
       }
     }
   }

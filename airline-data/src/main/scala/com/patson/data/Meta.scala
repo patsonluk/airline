@@ -274,6 +274,7 @@ object Meta {
     createAirlineLogo(connection)
     createAirplaneRenewal(connection)
     createAlliance(connection)
+    createLounge(connection)
     createResetUser(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
@@ -832,6 +833,25 @@ object Meta {
     
     
     
+    statement.close()
+  }
+  
+  def createLounge(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOUNGE_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + LOUNGE_TABLE + "(" +
+      "airport INTEGER, " +
+      "alliance INTEGER, " + 
+      "airline INTEGER, " +
+      "level INTEGER," +
+      "status VARCHAR(16)," + 
+      "founded_cycle INTEGER," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
     statement.close()
   }
   

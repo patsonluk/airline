@@ -1135,7 +1135,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     "accept very few links at standard price if it fulfill some lounge requirement (level 1 at departing airport only)".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
-      clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, alliance  = None, airport = clonedFromAirport, level = 1, foundedCycle = 0))) //only from airport has it
+      clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = clonedFromAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       
       val toAirport = toAirportsList(0).copy()
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1171,10 +1171,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     "accept some links at standard price if it fulfill some lounge requirement (level 1 at both airports)".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
-      clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, alliance  = None, airport = clonedFromAirport, level = 1, foundedCycle = 0))) //only from airport has it
+      clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = clonedFromAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       
       val toAirport = toAirportsList(0).copy()
-      toAirport.initLounges(List(Lounge(airline = testAirline1, alliance  = None, airport = toAirport, level = 1, foundedCycle = 0))) //only from airport has it
+      toAirport.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = toAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
@@ -1208,10 +1208,47 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     "accept all links at standard price if it fulfill all lounge requirements (level 3 at both airports)".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
-      clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, alliance  = None, airport = clonedFromAirport, level = 3, foundedCycle = 0))) //only from airport has it
+      clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, allianceId  = None, airport = clonedFromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       
       val toAirport = toAirportsList(0).copy()
-      toAirport.initLounges(List(Lounge(airline = testAirline1, alliance  = None, airport = toAirport, level = 3, foundedCycle = 0))) //only from airport has it
+      toAirport.initLounges(List(Lounge(airline = testAirline1, allianceId  = None, airport = toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
+      val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
+      val price = suggestedPrice
+      val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
+      newLink.setQuality(quality)
+          
+      
+      //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
+      var totalRoutes = 0
+      var totalAcceptedRoutes = 0;
+      for (i <- 0 until LOOP_COUNT) {
+        DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
+          case(linkClass, flightPreference) => {
+            flightPreference.filter(isLoungePreference(_)).foreach {  flightPreference =>
+              val cost = flightPreference.computeCost(newLink)
+              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, linkClass, false))
+              val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
+              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, linkClass)) {
+                totalAcceptedRoutes = totalAcceptedRoutes + 1
+              }
+              totalRoutes = totalRoutes + 1
+            }
+          }
+        }
+      }
+      assert(totalAcceptedRoutes ==  totalRoutes)
+    }
+    
+    "accept all links at standard price if it fulfill all lounge requirements (level 3 at both airports from alliance)".in {
+      val clonedFromAirport  = fromAirport.copy()
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initLounges(List(Lounge(airline = testAirline2, allianceId = Some(1), airport = clonedFromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
+      
+      val toAirport = toAirportsList(0).copy()
+      toAirport.initLounges(List(Lounge(airline = testAirline2, allianceId = Some(1), airport = toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
