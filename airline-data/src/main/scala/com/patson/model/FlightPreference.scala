@@ -86,13 +86,13 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
       if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
         perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
       } else {
-        perceivedPrice = perceivedPrice - 100 * ((fromLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
+        perceivedPrice = perceivedPrice - 50 * ((fromLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
       }
       
       if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
         perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
       } else {
-        perceivedPrice = perceivedPrice - 100 * ((toLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
+        perceivedPrice = perceivedPrice - 50 * ((toLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
       }
     }
     
