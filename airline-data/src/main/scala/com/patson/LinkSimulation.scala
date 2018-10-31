@@ -14,7 +14,7 @@ object LinkSimulation {
   
   private[this] val VIP_COUNT = 5
   
-  def linkSimulation(cycle: Int, links : List[Link]) : List[LinkConsumptionDetails] = {
+  def linkSimulation(cycle: Int, links : List[Link]) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
     val demand = DemandGenerator.computeDemand()
     println("DONE with demand total demand: " + demand.foldLeft(0) {
@@ -54,15 +54,35 @@ object LinkSimulation {
 //    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
     
     println("Calculating profits by links")
-    val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
-      (link, foldList) =>
-        computeLinkConsumptionDetail(link, cycle) :: foldList
+    val linkConsumptionDetails = ListBuffer[LinkConsumptionDetails]()
+    val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
+      
+    links.foreach { link =>
+      val (linkResult, loungeResult) = computeLinkConsumptionDetail(link, cycle)
+      linkConsumptionDetails += linkResult
+      loungeConsumptionDetails ++= loungeResult
     }
+      
     
     LinkSource.deleteLinkConsumptionsByCycle(30)
-    LinkSource.saveLinkConsumptions(linkConsumptionDetails)
+    LinkSource.saveLinkConsumptions(linkConsumptionDetails.toList)
     
-    linkConsumptionDetails
+    println("Calculating Lounge usage")
+    //condense the lounge result
+    val loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails] = loungeConsumptionDetails.groupBy(_.lounge).map{ 
+      case (lounge, consumptionsForThisLounge) => 
+        var totalSelfVisitors = 0
+        var totalAllianceVistors = 0
+        consumptionsForThisLounge.foreach {
+          case LoungeConsumptionDetails(_, selfVisitors, allianceVisitors, _) =>  
+            totalSelfVisitors += selfVisitors
+            totalAllianceVistors += allianceVisitors
+        }
+        (lounge, LoungeConsumptionDetails(lounge, totalSelfVisitors, totalAllianceVistors, cycle))
+    }.toMap
+    
+    
+    (linkConsumptionDetails.toList, loungeResult) 
   }
   
   val minorDelayNormalThreshold = 0.4  // so it's around 24% at 40% condition (multiplier at 0.6) to run into minor delay OR worse
@@ -122,7 +142,7 @@ object LinkSimulation {
     }
   }
   
-  def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
+  def computeLinkConsumptionDetail(link : Link, cycle : Int) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
     
     val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
     
@@ -161,12 +181,40 @@ object LinkSimulation {
     // delays incur extra cost
     var delayCompensation = Computation.computeCompensation(link)
     
-    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - delayCompensation - depreciation
+    // lounge cost
+    val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId())
+    val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId())
+    var loungeCost = 0
+    val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]() 
+    if (fromLounge.isDefined || toLounge.isDefined) {
+      val visitorCount = link.soldSeats(BUSINESS) + link.soldSeats(FIRST)
+      if (fromLounge.isDefined) {
+        loungeCost += visitorCount * Lounge.PER_VISITOR_CHARGE
+        loungeConsumptionDetails += (
+          if (fromLounge.get.airline.id == link.airline.id) { 
+            LoungeConsumptionDetails(fromLounge.get, selfVisitors = visitorCount, allianceVisitors = 0, cycle) 
+          } else {
+            LoungeConsumptionDetails(fromLounge.get, selfVisitors = 0, allianceVisitors = visitorCount, cycle)
+          })
+      }
+      if (toLounge.isDefined) {
+        loungeCost += visitorCount * Lounge.PER_VISITOR_CHARGE
+        loungeConsumptionDetails += (
+          if (toLounge.get.airline.id == link.airline.id) { 
+            LoungeConsumptionDetails(toLounge.get, selfVisitors = visitorCount, allianceVisitors = 0, cycle) 
+          } else {
+            LoungeConsumptionDetails(toLounge.get, selfVisitors = 0, allianceVisitors = visitorCount, cycle)
+          })
+      }
+       
+    }
+      
+    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - delayCompensation - depreciation - loungeCost
 
     //val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, link.cancellationCount, linklink.from.id, link.to.id, link.airline.id, link.distance, cycle)
-    val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, cycle)
+    val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, loungeCost = loungeCost, revenue, profit, cycle)
     //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
-    result
+    (result, loungeConsumptionDetails.toList)
   }
   
   def generateLinkStatistics(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : List[LinkStatistics] = {

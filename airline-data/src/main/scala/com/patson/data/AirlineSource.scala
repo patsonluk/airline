@@ -437,6 +437,10 @@ object AirlineSource {
   }
   
   //
+  def loadAllLounges() : List[Lounge] = {
+    loadLoungesByCriteria(List())
+  }
+  
   
   def loadLoungesByAirportId(airportId : Int) : List[Lounge] = {
     loadLoungesByCriteria(List(("airport", airportId)))

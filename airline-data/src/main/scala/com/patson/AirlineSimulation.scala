@@ -12,7 +12,7 @@ object AirlineSimulation {
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
   val MAX_REPUATION_DELTA = 0.5
   
-  def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], airplanes : List[Airplane]) = {
+  def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
     val allAirlines = AirlineSource.loadAllAirlines(true)
     val allLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).groupBy { _.airline.id }
@@ -24,6 +24,9 @@ object AirlineSimulation {
     val linkResultByAirline = linkResult.groupBy { _.link.airline.id }
     val airplanesByAirline = airplanes.groupBy(_.owner.id)
     val allCountries = CountrySource.loadAllCountries().map( country => (country.countryCode, country)).toMap
+    
+    val loungesByAirlineId = Map[Int, ListBuffer[Lounge]]().withDefaultValue(ListBuffer[Lounge]())
+    AirlineSource.loadAllLounges.foreach(lounge => loungesByAirlineId(lounge.airline.id) += lounge)
     
     val allIncomes = ListBuffer[AirlineIncome]()
     val allCashFlows = ListBuffer[AirlineCashFlow]() //cash flow for accounting purpose
@@ -50,14 +53,16 @@ object AirlineSimulation {
             val linksDelayCompensation = linkConsumptions.foldLeft(0L)(_ + _.delayCompensation)
             val linksMaintenanceCost = linkConsumptions.foldLeft(0L)(_ + _.maintenanceCost)
             linksDepreciation = linkConsumptions.foldLeft(0L)(_ + _.depreciation)
+            val linksLoungeCost = linkConsumptions.foldLeft(0L)(_ + _.loungeCost)
             val linksRevenue = linkConsumptions.foldLeft(0L)(_ + _.revenue)
-            val linksExpense = linksAirportFee + linksCrewCost + linksFuelCost + linksInflightCost + linksDelayCompensation + linksMaintenanceCost + linksDepreciation
+            
+            val linksExpense = linksAirportFee + linksCrewCost + linksFuelCost + linksInflightCost + linksDelayCompensation + linksMaintenanceCost + linksDepreciation + linksLoungeCost
             
             totalCashRevenue += linksRevenue
             totalCashExpense += linksExpense - linksDepreciation //airplane depreciation is already deducted on the plane, not a cash expense
-            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, delayCompensation = -1 * linksDelayCompensation, maintenanceCost= -1 * linksMaintenanceCost, depreciation = -1 * linksDepreciation, cycle = currentCycle)
+            LinksIncome(airline.id, profit = linksProfit, revenue = linksRevenue, expense = linksExpense, ticketRevenue = linksRevenue, airportFee = -1 * linksAirportFee, fuelCost = -1 * linksFuelCost, crewCost = -1 * linksCrewCost, inflightCost = -1 * linksInflightCost, delayCompensation = -1 * linksDelayCompensation, maintenanceCost= -1 * linksMaintenanceCost, loungeCost= -1 * linksLoungeCost,  depreciation = -1 * linksDepreciation, cycle = currentCycle)
           }
-          case None => LinksIncome(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle = currentCycle)
+          case None => LinksIncome(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle = currentCycle)
         }
         
         val transactionsIncome = allTransactions.get(airline.id) match {
@@ -105,6 +110,22 @@ object AirlineSimulation {
         othersSummary.put(OtherIncomeItemType.LOAN_INTEREST, -1 * interestPayment)
         totalCashExpense += loanPayment //paying both principle + interest
         
+        val loungeUpkeep = loungesByAirlineId(airline.id).map(_.getUpkeep).sum 
+        var loungeCost = 0L
+        var loungeIncome = 0L;
+        
+        loungeResult.filter(_._1.airline.id == airline.id).map {
+          case (_, LoungeConsumptionDetails(_, selfVisitors, allianceVisitors, _)) => {
+            loungeCost += (selfVisitors + allianceVisitors) * Lounge.PER_VISITOR_COST
+            loungeIncome += (selfVisitors + allianceVisitors) * Lounge.PER_VISITOR_CHARGE
+          }
+        }
+        othersSummary.put(OtherIncomeItemType.LOUNGE_UPKEEP, -1 * loungeUpkeep)
+        othersSummary.put(OtherIncomeItemType.LOUNGE_COST, -1 * loungeCost)
+        othersSummary.put(OtherIncomeItemType.LOUNGE_INCOME, loungeIncome)
+        
+        totalCashExpense += loungeUpkeep + loungeCost
+        
         var othersRevenue = 0L
         var othersExpense = 0L
         othersSummary.foreach { 
@@ -123,6 +144,9 @@ object AirlineSimulation {
             , serviceInvestment = othersSummary.getOrElse(OtherIncomeItemType.SERVICE_INVESTMENT, 0)
             , maintenanceInvestment = othersSummary.getOrElse(OtherIncomeItemType.MAINTENANCE_INVESTMENT, 0)
             , advertisement = othersSummary.getOrElse(OtherIncomeItemType.ADVERTISEMENT, 0)
+            , loungeUpkeep = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_UPKEEP, 0)
+            , loungeCost = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_COST, 0)
+            , loungeIncome = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_INCOME, 0)
             , depreciation = othersSummary.getOrElse(OtherIncomeItemType.DEPRECIATION, 0)
             , cycle = currentCycle
         )      

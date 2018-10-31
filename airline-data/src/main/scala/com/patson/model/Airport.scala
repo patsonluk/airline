@@ -270,6 +270,17 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     loungesByAlliance.get(alliance)
   }
   
+  def getLounge(airlineId : Int, allianceIdOption : Option[Int]) : Option[Lounge] = {
+     getLoungeByAirline(airlineId) match {
+       case Some(lounge) => Some(lounge)
+       case None => allianceIdOption match {
+         case Some(allianceId) => getLoungeByAlliance(allianceId)
+         case None => None
+       }
+     }
+     
+  }
+  
   def isFeaturesLoaded = featuresLoaded
   
   def getFeatures() : List[AirportFeature] = {

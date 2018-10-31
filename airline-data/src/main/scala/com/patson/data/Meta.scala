@@ -381,6 +381,7 @@ object Meta {
       "inflight_cost INTEGER, " +
       "delay_compensation INTEGER, " +
       "maintenance_cost INTEGER, " +
+      "lounge_cost INTEGER, " + 
       "depreciation INTEGER, " +
       "revenue INTEGER, " +
       "profit INTEGER, " +
@@ -666,6 +667,7 @@ object Meta {
       "inflight_cost LONG," +
       "delay_compensation LONG," +
       "maintenance_cost LONG," +
+      "lounge_cost LONG," +
       "depreciation LONG," +
       "period INTEGER," +
       "cycle INTEGER," +
@@ -707,6 +709,9 @@ object Meta {
       "service_investment LONG," +
       "maintenance_investment LONG," +
       "advertisement LONG," +
+      "lounge_upkeep LONG, " + 
+      "lounge_cost LONG, " +
+      "lounge_income LONG, " +
       "depreciation LONG," +
       "period INTEGER," +
       "cycle INTEGER," +
