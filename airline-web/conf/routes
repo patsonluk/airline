@@ -1,118 +1,122 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
+#	Routes
+#	This file defines all application routes (Higher priority routes first)
+#	~~~~
 
-# Home page
-GET     /                           controllers.Application.index
-GET     /test                       controllers.Application.test
-GET     /chat                       controllers.Application.chatSocket
+#	Home	page
+GET		/							controllers.Application.index
+GET		/test						controllers.Application.test
+GET		/chat						controllers.ChatApplication.chatSocket
 
 #Web Socket management
-GET		/wsWithActor						controllers.WebsocketApplication.wsWithActor
+GET			/wsWithActor													controllers.WebsocketApplication.wsWithActor
 
-POST	 /login							  controllers.UserApplication.login
-POST	 /logout						  controllers.UserApplication.logout
-#GET	 	 /login							  controllers.UserApplication.login
-#PUT		 /users							  controllers.UserApplication.putUser
-GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
-GET		 /airports/:airportId 		  	  controllers.Application.getAirport(airportId : Int)
-#GET		 /airports/:airportId/details  	  controllers.Application.getAirportDetails(airportId : Int)
-GET	 	 /airports/:airportId/slots	      controllers.Application.getAirportSlotsByAirline(airportId : Int, airlineId : Int)
-GET	 	 /airports/:airportId/link-statistics	        controllers.Application.getAirportLinkStatistics(airportId : Int)
-GET	 	 /airports/:airportId/departures/:dayOfWeek/:hour/:minute controllers.Application.getDepartures(airportId : Int, dayOfWeek : Int, hour : Int, minute : Int)
-GET		 /airports/:fromAirportId/to/:toAirportId				controllers.Application.getAirportLinkConsumptions(fromAirportId : Int, toAirportId : Int)
-GET		 /airports/:airportId/link-consumptions	controllers.Application.getLinkConsumptionsByAirport(airportId : Int)
-GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportProjects(airportId : Int)
-PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
-GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
-GET		 /airlines						  controllers.AirlineApplication.getAllAirlines
-GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int, extendedInfo : Boolean ?= false)
-GET		 /airlines/:airlineId/airplane-models	  controllers.AirplaneApplication.getAirplaneModelsByAirline(airlineId : Int)
-GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getAirplanes(airlineId : Int, simpleResult : Boolean ?= false)
-GET		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.getAirplane(airlineId : Int, airplaneId : Int)
-DELETE	 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.sellAirplane(airlineId : Int, airplaneId : Int)
-PUT		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.replaceAirplane(airlineId : Int, airplaneId : Int)
-PUT	     /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.addAirplane(airlineId : Int, model: Int, quantity: Int)
-GET		 /airlines/:airlineId/links	  	  controllers.LinkApplication.getLinks(airlineId : Int, getProfit : Boolean ?= false, toAirportId : Int = -1)
-PUT 	 /airlines/:airlineId/links 	  controllers.LinkApplication.addLink(airlineId : Int)
-DELETE   /airlines/:airlineId/links/:linkId 		 	controllers.LinkApplication.deleteLink(airlineId : Int, linkId : Int)
-GET		 /airlines/:airlineId/links/:linkId 			controllers.LinkApplication.getLink(airlineId : Int, linkId : Int)
-GET		 /airlines/:airlineId/bases		  controllers.AirlineApplication.getBases(airlineId : Int)
-GET		 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.getBase(airlineId : Int, airportId : Int)
-DELETE	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.deleteBase(airlineId : Int, airportId : Int)
-PUT	 	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.putBase(airlineId : Int, airportId : Int)
-GET		 /airlines/:airlineId/downgradeBase/:airportId  controllers.AirlineApplication.downgradeBase(airlineId : Int, airportId : Int)
-GET		 /airlines/:airlineId/link-consumptions/:linkId	  controllers.LinkApplication.getLinkConsumption(airlineId : Int, linkId: Int, cycleCount : Int ?= 1)
-#PUT		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.setWatchedLink(airlineId: Int, linkId: Int)
-#GET		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.getWatchedLink(airlineId: Int)
-#GET		 /airlines/:airlineId/link-history 				controllers.LinkApplication.getLinkHistory(airlineId: Int)
-GET		 /airlines/:airlineId/related-link-consumption/:linkId		controllers.LinkApplication.getRelatedLinkConsumption(airlineId: Int, linkId: Int, selfOnly : Boolean ?= false)
-PUT		 /airlines/:airlineId/serviceFunding			controllers.LinkApplication.updateServiceFunding(airlineId: Int)
-GET		 /airlines/:airlineId/servicePrediction		    controllers.AirlineApplication.getServicePrediction(airlineId: Int)
-GET		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.getAirplaneRenewal(airlineId: Int)
-PUT		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.updateAirplaneRenewal(airlineId: Int)
-PUT		 /airlines/:airlineId/maintenanceQuality			controllers.LinkApplication.updateMaintenanceQuality(airlineId: Int)
-POST	 /airlines/:airlineId/plan-link	  controllers.LinkApplication.planLink(airlineId : Int)
-GET		 /airlines/:airlineId/finances  controllers.AirlineApplication.getAirlineFinances(airlineId : Int)
-GET		 /airlines/:airlineId/loans  controllers.BankApplication.viewLoans(airlineId : Int)
-POST	 /airlines/:airlineId/loans  controllers.BankApplication.takeOutLoan(airlineId : Int)
-DELETE   /airlines/:airlineId/loans/:loanId	  controllers.BankApplication.repayLoan(airlineId : Int, loanId : Int)
-GET		 /airlines/:airlineId/loan-options  controllers.BankApplication.getLoanOptions(airlineId : Int, loanAmount : Long)
-GET		 /airlines/:airlineId/max-loan  controllers.BankApplication.getMaxLoan(airlineId : Int)
-GET		 /airlines/:airlineId/championed-countries  controllers.AirlineApplication.getChampionedCountries(airlineId : Int)
-GET		 /airlines/:airlineId/reset	   controllers.AirlineApplication.resetAirline(airlineId : Int)
-GET		 /airlines/:airlineId/logo	controllers.AirlineApplication.getLogo(airlineId : Int)
-GET		 /airlines/:airlineId/set-logo	controllers.AirlineApplication.setLogo(airlineId : Int, templateIndex : Int, color1 : String, color2 : String)
-POST	 /airlines/:airlineId/logo	controllers.AirlineApplication.uploadLogo(airlineId : Int)
-PUT		 /airlines/:airlineId/airline-code	   controllers.AirlineApplication.setAirlineCode(airlineId : Int)
-GET		 /colors			  controllers.AirlineApplication.getColors()
-GET		 /airlines/:airlineId/set-color			  controllers.AirlineApplication.setColor(airlineId : Int, color : String)
-GET		 /airlines/:airlineId/alliance-details  controllers.AllianceApplication.getAirlineAllianceDetails(airlineId : Int)
-GET		 /alliances  controllers.AllianceApplication.getAlliances()
-GET		 /alliances/:allianceId/links  controllers.AllianceApplication.getAllianceLinks(allianceId : Int)
-POST	 /airlines/:airlineId/form-alliance  controllers.AllianceApplication.formAlliance(airlineId : Int)
-GET		 /airlines/:airlineId/evaluate-alliance/:allianceId  controllers.AllianceApplication.evaluateAlliance(airlineId : Int, allianceId : Int)
-GET		 /airlines/:airlineId/apply-for-alliance/:allianceId  controllers.AllianceApplication.applyForAlliance(airlineId : Int, allianceId : Int)
-GET		 /airlines/:airlineId/remove-alliance-member/:targetAirlineId  controllers.AllianceApplication.removeFromAlliance(airlineId : Int, targetAirlineId : Int)
-GET		 /airlines/:airlineId/accept-alliance-member/:targetAirlineId  controllers.AllianceApplication.addToAlliance(airlineId : Int, targetAirlineId : Int)
-GET		 /airlines/:airlineId/used-airplanes/models/:modelId	controllers.AirplaneApplication.getUsedAirplanes(airlineId : Int, modelId : Int)
-PUT		 /airlines/:airlineId/used-airplanes/airplanes/:airplaneId	controllers.AirplaneApplication.buyUsedAirplane(airlineId : Int, airplaneId : Int)
+POST		/login															controllers.UserApplication.login
+POST		/logout															controllers.UserApplication.logout
+GET			/airports														controllers.Application.getAirports(count:Int?=100)
+GET			/airports/:airportId											controllers.Application.getAirport(airportId:Int)
+GET			/airports/:airportId/slots										controllers.Application.getAirportSlotsByAirline(airportId:Int,	airlineId:Int)
+GET			/airports/:airportId/link-statistics							controllers.Application.getAirportLinkStatistics(airportId:Int)
+GET			/airports/:airportId/departures/:dayOfWeek/:hour/:minute		controllers.Application.getDepartures(airportId:Int, dayOfWeek:Int, hour:Int, minute:Int)
+GET			/airports/:fromAirportId/to/:toAirportId						controllers.Application.getAirportLinkConsumptions(fromAirportId:Int, toAirportId:Int)
+GET			/airports/:airportId/link-consumptions							controllers.Application.getLinkConsumptionsByAirport(airportId:Int)
+GET			/airports/:airportId/projects									controllers.Application.getAirportProjects(airportId:Int)
+PUT			/airports/:airportId/projects									controllers.Application.addAirportProject(airlineId:Int, airportId:Int)
+GET			/cities/:cityId/airportShares									controllers.Application.getAirportSharesOnCity(cityId:Int)
+GET			/airlines														controllers.AirlineApplication.getAllAirlines
+GET			/airlines/:airlineId											controllers.AirlineApplication.getAirline(airlineId:Int,	extendedInfo:Boolean?=false)
+GET			/airlines/:airlineId/airplane-models							controllers.AirplaneApplication.getAirplaneModelsByAirline(airlineId:Int)
+GET			/airlines/:airlineId/airplanes									controllers.AirplaneApplication.getAirplanes(airlineId:Int,	simpleResult:Boolean?=false)
+GET			/airlines/:airlineId/airplanes/:airplaneId						controllers.AirplaneApplication.getAirplane(airlineId:Int,	airplaneId:Int)
+DELETE		/airlines/:airlineId/airplanes/:airplaneId						controllers.AirplaneApplication.sellAirplane(airlineId:Int,	airplaneId:Int)
+PUT			/airlines/:airlineId/airplanes/:airplaneId						controllers.AirplaneApplication.replaceAirplane(airlineId:Int,	airplaneId:Int)
+PUT			/airlines/:airlineId/airplanes									controllers.AirplaneApplication.addAirplane(airlineId:Int,	model:	Int,	quantity:	Int)
+GET			/airlines/:airlineId/links										controllers.LinkApplication.getLinks(airlineId:Int,	getProfit:Boolean?=false, toAirportId:Int = -1)
+PUT			/airlines/:airlineId/links										controllers.LinkApplication.addLink(airlineId:Int)
+DELETE		/airlines/:airlineId/links/:linkId								controllers.LinkApplication.deleteLink(airlineId:Int, linkId:Int)
+GET			/airlines/:airlineId/links/:linkId								controllers.LinkApplication.getLink(airlineId:Int, linkId:Int)
+GET			/airlines/:airlineId/bases										controllers.AirlineApplication.getBases(airlineId:Int)
+GET			/airlines/:airlineId/bases/:airportId							controllers.AirlineApplication.getBase(airlineId:Int,	airportId:Int)
+DELETE		/airlines/:airlineId/bases/:airportId							controllers.AirlineApplication.deleteBase(airlineId:Int,	airportId:Int)
+PUT			/airlines/:airlineId/bases/:airportId							controllers.AirlineApplication.putBase(airlineId:Int,	airportId:Int)
+GET			/airlines/:airlineId/downgradeBase/:airportId					controllers.AirlineApplication.downgradeBase(airlineId:Int,	airportId:Int)
+GET			/airlines/:airlineId/link-consumptions/:linkId					controllers.LinkApplication.getLinkConsumption(airlineId:Int, linkId: Int, cycleCount:Int?=1)
+GET			/airlines/:airlineId/related-link-consumption/:linkId			controllers.LinkApplication.getRelatedLinkConsumption(airlineId: Int, linkId: Int, selfOnly:Boolean ?= false)
+PUT			/airlines/:airlineId/serviceFunding								controllers.LinkApplication.updateServiceFunding(airlineId:	Int)
+GET			/airlines/:airlineId/servicePrediction							controllers.AirlineApplication.getServicePrediction(airlineId:	Int)
+GET			/airlines/:airlineId/airplane-renewal							controllers.AirlineApplication.getAirplaneRenewal(airlineId:	Int)
+PUT			/airlines/:airlineId/airplane-renewal							controllers.AirlineApplication.updateAirplaneRenewal(airlineId:	Int)
+PUT			/airlines/:airlineId/maintenanceQuality							controllers.LinkApplication.updateMaintenanceQuality(airlineId:	Int)
+POST		/airlines/:airlineId/plan-link									controllers.LinkApplication.planLink(airlineId:Int)
+GET			/airlines/:airlineId/finances									controllers.AirlineApplication.getAirlineFinances(airlineId:Int)
+GET			/airlines/:airlineId/loans										controllers.BankApplication.viewLoans(airlineId:Int)
+POST		/airlines/:airlineId/loans										controllers.BankApplication.takeOutLoan(airlineId:Int)
+DELETE		/airlines/:airlineId/loans/:loanId								controllers.BankApplication.repayLoan(airlineId:Int,	loanId:Int)
+GET			/airlines/:airlineId/loan-options								controllers.BankApplication.getLoanOptions(airlineId:Int,	loanAmount:Long)
+GET			/airlines/:airlineId/max-loan									controllers.BankApplication.getMaxLoan(airlineId:Int)
+GET			/airlines/:airlineId/championed-countries						controllers.AirlineApplication.getChampionedCountries(airlineId:Int)
+GET			/airlines/:airlineId/reset										controllers.AirlineApplication.resetAirline(airlineId:Int)
+GET			/airlines/:airlineId/logo										controllers.AirlineApplication.getLogo(airlineId:Int)
+GET			/airlines/:airlineId/set-logo									controllers.AirlineApplication.setLogo(airlineId:Int, templateIndex:Int, color1:String,	color2:String)
+POST		/airlines/:airlineId/logo										controllers.AirlineApplication.uploadLogo(airlineId:Int)
+PUT			/airlines/:airlineId/airline-code								controllers.AirlineApplication.setAirlineCode(airlineId:Int)
+GET			/colors															controllers.AirlineApplication.getColors()
+GET			/airlines/:airlineId/set-color									controllers.AirlineApplication.setColor(airlineId:Int,	color:String)
+GET			/airlines/:airlineId/alliance-details							controllers.AllianceApplication.getAirlineAllianceDetails(airlineId:Int)
+GET			/alliances														controllers.AllianceApplication.getAlliances()
+GET			/alliances/:allianceId/links									controllers.AllianceApplication.getAllianceLinks(allianceId:Int)
+POST		/airlines/:airlineId/form-alliance								controllers.AllianceApplication.formAlliance(airlineId:Int)
+GET			/airlines/:airlineId/evaluate-alliance/:allianceId				controllers.AllianceApplication.evaluateAlliance(airlineId:Int,	allianceId:Int)
+GET			/airlines/:airlineId/apply-for-alliance/:allianceId				controllers.AllianceApplication.applyForAlliance(airlineId:Int,	allianceId:Int)
+GET			/airlines/:airlineId/remove-alliance-member/:targetAirlineId	controllers.AllianceApplication.removeFromAlliance(airlineId:Int,	targetAirlineId:Int)
+GET			/airlines/:airlineId/accept-alliance-member/:targetAirlineId	controllers.AllianceApplication.addToAlliance(airlineId:Int,	targetAirlineId:Int)
+GET			/airlines/:airlineId/used-airplanes/models/:modelId				controllers.AirplaneApplication.getUsedAirplanes(airlineId:Int,	modelId:Int)
+PUT			/airlines/:airlineId/used-airplanes/airplanes/:airplaneId		controllers.AirplaneApplication.buyUsedAirplane(airlineId:Int,	airplaneId:Int)
 
-GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
-GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
+#GET			/login										controllers.UserApplication.login
+#PUT			/users										controllers.UserApplication.putUser
+#GET			/airports/:airportId/details				controllers.Application.getAirportDetails(airportId:Int)
+#PUT			/airlines/:airlineId/watched-link			controllers.LinkApplication.setWatchedLink(airlineId:	Int,	linkId:	Int)
+#GET			/airlines/:airlineId/watched-link			controllers.LinkApplication.getWatchedLink(airlineId:	Int)
+#GET			/airlines/:airlineId/link-history			controllers.LinkApplication.getLinkHistory(airlineId:	Int)
 
 
-
-PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
-GET		 /links							  controllers.LinkApplication.getAllLinks
-DELETE   /links							  controllers.LinkApplication.deleteAllLinks
-#GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes
-GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
-GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels
-GET		 /rankings  		  		      controllers.RankingApplication.getRankings()
-GET		 /logos/templates 				  controllers.LogoApplication.getTemplates()	
-GET		 /logos/templates/:id			  controllers.LogoApplication.getTemplate(id : Int)
-GET		 /logos/preview					  controllers.LogoApplication.getPreview(templateIndex : Int, color1 : String, color2 : String)	
-
-# Signup
-GET     /signup                     controllers.SignUp.form
-GET		/signup/profiles            controllers.SignUp.profiles
-#GET     /editUser/fakeuser             controllers.SignUp.editForm
-POST    /signup                     controllers.SignUp.submit
-
-# PasswordReset
-GET    /password-reset				controllers.AccountApplication.passwordResetForm(resetToken : String)
-POST   /password-reset				controllers.AccountApplication.passwordResetSubmit
-GET   /forgot-password				controllers.AccountApplication.forgotPassword
-POST   /forgot-password				controllers.AccountApplication.forgotPasswordSubmit
-GET   /forgot-id				controllers.AccountApplication.forgotId
-POST   /forgot-id				controllers.AccountApplication.forgotIdSubmit
-GET   /send-email				controllers.AccountApplication.sendEmail
+GET			/countries						controllers.CountryApplication.getAllCountries(homeCountryCode:	Option[String])
+GET			/countries/:countryCode			controllers.CountryApplication.getCountry(countryCode:String)
 
 
 
-OPTIONS    /*path     controllers.Application.options(path)
+PUT			/test-links						controllers.LinkApplication.addTestLink
+GET			/links							controllers.LinkApplication.getAllLinks
+DELETE		/links							controllers.LinkApplication.deleteAllLinks
+GET			/link-consumptions				controllers.LinkApplication.getAllLinkConsumptions	
+GET			/airplane-models				controllers.AirplaneApplication.getAirplaneModels
+GET			/rankings						controllers.RankingApplication.getRankings()
+GET			/logos/templates				controllers.LogoApplication.getTemplates()	
+GET			/logos/templates/:id			controllers.LogoApplication.getTemplate(id:Int)
+GET			/logos/preview					controllers.LogoApplication.getPreview(templateIndex:Int,	color1:String,	color2:String)	
+
+#GET			/vip-routes					controllers.LinkApplication.getVipRoutes
+
+#	Signup
+GET		/signup							controllers.SignUp.form
+GET		/signup/profiles				controllers.SignUp.profiles
+POST	/signup							controllers.SignUp.submit
+#GET	/editUser/fakeuser				controllers.SignUp.editForm
 
 
-# Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+#	PasswordReset
+GET		/password-reset					controllers.AccountApplication.passwordResetForm(resetToken:String)
+POST	/password-reset					controllers.AccountApplication.passwordResetSubmit
+GET		/forgot-password				controllers.AccountApplication.forgotPassword
+POST	/forgot-password				controllers.AccountApplication.forgotPasswordSubmit
+GET		/forgot-id						controllers.AccountApplication.forgotId
+POST	/forgot-id						controllers.AccountApplication.forgotIdSubmit
+GET		/send-email						controllers.AccountApplication.sendEmail
+
+
+
+OPTIONS				/*path			controllers.Application.options(path)
+
+
+#Map static	resources from the /public folder to the /assets URL path
+GET		/assets/*file					controllers.Assets.versioned(path="/public",	file:	Asset)
