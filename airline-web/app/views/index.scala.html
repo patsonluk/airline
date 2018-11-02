@@ -1797,33 +1797,6 @@
 				<div style="clear: both;"></div>
   			</div>
 	<!-- end alliance canvas -->
-				<div id="chatCanvas" style="display: none; height: 100%">
-				<div style="height: 90% ; width : 50%; float: left;" class="mainPanel">
-  					<div class="section" style="height: 95% ; width : 95%; float: left;"> 
-					    <div ng-app="ChatApp">
-							<div ng-controller="ChatController as chat">
-								<form>
-									<input type="text" placeholder="Enter name..."
-										   ng-model="chat.username">
-									<input type="text" placeholder="Enter message..."
-										   ng-model="chat.currentMessage">
-									<input type="submit" value="Send"
-										   ng-click="chat.sendMessage()">
-								</form>
-
-								<ul>
-									<li ng-repeat="msg in chat.messages track by $index">
-										{{msg}}
-									</li>
-								</ul>
-							</div>
-						</div>
-					</div>
-				<div style="clear: both;"></div>
-  			</div>
-	<!-- end chat canvas -->
-			<div style="clear: both;"></div>
-  		</div>
   	<!-- main canvas end -->
 		<div style="clear: both;"></div>
     </div>
