@@ -182,8 +182,8 @@ object LinkSimulation {
     var delayCompensation = Computation.computeCompensation(link)
     
     // lounge cost
-    val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId())
-    val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId())
+    val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId(), activeOnly = true)
+    val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId(), activeOnly = true)
     var loungeCost = 0
     val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]() 
     if (fromLounge.isDefined || toLounge.isDefined) {

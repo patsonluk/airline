@@ -69,8 +69,8 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     
     //adjust by lounge
     if (linkClass.level >= BUSINESS.level) {
-      val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId)
-      val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId)
+      val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
+      val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
         
       val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
       val toLoungeLevel = toLounge.map(_.level).getOrElse(0)

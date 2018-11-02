@@ -8,6 +8,15 @@ case class Lounge(airline : Airline, allianceId : Option[Int], airport : Airport
   val getUpkeep : Long = {
     (10000 + airport.income) * 5 * level 
   }
+  
+  //to be considered active, it should have passenger ranking smaller (ie higher) or equals to this value)
+  val getActiveRankingThreshold : Int = {
+    if (level <= 4) {
+      1
+    } else {
+      (airport.size - 1) / 2
+    }
+  }
 }
 
 object Lounge {

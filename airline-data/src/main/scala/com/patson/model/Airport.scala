@@ -262,19 +262,23 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     airlineBases.toMap
   }
   
-  def getLoungeByAirline(airlineId : Int) : Option[Lounge] = {
-    loungesByAirline.get(airlineId)
+  def getLoungeByAirline(airlineId : Int, activeOnly : Boolean = false) : Option[Lounge] = {
+    loungesByAirline.get(airlineId).filter(!activeOnly || _.status == LoungeStatus.ACTIVE)
   }
   
-  def getLoungeByAlliance(alliance : Int) : Option[Lounge] = {
-    loungesByAlliance.get(alliance)
+  def getLounges() : List[Lounge] = {
+    loungesByAirline.values.toList
   }
   
-  def getLounge(airlineId : Int, allianceIdOption : Option[Int]) : Option[Lounge] = {
-     getLoungeByAirline(airlineId) match {
+  def getLoungeByAlliance(alliance : Int, activeOnly : Boolean = false) : Option[Lounge] = {
+    loungesByAlliance.get(alliance).filter(!activeOnly || _.status == LoungeStatus.ACTIVE)
+  }
+  
+  def getLounge(airlineId : Int, allianceIdOption : Option[Int], activeOnly : Boolean = false) : Option[Lounge] = {
+     getLoungeByAirline(airlineId, activeOnly) match {
        case Some(lounge) => Some(lounge)
        case None => allianceIdOption match {
-         case Some(allianceId) => getLoungeByAlliance(allianceId)
+         case Some(allianceId) => getLoungeByAlliance(allianceId, activeOnly)
          case None => None
        }
      }
