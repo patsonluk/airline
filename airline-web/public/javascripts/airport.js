@@ -395,10 +395,6 @@ function addMarkers(airports) {
 				  } else if (this.airport.id == activeAirline.headquarterAirport.airportId) {
 					  $("#planToAirportButton").hide()
 				  } else {
-					  $("#planToAirportButton").click(function() {
-						  planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
-						  infoWindow.close();
-					  });
 					  $("#planToAirportButton").show()
 				  }
 			  } else {
@@ -411,6 +407,11 @@ function addMarkers(airports) {
 	}
 	//now assign it to markers to indicate that it's ready
 	markers = resultMarkers
+}
+
+function planToAirportFromInfoWindow() {
+	activeAirportPopupInfoWindow.close();
+	planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
 }
 
 function removeMarkers() {
