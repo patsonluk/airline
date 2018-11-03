@@ -275,6 +275,7 @@ object Meta {
     createAirplaneRenewal(connection)
     createAlliance(connection)
     createLounge(connection)
+    createLoungeConsumption(connection)
     createResetUser(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
@@ -853,6 +854,25 @@ object Meta {
       "level INTEGER," +
       "status VARCHAR(16)," + 
       "founded_cycle INTEGER," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createLoungeConsumption(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOUNGE_CONSUMPTION_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + LOUNGE_CONSUMPTION_TABLE + "(" +
+      "airport INTEGER, " +
+      "airline INTEGER, " +
+      "self_visitors INTEGER," +
+      "alliance_visitors INTEGER," +
+      "cycle INTEGER," +
+      "PRIMARY KEY (airport, airline), " +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

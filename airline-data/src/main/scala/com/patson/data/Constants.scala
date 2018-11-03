@@ -75,6 +75,7 @@ object Constants {
   val PASSENGER_HISTORY_TABLE = "passenger_history"
   val LOAN_TABLE = "loan"
   val LOUNGE_TABLE = "lounge"
+  val LOUNGE_CONSUMPTION_TABLE = "lounge_consumption"
   
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"

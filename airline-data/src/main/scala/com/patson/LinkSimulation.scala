@@ -58,7 +58,7 @@ object LinkSimulation {
     val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
       
     links.foreach { link =>
-      val (linkResult, loungeResult) = computeLinkConsumptionDetail(link, cycle)
+      val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle)
       linkConsumptionDetails += linkResult
       loungeConsumptionDetails ++= loungeResult
     }
@@ -80,6 +80,8 @@ object LinkSimulation {
         }
         (lounge, LoungeConsumptionDetails(lounge, totalSelfVisitors, totalAllianceVistors, cycle))
     }.toMap
+    
+    LoungeHistorySource.updateConsumptions(loungeResult.map(_._2).toList)
     
     
     (linkConsumptionDetails.toList, loungeResult) 
@@ -142,7 +144,11 @@ object LinkSimulation {
     }
   }
   
-  def computeLinkConsumptionDetail(link : Link, cycle : Int) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
+  def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
+    computeLinkAndLoungeConsumptionDetail(link, cycle)._1
+  }
+  
+  def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
     
     val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
     

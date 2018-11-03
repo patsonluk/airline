@@ -628,6 +628,7 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkAirportFees").text("-")
 		    	$("#linkDepreciation").text("-")
 		    	$("#linkCompensation").text("-")
+		    	$("#linkLoungeCost").text("-")
 		    	$("#linkOtherCosts").text("-")
 		    	$("#linkDelays").text("-")
 		    	$("#linkCancellations").text("-")
@@ -652,6 +653,7 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkAirportFees").text("$" + commaSeparateNumber(linkConsumption.airportFees))
 		    	$("#linkDepreciation").text("$" + commaSeparateNumber(linkConsumption.depreciation))
 		    	$("#linkCompensation").text("$" + commaSeparateNumber(linkConsumption.delayCompensation))
+		    	$("#linkLoungeCost").text("$" + commaSeparateNumber(linkConsumption.loungeCost))
 		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost))
 		    	if (linkConsumption.minorDelayCount == 0 && linkConsumption.majorDelayCount == 0) {
 		    		$("#linkDelays").removeClass("warning")
