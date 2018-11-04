@@ -87,7 +87,8 @@ function showFacilityModal(currentFacility) {
 	    	$('#facilityModal .facilityType').text("Airport Lounge") //for now only one
 	    	
 	    	if (currentFacility.level) {
-	    		$('#facilityModal .facilityLevel').text(currentFacility.level)
+	    		$('#facilityModal .facilityLevel').empty()
+	    		$('#facilityModal .facilityLevel').append(getLevelStarsImgs(currentFacility.level, 3))
 	    	} else {
 	    		$('#facilityModal .facilityLevel').text('-')
 	    	}
@@ -180,6 +181,18 @@ function showFacilityModal(currentFacility) {
 	});
 	
 }	
+
+function getLevelStarsImgs(level, maxLevel) {
+	var html = ""
+	for (i = 0 ; i < level; i ++) {
+		html += "<img src='assets/images/icons/star.png'/>"
+	}
+	for (i = 0 ; i < maxLevel - level; i ++) {
+		html += "<img src='assets/images/icons/star-empty.png'/>"
+	}
+	return html
+}
+
 
 function closeFacilityModal() {
 	closeModal($('#facilityModal'))
