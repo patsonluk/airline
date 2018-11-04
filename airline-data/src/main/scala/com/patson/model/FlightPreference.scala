@@ -79,13 +79,13 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
       if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
         perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
       } else {
-        perceivedPrice = perceivedPrice - 50 * ((fromLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
+        perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * ((fromLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
       }
       
       if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
         perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
       } else {
-        perceivedPrice = perceivedPrice - 50 * ((toLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
+        perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * ((toLoungeLevel - loungeLevelRequired) * linkClass.priceMultiplier).toInt
       }
     }
     
@@ -109,10 +109,12 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
 
 object AppealPreference {
   var count: Int = 0
+  val LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE = 50
   def getAppealPreferenceWithId(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, loungeLevelRequired : Int) = {
     count += 1
     AppealPreference(appealList, linkClass, loungeLevelRequired = loungeLevelRequired, count)
   }
+  
 }
 
 
