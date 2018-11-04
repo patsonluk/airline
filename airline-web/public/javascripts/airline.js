@@ -707,12 +707,13 @@ function toggleLinkHistory(linkId) {
 	
 	if (linkHistoryState == "hidden") {
 		clearAllPaths()
+		
 		$.ajax({
 			type: 'GET',
 			url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId,
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
-		    async: false,
+		    async: true,
 		    success: function(linkHistory) {
 		    	if (!jQuery.isEmptyObject(linkHistory)) {
 		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
@@ -722,10 +723,17 @@ function toggleLinkHistory(linkId) {
 		    			drawLinkHistoryPath(relatedLink, true, linkId)
 		    		})
 		    	}
+		    	showLinkHistoryPaths(linkHistoryState)
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));
 		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    },
+		    beforeSend: function() {
+		    	$('body .loadingSpinner').show()
+		    },
+		    complete: function(){
+		    	$('body .loadingSpinner').hide()
 		    }
 		});
 	}
@@ -744,7 +752,7 @@ function toggleLinkHistory(linkId) {
 	} else if (linkHistoryState == "showInvertedSelf") {
 		printConsole("Passengers using this flight from " + linkInfo.toAirportCity + " to " + linkInfo.fromAirportCity + " as a part of their route, showing only flights operated by your airline. Click on 'View Passenger Map' again to see more...", 1);
 	}
-	
+	 
 	showLinkHistoryPaths(linkHistoryState)
 }
 
