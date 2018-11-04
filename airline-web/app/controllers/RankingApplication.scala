@@ -36,6 +36,9 @@ class RankingApplication extends Controller {
       } else if (ranking.entry.isInstanceOf[Link]) {
         val link = ranking.entry.asInstanceOf[Link]
         result = result + ("airlineName" -> JsString(link.airline.name)) + ("airlineId" -> JsNumber(link.airline.id)) + ("rankInfo" -> JsString(getLinkDescription(link)))
+      } else if (ranking.entry.isInstanceOf[Lounge]) {
+        val lounge = ranking.entry.asInstanceOf[Lounge]
+        result = result + ("airlineName" -> JsString(lounge.airline.name)) + ("airlineId" -> JsNumber(lounge.airline.id)) + ("rankInfo" -> JsString(getLoungeDescription(lounge)))
       }
       
       result
@@ -52,6 +55,10 @@ class RankingApplication extends Controller {
   
   def getLinkDescription(link : Link) = {
     link.from.city + "(" + link.from.iata + ") <=> " + link.to.city + "(" + link.to.iata + ")" 
+  }
+  
+  def getLoungeDescription(lounge : Lounge) = {
+    lounge.name + " at " + lounge.airport.city + "(" + lounge.airport.iata + ")" 
   }
   
   

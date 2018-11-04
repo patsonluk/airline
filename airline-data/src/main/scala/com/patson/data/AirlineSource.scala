@@ -497,17 +497,20 @@ object AirlineSource {
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
           val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          AllianceSource.loadAllianceMemberByAirline(airline).foreach { member =>
+            airline.setAllianceId(member.allianceId)
+          }
+          
           //val airport = Airport.fromId(resultSet.getInt("airport"))
           val airportId = resultSet.getInt("airport")
           val airport = airports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, false).get)
-          val allianceIdObject = resultSet.getObject("alliance")
-          val allianceId = if (allianceIdObject != null) Some(allianceIdObject.asInstanceOf[Int]) else None
+          val name = resultSet.getString("name")
           val level = resultSet.getInt("level")
           val foundedCycle = resultSet.getInt("founded_cycle")
           val status = resultSet.getString("status")
           
           
-          lounges += Lounge(airline, allianceId, airport, level, LoungeStatus.withName(status), foundedCycle)
+          lounges += Lounge(airline, airline.getAllianceId(), airport, name, level, LoungeStatus.withName(status), foundedCycle)
         }
         
         resultSet.close()
@@ -524,15 +527,11 @@ object AirlineSource {
   def saveLounge(lounge : Lounge) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("REPLACE INTO " + LOUNGE_TABLE + "(airline, alliance, airport, level, status, founded_cycle) VALUES(?, ?, ?, ?, ?, ?)")
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + LOUNGE_TABLE + "(airline, airport, name, level, status, founded_cycle) VALUES(?, ?, ?, ?, ?, ?)")
           
       preparedStatement.setInt(1, lounge.airline.id)
-      lounge.allianceId match {
-        case Some(allianceId) => preparedStatement.setInt(2, allianceId)
-        case None => preparedStatement.setObject(2, null)
-      }
-      
-      preparedStatement.setInt(3, lounge.airport.id)
+      preparedStatement.setInt(2, lounge.airport.id)
+      preparedStatement.setString(3, lounge.name)
       preparedStatement.setInt(4, lounge.level)
       preparedStatement.setString(5, lounge.status.toString())
       preparedStatement.setInt(6, lounge.foundedCycle)

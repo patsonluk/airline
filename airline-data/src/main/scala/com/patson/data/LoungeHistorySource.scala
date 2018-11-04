@@ -38,6 +38,14 @@ object LoungeHistorySource {
     }
   }
   
+  def loadLoungeConsumptionsByAirportId(airportId : Int, fullLoad : Boolean = false) = {
+    loadLoungeConsumptionsByCriteria(List(("airport", airportId)))
+  }
+  
+  def loadAll() = {
+    loadLoungeConsumptionsByCriteria(List())
+  }
+  
   def loadLoungeConsumptionsByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
       var queryString = "SELECT * FROM " + LOUNGE_CONSUMPTION_TABLE
       

@@ -849,11 +849,12 @@ object Meta {
     
     statement = connection.prepareStatement("CREATE TABLE " + LOUNGE_TABLE + "(" +
       "airport INTEGER, " +
-      "alliance INTEGER, " + 
       "airline INTEGER, " +
+      "name VARCHAR(256), " + 
       "level INTEGER," +
       "status VARCHAR(16)," + 
       "founded_cycle INTEGER," +
+      "PRIMARY KEY (airport, airline), " +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
