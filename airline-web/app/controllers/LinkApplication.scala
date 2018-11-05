@@ -531,20 +531,21 @@ class LinkApplication extends Controller {
             var suggestedPrice : LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), ECONOMY),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), BUSINESS),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), FIRST))
-                                                                   
+            var priceBonus : LinkClassValues = LinkClassValues.getInstance()
+                                                                                                                                      
             //adjust suggestedPrice with Lounge
             toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
-              suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
-                                                           suggestedPrice(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt,
-                                                           suggestedPrice(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * FIRST.priceMultiplier).toInt)
+              priceBonus = LinkClassValues.getInstance(priceBonus(ECONOMY), 
+                                                       priceBonus(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt,
+                                                       priceBonus(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * FIRST.priceMultiplier).toInt)
+                                                           
             }
             
             fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
-              suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
-                                                           suggestedPrice(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt,
-                                                           suggestedPrice(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * FIRST.priceMultiplier).toInt)
+              priceBonus = LinkClassValues.getInstance(priceBonus(ECONOMY), 
+                                                       priceBonus(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt,
+                                                       priceBonus(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * FIRST.priceMultiplier).toInt)
             }
-                                                                   
             val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
             val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.BUSINESS)
             val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.TOURIST)
@@ -573,6 +574,7 @@ class LinkApplication extends Controller {
                                         "mutualRelationship" -> relationship,
                                         "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,
+                                        "priceBonus" -> priceBonus,
                                         "economySpaceMultiplier" -> ECONOMY.spaceMultiplier, 
                                         "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
                                         "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
