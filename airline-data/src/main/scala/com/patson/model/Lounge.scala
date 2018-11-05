@@ -25,6 +25,7 @@ object Lounge {
   val PER_VISITOR_COST = 30 //how much extra cost to serve 1 visitor
   val PER_VISITOR_CHARGE = 50 //how much to charge an airline (self and alliance member) per 1 visitor. This has to be higher to make popular lounge profitable
   val MAX_LEVEL = 3
+  val LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT = 4 //lounge passenger only spawn if from and to airport fulfills this
   
   def getBaseScaleRequirement(loungeLevel : Int) = {
     if (loungeLevel == 3) {

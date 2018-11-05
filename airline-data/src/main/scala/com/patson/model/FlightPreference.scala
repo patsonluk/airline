@@ -12,6 +12,7 @@ import com.patson.Util
 abstract class FlightPreference {
   def computeCost(link : Link) : Double
   def linkClass : LinkClass
+  def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean //whether this flight preference is applicable to this from/to airport
 }
 
 /**
@@ -31,6 +32,8 @@ case class SimplePreference(priceSensitivity : Double, linkClass: LinkClass) ext
     val cost = standardPrice + deltaFromStandardPrice * priceSensitivity
     cost
   }
+  
+  def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
 }
 
 case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, loungeLevelRequired : Int, id : Int)  extends FlightPreference{
@@ -105,6 +108,14 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     
     return finalCost
   }
+  
+  def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = {
+    if (loungeLevelRequired > 0) {
+      fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT
+    } else {
+      true
+    }
+  }
 }
 
 object AppealPreference {
@@ -153,9 +164,9 @@ class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]
 //      Range(0, entry._2, 1).foldRight(List[FlightPreference]())((_, childFoldList) => entry._1 :: childFoldList) ::: foldList
 //  }
   
-  def draw(linkClass : LinkClass) : FlightPreference = {
+  def draw(linkClass: LinkClass, fromAirport : Airport, toAirport : Airport) : FlightPreference = {
     //Random.shuffle(pool).apply(0)
-    val poolForClass = pool(linkClass)
+    val poolForClass = pool(linkClass).filter(_.isApplicable(fromAirport, toAirport))
     poolForClass(Random.nextInt(poolForClass.length))
   }
 }
