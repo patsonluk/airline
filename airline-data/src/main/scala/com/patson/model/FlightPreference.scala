@@ -84,7 +84,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
         // Wants a lounge .. SHOULD NOT NEED THEM ON BOTH SIDES as that is impractical
         // But if they are there .. slight extra bonus
         
-        if ((fromLoungeLevel >= loungeLevelRequired) || (toLoungeLevel < loungeLevelRequired)) {
+        if ((fromLoungeLevel >= loungeLevelRequired) || (toLoungeLevel >= loungeLevelRequired)) {
          // Atleast one side has the lounge .. nice 
           perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (fromLoungeLevel.max(toLoungeLevel) * linkClass.priceMultiplier).toInt
         }
