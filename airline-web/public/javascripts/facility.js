@@ -38,34 +38,34 @@ function removeFacility(facility) {
 
 function updateFacilityIcons(airport) {
 	$('#airportDetailsFacilities').empty()
-	$.ajax({
-		type: 'GET',
-		url: "airlines/" + activeAirline.id + "/facilities/" + airport.id,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(facilityDetails) {
-	    	if (facilityDetails.lounge) { //lounge
-	    		var imageUrl
-	    		var imageTitle
-    			if (facilityDetails.lounge.status == 'ACTIVE') {
-    				imageUrl = 'assets/images/icons/sofa.png'
-					imageTitle = 'Active Lounge Level ' + facilityDetails.lounge.level + " - " + facilityDetails.lounge.name 	
-    			} else {
-    				imageUrl = 'assets/images/icons/sofa-grey.png'
-    				imageTitle = 'No Active Lounge'
-    			}
-    			
-	    		var iconImg = $("<img class='button' src='" + imageUrl +  "' onclick='showFacilityModal($(this).data(&quot;facility&quot;))' title='" + imageTitle + "'>")
-    			//attach to modal
-	    		iconImg.data("facility", facilityDetails.lounge)
-	    		$('#airportDetailsFacilities').append(iconImg)
-    		}	    	
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+//	$.ajax({
+//		type: 'GET',
+//		url: "airlines/" + activeAirline.id + "/facilities/" + airport.id,
+//	    contentType: 'application/json; charset=utf-8',
+//	    dataType: 'json',
+//	    success: function(facilityDetails) {
+//	    	if (facilityDetails.lounge) { //lounge
+//	    		var imageUrl
+//	    		var imageTitle
+//    			if (facilityDetails.lounge.status == 'ACTIVE') {
+//    				imageUrl = 'assets/images/icons/sofa.png'
+//					imageTitle = 'Active Lounge Level ' + facilityDetails.lounge.level + " - " + facilityDetails.lounge.name 	
+//    			} else {
+//    				imageUrl = 'assets/images/icons/sofa-grey.png'
+//    				imageTitle = 'No Active Lounge'
+//    			}
+//    			
+//	    		var iconImg = $("<img class='button' src='" + imageUrl +  "' onclick='showFacilityModal($(this).data(&quot;facility&quot;))' title='" + imageTitle + "'>")
+//    			//attach to modal
+//	    		iconImg.data("facility", facilityDetails.lounge)
+//	    		$('#airportDetailsFacilities').append(iconImg)
+//    		}	    	
+//	    },
+//	    error: function(jqXHR, textStatus, errorThrown) {
+//	            console.log(JSON.stringify(jqXHR));
+//	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+//	    }
+//	});
 }
 
 function showFacilityModal(currentFacility) {

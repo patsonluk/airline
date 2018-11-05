@@ -26,7 +26,7 @@ object AirlineSimulation {
     val allCountries = CountrySource.loadAllCountries().map( country => (country.countryCode, country)).toMap
     
     val loungesByAirlineId = scala.collection.mutable.Map[Int, ListBuffer[Lounge]]()
-    AirlineSource.loadAllLounges.foreach(lounge =>  
+    AirlineSource.loadAllLounges().filter(_.status == LoungeStatus.ACTIVE).foreach(lounge =>  
       loungesByAirlineId.getOrElseUpdate(lounge.airline.id, ListBuffer[Lounge]()) += lounge
     )
     

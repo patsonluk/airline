@@ -71,26 +71,26 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
     //adjust by lounge
-    if (linkClass.level >= BUSINESS.level) {
-      val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
-      val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
-        
-      val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
-      val toLoungeLevel = toLounge.map(_.level).getOrElse(0)
-      
-       
-      if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
-        perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
-      } else {
-        perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (fromLoungeLevel * linkClass.priceMultiplier).toInt
-      }
-      
-      if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
-        perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
-      } else {
-        perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (toLoungeLevel * linkClass.priceMultiplier).toInt
-      }
-    }
+//    if (linkClass.level >= BUSINESS.level) {
+//      val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
+//      val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
+//        
+//      val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
+//      val toLoungeLevel = toLounge.map(_.level).getOrElse(0)
+//      
+//       
+//      if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
+//        perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
+//      } else {
+//        perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (fromLoungeLevel * linkClass.priceMultiplier).toInt
+//      }
+//      
+//      if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
+//        perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
+//      } else {
+//        perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (toLoungeLevel * linkClass.priceMultiplier).toInt
+//      }
+//    }
     
 //    println(link.price(linkClass) + " vs " + perceivedPrice + " from " + this)
     
@@ -167,6 +167,10 @@ class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]
   def draw(linkClass: LinkClass, fromAirport : Airport, toAirport : Airport) : FlightPreference = {
     //Random.shuffle(pool).apply(0)
     val poolForClass = pool(linkClass).filter(_.isApplicable(fromAirport, toAirport))
+    if (linkClass == BUSINESS) {
+      println(fromAirport.size + "<->" + toAirport.size)
+      println(poolForClass)
+    }
     poolForClass(Random.nextInt(poolForClass.length))
   }
 }

@@ -171,23 +171,23 @@ object AirportSimulation {
       }
     }
     
-    if (!airport.getLounges().isEmpty) {
-      val airlinesByPassengers = soldLinksByAirline.mapValues( consumptionDetails => consumptionDetails.map {_.link.soldSeats.total}.sum).toList.sortBy(_._2) //Map[airlineId, totalPassengersForThisAirport]
-      val eligibleAirlines = airlinesByPassengers.takeRight(airport.getLounges()(0).getActiveRankingThreshold).map(_._1)
-      airport.getLounges().foreach { lounge =>
-        val newStatus =
-        if (eligibleAirlines.contains(lounge.airline.id)) {
-          LoungeStatus.ACTIVE
-        } else {
-          LoungeStatus.INACTIVE
-        }
-        
-        if (lounge.status != newStatus) {
-          AirlineSource.saveLounge(lounge.copy(status = newStatus))
-        }
-      }
-      
-    }
+//    if (!airport.getLounges().isEmpty) {
+//      val airlinesByPassengers = soldLinksByAirline.mapValues( consumptionDetails => consumptionDetails.map {_.link.soldSeats.total}.sum).toList.sortBy(_._2) //Map[airlineId, totalPassengersForThisAirport]
+//      val eligibleAirlines = airlinesByPassengers.takeRight(airport.getLounges()(0).getActiveRankingThreshold).map(_._1)
+//      airport.getLounges().foreach { lounge =>
+//        val newStatus =
+//        if (eligibleAirlines.contains(lounge.airline.id)) {
+//          LoungeStatus.ACTIVE
+//        } else {
+//          LoungeStatus.INACTIVE
+//        }
+//        
+//        if (lounge.status != newStatus) {
+//          AirlineSource.saveLounge(lounge.copy(status = newStatus))
+//        }
+//      }
+//      
+//    }
     
     
     
