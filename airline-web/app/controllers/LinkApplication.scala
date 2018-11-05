@@ -536,15 +536,15 @@ class LinkApplication extends Controller {
             //adjust suggestedPrice with Lounge
             toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
               priceBonus = LinkClassValues.getInstance(priceBonus(ECONOMY), 
-                                                       priceBonus(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt,
-                                                       priceBonus(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * FIRST.priceMultiplier).toInt)
+                                                       priceBonus(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * BUSINESS.priceMultiplier).toInt,
+                                                       priceBonus(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * FIRST.priceMultiplier).toInt)
                                                            
             }
             
             fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
               priceBonus = LinkClassValues.getInstance(priceBonus(ECONOMY), 
-                                                       priceBonus(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt,
-                                                       priceBonus(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * FIRST.priceMultiplier).toInt)
+                                                       priceBonus(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * BUSINESS.priceMultiplier).toInt,
+                                                       priceBonus(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * FIRST.priceMultiplier).toInt)
             }
             val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
             val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.BUSINESS)
