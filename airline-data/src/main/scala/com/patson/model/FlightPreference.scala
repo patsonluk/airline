@@ -71,6 +71,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
     //adjust by lounge
+    
     if (linkClass.level >= BUSINESS.level) {
       val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
       val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
@@ -78,17 +79,34 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
       val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
       val toLoungeLevel = toLounge.map(_.level).getOrElse(0)
       
-       
-      if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
-        perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
-      } else {
-        perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (fromLoungeLevel * linkClass.priceMultiplier).toInt
-      }
       
-      if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
-        perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
+      if (loungeLevelRequired > 0) { 
+        // Wants a lounge .. SHOULD NOT NEED THEM ON BOTH SIDES as that is impractical
+        // But if they are there .. slight extra bonus
+        
+        if ((fromLoungeLevel >= loungeLevelRequired) || (toLoungeLevel < loungeLevelRequired)) {
+         // Atleast one side has the lounge .. nice 
+          perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (fromLoungeLevel.max(toLoungeLevel) * linkClass.priceMultiplier).toInt
+        }
+       
+        if ((fromLoungeLevel >= loungeLevelRequired) && (toLoungeLevel >= loungeLevelRequired)) {
+         // Both sides have the required lounge .. extra nice 
+          perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (fromLoungeLevel.min(toLoungeLevel) * linkClass.priceMultiplier).toInt
+        }
+       
+        if ((fromLoungeLevel < loungeLevelRequired) && (toLoungeLevel < loungeLevelRequired)) {
+         // No required lounges .. aww
+          perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - fromLoungeLevel.max(toLoungeLevel)) * linkClass.priceMultiplier).toInt
+        }
       } else {
-        perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (toLoungeLevel * linkClass.priceMultiplier).toInt
+       //Has little preference for lounges so make perceived price difference smaller. Don't want to suck up too much demand
+       //Level should make no difference to these travelers - Lounge level irrelevant
+        if (toLoungeLevel > 0) {
+          perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (linkClass.priceMultiplier / 2).toInt 
+        }
+        if (fromLoungeLevel > 0) {
+          perceivedPrice = perceivedPrice - AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * (linkClass.priceMultiplier / 2).toInt           
+        }
       }
     }
     
