@@ -215,8 +215,8 @@ object DemandGenerator {
       
       //add extra business and first class demand from lounge for major airports
       if (fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) { 
-        firstClassDemand *= 3
-        businessClassDemand *= 3
+        firstClassDemand = (firstClassDemand * 2.5).toInt
+        businessClassDemand = (businessClassDemand * 2.5).toInt
       }
       
       LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
