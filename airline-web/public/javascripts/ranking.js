@@ -41,6 +41,8 @@ function updateRankingTable(rankingType, rankings) {
 		rankingTable = $('#linkCountRank')
 	} else if (rankingType == "LINK_PROFIT") {
 		rankingTable = $('#linkProfitRank')
+	} else if (rankingType == "LOUNGE") {
+		rankingTable = $('#loungeRank')
 	} else if (rankingType == "PASSENGER_AS") {
 		rankingTable = $('#passengerRankAs')
 	} else if (rankingType == "PASSENGER_AF") {

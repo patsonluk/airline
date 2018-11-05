@@ -151,7 +151,8 @@ object AirportSimulation {
   }
   
   private def updateAirportBySoldLinks(airport : Airport, soldLinksForThisAirport : Seq[LinkConsumptionDetails]) = {
-    soldLinksForThisAirport.groupBy { _.link.airline.id }.foreach {
+    val soldLinksByAirline = soldLinksForThisAirport.groupBy { _.link.airline.id } 
+    soldLinksByAirline.foreach {
       case(airlineId, soldLinksByAirline) => {
         val targetLoyalty = getTargetLoyalty(soldLinksByAirline, airport.population)
         val currentLoyalty = airport.getAirlineLoyalty(airlineId)
@@ -166,10 +167,30 @@ object AirportSimulation {
         }
         
         airport.setAirlineLoyalty(airlineId, newLoyalty)
-        
         //println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
       }
     }
+    
+    if (!airport.getLounges().isEmpty) {
+      val airlinesByPassengers = soldLinksByAirline.mapValues( consumptionDetails => consumptionDetails.map {_.link.soldSeats.total}.sum).toList.sortBy(_._2) //Map[airlineId, totalPassengersForThisAirport]
+      val eligibleAirlines = airlinesByPassengers.takeRight(airport.getLounges()(0).getActiveRankingThreshold).map(_._1)
+      airport.getLounges().foreach { lounge =>
+        val newStatus =
+        if (eligibleAirlines.contains(lounge.airline.id)) {
+          LoungeStatus.ACTIVE
+        } else {
+          LoungeStatus.INACTIVE
+        }
+        
+        if (lounge.status != newStatus) {
+          AirlineSource.saveLounge(lounge.copy(status = newStatus))
+        }
+      }
+      
+    }
+    
+    
+    
   }
   
   private[patson] val getTargetLoyalty : (Seq[LinkConsumptionDetails], Long) => Double = (consumptionDetails, population) => {

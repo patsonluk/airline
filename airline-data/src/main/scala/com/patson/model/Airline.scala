@@ -2,6 +2,7 @@ package com.patson.model
 
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
+  var allianceId : Option[Int] = None
   var bases : List[AirlineBase] = List.empty
   
   def setBalance(balance : Long) = { 
@@ -37,6 +38,16 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def getAirlineCode() = {
     airlineInfo.airlineCode
   }
+
+  def setAllianceId(allianceId : Int) = {
+    this.allianceId = Some(allianceId)
+  }
+  
+  def getAllianceId() : Option[Int] = {
+    allianceId
+  }
+  
+  
   
   def setBases(bases : List[AirlineBase]) {
     this.bases = bases
@@ -166,12 +177,12 @@ object TransactionType extends Enumeration {
 
 object OtherIncomeItemType extends Enumeration {
   type OtherBalanceItemType = Value
-  val LOAN_INTEREST, BASE_UPKEEP, SERVICE_INVESTMENT, MAINTENANCE_INVESTMENT, ADVERTISEMENT, DEPRECIATION = Value
+  val LOAN_INTEREST, BASE_UPKEEP, SERVICE_INVESTMENT, MAINTENANCE_INVESTMENT, LOUNGE_UPKEEP, LOUNGE_COST, LOUNGE_INCOME, ADVERTISEMENT, DEPRECIATION = Value
 }
 
 object CashFlowType extends Enumeration {
   type CashFlowType = Value
-  val BASE_CONSTRUCTION, BUY_AIRPLANE, SELL_AIRPLANE, CREATE_LINK = Value
+  val BASE_CONSTRUCTION, BUY_AIRPLANE, SELL_AIRPLANE, CREATE_LINK, FACILITY_CONSTRUCTION = Value
 }
 
 object Period extends Enumeration {
@@ -197,7 +208,7 @@ case class AirlineIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, 
         cycle = income2.cycle)
   }
 }
-case class LinksIncome(airlineId : Int, profit : Long = 0, revenue : Long = 0, expense : Long = 0, ticketRevenue: Long = 0, airportFee : Long = 0, fuelCost : Long = 0, crewCost : Long = 0, inflightCost : Long = 0, delayCompensation : Long = 0, maintenanceCost: Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
+case class LinksIncome(airlineId : Int, profit : Long = 0, revenue : Long = 0, expense : Long = 0, ticketRevenue: Long = 0, airportFee : Long = 0, fuelCost : Long = 0, crewCost : Long = 0, inflightCost : Long = 0, delayCompensation : Long = 0, maintenanceCost: Long = 0, loungeCost : Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
   def update(income2 : LinksIncome) : LinksIncome = {
     LinksIncome(airlineId, 
         profit = profit + income2.profit,
@@ -209,6 +220,7 @@ case class LinksIncome(airlineId : Int, profit : Long = 0, revenue : Long = 0, e
         crewCost = crewCost + income2.crewCost,
         inflightCost = inflightCost + income2.inflightCost,
         maintenanceCost = maintenanceCost + income2.maintenanceCost,
+        loungeCost = loungeCost + income2.loungeCost,
         depreciation = depreciation + income2.depreciation,
         period = period,
         cycle = income2.cycle)
@@ -226,7 +238,7 @@ case class TransactionsIncome(airlineId : Int, profit : Long = 0, revenue: Long 
         cycle = income2.cycle)
   }  
 }
-case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, expense: Long = 0, loanInterest : Long = 0, baseUpkeep : Long = 0, serviceInvestment : Long = 0, maintenanceInvestment : Long = 0, advertisement : Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
+case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, expense: Long = 0, loanInterest : Long = 0, baseUpkeep : Long = 0, serviceInvestment : Long = 0, maintenanceInvestment : Long = 0, advertisement : Long = 0, loungeUpkeep : Long = 0, loungeCost : Long = 0, loungeIncome : Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
   def update(income2 : OthersIncome) : OthersIncome = {
     OthersIncome(airlineId, 
         profit = profit + income2.profit,
@@ -237,6 +249,9 @@ case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, e
         serviceInvestment = serviceInvestment + income2.serviceInvestment,
         maintenanceInvestment = maintenanceInvestment + income2.maintenanceInvestment,
         advertisement = advertisement + income2.advertisement,
+        loungeUpkeep = loungeUpkeep + income2.loungeUpkeep,
+        loungeCost = loungeCost + income2.loungeCost,
+        loungeIncome = loungeIncome + income2.loungeIncome,
         depreciation = depreciation + income2.depreciation,
         period = period,
         cycle = income2.cycle)

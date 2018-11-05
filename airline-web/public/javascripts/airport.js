@@ -84,10 +84,12 @@ function updateAirportDetails(airport) {
 	    			$('#airportDetailsBaseType').text('-')
 	    			$('#airportDetailsBaseScale').text('-')
 	    			$('#airportDetailsBaseUpkeep').text('-')
+	    			$('#airportDetailsFacilities').empty()
 	    		} else {
 	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
 	    			$('#airportDetailsBaseScale').text(airportBase.scale)
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
+	    			updateFacilityIcons(airport)
 	    		}
 		    	$('#airportDetailsLinkLimitBoost').text(baseDetails.linkLimitDomestic + " / " + baseDetails.linkLimitRegional)
 		    	var targetBase = baseDetails.targetBase
@@ -150,6 +152,8 @@ function updateAirportDetails(airport) {
 		$('#airportBaseDetails').hide()
 	}
 }
+
+
 
 
 function populateAirportDetails(airport) {
@@ -227,7 +231,7 @@ function loadAirportStatistics(airport) {
 	    	$('#airportDetailsLinkCount').text(airportStatistics.linkCount)
 	    	$('#airportDetailsFlightFrequency').text(airportStatistics.flightFrequency)
 	    	
-	    	updateBaseList(airportStatistics)
+	    	updateFacilityList(airportStatistics)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -236,21 +240,21 @@ function loadAirportStatistics(airport) {
 	});
 }
 
-function updateBaseList(statistics) {
+function updateFacilityList(statistics) {
 	$('#airportDetailsHeadquarterList').children('.table-row').remove()
 	$('#airportDetailsBaseList').children('.table-row').remove()
+	$('#airportDetailsLoungeList').children('.table-row').remove()
+	
 	
 	var hasHeadquarters = false
 	var hasBases = false
+	var hasLounges = false
 	$.each(statistics.bases, function(index, base) {
 		var row = $("<div class='table-row'></div>")
-		var countryFlagUrl = getCountryFlagUrl(base.airlineCountryCode)
-		if (countryFlagUrl) {
-			row.append("<div class='cell'><img src='" + countryFlagUrl + "'/>" + base.airlineName + "</div>")
-		} else {
-			row.append("<div class='cell'>" + base.airlineName + "</div>")
-		}
+		row.append("<div class='cell'>" +  getAirlineLogoImg(base.airlineId) + base.airlineName + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + getCountryFlagImg(base.airlineCountryCode) + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + base.scale + "</div>")
+		
 		
 		var linkCount = 0;
 		$.each(statistics.linkCountByAirline, function(index, entry) {
@@ -285,9 +289,24 @@ function updateBaseList(statistics) {
 		}
 	})
 	
+	$.each(statistics.lounges, function(index, loungeStats) {
+		var lounge = loungeStats.lounge
+		var row = $("<div class='table-row'></div>")
+		row.append("<div class='cell'>" +  getAirlineLogoImg(lounge.airlineId) + lounge.airlineName + "</div>")
+		row.append("<div class='cell'>" + lounge.name + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + lounge.level + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + lounge.status + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(loungeStats.selfVisitors) + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(loungeStats.allianceVisitors) + "</div>")
+		
+		$('#airportDetailsLoungeList').append(row)
+		hasLounges = true
+	})
+	
 	if (!hasHeadquarters) {
 		var emtpyRow = $("<div class='table-row'></div>")
 		emtpyRow.append("<div class='cell'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
@@ -299,11 +318,18 @@ function updateBaseList(statistics) {
 		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		$('#airportDetailsBaseList').append(emtpyRow)
 	}
-
-	
-
+	if (!hasLounges) {
+		var emtpyRow = $("<div class='table-row'></div>")
+		emtpyRow.append("<div class='cell'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		$('#airportDetailsLoungeList').append(emtpyRow)
+	}
 }
 
 

@@ -4,9 +4,19 @@ import scala.collection.mutable.ListBuffer
 import java.sql.DriverManager
 import com.patson.model._
 import java.sql.PreparedStatement
+import scala.collection.mutable.Map
 
 object LinkStatisticsSource {
-  def loadLinkStatisticsByCriteria(criteria : List[(String, Any)]) : List[LinkStatistics]= {
+  val FULL_LOAD = Map(DetailType.AIRLINE -> true, DetailType.AIRPORT -> true)
+  val SIMPLE_LOAD = Map(DetailType.AIRLINE -> false, DetailType.AIRPORT -> false)
+  val ID_LOAD : Map[DetailType.Type, Boolean] = Map.empty
+  
+  object DetailType extends Enumeration {
+    type Type = Value
+    val AIRPORT, AIRLINE = Value
+  }
+  
+  def loadLinkStatisticsByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = ID_LOAD) : List[LinkStatistics]= {
     val connection = Meta.getConnection()
     try {  
       var queryString = "SELECT * FROM " + LINK_STATISTICS_TABLE 
@@ -36,16 +46,32 @@ object LinkStatisticsSource {
       var airline : Airline = null
       
       val links = new ListBuffer[LinkStatistics]()
+      
+      val airports = Map[Int, Airport]()
+      val airlines = Map[Int, Airline]()
+      
       while (resultSet.next()) {
         if (!isSingleFromAirport || fromAirport == null) {
-          fromAirport = AirportSource.loadAirportById(resultSet.getInt("from_airport"), false).get
+          val airportId = resultSet.getInt("from_airport")
+          
+          fromAirport = airports.getOrElseUpdate(airportId, loadDetails.get(DetailType.AIRPORT) match {
+            case Some(fullLoad) => AirportSource.loadAirportById(airportId, fullLoad).get
+            case None => Airport.fromId(airportId)
+          })
         }
         if (!isSingleToAirport || toAirport == null) {
-          toAirport = AirportSource.loadAirportById(resultSet.getInt("to_airport"), false).get
+          val airportId = resultSet.getInt("to_airport")
+          toAirport = airports.getOrElseUpdate(airportId, loadDetails.get(DetailType.AIRPORT) match {
+            case Some(fullLoad) => AirportSource.loadAirportById(airportId, fullLoad).get
+            case None => Airport.fromId(airportId)
+          })
         }
         if (!isSingleAirline || airline == null) {
           val airlineId = resultSet.getInt("airline")
-          airline = AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId))
+          airline = airlines.getOrElseUpdate(airlineId, loadDetails.get(DetailType.AIRLINE) match {
+            case Some(fullLoad) => AirlineSource.loadAirlineById(airlineId, fullLoad).get
+            case None => Airline.fromId(airlineId)
+          })
         }
         
         val linkStatistics = LinkStatistics(LinkStatisticsKey(fromAirport, toAirport, resultSet.getBoolean("is_departure"), resultSet.getBoolean("is_destination"), airline), resultSet.getInt("passenger_count"), resultSet.getInt("cycle"))
@@ -63,22 +89,22 @@ object LinkStatisticsSource {
   /**
    * Only load latest for now
    */
-  def loadLinkStatisticsByAirline(airlineId : Int) : List[LinkStatistics]= {
-    loadLinkStatisticsByCriteria(List(("airline", airlineId),("cycle", CycleSource.loadCycle() - 1)))
+  def loadLinkStatisticsByAirline(airlineId : Int, loadDetails : Map[DetailType.Value, Boolean] = ID_LOAD) : List[LinkStatistics]= {
+    loadLinkStatisticsByCriteria(List(("airline", airlineId),("cycle", CycleSource.loadCycle() - 1)), loadDetails)
   }
   
   /**
    * Only load latest for now
    */
-  def loadLinkStatisticsByFromAirport(fromAirportId : Int) : List[LinkStatistics]= {
-    loadLinkStatisticsByCriteria(List(("from_airport", fromAirportId),("cycle", CycleSource.loadCycle() - 1)))
+  def loadLinkStatisticsByFromAirport(fromAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = ID_LOAD) : List[LinkStatistics]= {
+    loadLinkStatisticsByCriteria(List(("from_airport", fromAirportId),("cycle", CycleSource.loadCycle() - 1)), loadDetails)
   }
   
   /**
    * Only load latest for now
    */
-  def loadLinkStatisticsByToAirport(toAirportId : Int) : List[LinkStatistics]= {
-    loadLinkStatisticsByCriteria(List(("to_airport", toAirportId),("cycle", CycleSource.loadCycle() - 1)))
+  def loadLinkStatisticsByToAirport(toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = ID_LOAD) : List[LinkStatistics]= {
+    loadLinkStatisticsByCriteria(List(("to_airport", toAirportId),("cycle", CycleSource.loadCycle() - 1)), loadDetails)
   }
   
   def saveLinkStatistics(linkStatistics : List[LinkStatistics]) = {

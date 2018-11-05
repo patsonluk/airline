@@ -18,6 +18,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var airlineBasesLoaded = false
   private[this] val features = ListBuffer[AirportFeature]()
   private[this] var featuresLoaded = false
+  private[this] val loungesByAirline = scala.collection.mutable.Map[Int, Lounge]()
+  private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
+  //private[this] var loungesLoaded = false
+  
   
   private[this] var airportImageUrl : Option[String] = None
   private[this] var cityImageUrl : Option[String] = None
@@ -258,6 +262,29 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     airlineBases.toMap
   }
   
+  def getLoungeByAirline(airlineId : Int, activeOnly : Boolean = false) : Option[Lounge] = {
+    loungesByAirline.get(airlineId).filter(!activeOnly || _.status == LoungeStatus.ACTIVE)
+  }
+  
+  def getLounges() : List[Lounge] = {
+    loungesByAirline.values.toList
+  }
+  
+  def getLoungeByAlliance(alliance : Int, activeOnly : Boolean = false) : Option[Lounge] = {
+    loungesByAlliance.get(alliance).filter(!activeOnly || _.status == LoungeStatus.ACTIVE)
+  }
+  
+  def getLounge(airlineId : Int, allianceIdOption : Option[Int], activeOnly : Boolean = false) : Option[Lounge] = {
+     getLoungeByAirline(airlineId, activeOnly) match {
+       case Some(lounge) => Some(lounge)
+       case None => allianceIdOption match {
+         case Some(allianceId) => getLoungeByAlliance(allianceId, activeOnly)
+         case None => None
+       }
+     }
+     
+  }
+  
   def isFeaturesLoaded = featuresLoaded
   
   def getFeatures() : List[AirportFeature] = {
@@ -285,6 +312,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     this.features.clear()
     this.features ++= features
     featuresLoaded = true
+  }
+  
+  def initLounges(lounges : List[Lounge]) = {
+    this.loungesByAirline.clear()
+    lounges.foreach { lounge =>
+      this.loungesByAirline.put(lounge.airline.id, lounge)
+      lounge.allianceId.foreach {
+         allianceId => this.loungesByAlliance.put(allianceId, lounge)  
+      }
+    }
   }
   
   def slotFee(airplaneModel : Model, airline : Airline) : Int = { 

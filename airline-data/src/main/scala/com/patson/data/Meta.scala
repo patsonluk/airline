@@ -274,6 +274,8 @@ object Meta {
     createAirlineLogo(connection)
     createAirplaneRenewal(connection)
     createAlliance(connection)
+    createLounge(connection)
+    createLoungeConsumption(connection)
     createResetUser(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
@@ -380,6 +382,7 @@ object Meta {
       "inflight_cost INTEGER, " +
       "delay_compensation INTEGER, " +
       "maintenance_cost INTEGER, " +
+      "lounge_cost INTEGER, " + 
       "depreciation INTEGER, " +
       "revenue INTEGER, " +
       "profit INTEGER, " +
@@ -665,6 +668,7 @@ object Meta {
       "inflight_cost LONG," +
       "delay_compensation LONG," +
       "maintenance_cost LONG," +
+      "lounge_cost LONG," +
       "depreciation LONG," +
       "period INTEGER," +
       "cycle INTEGER," +
@@ -706,6 +710,9 @@ object Meta {
       "service_investment LONG," +
       "maintenance_investment LONG," +
       "advertisement LONG," +
+      "lounge_upkeep LONG, " + 
+      "lounge_cost LONG, " +
+      "lounge_income LONG, " +
       "depreciation LONG," +
       "period INTEGER," +
       "cycle INTEGER," +
@@ -832,6 +839,45 @@ object Meta {
     
     
     
+    statement.close()
+  }
+  
+  def createLounge(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOUNGE_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + LOUNGE_TABLE + "(" +
+      "airport INTEGER, " +
+      "airline INTEGER, " +
+      "name VARCHAR(256), " + 
+      "level INTEGER," +
+      "status VARCHAR(16)," + 
+      "founded_cycle INTEGER," +
+      "PRIMARY KEY (airport, airline), " +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createLoungeConsumption(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOUNGE_CONSUMPTION_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + LOUNGE_CONSUMPTION_TABLE + "(" +
+      "airport INTEGER, " +
+      "airline INTEGER, " +
+      "self_visitors INTEGER," +
+      "alliance_visitors INTEGER," +
+      "cycle INTEGER," +
+      "PRIMARY KEY (airport, airline), " +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
     statement.close()
   }
   

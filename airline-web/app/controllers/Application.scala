@@ -29,6 +29,7 @@ import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
 import controllers.WeatherUtil.Coordinates
 import controllers.WeatherUtil.Weather
+import com.patson.data.LoungeHistorySource
 
 
 class Application extends Controller {
@@ -293,6 +294,16 @@ class Application extends Controller {
           flightFrequency = flightFrequency + link.frequency
         }
         
+        val loungesStats = LoungeHistorySource.loadLoungeConsumptionsByAirportId(airport.id)
+        val loungesWithVisitors = loungesStats.map { _.lounge.airline.id }
+        val emptyLoungesStats = ListBuffer[LoungeConsumptionDetails]() 
+        //now some lounge might be newly built or have no visitors
+        AirlineSource.loadLoungesByAirportId(airportId).foreach { lounge =>
+          if (!loungesWithVisitors.contains(lounge.airline.id)) {
+            emptyLoungesStats += LoungeConsumptionDetails(lounge = lounge, selfVisitors = 0, allianceVisitors = 0, cycle = 0)
+          }
+        }
+         
         
         
         Ok(Json.obj("connectedCountryCount" -> servedCountries.size,
@@ -304,6 +315,7 @@ class Application extends Controller {
                     },
                     "flightFrequency" -> flightFrequency,
                     "bases" -> Json.toJson(airport.getAirlineBases().values),
+                    "lounges" -> Json.toJson(loungesStats ++ emptyLoungesStats),
                     "departureOrArrivalPassengers" -> departureOrArrivalPassengers, 
                     "transitPassengers" -> transitPassengers,
                     "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),

@@ -44,6 +44,7 @@
     <script src="@routes.Assets.versioned("javascripts/bank.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
@@ -230,6 +231,10 @@
 					    			<div class="table-row">
 					    				<div class="label"><h5>Compensation:</h5></div>
 					    				<div class="value" id="linkCompensation"></div>
+					    			</div>
+					    			<div class="table-row">
+					    				<div class="label"><h5>Lounge Cost:</h5></div>
+					    				<div class="value" id="linkLoungeCost"></div>
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>Other Costs:</h5></div>
@@ -542,6 +547,10 @@
 			    				<div class="label"><h5>Base Upkeep after upgrade:</h5></div>
 			    				<div class="value" id="airportDetailsBaseUpgradeUpkeep"></div>
 			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Facilities:</h5></div>
+			    				<div class="value" id="airportDetailsFacilities"></div>
+			    			</div>
 						</div>
   						<div id="baseRejection" style="display:none;">
 			    			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="baseRejectionReason" class="warning"></span>
@@ -718,19 +727,32 @@
 						<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
 						<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table">
 							<div class="table-header">
-		 	  					<div class="cell" style="width: 50%">Airline</div>
+		 	  					<div class="cell" style="width: 30%">Airline</div>
+		 	  					<div class="cell" style="width: 10%; text-align: right;">Home Country</div>
 		 	  					<div class="cell" style="width: 10%; text-align: right;">Office Scale</div>
-		 	  					<div class="cell" style="width: 10%; text-align: right;">Flight Routes</div>
-		 	  					<div class="cell" style="width: 30%; text-align: right;">Weekly Passengers</div>
+		 	  					<div class="cell" style="width: 25%; text-align: right;">Flight Routes</div>
+		 	  					<div class="cell" style="width: 25%; text-align: right;">Weekly Passengers</div>
 							</div>
 						</div>
 						<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-low.png")'></div><div style="float: left;"><h4>Airline Bases</h4></div>
-						<div id="airportDetailsBaseList" style="width: 100%;" class="table">
+						<div id="airportDetailsBaseList" style="width: 100%; margin-bottom: 15px;" class="table">
 							<div class="table-header">
-		 	  					<div class="cell" style="width: 50%">Airline</div>
+		 	  					<div class="cell" style="width: 30%">Airline</div>
+		 	  					<div class="cell" style="width: 10%; text-align: right;">Home Country</div>
 		 	  					<div class="cell" style="width: 10%; text-align: right;">Office Scale</div>
-		 	  					<div class="cell" style="width: 10%; text-align: right;">Flight Routes</div>
-		 	  					<div class="cell" style="width: 30%; text-align: right;">Weekly Passengers</div>
+		 	  					<div class="cell" style="width: 25%; text-align: right;">Flight Routes</div>
+		 	  					<div class="cell" style="width: 25%; text-align: right;">Weekly Passengers</div>
+							</div>
+						</div>
+  						<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/sofa.png")'></div><div style="float: left;"><h4>Airline Lounges</h4></div>
+						<div id="airportDetailsLoungeList" style="width: 100%;" class="table">
+							<div class="table-header">
+		 	  					<div class="cell" style="width: 20%">Airline</div>
+		 	  					<div class="cell" style="width: 20%">Lounge Name</div>
+		 	  					<div class="cell" style="width: 10%; text-align: right;">Lounge Level</div>
+		 	  					<div class="cell" style="width: 10%; text-align: right;">Status</div>
+		 	  					<div class="cell" style="width: 20%; text-align: right;">Weekly Passengers (self)</div>
+		 	  					<div class="cell" style="width: 20%; text-align: right;">Weekly Passengers (alliance members)</div>
 							</div>
 						</div>
   					</div>
@@ -1194,6 +1216,10 @@
 				 	  					<div id="linksMaintenance" class="cell" style="text-align: right;"></div>
 				 	  				</div>
 				 	  				<div class="table-row">
+				 	  					<div class="cell">Lounge Cost:</div>
+				 	  					<div id="linksLoungeCost" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
 				 	  					<div class="cell">Airplane Depreciation:</div>
 				 	  					<div id="linksDepreciation" class="cell" style="text-align: right;"></div>
 				 	  				</div>
@@ -1258,6 +1284,18 @@
 				 	  				<div class="table-row">
 				 	  					<div class="cell">Office Upkeep:</div>
 				 	  					<div id="othersBaseUpkeep" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Lounge Upkeep:</div>
+				 	  					<div id="othersLoungeUpkeep" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Lounge Supplies:</div>
+				 	  					<div id="othersLoungeCost" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
+				 	  					<div class="cell">Lounge Income:</div>
+				 	  					<div id="othersLoungeIncome" class="cell" style="text-align: right;"></div>
 				 	  				</div>
 				 	  				<div class="table-row">
 				 	  					<div class="cell">Service Investment:</div>
@@ -1529,6 +1567,14 @@
 	 	  					<div class="cell" style="width: 10%">Movement</div>
 	 	  					<div class="cell" style="width: 50%">Airline</div>
 	 	  					<div class="cell" style="width: 30%" align="right">Airline Reputation</div>
+						</div>
+         			</div>
+         			<div class="table data section" id="loungeRank" style="width: 95%">
+         				<div class="table-header">
+	 	  					<div class="cell" style="width: 10%">Rank</div>
+	 	  					<div class="cell" style="width: 10%">Movement</div>
+	 	  					<div class="cell" style="width: 50%">Airline</div>
+	 	  					<div class="cell" style="width: 30%" align="right">Weekly Lounge Visitors</div>
 						</div>
          			</div>
 <!--          			<div class="table data section" id="passengerRankNa" style="width: 95%"> -->
@@ -1995,6 +2041,65 @@
 		    </div>
 	    </div>
 	</div>
+	
+	<!-- airport facility modal -->
+	<div id="facilityModal" class="modal">
+	  <div class="modal-content"  style="width : 400px;">
+	    <span class="close" onclick="closeFacilityModal()">&times;</span>
+	    <h3><span class="facilityType"></span></h3>
+	    <div class="table" style="width: 100%">
+	    	<div class="table-row">
+			    				<div class="label" style="width: 50%"><h5>Name:</h5></div>
+			    				<div class="value facilityName" style="width: 50%"></div>
+			    				<div class="value facilityNameInputDiv" style="width: 50%"><input type="text" class="facilityNameInput"></div>
+			    			</div>
+			<div class="table-row facitilyNameWarningDiv" style="display: none;">
+			    				<div class="warning"></div>
+			    				
+			    			</div>
+			    			
+							<div class="table-row">
+			    				<div class="label" style="width: 50%"><h5>Level:</h5></div>
+			    				<div class="value facilityLevel" style="width: 50%"></div>
+			    			</div>
+							<div class="table-row">
+		    					<div class="label"><h5>Upkeep:</h5></div>
+		    					<div class="value facilityUpkeep"></div>
+		    				</div>
+		    				<div class="table-row">
+		    					<div class="label"><h5>Supplies:</h5></div>
+		    					<div class="value facilityCost"></div>
+		    				</div>
+		    				<div class="table-row">
+		    					<div class="label"><h5>Income:</h5></div>
+		    					<div class="value facilityIncome"></div>
+		    				</div>
+		    				<div class="table-row">
+			    				<div class="label"><h5>Profit:</h5></div>
+			    				<div class="value facilityProfit"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Upgrade Cost:</h5></div>
+			    				<div class="value upgradeCost"></div>
+			    			</div>
+			    			<div class="table-row">
+			    				<div class="label"><h5>Upkeep after Upgrade:</h5></div>
+			    				<div class="value upgradeUpkeep"></div>
+			    			</div>
+						</div>
+		<div class="upgradeRejectionDiv" style="display:none;"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning upgradeRejectionReason"></span></div>						
+	    
+	    <div class="button buildButton" onclick="buildFacility($('#facilityModal').data('facility'), 1)">Build</div>
+	    <div class="button upgradeButton" onclick="buildFacility($('#facilityModal').data('facility'), 1)">Upgrade</div>
+	    <div class="button downgradeButton" onclick="buildFacility($('#facilityModal').data('facility'), -1)">Downgrade</div>
+	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
+	  </div>
+	</div>
+	
+	<!-- Modal for loading -->
+	<div class="loadingSpinner"><!-- Place at bottom of page --></div>
+	
+	
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry,drawing&callback=initMap">
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->

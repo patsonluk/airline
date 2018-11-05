@@ -29,9 +29,9 @@ object IncomeSource {
      //open the hsqldb
     val connection = Meta.getConnection()
     val incomePreparedStatement = connection.prepareStatement("REPLACE INTO " + INCOME_TABLE + "(airline, profit, revenue, expense, period, cycle) VALUES(?,?,?,?,?,?)")
-    val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, delay_compensation, maintenance_cost, depreciation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     val transactionsPreparedStatement = connection.prepareStatement("REPLACE INTO " + TRANSACTIONS_INCOME_TABLE + "(airline, profit, revenue, expense, capital_gain, create_link, period, cycle) VALUES(?,?,?,?,?,?,?,?)")
-    val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, maintenance_investment, advertisement, depreciation,  period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
+    val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, maintenance_investment, advertisement, lounge_upkeep, lounge_cost, lounge_income, depreciation,  period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     
     try {
       connection.setAutoCommit(false)
@@ -56,9 +56,10 @@ object IncomeSource {
           linksPreparedStatement.setLong(9, income.links.inflightCost)
           linksPreparedStatement.setLong(10, income.links.delayCompensation)
           linksPreparedStatement.setLong(11, income.links.maintenanceCost)
-          linksPreparedStatement.setLong(12, income.links.depreciation)
-          linksPreparedStatement.setInt(13, period.id)
-          linksPreparedStatement.setInt(14, income.cycle)
+          linksPreparedStatement.setLong(12, income.links.loungeCost)
+          linksPreparedStatement.setLong(13, income.links.depreciation)
+          linksPreparedStatement.setInt(14, period.id)
+          linksPreparedStatement.setInt(15, income.cycle)
           linksPreparedStatement.addBatch()
           
           
@@ -83,9 +84,12 @@ object IncomeSource {
           othersPreparedStatement.setLong(7, income.others.serviceInvestment)
           othersPreparedStatement.setLong(8, income.others.maintenanceInvestment)
           othersPreparedStatement.setLong(9, income.others.advertisement)
-          othersPreparedStatement.setLong(10, income.others.depreciation)
-          othersPreparedStatement.setInt(11, period.id)
-          othersPreparedStatement.setInt(12, income.cycle)
+          othersPreparedStatement.setLong(10, income.others.loungeUpkeep)
+          othersPreparedStatement.setLong(11, income.others.loungeCost)
+          othersPreparedStatement.setLong(12, income.others.loungeIncome)
+          othersPreparedStatement.setLong(13, income.others.depreciation)
+          othersPreparedStatement.setInt(14, period.id)
+          othersPreparedStatement.setInt(15, income.cycle)
           othersPreparedStatement.addBatch()
           
           
@@ -207,6 +211,7 @@ object IncomeSource {
                          inflightCost = resultSet.getLong("l.inflight_cost"),
                          delayCompensation = resultSet.getLong("l.delay_compensation"),
                          maintenanceCost= resultSet.getLong("l.maintenance_cost"),
+                         loungeCost= resultSet.getLong("l.lounge_cost"),
                          depreciation = resultSet.getLong("l.depreciation"),
                          period = Period(resultSet.getInt("l.period")),
                          cycle = resultSet.getInt("l.cycle"))
@@ -231,6 +236,9 @@ object IncomeSource {
                          serviceInvestment = resultSet.getLong("o.service_investment"), 
                          maintenanceInvestment = resultSet.getLong("o.maintenance_investment"),
                          advertisement = resultSet.getLong("o.advertisement"), 
+                         loungeUpkeep = resultSet.getLong("o.lounge_upkeep"),
+                         loungeCost = resultSet.getLong("o.lounge_cost"),
+                         loungeIncome = resultSet.getLong("o.lounge_income"),
                          depreciation = resultSet.getLong("o.depreciation"),
                          period = Period(resultSet.getInt("o.period")),
                          cycle = resultSet.getInt("o.cycle"))

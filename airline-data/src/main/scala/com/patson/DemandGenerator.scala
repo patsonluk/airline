@@ -32,7 +32,7 @@ object DemandGenerator {
   private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02) //max 8% first (Business passenger), 2% first (Tourist)
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100000
-  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.30, PassengerType.TOURIST -> 0.10) //max 30% business (Business passenger), 10% business (Tourist) 
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.30, PassengerType.TOURIST -> 0.10) //max 30% business (Business passenger), 10% business (Tourist)
   val MIN_DISTANCE = 50
   
   val defaultTotalWorldPower = {
@@ -91,11 +91,11 @@ object DemandGenerator {
                 var remainingDemand = demand(linkClass)
                 var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
                 while (remainingDemand > demandChunkSize) {
-                  allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, demandChunkSize))
+                  allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, demandChunkSize))
                   remainingDemand -= demandChunkSize
                   demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
                 }
-                allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
+                allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
               }
             }
         }
@@ -209,9 +209,16 @@ object DemandGenerator {
         } else {
          0 
         }
-      val firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
-      val businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
+      var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
+      var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
       val economyClassDemand = adjustedDemand.toInt - firstClassDemand - businessClassDemand
+      
+      //add extra business and first class demand from lounge for major airports
+      if (fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) { 
+        firstClassDemand = (firstClassDemand * 2.5).toInt
+        businessClassDemand = (businessClassDemand * 2.5).toInt
+      }
+      
       LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
     }
   }
@@ -228,11 +235,16 @@ object DemandGenerator {
     //for now 5 * 3 loyalty preferences per airport
     val loyaltyPreferenceCount = 5;
     for (i <- 0 until loyaltyPreferenceCount) {
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), ECONOMY), 10)) 
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS), 2))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), ECONOMY, loungeLevelRequired = 0), 10)) 
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS, loungeLevelRequired = 0), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST, loungeLevelRequired = 0), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS, loungeLevelRequired = 1), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST, loungeLevelRequired = 1), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS, loungeLevelRequired = 2), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST, loungeLevelRequired = 2), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), BUSINESS, loungeLevelRequired = 3), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(fromAirport.getAirlineAppeals(), FIRST, loungeLevelRequired = 3), 1))
     }
-    
     
     new FlightPreferencePool(flightPreferences.toList)
   }

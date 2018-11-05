@@ -135,6 +135,9 @@ object AirportSource {
           airport.initAirlineBases(airlineBases.toList)
           
           
+          val lounges = AirlineSource.loadLoungesByAirport(airport)
+          airport.initLounges(lounges)
+          
           //load features
           val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
           featureStatement.setInt(1, airport.id)
