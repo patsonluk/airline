@@ -17,6 +17,11 @@ import play.api.libs.json.JsBoolean
 import com.patson.model.AirlineIncome
 import com.patson.model.AirlineIncome
 import com.patson.model.AirlineCashFlow
+import play.api.libs.json.Reads
+import models.AirportFacility
+import models.FacilityType
+import models.AirportFacility
+import models.FacilityType.FacilityType
 
 
 
@@ -230,6 +235,46 @@ package object controllers {
         
   }
   
+  implicit object FacilityReads extends Reads[AirportFacility] {
+    def reads(json: JsValue): JsResult[AirportFacility] = {
+      val airport = AirportSource.loadAirportById((json \ "airportId").as[Int]).get
+      val airline = Airline.fromId((json \ "airlineId").as[Int])
+      val name = (json \ "name").as[String]
+      val level = (json \ "level").as[Int]
+      JsSuccess(AirportFacility(airline, airport, name, level, FacilityType.withName((json \ "type").as[String])))
+    }
+  }
+  
+  implicit object LoungeWrites extends Writes[Lounge] {
+    def writes(lounge: Lounge): JsValue = {
+      var jsObject = JsObject(List(
+      "airportId" -> JsNumber(lounge.airport.id),
+      "airportName" -> JsString(lounge.airport.name),
+      "airlineId" -> JsNumber(lounge.airline.id),
+      "airlineName" -> JsString(lounge.airline.name),
+      "name" ->  JsString(lounge.name),
+      "level" -> JsNumber(lounge.level),
+      "upkeep" -> JsNumber(lounge.getUpkeep),
+      "status" -> JsString(lounge.status.toString()),
+      "type" -> JsString(FacilityType.LOUNGE.toString()),
+      "foundedCycle" -> JsNumber(lounge.foundedCycle)))
+      
+      jsObject
+    }
+  }
+  
+  implicit object LoungeConsumptionDetailsWrites extends Writes[LoungeConsumptionDetails] {
+    def writes(details: LoungeConsumptionDetails): JsValue = {
+      var jsObject = JsObject(List(
+      "lounge" -> Json.toJson(details.lounge),
+      "selfVisitors" -> JsNumber(details.selfVisitors),
+      "allianceVisitors" -> JsNumber(details.allianceVisitors),
+      "cycle" -> JsNumber(details.cycle)))
+      
+      jsObject
+    }
+  }
+  
   implicit object AirlineIncomeWrite extends Writes[AirlineIncome] {
      def writes(airlineIncome : AirlineIncome): JsValue = {
       JsObject(List(
@@ -247,6 +292,7 @@ package object controllers {
         "linksInflightCost" -> JsNumber(airlineIncome.links.inflightCost),
         "linksDelayCompensation" -> JsNumber(airlineIncome.links.delayCompensation),
         "linksMaintenanceCost" -> JsNumber(airlineIncome.links.maintenanceCost),
+        "linksLoungeCost" -> JsNumber(airlineIncome.links.loungeCost),
         "linksDepreciation" -> JsNumber(airlineIncome.links.depreciation),
         "transactionsProfit" -> JsNumber(airlineIncome.transactions.profit),
         "transactionsRevenue" -> JsNumber(airlineIncome.transactions.revenue),
@@ -258,6 +304,9 @@ package object controllers {
         "othersExpense" -> JsNumber(airlineIncome.others.expense),
         "othersLoanInterest" -> JsNumber(airlineIncome.others.loanInterest),
         "othersBaseUpkeep" -> JsNumber(airlineIncome.others.baseUpkeep),
+        "othersLoungeUpkeep" -> JsNumber(airlineIncome.others.loungeUpkeep),
+        "othersLoungeCost" -> JsNumber(airlineIncome.others.loungeCost),
+        "othersLoungeIncome" -> JsNumber(airlineIncome.others.loungeIncome),
         "othersServiceInvestment" -> JsNumber(airlineIncome.others.serviceInvestment),
         "othersMaintenanceInvestment" -> JsNumber(airlineIncome.others.maintenanceInvestment),
         "othersAdvertisement" -> JsNumber(airlineIncome.others.advertisement),

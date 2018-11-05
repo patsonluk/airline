@@ -73,6 +73,9 @@ object AirlineSource {
           
           if (fullLoad) {
             airline.setBases(loadAirlineBasesByAirline(airline.id))
+            AllianceSource.loadAllianceMemberByAirline(airline).foreach {
+              thisAirlineAsAllianceMember => airline.setAllianceId(thisAirlineAsAllianceMember.allianceId)
+            }
           }
           
           airlines += airline
@@ -425,6 +428,148 @@ object AirlineSource {
       
       preparedStatement.close()
       println("Deleted " + deletedCount + " airline base records")
+      deletedCount
+      
+    } finally {
+      connection.close()
+    }
+      
+  }
+  
+  //
+  def loadAllLounges() : List[Lounge] = {
+    loadLoungesByCriteria(List())
+  }
+  
+  
+  def loadLoungesByAirportId(airportId : Int) : List[Lounge] = {
+    loadLoungesByCriteria(List(("airport", airportId)))
+  }
+   
+  def loadLoungesByAirport(airport : Airport) : List[Lounge] = {
+    loadLoungesByCriteria(List(("airport", airport.id)), Map(airport.id -> airport))
+  }
+  
+  def loadLoungesByAirline(airlineId : Int) : List[Lounge] = {
+    loadLoungesByCriteria(List(("airline", airlineId)))
+  }
+  
+  
+  def loadLoungesByCountryCode(countryCode : String) : List[Lounge] = {
+    loadLoungesByCriteria(List(("country", countryCode)))
+  }
+  
+  def loadLoungeByAirlineAndAirport(airlineId : Int, airportId : Int) : Option[Lounge] = {
+    val result = loadLoungesByCriteria(List(("airline", airlineId), ("airport", airportId)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+  
+  def loadLoungesByCriteria(criteria : List[(String, Any)], airports : Map[Int, Airport] = Map[Int, Airport]()) : List[Lounge] = {
+      //open the hsqldb
+      val connection = Meta.getConnection() 
+      try {
+        var queryString = "SELECT * FROM " + LOUNGE_TABLE
+        
+        if (!criteria.isEmpty) {
+          queryString += " WHERE "
+          for (i <- 0 until criteria.size - 1) {
+            queryString += criteria(i)._1 + " = ? AND "
+          }
+          queryString += criteria.last._1 + " = ?"
+        }
+        
+        val preparedStatement = connection.prepareStatement(queryString)
+        
+        for (i <- 0 until criteria.size) {
+          preparedStatement.setObject(i + 1, criteria(i)._2)
+        }
+        
+        
+        val resultSet = preparedStatement.executeQuery()
+        
+        val lounges = new ListBuffer[Lounge]()
+        
+        val airlines = Map[Int, Airline]()
+        while (resultSet.next()) {
+          val airlineId = resultSet.getInt("airline")
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          AllianceSource.loadAllianceMemberByAirline(airline).foreach { member =>
+            airline.setAllianceId(member.allianceId)
+          }
+          
+          //val airport = Airport.fromId(resultSet.getInt("airport"))
+          val airportId = resultSet.getInt("airport")
+          val airport = airports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, false).get)
+          val name = resultSet.getString("name")
+          val level = resultSet.getInt("level")
+          val foundedCycle = resultSet.getInt("founded_cycle")
+          val status = resultSet.getString("status")
+          
+          
+          lounges += Lounge(airline, airline.getAllianceId(), airport, name, level, LoungeStatus.withName(status), foundedCycle)
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        lounges.toList
+      } finally {
+        connection.close()
+      }
+  }
+  
+  
+  //case class AirlineBase(airline : Airline, airport : Airport, scale : Int, headQuarter : Boolean = false, var id : Int = 0) extends IdObject
+  def saveLounge(lounge : Lounge) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + LOUNGE_TABLE + "(airline, airport, name, level, status, founded_cycle) VALUES(?, ?, ?, ?, ?, ?)")
+          
+      preparedStatement.setInt(1, lounge.airline.id)
+      preparedStatement.setInt(2, lounge.airport.id)
+      preparedStatement.setString(3, lounge.name)
+      preparedStatement.setInt(4, lounge.level)
+      preparedStatement.setString(5, lounge.status.toString())
+      preparedStatement.setInt(6, lounge.foundedCycle)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def deleteLounge(lounge : Lounge) = {
+    deleteLoungeByCriteria(List(("airline", lounge.airline.id), ("airport", lounge.airport.id)))
+  }
+  
+  def deleteLoungeByCriteria(criteria : List[(String, Any)]) = {
+      //open the hsqldb
+    val connection = Meta.getConnection()
+    try {
+      var queryString = "DELETE FROM " + LOUNGE_TABLE
+      
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+      
+      val preparedStatement = connection.prepareStatement(queryString)
+      
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+      
+      val deletedCount = preparedStatement.executeUpdate()
+      
+      preparedStatement.close()
+      println("Deleted " + deletedCount + " lounge records")
       deletedCount
       
     } finally {

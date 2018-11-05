@@ -71,6 +71,10 @@ object Bank {
       totalAssets = totalAssets + base.getValue 
     }
     
+    AirlineSource.loadLoungesByAirline(airlineId).foreach { lounge =>
+      totalAssets = totalAssets + lounge.getValue 
+    }
+    
     AirplaneSource.loadAirplanesByOwner(airlineId).foreach { airplane =>
       totalAssets = totalAssets + airplane.value
     }

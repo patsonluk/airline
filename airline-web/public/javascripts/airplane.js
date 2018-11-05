@@ -342,7 +342,8 @@ function loadUsedAirplanes(modelInfo) {
 	    dataType: 'json',
 	    success: function(usedAirplanes) { 
 	    	loadedUsedAirplanes = usedAirplanes
-	    	updateUsedAirplaneTable()
+	    	var selectedSortHeader = $('#usedAirplaneSortHeader .cell.selected')
+	    	updateUsedAirplaneTable(selectedSortHeader.data("sort-property"), selectedSortHeader.data("sort-order"))
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

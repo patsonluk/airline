@@ -473,7 +473,7 @@ object LinkSource {
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, delay_compensation, maintenance_cost, depreciation, revenue, profit, minor_delay_count, major_delay_count, cancellation_count, from_airport, to_airport, airline, distance, frequency, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, revenue, profit, minor_delay_count, major_delay_count, cancellation_count, from_airport, to_airport, airline, distance, frequency, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       connection.setAutoCommit(false)
@@ -495,18 +495,19 @@ object LinkSource {
           preparedStatement.setInt(15, linkConsumption.inflightCost)
           preparedStatement.setInt(16, linkConsumption.delayCompensation)
           preparedStatement.setInt(17, linkConsumption.maintenanceCost)
-          preparedStatement.setInt(18, linkConsumption.depreciation)
-          preparedStatement.setInt(19, linkConsumption.revenue)
-          preparedStatement.setInt(20, linkConsumption.profit)
-          preparedStatement.setInt(21, linkConsumption.link.minorDelayCount)
-          preparedStatement.setInt(22, linkConsumption.link.majorDelayCount)
-          preparedStatement.setInt(23, linkConsumption.link.cancellationCount)
-          preparedStatement.setInt(24, linkConsumption.link.from.id)
-          preparedStatement.setInt(25, linkConsumption.link.to.id)
-          preparedStatement.setInt(26, linkConsumption.link.airline.id)
-          preparedStatement.setInt(27, linkConsumption.link.distance)
-          preparedStatement.setInt(28, linkConsumption.link.frequency)
-          preparedStatement.setInt(29, linkConsumption.cycle)
+          preparedStatement.setInt(18, linkConsumption.loungeCost)
+          preparedStatement.setInt(19, linkConsumption.depreciation)
+          preparedStatement.setInt(20, linkConsumption.revenue)
+          preparedStatement.setInt(21, linkConsumption.profit)
+          preparedStatement.setInt(22, linkConsumption.link.minorDelayCount)
+          preparedStatement.setInt(23, linkConsumption.link.majorDelayCount)
+          preparedStatement.setInt(24, linkConsumption.link.cancellationCount)
+          preparedStatement.setInt(25, linkConsumption.link.from.id)
+          preparedStatement.setInt(26, linkConsumption.link.to.id)
+          preparedStatement.setInt(27, linkConsumption.link.airline.id)
+          preparedStatement.setInt(28, linkConsumption.link.distance)
+          preparedStatement.setInt(29, linkConsumption.link.frequency)
+          preparedStatement.setInt(30, linkConsumption.cycle)
           preparedStatement.executeUpdate()
         }
       preparedStatement.close()
@@ -635,6 +636,7 @@ object LinkSource {
               inflightCost = resultSet.getInt("inflight_cost"),
               delayCompensation = resultSet.getInt("delay_compensation"),
               maintenanceCost = resultSet.getInt("maintenance_cost"),
+              loungeCost = resultSet.getInt("lounge_cost"),
               depreciation = resultSet.getInt("depreciation"),
               revenue = resultSet.getInt("revenue"),
               profit = resultSet.getInt("profit"),

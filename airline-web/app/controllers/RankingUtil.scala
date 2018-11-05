@@ -15,6 +15,8 @@ import com.patson.data.AirlineSource
 import java.io.File
 import java.awt.Color
 import play.api.libs.json.Json
+import com.patson.model.LoungeConsumptionDetails
+import com.patson.data.LoungeHistorySource
  
 
 object RankingUtil {
@@ -56,6 +58,7 @@ object RankingUtil {
     updatedRankings.put(RankingType.SERVICE_QUALITY, getServiceQualityRanking(airlinesById))
     updatedRankings.put(RankingType.LINK_COUNT, getLinkCountRanking(links, airlinesById))
     updatedRankings.put(RankingType.LINK_PROFIT, getLinkProfitRanking(linkConsumptions, airlinesById))
+    updatedRankings.put(RankingType.LOUNGE, getLoungeRanking(LoungeHistorySource.loadAll, airlinesById))
 //    val linkConsumptionsByAirlineAndZone = getPassengersByZone(linkConsumptionsByAirline)
 //    updatedRankings.put(RankingType.PASSENGER_AS, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AS, "AS"))
 //    updatedRankings.put(RankingType.PASSENGER_AF, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AF, "AF"))
@@ -141,6 +144,23 @@ object RankingUtil {
     }.toList.sortBy(_.ranking)
   }
   
+  private[this] def getLoungeRanking(loungeConsumptions : List[LoungeConsumptionDetails], airlinesById : Map[Int, Airline]) : List[Ranking] = {
+    val mostVisitedLounges : List[LoungeConsumptionDetails] = loungeConsumptions.sortBy(entry => entry.selfVisitors + entry.allianceVisitors)(Ordering[Int].reverse).take(20)
+    
+    mostVisitedLounges.zipWithIndex.map {
+      case(details, index) => {
+        val lounge = details.lounge
+        val ranking = Ranking(RankingType.LOUNGE,
+                key = lounge.airline.id + "|" + lounge.airport.id,
+                entry = lounge,
+                ranking = index + 1,
+                rankedValue = details.selfVisitors + details.allianceVisitors)
+        ranking
+      }
+                                           
+    }.toList.sortBy(_.ranking)
+  }
+  
   
   
   private[this] def getReputationRanking(airlinesById : Map[Int, Airline]) : List[Ranking] = {
@@ -203,7 +223,7 @@ object RankingUtil {
 
 object RankingType extends Enumeration {
   type RankingType = Value
-  val PASSENGER, PASSENGER_MILE, REPUTATION, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, PASSENGER_AS, PASSENGER_AF, PASSENGER_OC, PASSENGER_EU, PASSENGER_NA, PASSENGER_SA = Value
+  val PASSENGER, PASSENGER_MILE, REPUTATION, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LOUNGE, PASSENGER_AS, PASSENGER_AF, PASSENGER_OC, PASSENGER_EU, PASSENGER_NA, PASSENGER_SA = Value
 }
 
 
