@@ -25,8 +25,10 @@ object AirlineSimulation {
     val airplanesByAirline = airplanes.groupBy(_.owner.id)
     val allCountries = CountrySource.loadAllCountries().map( country => (country.countryCode, country)).toMap
     
-    val loungesByAirlineId = Map[Int, ListBuffer[Lounge]]().withDefaultValue(ListBuffer[Lounge]())
-    AirlineSource.loadAllLounges.foreach(lounge => loungesByAirlineId(lounge.airline.id) += lounge)
+    val loungesByAirlineId = scala.collection.mutable.Map[Int, ListBuffer[Lounge]]()
+    AirlineSource.loadAllLounges.foreach(lounge =>  
+      loungesByAirlineId.getOrElseUpdate(lounge.airline.id, ListBuffer[Lounge]()) += lounge
+    )
     
     val allIncomes = ListBuffer[AirlineIncome]()
     val allCashFlows = ListBuffer[AirlineCashFlow]() //cash flow for accounting purpose
@@ -110,7 +112,10 @@ object AirlineSimulation {
         othersSummary.put(OtherIncomeItemType.LOAN_INTEREST, -1 * interestPayment)
         totalCashExpense += loanPayment //paying both principle + interest
         
-        val loungeUpkeep = loungesByAirlineId(airline.id).map(_.getUpkeep).sum 
+        val loungeUpkeep = loungesByAirlineId.get(airline.id) match {
+          case Some(lounges) => lounges.map(_.getUpkeep).sum
+          case None => 0
+        }
         var loungeCost = 0L
         var loungeIncome = 0L;
         
