@@ -535,14 +535,14 @@ class LinkApplication extends Controller {
             //adjust suggestedPrice with Lounge
             toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
               suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
-                                                           suggestedPrice(BUSINESS) + AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level,
-                                                           suggestedPrice(FIRST) + AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level)
+                                                           suggestedPrice(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt,
+                                                           suggestedPrice(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * FIRST.priceMultiplier).toInt)
             }
             
             fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
               suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
-                                                           suggestedPrice(BUSINESS) + AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level,
-                                                           suggestedPrice(FIRST) + AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level)
+                                                           suggestedPrice(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt,
+                                                           suggestedPrice(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * lounge.level * BUSINESS.priceMultiplier).toInt)
             }
                                                                    
             val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
