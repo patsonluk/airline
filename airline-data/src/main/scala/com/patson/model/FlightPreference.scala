@@ -167,10 +167,6 @@ class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]
   def draw(linkClass: LinkClass, fromAirport : Airport, toAirport : Airport) : FlightPreference = {
     //Random.shuffle(pool).apply(0)
     val poolForClass = pool(linkClass).filter(_.isApplicable(fromAirport, toAirport))
-    if (linkClass == BUSINESS) {
-      println(fromAirport.size + "<->" + toAirport.size)
-      println(poolForClass)
-    }
     poolForClass(Random.nextInt(poolForClass.length))
   }
 }
