@@ -1164,8 +1164,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.3)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.5)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.2)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.4)
     }
     
     "accept some links at standard price if it fulfill some lounge requirement (level 1 at both airports)".in {
@@ -1201,8 +1201,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.4)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.6)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.3)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.5)
     }
     
     "accept all links at standard price if it fulfill all lounge requirements (level 3 at both airports)".in {

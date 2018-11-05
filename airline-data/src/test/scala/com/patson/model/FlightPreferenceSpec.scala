@@ -377,8 +377,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 1.5)
-      assert(ratio < 3)
+      assert(ratio > 2)
+      assert(ratio < 4)
     }
     "generate no overlaps if everything is the same but one has lounge but all passengers are business class with max lounge requirement".in {
       val adjustedAirline1 = testAirline1.copy()
