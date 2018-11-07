@@ -1072,9 +1072,9 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	
 	if (!linkInfo.existingLink) {
-		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy + linkInfo.priceBonus.economy)
-		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business + linkInfo.priceBonus.business)
-		$('#planLinkFirstPrice').val(linkInfo.suggestedPrice.first +  + linkInfo.priceBonus.first)
+		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)
+		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)
+		$('#planLinkFirstPrice').val(linkInfo.suggestedPrice.first)
 		$('#addLinkButton').show()
 		$('#deleteLinkButton').hide()
 		$('#updateLinkButton').hide()
@@ -1184,7 +1184,7 @@ function resetPrice() {
 
 function increasePrice() {
 	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 10
-	var currentPercentage = Math.round((currentPrice - planLinkInfo.priceBonus.economy) / planLinkInfo.suggestedPrice.economy) / 10
+	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 10
 	var newPercentage = currentPercentage + 0.1
 	updatePrice(newPercentage)
 	$('#planLinkPricePercentage').val(newPercentage)
@@ -1192,7 +1192,7 @@ function increasePrice() {
 
 function decreasePrice() {
 	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 10
-	var currentPercentage = Math.round((currentPrice - planLinkInfo.priceBonus.economy) / planLinkInfo.suggestedPrice.economy) / 10
+	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 10
 	var newPercentage = currentPercentage
 	if (currentPercentage > 0) {
 		newPercentage -= 0.1
@@ -1203,9 +1203,9 @@ function decreasePrice() {
 }
 
 function updatePrice(percentage) {
-	$('#planLinkEconomyPrice').val(Math.round(planLinkInfo.suggestedPrice.economy * percentage) + planLinkInfo.priceBonus.economy)
-	$('#planLinkBusinessPrice').val(Math.round(planLinkInfo.suggestedPrice.business * percentage) + planLinkInfo.priceBonus.business)
-	$('#planLinkFirstPrice').val(Math.round(planLinkInfo.suggestedPrice.first * percentage) + planLinkInfo.priceBonus.first)
+	$('#planLinkEconomyPrice').val(Math.round(planLinkInfo.suggestedPrice.economy * percentage))
+	$('#planLinkBusinessPrice').val(Math.round(planLinkInfo.suggestedPrice.business * percentage))
+	$('#planLinkFirstPrice').val(Math.round(planLinkInfo.suggestedPrice.first * percentage))
 }
 
 function updateFrequencyBar(airplaneModelId, configuration) {

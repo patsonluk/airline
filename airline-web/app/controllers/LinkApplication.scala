@@ -531,20 +531,19 @@ class LinkApplication extends Controller {
             var suggestedPrice : LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), ECONOMY),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), BUSINESS),
                                                                    Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), FIRST))
-            var priceBonus : LinkClassValues = LinkClassValues.getInstance()
                                                                                                                                       
             //adjust suggestedPrice with Lounge
             toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
-              priceBonus = LinkClassValues.getInstance(priceBonus(ECONOMY), 
-                                                       priceBonus(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * BUSINESS.priceMultiplier).toInt,
-                                                       priceBonus(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * FIRST.priceMultiplier).toInt)
+              suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
+                                                       (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor).toInt,
+                                                       (suggestedPrice(FIRST) / lounge.getPriceReduceFactor).toInt)
                                                            
             }
             
             fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
-              priceBonus = LinkClassValues.getInstance(priceBonus(ECONOMY), 
-                                                       priceBonus(BUSINESS) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * BUSINESS.priceMultiplier).toInt,
-                                                       priceBonus(FIRST) + (AppealPreference.LOUNGE_PERCEIVED_PRICE_REDUCTION_BASE * FIRST.priceMultiplier).toInt)
+              suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
+                                                       (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor).toInt,
+                                                       (suggestedPrice(FIRST) / lounge.getPriceReduceFactor).toInt)
             }
             val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
             val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.BUSINESS)
@@ -574,7 +573,6 @@ class LinkApplication extends Controller {
                                         "mutualRelationship" -> relationship,
                                         "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,
-                                        "priceBonus" -> priceBonus,
                                         "economySpaceMultiplier" -> ECONOMY.spaceMultiplier, 
                                         "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
                                         "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
