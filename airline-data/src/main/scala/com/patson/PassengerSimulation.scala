@@ -499,7 +499,7 @@ object PassengerSimulation {
    * Returns a map with valid route in format of
    * Map[toAiport, Route]
    */
-  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxHop : Int) : Map[Airport, Route] = {
+  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxIteration : Int) : Map[Airport, Route] = {
    
 
     //     // Step 1: initialize graph
@@ -525,7 +525,7 @@ object PassengerSimulation {
 //           if distance[u] + w < distance[v]:
 //               distance[v] := distance[u] + w
 //               predecessor[v] := u
-    for (i <- 0 until maxHop) {
+    for (i <- 0 until maxIteration) {
       //val updatingLinks = ArrayBuffer[LinkConsideration]()
       for (j <- 0 until linkConsiderations.size()) {
         val linkConsideration = linkConsiderations.get(j)
@@ -561,14 +561,15 @@ object PassengerSimulation {
     
     //println("cost found : " + distanceMap(to))
     
-    val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]() 
+    val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]()
+    val maxHop = maxIteration * (maxIteration + 1) / 2
     toAirports.foreach{ to =>  
       var walker = to.id
       var noSolution = false;
       var foundSolution = false
       var route = ListBuffer[LinkConsideration]()
       var hopCounter = 0
-      while (!foundSolution && !noSolution && hopCounter < maxHop) {
+      while (!foundSolution && !noSolution && hopCounter < maxIteration) {
         if (predecessorMap.containsKey(walker)) {
           val link = predecessorMap.get(walker)
           route.prepend(link)

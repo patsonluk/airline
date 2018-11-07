@@ -19,6 +19,8 @@ case class Lounge(airline : Airline, allianceId : Option[Int], airport : Airport
   }
   
   
+  val getPriceReduceFactor : Double = 1 - (0.05 + level * 0.01) 
+  
 }
 
 object Lounge {
