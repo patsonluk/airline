@@ -317,8 +317,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 2)
-      assert(ratio < 5)
+      assert(ratio > 1)
+      assert(ratio < 2)
     }
     
     "generate different yet some overlapping cost if everything is the same but one has level 3 lounge and all passengers are business class with no lounge requirement".in {
@@ -346,8 +346,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 3)
-      assert(ratio < 5)
+      assert(ratio > 1.5)
+      assert(ratio < 2.5)
     }
     
     "generate different yet some overlapping cost if everything is the same but one has higher level lounge and all passengers are business class with some lounge requirement".in {
