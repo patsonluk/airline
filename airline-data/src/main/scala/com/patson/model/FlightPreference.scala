@@ -10,8 +10,8 @@ import com.patson.Util
  * When a link contains certain properties that the "Flight preference" likes/hates, it might reduce (if like) or increase (if hate) the "perceived price"  
  */
 abstract class FlightPreference {
-  def computeCost(link : Link) : Double
-  def linkClass : LinkClass
+  def computeCost(link : Link, linkClass : LinkClass) : Double
+  def preferredLinkClass : LinkClass
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean //whether this flight preference is applicable to this from/to airport
 }
 
@@ -24,8 +24,8 @@ abstract class FlightPreference {
  * 
  * Take note that 0 would means a preference that totally ignore the price difference (could be dangerous as very expensive ticket will get through)
  */
-case class SimplePreference(priceSensitivity : Double, linkClass: LinkClass) extends FlightPreference {
-  def computeCost(link : Link) = {
+case class SimplePreference(priceSensitivity : Double, preferredLinkClass: LinkClass) extends FlightPreference {
+  def computeCost(link : Link, linkClass : LinkClass) = {
     val standardPrice = Pricing.computeStandardPrice(link, linkClass)
     val deltaFromStandardPrice = link.price(linkClass) - standardPrice 
     
@@ -36,7 +36,7 @@ case class SimplePreference(priceSensitivity : Double, linkClass: LinkClass) ext
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
 }
 
-case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, loungeLevelRequired : Int, id : Int)  extends FlightPreference{
+case class AppealPreference(appealList : Map[Int, AirlineAppeal], preferredLinkClass : LinkClass, loungeLevelRequired : Int, id : Int)  extends FlightPreference{
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   //val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
@@ -50,10 +50,14 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
   val minReduceFactorAtMinLoyalty = 0.9 
   //val drawPool = new DrawPool(appealList)
   
-  def computeCost(link : Link) : Double = {
+  def computeCost(link : Link, linkClass : LinkClass) : Double = {
     val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
     
     var perceivedPrice = link.price(linkClass);
+    if (linkClass.level < preferredLinkClass.level) {
+      perceivedPrice *= 2 //unwillingness to downgrade
+    }
+    
     val loyalty = appeal.loyalty
     //the maxReduceFactorForThisAirline, if at max loyalty, it is the same as maxReduceFactorAtMaxLoyalty, at 0 loyalty, this is at maxReduceFactorAtMinLoyalty
     val maxReduceFactorForThisAirline = maxReduceFactorAtMinLoyalty + (maxReduceFactorAtMaxLoyalty - 1) * (loyalty.toDouble / maxLoyalty)
@@ -83,7 +87,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
         perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
       } else {
         if (fromLounge.isDefined) {
-          perceivedPrice = (perceivedPrice * fromLounge.get.getPriceReduceFactor).toInt
+          perceivedPrice = (perceivedPrice * fromLounge.get.getPriceReduceFactor(link.distance)).toInt
         }
       }
       
@@ -91,7 +95,7 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], linkClass : Li
         perceivedPrice = perceivedPrice + 400 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
       } else {
         if (toLounge.isDefined) {
-          perceivedPrice = (perceivedPrice * toLounge.get.getPriceReduceFactor).toInt
+          perceivedPrice = (perceivedPrice * toLounge.get.getPriceReduceFactor(link.distance)).toInt
         }
       }
     }
@@ -156,7 +160,7 @@ object AppealPreference {
 
 class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]) {
   val pool : Map[LinkClass, List[FlightPreference]] = preferencesWithWeight.groupBy {
-    case (flightPrefernce, weight) => flightPrefernce.linkClass
+    case (flightPrefernce, weight) => flightPrefernce.preferredLinkClass
   }.mapValues { 
     _.flatMap {
       case (flightPreference, weight) => (0 until weight).foldRight(List[FlightPreference]()) { (_, foldList) =>

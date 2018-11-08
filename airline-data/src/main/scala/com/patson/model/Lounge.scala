@@ -18,8 +18,8 @@ case class Lounge(airline : Airline, allianceId : Option[Int], airport : Airport
     }
   }
   
-  
-  val getPriceReduceFactor : Double = 1 - (0.025 + level * 0.005) 
+  val baseReduceRate = 0.025 + level * 0.005
+  val getPriceReduceFactor : (Int => Double) = flightDistance => 1 - (baseReduceRate * (if (flightDistance >= 10000) 1 else 2 - flightDistance.toDouble / 10000)) 
   
 }
 
