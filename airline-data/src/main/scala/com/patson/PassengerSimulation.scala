@@ -143,9 +143,9 @@ object PassengerSimulation {
                  //val affordableCost = totalDistance * (1.25 - Random.nextFloat() / 2)
                  //val affordableCost = totalDistance * (Util.getBellRandom(1))
                  //val MIN_AIPLANE_SPEED = 300.0
-                 val linkClass = passengerGroup.preference.linkClass
+                 //val linkClass = passengerGroup.preference.preferredLinkClass
                  
-                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport, linkClass)) {
+                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport)) {
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
                      val actualLinkClass = linkConsideration.linkClass
                      val availableSeats = linkConsideration.link.availableSeats(actualLinkClass) 
@@ -212,7 +212,7 @@ object PassengerSimulation {
     collapsedMap
   }
   
-  def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, linkClass: LinkClass) : Boolean = {
+  def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport) : Boolean = {
     val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
     val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
@@ -229,7 +229,7 @@ object PassengerSimulation {
     
       val LINK_COST_TOLERANCE_FACTOR = 1.3;
       val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
-          val link = linkConsideration.link
+          val link = linkConsideration.link 
           
           
           val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
@@ -351,7 +351,7 @@ object PassengerSimulation {
     
     val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.par.map {
       case(passengerGroup, toAirports) => {
-        val linkClass = passengerGroup.preference.linkClass
+        val preferredLinkClass = passengerGroup.preference.preferredLinkClass
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
         val linkConsiderations = new ArrayList[LinkConsideration]()
         
@@ -359,7 +359,7 @@ object PassengerSimulation {
         linksList.foreach { link =>
           
           //see if there are any seats for that class (or lower) left
-          link.availableSeatsAtOrBelowClass(linkClass).foreach { 
+          link.availableSeatsAtOrBelowClass(preferredLinkClass).foreach { 
             case(matchingLinkClass, seatsLeft) =>
               //from the perspective of the passenger group, how well does it know each link
               val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
@@ -368,16 +368,7 @@ object PassengerSimulation {
               val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
               
               if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
-                var cost =
-                  if (matchingLinkClass == linkClass) {
-                    passengerGroup.preference.computeCost(link)
-                  } else { //cannot pass the link as is, cause it might have really cheap higher class but sold out/not available
-                    val normalizedLink = link.copy(price = Pricing.getNormalizedPrice(link.price(matchingLinkClass), matchingLinkClass, 2)) //2 multiplier to indicate unwillingness to downgrade
-                    normalizedLink.setQuality(link.computedQuality)
-                    passengerGroup.preference.computeCost(normalizedLink) 
-                  }
-                
-                
+                var cost = passengerGroup.preference.computeCost(link, matchingLinkClass)
                 
                 //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
                 val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)
