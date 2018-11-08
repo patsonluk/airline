@@ -54,8 +54,8 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], preferredLinkC
     val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
     
     var perceivedPrice = link.price(linkClass);
-    if (linkClass.level < preferredLinkClass.level) {
-      perceivedPrice *= 2 //unwillingness to downgrade
+    if (linkClass.level != preferredLinkClass.level) {
+      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * 2).toInt //have to normalize the price to match the preferred link class, * 2 for unwillingness to downgrade
     }
     
     val loyalty = appeal.loyalty

@@ -145,7 +145,7 @@ object PassengerSimulation {
                  //val MIN_AIPLANE_SPEED = 300.0
                  //val linkClass = passengerGroup.preference.preferredLinkClass
                  
-                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport)) {
+                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport, passengerGroup.preference.preferredLinkClass)) {
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
                      val actualLinkClass = linkConsideration.linkClass
                      val availableSeats = linkConsideration.link.availableSeats(actualLinkClass) 
@@ -212,7 +212,7 @@ object PassengerSimulation {
     collapsedMap
   }
   
-  def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport) : Boolean = {
+  def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
     val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
     val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
@@ -232,7 +232,7 @@ object PassengerSimulation {
           val link = linkConsideration.link 
           
           
-          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
+          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass) * LINK_COST_TOLERANCE_FACTOR
           
 //          if (linkConsideration.linkClass == BUSINESS) {
 //            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 
