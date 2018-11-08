@@ -535,15 +535,15 @@ class LinkApplication extends Controller {
             //adjust suggestedPrice with Lounge
             toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
               suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
-                                                       (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor).toInt,
-                                                       (suggestedPrice(FIRST) / lounge.getPriceReduceFactor).toInt)
+                                                       (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor(distance)).toInt,
+                                                       (suggestedPrice(FIRST) / lounge.getPriceReduceFactor(distance)).toInt)
                                                            
             }
             
             fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
               suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
-                                                       (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor).toInt,
-                                                       (suggestedPrice(FIRST) / lounge.getPriceReduceFactor).toInt)
+                                                       (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor(distance)).toInt,
+                                                       (suggestedPrice(FIRST) / lounge.getPriceReduceFactor(distance)).toInt)
             }
             val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
             val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.BUSINESS)
