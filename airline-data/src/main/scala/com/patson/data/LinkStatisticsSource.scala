@@ -70,7 +70,7 @@ object LinkStatisticsSource {
           val airlineId = resultSet.getInt("airline")
           airline = airlines.getOrElseUpdate(airlineId, loadDetails.get(DetailType.AIRLINE) match {
             case Some(fullLoad) => AirlineSource.loadAirlineById(airlineId, fullLoad).get
-            case None => Airline.fromId(airlineId)
+            case None => AirlineSource.loadAirlineById(airlineId, false).get
           })
         }
         
