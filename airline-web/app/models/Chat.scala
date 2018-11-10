@@ -21,13 +21,13 @@ class Chat extends Actor {
       // replaces message-handling behavior by the new one
       context become process(subscribers + sender)
 	  //You can turn these loggers off if needed
-	  Logger.info("Chat socket connected")
+	  //Logger.info("Chat socket connected")
 	  log.foreach { i => sender ! i }
 
     case Leave =>
       context become process(subscribers - sender)
 	  //You can turn these loggers off if needed
-	  Logger.info("Chat socket disconnected")
+	  //Logger.info("Chat socket disconnected")
 
     case msg: ClientSentMessage =>
       // Check if replay of log
@@ -39,7 +39,7 @@ class Chat extends Actor {
 		  while (log.size > 10) { log.dequeue() }
 		  (subscribers).foreach { _ ! msg }
 		  //You can turn these loggers off if needed
-		  Logger.info("Message:" + msg.text)
+		  //Logger.info("Message:" + msg.text)
 	  }
   }
 }
