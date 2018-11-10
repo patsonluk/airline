@@ -251,8 +251,8 @@ class Application extends Controller {
     AirportSource.loadAirportById(airportId, true) match {
       case Some(airport) => { 
         //group things up
-        val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId)
-        val flightsToThisAirport = LinkStatisticsSource.loadLinkStatisticsByToAirport(airportId)
+        val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId, LinkStatisticsSource.SIMPLE_LOAD)
+        val flightsToThisAirport = LinkStatisticsSource.loadLinkStatisticsByToAirport(airportId, LinkStatisticsSource.SIMPLE_LOAD)
         val departureOrArrivalFlights = flightsFromThisAirport.filter { _.key.isDeparture} ++ flightsToThisAirport.filter { _.key.isDestination }
         val connectionFlights = flightsFromThisAirport.filterNot { _.key.isDeparture} ++ flightsToThisAirport.filterNot { _.key.isDestination }
         
