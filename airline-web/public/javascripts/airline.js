@@ -1265,7 +1265,10 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
 		
 		$('#planLinkAirplaneSelect').empty()
 		
-		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('isAssigned', false))
+		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('condition', true))
+		thisModelPlanLinkInfo.airplanes = sortPreserveOrder(thisModelPlanLinkInfo.airplanes, 'isAssigned', false)		
+		
+		
 		$('#planLinkAirplaneSelect').data('badConditionThreshold', thisModelPlanLinkInfo.badConditionThreshold)
 		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplane) {
 //			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
