@@ -94,34 +94,35 @@
 	  			<span style="margin: 0px 10px">Service Quality: <span id="serviceQuality" class="label"></span></span>
   			</span>
   		</div>
+  		<div style="float: right;">
   		<div style="float: right; margin: 5px;">
   			<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
   				<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px;" title="Become a Patreon to support this project!">
   			</a>
   		</div>
   		<div style="float: right" class="button"><a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a></div>
-  		<div style="float: right;">
-  			<div style="display: hidden;" id="loginDiv">
-	  			<span class="label">User Name</span>
-	  			<input type="text" id="loginUserName"/>
-	  			<a href="/forgot-id"  target="_blank">
-	  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
-	  			</a> 
-	  			<span class="label">Password</span>
-	  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)"/>
-	  			<a href="/forgot-password"  target="_blank">
-	  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
-	  			</a>
-	  			<div class="button" onclick="login()">Login</div>
-<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
-	  			<a href="signup"><div class="button" onclick="">Sign Up</div></a>
-  			</div>
-  			<div style="float: right; display: none;" id="logoutDiv">
-  				<span id="currentUserName" class="label"></span>
-  				<div class="button" onclick="logout()">Logout</div> 
-  			</div>
+	  		<div style="float: right;">
+	  			<div style="display: hidden;" id="loginDiv">
+		  			<span class="label">User Name</span>
+		  			<input type="text" id="loginUserName"/>
+		  			<a href="/forgot-id"  target="_blank">
+		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
+		  			</a> 
+		  			<span class="label">Password</span>
+		  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)"/>
+		  			<a href="/forgot-password"  target="_blank">
+		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
+		  			</a>
+		  			<div class="button" onclick="login()">Login</div>
+	<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
+		  			<a href="signup"><div class="button" onclick="">Sign Up</div></a>
+	  			</div>
+	  			<div style="float: right; display: none;" id="logoutDiv">
+	  				<span id="currentUserName" class="label"></span>
+	  				<div class="button" onclick="logout()">Logout</div> 
+	  			</div>
+			</div>
 		</div>
-		
   	</div>
   	<div id="main" style="width: 100%;" >
   		<div id="console" class="marquee" style="width: 100%; position: relative; float: left;" align="center">
@@ -129,39 +130,30 @@
   			<span id="consoleMessage"></span>
   		</div>
   		 
-	<!-- Chat Window -->
-	<div id="live-chat" class="user-specific-tab">
-	<div ng-app="ChatApp">
-	<div ng-controller="ChatController as chat">
-	
-		<header class="clearfix">
-			
-			<h4>Game Chat</h4>
-			
-		</header>
-
-		<div class="chat" style="display: none;">
-			
-			<div class="chat-history">
-						<ul>
-							<li ng-repeat="msg in chat.messages track by $index">
-								{{msg}}
-							</li>
-						</ul>
-	
-			</div> <!-- end chat-history -->
-				<form>
+		<!-- Chat Window -->
+		<div id="live-chat" class="user-specific-tab">
+			<div ng-app="ChatApp">
+				<div ng-controller="ChatController as chat">
+					<header class="clearfix">
+						<h4>Game Chat</h4>
+					</header>
+					<div class="chat" style="display: none;">
+						<div class="chat-history">
+							<ul>
+								<li ng-repeat="msg in chat.messages track by $index">
+									{{msg}}
+								</li>
+							</ul>
+						</div> <!-- end chat-history -->
+						<form>
 							<input type="text" placeholder="Enter message..."
 								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()"/>
-								   
-							
 						</form>
-
-		</div> <!-- end chat -->
-	</div>
-	</div>
-	</div> 
-    <!-- end live-chat -->
+					</div> <!-- end chat -->
+				</div>
+			</div>
+		</div> 
+	    <!-- end live-chat -->
 		 
 		 
   		<div style="width: 80px; float: left;">
