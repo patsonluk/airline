@@ -8,7 +8,6 @@ var loadedLinks = []
 var loadedLinksById = {}
 var currentAnimationStatus = true
 var currentAirlineAllianceMembers = []
-var airlineName = "";	
 function updateAirlineInfo(airlineId) {
 	$.ajax({
 		type: 'GET',
@@ -19,7 +18,6 @@ function updateAirlineInfo(airlineId) {
 	    success: function(airline) {
 	    	refreshTopBar(airline)
 	    	$("#currentAirline").text(airline.name)
-			airlineName = airline.name
 	    	if (airline.headquarterAirport) {
                         $("#currentAirlineCountry").html("<img class='flag' src='assets/images/flags/" + airline.headquarterAirport.countryCode + ".png' />")
 	    	} else {
