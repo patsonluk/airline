@@ -351,9 +351,9 @@ div#canvas {
 	width: -webkit-calc(100% - 80px);
     width:    -moz-calc(100% - 80px);
     width:         calc(100% - 80px);
-    height: -webkit-calc(100vh - 70px); 
-    height: -moz-calc(100vh - 70px);
-    height: calc(100vh - 70px);
+    height: -webkit-calc(100vh - 110px); 
+    height: -moz-calc(100vh - 110px);
+    height: calc(100vh - 110px);
 //	background-image:url("../../assets/images/background/brushedsteel.jpg");
 }
 
