@@ -30,11 +30,13 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 
   // what happens when user enters message
   chat.sendMessage = function() {
-    var text = airlineName+ ": " + chat.currentMessage;
-    //chat.messages.push(text);
-    chat.currentMessage = "";
-    // send it to the server through websockets
-    ws.send(text);
+	  if (activeAirline) {
+	    var text = activeAirline.name + ": " + chat.currentMessage;
+	    //chat.messages.push(text);
+	    chat.currentMessage = "";
+	    // send it to the server through websockets
+	    ws.send(text);
+	  }
   };
 
   // what to do when we receive message from the webserver
