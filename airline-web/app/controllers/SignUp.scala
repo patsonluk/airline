@@ -114,7 +114,7 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
         
         if (isValidRecaptcha(userInput.recaptchaToken)) {
           // We got a valid User value, display the summary
-          val user = User(userInput.username, userInput.email, Calendar.getInstance, UserStatus.ACTIVE)
+          val user = User(userInput.username, userInput.email, Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0)
           UserSource.saveUser(user)
           Authentication.createUserSecret(userInput.username, userInput.password)
           

@@ -97,7 +97,7 @@
   		<div style="float: right;">
   		<div style="float: right; margin: 5px;">
   			<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
-  				<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px;" title="Become a Patreon to support this project!">
+  				<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
   			</a>
   		</div>
   		<div style="float: right" class="button"><a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a></div>
@@ -135,10 +135,10 @@
 			<div ng-app="ChatApp">
 				<div ng-controller="ChatController as chat">
 					<header class="clearfix">
-						<h4>Game Chat</h4>
+						<h4></h4>
 					</header>
 					<div class="chat" style="display: none;">
-						<div class="chat-history">
+						<div class="chat-history" id="chatBox">
 							<ul>
 								<li ng-repeat="msg in chat.messages track by $index">
 									{{msg}}
@@ -146,7 +146,7 @@
 							</ul>
 						</div> <!-- end chat-history -->
 						<form>
-							<input type="text" placeholder="Enter message..."
+							<input type="text" maxlength="250" placeholder="Enter message..."
 								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()"/>
 						</form>
 					</div> <!-- end chat -->

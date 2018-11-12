@@ -111,7 +111,8 @@ function refreshLoginBar() {
 	if (!activeUser) {
 		setActiveDiv($("#loginDiv"))
 	} else {
-		$("#currentUserName").text(activeUser.userName)
+		$("#currentUserName").empty()
+		$("#currentUserName").append(activeUser.userName + getUserLevelImg(activeUser.level))
 		setActiveDiv($("#logoutDiv"))
 	}
 }

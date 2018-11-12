@@ -18,7 +18,9 @@ class UserApplication extends Controller {
         "userName" -> JsString(user.userName),
         "email" -> JsString(user.email),
         "status" -> JsString(user.status.toString()),
+        "level" -> JsNumber(user.level),
         "creationTime" -> JsString(user.creationTime.getTime.toString()),
+        "lastActiveTime" -> JsString(user.lastActiveTime.getTime.toString()),
         "airlineIds" -> JsArray(user.getAccessibleAirlines().map { airline => JsNumber(airline.id) })))
     }
   }

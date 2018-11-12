@@ -187,6 +187,30 @@ function getAirlineLogoImg(airlineId) {
 	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo' style='vertical-align:middle;'/>"
 }
 
+function getUserLevelImg(level) {
+	if (level <= 0) {
+		return ""
+	} 
+	var levelTitle
+	var levelIcon
+	if (level == 1) {
+		levelIcon = "assets/images/icons/medal-bronze-premium.png"
+		levelTitle = "Patreon : Bronze"
+	} else if (level == 2) {
+		levelIcon = "assets/images/icons/medal-silver-premium.png"
+		levelTitle = "Patreon : Silver"
+	} else if (level == 3) {
+		levelIcon = "assets/images/icons/medal-red-premium.png"
+		levelTitle = "Patreon : Gold"
+	}
+	
+	if (levelIcon) {
+		return "<img src='" + levelIcon + "' title='" + levelTitle + "' style='vertical-align:middle;'/>"
+	} else {
+		return ""
+	} 
+}
+
 function getRankingImg(ranking) {
 	var rankingIcon
 	var rankingTitle
