@@ -43,6 +43,8 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
   ws.onmessage = function(msg) {
     chat.messages.push(msg.data);
     $scope.$digest();
+    var scroller = document.getElementById("chatBox");
+    scroller.scrollTop = scroller.scrollHeight;
   };
 });
 
