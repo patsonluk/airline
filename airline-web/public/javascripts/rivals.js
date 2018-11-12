@@ -54,7 +54,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 //			countryFlagImg = getCountryFlagImg(airline.countryCode)
 //		}
 		
-		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) + airline.name + "</div>")
+		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) + airline.name + getUserLevelImg(airline.userLevel) + "</div>")
 		if (airline.headquartersAirportName) {
 			row.append("<div class='cell'>" + getAirportText(airline.headquartersCity, airline.headquartersAirportName) + "</div>")
 		} else {

@@ -97,9 +97,14 @@ object UserSource {
         val creationTime = Calendar.getInstance()
         
         creationTime.setTime(dateFormat.get().parse(resultSet.getString("creation_time")))
+        
+        val lastActiveTime = Calendar.getInstance()
+        
+        lastActiveTime.setTime(dateFormat.get().parse(resultSet.getString("last_active")))
+        
         val status = UserStatus.withName(resultSet.getString("status"))
         
-        val user = User(userName, resultSet.getString("email"), creationTime, status, resultSet.getInt("id"))
+        val user = User(userName, resultSet.getString("email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"), resultSet.getInt("id"))
         user.setAccesibleAirlines(userAirlines.toList)
         userList.append(user)
       }

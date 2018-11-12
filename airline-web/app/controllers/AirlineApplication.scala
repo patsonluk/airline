@@ -56,6 +56,8 @@ import com.patson.data.LoungeHistorySource
 import scala.collection.mutable.ListBuffer
 import com.patson.model.LoungeConsumptionDetails
 import models.FacilityType.FacilityType
+import com.patson.data.UserSource
+import com.patson.model.User
 
 
 class AirlineApplication extends Controller {
@@ -81,9 +83,28 @@ class AirlineApplication extends Controller {
     }
   }
   
+  
+  implicit object AirlineWithUserWrites extends Writes[(Airline, User)] {
+    def writes(entry: (Airline, User)): JsValue = {
+      val (airline, user) = entry
+      val result = Json.toJson(airline).asInstanceOf[JsObject] + 
+        ("userLevel" -> JsNumber(user.level)) +
+        ("username" -> JsString(user.userName))
+        //("lastActiveTime" -> JsString(user.lastActive.getTime.toString)) //maybe last active time is still too sensitive
+      result
+    }
+  }
+  
   def getAllAirlines() = Authenticated { implicit request =>
-     val airlines = AirlineSource.loadAllAirlines(fullLoad = true)
-    Ok(Json.toJson(airlines)).withHeaders(
+     //val airlines = AirlineSource.loadAllAirlines(fullLoad = true)
+    val airlinesByUser = scala.collection.mutable.Map[Airline, User]() 
+    UserSource.loadUsersByCriteria(List.empty).foreach { user =>
+      user.getAccessibleAirlines().foreach { airline =>
+        airlinesByUser.put(airline, user)  
+      }
+    }
+    
+    Ok(Json.toJson(airlinesByUser.toList)).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"
     )

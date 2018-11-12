@@ -4,7 +4,7 @@ import java.util.Calendar
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Map
 
-case class User(userName : String, email : String, creationTime : Calendar, status : UserStatus.UserStatus, var id : Int = 0) extends IdObject{
+case class User(userName : String, email : String, creationTime : Calendar, lastActiveTime : Calendar, status : UserStatus.UserStatus, level : Int, var id : Int = 0) extends IdObject{
   private[this] val airlinesMap : Map[Int, Airline] = Map[Int, Airline]()
   
   def getAccessibleAirlines() = {
