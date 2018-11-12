@@ -1,10 +1,11 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
+#	Routes
+#	This file defines all application routes (Higher priority routes first)
+#	~~~~
 
-# Home page
-GET     /                           controllers.Application.index
-GET     /test                       controllers.Application.test
+#	Home	page
+GET		/							controllers.Application.index
+GET		/test						controllers.Application.test
+GET		/chat						controllers.ChatApplication.chatSocket
 
 #Web Socket management
 GET		/wsWithActor						controllers.WebsocketApplication.wsWithActor
