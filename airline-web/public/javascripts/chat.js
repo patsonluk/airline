@@ -40,13 +40,13 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
   };
 
    ws.onopen = function () {
-	   $("#live-chat i").css({"color":"green"});
+	   $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat.png\")"});
 	   chat.messages.push("Chat Connected");
 	   $scope.$digest();
    }
    
    ws.onclose = function () {
-	   $("#live-chat i").css({"color":"red"});
+	   $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat-red.png\")"});
 	   chat.messages.push("Chat Disconnected");
 	   $scope.$digest();
    }
