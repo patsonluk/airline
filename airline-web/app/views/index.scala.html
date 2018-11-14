@@ -104,18 +104,18 @@
 	  		<div style="float: right;">
 	  			<div style="display: hidden;" id="loginDiv">
 		  			<span class="label">User Name</span>
-		  			<input type="text" id="loginUserName"/>
+		  			<input type="text" id="loginUserName" tabindex=1/>
 		  			<a href="/forgot-id"  target="_blank">
 		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
 		  			</a> 
 		  			<span class="label">Password</span>
-		  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)"/>
+		  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2/>
 		  			<a href="/forgot-password"  target="_blank">
 		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
 		  			</a>
-		  			<div class="button" onclick="login()">Login</div>
+		  			<div class="button" onclick="login()" tabindex=3>Login</div>
 	<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
-		  			<a href="signup"><div class="button" onclick="">Sign Up</div></a>
+		  			<a href="signup"><div class="button" onclick="" tabindex=4>Sign Up</div></a>
 	  			</div>
 	  			<div style="float: right; display: none;" id="logoutDiv">
 	  				<span id="currentUserName" class="label"></span>
