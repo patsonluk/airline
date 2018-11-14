@@ -29,6 +29,8 @@
 	width: 16px;
 }
 
+
+
 #live-chat h4 {
 	font-size: 12px;
 }
@@ -116,3 +118,15 @@
 	font-style: italic;	
 	margin: 0 0 0 80px;
 }
+
+  .notify-bubble {
+    position: absolute;
+    top: -8px;
+    right: -7px;
+    padding: 2px 5px 2px 6px;
+    background-color: green;
+    color: white;
+    border-radius: 50%;
+    box-shadow: 1px 1px 1px gray;
+    display: none;
+  }

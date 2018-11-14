@@ -10,6 +10,8 @@ $('#live-chat header').on('click', function() {
 				//Expanded
 				$("#live-chat").css({"left":"24px", "width":"500px"});
 				$("#live-chat h4").text("Game Chat");
+				$('.notify-bubble').hide();
+				$('.notify-bubble').text("0");
 			}
         });
 });

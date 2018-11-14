@@ -57,6 +57,10 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
     $scope.$digest();
     var scroller = document.getElementById("chatBox");
     scroller.scrollTop = scroller.scrollHeight;
+	if ($('.chat').is(':hidden')) {
+		$('.notify-bubble').show(400);
+		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
+	}
   };
 });
 
