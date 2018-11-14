@@ -20,7 +20,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 	}
 
 	var wsUri = wsProtocol + "//" +  window.location.hostname + ":" + port + "/chat"; 
-    var ws = new WebSocket(wsUri);
+    var ws = new ReconnectingWebSocket(wsUri);
 
   // binding model for the UI
   var chat = this;
@@ -30,7 +30,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 
   // what happens when user enters message
   chat.sendMessage = function() {
-	  if (activeAirline) {
+	  if (activeAirline && (chat.currentMessage.length > 0)) {
 	    var text = activeAirline.name + ": " + chat.currentMessage;
 	    //chat.messages.push(text);
 	    chat.currentMessage = "";
@@ -39,6 +39,18 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 	  }
   };
 
+   ws.onopen = function () {
+	   $("#live-chat i").css({"color":"green"});
+	   chat.messages.push("Chat Connected");
+	   $scope.$digest();
+   }
+   
+   ws.onclose = function () {
+	   $("#live-chat i").css({"color":"red"});
+	   chat.messages.push("Chat Disconnected");
+	   $scope.$digest();
+   }
+   
   // what to do when we receive message from the webserver
   ws.onmessage = function(msg) {
     chat.messages.push(msg.data);

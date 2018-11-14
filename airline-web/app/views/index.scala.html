@@ -17,7 +17,12 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
     <link rel="icon" type="image/png"  href='@routes.Assets.versioned("images/icons/globe-green.png")'>
+	
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/emoji/jquery.emojipicker.css")">
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/emoji/jquery.emojipicker.a.css")">
+
     
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"
@@ -30,7 +35,11 @@
 			  
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/chat.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")"></script>	
+	<script type="text/javascript" src="@routes.Assets.versioned("javascripts/emoji/jquery.emojipicker.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.versioned("javascripts/emoji/jquery.emojipicker.a.js")"></script>
 
+	
     <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")"></script>
@@ -79,6 +88,14 @@
 			})(window,document,window['_fs_namespace'],'script','user');
     	}
 	</script>
+	  <script type="text/javascript">
+		$(document).ready(function(e) {
+		  $('.emojiable-option').emojiPicker({
+			width: '250px',
+			height: '300px'
+		  });
+		});
+  </script>
   </head>
   <body>
   
@@ -135,7 +152,10 @@
 			<div ng-app="ChatApp">
 				<div ng-controller="ChatController as chat">
 					<header class="clearfix">
+						<span>
+						 <i style="color:red;font-size:22px;float:left;display:inline-block" class="far fa-comment"></i>
 						<h4></h4>
+						</span>
 					</header>
 					<div class="chat" style="display: none;">
 						<div class="chat-history" id="chatBox">
@@ -147,7 +167,7 @@
 						</div> <!-- end chat-history -->
 						<form>
 							<input type="text" maxlength="250" placeholder="Enter message..."
-								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()"/>
+								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()" class="emojiable-option" />
 						</form>
 					</div> <!-- end chat -->
 				</div>

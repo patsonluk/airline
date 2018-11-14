@@ -16,15 +16,12 @@
 	border-radius: 5px 5px 0 0;
 	color: #fff;
 	cursor: pointer;
-	padding: 10px 24px;
+	padding: 10px 20px;
+	height: 18px;
 	border-bottom: 1px solid rgb(168, 168, 168);
 }
 
 #live-chat h4:before {
-	//background: #1a8a34;
-	background:url("../../assets/images/icons/balloon-ellipsis.png");
-	vertical-align: -25%;
-	//border-radius: 50%;
 	content: "";
 	display: inline-block;
 	height: 16px;
