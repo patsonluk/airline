@@ -332,6 +332,8 @@
       inputField.focus();
       inputField.value += myValue;
     }
+	var input = $('#chattext');
+	input[0].dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   function toUnicode(code) {
