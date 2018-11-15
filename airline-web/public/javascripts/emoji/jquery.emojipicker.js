@@ -7,7 +7,7 @@
         position: 'bottom',
         fadeTime: 100,
         iconColor: 'black',
-        iconBackgroundColor: '#eee',
+        iconBackgroundColor: '#fff',
         container: 'body',
         button: true
       };
