@@ -165,7 +165,8 @@
 								</li>
 							</ul>
 						</div> <!-- end chat-history -->
-						<form>
+						<form autocomplete="off">
+							<input autocomplete="false" name="hidden" type="text" style="display:none;">
 							<input type="text" maxlength="250" placeholder="Enter message..."
 								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()" id="chattext" class="emojiable-option" />
 						</form>
