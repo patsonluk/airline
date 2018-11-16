@@ -14,7 +14,7 @@ class ClientActor(out: ActorRef, chat: ActorRef) extends Actor {
   def receive = {
     // this handles messages from the websocket
     case text: String =>
-	  val sdf = new SimpleDateFormat("hh:mm:ss")
+	  val sdf = new SimpleDateFormat("HH:mm:ss")
       if (text.indexOf("[LOGGED]") > -1) {
 	   chat ! ClientSentMessage(text)
 	  } else {
