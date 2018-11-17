@@ -45,8 +45,7 @@ object QuickCreateSchema extends App {
   }
   
   def createSchema(connection : Connection) = {
-    Meta.createLounge(connection)
-    Meta.createLoungeConsumption(connection)
+    Meta.createOil(connection)
   }
   
   

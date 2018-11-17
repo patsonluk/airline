@@ -276,6 +276,7 @@ object Meta {
     createAlliance(connection)
     createLounge(connection)
     createLoungeConsumption(connection)
+    createOil(connection)
     createResetUser(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
@@ -891,6 +892,38 @@ object Meta {
       "user_name VARCHAR(100) PRIMARY KEY, " +
       "token VARCHAR(256) NOT NULL, " + 
       "FOREIGN KEY(user_name) REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createOil(connection : Connection) {
+    //airline, price, volume, cost, start_cycle, duration
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OIL_CONTRACT_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + OIL_CONTRACT_TABLE + "(" +
+      "airline INTEGER, " +
+      "price DOUBLE, " + 
+      "volume INTEGER," +
+      "cost BIGINT(20)," + 
+      "start_cycle INTEGER," +
+      "duration INTEGER," +
+      "PRIMARY KEY (airline), " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OIL_PRICE_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + OIL_PRICE_TABLE + "(" +
+      "price DOUBLE, " + 
+      "cycle INTEGER," +
+      "PRIMARY KEY (cycle)" + 
       ")")
     statement.execute()
     statement.close()
