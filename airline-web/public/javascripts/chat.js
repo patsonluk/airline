@@ -20,7 +20,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 	}
 
 	var wsUri = wsProtocol + "//" +  window.location.hostname + ":" + port + "/chat"; 
-    var ws = new WebSocket(wsUri);
+    var ws = new ReconnectingWebSocket(wsUri);
 
   // binding model for the UI
   var chat = this;
@@ -30,7 +30,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 
   // what happens when user enters message
   chat.sendMessage = function() {
-	  if (activeAirline) {
+	  if (activeAirline && (chat.currentMessage.length > 0)) {
 	    var text = activeAirline.name + ": " + chat.currentMessage;
 	    //chat.messages.push(text);
 	    chat.currentMessage = "";
@@ -39,12 +39,28 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 	  }
   };
 
+   ws.onopen = function () {
+	   $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat.png\")"});
+	   chat.messages.push("Chat Connected");
+	   $scope.$digest();
+   }
+   
+   ws.onclose = function () {
+	   $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat-red.png\")"});
+	   chat.messages.push("Chat Disconnected");
+	   $scope.$digest();
+   }
+   
   // what to do when we receive message from the webserver
   ws.onmessage = function(msg) {
     chat.messages.push(msg.data);
     $scope.$digest();
     var scroller = document.getElementById("chatBox");
     scroller.scrollTop = scroller.scrollHeight;
+	if ($('.chat').is(':hidden')) {
+		$('.notify-bubble').show(400);
+		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
+	}
   };
 });
 

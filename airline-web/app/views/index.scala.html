@@ -17,7 +17,11 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
-    <link rel="icon" type="image/png"  href='@routes.Assets.versioned("images/icons/globe-green.png")'>
+	<link rel="icon" type="image/png"  href='@routes.Assets.versioned("images/icons/globe-green.png")'>
+	
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/emoji/jquery.emojipicker.css")">
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/emoji/jquery.emojipicker.a.css")">
+
     
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"
@@ -30,7 +34,11 @@
 			  
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/chat.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")"></script>	
+	<script type="text/javascript" src="@routes.Assets.versioned("javascripts/emoji/jquery.emojipicker.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.versioned("javascripts/emoji/jquery.emojipicker.a.js")"></script>
 
+	
     <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")"></script>
@@ -79,6 +87,14 @@
 			})(window,document,window['_fs_namespace'],'script','user');
     	}
 	</script>
+	  <script type="text/javascript">
+		$(document).ready(function(e) {
+		  $('.emojiable-option').emojiPicker({
+			width: '250px',
+			height: '300px'
+		  });
+		});
+  </script>
   </head>
   <body>
   
@@ -104,18 +120,18 @@
 	  		<div style="float: right;">
 	  			<div style="display: hidden;" id="loginDiv">
 		  			<span class="label">User Name</span>
-		  			<input type="text" id="loginUserName"/>
+		  			<input type="text" id="loginUserName" tabindex=1/>
 		  			<a href="/forgot-id"  target="_blank">
 		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
 		  			</a> 
 		  			<span class="label">Password</span>
-		  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)"/>
+		  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2/>
 		  			<a href="/forgot-password"  target="_blank">
 		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
 		  			</a>
-		  			<div class="button" onclick="login()">Login</div>
+		  			<div class="button" onclick="login()" tabindex=3>Login</div>
 	<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
-		  			<a href="signup"><div class="button" onclick="">Sign Up</div></a>
+		  			<a href="signup"><div class="button" onclick="" tabindex=4>Sign Up</div></a>
 	  			</div>
 	  			<div style="float: right; display: none;" id="logoutDiv">
 	  				<span id="currentUserName" class="label"></span>
@@ -135,7 +151,11 @@
 			<div ng-app="ChatApp">
 				<div ng-controller="ChatController as chat">
 					<header class="clearfix">
+						<span>
+						 <i></i>
 						<h4></h4>
+						</span>
+						<span class="notify-bubble">0</span>
 					</header>
 					<div class="chat" style="display: none;">
 						<div class="chat-history" id="chatBox">
@@ -145,9 +165,10 @@
 								</li>
 							</ul>
 						</div> <!-- end chat-history -->
-						<form>
+						<form autocomplete="off">
+							<input autocomplete="false" name="hidden" type="text" style="display:none;">
 							<input type="text" maxlength="250" placeholder="Enter message..."
-								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()"/>
+								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()" id="chattext" class="emojiable-option" />
 						</form>
 					</div> <!-- end chat -->
 				</div>

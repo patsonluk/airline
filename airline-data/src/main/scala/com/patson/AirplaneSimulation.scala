@@ -47,7 +47,7 @@ object AirplaneSimulation {
     }
     
     var updatingAirplanes = updatingAirplanesListBuffer.toList 
-    AirplaneSource.updateAirplanes(updatingAirplanes)
+    AirplaneSource.updateAirplanesCondition(updatingAirplanes)
     println("Finished updating all airplanes")
     
     println("Start renewing airplanes")
@@ -76,7 +76,7 @@ object AirplaneSimulation {
         removingAirplanes.append(airplane)
       }
     }
-    AirplaneSource.updateAirplanes(updatingAirplanes.toList)
+    AirplaneSource.updateAirplanesCondition(updatingAirplanes.toList)
     removingAirplanes.foreach { airplane =>
       AirplaneSource.deleteAirplanesByCriteria(List(("id", airplane.id), ("is_sold", true))) //need to be careful here, make sure it is still in 2nd hand market
     }
