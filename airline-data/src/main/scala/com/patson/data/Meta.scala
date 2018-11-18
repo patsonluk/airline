@@ -715,6 +715,7 @@ object Meta {
       "lounge_upkeep LONG, " + 
       "lounge_cost LONG, " +
       "lounge_income LONG, " +
+      "fuel_profit LONG, " +
       "depreciation LONG," +
       "period INTEGER," +
       "cycle INTEGER," +
@@ -739,6 +740,8 @@ object Meta {
       "buy_airplane BIGINT(20), " +
       "sell_airplane BIGINT(20)," +
       "create_link BIGINT(20), " + 
+      "facility_construction BIGINT(20), " +
+      "oil_contract BIGINT(20), " +
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +
@@ -904,13 +907,12 @@ object Meta {
     statement.close()
     
     statement = connection.prepareStatement("CREATE TABLE " + OIL_CONTRACT_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "airline INTEGER, " +
       "price DOUBLE, " + 
       "volume INTEGER," +
-      "cost BIGINT(20)," + 
       "start_cycle INTEGER," +
       "duration INTEGER," +
-      "PRIMARY KEY (airline), " +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()

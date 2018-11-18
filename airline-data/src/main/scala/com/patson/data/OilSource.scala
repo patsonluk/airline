@@ -23,6 +23,15 @@ object OilSource {
     loadOilContractsByCriteria(List(("airline", airlineId)))
   }
   
+  def loadOilContractById(id : Int) : Option[OilContract] = {
+    val result = loadOilContractsByCriteria(List(("id", id)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+  
   
   def loadOilContractsByCriteria(criteria : List[(String, Any)], airports : Map[Int, Airport] = Map[Int, Airport]()) : List[OilContract] = {
       //open the hsqldb
@@ -55,7 +64,7 @@ object OilSource {
           val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           
           //airline : Airline, contractPrice : OilPrice, volume : Int, contractCost : Long, startCycle : Int, contractDuration : Int
-          contracts += OilContract(airline = airline, contractPrice = resultSet.getDouble("price"), volume = resultSet.getInt("volume"), contractCost = resultSet.getLong("cost") , startCycle = resultSet.getInt("start_cycle"), contractDuration = resultSet.getInt("duration"))
+          contracts += OilContract(airline = airline, contractPrice = resultSet.getDouble("price"), volume = resultSet.getInt("volume"), startCycle = resultSet.getInt("start_cycle"), contractDuration = resultSet.getInt("duration"), id = resultSet.getInt("id"))
         }
         
         resultSet.close()
@@ -72,14 +81,13 @@ object OilSource {
   def saveOilContract(contract : OilContract) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("REPLACE INTO " + OIL_CONTRACT_TABLE + "(airline, price, volume, cost, start_cycle, duration) VALUES(?, ?, ?, ?, ?, ?)")
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + OIL_CONTRACT_TABLE + "(airline, price, volume, start_cycle, duration) VALUES(?, ?, ?, ?, ?)")
           
       preparedStatement.setInt(1, contract.airline.id)
       preparedStatement.setDouble(2, contract.contractPrice)
       preparedStatement.setInt(3, contract.volume)
-      preparedStatement.setLong(4, contract.contractCost)
-      preparedStatement.setInt(5, contract.startCycle)
-      preparedStatement.setInt(6, contract.contractDuration)
+      preparedStatement.setInt(4, contract.startCycle)
+      preparedStatement.setInt(5, contract.contractDuration)
       preparedStatement.executeUpdate()
       preparedStatement.close()
     } finally {
@@ -88,7 +96,7 @@ object OilSource {
   }
   
   def deleteOilContract(contract : OilContract) = {
-    deleteOilContractByCriteria(List(("airline", contract.airline.id)))
+    deleteOilContractByCriteria(List(("id", contract.id)))
   }
   
   def deleteOilContractByCriteria(criteria : List[(String, Any)]) = {
@@ -165,15 +173,29 @@ object OilSource {
         connection.close()
       }
   }
+  def saveOilPrice(oilPrice : OilPrice) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + OIL_PRICE_TABLE + "(price, cycle) VALUES(?, ?)")
+          
+      preparedStatement.setDouble(1, oilPrice.price)
+      preparedStatement.setInt(2, oilPrice.cycle)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
   
   def deleteOilPricesUpToCycle(toCycle : Int) : Int = {
-    var queryString = "DELETE * FROM " + OIL_PRICE_TABLE + " WHERE cycle < ?"
+    var queryString = "DELETE FROM " + OIL_PRICE_TABLE + " WHERE cycle < ?"
     val connection = Meta.getConnection()
     try {
         val preparedStatement = connection.prepareStatement(queryString)
         preparedStatement.setInt(1, toCycle)
+        val updateCount = preparedStatement.executeUpdate()
         preparedStatement.close()
-        preparedStatement.executeUpdate()
+        updateCount
       } finally {
         connection.close()
       }
