@@ -26,19 +26,16 @@ import com.patson.model.Loan
 import play.api.data.Form
 import play.api.data.Forms
 import com.patson.data.OilSource
-import com.patson.data.OilSource
 import com.patson.model.oil.OilContract
-import com.patson.model.oil.OilContract
-import com.patson.model.oil.OilContract
-import com.patson.data.IncomeSource
 import com.patson.model.oil.OilPrice
+import com.patson.data.IncomeSource
 
 
 
 class OilApplication extends Controller {
   implicit object OilContractWrites extends Writes[OilContractWithDetails] {
 //case class OilContract(airline : Airline, contractPrice : Double, volume : Int, startCycle : Int, contractDuration : Int, var id : Int = 0) extends IdObject {
-    def writes(contractWithDetails: OilContractWithDetails): JsValue = 
+    def writes(contractWithDetails: OilContractWithDetails): JsValue = {
       val contract = contractWithDetails.contract
       val penalty = contractWithDetails.penalty
       val rejection = contractWithDetails.rejection
@@ -57,25 +54,62 @@ class OilApplication extends Controller {
         result = result + ("rejection" -> JsString(rejection))
       }
       result
+    }
   }
   
   case class OilContractWithDetails(contract : OilContract, penalty : Long, rejection : Option[String])
   
   def getContracts(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    Ok(Json.toJson(OilSource.loadOilContractsByAirline(airlineId))
+    val currentCycle = CycleSource.loadCycle()
+    Ok(Json.toJson(OilSource.loadOilContractsByAirline(airlineId).map(contract => wrapContract(request.user, contract, currentCycle))))
+  }
+  
+  def wrapContract(airline : Airline, contract : OilContract, currentCycle : Int) : OilContractWithDetails = {
+    val penalty = contract.contractTerminationPenalty(currentCycle)
+    val rejection = getTerminateContractRejection(airline, contract, currentCycle)
+    OilContractWithDetails(contract, penalty, rejection)
   }
   
   def getContractConsideration(airlineId : Int, volume : Int, duration : Int) = AuthenticatedAirline(airlineId) { request =>
-    OilSource.loadOilContractsByAirline(airlineId)
-    Ok(Json.toJson(OilSource.loadOilContractsByAirline(airlineId))
+    val currentCycle = CycleSource.loadCycle()
+    val existingContracts = OilSource.loadOilContractsByAirline(airlineId)
+    val currentPrice : Double = OilSource.loadOilPriceByCycle(currentCycle) match {
+      case Some(price) => price.price
+      case None => OilPrice.DEFAULT_PRICE
+    }
+    
+    val airline = request.user
+    val newContract = OilContract(airline = airline, contractPrice = currentPrice, volume = volume, startCycle = currentCycle, contractDuration = duration)
+    val penalty = newContract.contractTerminationPenalty(currentCycle)
+    val rejection = getSignContractRejection(airline, newContract, existingContracts, currentCycle)
+    
+    Ok(Json.toJson(OilContractWithDetails(newContract, penalty, rejection)))
   }
   
   def signContract(airlineId : Int, volume : Int, duration : Int) = AuthenticatedAirline(airlineId) { request =>
-    Ok(Json.toJson(OilSource.loadOilContractsByAirline(airlineId))
+    val currentCycle = CycleSource.loadCycle()
+    val existingContracts = OilSource.loadOilContractsByAirline(airlineId)
+    val currentPrice = OilSource.loadOilPriceByCycle(currentCycle) match {
+      case Some(price) => price.price
+      case None => OilPrice.DEFAULT_PRICE
+    }
+    
+    val airline = request.user
+    val newContract = OilContract(airline = airline, contractPrice = currentPrice, volume = volume, startCycle = currentCycle, contractDuration = duration)
+    getSignContractRejection(airline, newContract, existingContracts, currentCycle) match {
+      case Some(rejection) => BadRequest(rejection)
+      case None =>
+        OilSource.saveOilContract(newContract)
+        val cost = newContract.contractCost * -1
+        AirlineSource.adjustAirlineBalance(airlineId, cost)
+        AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.OIL_CONTRACT, cost))
+        Ok(Json.toJson(OilContractWithDetails(newContract, 0, None)))
+    }
   }
   
   def terminateContract(airlineId : Int, contractId : Int) = AuthenticatedAirline(airlineId) { request =>
     val currentCycle = CycleSource.loadCycle()
+    val airline = request.user
     //ensure this is a contract this airline owns
     OilSource.loadOilContractById(contractId) match {
       case Some(contract) => 
@@ -85,9 +119,9 @@ class OilApplication extends Controller {
             case None =>
               OilSource.deleteOilContract(contract)
               val penalty = contract.contractTerminationPenalty(currentCycle) * -1
-              AirlineSource.adjustBalance(airlineId, penalty)
+              AirlineSource.adjustAirlineBalance(airlineId, penalty)
               AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.OIL_CONTRACT, penalty))
-              Ok(Json.toJson(contract))
+              Ok(Json.obj("id" -> contract.id))
           }
         } else {
           Forbidden("Cannot terminate contract that the airline does not own!")
@@ -100,7 +134,7 @@ class OilApplication extends Controller {
   
   def getTerminateContractRejection(airline : Airline, contract : OilContract, currentCycle : Int) : Option[String] = {
     val penalty = contract.contractTerminationPenalty(currentCycle)
-    if (penalty > airline.balance) {
+    if (penalty > airline.getBalance()) {
       return Some("Cannot termiante this contract - insufficient fund to pay the penalty")
     }
     
@@ -112,32 +146,45 @@ class OilApplication extends Controller {
       return Some("Cannot sign more contracts, only " + OilContract.MAX_CONTRACTS_ALLOWED + " active contracts allowed")
     }
     
-    val extraBarrelsAllowed = getExtraBarrelsAllowed(airline, existingContracts)
-    if (extraBarrelsAllowed < contract) {
+    if (contract.contractDuration > OilContract.MAX_DURATION) {
+      return Some("Contract cannot be longer than " + OilContract.MAX_DURATION + " weeks")
+    }
+    
+    if (contract.contractDuration < OilContract.MIN_DURATION) {
+      return Some("Contract cannot be shorter than " + OilContract.MIN_DURATION + " weeks")
+    }
+    
+    
+    if (contract.volume <= 0) {
+      return Some("Cannot sign contract with negative barrels")
+    }
+    
+    val extraBarrelsAllowed = getExtraBarrelsAllowed(airline, existingContracts, currentCycle)
+    if (extraBarrelsAllowed < contract.volume) {
       if (extraBarrelsAllowed > 0) {
-        return Some("Can only sign a contract with maximum of " + existingBarrels + " barrels")
+        return Some("Can only sign a contract with maximum of " + extraBarrelsAllowed + " barrels")
       } else {
         return Some("Cannot sign any new contracts as existing contracts already exceeded the barrels allowed according to your current usage")
       }
     }
     
-    if (contract.contractCost > airline.balance) {
+    if (contract.contractCost > airline.getBalance()) {
       return Some("Insufficient funds to sign this contract")
     }
     
     return None
   }
   
-  def getBarrelsUsed(airline : Airline) : Long = {
+  def getBarrelsUsed(airline : Airline, currentCycle : Int) : Long = {
     IncomeSource.loadIncomeByAirline(airlineId = airline.id, cycle = currentCycle - 1, period = Period.WEEKLY) match {
       case Some(airlineIncome) => (airlineIncome.links.fuelCost * -1 / OilPrice.DEFAULT_PRICE).toLong
       case None => 0
     }
   }
   
-  def getExtraBarrelsAllowed(airline : Airline, existingContracts : List[OilContract]) = {
+  def getExtraBarrelsAllowed(airline : Airline, existingContracts : List[OilContract], currentCycle : Int) = {
     val existingBarrels = existingContracts.map(_.volume).sum
-    val barrelsUsed = getBarrelsUsed(airline)
+    val barrelsUsed = getBarrelsUsed(airline, currentCycle)
     val totalBarrelsAllowed = (barrelsUsed * OilContract.MAX_VOLUME_FACTOR).toLong
     val extraBarrelsAllowed = totalBarrelsAllowed - existingBarrels
     extraBarrelsAllowed

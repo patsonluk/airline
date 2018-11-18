@@ -136,7 +136,8 @@ object AirlineSimulation {
         totalCashExpense += loungeUpkeep + loungeCost
         
         //calculate extra cash flow due to difference in fuel cost
-        val barrelsUsed = linksIncome.fuelCost * -1 / OilPrice.DEFAULT_PRICE
+        val accountingFuelCost = linksIncome.fuelCost * -1
+        val barrelsUsed = accountingFuelCost / OilPrice.DEFAULT_PRICE
         val actualFuelCost = fuelContractByAirlineId.get(airline.id) match {
           case Some(contract) => 
             if (contract.volume <= barrelsUsed) {
@@ -147,14 +148,14 @@ object AirlineSimulation {
           case None => barrelsUsed * currentFuelPrice
         }
         
-        val fuelProfit = linksIncome.fuelCost - actualFuelCost.toLong
+        val fuelProfit = accountingFuelCost - actualFuelCost.toLong
         if (fuelProfit > 0) {
           totalCashRevenue += fuelProfit
         } else {
           totalCashExpense += fuelProfit * -1
         }
         println("airline " + airline)
-        println("barrels used: " + barrelsUsed + " acc. fuel cost " + linksIncome.fuelCost + " actual fuel cost " + actualFuelCost + " profit " + fuelProfit)
+        println("barrels used: " + barrelsUsed + " acc. fuel cost " + linksIncome.fuelCost + " actual fuel cost " + actualFuelCost.toLong + " profit " + fuelProfit)
         
         othersSummary.put(OtherIncomeItemType.FUEL_PROFIT, fuelProfit)
         

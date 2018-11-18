@@ -12,4 +12,6 @@ case class OilContract(airline : Airline, contractPrice : Double, volume : Int, 
 object OilContract {
   val MAX_CONTRACTS_ALLOWED = 5
   val MAX_VOLUME_FACTOR = 1.2
+  val MAX_DURATION = 300
+  val MIN_DURATION = 10
 }
