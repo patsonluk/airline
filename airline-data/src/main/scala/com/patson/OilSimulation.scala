@@ -67,7 +67,7 @@ object OilSimulation {
 //  val MAX_ACCELERATION = 3
 //  val MAX_ACCELERATION_DELTA = 1
   val MAX_VELOCITY = 5
-  val MAX_VELOCITY_DELTA = 10
+  val MAX_VELOCITY_DELTA = 4
   val MIN_PRICE = 10
   val MAX_PRICE = OilPrice.DEFAULT_PRICE * 2 - MIN_PRICE
   val BOUNDARY_ZONE_FACTOR = 0.3
@@ -122,6 +122,6 @@ object OilSimulation {
      
      //println(" pv " +  previousVelocity + " pp " + previousPrice  + " v " + newVelocity + " p " + newPrice)
      
-     newPrice
+     BigDecimal(newPrice).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }
 }

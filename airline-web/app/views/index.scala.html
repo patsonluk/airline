@@ -52,6 +52,7 @@
     <script src="@routes.Assets.versioned("javascripts/office.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/bank.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/oil.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
@@ -167,6 +168,7 @@
 			  <li class="button left-tab user-specific-tab" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
 			  <li class="button left-tab user-specific-tab" id="officeCanvasTab" onclick="showOfficeCanvas();"><span>Office</span></li>
 			  <li class="button left-tab user-specific-tab" id="bankCanvasTab" onclick="showBankCanvas();"><span>Bank</span></li>
+			  <li class="button left-tab user-specific-tab" id="oilCanvasTab" onclick="showOilCanvas();"><span>Oil</span></li>
 			  <li class="button left-tab user-specific-tab" id="rivalsCanvasTab" onclick="showRivalsCanvas();"><span>Rivals</span></li>
 			  <li class="button left-tab" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
 			  <li class="button left-tab" id="allianceCanvasTab" onclick="showAllianceCanvas();"><span>Alliance</span></li>
@@ -1537,6 +1539,80 @@
 	<!--          end loan list -->
   			</div>
 <!--   			end bank canvas -->
+
+			<div id="oilCanvas" style="height: 100%; display: none;">
+				<div style="width : 60%; float: left;">
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Oil Price History</h4>
+						<div id="oilPriceChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
+					</div>
+				</div>
+				<div style="width : 40%; float: left;">
+				<!--  new loan -->
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Fuel Consumption Details</h4>
+						<div class="table" style="width: 100%; margin-bottom: 15px">
+				   			<div class="table-row">
+				   				<div class="label"><h5>Current Consumption:</h5></div>
+				   				<div class="value"><span id="oilConsumption"></span> barrels</div>
+				   			</div>
+				   		</div>
+						<h4>New Oil Contract</h4>
+						<div class="table" style="width: 100%; margin-bottom: 15px">
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Per Barrel Price:</h5></div>
+				   				<div class="value" id="oilContractPrice"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Volume:</h5></div>
+				   				<div class="value">
+				   					<input type="text" id="oilContractVolume" oninput="loadOilContractConsideration($('#oilContractVolume').val(), $('#oilContractDuration').val())"/> barrels
+				   					<img class="button" src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' title="reset value" onclick="setSuggestedOilContractVolume()">
+				   					<img class="button" src='@routes.Assets.versioned("images/icons/control-skip-090.png")' title="max value" onclick="setMaxOilContractVolume()">
+				   				</div>
+				   				
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Duration:</h5></div>
+				   				<div class="value">
+				   					<input type="text" id="oilContractDuration" oninput="loadOilContractConsideration($('#oilContractVolume').val(), $('#oilContractDuration').val())"/> weeks
+				   					<img class="button" src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' title="reset value" onclick="setSuggestedOilContractDuration()">
+				   					<img class="button" src='@routes.Assets.versioned("images/icons/control-skip-090.png")' title="max value" onclick="setMaxOilContractDuration()">	
+				   				</div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Initial Cost:</h5></div>
+				   				<div class="value" id="oilContractInitialCost"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Termination Cost (current):</h5></div>
+				   				<div class="value" id="oilContractTerminationCost"></div>
+				   			</div>
+				   		</div>
+				   		<div class="button" id="signOilContractButton" style="display:none;" onclick="addOilContract($('#oilContractVolume').val(), $('#oilContractDuration').val())">Sign</div>
+				   		<div id="signOilContractRejectionDiv" style="display:none;">
+				   			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'>
+				   			<span id="signOilContractRejection" class="warning"></span>
+		   				</div>
+					</div>
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Active Oil Contracts</h4>
+						<div class="table data" id="existingContractsTable" style="height: 100%; width: 100%">
+		 	  				<div class="table-header">
+		 	  					<div class="cell" style="width: 15%" align="right">Contract Price</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Volume</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Initial Cost</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Termination Penalty</div>
+		 	  					<div class="cell" style="width: 15%" align="right">Remaining Weeks</div>
+		 	  					<div class="cell" style="width: 10%"></div>
+							</div>
+						</div>
+         			</div>
+				</div>
+						
+	<!--          end contract list -->
+  			</div>
+<!--   			end oil canvas -->
 
 
 			<div id="rankingCanvas" style="height: 100%; display: none;">

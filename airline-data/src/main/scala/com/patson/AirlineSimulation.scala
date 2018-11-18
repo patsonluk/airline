@@ -42,7 +42,7 @@ object AirlineSimulation {
     val allianceByAirlineId :scala.collection.immutable.Map[Int, Alliance] = alliances.flatMap { alliance => (alliance.members.filter(_.role != AllianceRole.APPLICANT).map(member => (member.airline.id, alliance))) }.toMap
     val allianceRankings = Alliance.getRankings(alliances)
     
-    val fuelContractByAirlineId = OilSource.loadAllOilContracts().map(contract => (contract.airline.id, contract)).toMap
+    val fuelContractsByAirlineId = OilSource.loadAllOilContracts().groupBy(contract => contract.airline.id)
     val currentFuelPrice = OilSource.loadOilPriceByCycle(cycle).get.price
     
     allAirlines.foreach { airline =>
@@ -138,12 +138,14 @@ object AirlineSimulation {
         //calculate extra cash flow due to difference in fuel cost
         val accountingFuelCost = linksIncome.fuelCost * -1
         val barrelsUsed = accountingFuelCost / OilPrice.DEFAULT_PRICE
-        val actualFuelCost = fuelContractByAirlineId.get(airline.id) match {
-          case Some(contract) => 
-            if (contract.volume <= barrelsUsed) {
-              contract.volume * contract.contractPrice + (barrelsUsed - contract.volume) * currentFuelPrice
+        val actualFuelCost = fuelContractsByAirlineId.get(airline.id) match {
+          case Some(contracts) =>
+            val totalPaymentFromContract = contracts.map(contract => contract.contractPrice * contract.volume).sum
+            val totalVolumeFromContract = contracts.map(_.volume).sum
+            if (totalVolumeFromContract <= barrelsUsed) {
+              totalPaymentFromContract + (barrelsUsed - totalVolumeFromContract) * currentFuelPrice
             } else { //excessive
-              contract.volume * contract.contractPrice - (contract.volume - barrelsUsed) * currentFuelPrice / 2 //and sell the rest half market price
+              totalPaymentFromContract - (totalVolumeFromContract - barrelsUsed) * currentFuelPrice / 2 //and sell the rest half market price
             }
           case None => barrelsUsed * currentFuelPrice
         }
@@ -155,7 +157,7 @@ object AirlineSimulation {
           totalCashExpense += fuelProfit * -1
         }
         println("airline " + airline)
-        println("barrels used: " + barrelsUsed + " acc. fuel cost " + linksIncome.fuelCost + " actual fuel cost " + actualFuelCost.toLong + " profit " + fuelProfit)
+        println("barrels used: " + barrelsUsed + " acc. fuel cost " + accountingFuelCost + " actual fuel cost " + actualFuelCost.toLong + " profit " + fuelProfit)
         
         othersSummary.put(OtherIncomeItemType.FUEL_PROFIT, fuelProfit)
         
