@@ -310,6 +310,7 @@ package object controllers {
         "othersServiceInvestment" -> JsNumber(airlineIncome.others.serviceInvestment),
         "othersMaintenanceInvestment" -> JsNumber(airlineIncome.others.maintenanceInvestment),
         "othersAdvertisement" -> JsNumber(airlineIncome.others.advertisement),
+        "othersFuelProfit" -> JsNumber(airlineIncome.others.fuelProfit),
         "othersDepreciation" -> JsNumber(airlineIncome.others.depreciation),
         "period" -> JsString(airlineIncome.period.toString()),
         "cycle" -> JsNumber(airlineIncome.cycle)))
@@ -328,6 +329,8 @@ package object controllers {
         "buyAirplane" -> JsNumber(airlineCashFlow.buyAirplane),
         "sellAirplane" -> JsNumber(airlineCashFlow.sellAirplane),
         "createLink" -> JsNumber(airlineCashFlow.createLink),
+        "facilityConstruction" -> JsNumber(airlineCashFlow.facilityConstruction),
+        "oilContract" -> JsNumber(airlineCashFlow.oilContract),
         "period" -> JsString(airlineCashFlow.period.toString()),
         "cycle" -> JsNumber(airlineCashFlow.cycle)))
     }
