@@ -157,7 +157,9 @@ object AirlineSimulation {
               val inventoryPrice = inventoryPolicy.inventoryPrice(currentFuelPrice)
               val volumeFromInventory = barrelsUsed - totalVolumeFromContract
               val consumptionType = if (inventoryPolicy.factor == 0) OilConsumptionType.MARKET else OilConsumptionType.INVENTORY
-              oilConsumptionEntries += OilConsumptionHistory(airline, inventoryPrice, volumeFromInventory, consumptionType, currentCycle)
+              if (volumeFromInventory > 0) {
+                oilConsumptionEntries += OilConsumptionHistory(airline, inventoryPrice, volumeFromInventory, consumptionType, currentCycle)
+              }
               totalPaymentFromContract + volumeFromInventory * inventoryPrice
             } else { //excessive
               //sell to someone else
@@ -170,7 +172,9 @@ object AirlineSimulation {
             val inventoryPolicy = fuelInventoryPolicyByAirlineId.getOrElse(airline.id, OilInventoryPolicy.getDefaultPolicy(airline))
             val inventoryPrice = inventoryPolicy.inventoryPrice(currentFuelPrice)
             val consumptionType = if (inventoryPolicy.factor == 0) OilConsumptionType.MARKET else OilConsumptionType.INVENTORY
-            oilConsumptionEntries += OilConsumptionHistory(airline, inventoryPrice, barrelsUsed, consumptionType, currentCycle)
+            if (barrelsUsed > 0) {
+              oilConsumptionEntries += OilConsumptionHistory(airline, inventoryPrice, barrelsUsed, consumptionType, currentCycle)
+            }
             barrelsUsed * inventoryPrice
         }
         

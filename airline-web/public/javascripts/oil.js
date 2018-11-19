@@ -84,6 +84,7 @@ function loadOilContractConsideration(volume, duration) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
+	    	$('#oilContractPrice').text('$' + commaSeparateNumber(result.price))
 	    	$('#oilContractInitialCost').text('$' + commaSeparateNumber(result.cost))
 	    	$('#oilContractTerminationCost').text('$' + commaSeparateNumber(result.terminationPenalty))
 	    	if (result.rejection) {

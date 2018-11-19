@@ -116,7 +116,7 @@ class OilApplication extends Controller {
     val existingContractBarrels = existingContracts.map(_.volume).sum
     val barrelsUsed = getBarrelsUsed(airline, currentCycle)
     val totalBarrelsAllowed = (barrelsUsed * OilContract.MAX_VOLUME_FACTOR).toLong
-    val extraBarrelsAllowed = totalBarrelsAllowed - existingContractBarrels
+    val extraBarrelsAllowed = Math.max(0, totalBarrelsAllowed - existingContractBarrels)
     val suggestedBarrels =
       if (existingContractBarrels > barrelsUsed) {
         0
@@ -318,7 +318,7 @@ class OilApplication extends Controller {
   }
   
   def getBarrelsUsed(airline : Airline, currentCycle : Int) : Long = {
-    OilSource.loadOilConsumptionHistoryByAirlineId(airline.id, currentCycle).map(_.volume).sum
+    OilSource.loadOilConsumptionHistoryByAirlineId(airline.id, currentCycle - 1).map(_.volume).sum
   }
   
   def getExtraBarrelsAllowed(airline : Airline, existingContracts : List[OilContract], currentCycle : Int) = {
