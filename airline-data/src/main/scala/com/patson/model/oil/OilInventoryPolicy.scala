@@ -15,7 +15,7 @@ case class OilInventoryPolicy(airline : Airline, factor : Double, startCycle : I
   }
   
   val option = factor match {
-    case 0.8 => CONSERVATIVE
+    case 0.9 => CONSERVATIVE
     case 0.5 => BALANCED
     case 0.2 => AGGRESSIVE
     case 0 => NONE
