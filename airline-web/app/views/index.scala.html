@@ -1583,7 +1583,14 @@
 				<div style="width : 40%; float: left;">
 				<!--  new loan -->
 					<div style="width : 95%; float: left;" class="section">
-						<h4>Fuel Consumption Details</h4>
+						<h4>Fuel Consumption History
+							<span class="tooltip">
+		    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+		    					<span class="tooltiptext below" style="width: 400px;">
+			    					Fuel consumption details of previous week
+		    					</span>
+		    				</span>
+						</h4>
 						<div class="table data" id="oilConsumptionHistoryTable" style="height: 100%; width: 100%; margin-bottom: 15px">
 			 	  				<div class="table-header">
 			 	  					<div class="cell" style="width: 20%" align="right">Price per Barrel</div>
@@ -1591,7 +1598,18 @@
 			 	  					<div class="cell" style="width: 50%" align="right">Transaction Type</div>
 								</div>
 		   				</div>
-		   				<h4>Inventory Policy</h4>
+		   				<h4>Inventory Policy
+		   					<span class="tooltip">
+		    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+		    					<span class="tooltiptext below" style="width: 400px;">
+			    					Airline keeps an inventory of fuel to buffer oil price fluctuations<br/>
+			    					<br/>
+			    					Oil from inventory still fluctates with the market price but to a smaller degree depending on the policy type<br/>
+			    					<br/>
+			    					In order to completely fix fuel price, Oil Contract should be signed
+		    					</span>
+		    				</span>
+		   				</h4>
 		   				<div class="table" style="width: 100%; margin-bottom: 15px">
 		   					<div class="table-row">
 				   				<div class="label"><h5>Current Policy:</h5></div>
@@ -1619,7 +1637,16 @@
 		   				</div>
 		   				
 				   		
-						<h4>New Oil Contract</h4>
+						<h4>New Oil Contract
+							<span class="tooltip">
+		    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+		    					<span class="tooltiptext"  style="width: 400px;">
+			    					Sign long term Oil Contract with fixed price.<br/>
+			    					<br/> 
+			    					The price offered depends on current market price and the contract duration
+		    					</span>
+		    				</span>
+						</h4>
 						<div class="table" style="width: 100%; margin-bottom: 15px">
 				   			<div class="table-row">
 				   				<div class="label"><h5>Contract Per Barrel Price:</h5></div>
