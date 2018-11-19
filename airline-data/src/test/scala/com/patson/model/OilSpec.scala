@@ -65,7 +65,7 @@ class OilSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
       val sortedPrices = prices.sorted
       println("lowest " + sortedPrices.take(1) + " highest " + sortedPrices.takeRight(1))
       assert(withinBoundryCount.toDouble / prices.length > 0.8)
-      assert(withinBoundryCount.toDouble / prices.length < 0.9) //yet some of them should be outside the boundary 
+      assert(withinBoundryCount.toDouble / prices.length < 0.95) //yet some of them should be outside the boundary 
     }
     
   }
