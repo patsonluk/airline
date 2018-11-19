@@ -28,7 +28,7 @@ object OilInventoryPolicy {
   def byOption(option : OilInventoryPolicyOption.Value, airline : Airline, startCycle : Int) = {
     val factor : Double = 
       option match {
-        case CONSERVATIVE => 0.8
+        case CONSERVATIVE => 0.9
         case BALANCED => 0.5
         case AGGRESSIVE => 0.2
         case NONE => 0
@@ -43,7 +43,7 @@ object OilInventoryPolicy {
   
   val description = (value : Value) => {
     value match {
-        case CONSERVATIVE => "Conservative - shields from 80% of price fluctuation"
+        case CONSERVATIVE => "Conservative - shields from 90% of price fluctuation"
         case BALANCED => "Balanced - shields from 50% of price fluctuation"
         case AGGRESSIVE => "Aggressive - shields from 20% of price fluctuation"
         case NONE => "No Inventory - buys all required fuel at market price"
