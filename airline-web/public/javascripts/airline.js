@@ -581,7 +581,8 @@ function refreshLinkDetails(linkId) {
 	    	    contentType: 'application/json; charset=utf-8',
 	    	    dataType: 'json',
 	    	    success: function(linkConsumptions) {
-    	    		$.each(linkConsumptions, function(index, linkConsumption) {
+	    	    	$("#linkCompetitons .data-row").remove()
+	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
     	    			if (linkConsumption.airlineId != airlineId) {
 		    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
 		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")

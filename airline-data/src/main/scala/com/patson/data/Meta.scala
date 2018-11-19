@@ -929,6 +929,37 @@ object Meta {
       ")")
     statement.execute()
     statement.close()
+    
+    
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OIL_CONSUMPTION_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + OIL_CONSUMPTION_HISTORY_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airline INTEGER, " +
+      "price DOUBLE, " + 
+      "volume INTEGER," +
+      "consumption_type INTEGER," +
+      "cycle INTEGER," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OIL_INVENTORY_POLICY_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + OIL_INVENTORY_POLICY_TABLE + "(" +
+      "airline INTEGER, " +
+      "factor DOUBLE," +
+      "start_cycle INTEGER," +
+      "PRIMARY KEY (airline), " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
   }
 }
 

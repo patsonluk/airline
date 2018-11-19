@@ -31,6 +31,12 @@ import com.patson.model.oil.OilPrice
 import com.patson.data.IncomeSource
 import com.patson.data.OilSource
 import com.patson.model.oil.OilPrice
+import com.patson.data.OilSource
+import com.patson.model.oil.OilConsumptionHistory
+import com.patson.model.oil.OilConsumptionType
+import com.patson.model.oil.OilConsumptionType
+import com.patson.model.oil.OilInventoryPolicy
+import com.patson.model.oil.OilInventoryPolicyOption
 
 
 
@@ -71,6 +77,20 @@ class OilApplication extends Controller {
     }
   }
   
+  implicit object OilConsumptionHistoryWrites extends Writes[OilConsumptionHistory] {
+//case class OilContract(airline : Airline, contractPrice : Double, volume : Int, startCycle : Int, contractDuration : Int, var id : Int = 0) extends IdObject {
+    def writes(history: OilConsumptionHistory): JsValue = {
+      
+      JsObject(List(
+      "airlineId" -> JsNumber(history.airline.id),
+      "price" -> JsNumber(history.price),
+      "volume" -> JsNumber(history.volume),
+      "type" -> JsString(OilConsumptionType.description(history.consumptionType)),
+      "cycle" -> JsNumber(history.cycle)))
+      
+    }
+  }
+  
   case class OilContractWithDetails(contract : OilContract, remainingDuration : Int, penalty : Long, rejection : Option[String])
   
   def getContracts(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
@@ -86,7 +106,10 @@ class OilApplication extends Controller {
     OilContractWithDetails(contract, remainingDuration, penalty, rejection)
   }
   
-  def getContractSuggestion(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  /**
+   * Suggestions and past usage
+   */
+  def getDetails(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline = request.user
     val currentCycle = CycleSource.loadCycle()
     val existingContracts = OilSource.loadOilContractsByAirline(airlineId)
@@ -105,14 +128,19 @@ class OilApplication extends Controller {
       case Some(price) => price.price
       case None => OilPrice.DEFAULT_PRICE
     }
-    val contractPrice = currentPrice + OilContract.EXTRA_PER_BARREL_CHARGE
+    
+    val historyObj = Json.toJson(OilSource.loadOilConsumptionHistoryByAirlineId(airlineId, currentCycle - 1))
+    val inventoryPolicy = OilSource.loadOilInventoryPolicyByAirlineId(airlineId).getOrElse(OilInventoryPolicy.getDefaultPolicy(airline))
+    
     Ok(Json.obj("barrelsUsed" -> JsNumber(barrelsUsed), 
         "suggestedBarrels" -> JsNumber(suggestedBarrels), 
         "extraBarrelsAllowed" -> JsNumber(extraBarrelsAllowed), 
         "suggestedDuration" -> OilContract.MIN_DURATION, 
         "maxDuration" -> OilContract.MAX_DURATION, 
-        "contractPrice" -> contractPrice,
-        "barrelsUsed" -> barrelsUsed))     
+        "barrelsUsed" -> barrelsUsed,
+        "history" -> historyObj,
+        "inventoryPolicyDescription" -> OilInventoryPolicy.description(inventoryPolicy.option),
+        "inventoryPrice" -> inventoryPolicy.inventoryPrice(currentPrice)))     
   }
   
   def getContractConsideration(airlineId : Int, volume : Int, duration : Int) = AuthenticatedAirline(airlineId) { request =>
@@ -123,10 +151,8 @@ class OilApplication extends Controller {
       case None => OilPrice.DEFAULT_PRICE
     }
     
-    val contractPrice = currentPrice + OilContract.EXTRA_PER_BARREL_CHARGE
-    
     val airline = request.user
-    val newContract = OilContract(airline = airline, contractPrice = contractPrice, volume = volume, startCycle = currentCycle, contractDuration = duration)
+    val newContract = OilContract.getOilContract(airline = airline, marketPrice = currentPrice, volume = volume, currentCycle = currentCycle, contractDuration = duration)
     val penalty = newContract.contractTerminationPenalty(currentCycle)
     val rejection = getSignContractRejection(airline, newContract, existingContracts, currentCycle)
     
@@ -140,10 +166,9 @@ class OilApplication extends Controller {
       case Some(price) => price.price
       case None => OilPrice.DEFAULT_PRICE
     }
-    val contractPrice = currentPrice + OilContract.EXTRA_PER_BARREL_CHARGE
     
     val airline = request.user
-    val newContract = OilContract(airline = airline, contractPrice = contractPrice, volume = volume, startCycle = currentCycle, contractDuration = duration)
+    val newContract = OilContract.getOilContract(airline = airline, marketPrice = currentPrice, volume = volume, currentCycle = currentCycle, contractDuration = duration)
     getSignContractRejection(airline, newContract, existingContracts, currentCycle) match {
       case Some(rejection) => BadRequest(rejection)
       case None =>
@@ -184,6 +209,59 @@ class OilApplication extends Controller {
     val currentCycle = CycleSource.loadCycle()
     val prices = OilSource.loadOilPricesFromCycle(currentCycle - 50).sortBy(_.cycle)
     Ok(Json.toJson(prices))
+  }
+  
+  def getInventoryOptions(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    var optionsJson = Json.arr()
+    val currentCycle = CycleSource.loadCycle()
+    val airline = request.user
+    val marketPrice = OilSource.loadOilPriceByCycle(currentCycle) match {
+      case Some(price) => price.price
+      case None => OilPrice.DEFAULT_PRICE
+    } 
+    val currentPolicy = OilSource.loadOilInventoryPolicyByAirlineId(airlineId).getOrElse(OilInventoryPolicy.getDefaultPolicy(airline)) 
+    
+    OilInventoryPolicyOption.values.foreach { option =>
+      val policy = OilInventoryPolicy.byOption(option, airline, currentCycle)  
+      
+      val optionJson = Json.obj("id" -> JsNumber(option.id), 
+          "description" -> JsString(OilInventoryPolicy.description(option)),
+          "price" -> policy.inventoryPrice(marketPrice))
+      
+      optionsJson = optionsJson.append(optionJson)
+    }
+    var result = Json.obj("options" -> optionsJson)
+    getChangeInventoryPolicyRejection(airline, currentPolicy, currentCycle).foreach { rejection =>
+      result += ("rejection" -> JsString(rejection))
+    }
+    result += ("warning" -> JsString("Policy can only be changed every " + OilInventoryPolicy.MIN_CHANGE_DURATION + " weeks"))
+    Ok(result)
+    
+  }
+  
+  
+  def setInventoryOption(airlineId : Int, optionId : Int) = AuthenticatedAirline(airlineId) { request =>
+     
+    val currentCycle = CycleSource.loadCycle()
+    val airline = request.user
+    val marketPrice = OilSource.loadOilPriceByCycle(currentCycle) match {
+      case Some(price) => price.price
+      case None => OilPrice.DEFAULT_PRICE
+    } 
+    val currentPolicy = OilSource.loadOilInventoryPolicyByAirlineId(airlineId).getOrElse(OilInventoryPolicy.getDefaultPolicy(airline))
+    
+    val option = OilInventoryPolicyOption(optionId)
+    if (option == currentPolicy.option) { //if same option, do not update
+      Ok(Json.obj("optionId" -> optionId))
+    } else {
+      getChangeInventoryPolicyRejection(airline, currentPolicy, currentCycle) match {
+        case Some(rejection) => BadRequest(rejection)
+        case None =>
+          val newPolicy = OilInventoryPolicy.byOption(option, airline, currentCycle)
+          OilSource.saveOilInventoryPolicy(newPolicy)
+            Ok(Json.obj("optionId" -> optionId))
+      }
+    }
   }
   
   def getTerminateContractRejection(airline : Airline, contract : OilContract, currentCycle : Int) : Option[String] = {
@@ -229,11 +307,18 @@ class OilApplication extends Controller {
     return None
   }
   
-  def getBarrelsUsed(airline : Airline, currentCycle : Int) : Long = {
-    IncomeSource.loadIncomeByAirline(airlineId = airline.id, cycle = currentCycle - 1, period = Period.WEEKLY) match {
-      case Some(airlineIncome) => (airlineIncome.links.fuelCost * -1 / OilPrice.DEFAULT_PRICE).toLong
-      case None => 0
+  def getChangeInventoryPolicyRejection(airline : Airline, currentPolicy : OilInventoryPolicy, currentCycle : Int) : Option[String] = {
+    val cycleChangeMinWeek = currentPolicy.startCycle + OilInventoryPolicy.MIN_CHANGE_DURATION;
+    val waitCycle = cycleChangeMinWeek - currentCycle
+    if (waitCycle > 0) {
+      return Some("Can only change policy again after " + waitCycle + " week(s)") 
     }
+    
+    return None
+  }
+  
+  def getBarrelsUsed(airline : Airline, currentCycle : Int) : Long = {
+    OilSource.loadOilConsumptionHistoryByAirlineId(airline.id, currentCycle).map(_.volume).sum
   }
   
   def getExtraBarrelsAllowed(airline : Airline, existingContracts : List[OilContract], currentCycle : Int) = {

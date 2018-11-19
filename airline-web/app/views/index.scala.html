@@ -1584,12 +1584,41 @@
 				<!--  new loan -->
 					<div style="width : 95%; float: left;" class="section">
 						<h4>Fuel Consumption Details</h4>
-						<div class="table" style="width: 100%; margin-bottom: 15px">
-				   			<div class="table-row">
-				   				<div class="label"><h5>Current Consumption:</h5></div>
-				   				<div class="value"><span id="oilConsumption"></span> barrels</div>
+						<div class="table data" id="oilConsumptionHistoryTable" style="height: 100%; width: 100%; margin-bottom: 15px">
+			 	  				<div class="table-header">
+			 	  					<div class="cell" style="width: 20%" align="right">Price per Barrel</div>
+			 	  					<div class="cell" style="width: 30%" align="right">Volume</div>
+			 	  					<div class="cell" style="width: 50%" align="right">Transaction Type</div>
+								</div>
+		   				</div>
+		   				<h4>Inventory Policy</h4>
+		   				<div class="table" style="width: 100%; margin-bottom: 15px">
+		   					<div class="table-row">
+				   				<div class="label"><h5>Current Policy:</h5></div>
+				   				<div class="value"> 
+				   					<div id="currentInventoryPolicyDiv">
+					   					<span id="currentInventoryPolicy"></span>
+					   					<img id="editOilInventoryPolicyButton" src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editOilInventoryPolicy()"/>
+				   					</div>
+				   					<div id="editInventoryPolicyDiv" style="display:none;">
+					   					<div class="table data" id="editInventoryPolicyTable" style="height: 100%; width: 100%; margin-bottom: 15px">
+							 	  			<div class="table-header">
+							 	  					<div class="cell" style="width: 70%" >Policy</div>
+							 	  					<div class="cell" style="width: 20%" align="right">Inventory Price</div>
+							 	  					<div class="cell" style="width: 10%" align="right"></div>
+											</div>
+						   				</div>
+						   				<div><img src='@routes.Assets.versioned("images/icons/information.png")'><span class="warning"></span></div>
+						   			</div>
+				   				</div>
 				   			</div>
-				   		</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Current Inventory Price:</h5></div>
+				   				<div class="value" id="currentInventoryPrice"></div>
+				   			</div>
+		   				</div>
+		   				
+				   		
 						<h4>New Oil Contract</h4>
 						<div class="table" style="width: 100%; margin-bottom: 15px">
 				   			<div class="table-row">

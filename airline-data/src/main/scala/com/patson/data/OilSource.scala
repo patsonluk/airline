@@ -10,6 +10,9 @@ import java.io.ByteArrayInputStream
 import java.sql.Blob
 import com.patson.model.oil.OilContract
 import com.patson.model.oil.OilPrice
+import com.patson.model.oil.OilInventoryPolicy
+import com.patson.model.oil.OilConsumptionHistory
+import com.patson.model.oil.OilConsumptionType
 
 
 object OilSource {
@@ -193,6 +196,166 @@ object OilSource {
     try {
         val preparedStatement = connection.prepareStatement(queryString)
         preparedStatement.setInt(1, toCycle)
+        val updateCount = preparedStatement.executeUpdate()
+        preparedStatement.close()
+        updateCount
+      } finally {
+        connection.close()
+      }
+  }
+  
+  def loadAllOilInventoryPolicies() = {
+    loadOilInventoryPoliciesByCriteria(List.empty)
+  }
+  
+  def loadOilInventoryPolicyByAirlineId(airlineId : Int) : Option[OilInventoryPolicy] = {
+    val result = loadOilInventoryPoliciesByCriteria(List(("airline", airlineId)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+  
+   def loadOilInventoryPoliciesByCriteria(criteria : List[(String, Any)]) : List[OilInventoryPolicy] = {
+      //open the hsqldb
+      val connection = Meta.getConnection() 
+      try {
+        var queryString = "SELECT * FROM " + OIL_INVENTORY_POLICY_TABLE
+        
+        if (!criteria.isEmpty) {
+          queryString += " WHERE "
+          for (i <- 0 until criteria.size - 1) {
+            queryString += criteria(i)._1 + " = ? AND "
+          }
+          queryString += criteria.last._1 + " = ?"
+        }
+        
+        val preparedStatement = connection.prepareStatement(queryString)
+        
+        for (i <- 0 until criteria.size) {
+          preparedStatement.setObject(i + 1, criteria(i)._2)
+        }
+        
+        
+        val resultSet = preparedStatement.executeQuery()
+        
+        val result = new ListBuffer[OilInventoryPolicy]()
+        
+        val airlines = Map[Int, Airline]()
+        while (resultSet.next()) {
+          val airlineId = resultSet.getInt("airline")
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          
+          //airline : Airline, contractPrice : OilPrice, volume : Int, contractCost : Long, startCycle : Int, contractDuration : Int
+          result += OilInventoryPolicy(airline = airline, factor = resultSet.getDouble("factor"), startCycle = resultSet.getInt("start_cycle"))
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        result.toList
+      } finally {
+        connection.close()
+      }
+  }
+   
+  def saveOilInventoryPolicy(policy : OilInventoryPolicy) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + OIL_INVENTORY_POLICY_TABLE + "(airline, factor, start_cycle) VALUES(?, ?, ?)")
+          
+      preparedStatement.setInt(1, policy.airline.id)
+      preparedStatement.setDouble(2, policy.factor)
+      preparedStatement.setInt(3, policy.startCycle)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  
+  
+   def loadOilConsumptionHistoryByAirlineId(airlineId : Int, cycle : Int) : List[OilConsumptionHistory] = {
+    val result = loadOilConsumptionHistoryByCriteria(List(("airline", airlineId), ("cycle", cycle)))
+    result
+  }
+  
+   def loadOilConsumptionHistoryByCriteria(criteria : List[(String, Any)]) : List[OilConsumptionHistory] = {
+      //open the hsqldb
+      val connection = Meta.getConnection() 
+      try {
+        var queryString = "SELECT * FROM " + OIL_CONSUMPTION_HISTORY_TABLE
+        
+        if (!criteria.isEmpty) {
+          queryString += " WHERE "
+          for (i <- 0 until criteria.size - 1) {
+            queryString += criteria(i)._1 + " = ? AND "
+          }
+          queryString += criteria.last._1 + " = ?"
+        }
+        
+        val preparedStatement = connection.prepareStatement(queryString)
+        
+        for (i <- 0 until criteria.size) {
+          preparedStatement.setObject(i + 1, criteria(i)._2)
+        }
+        
+        val resultSet = preparedStatement.executeQuery()
+        
+        val result = new ListBuffer[OilConsumptionHistory]()
+        
+        val airlines = Map[Int, Airline]()
+        while (resultSet.next()) {
+          val airlineId = resultSet.getInt("airline")
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          
+          //(airline : Airline, price : Double, volume : Int, consumptionType : OilConsumptionType.Value, cycle : Int
+          result += OilConsumptionHistory(airline = airline, 
+              price = resultSet.getDouble("price"), 
+              volume = resultSet.getInt("volume"), 
+              consumptionType = OilConsumptionType(resultSet.getInt("consumption_type")), 
+              cycle = resultSet.getInt("cycle"))
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        result.toList
+      } finally {
+        connection.close()
+      }
+  }
+   
+  def saveOilConsumptionHistory(historyEntires : List[OilConsumptionHistory]) = {
+     val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + OIL_CONSUMPTION_HISTORY_TABLE + "(airline, price, volume, consumption_type, cycle) VALUES (?,?,?,?,?)")
+    
+      connection.setAutoCommit(false)
+      historyEntires.foreach { 
+        entry =>
+          preparedStatement.setInt(1, entry.airline.id)
+          preparedStatement.setDouble(2, entry.price)
+          preparedStatement.setInt(3, entry.volume)
+          preparedStatement.setInt(4, entry.consumptionType.id)
+          preparedStatement.setInt(5, entry.cycle)
+          preparedStatement.executeUpdate()
+      }
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def deleteOilConsumptionHistoryBeforeCycle(cycle : Int) = {
+    var queryString = "DELETE FROM " + OIL_CONSUMPTION_HISTORY_TABLE + " WHERE cycle < ?"
+    val connection = Meta.getConnection()
+    try {
+        val preparedStatement = connection.prepareStatement(queryString)
+        preparedStatement.setInt(1, cycle)
         val updateCount = preparedStatement.executeUpdate()
         preparedStatement.close()
         updateCount

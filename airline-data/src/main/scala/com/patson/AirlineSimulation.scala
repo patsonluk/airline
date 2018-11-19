@@ -7,6 +7,9 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.patson.model.airplane.Airplane
 import com.patson.model.oil.OilPrice
+import com.patson.model.oil.OilInventoryPolicy
+import com.patson.model.oil.OilConsumptionHistory
+import com.patson.model.oil.OilConsumptionType
 
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
@@ -43,7 +46,9 @@ object AirlineSimulation {
     val allianceRankings = Alliance.getRankings(alliances)
     
     val fuelContractsByAirlineId = OilSource.loadAllOilContracts().groupBy(contract => contract.airline.id)
+    val fuelInventoryPolicyByAirlineId = OilSource.loadAllOilInventoryPolicies.map(policy => (policy.airline.id, policy)).toMap
     val currentFuelPrice = OilSource.loadOilPriceByCycle(cycle).get.price
+    val oilConsumptionEntries = ListBuffer[OilConsumptionHistory]()
     
     allAirlines.foreach { airline =>
         var totalCashRevenue = 0L
@@ -137,17 +142,36 @@ object AirlineSimulation {
         
         //calculate extra cash flow due to difference in fuel cost
         val accountingFuelCost = linksIncome.fuelCost * -1
-        val barrelsUsed = accountingFuelCost / OilPrice.DEFAULT_PRICE
+        val barrelsUsed = (accountingFuelCost / OilPrice.DEFAULT_PRICE).toInt
         val actualFuelCost = fuelContractsByAirlineId.get(airline.id) match {
           case Some(contracts) =>
-            val totalPaymentFromContract = contracts.map(contract => contract.contractPrice * contract.volume).sum
+            val totalPaymentFromContract = contracts.map{ contract =>
+                oilConsumptionEntries += OilConsumptionHistory(airline, contract.contractPrice, contract.volume, OilConsumptionType.CONTRACT, currentCycle)
+                contract.contractPrice * contract.volume
+              }.sum
+            
             val totalVolumeFromContract = contracts.map(_.volume).sum
             if (totalVolumeFromContract <= barrelsUsed) {
-              totalPaymentFromContract + (barrelsUsed - totalVolumeFromContract) * currentFuelPrice
+              //has to use inventory
+              val inventoryPolicy = fuelInventoryPolicyByAirlineId.getOrElse(airline.id, OilInventoryPolicy.getDefaultPolicy(airline))
+              val inventoryPrice = inventoryPolicy.inventoryPrice(currentFuelPrice)
+              val volumeFromInventory = barrelsUsed - totalVolumeFromContract
+              val consumptionType = if (inventoryPolicy.factor == 0) OilConsumptionType.MARKET else OilConsumptionType.INVENTORY
+              oilConsumptionEntries += OilConsumptionHistory(airline, inventoryPrice, volumeFromInventory, consumptionType, currentCycle)
+              totalPaymentFromContract + volumeFromInventory * inventoryPrice
             } else { //excessive
-              totalPaymentFromContract - (totalVolumeFromContract - barrelsUsed) * currentFuelPrice / 2 //and sell the rest half market price
+              //sell to someone else
+              val sellPrice = currentFuelPrice / 2
+              val excessBarrles = totalVolumeFromContract - barrelsUsed
+              oilConsumptionEntries += OilConsumptionHistory(airline, sellPrice, excessBarrles * -1, OilConsumptionType.EXCESS, currentCycle)
+              totalPaymentFromContract - excessBarrles * sellPrice //and sell the rest half market price
             }
-          case None => barrelsUsed * currentFuelPrice
+          case None =>
+            val inventoryPolicy = fuelInventoryPolicyByAirlineId.getOrElse(airline.id, OilInventoryPolicy.getDefaultPolicy(airline))
+            val inventoryPrice = inventoryPolicy.inventoryPrice(currentFuelPrice)
+            val consumptionType = if (inventoryPolicy.factor == 0) OilConsumptionType.MARKET else OilConsumptionType.INVENTORY
+            oilConsumptionEntries += OilConsumptionHistory(airline, inventoryPrice, barrelsUsed, consumptionType, currentCycle)
+            barrelsUsed * inventoryPrice
         }
         
         val fuelProfit = accountingFuelCost - actualFuelCost.toLong
@@ -317,6 +341,10 @@ object AirlineSimulation {
     CashFlowSource.deleteCashFlowsBefore(currentCycle - 10, Period.WEEKLY);
     CashFlowSource.deleteCashFlowsBefore(currentCycle - 10 * 4, Period.MONTHLY);
     CashFlowSource.deleteCashFlowsBefore(currentCycle - 10 * 52, Period.YEARLY);
+    
+    //update Oil consumption history
+    OilSource.saveOilConsumptionHistory(oilConsumptionEntries.toList)
+    OilSource.deleteOilConsumptionHistoryBeforeCycle(currentCycle - 10)
   }
   
 //  def getChampionReputationBoost(airlineId : Int) : Double = {

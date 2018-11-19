@@ -5,7 +5,7 @@ function showOilCanvas() {
 	setActiveDiv($("#oilCanvas"))
 	highlightTab($('#oilCanvasTab'))
 	loadOilPriceChart()
-	loadOilContractSuggestion() 
+	loadOilDetails() 
     loadExistingOilContracts()
 }
 
@@ -28,8 +28,8 @@ function loadOilPriceChart() {
 	
 }
 
-function loadOilContractSuggestion() {
-	var url = "airlines/" + activeAirline.id + "/oil-contract-suggestion"
+function loadOilDetails() {
+	var url = "airlines/" + activeAirline.id + "/oil-details"
 	$.ajax({
 		type: 'GET',
 		url: url,
@@ -37,10 +37,13 @@ function loadOilContractSuggestion() {
 	    dataType: 'json',
 	    success: function(result) {
 	    	loadedSuggestion = result
-	    	$('#oilContractPrice').text('$' + result.contractPrice)
 	    	$('#oilContractVolume').val(result.suggestedBarrels)
 	    	$('#oilContractDuration').val(result.suggestedDuration)
-	    	$('#oilConsumption').text(commaSeparateNumber(result.barrelsUsed))
+	    	$('#currentInventoryPolicy').text(result.inventoryPolicyDescription)
+	    	$('#currentInventoryPrice').text('$' + commaSeparateNumber(result.inventoryPrice))
+	    	$('#currentInventoryPolicyDiv').show()
+	    	$('#editInventoryPolicyDiv').hide()
+	    	loadOilConsumptionHistoryTable(result.history)
 	    	loadOilContractConsideration(result.suggestedBarrels, result.suggestedDuration)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -48,6 +51,29 @@ function loadOilContractSuggestion() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function loadOilConsumptionHistoryTable(entries) {
+	var table = $("#oilConsumptionHistoryTable")
+	table.children("div.table-row").remove()
+	
+	var totalConsumption = 0
+	$.each(entries, function(index, entry) {
+		var row = $("<div class='table-row'></div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(entry.price) + "</div>")
+		row.append("<div class='cell' align='right'>" + commaSeparateNumber(entry.volume) + "</div>")
+		row.append("<div class='cell' align='right'>" + entry.type + "</div>")
+		table.append(row)
+		
+		totalConsumption += entry.volume
+	});
+	
+	//total Row
+	var row = $("<div class='table-row' style='background-color: #ffe084;'></div>")
+	row.append("<div class='cell' align='right'>-</div>")
+	row.append("<div class='cell' align='right'>" + commaSeparateNumber(totalConsumption) + "</div>")
+	row.append("<div class='cell' align='right'>Total</div>")
+	table.append(row)
 }
 
 function loadOilContractConsideration(volume, duration) {
@@ -115,6 +141,65 @@ function loadExistingOilContracts() {
 	});
 }
 
+function editOilInventoryPolicy() {
+	var url = "airlines/" + activeAirline.id + "/oil-inventory-options"
+	loadedContracts = {}
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	$('#currentInventoryPolicyDiv').hide()
+	    	var table = $("#editInventoryPolicyTable")
+	    	table.children("div.table-row").remove()
+	    	
+	    	$.each(result.options, function(index, option) {
+	    		var row = $("<div class='table-row'></div>")
+	    		row.append("<div class='cell'>" + option.description + "</div>")
+	    		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(option.price) + "</div>")
+	    		if (!result.rejection) {
+	    			row.append("<div class='cell' align='right'><img src='assets/images/icons/tick.png' title='Pick this policy' class='button' onclick='setOilInventoryPolicy(" + option.id + ")'/></div>")
+	    		} else {
+	    			row.append("<div class='cell' align='right'><img src='assets/images/icons/prohibition.png' class='button' title='" + result.rejection + "' onclick='exitOilInventoryPolicy()'/></div>")
+	    		}
+	    		
+	    		table.append(row)
+			});
+	    	
+	    	$('#editInventoryPolicyDiv .warning').text(result.warning)
+	    	
+	    	$('#editInventoryPolicyDiv').show()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function exitOilInventoryPolicy() {
+	$('#currentInventoryPolicyDiv').show()
+	$('#editInventoryPolicyDiv').hide()
+}
+
+function setOilInventoryPolicy(optionId) {
+	var url = "airlines/" + activeAirline.id + "/set-oil-inventory-option?optionId=" + optionId
+	$.ajax({
+		type: 'GET',
+		url: url,
+		contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	loadOilDetails()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(JSON.stringify(jqXHR));
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 function updatedLoadedContracts(contracts) {
 	$.each(contracts, function(index, contract) {
 		loadedContracts[contract.id] = contract
@@ -144,7 +229,7 @@ function updateExistingContractsTable() {
 	
 	if (jQuery.isEmptyObject(loadedContracts)) {
 		var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell'>-</div>")
+		row.append("<div class='cell' align='right'>-</div>")
 		row.append("<div class='cell' align='right'>-</div>")
 		row.append("<div class='cell' align='right'>-</div>")
 		row.append("<div class='cell' align='right'>-</div>")
