@@ -69,7 +69,7 @@ function loadOilConsumptionHistoryTable(entries) {
 	});
 	
 	//total Row
-	var row = $("<div class='table-row' style='background-color: #ffe084;'></div>")
+	var row = $("<div class='table-row' style='background-color: #A1D490;'></div>")
 	row.append("<div class='cell' align='right'>-</div>")
 	row.append("<div class='cell' align='right'>" + commaSeparateNumber(totalConsumption) + "</div>")
 	row.append("<div class='cell' align='right'>Total</div>")
