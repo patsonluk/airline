@@ -67,7 +67,7 @@ object OilSimulation {
 //  val MAX_ACCELERATION = 3
 //  val MAX_ACCELERATION_DELTA = 1
   val MAX_VELOCITY = 10
-  val MAX_VELOCITY_DELTA = 20
+  val MAX_VELOCITY_DELTA_FACTOR = 3
   val MIN_PRICE = 10
   val MAX_PRICE = OilPrice.DEFAULT_PRICE * 2 - MIN_PRICE
   val BOUNDARY_ZONE_FACTOR = 0.35
@@ -110,7 +110,8 @@ object OilSimulation {
     bellRandom /= 2
     
     
-    var acceleration =  bellRandom * MAX_VELOCITY_DELTA
+    var acceleration =  bellRandom * MAX_VELOCITY_DELTA_FACTOR * (3 + Math.abs(previousVelocity))
+    
      
      var newVelocity = previousVelocity / 5 + acceleration
      
