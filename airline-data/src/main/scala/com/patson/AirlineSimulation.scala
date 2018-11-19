@@ -184,8 +184,8 @@ object AirlineSimulation {
         } else {
           totalCashExpense += fuelProfit * -1
         }
-        println("airline " + airline)
-        println("barrels used: " + barrelsUsed + " acc. fuel cost " + accountingFuelCost + " actual fuel cost " + actualFuelCost.toLong + " profit " + fuelProfit)
+//        println("airline " + airline)
+//        println("barrels used: " + barrelsUsed + " acc. fuel cost " + accountingFuelCost + " actual fuel cost " + actualFuelCost.toLong + " profit " + fuelProfit)
         
         othersSummary.put(OtherIncomeItemType.FUEL_PROFIT, fuelProfit)
         
