@@ -676,7 +676,7 @@ function plotOilPriceChart(oilPrices, container) {
 	            "line": [
 	                {
 	                    "startvalue": average,
-	                    "color": "#29C3BE",
+	                    "color": "#A1D490",
 	                    "displayvalue": "Average",
 	                    "valueOnRight": "1",
 	                    "thickness": "2"
