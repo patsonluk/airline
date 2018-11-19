@@ -66,12 +66,12 @@ object OilSimulation {
   
 //  val MAX_ACCELERATION = 3
 //  val MAX_ACCELERATION_DELTA = 1
-  val MAX_VELOCITY = 5
-  val MAX_VELOCITY_DELTA = 4
+  val MAX_VELOCITY = 10
+  val MAX_VELOCITY_DELTA = 20
   val MIN_PRICE = 10
   val MAX_PRICE = OilPrice.DEFAULT_PRICE * 2 - MIN_PRICE
-  val BOUNDARY_ZONE_FACTOR = 0.3
-  val BOUNDARY_ZONE_VELOCITY_ADJUSTMENT = 3
+  val BOUNDARY_ZONE_FACTOR = 0.4
+  val BOUNDARY_ZONE_VELOCITY_ADJUSTMENT = 5
   val HIGH_PRICE_THRESHOLD = MAX_PRICE - (MAX_PRICE - MIN_PRICE) * BOUNDARY_ZONE_FACTOR
   val LOW_PRICE_THRESHOLD = MIN_PRICE + (MAX_PRICE - MIN_PRICE) * BOUNDARY_ZONE_FACTOR 
   
@@ -103,7 +103,15 @@ object OilSimulation {
 //  }
   
   def computeNextPrice(previousPrice : Double, previousVelocity : Double) : Double = {
-    val acceleration =  Util.getBellRandom(0) * MAX_VELOCITY_DELTA
+    var bellRandom = 0.0
+    for (i <- 0 to 10) {
+      bellRandom += Util.getBellRandom(0)
+    }
+    bellRandom /= 10
+    
+    
+    var acceleration =  bellRandom * MAX_VELOCITY_DELTA
+     
      var newVelocity = previousVelocity + acceleration
      
      //now adjust the acceleration if it's very close to boundary zone
@@ -120,7 +128,7 @@ object OilSimulation {
      newPrice = Math.min(MAX_PRICE, newPrice)
      newPrice = Math.max(MIN_PRICE, newPrice)
      
-     //println(" pv " +  previousVelocity + " pp " + previousPrice  + " v " + newVelocity + " p " + newPrice)
+//     println(" pv " +  previousVelocity + " pp " + previousPrice  + " v " + newVelocity + " p " + newPrice)
      
      BigDecimal(newPrice).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }
