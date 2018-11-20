@@ -22,7 +22,7 @@ object OilContract {
       if (contractDuration > MAX_DURATION / 2) {
         0.5
       } else {
-        1 - contractDuration.toDouble / (MAX_DURATION / 2)
+        1 - contractDuration.toDouble / (MAX_DURATION / 2) / 2
       }
     
     val contractPrice = BigDecimal(OilPrice.DEFAULT_PRICE + deltaFromDefault * durationRatio).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
