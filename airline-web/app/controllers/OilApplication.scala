@@ -207,7 +207,7 @@ class OilApplication extends Controller {
   
   def getOilPrices() = Action {
     val currentCycle = CycleSource.loadCycle()
-    val prices = OilSource.loadOilPricesFromCycle(currentCycle - 50).sortBy(_.cycle)
+    val prices = OilSource.loadOilPricesFromCycle(currentCycle - 100).sortBy(_.cycle)
     Ok(Json.toJson(prices))
   }
   
