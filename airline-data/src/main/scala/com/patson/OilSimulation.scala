@@ -110,7 +110,7 @@ object OilSimulation {
     bellRandom /= 2
     
     
-    var acceleration =  bellRandom * MAX_VELOCITY_DELTA_FACTOR * (3 + Math.abs(previousVelocity))
+    var acceleration =  bellRandom * MAX_VELOCITY_DELTA_FACTOR * (3.5 + Math.abs(previousVelocity))
     
      
      var newVelocity = previousVelocity / 5 + acceleration
