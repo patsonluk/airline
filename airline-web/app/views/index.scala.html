@@ -60,6 +60,7 @@
     <script src="@routes.Assets.versioned("javascripts/office.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/bank.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/oil.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
@@ -188,6 +189,7 @@
 			  <li class="button left-tab user-specific-tab" id="airplaneCanvasTab" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
 			  <li class="button left-tab user-specific-tab" id="officeCanvasTab" onclick="showOfficeCanvas();"><span>Office</span></li>
 			  <li class="button left-tab user-specific-tab" id="bankCanvasTab" onclick="showBankCanvas();"><span>Bank</span></li>
+			  <li class="button left-tab user-specific-tab" id="oilCanvasTab" onclick="showOilCanvas();"><span>Oil</span></li>
 			  <li class="button left-tab user-specific-tab" id="rivalsCanvasTab" onclick="showRivalsCanvas();"><span>Rivals</span></li>
 			  <li class="button left-tab" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
 			  <li class="button left-tab" id="allianceCanvasTab" onclick="showAllianceCanvas();"><span>Alliance</span></li>
@@ -784,7 +786,7 @@
 <!-- 		    		end main details -->
   					<div class="section" style="width: 90%; float:left;">
 						<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
-						<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table">
+						<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table data">
 							<div class="table-header">
 		 	  					<div class="cell" style="width: 30%">Airline</div>
 		 	  					<div class="cell" style="width: 10%; text-align: right;">Home Country</div>
@@ -794,7 +796,7 @@
 							</div>
 						</div>
 						<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-low.png")'></div><div style="float: left;"><h4>Airline Bases</h4></div>
-						<div id="airportDetailsBaseList" style="width: 100%; margin-bottom: 15px;" class="table">
+						<div id="airportDetailsBaseList" style="width: 100%; margin-bottom: 15px;" class="table data">
 							<div class="table-header">
 		 	  					<div class="cell" style="width: 30%">Airline</div>
 		 	  					<div class="cell" style="width: 10%; text-align: right;">Home Country</div>
@@ -804,7 +806,7 @@
 							</div>
 						</div>
   						<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/sofa.png")'></div><div style="float: left;"><h4>Airline Lounges</h4></div>
-						<div id="airportDetailsLoungeList" style="width: 100%;" class="table">
+						<div id="airportDetailsLoungeList" style="width: 100%;" class="table data">
 							<div class="table-header">
 		 	  					<div class="cell" style="width: 20%">Airline</div>
 		 	  					<div class="cell" style="width: 20%">Lounge Name</div>
@@ -1369,6 +1371,10 @@
 				 	  					<div id="othersAdvertisement" class="cell" style="text-align: right;"></div>
 				 	  				</div>
 				 	  				<div class="table-row">
+				 	  					<div class="cell">Fuel Profit:</div>
+				 	  					<div id="othersFuelProfit" class="cell" style="text-align: right;"></div>
+				 	  				</div>
+				 	  				<div class="table-row">
 				 	  					<div class="cell">Depreciation:</div>
 				 	  					<div id="othersDepreciation" class="cell" style="text-align: right;"></div>
 				 	  				</div>
@@ -1449,6 +1455,14 @@
 					 	  				<div class="table-row">
 					 	  					<div class="cell">Route Setup:</div>
 					 	  					<div class="createLink cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  				<div class="table-row">
+					 	  					<div class="cell">Facility Construction:</div>
+					 	  					<div class="facilityConstruction cell" style="text-align: right;"></div>
+					 	  				</div>
+					 	  				<div class="table-row">
+					 	  					<div class="cell">Oil Contract Cost/Penalty:</div>
+					 	  					<div class="oilContract cell" style="text-align: right;"></div>
 					 	  				</div>
 					 	  			</div>
 				         		</div>
@@ -1558,6 +1572,136 @@
 	<!--          end loan list -->
   			</div>
 <!--   			end bank canvas -->
+
+			<div id="oilCanvas" style="height: 100%; display: none;">
+				<div style="width : 60%; float: left;">
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Oil Price History</h4>
+						<div id="oilPriceChart" style="width: 90%; height: 500px; margin: 0 auto;"></div>
+					</div>
+				</div>
+				<div style="width : 40%; float: left;">
+				<!--  new loan -->
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Fuel Consumption History
+							<span class="tooltip">
+		    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+		    					<span class="tooltiptext below" style="width: 400px;">
+			    					Fuel consumption details of previous week
+		    					</span>
+		    				</span>
+						</h4>
+						<div class="table data" id="oilConsumptionHistoryTable" style="height: 100%; width: 100%; margin-bottom: 15px">
+			 	  				<div class="table-header">
+			 	  					<div class="cell" style="width: 20%" align="right">Price per Barrel</div>
+			 	  					<div class="cell" style="width: 30%" align="right">Volume</div>
+			 	  					<div class="cell" style="width: 50%" align="right">Transaction Type</div>
+								</div>
+		   				</div>
+		   				<h4>Inventory Policy
+		   					<span class="tooltip">
+		    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+		    					<span class="tooltiptext below" style="width: 400px;">
+			    					Airline keeps an inventory of fuel to buffer oil price fluctuations<br/>
+			    					<br/>
+			    					Oil from inventory still fluctates with the market price but to a smaller degree depending on the policy type<br/>
+			    					<br/>
+			    					In order to completely fix fuel price, Oil Contract should be signed
+		    					</span>
+		    				</span>
+		   				</h4>
+		   				<div class="table" style="width: 100%; margin-bottom: 15px">
+		   					<div class="table-row">
+				   				<div class="label"><h5>Current Policy:</h5></div>
+				   				<div class="value"> 
+				   					<div id="currentInventoryPolicyDiv">
+					   					<span id="currentInventoryPolicy"></span>
+					   					<img id="editOilInventoryPolicyButton" src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editOilInventoryPolicy()"/>
+				   					</div>
+				   					<div id="editInventoryPolicyDiv" style="display:none;">
+					   					<div class="table data" id="editInventoryPolicyTable" style="height: 100%; width: 100%; margin-bottom: 15px">
+							 	  			<div class="table-header">
+							 	  					<div class="cell" style="width: 70%" >Policy</div>
+							 	  					<div class="cell" style="width: 20%" align="right">Inventory Price</div>
+							 	  					<div class="cell" style="width: 10%" align="right"></div>
+											</div>
+						   				</div>
+						   				<div><img src='@routes.Assets.versioned("images/icons/information.png")'><span class="warning"></span></div>
+						   			</div>
+				   				</div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Current Inventory Price:</h5></div>
+				   				<div class="value" id="currentInventoryPrice"></div>
+				   			</div>
+		   				</div>
+		   				
+				   		
+						<h4>New Oil Contract
+							<span class="tooltip">
+		    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+		    					<span class="tooltiptext"  style="width: 400px;">
+			    					Sign long term Oil Contract with fixed price.<br/>
+			    					<br/> 
+			    					The price offered depends on current market price and the contract duration
+		    					</span>
+		    				</span>
+						</h4>
+						<div class="table" style="width: 100%; margin-bottom: 15px">
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Per Barrel Price:</h5></div>
+				   				<div class="value" id="oilContractPrice"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Volume:</h5></div>
+				   				<div class="value">
+				   					<input type="text" id="oilContractVolume" oninput="loadOilContractConsideration($('#oilContractVolume').val(), $('#oilContractDuration').val())"/> barrels
+				   					<img class="button" src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' title="reset value" onclick="setSuggestedOilContractVolume()">
+				   					<img class="button" src='@routes.Assets.versioned("images/icons/control-skip-090.png")' title="max value" onclick="setMaxOilContractVolume()">
+				   				</div>
+				   				
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Duration:</h5></div>
+				   				<div class="value">
+				   					<input type="text" id="oilContractDuration" oninput="loadOilContractConsideration($('#oilContractVolume').val(), $('#oilContractDuration').val())"/> weeks
+				   					<img class="button" src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' title="reset value" onclick="setSuggestedOilContractDuration()">
+				   					<img class="button" src='@routes.Assets.versioned("images/icons/control-skip-090.png")' title="max value" onclick="setMaxOilContractDuration()">	
+				   				</div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Initial Cost:</h5></div>
+				   				<div class="value" id="oilContractInitialCost"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Contract Termination Cost (current):</h5></div>
+				   				<div class="value" id="oilContractTerminationCost"></div>
+				   			</div>
+				   		</div>
+				   		<div class="button" id="signOilContractButton" style="display:none;" onclick="addOilContract($('#oilContractVolume').val(), $('#oilContractDuration').val())">Sign</div>
+				   		<div id="signOilContractRejectionDiv" style="display:none;">
+				   			<img src='@routes.Assets.versioned("images/icons/prohibition.png")'>
+				   			<span id="signOilContractRejection" class="warning"></span>
+		   				</div>
+					</div>
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Active Oil Contracts</h4>
+						<div class="table data" id="existingContractsTable" style="height: 100%; width: 100%">
+		 	  				<div class="table-header">
+		 	  					<div class="cell" style="width: 15%" align="right">Contract Price</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Volume</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Initial Cost</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Termination Penalty</div>
+		 	  					<div class="cell" style="width: 15%" align="right">Remaining Weeks</div>
+		 	  					<div class="cell" style="width: 10%"></div>
+							</div>
+						</div>
+         			</div>
+				</div>
+						
+	<!--          end contract list -->
+  			</div>
+<!--   			end oil canvas -->
 
 
 			<div id="rankingCanvas" style="height: 100%; display: none;">

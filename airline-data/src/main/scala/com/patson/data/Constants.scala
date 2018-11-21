@@ -76,7 +76,10 @@ object Constants {
   val LOAN_TABLE = "loan"
   val LOUNGE_TABLE = "lounge"
   val LOUNGE_CONSUMPTION_TABLE = "lounge_consumption"
-  
+  val OIL_CONTRACT_TABLE = "oil_contract"
+  val OIL_PRICE_TABLE = "oil_price"
+  val OIL_CONSUMPTION_HISTORY_TABLE = "oil_consumption_history"
+  val OIL_INVENTORY_POLICY_TABLE = "oil_inventory_policy"
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"

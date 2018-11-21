@@ -12,11 +12,18 @@
     padding: 10px 10px;
     position: absolute;
     z-index: 1;
-    bottom: 125%;
     left: 50%;
     transform:translateX(-50%);
     opacity: 0;
     transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext:not(.below) {
+	bottom: 125%;	
+}
+
+.tooltip .tooltiptext.below {
+	top: 125%;
 }
 
 .tooltip .tooltiptext img {
@@ -26,12 +33,20 @@
 .tooltip .tooltiptext::after {
     content: "";
     position: absolute;
-    top: 100%;
     left: 50%;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #555 transparent transparent transparent;
+}
+
+.tooltip .tooltiptext:not(.below)::after {
+	top: 100%;
+	border-color: #555 transparent transparent transparent;
+}
+
+.tooltip .tooltiptext.below::after {
+	bottom: 100%;
+	border-color: transparent transparent #555 transparent;
 }
 
 .tooltip:hover .tooltiptext {

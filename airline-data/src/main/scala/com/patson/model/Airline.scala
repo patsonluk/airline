@@ -177,12 +177,12 @@ object TransactionType extends Enumeration {
 
 object OtherIncomeItemType extends Enumeration {
   type OtherBalanceItemType = Value
-  val LOAN_INTEREST, BASE_UPKEEP, SERVICE_INVESTMENT, MAINTENANCE_INVESTMENT, LOUNGE_UPKEEP, LOUNGE_COST, LOUNGE_INCOME, ADVERTISEMENT, DEPRECIATION = Value
+  val LOAN_INTEREST, BASE_UPKEEP, SERVICE_INVESTMENT, MAINTENANCE_INVESTMENT, LOUNGE_UPKEEP, LOUNGE_COST, LOUNGE_INCOME, ADVERTISEMENT, DEPRECIATION, FUEL_PROFIT = Value
 }
 
 object CashFlowType extends Enumeration {
   type CashFlowType = Value
-  val BASE_CONSTRUCTION, BUY_AIRPLANE, SELL_AIRPLANE, CREATE_LINK, FACILITY_CONSTRUCTION = Value
+  val BASE_CONSTRUCTION, BUY_AIRPLANE, SELL_AIRPLANE, CREATE_LINK, FACILITY_CONSTRUCTION, OIL_CONTRACT = Value
 }
 
 object Period extends Enumeration {
@@ -238,7 +238,7 @@ case class TransactionsIncome(airlineId : Int, profit : Long = 0, revenue: Long 
         cycle = income2.cycle)
   }  
 }
-case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, expense: Long = 0, loanInterest : Long = 0, baseUpkeep : Long = 0, serviceInvestment : Long = 0, maintenanceInvestment : Long = 0, advertisement : Long = 0, loungeUpkeep : Long = 0, loungeCost : Long = 0, loungeIncome : Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
+case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, expense: Long = 0, loanInterest : Long = 0, baseUpkeep : Long = 0, serviceInvestment : Long = 0, maintenanceInvestment : Long = 0, advertisement : Long = 0, loungeUpkeep : Long = 0, loungeCost : Long = 0, loungeIncome : Long = 0, fuelProfit : Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
   def update(income2 : OthersIncome) : OthersIncome = {
     OthersIncome(airlineId, 
         profit = profit + income2.profit,
@@ -252,6 +252,7 @@ case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, e
         loungeUpkeep = loungeUpkeep + income2.loungeUpkeep,
         loungeCost = loungeCost + income2.loungeCost,
         loungeIncome = loungeIncome + income2.loungeIncome,
+        fuelProfit = fuelProfit + income2.fuelProfit,
         depreciation = depreciation + income2.depreciation,
         period = period,
         cycle = income2.cycle)
@@ -260,7 +261,7 @@ case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, e
 
 
 case class AirlineCashFlowItem(airlineId : Int, cashFlowType : CashFlowType.Value, amount : Long, var cycle : Int = 0)
-case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Long = 0, loanInterest : Long = 0, loanPrincipal : Long = 0, baseConstruction : Long = 0, buyAirplane : Long = 0, sellAirplane : Long = 0,  createLink : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
+case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Long = 0, loanInterest : Long = 0, loanPrincipal : Long = 0, baseConstruction : Long = 0, buyAirplane : Long = 0, sellAirplane : Long = 0,  createLink : Long = 0, facilityConstruction : Long = 0, oilContract : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
 /**
    * Current income is expected to be MONTHLY/YEARLY. Adds parameter (WEEKLY income) to this current income object and return a new Airline income with period same as this object but cycle as the parameter
    */
@@ -274,6 +275,8 @@ case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Lon
         buyAirplane = buyAirplane + cashFlow2.buyAirplane,
         sellAirplane = sellAirplane + cashFlow2.sellAirplane,
         createLink = createLink + cashFlow2.createLink,
+        facilityConstruction = facilityConstruction + cashFlow2.facilityConstruction,
+        oilContract = oilContract + cashFlow2.oilContract,
         period = period,
         cycle = cashFlow2.cycle)
   }
