@@ -80,6 +80,15 @@ GET		 /airlines/:airlineId/remove-alliance-member/:targetAirlineId  controllers.
 GET		 /airlines/:airlineId/accept-alliance-member/:targetAirlineId  controllers.AllianceApplication.addToAlliance(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/used-airplanes/models/:modelId	controllers.AirplaneApplication.getUsedAirplanes(airlineId : Int, modelId : Int)
 PUT		 /airlines/:airlineId/used-airplanes/airplanes/:airplaneId	controllers.AirplaneApplication.buyUsedAirplane(airlineId : Int, airplaneId : Int)
+GET		 /airlines/:airlineId/oil-contracts	controllers.OilApplication.getContracts(airlineId : Int)
+GET		 /airlines/:airlineId/oil-details	controllers.OilApplication.getDetails(airlineId : Int)
+GET		 /airlines/:airlineId/oil-contract-consideration	controllers.OilApplication.getContractConsideration(airlineId : Int, volume : Int, duration : Int)			
+GET		 /airlines/:airlineId/sign-oil-contract	controllers.OilApplication.signContract(airlineId : Int, volume : Int, duration : Int)
+DELETE	 /airlines/:airlineId/oil-contracts/:contractId	controllers.OilApplication.terminateContract(airlineId : Int, contractId : Int)
+GET	 	 /airlines/:airlineId/oil-inventory-options		controllers.OilApplication.getInventoryOptions(airlineId : Int)
+GET		 /airlines/:airlineId/set-oil-inventory-option  controllers.OilApplication.setInventoryOption(airlineId : Int, optionId : Int)
+GET		 /oil-prices	controllers.OilApplication.getOilPrices()
+
 
 GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)

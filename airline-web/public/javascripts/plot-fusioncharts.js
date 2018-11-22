@@ -624,3 +624,66 @@ function plotCashFlowChart(airlineCashFlows, period, container) {
 	})
 }
 
+function plotOilPriceChart(oilPrices, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
+	var data = []
+	var category = []
+	var total = 0 
+	var count = 0
+	
+	$.each(oilPrices, function(key, oilPrice) {
+		data.push({ value : oilPrice.price })
+		category.push({ "label" : oilPrice.cycle.toString() })
+		total += oilPrice.price
+		count ++;
+	})
+	
+	var average
+	if (count > 0)  {
+		average = total / count
+	} else {
+		average = 0
+	}
+	
+	
+	var chart = container.insertFusionCharts({
+		type: 'msline',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": "Week",
+	    		"yAxisName": "Oil Price Per Barrel",
+	    		"numberPrefix": "$",
+	    		"useroundedges": "1",
+	    		"animation": "1",
+	    		"showBorder":"0",
+	    		"showValues": "0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "bgAlpha":"0",
+                "setAdaptiveYMin":"1",
+                "labelStep": "4"
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : [{ "seriesname": "Price", "data" : data}],
+			"trendlines": [{
+	            "line": [
+	                {
+	                    "startvalue": average,
+	                    "color": "#A1D490",
+	                    "displayvalue": "Average",
+	                    "valueOnRight": "1",
+	                    "thickness": "2"
+	                }
+	            ]
+	        }]
+	    }
+	})
+}
+
+

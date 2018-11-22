@@ -7,9 +7,10 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.patson.model.airplane.Airplane
 import scala.util.Random
+import com.patson.model.oil.OilPrice
 
 object LinkSimulation {
-  private val FUEL_UNIT_COST = 0.08//for now...
+  private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
   private val CREW_UNIT_COST = 12 //for now...
   
   private[this] val VIP_COUNT = 5

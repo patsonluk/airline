@@ -415,6 +415,58 @@ function toggleMapAnimation() {
 	refreshLinks(true)	
 }
 
+var christmasMarker = false
+function toggleChristmasMarker() {
+	if (!christmasMarker) {
+		currentAnimationStatus = true
+		christmasMarker = true
+		document.getElementById('christmasMusic').play()
+	} else {
+		christmasMarker = false
+		document.getElementById('christmasMusic').pause()
+		$.each(flightMarkers, function(index, markersByLinkId) {
+			$.each(markersByLinkId.markers, function(index2, marker) {
+				marker.icon = {
+			        url: "assets/images/markers/dot.png",
+			        origin: new google.maps.Point(0, 0),
+			        anchor: new google.maps.Point(6, 6),
+			    };
+			})
+		})
+	}
+}
+
+var flightMarkerImageWeight = {
+	"assets/images/markers/dot.png" : 2000,
+	"assets/images/markers/christmas/snowflake.png" : 200,
+	"assets/images/markers/christmas/star.png" : 50,
+	"assets/images/markers/christmas/holly.png" : 20,
+	"assets/images/markers/christmas/bauble.png" : 20,
+	"assets/images/markers/christmas/candy-cane.png" : 10,
+	"assets/images/markers/christmas/gingerbread-man.png" : 10,
+	"assets/images/markers/christmas/santa-hat.png" : 2,
+}
+
+var flightMarkerWeightTotal = 0
+
+$.each(flightMarkerImageWeight, function(image, weight) {
+	flightMarkerWeightTotal += weight
+})
+
+function randomFlightMarker() {
+	var random = Math.random()
+	var acc = 0
+	var pickedImage = ""
+	$.each(flightMarkerImageWeight, function(image, weight) {
+		acc += weight / flightMarkerWeightTotal
+		if (acc >= random) {
+			pickedImage = image 
+			return false;
+		}
+	})
+	return pickedImage
+}
+
 //Use the DOM setInterval() function to change the offset of the symbol
 //at fixed intervals.
 function drawFlightMarker(line, link) {
@@ -471,6 +523,13 @@ function drawFlightMarker(line, link) {
 		var animation = window.setInterval(function() {
 			$.each(markersOfThisLink, function(key, marker) { 
 				if (count == marker.nextDepartureFrame) {
+					if (christmasMarker) {
+						marker.icon = {
+						        url: randomFlightMarker(),
+						        origin: new google.maps.Point(0, 0),
+						        anchor: new google.maps.Point(6, 6),
+						    };
+					} 
 					marker.isActive = true
 					marker.elapsedDuration = 0
 					marker.setPosition(from)
@@ -581,7 +640,8 @@ function refreshLinkDetails(linkId) {
 	    	    contentType: 'application/json; charset=utf-8',
 	    	    dataType: 'json',
 	    	    success: function(linkConsumptions) {
-    	    		$.each(linkConsumptions, function(index, linkConsumption) {
+	    	    	$("#linkCompetitons .data-row").remove()
+	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
     	    			if (linkConsumption.airlineId != airlineId) {
 		    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
 		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")

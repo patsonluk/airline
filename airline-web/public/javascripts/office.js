@@ -231,6 +231,7 @@ function updateIncomeSheet(airlineIncome) {
         $("#othersServiceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersServiceInvestment))
         $("#othersMaintenanceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersMaintenanceInvestment))
         $("#othersAdvertisement").text('$' + commaSeparateNumber(airlineIncome.othersAdvertisement))
+        $("#othersFuelProfit").text('$' + commaSeparateNumber(airlineIncome.othersFuelProfit))
         $("#othersDepreciation").text('$' + commaSeparateNumber(airlineIncome.othersDepreciation))
 	}
 }
@@ -287,6 +288,8 @@ function updateCashFlowSheet(airlineCashFlow) {
         $("#cashFlowSheet .buyAirplane").text('$' + commaSeparateNumber(airlineCashFlow.buyAirplane))
         $("#cashFlowSheet .sellAirplane").text('$' + commaSeparateNumber(airlineCashFlow.sellAirplane))
         $("#cashFlowSheet .createLink").text('$' + commaSeparateNumber(airlineCashFlow.createLink))
+        $("#cashFlowSheet .facilityConstruction").text('$' + commaSeparateNumber(airlineCashFlow.facilityConstruction))
+        $("#cashFlowSheet .oilContract").text('$' + commaSeparateNumber(airlineCashFlow.oilContract))
 	}
 }
 

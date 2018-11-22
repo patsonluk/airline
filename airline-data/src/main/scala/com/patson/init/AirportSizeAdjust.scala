@@ -236,8 +236,8 @@ object AirportSizeAdjust {
         "CLO" -> 4,
         "GYE" -> 4,
         "UIO" -> 4,
-        "JTR" -> 3 //Santorini
-        
+        "JTR" -> 3, //Santorini
+        "MDE" -> 5 //https://en.wikipedia.org/wiki/Jos%C3%A9_Mar%C3%ADa_C%C3%B3rdova_International_Airport around 7 mil passengers
       )
       
   
