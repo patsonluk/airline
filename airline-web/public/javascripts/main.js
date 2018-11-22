@@ -254,6 +254,10 @@ function initMap() {
   map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapAnimationButton")[0]);
   $("#toggleMapAnimationButton").show()
   
+  $("#toggleMapChristmasButton").index = 3
+  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapChristmasButton")[0]);
+  $("#toggleMapChristmasButton").show()
+  
 //  $("#linkHistoryButton").index = 2
 //  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
   
