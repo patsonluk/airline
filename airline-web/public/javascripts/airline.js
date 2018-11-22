@@ -424,6 +424,15 @@ function toggleChristmasMarker() {
 	} else {
 		christmasMarker = false
 		document.getElementById('christmasMusic').pause()
+		$.each(flightMarkers, function(index, markersByLinkId) {
+			$.each(markersByLinkId.markers, function(index2, marker) {
+				marker.icon = {
+			        url: "assets/images/markers/dot.png",
+			        origin: new google.maps.Point(0, 0),
+			        anchor: new google.maps.Point(6, 6),
+			    };
+			})
+		})
 	}
 }
 
@@ -520,7 +529,7 @@ function drawFlightMarker(line, link) {
 						        origin: new google.maps.Point(0, 0),
 						        anchor: new google.maps.Point(6, 6),
 						    };
-					}
+					} 
 					marker.isActive = true
 					marker.elapsedDuration = 0
 					marker.setPosition(from)
