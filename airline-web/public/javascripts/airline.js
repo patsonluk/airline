@@ -421,6 +421,7 @@ function toggleChristmasMarker() {
 		currentAnimationStatus = true
 		christmasMarker = true
 		document.getElementById('christmasMusic').play()
+		$("body").addClass('christmas')
 	} else {
 		christmasMarker = false
 		document.getElementById('christmasMusic').pause()
@@ -433,6 +434,7 @@ function toggleChristmasMarker() {
 			    };
 			})
 		})
+		$("body").removeClass('christmas')
 	}
 }
 
