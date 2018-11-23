@@ -12,6 +12,8 @@ $('#live-chat header').on('click', function() {
 				$("#live-chat h4").text("Game Chat");
 				$('.notify-bubble').hide();
 				$('.notify-bubble').text("0");
+				var scroller = document.getElementById("chatBox");
+				scroller.scrollTop = scroller.scrollHeight;
 			}
         });
 });
