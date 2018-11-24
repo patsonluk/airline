@@ -620,10 +620,10 @@
 			    		<div id="downgradeRejection" style="display:none;">
 			    			<img src='@routes.Assets.versioned("images/icons/information.png")'><span id="downgradeRejectionReason"></span>
 			    		</div>
-			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick="buildBase(true)">Build Headquarter</div>
-    					<div class="button" id="buildBaseButton" style="display: none;" onclick="buildBase(false)">Build Base</div>
-    					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick="buildBase(false, parseInt($('#airportDetailsBaseScale').text()) + 1)">Upgrade Base</div>
-    					<div class="button" id="downgradeBaseButton" style="display: none;" onclick="downgradeBase()">Downgrade Base</div>
+			    		<div class="button" id="buildHeadquarterButton" style="display: none;" onclick='promptConfirm("Build your headquarters at this airport?", data => buildBase(true))'>Build Headquarter</div>
+    					<div class="button" id="buildBaseButton" style="display: none;" onclick='promptConfirm("Build a base at this airport?", data => buildBase(false))'>Build Base</div>
+    					<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade Base</div>
+    					<div class="button" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade Base</div>
     					<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed.", deleteBase)'>Remove Base</div>
     					
 <!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
