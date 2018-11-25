@@ -631,7 +631,7 @@ function refreshLinkDetails(linkId) {
 	    	}
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
 	    	$("#linkDistance").text(link.distance + " km")
-	    	$("#linkQuality").text(link.computedQuality)
+	    	$("#linkQuality").html(getGradeStarsImgs(Math.round(link.computedQuality / 10)) + link.computedQuality)
 	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
 	    	$("#linkCurrentDetails").show()
 	    	$("#linkToAirportId").val(link.toAirportId)

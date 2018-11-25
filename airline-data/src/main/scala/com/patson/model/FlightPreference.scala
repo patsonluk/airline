@@ -130,10 +130,10 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   def getQualityAdjustRatio(homeAirport : Airport, link : Link, linkClass : LinkClass) : Double = {
     val qualityExpectation = homeAirport.expectedQuality(link.flightType, linkClass)
     val qualityDelta = link.computedQuality - qualityExpectation
-    val GOOD_QUALITY_DELTA = 30 
+    val GOOD_QUALITY_DELTA = 20 
     val priceAdjust =
       if (qualityDelta < 0) { 
-        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 2 //for example, expect 50, actual 0, it will return 2
+        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 2 
       } else if (qualityDelta < GOOD_QUALITY_DELTA) { 
         1 - qualityDelta.toDouble / Link.MAX_QUALITY * 0.5 
       } else { //reduced benefit on extremely high quality

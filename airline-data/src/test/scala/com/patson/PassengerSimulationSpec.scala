@@ -540,7 +540,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 0.6
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -609,7 +609,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -645,7 +645,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -680,7 +680,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -751,7 +751,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 3
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -935,7 +935,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(ECONOMY, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, ECONOMY)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 0, 0), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -959,8 +959,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.4)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.7)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.5)
     }
     
     
@@ -973,7 +973,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-          val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+          val quality = fromAirport.expectedQuality(linkType, FIRST)
           val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * 1.5, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
           newLink.setQuality(quality)
           airportWalker = toAirport
@@ -1061,7 +1061,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-          val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+          val quality = fromAirport.expectedQuality(linkType, FIRST)
           val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
           newLink.setQuality(quality)
           airportWalker = toAirport
@@ -1216,7 +1216,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -1251,7 +1251,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -1288,7 +1288,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)    
       
@@ -1325,7 +1325,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)
           
@@ -1362,7 +1362,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val quality = Link.neutralQualityOfClass(FIRST, clonedFromAirport, toAirport, linkType)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, 1, linkType)
       newLink.setQuality(quality)
           

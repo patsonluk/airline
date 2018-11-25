@@ -27,8 +27,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   val testAirline1 = Airline("airline 1", id = 1)
   val testAirline2 = Airline("airline 2", id = 2)
   val topAirline = Airline("top airline", id = 3)
-  val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, 0, 0, 0, 0)
-  val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, 0, 0, 0, 0)
+  val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, power = 40000, population = 1, 0, 0)
+  val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, power = 40000, population = 1, 0, 0)
   
   
   val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
@@ -39,8 +39,10 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   fromAirport.initLounges(scala.collection.immutable.List.empty)
   toAirport.initLounges(scala.collection.immutable.List.empty)
   val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-  val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport, flightType), 600, 1, flightType)  //make the quality a bit higher
-  val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = Link.neutralQualityOfClass(FIRST, fromAirport, toAirport, flightType), 600, 1, flightType)  //make the quality a bit higher 
+  val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, distance = distance, defaultCapacity, rawQuality = 0, 600, 1, flightType)  
+  val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 0, 600, 1, flightType)  
+  airline1Link.setQuality(fromAirport.expectedQuality(flightType, FIRST))
+  airline2Link.setQuality(fromAirport.expectedQuality(flightType, FIRST))
   val topAirlineLink = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 100, 600, 1, flightType) 
   airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline1, 0, 100, 0, 0)))
   airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline2, 0, 100, 0, 0)))
@@ -220,8 +222,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.setAirlineLoyalty(adjustedAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, defaultPrice, 10000, defaultCapacity, 60, 600, 1, flightType)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 10, 600, 1, flightType)
-      airline1Link.setQuality(30)
-      airline2Link.setQuality(20)
+      airline1Link.setQuality(55)
+      airline2Link.setQuality(45)
        
       var airline1Picked = 0
       var airline2Picked = 0
@@ -231,7 +233,6 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         val link2Cost = preference.computeCost(airline2Link, ECONOMY)
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
-      println("EQ " + fromAirport.expectedQuality(flightType, ECONOMY))
       val ratio = airline1Picked.toDouble / airline2Picked 
       ratio.shouldBe( >= (1.4)) //more people should pick airline 1
       ratio.shouldBe( < (1.6)) //yet some will still pick airline 2
@@ -268,8 +269,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       fromAirport.setAirlineLoyalty(adjustedAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, defaultPrice, 10000, defaultCapacity, 60, 600, 1, flightType)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 10, 600, 1, flightType)
-      airline1Link.setQuality(60)
-      airline2Link.setQuality(10)
+      airline1Link.setQuality(80)
+      airline2Link.setQuality(40)
        
       var airline1Picked = 0
       var airline2Picked = 0
