@@ -181,6 +181,11 @@ object DemandGenerator {
         }
       }
       
+      //adjustments : China has very extensive highspeed rail network
+      if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN") {
+        adjustedDemand *= 0.6
+      }
+      
       //adjust by features
       fromAirport.getFeatures().foreach { feature =>
         val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType)
