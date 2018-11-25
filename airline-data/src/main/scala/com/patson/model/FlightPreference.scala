@@ -36,7 +36,8 @@ case class SimplePreference(priceSensitivity : Double, preferredLinkClass: LinkC
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
 }
 
-case class AppealPreference(appealList : Map[Int, AirlineAppeal], preferredLinkClass : LinkClass, loungeLevelRequired : Int, id : Int)  extends FlightPreference{
+case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, loungeLevelRequired : Int, id : Int)  extends FlightPreference{
+  val appealList : Map[Int, AirlineAppeal] = homeAirport.getAirlineAppeals
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   //val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
@@ -69,8 +70,12 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], preferredLinkC
     
     perceivedPrice = (perceivedPrice / actualReduceFactor).toInt
     
-    //adjust by quality  
-    perceivedPrice = (perceivedPrice * link.computeQualityPriceAdjust(linkClass)).toInt
+    //adjust by quality
+    
+    //println("neutral quality : " + neutralQuality + " distance : " + distance)
+  
+    
+    perceivedPrice = (perceivedPrice * getQualityAdjustRatio(homeAirport, link, linkClass)).toInt
         
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
@@ -122,6 +127,25 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], preferredLinkC
      
   }
   
+  def getQualityAdjustRatio(homeAirport : Airport, link : Link, linkClass : LinkClass) : Double = {
+    val qualityExpectation = homeAirport.expectedQuality(link.flightType, linkClass)
+    val qualityDelta = link.computedQuality - qualityExpectation
+    val GOOD_QUALITY_DELTA = 30 
+    val priceAdjust =
+      if (qualityDelta < 0) { 
+        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 2 //for example, expect 50, actual 0, it will return 2
+      } else if (qualityDelta < GOOD_QUALITY_DELTA) { 
+        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 0.5 
+      } else { //reduced benefit on extremely high quality
+        val extraDelta = qualityDelta - GOOD_QUALITY_DELTA
+        1 - GOOD_QUALITY_DELTA.toDouble / Link.MAX_QUALITY * 0.5 - extraDelta.toDouble / Link.MAX_QUALITY * 0.2
+      }
+    //TODO this makes higher income country
+    //println(qualityExpectation + " vs " + link.computedQuality + " : " + priceAdjust)
+    priceAdjust
+  }
+  
+  
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = {
     if (loungeLevelRequired > 0) {
       fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT
@@ -133,9 +157,9 @@ case class AppealPreference(appealList : Map[Int, AirlineAppeal], preferredLinkC
 
 object AppealPreference {
   var count: Int = 0
-  def getAppealPreferenceWithId(appealList : Map[Int, AirlineAppeal], linkClass : LinkClass, loungeLevelRequired : Int) = {
+  def getAppealPreferenceWithId(homeAirport : Airport, linkClass : LinkClass, loungeLevelRequired : Int) = {
     count += 1
-    AppealPreference(appealList, linkClass, loungeLevelRequired = loungeLevelRequired, count)
+    AppealPreference(homeAirport, linkClass, loungeLevelRequired = loungeLevelRequired, count)
   }
   
 }

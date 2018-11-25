@@ -22,13 +22,13 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
   //private[this] var loungesLoaded = false
   
-  
   private[this] var airportImageUrl : Option[String] = None
   private[this] var cityImageUrl : Option[String] = None
   
   private[model] var country : Option[Country] = None
   
   val income = if (population > 0) (power / population).toInt  else 0
+  lazy val incomeLevel = Computation.getIncomeLevel(income)
   
   def availableSlots : Int = {
     if (slotAssignmentsLoaded) {
@@ -372,6 +372,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     size >= airplaneModel.minAirportSize
   }
   
+  val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
+    Math.min(incomeLevel, 50) * 40 / 50 + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass) //40% on income level, 60% on flight adjust
+  }
+  
   private[this] def getCountry() : Country = {
     if (country.isEmpty) {
       country = CountrySource.loadCountryByCode(countryCode)
@@ -406,6 +410,16 @@ object Airport {
   val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
   val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
   val NON_BASE_MAX_SLOT = 70
+  
+  import FlightType._
+  val qualityExpectationFlightTypeAdjust = 
+  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 10, 10),
+        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 20, 30),
+        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(5, 20, 30),
+        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(10, 25, 35),
+        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(15, 30, 40),
+        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(20, 35, 50),
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(20, 35, 50))
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)

@@ -120,30 +120,6 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   
-    
-  //println("neutral quality : " + neutralQuality + " distance : " + distance)
-  def computeQualityPriceAdjust(linkClass : LinkClass) : Double = {
-    if (!computedQualityPriceAdjust.containsKey(linkClass)) {
-      val neutralQuality = Link.neutralQualityOfClass(linkClass, from, to, flightType)
-      val qualityDelta = computedQuality - neutralQuality.toDouble
-      
-      val multiplier =
-        if (qualityDelta < 0) { //neutral at 50, quality 0 yields 2.0 (heavy penalty)
-          2
-        } else { //neutral at 50, quality 100 yields 0.75 (slight advantage)
-          0.5
-        }
-      
-        var priceAdjust = 1 - (qualityDelta / Link.MAX_QUALITY) * multiplier
-        if (priceAdjust < 0.75) { //don't reduce too much
-          priceAdjust = 0.75
-        }
-      
-      computedQualityPriceAdjust.put(linkClass, priceAdjust)
-    }
-    computedQualityPriceAdjust.get(linkClass)
-  }
-  
   lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
 }
 
