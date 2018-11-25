@@ -214,11 +214,16 @@
 			    					<h4>Current Details</h4>
 				    				<div class="table-row">
 					    				<div class="label"><h5>From:</h5></div>
-					    				<div class="value clickable" id="linkFromAirport"></div>
+					    				<div class="value">
+					    					<span class="clickable" id="linkFromAirport"></span>
+					    				</div>
+					    				
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>To:</h5></div>
-					    				<div class="value clickable" id="linkToAirport"></div>
+					    				<div class="value">
+					    					<span class="clickable" id="linkToAirport"></span>
+					    				</div>
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>Flight Code:</h5></div>
@@ -339,13 +344,21 @@
 					    			<div class="label"><h5>From:</h5></div>
 				    				<div class="value">
 				    					<span id="planLinkFromAirportName" class="clickable"></span>
+			    						<img class="button" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
 				    					<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/globe--pencil.png")' class='button' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
+					    				
 				    					<div class="value"><select id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
+				    					
 				    				</div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>To:</h5></div>
-					    			<div class="value clickable" id="planLinkToAirportName"></div>
+					    			<div class="value">
+					    				<span id="planLinkToAirportName" class="clickable"></span>
+					    				<img class="button"  src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(false)">
+					    			</div>
+					    			
+					    			
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Flight Code:</h5></div>
@@ -2298,6 +2311,39 @@
 	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
 	  </div>
 	</div>
+	<div id="expectedQualityModal" class="modal">
+		<div class="modal-content"  style="width : 500px;">
+			<span class="close" onclick="closeModal($('#expectedQualityModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;">Flight Quality Expectation</h3>
+			<div style="margin-bottom: 10px;">Quality expection for this route from passengers of this airport:</div>
+			<div class="table expectedQualityTable" style="width: 100%; margin-bottom: 10px;">
+				<div class="table-row">
+    				<div class="label" style="width: 50%"><h5>First Class:</h5></div>
+    				<div class="expectedQualityValue firstClass" style="width: 50%"></div>
+    			</div>
+    			<div class="table-row">
+    				<div class="label" style="width: 50%"><h5>Business Class:</h5></div>
+    				<div class="expectedQualityValue businessClass" style="width: 50%"></div>
+    			</div>
+    			<div class="table-row">
+    				<div class="label" style="width: 50%"><h5>Economy Class:</h5></div>
+    				<div class="expectedQualityValue economyClass" style="width: 50%"></div>
+    			</div>
+			</div>
+			<div>
+				Some passengers are reluctant to take flights that do not match expected quality<br/>
+				</br>
+				Flight Quality is affected by:
+			</div>
+			<ul>
+				<li class="label" style="padding: 5px;">- Fleet age</li>
+				<li class="label" style="padding: 5px;">- Service level per route</li>
+				<li class="label" style="padding: 5px;">- Company wide level Service Quality (by Service Funding in Office View)</li>
+			</ul>
+			
+	    </div>
+	</div>
+					    		
 	
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>

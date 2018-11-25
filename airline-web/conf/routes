@@ -37,6 +37,7 @@ GET		 /airlines/:airlineId/links	  	  controllers.LinkApplication.getLinks(airli
 PUT 	 /airlines/:airlineId/links 	  controllers.LinkApplication.addLink(airlineId : Int)
 DELETE   /airlines/:airlineId/links/:linkId 		 	controllers.LinkApplication.deleteLink(airlineId : Int, linkId : Int)
 GET		 /airlines/:airlineId/links/:linkId 			controllers.LinkApplication.getLink(airlineId : Int, linkId : Int)
+GET		 /airlines/:airlineId/expectedQuality/:fromAirportId/:toAirportId/:queryAirportId	controllers.LinkApplication.getExpectedQuality(airlineId : Int, fromAirportId : Int, toAirportId : Int, queryAirportId : Int)
 GET		 /airlines/:airlineId/bases		  controllers.AirlineApplication.getBases(airlineId : Int)
 GET		 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.getBase(airlineId : Int, airportId : Int)
 DELETE	 /airlines/:airlineId/bases/:airportId  		controllers.AirlineApplication.deleteBase(airlineId : Int, airportId : Int)

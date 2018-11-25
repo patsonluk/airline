@@ -371,6 +371,26 @@ class LinkApplication extends Controller {
     }
   }
   
+  def getExpectedQuality(airlineId : Int, fromAirportId : Int, toAirportId : Int, queryAirportId : Int) = AuthenticatedAirline(airlineId) { request =>
+    AirportSource.loadAirportById(fromAirportId) match {
+      case Some(fromAirport) =>
+        AirportSource.loadAirportById(toAirportId) match {
+          case Some(toAirport) =>
+            val flightType = Computation.getFlightType(fromAirport, toAirport, Computation.calculateDistance(fromAirport, toAirport))
+            val airport = if (fromAirportId == queryAirportId) fromAirport else toAirport
+            var result = Json.obj()
+            LinkClass.values.foreach { linkClass : LinkClass =>
+              result += (linkClass.code -> JsNumber(airport.expectedQuality(flightType, linkClass)))
+            }
+            Ok(result)
+          case None =>
+          NotFound
+        }
+      case None =>
+        NotFound
+    }
+  }
+  
   def getAllLinks() = Action {
      val links = LinkSource.loadAllLinks()
     Ok(Json.toJson(links))

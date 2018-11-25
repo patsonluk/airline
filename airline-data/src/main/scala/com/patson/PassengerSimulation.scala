@@ -228,11 +228,17 @@ object PassengerSimulation {
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
     
       val LINK_COST_TOLERANCE_FACTOR = 1.3;
+      val incomeAdjustedFactor : Double = 
+        if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
+          1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.4 //can reduce down to 0.6 
+        } else {
+          1
+        }
       val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
           val link = linkConsideration.link 
           
           
-          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass) * LINK_COST_TOLERANCE_FACTOR
+          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass) * LINK_COST_TOLERANCE_FACTOR * incomeAdjustedFactor
           
 //          if (linkConsideration.linkClass == BUSINESS) {
 //            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 

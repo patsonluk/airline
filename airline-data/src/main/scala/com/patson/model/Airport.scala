@@ -373,7 +373,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   
   val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
-    Math.min(incomeLevel, 50) * 40 / 50 + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass) //40% on income level, 60% on flight adjust
+    Math.min(incomeLevel, 50) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass) //50% on income level, 50% on flight adjust
   }
   
   private[this] def getCountry() : Country = {
@@ -414,12 +414,12 @@ object Airport {
   import FlightType._
   val qualityExpectationFlightTypeAdjust = 
   Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 10, 10),
-        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 20, 30),
-        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(5, 20, 30),
-        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(10, 25, 35),
-        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(15, 30, 40),
-        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(20, 35, 50),
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(20, 35, 50))
+        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 10, 20),
+        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(5, 10, 20),
+        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 15, 25),
+        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 20, 30),
+        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 30, 40),
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 30, 40))
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)
