@@ -28,7 +28,7 @@ object Pricing {
       }
       remainDistance -= priceBracket._1
     }
-    ((flightType match {
+    price = ((flightType match {
       case SHORT_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL => (price * INTERNATIONAL_PRICE_MULTIPLIER)
       case SHORT_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => (price * INTERCONTINENTAL_PRICE_MULTIPLIER)
       case _ => price
