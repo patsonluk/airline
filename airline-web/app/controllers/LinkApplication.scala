@@ -35,6 +35,8 @@ import com.patson.data.CycleSource
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import com.patson.model.LinkConsumptionHistory
+import com.patson.model.FlightPreferenceType
 
 class LinkApplication extends Controller {
   object TestLinkReads extends Reads[Link] {
@@ -193,6 +195,8 @@ class LinkApplication extends Controller {
       "toAirportId" -> number
     )(PlanLinkData.apply)(PlanLinkData.unapply)
   )
+  
+  val countryByCode = CountrySource.loadAllCountries.map(country => (country.countryCode, country)).toMap
   
   def addTestLink() = Action { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
@@ -760,6 +764,42 @@ class LinkApplication extends Controller {
       BadRequest("Cannot Update maintenance quality")
     }
   }
+  
+  
+  def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) {
+    val consumptionEntries : List[LinkConsumptionHistory]= ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
+    val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).mapValues(entries => entries.map(_.passengerCount).sum)
+    
+    
+    
+    var countryJson = Json.arr()
+    consumptionByCountry.foreach {
+      case(countryCode, passengerCount) => 
+        countryByCode.get(countryCode).foreach { country => //just in case the first turn after patch this will be ""
+          countryJson = countryJson.append(Json.obj("countryName" -> country.name, "countryCode" -> countryCode, "passengerCount" -> passengerCount))  
+        }
+         
+    }
+    var passengerTypeJson = Json.arr()
+    consumptionByPassengerType.foreach {
+      case(passengerType, passengerCount) => passengerTypeJson = passengerTypeJson.append(Json.obj("title" -> getPassengerTypeTitle(passengerType), "passengerCount" -> passengerCount)) 
+    }
+    
+    var preferenceTypeJson = Json.arr()
+    consumptionByPreferenceType.foreach {
+      case(preferenceType, passengerCount) => preferenceTypeJson = preferenceTypeJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "passengerCount" -> passengerCount)) 
+    }
+    
+    Ok(Json.obj("country" -> countryJson, "passengerType" -> passengerTypeJson, "preferenceType" -> preferenceTypeJson))
+  }
+  
+  val getPassengerTypeTitle = (passengerType : PassengerType.Value) =>  passengerType match {
+    case PassengerType.BUSINESS => "Business"
+    case PassengerType.TOURIST => "Tourist"
+  }
+  
 
   
   class PlanLinkResult(distance : Double, availableAirplanes : List[Airplane])
