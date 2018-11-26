@@ -78,7 +78,7 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     if (finalCost >= 0) {
       finalCost  
     } else { //just to play safe - do NOT allow negative cost link
-      cost
+      0
     }
   }
   
