@@ -13,8 +13,25 @@ abstract class FlightPreference {
   def computeCost(link : Link, linkClass : LinkClass) : Double
   def preferredLinkClass : LinkClass
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean //whether this flight preference is applicable to this from/to airport
+  def getPreferenceType : FlightPreferenceType.Value
 }
 
+object FlightPreferenceType extends Enumeration {
+  type FlightType = Value
+  
+  
+  protected case class Val(title : String, description : String) extends super.Val { 
+    
+  } 
+  implicit def valueToFlightPreferenceTypeVal(x: Value) = x.asInstanceOf[Val] 
+
+  val BUDGET = Val("Budget Traveler", "") 
+  val SIMPLE  = Val("Simple Traveler", "") 
+  val APPEAL   = Val("Appeal Driven Traveler", "") 
+  val ELITE    = Val("Elite Traveler", "") 
+}
+
+import FlightPreferenceType._
 /**
  * priceSensitivity : how sensitive to the price, base value is 1 (100%)
  * 
@@ -31,6 +48,14 @@ case class SimplePreference(priceSensitivity : Double, preferredLinkClass: LinkC
     
     val cost = standardPrice + deltaFromStandardPrice * priceSensitivity
     cost
+  }
+  
+  val getPreferenceType = {
+    if (priceSensitivity >= 1) {
+      BUDGET
+    } else {
+      SIMPLE
+    }
   }
   
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
@@ -124,7 +149,14 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     } else { //just to play safe - do NOT allow negative cost link
       return 0
     }
-     
+  }
+  
+  val getPreferenceType = {
+    if (loungeLevelRequired > 0) {
+      ELITE
+    } else {
+      APPEAL
+    }
   }
   
   def getQualityAdjustRatio(homeAirport : Airport, link : Link, linkClass : LinkClass) : Double = {

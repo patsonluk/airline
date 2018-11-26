@@ -258,8 +258,11 @@
 					    		
 					    		<div class="divider"></div>
 					    		<div class="table" id="linkHistoryDetails" style="width: 100%">
-				    				<h4>History</h4>	
-					    			<div class="table-row">
+			    					<h4>
+			    						History
+			    						<img src='@routes.Assets.versioned("images/icons/chart-pie.png")' class="button" title="View Passenger Composition"onclick="showLinkComposition($('#actionLinkId').val())" style="vertical-align: text-bottom">
+			    					</h4>
+				    				<div class="table-row">
 					    				<div class="label"><h5>Price:</h5></div>
 					    				<div class="value" id="linkHistoryPrice"></div>
 					    			</div>
@@ -2311,6 +2314,8 @@
 	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
 	  </div>
 	</div>
+	
+	<!-- airport passenger quality expectation model -->
 	<div id="expectedQualityModal" class="modal">
 		<div class="modal-content"  style="width : 500px;">
 			<span class="close" onclick="closeModal($('#expectedQualityModal'))">&times;</span>
@@ -2340,6 +2345,29 @@
 				<li class="label" style="padding: 5px;">- Service level per route</li>
 				<li class="label" style="padding: 5px;">- Company wide level Service Quality (by Service Funding in Office View)</li>
 			</ul>
+			
+	    </div>
+	</div>
+	
+	<!-- link passenger composition modal -->
+	<div id="linkCompositionModal" class="modal">
+		<div class="modal-content"  style="width : 800px; height: 250px;">
+			<span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;">Passenger Composition</h3>
+			<div style="width: 100%; float: left;">
+  				<div style="float: left;">
+  					<h5 align="center">Country</h5>
+  					<div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
+  				</div>
+  				<div style="float: left;">	
+  					<h5 align="center">Passenger Type</h5>
+  					<div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
+  				</div>
+  				<div style="float: left;">
+  					<h5 align="center">Travel Preference</h5>	
+  					<div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
+ 				</div>
+			</div>
 			
 	    </div>
 	</div>

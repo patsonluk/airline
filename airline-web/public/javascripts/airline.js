@@ -1888,3 +1888,36 @@ function showLinkExpectedQualityModal(isFromAirport) {
 	});
 }
 
+function showLinkComposition(linkId) {
+	var url = "airlines/" + activeAirline.id + "/link-composition/" + linkId
+	
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
+	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
+	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
+	    	
+	    	$('#linkCompositionModal').fadeIn(200)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    },
+	    beforeSend: function() {
+	    	$('body .loadingSpinner').show()
+	    },
+	    complete: function(){
+	    	$('body .loadingSpinner').hide()
+	    }
+	});
+	
+	
+	
+	
+	
+}
+
