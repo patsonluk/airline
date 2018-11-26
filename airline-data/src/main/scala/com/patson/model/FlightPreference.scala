@@ -14,6 +14,24 @@ abstract class FlightPreference {
   def preferredLinkClass : LinkClass
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean //whether this flight preference is applicable to this from/to airport
   def getPreferenceType : FlightPreferenceType.Value
+  
+  def getQualityAdjustRatio(homeAirport : Airport, link : Link, linkClass : LinkClass) : Double = {
+    val qualityExpectation = homeAirport.expectedQuality(link.flightType, linkClass)
+    val qualityDelta = link.computedQuality - qualityExpectation
+    val GOOD_QUALITY_DELTA = 20 
+    val priceAdjust =
+      if (qualityDelta < 0) { 
+        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 2 
+      } else if (qualityDelta < GOOD_QUALITY_DELTA) { 
+        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 0.5 
+      } else { //reduced benefit on extremely high quality
+        val extraDelta = qualityDelta - GOOD_QUALITY_DELTA
+        1 - GOOD_QUALITY_DELTA.toDouble / Link.MAX_QUALITY * 0.5 - extraDelta.toDouble / Link.MAX_QUALITY * 0.2
+      }
+    //TODO this makes higher income country
+    //println(qualityExpectation + " vs " + link.computedQuality + " : " + priceAdjust)
+    priceAdjust
+  }
 }
 
 object FlightPreferenceType extends Enumeration {
@@ -41,13 +59,27 @@ import FlightPreferenceType._
  * 
  * Take note that 0 would means a preference that totally ignore the price difference (could be dangerous as very expensive ticket will get through)
  */
-case class SimplePreference(priceSensitivity : Double, preferredLinkClass: LinkClass) extends FlightPreference {
+case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, preferredLinkClass: LinkClass) extends FlightPreference {
   def computeCost(link : Link, linkClass : LinkClass) = {
     val standardPrice = Pricing.computeStandardPrice(link, linkClass)
     val deltaFromStandardPrice = link.price(linkClass) - standardPrice 
     
-    val cost = standardPrice + deltaFromStandardPrice * priceSensitivity
-    cost
+    var cost = standardPrice + deltaFromStandardPrice * priceSensitivity
+    
+    val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 2) / 3  //dumpen the effect
+    cost = (cost * qualityAdjustedRatio).toInt
+    
+    val noise = (0.9 + (Util.getBellRandom(0)) * 0.1) // max noise : 0.8 - 1.2
+
+    
+    //NOISE?
+    val finalCost = cost * noise
+    
+    if (finalCost >= 0) {
+      finalCost  
+    } else { //just to play safe - do NOT allow negative cost link
+      cost
+    }
   }
   
   val getPreferenceType = {
@@ -158,25 +190,6 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
       APPEAL
     }
   }
-  
-  def getQualityAdjustRatio(homeAirport : Airport, link : Link, linkClass : LinkClass) : Double = {
-    val qualityExpectation = homeAirport.expectedQuality(link.flightType, linkClass)
-    val qualityDelta = link.computedQuality - qualityExpectation
-    val GOOD_QUALITY_DELTA = 20 
-    val priceAdjust =
-      if (qualityDelta < 0) { 
-        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 2 
-      } else if (qualityDelta < GOOD_QUALITY_DELTA) { 
-        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 0.5 
-      } else { //reduced benefit on extremely high quality
-        val extraDelta = qualityDelta - GOOD_QUALITY_DELTA
-        1 - GOOD_QUALITY_DELTA.toDouble / Link.MAX_QUALITY * 0.5 - extraDelta.toDouble / Link.MAX_QUALITY * 0.2
-      }
-    //TODO this makes higher income country
-    //println(qualityExpectation + " vs " + link.computedQuality + " : " + priceAdjust)
-    priceAdjust
-  }
-  
   
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = {
     if (loungeLevelRequired > 0) {
