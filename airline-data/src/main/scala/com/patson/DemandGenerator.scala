@@ -243,9 +243,11 @@ object DemandGenerator {
     flightPreferences.append((SimplePreference(0.9, ECONOMY), 2))
     
     val budgetTravelerMultiplier =
-      if (homeAirport.income < Country.LOW_INCOME_THRESHOLD) {
+      if (homeAirport.income < Country.LOW_INCOME_THRESHOLD / 2) {
         3
-      } else {
+      } else if (homeAirport.income < Country.LOW_INCOME_THRESHOLD) {
+    	2
+  	  } else {
         1
       }
     flightPreferences.append((SimplePreference(1, ECONOMY), 2 * budgetTravelerMultiplier)) //average sensitivity
