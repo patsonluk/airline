@@ -241,15 +241,22 @@ object DemandGenerator {
     val flightPreferences = ListBuffer[(FlightPreference, Int)]()
     flightPreferences.append((SimplePreference(0.7, ECONOMY), 1)) //someone that does not care much
     flightPreferences.append((SimplePreference(0.9, ECONOMY), 2))
-    flightPreferences.append((SimplePreference(1, ECONOMY), 2)) //average sensitivity
-    flightPreferences.append((SimplePreference(2, ECONOMY), 2)) //quite sensitive to price
-    flightPreferences.append((SimplePreference(5, ECONOMY), 1)) //very sensitive to price
+    
+    val budgetTravelerMultiplier =
+      if (homeAirport.income < Country.LOW_INCOME_THRESHOLD) {
+        3
+      } else {
+        1
+      }
+    flightPreferences.append((SimplePreference(1, ECONOMY), 2 * budgetTravelerMultiplier)) //average sensitivity
+    flightPreferences.append((SimplePreference(2, ECONOMY), 2 * budgetTravelerMultiplier)) //quite sensitive to price
+    flightPreferences.append((SimplePreference(5, ECONOMY), 1 * budgetTravelerMultiplier)) //very sensitive to price
 
         
     //for now 5 * 3 loyalty preferences per airport
     val loyaltyPreferenceCount = 5;
     for (i <- 0 until loyaltyPreferenceCount) {
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 10)) 
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4)) 
       flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0), 2))
       flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 0), 2))
       flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 1), 1))
