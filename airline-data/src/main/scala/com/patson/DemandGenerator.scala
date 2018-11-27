@@ -241,23 +241,27 @@ object DemandGenerator {
     val flightPreferences = ListBuffer[(FlightPreference, Int)]()
     //ECONOMY prefs
     flightPreferences.append((SimplePreference(homeAirport, 0.7, ECONOMY), 1)) //someone that does not care much
-    flightPreferences.append((SimplePreference(homeAirport, 0.9, ECONOMY), 2))
+    flightPreferences.append((SimplePreference(homeAirport, 0.9, ECONOMY), 1))
     
     val budgetTravelerMultiplier =
       if (homeAirport.income < Country.LOW_INCOME_THRESHOLD / 2) {
         3
       } else if (homeAirport.income < Country.LOW_INCOME_THRESHOLD) {
-    	2
+    	  2
   	  } else {
         1
       }
-    flightPreferences.append((SimplePreference(homeAirport, 1, ECONOMY), 2 * budgetTravelerMultiplier)) //average sensitivity
-    flightPreferences.append((SimplePreference(homeAirport, 2, ECONOMY), 2 * budgetTravelerMultiplier)) //quite sensitive to price
-    flightPreferences.append((SimplePreference(homeAirport, 5, ECONOMY), 1 * budgetTravelerMultiplier)) //very sensitive to price
+    
+    for (i <- 0 until budgetTravelerMultiplier) {
+      flightPreferences.append((SimplePreference(homeAirport, 1, ECONOMY), 2)) //average sensitivity
+      flightPreferences.append((SimplePreference(homeAirport, 2, ECONOMY), 2)) //quite sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 5, ECONOMY), 1)) //very sensitive to price
+    }
     
     flightPreferences.append((SpeedPreference(homeAirport, ECONOMY), 2))
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 3))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.5), 5))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.5), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.5), 2))
     
     
     //BUSINSES prefs
