@@ -391,7 +391,7 @@ object PassengerSimulation {
         
         //then find the shortest route based on the cost
         
-        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
+        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
         if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
           print(".")
           if (progressCount.incrementAndGet() % 10 == 0) {
@@ -496,8 +496,8 @@ object PassengerSimulation {
    * Returns a map with valid route in format of
    * Map[toAiport, Route]
    */
-  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxIteration : Int) : Map[Airport, Route] = {
-   
+  def findShortestRoute(passengerGroup : PassengerGroup, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : Map[Int, Int], maxIteration : Int) : Map[Airport, Route] = {
+    val from = passengerGroup.fromAirport
 
     //     // Step 1: initialize graph
 //   for each vertex v in vertices:
@@ -544,6 +544,8 @@ object PassengerSimulation {
               if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == None || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
                 connectionCost += 50 
               }
+              
+              connectionCost *= passengerGroup.preference.connectionCostRatio
           }
           
           

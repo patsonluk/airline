@@ -28,10 +28,13 @@ abstract class FlightPreference {
         val extraDelta = qualityDelta - GOOD_QUALITY_DELTA
         1 - GOOD_QUALITY_DELTA.toDouble / Link.MAX_QUALITY * 0.5 - extraDelta.toDouble / Link.MAX_QUALITY * 0.2
       }
+    
     //TODO this makes higher income country
     //println(qualityExpectation + " vs " + link.computedQuality + " : " + priceAdjust)
     priceAdjust
   }
+  
+  val connectionCostRatio = 1.0
 }
 
 object FlightPreferenceType extends Enumeration {
@@ -44,8 +47,10 @@ object FlightPreferenceType extends Enumeration {
   implicit def valueToFlightPreferenceTypeVal(x: Value) = x.asInstanceOf[Val] 
 
   val BUDGET = Val("Budget Traveler", "") 
-  val SIMPLE  = Val("Simple Traveler", "") 
+  val SIMPLE  = Val("Simple Traveler", "")
+  val SPEED = Val("Speedy Traveler", "")
   val APPEAL   = Val("Appeal Driven Traveler", "") 
+  val LOYAL   = Val("Loyal Traveler", "")
   val ELITE    = Val("Elite Traveler", "") 
 }
 
@@ -66,7 +71,7 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     
     var cost = standardPrice + deltaFromStandardPrice * priceSensitivity
     
-    val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 2) / 3  //dumpen the effect
+    val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 2) / 3  //dampen the effect
     cost = (cost * qualityAdjustedRatio).toInt
     
     val noise = (0.9 + (Util.getBellRandom(0)) * 0.1) // max noise : 0.8 - 1.2
@@ -90,22 +95,54 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     }
   }
   
+  override val connectionCostRatio = 0.5 //more okay with taking connection
+  
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
 }
 
-case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, loungeLevelRequired : Int, id : Int)  extends FlightPreference{
+case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass) extends FlightPreference {
+  def computeCost(link : Link, linkClass : LinkClass) = {
+    val standardPrice = Pricing.computeStandardPrice(link, linkClass)
+    val deltaFromStandardPrice = link.price(linkClass) - standardPrice 
+    
+    var cost = standardPrice + deltaFromStandardPrice * 0.5 //care much less about price
+    val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 1) / 2  //dampen the effect
+    cost = (cost * qualityAdjustedRatio).toInt
+    
+    if (link.frequency < 14) { //less than twice a day. I NEED THE FLIGHT NOW! extra penalty up to double if frequency is min 
+      cost = cost * (1 + (14 - link.frequency).toDouble / 14)  
+    }
+    
+    val noise = (0.9 + (Util.getBellRandom(0)) * 0.1) // max noise : 0.8 - 1.2
+
+    //NOISE?
+    val finalCost = cost * noise
+    
+    finalCost 
+  }
+  
+  val getPreferenceType = {
+    SPEED
+  }
+  
+  def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
+  
+  override val connectionCostRatio = 3.0
+}
+
+case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, loungeLevelRequired : Int, loyaltyRatio : Double = 1, id : Int)  extends FlightPreference{
   val appealList : Map[Int, AirlineAppeal] = homeAirport.getAirlineAppeals
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   //val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
   val maxReduceFactorAtMaxLoyalty = 1.7
   //at min loyalty (0), passenger can perceive the ticket price down to actual price / maxReduceFactorAtMinLoyalty.  
-  val maxReduceFactorAtMinLoyalty = 1.2
+  val maxReduceFactorAtMinLoyalty = 1.0
   
   //at max loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty.
   val minReduceFactorAtMaxLoyalty = 1.1
   //at min loyalty, passenger at least perceive the ticket price down to actual price / minReduceFactorAtMaxLoyalty. (at 0.8 means increasing perceieved price)
-  val minReduceFactorAtMinLoyalty = 0.9 
+  val minReduceFactorAtMinLoyalty = 0.8 
   //val drawPool = new DrawPool(appealList)
   
   def computeCost(link : Link, linkClass : LinkClass) : Double = {
@@ -123,7 +160,7 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     val minReduceFactorForThisAirline = minReduceFactorAtMinLoyalty + (minReduceFactorAtMaxLoyalty - 1) * (loyalty.toDouble / maxLoyalty)
     
     //the actualReduceFactor is random number (linear distribution) from minReduceFactorForThisAirline up to the maxReduceFactorForThisAirline. 
-    val actualReduceFactor = minReduceFactorForThisAirline + (maxReduceFactorForThisAirline - minReduceFactorForThisAirline) * Math.random()
+    val actualReduceFactor = (minReduceFactorForThisAirline + (maxReduceFactorForThisAirline - minReduceFactorForThisAirline) * Math.random()) * loyaltyRatio
     
     perceivedPrice = (perceivedPrice / actualReduceFactor).toInt
     
@@ -187,7 +224,11 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     if (loungeLevelRequired > 0) {
       ELITE
     } else {
-      APPEAL
+      if (loyaltyRatio > 1) {
+        LOYAL
+      } else {
+        APPEAL
+      }
     }
   }
   
@@ -202,9 +243,9 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
 
 object AppealPreference {
   var count: Int = 0
-  def getAppealPreferenceWithId(homeAirport : Airport, linkClass : LinkClass, loungeLevelRequired : Int) = {
+  def getAppealPreferenceWithId(homeAirport : Airport, linkClass : LinkClass, loungeLevelRequired : Int, loyaltyRatio : Double = 1.0) = {
     count += 1
-    AppealPreference(homeAirport, linkClass, loungeLevelRequired = loungeLevelRequired, count)
+    AppealPreference(homeAirport, linkClass, loungeLevelRequired = loungeLevelRequired, loyaltyRatio = loyaltyRatio, count)
   }
   
 }

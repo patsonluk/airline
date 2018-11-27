@@ -239,6 +239,7 @@ object DemandGenerator {
   
   def getFlightPreferencePoolOnAirport(homeAirport : Airport) : FlightPreferencePool = {
     val flightPreferences = ListBuffer[(FlightPreference, Int)]()
+    //ECONOMY prefs
     flightPreferences.append((SimplePreference(homeAirport, 0.7, ECONOMY), 1)) //someone that does not care much
     flightPreferences.append((SimplePreference(homeAirport, 0.9, ECONOMY), 2))
     
@@ -253,21 +254,27 @@ object DemandGenerator {
     flightPreferences.append((SimplePreference(homeAirport, 1, ECONOMY), 2 * budgetTravelerMultiplier)) //average sensitivity
     flightPreferences.append((SimplePreference(homeAirport, 2, ECONOMY), 2 * budgetTravelerMultiplier)) //quite sensitive to price
     flightPreferences.append((SimplePreference(homeAirport, 5, ECONOMY), 1 * budgetTravelerMultiplier)) //very sensitive to price
-
-        
-    //for now 5 * 3 loyalty preferences per airport
-    val loyaltyPreferenceCount = 5;
-    for (i <- 0 until loyaltyPreferenceCount) {
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4)) 
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0), 2))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 0), 2))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 1), 1))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 1), 1))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 2), 1))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 2), 1))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 3), 1))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 3), 1))
-    }
+    
+    flightPreferences.append((SpeedPreference(homeAirport, ECONOMY), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 3))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.5), 5))
+    
+    
+    //BUSINSES prefs
+    flightPreferences.append((SpeedPreference(homeAirport, BUSINESS), 3))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1.5), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 1, loyaltyRatio = 1.5), 1))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 2, loyaltyRatio = 1.5), 1))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 3, loyaltyRatio = 1.5), 1))
+    
+    //FIRST prefs
+    flightPreferences.append((SpeedPreference(homeAirport, FIRST), 1))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 0, loyaltyRatio = 1.5), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 1, loyaltyRatio = 1.5), 1))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 2, loyaltyRatio = 1.5), 1))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 3, loyaltyRatio = 1.5), 1))
+    
     
     new FlightPreferencePool(flightPreferences.toList)
   }
