@@ -39,7 +39,6 @@ object ConsumptionHistorySource {
           }
         }
       }
-	  val t1 = System.currentTimeMillis()
 	  
 	  // Convert this to scratchpad constant  .. also add that 
 	  connection.createStatement().executeUpdate("UPDATE server_scratchpad Set DATA ='" + rOut.mkString("", "\n","")  +"', USED = 1 WHERE ID = 1");
@@ -68,12 +67,9 @@ object ConsumptionHistorySource {
       }
       // Not sure if this works as it never gets called but the scratchpad should be more effcient
 	  if (isScratchpad) {
-		  println("Using scratchpad table")
 		  val preparedStatement = connection.prepareStatement("SELECT DATA FROM server_scratchpad where ID = 1")
-
 		  val resultSet = preparedStatement.executeQuery()
-	  
-		  
+		  println("Using scratchpad table")
 		  while (resultSet.next()) {
 		    val pOut : ListBuffer[(Int, Int, Int, Int, String, Boolean)] = ListBuffer()
 			val inText = resultSet.getString("DATA")
