@@ -48,7 +48,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
 //  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, JUMBO -> 0.2)
 //  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.5, SMALL -> 0.3, MEDIUM -> 0.1, LARGE -> -0.15, X_LARGE-> -0.2, JUMBO -> -0.25)
 //  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.8, REGIONAL -> 0.7, SMALL -> 0.5, MEDIUM -> 0.2, LARGE -> 0.15, X_LARGE-> 0.1, JUMBO -> 0.1)
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.4, SMALL -> 0.25, MEDIUM -> 0.2, LARGE -> 0.2, X_LARGE -> 0.15, JUMBO -> 0.05)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.4, SMALL -> 0.25, MEDIUM -> 0.2, LARGE -> 0.2, X_LARGE -> 0.15, JUMBO -> 0.1)
   private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.7, SMALL -> 0.6, MEDIUM -> 0.45, LARGE -> 0.45, X_LARGE -> 0.45, JUMBO -> 0.35)
   
   "Compute profit".must {
