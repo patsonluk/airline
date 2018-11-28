@@ -444,7 +444,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     "More profitable to have low quality flight if quality requirement is low".in  {
       val airplane = largeAirplane
       val airplaneModel = airplane.model
-      val distance = 1000
+      val distance = 5000
       val duration = Computation.calculateDuration(airplaneModel, distance)
       val frequency = Computation.calculateMaxFrequency(airplaneModel, distance)
       val maxEconomyCapacity = (airplaneModel.capacity / ECONOMY.spaceMultiplier).toInt * frequency
@@ -456,8 +456,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       
       val economyPrice = Pricing.computeStandardPrice(distance, SHORT_HAUL_DOMESTIC, ECONOMY)
       
-      val economylink1 = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> (economyPrice * 1.1).toInt)), distance = distance, allEconomyCapacity, rawQuality = 100, duration, frequency, SHORT_HAUL_DOMESTIC)
-      val economylink2 = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = 20, duration, frequency, SHORT_HAUL_DOMESTIC)
+      val economylink1 = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> (economyPrice * 1.1).toInt)), distance = distance, allEconomyCapacity, rawQuality = 100, duration, frequency, LONG_HAUL_DOMESTIC)
+      val economylink2 = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = 20, duration, frequency, LONG_HAUL_DOMESTIC)
     
       economylink1.addSoldSeats(allEconomyCapacity) //all consumed
       economylink2.addSoldSeats(allEconomyCapacity) //all consumed
@@ -469,7 +469,6 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val economyResult1 = LinkSimulation.computeLinkConsumptionDetail(economylink1 , 0)
       val economyResult2 = LinkSimulation.computeLinkConsumptionDetail(economylink2 , 0)
       
-      assert(economyResult1.profit < 0) //not profitable to give 5 star service basically
       economyResult1.profit.should(be < economyResult2.profit)
     }
   }

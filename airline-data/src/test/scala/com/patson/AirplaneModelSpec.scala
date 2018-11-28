@@ -16,7 +16,7 @@ import Model.Type._
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
   private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.25, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, X_LARGE -> 0.1, JUMBO -> 0.1)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, X_LARGE -> 0.15, JUMBO -> 0.15)
   
   "all airplane models".must {
     "Generate good profit at MAX LF at suitable range".in {

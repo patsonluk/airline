@@ -180,7 +180,7 @@ object LinkSimulation {
       val capacity = link.capacity(linkClass)
       val soldSeats = link.soldSeats(linkClass)
       
-      inflightCost += (linkClass.resourceMultiplier * (30 + link.rawQuality * link.duration / 60 / 5) * soldSeats * 2).toInt //5 hours, on top quality flight, cost is 100 per passenger + $30 basic cost . Roundtrip X 2
+      inflightCost += (linkClass.resourceMultiplier * (30 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2).toInt //10 hours, on top quality flight, cost is 100 per passenger + $30 basic cost . Roundtrip X 2
       crewCost += (linkClass.resourceMultiplier * capacity * link.duration / 60 * CREW_UNIT_COST).toInt 
       revenue += soldSeats * link.price(linkClass)
     }
