@@ -254,8 +254,8 @@ object DemandGenerator {
     
     for (i <- 0 until budgetTravelerMultiplier) {
       flightPreferences.append((SimplePreference(homeAirport, 1, ECONOMY), 2)) //average sensitivity
-      flightPreferences.append((SimplePreference(homeAirport, 2, ECONOMY), 2)) //quite sensitive to price
-      flightPreferences.append((SimplePreference(homeAirport, 5, ECONOMY), 1)) //very sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 1.1, ECONOMY), 2)) //quite sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 1.2, ECONOMY), 1)) //very sensitive to price
     }
     
     flightPreferences.append((SpeedPreference(homeAirport, ECONOMY), 2))

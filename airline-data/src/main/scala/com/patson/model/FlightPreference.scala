@@ -82,7 +82,7 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 2) / 3  //dampen the effect
     cost = (cost * qualityAdjustedRatio).toInt
     
-    val noise = 0.9 + getFlatTopBellRandom(0.05, 0.1)
+    val noise = 0.9 + getFlatTopBellRandom(0.2, 0.1)
     
     //NOISE?
     val finalCost = cost * noise
@@ -117,10 +117,10 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
     cost = (cost * qualityAdjustedRatio).toInt
     
     if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) { //less than twice a day. I NEED THE FLIGHT NOW! extra penalty up to double if frequency is min 
-      cost = cost * (1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD)  
+      cost = cost * (1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD / 5)  
     }
     
-    val noise = 0.9 + getFlatTopBellRandom(0.05, 0.1)
+    val noise = 0.8 + getFlatTopBellRandom(0.2, 0.1)
 
     //NOISE?
     val finalCost = cost * noise
@@ -134,7 +134,7 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
   
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
   
-  override val connectionCostRatio = 3.0
+  override val connectionCostRatio = 2.0
 }
 
 case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, loungeLevelRequired : Int, loyaltyRatio : Double, id : Int)  extends FlightPreference{
@@ -183,6 +183,10 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   
     
     perceivedPrice = (perceivedPrice * getQualityAdjustRatio(homeAirport, link, linkClass)).toInt
+    
+    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {  
+      perceivedPrice = (perceivedPrice * (1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD / 15)).toInt  
+    }
         
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     

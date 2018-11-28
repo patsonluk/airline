@@ -25,7 +25,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
  
   val testAirline1 = Airline("airline 1")
   val testAirline2 = Airline("airline 2")
-  val fromAirport = Airport.fromId(1).copy(size = 3)
+  val fromAirport = Airport.fromId(1).copy(size = 3, power = Country.HIGH_INCOME_THRESHOLD, population = 1)
   fromAirport.initAirlineBases(List.empty)
   val toAirport = Airport.fromId(2).copy(size = 3)
   toAirport.initAirlineBases(List.empty)
@@ -46,8 +46,10 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   //LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO
 //  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.35, REGIONAL -> 0.28, SMALL -> 0.2, MEDIUM -> 0.1, LARGE -> 0.05, JUMBO -> 0.05)
 //  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, JUMBO -> 0.2)
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.3, REGIONAL -> 0.2, SMALL -> 0.05, MEDIUM -> -0.1, LARGE -> -0.15, X_LARGE-> -0.2, JUMBO -> -0.25)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.2, LARGE -> 0.15, X_LARGE-> 0.1, JUMBO -> 0.1)
+//  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.5, SMALL -> 0.3, MEDIUM -> 0.1, LARGE -> -0.15, X_LARGE-> -0.2, JUMBO -> -0.25)
+//  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.8, REGIONAL -> 0.7, SMALL -> 0.5, MEDIUM -> 0.2, LARGE -> 0.15, X_LARGE-> 0.1, JUMBO -> 0.1)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.4, SMALL -> 0.25, MEDIUM -> 0.2, LARGE -> 0.2, X_LARGE -> 0.15, JUMBO -> 0.05)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.7, SMALL -> 0.6, MEDIUM -> 0.45, LARGE -> 0.45, X_LARGE -> 0.45, JUMBO -> 0.35)
   
   "Compute profit".must {
     "More profitable with more frequency flight (max LF)".in {
@@ -225,9 +227,9 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val businessPrice = Pricing.computeStandardPrice(distance, SHORT_HAUL_DOMESTIC, BUSINESS)
       val firstPrice = Pricing.computeStandardPrice(distance, SHORT_HAUL_DOMESTIC, FIRST)
     
-      val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = 60, duration, frequency, SHORT_HAUL_DOMESTIC)
-      val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice)), distance = distance, allBusinessCapacity, rawQuality = 60, duration, frequency, SHORT_HAUL_DOMESTIC)
-      val firstLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(FIRST -> firstPrice)), distance = distance, allFirstCapacity, rawQuality = 60, duration, frequency, SHORT_HAUL_DOMESTIC)
+      val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = fromAirport.expectedQuality(SHORT_HAUL_DOMESTIC, ECONOMY), duration, frequency, SHORT_HAUL_DOMESTIC)
+      val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice)), distance = distance, allBusinessCapacity, rawQuality = fromAirport.expectedQuality(SHORT_HAUL_DOMESTIC, BUSINESS), duration, frequency, SHORT_HAUL_DOMESTIC)
+      val firstLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(FIRST -> firstPrice)), distance = distance, allFirstCapacity, rawQuality = fromAirport.expectedQuality(SHORT_HAUL_DOMESTIC, FIRST), duration, frequency, SHORT_HAUL_DOMESTIC)
     
       economylink.addSoldSeats(allEconomyCapacity) //all consumed
       businessLink.addSoldSeats(allBusinessCapacity) //all consumed
@@ -270,9 +272,9 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val businessPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERNATIONAL, BUSINESS)
       val firstPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERNATIONAL, FIRST)
     
-      val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = 60, duration, frequency, SHORT_HAUL_INTERNATIONAL)
-      val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice)), distance = distance, allBusinessCapacity, rawQuality = 60, duration, frequency, SHORT_HAUL_INTERNATIONAL)
-      val firstLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(FIRST -> firstPrice)), distance = distance, allFirstCapacity, rawQuality = 60, duration, frequency, SHORT_HAUL_INTERNATIONAL)
+      val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = fromAirport.expectedQuality(SHORT_HAUL_INTERNATIONAL, ECONOMY), duration, frequency, SHORT_HAUL_INTERNATIONAL)
+      val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice)), distance = distance, allBusinessCapacity, rawQuality = fromAirport.expectedQuality(SHORT_HAUL_INTERNATIONAL, BUSINESS), duration, frequency, SHORT_HAUL_INTERNATIONAL)
+      val firstLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(FIRST -> firstPrice)), distance = distance, allFirstCapacity, rawQuality = fromAirport.expectedQuality(SHORT_HAUL_INTERNATIONAL, FIRST), duration, frequency, SHORT_HAUL_INTERNATIONAL)
     
       economylink.addSoldSeats(allEconomyCapacity) //all consumed
       businessLink.addSoldSeats(allBusinessCapacity) //all consumed
@@ -311,13 +313,13 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val allBusinessCapacity : LinkClassValues = LinkClassValues.getInstance(0, maxBusinessCapacity, 0)
       val allFirstCapacity : LinkClassValues = LinkClassValues.getInstance(0, 0, maxFirstCapacity)
       
-      val economyPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, ECONOMY) * 1.2
-      val businessPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, BUSINESS) * 1.2
-      val firstPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, FIRST) * 1.2
+      val economyPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, ECONOMY)
+      val businessPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, BUSINESS)
+      val firstPrice = Pricing.computeStandardPrice(distance, LONG_HAUL_INTERCONTINENTAL, FIRST)
     
-      val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice.toInt)), distance = distance, allEconomyCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
-      val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice.toInt)), distance = distance, allBusinessCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
-      val firstLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(FIRST -> firstPrice.toInt)), distance = distance, allFirstCapacity, rawQuality = 60, duration, frequency, LONG_HAUL_INTERCONTINENTAL)
+      val economylink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice.toInt)), distance = distance, allEconomyCapacity, rawQuality = fromAirport.expectedQuality(LONG_HAUL_INTERCONTINENTAL, ECONOMY), duration, frequency, LONG_HAUL_INTERCONTINENTAL)
+      val businessLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(BUSINESS -> businessPrice.toInt)), distance = distance, allBusinessCapacity, rawQuality = fromAirport.expectedQuality(LONG_HAUL_INTERCONTINENTAL, BUSINESS), duration, frequency, LONG_HAUL_INTERCONTINENTAL)
+      val firstLink = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(FIRST -> firstPrice.toInt)), distance = distance, allFirstCapacity, rawQuality = fromAirport.expectedQuality(LONG_HAUL_INTERCONTINENTAL, FIRST), duration, frequency, LONG_HAUL_INTERCONTINENTAL)
     
       economylink.addSoldSeats(allEconomyCapacity) //all consumed
       businessLink.addSoldSeats(allBusinessCapacity) //all consumed
@@ -355,7 +357,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val capacity = frequency * airplane.model.capacity
       
       
-      var link = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> price)), distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, FlightType.LONG_HAUL_INTERCONTINENTAL)
+      var link = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> price)), distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(LONG_HAUL_INTERCONTINENTAL, ECONOMY), duration, frequency, FlightType.LONG_HAUL_INTERCONTINENTAL)
       println("delay link " + link)
       link.addSoldSeats(LinkClassValues(Map(ECONOMY -> capacity)))
       link.setAssignedAirplanes(airplanes)
@@ -429,14 +431,46 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       assert(consumptionResultSingleMajorDelay.profit > consumptionResultSingleCancellation.profit)
       
       //at half the incident, it should not be profitable in more severe cases
-      assert(consumptionResultHalfMinorDelay.profit > 0)
-      assert(consumptionResultHalfMajorDelay.profit < 0)
+//      assert(consumptionResultHalfMinorDelay.profit > 0)
+//      assert(consumptionResultHalfMajorDelay.profit > 0)
       assert(consumptionResultHalfCancellation.profit < 0)
       
       //at full incident, it should not be profitable in any cases      
-      assert(consumptionResultAllMinorDelay.profit < 0) 
-      assert(consumptionResultAllMajorDelay.profit < 0)
+//      assert(consumptionResultAllMinorDelay.profit > 0) 
+//      assert(consumptionResultAllMajorDelay.profit < 0)
       assert(consumptionResultAllCancelled.profit < 0)
+    }
+    
+    "More profitable to have low quality flight if quality requirement is low".in  {
+      val airplane = largeAirplane
+      val airplaneModel = airplane.model
+      val distance = 1000
+      val duration = Computation.calculateDuration(airplaneModel, distance)
+      val frequency = Computation.calculateMaxFrequency(airplaneModel, distance)
+      val maxEconomyCapacity = (airplaneModel.capacity / ECONOMY.spaceMultiplier).toInt * frequency
+      val maxBusinessCapacity = (airplaneModel.capacity / BUSINESS.spaceMultiplier).toInt * frequency
+      val maxFirstCapacity = (airplaneModel.capacity / FIRST.spaceMultiplier).toInt * frequency
+      val allEconomyCapacity : LinkClassValues = LinkClassValues.getInstance(maxEconomyCapacity, 0, 0)
+      val allBusinessCapacity : LinkClassValues = LinkClassValues.getInstance(0, maxBusinessCapacity, 0)
+      val allFirstCapacity : LinkClassValues = LinkClassValues.getInstance(0, 0, maxFirstCapacity)
+      
+      val economyPrice = Pricing.computeStandardPrice(distance, SHORT_HAUL_DOMESTIC, ECONOMY)
+      
+      val economylink1 = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> (economyPrice * 1.1).toInt)), distance = distance, allEconomyCapacity, rawQuality = 100, duration, frequency, SHORT_HAUL_DOMESTIC)
+      val economylink2 = Link(fromAirport, toAirport, testAirline1, LinkClassValues(Map(ECONOMY -> economyPrice)), distance = distance, allEconomyCapacity, rawQuality = 20, duration, frequency, SHORT_HAUL_DOMESTIC)
+    
+      economylink1.addSoldSeats(allEconomyCapacity) //all consumed
+      economylink2.addSoldSeats(allEconomyCapacity) //all consumed
+      
+      economylink1.setAssignedAirplanes(List(airplane))
+      economylink2.setAssignedAirplanes(List(airplane))
+      
+    
+      val economyResult1 = LinkSimulation.computeLinkConsumptionDetail(economylink1 , 0)
+      val economyResult2 = LinkSimulation.computeLinkConsumptionDetail(economylink2 , 0)
+      
+      assert(economyResult1.profit < 0) //not profitable to give 5 star service basically
+      economyResult1.profit.should(be < economyResult2.profit)
     }
   }
   
@@ -464,26 +498,13 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     val capacity = frequency * airplaneModel.capacity
     val price = Pricing.computeStandardPrice(distance, flightType, ECONOMY)
     
-    val neutralQuality = 
-      flightType match {
-      case SHORT_HAUL_DOMESTIC => 30
-      case SHORT_HAUL_INTERNATIONAL => 40
-      case SHORT_HAUL_INTERCONTINENTAL => 45
-      case LONG_HAUL_DOMESTIC => 50
-      case LONG_HAUL_INTERNATIONAL => 60
-      case LONG_HAUL_INTERCONTINENTAL => 65
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 75
-    }
-    
     val fromAirportClone = fromAirport.copy(size = airportSize)
     fromAirportClone.initAirlineBases(fromAirport.getAirlineBases().map(_._2).toList)
     val toAirportClone = toAirport.copy(size = airportSize)
     toAirportClone.initAirlineBases(toAirport.getAirlineBases().map(_._2).toList)
     
-    val link = Link(fromAirportClone, toAirportClone, testAirline1, LinkClassValues(Map(ECONOMY -> price)), distance = distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = neutralQuality, duration, frequency, flightType)
+    val link = Link(fromAirportClone, toAirportClone, testAirline1, LinkClassValues(Map(ECONOMY -> price)), distance = distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(flightType, ECONOMY), duration, frequency, flightType)
     link.addSoldSeats(LinkClassValues(Map(ECONOMY -> (capacity * loadFactor).toInt)))
-    
-    
     
     link.setAssignedAirplanes((0 until airplaneCount).foldRight(List[Airplane]()) { 
       case (_, foldList) => Airplane(airplaneModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(airplaneModel, Airplane.MAX_CONDITION.toDouble / airplaneModel.lifespan), airplaneModel.price) :: foldList  
