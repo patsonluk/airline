@@ -1248,16 +1248,16 @@ function resetPrice() {
 }
 
 function increasePrice() {
-	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 10
-	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 10
+	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 20
+	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 20
 	var newPercentage = currentPercentage + 0.05
 	updatePrice(newPercentage)
 	$('#planLinkPricePercentage').val(newPercentage)
 }
 
 function decreasePrice() {
-	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 10
-	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 10
+	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 20
+	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 20
 	var newPercentage = currentPercentage
 	if (currentPercentage > 0) {
 		newPercentage -= 0.05
