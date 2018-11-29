@@ -54,12 +54,12 @@ object FlightPreferenceType extends Enumeration {
   } 
   implicit def valueToFlightPreferenceTypeVal(x: Value) = x.asInstanceOf[Val] 
 
-  val BUDGET = Val("Budget Traveler", "") 
-  val SIMPLE  = Val("Simple Traveler", "")
-  val SPEED = Val("Speedy Traveler", "")
-  val APPEAL   = Val("Appeal Driven Traveler", "") 
-  val LOYAL   = Val("Loyal Traveler", "")
-  val ELITE    = Val("Elite Traveler", "") 
+  val BUDGET = Val("Budget", "") 
+  val SIMPLE  = Val("Carefree", "")
+  val SPEED = Val("Swift", "")
+  val APPEAL   = Val("Comprehensive", "") 
+  val LOYAL   = Val("Loyalist", "")
+  val ELITE    = Val("Elite", "") 
 }
 
 import FlightPreferenceType._
