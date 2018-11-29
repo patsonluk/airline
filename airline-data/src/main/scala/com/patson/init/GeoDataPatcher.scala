@@ -338,7 +338,7 @@ object GeoDataPatcher extends App {
     airports.foreach { airport =>
       airport.id = existingIds(airport.iata)
     }
-    AirportSource.updateAirports(airports)
+    AirportSource.fullUpdateAirports(airports)
 
     //patch features
     AirportFeaturePatcher.patchFeatures()

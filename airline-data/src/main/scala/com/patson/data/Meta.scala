@@ -160,15 +160,15 @@ object Meta {
     statement.execute()
     statement.close()
 
-    statement = connection.prepareStatement("CREATE TABLE " + CITY_TABLE + "(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256) CHARACTER SET 'utf8', population INTEGER, income INTEGER)")
+    statement = connection.prepareStatement("CREATE TABLE " + CITY_TABLE + "(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256) CHARACTER SET 'utf8', population INTEGER, income INTEGER)")
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_TABLE + "(code CHAR(2) PRIMARY KEY, name VARCHAR(256), airport_population INTEGER, income INTEGER, openness INTEGER)")
+    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_TABLE + "(code CHAR(2) PRIMARY KEY, name VARCHAR(256) CHARACTER SET 'utf8', airport_population INTEGER, income INTEGER, openness INTEGER)")
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256), zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG)")
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG)")
     statement.execute()
     statement.close()
     

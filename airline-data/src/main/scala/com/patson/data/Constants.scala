@@ -83,7 +83,7 @@ object Constants {
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"
-  val DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/airline?useSSL=false&autoReconnect=true"
+  val DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/airline?useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
   val DB_DRIVER = "com.mysql.jdbc.Driver"
   val DATABASE_USER = "sa" 
   val DATABASE_PASSWORD = "admin"

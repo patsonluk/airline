@@ -356,6 +356,67 @@ object AirportSource {
       connection.close()
     }
   }
+  
+  def fullUpdateAirports(airports : List[Airport]) = {
+            Class.forName(DB_DRIVER);
+    val connection = Meta.getConnection()
+    
+    try {
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, power = ?, population = ?, slots = ?, name = ?, city = ?  WHERE id = ?")
+      
+      connection.setAutoCommit(false)
+      
+      
+      airports.foreach { 
+        airport =>
+          preparedStatement.setInt(1, airport.size)
+          preparedStatement.setLong(2, airport.power)
+          preparedStatement.setLong(3, airport.population)
+          preparedStatement.setInt(4, airport.slots)
+          preparedStatement.setString(5, airport.name)
+          preparedStatement.setString(6, airport.city)
+          preparedStatement.setInt(7, airport.id)
+          preparedStatement.addBatch()
+          //preparedStatement.executeUpdate()
+          
+          
+          val purgeCityShareStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_CITY_SHARE_TABLE + " WHERE airport = ?");
+          purgeCityShareStatement.setInt(1, airport.id)
+          purgeCityShareStatement.executeUpdate()
+          purgeCityShareStatement.close()
+          val purgeFeatureStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?");
+          purgeFeatureStatement.setInt(1, airport.id)
+          purgeFeatureStatement.executeUpdate()
+          purgeFeatureStatement.close()
+          
+          //update airline info too
+          airport.citiesServed.foreach { 
+            case (city, share) =>
+            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_CITY_SHARE_TABLE + "(airport, city, share) VALUES(?,?,?)")
+            infoStatement.setInt(1, airport.id)
+            infoStatement.setInt(2, city.id)
+            infoStatement.setDouble(3, share)
+            infoStatement.executeUpdate()
+            infoStatement.close()
+          }
+          //insert features
+          airport.getFeatures().foreach { feature =>
+            val featureStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_FEATURE_TABLE + "(airport, feature_type, strength) VALUES(?,?,?)")
+            featureStatement.setInt(1, airport.id)
+            featureStatement.setString(2, feature.featureType.toString())
+            featureStatement.setInt(3, feature.strength)
+            featureStatement.executeUpdate()
+            featureStatement.close()
+          }
+      }
+      preparedStatement.executeBatch()
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+  
   def updateAirportFeatures(airports : List[Airport]) = {
     val connection = Meta.getConnection()
     try {
