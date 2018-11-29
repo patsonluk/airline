@@ -18,6 +18,8 @@ import scala.collection.mutable.HashMap
 //	`USED` TINYINT(4) NOT NULL DEFAULT '0',
 //	PRIMARY KEY (`ID`)
 //)
+//INSERT INTO `server_scratchpad` (`ID`, `DATA`, `USED`) VALUES
+//	(1, '1', 0);
 
 
 object ConsumptionHistorySource {
