@@ -2351,21 +2351,93 @@
 	
 	<!-- link passenger composition modal -->
 	<div id="linkCompositionModal" class="modal">
-		<div class="modal-content"  style="width : 800px; height: 250px;">
+		<div class="modal-content"  style="width : 800px; height: 350px;">
 			<span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
 			<h3 style="margin-bottom: 10px;">Passenger Composition</h3>
 			<div style="width: 100%; float: left;">
   				<div style="float: left;">
   					<h5 align="center">Country</h5>
   					<div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
+  					<div class="table data topCountryTable" style="width: 95%;">
+  					</div>
   				</div>
   				<div style="float: left;">	
   					<h5 align="center">Passenger Type</h5>
   					<div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
+  					<div class="table data passengerTypeTable" style="width: 95%;"></div>
   				</div>
   				<div style="float: left;">
-  					<h5 align="center">Travel Preference</h5>	
+  					<h5 align="center">
+  						Travel Preference
+  						<div class="tooltip">
+	    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+	    					<span class="tooltiptext" style="width: 600px;">
+		    					Passengers all have different preferences and emphasis when choosing their airlines. <br/>
+		    					<br/>
+		    					
+		         				<div class="table data" style="width: 100%;">
+			         			 	<div class="table-header">
+				 	  					<div class="cell" style="width: 10%;"></div>
+				 	  					<div class="cell" style="width: 12%;">Pricing</div>
+				 	  					<div class="cell" style="width: 12%;">Freq./Stops</div>
+				 	  					<div class="cell" style="width: 12%;">Quality</div>
+				 	  					<div class="cell" style="width: 12%;">Loyalty</div>
+				 	  					<div class="cell" style="width: 38%;">Others</div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Budget</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+										<div class="cell">Common in low income countries</div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Carefree</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+										<div class="cell"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Swift</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+										<div class="cell"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Comprehensive</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Loyalist</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Elite</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell">Requires Lounge</div>
+									</div>
+			        			</div>
+			        		</span>
+	    				</div>	
+  					</h5>	
   					<div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
+  					<div class="table data preferenceTypeTable" style="width: 95%;"></div>
  				</div>
 			</div>
 			

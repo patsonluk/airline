@@ -1897,6 +1897,9 @@ function showLinkComposition(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
+	    	updateTopCountryComposition(result.country)
+	    	updatePassengerTypeComposition(result.passengerType)
+	    	updatePrefernceTypeComposition(result.preferenceType)
 	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
 	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
 	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
@@ -1914,10 +1917,47 @@ function showLinkComposition(linkId) {
 	    	$('body .loadingSpinner').hide()
 	    }
 	});
+}
+
+function updateTopCountryComposition(countryComposition) {
+	countryComposition = countryComposition.sort(function (a, b) {
+	    return b.passengerCount - a.passengerCount 
+	});
 	
+	var max = 5;
+	var index = 0;
+	$('#linkCompositionModal .topCountryTable .table-row').remove()
+	$.each(countryComposition, function(key, entry) {
+		$('#linkCompositionModal .topCountryTable').append("<div class='table-row data-row'><div style='display: table-cell; width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.countryName
+	 			   + "</div><div style='display: table-cell; width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+		index ++;
+		if (index >= max) {
+			return false;
+		}
+	});
+}
+
+function updatePassengerTypeComposition(countryComposition) {
+	countryComposition = countryComposition.sort(function (a, b) {
+	    return b.passengerCount - a.passengerCount 
+	});
 	
+	$('#linkCompositionModal .passengerTypeTable .table-row').remove()
+	$.each(countryComposition, function(key, entry) {
+		$('#linkCompositionModal .passengerTypeTable').append("<div class='table-row data-row'><div style='display: table-cell; width: 70%;'>" + entry.title
+	 			   + "</div><div style='display: table-cell; width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+	});
+}
+
+function updatePrefernceTypeComposition(countryComposition) {
+	countryComposition = countryComposition.sort(function (a, b) {
+	    return b.passengerCount - a.passengerCount 
+	});
 	
-	
-	
+	$('#linkCompositionModal .preferenceTypeTable .table-row').remove()
+	$.each(countryComposition, function(key, entry) {
+		$('#linkCompositionModal .preferenceTypeTable').append("<div class='table-row data-row'><div style='display: table-cell; width: 70%;'>" + entry.title
+	 			   + "</div><div style='display: table-cell; width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+	});
 }
 
