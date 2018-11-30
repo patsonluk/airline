@@ -302,6 +302,9 @@ function updateAllianceBonus(allianceId) {
 		}
 	}
 }
+function updateAllianceChampionContries(allianceId) {
+	
+}
 
 function updateAllianceHistory(allianceId) {
 	var alliance = loadedAlliancesById[allianceId]

@@ -54,12 +54,12 @@ object UserSource {
   }
   
   
-  def loadUsersByCriteria(criteria : List[(String, Any)]) = {
+  def loadUsersByCriteria(criteria : List[(String, Any)]) : List[User] = {
       //open the hsqldb
     val connection = Meta.getConnection()
     
     try {  
-      var queryString = "SELECT * FROM " +  USER_TABLE 
+      var queryString = "SELECT u.*, ua.* FROM " +  USER_TABLE + " u LEFT JOIN " + USER_AIRLINE_TABLE + " ua ON u.id = ua.airline"  
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -78,40 +78,34 @@ object UserSource {
       
       val resultSet = preparedStatement.executeQuery()
       
-      val userList = new ListBuffer[User]()
+      val userList = scala.collection.mutable.Map[Int, (User, ListBuffer[Int])]() //Map[UserId, (User, List[AirlineId])]
       
       while (resultSet.next()) {
-        val userName = resultSet.getString("user_name")
-        val userAirlines = ListBuffer[Airline]()
-        val userAirlineStatment = connection.prepareStatement("SELECT * FROM " + USER_AIRLINE_TABLE + " WHERE user_name = ?")
-        userAirlineStatment.setString(1, userName)
-        val userAirlineResultSet = userAirlineStatment.executeQuery()
-        while (userAirlineResultSet.next()) {
-          val airlineId = userAirlineResultSet.getInt("airline")
-          AirlineSource.loadAirlineById(airlineId, true).foreach { airline => 
-            userAirlines.append(airline)
-          }
-        }
-        userAirlineResultSet.close()
-        userAirlineStatment.close()
-        val creationTime = Calendar.getInstance()
+        val userId = resultSet.getInt("u.id")
+        val (user, userAirlines) = userList.getOrElseUpdate(userId, {
+          val userName = resultSet.getString("u.user_name")
+          val creationTime = Calendar.getInstance()
+          creationTime.setTime(dateFormat.get().parse(resultSet.getString("u.creation_time")))
+          val lastActiveTime = Calendar.getInstance()
+          lastActiveTime.setTime(dateFormat.get().parse(resultSet.getString("u.last_active")))
+          val status = UserStatus.withName(resultSet.getString("u.status"))
+          (User(userName, resultSet.getString("u.email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"), id = userId), ListBuffer[Int]())  
+        })
         
-        creationTime.setTime(dateFormat.get().parse(resultSet.getString("creation_time")))
-        
-        val lastActiveTime = Calendar.getInstance()
-        
-        lastActiveTime.setTime(dateFormat.get().parse(resultSet.getString("last_active")))
-        
-        val status = UserStatus.withName(resultSet.getString("status"))
-        
-        val user = User(userName, resultSet.getString("email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"), resultSet.getInt("id"))
-        user.setAccesibleAirlines(userAirlines.toList)
-        userList.append(user)
+        userAirlines += resultSet.getInt("ua.airline") 
+      }
+      
+      val allAirlineIds : List[Int] = userList.values.map(_._2).flatten.toSet.toList
+      
+      val airlinesMap = AirlineSource.loadAirlinesByIds(allAirlineIds, true).map(airline => (airline.id, airline)).toMap
+      
+      userList.values.foreach {
+        case(user,userAirlineIds) => user.setAccesibleAirlines(userAirlineIds.map(airlineId => airlinesMap.get(airlineId)).flatten.toList)
       }
       
       resultSet.close()
       preparedStatement.close()
-      userList.toList
+      userList.values.map(_._1).toList
     } finally {
       connection.close()
     }

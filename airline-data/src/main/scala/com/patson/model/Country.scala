@@ -2,7 +2,17 @@ package com.patson.model
 
 import com.patson.data.AirportSource
 
-case class Country(countryCode : String, name : String, airportPopulation : Int, income : Int, openness : Int)
+case class Country(countryCode : String, name : String, airportPopulation : Int, income : Int, openness : Int) {
+  val championBonusRankingCount = {
+    val firstBonus = Computation.computeReputationBoost(this, 1)
+    
+    if (firstBonus > 10) {
+      10
+    } else {
+      5
+    }
+  }
+}
 
 object Country {
   val MAX_OPENNESS : Int = 10
