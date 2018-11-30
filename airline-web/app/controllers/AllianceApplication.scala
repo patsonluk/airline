@@ -235,7 +235,7 @@ class AllianceApplication extends Controller {
           ChampionUtil.getChampionInfoByAirlineId(allianceMember.airline.id)
         }
         
-        Ok(Json.toJson(champions.sortBy(_.reputationBoost)))
+        Ok(Json.toJson(champions.sortBy(_.reputationBoost).reverse))
       }
     }
   }
