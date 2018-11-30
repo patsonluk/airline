@@ -315,19 +315,21 @@ function updateAllianceChampionContries(allianceId) {
 	    	$(championedCountries).each(function(index, championDetails) {
 	    		var country = championDetails.country
 	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
-	    		row.append("<div class='cell' style='width : 10%'>" + getRankingImg(championDetails.ranking) + "</div>")
-	    		row.append("<div class='cell' style='width : 30%'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
-	    		row.append("<div class='cell' style='width : 50%'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
-	    		row.append("<div class='cell' style='width : 10%'>" + championDetails.reputationBoost + "</div>") 
+	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
+	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
+	    		row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.passengerCount) + "</div>")
+	    		row.append("<div class='cell' align='right'>" + championDetails.reputationBoost + "</div>") 
 	    		$('#allianceChampionList').append(row)
 	    	})
 	    	
 	    	if ($(championedCountries).length == 0) {
 	    		var row = $("<div class='table-row'></div>")
-	    		row.append("<div class='cell' style='width : 10%'>-</div>")
-	    		row.append("<div class='cell' style='width : 30%'>-</div>")
-	    		row.append("<div class='cell' style='width : 50%'>-</div>")
-	    		row.append("<div class='cell' style='width : 10%'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell' align='right'>-</div>")
+	    		row.append("<div class='cell' align='right'>-</div>")
 	    		$('#allianceChampionList').append(row)
 	    	}
 	    },

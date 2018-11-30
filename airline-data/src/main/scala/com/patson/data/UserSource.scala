@@ -113,7 +113,7 @@ object UserSource {
   
   
   def loadUserById(id : Int) = {
-      val result = loadUsersByCriteria(List(("id", id)))
+      val result = loadUsersByCriteria(List(("u.id", id)))
       if (result.isEmpty) {
         None
       } else {
@@ -122,7 +122,7 @@ object UserSource {
   }
   
   def loadUserByUserName(userName : String) = {
-      val result = loadUsersByCriteria(List(("user_name", userName)))
+      val result = loadUsersByCriteria(List(("u.user_name", userName)))
       if (result.isEmpty) {
         None
       } else {
