@@ -59,7 +59,7 @@ object UserSource {
     val connection = Meta.getConnection()
     
     try {  
-      var queryString = "SELECT u.*, ua.* FROM " +  USER_TABLE + " u LEFT JOIN " + USER_AIRLINE_TABLE + " ua ON u.id = ua.airline"  
+      var queryString = "SELECT u.*, ua.* FROM " +  USER_TABLE + " u LEFT JOIN " + USER_AIRLINE_TABLE + " ua ON u.user_name = ua.user_name"  
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "
@@ -100,7 +100,8 @@ object UserSource {
       val airlinesMap = AirlineSource.loadAirlinesByIds(allAirlineIds, true).map(airline => (airline.id, airline)).toMap
       
       userList.values.foreach {
-        case(user,userAirlineIds) => user.setAccesibleAirlines(userAirlineIds.map(airlineId => airlinesMap.get(airlineId)).flatten.toList)
+        case(user,userAirlineIds) =>
+          user.setAccesibleAirlines(userAirlineIds.map(airlineId => airlinesMap.get(airlineId)).flatten.toList)
       }
       
       resultSet.close()
