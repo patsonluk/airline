@@ -58,6 +58,9 @@ import com.patson.model.LoungeConsumptionDetails
 import models.FacilityType.FacilityType
 import com.patson.data.UserSource
 import com.patson.model.User
+import com.patson.model.Alliance
+import com.patson.util.ChampionUtil
+import com.patson.util.ChampionInfo
 
 
 class AirlineApplication extends Controller {
@@ -84,12 +87,16 @@ class AirlineApplication extends Controller {
   }
   
   
-  implicit object AirlineWithUserWrites extends Writes[(Airline, User)] {
-    def writes(entry: (Airline, User)): JsValue = {
-      val (airline, user) = entry
-      val result = Json.toJson(airline).asInstanceOf[JsObject] + 
+  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[Alliance])] {
+    def writes(entry: (Airline, User, Option[Alliance])): JsValue = {
+      val (airline, user, alliance) = entry
+      var result = Json.toJson(airline).asInstanceOf[JsObject] + 
         ("userLevel" -> JsNumber(user.level)) +
         ("username" -> JsString(user.userName))
+        
+      alliance.foreach { alliance =>
+        result = result + ("allianceName" -> JsString(alliance.name))
+      }
         //("lastActiveTime" -> JsString(user.lastActive.getTime.toString)) //maybe last active time is still too sensitive
       result
     }
@@ -104,7 +111,10 @@ class AirlineApplication extends Controller {
       }
     }
     
-    Ok(Json.toJson(airlinesByUser.toList)).withHeaders(
+    val alliances = AllianceSource.loadAllAlliances().map(alliance => (alliance.id, alliance)).toMap
+    Ok(Json.toJson(airlinesByUser.toList.map {
+      case(airline, user) => (airline, user, airline.getAllianceId.map(alliances(_)))
+    })).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"
     )
@@ -580,28 +590,10 @@ class AirlineApplication extends Controller {
   }
   
   def getChampionedCountries(airlineId : Int) = Authenticated { implicit request =>
-    val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
-      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(5).zipWithIndex)
-    }
+    val championedCountryByThisAirline  = ChampionUtil.getChampionInfoByAirlineId(airlineId).sortBy(_.ranking)
     
-    val championedCountryByThisAirline: List[(Country, Int, Long, Double)] = topChampionsByCountryCode.map { //(country, ranking, passengerCount, reputation boost)
-      case (countryCode, championAirlines) => (countryCode, championAirlines.find {
-        case((championAirlineId, passengerCount), ranking) => championAirlineId == airlineId
-      })
-    }.filter {
-      case (countryCode, thisAirlineRankingOption) => thisAirlineRankingOption.isDefined
-    }.map {
-      case (countryCode, thisAirlineRankingOption) => {
-        val country = CountrySource.loadCountryByCode(countryCode).get
-        val ranking = thisAirlineRankingOption.get._2 + 1
-        val passengerCount = thisAirlineRankingOption.get._1._2 
-        (country, ranking, passengerCount, Computation.computeReputationBoost(country, ranking))
-      }
-    }.sortBy {
-      case (countryCode, ranking, passengerCount, reputationBoost) => ranking
-    }
     
-    Ok(Json.toJson(championedCountryByThisAirline)(ChampionedCountriesWrites))
+    Ok(Json.toJson(championedCountryByThisAirline))
   }
   
   def resetAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
@@ -752,20 +744,4 @@ class AirlineApplication extends Controller {
      } 
      
   }
-  
-  object ChampionedCountriesWrites extends Writes[List[(Country, Int, Long, Double)]] {
-    def writes(championedCountries : List[(Country, Int, Long, Double)]): JsValue = {
-      var arr = Json.arr()
-      championedCountries.foreach {
-        case (country, ranking, passengerCount, reputationBoost) =>
-          arr = arr :+ Json.obj(
-              "country" -> Json.toJson(country),
-              "ranking" -> JsNumber(ranking),
-              "passengerCount" -> JsNumber(passengerCount),
-              "reputationBoost" -> JsNumber(reputationBoost))
-      }
-      arr
-    }
-  }
-  
 }

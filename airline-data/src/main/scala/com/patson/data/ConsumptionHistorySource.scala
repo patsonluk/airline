@@ -13,7 +13,7 @@ import scala.collection.mutable.HashMap
 object ConsumptionHistorySource {
   val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
     val connection = Meta.getConnection()
-    val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE + "(passenger_type, passenger_count, route_id, link, link_class, inverted) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE + "(passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     
     connection.setAutoCommit(false)
     
@@ -26,7 +26,10 @@ object ConsumptionHistorySource {
           routeId += 1
           passengerHistoryStatement.setInt(1, passengerGroup.passengerType.id)
           passengerHistoryStatement.setInt(2, passengerCount)
-          passengerHistoryStatement.setInt(3, routeId)          
+          passengerHistoryStatement.setInt(3, routeId)
+          passengerHistoryStatement.setString(7, passengerGroup.fromAirport.countryCode)
+          passengerHistoryStatement.setInt(8, passengerGroup.fromAirport.id)
+          passengerHistoryStatement.setInt(9, passengerGroup.preference.getPreferenceType.id)
           route.links.foreach { linkConsideration =>  
             passengerHistoryStatement.setInt(4, linkConsideration.link.id)
             passengerHistoryStatement.setString(5, linkConsideration.linkClass.code)
@@ -77,6 +80,34 @@ object ConsumptionHistorySource {
       }.toList
     } finally {
       connection.close()
+    }
+  }
+  
+  def loadConsumptionByLinkId(linkId : Int) : List[LinkConsumptionHistory] = {
+    LinkSource.loadLinkById(linkId) match {
+      case Some(link) => 
+        val connection = Meta.getConnection()
+        try {  
+          val preparedStatement = connection.prepareStatement("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " WHERE link = ? ")
+    
+          preparedStatement.setInt(1, linkId)
+          val resultSet = preparedStatement.executeQuery()
+          
+          val result = new ListBuffer[LinkConsumptionHistory]()
+          while (resultSet.next()) {
+            result += LinkConsumptionHistory(link = link, 
+                passengerCount = resultSet.getInt("passenger_count"), 
+                homeCountryCode = resultSet.getString("home_country"), 
+                passengerType = PassengerType(resultSet.getInt("passenger_type")), 
+                preferenceType = FlightPreferenceType(resultSet.getInt("preference_type")))
+          }
+        
+          
+          result.toList
+        } finally {
+          connection.close()
+        }
+      case None => List.empty
     }
   }
 }

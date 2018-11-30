@@ -18,6 +18,7 @@ import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.CountrySource
 import com.patson.data.AirportSource
+import com.patson.util.ChampionUtil
 
 
 class CountryApplication extends Controller {
@@ -61,23 +62,22 @@ class CountryApplication extends Controller {
                    "bases" -> Json.toJson(bases))
         val allAirlines = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
         CountrySource.loadMarketSharesByCountryCode(countryCode).foreach { marketShares => //if it has market share data
+          val champions = ChampionUtil.getChampionInfoByCountryCode(countryCode).sortBy(_.ranking)
+          var championsJson = Json.toJson(champions)
+  //        var x = 0
+  //        for (x <- 0 until champions.size) {
+  //          val airline = allAirlines(champions(x)._1)
+  //          val passengerCount = champions(x)._2
+  //          val ranking = x + 1
+  //          val reputationBoost = Computation.computeReputationBoost(country, ranking) 
+  //          championsJson = championsJson :+ Json.obj("airline" -> Json.toJson(airline), "passengerCount" -> JsNumber(passengerCount), "ranking" -> JsNumber(ranking), "reputationBoost" -> JsNumber(reputationBoost))
+  //        }
           
-        val champions = marketShares.airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(5)
-        var championsJson = Json.arr()
-        var x = 0
-        for (x <- 0 until champions.size) {
-          val airline = allAirlines(champions(x)._1)
-          val passengerCount = champions(x)._2
-          val ranking = x + 1
-          val reputationBoost = Computation.computeReputationBoost(country, ranking) 
-          championsJson = championsJson :+ Json.obj("airline" -> Json.toJson(airline), "passengerCount" -> JsNumber(passengerCount), "ranking" -> JsNumber(ranking), "reputationBoost" -> JsNumber(reputationBoost))
-        }
-        
-        jsonObject = jsonObject.asInstanceOf[JsObject] + ("champions" -> championsJson)
-        
-        jsonObject = jsonObject.asInstanceOf[JsObject] + ("marketShares" -> Json.toJson(marketShares.airlineShares.map { 
-            case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
-          }.toList)(AirlineSharesWrites))
+          jsonObject = jsonObject.asInstanceOf[JsObject] + ("champions" -> championsJson)
+          
+          jsonObject = jsonObject.asInstanceOf[JsObject] + ("marketShares" -> Json.toJson(marketShares.airlineShares.map { 
+              case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
+            }.toList)(AirlineSharesWrites))
         }
         
         val baseLinkLimit = Country.getLimitByCountryCode(countryCode)

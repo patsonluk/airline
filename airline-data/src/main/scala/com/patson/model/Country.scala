@@ -2,7 +2,17 @@ package com.patson.model
 
 import com.patson.data.AirportSource
 
-case class Country(countryCode : String, name : String, airportPopulation : Int, income : Int, openness : Int)
+case class Country(countryCode : String, name : String, airportPopulation : Int, income : Int, openness : Int) {
+  val championBonusRankingCount = {
+    val firstBonus = Computation.computeReputationBoost(this, 1)
+    
+    if (firstBonus > 10) {
+      10
+    } else {
+      5
+    }
+  }
+}
 
 object Country {
   val MAX_OPENNESS : Int = 10
@@ -10,6 +20,8 @@ object Country {
   val INTERNATIONAL_INBOUND_MIN_OPENNESS = 2;
   val OPEN_DOMESTIC_MARKET_MIN_OPENNESS = 4;
   val SIXTH_FREEDOM_MIN_OPENNESS = 7
+  val LOW_INCOME_THRESHOLD = 15000
+  val HIGH_INCOME_THRESHOLD = 50000
   
   val loadedCountryCategories : scala.collection.mutable.Map[String, FlightCateogryLimits] = scala.collection.mutable.Map()
 

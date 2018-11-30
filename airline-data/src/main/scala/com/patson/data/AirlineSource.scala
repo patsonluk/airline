@@ -71,14 +71,22 @@ object AirlineSource {
             airline.setCountryCode(countryCode)
           }
           
-          if (fullLoad) {
-            airline.setBases(loadAirlineBasesByAirline(airline.id))
-            AllianceSource.loadAllianceMemberByAirline(airline).foreach {
-              thisAirlineAsAllianceMember => airline.setAllianceId(thisAirlineAsAllianceMember.allianceId)
-            }
+          airlines += airline
+        }
+        
+        if (fullLoad) {
+          val airlineBases : scala.collection.immutable.Map[Int, List[AirlineBase]] = loadAirlineBasesByAirlines(airlines.toList).groupBy(_.airline.id)
+          airlines.foreach { airline =>
+            airline.setBases(airlineBases.getOrElse(airline.id, List.empty))
           }
           
-          airlines += airline
+          val allianceMembers = AllianceSource.loadAllianceMemberByAirlines(airlines.toList)
+          airlines.foreach { airline =>
+            allianceMembers.get(airline) match { //i don't like foreach or fold... hard to read
+              case Some(allianceMember) => airline.setAllianceId(allianceMember.allianceId)
+              case None => //do nothing
+            }
+          }
         }
         
         resultSet.close()
@@ -307,6 +315,20 @@ object AirlineSource {
     loadAirlineBasesByCriteria(List(("airline", airlineId)))
   }
   
+  def loadAirlineBasesByAirlines(airlines : scala.collection.immutable.List[Airline]) : List[AirlineBase] = {
+    if (airlines.isEmpty) {
+      List.empty
+    } else {
+      val queryString = new StringBuilder("SELECT * FROM " + AIRLINE_BASE_TABLE + " where airline IN (");
+      for (i <- 0 until airlines.size - 1) {
+            queryString.append("?,")
+      }
+      
+      queryString.append("?)")
+      loadAirlineBasesByQueryString(queryString.toString(), airlines.map(_.id), airlines = collection.mutable.Map(airlines.map(airline => (airline.id, airline)).toMap.toSeq: _*))
+    }
+  }
+  
   
   def loadAirlineBasesByCountryCode(countryCode : String) : List[AirlineBase] = {
     loadAirlineBasesByCriteria(List(("country", countryCode)))
@@ -330,24 +352,32 @@ object AirlineSource {
     }
   }
   
-  def loadAirlineBasesByCriteria(criteria : List[(String, Any)]) : List[AirlineBase] = {
+  /**
+   * Provide the airlines map for quicker load
+   */
+  def loadAirlineBasesByCriteria(criteria : List[(String, Any)], airlines : Map[Int, Airline] = Map()) : List[AirlineBase] = {
+    var queryString = "SELECT * FROM " + AIRLINE_BASE_TABLE
+        
+    if (!criteria.isEmpty) {
+      queryString += " WHERE "
+      for (i <- 0 until criteria.size - 1) {
+        queryString += criteria(i)._1 + " = ? AND "
+      }
+      queryString += criteria.last._1 + " = ?"
+    }
+    loadAirlineBasesByQueryString(queryString, criteria.map(_._2), airlines)
+  }
+  
+  def loadAirlineBasesByQueryString(queryString : String, parameters : List[Any], airlines : Map[Int, Airline] = Map()) : List[AirlineBase] = {
       //open the hsqldb
       val connection = Meta.getConnection() 
       try {
-        var queryString = "SELECT * FROM " + AIRLINE_BASE_TABLE
         
-        if (!criteria.isEmpty) {
-          queryString += " WHERE "
-          for (i <- 0 until criteria.size - 1) {
-            queryString += criteria(i)._1 + " = ? AND "
-          }
-          queryString += criteria.last._1 + " = ?"
-        }
         
         val preparedStatement = connection.prepareStatement(queryString)
         
-        for (i <- 0 until criteria.size) {
-          preparedStatement.setObject(i + 1, criteria(i)._2)
+        for (i <- 0 until parameters.size) {
+          preparedStatement.setObject(i + 1, parameters(i))
         }
         
         
@@ -355,14 +385,20 @@ object AirlineSource {
         
         val bases = new ListBuffer[AirlineBase]()
         
-        val airports = Map[Int, Airport]()
-        val airlines = Map[Int, Airline]()
+        val airportIds = scala.collection.mutable.Set[Int]()
+        while (resultSet.next()) {
+          airportIds.add(resultSet.getInt("airport"))
+        }
+        
+        val airports = AirportSource.loadAirportsByIds(airportIds.toList, false).map(airport => (airport.id, airport)).toMap
+        
+        resultSet.beforeFirst()
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
           val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           //val airport = Airport.fromId(resultSet.getInt("airport"))
           val airportId = resultSet.getInt("airport")
-          val airport = airports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, false).get)
+          val airport = airports(airportId)
           val scale = resultSet.getInt("scale")
           val foundedCycle = resultSet.getInt("founded_cycle")
           val headquarter = resultSet.getBoolean("headquarter")
