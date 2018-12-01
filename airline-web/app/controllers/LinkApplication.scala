@@ -237,7 +237,7 @@ class LinkApplication extends Controller {
       //validate frequency by duration
       val maxFrequency = incomingLink.getAssignedModel().fold(0)(assignedModel => Computation.calculateMaxFrequency(assignedModel, incomingLink.distance))
       if (maxFrequency * incomingLink.getAssignedAirplanes().size < incomingLink.frequency) { //TODO log error!
-        println("max frequency exceeded, max " + maxFrequency * incomingLink.getAssignedAirplanes().size + " found " +  incomingLink.frequency)
+        println("max frequency exceeded, max " + maxFrequency * incomingLink.getAssignedAirplanes().size + " found " +  incomingLink.frequency + " airline " + request.user)
         return BadRequest("Cannot insert link - frequency exceeded limit")  
       }
 
