@@ -408,6 +408,11 @@ object Meta {
     statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_2 + " ON " + LINK_CONSUMPTION_TABLE + "(airline)")
     statement.execute()
     statement.close()
+    
+    statement = connection.prepareStatement("CREATE INDEX " + LINK_CONSUMPTION_INDEX_3 + " ON " + LINK_CONSUMPTION_TABLE + "(cycle DESC)")
+    statement.execute()
+    statement.close()
+
 
 //    statement = connection.prepareStatement("CREATE TABLE " + WATCHED_LINK_TABLE + "(" +
 //      "airline INTEGER PRIMARY KEY, " +
