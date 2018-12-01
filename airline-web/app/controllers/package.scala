@@ -22,6 +22,7 @@ import models.AirportFacility
 import models.FacilityType
 import models.AirportFacility
 import models.FacilityType.FacilityType
+import com.patson.util.ChampionInfo
 
 
 
@@ -359,6 +360,18 @@ package object controllers {
         "openness" ->  country.openness,
         "mutualRelationship" -> mutualRelationship
       )
+    }
+  }
+  
+  implicit object ChampionedCountriesWrites extends Writes[ChampionInfo] {
+    def writes(info : ChampionInfo): JsValue = {
+      Json.obj(
+              "country" -> Json.toJson(info.country),
+              "airlineId" -> JsNumber(info.airline.id),
+              "airlineName" -> JsString(info.airline.name),
+              "ranking" -> JsNumber(info.ranking),
+              "passengerCount" -> JsNumber(info.passengerCount),
+              "reputationBoost" -> JsNumber(info.reputationBoost))
     }
   }
 }

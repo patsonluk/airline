@@ -214,11 +214,16 @@
 			    					<h4>Current Details</h4>
 				    				<div class="table-row">
 					    				<div class="label"><h5>From:</h5></div>
-					    				<div class="value clickable" id="linkFromAirport"></div>
+					    				<div class="value">
+					    					<span class="clickable" id="linkFromAirport"></span>
+					    				</div>
+					    				
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>To:</h5></div>
-					    				<div class="value clickable" id="linkToAirport"></div>
+					    				<div class="value">
+					    					<span class="clickable" id="linkToAirport"></span>
+					    				</div>
 					    			</div>
 					    			<div class="table-row">
 					    				<div class="label"><h5>Flight Code:</h5></div>
@@ -237,7 +242,22 @@
 					    				<div class="value" id="linkCurrentPrice"></div>
 					    			</div>
 					    			<div class="table-row">
-					    				<div class="label"><h5>Overall Quality:</h5></div>
+					    				<div class="label">
+					    					<h5>
+					    						Overall Quality:
+					    						<div class="tooltip">
+						    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+						    					<span class="tooltiptext below">
+							    					Overall quality is determined by:<br/>
+							    					- Fleet Age per Route<br/>
+							    					- Service Star level per route<br/> 
+							    					- Company wide Service Quality<br/>
+							    					<br/>
+							    					<img src='@routes.Assets.versioned("images/clips/service-quality.gif")'> 
+						    					</span>
+						    				</div>
+					    					</h5>
+					    				</div>
 					    				<div class="value" id="linkQuality"></div>
 					    			</div>
 					    			<div class="table-row">
@@ -253,8 +273,11 @@
 					    		
 					    		<div class="divider"></div>
 					    		<div class="table" id="linkHistoryDetails" style="width: 100%">
-				    				<h4>History</h4>	
-					    			<div class="table-row">
+			    					<h4>
+			    						History
+			    						<img src='@routes.Assets.versioned("images/icons/chart-pie.png")' class="button" title="View Passenger Composition"onclick="showLinkComposition($('#actionLinkId').val())" style="vertical-align: text-bottom">
+			    					</h4>
+				    				<div class="table-row">
 					    				<div class="label"><h5>Price:</h5></div>
 					    				<div class="value" id="linkHistoryPrice"></div>
 					    			</div>
@@ -339,13 +362,21 @@
 					    			<div class="label"><h5>From:</h5></div>
 				    				<div class="value">
 				    					<span id="planLinkFromAirportName" class="clickable"></span>
+			    						<img class="button" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
 				    					<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/globe--pencil.png")' class='button' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
+					    				
 				    					<div class="value"><select id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
+				    					
 				    				</div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>To:</h5></div>
-					    			<div class="value clickable" id="planLinkToAirportName"></div>
+					    			<div class="value">
+					    				<span id="planLinkToAirportName" class="clickable"></span>
+					    				<img class="button"  src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(false)">
+					    			</div>
+					    			
+					    			
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Flight Code:</h5></div>
@@ -1840,11 +1871,35 @@
 					</div>
 				</div>
 				<div id="rivalDetails" class="sidePanel" style="float: left; width : 50%; height : 100%; display: none;">
-					<div class="section" style="width: 95%; height: 20%;  overflow: auto;">
-						<h4><span class="airlineName"></span>&nbsp;(<span class="airlineCode"></span>)<span class="airlineColorDot" style="margin-left: 5px;"></span><span class="airlineGrade" style="margin-left: 5px;"></span></h4>
-         				<div id="rivalBases" style="width: 100%;" class="table">
-						</div>
+					<div class="section" style="width: 95%;">
+						<h4><span class="airlineName"></h4>
+						
+						<div class="table" style="width: 100%;">
+				   			<div class="table-row">
+				   				<div class="label"><h5>Airline Code:</h5></div>
+				   				<div class="value airlineCode"></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Airline Color:</h5></div>
+				   				<div class="value"><span class="airlineColorDot"></span></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Grade:</h5></div>
+				   				<div class="value"><span class="airlineGrade"></span></div>
+				   			</div>
+				   			<div class="table-row">
+				   				<div class="label"><h5>Alliance:</h5></div>
+				   				<div class="value alliance"></div>
+				   			</div>
+				   		</div>
          			</div>
+         			
+         			<div class="section" style="width: 95%; height: 20%;  overflow: auto;">
+         				<h4>Airline Bases</h4>
+         				<div id="rivalBases" style="width: 100%;" class="table data">
+						</div>
+					</div>
+         			
 					<div class="section" style="width: 95%; height: 20%;  overflow: auto;">
 						<h4>Championed Countries</h4>
 						<div id="rivalChampionedCountriesList" class="table data" style="width: 100%; height: 20px;">
@@ -1976,22 +2031,34 @@
 		 	  			</div>
 		 	  		</div>
 		 	  		<div class="section" style="width: 95%;">
-		 	  			<h4 style="margin-top: 10px">Alliance Bonus</h4>
+		 	  			<h4>Alliance Bonus</h4>
 		 	  			<div style="width: 100%;">
-		 	  				<ul id="allianceBonusList">
-		 	  					<li class="label" id ="allianceNoneBonus" style="display:none; padding: 5px;">- None</li>
-		 	  					<li class="label" id ="allianceCodeShareBonus" style="display:none; padding: 5px;">- Flight Code sharing - passengers are more willing to take connection flights from the same alliance</li>
-								<li class="label" id="allianceReputationBonus" style="display:none; padding: 5px;">- Reputation increased by <span id="allianceReputationBonusValue"></span></li>
-			 	  				<li class="label" id="allianceMaxFrequencyBonus" style="display:none; padding: 5px;">- Max Flight Frequency increased by <span id="allianceMaxFrequencyBonusValue"></span></li>
-		 	  				</ul>
+		 	  				<div id="allianceBonusList" class="table data" style="width: 100%;">
+		 	  					<div class='table-row' id ="allianceNoneBonus" style="display:none;"><div class='cell'>Flight Code sharing - passengers are more willing to take connection flights from the same alliance</div></div>
+		 	  					<div class='table-row' id ="allianceCodeShareBonus" style="display:none;"><div class='cell'>Flight Code sharing - passengers are more willing to take connection flights from the same alliance</div></div>
+		 	  					<div class='table-row' id="allianceReputationBonus" style="display:none;"><div class='cell'>Reputation increased by <span id="allianceReputationBonusValue"></span></div></div>
+		 	  					<div class='table-row' id="allianceMaxFrequencyBonus" style="display:none;"><div class='cell'>Max Flight Frequency increased by <span id="allianceMaxFrequencyBonusValue"></span></div></div>
+		 	  				</div>
 						</div>
 					</div>
-		 	  		<div class="section" style="width: 95%;">						
+					<div class="section" style="width: 95%;  height : 30%; overflow: auto;">						
+						<h4>Alliance Championed Countries</h4>
+         				<div style="width: 100%;">
+	  						<div class="table data" id="allianceChampionList" style="width: 100%;">
+	  						  <div class="table-header">
+		 	  					<div class="cell" style="width: 10%">Ranking</div>
+		 	  					<div class="cell" style="width: 30%">Country</div>
+		 	  					<div class="cell" style="width: 30%">Airline</div>
+		 	  					<div class="cell" style="width: 20% align='right'">Weekly Passengers</div>
+		 	  					<div class="cell" style="width: 10% align='right'">Reputation Bonus</div>
+							  </div>
+		 	  				</div>
+						</div>
+         			</div>
+		 	  		<div class="section" style="width: 95%;  height : 30%; overflow: auto;">						
 						<h4>Alliance History</h4>
          				<div style="width: 100%;">
-	  						<div class="table" id="allianceHistory" style="width: 100%;">
-								<div class="table-row">
-				 	  			</div>
+	  						<div class="table data" id="allianceHistory" style="width: 100%;">
 		 	  				</div>
 						</div>
          			</div>
@@ -2298,6 +2365,136 @@
 	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
 	  </div>
 	</div>
+	
+	<!-- airport passenger quality expectation model -->
+	<div id="expectedQualityModal" class="modal">
+		<div class="modal-content"  style="width : 500px;">
+			<span class="close" onclick="closeModal($('#expectedQualityModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;">Flight Quality Expectation</h3>
+			<div style="margin-bottom: 10px;">Quality expection for this route from passengers of this airport:</div>
+			<div class="table expectedQualityTable" style="width: 100%; margin-bottom: 10px;">
+				<div class="table-row">
+    				<div class="label" style="width: 50%"><h5>First Class:</h5></div>
+    				<div class="expectedQualityValue firstClass" style="width: 50%"></div>
+    			</div>
+    			<div class="table-row">
+    				<div class="label" style="width: 50%"><h5>Business Class:</h5></div>
+    				<div class="expectedQualityValue businessClass" style="width: 50%"></div>
+    			</div>
+    			<div class="table-row">
+    				<div class="label" style="width: 50%"><h5>Economy Class:</h5></div>
+    				<div class="expectedQualityValue economyClass" style="width: 50%"></div>
+    			</div>
+			</div>
+			<div>
+				Some passengers are reluctant to take flights that do not match expected quality<br/>
+				</br>
+				Flight Quality is affected by:
+			</div>
+			<ul>
+				<li class="label" style="padding: 5px;">- Fleet age</li>
+				<li class="label" style="padding: 5px;">- Service level per route</li>
+				<li class="label" style="padding: 5px;">- Company wide level Service Quality (by Service Funding in Office View)</li>
+			</ul>
+			
+	    </div>
+	</div>
+	
+	<!-- link passenger composition modal -->
+	<div id="linkCompositionModal" class="modal">
+		<div class="modal-content"  style="width : 800px; height: 350px;">
+			<span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;">Passenger Composition</h3>
+			<div style="width: 100%; float: left;">
+  				<div style="float: left;">
+  					<h5 align="center">Country</h5>
+  					<div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
+  					<div class="table data topCountryTable" style="width: 95%;">
+  					</div>
+  				</div>
+  				<div style="float: left;">	
+  					<h5 align="center">Passenger Type</h5>
+  					<div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
+  					<div class="table data passengerTypeTable" style="width: 95%;"></div>
+  				</div>
+  				<div style="float: left;">
+  					<h5 align="center">
+  						Travel Preference
+  						<div class="tooltip">
+	    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
+	    					<span class="tooltiptext" style="width: 600px;">
+		    					Passengers all have different preferences and emphasis when choosing their flights. <br/>
+		    					<br/>
+		    					
+		         				<div class="table data" style="width: 100%;">
+			         			 	<div class="table-header">
+				 	  					<div class="cell" style="width: 10%;"></div>
+				 	  					<div class="cell" style="width: 12%;">Pricing</div>
+				 	  					<div class="cell" style="width: 12%;">Freq./Stops</div>
+				 	  					<div class="cell" style="width: 12%;">Quality</div>
+				 	  					<div class="cell" style="width: 12%;">Loyalty</div>
+				 	  					<div class="cell" style="width: 38%;">Others</div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Budget</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+										<div class="cell">Common in low income countries</div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Carefree</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+										<div class="cell"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Swift</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+										<div class="cell"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Comprehensive</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Loyalist</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell">Elite</div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell"><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'><img src='@routes.Assets.versioned("images/icons/weather.png")'></div>
+										<div class="cell">Requires Lounge</div>
+									</div>
+			        			</div>
+			        		</span>
+	    				</div>	
+  					</h5>	
+  					<div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
+  					<div class="table data preferenceTypeTable" style="width: 95%;"></div>
+ 				</div>
+			</div>
+			
+	    </div>
+	</div>
+					    		
 	
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>

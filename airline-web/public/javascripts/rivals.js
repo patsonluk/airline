@@ -172,6 +172,12 @@ function updateRivalBasicsDetails(airlineId) {
 	}
 	
 	$("#rivalsCanvas .airlineGrade").html(getGradeStarsImgs(rival.gradeValue))
+	
+	if (rival.allianceName) {
+		$("#rivalsCanvas .alliance").text(rival.allianceName)
+	} else {
+		$("#rivalsCanvas .alliance").text('-')
+	}
 }
 
 function updateRivalChampionedCountriesDetails(airlineId) {

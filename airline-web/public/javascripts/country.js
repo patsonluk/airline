@@ -139,7 +139,7 @@ function loadCountryDetails(countryId) {
 	    		var championDivs = ""
 	    			
     			$.each(country.champions, function(index, champion) {
-    				championDivs += "<div>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airline.id) + "<span style='font-weight: bold;'>" + champion.airline.name + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
+    				championDivs += "<div>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airlineId) + "<span style='font-weight: bold;'>" + champion.airlineName + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
     			})
 	    		
 	    		$("#countryDetailsChampion").html(championDivs)

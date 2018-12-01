@@ -143,6 +143,41 @@ object AllianceSource {
       }
   }
   
+  def loadAllianceMemberByAirlines(airlines : List[Airline]) : scala.collection.immutable.Map[Airline, AllianceMember] = {
+    val queryString = new StringBuilder("SELECT * FROM " + ALLIANCE_MEMBER_TABLE + " WHERE airline IN (");
+    for (i <- 0 until airlines.size - 1) {
+          queryString.append("?,")
+    }
+    
+    queryString.append("?)")  
+    
+    val connection = Meta.getConnection()
+    try {
+        val preparedStatement = connection.prepareStatement(queryString.toString)
+        
+        for (i <- 0 until airlines.size) {
+          preparedStatement.setObject(i + 1, airlines(i).id)
+        }
+        
+        val result = scala.collection.mutable.Map[Airline, AllianceMember]()
+        val resultSet = preparedStatement.executeQuery()
+        val airlinesMap = airlines.map(airline => (airline.id, airline)).toMap
+        while (resultSet.next()) {
+          val airline = airlinesMap(resultSet.getInt("airline"))
+          val allianceMember = AllianceMember(resultSet.getInt("alliance"), airline = airline, role = AllianceRole.withName(resultSet.getString("role")), joinedCycle = resultSet.getInt("joined_cycle"))
+          result.put(airline, allianceMember)
+        }
+        
+        resultSet.close()
+        preparedStatement.close()
+        
+        result.toMap
+      } finally {
+        connection.close()
+      }
+  }
+  
+  
   def loadAllianceHistoryByAirline(airlineId : Int) : List[AllianceHistory] = {
     loadAllianceHistoryByCriteria(List(("airline", airlineId)))
   }

@@ -192,6 +192,7 @@ function selectAlliance(row, allianceId) {
 function loadAllianceDetails(allianceId) {
 	updateAllianceBasicsDetails(allianceId)
 	updateAllianceBonus(allianceId)
+	updateAllianceChampionContries(allianceId)
 	updateAllianceHistory(allianceId)
 	$('#allianceDetails').fadeIn(200)
 }
@@ -301,6 +302,42 @@ function updateAllianceBonus(allianceId) {
 			$('#allianceReputationBonus').hide();
 		}
 	}
+}
+function updateAllianceChampionContries(allianceId) {
+	$('#allianceChampionList').children('div.table-row').remove()
+	
+	$.ajax({
+		type: 'GET',
+		url: "alliances/" + allianceId + "/championed-countries",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(championedCountries) {
+	    	$(championedCountries).each(function(index, championDetails) {
+	    		var country = championDetails.country
+	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
+	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
+	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
+	    		row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.passengerCount) + "</div>")
+	    		row.append("<div class='cell' align='right'>" + championDetails.reputationBoost + "</div>") 
+	    		$('#allianceChampionList').append(row)
+	    	})
+	    	
+	    	if ($(championedCountries).length == 0) {
+	    		var row = $("<div class='table-row'></div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell' align='right'>-</div>")
+	    		row.append("<div class='cell' align='right'>-</div>")
+	    		$('#allianceChampionList').append(row)
+	    	}
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function updateAllianceHistory(allianceId) {
