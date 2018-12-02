@@ -89,7 +89,7 @@ object Model {
                       Model("Boeing 737-700C", capacity = 140, fuelBurn = (140 * 3.3).toInt, speed = 825, range = 6083, price = 85000000, lifespan = 35 * 52, constructionTime = 12, countryCode = "US", imageUrl = "https://www.norebbo.com/2014/04/boeing-737-700-blank-illustration-templates/"),
                       Model("McDonnel Douglas MD-90", capacity = 160, fuelBurn = (160 * 3.55).toInt, speed = 811, range = 3787, price = 80000000, lifespan = 30 * 52, constructionTime = 18, countryCode = "US", imageUrl = "https://www.norebbo.com/2018/02/mcdonnell-douglas-md-90-blank-illustration-templates/"),
                       Model("Boeing 737-800", capacity = 184, fuelBurn = (184 * 3.8).toInt, speed = 825, range = 5436, price = 100000000, lifespan = 35 * 52, constructionTime = 24, countryCode = "US", imageUrl = "https://www.norebbo.com/2012/11/boeing-737-800-blank-illustration-templates/"),
-                      Model("Airbus A320neo", capacity = 195, fuelBurn = (195 * 4).toInt, speed = 833, range = 6500, price = 110000000, lifespan = 35 * 52, constructionTime = 8, countryCode = "NL", imageUrl = "https://www.norebbo.com/2017/08/airbus-a320-neo-blank-illustration-templates/"),
+                      Model("Airbus A320neo", capacity = 195, fuelBurn = (195 * 4).toInt, speed = 833, range = 6500, price = 110000000, lifespan = 35 * 52, constructionTime = 24, countryCode = "NL", imageUrl = "https://www.norebbo.com/2017/08/airbus-a320-neo-blank-illustration-templates/"),
                       Model("Boeing 757-200", capacity = 200, fuelBurn = (200 * 4.25).toInt, speed = 854, range = 7250, price = 95000000, lifespan = 35 * 52, constructionTime = 24, countryCode = "US", imageUrl = "https://www.norebbo.com/2015/01/boeing-757-200-blank-illustration-templates/"),
                       Model("Tupolev Tu-204", capacity = 210, fuelBurn = (210 * 4.5).toInt, speed = 810, range = 4300, price = 50000000, lifespan = 25 * 52, constructionTime = 24, countryCode = "RU"),
                       Model("Boeing 737 MAX 9", capacity = 230, fuelBurn = (230 * 4.2).toInt, speed = 839, range = 6570, price = 124000000, lifespan = 35 * 52, constructionTime = 36, countryCode = "US", imageUrl = "https://www.norebbo.com/2018/05/boeing-737-9-max-blank-illustration-templates/"),
@@ -108,6 +108,3 @@ object Model {
                       
   val modelByName = models.map { model => (model.name, model) }.toMap 
 }
-
-
-
