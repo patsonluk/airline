@@ -164,7 +164,7 @@ object Computation {
   
   
   def computeCompensation(link : Link) : Int = {
-    if (link.majorDelayCount > 0 || link.minorDelayCount > 0) {
+    if (link.majorDelayCount > 0 || link.minorDelayCount > 0 || link.cancellationCount > 0 ) {
       val soldSeatsPerFlight = link.soldSeats / link.frequency
       val halfCapacityPerFlight = link.capacity / link.frequency * 0.5
       
