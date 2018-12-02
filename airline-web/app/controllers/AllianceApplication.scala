@@ -231,11 +231,14 @@ class AllianceApplication extends Controller {
     AllianceSource.loadAllianceById(allianceId, true) match {
       case None => NotFound("Alliance with " + allianceId + " is not found")
       case Some(alliance) => {
-        val champions = alliance.members.flatMap { allianceMember =>
+        val approvedMembersChampions = alliance.members.filter(_.role != AllianceRole.APPLICANT).flatMap { allianceMember =>
+          ChampionUtil.getChampionInfoByAirlineId(allianceMember.airline.id)
+        }
+        val applicantChampions = alliance.members.filter(_.role == AllianceRole.APPLICANT).flatMap { allianceMember =>
           ChampionUtil.getChampionInfoByAirlineId(allianceMember.airline.id)
         }
         
-        Ok(Json.toJson(champions.sortBy(_.reputationBoost).reverse))
+        Ok(Json.obj("members" -> Json.toJson(approvedMembersChampions.sortBy(_.reputationBoost).reverse), "applicants" -> Json.toJson(applicantChampions.sortBy(_.reputationBoost).reverse)))
       }
     }
   }

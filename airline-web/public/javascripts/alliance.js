@@ -223,7 +223,11 @@ function updateAllianceBasicsDetails(allianceId) {
 	$.each(alliance.members, function(index, member) {
 		var row = $("<div class='table-row clickable' style='height: 20px;' onclick='showRivalsCanvas(" + member.airlineId + ")'></div>")
 		row.append("<div class='cell' style='vertical-align: middle;'>" + getAirlineLogoImg(member.airlineId) + member.airlineName + "</div>")
-		row.append("<div class='cell' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
+		if (member.allianceRole == "Applicant") {
+			row.append("<div class='cell warning' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
+		} else {
+			row.append("<div class='cell' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
+		}
 		if (activeAirline) {
 			if (member.airlineId == activeAirline.id) {
 				row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/cross.png' class='button' title='Leave Alliance' onclick='promptConfirm(\"Leave Alliance?\", removeAllianceMember, " + activeAirline.id + ")'></div>")
@@ -312,7 +316,9 @@ function updateAllianceChampionContries(allianceId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(championedCountries) {
-	    	$(championedCountries).each(function(index, championDetails) {
+	    	var approvedMembersChampions = championedCountries.members
+	    	var applicantChampions = championedCountries.applicants
+	    	$(approvedMembersChampions).each(function(index, championDetails) {
 	    		var country = championDetails.country
 	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
@@ -323,7 +329,18 @@ function updateAllianceChampionContries(allianceId) {
 	    		$('#allianceChampionList').append(row)
 	    	})
 	    	
-	    	if ($(championedCountries).length == 0) {
+	    	$(applicantChampions).each(function(index, championDetails) {
+	    		var country = championDetails.country
+	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
+	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
+	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
+	    		row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.passengerCount) + "</div>")
+	    		row.append("<div class='cell warning' align='right'><img src='assets/images/icons/information.png' title='Points not counted as this airline is not an approved member yet'>" + championDetails.reputationBoost + "</div>") 
+	    		$('#allianceChampionList').append(row)
+	    	})
+	    	
+	    	if ($(approvedMembersChampions).length == 0 && $(applicantChampions).length == 0) {
 	    		var row = $("<div class='table-row'></div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
