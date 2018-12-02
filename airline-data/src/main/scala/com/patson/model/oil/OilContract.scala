@@ -5,7 +5,7 @@ import com.patson.model.IdObject
 
 case class OilContract(airline : Airline, contractPrice : Double, volume : Int, startCycle : Int, contractDuration : Int, var id : Int = 0) extends IdObject {
   val endCycle = startCycle + contractDuration
-  def contractTerminationPenalty(currentCycle : Int) = (((endCycle - currentCycle) / contractDuration.toDouble) * 5 * contractCost).toLong
+  def contractTerminationPenalty(currentCycle : Int) = ((endCycle - currentCycle) * volume * 5).toLong //$5 penalty per barrel left
   val contractCost : Long = volume.toLong * 3 * contractDuration 
 }
 
