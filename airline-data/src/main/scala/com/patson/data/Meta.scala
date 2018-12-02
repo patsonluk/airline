@@ -579,7 +579,7 @@ object Meta {
                                             "route_id INTEGER," +
                                             "link INTEGER," +
                                             "link_class VARCHAR(2)," +
-                                            "inverted INTEGER" +
+                                            "inverted INTEGER," +
                                             "home_country VARCHAR(2) NOT NULL DEFAULT ''," +
                                             "home_airport INT(11)," +
                                             "preference_type INT(11)" +
