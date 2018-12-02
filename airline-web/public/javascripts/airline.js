@@ -717,7 +717,8 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkDepreciation").text("$" + commaSeparateNumber(linkConsumption.depreciation))
 		    	$("#linkCompensation").text("$" + commaSeparateNumber(linkConsumption.delayCompensation))
 		    	$("#linkLoungeCost").text("$" + commaSeparateNumber(linkConsumption.loungeCost))
-		    	$("#linkOtherCosts").text("$" + commaSeparateNumber(linkConsumption.inflightCost + linkConsumption.maintenanceCost))
+		    	$("#linkServiceSupplies").text("$" + commaSeparateNumber(linkConsumption.inflightCost))
+		    	$("#linkMaintenance").text("$" + commaSeparateNumber(linkConsumption.maintenanceCost))
 		    	if (linkConsumption.minorDelayCount == 0 && linkConsumption.majorDelayCount == 0) {
 		    		$("#linkDelays").removeClass("warning")
 		    		$("#linkDelays").text("-")
