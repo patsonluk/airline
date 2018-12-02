@@ -436,8 +436,8 @@ object AirlineSimulation {
     var totalPrincipalPayment = 0L
     var totalLoanInterest = 0L
     loans.foreach { loan => 
-      val principlePayment = Math.ceil(loan.borrowedAmount.toDouble / loan.loanTerm).toLong
-      val interestPayment = Math.ceil(loan.interest.toDouble / loan.loanTerm).toLong
+      val principlePayment = loan.principalWeeklyPayment
+      val interestPayment = loan.interestWeeklyPayment
       totalLoanInterest = totalLoanInterest + interestPayment
       totalPrincipalPayment = totalPrincipalPayment + principlePayment
       loan.remainingAmount = loan.remainingAmount - interestPayment - principlePayment 
