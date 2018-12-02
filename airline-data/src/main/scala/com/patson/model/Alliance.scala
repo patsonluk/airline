@@ -87,7 +87,7 @@ object Alliance {
             if (allianceMember.role == AllianceRole.APPLICANT) { //do not add champion points from applicant
               0
             } else {
-              countryChampions.filter(_.airline.id == allianceMember.airline.id).map(_.reputationBoost).sum
+              countryChampions.filter(_.airline.id == allianceMember.airline.id).map(champion => BigDecimal.valueOf(champion.reputationBoost)).sum
             }
           allianceChampionPoints = allianceChampionPoints + memberChampiontPoints
         }
