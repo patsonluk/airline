@@ -284,13 +284,14 @@ object AirplaneSource {
       
     try {
       connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET airplane_condition = ?, value = ? WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET airplane_condition = ?, value = ?, dealer_ratio = ? WHERE id = ?")
       
       airplanes.foreach { 
         airplane =>
           preparedStatement.setDouble(1, airplane.condition)
           preparedStatement.setInt(2, airplane.value)
-          preparedStatement.setInt(3, airplane.id)
+          preparedStatement.setDouble(3, airplane.dealerRatio)
+          preparedStatement.setInt(4, airplane.id)
           updateCount += preparedStatement.executeUpdate()
       }
       

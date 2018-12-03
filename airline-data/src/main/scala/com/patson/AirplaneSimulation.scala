@@ -69,7 +69,6 @@ object AirplaneSimulation {
     val updatingAirplanes = ListBuffer[Airplane]()
     val removingAirplanes = ListBuffer[Airplane]()
     secondHandAirplanes.foreach { airplane =>
-      airplane.dealerRatio = airplane.dealerRatio - DEALER_RATIO_DROP_RATE
       if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THERSHOLD) {
         updatingAirplanes.append(airplane)
       } else {
