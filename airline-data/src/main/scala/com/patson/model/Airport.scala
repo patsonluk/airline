@@ -178,11 +178,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     
     //now see whether this new max slot would violate reserved slots
     var increment = maxSlots - currentAssignedSlotToThisAirline
-    val reservedSlots = (slots * 0.1).toInt //airport always keep 10% spare
+    //val reservedSlots = (slots * 0.1).toInt //airport always keep 10% spare
     
-    if (availableSlots - increment < reservedSlots) { //at reserved range
-      increment =  availableSlots - reservedSlots
-    } 
+//    if (availableSlots - increment < reservedSlots) { //at reserved range
+//      increment =  availableSlots - reservedSlots
+//    } 
     
     maxSlots = currentAssignedSlotToThisAirline + increment
     
