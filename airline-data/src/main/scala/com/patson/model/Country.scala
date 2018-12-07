@@ -22,6 +22,7 @@ object Country {
   val SIXTH_FREEDOM_MIN_OPENNESS = 7
   val LOW_INCOME_THRESHOLD = 15000
   val HIGH_INCOME_THRESHOLD = 50000
+  val DEFAULT_UNKNOWN_INCOME = 1000
   
   val loadedCountryCategories : scala.collection.mutable.Map[String, FlightCateogryLimits] = scala.collection.mutable.Map()
 
