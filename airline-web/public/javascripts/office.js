@@ -463,7 +463,7 @@ function setAirlineColor() {
 }
 
 function showUploadLogo() {
-	if (activeAirline.reputation >= 50) {
+	if (activeAirline.reputation >= 40) {
 		updateLogoUpload()
 		$('#uploadLogoPanelForbidden').hide()
 		$('#uploadLogoPanel').show()
