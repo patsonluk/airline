@@ -47,7 +47,7 @@ object AirplaneSimulation {
     }
     
     var updatingAirplanes = updatingAirplanesListBuffer.toList 
-    AirplaneSource.updateAirplanesCondition(updatingAirplanes)
+    AirplaneSource.updateAirplanesDetails(updatingAirplanes)
     println("Finished updating all airplanes")
     
     println("Start renewing airplanes")
@@ -69,14 +69,13 @@ object AirplaneSimulation {
     val updatingAirplanes = ListBuffer[Airplane]()
     val removingAirplanes = ListBuffer[Airplane]()
     secondHandAirplanes.foreach { airplane =>
-      airplane.dealerRatio = airplane.dealerRatio - DEALER_RATIO_DROP_RATE
       if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THERSHOLD) {
         updatingAirplanes.append(airplane)
       } else {
         removingAirplanes.append(airplane)
       }
     }
-    AirplaneSource.updateAirplanesCondition(updatingAirplanes.toList)
+    AirplaneSource.updateAirplanesDetails(updatingAirplanes.toList)
     removingAirplanes.foreach { airplane =>
       AirplaneSource.deleteAirplanesByCriteria(List(("id", airplane.id), ("is_sold", true))) //need to be careful here, make sure it is still in 2nd hand market
     }

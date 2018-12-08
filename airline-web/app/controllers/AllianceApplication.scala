@@ -36,6 +36,7 @@ import com.patson.data.AllianceSource
 import com.patson.model.AllianceHistory
 import play.api.libs.json.JsBoolean
 import com.patson.data.LinkSource
+import com.patson.util.ChampionUtil
 
 
 class AllianceApplication extends Controller {
@@ -222,6 +223,22 @@ class AllianceApplication extends Controller {
         }
         
         Ok(Json.toJson(links)(SimpleLinkWrites))
+      }
+    }
+  }
+  
+  def getAllianceChampions(allianceId : Int) = Action { request =>
+    AllianceSource.loadAllianceById(allianceId, true) match {
+      case None => NotFound("Alliance with " + allianceId + " is not found")
+      case Some(alliance) => {
+        val approvedMembersChampions = alliance.members.filter(_.role != AllianceRole.APPLICANT).flatMap { allianceMember =>
+          ChampionUtil.getChampionInfoByAirlineId(allianceMember.airline.id)
+        }
+        val applicantChampions = alliance.members.filter(_.role == AllianceRole.APPLICANT).flatMap { allianceMember =>
+          ChampionUtil.getChampionInfoByAirlineId(allianceMember.airline.id)
+        }
+        
+        Ok(Json.obj("members" -> Json.toJson(approvedMembersChampions.sortBy(_.reputationBoost).reverse), "applicants" -> Json.toJson(applicantChampions.sortBy(_.reputationBoost).reverse)))
       }
     }
   }

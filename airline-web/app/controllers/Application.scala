@@ -213,9 +213,10 @@ class Application extends Controller {
     Ok(views.html.test())
   }
   
+  val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)
+  
   def getAirports(count : Int) = Action {
-    val airports = AirportSource.loadAllAirports()
-    val selectedAirports = airports.takeRight(count)
+    val selectedAirports = cachedAirportsByPower.takeRight(count)
     Ok(Json.toJson(selectedAirports))
   }
   

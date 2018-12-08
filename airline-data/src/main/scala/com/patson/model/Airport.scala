@@ -22,13 +22,13 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
   //private[this] var loungesLoaded = false
   
-  
   private[this] var airportImageUrl : Option[String] = None
   private[this] var cityImageUrl : Option[String] = None
   
   private[model] var country : Option[Country] = None
   
   val income = if (population > 0) (power / population).toInt  else 0
+  lazy val incomeLevel = Computation.getIncomeLevel(income)
   
   def availableSlots : Int = {
     if (slotAssignmentsLoaded) {
@@ -178,11 +178,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     
     //now see whether this new max slot would violate reserved slots
     var increment = maxSlots - currentAssignedSlotToThisAirline
-    val reservedSlots = (slots * 0.2).toInt //airport always keep 20% spare
+    //val reservedSlots = (slots * 0.1).toInt //airport always keep 10% spare
     
-    if (availableSlots - increment < reservedSlots) { //at reserved range
-      increment =  availableSlots - reservedSlots
-    } 
+//    if (availableSlots - increment < reservedSlots) { //at reserved range
+//      increment =  availableSlots - reservedSlots
+//    } 
     
     maxSlots = currentAssignedSlotToThisAirline + increment
     
@@ -372,6 +372,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     size >= airplaneModel.minAirportSize
   }
   
+  val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
+    Math.max(0, Math.min(incomeLevel, 50) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //50% on income level, 50% on flight adjust
+  }
+  
   private[this] def getCountry() : Country = {
     if (country.isEmpty) {
       country = CountrySource.loadCountryByCode(countryCode)
@@ -406,6 +410,16 @@ object Airport {
   val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
   val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
   val NON_BASE_MAX_SLOT = 70
+  
+  import FlightType._
+  val qualityExpectationFlightTypeAdjust = 
+  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, 0, 15),
+        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 5, 20),
+        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 10, 25),
+        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 30),
+        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 20, 35),
+        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 25, 40),
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 25, 40))
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)

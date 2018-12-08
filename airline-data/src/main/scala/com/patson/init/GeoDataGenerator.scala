@@ -27,14 +27,14 @@ object GeoDataGenerator extends App {
 
   //implicit val materializer = FlowMaterializer()
 
-  private val DEFAULT_UNKNOWN_INCOME = 1000
-  
   mainFlow
   
   def mainFlow() {
-    val getCityFuture = getCity(getIncomeInfo())
+    val incomeInfo = getIncomeInfo()
+    val getCityFuture = getCity(incomeInfo)
     
-    val cities = Await.result(getCityFuture, Duration.Inf)  
+    var cities = Await.result(getCityFuture, Duration.Inf)  
+    cities = cities ++ AdditionalLoader.loadAdditionalCities(incomeInfo)
         
     //make sure cities are saved first as we need the id for airport info
     try {
@@ -64,7 +64,7 @@ object GeoDataGenerator extends App {
           if (incomeInfo.get(info(8)).isEmpty) {
             println(info(8) + " has no income info")
           }
-          new City(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, incomeInfo.get(info(8)).getOrElse(DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
+          new City(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, incomeInfo.get(info(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
         }
     }
     
@@ -208,7 +208,7 @@ object GeoDataGenerator extends App {
           index -= 1
         }
         if (income == 0) {
-          income = DEFAULT_UNKNOWN_INCOME
+          income = Country.DEFAULT_UNKNOWN_INCOME
 //          println("unknown: " + tokens(0))
         }
         (countryCode, income)
@@ -237,7 +237,11 @@ object GeoDataGenerator extends App {
          airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
       }, runwayResult)
       
-    airportResult = adjustAirportSize(airportResult)  
+    airportResult = adjustAirportSize(airportResult)
+    
+    val additionalAirports : List[Airport] = AdditionalLoader.loadAdditionalAirports()
+    
+    airportResult = airportResult ++ additionalAirports
     
     val airportsSortedByLongitude = airportResult.sortBy(_.longitude)
     val citiesSortedByLongitude = citites.sortBy(_.longitude)

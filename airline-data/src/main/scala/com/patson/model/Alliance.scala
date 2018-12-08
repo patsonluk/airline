@@ -2,6 +2,7 @@ package com.patson.model
 
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CountrySource
+import com.patson.util.ChampionUtil
 
 case class Alliance(name: String, creationCycle: Int, members: List[AllianceMember], var id: Int = 0) {
   val status = {
@@ -33,20 +34,30 @@ object AllianceEvent extends Enumeration {
 }
 
 object Alliance {
-  val MAX_MEMBER_COUNT = 10
+  val MAX_MEMBER_COUNT = 12
   val ESTABLISH_MIN_MEMBER_COUNT = 3
 
   val getReputationBonus: (Int => Double) = { (ranking: Int) =>
     if (ranking == 1) {
       20
     } else if (ranking == 2) {
-      12
+      15
     } else if (ranking == 3) {
-      8
+      12
     } else if (ranking == 4) {
-      6
+      10
     } else if (ranking == 5) {
+      8
+    } else if (ranking == 6) {
+      7
+    } else if (ranking == 7) {
+      6
+    } else if (ranking == 8) {
+      5
+    } else if (ranking == 9) {
       4
+    } else if (ranking == 10) {
+      3      
     } else {
       2
     }
@@ -59,13 +70,15 @@ object Alliance {
       10
     } else if (ranking == 3) {
       5
+    } else if (ranking <= 10) {
+      2
     } else {
       0
     }
   }
 
   def getRankings(alliances: List[Alliance]): Map[Alliance, (Int, BigDecimal)] = {
-    val countryChampionsByAirline: Map[Int, List[(Country, Double)]] = getCountryChampions()
+    val countryChampions = ChampionUtil.getAllChampionInfo()
     val alliancesWithChampionPoints: List[(Alliance, BigDecimal)] = alliances.filter(_.status == AllianceStatus.ESTABLISHED).map {
       alliance =>
         var allianceChampionPoints: BigDecimal = 0.0
@@ -74,12 +87,7 @@ object Alliance {
             if (allianceMember.role == AllianceRole.APPLICANT) { //do not add champion points from applicant
               0
             } else {
-              countryChampionsByAirline.get(allianceMember.airline.id) match {
-                case Some(championedCountries) => {
-                  championedCountries.map(boostEntry => BigDecimal.valueOf(boostEntry._2)).sum
-                }
-                case None => 0
-              }
+              countryChampions.filter(_.airline.id == allianceMember.airline.id).map(champion => BigDecimal.valueOf(champion.reputationBoost)).sum
             }
           allianceChampionPoints = allianceChampionPoints + memberChampiontPoints
         }
@@ -92,34 +100,4 @@ object Alliance {
 
     alliancesWithRanking.toMap
   }
-  
-    
-  /**
-   * returns Map[AirlineId, List[CountryCode, ReputationBoost]]
-   */
-  def getCountryChampions() : Map[Int, List[(Country, Double)]] = {
-    val topChampionsByCountryCode : List[(String, List[((Int, Long), Int)])]= CountrySource.loadMarketSharesByCriteria(List()).map {
-      case CountryMarketShare(countryCode, airlineShares) => (countryCode, airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(5).zipWithIndex)
-    }
-    
-    val championedCountryByAirline: scala.collection.mutable.Map[Int, ListBuffer[(Country, Double)]] = scala.collection.mutable.Map[Int, ListBuffer[(Country, Double)]]()  
-      
-    val countriesByCode = CountrySource.loadAllCountries().map(country => (country.countryCode, country)).toMap
-    topChampionsByCountryCode.foreach { //(country, reputation boost)
-      case (countryCode, champions) => champions.foreach {
-        case ((championAirlineId, passengerCount), rankingIndex) =>
-          val country = countriesByCode(countryCode)
-          val ranking = rankingIndex + 1
-          val reputationBoost = Computation.computeReputationBoost(country, ranking)
-          val existingBoosts : ListBuffer[(Country, Double)] = championedCountryByAirline.getOrElseUpdate(championAirlineId, ListBuffer[(Country, Double)]())
-          existingBoosts.append((country, reputationBoost))
-      }
-    }
-    
-    championedCountryByAirline.mapValues( _.toList).toMap
-  }
- 
-  
-
-
 }

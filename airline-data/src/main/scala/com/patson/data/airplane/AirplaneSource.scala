@@ -278,19 +278,24 @@ object AirplaneSource {
     updateCount
   }
   
-   def updateAirplanesCondition(airplanes : List[Airplane]) = {
+  /**
+   * Update an airplane's details exception owner, construction_cylce and isSold information
+   */
+   def updateAirplanesDetails(airplanes : List[Airplane]) = {
     val connection = Meta.getConnection()
     var updateCount = 0
       
     try {
       connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET airplane_condition = ?, value = ? WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET airplane_condition = ?, depreciation_rate = ?, value = ?, dealer_ratio = ? WHERE id = ?")
       
       airplanes.foreach { 
         airplane =>
           preparedStatement.setDouble(1, airplane.condition)
-          preparedStatement.setInt(2, airplane.value)
-          preparedStatement.setInt(3, airplane.id)
+          preparedStatement.setInt(2, airplane.depreciationRate)
+          preparedStatement.setInt(3, airplane.value)
+          preparedStatement.setDouble(4, airplane.dealerRatio)
+          preparedStatement.setInt(5, airplane.id)
           updateCount += preparedStatement.executeUpdate()
       }
       

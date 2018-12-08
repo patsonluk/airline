@@ -121,18 +121,37 @@ object Computation {
     (baseCost * airportSizeMultiplier * distanceMultiplier * internationalMultiplier).toInt 
   }
   
-  def computeReputationBoost(country : Country, ranking : Int) : Double = {
-    //US gives 30 boost if 1st rank, 20 if 2nd and 10 if 3rd  pop 97499995 income 54629
+  val reputationBoostTop10 = Map(
+      1 -> 30,
+      2 -> 24,
+      3 -> 19,
+      4 -> 16,
+      5 -> 13,
+      6 -> 10,
+      7 -> 8,
+      8 -> 6,
+      9 -> 4,
+      10 -> 2
+      )
     
+  def computeReputationBoost(country : Country, ranking : Int) : Double = {
+    //US gives boost of (rank : boost)  
+    // 1st : 30
+    // 2nd : 24 
+    // 3rd : 19
+    // 4th : 16
+    // 5th : 13
+    // 6th : 10
+    // 7th : 8
+    // 8th : 6
+    // 9th : 4
+    // 10th : 2
+    
+    //pop 97499995 income 54629
     val modelPower = 97499995L * 54629L
     val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
     
-    val boost = 
-      if (ranking <= 3) { //top 3
-        math.log10(ratioToModelPower * 100) / 2 * 10 * (4 - ranking)
-      } else {
-        math.log10(ratioToModelPower * 100) / 2 * 5 / (ranking - 3)
-      }
+    val boost = math.log10(ratioToModelPower * 100) / 2 * reputationBoostTop10(ranking)
     
     if (boost < 1 && ranking <= 3) {
       1
@@ -145,7 +164,7 @@ object Computation {
   
   
   def computeCompensation(link : Link) : Int = {
-    if (link.majorDelayCount > 0 || link.minorDelayCount > 0) {
+    if (link.majorDelayCount > 0 || link.minorDelayCount > 0 || link.cancellationCount > 0 ) {
       val soldSeatsPerFlight = link.soldSeats / link.frequency
       val halfCapacityPerFlight = link.capacity / link.frequency * 0.5
       

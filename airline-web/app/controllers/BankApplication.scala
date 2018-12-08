@@ -36,6 +36,10 @@ class BankApplication extends Controller {
       "borrowedAmount" -> JsNumber(loan.borrowedAmount),
       "interest" -> JsNumber(loan.interest),
       "remainingAmount" -> JsNumber(loan.remainingAmount),
+      "earlyRepaymentFee" -> JsNumber(loan.earlyRepaymentFee),
+      "earlyRepayment" -> JsNumber(loan.earlyRepayment),
+      "remainingTerm" -> JsNumber(loan.remainingTerm),
+      "weeklyPayment" -> JsNumber(loan.weeklyPayment),
       "creationCycle" -> JsNumber(loan.creationCycle),
       "loanTerm" ->  JsNumber(loan.loanTerm),
       "id" -> JsNumber(loan.id)))
@@ -103,10 +107,10 @@ class BankApplication extends Controller {
           BadRequest("Cannot repay loan not owned by this airline") 
         } else {
           val balance = request.user.getBalance 
-          if (balance < loan.remainingAmount) {
+          if (balance < loan.earlyRepayment) {
             BadRequest("Not enough cash to repay this loan")
           } else {
-            AirlineSource.adjustAirlineBalance(request.user.id, -1 * loan.remainingAmount)
+            AirlineSource.adjustAirlineBalance(request.user.id, -1 * loan.earlyRepayment)
             BankSource.deleteLoan(loanId)
             Ok
           }

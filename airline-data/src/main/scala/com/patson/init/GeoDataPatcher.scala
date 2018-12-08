@@ -20,6 +20,7 @@ import com.patson.model.Computation
 import scala.collection.mutable.ArrayBuffer
 import com.patson.model.Country
 import com.patson.data.CountrySource
+import scala.collection.mutable.ListBuffer
 
 object GeoDataPatcher extends App {
 
@@ -27,14 +28,18 @@ object GeoDataPatcher extends App {
 
   //implicit val materializer = FlowMaterializer()
 
-  private val DEFAULT_UNKNOWN_INCOME = 1000
-  
   mainFlow
   
   def mainFlow() {
-    val getCityFuture = getCity(getIncomeInfo())
+    val incomeInfo = getIncomeInfo()
+    val getCityFuture = getCity(incomeInfo)
     
-    val cities = Await.result(getCityFuture, Duration.Inf)  
+    var cities = Await.result(getCityFuture, Duration.Inf)
+    println("FROM " + cities.length)
+    cities = cities ++ AdditionalLoader.loadAdditionalCities(incomeInfo)
+    println("TO " + cities.length)
+    
+    //cities.foreach(println)
         
     //make sure cities are saved first as we need the id for airport info
     try {
@@ -64,7 +69,7 @@ object GeoDataPatcher extends App {
           if (incomeInfo.get(info(8)).isEmpty) {
             println(info(8) + " has no income info")
           }
-          new City(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, incomeInfo.get(info(8)).getOrElse(DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
+          new City(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, incomeInfo.get(info(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
         }
     }
     
@@ -208,7 +213,7 @@ object GeoDataPatcher extends App {
           index -= 1
         }
         if (income == 0) {
-          income = DEFAULT_UNKNOWN_INCOME
+          income = Country.DEFAULT_UNKNOWN_INCOME
 //          println("unknown: " + tokens(0))
         }
         (countryCode, income)
@@ -229,6 +234,7 @@ object GeoDataPatcher extends App {
     val rawAirportResult : List[Airport] = results(0).asInstanceOf[List[Airport]]
     val runwayResult : Map[String, List[Runway]] = results(1).asInstanceOf[Map[String, List[Runway]]]
     
+    
     println(rawAirportResult.size + " airports")
     println(runwayResult.size + " solid runways")
     println(citites.size + " cities")
@@ -237,7 +243,11 @@ object GeoDataPatcher extends App {
          airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
       }, runwayResult)
       
-    airportResult = adjustAirportSize(airportResult)  
+    airportResult = adjustAirportSize(airportResult)
+    
+    val additionalAirports : List[Airport] = AdditionalLoader.loadAdditionalAirports()
+    
+    airportResult = airportResult ++ additionalAirports
     
     val airportsSortedByLongitude = airportResult.sortBy(_.longitude)
     val citiesSortedByLongitude = citites.sortBy(_.longitude)
@@ -334,11 +344,22 @@ object GeoDataPatcher extends App {
     
     val existingIds = AirportSource.loadAllAirports().map( airport => (airport.iata, airport.id)).toMap
     
-    
+    val newAirports = ListBuffer[Airport]()
+    val existingAirports = ListBuffer[Airport]()
     airports.foreach { airport =>
-      airport.id = existingIds(airport.iata)
+      existingIds.get(airport.iata) match {
+        case Some(airportId) => {
+          airport.id = airportId
+          existingAirports += airport
+        }
+        case None => newAirports += airport
+      }
     }
-    AirportSource.updateAirports(airports)
+    AirportSource.fullUpdateAirports(existingAirports.toList)
+    println("Saving new airports:")
+    
+    newAirports.foreach(println)
+    AirportSource.saveAirports(newAirports.toList)
 
     //patch features
     AirportFeaturePatcher.patchFeatures()

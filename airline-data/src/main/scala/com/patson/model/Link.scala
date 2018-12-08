@@ -120,53 +120,30 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   
-    
-  //println("neutral quality : " + neutralQuality + " distance : " + distance)
-  def computeQualityPriceAdjust(linkClass : LinkClass) : Double = {
-    if (!computedQualityPriceAdjust.containsKey(linkClass)) {
-      val neutralQuality = Link.neutralQualityOfClass(linkClass, from, to, flightType)
-      val qualityDelta = computedQuality - neutralQuality.toDouble
-      
-      val multiplier =
-        if (qualityDelta < 0) { //neutral at 50, quality 0 yields 2.0 (heavy penalty)
-          2
-        } else { //neutral at 50, quality 100 yields 0.75 (slight advantage)
-          0.5
-        }
-      
-        var priceAdjust = 1 - (qualityDelta / Link.MAX_QUALITY) * multiplier
-        if (priceAdjust < 0.75) { //don't reduce too much
-          priceAdjust = 0.75
-        }
-      
-      computedQualityPriceAdjust.put(linkClass, priceAdjust)
-    }
-    computedQualityPriceAdjust.get(linkClass)
-  }
-  
   lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
 }
 
 object Link {
   val MAX_QUALITY = 100
+  val HIGH_FREQUENCY_THRESHOLD = 14
   def fromId(id : Int) : Link = {
     Link(from = Airport.fromId(0), to = Airport.fromId(0), Airline.fromId(0), price = LinkClassValues.getInstance(), distance = 0, capacity = LinkClassValues.getInstance(), rawQuality = 0, duration = 0, frequency = 0, flightType = FlightType.SHORT_HAUL_DOMESTIC, id = id)
   }
   
    //adjust by quality
-  import FlightType._
-  val neutralQualityOfClass = (linkClass : LinkClass, from : Airport, to : Airport, flightType : FlightType.Value) => {
-    val linkClassMultiplier = linkClass.level - 1
-    flightType match {
-      case SHORT_HAUL_DOMESTIC => 30 + linkClassMultiplier * 15
-      case SHORT_HAUL_INTERNATIONAL => 35 + linkClassMultiplier * 15
-      case SHORT_HAUL_INTERCONTINENTAL => 40 + linkClassMultiplier * 15
-      case LONG_HAUL_DOMESTIC => 45 + linkClassMultiplier * 15
-      case LONG_HAUL_INTERNATIONAL => 50 + linkClassMultiplier * 15
-      case LONG_HAUL_INTERCONTINENTAL => 55 + linkClassMultiplier * 15
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 60 + linkClassMultiplier * 15
-    }
-  }
+//  import FlightType._
+//  val neutralQualityOfClass = (linkClass : LinkClass, from : Airport, to : Airport, flightType : FlightType.Value) => {
+//    val linkClassMultiplier = linkClass.level - 1
+//    flightType match {
+//      case SHORT_HAUL_DOMESTIC => 30 + linkClassMultiplier * 15
+//      case SHORT_HAUL_INTERNATIONAL => 35 + linkClassMultiplier * 15
+//      case SHORT_HAUL_INTERCONTINENTAL => 40 + linkClassMultiplier * 15
+//      case LONG_HAUL_DOMESTIC => 45 + linkClassMultiplier * 15
+//      case LONG_HAUL_INTERNATIONAL => 50 + linkClassMultiplier * 15
+//      case LONG_HAUL_INTERCONTINENTAL => 55 + linkClassMultiplier * 15
+//      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 60 + linkClassMultiplier * 15
+//    }
+//  }
 }
 
 /**
@@ -182,8 +159,8 @@ case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, 
 }
 
 sealed abstract class LinkClass(val code : String, val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val level : Int) //level for sorting/comparison purpose
-case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 3, priceMultiplier = 8, 3)
-case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 2, priceMultiplier = 2.5, 2)
+case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 3, priceMultiplier = 9, 3)
+case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 2, priceMultiplier = 3, 2)
 case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, 1)
 object LinkClass {
   val values = List(FIRST, BUSINESS, ECONOMY)

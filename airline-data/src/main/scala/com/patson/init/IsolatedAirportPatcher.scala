@@ -41,7 +41,7 @@ object IsolatedAirportPatcher {
       }
     }
     
-    isolatedAirports.foreach(println)
+    //isolatedAirports.foreach(println)
     AirportSource.updateAirportFeatures(isolatedAirports.toList)
   }
 }  

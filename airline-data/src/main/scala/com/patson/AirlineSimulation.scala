@@ -10,6 +10,8 @@ import com.patson.model.oil.OilPrice
 import com.patson.model.oil.OilInventoryPolicy
 import com.patson.model.oil.OilConsumptionHistory
 import com.patson.model.oil.OilConsumptionType
+import com.patson.util.ChampionInfo
+import com.patson.util.ChampionUtil
 
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
@@ -38,7 +40,7 @@ object AirlineSimulation {
     val allCashFlows = ListBuffer[AirlineCashFlow]() //cash flow for accounting purpose
      
     val currentCycle = MainSimulation.currentWeek
-    val champions : scala.collection.immutable.Map[Airline, List[(Country, Int)]] = getChampions(allAirlines.map( airline => (airline.id, airline)).toMap, allCountries)
+    val champions : scala.collection.immutable.Map[Airline, List[ChampionInfo]] = ChampionUtil.getAllChampionInfo().groupBy(_.airline)
     val cashFlows = Map[Airline, Long]() //cash flow for actual deduction
     
     val alliances = AllianceSource.loadAllAlliances()
@@ -273,11 +275,8 @@ object AirlineSimulation {
         }
         
         champions.get(airline).foreach { //if this airline championed anything
-          _.foreach {
-            case(country, ranking) => { 
-              val boost = Computation.computeReputationBoost(country, ranking)
-              targetReputation = targetReputation + boost
-            }
+          _.foreach { championInfo =>
+              targetReputation = targetReputation + championInfo.reputationBoost
           }
         }
         
@@ -437,8 +436,8 @@ object AirlineSimulation {
     var totalPrincipalPayment = 0L
     var totalLoanInterest = 0L
     loans.foreach { loan => 
-      val principlePayment = Math.ceil(loan.borrowedAmount.toDouble / loan.loanTerm).toLong
-      val interestPayment = Math.ceil(loan.interest.toDouble / loan.loanTerm).toLong
+      val principlePayment = loan.principalWeeklyPayment
+      val interestPayment = loan.interestWeeklyPayment
       totalLoanInterest = totalLoanInterest + interestPayment
       totalPrincipalPayment = totalPrincipalPayment + principlePayment
       loan.remainingAmount = loan.remainingAmount - interestPayment - principlePayment 
@@ -492,20 +491,20 @@ object AirlineSimulation {
     } 
   }
   
-  def getChampions(allAirlines : scala.collection.immutable.Map[Int, Airline], allCountries : scala.collection.immutable.Map[String, Country]) : scala.collection.immutable.Map[Airline, List[(Country, Int)]] = {
-    val champions = Map[Airline, ListBuffer[(Country, Int)]]()
-     CountrySource.loadMarketSharesByCriteria(List.empty).foreach { 
-       case CountryMarketShare(countryCode : String, airlineShares) => {
-         val championsForThisCountry = airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(5)
-         for (x <- 0 until championsForThisCountry.size) {
-            val airline = allAirlines((championsForThisCountry(x)._1))
-            val ranking = x + 1
-            val airlineChampionedCountries = champions.getOrElseUpdate(airline, ListBuffer[(Country, Int)]())
-            airlineChampionedCountries += ((allCountries(countryCode), ranking))
-         }
-       }
-     }
-    
-    champions.mapValues(_.toList).toMap
-  }
+//  def getChampions(allAirlines : scala.collection.immutable.Map[Int, Airline], allCountries : scala.collection.immutable.Map[String, Country]) : scala.collection.immutable.Map[Airline, List[(Country, Int)]] = {
+//    val champions = Map[Airline, ListBuffer[(Country, Int)]]()
+//     CountrySource.loadMarketSharesByCriteria(List.empty).foreach { 
+//       case CountryMarketShare(countryCode : String, airlineShares) => {
+//         val championsForThisCountry = airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(5)
+//         for (x <- 0 until championsForThisCountry.size) {
+//            val airline = allAirlines((championsForThisCountry(x)._1))
+//            val ranking = x + 1
+//            val airlineChampionedCountries = champions.getOrElseUpdate(airline, ListBuffer[(Country, Int)]())
+//            airlineChampionedCountries += ((allCountries(countryCode), ranking))
+//         }
+//       }
+//     }
+//    
+//    champions.mapValues(_.toList).toMap
+//  }
 }
