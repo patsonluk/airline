@@ -61,6 +61,7 @@ import com.patson.model.User
 import com.patson.model.Alliance
 import com.patson.util.ChampionUtil
 import com.patson.util.ChampionInfo
+import com.patson.data.OilSource
 
 
 class AirlineApplication extends Controller {
@@ -612,6 +613,11 @@ class AirlineApplication extends Controller {
       BankSource.loadLoansByAirline(airlineId).foreach { loan =>
         BankSource.deleteLoan(loan.id)
       }
+      //remove all factilities
+      AirlineSource.deleteLoungeByCriteria(List(("airline", airlineId)))
+      
+      //remove all oil contract
+      OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
       
       AllianceSource.loadAllianceMemberByAirline(request.user).foreach { allianceMember =>
         AllianceSource.deleteAllianceMember(airlineId)
