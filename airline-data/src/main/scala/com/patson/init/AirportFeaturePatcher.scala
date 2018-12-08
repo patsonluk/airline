@@ -104,10 +104,12 @@ object AirportFeaturePatcher {
         "PSA" -> 22,
         "OSL" -> 22, //Oslo
         "SFO" -> 20,
+        "KBV" -> 19,
+        "OOL" -> 20,
         "BWN" -> 19, //Brunei
         "MFM" -> 19, //Macau
         "CTS" -> 19, //Chitose Sapporo
-        "HKT" -> 19, //Phuket
+        "HKT" -> 43, //Phuket
         "PMI" -> 19, //Palma De Mallorca
         "OGG" -> 18, //	Kahului, Hawaii
         "KUL" -> 19, //	Kuala Lumpur
