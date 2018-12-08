@@ -8,6 +8,7 @@ object AirportFeaturePatcher {
   import AirportFeatureType._
   val featureList = Map(
     INTERNATIONAL_HUB -> Map[String, Int](
+        "JFK" -> 90,
         "JFK" -> 80,
         "LHR" -> 80,
         "HKG" -> 70,
