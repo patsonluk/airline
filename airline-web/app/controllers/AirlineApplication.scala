@@ -670,7 +670,7 @@ class AirlineApplication extends Controller {
  }	 
  
   def uploadLogo(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    if (request.user.getReputation < 50) {
+    if (request.user.getReputation < 40) {
       Ok(Json.obj("error" -> JsString("Cannot upload img at current reputation"))) //have to send ok as the jquery plugin's error cannot read the response
     } else {
       request.body.asMultipartFormData.map { data =>

@@ -468,7 +468,7 @@ function showUploadLogo() {
 		$('#uploadLogoPanelForbidden').hide()
 		$('#uploadLogoPanel').show()
 	} else {
-		$('#uploadLogoPanelForbidden .warning').text('You may only upload airline banner at Reputation 50 or above')
+		$('#uploadLogoPanelForbidden .warning').text('You may only upload airline banner at Reputation 40 or above')
 		$('#uploadLogoPanelForbidden').show()
 		$('#uploadLogoPanel').hide()
 	}
