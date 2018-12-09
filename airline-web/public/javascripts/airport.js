@@ -586,7 +586,7 @@ function updateAirportExtendedDetails(airportId) {
 			    	$(".airportRelationship").text(relationship)
 		    	}
 		    	
-		    	$(".airportSlots").text(airport.availableSlots + " / " + airport.slots)
+		    	$(".airportSlots").text(airport.slots)
 		    	
 	//	    	$.each(airport.linkCounts, function(withLinksAirlineId, linkCount) {
 	//	    		if (airlineId == withLinksAirlineId) {
