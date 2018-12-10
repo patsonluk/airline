@@ -105,6 +105,7 @@ DELETE   /links							  controllers.LinkApplication.deleteAllLinks
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels
 GET		 /rankings  		  		      controllers.RankingApplication.getRankings()
+GET		 /rankings/:airlineId  		      controllers.RankingApplication.getRankingsWithAirline(airlineId : Int)
 GET		 /logos/templates 				  controllers.LogoApplication.getTemplates()	
 GET		 /logos/templates/:id			  controllers.LogoApplication.getTemplate(id : Int)
 GET		 /logos/preview					  controllers.LogoApplication.getPreview(templateIndex : Int, color1 : String, color2 : String)	
