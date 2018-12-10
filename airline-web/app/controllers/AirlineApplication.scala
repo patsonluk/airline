@@ -539,12 +539,14 @@ class AirlineApplication extends Controller {
                 } else{
                   AirlineSource.deleteLounge(lounge)
                 }
+                
+                if (consideration.cost > 0) {
+                  AirlineSource.adjustAirlineBalance(request.user.id, -1 * consideration.cost)
+                  AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.FACILITY_CONSTRUCTION, -1 * consideration.cost))
+                }
+                Ok(Json.toJson(consideration.newFacility))
               }
-              if (consideration.cost > 0) {
-                AirlineSource.adjustAirlineBalance(request.user.id, -1 * consideration.cost)
-                AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.FACILITY_CONSTRUCTION, -1 * consideration.cost))
-              }
-              Ok(Json.toJson(consideration.newFacility))
+              
             } else {
               BadRequest("Unrecognized facitility type " + inputFacility.facilityType)
             }
