@@ -39,6 +39,9 @@ class RankingApplication extends Controller {
       } else if (ranking.entry.isInstanceOf[Lounge]) {
         val lounge = ranking.entry.asInstanceOf[Lounge]
         result = result + ("airlineName" -> JsString(lounge.airline.name)) + ("airlineId" -> JsNumber(lounge.airline.id)) + ("rankInfo" -> JsString(getLoungeDescription(lounge)))
+      } else if (ranking.entry.isInstanceOf[Airport]) { 
+        val airport = ranking.entry.asInstanceOf[Airport]
+        result = result + ("airportName" -> JsString(airport.name)) + ("airportId" -> JsNumber(airport.id)) + ("iata" -> JsString(airport.iata)) + ("countryCode" -> JsString(airport.countryCode))
       }
       
       result

@@ -17,6 +17,7 @@ import java.awt.Color
 import play.api.libs.json.Json
 import com.patson.model.LoungeConsumptionDetails
 import com.patson.data.LoungeHistorySource
+import com.patson.model.Airport
  
 
 object RankingUtil {
@@ -25,7 +26,7 @@ object RankingUtil {
   
 //  val generatedLogo = ImageUtil.generateLogo("logo/star.bmp", Color.CYAN.getRGB, Color.RED.getRGB)
 //  LogoUtil.saveLogo(1, generatedLogo)
-  
+  val RANKING_MAX = 40 //save top 40 for now
   
   
   def getRankings() : Map[RankingType.Value, List[Ranking]] = {
@@ -59,6 +60,7 @@ object RankingUtil {
     updatedRankings.put(RankingType.LINK_COUNT, getLinkCountRanking(links, airlinesById))
     updatedRankings.put(RankingType.LINK_PROFIT, getLinkProfitRanking(linkConsumptions, airlinesById))
     updatedRankings.put(RankingType.LOUNGE, getLoungeRanking(LoungeHistorySource.loadAll, airlinesById))
+    updatedRankings.put(RankingType.AIRPORT, getAirportRanking(linkConsumptions))
 //    val linkConsumptionsByAirlineAndZone = getPassengersByZone(linkConsumptionsByAirline)
 //    updatedRankings.put(RankingType.PASSENGER_AS, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AS, "AS"))
 //    updatedRankings.put(RankingType.PASSENGER_AF, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AF, "AF"))
@@ -67,12 +69,14 @@ object RankingUtil {
 //    updatedRankings.put(RankingType.PASSENGER_NA, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_NA, "NA"))
 //    updatedRankings.put(RankingType.PASSENGER_SA, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_SA, "SA"))
     
+    
+    
     updateMovements(cachedRankings, updatedRankings.toMap)
     
     cachedRankings = updatedRankings.toMap
   }
   
-  private[this] def getPassengerRanking(linkConsumptions : Map[Int, List[LinkConsumptionDetails]], airlinesById : Map[Int, Airline]) : List[Ranking] = {
+  private[this] def getPassengerRanking(linkConsumptions : Map[Int, List[LinkConsumptionDetails]], airlinesById : Map[Int, Airline], maxCount : Int = RANKING_MAX) : List[Ranking] = {
     val passengersByAirline : Map[Int, Long] = linkConsumptions.mapValues(_.map(_.link.soldSeats.total).sum)
     val sortedPassengersByAirline = passengersByAirline.toList.sortBy(_._2)(Ordering[Long].reverse)  //sort by total passengers of each airline
     
@@ -82,11 +86,11 @@ object RankingUtil {
                                                       entry = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId)),
                                                       ranking = index + 1,
                                                       rankedValue = passengers)
-    }.toList.sortBy(_.ranking)
+    }.toList.sortBy(_.ranking).take(maxCount)
   }
   
   
-  private[this] def getPassengerByZoneRanking(passengersByAirlineAndZone : Map[Int, Map[String, Long]], airlinesById : Map[Int, Airline], rankingType : RankingType.Value, zone : String) : List[Ranking] = {
+  private[this] def getPassengerByZoneRanking(passengersByAirlineAndZone : Map[Int, Map[String, Long]], airlinesById : Map[Int, Airline], rankingType : RankingType.Value, zone : String, maxCount : Int = RANKING_MAX) : List[Ranking] = {
     val passengersByAirline : Map[Int, Long] = passengersByAirlineAndZone.mapValues { passengersByZone =>
       passengersByZone.getOrElse(zone, 0)
     }
@@ -98,7 +102,7 @@ object RankingUtil {
                                                       entry = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId)),
                                                       ranking = index + 1,
                                                       rankedValue = passengers)
-    }.toList.sortBy(_.ranking)
+    }.toList.sortBy(_.ranking).take(maxCount)
   }
   
   private[this] def getPassengersByZone(linkConsumptions : Map[Int, List[LinkConsumptionDetails]]) : Map[Int, Map[String, Long]] = {
@@ -111,7 +115,7 @@ object RankingUtil {
   
   
   
-  private[this] def getPassengerMileRanking(linkConsumptions : Map[Int, List[LinkConsumptionDetails]], airlinesById : Map[Int, Airline]) : List[Ranking] = {
+  private[this] def getPassengerMileRanking(linkConsumptions : Map[Int, List[LinkConsumptionDetails]], airlinesById : Map[Int, Airline], maxCount : Int = RANKING_MAX) : List[Ranking] = {
     val passengerMileByAirline : Map[Int, Long] = linkConsumptions.mapValues(_.map { linkConsumption => 
         linkConsumption.link.soldSeats.total.toLong * linkConsumption.link.distance
       }.sum)
@@ -124,10 +128,10 @@ object RankingUtil {
                                                       entry = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId)),
                                                       ranking = index + 1,
                                                       rankedValue = passengerMile)
-    }.toList.sortBy(_.ranking)
+    }.toList.sortBy(_.ranking).take(maxCount)
   }
   
-  private[this] def getLinkProfitRanking(linkConsumptions : List[LinkConsumptionDetails], airlinesById : Map[Int, Airline]) : List[Ranking] = {
+  private[this] def getLinkProfitRanking(linkConsumptions : List[LinkConsumptionDetails], airlinesById : Map[Int, Airline], maxCount : Int = RANKING_MAX) : List[Ranking] = {
     val mostProfitableLinks : List[LinkConsumptionDetails] = linkConsumptions.sortBy(_.profit)(Ordering[Int].reverse).take(20)
     
     mostProfitableLinks.zipWithIndex.map {
@@ -141,10 +145,10 @@ object RankingUtil {
         ranking
       }
                                            
-    }.toList.sortBy(_.ranking)
+    }.toList.sortBy(_.ranking).take(maxCount)
   }
   
-  private[this] def getLoungeRanking(loungeConsumptions : List[LoungeConsumptionDetails], airlinesById : Map[Int, Airline]) : List[Ranking] = {
+  private[this] def getLoungeRanking(loungeConsumptions : List[LoungeConsumptionDetails], airlinesById : Map[Int, Airline], maxCount : Int = RANKING_MAX) : List[Ranking] = {
     val mostVisitedLounges : List[LoungeConsumptionDetails] = loungeConsumptions.sortBy(entry => entry.selfVisitors + entry.allianceVisitors)(Ordering[Int].reverse).take(20)
     
     mostVisitedLounges.zipWithIndex.map {
@@ -158,12 +162,12 @@ object RankingUtil {
         ranking
       }
                                            
-    }.toList.sortBy(_.ranking)
+    }.toList.sortBy(_.ranking).take(maxCount)
   }
   
   
   
-  private[this] def getReputationRanking(airlinesById : Map[Int, Airline]) : List[Ranking] = {
+  private[this] def getReputationRanking(airlinesById : Map[Int, Airline], maxCount : Int = RANKING_MAX) : List[Ranking] = {
     val airlinesBySortedReputation = airlinesById.values.toList.sortBy(_.getReputation())(Ordering[Double].reverse)
     
     airlinesBySortedReputation.zipWithIndex.map {
@@ -172,9 +176,9 @@ object RankingUtil {
                                                       entry = airline,
                                                       ranking = index + 1,
                                                       rankedValue = airline.getReputation())
-    }
+    }.take(maxCount)
   }
-  private[this] def getServiceQualityRanking(airlinesById : Map[Int, Airline]) : List[Ranking] = {
+  private[this] def getServiceQualityRanking(airlinesById : Map[Int, Airline], maxCount : Int = RANKING_MAX) : List[Ranking] = {
     val airlinesBySortedServiceQuality = airlinesById.values.toList.sortBy(_.getServiceQuality())(Ordering[Double].reverse)
     
     airlinesBySortedServiceQuality.zipWithIndex.map {
@@ -183,10 +187,10 @@ object RankingUtil {
                                                       entry = airline,
                                                       ranking = index + 1,
                                                       rankedValue = airline.getServiceQuality())
-    }
+    }.take(maxCount)
   }
   
-  private[this] def getLinkCountRanking(linksByAirline : Map[Int, List[Link]], airlinesById : Map[Int, Airline]) : List[Ranking] = {
+  private[this] def getLinkCountRanking(linksByAirline : Map[Int, List[Link]], airlinesById : Map[Int, Airline], maxCount : Int = RANKING_MAX) : List[Ranking] = {
     val linkCountByAirline : Map[Int, Int] = linksByAirline.mapValues(_.length)
     val sortedLinkCountByAirline = linkCountByAirline.toList.sortBy(_._2)(Ordering[Int].reverse)  //sort by total passengers of each airline
     
@@ -196,7 +200,27 @@ object RankingUtil {
                                                       entry = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId)),
                                                       ranking = index + 1,
                                                       rankedValue = linkCount)
-    }.toList
+    }.toList.take(maxCount)
+  }
+  
+  private[this] def getAirportRanking(linkConsumptions : List[LinkConsumptionDetails], maxCount : Int = RANKING_MAX) : List[Ranking] = {
+    val passengersByAirport = scala.collection.mutable.Map[Airport, Long]()
+    
+    linkConsumptions.foreach {  consumption =>
+      val fromAirport = consumption.link.from
+      val toAirport = consumption.link.to
+      val passengers = consumption.link.getTotalSoldSeats.toLong
+      passengersByAirport.put(fromAirport, passengersByAirport.getOrElse(fromAirport, 0L) + passengers)
+      passengersByAirport.put(toAirport, passengersByAirport.getOrElse(toAirport, 0L) + passengers)
+    }
+    
+    passengersByAirport.toList.sortBy(_._2)(Ordering[Long].reverse).zipWithIndex.map {
+      case((airport, passengers), index) => Ranking(RankingType.AIRPORT,
+                                                      key = airport.id,
+                                                      entry = airport,
+                                                      ranking = index + 1,
+                                                      rankedValue = passengers)
+    }.toList.take(maxCount)
   }
   
   private[this] def updateMovements(previousRankings : Map[RankingType.Value, List[Ranking]], newRankings : Map[RankingType.Value, List[Ranking]]) = {
@@ -223,7 +247,7 @@ object RankingUtil {
 
 object RankingType extends Enumeration {
   type RankingType = Value
-  val PASSENGER, PASSENGER_MILE, REPUTATION, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LOUNGE, PASSENGER_AS, PASSENGER_AF, PASSENGER_OC, PASSENGER_EU, PASSENGER_NA, PASSENGER_SA = Value
+  val PASSENGER, PASSENGER_MILE, REPUTATION, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LOUNGE, AIRPORT, PASSENGER_AS, PASSENGER_AF, PASSENGER_OC, PASSENGER_EU, PASSENGER_NA, PASSENGER_SA = Value
 }
 
 

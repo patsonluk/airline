@@ -49,6 +49,8 @@ function updateRankingTable(rankingType, rankings) {
 		rankingTable = $('#linkProfitRank')
 	} else if (rankingType == "LOUNGE") {
 		rankingTable = $('#loungeRank')
+	} else if (rankingType == "AIRPORT") {
+		rankingTable = $('#airportRank')
 	} else if (rankingType == "PASSENGER_AS") {
 		rankingTable = $('#passengerRankAs')
 	} else if (rankingType == "PASSENGER_AF") {
@@ -90,11 +92,16 @@ function getRankingRow(ranking) {
 	var row = $("<div class='table-row'></div>")
 	row.append("<div class='cell'>" + ranking.rank + "</div>")
 	row.append("<div class='cell'>" + getMovementLabel(ranking.movement) + "</div>")
-	var entry = getAirlineLogoImg(ranking.airlineId) + ranking.airlineName
-	if (ranking.rankInfo) {
-		entry += ' : ' + ranking.rankInfo
+	if (ranking.airlineId) {
+		var entry = getAirlineLogoImg(ranking.airlineId) + ranking.airlineName
+		if (ranking.rankInfo) {
+			entry += ' : ' + ranking.rankInfo
+		}
+		row.append("<div class='cell'>" + entry + "</div>")
+	} else if (ranking.airportId) {
+		var entry = getCountryFlagImg(ranking.countryCode) + ranking.iata + " : " + ranking.airportName 
+		row.append("<div class='cell'>" + entry + "</div>")
 	}
-	row.append("<div class='cell'>" + entry + "</div>")
 	row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(ranking.rankedValue) + "</div>")
 	
 	
