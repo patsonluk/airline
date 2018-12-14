@@ -20,7 +20,6 @@ object AirportFeaturePatcher {
         "SYD" -> 50,
         "AUH" -> 50,
         "EZE" -> 20,
-        "BOM" -> 10,
         "MXP" -> 30,
         "GRU" -> 20,
         "FRA" -> 40,
@@ -30,7 +29,6 @@ object AirportFeaturePatcher {
         "AMS" -> 20,
         "KUL" -> 20,
         "FCO" -> 30,
-        "BRU" -> 10,
         "ICN" -> 30,
         "JNB" -> 20,
         "SFO" -> 40,
@@ -43,7 +41,10 @@ object AirportFeaturePatcher {
         "CGK" -> 20,
         "TPE" -> 30,
         "KIX" -> 20,
-        "ARN" -> 20
+        "ARN" -> 20,
+        "MEX" -> 12,
+        "BRU" -> 10,
+        "BOM" -> 10
       ),
     VACATION_HUB -> Map[String, Int](
         "HNL" -> 80, //honolulu
@@ -184,6 +185,7 @@ object AirportFeaturePatcher {
         "LGA" -> 19,
         "DUS" -> 18,
         "CGN" -> 18,
+        "MEX" -> 18,
         "PHL" -> 17,
         "MUC" -> 23,
         "SEA" -> 22,
