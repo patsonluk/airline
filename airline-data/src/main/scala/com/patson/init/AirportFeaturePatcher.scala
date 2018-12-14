@@ -166,6 +166,7 @@ object AirportFeaturePatcher {
         "DEN" -> 34,
         "EWR" -> 33,
         "SHA" -> 33, //Shanghai Hongqiao
+        "LGW" -> 32, //London Gatwick
         "ITM" -> 28,
         "CLT" -> 28,
         "ATL" -> 27,
@@ -174,6 +175,7 @@ object AirportFeaturePatcher {
         "SZX" -> 25, //Shenzhen
         "GMP" -> 24, //Seoul Gimpo
         "TSN" -> 23, //Tianjin
+        "BHX" -> 22, //Birmingham
         "DEL" -> 22, //New Delhi
         "PHX" -> 22,
         "IAH" -> 21,
@@ -200,6 +202,7 @@ object AirportFeaturePatcher {
         "HAM" -> 18,
         "TXL" -> 16,
         "ARN" -> 17,
+        "DUB" -> 13,  //Dublin
         "MNL" -> 13, //Manila
         "CKG" -> 10, //Chongqing
         "WUH" -> 10, //Wuhan
