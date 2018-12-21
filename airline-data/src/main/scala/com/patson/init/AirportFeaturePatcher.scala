@@ -69,6 +69,7 @@ object AirportFeaturePatcher {
         "OKA" -> 32, //Okinawa
         "CUN" -> 32, //Cancun
         "GUM" -> 31, //Guam
+        "BDA" -> 35, //Bermuda
         "FCO" -> 38, //Rome
         "KIX" -> 30,
         "LAS" -> 30, //Vegas
