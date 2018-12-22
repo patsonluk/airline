@@ -68,12 +68,11 @@ object AirportFeaturePatcher {
         "PPT" -> 34, //Pape'ete
         "HER" -> 33, //Crete
         "CNS" -> 33, //Cairns Australia
-        "PUJ" -> 33, //Puna cana
+        "PUJ" -> 33, //Punta cana
         "OKA" -> 32, //Okinawa
         "CUN" -> 32, //Cancun
         "ORY" -> 32, //Paris Orly
         "GUM" -> 31, //Guam
-        "BDA" -> 35, //Bermuda
         "FCO" -> 38, //Rome
         "KIX" -> 30,
         "LAS" -> 30, //Vegas
@@ -147,7 +146,8 @@ object AirportFeaturePatcher {
         "TAO" -> 10, //Qingdao China
         "GEA" -> 10,
         "YZF" -> 10, //Yellowknife
-        "CUR" -> 10 //Curacao
+        "CUR" -> 10 //Curacao      
+        "BDA" -> 10, //Bermuda
         
         
       ),
