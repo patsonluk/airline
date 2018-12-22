@@ -14,12 +14,12 @@ object AirportFeaturePatcher {
         "SIN" -> 70,
         "NRT" -> 65,
         "CDG" -> 60,
+        "GVA" -> 58, //Geneva
         "PVG" -> 40,
         "PEK" -> 20,
         "SYD" -> 50,
         "AUH" -> 50,
         "EZE" -> 20,
-        "BOM" -> 10,
         "MXP" -> 30,
         "GRU" -> 20,
         "FRA" -> 40,
@@ -29,7 +29,6 @@ object AirportFeaturePatcher {
         "AMS" -> 20,
         "KUL" -> 20,
         "FCO" -> 30,
-        "BRU" -> 10,
         "ICN" -> 30,
         "JNB" -> 20,
         "SFO" -> 40,
@@ -42,7 +41,10 @@ object AirportFeaturePatcher {
         "CGK" -> 20,
         "TPE" -> 30,
         "KIX" -> 20,
-        "ARN" -> 20
+        "ARN" -> 20,
+        "MEX" -> 12,
+        "BRU" -> 10,
+        "BOM" -> 10
       ),
     VACATION_HUB -> Map[String, Int](
         "HNL" -> 80, //honolulu
@@ -61,6 +63,7 @@ object AirportFeaturePatcher {
         "PRG" -> 38, //Prague
         "LPA" -> 38, //Gran Canaria 
         "IST" -> 35, //Istanbul
+        "DMK" -> 35, //Bangkok other airport
         "TFS" -> 34, //Tenerife
         "PPT" -> 34, //Pape'ete
         "HER" -> 33, //Crete
@@ -68,6 +71,7 @@ object AirportFeaturePatcher {
         "PUJ" -> 33, //Puna cana
         "OKA" -> 32, //Okinawa
         "CUN" -> 32, //Cancun
+        "ORY" -> 32, //Paris Orly
         "GUM" -> 31, //Guam
         "BDA" -> 35, //Bermuda
         "FCO" -> 38, //Rome
@@ -105,6 +109,8 @@ object AirportFeaturePatcher {
         "PSA" -> 22,
         "OSL" -> 22, //Oslo
         "SFO" -> 20,
+        "OOL" -> 20, //Gold Coast Aus
+        "CMB" -> 20, //Colombo, Sri Lanka
         "BWN" -> 19, //Brunei
         "MFM" -> 19, //Macau
         "CTS" -> 19, //Chitose Sapporo
@@ -133,7 +139,8 @@ object AirportFeaturePatcher {
         "DRW" -> 14, //Darwin Australia
         "MBJ" -> 13, //Montego bay
         "LXA" -> 12, //Lhasa China
-        "MYR" -> 12,
+        "MYR" -> 12, //Myrtle Beach
+        "KBV" -> 12, //Krab Thailand
         "AUA" -> 11, //Aruba
         "BGI" -> 11, //Barbados
         "IBZ" -> 11, //Ibiza
@@ -152,6 +159,7 @@ object AirportFeaturePatcher {
         "SIN" -> 70,
         "ICN" -> 50,
         "PVG" -> 50,
+        "DXB" -> 44,
         "ZRH" -> 40,
         "BOS" -> 39,
         "SFO" -> 38,
@@ -160,9 +168,17 @@ object AirportFeaturePatcher {
         "DEN" -> 34,
         "EWR" -> 33,
         "SHA" -> 33, //Shanghai Hongqiao
+        "LGW" -> 32, //London Gatwick
         "ITM" -> 28,
         "CLT" -> 28,
-        "DXB" -> 25,
+        "ATL" -> 27,
+        "ORY" -> 25, //Paris Orly
+        "CAN" -> 25, //Guangzhou
+        "SZX" -> 25, //Shenzhen
+        "GMP" -> 24, //Seoul Gimpo
+        "TSN" -> 23, //Tianjin
+        "BHX" -> 22, //Birmingham
+        "DEL" -> 22, //New Delhi
         "PHX" -> 22,
         "IAH" -> 21,
         "YYZ" -> 20,
@@ -170,26 +186,30 @@ object AirportFeaturePatcher {
         "LGA" -> 19,
         "DUS" -> 18,
         "CGN" -> 18,
+        "MEX" -> 18,
         "PHL" -> 17,
         "MUC" -> 23,
         "SEA" -> 22,
         "CPT" -> 19,
-        "CAN" -> 18, //Guangzhou
+        "BWI" -> 18, //Baltimore
         "MAA" -> 17, //Chennai
-        "SZX" -> 15, //Shenzhen
         "FUK" -> 20,
-        "ATL" -> 18,
         "PUS" -> 22, //Busan
         "FLL" -> 15,
         "BSB" -> 18, //Brazilia
         "CDG" -> 38, //paris
         "FRA" -> 54,
+        "DMK" -> 19, //Bangkok other airport
         "NGO" -> 18,
         "MAN" -> 18,
         "HAM" -> 18,
         "TXL" -> 16,
         "ARN" -> 17,
+        "DUB" -> 13,  //Dublin
         "MNL" -> 13, //Manila
+        "CKG" -> 10, //Chongqing
+        "WUH" -> 10, //Wuhan
+        "CTU" -> 10, //Chengdu
         "KHH" -> 11 //Kaohsiung
       ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()

@@ -239,7 +239,8 @@ object AirportSizeAdjust {
         "JTR" -> 3, //Santorini
         "YLW" -> 3, //Kelowna
         "MDE" -> 5, //https://en.wikipedia.org/wiki/Jos%C3%A9_Mar%C3%ADa_C%C3%B3rdova_International_Airport around 7 mil passengers
-        "BDA" -> 5 // Bermuda
+        "BDA" -> 5, // Bermuda
+        "BHX" -> 5 //https://en.wikipedia.org/wiki/Birmingham_Airport around 13 mil passengers, A380 capable
       )
       
   

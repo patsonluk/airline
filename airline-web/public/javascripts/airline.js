@@ -1116,10 +1116,10 @@ function updatePlanLinkInfo(linkInfo) {
 		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
 		//set the temp path
 		tempPath = drawFlightPath(tempLink, '#2658d3')
-		highlightPath(tempPath.path, true)
+		highlightPath(tempPath.path, false)
 	} else {
 		//selectLinkFromMap(linkInfo.existingLink.id, true)
-		highlightLink(linkInfo.existingLink.id, true)
+		highlightLink(linkInfo.existingLink.id, false)
 	}
 	
 	if (linkInfo.rejection) {
