@@ -146,10 +146,7 @@ object AirportFeaturePatcher {
         "TAO" -> 10, //Qingdao China
         "GEA" -> 10,
         "YZF" -> 10, //Yellowknife
-        "CUR" -> 10 //Curacao      
-        "BDA" -> 10, //Bermuda
-        
-        
+        "CUR" -> 10 //Curacao    
       ),
     FINANCIAL_HUB -> Map[String, Int](
         "LHR" -> 80,
