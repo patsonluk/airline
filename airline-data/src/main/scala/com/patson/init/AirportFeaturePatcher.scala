@@ -68,7 +68,7 @@ object AirportFeaturePatcher {
         "PPT" -> 34, //Pape'ete
         "HER" -> 33, //Crete
         "CNS" -> 33, //Cairns Australia
-        "PUJ" -> 33, //Puna cana
+        "PUJ" -> 33, //Punta cana
         "OKA" -> 32, //Okinawa
         "CUN" -> 32, //Cancun
         "ORY" -> 32, //Paris Orly
@@ -146,9 +146,7 @@ object AirportFeaturePatcher {
         "TAO" -> 10, //Qingdao China
         "GEA" -> 10,
         "YZF" -> 10, //Yellowknife
-        "CUR" -> 10 //Curacao
-        
-        
+        "CUR" -> 10 //Curacao    
       ),
     FINANCIAL_HUB -> Map[String, Int](
         "LHR" -> 80,
