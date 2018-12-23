@@ -81,6 +81,7 @@ object AirportFeaturePatcher {
         "HND" -> 28, //Tokyo
         "VIE" -> 28, //vienna
         "BCN" -> 28, //Barcelona
+        "HAV" -> 27, //Havana
         "MRS" -> 27,
         "MXP" -> 27,
         "SJD" -> 26, //Los Cabos
@@ -110,6 +111,7 @@ object AirportFeaturePatcher {
         "SFO" -> 20,
         "OOL" -> 20, //Gold Coast Aus
         "CMB" -> 20, //Colombo, Sri Lanka
+        "KIN" -> 19, //Kingston Jamaica
         "BWN" -> 19, //Brunei
         "MFM" -> 19, //Macau
         "CTS" -> 19, //Chitose Sapporo
@@ -125,6 +127,7 @@ object AirportFeaturePatcher {
         "FLN" -> 18,
         "NAP" -> 18,
         "KRK" -> 18,
+        "VRA" -> 18, //Varadero Cuba
         "HEL" -> 17, //Helsinki 
         "LED" -> 17, //St Petersburg
         "CJU" -> 17, //Jeju
@@ -136,7 +139,8 @@ object AirportFeaturePatcher {
         "WAW" -> 15, //Warsaw
         "KWL" -> 15, //Guilin China
         "DRW" -> 14, //Darwin Australia
-        "MBJ" -> 13, //Montego bay
+        "STX" -> 14, //US Virgin Island
+        "MBJ" -> 13, //Montego bay Jamaica
         "LXA" -> 12, //Lhasa China
         "MYR" -> 12, //Myrtle Beach
         "KBV" -> 12, //Krab Thailand
