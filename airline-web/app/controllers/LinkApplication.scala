@@ -235,8 +235,8 @@ class LinkApplication extends Controller {
 
       
       //validate frequency by duration
-      val maxFrequency = incomingLink.getAssignedModel().fold(0)(assignedModel => Computation.calculateMaxFrequency(assignedModel, incomingLink.distance))
-      if (maxFrequency * incomingLink.getAssignedAirplanes().size < incomingLink.frequency) { //TODO log error!
+      val maxFrequency = incomingLink.getAssignedModel().fold(0)(assignedModel => Computation.calculateMaxFrequency(assignedModel, incomingLink.distance, incomingLink.getAssignedAirplanes().size))
+      if (maxFrequency < incomingLink.frequency) {
         println("max frequency exceeded, max " + maxFrequency * incomingLink.getAssignedAirplanes().size + " found " +  incomingLink.frequency + " airline " + request.user)
         return BadRequest("Cannot insert link - frequency exceeded limit")  
       }
@@ -546,7 +546,7 @@ class LinkApplication extends Controller {
               case(model, airplaneList) => 
                 val duration = Computation.calculateDuration(model, distance)
                 val existingSlotsUsedByThisModel= if (assignedModel.isDefined && assignedModel.get.id == model.id) { existingLink.get.frequency } else { 0 } 
-                val maxFrequencyByModel : Int = Computation.calculateMaxFrequency(model, distance)
+                val maxFrequencyByModel : Double = Computation.calculateMaxFrequencyDouble(model, distance)
                 
                 planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, maxFrequencyByModel, assignedModel.isDefined && assignedModel.get.id == model.id, airplaneList.toList))
             }
@@ -804,7 +804,7 @@ class LinkApplication extends Controller {
   
   class PlanLinkResult(distance : Double, availableAirplanes : List[Airplane])
   //case class AirplaneWithPlanRouteInfo(airplane : Airplane, duration : Int, maxFrequency : Int, limitingFactor : String, isAssigned : Boolean)
-  case class ModelPlanLinkInfo(model: Model, duration : Int, maxFrequency : Int, isAssigned : Boolean, airplanes : List[(Airplane, Boolean)])
+  case class ModelPlanLinkInfo(model: Model, duration : Int, maxFrequency : Double, isAssigned : Boolean, airplanes : List[(Airplane, Boolean)])
   
   private def getMaxFrequencyByAirports(fromAirport : Airport, toAirport : Airport, airline : Airline, existingLink : Option[Link]) : (Int, Int) =  {
     val airlineId = airline.id
