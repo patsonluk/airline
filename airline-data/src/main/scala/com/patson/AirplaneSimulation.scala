@@ -158,9 +158,7 @@ object AirplaneSimulation {
         if (retiringAirplanesCount > 0) {
            println("retiring " + retiringAirplanesCount + " airplanes for link " + link)
            //now see if frequency should be reduced
-           val maxFrequency = okAirplanes.foldLeft(0) {
-             case (x, airplane) => x + Computation.calculateMaxFrequency(airplane.model, link.distance)
-           }
+           val maxFrequency = if (okAirplanes.isEmpty) 0 else { Computation.calculateMaxFrequency(okAirplanes(0).model, link.distance, airplaneCount = okAirplanes.length) }
            val updatingLink = 
              if (maxFrequency < link.frequency) {
                val capacityPerFlight = link.capacity / link.frequency
