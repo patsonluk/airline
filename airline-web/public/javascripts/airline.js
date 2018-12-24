@@ -1327,6 +1327,9 @@ function updateFrequencyBar(airplaneModelId, configuration) {
 	} else {
 		$("#planLinkLimitingDiv").hide()
 	}
+	if (configuration) {
+		updateCapacity(configuration, $("#planLinkFrequency").val())
+	}
 }
 
 function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
