@@ -13,13 +13,15 @@ import scala.collection.mutable.HashMap
 object ConsumptionHistorySource {
   val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
     val connection = Meta.getConnection()
-    val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE + "(passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE + "(passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?)")
     
     connection.setAutoCommit(false)
     
     connection.createStatement().executeUpdate("DELETE FROM " + PASSENGER_HISTORY_TABLE);
     
     var routeId = 0
+    val batchSize = 100
+    
     try {
       consumptions.foreach { 
         case((passengerGroup, _, route), passengerCount) => {
@@ -37,10 +39,13 @@ object ConsumptionHistorySource {
             //passengerHistoryStatement.executeUpdate()
             passengerHistoryStatement.addBatch()
           }
+          if (routeId % batchSize == 0) {
+            passengerHistoryStatement.executeBatch()
+            //println("inserted " + routeId)
+          }
         }
       }
       passengerHistoryStatement.executeBatch()
-      
       connection.commit()
     } finally {
       passengerHistoryStatement.close()
