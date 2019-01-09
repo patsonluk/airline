@@ -1,5 +1,7 @@
 package com.patson.data
 
+import com.typesafe.config.ConfigFactory
+
 object Constants {
   val CYCLE_TABLE = "cycle"
   val CITY_TABLE = "city"
@@ -84,7 +86,11 @@ object Constants {
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"
-  val DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/airline?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
+  val configFactory = ConfigFactory.load()
+  val DB_HOST = if (configFactory.hasPath("mysqldb.host")) configFactory.getString("mysqldb.host") else "localhost:3306"
+  println("!!!!!!!!!!!!!!!DB HOST IS " + DB_HOST)
+  
+  val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
   val DB_DRIVER = "com.mysql.jdbc.Driver"
   val DATABASE_USER = "sa" 
   val DATABASE_PASSWORD = "admin"
