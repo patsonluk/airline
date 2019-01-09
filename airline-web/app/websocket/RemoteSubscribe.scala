@@ -73,7 +73,11 @@ object RemoteSubscribe {
   val BRIDGE_ACTOR_NAME = "bridgeActor"
   implicit val system = ActorSystem("localWebsocketSystem")
   
-  val remoteActor = system.actorSelection("akka.tcp://" + REMOTE_SYSTEM_NAME + "@127.0.0.1:2552/user/" + BRIDGE_ACTOR_NAME)
+  val configFactory = ConfigFactory.load()
+  val actorHost = if (configFactory.hasPath("airline.akka-actor.host")) configFactory.getString("airline.akka-actor.host") else "127.0.0.1:2552"
+  println("!!!!!!!!!!!!!!!AKK ACTOR HOST IS " + actorHost)
+  
+  val remoteActor = system.actorSelection("akka.tcp://" + REMOTE_SYSTEM_NAME + "@" + actorHost + "/user/" + BRIDGE_ACTOR_NAME)
   val reconnectActor = system.actorOf(Props(classOf[ReconnectActor], remoteActor), "reconnect-actor")
   reconnectActor ! remoteActor
 //  sealed class PingActor extends Actor {
