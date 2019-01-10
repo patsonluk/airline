@@ -62,6 +62,7 @@ class AllianceApplication extends Controller {
         case FOUNDING_MEMBER => "Founding member"
         case MEMBER => "Member"
         case APPLICANT => "Applicant"
+        case PRESIDENT => "President"
       }),
       "allianceId" -> JsNumber(allianceMember.allianceId)))
   }
@@ -83,6 +84,8 @@ class AllianceApplication extends Controller {
         case REJECT_ALLIANCE => "was rejected by alliance"
         case LEAVE_ALLIANCE => "left alliance"
         case BOOT_ALLIANCE => "was removed from alliance"
+        case BECAME_LEADER => "became leader of"
+        case BECAME_PRESIDENT => "became president of"
       }
       history.airline.name + " " + eventAction + " " + history.allianceName
     }
@@ -160,6 +163,9 @@ class AllianceApplication extends Controller {
           allianceMemberJson = allianceMemberJson.append(Json.toJson(allianceMember))
           if (allianceMember.role == LEADER) {
             allianceJson = allianceJson.asInstanceOf[JsObject] + ("leader" -> Json.toJson(allianceMember.airline))
+          }
+          if (allianceMember.role == PRESIDENT) {
+            allianceJson = allianceJson.asInstanceOf[JsObject] + ("president" -> Json.toJson(allianceMember.airline))
           }
         }
         allianceJson = allianceJson + ("members" -> allianceMemberJson)
@@ -278,6 +284,34 @@ class AllianceApplication extends Controller {
         }
     }
   }
+  
+  def assignPresidentForAlliance(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
+   val currentCycle = CycleSource.loadCycle
+   AllianceSource.loadAllianceMemberByAirline(request.user) match {
+      case None => BadRequest("Current airline " + request.user + " cannot update airline id "+ targetAirlineId + "  as current airline does not belong to any alliance")
+      case Some(currentAirlineAllianceMember) =>
+        val alliance = AllianceSource.loadAllianceById(currentAirlineAllianceMember.allianceId, false).get
+        if (currentAirlineAllianceMember.role != LEADER && currentAirlineAllianceMember.role != PRESIDENT) {
+          BadRequest("Current airline " + request.user + " cannot update airline id "+ targetAirlineId + " as member airline does not have permission")
+        }
+        AirlineSource.loadAirlineById(targetAirlineId) match {
+         case None => NotFound("Airline with id " + targetAirlineId + " not found")
+         case Some(targetAirline) =>
+           AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
+             case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
+             case Some(allianceMember) =>
+               if (allianceMember.allianceId != currentAirlineAllianceMember.allianceId) {
+                 BadRequest("Airline " + targetAirline + " does not belong to alliance " + alliance)
+               } else { //OK ..updating
+                 AllianceSource.updateRole(targetAirlineId, allianceMember.allianceId, "PRESIDENT")
+                 AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = BECAME_PRESIDENT, cycle = currentCycle))
+
+                 Ok(Json.toJson(allianceMember))
+               }
+             }
+          }
+      }
+  }
    
   def removeFromAlliance(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
        val currentCycle = CycleSource.loadCycle
@@ -294,7 +328,7 @@ class AllianceApplication extends Controller {
              
              Ok(Json.toJson(currentAirlineAllianceMember))
            } else { //check if current airline is leader and the target airline is within this alliance
-             if (currentAirlineAllianceMember.role != LEADER) {
+             if (currentAirlineAllianceMember.role != LEADER  && currentAirlineAllianceMember.role != PRESIDENT) {
                BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline is not leader")
              } else {
                AirlineSource.loadAirlineById(targetAirlineId) match {
@@ -305,6 +339,9 @@ class AllianceApplication extends Controller {
                      case Some(allianceMember) =>
                        if (allianceMember.allianceId != currentAirlineAllianceMember.allianceId) {
                          BadRequest("Airline " + targetAirline + " does not belong to alliance " + alliance)
+                       } else if (allianceMember.role == LEADER){
+                         // how dare you!
+                         BadRequest("Cannot remove leader!")
                        } else { //OK ..removing
                          AllianceSource.deleteAllianceMember(targetAirlineId)
                          if (allianceMember.role == APPLICANT) {
@@ -328,7 +365,7 @@ class AllianceApplication extends Controller {
           case None => BadRequest("Current airline " + request.user + " cannot add airline id "+ targetAirlineId + " to alliance as current airline does not belong to any alliance")
           case Some(currentAirlineAllianceMember) =>
             //check if current airline is leader and the target airline has applied to this alliance
-           if (currentAirlineAllianceMember.role != LEADER) {
+           if (currentAirlineAllianceMember.role != LEADER  && currentAirlineAllianceMember.role != PRESIDENT) {
              BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline is not leader")
            } else {
              val alliance = AllianceSource.loadAllianceById(currentAirlineAllianceMember.allianceId, false).get 

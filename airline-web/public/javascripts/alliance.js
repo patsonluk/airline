@@ -231,16 +231,23 @@ function updateAllianceBasicsDetails(allianceId) {
 		if (activeAirline) {
 			if (member.airlineId == activeAirline.id) {
 				row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/cross.png' class='button' title='Leave Alliance' onclick='promptConfirm(\"Leave Alliance?\", removeAllianceMember, " + activeAirline.id + ")'></div>")
-			} else if (alliance.leader.id == activeAirline.id) {
+			} else if (alliance.leader.id == activeAirline.id || (alliance.president && alliance.president.id == activeAirline.id)) {
 				if (member.allianceRole == "Applicant") {
 					var acceptQuestion = "Accept application from " + member.airlineName + "?"
 					var rejectQuestion = "Reject application from " + member.airlineName + "?"
 					row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/tick.png' class='button' title='Accept Member' onclick='promptConfirm(\"" + acceptQuestion + "\", acceptAllianceMember, " + member.airlineId + ")'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"" + rejectQuestion + "\", removeAllianceMember, " + member.airlineId + ")'></div>")
 				} else {
 					row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"Remove " + member.airlineName + " from alliance?\", removeAllianceMember, " + member.airlineId + ")'></div>")
+					if (member.allianceRole == "Member") {
+						row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/president-candidate.png' class='button' title='Assign Presidenty' onclick='promptConfirm(\"Give presidency to " + member.airlineName + "?\", assignPresident, " + member.airlineId + ")'></div>")
+					}
 				}
-			} else {
-				row.append("<div class='cell' style='vertical-align: middle;'></div>")
+			}
+			// for members
+			if (member.allianceRole == "President") {
+				row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/president.png' title='president'></div>")
+			} else if (member.allianceRole == "Leader") {
+				row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/leader.png' title='leader'></div>")
 			}
 		}
 		$("#allianceMemberList").append(row)

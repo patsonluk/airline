@@ -328,6 +328,50 @@ object AllianceSource {
     }
   }
  
+  def updateRole(airlineId : Int, allianceId : Int, role : String) = {
+   val allianceRole = AllianceRole.withName(role)
+   val connection = Meta.getConnection()
+   connection.setAutoCommit(false)
+
+   try {
+     // Update the role to target airline
+     var preparedStatement = connection.prepareStatement("UPDATE " + ALLIANCE_MEMBER_TABLE + " SET role = ? WHERE alliance = ? AND airline = ?")
+
+     preparedStatement.setString(1, allianceRole.toString)
+     preparedStatement.setInt(2, allianceId)
+     preparedStatement.setInt(3, airlineId)
+     preparedStatement.executeUpdate()
+     preparedStatement.close()
+
+     // do another call to downgrade previous senior member
+     if (allianceRole == AllianceRole.LEADER || allianceRole == AllianceRole.PRESIDENT) {
+         preparedStatement = connection.prepareStatement("SELECT airline FROM " + ALLIANCE_MEMBER_TABLE + " WHERE role = ? AND airline != ?")
+
+         preparedStatement.setString(1, allianceRole.toString)
+         preparedStatement.setInt(2, airlineId)
+
+         val resultSet = preparedStatement.executeQuery()
+
+         if (resultSet.next()) {
+           var downgradeAirline = resultSet.getInt("airline")
+
+           var downgradeStatement = connection.prepareStatement("UPDATE " + ALLIANCE_MEMBER_TABLE + " SET role = 'MEMBER' WHERE alliance = ? AND airline = ?")
+
+           downgradeStatement.setInt(1, allianceId)
+           downgradeStatement.setInt(2, downgradeAirline)
+           downgradeStatement.executeUpdate()
+           downgradeStatement.close()
+         }
+         resultSet.close()
+         preparedStatement.close()        
+     }
+
+     connection.commit()
+   } finally {
+     connection.rollback()
+     connection.close()
+   }
+ }
 
   def deleteAllianceMember(airlineId : Int) = {
     deleteAllianceMemberByCriteria(List(("airline", airlineId)))
