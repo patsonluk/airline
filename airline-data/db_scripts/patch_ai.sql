@@ -1,0 +1,1 @@
+REPLACE INTO airline_renewal (airline, threshold) SELECT id, 40 FROM airline where is_generated = 1; 

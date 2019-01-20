@@ -40,7 +40,8 @@ package object controllers {
       "reputation" -> JsNumber(airline.getReputation()),
       "gradeValue" -> JsNumber(airline.airlineGrade.value),
       "airlineCode" -> JsString(airline.getAirlineCode()),
-      "baseCount" -> JsNumber(airline.getBases().size)))
+      "baseCount" -> JsNumber(airline.getBases().size),
+      "isGenerated" -> JsBoolean(airline.isGenerated)))
       
       if (airline.getCountryCode.isDefined) {
         result = result.asInstanceOf[JsObject] + ("countryCode" -> JsString(airline.getCountryCode.get))
