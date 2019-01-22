@@ -80,6 +80,7 @@ POST	 /airlines/:airlineId/form-alliance  controllers.AllianceApplication.formAl
 GET		 /airlines/:airlineId/evaluate-alliance/:allianceId  controllers.AllianceApplication.evaluateAlliance(airlineId : Int, allianceId : Int)
 GET		 /airlines/:airlineId/apply-for-alliance/:allianceId  controllers.AllianceApplication.applyForAlliance(airlineId : Int, allianceId : Int)
 GET		 /airlines/:airlineId/remove-alliance-member/:targetAirlineId  controllers.AllianceApplication.removeFromAlliance(airlineId : Int, targetAirlineId : Int)
+GET		 /airlines/:airlineId/assign-president/:targetAirlineId  controllers.AllianceApplication.assignPresidentForAlliance(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/accept-alliance-member/:targetAirlineId  controllers.AllianceApplication.addToAlliance(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/used-airplanes/models/:modelId	controllers.AirplaneApplication.getUsedAirplanes(airlineId : Int, modelId : Int)
 PUT		 /airlines/:airlineId/used-airplanes/airplanes/:airplaneId	controllers.AirplaneApplication.buyUsedAirplane(airlineId : Int, airplaneId : Int)
