@@ -79,9 +79,6 @@ class CountryApplication extends Controller {
               case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
             }.toList)(AirlineSharesWrites))
         }
-        
-        val baseLinkLimit = Country.getLimitByCountryCode(countryCode)
-        jsonObject = jsonObject ++ Json.obj("linkLimitDomestic" -> baseLinkLimit.domestic, "linkLimitRegional" -> baseLinkLimit.regional) 
           
         Ok(jsonObject)
       case None => NotFound

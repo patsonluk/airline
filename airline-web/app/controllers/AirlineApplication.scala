@@ -145,9 +145,7 @@ class AirlineApplication extends Controller {
        ("domesticLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.DOMESTIC))) +
        ("regionalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.REGIONAL))) +
        ("intercontinentalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.INTERCONTINENTAL))) +
-       ("domesticLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.DOMESTIC))) +
-       ("regionalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.REGIONAL))) +
-       ("intercontinentalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.INTERCONTINENTAL)))  
+       ("intercontinentalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.INTERCONTINENTAL).get))  
               
        
        
@@ -194,10 +192,6 @@ class AirlineApplication extends Controller {
             result = result + ("downgradeRejection" -> JsString(rejection))
           }
         }
-        
-        
-        val baseLinkLimit = Country.getLimitByCountryCode(airport.countryCode)
-        result = result ++ Json.obj("linkLimitDomestic" -> baseLinkLimit.domestic, "linkLimitRegional" -> baseLinkLimit.regional)
         
         Ok(result)
       }
