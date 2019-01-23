@@ -91,7 +91,7 @@ function updateAirportDetails(airport) {
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
 	    			updateFacilityIcons(airport)
 	    		}
-		    	$('#airportDetailsLinkLimitBoost').text(baseDetails.linkLimitDomestic + " / " + baseDetails.linkLimitRegional)
+
 		    	var targetBase = baseDetails.targetBase
 		    	$('#airportDetailsBaseUpgradeCost').text('$' + commaSeparateNumber(targetBase.value))
     			$('#airportDetailsBaseUpgradeUpkeep').text('$' + commaSeparateNumber(targetBase.upkeep))

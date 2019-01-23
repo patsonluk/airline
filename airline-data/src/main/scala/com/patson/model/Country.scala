@@ -23,25 +23,4 @@ object Country {
   val LOW_INCOME_THRESHOLD = 15000
   val HIGH_INCOME_THRESHOLD = 50000
   val DEFAULT_UNKNOWN_INCOME = 1000
-  
-  val loadedCountryCategories : scala.collection.mutable.Map[String, FlightCateogryLimits] = scala.collection.mutable.Map()
-
-  //domestic = 3 credits
-  //regional = 4 credits
-  def getLimitByCountryCode(countryCode : String) : FlightCateogryLimits = {
-    loadedCountryCategories.getOrElseUpdate(countryCode, {
-      val decentAirportCount = AirportSource.loadAirportsByCountry(countryCode).count(_.size >= 3)
-      if (decentAirportCount <= 2) {
-        FlightCateogryLimits(1, 12)
-      } else if (decentAirportCount <= 4) {
-        FlightCateogryLimits(3, 10)
-      } else if (decentAirportCount <= 8) { 
-        FlightCateogryLimits(6, 8)
-      } else if (decentAirportCount <= 10) {
-        FlightCateogryLimits(9, 6)
-      } else {
-        FlightCateogryLimits(12, 4)
-      }
-    })
-  }
 }
