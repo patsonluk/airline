@@ -661,6 +661,7 @@ class AirlineApplication extends Controller {
       AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
       //remove all loans
       BankSource.loadLoansByAirline(airlineId).foreach { loan =>
+        airline.setBalance(airline.getBalance()- loan.earlyRepayment)
         BankSource.deleteLoan(loan.id)
       }
       //remove all factilities
