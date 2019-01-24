@@ -642,6 +642,51 @@ class AirlineApplication extends Controller {
       Ok(Json.toJson(airline))
     }
   }
+  
+  def sellallAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (airlineId != request.user.id) {
+      Forbidden
+    } else {
+      //set balance
+      val airline : Airline = request.user
+      airline.setBalance(Bank.getAssets(airlineId) + airline.getBalance())
+      
+      //remove all links
+      LinkSource.loadLinksByAirlineId(airlineId).foreach { link =>
+        LinkSource.deleteLink(link.id)
+      }
+      //remove all airplanes
+      AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
+      //remove all bases
+      AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
+      //remove all loans
+      BankSource.loadLoansByAirline(airlineId).foreach { loan =>
+        BankSource.deleteLoan(loan.id)
+      }
+      //remove all factilities
+      AirlineSource.deleteLoungeByCriteria(List(("airline", airlineId)))
+      
+      //remove all oil contract
+      OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
+      
+      AllianceSource.loadAllianceMemberByAirline(request.user).foreach { allianceMember =>
+        AllianceSource.deleteAllianceMember(airlineId)
+        if (allianceMember.role == AllianceRole.LEADER) { //remove the alliance
+           AllianceSource.deleteAlliance(allianceMember.allianceId)
+        }
+      }  
+      
+      //unset country code
+      airline.removeCountryCode()
+      //unset service investment
+      airline.setServiceFunding(0)
+      airline.setServiceQuality(0)
+      
+      AirlineSource.saveAirlineInfo(airline)
+      Ok(Json.toJson(airline))
+    }
+  }
+  
     
  def setAirlineCode(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {

@@ -666,3 +666,21 @@ function resetAirline() {
 	
 }
 
+function sellallAirline() {
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/sellall",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function() {
+	    	updateAllPanels(activeAirline.id)
+	    	showWorldMap()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+	
+}
+
