@@ -248,4 +248,4 @@ Yemen,YE,YEM,887,ISO 3166-2:YE,Asia,Western Asia,142,145
 Zambia,ZM,ZMB,894,ISO 3166-2:ZM,Africa,Eastern Africa,002,014
 Zimbabwe,ZW,ZWE,716,ISO 3166-2:ZW,Africa,Eastern Africa,002,014
 Kosovo,XK,KSV,688,ISO 3166-2:RS,Europe,Southern Europe,150,039
-Netherlands Antilles,AN,ANT,ISO 3166-2:AN,Americas,South America,,
+Netherlands Antilles,AN,ANT,,ISO 3166-2:AN,Americas,South America,,
