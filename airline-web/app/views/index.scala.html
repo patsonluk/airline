@@ -1551,27 +1551,47 @@
 	  							<li class="label" style="padding: 5px">- Headquarters, bases and facilities will be removed</li>
 	  							<li class="label" style="padding: 5px">- All routes will be cancelled</li>
 	  							<li class="label" style="padding: 5px">- All loans and oil contracts cancelled<li>
+	  							<li class="label" style="padding: 5px">- Dropped from current Alliance<li>
 	  							<li class="label" style="padding: 5px">- Service Quality will be reset<li>
 	  							<li class="label" style="padding: 5px">- Reputation, Awareness and Loyalty will be kept</li>
-	  							<li class="label" style="padding: 5px">- Balance reset to 50,000,000</li>
+	  							<li class="label" style="padding: 5px">- If declare bankruptcy, Balance reset to 50,000,000</li>
+	  							<li class="label" style="padding: 5px">- If rebuild airline, Balance reset to <span id="resetBalance"></span>
+	  							<div class="tooltip resetTooltip">
+	    							<img src='@routes.Assets.versioned("images/icons/information.png")'>
+	    							<span class="tooltiptext" style="width: 600px;">
+		    							<div class="table data" style="width: 100%;">
+											<div class="table-row">
+												<div class="label">Sold Airplanes</div>
+												<div class="value airplanes"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">Sold Bases</div>
+												<div class="value bases"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">Loans Repayment</div>
+												<div class="value loans"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">Oil Contracts Termination</div>
+												<div class="value oilContracts"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">Cash</div>
+												<div class="value cash"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">New Balance after reset</div>
+												<div class="value overall"></div>
+											</div>
+			        					</div>
+			        				</span>
+	    						</div>	
+	  							</li>
 	  						</ul>
-	  						<div class='button' onclick='promptConfirm("Declare bankruptcy?", resetAirline)'>Declare Bankruptcy</div>
-	  						 
-<!-- 	  					<div class="table" style="width: 100%;"> -->
-<!-- 							<div class="table-row"> -->
-<!-- 								<div class="cell label" style="width: 35%">Current Maintenance Level:</div> -->
-<!-- 								<div class="cell value" style="width: 65%"> -->
-<!-- 									<span id="maintenanceLevelDisplaySpan"> -->
-<!-- 		 	  							<span id="maintenanceLevel"></span> -->
-<!-- 		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editMaintenanceLevel()"/>	 -->
-<!-- 		 	  						</span> -->
-<!-- 		 	  						<span id="maintenanceLevelInputSpan" style="display: none;"> -->
-<!-- 		 	  							<input type="hidden" id="maintenanceLevelInput"/> -->
-<!-- 		 	  							<div id="maintenanceLevelGauge" style="width: 90%; float: left;"></div> -->
-<!-- 		 	  						</span> -->
-<!-- 								</div> -->
-<!-- 		 	  				</div> -->
-<!-- 		         		</div>   -->
+	  						<div class='button resetAirline' onclick='promptConfirm("Declare bankruptcy?", resetAirline, false)'>Declare Bankruptcy</div>
+	  						<div class='button resetAirline' onclick='promptConfirm("Rebuild Airline?", resetAirline, true)'>Rebuild Airline</div>
+	  						<div class="resetAirlineRejectionDiv" style="display:none;"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning resetAirlineRejection"></span></div>
 		    		</div>
 		    	</div>
 <!-- 		    	end right section -->

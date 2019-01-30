@@ -4,6 +4,10 @@ import com.patson.model.airplane._
 import com.patson.data.CycleSource
 import com.patson.Util
 import com.patson.data.AllianceSource
+import com.patson.data.AirplaneSource
+import com.patson.data.AirlineSource
+import com.patson.data.BankSource
+import com.patson.data.OilSource
 
 object Computation {
   //distance vs max speed
@@ -204,6 +208,20 @@ object Computation {
        }
        case None => MAX_FREQUENCY_ABSOLUTE_BASE
      }
+  }
+  
+  def getResetAmount(airlineId : Int) : ResetAmountInfo = {
+    val amountFromAirplanes = AirplaneSource.loadAirplanesByOwner(airlineId, false).map(Computation.calculateAirplaneSellValue(_).toLong).sum
+    val amountFromBases = AirlineSource.loadAirlineBasesByAirline(airlineId).map(_.getValue * 0.2).sum.toLong //only get 20% back
+    val amountFromLoans = BankSource.loadLoansByAirline(airlineId).map(_.earlyRepayment * -1).sum //repay all loans now
+    val amountFromOilContracts = OilSource.loadOilContractsByAirline(airlineId).map(_.contractTerminationPenalty(CycleSource.loadCycle()) * -1).sum //termination penalty
+    val existingBalance = AirlineSource.loadAirlineById(airlineId).get.airlineInfo.balance
+    
+    ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromLoans, amountFromOilContracts, existingBalance)
+  }
+  
+  case class ResetAmountInfo(airplanes : Long, bases : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
+    val overall = airplanes + bases + loans + oilContracts + existingBalance
   }
   
 //  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
