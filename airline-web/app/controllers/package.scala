@@ -191,14 +191,21 @@ package object controllers {
   }
   
   object SimpleLinkConsumptionWrite extends Writes[LinkConsumptionDetails] {
-     def writes(linkConsumption : LinkConsumptionDetails): JsValue = {
+     def writes(linkConsumption : LinkConsumptionDetails): JsValue = { 
+       var priceJson = Json.obj() 
+       LinkClass.values.foreach { linkClass =>
+         if (linkConsumption.link.capacity(linkClass) > 0) { //do not report price for link class that has no capacity
+           priceJson = priceJson + (linkClass.label -> JsNumber(linkConsumption.link.price(linkClass)))
+         }  
+       }
+       
        
       JsObject(List(
         "linkId" -> JsNumber(linkConsumption.link.id),
         "airlineId" -> JsNumber(linkConsumption.link.airline.id),
         "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
-        "price" -> Json.toJson(linkConsumption.link.price),
-        "capacity" -> JsNumber(linkConsumption.link.capacity.total),
+        "price" -> priceJson,
+        "capacity" -> Json.toJson(linkConsumption.link.capacity),
         "soldSeats" -> JsNumber(linkConsumption.link.soldSeats.total),
         "quality" -> JsNumber(linkConsumption.link.computedQuality)))
     }

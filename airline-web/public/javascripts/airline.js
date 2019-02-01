@@ -647,9 +647,9 @@ function refreshLinkDetails(linkId) {
 	    	    	$("#linkCompetitons .data-row").remove()
 	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
     	    			if (linkConsumption.airlineId != airlineId) {
-		    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+    	    				$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
 		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
-		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.capacity 
+		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity) 
 		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality + "</div></div>")
     	    			}
 	    	    	})
@@ -1092,7 +1092,7 @@ function updatePlanLinkInfo(linkInfo) {
 		if (linkConsumption.airlineId != activeAirline.id) {
 			$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
 				    	    			   + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
-				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.capacity 
+				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity) 
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality + "</div></div>")
 		}			
 	})
