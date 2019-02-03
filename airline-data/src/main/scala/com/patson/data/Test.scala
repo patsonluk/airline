@@ -8,9 +8,6 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.util.Random
-import com.appoptics.api.ext.Trace
-import com.appoptics.api.ext.TraceContext
-import com.appoptics.api.ext.AgentChecker
 
 object Test extends App {
      
