@@ -5,7 +5,7 @@ import java.util.Calendar
 import java.util.Date
 import java.text.SimpleDateFormat
 
-class ClientActor(out: ActorRef, chat: ActorRef) extends Actor {
+class ClientActor(out: ActorRef, chat: ActorRef, userId : Int) extends Actor {
 
   chat ! Join
 

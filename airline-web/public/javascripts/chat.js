@@ -32,11 +32,13 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
   // what happens when user enters message
   chat.sendMessage = function() {
 	  if (activeAirline && (chat.currentMessage.length > 0)) {
-	    var text = activeAirline.name + ": " + chat.currentMessage;
+		var active_tab = $("li.tab-link.current").attr('data-tab');
+		var text = { room: active_tab, text: chat.currentMessage };
 	    //chat.messages.push(text);
 	    chat.currentMessage = "";
 	    // send it to the server through websockets
-	    ws.send(text);
+	    ws.send(JSON.stringify(text));
+		
 	  }
   };
 
@@ -54,7 +56,14 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
    
   // what to do when we receive message from the webserver
   ws.onmessage = function(msg) {
-    chat.gmessages.push(msg.data);
+	  var r_text = msg.data.toString;
+	  var r_msg = JSON.parse(r_text);
+	console.log(msg.data);
+	//if (r_msg.room == "chatBox-1") {
+		chat.gmessages.push(msg.data);
+	//} else {
+		chat.amessages.push(msg.data);
+	//}
     $scope.$digest();
 	
 	if (!$('#scroll_lockc').is(":checked")) {
