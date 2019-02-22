@@ -61,6 +61,8 @@ import com.patson.model.User
 import com.patson.model.Alliance
 import com.patson.util.ChampionUtil
 import com.patson.util.ChampionInfo
+import com.patson.data.OilSource
+import com.patson.model.Computation.ResetAmountInfo
 
 
 class AirlineApplication extends Controller {
@@ -99,6 +101,18 @@ class AirlineApplication extends Controller {
       }
         //("lastActiveTime" -> JsString(user.lastActive.getTime.toString)) //maybe last active time is still too sensitive
       result
+    }
+  }
+  
+   object ResetAmountInfoWrites extends Writes[ResetAmountInfo] {
+    def writes(info: ResetAmountInfo): JsValue =  {
+      JsObject(List(
+      "airplanes" -> JsNumber(info.airplanes),
+      "bases" -> JsNumber(info.bases),
+      "loans" -> JsNumber(info.loans),
+      "oilContracts" -> JsNumber(info.oilContracts),
+      "existingBalance" -> JsNumber(info.existingBalance),
+      "overall" -> JsNumber(info.overall)))
     }
   }
   
@@ -144,9 +158,7 @@ class AirlineApplication extends Controller {
        ("domesticLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.DOMESTIC))) +
        ("regionalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.REGIONAL))) +
        ("intercontinentalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.INTERCONTINENTAL))) +
-       ("domesticLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.DOMESTIC))) +
-       ("regionalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.REGIONAL))) +
-       ("intercontinentalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.INTERCONTINENTAL)))  
+       ("intercontinentalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.INTERCONTINENTAL).get))  
               
        
        
@@ -193,10 +205,6 @@ class AirlineApplication extends Controller {
             result = result + ("downgradeRejection" -> JsString(rejection))
           }
         }
-        
-        
-        val baseLinkLimit = Country.getLimitByCountryCode(airport.countryCode)
-        result = result ++ Json.obj("linkLimitDomestic" -> baseLinkLimit.domestic, "linkLimitRegional" -> baseLinkLimit.regional)
         
         Ok(result)
       }
@@ -538,12 +546,14 @@ class AirlineApplication extends Controller {
                 } else{
                   AirlineSource.deleteLounge(lounge)
                 }
+                
+                if (consideration.cost > 0) {
+                  AirlineSource.adjustAirlineBalance(request.user.id, -1 * consideration.cost)
+                  AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.FACILITY_CONSTRUCTION, -1 * consideration.cost))
+                }
+                Ok(Json.toJson(consideration.newFacility))
               }
-              if (consideration.cost > 0) {
-                AirlineSource.adjustAirlineBalance(request.user.id, -1 * consideration.cost)
-                AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.FACILITY_CONSTRUCTION, -1 * consideration.cost))
-              }
-              Ok(Json.toJson(consideration.newFacility))
+              
             } else {
               BadRequest("Unrecognized facitility type " + inputFacility.facilityType)
             }
@@ -596,43 +606,70 @@ class AirlineApplication extends Controller {
     Ok(Json.toJson(championedCountryByThisAirline))
   }
   
-  def resetAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def resetAirline(airlineId : Int, keepAssets : Boolean) = AuthenticatedAirline(airlineId) { request =>
     if (airlineId != request.user.id) {
       Forbidden
     } else {
-      //remove all links
-      LinkSource.loadLinksByAirlineId(airlineId).foreach { link =>
-        LinkSource.deleteLink(link.id)
+      getResetRejection(request.user) match {
+        case Some(rejection) => Ok(Json.obj("rejection" -> rejection))
+        case None =>
+          val resetBalance = if (keepAssets) Computation.getResetAmount(airlineId).overall else EntrepreneurProfile.INITIAL_BALANCE //do it here before deleting everything
+          
+          LinkSource.loadLinksByAirlineId(airlineId).foreach { link => //remove all links
+            LinkSource.deleteLink(link.id)
+          }
+          //remove all airplanes
+          AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
+          //remove all bases
+          AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
+          //remove all loans
+          BankSource.loadLoansByAirline(airlineId).foreach { loan =>
+            BankSource.deleteLoan(loan.id)
+          }
+          //remove all facilities
+          AirlineSource.deleteLoungeByCriteria(List(("airline", airlineId)))
+          
+          //remove all oil contract
+          OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
+          
+          AllianceSource.loadAllianceMemberByAirline(request.user).foreach { allianceMember =>
+            AllianceSource.deleteAllianceMember(airlineId)
+            if (allianceMember.role == AllianceRole.LEADER) { //remove the alliance
+               AllianceSource.deleteAlliance(allianceMember.allianceId)
+            }
+          }  
+          
+          //reset balance
+          val airline : Airline = request.user
+          
+          airline.setBalance(resetBalance) 
+          
+          //unset country code
+          airline.removeCountryCode()
+          //unset service investment
+          airline.setServiceFunding(0)
+          airline.setServiceQuality(0)
+          
+          AirlineSource.saveAirlineInfo(airline)
+          Ok(Json.toJson(airline))
       }
-      //remove all airplanes
-      AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
-      //remove all bases
-      AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
-      //remove all loans
-      BankSource.loadLoansByAirline(airlineId).foreach { loan =>
-        BankSource.deleteLoan(loan.id)
-      }
-      
-      AllianceSource.loadAllianceMemberByAirline(request.user).foreach { allianceMember =>
-        AllianceSource.deleteAllianceMember(airlineId)
-        if (allianceMember.role == AllianceRole.LEADER) { //remove the alliance
-           AllianceSource.deleteAlliance(allianceMember.allianceId)
-        }
-      }  
-      
-      //reset balance
-      val airline : Airline = request.user
-      airline.setBalance(EntrepreneurProfile.INITIAL_BALANCE)
-      
-      //unset country code
-      airline.removeCountryCode()
-      //unset service investment
-      airline.setServiceFunding(0)
-      airline.setServiceQuality(0)
-      
-      AirlineSource.saveAirlineInfo(airline)
-      Ok(Json.toJson(airline))
     }
+  }
+  
+  def resetAirlineConsideration(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    var result = Json.toJson(Computation.getResetAmount(airlineId))(ResetAmountInfoWrites)
+    getResetRejection(request.user).foreach { rejection => 
+      result = result.asInstanceOf[JsObject] + ("rejection" -> JsString(rejection))   
+    } 
+    Ok(result)
+  }
+  
+  def getResetRejection(airline : Airline) : Option[String] = {
+    val allianceMemberOption = AllianceSource.loadAllianceMemberByAirline(airline)
+    if (allianceMemberOption.isDefined && allianceMemberOption.get.role == AllianceRole.LEADER) {
+        return Some("Cannot reset airline as your airline is the leader of an alliance. Either promote another member as leader or disband the alliance before proceeding")
+    }
+    return None
   }
     
  def setAirlineCode(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
@@ -670,7 +707,7 @@ class AirlineApplication extends Controller {
  }	 
  
   def uploadLogo(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    if (request.user.getReputation < 50) {
+    if (request.user.getReputation < 40) {
       Ok(Json.obj("error" -> JsString("Cannot upload img at current reputation"))) //have to send ok as the jquery plugin's error cannot read the response
     } else {
       request.body.asMultipartFormData.map { data =>

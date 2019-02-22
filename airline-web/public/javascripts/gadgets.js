@@ -116,7 +116,11 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	if (!suffix) {
 		suffix = ""
 	}
- 	return prefix + linkValues.economy + suffix + " / " + prefix + linkValues.business + suffix + " / " + prefix + linkValues.first + suffix
+	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy : '-'
+	var businessValue = linkValues.hasOwnProperty('business') ? linkValues.business : '-'
+	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'	
+		
+ 	return prefix + economyValue + suffix + " / " + prefix + businessValue + suffix + " / " + prefix + firstValue + suffix
 }
 
 function changeColoredElementValue(element, newValue) {

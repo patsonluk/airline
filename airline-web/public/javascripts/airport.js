@@ -91,7 +91,7 @@ function updateAirportDetails(airport) {
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
 	    			updateFacilityIcons(airport)
 	    		}
-		    	$('#airportDetailsLinkLimitBoost').text(baseDetails.linkLimitDomestic + " / " + baseDetails.linkLimitRegional)
+
 		    	var targetBase = baseDetails.targetBase
 		    	$('#airportDetailsBaseUpgradeCost').text('$' + commaSeparateNumber(targetBase.value))
     			$('#airportDetailsBaseUpgradeUpkeep').text('$' + commaSeparateNumber(targetBase.upkeep))
@@ -586,7 +586,7 @@ function updateAirportExtendedDetails(airportId) {
 			    	$(".airportRelationship").text(relationship)
 		    	}
 		    	
-		    	$(".airportSlots").text(airport.availableSlots + " / " + airport.slots)
+		    	$(".airportSlots").text(airport.slots)
 		    	
 	//	    	$.each(airport.linkCounts, function(withLinksAirlineId, linkCount) {
 	//	    		if (airlineId == withLinksAirlineId) {

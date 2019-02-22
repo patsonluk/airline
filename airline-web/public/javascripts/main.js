@@ -449,7 +449,7 @@ function promptConfirm(prompt, targetFunction, param) {
 	if (typeof param != 'undefined') {
 		$('#confirmationModal .confirmationButton').data('targetFunctionParam', param)
 	}
-	$('#confirmationPrompt').text(prompt)
+	$('#confirmationPrompt').html(prompt)
 	$('#confirmationModal').fadeIn(1000)
 }
 

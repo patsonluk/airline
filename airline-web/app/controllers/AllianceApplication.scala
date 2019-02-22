@@ -83,6 +83,7 @@ class AllianceApplication extends Controller {
         case REJECT_ALLIANCE => "was rejected by alliance"
         case LEAVE_ALLIANCE => "left alliance"
         case BOOT_ALLIANCE => "was removed from alliance"
+        case PROMOTE_LEADER => "was promoted to alliance leader of"
       }
       history.airline.name + " " + eventAction + " " + history.allianceName
     }
@@ -353,6 +354,39 @@ class AllianceApplication extends Controller {
            }
     }
   }
+  
+  def promoteToAllianceLeader(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
+       val currentCycle = CycleSource.loadCycle
+       AllianceSource.loadAllianceMemberByAirline(request.user) match {
+          case None => BadRequest("Current airline " + request.user + " cannot add airline id "+ targetAirlineId + " to alliance as current airline does not belong to any alliance")
+          case Some(currentAirlineAllianceMember) =>
+            //check if current airline is leader and the target airline has applied to this alliance
+           if (currentAirlineAllianceMember.role != LEADER) {
+             BadRequest("Current airline " + request.user + " cannot promote airline id "+ targetAirlineId + " from alliance as current airline is not leader")
+           } else {
+             val alliance = AllianceSource.loadAllianceById(currentAirlineAllianceMember.allianceId, false).get 
+             AirlineSource.loadAirlineById(targetAirlineId) match {
+               case None => NotFound("Airline with id " + targetAirlineId + " not found")
+               case Some(targetAirline) =>
+                 AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
+                   case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
+                   case Some(allianceMember) =>
+                     if (allianceMember.allianceId != currentAirlineAllianceMember.allianceId) {
+                       BadRequest("Airline " + targetAirline + " does not belong to alliance " + alliance)
+                     } else { //OK ..promoting
+                       AllianceSource.saveAllianceMember(allianceMember.copy(role = LEADER))
+                       AllianceSource.saveAllianceMember(currentAirlineAllianceMember.copy(role = MEMBER))
+                       AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = PROMOTE_LEADER, cycle = currentCycle))
+                       
+                       Ok(Json.toJson(allianceMember))
+                     }
+                  }
+             }
+           }
+    }
+  }
+  
+  
   
   def getApplyRejection(airline : Airline, alliance : Alliance) : Option[String] = {
     val allianceMembers = alliance.members

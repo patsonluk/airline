@@ -237,7 +237,7 @@ function updateAllianceBasicsDetails(allianceId) {
 					var rejectQuestion = "Reject application from " + member.airlineName + "?"
 					row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/tick.png' class='button' title='Accept Member' onclick='promptConfirm(\"" + acceptQuestion + "\", acceptAllianceMember, " + member.airlineId + ")'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"" + rejectQuestion + "\", removeAllianceMember, " + member.airlineId + ")'></div>")
 				} else {
-					row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"Remove " + member.airlineName + " from alliance?\", removeAllianceMember, " + member.airlineId + ")'></div>")
+					row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/user-promote.png' class='button' title='Promote Member to Leader' onclick='promptConfirm(\"Promote " + member.airlineName + " as alliance leader?<br/><br/><b>Your airline will lose the leadership and be demoted to member!!</b>\", promoteAllianceMember, " + member.airlineId + ")'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"Remove " + member.airlineName + " from alliance?\", removeAllianceMember, " + member.airlineId + ")'></div>")
 				}
 			} else {
 				row.append("<div class='cell' style='vertical-align: middle;'></div>")
@@ -416,6 +416,23 @@ function removeAllianceMember(removeAirlineId) {
 
 function acceptAllianceMember(acceptAirlineId) {
 	var url = "airlines/" + activeAirline.id + "/accept-alliance-member/" + acceptAirlineId
+	$.ajax({
+		type: 'GET',
+		url: url,
+		contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	showAllianceCanvas()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(JSON.stringify(jqXHR));
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function promoteAllianceMember(promoteAirlineId) {
+	var url = "airlines/" + activeAirline.id + "/promote-alliance-member/" + promoteAirlineId
 	$.ajax({
 		type: 'GET',
 		url: url,

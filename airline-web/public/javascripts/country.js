@@ -115,7 +115,6 @@ function loadCountryDetails(countryId) {
 	    	$("#countryDetailsMediumAirportCount").text(country.mediumAirportCount)
 	    	$("#countryDetailsSmallAirportCount").text(country.smallAirportCount)
 	    	$("#countryDetailsSmallAirportCount").text(country.smallAirportCount)
-	    	$("#countryDetailsLinkLimitBoost").text(country.linkLimitDomestic + " / " + country.linkLimitRegional)
 	    	
 	    	
 //	    	if (country.headquarters.length > 0) {

@@ -50,6 +50,9 @@ function updateFacilityIcons(airport) {
     			if (facilityDetails.lounge.status == 'ACTIVE') {
     				imageUrl = 'assets/images/icons/sofa.png'
 					imageTitle = 'Active Lounge Level ' + facilityDetails.lounge.level + " - " + facilityDetails.lounge.name 	
+    			} else if (facilityDetails.lounge > 0) {
+    				imageUrl = 'assets/images/icons/sofa-grey.png'
+    				imageTitle = 'Inactive Lounge Level ' + facilityDetails.lounge.level + " - " + facilityDetails.lounge.name
     			} else {
     				imageUrl = 'assets/images/icons/sofa-grey.png'
     				imageTitle = 'No Active Lounge'

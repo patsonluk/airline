@@ -198,9 +198,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     //now double check if it violated limit
     increment = maxSlots - currentAssignedSlotToThisAirline
     
-    if (increment > availableSlots) {
-      increment = availableSlots
-    }
+//    if (increment > availableSlots) {
+//      increment = availableSlots
+//    }
     
     currentAssignedSlotToThisAirline + increment
   }

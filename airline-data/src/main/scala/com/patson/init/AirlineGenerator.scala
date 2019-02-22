@@ -58,6 +58,8 @@ object AirlineGenerator extends App {
       UserSource.setUserAirline(user, newAirline)
       AirlineSource.saveAirlineBase(airlineBase)
       
+      AirlineSource.saveAirplaneRenewal(newAirline.id, 50)
+      
       baseAirport.setAirlineAwareness(newAirline.id, 100)
       baseAirport.setAirlineLoyalty(newAirline.id, 100)
       AirportSource.updateAirlineAppeal(airports)

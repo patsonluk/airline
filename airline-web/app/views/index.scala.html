@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Airline Club</title>
 <!--   	<meta name="google-signin-client_id" content="526466847284-mmk6qg2bc4su9ihgqippccaha28edn81.apps.googleusercontent.com"> -->
     <meta name="description" content="A free and open source Airline Management Simulation Game. Realistic simulation of air travel demand between 4k+ airports with virtual passengers making unique travel choices. ">
     <meta name="keywords" content="Game,Free,Open Source,Airline">
@@ -341,12 +342,12 @@
 				    			<div class="button" id="toggleLinkHistoryButton" onclick="toggleLinkHistoryView()">View Passenger Map</div>
 				    			<div class="divider"></div>
 				    			<h4>Direct Competitions</h4>
-				    			<div class="table" id="linkCompetitons" style="width: 100%">
+				    			<div class="table data" id="linkCompetitons" style="width: 100%">
 			    					<div class='table-header'>
-			    						<div class="cell" style="width: 40%;"><h5>Airline</h5></div>
+			    						<div class="cell" style="width: 35%;"><h5>Airline</h5></div>
 			    						<div class="cell" style="width: 30%;"><h5>Price</h5></div>
-			    						<div class="cell" style="width: 15%;"><h5>Capacity</h5></div>
-			    						<div class="cell" style="width: 15%;"><h5>Quality</h5></div>
+			    						<div class="cell" style="width: 25%;"><h5>Capacity</h5></div>
+			    						<div class="cell" style="width: 10%;"><h5>Quality</h5></div>
 			    					</div>
 			    				</div>
 			    				<div id=linkCompetitionsPie align="center"></div>
@@ -401,13 +402,13 @@
 					    		<div class="table-row">
 					    			<div class="label"><h5>Direct Competitions:</h5></div>
 					    			<div class="value">
-										<div class="table" id="planLinkCompetitons" style="width: 100%">
-					    					<div class='table-row'>
-					    						<div style="display: table-cell;"><h5>Airline</h5></div>
-					    						<div style="display: table-cell;"><h5>Price</h5></div>
-					    						<div style="display: table-cell;"><h5>Capacity</h5></div>
-					    						<div style="display: table-cell;"><h5>Quality</h5></div>
-					    					</div>
+										<div class="table data" id="planLinkCompetitons" style="width: 100%">
+					    					<div class='table-header'>
+			    								<div class="cell" style="width: 35%;"><h5>Airline</h5></div>
+			    								<div class="cell" style="width: 30%;"><h5>Price</h5></div>
+			    								<div class="cell" style="width: 25%;"><h5>Capacity</h5></div>
+			    								<div class="cell" style="width: 10%;"><h5>Quality</h5></div>
+			    							</div>
 					    				</div>			    			
 					    			</div> 
 			    				</div>
@@ -469,7 +470,37 @@
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"></div>
-					    			<div class="value" style="padding-bottom: 15px"><h6><span id="planLinkLimitingFactor" class='warning'></span></h6></div>
+					    			<div class="value">
+					    				<h6>
+					    					<div id="planLinkLimitingDiv" style="display:none;">
+					    						<div class="tooltip">
+						    						<img src='@routes.Assets.versioned("images/icons/information.png")'>
+						    						<span class="tooltiptext" style="width: 450px;">
+							    						Max Flight Freuency is determined by the lowest number below: <br/>
+							    						<div style='display:table; width: 100%;'>
+							    							<div style='display:table-row'>
+							    								<div style='width: 60%; display: table-cell;'>General max frequency allowed per Route</div>
+							    								<div class='maxFrequencyAbsolute' style='width: 40%; display: table-cell;'></div>
+							    							</div>
+							    							<div style='display:table-row'>
+							    								<div style='width: 60%; display: table-cell;'>Current slots by Departing Airport</div>
+							    								<div class='maxFrequencyFromAirport' style='width: 40%; display: table-cell;'></div>
+							    							</div>
+							    							<div style='display:table-row'>
+							    								<div style='width: 60%; display: table-cell;'>Current slots by Destination Airport</div>
+							    								<div class='maxFrequencyToAirport' style='width: 40%; display: table-cell;'></div>
+							    							</div>
+							    							<div style='display:table-row'>
+							    								<div style='width: 60%; display: table-cell;'>By number of assigned Aircrafts</div>
+							    								<div class='maxFrequencyByAirplanes' style='width: 40%; display: table-cell;'></div>
+							    							</div>
+							    						</div>
+						    						</span>
+						    					</div>
+					    						<span id="planLinkLimitingFactor"></span>
+					    					</div>
+					    				</h6>
+					    			</div>
 					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Capacity (Y/J/F):</h5></div>
@@ -633,10 +664,6 @@
 			    				<div class="value" id="airportDetailsBaseUpkeep"></div>
 			    			</div>
 			    			<div class="table-row">
-			    				<div class="label"><h5>Route Limit Boost (domestic/regional):</h5></div>
-			    				<div class="value" id="airportDetailsLinkLimitBoost"></div>
-			    			</div>
-			    			<div class="table-row">
 			    				<div class="label"><h5>Build/Upgrade Cost:</h5></div>
 			    				<div class="value" id="airportDetailsBaseUpgradeCost"></div>
 			    			</div>
@@ -687,7 +714,7 @@
 				   				<div class="value" id="airportDetailsIncomeLevel"></div>
 				   			</div>
 				   			<div class="table-row">
-				   				<div class="label"><h5>Slots (available / total):</h5></div>
+				   				<div class="label"><h5>Slots:</h5></div>
 				   				<div class="value airportSlots" id="airportDetailsSlots"></div>
 				   			</div>
 				   			<div class="table-row">
@@ -961,10 +988,6 @@
 			    				<div class="value" id="countryDetailsSmallAirportCount"></div>
 			    			</div>
 			    			<div class="table-row">
-			    				<div class="label"><h5>Route Limit boost per HQ/Base (Domestic/Regional):</h5></div>
-			    				<div class="value" id="countryDetailsLinkLimitBoost"></div>
-			    			</div>
-			    			<div class="table-row">
 			    				<div class="label"><h5>Airline Headquarters:</h5></div>
 			    				<div class="value" id="countryDetailsAirlineHeadquarters"></div>
 			    			</div>
@@ -1199,11 +1222,11 @@
 		         		</div>
 	  					<div class="table" style="width: 50%; float: left;">
 	  						<div class="table-row">
-		 	  					<div class="cell label">Domestic Route (current/limit):</div>
+		 	  					<div class="cell label">Domestic Route (current):</div>
 		 	  					<div id="domesticLinkCount" class="cell value"></div>
 		 	  				</div>
 		 	  				<div class="table-row">
-		 	  					<div class="cell label">Regional Route (current/limit):</div>
+		 	  					<div class="cell label">Regional Route (current):</div>
 		 	  					<div id="regionalLinkCount" class="cell value"></div>
 		 	  				</div>
 		 	  				<div class="table-row">
@@ -1522,33 +1545,53 @@
          			</div>
 	  					
 	  				<div class="section" style="width: 90%;">
-	  					<h4>Declare bankruptcy and seek new investment&nbsp;<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
+	  					<h4>Rebuild Airline<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
 	  						<ul>
 	  							<li class="label" style="padding: 5px">- All of the airplanes will be removed</li>
-	  							<li class="label" style="padding: 5px">- Headquarters and bases will be removed</li>
+	  							<li class="label" style="padding: 5px">- Headquarters, bases and facilities will be removed</li>
 	  							<li class="label" style="padding: 5px">- All routes will be cancelled</li>
-	  							<li class="label" style="padding: 5px">- All loans cancelled<li>
+	  							<li class="label" style="padding: 5px">- All loans and oil contracts cancelled<li>
+	  							<li class="label" style="padding: 5px">- Dropped from current Alliance<li>
 	  							<li class="label" style="padding: 5px">- Service Quality will be reset<li>
 	  							<li class="label" style="padding: 5px">- Reputation, Awareness and Loyalty will be kept</li>
-	  							<li class="label" style="padding: 5px">- Balance reset to 50,000,000</li>
+	  							<li class="label" style="padding: 5px">- If declare bankruptcy, Balance reset to 50,000,000</li>
+	  							<li class="label" style="padding: 5px">- If rebuild airline, Balance reset to <span id="resetBalance"></span>
+	  							<div class="tooltip resetTooltip">
+	    							<img src='@routes.Assets.versioned("images/icons/information.png")'>
+	    							<span class="tooltiptext" style="width: 600px;">
+		    							<div class="table data" style="width: 100%;">
+											<div class="table-row">
+												<div class="label">Sold Airplanes</div>
+												<div class="value airplanes"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">Sold Bases</div>
+												<div class="value bases"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">Loans Repayment</div>
+												<div class="value loans"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">Oil Contracts Termination</div>
+												<div class="value oilContracts"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">Cash</div>
+												<div class="value cash"></div>
+											</div>
+											<div class="table-row">
+												<div class="label">New Balance after reset</div>
+												<div class="value overall"></div>
+											</div>
+			        					</div>
+			        				</span>
+	    						</div>	
+	  							</li>
 	  						</ul>
-	  						<div class='button' onclick='promptConfirm("Declare bankruptcy?", resetAirline)'>Declare Bankruptcy</div>
-	  						 
-<!-- 	  					<div class="table" style="width: 100%;"> -->
-<!-- 							<div class="table-row"> -->
-<!-- 								<div class="cell label" style="width: 35%">Current Maintenance Level:</div> -->
-<!-- 								<div class="cell value" style="width: 65%"> -->
-<!-- 									<span id="maintenanceLevelDisplaySpan"> -->
-<!-- 		 	  							<span id="maintenanceLevel"></span> -->
-<!-- 		 	  							<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editMaintenanceLevel()"/>	 -->
-<!-- 		 	  						</span> -->
-<!-- 		 	  						<span id="maintenanceLevelInputSpan" style="display: none;"> -->
-<!-- 		 	  							<input type="hidden" id="maintenanceLevelInput"/> -->
-<!-- 		 	  							<div id="maintenanceLevelGauge" style="width: 90%; float: left;"></div> -->
-<!-- 		 	  						</span> -->
-<!-- 								</div> -->
-<!-- 		 	  				</div> -->
-<!-- 		         		</div>   -->
+	  						<div class='button resetAirline' onclick='promptConfirm("Declare bankruptcy?", resetAirline, false)'>Declare Bankruptcy</div>
+	  						<div class='button resetAirline' onclick='promptConfirm("Rebuild Airline?", resetAirline, true)'>Rebuild Airline</div>
+	  						<div class="resetAirlineRejectionDiv" style="display:none;"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning resetAirlineRejection"></span></div>
 		    		</div>
 		    	</div>
 <!-- 		    	end right section -->
@@ -1758,6 +1801,14 @@
 	 	  					<div class="cell" style="width: 10%">Movement</div>
 	 	  					<div class="cell" style="width: 50%">Airline</div>
 	 	  					<div class="cell" style="width: 30%" align="right">Route Weekly Profit</div>
+						</div>
+         			</div>
+         			<div class="table data section" id="airportRank" style="width: 95%">
+	 	  				<div class="table-header">
+	 	  					<div class="cell" style="width: 10%">Rank</div>
+	 	  					<div class="cell" style="width: 10%">Movement</div>
+	 	  					<div class="cell" style="width: 50%">Airport</div>
+	 	  					<div class="cell" style="width: 30%" align="right">Total Weekly Passengers</div>
 						</div>
          			</div>
 <!--          			<div class="table data section" id="passengerRankAs" style="width: 95%"> -->
@@ -2120,7 +2171,7 @@
    				<div class="value" id="airportPopupOpenness"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Slots (available / total):</h5></div>
+   				<div class="label"><h5>Slots:</h5></div>
    				<div class="value airportSlots" id="airportPopupSlots"></div>
    			</div>
    			<div class="table-row">

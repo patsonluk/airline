@@ -52,6 +52,7 @@ function showOfficeCanvas() {
 	updateAirplaneRenewalDetails()
 	updateMaintenanceLevelDetails()
 	updateAirlineColorPicker()
+	updateResetAirlineInfo()
 }
 
 function updateAirlineColorPicker() {
@@ -77,8 +78,8 @@ function updateAirlineDetails() {
 	    	$('#fleetSize').text(airline.fleetSize)
 	    	$('#fleetAge').text(getYearMonthText(airline.fleetAge))
 	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
-	    	$('#domesticLinkCount').text(airline.domesticLinkCount + "/" + airline.domesticLinkMax)
-	    	$('#regionalLinkCount').text(airline.regionalLinkCount + "/" + airline.regionalLinkMax)
+	    	$('#domesticLinkCount').text(airline.domesticLinkCount)
+	    	$('#regionalLinkCount').text(airline.regionalLinkCount)
 	    	$('#intercontinentalLinkCount').text(airline.intercontinentalLinkCount + "/" + airline.intercontinentalLinkMax)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -463,12 +464,12 @@ function setAirlineColor() {
 }
 
 function showUploadLogo() {
-	if (activeAirline.reputation >= 50) {
+	if (activeAirline.reputation >= 40) {
 		updateLogoUpload()
 		$('#uploadLogoPanelForbidden').hide()
 		$('#uploadLogoPanel').show()
 	} else {
-		$('#uploadLogoPanelForbidden .warning').text('You may only upload airline banner at Reputation 50 or above')
+		$('#uploadLogoPanelForbidden .warning').text('You may only upload airline banner at Reputation 40 or above')
 		$('#uploadLogoPanelForbidden').show()
 		$('#uploadLogoPanel').hide()
 	}
@@ -648,10 +649,49 @@ function updateMaintenanceLevelDetails() {
 	})
 }
 
-function resetAirline() {
+
+function updateResetAirlineInfo() {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/reset-consideration"
+    $.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	if (result.rejection) {
+	    		$("#officeCanvas .button.resetAirline").hide()
+	    		$("#officeCanvas .resetAirlineRejection").text(result.rejection)
+	    		$("#officeCanvas .resetAirlineRejectionDiv").show()
+	    	} else {
+	    		$("#officeCanvas .button.resetAirline").show()
+	    		$("#officeCanvas .resetAirlineRejectionDiv").hide()
+	    	} 
+	    	if (result.overall >= 0) {
+	    		$("#officeCanvas #resetBalance").text(commaSeparateNumber(result.overall))
+	    	} else {
+	    		$("#officeCanvas #resetBalance").text('-' + commaSeparateNumber(result.overall * -1)) //to avoid the () negative number which could be confusing
+	    	}
+	    	
+	    	$('.resetTooltip .airplanes').text(commaSeparateNumber(result.airplanes))
+	    	$('.resetTooltip .bases').text(commaSeparateNumber(result.bases))
+	    	$('.resetTooltip .loans').text(commaSeparateNumber(result.loans))
+	    	$('.resetTooltip .oilContracts').text(commaSeparateNumber(result.oilContracts))
+	    	$('.resetTooltip .cash').text(commaSeparateNumber(result.existingBalance))
+	    	$('.resetTooltip .overall').text(commaSeparateNumber(result.overall))
+	    	
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function resetAirline(keepAssets) {
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + activeAirline.id + "/reset",
+		url: "airlines/" + activeAirline.id + "/reset?keepAssets=" + keepAssets,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function() {

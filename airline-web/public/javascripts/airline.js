@@ -647,9 +647,9 @@ function refreshLinkDetails(linkId) {
 	    	    	$("#linkCompetitons .data-row").remove()
 	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
     	    			if (linkConsumption.airlineId != airlineId) {
-		    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+    	    				$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
 		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
-		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.capacity 
+		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity) 
 		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality + "</div></div>")
     	    			}
 	    	    	})
@@ -1092,7 +1092,7 @@ function updatePlanLinkInfo(linkInfo) {
 		if (linkConsumption.airlineId != activeAirline.id) {
 			$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
 				    	    			   + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
-				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.capacity 
+				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity) 
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality + "</div></div>")
 		}			
 	})
@@ -1116,10 +1116,10 @@ function updatePlanLinkInfo(linkInfo) {
 		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
 		//set the temp path
 		tempPath = drawFlightPath(tempLink, '#2658d3')
-		highlightPath(tempPath.path, true)
+		highlightPath(tempPath.path, false)
 	} else {
 		//selectLinkFromMap(linkInfo.existingLink.id, true)
-		highlightLink(linkInfo.existingLink.id, true)
+		highlightLink(linkInfo.existingLink.id, false)
 	}
 	
 	if (linkInfo.rejection) {
@@ -1278,40 +1278,44 @@ function updateFrequencyBar(airplaneModelId, configuration) {
 	var frequencyBar = $("#frequencyBar")
 	var selectedCount = getAssignedAirplanes().length
 	
-	var maxFrequencyByAirplanes = planLinkInfoByModel[airplaneModelId].maxFrequency * selectedCount
+	var maxFrequencyByAirplanes = Math.floor(planLinkInfoByModel[airplaneModelId].maxFrequency * selectedCount)
 	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
 	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
 	var maxFrequency = planLinkInfo.maxFrequencyAbsolute
-	var limitingFactor = "Limited by max frequency allowed for route"
-	
+	var limitingFactor = "Reaches max frequency for route"
+		
+	$('#planLinkLimitingDiv .maxFrequencyAbsolute').text(planLinkInfo.maxFrequencyAbsolute)
 	
 	if (maxFrequencyFromAirport < maxFrequency) { //limited by from airport
 		maxFrequency = maxFrequencyFromAirport
-		limitingFactor = "Limited by slots offered by Departure Airport"
+		limitingFactor = "Reaches max slots offered by Departure Airport"
 	}
+	$('#planLinkLimitingDiv .maxFrequencyFromAirport').text(maxFrequencyFromAirport)
 	
 	if (maxFrequencyToAirport < maxFrequency) { //limited by to airport
 		maxFrequency = maxFrequencyToAirport
-		limitingFactor = "Limited by slots offered by Destination Airport"
+		limitingFactor = "Reaches max slots offered by Destination Airport"
 	}
+	$('#planLinkLimitingDiv .maxFrequencyToAirport').text(maxFrequencyToAirport)
 	
 	if (maxFrequencyByAirplanes < maxFrequency) { //limited by airplanes
 		maxFrequency = maxFrequencyByAirplanes
-		limitingFactor = "Limited by number of airplanes assigned. Purchase more of this airplane to increase frequency"
+		limitingFactor = "Reaches max frequency due to number of aircrafts assigned, assign more to further increase frequency"
 	}
-	
+	$('#planLinkLimitingDiv .maxFrequencyByAirplanes').text(maxFrequencyByAirplanes)
 	
 	if (maxFrequencyByAirplanes == 0) {
 		frequencyBar.text("No routing allowed, reason: ")
+		limitingFactor = "No aircraft is assigned, purchase and assign aircraft to this route"
 	} else {
 		generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequency, frequencyBar, $("#planLinkFrequency"), null, null, function(oldFrequency, newFrequency) {
 //			console.log("frequency from " + oldFrequency + " to " + newFrequency)
 //			console.log(thisModelPlanLinkInfo.configuration)
 			updateCapacity(configuration, newFrequency)
 			if (newFrequency == maxFrequency) {
-				$("#planLinkLimitingFactor").show()
+				$("#planLinkLimitingDiv").show()
 			} else {
-				$("#planLinkLimitingFactor").hide()
+				$("#planLinkLimitingDiv").hide()
 			}
 		})
 	}
@@ -1319,9 +1323,12 @@ function updateFrequencyBar(airplaneModelId, configuration) {
 	$("#planLinkLimitingFactor").data('maxFrequency', maxFrequency)
 	
 	if ($("#planLinkFrequency").val() == maxFrequency) {
-		$("#planLinkLimitingFactor").show()
+		$("#planLinkLimitingDiv").show()
 	} else {
-		$("#planLinkLimitingFactor").hide()
+		$("#planLinkLimitingDiv").hide()
+	}
+	if (configuration) {
+		updateCapacity(configuration, $("#planLinkFrequency").val())
 	}
 }
 
