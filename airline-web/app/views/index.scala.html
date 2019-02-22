@@ -155,18 +155,32 @@
 					<header class="clearfix">
 						<span>
 						 <i></i>
-						<h4></h4>
+						<h4>
+							<ul class="ctabs">
+								<li class="tab-link current" data-tab="chatBox-1">General</li>
+								<li class="tab-link" data-tab="chatBox-2">Alliance</li>
+							</ul>
+						</h4>
+						<div id="scroll_lock">Lock<input type="checkbox" name="scroll_lockc" id="scroll_lockc" value="Lock" /></div>
 						</span>
 						<span class="notify-bubble">0</span>
 					</header>
 					<div class="chat" style="display: none;">
-						<div class="chat-history" id="chatBox">
+						<div class="chat-history tab-content current" id="chatBox-1">
 							<ul>
-								<li ng-repeat="msg in chat.messages track by $index">
+								<li ng-repeat="msg in chat.gmessages track by $index">
 									{{msg}}
 								</li>
 							</ul>
 						</div> <!-- end chat-history -->
+						<div class="chat-history tab-content" id="chatBox-2">
+							<ul>
+								<li ng-repeat="msg in chat.amessages track by $index">
+									{{msg}}
+								</li>
+							</ul>
+						</div> <!-- end chat-history -->
+						
 						<form autocomplete="off">
 							<input autocomplete="false" name="hidden" type="text" style="display:none;">
 							<input type="text" maxlength="250" placeholder="Enter message..."

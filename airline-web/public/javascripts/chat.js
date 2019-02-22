@@ -24,7 +24,8 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 
   // binding model for the UI
   var chat = this;
-  chat.messages = [];
+  chat.gmessages = []; // Global
+  chat.amessages = []; // Alliance
   chat.currentMessage = "";
   chat.username = "";
 
@@ -41,22 +42,27 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
 
    ws.onopen = function () {
 	   $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat.png\")"});
-	   chat.messages.push("Chat Connected");
+	   chat.gmessages.push("Chat Connected");
 	   $scope.$digest();
    }
    
    ws.onclose = function () {
 	   $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat-red.png\")"});
-	   chat.messages.push("Chat Disconnected");
+	   chat.gmessages.push("Chat Disconnected");
 	   $scope.$digest();
    }
    
   // what to do when we receive message from the webserver
   ws.onmessage = function(msg) {
-    chat.messages.push(msg.data);
+    chat.gmessages.push(msg.data);
     $scope.$digest();
-    var scroller = document.getElementById("chatBox");
-    scroller.scrollTop = scroller.scrollHeight;
+	
+	if (!$('#scroll_lockc').is(":checked")) {
+		var scroller = document.getElementById("chatBox-1");
+		scroller.scrollTop = scroller.scrollHeight;
+		var scroller = document.getElementById("chatBox-2");
+		scroller.scrollTop = scroller.scrollHeight;
+	}
 	if ($('.chat').is(':hidden')) {
 		$('.notify-bubble').show(400);
 		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
