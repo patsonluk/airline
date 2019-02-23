@@ -45,7 +45,7 @@ class ClientActor(out: ActorRef, chat: ActorRef, userId : Int) extends Actor {
 	   
     case ClientSentMessage(text) =>
 	
-		val json_text: JsValue = Json.parse(text)
+		val json_text: JsValue = Json.parse(text.replaceFirst("\\W*(\\[LOGGED\\])",""))
 		val room = json_text.\("room").as[Int]
 		var o_room = 0;
 		val airlines = Map[Int, Airline]()
