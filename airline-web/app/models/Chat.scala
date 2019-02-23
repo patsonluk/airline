@@ -36,7 +36,8 @@ class Chat extends Actor {
 	  } else {
 		  // send messages to all
 		  log.enqueue("[LOGGED]"+ msg.text)
-		  while (log.size > 10) { log.dequeue() }
+		  //Setting to 50 now .. want to change to SQL logging soon
+		  while (log.size > 50) { log.dequeue() } 
 		  (subscribers).foreach { _ ! msg }
 		  //You can turn these loggers off if needed
 		  //Logger.info("Message:" + msg.text)

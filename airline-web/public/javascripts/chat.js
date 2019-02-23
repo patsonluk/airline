@@ -56,14 +56,15 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
    
   // what to do when we receive message from the webserver
   ws.onmessage = function(msg) {
-	  var r_text = msg.data.toString;
-	  var r_msg = JSON.parse(r_text);
-	console.log(msg.data);
-	//if (r_msg.room == "chatBox-1") {
-		chat.gmessages.push(msg.data);
-	//} else {
-		chat.amessages.push(msg.data);
-	//}
+	var r_text = msg.data;
+	console.log(r_text);
+	var r_msg = JSON.parse(r_text);
+	
+	if (r_msg.room == "-1") {
+		chat.gmessages.push(r_msg.text);
+	} else {
+		chat.amessages.push(r_msg.text);
+	}
     $scope.$digest();
 	
 	if (!$('#scroll_lockc').is(":checked")) {
