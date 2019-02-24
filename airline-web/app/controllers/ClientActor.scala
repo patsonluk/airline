@@ -31,11 +31,9 @@ class ClientActor(out: ActorRef, chat: ActorRef, userId : Int) extends Actor {
 		  val room = json_text.\("room").as[String]
 		  var o_room = -1
 		  if (room != "chatBox-1") {
-			// Get Alliance ID
-			o_room = 0; // Default
-			val airlines = Map[Int, Airline]()
-			val airline2 = airlines.getOrElseUpdate(userId, AirlineSource.loadAirlineById(userId, false).getOrElse(Airline.fromId(userId)))
-			  AllianceSource.loadAllianceMemberByAirline(airline2).foreach { member =>
+			  // Get Alliance ID
+			  o_room = 0; // Default
+			  AllianceSource.loadAllianceMemberByAirline(airline.get).foreach { member =>
 				o_room=member.allianceId
 			  }  
 		  } 
@@ -48,11 +46,12 @@ class ClientActor(out: ActorRef, chat: ActorRef, userId : Int) extends Actor {
 		val json_text: JsValue = Json.parse(text.replaceFirst("\\W*(\\[LOGGED\\])",""))
 		val room = json_text.\("room").as[Int]
 		var o_room = 0;
-		val airlines = Map[Int, Airline]()
-		val airline2 = airlines.getOrElseUpdate(userId, AirlineSource.loadAirlineById(userId, false).getOrElse(Airline.fromId(userId)))
-		  AllianceSource.loadAllianceMemberByAirline(airline2).foreach { member =>
-			 o_room = member.allianceId
-		  } 
+		
+		val airline = AirlineSource.loadAirlineById(userId)
+		AllianceSource.loadAllianceMemberByAirline(airline.get).foreach { member =>
+			o_room=member.allianceId
+		}  
+		 
 	
 		if ((room < 0) || (room == o_room)) {
 			out ! text.replaceFirst("\\W*(\\[LOGGED\\])","")
