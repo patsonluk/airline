@@ -16,10 +16,10 @@ class Chat extends Actor {
   // initial message-handling behavior
   
   // General Chat Log (50)
-  var g_log = Queue[String]()
+  val g_log = Queue[String]()
   
   // Alliance Chat Log (1000)
-  var a_log = Queue[String]()
+  val a_log = Queue[String]()
   
   def receive = process(Set.empty)
 	
