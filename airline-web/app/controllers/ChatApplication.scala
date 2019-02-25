@@ -11,11 +11,14 @@ import scala.concurrent.Future
 import play.api.libs.json.JsValue
 
 import models._
+import com.patson.data.UserSource
+import websocket.chat.ChatControllerActor
+import websocket.chat.ChatClientActor
 
 @Singleton
 class ChatApplication @Inject()(actorSystem: ActorSystem) extends Controller {
-// creates actor of type chat described above
-  val chat = actorSystem.actorOf(Props[Chat], "chat")
+  
+  val chatControllerActor = actorSystem.actorOf(Props[ChatControllerActor], "chatControllerActor")
 
   /*
    Specifies how to wrap an out-actor that will represent
@@ -32,8 +35,16 @@ class ChatApplication @Inject()(actorSystem: ActorSystem) extends Controller {
         Logger.info("Chatsocket rejected")
         Left(Forbidden)
       case Some(userId) => 
-        Logger.info("Chatsocket, client connected with userId " + userId)
-        Right((out: ActorRef) => Props(new ClientActor(out, chat, userId.toInt)))
+        
+        UserSource.loadUserById(userId.toInt) match {
+          case None =>
+            Logger.info("Chatsocket rejected : user not found for id " + userId)
+            Left(Forbidden)
+          case Some(user) =>
+            Logger.info("Chatsocket, client connected with userId " + userId)
+            Right((out: ActorRef) => Props(new ChatClientActor(out, chatControllerActor, user)))
+        }
+        
     })
   }
 }
