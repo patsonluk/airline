@@ -26,7 +26,6 @@ import com.patson.model.AirlineCashFlowItem
 
 
 class AirplaneApplication extends Controller {
-  val BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD = 0
   
   implicit object AirplaneWithAssignedLinkWrites extends Writes[(Airplane, Option[Link])] {
     def writes(airplaneWithAssignedLink : (Airplane, Option[Link])): JsValue = {
@@ -96,7 +95,7 @@ class AirplaneApplication extends Controller {
   }
   
   def getRejection(model: Model, countryRelationship : Int, ownedModels : Set[Model], airline : Airline) : Option[String]= {
-    if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
+    if (!model.purchasable(countryRelationship)) {
       return Some("The company refuses to sell " + model.name + " to your airline due to bad country relationship")
     }
     

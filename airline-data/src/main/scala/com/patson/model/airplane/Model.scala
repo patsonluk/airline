@@ -56,9 +56,14 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
   val maintenanceCost : Int = { 
     (capacity * 100).toInt //for now
   }
+  
+  val purchasable : (Int => Boolean) = { countryRelationship =>
+    countryRelationship >= Model.BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD
+  }
 }
 
 object Model {
+  val BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD = 0
   def fromId(id : Int) = {
     val modelWithJustId = Model("", 0, 0, 0, 0, 0, 0, 0, countryCode = "")
     modelWithJustId.id = id
