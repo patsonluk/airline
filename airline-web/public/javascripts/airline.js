@@ -1186,14 +1186,7 @@ function updatePlanLinkInfo(linkInfo) {
 		});
 	}
 	
-	if (!selectedModelId) {
-		$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
-			if (modelPlanLinkInfo.airplanes.length > 0) { //select the first one with available planes
-				selectedModelId = modelPlanLinkInfo.modelId
-				return false
-			}  
-		})
-	}
+	
 	
 //	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 //		if (modelPlanLinkInfo.airplanes.length > 0) {
@@ -1244,7 +1237,9 @@ function updatePlanLinkInfo(linkInfo) {
 	var selectedModelId
 	if (linkInfo.existingLink) {
 		targetFrequency = linkInfo.existingLink.frequency
-	} 
+	} else {
+		targetFrequency = 0
+	}
 	
 	refreshPlanLink(linkInfo.fromAirportId, linkInfo.toAirportId, selectedModelId, targetFrequency)
 	$("#planLinkDetails div.value").show()
