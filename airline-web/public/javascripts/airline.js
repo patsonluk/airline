@@ -1195,13 +1195,13 @@ function updatePlanLinkInfo(linkInfo) {
 		})
 	}
 	
-	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
-		if (modelPlanLinkInfo.airplanes.length > 0) {
-			modelPlanLinkInfo.owned = true
-		} else {
-			modelPlanLinkInfo.owned = false
-		}
-	})
+//	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
+//		if (modelPlanLinkInfo.airplanes.length > 0) {
+//			modelPlanLinkInfo.owned = true
+//		} else {
+//			modelPlanLinkInfo.owned = false
+//		}
+//	})
 	
 	linkInfo.modelPlanLinkInfo = sortPreserveOrder(linkInfo.modelPlanLinkInfo, "capacity", true)
 	linkInfo.modelPlanLinkInfo = sortPreserveOrder(linkInfo.modelPlanLinkInfo, "owned", false)
@@ -1216,7 +1216,7 @@ function updatePlanLinkInfo(linkInfo) {
 		var modelId = modelPlanLinkInfo.modelId
 		var modelname = modelPlanLinkInfo.modelName
 		
-		var option = $("<option></option>").attr("value", modelId).text(modelname + " (" + modelPlanLinkInfo.airplanes.length + ")")
+		var option = $("<option></option>").attr("value", modelId).text(modelname)
 		option.appendTo($("#planLinkModelSelect"))
 		
 		if (selectedModelId == modelId) {
@@ -1240,7 +1240,13 @@ function updatePlanLinkInfo(linkInfo) {
 		setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 	}
 	
-	updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId)
+	var targetFrequency
+	var selectedModelId
+	if (linkInfo.existingLink) {
+		targetFrequency = linkInfo.existingLink.frequency
+	} 
+	
+	refreshPlanLink(linkInfo.fromAirportId, linkInfo.toAirportId, selectedModelId, targetFrequency)
 	$("#planLinkDetails div.value").show()
 }
 
@@ -1332,74 +1338,99 @@ function updateFrequencyBar(airplaneModelId, configuration) {
 	}
 }
 
-function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
-	if (selectedModelId) {
-		var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
-		
-		$('#planLinkAirplaneSelect').empty()
-		
-		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('condition', true))
-		thisModelPlanLinkInfo.airplanes = sortPreserveOrder(thisModelPlanLinkInfo.airplanes, 'isAssigned', false)		
-		
-		
-		$('#planLinkAirplaneSelect').data('badConditionThreshold', thisModelPlanLinkInfo.badConditionThreshold)
-		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplane) {
-//			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
-//			option.appendTo($("#planLinkAirplaneSelect"))
-			
-			var span =  $('<span class="button airplaneButton" onclick="toggleAssignedAirplane(this)"><img src="' + getAssignedAirplaneIcon(airplane) +  '" title="#' + airplane.airplaneId + ' condition ' + airplane.condition + '%"></span>')
-			span.data('airplane', airplane)
-			
-			$('#planLinkAirplaneSelect').append(span)
-		})
-		
-		if (thisModelPlanLinkInfo.airplanes.length > 0 && getAssignedAirplanes().length == 0) { //then highlight first one
-			toggleAssignedAirplane($('#planLinkAirplaneSelect span.airplaneButton:first-child'))
-		}
-		
-		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))
-		
-		var existingLink = planLinkInfo.existingLink
-		
-		if (existingLink) {
-			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
-		} else {
-			$("#planLinkServiceLevel").val(1)
-		}
+function updatePlanLinkInfoWithModelSelected(selectedModelId) {
+	refreshPlanLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), selectedModelId, $("#planLinkFrequency").val())
+}
+
+function refreshPlanLink(fromAirport, toAirport, selectedModelId, frequency) {
+	var url = "airlines/" + activeAirline.id + "/preview-link/" + fromAirport + "/" + toAirport + "/" + selectedModelId + "/" + frequency
+		$.ajax({
+			type: 'GET',
+			url: url,
+//			data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
+//			contentType: 'application/json; charset=utf-8',
+			dataType: 'json',
+		    success: function(planLinkInfo) {
+		    	var airplaneComposition = planLinkInfo.airplaneComposition
+		    	if (selectedModelId) {
+		    		var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
+		    		
+		    		$('#planLinkAirplaneSelect').empty()
+		    		
+//		    		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('condition', true))
+//		    		thisModelPlanLinkInfo.airplanes = sortPreserveOrder(thisModelPlanLinkInfo.airplanes, 'isAssigned', false)		
+		    		
+		    		
+		    		$('#planLinkAirplaneSelect').data('badConditionThreshold', thisModelPlanLinkInfo.badConditionThreshold)
+		    		$.each(airplaneComposition.existingAssignedAirplanes, function(key, airplane) {
+//		    			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
+//		    			option.appendTo($("#planLinkAirplaneSelect"))
+		    			
+		    			var span =  $('<span class="button airplaneButton" onclick="toggleAssignedAirplane(this)"><img src="' + getAssignedAirplaneIcon(airplane) +  '" title="#' + airplane.airplaneId + ' condition ' + airplane.condition + '%"></span>')
+		    			span.data('airplane', airplane)
+		    			
+		    			$('#planLinkAirplaneSelect').append(span)
+		    		})
+		    		
+//		    		if (thisModelPlanLinkInfo.airplanes.length > 0 && getAssignedAirplanes().length == 0) { //then highlight first one
+//		    			toggleAssignedAirplane($('#planLinkAirplaneSelect span.airplaneButton:first-child'))
+//		    		}
+		    		
+		    		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))
+		    		
+		    		var existingLink = planLinkInfo.existingLink
+		    		var assignedModelId
+		    		if (existingLink) {
+		    			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
+		    			if (existingLink.assignedAirplanes && existingLink.assignedAirplanes.length > 0) {
+		    				assignedModelId = existingLink.assignedAirplanes[0].modelId
+		    			}
+		    		} else {
+		    			$("#planLinkServiceLevel").val(1)
+		    		}
+		    	
+		    		 
+		    		
+		    		if (selectedModelId == assignedModelId) {
+		    			$("#planLinkFrequency").val(existingLink.frequency)
+		    			thisModelPlanLinkInfo.configuration = { "economy" : existingLink.capacity.economy / existingLink.frequency, 
+		    													"business" : existingLink.capacity.business / existingLink.frequency, 
+		    													"first" : existingLink.capacity.first / existingLink.frequency}
+		    		} else {
+		    			$("#planLinkFrequency").val(0)
+		    			//$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
+		    			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
+		    		}
+		    		 
+		    		updateFrequencyBar(selectedModelId, thisModelPlanLinkInfo.configuration)
+		    		
+		    		updateCapacity(thisModelPlanLinkInfo.configuration)
+		    		
+		    		var spaceMultipliers = {
+		    			economy : planLinkInfo.economySpaceMultiplier,
+		    			business : planLinkInfo.businessSpaceMultiplier,
+		    			first : planLinkInfo.firstSpaceMultiplier
+		    		}
+		    		
+		    		plotSeatConfigurationGauge($("#seatConfigurationGauge"), thisModelPlanLinkInfo.configuration, thisModelPlanLinkInfo.capacity, spaceMultipliers, updateCapacity)
+		    			
+		    		var serviceLevelBar = $("#serviceLevelBar")
+		    		generateImageBar(serviceLevelBar.data("emptyIcon"), serviceLevelBar.data("fillIcon"), 5, serviceLevelBar, $("#planLinkServiceLevel"))
+		    		$("#planLinkExtendedDetails").show()
+		    	} else {
+		    		$("#planLinkExtendedDetails").hide()
+		    	}
+		    },
+	        error: function(jqXHR, textStatus, errorThrown) {
+		            console.log(JSON.stringify(jqXHR));
+		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		    }
+		});
+
 	
-		if (selectedModelId == assignedModelId) {
-			$("#planLinkFrequency").val(existingLink.frequency)
-			thisModelPlanLinkInfo.configuration = { "economy" : existingLink.capacity.economy / existingLink.frequency, 
-													"business" : existingLink.capacity.business / existingLink.frequency, 
-													"first" : existingLink.capacity.first / existingLink.frequency}
-		} else {
-			if (thisModelPlanLinkInfo.airplanes.length > 0){
-				$("#planLinkFrequency").val(1)
-			} else {
-				$("#planLinkFrequency").val(0)
-			}
-			//$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
-			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
-		}
-		 
-		updateFrequencyBar(selectedModelId, thisModelPlanLinkInfo.configuration)
-		
-		updateCapacity(thisModelPlanLinkInfo.configuration)
-		
-		var spaceMultipliers = {
-			economy : planLinkInfo.economySpaceMultiplier,
-			business : planLinkInfo.businessSpaceMultiplier,
-			first : planLinkInfo.firstSpaceMultiplier
-		}
-		
-		plotSeatConfigurationGauge($("#seatConfigurationGauge"), thisModelPlanLinkInfo.configuration, thisModelPlanLinkInfo.capacity, spaceMultipliers, updateCapacity)
-			
-		var serviceLevelBar = $("#serviceLevelBar")
-		generateImageBar(serviceLevelBar.data("emptyIcon"), serviceLevelBar.data("fillIcon"), 5, serviceLevelBar, $("#planLinkServiceLevel"))
-		$("#planLinkExtendedDetails").show()
-	} else {
-		$("#planLinkExtendedDetails").hide()
-	}
+	
+	
+	
 }
 
 function updateCapacity(configuration, frequency) {

@@ -71,9 +71,7 @@ class AirplaneApplication extends Controller {
   def getRejections(models : List[Model], airline : Airline) : Map[Model, Option[String]] = {
      
     val countryRelations : Map[String, Int] = airline.getCountryCode() match {
-      case Some(homeCountry) => CountrySource.getCountryMutualRelationShips(homeCountry).map {
-        case ((homeCountry, otherCountry), relationship) => (otherCountry, relationship)
-      }.toMap
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationships(homeCountry)
       case None => Map.empty
     }    
     
@@ -116,7 +114,7 @@ class AirplaneApplication extends Controller {
       case None => 0
     }
     
-    if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
+    if (countryRelationship < Model.BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
       val rejection = "Cannot buy used airplane of " + model.name + " as your home country has bad relationship with manufacturer's country"
       return usedAirplanes.map((_, rejection)).toMap
     }

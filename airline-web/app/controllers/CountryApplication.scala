@@ -28,9 +28,9 @@ class CountryApplication extends Controller {
     homeCountryCode match {
       case None => Ok(Json.toJson(countries))
       case Some(homeCountryCode) => {
-        val mutualRelationships = CountrySource.getCountryMutualRelationShips(homeCountryCode)
+        val mutualRelationships = CountrySource.getCountryMutualRelationships(homeCountryCode)
         val countriesWithMutualRelationship : List[(Country, Int)] = countries.map { country =>
-            (country, mutualRelationships.get((homeCountryCode, country.countryCode)).getOrElse(0))
+            (country, mutualRelationships.get(country.countryCode).getOrElse(0))
         }
     
         Ok(Json.toJson(countriesWithMutualRelationship))

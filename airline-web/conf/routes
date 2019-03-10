@@ -58,6 +58,7 @@ GET		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.get
 PUT		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.updateAirplaneRenewal(airlineId: Int)
 PUT		 /airlines/:airlineId/maintenanceQuality			controllers.LinkApplication.updateMaintenanceQuality(airlineId: Int)
 POST	 /airlines/:airlineId/plan-link	  controllers.LinkApplication.planLink(airlineId : Int)
+GET	 	 /airlines/:airlineId/preview-link/:fromAirportId/:toAirportId/:airplaneModelId/:frequency	  controllers.LinkApplication.previewLink(airlineId : Int, fromAirportId : Int, toAirportId : Int, airplaneModelId : Int, frequency : Int) 
 GET		 /airlines/:airlineId/finances  controllers.AirlineApplication.getAirlineFinances(airlineId : Int)
 GET		 /airlines/:airlineId/loans  controllers.BankApplication.viewLoans(airlineId : Int)
 POST	 /airlines/:airlineId/loans  controllers.BankApplication.takeOutLoan(airlineId : Int)
