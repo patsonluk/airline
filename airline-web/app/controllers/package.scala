@@ -23,6 +23,7 @@ import models.FacilityType
 import models.AirportFacility
 import models.FacilityType.FacilityType
 import com.patson.util.ChampionInfo
+import models.AirplaneWithReadyStatus
 
 
 
@@ -108,51 +109,7 @@ package object controllers {
       "first" -> JsNumber(linkClassValues(FIRST))))
   }
   
-  implicit object LinkFormat extends Format[Link] {
-    def reads(json: JsValue): JsResult[Link] = {
-      val fromAirportId = json.\("fromAirportId").as[Int]
-      val toAirportId = json.\("toAirportId").as[Int]
-      val airlineId = json.\("airlineId").as[Int]
-      //val capacity = json.\("capacity").as[Int]
-      val price = LinkClassValues.getInstance(json.\("price").\("economy").as[Int], json.\("price").\("business").as[Int], json.\("price").\("first").as[Int])
-      val fromAirport = AirportSource.loadAirportById(fromAirportId, true).get
-      val toAirport = AirportSource.loadAirportById(toAirportId, true).get
-      val airline = AirlineSource.loadAirlineById(airlineId).get
-      val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
-      val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val airplaneIds = json.\("airplanes").as[List[Int]]
-      val frequency = json.\("frequency").as[Int]
-      val modelId = json.\("model").as[Int]
-      
-      val capacity = LinkClassValues.getInstance(frequency * json.\("configuration").\("economy").as[Int],
-                                              frequency * json.\("configuration").\("business").as[Int],
-                                              frequency * json.\("configuration").\("first").as[Int])
-                                
-      val duration = ModelSource.loadModelById(modelId).fold(Integer.MAX_VALUE)(Computation.calculateDuration(_, distance))
-       
-      val airplanes = airplaneIds.foldRight(List[Airplane]()) { (airplaneId, foldList) =>
-        AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId, AirplaneSource.LINK_SIMPLE_LOAD) match { 
-          case Some((airplane, Some(link))) if (link.from.id != fromAirport.id || link.to.id != toAirport.id) =>
-            throw new IllegalStateException("Airplane with id " + airplaneId + " is assigned to other link")
-          case Some((airplane, _)) =>
-            airplane :: foldList
-          case None => 
-            throw new IllegalStateException("Airplane with id " + airplaneId + " does not exist")
-        }
-      }
-      var rawQuality =  json.\("rawQuality").as[Int]
-      if (rawQuality > Link.MAX_QUALITY) {
-        rawQuality = Link.MAX_QUALITY
-      } else if (rawQuality < 0) {
-        rawQuality = 0
-      }
-         
-      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency, flightType)
-      link.setAssignedAirplanes(airplanes)
-      //(json \ "id").asOpt[Int].foreach { link.id = _ } 
-      JsSuccess(link)
-    }
-    
+  implicit object LinkWrites extends Writes[Link] {
     def writes(link: Link): JsValue = {
       var json = JsObject(List(
       "id" -> JsNumber(link.id),
@@ -380,6 +337,13 @@ package object controllers {
               "ranking" -> JsNumber(info.ranking),
               "passengerCount" -> JsNumber(info.passengerCount),
               "reputationBoost" -> JsNumber(info.reputationBoost))
+    }
+  }
+  
+  implicit object AirplaneWithReadyStatusWrites extends Writes[AirplaneWithReadyStatus] {
+    def writes(airplaneWithStatus: AirplaneWithReadyStatus): JsValue = {
+      Json.toJson(airplaneWithStatus.airplane).asInstanceOf[JsObject] + 
+        ("isReady" -> JsBoolean(airplaneWithStatus.isReady)) 
     }
   }
 }

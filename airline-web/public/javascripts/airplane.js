@@ -46,9 +46,9 @@ function loadAirplaneModelOwnerInfo() {
 	    		ownedModelIds.push(model.id)
 	    		loadedModelsOwnerInfo.push(model)
 	    		model.assignedAirplanes.sort(sortByProperty('condition'))
-	    		model.availableAirplanes.sort(sortByProperty('condition'))
+	    		model.idleAirplanes.sort(sortByProperty('condition'))
 	    		
-	    		model.totalOwned = model.assignedAirplanes.length + model.availableAirplanes.length + model.constructingAirplanes.length
+	    		model.totalOwned = model.assignedAirplanes.length + model.idleAirplanes.length 
 	    		model.rejection = loadedModelsById[model.id].rejection
 	  		});
 	    	
@@ -56,8 +56,7 @@ function loadAirplaneModelOwnerInfo() {
 	    	$.each(loadedModelsById, function(modelId, model) {
 	    		if (!ownedModelIds.includes(model.id)) {
 	    			model.assignedAirplanes = []
-	    			model.availableAirplanes = []
-	    			model.constructingAirplanes = []
+	    			model.idleAirplanes = []
 	    			model.totalOwned = 0
 	    			loadedModelsOwnerInfo.push(model)
 	    		}
@@ -88,7 +87,7 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.fuelBurn + "</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.lifespan / 52 + " yrs</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.speed + " km/h</div>")
-		row.append("<div class='cell' align='right'>" + modelOwnerInfo.assignedAirplanes.length + "/" + modelOwnerInfo.availableAirplanes.length + "/" + modelOwnerInfo.constructingAirplanes.length + "</div>")
+		row.append("<div class='cell' align='right'>" + modelOwnerInfo.assignedAirplanes.length + "/" + modelOwnerInfo.idleAirplanes.length + "</div>")
 		row.data("modelOwnerInfo", modelOwnerInfo)
 		
 		if (selectedModelId == modelOwnerInfo.id) {
@@ -358,43 +357,65 @@ function showAirplaneInventory(modelInfo) {
 	airplaneInventoryList.empty()
 	
 	
+	$.each(modelInfo.airplanes, function( key, airplane ) {
+		var airplaneId = airplane.id
+		
+		var status
+		var isBadCondition = airplane.condition < modelInfo.badConditionThreshold
+		if (airplane.assigned) {
+			if (!airplane.isReady) {
+				status = "assignedBuilding"
+			} else if (isBadCondition){
+				status = "assignedReadyBad"
+			} else {
+				status = "assignedReady"
+			}
+		} else {
+			if (!airplane.isReady) {
+				status = "idleBuilding"
+			} else if (isBadCondition){
+				status = "idleReadyBad"
+			} else {
+				status = "idleReady"
+			}
+		}
+		
+		var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this))'></div>").appendTo(airplaneInventoryList)
+		li.append(getAirplaneIcon(status))
+	});
+	
+	
+	
 	$.each(modelInfo.assignedAirplanes, function( key, airplane ) {
 		var airplaneId = airplane.id
+		if (!airplane.isReady) {
+			status = "assignedBuilding"
+		} else if (airplane.condition < modelInfo.badConditionThreshold){
+			status = "assignedReadyBad"
+		} else {
+			status = "assignedReady"
+		}
 		var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this))'></div>").appendTo(airplaneInventoryList)
-		li.append(getAirplaneIcon(airplane.condition, modelInfo.badConditionThreshold, true))
+		li.append(getAirplaneIcon(status, airplane))
 	});
 	
-	$.each(modelInfo.availableAirplanes, function( key, airplane ) {
+	$.each(modelInfo.idleAirplanes, function( key, airplane ) {
 		var airplaneId = airplane.id
+		
+		if (!airplane.isReady) {
+			status = "idleBuilding"
+		} else if (airplane.condition < modelInfo.badConditionThreshold){
+			status = "idleReadyBad"
+		} else {
+			status = "idleReady"
+		}
 		var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this))'></div>").appendTo(airplaneInventoryList)
-		li.append(getAirplaneIcon(airplane.condition, modelInfo.badConditionThreshold, false))
+		li.append(getAirplaneIcon(status, airplane))
 	});
 	
-	$.each(modelInfo.constructingAirplanes, function( key, airplane ) {
-		var airplaneId = airplane.id
-		var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this))'></div>").appendTo(airplaneInventoryList)
-		li.append("<img src='assets/images/icons/airplane-empty-construct.png'/>")
-	});
 	
-	
-	if (modelInfo.assignedAirplanes.length == 0 && modelInfo.availableAirplanes.length == 0 && modelInfo.constructingAirplanes.length == 0) {
+	if (modelInfo.totalOwned == 0) {
 		airplaneInventoryList.append("<div class='label'>Do not own any " + modelInfo.name + "</div>")
-	}
-}
-
-function getAirplaneIcon(condition, badConditionThreshold, isAssigned) {
-	if (condition < badConditionThreshold) {
-		if (isAssigned) {
-			return "<img src='assets/images/icons/airplane-exclamation.png'/>"
-		} else {
-			return "<img src='assets/images/icons/airplane-empty-exclamation.png'/>"
-		}
-	} else {
-		if (isAssigned) {
-			return "<img src='assets/images/icons/airplane.png'/>"
-		} else {
-			return "<img src='assets/images/icons/airplane-empty.png'/>"
-		}
 	}
 }
 

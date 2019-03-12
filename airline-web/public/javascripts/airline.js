@@ -1240,6 +1240,7 @@ function updatePlanLinkInfo(linkInfo) {
 	} else {
 		targetFrequency = 0
 	}
+	$("#planLinkFrequency").val(targetFrequency)
 	
 	refreshPlanLink(linkInfo.fromAirportId, linkInfo.toAirportId, selectedModelId, targetFrequency)
 	$("#planLinkDetails div.value").show()
@@ -1275,33 +1276,33 @@ function updatePrice(percentage) {
 	$('#planLinkFirstPrice').val(Math.round(planLinkInfo.suggestedPrice.first * percentage))
 }
 
-function updateFrequencyBar(airplaneModelId, configuration) {
+function updateFrequencyBar(airplaneModelId, configuration, possibleAirplanes) {
 	var frequencyBar = $("#frequencyBar")
-	var selectedCount = getAssignedAirplanes().length
+	//var selectedCount = getAssignedAirplanes().length
 	
-	var maxFrequencyByAirplanes = Math.floor(planLinkInfoByModel[airplaneModelId].maxFrequency * selectedCount)
-	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
-	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
+	var maxFrequencyByAirplanes = Math.floor(planLinkInfoByModel[airplaneModelId].maxFrequency * possibleAirplanes)
+//	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
+//	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
 	var maxFrequency = planLinkInfo.maxFrequencyAbsolute
 	var limitingFactor = "Reaches max frequency for route"
 		
 	$('#planLinkLimitingDiv .maxFrequencyAbsolute').text(planLinkInfo.maxFrequencyAbsolute)
 	
-	if (maxFrequencyFromAirport < maxFrequency) { //limited by from airport
-		maxFrequency = maxFrequencyFromAirport
-		limitingFactor = "Reaches max slots offered by Departure Airport"
-	}
-	$('#planLinkLimitingDiv .maxFrequencyFromAirport').text(maxFrequencyFromAirport)
-	
-	if (maxFrequencyToAirport < maxFrequency) { //limited by to airport
-		maxFrequency = maxFrequencyToAirport
-		limitingFactor = "Reaches max slots offered by Destination Airport"
-	}
-	$('#planLinkLimitingDiv .maxFrequencyToAirport').text(maxFrequencyToAirport)
-	
+//	if (maxFrequencyFromAirport < maxFrequency) { //limited by from airport
+//		maxFrequency = maxFrequencyFromAirport
+//		limitingFactor = "Reaches max slots offered by Departure Airport"
+//	}
+//	$('#planLinkLimitingDiv .maxFrequencyFromAirport').text(maxFrequencyFromAirport)
+//	
+//	if (maxFrequencyToAirport < maxFrequency) { //limited by to airport
+//		maxFrequency = maxFrequencyToAirport
+//		limitingFactor = "Reaches max slots offered by Destination Airport"
+//	}
+//	$('#planLinkLimitingDiv .maxFrequencyToAirport').text(maxFrequencyToAirport)
+//	
 	if (maxFrequencyByAirplanes < maxFrequency) { //limited by airplanes
 		maxFrequency = maxFrequencyByAirplanes
-		limitingFactor = "Reaches max frequency due to number of aircrafts assigned, assign more to further increase frequency"
+		limitingFactor = "Reaches the max frequency possible in this round of negotiation"
 	}
 	$('#planLinkLimitingDiv .maxFrequencyByAirplanes').text(maxFrequencyByAirplanes)
 	
@@ -1323,6 +1324,9 @@ function updateFrequencyBar(airplaneModelId, configuration) {
 	$("#planLinkLimitingFactor").text(limitingFactor)
 	$("#planLinkLimitingFactor").data('maxFrequency', maxFrequency)
 	
+	$("#frequencyBar .button").attr("onclick", "updatePlanLinkInfoWithFrequencyChange()")
+	
+	
 	if ($("#planLinkFrequency").val() == maxFrequency) {
 		$("#planLinkLimitingDiv").show()
 	} else {
@@ -1337,8 +1341,14 @@ function updatePlanLinkInfoWithModelSelected(selectedModelId) {
 	refreshPlanLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), selectedModelId, $("#planLinkFrequency").val())
 }
 
+function updatePlanLinkInfoWithFrequencyChange() {
+	refreshPlanLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), $("#planLinkModelSelect").val(), $("#planLinkFrequency").val())
+}
+
+
+
 function refreshPlanLink(fromAirport, toAirport, selectedModelId, frequency) {
-	var url = "airlines/" + activeAirline.id + "/preview-link/" + fromAirport + "/" + toAirport + "/" + selectedModelId + "/" + frequency
+	var url = "airlines/" + activeAirline.id + "/preview-airplane-composition/" + fromAirport + "/" + toAirport + "/" + selectedModelId + "/" + frequency
 		$.ajax({
 			type: 'GET',
 			url: url,
@@ -1350,22 +1360,45 @@ function refreshPlanLink(fromAirport, toAirport, selectedModelId, frequency) {
 		    	if (selectedModelId) {
 		    		var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
 		    		
-		    		$('#planLinkAirplaneSelect').empty()
+		    		$('#planLinkAirplanes').empty()
 		    		
 //		    		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('condition', true))
 //		    		thisModelPlanLinkInfo.airplanes = sortPreserveOrder(thisModelPlanLinkInfo.airplanes, 'isAssigned', false)		
 		    		
 		    		
-		    		$('#planLinkAirplaneSelect').data('badConditionThreshold', thisModelPlanLinkInfo.badConditionThreshold)
+		    		$('#planLinkAirplanes').data('badConditionThreshold', thisModelPlanLinkInfo.badConditionThreshold)
 		    		$.each(airplaneComposition.existingAssignedAirplanes, function(key, airplane) {
-//		    			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
-//		    			option.appendTo($("#planLinkAirplaneSelect"))
-		    			
-		    			var span =  $('<span class="button airplaneButton" onclick="toggleAssignedAirplane(this)"><img src="' + getAssignedAirplaneIcon(airplane) +  '" title="#' + airplane.airplaneId + ' condition ' + airplane.condition + '%"></span>')
+		    			var status
+		    			if (!airplane.isReady) {
+		    				status = "assignedBuilding"
+		    			} else {
+		    				status = airplane.condition < thisModelPlanLinkInfo.badConditionThreshold ? "assignedReadyBad" : "assignedReady"
+		    			}
+		    			var span =  $('<span class="airplaneButton">' + getAirplaneIcon(status, airplane) + '</span>')
 		    			span.data('airplane', airplane)
 		    			
-		    			$('#planLinkAirplaneSelect').append(span)
+		    			$('#planLinkAirplanes').append(span)
 		    		})
+		    		$.each(airplaneComposition.newAssignedAirplanes, function(key, airplane) {
+		    			var status = airplane.condition < thisModelPlanLinkInfo.badConditionThreshold ? "assignedReadyBad" : "assignedReady"
+	    				if (!airplane.isReady) {
+		    				status = "assignedBuilding"
+		    			} else {
+		    				status = airplane.condition < thisModelPlanLinkInfo.badConditionThreshold ? "assignedReadyBad" : "assignedReady"
+		    			}
+		    			var span =  $('<span class="airplaneButton">' + getAirplaneIcon(status, airplane) + '</span>')
+		    			span.data('airplane', airplane)
+		    			
+		    			$('#planLinkAirplanes').append(span)
+		    		})
+		    		var i
+		    		for (i = 0; i < airplaneComposition.purchasingAirplanes; i++) {
+		    			var span =  $('<span class="airplaneButton">' + getAirplaneIcon("purchasing", null) + '</span>')
+		    			//span.data('airplane', airplane)
+		    			
+		    			$('#planLinkAirplanes').append(span)
+		    		}
+		    		
 		    		
 //		    		if (thisModelPlanLinkInfo.airplanes.length > 0 && getAssignedAirplanes().length == 0) { //then highlight first one
 //		    			toggleAssignedAirplane($('#planLinkAirplaneSelect span.airplaneButton:first-child'))
@@ -1387,17 +1420,17 @@ function refreshPlanLink(fromAirport, toAirport, selectedModelId, frequency) {
 		    		 
 		    		
 		    		if (selectedModelId == assignedModelId) {
-		    			$("#planLinkFrequency").val(existingLink.frequency)
+		    			//$("#planLinkFrequency").val(existingLink.frequency)
 		    			thisModelPlanLinkInfo.configuration = { "economy" : existingLink.capacity.economy / existingLink.frequency, 
 		    													"business" : existingLink.capacity.business / existingLink.frequency, 
 		    													"first" : existingLink.capacity.first / existingLink.frequency}
 		    		} else {
-		    			$("#planLinkFrequency").val(0)
+		    			//$("#planLinkFrequency").val(0)
 		    			//$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
 		    			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
 		    		}
 		    		 
-		    		updateFrequencyBar(selectedModelId, thisModelPlanLinkInfo.configuration)
+		    		updateFrequencyBar(selectedModelId, thisModelPlanLinkInfo.configuration, planLinkInfo.possibleAirplanes)
 		    		
 		    		updateCapacity(thisModelPlanLinkInfo.configuration)
 		    		
@@ -1435,43 +1468,27 @@ function updateCapacity(configuration, frequency) {
 	$('#planLinkCapacity').text(configuration.economy * frequency + "/" + configuration.business * frequency + "/" + configuration.first * frequency)
 }
 
-function getAssignedAirplaneIcon(airplane) {
-	var badConditionThreshold = $('#planLinkAirplaneSelect').data('badConditionThreshold')
-	if (airplane.isAssigned) {
-		if (airplane.condition < badConditionThreshold) {
-			return "assets/images/icons/airplane-exclamation.png"
-		} else {
-			return "assets/images/icons/airplane.png"
-		}
-	} else {
-		if (airplane.condition < badConditionThreshold) {
-			return "assets/images/icons/airplane-empty-exclamation.png"
-		} else { 
-			return "assets/images/icons/airplane-empty.png"
-		}
-	}
-	
-}
 
 
-function toggleAssignedAirplane(iconSpan) {
-	var airplane = $(iconSpan).data('airplane')
-	if (airplane.isAssigned) {
-		airplane.isAssigned = false
-	} else {
-		airplane.isAssigned = true
-	}
-	$(iconSpan).children('img').attr('src', getAssignedAirplaneIcon(airplane))
-	
-	var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
-	updateFrequencyBar($('#planLinkModelSelect').val(), configuration)
-}
+
+//function toggleAssignedAirplane(iconSpan) {
+//	var airplane = $(iconSpan).data('airplane')
+//	if (airplane.isAssigned) {
+//		airplane.isAssigned = false
+//	} else {
+//		airplane.isAssigned = true
+//	}
+//	$(iconSpan).children('img').attr('src', getAssignedAirplaneIcon(airplane))
+//	
+//	var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
+//	updateFrequencyBar($('#planLinkModelSelect').val(), configuration)
+//}
 
 function getAssignedAirplanes() {
 	var assignedAirplanes = []
-	$('#planLinkAirplaneSelect').children('span.airplaneButton').each(function(index) {
+	$('#planLinkAirplanes').children('span.airplaneButton').each(function(index) {
 		var airplane = $(this).data('airplane')
-		if (airplane.isAssigned) {
+		if (airplane) {
 			assignedAirplanes.push(airplane.airplaneId)
 		}
 	})
@@ -1489,7 +1506,8 @@ function createLink() {
 			"fromAirportId" : parseInt($("#planLinkFromAirportId").val()), 
 			"toAirportId" : parseInt($("#planLinkToAirportId").val()),
 			//"airplanes" : $("#planLinkAirplaneSelect").val().map(Number),
-			airplanes : getAssignedAirplanes(),
+			//"airplanes" : getAssignedAirplanes(),
+			//TODO new airplanes
 			"airlineId" : airlineId,
 			"configuration" : { "economy" : configuration.economy, "business" : configuration.business, "first" : configuration.first},
 			"price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},

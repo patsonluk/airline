@@ -492,3 +492,31 @@ function assignAirlineColors(dataSet, colorProperty) {
 	})
 }
 
+//<img src="' + getAirplaneIcon(status) +  '" title="#' + airplane.airplaneId + ' condition ' + airplane.condition + '%">
+function getAirplaneIcon(status, airplane) {
+	var imageLocation
+	if (status === "assignedReady") {
+		imageLocation = "assets/images/icons/airplane.png"
+	} else if (status === "assignedReadyBadCondition") {
+		imageLocation = "assets/images/icons/airplane-exclamation.png"
+	} else if (status == "assignedBuilding"){
+		imageLocation = "assets/images/icons/airplane-construct.png"
+	} else if (status == "idleReady") {
+		imageLocation = "assets/images/icons/airplane-empty.png"
+	} else if (status == "idleReadyBad") {
+		imageLocation = "assets/images/icons/airplane-empty-exclamation.png"
+	} else if (status == "idleBuilding") {
+		imageLocation = "assets/images/icons/airplane-empty-construct.png"
+	} else if (status == "purchasing"){
+		imageLocation = "assets/images/icons/airplane-dollar.png"
+	} else {
+		console.warn("Unknown airplane assignment status " + status)
+	}
+	
+	if (airplane) {
+		return '<img src="' + imageLocation +  '" title="#' + airplane.id + ' condition ' + airplane.condition + '%">'
+	} else {
+		return '<img src="' + imageLocation +  '" title="New Purchase">'
+	}
+	
+}
