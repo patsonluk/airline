@@ -1345,7 +1345,7 @@ function updatePlanLinkInfoWithFrequencyChange() {
 	refreshPlanLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), $("#planLinkModelSelect").val(), $("#planLinkFrequency").val())
 }
 
-
+var existingLink
 
 function refreshPlanLink(fromAirport, toAirport, selectedModelId, frequency) {
 	var url = "airlines/" + activeAirline.id + "/preview-airplane-composition/" + fromAirport + "/" + toAirport + "/" + selectedModelId + "/" + frequency
@@ -1406,7 +1406,7 @@ function refreshPlanLink(fromAirport, toAirport, selectedModelId, frequency) {
 		    		
 		    		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))
 		    		
-		    		var existingLink = planLinkInfo.existingLink
+		    		existingLink = planLinkInfo.existingLink
 		    		var assignedModelId
 		    		if (existingLink) {
 		    			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
@@ -1429,6 +1429,7 @@ function refreshPlanLink(fromAirport, toAirport, selectedModelId, frequency) {
 		    			//$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
 		    			thisModelPlanLinkInfo.configuration = { "economy" : thisModelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
 		    		}
+		    		existingLink.configuration = thisModelPlanLinkInfo.configuration 
 		    		 
 		    		updateFrequencyBar(selectedModelId, thisModelPlanLinkInfo.configuration, planLinkInfo.possibleAirplanes)
 		    		
@@ -1495,6 +1496,61 @@ function getAssignedAirplanes() {
 	
 	return assignedAirplanes
 }
+
+function linkConfirmation() {
+	if (existingLink) {
+		//existing link section
+		$('#linkConfirmationModal .modalHeader').text('Update Route')
+		$('#linkConfirmationModal div.existingLink .model').text(existingLink.modelName)
+		$('#linkConfirmationModal div.existingLink .duration').text(existingLink.duration)
+		$('#linkConfirmationModal div.existingLink .airplanes').html()
+		for (i = 0 ; i < existingLink.frequency ; i ++) {
+			var image = $("<img>")
+			image.attr("src", $("#frequencyBar").data("fillIcon"))
+			$('#linkConfirmationModal div.existingLink .frequency').append(image)
+			if ((i + 1) % 10 == 0) {
+				$('#linkConfirmationModal div.existingLink .frequency').append("<br/>")
+			}
+		}
+		$('#linkConfirmationModal div.existingLink .fullCapacity').text(existingLink.capacity.economy + "/" + existingLink.capacity.business + "/" + existingLink.capacity.first)
+		$('#linkConfirmationModal div.existingLink .currentCapacity').text(existingLink.currentCapacity.economy + "/" + existingLink.currentCapacity.business + "/" + existingLink.currentCapacity.first)
+		$('#linkConfirmationModal div.existingLink .price').text(existingLink.price.economy + "/" + existingLink.price.business + "/" + existingLink.price.first)
+		$('#linkConfirmationModal div.existingLink .configuration').text(existingLink.configuration.economy + "/" + existingLink.configuration.business + "/" + existingLink.configuration.first)
+		
+		
+	} else {
+		$('#linkConfirmationModal .modalHeader').text('Create Route')
+		$('#linkConfirmationModal div.existingLink .model').text('-')
+		$('#linkConfirmationModal div.existingLink .duration').text('-')
+		$('#linkConfirmationModal div.existingLink .airplanes').text('-')
+		$('#linkConfirmationModal div.existingLink .fullCapacity').text('-')
+		$('#linkConfirmationModal div.existingLink .currentCapacity').text('-')
+		$('#linkConfirmationModal div.existingLink .price').text('-')
+		$('#linkConfirmationModal div.existingLink .configuration').text('-')
+	}
+	
+	//update link section
+	var updateLinkModel = planLinkInfoByModel[$("#planLinkModelSelect").val()]
+	$('#linkConfirmationModal div.updateLink .model').text(updateLinkModel.name)
+	$('#linkConfirmationModal div.updateLink .duration').text($('#planLinkDuration').val())
+	$('#linkConfirmationModal div.updateLink .airplanes').html()
+	for (i = 0 ; i < $("#planLinkFrequency").val() ; i ++) {
+		var image = $("<img>")
+		image.attr("src", $("#frequencyBar").data("fillIcon"))
+		$('#linkConfirmationModal div.updateLink .frequency').append(image)
+		if ((i + 1) % 10 == 0) {
+			$('#linkConfirmationModal div.updateLink .frequency').append("<br/>")
+		}
+	}
+	$('#linkConfirmationModal div.updateLink .fullCapacity').text()
+	$('#linkConfirmationModal div.updateLink .currentCapacity').text()
+	$('#linkConfirmationModal div.updateLink .price').text($('#planLinkEconomyPrice').val() + "/" + $('#planLinkBusinessPrice').val() + "/" + $('#planLinkFirstPrice').val())
+	$('#linkConfirmationModal div.updateLink .configuration').text(updateLinkModel.configuration.economy + "/" + updateLinkModel.configuration.business + "/" + updateLinkModel.configuration.first)
+	
+	$('#linkConfirmationModal').fadeIn(200)
+}
+
+
 
 function createLink() {
 	if ($("#planLinkFromAirportId").val() && $("#planLinkToAirportId").val()) {

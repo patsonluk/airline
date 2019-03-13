@@ -127,6 +127,7 @@ package object controllers {
       "price" -> Json.toJson(link.price),
       "distance" -> JsNumber(link.distance),
       "capacity" -> Json.toJson(link.capacity),
+      "currentCapacity" -> Json.toJson(link.getCurrentCapacity()),
       "rawQuality" -> JsNumber(link.rawQuality),
       "computedQuality" -> JsNumber(link.computedQuality),
       "duration" -> JsNumber(link.duration),
@@ -141,8 +142,11 @@ package object controllers {
       "assignedAirplanes" -> Json.toJson(link.getAssignedAirplanes())))
       
       link.getAssignedModel().foreach { model =>
-        json = json + ("modelId" -> JsNumber(model.id))
+        json = json + ("modelId" -> JsNumber(model.id)) + ("modelName" -> JsString(model.name))
       }
+      
+      
+      
       json
     }
   }

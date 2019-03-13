@@ -22,6 +22,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   @volatile private var hasComputedQuality = false
   @volatile private var computedQualityStore : Int = 0
   @volatile private var computedQualityPriceAdjust : ConcurrentHashMap[LinkClass, Double] = new ConcurrentHashMap[LinkClass, Double]()
+  @volatile private var currentCapacity : LinkClassValues = LinkClassValues.getInstance() 
   
   def setAssignedAirplanes(assignedAirplanes : List[Airplane]) = {
     this.assignedAirplanes = assignedAirplanes
@@ -119,6 +120,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     }
   }
   
+  def setCurrentCapacity(currentCapacity : LinkClassValues) = {
+    this.currentCapacity = currentCapacity
+  }
+  
+  def getCurrentCapacity() : LinkClassValues = this.currentCapacity
   
   lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
 }

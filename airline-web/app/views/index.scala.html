@@ -548,8 +548,8 @@
 					    			<input type="hidden" id="planLinkServiceLevel" value="1"/></div>
 					    		</div>
 				    		</div>
-				    		<div class="button" id="addLinkButton" onclick="createLink()">Create</div>
-				    		<div class="button" id="updateLinkButton" onclick="createLink()">Update</div>
+				    		<div class="button" id="addLinkButton" onclick="linkConfirmation()">Create</div>
+				    		<div class="button" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
 				    		<div class="button" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</div>
 				    		<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 				    	</div>
@@ -2564,6 +2564,83 @@
   					<div class="table data preferenceTypeTable" style="width: 95%;"></div>
  				</div>
 			</div>
+			
+	    </div>
+	</div>
+	
+	<!-- link confirmation modal -->
+	<div id="linkConfirmationModal" class="modal">
+		<div class="modal-content" style="height: 600px;">
+			<span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;" class="modalHeader"></h3>
+			<div style="width: 350px; float: left;" class="existingLink table data">
+				<div class="table-row">
+					<div class="label"><h5>Airplane Model:</h5></div>
+					<div class="value model"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Flight Duration:</h5></div>
+					<div class="value duration"></div>
+			    </div>
+			    <div class="table-row">
+					<div class="label"><h5>Assigned Airplanes:</h5></div>
+					<div class="value airplanes"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Flight Frequency:</h5></div>
+					<div class="value frequency"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Full Capacity (Y/J/F):</h5></div>
+					<div class="value fullCapacity"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Current Capacity (Y/J/F):</h5></div>
+					<div class="value currentCapacity"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Price (Y/J/F):</h5></div>
+					<div class="value price"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Seat Configuration (Y/J/F):</h5></div>
+					<div class="value configuration"></div>
+				</div>
+  			</div>
+  			<div style="width: 350px; float: left;" class="updateLink table data">
+  				<div class="table-row">
+					<div class="label"><h5>Airplane Model:</h5></div>
+					<div class="value model"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Flight Duration:</h5></div>
+					<div class="value duration"></div>
+			    </div>
+			    <div class="table-row">
+					<div class="label"><h5>Assigned Airplanes:</h5></div>
+					<div class="value airplanes"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Flight Frequency:</h5></div>
+					<div class="value frequency"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Full Capacity (Y/J/F):</h5></div>
+					<div class="value fullCapacity"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Current Capacity (Y/J/F):</h5></div>
+					<div class="value currentCapacity"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Price (Y/J/F):</h5></div>
+					<div class="value price"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Seat Configuration (Y/J/F):</h5></div>
+					<div class="value configuration"></div>
+				</div>
+  			</div>
 			
 	    </div>
 	</div>
