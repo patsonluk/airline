@@ -434,21 +434,27 @@
 					    			<div class="label"></div>
 					    			<div class="value"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason" class="warning"></span></div>
 					    		</div>
-			    				
+			    				<div class="table-row">
+					    			<div class="label"><h5>Flight Duration:</h5></div>
+					    			<div class="value" id="planLinkDuration"></div>
+					    		</div>
+					    		<div class="table-row">
+					    			<div class="label"><h5>Capacity (Y/J/F):</h5></div>
+					    			<div class="value" id="planLinkCapacity"></div>
+					    		</div>
+					    		<div class="table-row">
+					    			<div class="label"><h5>Assigned Airplanes:</h5></div>
+									<div class="value" id="planLinkAirplanes"></div>
+					    		</div>
+					    	</div>
+					    	<div class="table" style="width: 100%; padding-top: 15px;">	
+					    		<h4>Route Settings</h4>
 					    		<div class="table-row" id="planLinkModelRow">
 					    			<div class="label"><h5>Airplane Model (available):</h5></div>
 					    			<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
 					    		</div>
 					    	</div>
 					    	<div class="table" style="width: 100%" id="planLinkExtendedDetails">
-					    		<div class="table-row">
-					    			<div class="label"><h5>Airplanes:</h5></div>
-									<div class="value" id="planLinkAirplanes"></div>
-					    		</div>
-					    		<div class="table-row">
-					    			<div class="label"><h5>Flight Duration:</h5></div>
-					    			<div class="value" id="planLinkDuration"></div>
-					    		</div>
 					    		<div class="table-row">
 					    			<div class="label"><h5>Price (Y/J/F):</h5></div>
 					    			<div class="value">
@@ -515,10 +521,7 @@
 					    				</h6>
 					    			</div>
 					    		</div>
-					    		<div class="table-row">
-					    			<div class="label"><h5>Capacity (Y/J/F):</h5></div>
-					    			<div class="value" id="planLinkCapacity"></div>
-					    		</div>
+					    		
 					    		<div class="table-row">
 					    			<div class="label">
 					    				<h5>

@@ -521,7 +521,10 @@ class LinkApplication extends Controller {
               val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
               val linkAirplaneComposition = getLinkAirplaneComposition(airline, distance, existingLinkOption, model, frequency)
               
-              var result = Json.obj("airplaneComposition" -> Json.toJson(linkAirplaneComposition))
+              var result = Json.obj("airplaneComposition" -> Json.toJson(linkAirplaneComposition),
+                                    "economySpaceMultiplier" -> ECONOMY.spaceMultiplier, 
+                                    "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
+                                    "firstSpaceMultiplier" -> FIRST.spaceMultiplier)
               
               existingLinkOption match  { 
                 case Some(link) => 
@@ -693,9 +696,6 @@ class LinkApplication extends Controller {
                                         "mutualRelationship" -> relationship,
                                         "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,
-                                        "economySpaceMultiplier" -> ECONOMY.spaceMultiplier, 
-                                        "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
-                                        "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
 //                                        "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
 //                                        "maxFrequencyToAirport" -> maxFrequencyToAirport,
                                         "maxFrequencyAbsolute" -> maxFrequencyAbsolute,
