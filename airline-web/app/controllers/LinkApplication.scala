@@ -153,7 +153,8 @@ class LinkApplication extends Controller {
       JsObject(List(
       "existingAssignedAirplanes" -> Json.toJson(composition.existingAssignedAirplanes.map(airplane => AirplaneWithReadyStatus(airplane, airplane.isReady(composition.currentCycle)))), 
       "newAssignedAirplanes" -> Json.toJson(composition.newAssignedAirplanes.map(airplane => AirplaneWithReadyStatus(airplane, airplane.isReady(composition.currentCycle)))),
-      "purchasingAirplanes" -> JsNumber(composition.purchasingAirplanes)))
+      "purchasingAirplanes" -> JsNumber(composition.purchasingAirplanes),
+      "model" -> Json.toJson(composition.model)))
       
     }
   }
@@ -528,7 +529,7 @@ class LinkApplication extends Controller {
               
               existingLinkOption match  { 
                 case Some(link) => 
-                  result = result + ("existingLink" -> Json.toJson(link))
+                  //result = result + ("existingLink" -> Json.toJson(link))
                    //if it already has X airplanes, allow X + 1
                   result = result + ("possibleAirplanes" -> JsNumber(link.getAssignedAirplanes().length + 1))    
                 case None =>
@@ -553,24 +554,25 @@ class LinkApplication extends Controller {
 //              }
     
 
-    
+    val currentCycle = CycleSource.loadCycle()
     val airplanesWithAssignedLinks : List[(Airplane, Option[Link])] = AirplaneSource.loadAirplanesWithAssignedLinkByCriteria(List(("owner", airline.id), ("model", model.id)))
     val availableAirplanes = airplanesWithAssignedLinks.filter {
       case (airplane, assignedLinkOption) => assignedLinkOption.isEmpty 
     }.map(_._1) //ok if some airplanes is not ready yet
     
+    
     var existingAssignedAirplanes = airplanesWithAssignedLinks.filter {
       case (airplane, assignedLinkOption) => existingLinkOption.isDefined && assignedLinkOption.isDefined && existingLinkOption.get.id == assignedLinkOption.get.id 
-    }.map(_._1).sortBy(_.condition)
+    }.map(_._1).sortBy(_.condition).sortBy(_.isReady(currentCycle)).reverse
     
     
     var shortCount = airplanesRequired - existingAssignedAirplanes.length
     val newAssignedReadyAirplanes = ListBuffer[Airplane]()
     val newAssignedBuildingAirplanes = ListBuffer[Airplane]()
-    val currentCycle = CycleSource.loadCycle()
+    
     
     if (shortCount < 0) { //have excessive airplanse
-      existingAssignedAirplanes = existingAssignedAirplanes.takeRight(airplanesRequired)
+      existingAssignedAirplanes = existingAssignedAirplanes.take(airplanesRequired)
     }
     
     if (shortCount > 0) { //need more airplanes
@@ -597,7 +599,7 @@ class LinkApplication extends Controller {
     }
     val purchasingAirplanes = shortCount
     
-    LinkAirplaneComposition(existingAssignedAirplanes, newAssignedReadyAirplanes.toList ++ newAssignedBuildingAirplanes.toList, purchasingAirplanes, currentCycle)
+    LinkAirplaneComposition(model, existingAssignedAirplanes, newAssignedReadyAirplanes.toList ++ newAssignedBuildingAirplanes.toList, purchasingAirplanes, currentCycle)
   }
   
     
@@ -678,8 +680,6 @@ class LinkApplication extends Controller {
             val flightCode = LinkApplication.getFlightCode(request.user, flightNumber)
             val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
             
-            
-            
             var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
                                         "fromAirportName" -> fromAirport.name,
                                         "fromAirportCity" -> fromAirport.city,
@@ -712,7 +712,14 @@ class LinkApplication extends Controller {
             resultObject = resultObject + ("otherLinks", otherLinkArray)
                                         
             if (existingLinkOption.isDefined) {
-              resultObject = resultObject + ("existingLink", Json.toJson(existingLinkOption))
+              val currentCycle = CycleSource.loadCycle
+              val sortedAssignedAirplanes = existingLinkOption.get.getAssignedAirplanes.sortBy(_.condition).sortBy(_.isReady(currentCycle)).reverse
+              val airplaneCompositionJson = Json.toJson(LinkAirplaneComposition(assignedModel.get, existingAssignedAirplanes = sortedAssignedAirplanes, newAssignedAirplanes = List.empty, purchasingAirplanes = 0, currentCycle = currentCycle))
+              val existingLinkJson = Json.toJson(existingLinkOption.get).asInstanceOf[JsObject] + ("airplaneComposition" -> airplaneCompositionJson) 
+              
+                
+              
+              resultObject = resultObject + ("existingLink", existingLinkJson)
               val deleteRejection = getDeleteLinkRejection(existingLinkOption.get, request.user)
               if (deleteRejection.isDefined) {
                 resultObject = resultObject + ("deleteRejection", Json.toJson(deleteRejection.get))
@@ -903,7 +910,7 @@ class LinkApplication extends Controller {
   class PlanLinkResult(distance : Double, availableAirplanes : List[Airplane])
   //case class AirplaneWithPlanRouteInfo(airplane : Airplane, duration : Int, maxFrequency : Int, limitingFactor : String, isAssigned : Boolean)
   case class ModelPlanLinkInfo(model: Model, duration : Int, maxFrequency : Double, isAssigned : Boolean)
-  case class LinkAirplaneComposition(existingAssignedAirplanes : List[Airplane], newAssignedAirplanes : List[Airplane], purchasingAirplanes : Int, currentCycle : Int)
+  case class LinkAirplaneComposition(model : Model, existingAssignedAirplanes : List[Airplane], newAssignedAirplanes : List[Airplane], purchasingAirplanes : Int, currentCycle : Int)
   
   private def getMaxFrequencyByAirports(fromAirport : Airport, toAirport : Airport, airline : Airline, existingLink : Option[Link]) : (Int, Int) =  {
     val airlineId = airline.id
