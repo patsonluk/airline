@@ -1485,6 +1485,9 @@ function updateCapacity(configuration, frequency) {
 //}
 
 function linkConfirmation() {
+	$('#linkConfirmationModal div.existing').empty()
+	$('#linkConfirmationModal div.updating').empty()
+	
 	if (existingLink) {
 		//existing link section
 		$('#linkConfirmationModal .modalHeader').text('Update Route')
@@ -1504,12 +1507,15 @@ function linkConfirmation() {
 		$('#linkConfirmationModal div.existing.currentCapacity').text(existingLink.currentCapacity.economy + "/" + existingLink.currentCapacity.business + "/" + existingLink.currentCapacity.first)
 		$('#linkConfirmationModal div.existing.price').text(existingLink.price.economy + "/" + existingLink.price.business + "/" + existingLink.price.first)
 		$('#linkConfirmationModal div.existing.configuration').text(existingLink.configuration.economy + "/" + existingLink.configuration.business + "/" + existingLink.configuration.first)
-	} 
+	} else {
+		$('#linkConfirmationModal div.existing').text('-')
+	}
 	
 	//update link section
 	var updateLinkModel = planLinkInfoByModel[$("#planLinkModelSelect").val()]
-	$('#linkConfirmationModal div.updating.model').text(updateLinkModel.name)
-	$('#linkConfirmationModal div.updating.duration').text($('#planLinkDuration').val())
+	$('#linkConfirmationModal div.updating.model').text(updateLinkModel.modelName)
+	$('#linkConfirmationModal div.updating.duration').text(updateLinkModel.duration)
+	
 	refreshAssignedAirplanesBar($('#linkConfirmationModal div.updating.airplanes'), $('#planLinkAirplanes').data('airplaneComposition'))
 	
 	for (i = 0 ; i < $("#planLinkFrequency").val() ; i ++) {
@@ -1520,8 +1526,29 @@ function linkConfirmation() {
 			$('#linkConfirmationModal div.updating.frequency').append("<br/>")
 		}
 	}
-	$('#linkConfirmationModal div.updating.fullCapacity').text()
-	$('#linkConfirmationModal div.updating.currentCapacity').text()
+	
+	var updatingAirplaneComposition = $('#planLinkAirplanes').data('airplaneComposition')
+	var readyAirplanes = 0
+	readyAirplanes += updatingAirplaneComposition.existingAssignedAirplanes.filter(function(airplane) { return airplane.isReady}).length
+	readyAirplanes += updatingAirplaneComposition.newAssignedAirplanes.filter(function(airplane) { return airplane.isReady}).length
+	if (updateLinkModel.constructionTime == 0) {
+		readyAirplanes += updatingAirplaneComposition.purchasingAirplanes
+	}
+	
+	var updatingCurrentFrequency = Math.floor(readyAirplanes * updateLinkModel.maxFrequency)
+	
+	var currentCapacity = {
+			"economy" : updateLinkModel.configuration.economy * updatingCurrentFrequency,
+			"business" : updateLinkModel.configuration.business * updatingCurrentFrequency,
+			"first" : updateLinkModel.configuration.first * updatingCurrentFrequency,
+	}
+	var fullCapacity = {
+		"economy" : updateLinkModel.configuration.economy * $("#planLinkFrequency").val(),
+		"business" : updateLinkModel.configuration.business * $("#planLinkFrequency").val(),
+		"first" : updateLinkModel.configuration.first * $("#planLinkFrequency").val(),
+	} 
+	$('#linkConfirmationModal div.updating.currentCapacity').text(currentCapacity.economy + "/" + currentCapacity.business + "/" + currentCapacity.first)
+	$('#linkConfirmationModal div.updating.fullCapacity').text(fullCapacity.economy + "/" + fullCapacity.business + "/" + fullCapacity.first)
 	$('#linkConfirmationModal div.updating.price').text($('#planLinkEconomyPrice').val() + "/" + $('#planLinkBusinessPrice').val() + "/" + $('#planLinkFirstPrice').val())
 	$('#linkConfirmationModal div.updating.configuration').text(updateLinkModel.configuration.economy + "/" + updateLinkModel.configuration.business + "/" + updateLinkModel.configuration.first)
 	

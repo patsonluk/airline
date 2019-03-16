@@ -143,6 +143,7 @@ class LinkApplication extends Controller {
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION),
       "capacity" -> JsNumber(modelPlanLinkInfo.model.capacity),
       "duration" -> JsNumber(modelPlanLinkInfo.duration), 
+      "constructionTime" -> JsNumber(modelPlanLinkInfo.model.constructionTime),
       "maxFrequency" -> JsNumber(modelPlanLinkInfo.maxFrequency),
       "isAssigned" -> JsBoolean(modelPlanLinkInfo.isAssigned)))
     }
