@@ -102,7 +102,12 @@ package object controllers {
     }
   }
   
-  implicit object LinkClassValuesWrites extends Writes[LinkClassValues] {
+  implicit object LinkClassValuesFormat extends Format[LinkClassValues] {
+    def reads(json: JsValue): JsResult[LinkClassValues] = {
+      val value = LinkClassValues.getInstance((json \ "economy").as[Int], (json \ "business").as[Int], (json \ "first").as[Int])
+      JsSuccess(value)
+    }
+    
     def writes(linkClassValues: LinkClassValues): JsValue = JsObject(List(
       "economy" -> JsNumber(linkClassValues(ECONOMY)),
       "business" -> JsNumber(linkClassValues(BUSINESS)),
@@ -348,6 +353,14 @@ package object controllers {
     def writes(airplaneWithStatus: AirplaneWithReadyStatus): JsValue = {
       Json.toJson(airplaneWithStatus.airplane).asInstanceOf[JsObject] + 
         ("isReady" -> JsBoolean(airplaneWithStatus.isReady)) 
+    }
+  }
+  
+  implicit object NegotiationInfoWrites extends Writes[NegotationInfo] {
+    def writes(info : NegotationInfo): JsValue = {
+      Json.obj(
+              "odds" -> JsNumber(info.odds),
+              "requiredPoints" -> JsNumber(info.requiredPoints))
     }
   }
 }

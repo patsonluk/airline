@@ -523,10 +523,11 @@ class LinkApplication extends Controller {
               val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
               val linkAirplaneComposition = getLinkAirplaneComposition(airline, distance, existingLinkOption, model, frequency)
               
-              var result = Json.obj("airplaneComposition" -> Json.toJson(linkAirplaneComposition),
-                                    "economySpaceMultiplier" -> ECONOMY.spaceMultiplier, 
-                                    "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
-                                    "firstSpaceMultiplier" -> FIRST.spaceMultiplier)
+              var result = Json.obj("airplaneComposition" -> 
+                                    (Json.toJson(linkAirplaneComposition).asInstanceOf[JsObject] + 
+                                    ("economySpaceMultiplier" -> JsNumber(ECONOMY.spaceMultiplier)) + 
+                                    ("businessSpaceMultiplier" -> JsNumber(BUSINESS.spaceMultiplier)) +
+                                    ("firstSpaceMultiplier" -> JsNumber(FIRST.spaceMultiplier)))) 
               
               existingLinkOption match  { 
                 case Some(link) => 
@@ -543,6 +544,32 @@ class LinkApplication extends Controller {
       case None => BadRequest("unknown Airport")
     }
   }
+  
+  def previewLinkNegotiation(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
+    val airline = request.user
+    
+    val fromAirportId = request.body.asInstanceOf[AnyContentAsJson].json.\("fromAirportId").as[Int]
+    val toAirportId = request.body.asInstanceOf[AnyContentAsJson].json.\("toAirportId").as[Int]
+    val frequency = request.body.asInstanceOf[AnyContentAsJson].json.\("frequency").as[Int]
+    val configuration = request.body.asInstanceOf[AnyContentAsJson].json.\("configuration").as[LinkClassValues]
+    val airplaneModelId = request.body.asInstanceOf[AnyContentAsJson].json.\("airplaneModelId").as[Int]
+    
+    loadAirports(fromAirportId, toAirportId) match {
+      case Some((fromAirport, toAirport)) =>
+          ModelSource.loadModelById(airplaneModelId) match {
+            case Some(model) =>
+              val capacity = configuration * frequency
+              val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
+              val negotiationInfo = NegotiationUtil.getLinkNegotationInfo(existingLinkOption, fromAirport, toAirport, capacity, frequency)
+              
+              Ok(Json.toJson(negotiationInfo))  
+            case None => BadRequest("unknown Airplane Model")
+          }
+      case None => BadRequest("unknown Airport")
+    }
+    
+  }
+  
   
   
   
@@ -715,7 +742,13 @@ class LinkApplication extends Controller {
             if (existingLinkOption.isDefined) {
               val currentCycle = CycleSource.loadCycle
               val sortedAssignedAirplanes = existingLinkOption.get.getAssignedAirplanes.sortBy(_.condition).sortBy(_.isReady(currentCycle)).reverse
-              val airplaneCompositionJson = Json.toJson(LinkAirplaneComposition(assignedModel.get, existingAssignedAirplanes = sortedAssignedAirplanes, newAssignedAirplanes = List.empty, purchasingAirplanes = 0, currentCycle = currentCycle))
+              val airplaneCompositionJson = 
+                Json.toJson(LinkAirplaneComposition(assignedModel.get, existingAssignedAirplanes = sortedAssignedAirplanes, newAssignedAirplanes = List.empty, purchasingAirplanes = 0, currentCycle = currentCycle)).asInstanceOf[JsObject] +
+                ("economySpaceMultiplier" -> JsNumber(ECONOMY.spaceMultiplier)) + 
+                ("businessSpaceMultiplier" -> JsNumber(BUSINESS.spaceMultiplier)) +
+                ("firstSpaceMultiplier" -> JsNumber(FIRST.spaceMultiplier)) 
+                
+                
               val existingLinkJson = Json.toJson(existingLinkOption.get).asInstanceOf[JsObject] + ("airplaneComposition" -> airplaneCompositionJson) 
               
                 

@@ -1220,7 +1220,7 @@ function updatePlanLinkInfo(linkInfo) {
 					"first" : existingLink.capacity.first / existingLink.frequency
 		    }
 			modelPlanLinkInfo.configuration = configuration //assign to this model so changing model would not reset configuration
-			existingLink.configuration = configuration //set to existing link as well for confirmation
+			existingLink.configuration = $.extend(true, {}, configuration) //set to existing link as well for confirmation, make a clone
 		} else {
 			modelPlanLinkInfo.configuration = { "economy" : modelPlanLinkInfo.capacity, "business" : 0, "first" : 0}
 		}
@@ -1433,9 +1433,9 @@ function refreshPlanLinkDetails(airplaneComposition, selectedModelId) {
 		updateCapacity(thisModelPlanLinkInfo.configuration)
 		
 		var spaceMultipliers = {
-			economy : planLinkInfo.economySpaceMultiplier,
-			business : planLinkInfo.businessSpaceMultiplier,
-			first : planLinkInfo.firstSpaceMultiplier
+			economy : airplaneComposition.economySpaceMultiplier,
+			business : airplaneComposition.businessSpaceMultiplier,
+			first : airplaneComposition.firstSpaceMultiplier
 		}
 		
 		plotSeatConfigurationGauge($("#seatConfigurationGauge"), thisModelPlanLinkInfo.configuration, thisModelPlanLinkInfo.capacity, spaceMultipliers, updateCapacity)
@@ -1492,7 +1492,7 @@ function linkConfirmation() {
 		//existing link section
 		$('#linkConfirmationModal .modalHeader').text('Update Route')
 		$('#linkConfirmationModal div.existing.model').text(existingLink.modelName)
-		$('#linkConfirmationModal div.existing.duration').text(existingLink.duration)
+		$('#linkConfirmationModal div.existing.duration').text(getDurationText(existingLink.duration))
 		refreshAssignedAirplanesBar($('#linkConfirmationModal div.existingLink .airplanes'), existingLink.airplaneComposition)
 		
 		for (i = 0 ; i < existingLink.frequency ; i ++) {
@@ -1503,10 +1503,9 @@ function linkConfirmation() {
 				$('#linkConfirmationModal div.existing.frequency').append("<br/>")
 			}
 		}
-		$('#linkConfirmationModal div.existing.fullCapacity').text(existingLink.capacity.economy + "/" + existingLink.capacity.business + "/" + existingLink.capacity.first)
-		$('#linkConfirmationModal div.existing.currentCapacity').text(existingLink.currentCapacity.economy + "/" + existingLink.currentCapacity.business + "/" + existingLink.currentCapacity.first)
-		$('#linkConfirmationModal div.existing.price').text(existingLink.price.economy + "/" + existingLink.price.business + "/" + existingLink.price.first)
-		$('#linkConfirmationModal div.existing.configuration').text(existingLink.configuration.economy + "/" + existingLink.configuration.business + "/" + existingLink.configuration.first)
+		$('#linkConfirmationModal div.existing.fullCapacity').text(toLinkClassValueString(existingLink.capacity))
+		$('#linkConfirmationModal div.existing.price').text(toLinkClassValueString(existingLink.price, '$'))
+		$('#linkConfirmationModal div.existing.configuration').text(toLinkClassValueString(existingLink.configuration))
 	} else {
 		$('#linkConfirmationModal div.existing').text('-')
 	}
@@ -1514,7 +1513,7 @@ function linkConfirmation() {
 	//update link section
 	var updateLinkModel = planLinkInfoByModel[$("#planLinkModelSelect").val()]
 	$('#linkConfirmationModal div.updating.model').text(updateLinkModel.modelName)
-	$('#linkConfirmationModal div.updating.duration').text(updateLinkModel.duration)
+	$('#linkConfirmationModal div.updating.duration').text(getDurationText(updateLinkModel.duration))
 	
 	refreshAssignedAirplanesBar($('#linkConfirmationModal div.updating.airplanes'), $('#planLinkAirplanes').data('airplaneComposition'))
 	
@@ -1527,33 +1526,63 @@ function linkConfirmation() {
 		}
 	}
 	
-	var updatingAirplaneComposition = $('#planLinkAirplanes').data('airplaneComposition')
-	var readyAirplanes = 0
-	readyAirplanes += updatingAirplaneComposition.existingAssignedAirplanes.filter(function(airplane) { return airplane.isReady}).length
-	readyAirplanes += updatingAirplaneComposition.newAssignedAirplanes.filter(function(airplane) { return airplane.isReady}).length
-	if (updateLinkModel.constructionTime == 0) {
-		readyAirplanes += updatingAirplaneComposition.purchasingAirplanes
-	}
-	
-	var updatingCurrentFrequency = Math.floor(readyAirplanes * updateLinkModel.maxFrequency)
-	
-	var currentCapacity = {
-			"economy" : updateLinkModel.configuration.economy * updatingCurrentFrequency,
-			"business" : updateLinkModel.configuration.business * updatingCurrentFrequency,
-			"first" : updateLinkModel.configuration.first * updatingCurrentFrequency,
-	}
 	var fullCapacity = {
 		"economy" : updateLinkModel.configuration.economy * $("#planLinkFrequency").val(),
 		"business" : updateLinkModel.configuration.business * $("#planLinkFrequency").val(),
 		"first" : updateLinkModel.configuration.first * $("#planLinkFrequency").val(),
 	} 
-	$('#linkConfirmationModal div.updating.currentCapacity').text(currentCapacity.economy + "/" + currentCapacity.business + "/" + currentCapacity.first)
-	$('#linkConfirmationModal div.updating.fullCapacity').text(fullCapacity.economy + "/" + fullCapacity.business + "/" + fullCapacity.first)
-	$('#linkConfirmationModal div.updating.price').text($('#planLinkEconomyPrice').val() + "/" + $('#planLinkBusinessPrice').val() + "/" + $('#planLinkFirstPrice').val())
-	$('#linkConfirmationModal div.updating.configuration').text(updateLinkModel.configuration.economy + "/" + updateLinkModel.configuration.business + "/" + updateLinkModel.configuration.first)
+	//$('#linkConfirmationModal div.updating.currentCapacity').text(currentCapacity.economy + "/" + currentCapacity.business + "/" + currentCapacity.first)
+	$('#linkConfirmationModal div.updating.fullCapacity').text(toLinkClassValueString(fullCapacity))
+	$('#linkConfirmationModal div.updating.price').text('$' + $('#planLinkEconomyPrice').val() + " / $" + $('#planLinkBusinessPrice').val() + " / $" + $('#planLinkFirstPrice').val())
+	$('#linkConfirmationModal div.updating.configuration').text(toLinkClassValueString(updateLinkModel.configuration))
 	
 	$('#linkConfirmationModal').fadeIn(200)
+	
+	previewLinkNegotiation()
 }
+
+function previewLinkNegotiation() {
+	var fromAirportId = $("#planLinkFromAirportId").val()
+	var toAirportId = $("#planLinkToAirportId").val()
+	var selectedModelId = $("#planLinkModelSelect").val()
+	var frequency = $("#planLinkFrequency").val()
+	var url = "airlines/" + activeAirline.id + "/preview-link-negotiation"
+	var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
+	$.ajax({
+		type: 'POST',
+		url: url,
+		data: JSON.stringify(
+		{ 
+			'fromAirportId': parseInt(fromAirportId), 
+			'toAirportId' : parseInt(toAirportId), 
+			'airplaneModelId' : parseInt(selectedModelId), 
+			'frequency' : parseInt(frequency),
+			'configuration' : configuration
+		}),
+		contentType: 'application/json; charset=utf-8',
+		dataType: 'json',
+	    success: function(negotiationPreview) {
+	    	if (negotiationPreview.requiredPoints) {
+	    		$('#linkConfirmationModal div.negotationInfo').show()
+	    		$('#linkConfirmationModal div.negotationInfo .successRate').text(negotiationPreview.odds * 100 + "%")
+	    		$('#linkConfirmationModal div.negotationInfo .requiredPoints').text(negotiationPreview.requiredPoints)
+	    		$('#linkConfirmationModal .negotiateButton').show()
+	    		$('#linkConfirmationModal .confirmButton').hide()
+	    	} else {
+	    		$('#linkConfirmationModal div.negotationInfo').hide()
+	    		$('#linkConfirmationModal .negotiateButton').hide()
+	    		$('#linkConfirmationModal .confirmButton').show()
+	    	}
+	    	
+	    	
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 
 
 

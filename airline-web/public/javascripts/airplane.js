@@ -259,21 +259,21 @@ function updateModelInfo(modelId) {
 	if (model.constructionTime == 0) {
 		$('#airplaneModelDetails .delivery').text("immediate")
 		$('#airplaneModelDetails .delivery').removeClass('warning')
-		$('#airplaneModelDetails .add').text('Purchase')
+//		$('#airplaneModelDetails .add').text('Purchase')
 	} else {
 		$('#airplaneModelDetails .delivery').text(model.constructionTime + " weeks")
 		$('#airplaneModelDetails .delivery').addClass('warning')
-		$('#airplaneModelDetails .add').text('Place Order')
+//		$('#airplaneModelDetails .add').text('Place Order')
 	}
 	
 	if (model.rejection) {
 		$('#airplaneModelDetails .rejectionSpan').text(model.rejection)
 		$('#airplaneModelDetails .rejection').show()
-		$('#airplaneModelDetails .add').hide()
+//		$('#airplaneModelDetails .add').hide()
 	} else {
 		$('#airplaneModelDetails .rejectionSpan').text('')
 		$('#airplaneModelDetails .rejection').hide()
-		$('#airplaneModelDetails .add').show()
+//		$('#airplaneModelDetails .add').show()
 	}
 }
 
