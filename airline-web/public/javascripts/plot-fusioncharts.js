@@ -686,4 +686,63 @@ function plotOilPriceChart(oilPrices, container) {
 	})
 }
 
+var negotiationGaugeDataSource 
+
+function plotNegotiationGauge(container, passingScore) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	
+	negotiationGaugeDataSource = {
+			  "chart": {
+				    "chartbottommargin": "5",
+				    "showvalue": "0",
+				    "animation": "0",
+				    "animationDuration" : "0",
+				    "bgAlpha":"0",
+				    "showToolTip" : "0",
+				    "showTickMarks": "0",
+				    "showTickValues" : "0",
+				    "showBorder" : "0"
+				    	
+				  },
+				  "colorrange": {
+				    "color": [
+				      {
+				        "minvalue": "0",
+				        "maxvalue": passingScore,
+				        "code": "#f8bd19"
+				      },
+				      {
+				        "minvalue": passingScore,
+				        "maxvalue": "250",
+				        "code": "#6baa01"
+				      }
+				    ]
+				  },
+				  "value" : "0"
+	}
+	
+	
+	negotiationGauge = container.insertFusionCharts({
+		type: "hled",
+		width: "100%",
+		height: "50px",
+		dataFormat: "json",
+		dataSource: negotiationGaugeDataSource
+   });
+	
+	
+
+}
+
+function updateNegotiationGauge(container, value) {
+	var dataSourceNew = $.extend({}, negotiationGaugeDataSource);
+	dataSourceNew.value = value
+    container.updateFusionCharts({
+        dataFormat: 'json',
+        dataSource: dataSourceNew
+    });
+	//container.find(':FusionCharts')[0].setData(value)
+}
 

@@ -349,8 +349,20 @@ class LinkApplication extends Controller {
       val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
       //validate balance
       
+      val negotiationInfo = NegotiationUtil.getLinkNegotationInfo(existingLinkOption, fromAirport, toAirport, incomingLink.capacity, incomingLink.frequency)
+      val negotiationResultOption = 
+        if (negotiationInfo.requiredPoints > 0) { //then negotiation is required
+          Some(NegotiationUtil.negotiate(negotiationInfo))
+        } else {
+          None
+        }
       
       println("PUT " + incomingLink)
+      
+      
+      if (negotiationResultOption.isDefined && !negotiationResultOption.get.isSuccessful) {
+        return Ok(Json.obj("negotiationResult" -> negotiationResultOption.get))
+      }
         
       val updatingLink : Link = existingLinkOption match {
         case Some(existingLink) => 
@@ -372,15 +384,23 @@ class LinkApplication extends Controller {
                toAirport.setAirlineAwareness(airlineId, 5)
                AirportSource.updateAirlineAppeal(List(toAirport))
             }
+            var result : JsObject = Json.toJson(link).asInstanceOf[JsObject]
+            negotiationResultOption.foreach { negotiationResult =>
+              result = result + ("negotiationResult" -> Json.toJson(negotiationResult))
+            }
             
-            
-            Created(Json.toJson(link))
+            Created(result)
           }
           case None => UnprocessableEntity("Cannot insert link")
         }
       } else {
         LinkSource.updateLink(updatingLink) match {
-          case 1 => Accepted(Json.toJson(updatingLink))      
+          case 1 => 
+            var result : JsObject = Json.toJson(updatingLink).asInstanceOf[JsObject]
+            negotiationResultOption.foreach { negotiationResult =>
+              result = result + ("negotiationResult" -> Json.toJson(negotiationResult))
+            }
+            Accepted(result)      
           case _ => UnprocessableEntity("Cannot update link")
         }
       }

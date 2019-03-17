@@ -2570,10 +2570,10 @@
 	
 	<!-- link confirmation modal -->
 	<div id="linkConfirmationModal" class="modal">
-		<div class="modal-content" style="height: 600px;">
+		<div class="modal-content" style="height: 700px; width : 600px">
 			<span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
 			<h3 style="margin-bottom: 10px;" class="modalHeader"></h3>
-			<div style="width: 600px;" class="existingLink table data">
+			<div style="width: 100%;" class="existingLink table data">
 				<div class='table-header'>
 					<div class="cell" style="width: 40%;"></div>
 					<div class="cell" style="width: 30%;"><h5>Existing Settings</h5></div>
@@ -2615,21 +2615,35 @@
 					<div class="cell updating configuration"></div>
 				</div>
   			</div>
-  			<div style="width: 600px;" class="negotationInfo table data">
-				<div class="table-row">
-					<div class="cell"><h3>Success Rate:</h3></div>
-					<div class="cell successRate"></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"><h3>Negotiation Points:</h3></div>
-					<div class="cell requiredPoints"></div>
-			    </div>
+  			<div class="negotationInfo">
+  				<h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation Required</h3>
+  				<div style="width: 100%;" class="table data">
+					<div class="table-row">
+						<div class="cell"><h5>Success Rate:</h5></div>
+						<div class="cell successRate"></div>
+					</div>
+					<div class="table-row">
+						<div class="cell"><h5>Negotiation Points:</h5></div>
+						<div class="cell requiredPoints"></div>
+				    </div>
+  				</div>
+  			</div>
+  			<div class="negotiationAnimation" style="width: 100%; height: 300px;">
+  				<h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation in progress...</h3>
+  				<div class="negotiationIcons" style="width: 100%; height: 50px;"></div>
+  				<div class="negotiationBar" style="width: 100%;"></div>
+  				<div class="negotiationResult">
+  					<h3 style="margin-top: 10px;" class="negotiationResultText"></h3>
+  					<div class="button" onclick="closeModal($('#linkConfirmationModal'))">Ok</div> 
+  			    </div>
+  				
   			</div>
   					
-  				
-  			<div class="button confirmButton" onclick="createLink">Confirm</div>
-	    	<div class="button negotiateButton" onclick="createLink">Negotiate</div>
-	    	<div class="button cancel" onclick="closeModal($('#linkConfirmationModal'))">Cancel</div>
+			<div class="controlButtons">  				
+  				<div class="button confirmButton" onclick="createLink()">Confirm</div>
+	    		<div class="button negotiateButton" onclick="createLink()">Negotiate</div>
+	    		<div class="button cancel" onclick="closeModal($('#linkConfirmationModal'))">Cancel</div>
+	    	</div>
 	    </div>
 	</div>
 					    		

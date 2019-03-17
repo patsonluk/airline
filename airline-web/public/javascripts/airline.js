@@ -1487,6 +1487,10 @@ function updateCapacity(configuration, frequency) {
 function linkConfirmation() {
 	$('#linkConfirmationModal div.existing').empty()
 	$('#linkConfirmationModal div.updating').empty()
+	$('#linkConfirmationModal div.controlButtons').hide()
+	$('#linkConfirmationModal .negotiationIcons').empty()
+	$('#linkConfirmationModal .negotiationBar').empty()
+	
 	
 	if (existingLink) {
 		//existing link section
@@ -1535,10 +1539,12 @@ function linkConfirmation() {
 	$('#linkConfirmationModal div.updating.fullCapacity').text(toLinkClassValueString(fullCapacity))
 	$('#linkConfirmationModal div.updating.price').text('$' + $('#planLinkEconomyPrice').val() + " / $" + $('#planLinkBusinessPrice').val() + " / $" + $('#planLinkFirstPrice').val())
 	$('#linkConfirmationModal div.updating.configuration').text(toLinkClassValueString(updateLinkModel.configuration))
+	$('#linkConfirmationModal div.controlButtons').show()
 	
 	$('#linkConfirmationModal').fadeIn(200)
 	
 	previewLinkNegotiation()
+	
 }
 
 function previewLinkNegotiation() {
@@ -1548,6 +1554,7 @@ function previewLinkNegotiation() {
 	var frequency = $("#planLinkFrequency").val()
 	var url = "airlines/" + activeAirline.id + "/preview-link-negotiation"
 	var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
+	$('#linkConfirmationModal div.negotiationAnimation').hide()
 	$.ajax({
 		type: 'POST',
 		url: url,
@@ -1611,6 +1618,13 @@ function createLink() {
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
 		    success: function(savedLink) {
+		    	var isSuccessful
+		    	if (savedLink.negotiationResult) {
+		    		isSuccessful = savedLink.negotiationResult.isSuccessful
+		    		negotiationAnimation(savedLink.negotiationResult)		    		
+		    	} else {
+		    		isSuccessful = true
+		    	}
 		    	if (savedLink.id) {
 		    		if (!flightPaths[savedLink.id]) { //new link
 		    			//remove temp path
@@ -1638,6 +1652,45 @@ function createLink() {
 		    }
 		});
 	}
+}
+
+function negotiationAnimation(negotiationResult) {
+	$('#linkConfirmationModal div.controlButtons').hide()
+	$('#linkConfirmationModal .negotiationResult').hide()
+	plotNegotiationGauge($('#linkConfirmationModal .negotiationBar'), negotiationResult.passingScore)
+	var gaugeValue = 0
+	$(negotiationResult.sessions).each( function(index, value) {
+		$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/balloon-ellipsis.png' style='padding : 5px;'>")
+		setTimeout(function(){
+			var icon
+			if (value > 25) {
+				icon = "smiley-kiss.png"
+			} else if (value > 20) {
+				icon = "smiley-lol.png"
+			} else if (value > 15) {
+				icon = "smiley.png"
+			} else if (value > 5) {
+				icon = "smiley-neutral.png"
+			} else if (value > 0) {
+				icon = "smiley-sad.png"
+			} else {
+				icon = "smiley-cry.png"
+			}
+			$('#linkConfirmationModal .negotiationIcons img:nth-child(' + (index + 1) + ')').attr("src", "assets/images/icons/" + icon)
+			//$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/" + icon + "'>")
+			gaugeValue += value
+			updateNegotiationGauge($('#linkConfirmationModal .negotiationBar'), gaugeValue)
+	        //$('#paint').fadeIn(500);
+		//	console.log(value)
+	    }, 1000 * index);
+	})
+	setTimeout(function(){ 
+		var result = negotiationResult.isSuccessful ? "Successful!" : "Failure..."
+		$('#linkConfirmationModal .negotiationResultText').text(result)
+		$('#linkConfirmationModal .negotiationResult').show()
+	}, 1000 * negotiationResult.sessions.length)
+	
+	$('#linkConfirmationModal div.negotiationAnimation').show()
 }
 
 function deleteLink() {

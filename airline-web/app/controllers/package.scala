@@ -356,11 +356,22 @@ package object controllers {
     }
   }
   
-  implicit object NegotiationInfoWrites extends Writes[NegotationInfo] {
-    def writes(info : NegotationInfo): JsValue = {
+  implicit object NegotiationInfoWrites extends Writes[NegotiationInfo] {
+    def writes(info : NegotiationInfo): JsValue = {
       Json.obj(
               "odds" -> JsNumber(info.odds),
               "requiredPoints" -> JsNumber(info.requiredPoints))
     }
   }
+  
+  implicit object NegotiationResultWrites extends Writes[NegotiationResult] {
+    def writes(result : NegotiationResult): JsValue = {
+      val negotationSessions = result.getNegotiationSessions()
+      Json.obj(
+              "passingScore" -> JsNumber(negotationSessions.passingScore),
+              "sessions" -> Json.toJson(negotationSessions.sessionScores),
+              "isSuccessful" -> JsBoolean(result.isSuccessful))
+    }
+  }
+  
 }
