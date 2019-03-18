@@ -1663,20 +1663,31 @@ function negotiationAnimation(negotiationResult) {
 		$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/balloon-ellipsis.png' style='padding : 5px;'>")
 		setTimeout(function(){
 			var icon
+			var description
 			if (value > 25) {
 				icon = "smiley-kiss.png"
+				description = "Awesome +" + Math.round(value)  
 			} else if (value > 20) {
 				icon = "smiley-lol.png"
+				description = "Great +" + Math.round(value)
 			} else if (value > 15) {
 				icon = "smiley.png"
+				description = "Good +" + Math.round(value)
 			} else if (value > 5) {
 				icon = "smiley-neutral.png"
+				description = "Soso +" + Math.round(value)
 			} else if (value > 0) {
 				icon = "smiley-sad.png"
+				description = "Bad +" + Math.round(value)
 			} else {
 				icon = "smiley-cry.png"
+				description = "Terrible " + Math.round(value)
 			}
 			$('#linkConfirmationModal .negotiationIcons img:nth-child(' + (index + 1) + ')').attr("src", "assets/images/icons/" + icon)
+			$('#linkConfirmationModal .negotiationDescriptions').text(description)
+			$('#linkConfirmationModal .negotiationDescriptions').hide()
+			$('#linkConfirmationModal .negotiationDescriptions').fadeIn(200);
+			
 			//$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/" + icon + "'>")
 			gaugeValue += value
 			updateNegotiationGauge($('#linkConfirmationModal .negotiationBar'), gaugeValue)
