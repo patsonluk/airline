@@ -65,11 +65,13 @@ case class NegotiationResult(threshold : Double, result : Double) {
   val isSuccessful = result >= threshold
   val SESSION_COUNT = 10
   def getNegotiationSessions() : NegotiationSession = {
-    val BASE_PASSING_SCORE = 100 //make it a more than 0...just for nicer display
+//    val BASE_PASSING_SCORE = 100 //make it a more than 0...just for nicer display
+//    
+    val passingScore = 75 + threshold * 25
     
-    val passingScore = BASE_PASSING_SCORE + threshold * 100
+    val score = 75 + result * 25
     
-    val average = (BASE_PASSING_SCORE + result * 100) / SESSION_COUNT //average score for each session
+    val average = score / SESSION_COUNT //average score for each session
     
     val sessionScores = ListBuffer[Double]()
     for (i <- 0 until SESSION_COUNT) {
@@ -79,7 +81,7 @@ case class NegotiationResult(threshold : Double, result : Double) {
     for (i <- 0 until 10) {
       val index1 = Random.nextInt(SESSION_COUNT)
       val index2 = Random.nextInt(SESSION_COUNT)
-      val variation = Random.nextInt(10)
+      val variation = Random.nextInt(5)
       sessionScores(index1) = sessionScores(index1) + variation   
       sessionScores(index2) = sessionScores(index2) - variation
     }

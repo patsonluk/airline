@@ -1621,30 +1621,16 @@ function createLink() {
 		    	var isSuccessful
 		    	if (savedLink.negotiationResult) {
 		    		isSuccessful = savedLink.negotiationResult.isSuccessful
-		    		negotiationAnimation(savedLink.negotiationResult)		    		
-		    	} else {
-		    		isSuccessful = true
-		    	}
-		    	if (savedLink.id) {
-		    		if (!flightPaths[savedLink.id]) { //new link
-		    			//remove temp path
-		    			removeTempPath()
-		    			//draw flight path
-		    			var newPath = drawFlightPath(savedLink)
-		    			selectLinkFromMap(savedLink.id, false)
-		    			refreshPanels(airlineId) //refresh panels would update link details
+		    		if (isSuccessful) {
+		    			negotiationAnimation(savedLink.negotiationResult, refreshSavedLink, savedLink)
 		    		} else {
-		    			refreshLinkDetails(savedLink.id)
+		    			negotiationAnimation(savedLink.negotiationResult)
 		    		}
-		    		
-			    	
-		    		setActiveDiv($('#linkDetails'))
-		    		hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
-		    				    				    		
-		    		if ($('#linksCanvas').is(':visible')) { //reload the links table then
-		    			loadLinksTable()
-		    		}
+		    	} else {
+		    		closeModal($('#linkConfirmationModal'))
+		    		refreshSavedLink(savedLink)
 		    	}
+		    	
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));
@@ -1654,7 +1640,29 @@ function createLink() {
 	}
 }
 
-function negotiationAnimation(negotiationResult) {
+function refreshSavedLink(savedLink) {
+	if (!flightPaths[savedLink.id]) { //new link
+		//remove temp path
+		removeTempPath()
+		//draw flight path
+		var newPath = drawFlightPath(savedLink)
+		selectLinkFromMap(savedLink.id, false)
+		refreshPanels(airlineId) //refresh panels would update link details
+	} else {
+		refreshLinkDetails(savedLink.id)
+	}
+	
+	
+	setActiveDiv($('#linkDetails'))
+	hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
+			    				    		
+	if ($('#linksCanvas').is(':visible')) { //reload the links table then
+		loadLinksTable()
+	}
+}
+
+
+function negotiationAnimation(negotiationResult, callback, callbackParam) {
 	$('#linkConfirmationModal div.controlButtons').hide()
 	$('#linkConfirmationModal .negotiationResult').hide()
 	plotNegotiationGauge($('#linkConfirmationModal .negotiationBar'), negotiationResult.passingScore)
@@ -1664,13 +1672,13 @@ function negotiationAnimation(negotiationResult) {
 		setTimeout(function(){
 			var icon
 			var description
-			if (value > 25) {
+			if (value > 14) {
 				icon = "smiley-kiss.png"
 				description = "Awesome +" + Math.round(value)  
-			} else if (value > 20) {
+			} else if (value > 11) {
 				icon = "smiley-lol.png"
 				description = "Great +" + Math.round(value)
-			} else if (value > 15) {
+			} else if (value > 8) {
 				icon = "smiley.png"
 				description = "Good +" + Math.round(value)
 			} else if (value > 5) {
@@ -1696,12 +1704,19 @@ function negotiationAnimation(negotiationResult) {
 	    }, 1000 * index);
 	})
 	setTimeout(function(){ 
-		var result = negotiationResult.isSuccessful ? "Successful!" : "Failure..."
-		$('#linkConfirmationModal .negotiationResultText').text(result)
+		var result = negotiationResult.isSuccessful ? "Successful" : "Failure"
+		$('#linkConfirmationModal .negotiationResult .result').text(result)
 		$('#linkConfirmationModal .negotiationResult').show()
 	}, 1000 * negotiationResult.sessions.length)
 	
+	if (callback) {
+		$('#linkConfirmationModal .close, #linkConfirmationModal .result').click(function() {
+			callback(callbackParam)
+		})
+	}
+	
 	$('#linkConfirmationModal div.negotiationAnimation').show()
+	
 }
 
 function deleteLink() {

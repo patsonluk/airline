@@ -715,7 +715,7 @@ function plotNegotiationGauge(container, passingScore) {
 				      },
 				      {
 				        "minvalue": passingScore,
-				        "maxvalue": "250",
+				        "maxvalue": "125",
 				        "code": "#6baa01"
 				      }
 				    ]
