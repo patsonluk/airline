@@ -69,7 +69,6 @@ function updateAirportDetails(airport) {
 	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness))
 	
 	updateAirportExtendedDetails(airport.id)
-	updateAirportSlots(airport.id)
 	
 	if (activeAirline) {
 		$('#airportBaseDetails').show()
@@ -374,7 +373,6 @@ function addMarkers(airports) {
 //		  		airportIncomeLevel: airportInfo.incomeLevel,
 //		  		airportCountryCode: airportInfo.countryCode,
 //		  		airportZone : airportInfo.zone,
-//		  		airportAvailableSlots: airportInfo.availableSlots,
 		  		airport : airportInfo,
 		  		icon: icon
 			  });
@@ -407,7 +405,7 @@ function addMarkers(airports) {
 			  $("#airportPopupIncomeLevel").text(this.airport.incomeLevel)
 			  $("#airportPopupOpenness").html(getOpennessSpan(loadedCountriesByCode[this.airport.countryCode].openness))
 			  updateAirportExtendedDetails(this.airport.id)
-			  updateAirportSlots(this.airport.id)
+			  
 			  
 			  $("#airportPopupId").val(this.airport.id)
 			  infoWindow.setContent($("#airportPopup").html())
@@ -553,7 +551,6 @@ function updateBaseInfo(airportId) {
 
 function updateAirportExtendedDetails(airportId) {
 	//clear the old values
-	$(".airportSlots").text('-')
 	$(".airportAwareness").text('-')
 	$(".airportLoyalty").text('-')
 	$(".airportRelationship").text('-')
@@ -586,7 +583,6 @@ function updateAirportExtendedDetails(airportId) {
 			    	$(".airportRelationship").text(relationship)
 		    	}
 		    	
-		    	$(".airportSlots").text(airport.slots)
 		    	
 	//	    	$.each(airport.linkCounts, function(withLinksAirlineId, linkCount) {
 	//	    		if (airlineId == withLinksAirlineId) {
@@ -616,32 +612,7 @@ function updateAirportExtendedDetails(airportId) {
 //	//$("#buildBaseButton").show()
 //}
 
-function updateAirportSlots(airportId) {
-	//clear the old ones
-	$(".airportAssignedSlots").text()
-	
-	if (activeAirline) {
-		var airlineId = activeAirline.id
-		$.ajax({
-			type: 'GET',
-			url: "airports/" + airportId + "/slots?airlineId=" + airlineId,
-		    dataType: 'json',
-		    success: function(slotInfo) {
-		    	var availableSlots = slotInfo.preferredSlots - slotInfo.assignedSlots 
-	    		$(".airportAssignedSlots").text(availableSlots + " / " + slotInfo.maxSlots)
-	    		if (availableSlots < 0) {
-	    			$(".airportAssignedSlots").addClass("warning")
-	    		} else {
-	    			$(".airportAssignedSlots").removeClass("warning")
-	    		}
-		    },
-		    error: function(jqXHR, textStatus, errorThrown) {
-		            console.log(JSON.stringify(jqXHR));
-		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-		    }
-		});
-	}
-}
+
 
 
 function updateAirportMarkers(airline) { //set different markers for head quarter and bases

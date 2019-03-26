@@ -415,10 +415,7 @@ class LinkApplication extends Controller {
     LinkSource.loadLinkById(linkId, LinkSource.FULL_LOAD) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
-          val (maxFrequencyFromAirport, maxFrequencyToAirport) = getMaxFrequencyByAirports(link.from, link.to, link.airline, Some(link))
-          Ok(Json.toJson(link).asInstanceOf[JsObject] + 
-             ("maxFrequencyFromAirport" -> JsNumber(maxFrequencyFromAirport)) +
-             ("maxFrequencyToAirport" -> JsNumber(maxFrequencyToAirport)))
+          Ok(Json.toJson(link))
         } else {
           Forbidden
         }
@@ -965,17 +962,6 @@ class LinkApplication extends Controller {
   //case class AirplaneWithPlanRouteInfo(airplane : Airplane, duration : Int, maxFrequency : Int, limitingFactor : String, isAssigned : Boolean)
   case class ModelPlanLinkInfo(model: Model, duration : Int, maxFrequency : Double, isAssigned : Boolean)
   case class LinkAirplaneComposition(model : Model, existingAssignedAirplanes : List[Airplane], newAssignedAirplanes : List[Airplane], purchasingAirplanes : Int, currentCycle : Int)
-  
-  private def getMaxFrequencyByAirports(fromAirport : Airport, toAirport : Airport, airline : Airline, existingLink : Option[Link]) : (Int, Int) =  {
-    val airlineId = airline.id
-    
-    val existingSlotsByThisLink = existingLink.fold(0)(_.frequency)
-    val maxFrequencyFromAirport : Int = fromAirport.getMaxSlotAssignment(airlineId) - fromAirport.getAirlineSlotAssignment(airlineId) + existingSlotsByThisLink 
-    val maxFrequencyToAirport : Int = toAirport.getMaxSlotAssignment(airlineId) - toAirport.getAirlineSlotAssignment(airlineId) + existingSlotsByThisLink
-    
-    (maxFrequencyFromAirport, maxFrequencyToAirport)
-  }
-  
   
 }
 

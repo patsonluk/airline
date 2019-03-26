@@ -60,19 +60,11 @@ class Application extends Controller {
       "longitude" -> JsNumber(airport.longitude),
       "countryCode" -> JsString(airport.countryCode),
       "population" -> JsNumber(airport.population),
-      "slots" -> JsNumber(airport.slots),
       "radius" -> JsNumber(airport.airportRadius),
       "zone" -> JsString(airport.zone),
       "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
       
       
-      if (airport.isSlotAssignmentsInitialized) {
-        airportObject = airportObject + ("availableSlots" -> JsNumber(airport.availableSlots))
-        airportObject = airportObject + ("slotAssignmentList" -> JsArray(airport.getAirlineSlotAssignments().toList.map {  
-          case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
-          }
-        ))
-      }
       if (airport.isAirlineAppealsInitialized) {
         airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAppeals().toList.map {  
           case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
@@ -196,15 +188,6 @@ class Application extends Controller {
 //  }
  
   
-  case class AirportSlotData(airlineId: Int, slotCount: Int)
-  val airportSlotForm = Form(
-    mapping(
-      "airlineId" -> number,
-      "slotCount" -> number
-    )(AirportSlotData.apply)(AirportSlotData.unapply)
-  )
-  
-  
   
   def index = Action {
     Ok(views.html.index(""))
@@ -233,16 +216,7 @@ class Application extends Controller {
        case None => NotFound
      }
   }
-  def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
-    AirportSource.loadAirportById(airportId, true) match {  
-       case Some(airport) =>  
-         val maxSlots = airport.getMaxSlotAssignment(airlineId)
-         val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
-         val preferredSlots = airport.getPreferredSlotAssignment(airlineId)
-         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots), "preferredSlots" -> JsNumber(preferredSlots)))
-       case None => NotFound
-     }
-  }
+ 
   
   def getAirportSharesOnCity(cityId : Int) = Action {
     Ok(Json.toJson(AirportSource.loadAirportSharesOnCity(cityId)))

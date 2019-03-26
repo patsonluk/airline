@@ -614,14 +614,9 @@ function refreshLinkDetails(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	var availableFromSlot = link.maxFrequencyFromAirport
-	    	var availableToSlot = link.maxFrequencyToAirport
-	    	availableFromSlot -= link.frequency
-	    	availableToSlot -= link.frequency
-	    	
-	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportName) + '&nbsp;' + availableFromSlot + " available slot(s)")
+	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportName))
 	    	//$("#linkFromAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.fromAirportId + ")")
-	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportName)+ '&nbsp;' + availableToSlot + " available slot(s)")
+	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportName))
 	    	//$("#linkToAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.toAirportId + ")")
 	    	$("#linkFlightCode").text(link.flightCode)
 	    	if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
@@ -1036,29 +1031,9 @@ var existingLink
 //var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
-	var availableFromSlot = linkInfo.maxFrequencyFromAirport
-	var availableToSlot = linkInfo.maxFrequencyToAirport
 	existingLink = linkInfo.existingLink
 	
-	if (existingLink) {
-		availableFromSlot -= existingLink.frequency
-		availableToSlot -= existingLink.frequency
-	}
-	var availableFromSlotText
-	if (availableFromSlot == 0) {
-		availableFromSlotText = '<span class="warning">' + availableFromSlot + ' available slot(s)</span>'
-	} else {
-		availableFromSlotText = '<span>' + availableFromSlot + ' available slot(s)</span>'
-	}
-	
-	var availableToSlotText
-	if (availableToSlot == 0) {
-		availableToSlotText = '<span class="warning">' + availableToSlot + ' available slot(s)</span>'
-	} else {
-		availableToSlotText = '<span>' + availableToSlot + ' available slot(s)</span>'
-	}
-	
-	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + availableFromSlotText)
+	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName))
 	if (activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
@@ -1080,7 +1055,7 @@ function updatePlanLinkInfo(linkInfo) {
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	//$('#planLinkFromAirportExpectedQuality').attr("onclick", "loadLinkExpectedQuality(" + linkInfo.fromAirportId + "," + linkInfo.toAirportId + "," + linkInfo.fromAirportId + ")")
 	
-	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + availableToSlotText)
+	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName))
 	//$('#planLinkToAirportExpectedQuality').attr("onclick", "loadLinkExpectedQuality(" + linkInfo.fromAirportId + "," + linkInfo.toAirportId + "," + linkInfo.toAirportId + ")")
 	$('#planLinkFlightCode').text(linkInfo.flightCode)
 	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))

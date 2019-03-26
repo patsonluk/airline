@@ -330,12 +330,6 @@ class AirlineApplication extends Controller {
        return Some("Cannot downgrade this base any further")
      }
      val airport = AirportSource.loadAirportById(base.airport.id, true).get
-     val assignedSlots = airport.getAirlineSlotAssignment(base.airline.id)
-     val preferredSlots = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = 0)
-     val preferredSlotsAfterDowngrade = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = -1)
-     if (assignedSlots > preferredSlotsAfterDowngrade) {
-       return Some("This base can only be downgraded if there are " + (preferredSlots - preferredSlotsAfterDowngrade)  + " free slots")
-     } 
      
      AirlineSource.loadLoungeByAirlineAndAirport(base.airline.id, base.airport.id).foreach { lounge =>
        if (Lounge.getBaseScaleRequirement(lounge.level) >= base.scale) { //cannot downgrade further unless Lounge is downgraded first

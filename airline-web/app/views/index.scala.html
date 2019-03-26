@@ -475,9 +475,8 @@
 						    					<span class="tooltiptext">
 							    					Increase/decrease the flight frequency by selecting/deselecting the airplane icons. <br/>
 							    					<br/>
-							    					Take note that the max frequency is limited by airplanes assigned and time slots allocated by both the departure and destination airports.<br/>
+							    					Take note that the max frequency is limited by airplanes assigned.<br/>
 							    					<br/>
-							    					Once flight service is established, airports will eventually open up more slots. Check regularly to increase flight frequency<br/>
 							    					<img src='@routes.Assets.versioned("images/clips/flight-frequency.gif")'> 
 						    					</span>
 						    				</div>
@@ -500,14 +499,6 @@
 							    							<div style='display:table-row'>
 							    								<div style='width: 60%; display: table-cell;'>General max frequency allowed per Route</div>
 							    								<div class='maxFrequencyAbsolute' style='width: 40%; display: table-cell;'></div>
-							    							</div>
-							    							<div style='display:table-row'>
-							    								<div style='width: 60%; display: table-cell;'>Current slots by Departing Airport</div>
-							    								<div class='maxFrequencyFromAirport' style='width: 40%; display: table-cell;'></div>
-							    							</div>
-							    							<div style='display:table-row'>
-							    								<div style='width: 60%; display: table-cell;'>Current slots by Destination Airport</div>
-							    								<div class='maxFrequencyToAirport' style='width: 40%; display: table-cell;'></div>
 							    							</div>
 							    							<div style='display:table-row'>
 							    								<div style='width: 60%; display: table-cell;'>By number of assigned Aircrafts</div>
@@ -730,32 +721,6 @@
 				   				<div class="value" id="airportDetailsIncomeLevel"></div>
 				   			</div>
 				   			<div class="table-row">
-				   				<div class="label"><h5>Slots:</h5></div>
-				   				<div class="value airportSlots" id="airportDetailsSlots"></div>
-				   			</div>
-				   			<div class="table-row">
-				   				<div class="label">
-				   					<h5>
-				   						<span>Slots for your airline (free / offered):</span>
-				   						<div class="tooltip">
-					    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
-					    					<span class="tooltiptext" style="width: 400px;">
-						    					Airport allocates time slots to your airline based on:<br/>
-						    					- Base size in this airport if present<br/>
-						    					- Loyalty to your airline<br/>
-						    					- Awareness of your airline<br/>
-						    					- Airline Reputation<br/>
-												- Relationship with your home country<br/>
-												- Country Openness<br/>
-												<br/>
-												A negative number in free slots means the airport will take back slots if freed from your assigned routes<br/>
-					    					</span>
-					    				</div>
-				   					</h5>
-				   				</div>
-				   				<div class="value airportAssignedSlots" id="airportDetailsAssignedSlots"></div>
-				   			</div>
-				   			<div class="table-row">
 				   				<div class="label">
 				   					<h5>
 				   						<span>Awareness of your airline:</span>
@@ -764,7 +729,6 @@
 					    					<span class="tooltiptext" style="width: 400px;">
 					    						Airport awareness affects:<br/>
 					    						- How likely a passenger from this airport will consider your route for his trip<br/>
-					    						- How many time slots will this airport offer to your airline initially (at 0 loyalty)<br/>
 					    						<br/>
 						    					Airport awareness builds up slowly by:<br/>
 						    					- Routes serving this airport offered by your airline<br/>
@@ -784,7 +748,6 @@
 					    					<span class="tooltiptext" style="width: 400px;">
 					    						Airport loyalty affects:<br/>
 					    						- How likely a passenger from this airport would choose your airline<br/>
-					    						- How many time slots will this airport offer to your airline<br/>
 					    						<br/>
 						    					Airport loyalty builds up slowly by:<br/>
 						    					- Passenger volume of your airline in this airport<br/>
@@ -2185,14 +2148,6 @@
    			<div class="table-row">
    				<div class="label"><h5>Country market openness:</h5></div>
    				<div class="value" id="airportPopupOpenness"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Slots:</h5></div>
-   				<div class="value airportSlots" id="airportPopupSlots"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Slots for your airline (free / offered):</h5></div>
-   				<div class="value airportAssignedSlots" id="airportPopupAssignedSlots"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>Awareness of your airline:</h5></div>
