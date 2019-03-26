@@ -10,56 +10,57 @@ import com.patson.model.BUSINESS
 import com.patson.model.FIRST
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
+import com.patson.model.Airline
+ 
 
 object NegotiationUtil {
   val NEW_LINK_BASE_COST = 100
-   def getLinkNegotationInfo(existingLinkOption : Option[Link], fromAirport : Airport, toAirport : Airport, newCapacity : LinkClassValues, newFrequency : Int) : NegotiationInfo = {
-     import FlightType._
-     
-     existingLinkOption.foreach{ link =>
-       if (link.capacity == newCapacity) {
-           return NegotiationInfo(1, 0)
-       }
-     }
-     
-     val flightTypeMultiplier = Computation.getFlightType(fromAirport, toAirport) match {
-       case SHORT_HAUL_DOMESTIC => 1
-       case LONG_HAUL_DOMESTIC => 1.5
-       case SHORT_HAUL_INTERNATIONAL => 2
-       case LONG_HAUL_INTERNATIONAL => 2.5
-       case SHORT_HAUL_INTERCONTINENTAL => 4
-       case LONG_HAUL_INTERCONTINENTAL => 5
-       case ULTRA_LONG_HAUL_INTERCONTINENTAL => 5
-     }
-     
-     val baseNegotationCost = if (existingLinkOption.isDefined) 0 else NEW_LINK_BASE_COST
-     val existingCapacity = existingLinkOption.map(_.capacity).getOrElse(LinkClassValues.getInstance())
-     val capacityChange : Double = normalizedCapacity(newCapacity) - normalizedCapacity(existingCapacity)
-     val capacityChangeCost = 
-       if (capacityChange < 0) { //reducing capacity
-         Math.ceil(capacityChange * -1 / 100)
-       } else {
-          Math.ceil(capacityChange / 100) 
-       }
-      
-     val cost = ((baseNegotationCost + capacityChangeCost) * flightTypeMultiplier).toInt
-     
-     val info = NegotiationInfo(0.5, cost)
-     negotiate(info) //TODO test
-     return info
-   }
+   
   
   def negotiate(info : NegotiationInfo) = {
     val number = Math.random()
-    NegotiationResult(info.odds, number)
+    NegotiationResult(info.odds.value, number)
   }
   
-  val normalizedCapacity : LinkClassValues => Double = (capacity : LinkClassValues) => {
-    capacity(ECONOMY) * ECONOMY.spaceMultiplier + capacity(BUSINESS) * BUSINESS.spaceMultiplier + capacity(FIRST) * FIRST.spaceMultiplier  
+ 
+  
+  val NO_NEGOTIATION_REQUIRED = {
+    val odds = new NegotiationOdds()
+    odds.addFactor(NegotationFactor.OTHER, 1)
+    NegotiationInfo(odds, 0)
   }
 }
 
-case class NegotiationInfo(odds : Double, requiredPoints : Int)
+class NegotiationOdds() {
+  private[this] val factors = scala.collection.mutable.LinkedHashMap[NegotationFactor.Value, Double]() 
+  def addFactor(factor : NegotationFactor.Value, value : Double) = {
+    factors.put(factor, value)
+  }
+  
+  def value = factors.values.sum match {
+    case x if x > 1 => 1
+    case x if x < 0 => 0
+    case x => x
+  }
+  
+  def getFactors : Map[NegotationFactor.Value, Double] = factors.toMap 
+}
+
+object NegotationFactor extends Enumeration {
+  type NegotationFactor = Value
+  val COUNTRY_RELATIONSHIP, EXISTING_LINKS, INITIAL_LINKS, DECREASE_CAPACITY, INCREASE_CAPACITY, OTHER = Value
+  
+  def description(factor : NegotationFactor) =  factor match {
+    case COUNTRY_RELATIONSHIP => "Country Relationship"
+    case EXISTING_LINKS => "Existing Routes by other Airlines"
+    case INITIAL_LINKS => "Bonus for smaller Airlines"
+    case INCREASE_CAPACITY => "Decreae Capacity"
+    case DECREASE_CAPACITY => "Increase Capacity"
+    case OTHER => "Unknown" 
+  }
+}
+
+case class NegotiationInfo(odds : NegotiationOdds, requiredPoints : Int)
 
 case class NegotiationResult(threshold : Double, result : Double) {
   val isSuccessful = result >= threshold

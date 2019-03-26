@@ -349,7 +349,7 @@ class LinkApplication extends Controller {
       val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
       //validate balance
       
-      val negotiationInfo = NegotiationUtil.getLinkNegotationInfo(existingLinkOption, fromAirport, toAirport, incomingLink.capacity, incomingLink.frequency)
+      val negotiationInfo = LinkApplication.getLinkNegotationInfo(airline, existingLinkOption, fromAirport, toAirport, incomingLink.capacity, incomingLink.frequency)
       val negotiationResultOption = 
         if (negotiationInfo.requiredPoints > 0) { //then negotiation is required
           Some(NegotiationUtil.negotiate(negotiationInfo))
@@ -577,7 +577,7 @@ class LinkApplication extends Controller {
             case Some(model) =>
               val capacity = configuration * frequency
               val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
-              val negotiationInfo = NegotiationUtil.getLinkNegotationInfo(existingLinkOption, fromAirport, toAirport, capacity, frequency)
+              val negotiationInfo = LinkApplication.getLinkNegotationInfo(airline, existingLinkOption, fromAirport, toAirport, capacity, frequency)
               
               Ok(Json.toJson(negotiationInfo))  
             case None => BadRequest("unknown Airplane Model")
@@ -986,6 +986,85 @@ object LinkApplication {
     
     return candidate
   }
+  
+  def getLinkNegotationInfo(airline : Airline, existingLinkOption : Option[Link], fromAirport : Airport, toAirport : Airport, newCapacity : LinkClassValues, newFrequency : Int) : NegotiationInfo = {
+     import FlightType._
+     
+     existingLinkOption.foreach{ link =>
+       if (link.capacity == newCapacity) {
+           return NegotiationUtil.NO_NEGOTIATION_REQUIRED
+       }
+     }
+     
+     val flightTypeMultiplier = Computation.getFlightType(fromAirport, toAirport) match {
+       case SHORT_HAUL_DOMESTIC => 1
+       case LONG_HAUL_DOMESTIC => 1.5
+       case SHORT_HAUL_INTERNATIONAL => 2
+       case LONG_HAUL_INTERNATIONAL => 2.5
+       case SHORT_HAUL_INTERCONTINENTAL => 4
+       case LONG_HAUL_INTERCONTINENTAL => 5
+       case ULTRA_LONG_HAUL_INTERCONTINENTAL => 5
+     }
+     val NEW_LINK_BASE_COST = 100
+     val baseNegotationCost = if (existingLinkOption.isDefined) 0 else NEW_LINK_BASE_COST
+     val existingCapacity = existingLinkOption.map(_.capacity).getOrElse(LinkClassValues.getInstance())
+     val capacityChange : Double = normalizedCapacity(newCapacity) - normalizedCapacity(existingCapacity)
+     val capacityChangeCost = 
+       if (capacityChange < 0) { //reducing capacity
+         Math.ceil(capacityChange * -1 / 100)
+       } else {
+          Math.ceil(capacityChange / 100) 
+       }
+      
+     val cost = ((baseNegotationCost + capacityChangeCost) * flightTypeMultiplier).toInt
+     
+     val countryRelationships = CountrySource.getCountryRelationshipsByAirline(airline)
+     val fromCountryRelationship = countryRelationships.getOrElse(fromAirport.countryCode, 0)
+     val toCountryRelationship = countryRelationships.getOrElse(toAirport.countryCode, 0)
+     
+     val odds = new NegotiationOdds()
+     
+     existingLinkOption match { 
+       case Some(link) => 
+         if (capacityChange <= 0) {
+           odds.addFactor(NegotationFactor.DECREASE_CAPACITY, 1.0)
+         } else {
+           odds.addFactor(NegotationFactor.INCREASE_CAPACITY, 0.75)
+         }
+         //existing LF
+       case None => 
+         odds.addFactor(NegotationFactor.COUNTRY_RELATIONSHIP, Math.min(fromCountryRelationship, toCountryRelationship) match {
+           case x if x >=5 => 1
+           case 4 => 0.9
+           case 3 => 0.8
+           case 2 => 0.7
+           case 1 => 0.6
+           case 0 => 0.5
+           case -1 => 0.2
+           case _ => 0
+         })
+         //consider how many existing routes - if more than 2 reduce the odds
+         val competingLinks = LinkSource.loadLinksByAirports(fromAirport.id, toAirport.id, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirport.id, fromAirport.id, LinkSource.ID_LOAD)
+         val competingLinksCount = competingLinks.filter(_.capacity.total > 0).size
+         if (competingLinksCount >= 2) {
+           odds.addFactor(NegotationFactor.EXISTING_LINKS, -0.05 * (competingLinksCount - 1))  
+         }
+         
+         val airlineLinksCount = LinkSource.loadLinksByAirlineId(airline.id, LinkSource.ID_LOAD).size
+         if (airlineLinksCount <= 9) { //first 10 routes bonus
+           odds.addFactor(NegotationFactor.INITIAL_LINKS, (10 - airlineLinksCount) * 0.1)  
+         }
+         
+       
+     }
+     
+     val info = NegotiationInfo(odds, cost)
+     return info
+   }
+  
+   val normalizedCapacity : LinkClassValues => Double = (capacity : LinkClassValues) => {
+    capacity(ECONOMY) * ECONOMY.spaceMultiplier + capacity(BUSINESS) * BUSINESS.spaceMultiplier + capacity(FIRST) * FIRST.spaceMultiplier  
+   }
 
   
 }

@@ -356,13 +356,28 @@ package object controllers {
     }
   }
   
+  implicit object NegotiationOddsWrites extends Writes[NegotiationOdds] {
+    def writes(odds : NegotiationOdds): JsValue = {
+      var result = Json.arr()
+      odds.getFactors.foreach {
+        case (factor, value) => 
+          result = result.append(Json.obj("description" -> JsString(NegotationFactor.description(factor)),
+                                     "value"-> JsNumber(value)))
+      }
+      result
+    }
+  }
+  
   implicit object NegotiationInfoWrites extends Writes[NegotiationInfo] {
     def writes(info : NegotiationInfo): JsValue = {
       Json.obj(
-              "odds" -> JsNumber(info.odds),
+              "odds" -> JsNumber(info.odds.value),
+              "oddsComposition" -> Json.toJson(info.odds),
               "requiredPoints" -> JsNumber(info.requiredPoints))
     }
   }
+  
+  
   
   implicit object NegotiationResultWrites extends Writes[NegotiationResult] {
     def writes(result : NegotiationResult): JsValue = {

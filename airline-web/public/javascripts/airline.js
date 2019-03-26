@@ -1544,9 +1544,15 @@ function previewLinkNegotiation() {
 		contentType: 'application/json; charset=utf-8',
 		dataType: 'json',
 	    success: function(negotiationPreview) {
+	    	$('#linkConfirmationModal div.negotationInfo .factor').empty()
 	    	if (negotiationPreview.requiredPoints) {
 	    		$('#linkConfirmationModal div.negotationInfo').show()
-	    		$('#linkConfirmationModal div.negotationInfo .successRate').text(negotiationPreview.odds * 100 + "%")
+	    		var currentRow = $('#linkConfirmationModal div.negotationInfo .table-header')
+	    		$.each(negotiationPreview.oddsComposition, function(index, composition) {
+	    			var sign = composition.value >= 0 ? '+' : ''
+	    			currentRow = $('<div class="table-row factor"><div class="cell"></div><div class="cell">' + composition.description + '</div><div class="cell">' + sign + Math.round(composition.value * 100) + '%</div></div>').insertAfter(currentRow)
+	    		})
+	    		$('#linkConfirmationModal div.negotationInfo .successRate').text(Math.round(negotiationPreview.odds * 100) + '%')
 	    		$('#linkConfirmationModal div.negotationInfo .requiredPoints').text(negotiationPreview.requiredPoints)
 	    		$('#linkConfirmationModal .negotiateButton').show()
 	    		$('#linkConfirmationModal .confirmButton').hide()
