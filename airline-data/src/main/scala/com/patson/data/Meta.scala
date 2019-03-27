@@ -278,6 +278,7 @@ object Meta {
     createLoungeConsumption(connection)
     createOil(connection)
     createResetUser(connection)
+    createLog(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -891,6 +892,27 @@ object Meta {
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createLog(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOG_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + LOG_TABLE + "(" +
+      "airline INTEGER, " +
+      "message VARCHAR(512)," +
+      "category INTEGER," +
+      "severity INTEGER," +
+      "cycle INTEGER," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE INDEX " + LOG_INDEX_1 + " ON " + LOG_TABLE + "(airline)")
     statement.execute()
     statement.close()
   }
