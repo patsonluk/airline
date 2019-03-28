@@ -92,7 +92,8 @@ GET		 /airlines/:airlineId/sign-oil-contract	controllers.OilApplication.signCont
 DELETE	 /airlines/:airlineId/oil-contracts/:contractId	controllers.OilApplication.terminateContract(airlineId : Int, contractId : Int)
 GET	 	 /airlines/:airlineId/oil-inventory-options		controllers.OilApplication.getInventoryOptions(airlineId : Int)
 GET		 /airlines/:airlineId/set-oil-inventory-option  controllers.OilApplication.setInventoryOption(airlineId : Int, optionId : Int)
-GET		 /airlines/:airlineId/logs  controllers.LogApplication.getLogs(airlineId : Int, optionId : Int)
+GET		 /airlines/:airlineId/logs  controllers.LogApplication.getLogs(airlineId : Int)
+GET		 /airlines/:airlineId/alerts  controllers.AlertApplication.getAlerts(airlineId : Int)
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
 
 

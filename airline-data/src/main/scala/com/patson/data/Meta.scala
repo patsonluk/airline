@@ -279,6 +279,7 @@ object Meta {
     createOil(connection)
     createResetUser(connection)
     createLog(connection)
+    createAlert(connection)
       
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -913,6 +914,28 @@ object Meta {
     statement.close()
     
     statement = connection.prepareStatement("CREATE INDEX " + LOG_INDEX_1 + " ON " + LOG_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
+  }
+  
+  def createAlert(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALERT_TABLE)
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE TABLE " + ALERT_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "airline INTEGER, " +
+      "message VARCHAR(512)," +
+      "category INTEGER," +
+      "target_id INTEGER," + 
+      "cycle INTEGER," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+    
+    statement = connection.prepareStatement("CREATE INDEX " + ALERT_INDEX_1 + " ON " + ALERT_TABLE + "(airline)")
     statement.execute()
     statement.close()
   }
