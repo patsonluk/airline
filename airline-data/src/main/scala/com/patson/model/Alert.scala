@@ -1,6 +1,6 @@
 package com.patson.model
 
-case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, var id : Int)
+case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, duration : Int, var id : Int = 0)
 
 object AlertCategory extends Enumeration {
     type AlertCategory = Value

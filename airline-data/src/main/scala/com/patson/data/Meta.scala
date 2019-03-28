@@ -928,7 +928,8 @@ object Meta {
       "airline INTEGER, " +
       "message VARCHAR(512)," +
       "category INTEGER," +
-      "target_id INTEGER," + 
+      "target_id INTEGER," +
+      "duration INTEGER," +
       "cycle INTEGER," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

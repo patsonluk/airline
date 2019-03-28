@@ -14,14 +14,14 @@ import scala.collection.mutable.Map
 object AlertSource {
   val insertAlerts = (alerts : List[Alert]) => {
     val connection = Meta.getConnection()
-    //case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, var id : Int)
-    val statement = connection.prepareStatement("INSERT INTO " + ALERT_TABLE + "(airline, message, category, target_id, cycle) VALUES(?,?,?,?,?)")
+    //case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, duration : Int, var id : Int)
+    val statement = connection.prepareStatement("INSERT INTO " + ALERT_TABLE + "(airline, message, category, target_id, duration, cycle) VALUES(?,?,?,?,?,?)")
     
     connection.setAutoCommit(false)
     
     try {
       alerts.foreach { alert => alert match {
-          case Alert(airline, message, category, targetId, cycle, id) => {
+          case Alert(airline, message, category, targetId, cycle, duration, id) => {
             statement.setInt(1, airline.id)
             statement.setString(2, message)
             statement.setInt(3, category.id)
@@ -31,6 +31,7 @@ object AlertSource {
             }
             
             statement.setInt(5, cycle)
+            statement.setInt(6, duration)
             
             statement.executeUpdate()
         
@@ -60,7 +61,7 @@ object AlertSource {
     
     try {
       alerts.foreach { 
-        case Alert(airline, message, category, targetId, cycle, id) => {
+        case Alert(airline, message, category, targetId, cycle, duration, id) => {
           statement.setInt(1, airline.id)
           statement.setString(2, message)
           statement.setInt(3, category.id)
@@ -70,7 +71,8 @@ object AlertSource {
           }
           
           statement.setInt(5, cycle)
-          statement.setInt(6, id)
+          statement.setInt(6, duration)
+          statement.setInt(7, id)
           statement.addBatch()
         }
       }
@@ -85,11 +87,40 @@ object AlertSource {
     }
   }
   
-  def loadAlertsByAirline(airlineId : Int, fromCycle : Int, fullLoad : Boolean = false) = {
-    var queryString = "SELECT * FROM " + ALERT_TABLE + " WHERE airline = ? AND cycle >= ?"
-     loadAlertsByQueryString(queryString, List(airlineId, fromCycle), fullLoad)
+  def deleteAlerts(alerts : List[Alert]) = {
+    val connection = Meta.getConnection()
+    //case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, var id : Int)
+    val statement = connection.prepareStatement("DELETE " + ALERT_TABLE + "WHERE id = ?")
+    
+    connection.setAutoCommit(false)
+    
+    try {
+      alerts.foreach { alert =>
+        statement.setInt(1, alert.id)
+        statement.addBatch()
+      }
+      
+      statement.executeBatch()
+      
+      
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
   }
   
+  def loadAlertsByAirline(airlineId : Int, fullLoad : Boolean = false) = {
+     loadAlertsByCriteria(List(("airline", airlineId)), fullLoad)
+  }
+  
+  def loadAlertsByAirlineAndCategory(airlineId : Int, category : AlertCategory.Value, fullLoad : Boolean = false) = {
+     loadAlertsByCriteria(List(("airline", airlineId), ("category", category.id)), fullLoad)
+  }
+  
+  def loadAlertsByCategory(category : AlertCategory.Value, fullLoad : Boolean = false) = {
+    loadAlertsByCriteria(List(("category", category.id)), fullLoad)
+  }
   
   def loadAlertsByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
       var queryString = "SELECT * FROM " + ALERT_TABLE
@@ -129,8 +160,9 @@ object AlertSource {
           val targetIdObject = resultSet.getObject("target_id")
           val targetId = if (targetIdObject == null) None else Some(targetIdObject.asInstanceOf[Int]) 
           val cycle = resultSet.getInt("cycle")
+          val duration = resultSet.getInt("duration")
           val id =  resultSet.getInt("id")
-          logs += Alert(airline, message, category, targetId, cycle, id)
+          logs += Alert(airline, message, category, targetId, cycle, duration, id)
         }
         
         resultSet.close()
