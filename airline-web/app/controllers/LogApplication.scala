@@ -35,8 +35,10 @@ class LogApplication extends Controller {
       "airlineId" -> JsString(log.airline.name),
       "airlineName" -> JsNumber(log.airline.id),
       "message" -> JsString(log.message),
-      "category" -> JsString(LogCategory.getDescription(log.category)),
-      "severity" -> JsString(LogSeverity.getDescription(log.severity)),
+      "category" -> JsNumber(log.category.id),
+      "categoryText" -> JsString(LogCategory.getDescription(log.category)),
+      "severity" -> JsNumber(log.severity.id),
+      "severityText" -> JsString(LogSeverity.getDescription(log.severity)),
       "cycle" -> JsNumber(log.cycle)
       ))
   }

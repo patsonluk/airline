@@ -36,7 +36,9 @@ class AlertApplication extends Controller {
       "airlineId" -> JsString(alert.airline.name),
       "airlineName" -> JsNumber(alert.airline.id),
       "message" -> JsString(alert.message),
-      "category" -> JsString(AlertCategory.getDescription(alert.category)),
+      "category" -> JsNumber(alert.category.id),
+      "categoryText" -> JsString(AlertCategory.getDescription(alert.category)),
+        "duration" -> JsNumber(alert.duration),
       "cycle" -> JsNumber(alert.cycle)
       ))
       
@@ -53,7 +55,7 @@ class AlertApplication extends Controller {
   
   
   def getAlerts(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    Ok(Json.toJson(AlertSource.loadAlertsByAirline(request.user.id, CycleSource.loadCycle)))
+    Ok(Json.toJson(AlertSource.loadAlertsByAirline(request.user.id)))
   }
   
   

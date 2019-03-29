@@ -64,6 +64,7 @@
     <script src="@routes.Assets.versioned("javascripts/oil.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/log.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
@@ -207,7 +208,8 @@
 			  <li class="button left-tab user-specific-tab" id="oilCanvasTab" onclick="showOilCanvas();"><span>Oil</span></li>
 			  <li class="button left-tab user-specific-tab" id="rivalsCanvasTab" onclick="showRivalsCanvas();"><span>Rivals</span></li>
 			  <li class="button left-tab" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
-			  <li class="button left-tab" id="allianceCanvasTab" onclick="showAllianceCanvas();"><span>Alliance</span></li>
+			  	<li class="button left-tab" id="allianceCanvasTab" onclick="showAllianceCanvas();"><span>Alliance</span></li>
+				<li class="button left-tab  user-specific-tab" id="logCanvasTab" onclick="showLogCanvas();"><span>Log</span></li>
 			  
 			</ul>
 		</div>
@@ -2139,6 +2141,57 @@
 				<div style="clear: both;"></div>
   			</div>
 	<!-- end alliance canvas -->
+			<div id="logCanvas" style="height: 100%; display: none;">
+				<div style="width : 95%; height: 200px" class="section">
+					<h4>Alerts</h4>
+					<div id = "alertTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+						<div class="table-header">
+							<div class="cell clickable selected" style="width: 10%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleAlertTableSortOrder($(this))">Week</div>
+							<div class="cell clickable" style="width: 10%" data-sort-property="severity" data-sort-order="descending" onclick="toggleAlertTableSortOrder($(this))">Category</div>
+							<div class="cell clickable" style="width: 10%" data-sort-property="duration" data-sort-order="ascending" onclick="toggleAlertTableSortOrder($(this))">Duration</div>
+							<div class="cell clickable" style="width: 20%" data-sort-property="airlineName" data-sort-order="ascending" onclick="toggleAlertTableSortOrder($(this))">Airline</div>
+							<div class="cell clickable" style="width: 50%" data-sort-property="message" data-sort-order="ascending" onclick="toggleAlertTableSortOrder($(this))">Message</div>
+						</div>
+					</div>
+					<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+						<div class="table data" id="alertTable" style="width: 100%; max-height: 100%">
+							<div class="table-header">
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 20%; border-bottom: none;"></div>
+								<div class="cell" style="width: 50%; border-bottom: none;"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div style="width : 95%; height: 500px" class="section">
+					<h4>Logs</h4>
+					<div id = "logTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+						<div class="table-header">
+							<div class="cell clickable selected" style="width: 10%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Week</div>
+							<div class="cell clickable" style="width: 10%" data-sort-property="severity" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Category</div>
+							<div class="cell clickable" style="width: 10%" data-sort-property="category" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Severity</div>
+							<div class="cell clickable" style="width: 20%" data-sort-property="airlineName" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Airline</div>
+							<div class="cell clickable" style="width: 50%" data-sort-property="message" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Message</div>
+						</div>
+					</div>
+					<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+						<div class="table data" id="logTable" style="width: 100%; max-height: 100%">
+							<div class="table-header">
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 20%; border-bottom: none;"></div>
+								<div class="cell" style="width: 50%; border-bottom: none;"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+			<!-- end log canvas -->
 			<div style="clear: both;"></div>
   		</div>
   	<!-- main canvas end -->

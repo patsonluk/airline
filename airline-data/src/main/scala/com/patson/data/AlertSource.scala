@@ -15,7 +15,7 @@ object AlertSource {
   val insertAlerts = (alerts : List[Alert]) => {
     val connection = Meta.getConnection()
     //case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, duration : Int, var id : Int)
-    val statement = connection.prepareStatement("INSERT INTO " + ALERT_TABLE + "(airline, message, category, target_id, duration, cycle) VALUES(?,?,?,?,?,?)")
+    val statement = connection.prepareStatement("INSERT INTO " + ALERT_TABLE + "(airline, message, category, target_id, duration, cycle) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     
     connection.setAutoCommit(false)
     
@@ -30,8 +30,8 @@ object AlertSource {
               case None => statement.setNull(4,  java.sql.Types.INTEGER)
             }
             
-            statement.setInt(5, cycle)
-            statement.setInt(6, duration)
+            statement.setInt(5, duration)
+            statement.setInt(6, cycle)
             
             statement.executeUpdate()
         
@@ -55,7 +55,7 @@ object AlertSource {
   val updateAlerts = (alerts : List[Alert]) => {
     val connection = Meta.getConnection()
     //case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, var id : Int)
-    val statement = connection.prepareStatement("REPLACE INTO " + ALERT_TABLE + "(airline, message, category, target_id, cycle, id) VALUES(?,?,?,?,?,?)")
+    val statement = connection.prepareStatement("REPLACE INTO " + ALERT_TABLE + "(airline, message, category, target_id, cycle, duration, id) VALUES(?,?,?,?,?,?,?)")
     
     connection.setAutoCommit(false)
     
@@ -90,7 +90,7 @@ object AlertSource {
   def deleteAlerts(alerts : List[Alert]) = {
     val connection = Meta.getConnection()
     //case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, var id : Int)
-    val statement = connection.prepareStatement("DELETE " + ALERT_TABLE + "WHERE id = ?")
+    val statement = connection.prepareStatement("DELETE FROM " + ALERT_TABLE + " WHERE id = ?")
     
     connection.setAutoCommit(false)
     

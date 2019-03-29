@@ -258,7 +258,7 @@ object LinkSimulation {
                   val message = "Airport authorities have revoked license of " + link.airline.name + " to operate route between " +  link.from.displayText + " and " + link.to.displayText + " due to prolonged low load factor"
                   newLogs += Log(airline = link.airline, message = message, category = LogCategory.LINK, severity = LogSeverity.WARN, cycle = cycle)
                   //notify competitors too with lower severity
-                  links.filter(_.id != link).foreach { competitorLink =>
+                  links.filter(_.id != link.id).foreach { competitorLink =>
                     newLogs += Log(airline = competitorLink.airline, message = message, category = LogCategory.LINK, severity = LogSeverity.INFO, cycle = cycle)
                   }
                 } else { //clock is ticking!
@@ -279,9 +279,8 @@ object LinkSimulation {
       }
     }
     
-    println("Revoked links:")
     deletingLinks.foreach { link =>
-       println(link)
+       println("Revoked link: " + link)
        LinkSource.deleteLink(link.id)
     }
     AlertSource.updateAlerts(updatingAlerts.toList)
