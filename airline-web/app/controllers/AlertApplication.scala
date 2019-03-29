@@ -33,8 +33,8 @@ class AlertApplication extends Controller {
   implicit object AlertWrites extends Writes[Alert] {
     def writes(alert: Alert): JsValue = { 
       var result = JsObject(List(
-      "airlineId" -> JsString(alert.airline.name),
-      "airlineName" -> JsNumber(alert.airline.id),
+      "airlineName" -> JsString(alert.airline.name),
+      "airlineId" -> JsNumber(alert.airline.id),
       "message" -> JsString(alert.message),
       "category" -> JsNumber(alert.category.id),
       "categoryText" -> JsString(AlertCategory.getDescription(alert.category)),

@@ -32,8 +32,8 @@ import com.patson.data.LogSource
 class LogApplication extends Controller {
   implicit object LogWrites extends Writes[Log] {
     def writes(log: Log): JsValue = JsObject(List(
-      "airlineId" -> JsString(log.airline.name),
-      "airlineName" -> JsNumber(log.airline.id),
+      "airlineName" -> JsString(log.airline.name),
+      "airlineId" -> JsNumber(log.airline.id),
       "message" -> JsString(log.message),
       "category" -> JsNumber(log.category.id),
       "categoryText" -> JsString(LogCategory.getDescription(log.category)),
@@ -48,7 +48,7 @@ class LogApplication extends Controller {
   
   
   def getLogs(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, CycleSource.loadCycle)))
+    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, CycleSource.loadCycle - LOG_RANGE)))
   }
   
   

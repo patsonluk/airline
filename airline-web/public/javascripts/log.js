@@ -89,10 +89,10 @@ function updateAlertTable(sortProperty, sortOrder) {
 	loadedAlerts.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
 
 	$.each(loadedAlerts, function(index, alert) {
-		var row = $("<div class='table-row clickable'  onclick='refreshLinkDetails(" + alert.targetId + "); showLinksDetails()'></div>")
+		var row = $("<div class='table-row clickable'  onclick=' showLinksDetails(); refreshLinkDetails(" + alert.targetId + ");'></div>")
 		row.append("<div class='cell'>" + alert.cycle + "</div>")
-		row.append("<div class='cell'>" + alert.severityText + "</div>")
-		row.append("<div class='cell'>" + alert.duration + "</div>")
+		row.append("<div class='cell'>" + alert.categoryText + "</div>")
+		row.append("<div class='cell'>" + alert.duration + " week(s)</div>")
 		row.append("<div class='cell'>" + getAirlineLogoImg(alert.airlineId) + alert.airlineName + "</div>")
 		row.append("<div class='cell'>" + alert.message + "</div>")
 
