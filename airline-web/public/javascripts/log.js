@@ -76,7 +76,7 @@ function updateLogTable(sortProperty, sortOrder) {
 	});
 
 	if (loadedLogs.length == 0) {
-	    logTable.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><</div>")
+	    logTable.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
 	}
 }
 
@@ -100,7 +100,7 @@ function updateAlertTable(sortProperty, sortOrder) {
 	});
 
     if (loadedAlerts.length == 0) {
-    	    alertTable.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><</div>")
+    	    alertTable.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
     }
 }
 
