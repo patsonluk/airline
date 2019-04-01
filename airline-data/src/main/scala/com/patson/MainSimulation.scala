@@ -54,6 +54,10 @@ object MainSimulation extends App {
       AirportSimulation.airportSimulation(cycle, linkResult)
       val airplanes = AirplaneSimulation.airplaneSimulation(cycle, links)
       AirlineSimulation.airlineSimulation(cycle, linkResult, loungeResult, airplanes)
+      
+      //purge log
+      LogSource.deleteLogsBeforeCycle(cycle - 100)
+      
       //notify the websockets via EventStream
       SimulationEventStream.publish(CycleCompleted(cycle), None)
       val cycleEnd = System.currentTimeMillis()
