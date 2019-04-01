@@ -233,7 +233,7 @@ object LinkSimulation {
   
   def checkLoadFactor(links : List[Link], cycle : Int) = {
     //group links by from and to airport ID Tuple(id1, id2), smaller ID goes first in the tuple
-    val linksByAirportIds = links.groupBy( link =>
+    val linksByAirportIds = links.filter(_.capacity.total > 0).groupBy( link =>
       if (link.from.id < link.to.id) (link.from.id, link.to.id) else (link.to.id, link.from.id)  
     )
     
