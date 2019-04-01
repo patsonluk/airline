@@ -904,7 +904,7 @@ object Meta {
     
     statement = connection.prepareStatement("CREATE TABLE " + LOG_TABLE + "(" +
       "airline INTEGER, " +
-      "message VARCHAR(512)," +
+      "message VARCHAR(512) CHARACTER SET 'utf8'," +
       "category INTEGER," +
       "severity INTEGER," +
       "cycle INTEGER," +
@@ -926,7 +926,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + ALERT_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "airline INTEGER, " +
-      "message VARCHAR(512)," +
+      "message VARCHAR(512) CHARACTER SET 'utf8'," +
       "category INTEGER," +
       "target_id INTEGER," +
       "duration INTEGER," +
