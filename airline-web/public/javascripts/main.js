@@ -137,6 +137,7 @@ function loadUser(isLogin) {
 			  printConsole('') //clear console
 			  getAirports();
 			  showUserSpecificElements();
+			  updateChatTabs()
 			  
 			  if (window.location.hostname != 'localhost') {
 				  FS.identify(user.id, {

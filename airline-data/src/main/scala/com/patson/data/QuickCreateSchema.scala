@@ -45,7 +45,8 @@ object QuickCreateSchema extends App {
   }
   
   def createSchema(connection : Connection) = {
-    Meta.createOil(connection)
+    Meta.createLog(connection)
+    Meta.createAlert(connection)
   }
   
   

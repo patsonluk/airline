@@ -1,5 +1,12 @@
+function updateChatTabs() {
+	if (activeUser.allianceName) {
+		$("#allianceChatTab").text(activeUser.allianceName)
+	} else {
+		$("#allianceChatTab").hide()
+	}
+}
+
 angular.module("ChatApp", []).controller("ChatController", function($scope){
-   
    // var ws = new WebSocket("ws://localhost:9000/chat");
    // connect to websockets endpoint of our server
     var port = window.location.port
@@ -33,7 +40,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
   chat.sendMessage = function() {
 	  if (activeAirline && (chat.currentMessage.length > 0)) {
 		var active_tab = $("li.tab-link.current").attr('data-tab');
-		var text = { room: active_tab, text: chat.currentMessage };
+		var text = { room: active_tab, text: chat.currentMessage, airlineId: activeAirline.id };
 	    //chat.messages.push(text);
 	    chat.currentMessage = "";
 	    // send it to the server through websockets
@@ -57,10 +64,10 @@ angular.module("ChatApp", []).controller("ChatController", function($scope){
   // what to do when we receive message from the webserver
   ws.onmessage = function(msg) {
 	var r_text = msg.data;
-	console.log(r_text);
+	//console.log(r_text);
 	var r_msg = JSON.parse(r_text);
 	
-	if (r_msg.room == "-1") {
+	if (!r_msg.allianceRoomId) {
 		chat.gmessages.push(r_msg.text);
 	} else {
 		chat.amessages.push(r_msg.text);

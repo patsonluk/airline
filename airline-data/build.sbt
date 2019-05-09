@@ -11,6 +11,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
   //"org.xerial" % "sqlite-jdbc" % "3.8.11.2",
   "mysql" % "mysql-connector-java" % "5.1.38",
+  "com.appoptics.agent.java" % "appoptics-sdk" % "6.0.0",
   "com.mchange" % "c3p0" % "0.9.5",
   "com.typesafe.akka"          %%  "akka-stream-experimental" % "0.10",
   "com.typesafe.play"          %%  "play-json" % "2.4.0")

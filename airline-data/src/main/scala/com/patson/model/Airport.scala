@@ -391,6 +391,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case _ => 0
     }
   }
+  
+  val displayText = city + "(" + iata + ")"
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)
