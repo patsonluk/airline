@@ -33,5 +33,9 @@ $('ul.ctabs li').click(function(){
 
 		$(this).addClass('current');
 		$("#"+tab_id).addClass('current');
+		var scroller = document.getElementById("chatBox-1");
+		scroller.scrollTop = scroller.scrollHeight;
+		var scroller = document.getElementById("chatBox-2");
+		scroller.scrollTop = scroller.scrollHeight;
 });
 
