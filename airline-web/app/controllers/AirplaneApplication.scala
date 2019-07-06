@@ -184,32 +184,34 @@ class AirplaneApplication extends Controller {
   }
   
   def buyUsedAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) { request =>
-      AirplaneSource.loadAirplaneById(airplaneId) match {
-        case Some(airplane) => 
-          val airline = request.user
-          getUsedRejections(List(airplane), airplane.model, airline).get(airplane) match {
-            case Some(rejection) => BadRequest(rejection)
-            case None => 
-              if (!airplane.isSold) {
-                BadRequest("Airplane is no longer for sale " + airlineId)
-              } else {
-                val dealerValue = airplane.dealerValue
-                val actualValue = airplane.value
-                airplane.buyFromDealer(airline)
-                if (AirplaneSource.updateAirplanes(List(airplane)) == 1) {
-                  val capitalGain = actualValue - dealerValue 
-                  AirlineSource.adjustAirlineBalance(airline.id, dealerValue * -1)
-                  AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = capitalGain))
-                  AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, dealerValue * -1))
-                  Ok(Json.obj())
+      this.synchronized {
+        AirplaneSource.loadAirplaneById(airplaneId) match {
+          case Some(airplane) =>
+            val airline = request.user
+            getUsedRejections(List(airplane), airplane.model, airline).get(airplane) match {
+              case Some(rejection) => BadRequest(rejection)
+              case None =>
+                if (!airplane.isSold) {
+                  BadRequest("Airplane is no longer for sale " + airlineId)
                 } else {
-                  BadRequest("Failed to buy used airplane " + airlineId)
+                  val dealerValue = airplane.dealerValue
+                  val actualValue = airplane.value
+                  airplane.buyFromDealer(airline)
+                  if (AirplaneSource.updateAirplanes(List(airplane)) == 1) {
+                    val capitalGain = actualValue - dealerValue
+                    AirlineSource.adjustAirlineBalance(airline.id, dealerValue * -1)
+                    AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = capitalGain))
+                    AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, dealerValue * -1))
+                    Ok(Json.obj())
+                  } else {
+                    BadRequest("Failed to buy used airplane " + airlineId)
+                  }
+
                 }
-                
-              }
-          }
-          
-        case None => BadRequest("airplane not found")
+            }
+
+          case None => BadRequest("airplane not found")
+        }
       }
   }
   
