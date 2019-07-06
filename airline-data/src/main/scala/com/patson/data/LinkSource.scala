@@ -442,7 +442,9 @@ object LinkSource {
   def deleteLinksByCriteria(criteria : List[(String, Any)]) = {
       //open the hsqldb
     val connection = Meta.getConnection()
-    try {  
+    try {
+      val purgingLinkIds = loadLinksByCriteria(criteria, ID_LOAD).map(_.id)
+
       var queryString = "DELETE FROM link "
       
       if (!criteria.isEmpty) {
@@ -458,11 +460,18 @@ object LinkSource {
       for (i <- 0 until criteria.size) {
         preparedStatement.setObject(i + 1, criteria(i)._2)
       }
-      
+
       val deletedCount = preparedStatement.executeUpdate()
       
       preparedStatement.close()
+
       println("Deleted " + deletedCount + " link records")
+      //purge alert records
+      val purgingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION).filter( alert => purgingLinkIds.contains(alert.targetId.get))
+      AlertSource.deleteAlerts(purgingAlerts)
+
+      println("Purged " + purgingAlerts.size + " alert records")
+
       deletedCount
     } finally {
       connection.close()
