@@ -282,9 +282,9 @@ class AirplaneApplication extends Controller {
             if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
               BadRequest("Not enough money")   
             } else {
-              if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
-                 AirplaneSource.saveAirplanes(List(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0)))
-              }
+//               if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
+//                  AirplaneSource.saveAirplanes(List(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0)))
+//               }
               
               val replacingAirplane = airplane.copy(constructedCycle = CycleSource.loadCycle(), condition = Airplane.MAX_CONDITION, value = airplane.model.price)
                
