@@ -107,6 +107,7 @@ object Model {
                       Model("Boeing 777-300", capacity = 550, fuelBurn = (550 * 5.5).toInt, speed = 945, range = 11121, price = 300000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US", imageUrl = "https://www.norebbo.com/2014/03/boeing-777-300-blank-illustration-templates/"),
                       Model("Boeing 747-400", capacity = 660, fuelBurn = (660 * 5.7).toInt, speed = 945, range = 13446, price = 350000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US", imageUrl = "https://www.norebbo.com/2013/09/boeing-747-400-blank-illustration-templates/"),
                       Model("Airbus A380-800", capacity = 853, fuelBurn = (853 * 6).toInt, speed = 945, range = 15700, price = 450000000, lifespan = 35 * 52, constructionTime = 54, countryCode = "NL", imageUrl = "https://www.norebbo.com/2013/06/airbus-a380-800-blank-illustration-templates/"),
+                      Model("Airbus A321", capacity = 220, fuelBurn = (220 * 3.6).toInt, speed = 830, range = 4167, price = 120000000, lifespan = 30 * 52, constructionTime = 8, countryCode = "DE", imageUrl = "https://www.norebbo.com/2014/03/airbus-a321-blank-illustration-templates/"),
                       Model("Airbus A319", capacity = 156, fuelBurn = (156 * 3.6).toInt, speed = 830, range = 3357, price = 95000000, lifespan = 30 * 52, constructionTime = 8, countryCode = "DE", imageUrl = "https://www.norebbo.com/2014/05/airbus-a319-blank-illustration-templates/"))
   
   val modelByName = models.map { model => (model.name, model) }.toMap 
