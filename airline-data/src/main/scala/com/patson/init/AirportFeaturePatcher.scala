@@ -44,7 +44,8 @@ object AirportFeaturePatcher {
         "ARN" -> 20,
         "MEX" -> 12,
         "BRU" -> 10,
-        "BOM" -> 10
+        "BOM" -> 10,
+        "PTY" -> 30
       ),
     VACATION_HUB -> Map[String, Int](
         "HNL" -> 80, //honolulu
@@ -74,6 +75,8 @@ object AirportFeaturePatcher {
         "ORY" -> 32, //Paris Orly
         "GUM" -> 31, //Guam
         "FCO" -> 38, //Rome
+        "PTY" -> 33,
+        "MRU" -> 30, //Mauritius
         "KIX" -> 30,
         "LAS" -> 30, //Vegas
         "MIA" -> 30,
@@ -150,7 +153,9 @@ object AirportFeaturePatcher {
         "TAO" -> 10, //Qingdao China
         "GEA" -> 10,
         "YZF" -> 10, //Yellowknife
-        "CUR" -> 10 //Curacao    
+        "CUR" -> 10, //Curacao
+        "IKU" -> 10, //Tamchy
+        "GPS" -> 16 //Galapagos
       ),
     FINANCIAL_HUB -> Map[String, Int](
         "LHR" -> 80,
@@ -211,7 +216,8 @@ object AirportFeaturePatcher {
         "CKG" -> 10, //Chongqing
         "WUH" -> 10, //Wuhan
         "CTU" -> 10, //Chengdu
-        "KHH" -> 11 //Kaohsiung
+        "KHH" -> 11, //Kaohsiung
+        "PTY" -> 23 //Panama
       ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()
   )
