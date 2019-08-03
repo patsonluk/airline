@@ -64,10 +64,10 @@ object LinkSimulation {
       linkConsumptionDetails += linkResult
       loungeConsumptionDetails ++= loungeResult
     }
-    
+
+    purgeAlerts()
     checkLoadFactor(links, cycle)
-      
-    
+
     LinkSource.deleteLinkConsumptionsByCycle(30)
     LinkSource.saveLinkConsumptions(linkConsumptionDetails.toList)
     
@@ -230,14 +230,30 @@ object LinkSimulation {
   val LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD = 3 //how many airlines before load factor is checked
   val LOAD_FACTOR_ALERT_THRESHOLD = 0.5 //LF threshold
   val LOAD_FACTOR_ALERT_DURAION = 52
-  
+
+  /**
+    * Purge alerts that are no longer valid
+    */
+  def purgeAlerts() = {
+    //only purge link cancellation alerts for now
+    val existingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION)
+
+    //try to purge the alerts, as some alerts might get inserted while the link is deleted during the simulation time
+    val liveLinkIds : List[Int] = LinkSource.loadAllLinks(LinkSource.ID_LOAD).map(_.id)
+    val deadAlerts = existingAlerts.filter(alert => !liveLinkIds.contains(alert.targetId))
+    AlertSource.deleteAlerts(deadAlerts)
+    println("Purged alerts with no corresponding links... " + deadAlerts.size)
+  }
+
   def checkLoadFactor(links : List[Link], cycle : Int) = {
+    val existingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION)
+
     //group links by from and to airport ID Tuple(id1, id2), smaller ID goes first in the tuple
     val linksByAirportIds = links.filter(_.capacity.total > 0).groupBy( link =>
-      if (link.from.id < link.to.id) (link.from.id, link.to.id) else (link.to.id, link.from.id)  
+      if (link.from.id < link.to.id) (link.from.id, link.to.id) else (link.to.id, link.from.id)
     )
-    
-    val existingAlertsByLinkId : scala.collection.immutable.Map[Int, Alert] = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION).map(alert => (alert.targetId.get, alert)).toMap
+
+    val existingAlertsByLinkId : scala.collection.immutable.Map[Int, Alert] = existingAlerts.map(alert => (alert.targetId.get, alert)).toMap
     
     val updatingAlerts = ListBuffer[Alert]()
     val newAlerts = ListBuffer[Alert]()
@@ -284,6 +300,7 @@ object LinkSimulation {
           }
         }
     }
+
     
     deletingLinks.foreach { link =>
        println("Revoked link: " + link)
