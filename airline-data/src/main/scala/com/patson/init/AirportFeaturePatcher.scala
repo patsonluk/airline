@@ -4,7 +4,7 @@ import com.patson.model._
 import com.patson.data.AirportSource
 import scala.collection.mutable.ListBuffer
 
-object AirportFeaturePatcher {
+object AirportFeaturePatcher extends App {
   import AirportFeatureType._
   val featureList = Map(
     INTERNATIONAL_HUB -> Map[String, Int](
@@ -42,8 +42,10 @@ object AirportFeaturePatcher {
         "TPE" -> 30,
         "KIX" -> 20,
         "ARN" -> 20,
-        "MEX" -> 12,
-        "BRU" -> 10,
+        "MEX" -> 18,
+        "BRU" -> 18,
+        "WAW" -> 15,
+        "LUX" -> 11,
         "BOM" -> 10
       ),
     VACATION_HUB -> Map[String, Int](
@@ -108,9 +110,11 @@ object AirportFeaturePatcher {
         "BUD" -> 24, //Budapest
         "PSA" -> 22,
         "OSL" -> 22, //Oslo
+        "CPH" -> 21, //Copenhagen
         "SFO" -> 20,
         "OOL" -> 20, //Gold Coast Aus
         "CMB" -> 20, //Colombo, Sri Lanka
+        "MRU" -> 20, //Mauritius
         "KIN" -> 19, //Kingston Jamaica
         "BWN" -> 19, //Brunei
         "MFM" -> 19, //Macau
@@ -201,11 +205,19 @@ object AirportFeaturePatcher {
         "CDG" -> 38, //paris
         "FRA" -> 54,
         "DMK" -> 19, //Bangkok other airport
+        "CPH" -> 19, //Copenhagen
         "NGO" -> 18,
         "MAN" -> 18,
         "HAM" -> 18,
         "TXL" -> 16,
+        "BOG" -> 15, //Bogota alpha-
+        "YUL" -> 18, //Montreal
+        "RUH" -> 15,
+        "SCL" -> 16, //Santiago alpha-
+        "DCA" -> 19,
         "ARN" -> 17,
+        "SVO" -> 19, //Moscow
+        "DME" -> 19, //Moscow
         "DUB" -> 13,  //Dublin
         "MNL" -> 13, //Manila
         "CKG" -> 10, //Chongqing
@@ -215,6 +227,8 @@ object AirportFeaturePatcher {
       ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()
   )
+
+    patchFeatures()
   
   def patchFeatures() = {
     val airportFeatures = scala.collection.mutable.Map[String, ListBuffer[AirportFeature]]()
