@@ -12,6 +12,8 @@ import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
 import com.patson.DemandGenerator
 import com.patson.Util
+
+import scala.collection.mutable
  
 class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
@@ -106,12 +108,12 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       ratio.shouldBe( >= (0.9))         //should be around 50 50
       ratio.shouldBe( <= (1.1))
     }
-    "generate similar cost if everything is the same but small differece in raw link quality".in {
+    "generate similar cost if everything is the same but small difference in raw link quality".in {
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal]())
       fromAirport.setAirlineLoyalty(testAirline1.id, 50)
       fromAirport.setAirlineLoyalty(testAirline2.id, 50)
       val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 51, 600, 1, flightType)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 1000, defaultCapacity, 50, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, 10000, defaultCapacity, 50, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -620,13 +622,40 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       assert(ratio > 1)
       assert(ratio < 1.2)
      }
+
+    "higher link class should care less about price".in {
+      val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, Link.HIGH_FREQUENCY_THRESHOLD, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline1, defaultPrice * (1.2), 10000, defaultCapacity, 0, 600, Link.HIGH_FREQUENCY_THRESHOLD, flightType)
+
+      val ratios = mutable.HashMap[LinkClass, Double]()
+      var airline1Picked = 0
+      var airline2Picked = 0
+      LinkClass.values.foreach { linkClass =>
+        for (i <- 0 until 100000) {
+          val preference = AppealPreference(fromAirport, linkClass, loungeLevelRequired = 0, loyaltyRatio = 1, 0)
+          val link1Cost = preference.computeCost(airline1Link, linkClass)
+          val link2Cost = preference.computeCost(airline2Link, linkClass)
+          if (link1Cost < link2Cost) airline1Picked += 1 else airline2Picked += 1
+        }
+        ratios.put(linkClass, airline1Picked.toDouble / airline2Picked)
+      }
+
+      println(ratios)
+      assert(ratios(ECONOMY) > ratios(BUSINESS))
+      assert(ratios(BUSINESS) > ratios(FIRST))
+      assert(ratios(FIRST) > 2)
+      assert(ratios(FIRST) < 2.5)
+      assert(ratios(ECONOMY) > 2.5)
+      assert(ratios(ECONOMY) < 3.5)
+
+    }
   }
    "A SimplePreference".must {
       "adjust price accordingly due to price weight ". in {
       val expensiveLink = airline1Link.copy(price = LinkClassValues.getInstance(10000, 10000, 10000))
       val cost1 = SimplePreference(fromAirport, 0.8, ECONOMY).computeCost(expensiveLink, ECONOMY)
       val cost2 = SimplePreference(fromAirport, 1.2, ECONOMY).computeCost(expensiveLink, ECONOMY)
-      val standardPrice = Pricing.computeStandardPrice(expensiveLink, ECONOMY)
+      val standardPrice = expensiveLink.standardPrice(ECONOMY)
       val delta1 = Math.abs(cost1 - standardPrice) //should be small delta as this group of customer care less about price
       val delta2 = Math.abs(cost2 - standardPrice)
       delta1.should(be < delta2)
