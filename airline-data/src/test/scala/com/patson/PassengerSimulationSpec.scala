@@ -755,8 +755,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.4)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.5)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.7)
     }
     
     "accept almost no link at 1.5 suggested price with 0 quality and no loyalty".in { 
