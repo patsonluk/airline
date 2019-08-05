@@ -80,29 +80,32 @@ object DemandGenerator {
 	  
 	  
 	  val allDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
+    var oneCount = 0
 	  allDemands.asScala.foreach {
 	    case (fromAirport, toAirportsWithDemand) =>
-	      //for each city generate different preferences
+        //for each city generate different preferences
         val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
 
         val demandListFromThisAiport = toAirportsWithDemand.foreach {
           case (toAirport, (passengerType, demand)) =>
-            LinkClass.values.foreach { linkClass =>
-              if (demand(linkClass) > 0) {
-                var remainingDemand = demand(linkClass)
-                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
-                while (remainingDemand > demandChunkSize) {
-                  allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, demandChunkSize))
-                  remainingDemand -= demandChunkSize
-                  demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
+            if (demand.total >= 2) { //drop very tiny demand for now (speed up simulation)
+              LinkClass.values.foreach { linkClass =>
+                if (demand(linkClass) > 0) {
+                  var remainingDemand = demand(linkClass)
+                  var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
+                  while (remainingDemand > demandChunkSize) {
+                    allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, demandChunkSize))
+                    remainingDemand -= demandChunkSize
+                    demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
+                  }
+                  allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
                 }
-                allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
               }
             }
         }
 	      
 	  }
-	  
+
 	  
     allDemandChunks.toList
   }

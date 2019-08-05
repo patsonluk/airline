@@ -535,14 +535,14 @@ object PassengerSimulation {
               
               val frequency = Math.max(predecessorLink.frequency, linkConsideration.link.frequency)
               //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
-              if (frequency < 42) {
+              if (frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
                 connectionCost += (3.5 * 24 * 5) / frequency //each extra hour wait is like $5 more
               }
               
               val previousLinkAirlineId = predecessorLink.airline.id
               val currentLinkAirlineId = linkConsideration.link.airline.id
               if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == None || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
-                connectionCost += 100
+                connectionCost += 50
               }
               
               connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
