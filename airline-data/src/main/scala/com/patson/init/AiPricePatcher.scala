@@ -36,7 +36,7 @@ object AiPricePatcher extends App {
     val updatingLinks = ListBuffer[Link]()
     AirlineSource.loadAllAirlines(false).filter(_.isGenerated).foreach {  aiAirline =>
       LinkSource.loadLinksByAirlineId(aiAirline.id).foreach { link =>
-        updatingLinks += link.copy(price = LinkClassValues.getInstance(Pricing.computeStandardPrice(link, ECONOMY), 0, 0))
+        updatingLinks += link.copy(price = LinkClassValues.getInstance(link.standardPrice(ECONOMY), 0, 0))
       }
     }
     
