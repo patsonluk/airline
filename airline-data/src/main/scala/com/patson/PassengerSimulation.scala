@@ -542,7 +542,7 @@ object PassengerSimulation {
               val previousLinkAirlineId = predecessorLink.airline.id
               val currentLinkAirlineId = linkConsideration.link.airline.id
               if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == None || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
-                connectionCost += 50 
+                connectionCost += 100
               }
               
               connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too

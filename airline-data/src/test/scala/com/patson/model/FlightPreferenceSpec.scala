@@ -643,10 +643,10 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       println(ratios)
       assert(ratios(ECONOMY) > ratios(BUSINESS))
       assert(ratios(BUSINESS) > ratios(FIRST))
-      assert(ratios(FIRST) > 2)
-      assert(ratios(FIRST) < 2.5)
-      assert(ratios(ECONOMY) > 2.5)
-      assert(ratios(ECONOMY) < 3.5)
+      assert(ratios(FIRST) > 2.5)
+      assert(ratios(FIRST) < 3.5)
+      assert(ratios(ECONOMY) > 3)
+      assert(ratios(ECONOMY) < 4)
 
     }
   }

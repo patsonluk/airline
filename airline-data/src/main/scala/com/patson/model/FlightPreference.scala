@@ -161,13 +161,13 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     
     var perceivedPrice = link.price(linkClass);
     if (linkClass.level != preferredLinkClass.level) {
-      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * 2).toInt //have to normalize the price to match the preferred link class, * 2 for unwillingness to downgrade
+      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * 2.5).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
     }
 
-    val standardPrice = link.standardPrice(linkClass)
+    val standardPrice = link.standardPrice(preferredLinkClass)
     val deltaFromStandardPrice = perceivedPrice - standardPrice
 
-    perceivedPrice = (standardPrice + deltaFromStandardPrice * linkClass.priceSensitivity).toInt
+    perceivedPrice = (standardPrice + deltaFromStandardPrice * preferredLinkClass.priceSensitivity).toInt
     
     val loyalty = appeal.loyalty
     //the maxReduceFactorForThisAirline, if at max loyalty, it is the same as maxReduceFactorAtMaxLoyalty, at 0 loyalty, this is at maxReduceFactorAtMinLoyalty
@@ -200,7 +200,7 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
     //adjust by lounge
-    if (linkClass.level >= BUSINESS.level) {
+    if (preferredLinkClass.level >= BUSINESS.level) {
       val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
       val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
         
