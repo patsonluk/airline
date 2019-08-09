@@ -122,10 +122,12 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
 
   def standardPrice(linkClass : LinkClass) : Int = {
-    if (!standardPrice.contains(linkClass)) {
-      standardPrice.put(linkClass, Pricing.computeStandardPrice(distance, flightType, linkClass))
+    var price = standardPrice.get(linkClass)
+    if (price == null) {
+      price = Pricing.computeStandardPrice(distance, flightType, linkClass)
+      standardPrice.put(linkClass, price)
     }
-    standardPrice.get(linkClass)
+    price
   }
   
   
