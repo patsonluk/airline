@@ -388,16 +388,11 @@ object PassengerSimulation {
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
         val linkConsiderations = new ArrayList[LinkConsideration]()
 
-        var walker = 0
         linksList.foreach { link =>
           
           //see if there are any seats for that class (or lower) left
           link.availableSeatsAtOrBelowClass(preferredLinkClass).foreach { 
             case(matchingLinkClass, seatsLeft) =>
-              if (seatsLeft == 0) {
-                walker += 1
-                println("????" + walker)
-              }
               //from the perspective of the passenger group, how well does it know each link
               val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
               val airlineAwarenessFromReputation = if (link.airline.getReputation() > Airline.MAX_REPUTATION / 2) AirlineAppeal.MAX_AWARENESS else link.airline.getReputation() * 2 //if reputation is 50+ then everyone will see it, otherwise reputation * 2
