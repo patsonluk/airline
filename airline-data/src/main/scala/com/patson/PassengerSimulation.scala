@@ -2,8 +2,6 @@
 
 package com.patson
 
-import java.util
-
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Set
 import scala.concurrent.Await
@@ -567,7 +565,7 @@ object PassengerSimulation {
               
               val previousLinkAirlineId = predecessorLink.airline.id
               val currentLinkAirlineId = linkConsideration.link.airline.id
-              if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == None || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
+              if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
                 connectionCost += 50
               }
               
