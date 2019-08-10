@@ -179,7 +179,7 @@ object LinkSimulation {
     val depreciation = link.getAssignedAirplanes().foldLeft(0)(_ + _.depreciationRate)
     
     var inflightCost, crewCost, revenue = 0 
-    link.capacity.map.keys.foreach { linkClass =>
+    LinkClass.values.foreach { linkClass =>
       val capacity = link.capacity(linkClass)
       val soldSeats = link.soldSeats(linkClass)
       

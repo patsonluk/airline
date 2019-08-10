@@ -365,10 +365,8 @@ object PassengerSimulation {
 
     establishedAlliances.foreach { alliance => alliance.members.filter(_.role != AllianceRole.APPLICANT).foreach(member => establishedAllianceIdByAirlineId.put(member.airline.id, alliance.id)) }
 
-    val traceTimestampMap = new ConcurrentHashMap[Long, Long]()
-    val maxTraceDuration = 60 * 1000; //1 min
-
-
+//    val traceTimestampMap = new ConcurrentHashMap[Long, Long]()
+//    val maxTraceDuration = 60 * 1000; //1 min
 //    println("Agent ready? : " + AgentChecker.waitUntilAgentReady(10, TimeUnit.SECONDS))
     val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.par.map {
       case(passengerGroup, toAirports) => {

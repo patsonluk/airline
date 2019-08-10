@@ -110,9 +110,9 @@ object LinkSource {
             fromAirport.get,
             toAirport.get,
             airline.get,
-            LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
+            LinkClassValues.getInstance(resultSet.getInt("price_economy"), resultSet.getInt("price_business"), resultSet.getInt("price_first")),
             resultSet.getInt("distance"),
-            LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
+            LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
             resultSet.getInt("quality"),
             resultSet.getInt("duration"),
             resultSet.getInt("frequency"),
@@ -622,13 +622,13 @@ object LinkSource {
           case Some(currentLink) =>
             //need to update current link with history link data
             val frequency = resultSet.getInt("frequency")
-            val price = LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first")))
+            val price = LinkClassValues.getInstance(resultSet.getInt("price_economy"), resultSet.getInt("price_business"), resultSet.getInt("price_first"))
             val quality = resultSet.getInt("quality")
-            val capacity =  LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first")))
+            val capacity =  LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"),resultSet.getInt("capacity_first"))
             
             val link = currentLink.copy(price = price, frequency = frequency, capacity = capacity)
             link.setQuality(quality)
-            link.addSoldSeats(LinkClassValues(Map(ECONOMY -> resultSet.getInt("sold_seats_economy"), BUSINESS -> resultSet.getInt("sold_seats_business"), FIRST -> resultSet.getInt("sold_seats_first"))))
+            link.addSoldSeats(LinkClassValues.getInstance(resultSet.getInt("sold_seats_economy"), resultSet.getInt("sold_seats_business"), resultSet.getInt("sold_seats_first")))
             link.minorDelayCount = resultSet.getInt("minor_delay_count")
             link.majorDelayCount = resultSet.getInt("major_delay_count")
             link.cancellationCount = resultSet.getInt("cancellation_count")

@@ -1,59 +1,60 @@
 package com.patson.model
 
-case class LinkClassValues(map : Map[LinkClass, Int]) {
-  def apply(linkClass : LinkClass) = { map.getOrElse(linkClass, 0) }
+//case class LinkClassValues(map : Map[LinkClass, Int]) {
+case class LinkClassValues(economyVal : Int, businessVal : Int, firstVal : Int) {
+//  val firstClassVal = map.getOrElse(FIRST, 0)
+//  val businessClassVal = map.getOrElse(BUSINESS, 0)
+//  val economyClassVal = map.getOrElse(ECONOMY, 0)
+
+  def apply(linkClass : LinkClass) = {
+  //  map.getOrElse(linkClass, 0)
+    linkClass match {
+      case ECONOMY => economyVal
+      case BUSINESS => businessVal
+      case FIRST => firstVal
+    }
+  }
   
-  val total = map.map(_._2).sum
+//  val total = map.map(_._2).sum
+val total = economyVal + businessVal + firstVal
   
   def +(otherValue : LinkClassValues) : LinkClassValues = {
-//    map.foreach {
-//      case (key, value) => map.update(key, map(key) + otherValue(key)) 
-//    }
-//    this
-    LinkClassValues(map.map { 
-      case (key, value) => (key, value + otherValue(key)) 
-    })
+//    LinkClassValues(map.map {
+//      case (key, value) => (key, value + otherValue(key))
+//    })
+    LinkClassValues(economyVal + otherValue.economyVal, businessVal + otherValue.businessVal, firstVal + otherValue.firstVal)
   }
   
   def -(otherValue : LinkClassValues) : LinkClassValues = {
-//    map.foreach {
-//      case (key, value) => map.update(key, map(key) - otherValue(key)) 
-//    }
-//    this
-    LinkClassValues(map.map { 
-      case (key, value) => (key, value - otherValue(key)) 
-    })
+//    LinkClassValues(map.map {
+//      case (key, value) => (key, value - otherValue(key))
+//    })
+    LinkClassValues(economyVal - otherValue.economyVal, businessVal - otherValue.businessVal, firstVal - otherValue.firstVal)
   }
   
   def *(otherValue : LinkClassValues) : LinkClassValues = {
-//    map.foreach {
-//      case (key, value) => map.update(key, (map(key) * multiplier).toInt) 
-//    }
-//    this
-    LinkClassValues(map.map { 
-      case (key, value) => (key, value * otherValue(key)) 
-    })
+//    LinkClassValues(map.map {
+//      case (key, value) => (key, value * otherValue(key))
+//    })
+    LinkClassValues(economyVal * otherValue.economyVal, businessVal * otherValue.businessVal, firstVal * otherValue.firstVal)
   }
   
   def *(multiplier : Double) : LinkClassValues = {
-//    map.foreach {
-//      case (key, value) => map.update(key, (map(key) * multiplier).toInt) 
-//    }
-//    this
-    LinkClassValues(map.mapValues { value => (value * multiplier).toInt })
+//    LinkClassValues(map.mapValues { value => (value * multiplier).toInt })
+    LinkClassValues((economyVal * multiplier).toInt, (businessVal * multiplier).toInt, (firstVal * multiplier).toInt)
   }
   
   def /(divider : Int) : LinkClassValues = {
-//    map.foreach {
-//      case (key, value) => map.update(key, map(key) / divider) 
-//    }
-//    this
-    LinkClassValues(map.mapValues { value => value / divider })
+//    LinkClassValues(map.mapValues { value => value / divider })
+    LinkClassValues(economyVal / divider, businessVal / divider, firstVal / divider)
   }
 }
 object LinkClassValues {
   def getInstance(economy : Int = 0, business : Int = 0, first : Int = 0) : LinkClassValues = {
-    LinkClassValues(Map(ECONOMY -> economy, BUSINESS -> business, FIRST -> first))
+    LinkClassValues(economy, business, first)
+  }
+  def getInstanceByMap(map : Map[LinkClass, Int]) : LinkClassValues = {
+    LinkClassValues(map.getOrElse(ECONOMY, 0), map.getOrElse(BUSINESS, 0), map.getOrElse(FIRST, 0))
   }
 }
 

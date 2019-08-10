@@ -104,7 +104,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   def addSoldSeatsByClass(linkClass : LinkClass, soldSeats : Int) = {
-    val soldSeatsClassValues = LinkClassValues(Map(linkClass -> soldSeats)) 
+    val soldSeatsClassValues = LinkClassValues.getInstanceByMap(Map(linkClass -> soldSeats))
     addSoldSeats(soldSeatsClassValues) 
   }
   
@@ -123,7 +123,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 
   def standardPrice(linkClass : LinkClass) : Int = {
     var price = standardPrice.get(linkClass)
-    if (price == null) {
+    if (price == null.asInstanceOf[Int]) {
       price = Pricing.computeStandardPrice(distance, flightType, linkClass)
       standardPrice.put(linkClass, price)
     }
