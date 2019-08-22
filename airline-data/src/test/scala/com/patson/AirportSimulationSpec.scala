@@ -86,7 +86,7 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
         val capacity = frequency * airplane.model.capacity
         val fromAirport = Airport.fromId(1)
         val toAirport = Airport.fromId(2)
-        val link = Link(fromAirport, toAirport, Airline.fromId(1), LinkClassValues(Map(ECONOMY -> price)), distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, Computation.getFlightType(fromAirport, toAirport, distance))
+        val link = Link(fromAirport, toAirport, Airline.fromId(1), LinkClassValues.getInstanceByMap(Map(ECONOMY -> price)), distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, Computation.getFlightType(fromAirport, toAirport, distance))
         link.setAssignedAirplanes(List(airplane))
         consumptions.append(LinkConsumptionDetails(link = link, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, loungeCost = 0, depreciation = 0, revenue = 0, profit = 0,  cycle = 0))
       }

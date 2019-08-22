@@ -415,13 +415,13 @@ object Airport {
   
   import FlightType._
   val qualityExpectationFlightTypeAdjust = 
-  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, 0, 15),
-        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 5, 20),
-        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 10, 25),
-        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 30),
-        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 20, 35),
-        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 25, 40),
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 25, 40))
+  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
+        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
+        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 5, 15),
+        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 5, 15),
+        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 10, 20),
+        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20),
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20))
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)
