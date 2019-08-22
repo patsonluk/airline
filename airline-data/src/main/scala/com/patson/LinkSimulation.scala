@@ -179,7 +179,7 @@ object LinkSimulation {
     val depreciation = link.getAssignedAirplanes().foldLeft(0)(_ + _.depreciationRate)
     
     var inflightCost, crewCost, revenue = 0 
-    link.capacity.map.keys.foreach { linkClass =>
+    LinkClass.values.foreach { linkClass =>
       val capacity = link.capacity(linkClass)
       val soldSeats = link.soldSeats(linkClass)
       
@@ -240,7 +240,7 @@ object LinkSimulation {
 
     //try to purge the alerts, as some alerts might get inserted while the link is deleted during the simulation time
     val liveLinkIds : List[Int] = LinkSource.loadAllLinks(LinkSource.ID_LOAD).map(_.id)
-    val deadAlerts = existingAlerts.filter(alert => !liveLinkIds.contains(alert.targetId))
+    val deadAlerts = existingAlerts.filter(alert => alert.targetId.isDefined && !liveLinkIds.contains(alert.targetId.get))
     AlertSource.deleteAlerts(deadAlerts)
     println("Purged alerts with no corresponding links... " + deadAlerts.size)
   }

@@ -80,9 +80,10 @@ object DemandGenerator {
 	  
 	  
 	  val allDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
+    var oneCount = 0
 	  allDemands.asScala.foreach {
 	    case (fromAirport, toAirportsWithDemand) =>
-	      //for each city generate different preferences
+        //for each city generate different preferences
         val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
 
         val demandListFromThisAiport = toAirportsWithDemand.foreach {
@@ -90,7 +91,7 @@ object DemandGenerator {
             LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
-                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
+                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
                 while (remainingDemand > demandChunkSize) {
                   allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, demandChunkSize))
                   remainingDemand -= demandChunkSize
@@ -102,7 +103,7 @@ object DemandGenerator {
         }
 	      
 	  }
-	  
+
 	  
     allDemandChunks.toList
   }

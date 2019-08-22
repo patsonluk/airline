@@ -22,7 +22,9 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   @volatile private var hasComputedQuality = false
   @volatile private var computedQualityStore : Int = 0
   @volatile private var computedQualityPriceAdjust : ConcurrentHashMap[LinkClass, Double] = new ConcurrentHashMap[LinkClass, Double]()
-  
+
+  private val standardPrice : ConcurrentHashMap[LinkClass, Int] = new ConcurrentHashMap[LinkClass, Int]()
+
   def setAssignedAirplanes(assignedAirplanes : List[Airplane]) = {
     this.assignedAirplanes = assignedAirplanes
     if (!assignedAirplanes.isEmpty) {
@@ -102,7 +104,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   def addSoldSeatsByClass(linkClass : LinkClass, soldSeats : Int) = {
-    val soldSeatsClassValues = LinkClassValues(Map(linkClass -> soldSeats)) 
+    val soldSeatsClassValues = LinkClassValues.getInstanceByMap(Map(linkClass -> soldSeats))
     addSoldSeats(soldSeatsClassValues) 
   }
   
@@ -117,6 +119,15 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     } else { //error 
       LinkClassValues.getInstance()
     }
+  }
+
+  def standardPrice(linkClass : LinkClass) : Int = {
+    var price = standardPrice.get(linkClass)
+    if (price == null.asInstanceOf[Int]) {
+      price = Pricing.computeStandardPrice(distance, flightType, linkClass)
+      standardPrice.put(linkClass, price)
+    }
+    price
   }
   
   
@@ -158,16 +169,16 @@ case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, 
     }
 }
 
-sealed abstract class LinkClass(val code : String, val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val level : Int) {
+sealed abstract class LinkClass(val code : String, val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val priceSensitivity : Double, val level : Int) {
   def label : String //level for sorting/comparison purpose
 }
-case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 3, priceMultiplier = 9, 3) {
+case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 3, priceMultiplier = 9, priceSensitivity = 0.6, level = 3) {
   override def label = "first"
 }
-case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 2, priceMultiplier = 3, 2) {
+case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 2, priceMultiplier = 3, priceSensitivity = 0.8, level = 2) {
   override def label = "business"
 }
-case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, 1) {
+case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, priceSensitivity = 1.0, level =1) {
   override def label = "economy"
 }
 object LinkClass {
