@@ -141,6 +141,7 @@ object AirlineSimulation {
         othersSummary.put(OtherIncomeItemType.LOUNGE_INCOME, loungeIncome)
         
         totalCashExpense += loungeUpkeep + loungeCost
+        totalCashRevenue += loungeIncome
         
         //calculate extra cash flow due to difference in fuel cost
         val accountingFuelCost = linksIncome.fuelCost * -1
@@ -229,7 +230,7 @@ object AirlineSimulation {
         //cash flow computation
         val totalCashFlow = totalCashRevenue - totalCashExpense
         
-        val operationCashFlow = totalCashFlow + loanPayment //include both interest and principle here
+        val operationCashFlow = totalCashFlow + loanPayment //exclude both interest and principle here, which WAS included in the total cash flow
         cashFlows.put(airline, totalCashFlow) //this is week end flow, used for actual adjustment
         
         //below is for accounting purpose
