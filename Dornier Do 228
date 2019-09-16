@@ -1,0 +1,1 @@
+ Model("Dornier Do 228", capacity = 16, fuelBurn = (16 * 1.5).toInt, speed = 413, range = 500, price = 6000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "DE",
