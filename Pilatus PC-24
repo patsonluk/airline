@@ -1,1 +1,1 @@
-Model("Pilatus PC-24", capacity = 11, fuelBurn = (11 * 2.2).toInt, speed = 815, range = 3334, price = 1000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "CH"/),
+Model("Pilatus PC-24", capacity = 11, fuelBurn = (11 * 2.2).toInt, speed = 815, range = 3334, price = 700000, lifespan = 35 * 52, constructionTime = 0, countryCode = "CH"/),
