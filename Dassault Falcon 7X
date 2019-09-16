@@ -1,0 +1,1 @@
+Model("Dassault Falcon 7X", capacity = 19, fuelBurn = (19 * 3.9).toInt, speed = 685, range = 11019, price = 19000000, lifespan = 35 * 52, constructionTime = 5, countryCode = "FR"/),
