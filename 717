@@ -1,2 +1,2 @@
-Model("Boeing 717-200", capacity = 128, fuelBurn = (128 * 3.0).toInt, speed = 811, range = 3820, price = 40000000, lifespan = 35 * 52, constructionTime = 5, countryCode = "US", imageUrl = "https://ibb.co/sHm0FGC/"),
-Model("McDonnell Douglas MD-88", capacity = 172, fuelBurn = (172 * 3.5).toInt, speed = 925, range = 4720, price = 45000000, lifespan = 35 * 52, constructionTime = 6, countryCode = "US", imageUrl = "https://ibb.co/26pVBYN/"),
+Model("Boeing 717-200", capacity = 128, fuelBurn = (128 * 3.75).toInt, speed = 811, range = 3820, price = 60000000, lifespan = 35 * 52, constructionTime = 5, countryCode = "US", imageUrl = "https://ibb.co/sHm0FGC/"),
+Model("McDonnell Douglas MD-88", capacity = 172, fuelBurn = (172 * 4.5).toInt, speed = 925, range = 4720, price = 62000000, lifespan = 35 * 52, constructionTime = 6, countryCode = "US", imageUrl = "https://ibb.co/26pVBYN/"),
