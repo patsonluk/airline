@@ -78,7 +78,7 @@ object GeoDataGenerator extends App {
   }
   
   def isCity(placeCode : String, countryCode : String) : Boolean = {
-    placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || placeCode == "PPLA3" || (placeCode == "PPL" && (countryCode == "AU" /*|| countryCode == "CA"*/))  
+    placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || placeCode == "PPLA3" || placeCode == "PPL")
   }
   
   def getRunway() : Future[Map[String, List[Runway]]] = {
