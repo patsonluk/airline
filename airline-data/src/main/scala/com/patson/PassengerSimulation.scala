@@ -350,8 +350,8 @@ object PassengerSimulation {
 //    val traceTimestampMap = new ConcurrentHashMap[Long, Long]()
 //    val maxTraceDuration = 60 * 1000; //1 min
 //    println("Agent ready? : " + AgentChecker.waitUntilAgentReady(10, TimeUnit.SECONDS))
-    val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.par.map {
-      case(passengerGroup : PassengerGroup, toAirports : Map[Airport, Route]) => {
+    val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.toList.par.map {
+      case((passengerGroup : PassengerGroup, toAirports)) => {
 //        val currentThreadId = Thread.currentThread().getId
 //        val currentTime = System.currentTimeMillis()
 //        if (!traceTimestampMap.containsKey(currentThreadId) || (currentTime - traceTimestampMap.get(currentThreadId)) > maxTraceDuration) {
