@@ -1,10 +1,13 @@
 package com.patson.init
 
 import java.net.URLEncoder
+
 import play.api.libs.json.Json
 import play.api.libs.json.JsObject
 import play.api.libs.json.JsArray
 import java.util.NoSuchElementException
+
+import scala.io.Source
 
 object WikiUtil {
   def queryProfilePicture(searchItem : String, preferredWords : List[String]) : Option[String] = {
@@ -132,7 +135,7 @@ object WikiUtil {
       connection.setReadTimeout(readTimeout)
       connection.setRequestMethod(requestMethod)
       val inputStream = connection.getInputStream
-      val content = io.Source.fromInputStream(inputStream).mkString
+      val content = Source.fromInputStream(inputStream).mkString
       if (inputStream != null) inputStream.close
       content
     }
