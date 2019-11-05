@@ -297,13 +297,13 @@ object AppealPreference {
 class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]) {
   val pool : Map[LinkClass, List[FlightPreference]] = preferencesWithWeight.groupBy {
     case (flightPrefernce, weight) => flightPrefernce.preferredLinkClass
-  }.mapValues { 
+  }.view.mapValues {
     _.flatMap {
       case (flightPreference, weight) => (0 until weight).foldRight(List[FlightPreference]()) { (_, foldList) =>
         flightPreference :: foldList 
       }
     }
-  }
+  }.toMap
   
   
   

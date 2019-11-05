@@ -2,26 +2,15 @@
 
 package com.patson
 
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Set
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import akka.actor.ActorSystem
-import akka.stream.FlowMaterializer
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import scala.util.Random
-import scala.concurrent.Future
-import com.patson.data._
-import com.patson.model._
-import scala.collection.immutable.Map
-import akka.actor.Actor
-import akka.actor.Props
 import java.util.concurrent.TimeUnit
-import com.patson.stream.SimulationEventStream
-import com.patson.stream.CycleCompleted
-import com.patson.stream.CycleStart
+
+import akka.actor.Props
+import akka.actor.Actor
+import com.patson.data._
+import com.patson.stream.{CycleCompleted, CycleStart, SimulationEventStream}
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.concurrent.duration.Duration
 
 object MainSimulation extends App {
   val CYCLE_DURATION : Int = 15 * 60
@@ -35,7 +24,6 @@ object MainSimulation extends App {
   mainFlow
   
   def mainFlow() = {
-    import actorSystem.dispatcher
     val actor = actorSystem.actorOf(Props[MainSimulationActor])
     actorSystem.scheduler.schedule(Duration.Zero, Duration(CYCLE_DURATION, TimeUnit.SECONDS), actor, Start)
   }

@@ -1,22 +1,9 @@
 package com.patson
 
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Set
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import akka.actor.ActorSystem
-import akka.stream.FlowMaterializer
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import scala.util.Random
-import scala.concurrent.Future
 import com.patson.data._
 import com.patson.model._
-import scala.collection.mutable.Map
-import akka.actor.Actor
-import akka.actor.Props
-import java.util.concurrent.TimeUnit
+
+import scala.collection.mutable.{Map, Set}
 
 object AirportSimulation {
   val AWARENESS_DECAY = 0.1
@@ -128,7 +115,7 @@ object AirportSimulation {
         linkConsumptions.map { 
           case (_, linkConsumptionsByDirection) => linkConsumptionsByDirection
         }.flatten
-    }
+    }.toMap
     
     airportSoldLinks.foreach {
       case (airportId, soldLinks) =>

@@ -1,18 +1,9 @@
 package com.patson
 
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
-import akka.actor.ActorSystem
-import akka.testkit.ImplicitSender
-import akka.testkit.TestKit
 import com.patson.model._
-import scala.collection.mutable.Set
-import scala.collection.mutable.ListBuffer
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import com.patson.model.airplane.Model.Type._
 import com.patson.model.airplane._
-import Model.Type._
+import org.scalatest.{Matchers, WordSpecLike}
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
   private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.25, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1)

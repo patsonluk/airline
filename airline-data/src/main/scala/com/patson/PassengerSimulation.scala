@@ -2,32 +2,16 @@
 
 package com.patson
 
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Set
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import akka.actor.ActorSystem
-import akka.stream.FlowMaterializer
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-
-import scala.util.Random
-import scala.concurrent.Future
-import com.patson.data.AirportSource
-import com.patson.data.LinkSource
-import com.patson.model._
-
-import scala.collection.mutable.ArrayBuffer
-import scala.util.control.Breaks._
-import com.patson.data.CountrySource
+import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.patson.data.AllianceSource
-import java.util.ArrayList
-import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
+import com.patson.data.{AllianceSource, CountrySource, LinkSource}
+import com.patson.model._
 
-import com.appoptics.api.ext.{AgentChecker, Trace, TraceContext}
+import scala.collection.mutable.{ListBuffer, Set}
+import scala.util.Random
+
+import scala.collection.parallel.CollectionConverters._
 
 object PassengerSimulation {
 
@@ -215,7 +199,7 @@ object PassengerSimulation {
 //    
 //    LinkSource.saveLinkConsumptions(soldLinks)
     
-    collapsedMap
+    collapsedMap.toMap
   }
   
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
@@ -367,7 +351,7 @@ object PassengerSimulation {
 //    val maxTraceDuration = 60 * 1000; //1 min
 //    println("Agent ready? : " + AgentChecker.waitUntilAgentReady(10, TimeUnit.SECONDS))
     val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.par.map {
-      case(passengerGroup, toAirports) => {
+      case(passengerGroup : PassengerGroup, toAirports : Map[Airport, Route]) => {
 //        val currentThreadId = Thread.currentThread().getId
 //        val currentTime = System.currentTimeMillis()
 //        if (!traceTimestampMap.containsKey(currentThreadId) || (currentTime - traceTimestampMap.get(currentThreadId)) > maxTraceDuration) {

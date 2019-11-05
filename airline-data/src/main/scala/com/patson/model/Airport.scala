@@ -1,15 +1,14 @@
 package com.patson.model
 
 import com.patson.model.airplane.Model
-import com.patson.model.airplane.Model.Type
 import scala.collection.mutable.ListBuffer
-import scala.collection.JavaConversions._
 import com.patson.data.AirlineSource
 import com.patson.data.CountrySource
+import scala.jdk.CollectionConverters._
 
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
-  val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
+  val citiesServed = scala.collection.mutable.ListBuffer[(City, Double)]()
   private[this] val airlineAppeals = new java.util.HashMap[Int, AirlineAppeal]()//scala.collection.mutable.Map[Int, AirlineAppeal]()
   private[this] var airlineAppealsLoaded = false
   private[this] val slotAssignments = scala.collection.mutable.Map[Int, Int]()
@@ -46,21 +45,21 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    airlineAppeals.toMap
+    airlineAppeals.asScala.toMap
   }
   
   def setAirlineLoyalty(airlineId : Int, value : Double) = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    val oldAppeal = airlineAppeals.getOrElse(airlineId, AirlineAppeal(0, 0))
+    val oldAppeal = airlineAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
     airlineAppeals.put(airlineId, AirlineAppeal(value, oldAppeal.awareness))
   }
   def setAirlineAwareness(airlineId : Int, value : Double) = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    val oldAppeal = airlineAppeals.getOrElse(airlineId, AirlineAppeal(0, 0))
+    val oldAppeal = airlineAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
     airlineAppeals.put(airlineId, AirlineAppeal(oldAppeal.loyalty, value))
   }
   def getAirlineLoyalty(airlineId : Int) : Double = {
@@ -293,7 +292,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   
   def initAirlineAppeals(airlineAppeals : Map[Int, AirlineAppeal]) = {
     this.airlineAppeals.clear()
-    this.airlineAppeals ++= airlineAppeals
+    this.airlineAppeals.asScala ++= airlineAppeals
     airlineAppealsLoaded = true
   }
   def initSlotAssignments(slotAssignments : Map[Int, Int]) = {

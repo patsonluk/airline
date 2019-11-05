@@ -1,17 +1,7 @@
 package com.patson
 
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
-import akka.actor.ActorSystem
-import akka.testkit.ImplicitSender
-import akka.testkit.TestKit
 import com.patson.model._
-import scala.collection.mutable.Set
-import scala.collection.mutable.ListBuffer
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import com.patson.model.airplane._
+import org.scalatest.{Matchers, WordSpecLike}
  
 class AirlineSimulationSpec extends WordSpecLike with Matchers {
   "getTargetQuality".must {
