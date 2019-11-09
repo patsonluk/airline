@@ -43,8 +43,8 @@ object LogoUtil {
   }
   
   def getBlankLogo() = {
-    val buffer = new ByteArrayOutputStream();
-    val is = play.Play.application().resourceAsStream("/logo/blank.png")
+    //val buffer = new ByteArrayOutputStream();
+    val is = play.Environment.simple().resourceAsStream("/logo/blank.png")
 
     val targetArray = new Array[Byte](is.available());
     is.read(targetArray);

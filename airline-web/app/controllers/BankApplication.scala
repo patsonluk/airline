@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -25,6 +26,7 @@ import com.patson.data.BankSource
 import com.patson.model.Loan
 import play.api.data.Form
 import play.api.data.Forms
+import play.api.mvc.Security.AuthenticatedRequest
 
 
 
@@ -52,9 +54,8 @@ class BankApplication extends Controller {
       "requestedTerm" -> Forms.number
     )(LoanRequest.apply)(LoanRequest.unapply)
   )
-  
-  
-  def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+
+  def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request : AuthenticatedRequest[Any, Airline] =>
     Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id)))
   }
   

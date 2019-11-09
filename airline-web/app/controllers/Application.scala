@@ -1,6 +1,5 @@
 package controllers
 
-import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.json.Json
@@ -15,21 +14,24 @@ import play.api.data.Forms.mapping
 import play.api.data.Forms.number
 import com.patson.data.CitySource
 import com.patson.data.LinkStatisticsSource
+
 import scala.collection.mutable.LinkedHashMap
 import scala.collection.mutable.ListBuffer
 import com.patson.model.Scheduling.TimeSlot
-import controllers.AuthenticationObject.AuthenticatedAirline
+
 import scala.collection.mutable.Set
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
 import java.util.Random
+
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
 import controllers.WeatherUtil.Coordinates
 import controllers.WeatherUtil.Weather
 import com.patson.data.LoungeHistorySource
+import controllers.AuthenticationObject.AuthenticatedAirline
 
 
 class Application extends Controller {
@@ -92,7 +94,7 @@ class Application extends Controller {
         airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
       }
       
-      airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.toList.map(_._1)))
+      airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.map(_._1).toList))
       
       airportObject
     }
@@ -112,21 +114,6 @@ class Application extends Controller {
     }
   }
  
-  implicit object CityWrites extends Writes[City] {
-    def writes(city: City): JsValue = {
-      val averageIncome = city.income
-      val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
-      JsObject(List(
-      "id" -> JsNumber(city.id),    
-      "name" -> JsString(city.name),
-      "latitude" -> JsNumber(city.latitude),
-      "longitude" -> JsNumber(city.longitude),
-      "countryCode" -> JsString(city.countryCode),
-      "population" -> JsNumber(city.population),
-      "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
-    }
-  }
-  
   implicit object AirportShareWrites extends Writes[(Airport, Double)] {
     def writes(airportShare: (Airport, Double)): JsValue = {
       JsObject(List(
@@ -498,7 +485,7 @@ class Application extends Controller {
   
   def getLinkConsumptionsByAirport(airportId : Int) = Action {
     val passengersByRemoteAirport : Map[Airport, Int] = HistoryUtil.loadConsumptionByAirport(airportId)
-    Ok(Json.toJson(passengersByRemoteAirport.map {
+    Ok(Json.toJson(passengersByRemoteAirport.toList.map {
       case (remoteAirport, passengers) => Json.obj("remoteAirport" -> Json.toJson(remoteAirport)(AirportSimpleWrites), ("passengers" -> JsNumber(passengers)))
     }))
   }

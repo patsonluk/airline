@@ -1,4 +1,4 @@
-@(forgotForm: Form[ForgotId])
+@(forgotForm: Form[ForgotId])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
 
 @import helper._
 @import play.api.Play.current
@@ -25,9 +25,9 @@
 	            <div style="padding: 10px;">
 	             @inputText(
 	                forgotForm("email"),
-	                '_label -> <h4>Email</h4>, 
-	                '_help -> "Please enter the email you registered with",
-	                '_error -> forgotForm.error("email")
+	                Symbol("_label") -> <h4>Email</h4>,
+					Symbol("_help") -> "Please enter the email you registered with",
+					Symbol("_error") -> forgotForm.error("email")
 	            )
 	            </div>
 	        </fieldset>

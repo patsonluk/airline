@@ -1,6 +1,5 @@
 package controllers
 
-import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
@@ -12,7 +11,6 @@ import com.patson.model._
 import com.patson.Authentication
 import java.util.Calendar
 import com.patson.data.AirlineSource
-import play.api.libs.ws.WS
 import play.api.libs.ws.WSClient
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
@@ -24,7 +22,7 @@ import play.api.libs.json.JsObject
 import play.api.libs.json.JsNumber
 import play.api.libs.json.JsString
 
-class SignUp @Inject() (ws: WSClient) extends Controller {
+class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractController(cc) with play.api.i18n.I18nSupport {
   private[this] val recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify"
   private[this] val recaptchaAction = "signup"
   private[this] val recaptchaSecret = "6LespV8UAAAAAErZ7LWP51SWmYaYrnAz6Z61jKBC"
@@ -78,7 +76,7 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
   /**
    * Display an empty form.
    */
-  def form = Action {
+  def form = Action { implicit request =>
     Ok(html.signup(signupForm))
   }
   
@@ -136,8 +134,6 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
       }
     )
   }
-  
-  implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
   
   def isValidRecaptcha(recaptchaToken: String) : Boolean = {
     println("checking token " + recaptchaToken)
