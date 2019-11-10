@@ -29,16 +29,19 @@ import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.DemandGenerator
 import com.patson.data.ConsumptionHistorySource
 import com.patson.data.CountrySource
+
 import scala.collection.SortedMap
 import scala.collection.immutable.ListMap
 import com.patson.data.CycleSource
+
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 import com.patson.model.LinkConsumptionHistory
 import com.patson.model.FlightPreferenceType
+import javax.inject.Inject
 
-class LinkApplication extends Controller {
+class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]

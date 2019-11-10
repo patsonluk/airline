@@ -5,8 +5,6 @@ import akka.actor._
 import akka.stream.Materializer
 import play.api._
 import play.api.mvc._
-import play.api.Play.current
-import play.api.libs.ws._
 
 import scala.concurrent.Future
 import com.patson.data.UserSource

@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -23,9 +24,10 @@ import com.patson.model.AirlineCashFlow
 import com.patson.model.CashFlowType
 import com.patson.model.CashFlowType
 import com.patson.model.AirlineCashFlowItem
+import javax.inject.Inject
 
 
-class AirplaneApplication extends Controller {
+class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   val BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD = 0
   
   implicit object AirplaneWithAssignedLinkWrites extends Writes[(Airplane, Option[Link])] {

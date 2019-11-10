@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -37,10 +38,11 @@ import com.patson.model.oil.OilConsumptionType
 import com.patson.model.oil.OilConsumptionType
 import com.patson.model.oil.OilInventoryPolicy
 import com.patson.model.oil.OilInventoryPolicyOption
+import javax.inject.Inject
 
 
 
-class OilApplication extends Controller {
+class OilApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object OilContractWrites extends Writes[OilContractWithDetails] {
 //case class OilContract(airline : Airline, contractPrice : Double, volume : Int, startCycle : Int, contractDuration : Int, var id : Int = 0) extends IdObject {
     def writes(contractWithDetails: OilContractWithDetails): JsValue = {

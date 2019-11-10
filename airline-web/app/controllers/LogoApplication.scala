@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -21,8 +22,10 @@ import com.patson.data.AirportSource
 import com.patson.util.LogoGenerator
 import java.awt.Color
 
+import javax.inject.Inject
 
-class LogoApplication extends Controller {
+
+class LogoApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   import scala.collection.JavaConverters._
   val templates : Map[Int, Array[Byte]] = LogoGenerator.getTemplates.asScala.map { case (key, value) => (key.intValue, value) }.toMap
   

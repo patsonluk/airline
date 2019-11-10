@@ -32,9 +32,10 @@ import controllers.WeatherUtil.Coordinates
 import controllers.WeatherUtil.Weather
 import com.patson.data.LoungeHistorySource
 import controllers.AuthenticationObject.AuthenticatedAirline
+import javax.inject.Inject
 
 
-class Application extends Controller {
+class Application @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
  implicit object AirportFormat extends Format[Airport] {
     def reads(json: JsValue): JsResult[Airport] = {
       val airport = Airport.fromId((json \ "id").as[Int])

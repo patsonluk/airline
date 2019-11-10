@@ -9,6 +9,7 @@ import com.patson.model.Computation.ResetAmountInfo
 import com.patson.model._
 import com.patson.util.{ChampionUtil, LogoGenerator}
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
+import javax.inject.Inject
 import models.{AirportFacility, Consideration, EntrepreneurProfile, FacilityType}
 import play.api.libs.json.{Json, _}
 import play.api.mvc._
@@ -16,7 +17,7 @@ import play.api.mvc._
 import scala.util.{Failure, Success, Try}
 
 
-class AirlineApplication extends Controller {
+class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   object OwnedAirlineWrites extends Writes[Airline] {
     def writes(airline: Airline): JsValue =  {
       var values = List(
