@@ -205,7 +205,7 @@ object ConsumptionHistorySource {
           }
 
           val result = linkConsiderationsByRouteId.map {
-            case (routeId : Int, considerations : ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0 , routeId), routeConsumptions.get(routeId))
+            case (routeId : Int, considerations : ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0 , routeId), routeConsumptions(routeId))
           }.toMap
 
           println("Loaded " + result.size + " routes related to link " + link);
