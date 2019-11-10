@@ -7,8 +7,6 @@ import scala.collection.mutable.ListBuffer
 import com.patson.model._
 import java.util
 
-import scala.jdk.CollectionConverters._
-
 
 object ConsumptionHistorySource {
   val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
@@ -182,8 +180,8 @@ object ConsumptionHistorySource {
 
           val relatedRouteSet = relatedRouteStatement.executeQuery()
 
-          val linkConsiderationsByRouteId = new util.HashMap[Int, ListBuffer[LinkConsideration]]()
-          val routeConsumptions = new util.HashMap[Int, (PassengerType.Value, Int)]()
+          val linkConsiderationsByRouteId = scala.collection.mutable.Map[Int, ListBuffer[LinkConsideration]]()
+          val routeConsumptions = new scala.collection.mutable.HashMap[Int, (PassengerType.Value, Int)]()
 
           val relatedLinkIds = scala.collection.mutable.HashSet[Int]()
           while (relatedRouteSet.next()) {
@@ -200,16 +198,13 @@ object ConsumptionHistorySource {
             val relatedLink = linkMap.getOrElse(relatedLinkId, Link.fromId(relatedLinkId))
             val linkConsideration = new LinkConsideration(relatedLink, 0, LinkClass.fromCode(relatedRouteSet.getString("link_class")), relatedRouteSet.getBoolean("inverted"))
 
-            var existingConsiderationsForThisRoute = linkConsiderationsByRouteId.get(routeId)
-            if (existingConsiderationsForThisRoute == null) {
-              existingConsiderationsForThisRoute = ListBuffer[LinkConsideration]()
-              linkConsiderationsByRouteId.put(routeId, existingConsiderationsForThisRoute)
-            }
+            val existingConsiderationsForThisRoute = linkConsiderationsByRouteId.getOrElseUpdate(routeId, ListBuffer[LinkConsideration]())
+
             existingConsiderationsForThisRoute += linkConsideration
             routeConsumptions.put(routeId, (passengerType, passengerCount))
           }
 
-          val result = linkConsiderationsByRouteId.asScala.map {
+          val result = linkConsiderationsByRouteId.map {
             case (routeId : Int, considerations : ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0 , routeId), routeConsumptions.get(routeId))
           }.toMap
 
