@@ -5,7 +5,7 @@ import java.util.UUID
 import com.patson.Authentication
 import com.patson.data.UserSource
 import com.patson.model._
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import models._
 import play.api.data.Forms._
 import play.api.data._
@@ -13,6 +13,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import views._
 
+@Singleton
 class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) with play.api.i18n.I18nSupport {
   /**
    * Sign Up Form definition.

@@ -43,7 +43,7 @@
 	            <div style="padding: 10px;">
 	            @inputText(
 	                signupForm("username"),
-	                Symbol("_label") -> <h4>Username</h4>,
+	                Symbol("_label") -> "Username",
 	                Symbol("_help") -> "Please choose a valid username.",
 	                Symbol("_error") -> signupForm.error("username")
 	            )
@@ -51,21 +51,21 @@
 	            <div style="padding: 10px;">
 	            @inputText(
 	                signupForm("email"),
-					Symbol("_label") -> <h4>Email</h4>,
+					Symbol("_label") -> "Email",
 	                Symbol("_help") -> "Enter a valid email address."
 	            )
 	            </div>
 	            <div style="padding: 10px;">
 	            @inputPassword(
 	                signupForm("password.main"), 
-	                Symbol("_label") -> <h4>Password</h4>,
+	                Symbol("_label") -> "Password",
 	                Symbol("_help") -> "A password must be at least 6 characters. "
 	            )
 	            </div>
 	            <div style="padding: 10px;">
 	            @inputPassword(
 	                signupForm("password.confirm"), 
-	                Symbol("_label") -> <h4>Repeat password</h4>,
+	                Symbol("_label") -> "Repeat password",
 	                Symbol("_help") -> "Please repeat your password again.",
 	                Symbol("_error") -> signupForm.error("password")
 	            )
@@ -73,7 +73,7 @@
 	            <div style="padding: 10px;">
 	            @inputText(
 	                signupForm("airlineName"),
-	                Symbol("_label") -> <h4>Airline name</h4>,
+	                Symbol("_label") -> "Airline name",
 	                Symbol("_help") -> "Please enter your airline name.",
 	                Symbol("_error") -> signupForm.error("airlineName")
 	            )
