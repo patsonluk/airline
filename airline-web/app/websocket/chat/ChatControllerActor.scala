@@ -1,6 +1,7 @@
 package websocket.chat
 
 import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
 import akka.actor._
@@ -56,8 +57,10 @@ class ChatControllerActor extends Actor {
 
       clientActors += sender
       context.watch(sender)
+      ChatControllerActor.addActiveUser(sender, user)
 	  //You can turn these loggers off if needed
-      logger.info("Chat socket connected " + sender)
+      logger.info("Chat socket connected " + sender + " for user " + user.userName + " current active sessions : " + clientActors.size + " unique users : " + ChatControllerActor.getActiveUsers().size)
+
 
       // resend the Archived Message
   	  generalMessageHistory.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
@@ -79,6 +82,7 @@ class ChatControllerActor extends Actor {
     case Terminated(chatClientActor) => {
       context.unwatch(chatClientActor)
       clientActors -= chatClientActor
+      ChatControllerActor.removeActiveUser(chatClientActor)
     }
 
     case IncomingMessage(text, allianceRoomIdOption) => {
@@ -108,5 +112,22 @@ class ChatControllerActor extends Actor {
     case TriggerPing => { //ping all clients, since play does NOT have ping support yet...https://github.com/playframework/playframework/issues/3861
       clientActors.foreach( _ ! TriggerPing)
     }
+  }
+}
+
+object ChatControllerActor {
+  import scala.jdk.CollectionConverters._
+  val activeUsers = new ConcurrentHashMap[ActorRef, User]().asScala
+
+  def getActiveUsers() : Set[User] = {
+    activeUsers.values.toSet
+  }
+
+  def addActiveUser(sender : ActorRef, user : User) : Unit = {
+    activeUsers.put(sender, user)
+  }
+
+  def removeActiveUser(sender : ActorRef) : Option[User] = {
+    activeUsers.remove(sender)
   }
 }

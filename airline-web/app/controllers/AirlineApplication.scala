@@ -2,6 +2,7 @@ package controllers
 
 import java.awt.Color
 import java.nio.file.Files
+import java.util.Calendar
 
 import com.patson.AirlineSimulation
 import com.patson.data._
@@ -13,6 +14,7 @@ import javax.inject.Inject
 import models.{AirportFacility, Consideration, EntrepreneurProfile, FacilityType}
 import play.api.libs.json.{Json, _}
 import play.api.mvc._
+import websocket.chat.ChatControllerActor
 
 import scala.util.{Failure, Success, Try}
 
@@ -39,14 +41,22 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       JsObject(values)
     }
   }
+
+  object LoginStatus extends Enumeration {
+    type LoginStatus = Value
+    val ONLINE, ACTIVE_7_DAYS, ACTIVE_30_DAYS, INACTIVE = Value
+  }
   
-  
-  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[Alliance])] {
-    def writes(entry: (Airline, User, Option[Alliance])): JsValue = {
-      val (airline, user, alliance) = entry
+  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance])] {
+    def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance])): JsValue = {
+      val (airline, user, loginStatus, alliance) = entry
       var result = Json.toJson(airline).asInstanceOf[JsObject] + 
         ("userLevel" -> JsNumber(user.level)) +
         ("username" -> JsString(user.userName))
+
+      loginStatus.foreach { status => //if there's a login status
+        result = result + ("loginStatus" -> JsNumber(status.id))
+      }
         
       alliance.foreach { alliance =>
         result = result + ("allianceName" -> JsString(alliance.name))
@@ -67,24 +77,58 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "overall" -> JsNumber(info.overall)))
     }
   }
-  
-  def getAllAirlines() = Authenticated { implicit request =>
+
+  def getAllAirlines(loginStatus : Boolean, hideInactive : Boolean) = Authenticated { implicit request =>
      //val airlines = AirlineSource.loadAllAirlines(fullLoad = true)
-    val airlinesByUser = scala.collection.mutable.Map[Airline, User]() 
+    val airlinesByUser = scala.collection.mutable.Map[Airline, User]()
+    val sevenDaysAgo = Calendar.getInstance();
+    sevenDaysAgo.add(Calendar.DATE, -7)
+    val thirtyDaysAgo = Calendar.getInstance()
+    thirtyDaysAgo.add(Calendar.DATE, -30)
+
     UserSource.loadUsersByCriteria(List.empty).foreach { user =>
-      user.getAccessibleAirlines().foreach { airline =>
-        airlinesByUser.put(airline, user)  
+      if (!hideInactive || user.lastActiveTime.after(thirtyDaysAgo)) {
+        user.getAccessibleAirlines().foreach { airline =>
+          airlinesByUser.put(airline, user)
+        }
       }
     }
-    
+
+    val userStatusMap: Map[User, LoginStatus.Value] =
+      if (loginStatus) {
+
+        val activeUsers = ChatControllerActor.getActiveUsers().map(_.id)
+        airlinesByUser.values.map { user =>
+          val status =
+            if (activeUsers.contains(user.id)) {
+              LoginStatus.ONLINE
+            } else {
+              if (user.lastActiveTime.after(sevenDaysAgo)) {
+                LoginStatus.ACTIVE_7_DAYS
+              } else if (user.lastActiveTime.after(thirtyDaysAgo)) {
+                LoginStatus.ACTIVE_30_DAYS
+              } else {
+                LoginStatus.INACTIVE
+              }
+            }
+          (user, status)
+        }.toMap
+      } else {
+        Map.empty[User, LoginStatus.Value]
+      }
+
+
+
+
     val alliances = AllianceSource.loadAllAlliances().map(alliance => (alliance.id, alliance)).toMap
     Ok(Json.toJson(airlinesByUser.toList.map {
-      case(airline, user) => (airline, user, airline.getAllianceId.map(alliances(_)))
+      case(airline, user) => (airline, user, userStatusMap.get(user), airline.getAllianceId.map(alliances(_)))
     })).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"
     )
   }
+
   
   def getAirline(airlineId : Int, extendedInfo : Boolean) = AuthenticatedAirline(airlineId) { request =>
      val airline = request.user
