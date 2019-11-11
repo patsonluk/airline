@@ -88,7 +88,6 @@ object RemoteSubscribe {
   def subscribe(f: (SimulationEvent, Any) => Option[Unit], subscriberId: String) = {
     val props = Props(classOf[LocalActor], f)
     val localSubscriber = system.actorOf(props, name = getLocalSubscriberName(subscriberId))
-    remoteActor ! "hmmm"
     remoteActor.!("subscribe")(localSubscriber)
 
 
