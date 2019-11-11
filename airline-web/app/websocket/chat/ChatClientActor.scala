@@ -3,22 +3,26 @@ package websocket.chat
 import akka.actor._
 import java.util.Calendar
 import java.text.SimpleDateFormat
+
 import play.api.libs.json._
 import com.patson.data.AllianceSource
 import com.patson.model.User
 import play.api.Logger
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
+
 import scala.math.BigDecimal.int2bigDecimal
 
 /**
  * Actor that receives message from websocket and send message out
  */
-class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User) extends Actor {
+class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User, lastMessageId : Option[Long]) extends Actor {
+  val logger = Logger(this.getClass)
+  chatControllerActor ! Join(user, lastMessageId)
 
-  chatControllerActor ! Join(user)
-
-  override def postStop() = chatControllerActor ! Leave(user)
+  override def postStop() = {
+    logger.info("Stopping chat client on user " + user.userName + " id " + user.id)
+  }
   
   val allianceId = getAllianceId(user) 
   
@@ -31,7 +35,7 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User)
 		  val airlineId = json_text.\("airlineId").as[Int]
 		  
 	    user.getAccessibleAirlines().find( _.id == airlineId) match {
-	      case None => Logger.warn("user " + user + " has no access to airline " + airlineId + " airline is not found")
+	      case None => logger.warn("user " + user + " has no access to airline " + airlineId + " airline is not found")
 	      case Some(airline) =>
 	        val otext =  "[" + sdf.format(Calendar.getInstance().getTime())+ "] " + airline.name + ": " + json_text.\("text").as[String]
     		  val room = json_text.\("room").as[String]
@@ -47,14 +51,18 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User)
 		  
   	  
   	// handles message writes to websocket
-    case OutgoingMessage(text, allianceRoomIdOption) => {
+    case OutgoingMessage(id, text, allianceRoomIdOption) => {
       if (allianceRoomIdOption.isEmpty || (allianceRoomIdOption == allianceId)) { 
-        var jsonMessage = Json.obj("text" -> text)
+        var jsonMessage = Json.obj("text" -> text, "id" -> id)
         allianceRoomIdOption.foreach { allianceRoomId =>
           jsonMessage = jsonMessage + ("allianceRoomId" -> JsNumber(allianceRoomId))
         }
         out ! jsonMessage.toString
       }
+    }
+
+    case TriggerPing => {
+      out ! "ping"
     }
   }
   

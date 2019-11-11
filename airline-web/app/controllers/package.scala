@@ -34,6 +34,7 @@ package object controllers {
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val actorSystem = ActorSystem("patson-web-app-system")
   implicit val materializer = ActorMaterializer()
+  implicit val order = Ordering.Double.IeeeOrdering
 
   implicit object AirlineFormat extends Format[Airline] {
     def reads(json: JsValue): JsResult[Airline] = {

@@ -30,7 +30,7 @@ import com.patson.DemandGenerator
 import com.patson.data.ConsumptionHistorySource
 import com.patson.data.CountrySource
 
-import scala.collection.SortedMap
+import scala.collection.{SortedMap, immutable}
 import scala.collection.immutable.ListMap
 import com.patson.data.CycleSource
 
@@ -418,7 +418,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
       )
     } else {
-      val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
+      val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(immutable.Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
         foldMap + (linkConsumptionDetails.link.id -> linkConsumptionDetails)
       }
       val linksWithProfit = links.map { link =>  
@@ -775,9 +775,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   
   def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) {
     val consumptionEntries : List[LinkConsumptionHistory]= ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
-    val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).mapValues(entries => entries.map(_.passengerCount).sum)
-    val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).mapValues(entries => entries.map(_.passengerCount).sum)
-    val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).view.mapValues(entries => entries.map(_.passengerCount).sum)
     
     
     

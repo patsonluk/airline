@@ -1,22 +1,29 @@
 package websocket.chat
 
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicLong
+
 import akka.actor._
-import scala.collection.mutable.Queue
-import scala.collection.mutable.Map
+
+import scala.collection.mutable.{ListBuffer, Map, Queue}
 import play.api.libs.json._
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import com.patson.model.User
 import com.patson.data.AllianceSource
 import play.api.Logger
 
+import scala.collection.mutable
+import scala.concurrent.ExecutionContext
+
 // our domain message protocol
-case class Join(user : User)
+case class Join(user : User, lastMessageId : Option[Long])
 case class Leave(user : User)
+case class TriggerPing()
 class Message
 final case class ClientSentMessage(text: String)
 
 final case class IncomingMessage(text: String, allianceId : Option[Int])
-final case class OutgoingMessage(text: String, allianceId : Option[Int])
+final case class OutgoingMessage(id: Long, text: String, allianceId : Option[Int])
 
 
 
@@ -28,42 +35,54 @@ final case class OutgoingMessage(text: String, allianceId : Option[Int])
 
 class ChatControllerActor extends Actor {
   // initial message-handling behavior
-  
+  val logger = Logger(this.getClass)
   val maxMessagePerRoom = 50
+  val ec: ExecutionContext = ExecutionContext.global
   
   val generalMessageHistory = Queue[OutgoingMessage]()
   val allianceMessageHistory = Map[Int, Queue[OutgoingMessage]]()
+  val clientActors = mutable.LinkedHashSet[ActorRef]()
   
   def receive = process(Set.empty)
-	
+
+  val messageIdCounter = new AtomicLong(0)
+
+  context.system.scheduler.schedule(Duration.ZERO, Duration.ofSeconds(10), self, TriggerPing, ec, self)
+
   def process(subscribers: Set[ActorRef]): Receive = {
-    case Join(user) => {
+    case Join(user, lastMessageId) => {
       // replaces message-handling behavior by the new one
-      context become process(subscribers + sender)
+      //context become process(subscribers + sender)
+
+      clientActors += sender
+      context.watch(sender)
 	  //You can turn these loggers off if needed
-  	  //Logger.info("Chat socket connected")
-      
+      logger.info("Chat socket connected " + sender)
+
       // resend the Archived Message
-  	  generalMessageHistory.foreach(sender ! _)
+  	  generalMessageHistory.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
       
       user.getAccessibleAirlines().foreach { airline => 
         AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
           allianceMessageHistory.get(allianceMember.allianceId).foreach { archivedMessages =>
-            archivedMessages.foreach(sender ! _)
+            archivedMessages.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
           }
         }
       }
     }
-  	  
 
-    case Leave => {
-      context become process(subscribers - sender)
-	  //You can turn these loggers off if needed
-	  //Logger.info("Chat socket disconnected")
+//    case Leave => {
+//      context become process(subscribers - sender)
+//	  //You can turn these loggers off if needed
+//	    logger.info("Chat socket disconnected " + sender)
+//    }
+    case Terminated(chatClientActor) => {
+      context.unwatch(chatClientActor)
+      clientActors -= chatClientActor
     }
 
     case IncomingMessage(text, allianceRoomIdOption) => {
-      val outMessage = OutgoingMessage(text, allianceRoomIdOption)
+      val outMessage = OutgoingMessage(messageIdCounter.incrementAndGet(), text, allianceRoomIdOption)
 		  
       //put message into history and send to subscribers
       allianceRoomIdOption match {
@@ -72,7 +91,7 @@ class ChatControllerActor extends Actor {
           while (generalMessageHistory.size > maxMessagePerRoom) { 
 		        generalMessageHistory.dequeue() 
 		      }
-          (subscribers).foreach { _ ! outMessage }
+          clientActors.foreach { _ ! outMessage }
         }
         case Some(allianceRoomId) =>
           val messageQueue = allianceMessageHistory.getOrElseUpdate(allianceRoomId, Queue[OutgoingMessage]())
@@ -80,13 +99,14 @@ class ChatControllerActor extends Actor {
           while (messageQueue.size > maxMessagePerRoom) { 
 		        messageQueue.dequeue() 
 		      }
-          
-          (subscribers).foreach { _ ! outMessage } //not the best, as we should be able to filter based on alliance Id here
+
+          clientActors.foreach { _ ! outMessage } //not the best, as we should be able to filter based on alliance Id here
       }
-      
-		  
 		  //You can turn these loggers off if needed
 		  //Logger.info("Message:" + msg.text)
+    }
+    case TriggerPing => { //ping all clients, since play does NOT have ping support yet...https://github.com/playframework/playframework/issues/3861
+      clientActors.foreach( _ ! TriggerPing)
     }
   }
 }

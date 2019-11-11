@@ -269,7 +269,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
         val servedAirports = Set[Airport]()
         val airlines = Set[Airline]()
         var flightFrequency = 0;
-        val linkCountByAirline = links.groupBy(_.airline.id).mapValues(_.size)
+        val linkCountByAirline = links.groupBy(_.airline.id).view.mapValues(_.size).toMap
         
         links.foreach { link =>
           servedCountries.add(link.from.countryCode)

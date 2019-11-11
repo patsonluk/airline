@@ -12,6 +12,8 @@ import com.patson.model.Airport
 import com.patson.data.AirlineSource
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.file.Path
+
 import javax.imageio.ImageIO
 
 object LogoUtil {
@@ -32,8 +34,8 @@ object LogoUtil {
     logos.put(airlineId, logo) //update cache
   }
   
-  def validateUpload(logoFile : File) : Option[String] = {
-    val image = ImageIO.read(logoFile)
+  def validateUpload(logoFile : Path) : Option[String] = {
+    val image = ImageIO.read(logoFile.toFile)
     println("!!!!!!!!!!!!!!!!!!!!" + image.getHeight + " X " + image.getWidth)
     if (image.getHeight() != imageHeight || image.getWidth() != imageWidth) {
       Some("Image should be " + imageWidth + "px wide and " + imageHeight + "px tall") 

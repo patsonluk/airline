@@ -137,7 +137,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
   
   def isValidRecaptcha(recaptchaToken: String) : Boolean = {
     println("checking token " + recaptchaToken)
-    val request = ws.url(recaptchaUrl).withQueryString("secret" -> recaptchaSecret, "response" -> recaptchaToken)
+    val request = ws.url(recaptchaUrl).withQueryStringParameters("secret" -> recaptchaSecret, "response" -> recaptchaToken)
     
     val (successJs, scoreJs, actionJs, responseBody) = Await.result(request.get().map { response =>
       ((response.json \ "success"), (response.json \ "score"), (response.json \ "action"), response.body)

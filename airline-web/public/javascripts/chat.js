@@ -1,3 +1,5 @@
+var lastMessageId = 0
+
 function updateChatTabs() {
 	if (activeUser.allianceName) {
 		$("#allianceChatTab").text(activeUser.allianceName)
@@ -122,8 +124,10 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 		}
 	}
 
-	var wsUri = wsProtocol + "//" +  window.location.hostname + ":" + port + "/chat"; 
-    var ws = new ReconnectingWebSocket(wsUri);
+	var wsUri = wsProtocol + "//" +  window.location.hostname + ":" + port + "/chat";
+    var ws = new ReconnectingWebSocket(function() {
+        return wsUri + "?last-message-id=" + lastMessageId
+    });
 
   // binding model for the UI
   var chat = this;
@@ -181,6 +185,11 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
    
   // what to do when we receive message from the webserver
   ws.onmessage = function(msg) {
+    if (msg.data == "ping") {
+        console.log("ping from server")
+        return
+     //ok
+    }
 	var r_text = msg.data;
 	//console.log(r_text);
 	var r_msg = JSON.parse(r_text);
@@ -202,6 +211,8 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 		$('.notify-bubble').show(400);
 		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
 	}
+
+    lastMessageId = r_msg.id
   };
 });
 

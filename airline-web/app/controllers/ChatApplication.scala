@@ -14,7 +14,7 @@ import websocket.chat.ChatClientActor
 
 @Singleton
 class ChatApplication @Inject()(cc: ControllerComponents)(implicit actorSystem: ActorSystem, mat : Materializer) extends AbstractController(cc) {
-  
+  val logger = Logger(this.getClass)
   val chatControllerActor = actorSystem.actorOf(Props[ChatControllerActor], "chatControllerActor")
 
   /*
@@ -29,16 +29,16 @@ class ChatApplication @Inject()(cc: ControllerComponents)(implicit actorSystem: 
    def chatSocket = WebSocket.acceptOrResult[String, String] { request =>
     Future.successful(request.session.get("userId") match {
       case None =>
-        Logger.info("Chatsocket rejected")
+        logger.info("Chatsocket rejected")
         Left(Forbidden)
       case Some(userId) => 
         UserSource.loadUserById(userId.toInt) match {
           case None =>
-            Logger.info("Chatsocket rejected : user not found for id " + userId)
+            logger.info("Chatsocket rejected : user not found for id " + userId)
             Left(Forbidden)
           case Some(user) =>
-            Logger.info("Chatsocket, client connected with userId " + userId)
-            Right(ActorFlow.actorRef { out => Props(new ChatClientActor(out, chatControllerActor, user))})
+            logger.info("Chatsocket, client connected with userId " + userId)
+            Right(ActorFlow.actorRef { out => Props(new ChatClientActor(out, chatControllerActor, user, request.getQueryString("last-message-id").flatMap(_.toLongOption)))})
         }
         
     })

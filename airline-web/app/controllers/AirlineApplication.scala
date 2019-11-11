@@ -35,7 +35,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       airline.getCountryCode.foreach { countryCode =>
         values = values :+ ("countryCode" -> JsString(countryCode))
       }
-      
+
       JsObject(values)
     }
   }
@@ -665,12 +665,12 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     } else {
       request.body.asMultipartFormData.map { data =>
 
-        val logoFile = data.file("logoFile").get.ref.file
+        val logoFile = data.file("logoFile").get.ref.path
         LogoUtil.validateUpload(logoFile) match {
           case Some(rejection) =>
             Ok(Json.obj("error" -> JsString(rejection))) //have to send ok as the jquery plugin's error cannot read the response
           case None =>
-            val data =Files.readAllBytes(logoFile.toPath)
+            val data =Files.readAllBytes(logoFile)
             LogoUtil.saveLogo(airlineId, data)
             
             println("Uploaded logo for airline " + request.user)
