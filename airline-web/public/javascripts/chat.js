@@ -139,7 +139,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
   // what happens when user enters message
   chat.sendMessage = function() {
 	  limit.tick('myevent_id');
-	  if (activeAirline && (chat.currentMessage.length > 0) && (limit.count('myevent_id') <= 6)) {
+	  if (activeAirline && (chat.currentMessage.length > 0) && (limit.count('myevent_id') <= 20)) {
 		var active_tab = $("li.tab-link.current").attr('data-tab');
 		var text = { room: active_tab, text: chat.currentMessage, airlineId: activeAirline.id };
 	    //chat.messages.push(text);
