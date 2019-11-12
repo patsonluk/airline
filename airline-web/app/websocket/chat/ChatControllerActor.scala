@@ -37,7 +37,7 @@ final case class OutgoingMessage(id: Long, text: String, allianceId : Option[Int
 class ChatControllerActor extends Actor {
   // initial message-handling behavior
   val logger = Logger(this.getClass)
-  val maxMessagePerRoom = 50
+  val maxMessagePerRoom = 100
   val ec: ExecutionContext = ExecutionContext.global
   
   val generalMessageHistory = Queue[OutgoingMessage]()
