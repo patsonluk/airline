@@ -236,7 +236,7 @@ object AirlineSimulation {
         //below is for accounting purpose
         //cash flow item that is already applied during this week, still need to load them for accounting purpose
         val transactionalCashFlowItems : scala.collection.immutable.Map[CashFlowType.Value, Long] = allTransactionalCashFlowItems.get(airline.id) match {
-          case Some(items) => items.groupBy(_.cashFlowType).mapValues( itemsByType => itemsByType.map(_.amount).sum)
+          case Some(items) => items.groupBy(_.cashFlowType).view.mapValues( itemsByType => itemsByType.map(_.amount).sum).toMap
           case None => scala.collection.immutable.Map.empty
         }
         

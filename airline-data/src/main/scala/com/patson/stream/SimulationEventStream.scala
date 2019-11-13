@@ -1,14 +1,10 @@
 package com.patson.stream
 
 import akka.actor._
-import akka.util.Timeout
-import scala.util.Success
-import scala.util.Failure
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.collection.mutable.Set
-import com.typesafe.config.ConfigFactory
-import akka.remote.RemotingLifecycleEvent
 import com.patson.MainSimulation
+import com.typesafe.config.ConfigFactory
+
+import scala.collection.mutable.Set
 
 object SimulationEventStream{
   val config = ConfigFactory.load()

@@ -1,10 +1,13 @@
 package com.patson.init
 
 import java.net.URLEncoder
+
 import play.api.libs.json.Json
 import play.api.libs.json.JsObject
 import play.api.libs.json.JsArray
 import java.util.NoSuchElementException
+
+import scala.io.Source
 
 object WikiUtil {
   def queryProfilePicture(searchItem : String, preferredWords : List[String]) : Option[String] = {
@@ -24,7 +27,7 @@ object WikiUtil {
           }
           if (isValidExtension(pageImage) && (preferredWords.isEmpty || isMatch)) {
             val imageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles=Image:" + pageImage + "&format=json&prop=imageinfo&iiprop=url&utf8="
-            val pageImageUrl = Json.parse(get(imageUrl)).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("imageinfo").asInstanceOf[JsArray].apply(0).get.asInstanceOf[JsObject].value("url").as[String]
+            val pageImageUrl = Json.parse(get(imageUrl)).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("imageinfo").asInstanceOf[JsArray].apply(0).asInstanceOf[JsObject].value("url").as[String]
             Some(pageImageUrl)
           } else {
             None
@@ -54,7 +57,7 @@ object WikiUtil {
           val responseString = get(url)
           val images : JsArray = Json.parse(responseString).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("images").asInstanceOf[JsArray]
           
-          val imageTitles = images.\\("title").map(_.as[String])
+          val imageTitles = images.\\("title").map(_.as[String]).toSeq
           
           var imageTitle = findMatchingTitle(imageTitles, preferredWords).getOrElse(return None)
           if (imageTitle.startsWith("File:")) {
@@ -65,7 +68,7 @@ object WikiUtil {
            
           val imageUrl = "https://en.wikipedia.org/w/api.php?action=query&titles=Image:" + imageTitle + "&format=json&prop=imageinfo&iiprop=url&utf8="
           //println(imageUrl)
-          val pageImageUrl = Json.parse(get(imageUrl)).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("imageinfo").asInstanceOf[JsArray].apply(0).get.asInstanceOf[JsObject].value("url").as[String]
+          val pageImageUrl = Json.parse(get(imageUrl)).asInstanceOf[JsObject].value("query").asInstanceOf[JsObject].value("pages").asInstanceOf[JsObject].values.toSeq(0).asInstanceOf[JsObject].value("imageinfo").asInstanceOf[JsArray].apply(0).asInstanceOf[JsObject].value("url").as[String]
           return Some(pageImageUrl)
         case None => None
       }
@@ -132,7 +135,7 @@ object WikiUtil {
       connection.setReadTimeout(readTimeout)
       connection.setRequestMethod(requestMethod)
       val inputStream = connection.getInputStream
-      val content = io.Source.fromInputStream(inputStream).mkString
+      val content = Source.fromInputStream(inputStream).mkString
       if (inputStream != null) inputStream.close
       content
     }

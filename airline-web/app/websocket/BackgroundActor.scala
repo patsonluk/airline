@@ -27,7 +27,7 @@ class BackgroundJob {
   val registeredActors = Map[ActorRef, Int]()
   def start() = {
     val thread = new Thread {
-      override def run() {
+      override def run() : Unit = {
         while (true) {
           registeredActors.foreach { 
             case(registeredActor, airlineId) =>

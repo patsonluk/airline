@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -37,9 +38,10 @@ import com.patson.model.AllianceHistory
 import play.api.libs.json.JsBoolean
 import com.patson.data.LinkSource
 import com.patson.util.ChampionUtil
+import javax.inject.Inject
 
 
-class AllianceApplication extends Controller {
+class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object AllianceWrites extends Writes[Alliance] {
     //case class AllianceMember(alliance: Alliance, airline : Airline, role : AllianceRole.Value, joinedCycle : Int)
     def writes(alliance: Alliance): JsValue = JsObject(List(

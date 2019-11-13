@@ -1,23 +1,22 @@
 package com.patson
 
 import com.patson.data.UserSource
-import sun.misc.BASE64Decoder
-import sun.misc.BASE64Encoder
 import com.patson.model.UserSecret
 import java.security.MessageDigest
 import java.util.Arrays
 import java.security.SecureRandom
+import java.util.Base64
 
 object Authentication {
   private[this] val ITERATION_NUMBER = 1000
-  val decoder = new BASE64Decoder()
-  val endecoder = new BASE64Encoder()
+  val decoder = Base64.getDecoder
+  val encoder = Base64.getEncoder
   def base64ToByte(data : String) = {
-     decoder.decodeBuffer(data)
+     decoder.decode(data)
    }
- 
+
    def byteToBase64(data : Array[Byte]) = {
-     endecoder.encode(data);
+     encoder.encode(data);
    }
   /**
     * Authenticates the user with a given login and password
@@ -71,7 +70,7 @@ object Authentication {
          val bDigest = getHash(ITERATION_NUMBER,password,bSalt);
          val sDigest = byteToBase64(bDigest);
          val sSalt = byteToBase64(bSalt);
-         UserSource.saveUserSecret(UserSecret(userName, sDigest, sSalt))
+         UserSource.saveUserSecret(UserSecret(userName, new String(sDigest), new String(sSalt)))
       } else {
         false
       }

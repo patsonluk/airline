@@ -1,6 +1,7 @@
 var loadedRivals = []
 var loadedRivalsById = {}
 var loadedRivalLinks = []
+var hideInactive = true
 
 function showRivalsCanvas(selectedAirline) {
 	setActiveDiv($("#rivalsCanvas"))
@@ -9,9 +10,15 @@ function showRivalsCanvas(selectedAirline) {
 	loadAllRivals(selectedAirline)
 }
 
+function toggleHideInactive(flagValue) {
+    hideInactive = flagValue
+    var selectedSortHeader = $('#rivalsTableSortHeader .table-header .cell.selected')
+    updateRivalsTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'), null)
+}
+
 function loadAllRivals(selectedAirline) {
-	var getUrl = "airlines"
-	
+	var getUrl = "airlines?loginStatus=true"
+
 	loadedRivals = []
 	loadedRivalsById = {}
 	$.ajax({
@@ -42,18 +49,31 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 	var rivalsTable = $("#rivalsCanvas #rivalsTable")
 	
 	rivalsTable.children("div.table-row").remove()
-	
+
+	//filter if necessary
+	var displayRivals
+	if (hideInactive) {
+	    displayRivals = loadedRivals.filter(function(rival) {
+                                    	    		  return rival.loginStatus < 3
+                                    	    	});
+	} else {
+	    displayRivals = loadedRivals
+    }
+
 	//sort the list
-	loadedRivals.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
+	displayRivals.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
 	
 	var selectedRow
-	$.each(loadedRivals, function(index, airline) {
+	$.each(displayRivals, function(index, airline) {
 		var row = $("<div class='table-row clickable' data-airline-id='" + airline.id + "' onclick=\"loadRivalDetails($(this), '" + airline.id + "')\"></div>")
 //		var countryFlagImg = ""
 //		if (airline.countryCode) {
 //			countryFlagImg = getCountryFlagImg(airline.countryCode)
 //		}
-		
+
+
+
+		row.append("<div class='cell'><img src='" + getStatusLogo(airline.loginStatus) + "' title='" + getStatusTitle(airline.loginStatus) + "' style='vertical-align:middle;'/>")
 		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) + airline.name + getUserLevelImg(airline.userLevel) 
 				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>")
 		if (airline.headquartersAirportName) {
@@ -76,6 +96,31 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 		loadRivalDetails(selectedRow, selectedAirline)
 	}
 }
+
+function getStatusLogo(status) {
+    if (status == 0) {
+      return "assets/images/icons/12px/status-green.png"
+    } else if (status == 1) {
+      return "assets/images/icons/12px/status-yellow.png"
+    } else if (status == 2) {
+      return "assets/images/icons/12px/status-orange.png"
+    } else {
+      return "assets/images/icons/12px/status-grey.png"
+    }
+}
+
+function getStatusTitle(status) {
+    if (status == 0) {
+      return "Online"
+    } else if (status == 1) {
+      return "Active within last 7 days"
+    } else if (status == 2) {
+      return "Active within last 30 days"
+    } else {
+      return "Inactive"
+    }
+}
+
 
 function toggleRivalsTableSortOrder(sortHeader) {
 	if (sortHeader.data("sort-order") == "ascending") {

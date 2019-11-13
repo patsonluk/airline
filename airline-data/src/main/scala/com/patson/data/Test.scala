@@ -24,7 +24,7 @@ object Test extends App {
 //     println(WikiUtil.queryOtherPicture("Vancouver"))
      
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
-//       AirportFeaturePatcher.patchFeatures()
+
 // AirportProfilePicturePatcher.patchProfilePictures()
 //    AirlineSource.loadAllAirlines(false).foreach(println)
 //    Patchers.patchAirlineCode()

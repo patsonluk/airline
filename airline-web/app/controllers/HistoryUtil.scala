@@ -66,9 +66,9 @@ object HistoryUtil {
     val groupedLinkConsumptions = relatedLinkConsumptions.groupBy { case(passengerType, _, linkConsideration) => (linkConsideration.link, linkConsideration.inverted, passengerType) }
     
     //fold the value of the grouped map, we only care about passenger count now
-    val computedConsumedLinks = groupedLinkConsumptions.mapValues{
+    val computedConsumedLinks = groupedLinkConsumptions.view.mapValues{
       _.foldLeft(0)( (totalPassengerCount, entry) => totalPassengerCount + entry._2)
-    }
+    }.toMap
     
     //now it should have a nice map of 
     //key: Link, inverted, passengerType

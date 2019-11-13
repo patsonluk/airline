@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -26,10 +27,11 @@ import com.patson.model.Loan
 import play.api.data.Form
 import play.api.data.Forms
 import com.patson.data.AlertSource
+import javax.inject.Inject
 
 
 
-class AlertApplication extends Controller {
+class AlertApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object AlertWrites extends Writes[Alert] {
     def writes(alert: Alert): JsValue = { 
       var result = JsObject(List(

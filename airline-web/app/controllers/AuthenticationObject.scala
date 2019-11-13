@@ -20,9 +20,10 @@ object AuthenticationObject {
 //  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), _ => 
 //    Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured Area"""")) {
 //  }
-  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req))
+  val defaultBodyParser = new BodyParsers.Default
+  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), defaultBodyParser)
   
-  case class AuthenticatedAirline(airlineId : Int) extends AuthenticatedBuilder(req => getUserAirlineFromRequest(req, airlineId))
+  case class AuthenticatedAirline(airlineId : Int) extends AuthenticatedBuilder(req => getUserAirlineFromRequest(req, airlineId), defaultBodyParser)
   
   def getUserFromRequest(request : RequestHeader) : Option[User] = {
     if (!request.session.isEmpty && request.session.get("userId").isDefined) {
@@ -67,7 +68,7 @@ object AuthenticationObject {
     }
   }
   
-  def getHashedPassword(plainPassword : String) {
+  def getHashedPassword(plainPassword : String) : Unit = {
     val salt = new Array[Byte](16);
     Random.nextBytes(salt);
     val spec = new PBEKeySpec(plainPassword.toCharArray(), salt, 65536, 128);

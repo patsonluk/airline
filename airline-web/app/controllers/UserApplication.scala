@@ -10,8 +10,9 @@ import com.patson.model.Airline
 import play.api.libs.json._
 import com.patson.data.UserSource
 import com.patson.data.AllianceSource
+import javax.inject.Inject
 
-class UserApplication extends Controller {
+class UserApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object UserWrites extends Writes[User] {
     def writes(user: User): JsValue = {
       var result = JsObject(List(

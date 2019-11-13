@@ -1,71 +1,25 @@
 package controllers
 
-import play.api.libs.json._
-import play.api.mvc._
-import play.api.libs.json.Json
-import com.patson.model.Airport
-import com.patson.model.Airline
-import com.patson.data.AirportSource
-import com.patson.Util
-import com.patson.model.Link
-import com.patson.data.LinkSource
-import com.patson.data.AirlineSource
-import com.patson.data.CycleSource
-import com.patson.model.AirlineBase
-import com.patson.model.AirlineBase
-import controllers.AuthenticationObject.Authenticated
-import controllers.AuthenticationObject.AuthenticatedAirline
-import com.patson.data.IncomeSource
-import com.patson.model.Period
-import com.patson.model.AirlineIncome
-import com.patson.model.LinksIncome
-import com.patson.model.TransactionsIncome
-import com.patson.model.OthersIncome
-import com.patson.AirlineSimulation
-import play.api.mvc.Security.AuthenticatedRequest
-import com.patson.data.CountrySource
-import com.patson.model.Country
-import com.patson.model.CountryMarketShare
-import com.patson.model.Computation
-import com.patson.data.BankSource
-import models.EntrepreneurProfile
-import com.patson.data.AirplaneSource
-import com.patson.model.Bank
 import java.awt.Color
-import com.patson.util.LogoGenerator
 import java.nio.file.Files
-import scala.util.Try
-import scala.util.Success
-import scala.util.Failure
-import com.patson.model.FlightCategory
-import com.patson.data.AllianceSource
-import com.patson.model.AllianceMember
-import com.patson.model.AirlineCashFlowItem
-import com.patson.model.CashFlowType
-import com.patson.data.CashFlowSource
-import com.patson.data.CashFlowSource
-import com.patson.model.AllianceRole
-import models.AirportFacility
-import models.FacilityType
-import com.patson.model.LoungeStatus
-import com.patson.model.Lounge
-import models.Consideration
-import com.patson.data.LinkStatisticsSource
-import com.patson.model.LinkStatistics
-import com.patson.data.LoungeHistorySource
-import scala.collection.mutable.ListBuffer
-import com.patson.model.LoungeConsumptionDetails
-import models.FacilityType.FacilityType
-import com.patson.data.UserSource
-import com.patson.model.User
-import com.patson.model.Alliance
-import com.patson.util.ChampionUtil
-import com.patson.util.ChampionInfo
-import com.patson.data.OilSource
+import java.util.Calendar
+
+import com.patson.AirlineSimulation
+import com.patson.data._
 import com.patson.model.Computation.ResetAmountInfo
+import com.patson.model._
+import com.patson.util.{ChampionUtil, LogoGenerator}
+import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
+import javax.inject.Inject
+import models.{AirportFacility, Consideration, EntrepreneurProfile, FacilityType}
+import play.api.libs.json.{Json, _}
+import play.api.mvc._
+import websocket.chat.ChatControllerActor
+
+import scala.util.{Failure, Success, Try}
 
 
-class AirlineApplication extends Controller {
+class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   object OwnedAirlineWrites extends Writes[Airline] {
     def writes(airline: Airline): JsValue =  {
       var values = List(
@@ -83,18 +37,26 @@ class AirlineApplication extends Controller {
       airline.getCountryCode.foreach { countryCode =>
         values = values :+ ("countryCode" -> JsString(countryCode))
       }
-      
+
       JsObject(values)
     }
   }
+
+  object LoginStatus extends Enumeration {
+    type LoginStatus = Value
+    val ONLINE, ACTIVE_7_DAYS, ACTIVE_30_DAYS, INACTIVE = Value
+  }
   
-  
-  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[Alliance])] {
-    def writes(entry: (Airline, User, Option[Alliance])): JsValue = {
-      val (airline, user, alliance) = entry
+  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance])] {
+    def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance])): JsValue = {
+      val (airline, user, loginStatus, alliance) = entry
       var result = Json.toJson(airline).asInstanceOf[JsObject] + 
         ("userLevel" -> JsNumber(user.level)) +
         ("username" -> JsString(user.userName))
+
+      loginStatus.foreach { status => //if there's a login status
+        result = result + ("loginStatus" -> JsNumber(status.id))
+      }
         
       alliance.foreach { alliance =>
         result = result + ("allianceName" -> JsString(alliance.name))
@@ -115,24 +77,58 @@ class AirlineApplication extends Controller {
       "overall" -> JsNumber(info.overall)))
     }
   }
-  
-  def getAllAirlines() = Authenticated { implicit request =>
+
+  def getAllAirlines(loginStatus : Boolean, hideInactive : Boolean) = Authenticated { implicit request =>
      //val airlines = AirlineSource.loadAllAirlines(fullLoad = true)
-    val airlinesByUser = scala.collection.mutable.Map[Airline, User]() 
+    val airlinesByUser = scala.collection.mutable.Map[Airline, User]()
+    val sevenDaysAgo = Calendar.getInstance();
+    sevenDaysAgo.add(Calendar.DATE, -7)
+    val thirtyDaysAgo = Calendar.getInstance()
+    thirtyDaysAgo.add(Calendar.DATE, -30)
+
     UserSource.loadUsersByCriteria(List.empty).foreach { user =>
-      user.getAccessibleAirlines().foreach { airline =>
-        airlinesByUser.put(airline, user)  
+      if (!hideInactive || user.lastActiveTime.after(thirtyDaysAgo)) {
+        user.getAccessibleAirlines().foreach { airline =>
+          airlinesByUser.put(airline, user)
+        }
       }
     }
-    
+
+    val userStatusMap: Map[User, LoginStatus.Value] =
+      if (loginStatus) {
+
+        val activeUsers = ChatControllerActor.getActiveUsers().map(_.id)
+        airlinesByUser.values.map { user =>
+          val status =
+            if (activeUsers.contains(user.id)) {
+              LoginStatus.ONLINE
+            } else {
+              if (user.lastActiveTime.after(sevenDaysAgo)) {
+                LoginStatus.ACTIVE_7_DAYS
+              } else if (user.lastActiveTime.after(thirtyDaysAgo)) {
+                LoginStatus.ACTIVE_30_DAYS
+              } else {
+                LoginStatus.INACTIVE
+              }
+            }
+          (user, status)
+        }.toMap
+      } else {
+        Map.empty[User, LoginStatus.Value]
+      }
+
+
+
+
     val alliances = AllianceSource.loadAllAlliances().map(alliance => (alliance.id, alliance)).toMap
     Ok(Json.toJson(airlinesByUser.toList.map {
-      case(airline, user) => (airline, user, airline.getAllianceId.map(alliances(_)))
+      case(airline, user) => (airline, user, userStatusMap.get(user), airline.getAllianceId.map(alliances(_)))
     })).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"
     )
   }
+
   
   def getAirline(airlineId : Int, extendedInfo : Boolean) = AuthenticatedAirline(airlineId) { request =>
      val airline = request.user
@@ -303,8 +299,8 @@ class AirlineApplication extends Controller {
     val linkStatisticsFromThisAirport : Map[Airline, List[LinkStatistics]] = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airport.id).groupBy(_.key.airline)
     val linkStatisticsToThisAirport : Map[Airline, List[LinkStatistics]] = LinkStatisticsSource.loadLinkStatisticsByToAirport(airport.id).groupBy(_.key.airline)
     val passengersOnThisAirport : Map[Airline, Long] = (linkStatisticsFromThisAirport.toList ++ linkStatisticsToThisAirport.toList).groupBy(_._1) //this gives Map[Airline, List[(Airline, List[LinkStatistics])]]
-                                      .mapValues(_.map(_._2).flatten) //this gives Map[Airline, List[LinkStatistics]]
-                                      .mapValues(_.map(_.passengers).sum)
+                                      .view.mapValues(_.map(_._2).flatten) //this gives Map[Airline, List[LinkStatistics]]
+                                      .mapValues(_.map(_.passengers.toLong).sum).toMap
                                       
     val sortedPassengersOnThisAirport : List[(Airline, Long)] = passengersOnThisAirport.toList.sortBy(_._2)
     val eligibleAirlines : List[(Airline, Long)] = sortedPassengersOnThisAirport.takeRight(newLounge.getActiveRankingThreshold)
@@ -398,7 +394,8 @@ class AirlineApplication extends Controller {
                case None => //ok to add then
                  AirportSource.loadAirportById(inputBase.airport.id, true).fold {
                    BadRequest("airport id " +  inputBase.airport.id + " not found!")
-                 } { airport =>//TODO for now. Maybe update to Ad event later on
+                 } {
+                   airport => //TODO for now. Maybe update to Ad event later on
                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
                    AirlineSource.saveAirlineBase(newBase)
                    if (airport.getAirlineAwareness(airlineId) < 20) { //update to 10 for hq
@@ -711,13 +708,13 @@ class AirlineApplication extends Controller {
       Ok(Json.obj("error" -> JsString("Cannot upload img at current reputation"))) //have to send ok as the jquery plugin's error cannot read the response
     } else {
       request.body.asMultipartFormData.map { data =>
-        import java.io.File
-        val logoFile = data.file("logoFile").get.ref.file
+
+        val logoFile = data.file("logoFile").get.ref.path
         LogoUtil.validateUpload(logoFile) match {
           case Some(rejection) =>
             Ok(Json.obj("error" -> JsString(rejection))) //have to send ok as the jquery plugin's error cannot read the response
           case None =>
-            val data =Files.readAllBytes(logoFile.toPath)
+            val data =Files.readAllBytes(logoFile)
             LogoUtil.saveLogo(airlineId, data)
             
             println("Uploaded logo for airline " + request.user)

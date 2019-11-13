@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -23,9 +24,10 @@ import com.patson.model.AirlineCashFlow
 import com.patson.model.CashFlowType
 import com.patson.model.CashFlowType
 import com.patson.model.AirlineCashFlowItem
+import javax.inject.Inject
 
 
-class AirplaneApplication extends Controller {
+class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   val BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD = 0
   
   implicit object AirplaneWithAssignedLinkWrites extends Writes[(Airplane, Option[Link])] {
@@ -72,8 +74,8 @@ class AirplaneApplication extends Controller {
   def getRejections(models : List[Model], airline : Airline) : Map[Model, Option[String]] = {
      
     val countryRelations : Map[String, Int] = airline.getCountryCode() match {
-      case Some(homeCountry) => CountrySource.getCountryMutualRelationShips(homeCountry).map {
-        case ((homeCountry, otherCountry), relationship) => (otherCountry, relationship)
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationShips(homeCountry).toList.map {
+        case ((_, otherCountry), relationship) => (otherCountry, relationship)
       }.toMap
       case None => Map.empty
     }    
@@ -143,18 +145,18 @@ class AirplaneApplication extends Controller {
     if (simpleResult) {
       val airplanesWithLink : List[(Airplane, Option[Link])]= AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
       
-      val airplanesByModel: Map[Model, (List[Airplane], List[Airplane])] = airplanesWithLink.groupBy( _._1.model ).mapValues { airplanesWithLink : List[(Airplane, Option[Link])] =>
+      val airplanesByModel: Map[Model, (List[Airplane], List[Airplane])] = airplanesWithLink.groupBy( _._1.model ).view.mapValues { airplanesWithLink : List[(Airplane, Option[Link])] =>
         airplanesWithLink.partition {
           case (_, linkOption) => linkOption.isDefined
         }
       }.mapValues {
         case (assignedAirplanes, freeAirplanes) =>
           (assignedAirplanes.map(_._1), freeAirplanes.map(_._1)) //get rid of the Option[Link] now as we have 2 lists already
-      }
+      }.toMap
       
       val currentCycle = CycleSource.loadCycle()
       
-      val airplanesByModelList = airplanesByModel.map {
+      val airplanesByModelList = airplanesByModel.toList.map {
         case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, availableAirplanes = freeAirplanes.filter(_.isReady(currentCycle)), constructingAirplanes=freeAirplanes.filter(!_.isReady(currentCycle)))
       }
       Ok(Json.toJson(airplanesByModelList))

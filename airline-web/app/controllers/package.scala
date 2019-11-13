@@ -1,3 +1,5 @@
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.patson.data._
 import com.patson.data.airplane._
 import com.patson.model._
@@ -24,9 +26,16 @@ import models.AirportFacility
 import models.FacilityType.FacilityType
 import com.patson.util.ChampionInfo
 
+import scala.concurrent.ExecutionContext
+
 
 
 package object controllers {
+  implicit val ec: ExecutionContext = ExecutionContext.global
+  implicit val actorSystem = ActorSystem("patson-web-app-system")
+  implicit val materializer = ActorMaterializer()
+  implicit val order = Ordering.Double.IeeeOrdering
+
   implicit object AirlineFormat extends Format[Airline] {
     def reads(json: JsValue): JsResult[Airline] = {
       val airline = Airline.fromId((json \ "id").as[Int])
@@ -120,7 +129,7 @@ package object controllers {
       val airline = AirlineSource.loadAirlineById(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val airplaneIds = json.\("airplanes").as[List[Int]]
+      val airplaneIds = json.\("airplanes").as[Array[Int]]
       val frequency = json.\("frequency").as[Int]
       val modelId = json.\("model").as[Int]
       
@@ -380,6 +389,21 @@ package object controllers {
               "ranking" -> JsNumber(info.ranking),
               "passengerCount" -> JsNumber(info.passengerCount),
               "reputationBoost" -> JsNumber(info.reputationBoost))
+    }
+  }
+
+  implicit object CityWrites extends Writes[City] {
+    def writes(city: City): JsValue = {
+      val averageIncome = city.income
+      val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
+      JsObject(List(
+        "id" -> JsNumber(city.id),
+        "name" -> JsString(city.name),
+        "latitude" -> JsNumber(city.latitude),
+        "longitude" -> JsNumber(city.longitude),
+        "countryCode" -> JsString(city.countryCode),
+        "population" -> JsNumber(city.population),
+        "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
     }
   }
 }

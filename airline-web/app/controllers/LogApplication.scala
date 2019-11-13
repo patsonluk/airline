@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -26,10 +27,11 @@ import com.patson.model.Loan
 import play.api.data.Form
 import play.api.data.Forms
 import com.patson.data.LogSource
+import javax.inject.Inject
 
 
 
-class LogApplication extends Controller {
+class LogApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object LogWrites extends Writes[Log] {
     def writes(log: Log): JsValue = JsObject(List(
       "airlineName" -> JsString(log.airline.name),
