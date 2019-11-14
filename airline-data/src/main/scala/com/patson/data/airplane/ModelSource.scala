@@ -40,7 +40,7 @@ object ModelSource {
       
  
 //  "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-//                                             "name VARCHAR(256), " +
+//                                             "name VARCHAR(255), " +
 //                                             "capacity INTEGER, " + 
 //                                             "fuel_burn INTEGER, " +
 //                                             "speed INTEGER, " +

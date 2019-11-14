@@ -160,15 +160,15 @@ object Meta {
     statement.execute()
     statement.close()
 
-    statement = connection.prepareStatement("CREATE TABLE " + CITY_TABLE + "(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256) CHARACTER SET 'utf8', population INTEGER, income INTEGER)")
+    statement = connection.prepareStatement("CREATE TABLE " + CITY_TABLE + "(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(255) CHARACTER SET 'utf8', population INTEGER, income INTEGER)")
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_TABLE + "(code CHAR(2) PRIMARY KEY, name VARCHAR(256) CHARACTER SET 'utf8', airport_population INTEGER, income INTEGER, openness INTEGER)")
+    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_TABLE + "(code CHAR(2) PRIMARY KEY, name VARCHAR(255) CHARACTER SET 'utf8', airport_population INTEGER, income INTEGER, openness INTEGER)")
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG)")
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(255), icao VARCHAR(255), name VARCHAR(255) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(255), city VARCHAR(255) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG)")
     statement.execute()
     statement.close()
     
@@ -177,7 +177,7 @@ object Meta {
     statement.close()
     
 
-    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(256), is_generated TINYINT(1))")
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), is_generated TINYINT(1))")
     statement.execute()
     statement.close()
     
@@ -301,7 +301,7 @@ object Meta {
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_FEATURE_TABLE + "(" +
       "airport INTEGER," +
-      "feature_type VARCHAR(256)," +
+      "feature_type VARCHAR(255)," +
       "strength DOUBLE," +
       "PRIMARY KEY (airport, feature_type)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
@@ -316,8 +316,8 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_PROJECT_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "airport INTEGER," +
-      "project_type VARCHAR(256)," +
-      "project_status VARCHAR(256)," +
+      "project_type VARCHAR(255)," +
+      "project_status VARCHAR(255)," +
       "progress DOUBLE," +
       "duration INTEGER," +
       "level INTEGER," +
@@ -507,7 +507,7 @@ object Meta {
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_MODEL_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-      "name VARCHAR(256), " +
+      "name VARCHAR(255), " +
       "capacity INTEGER, " +
       "fuel_burn INTEGER, " +
       "speed INTEGER, " +
@@ -516,7 +516,7 @@ object Meta {
       "lifespan INTEGER, " +
       "construction_time INTEGER, " +
       "country_code CHAR(2), " +
-      "image_url VARCHAR(256))")
+      "image_url VARCHAR(255))")
     statement.execute()
     statement.close()
 
@@ -548,8 +548,8 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + USER_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "user_name VARCHAR(100) UNIQUE, " +
-      "email VARCHAR(256) NOT NULL, " +
-      "status  VARCHAR(256) NOT NULL, " +
+      "email VARCHAR(255) NOT NULL, " +
+      "status  VARCHAR(255) NOT NULL, " +
       "creation_time DATETIME DEFAULT CURRENT_TIMESTAMP, " +
       "level INTEGER NOT NULL DEFAULT 0, " + 
       "last_active DATETIME DEFAULT CURRENT_TIMESTAMP)")
@@ -827,7 +827,7 @@ object Meta {
     
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
-      "name VARCHAR(256), " +
+      "name VARCHAR(255), " +
       "creation_cycle INTEGER" + 
       ")")
     statement.execute()
@@ -835,7 +835,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MEMBER_TABLE + "(" +
       "alliance INTEGER," +
       "airline INTEGER, " +
-      "role VARCHAR(256), " +
+      "role VARCHAR(255), " +
       "joined_cycle INTEGER, " + 
       "PRIMARY KEY (alliance, airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
@@ -847,8 +847,8 @@ object Meta {
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "cycle INTEGER," +
       "airline INTEGER, " +
-      "alliance_name VARCHAR(256)," +
-      "event VARCHAR(256), " +
+      "alliance_name VARCHAR(255)," +
+      "event VARCHAR(255), " +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
@@ -866,7 +866,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + LOUNGE_TABLE + "(" +
       "airport INTEGER, " +
       "airline INTEGER, " +
-      "name VARCHAR(256), " + 
+      "name VARCHAR(255), " +
       "level INTEGER," +
       "status VARCHAR(16)," + 
       "founded_cycle INTEGER," +
@@ -948,7 +948,7 @@ object Meta {
     
     statement = connection.prepareStatement("CREATE TABLE " + RESET_USER_TABLE + "(" +
       "user_name VARCHAR(100) PRIMARY KEY, " +
-      "token VARCHAR(256) NOT NULL, " + 
+      "token VARCHAR(255) NOT NULL, " +
       "FOREIGN KEY(user_name) REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()

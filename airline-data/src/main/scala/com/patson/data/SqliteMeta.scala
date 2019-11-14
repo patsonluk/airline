@@ -123,15 +123,15 @@ object SqliteMeta {
          statement.execute()
          statement.close()
          
-         statement = connection.prepareStatement("CREATE TABLE " + CITY_TABLE + "(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), population INTEGER, income INTEGER)")
+         statement = connection.prepareStatement("CREATE TABLE " + CITY_TABLE + "(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(255), population INTEGER, income INTEGER)")
          statement.execute()
          statement.close()
          
-         statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTOINCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256), zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG)")
+         statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTOINCREMENT, iata VARCHAR(255), icao VARCHAR(255), name VARCHAR(255), latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(255), city VARCHAR(255), zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG)")
          statement.execute()
          statement.close()
          
-         statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_TABLE + "( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(256))")
+         statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_TABLE + "( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255))")
          statement.execute()
          statement.close()
          
@@ -197,7 +197,7 @@ object SqliteMeta {
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_FEATURE_TABLE + "(" +
                                             "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
-                                            "feature_type VARCHAR(256)," +
+                                            "feature_type VARCHAR(255)," +
                                             "strength DOUBLE," +
                                             "PRIMARY KEY (airport, feature_type))")
     statement.execute()
@@ -348,7 +348,7 @@ object SqliteMeta {
      
      statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_MODEL_TABLE + "(" + 
                                              "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                             "name VARCHAR(256), " +
+                                             "name VARCHAR(255), " +
                                              "capacity INTEGER, " + 
                                              "fuel_burn INTEGER, " +
                                              "speed INTEGER, " +
@@ -379,8 +379,8 @@ object SqliteMeta {
      statement = connection.prepareStatement("CREATE TABLE " + USER_TABLE + "(" +
                                              "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                                              "user_name VARCHAR(100) UNIQUE, " +
-                                             "email VARCHAR(256) NOT NULL, " +
-                                             "status  VARCHAR(256) NOT NULL, " +
+                                             "email VARCHAR(255) NOT NULL, " +
+                                             "status  VARCHAR(255) NOT NULL, " +
                                              "creation_time DATETIME DEFAULT CURRENT_TIMESTAMP)")
      statement.execute()
      statement.close()

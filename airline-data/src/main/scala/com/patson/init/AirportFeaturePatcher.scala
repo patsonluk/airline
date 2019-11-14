@@ -228,7 +228,7 @@ object AirportFeaturePatcher extends App {
     DOMESTIC_AIRPORT -> Map[String, Int]()
   )
 
-    patchFeatures()
+    //patchFeatures()
   
   def patchFeatures() = {
     val airportFeatures = scala.collection.mutable.Map[String, ListBuffer[AirportFeature]]()
