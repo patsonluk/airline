@@ -51,7 +51,7 @@ GET		 /airlines/:airlineId/link-consumptions/:linkId	  controllers.LinkApplicati
 #GET		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.getWatchedLink(airlineId: Int)
 #GET		 /airlines/:airlineId/link-history 				controllers.LinkApplication.getLinkHistory(airlineId: Int)
 GET		 /airlines/:airlineId/related-link-consumption/:linkId		controllers.LinkApplication.getRelatedLinkConsumption(airlineId: Int, linkId: Int, selfOnly : Boolean ?= false)
-GET		 /airlines/:airlineId/link-composition/:linkId		controllers.LinkApplication.getLinkComposition(airlineId: Int, linkId: Int)
+GET		 /airlines/:airlineId/link-composition/:linkId		controllers.LinkApplication.getLinkComposition(airlineId: Int, linkId: Int, cycleCount : Int ?= 1)
 PUT		 /airlines/:airlineId/serviceFunding			controllers.LinkApplication.updateServiceFunding(airlineId: Int)
 GET		 /airlines/:airlineId/servicePrediction		    controllers.AirlineApplication.getServicePrediction(airlineId: Int)
 GET		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.getAirplaneRenewal(airlineId: Int)

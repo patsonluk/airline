@@ -5,10 +5,7 @@ import scala.collection.mutable.Map
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.int2bigDecimal
 import com.patson.Util
-import com.patson.data.AirlineSource
-import com.patson.data.AirplaneSource
-import com.patson.data.AirportSource
-import com.patson.data.LinkSource
+import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, ConsumptionHistorySource, CountrySource, CycleSource, LinkSource}
 import com.patson.model._
 import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
@@ -27,13 +24,9 @@ import com.patson.data.airplane.ModelSource
 import play.api.mvc.Security.AuthenticatedRequest
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.DemandGenerator
-import com.patson.data.ConsumptionHistorySource
-import com.patson.data.CountrySource
 
 import scala.collection.{SortedMap, immutable}
 import scala.collection.immutable.ListMap
-import com.patson.data.CycleSource
-
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
@@ -138,7 +131,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   implicit object ModelPlanLinkInfoWrites extends Writes[ModelPlanLinkInfo] {
     def writes(modelPlanLinkInfo : ModelPlanLinkInfo): JsValue = {
       val jsObject = JsObject(List(
-      "modelId" -> JsNumber(modelPlanLinkInfo.model.id), 
+      "modelId" -> JsNumber(modelPlanLinkInfo.model.id),
       "modelName" -> JsString(modelPlanLinkInfo.model.name),
       "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION),
@@ -773,13 +766,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
   
   
-  def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) {
+  def getLinkComposition(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
     val consumptionEntries : List[LinkConsumptionHistory]= ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
     val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).view.mapValues(entries => entries.map(_.passengerCount).sum)
-    
-    
     
     var countryJson = Json.arr()
     consumptionByCountry.foreach {
@@ -798,8 +789,59 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     consumptionByPreferenceType.foreach {
       case(preferenceType, passengerCount) => preferenceTypeJson = preferenceTypeJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "passengerCount" -> passengerCount)) 
     }
+
+    var result = Json.obj("country" -> countryJson, "passengerType" -> passengerTypeJson, "preferenceType" -> preferenceTypeJson)
+    //get competitor history
+    LinkSource.loadLinkById(linkId).foreach { link =>
+      //find all link with same from and to
+      val overlappingLinks = LinkSource.loadLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadLinksByAirports(link.to.id, link.from.id)
+      val rivals = scala.collection.mutable.HashSet[Airline]()
+
+      var overlappingLinksJson = Json.arr()
+      overlappingLinks.filter(_.capacity.total > 0).foreach { overlappingLink => //only work on links that have capacity
+        overlappingLinksJson = overlappingLinksJson.append(Json.toJson(LinkSource.loadLinkConsumptionsByLinkId(overlappingLink.id, cycleCount))(Writes.traversableWrites(MinimumLinkConsumptionWrite)))
+        rivals += overlappingLink.airline
+      }
+
+      result = result + ("overlappingLinks" -> overlappingLinksJson)
+
+      val fromAirportLinks = LinkSource.loadLinksByFromAirport(link.from.id) ++ LinkSource.loadLinksByToAirport(link.from.id)
+      val toAirportLinks =  LinkSource.loadLinksByFromAirport(link.to.id) ++ LinkSource.loadLinksByToAirport(link.to.id)
+
+      val fromAirport = AirportSource.loadAirportById(link.from.id, fullLoad = true).get
+      val toAirport = AirportSource.loadAirportById(link.to.id, fullLoad = true).get
+
+      //check the network capacity of rival (including self here)
+      var fromAirportInfo = Json.arr()
+      var toAirportInfo = Json.arr()
+      rivals.foreach { rival => //check alliance
+        val networkAirlineIds : List[Int] =
+          (AllianceSource.loadAllianceMemberByAirline(rival) match {
+            case Some(allianceMember) => AllianceSource.loadAllianceById(allianceMember.allianceId).get.members.map(_.airline)
+            case None => List(rival)
+          }).map(_.id)
+
+        //now check network capacity on the from Airport
+        val fromAirportAllianceLinks = fromAirportLinks.filter(fromAirportLink => networkAirlineIds.contains(fromAirportLink.airline.id) && fromAirportLink.id != link.id)
+        val toAirportAllianceLinks = toAirportLinks.filter(toAirportLink => networkAirlineIds.contains(toAirportLink.airline.id) && toAirportLink.id != link.id)
+
+        val fromAirportAllianceNetworkCapacity = fromAirportAllianceLinks.foldLeft(LinkClassValues.getInstance()) { (container, link) =>
+          container + link.capacity
+        }
+        val toAirportAllianceNetworkCapacity = toAirportAllianceLinks.foldLeft(LinkClassValues.getInstance()) { (container, link) =>
+          container + link.capacity
+        }
+
+        fromAirportInfo = fromAirportInfo.append(Json.obj("airline" -> rival, "network" -> fromAirportAllianceNetworkCapacity, "awareness" -> fromAirport.getAirlineAwareness(rival.id), "loyalty" -> fromAirport.getAirlineLoyalty(rival.id)))
+        toAirportInfo = toAirportInfo.append(Json.obj("airline" -> rival, "network" -> toAirportAllianceNetworkCapacity, "awareness" -> toAirport.getAirlineAwareness(rival.id), "loyalty" -> toAirport.getAirlineLoyalty(rival.id)))
+      }
+
+      result = result + ("fromAirport" -> fromAirportInfo)
+      result = result + ("toAirport" -> toAirportInfo)
+    }
+
     
-    Ok(Json.obj("country" -> countryJson, "passengerType" -> passengerTypeJson, "preferenceType" -> preferenceTypeJson))
+    Ok(result)
   }
   
   val getPassengerTypeTitle = (passengerType : PassengerType.Value) =>  passengerType match {

@@ -589,6 +589,10 @@ object Meta {
                                             
     statement.execute()
     statement.close()
+
+    statement = connection.prepareStatement("CREATE INDEX " + PASSENGER_HISTORY_INDEX_1 + " ON " + PASSENGER_HISTORY_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
     
     connection.close()
   }

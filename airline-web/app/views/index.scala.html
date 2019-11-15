@@ -2529,7 +2529,7 @@
 	
 	<!-- link passenger composition modal -->
 	<div id="linkCompositionModal" class="modal">
-		<div class="modal-content"  style="width : 800px; height: 350px;">
+		<div class="modal-content"  style="width : 800px; height: 800px;">
 			<span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
 			<h3 style="margin-bottom: 10px;">Passenger Composition</h3>
 			<div style="width: 100%; float: left;">
@@ -2544,7 +2544,7 @@
   					<div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
   					<div class="table data passengerTypeTable" style="width: 95%;"></div>
   				</div>
-  				<div style="float: left;">
+				<div style="float: left;">
   					<h5 align="center">
   						Travel Preference
   						<div class="tooltip">
@@ -2617,6 +2617,44 @@
   					<div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
   					<div class="table data preferenceTypeTable" style="width: 95%;"></div>
  				</div>
+			</div>
+
+			<h3 style="margin-bottom: 10px;">Ticket Price History</h3>
+			<div style="width: 100%; float: left;">
+				<div style="float: left;">
+					<div style="float: left;">
+						<h5 align="center">Economy</h5>
+						<div id="rivalEconomyPriceChart" style="height: 150px; width: 250px" align="center"></div>
+					</div>
+					<div style="float: left;">
+						<h5 align="center">Business</h5>
+						<div id="rivalBusinessPriceChart" style="height: 150px; width: 250px;" align="center"></div>
+					</div>
+					<div style="float: left;">
+						<h5 align="center">First</h5>
+						<div id="rivalFirstPriceChart" style="height: 150px; width: 250px;" align="center"></div>
+					</div>
+
+				</div>
+			</div>
+
+			<h3 style="margin-bottom: 10px;">Capacity History</h3>
+			<div style="width: 100%; float: left;">
+				<div style="float: left;">
+					<div style="float: left;">
+						<h5 align="center">Economy</h5>
+						<div id="rivalEconomyCapacityChart" style="height: 150px; width: 250px" align="center"></div>
+					</div>
+					<div style="float: left;">
+						<h5 align="center">Business</h5>
+						<div id="rivalBusinessCapacityChart" style="height: 150px; width: 250px;" align="center"></div>
+					</div>
+					<div style="float: left;">
+						<h5 align="center">First</h5>
+						<div id="rivalFirstCapacityChart" style="height: 150px; width: 250px;" align="center"></div>
+					</div>
+
+				</div>
 			</div>
 			
 	    </div>

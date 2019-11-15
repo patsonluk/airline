@@ -1,0 +1,1 @@
+CREATE INDEX passenger_history_index_1 ON passenger_history(link);

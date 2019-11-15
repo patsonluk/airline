@@ -76,6 +76,7 @@ object Constants {
   val VIP_ROUTE_TABLE = "vip_route"
   val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"
   val PASSENGER_HISTORY_TABLE = "passenger_history"
+  val PASSENGER_HISTORY_INDEX_1 = "passenger_history_index_1"
   val LOAN_TABLE = "loan"
   val LOUNGE_TABLE = "lounge"
   val LOUNGE_CONSUMPTION_TABLE = "lounge_consumption"

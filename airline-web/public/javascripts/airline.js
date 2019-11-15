@@ -1897,7 +1897,7 @@ function showLinkExpectedQualityModal(isFromAirport) {
 }
 
 function showLinkComposition(linkId) {
-	var url = "airlines/" + activeAirline.id + "/link-composition/" + linkId
+	var url = "airlines/" + activeAirline.id + "/link-composition/" + linkId + "?cycleCount=30"
 	
 	$.ajax({
 		type: 'GET',
@@ -1911,6 +1911,12 @@ function showLinkComposition(linkId) {
 	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
 	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
 	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
+	    	plotRivalHistoryChart(result.overlappingLinks, $("#rivalEconomyPriceChart"), "economy", "price", "$", activeAirline.id)
+	    	plotRivalHistoryChart(result.overlappingLinks, $("#rivalBusinessPriceChart"), "business", "price", "$", activeAirline.id)
+	    	plotRivalHistoryChart(result.overlappingLinks, $("#rivalFirstPriceChart"), "first", "price", "$", activeAirline.id)
+	    	plotRivalHistoryChart(result.overlappingLinks, $("#rivalEconomyCapacityChart"), "economy", "capacity", "", activeAirline.id)
+            plotRivalHistoryChart(result.overlappingLinks, $("#rivalBusinessCapacityChart"), "business", "capacity", "", activeAirline.id)
+            plotRivalHistoryChart(result.overlappingLinks, $("#rivalFirstCapacityChart"), "first", "capacity", "", activeAirline.id)
 	    	
 	    	$('#linkCompositionModal').fadeIn(200)
 	    },
