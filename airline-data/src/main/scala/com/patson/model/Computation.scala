@@ -1,5 +1,7 @@
 package com.patson.model
 
+import java.util.concurrent.ConcurrentHashMap
+
 import com.patson.model.airplane._
 import com.patson.data.CycleSource
 import com.patson.Util
@@ -8,15 +10,20 @@ import com.patson.data.AirplaneSource
 import com.patson.data.AirlineSource
 import com.patson.data.BankSource
 import com.patson.data.OilSource
+import scala.jdk.CollectionConverters._
 
 object Computation {
   //distance vs max speed
-  val speedLimits = List((300, 350), (400, 500), (400, 700))  
-  def calculateDuration(airplaneModel: Model, distance : Int) = {
+  val speedLimits = List((300, 350), (400, 500), (400, 700))
+
+  def calculateDuration(model: Model, distance : Int) : Int = {
+    calculateDuration(model.speed, distance)
+  }
+  def calculateDuration(modelSpeed : Int, distance : Int) = {
     var remainDistance = distance
     var duration = 0;
     for ((distanceBucket, maxSpeed) <- speedLimits if(remainDistance > 0)) {
-      val speed = Math.min(maxSpeed, airplaneModel.speed)
+      val speed = Math.min(maxSpeed, modelSpeed)
       if (distanceBucket >= remainDistance) {
         duration += remainDistance * 60 / speed
       } else {
@@ -26,9 +33,19 @@ object Computation {
     }
     
     if (remainDistance > 0) {
-      duration += remainDistance * 60 / airplaneModel.speed
+      duration += remainDistance * 60 / modelSpeed
     }
     duration
+  }
+
+
+  val standardFlightTimeCache = new ConcurrentHashMap[Int, Int]().asScala
+  val STANDARD_SPEED = 800
+  /**
+    * Get expected flight time based on distance
+    */
+  val getStandardFlightTime : (Int => Int) = (distance) => {
+    standardFlightTimeCache.getOrElseUpdate(distance, calculateDuration(STANDARD_SPEED, distance))
   }
 
   def calculateMaxFrequency(airplaneModel: Model, distance : Int, airplaneCount : Int = 1) : Int = {
