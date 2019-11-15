@@ -1,29 +1,15 @@
 package controllers
 
-import scala.math.BigDecimal.int2bigDecimal
-import com.patson.data.AirlineSource
-import com.patson.data.AirplaneSource
-import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane._
-import com.patson.model._
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsObject
-import play.api.libs.json.JsString
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
-import play.api.libs.json.Writes
-import play.api.mvc._
-import scala.collection.mutable.ListBuffer
-import com.patson.data.CycleSource
-import controllers.AuthenticationObject.AuthenticatedAirline
-import com.patson.data.CountrySource
-import com.patson.data.AirportSource
-import com.patson.util.LogoGenerator
 import java.awt.Color
 
+import com.patson.util.LogoGenerator
+import javax.inject.Inject
+import play.api.libs.json.Json
+import play.api.mvc._
+import scala.jdk.CollectionConverters._
 
-class LogoApplication extends Controller {
-  import scala.collection.JavaConverters._
+class LogoApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+
   val templates : Map[Int, Array[Byte]] = LogoGenerator.getTemplates.asScala.map { case (key, value) => (key.intValue, value) }.toMap
   
 

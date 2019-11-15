@@ -29,16 +29,19 @@ import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.DemandGenerator
 import com.patson.data.ConsumptionHistorySource
 import com.patson.data.CountrySource
-import scala.collection.SortedMap
+
+import scala.collection.{SortedMap, immutable}
 import scala.collection.immutable.ListMap
 import com.patson.data.CycleSource
+
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 import com.patson.model.LinkConsumptionHistory
 import com.patson.model.FlightPreferenceType
+import javax.inject.Inject
 
-class LinkApplication extends Controller {
+class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -100,35 +103,35 @@ class LinkApplication extends Controller {
       
     }
   }
-  
+
+  implicit object RelatedLinkWrites extends Writes[RelatedLink] {
+    def writes(relatedLink : RelatedLink): JsValue = {
+      JsObject(List(
+        "linkId" -> JsNumber(relatedLink.relatedLinkId),
+        "fromAirportId" -> JsNumber(relatedLink.fromAirport.id),
+        "fromAirportCode" -> JsString(relatedLink.fromAirport.iata),
+        "fromAirportName" -> JsString(relatedLink.fromAirport.name),
+        "toAirportId" -> JsNumber(relatedLink.toAirport.id),
+        "toAirportCode" -> JsString(relatedLink.toAirport.iata),
+        "toAirportName" -> JsString(relatedLink.toAirport.name),
+        "fromAirportCity" -> JsString(relatedLink.fromAirport.city),
+        "toAirportCity" -> JsString(relatedLink.toAirport.city),
+        "fromLatitude" -> JsNumber(relatedLink.fromAirport.latitude),
+        "fromLongitude" -> JsNumber(relatedLink.fromAirport.longitude),
+        "toLatitude" -> JsNumber(relatedLink.toAirport.latitude),
+        "toLongitude" -> JsNumber(relatedLink.toAirport.longitude),
+        "airlineId" -> JsNumber(relatedLink.airline.id),
+        "airlineName" -> JsString(relatedLink.airline.name),
+        "passenger" -> JsNumber(relatedLink.passengers)))
+    }
+  }
+
   implicit object LinkHistoryWrites extends Writes[LinkHistory] {
     def writes(linkHistory: LinkHistory): JsValue = {
           JsObject(List(
       "watchedLinkId" -> JsNumber(linkHistory.watchedLinkId),
       "relatedLinks" -> Json.toJson(linkHistory.relatedLinks),
       "invertedRelatedLinks" -> Json.toJson(linkHistory.invertedRelatedLinks)))
-    }
-  }
-  
-  implicit object RelatedLinkWrites extends Writes[RelatedLink] {
-    def writes(relatedLink : RelatedLink): JsValue = {
-          JsObject(List(
-      "linkId" -> JsNumber(relatedLink.relatedLinkId),
-      "fromAirportId" -> JsNumber(relatedLink.fromAirport.id),
-      "fromAirportCode" -> JsString(relatedLink.fromAirport.iata),
-      "fromAirportName" -> JsString(relatedLink.fromAirport.name),
-      "toAirportId" -> JsNumber(relatedLink.toAirport.id),
-      "toAirportCode" -> JsString(relatedLink.toAirport.iata),
-      "toAirportName" -> JsString(relatedLink.toAirport.name),
-      "fromAirportCity" -> JsString(relatedLink.fromAirport.city),
-      "toAirportCity" -> JsString(relatedLink.toAirport.city),
-      "fromLatitude" -> JsNumber(relatedLink.fromAirport.latitude),
-      "fromLongitude" -> JsNumber(relatedLink.fromAirport.longitude),
-      "toLatitude" -> JsNumber(relatedLink.toAirport.latitude),
-      "toLongitude" -> JsNumber(relatedLink.toAirport.longitude),
-      "airlineId" -> JsNumber(relatedLink.airline.id),
-      "airlineName" -> JsString(relatedLink.airline.name),
-      "passenger" -> JsNumber(relatedLink.passengers)))
     }
   }
   
@@ -163,12 +166,7 @@ class LinkApplication extends Controller {
       Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue)) + ("passengers" -> Json.toJson(passengers))
     }
   }
-  
-  implicit object RouteWrites extends Writes[Route] {
-    def writes(route : Route): JsValue = { 
-      Json.toJson(route.links)
-    }
-  }
+
   implicit object LinkWithDirectionWrites extends Writes[LinkConsideration] {
     def writes(linkWithDirection : LinkConsideration): JsValue = {
       JsObject(List(
@@ -187,6 +185,13 @@ class LinkApplication extends Controller {
         "toLongitude" -> JsNumber(linkWithDirection.to.longitude)))
     }
   }
+
+  implicit object RouteWrites extends Writes[Route] {
+    def writes(route : Route): JsValue = { 
+      Json.toJson(route.links)
+    }
+  }
+
   
   case class PlanLinkData(fromAirportId: Int, toAirportId: Int)
   val planLinkForm = Form(
@@ -413,7 +418,7 @@ class LinkApplication extends Controller {
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
       )
     } else {
-      val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
+      val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(immutable.Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
         foldMap + (linkConsumptionDetails.link.id -> linkConsumptionDetails)
       }
       val linksWithProfit = links.map { link =>  
@@ -671,7 +676,7 @@ class LinkApplication extends Controller {
       
       
       //check airline grade limit
-      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).mapValues(_.size)
+      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).view.mapValues(_.size).toMap
       val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
       airline.getLinkLimit(flightCategory).foreach { limit =>//if there's limit
         if (limit <= existingFlightCategoryCounts.getOrElse(flightCategory, 0)) {
@@ -770,9 +775,9 @@ class LinkApplication extends Controller {
   
   def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) {
     val consumptionEntries : List[LinkConsumptionHistory]= ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
-    val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).mapValues(entries => entries.map(_.passengerCount).sum)
-    val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).mapValues(entries => entries.map(_.passengerCount).sum)
-    val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).view.mapValues(entries => entries.map(_.passengerCount).sum)
     
     
     

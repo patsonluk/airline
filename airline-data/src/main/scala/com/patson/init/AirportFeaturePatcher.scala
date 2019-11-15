@@ -242,13 +242,13 @@ object AirportFeaturePatcher extends App {
     }
     
     val updatingAirports = 
-      airportFeatures.map {
+      airportFeatures.toList.map {
         case (iata, features) =>
           val airport = AirportSource.loadAirportByIata(iata).get
           airport.initFeatures(features.toList)
           airport
       }
     
-    AirportSource.updateAirportFeatures(updatingAirports.toList)
+    AirportSource.updateAirportFeatures(updatingAirports)
   }
 }

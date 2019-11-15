@@ -498,9 +498,9 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     val price = Pricing.computeStandardPrice(distance, flightType, ECONOMY)
     
     val fromAirportClone = fromAirport.copy(size = airportSize)
-    fromAirportClone.initAirlineBases(fromAirport.getAirlineBases().map(_._2).toList)
+    fromAirportClone.initAirlineBases(fromAirport.getAirlineBases().toList.map(_._2))
     val toAirportClone = toAirport.copy(size = airportSize)
-    toAirportClone.initAirlineBases(toAirport.getAirlineBases().map(_._2).toList)
+    toAirportClone.initAirlineBases(toAirport.getAirlineBases().toList.map(_._2))
     
     val link = Link(fromAirportClone, toAirportClone, testAirline1, LinkClassValues.getInstanceByMap(Map(ECONOMY -> price)), distance = distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(flightType, ECONOMY), duration, frequency, flightType)
     link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity * loadFactor).toInt)))
@@ -519,7 +519,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   }
   
   def verifyInDescendingOrder(numbers : List[Double]) = {
-    assert(numbers.sorted(Ordering.Double.reverse) == numbers)
+    assert(numbers.sorted(Ordering[Double].reverse) == numbers)
   }
   
   

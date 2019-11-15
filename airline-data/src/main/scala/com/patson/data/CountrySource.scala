@@ -280,9 +280,9 @@ object CountrySource {
   }
   
   def loadCountryRelationshipsByAirline(airlineId : Int) : scala.collection.immutable.Map[Country, Int] = {
-    loadCountryRelationshipsByCriteria(List(("airline", airlineId))).mapValues { airlineToRelationship =>
+    loadCountryRelationshipsByCriteria(List(("airline", airlineId))).view.mapValues { airlineToRelationship =>
       airlineToRelationship.toIterable.head._2
-    }
+    }.toMap
   }
   
   def saveMarketShares(marketShares : List[CountryMarketShare]) = {
@@ -358,9 +358,9 @@ object CountrySource {
       resultSet.close()
       preparedStatement.close()
       
-      resultMap.map {
+      resultMap.toList.map {
         case ((countryCode, airlinePassengers)) => CountryMarketShare(countryCode, airlinePassengers.toMap)
-      }.toList
+      }
     } finally {
       connection.close()
     }  

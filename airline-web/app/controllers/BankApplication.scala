@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -23,12 +24,14 @@ import play.api.libs.json.JsResult
 import play.api.libs.json.JsSuccess
 import com.patson.data.BankSource
 import com.patson.model.Loan
+import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms
+import play.api.mvc.Security.AuthenticatedRequest
 
 
 
-class BankApplication extends Controller {
+class BankApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object LoanWrites extends Writes[Loan] {
     //case class Loan(airlineId : Int, borrowedAmount : Long, interest : Long, var remainingAmount : Long, creationCycle : Int, loanTerm : Int, var id : Int = 0) extends IdObject
     def writes(loan: Loan): JsValue = JsObject(List(
@@ -52,9 +55,8 @@ class BankApplication extends Controller {
       "requestedTerm" -> Forms.number
     )(LoanRequest.apply)(LoanRequest.unapply)
   )
-  
-  
-  def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+
+  def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request : AuthenticatedRequest[Any, Airline] =>
     Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id)))
   }
   
