@@ -18,7 +18,7 @@ object ConsumptionHistorySource {
     connection.createStatement().executeUpdate("DELETE FROM " + PASSENGER_HISTORY_TABLE);
     
     var routeId = 0
-    val batchSize = 100
+    val batchSize = 1000
     
     try {
       consumptions.foreach { 

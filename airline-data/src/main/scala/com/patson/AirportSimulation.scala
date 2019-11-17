@@ -12,7 +12,6 @@ object AirportSimulation {
   val AWARENESS_INCREMENT_WITH_BASE = 0.5
   val AWARENESS_INCREMENT_MAX_WITH_HQ = 50 //how much awareness will increment to just because of being a HQ
   val AWARENESS_INCREMENT_MAX_WITH_BASE = 30 //how much awareness will increment to just because of being a HQ
-  val LOYALTY_DECAY = 0.01
   val LOYALTY_AUTO_INCREMENT_WITH_HQ = 0.05
   val LOYALTY_AUTO_INCREMENT_WITH_BASE = 0.02
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
@@ -41,10 +40,8 @@ object AirportSimulation {
       airport.getAirlineAppeals().foreach { 
         case(airline, AirlineAppeal(loyalty, awareness)) =>
           //decay    
-          val newLoyalty = if (loyalty - LOYALTY_DECAY <= 0) 0 else loyalty - LOYALTY_DECAY
           val newAwareness = if (awareness - AWARENESS_DECAY <= 0) 0 else awareness - AWARENESS_DECAY
           
-          airport.setAirlineLoyalty(airline, newLoyalty)
           airport.setAirlineAwareness(airline, newAwareness)
       }
        //add base on bases
@@ -116,10 +113,22 @@ object AirportSimulation {
           case (_, linkConsumptionsByDirection) => linkConsumptionsByDirection
         }.flatten
     }.toMap
-    
-    airportSoldLinks.foreach {
-      case (airportId, soldLinks) =>
-        updateAirportBySoldLinks(allAirportsMap(airportId), soldLinks)
+
+    allAirports.foreach { airport =>
+      if ("FSM".equals(airport.iata)) {
+        println("STOP HERE");
+      }
+      val soldLinksOfThisAirport = airportSoldLinks.get(airport.id).getOrElse(Seq.empty[LinkConsumptionDetails])
+      val soldLinksByAirline = scala.collection.mutable.Map(soldLinksOfThisAirport.groupBy { _.link.airline.id }.toSeq: _*)
+      airport.getAirlineAppeals().foreach {
+        case(airlineId, _) =>  { //for all airlines that have record with this airport
+          if (!soldLinksByAirline.contains(airlineId)) { //put an empty list, so it gets updated
+            soldLinksByAirline.put(airlineId, Seq.empty[LinkConsumptionDetails])
+          }
+        }
+      }
+      //now the soldLinksByAirline should contain all the sold flights of this airport grouped by airline, if the airline no longer offer flights, it will be empty
+      updateAirportBySoldLinks(airport, soldLinksByAirline)
     }
     
     AirportSource.updateAirlineAppeal(allAirports)
@@ -132,13 +141,9 @@ object AirportSimulation {
     println("simulating airport projects")
     
     val inProgressProjects = AirportSource.loadAllAirportProjects().filter { _.status != COMPLETED }
-    
-    
-    
   }
   
-  private def updateAirportBySoldLinks(airport : Airport, soldLinksForThisAirport : Seq[LinkConsumptionDetails]) = {
-    val soldLinksByAirline = soldLinksForThisAirport.groupBy { _.link.airline.id } 
+  private def updateAirportBySoldLinks(airport : Airport, soldLinksByAirline : Map[Int, Seq[LinkConsumptionDetails]]) = {
     soldLinksByAirline.foreach {
       case(airlineId, soldLinksByAirline) => {
         val targetLoyalty = getTargetLoyalty(soldLinksByAirline, airport.population)
