@@ -357,7 +357,11 @@
 				    			</div>
 				    			<div class="button" id="toggleLinkHistoryButton" onclick="toggleLinkHistoryView()">View Passenger Map</div>
 				    			<div class="divider"></div>
-				    			<h4>Direct Competitions</h4>
+				    			<h4>
+									<span>Direct Competitions</span>
+									<img src='@routes.Assets.versioned("images/icons/chart-up.png")' class="button" title="View Rival History"onclick="showLinkRivalHistory($('#actionLinkId').val())" style="vertical-align: text-bottom">
+									<img src='@routes.Assets.versioned("images/icons/magnifier.png")' class="button" title="View Rival Details"onclick="showLinkRivalDetails($('#actionLinkId').val())" style="vertical-align: text-bottom">
+								</h4>
 				    			<div class="table data" id="linkCompetitons" style="width: 100%">
 			    					<div class='table-header'>
 			    						<div class="cell" style="width: 35%;"><h5>Airline</h5></div>
@@ -2528,31 +2532,31 @@
 	</div>
 	
 	<!-- link passenger composition modal -->
-	<div id="linkCompositionModal" class="modal">
-		<div class="modal-content"  style="width : 800px; height: 800px;">
-			<span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
-			<h3 style="margin-bottom: 10px;">Passenger Composition</h3>
-			<div style="width: 100%; float: left;">
-  				<div style="float: left;">
-  					<h5 align="center">Country</h5>
-  					<div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
-  					<div class="table data topCountryTable" style="width: 95%;">
-  					</div>
-  				</div>
-  				<div style="float: left;">	
-  					<h5 align="center">Passenger Type</h5>
-  					<div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
-  					<div class="table data passengerTypeTable" style="width: 95%;"></div>
-  				</div>
-				<div style="float: left;">
-  					<h5 align="center">
-  						Travel Preference
-  						<div class="tooltip">
-	    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
-	    					<span class="tooltiptext" style="width: 600px;">
+    <div id="linkCompositionModal" class="modal">
+        <div class="modal-content"  style="width : 800px; height: 350px;">
+            <span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
+            <h3 style="margin-bottom: 10px;">Passenger Composition</h3>
+            <div style="width: 100%; float: left;">
+                <div style="float: left;">
+                    <h5 align="center">Country</h5>
+                    <div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
+                    <div class="table data topCountryTable" style="width: 95%;">
+                    </div>
+                </div>
+                <div style="float: left;">
+                    <h5 align="center">Passenger Type</h5>
+                    <div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
+                    <div class="table data passengerTypeTable" style="width: 95%;"></div>
+                </div>
+                <div style="float: left;">
+                    <h5 align="center">
+                        Travel Preference
+                        <div class="tooltip">
+                            <img src='@routes.Assets.versioned("images/icons/information.png")'>
+                            <span class="tooltiptext" style="width: 600px;">
 		    					Passengers all have different preferences and emphasis when choosing their flights. <br/>
 		    					<br/>
-		    					
+
 		         				<div class="table data" style="width: 100%;">
 			         			 	<div class="table-header">
 				 	  					<div class="cell" style="width: 10%;"></div>
@@ -2612,53 +2616,109 @@
 									</div>
 			        			</div>
 			        		</span>
-	    				</div>	
-  					</h5>	
-  					<div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
-  					<div class="table data preferenceTypeTable" style="width: 95%;"></div>
- 				</div>
-			</div>
+                        </div>
+                    </h5>
+                    <div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
+                    <div class="table data preferenceTypeTable" style="width: 95%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-			<h3 style="margin-bottom: 10px;">Ticket Price History</h3>
-			<div style="width: 100%; float: left;">
-				<div style="float: left;">
-					<div style="float: left;">
-						<h5 align="center">Economy</h5>
-						<div id="rivalEconomyPriceChart" style="height: 150px; width: 250px" align="center"></div>
-					</div>
-					<div style="float: left;">
-						<h5 align="center">Business</h5>
-						<div id="rivalBusinessPriceChart" style="height: 150px; width: 250px;" align="center"></div>
-					</div>
-					<div style="float: left;">
-						<h5 align="center">First</h5>
-						<div id="rivalFirstPriceChart" style="height: 150px; width: 250px;" align="center"></div>
-					</div>
+    <!-- link rival awareness/loyalty modal -->
+    <div id="linkRivalHistoryModal" class="modal">
+        <div class="modal-content"  style="width : 800px; height: 450px;">
+            <span class="close" onclick="closeModal($('#linkRivalHistoryModal'))">&times;</span>
+            <h3 style="margin-bottom: 10px;">Ticket Price History</h3>
+            <div style="width: 100%; float: left;">
+                <div style="float: left;">
+                    <div style="float: left;">
+                        <h5 align="center">Economy</h5>
+                        <div id="rivalEconomyPriceChart" style="height: 150px; width: 250px" align="center"></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 align="center">Business</h5>
+                        <div id="rivalBusinessPriceChart" style="height: 150px; width: 250px;" align="center"></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 align="center">First</h5>
+                        <div id="rivalFirstPriceChart" style="height: 150px; width: 250px;" align="center"></div>
+                    </div>
 
-				</div>
-			</div>
+                </div>
+            </div>
 
-			<h3 style="margin-bottom: 10px;">Capacity History</h3>
-			<div style="width: 100%; float: left;">
-				<div style="float: left;">
-					<div style="float: left;">
-						<h5 align="center">Economy</h5>
-						<div id="rivalEconomyCapacityChart" style="height: 150px; width: 250px" align="center"></div>
-					</div>
-					<div style="float: left;">
-						<h5 align="center">Business</h5>
-						<div id="rivalBusinessCapacityChart" style="height: 150px; width: 250px;" align="center"></div>
-					</div>
-					<div style="float: left;">
-						<h5 align="center">First</h5>
-						<div id="rivalFirstCapacityChart" style="height: 150px; width: 250px;" align="center"></div>
-					</div>
+            <h3 style="margin-bottom: 10px;">Capacity History</h3>
+            <div style="width: 100%; float: left;">
+                <div style="float: left;">
+                    <div style="float: left;">
+                        <h5 align="center">Economy</h5>
+                        <div id="rivalEconomyCapacityChart" style="height: 150px; width: 250px" align="center"></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 align="center">Business</h5>
+                        <div id="rivalBusinessCapacityChart" style="height: 150px; width: 250px;" align="center"></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 align="center">First</h5>
+                        <div id="rivalFirstCapacityChart" style="height: 150px; width: 250px;" align="center"></div>
+                    </div>
 
-				</div>
-			</div>
-			
-	    </div>
+                </div>
+            </div>
+		</div>
 	</div>
+	<!-- link rival network modal -->
+	<div id="linkRivalDetailsModal" class="modal">
+		<div class="modal-content"  style="width : 800px; height: 600px;">
+			<span class="close" onclick="closeModal($('#linkRivalDetailsModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;">Loyalty/Awareness</h3>
+			<div style="height: 250px; width: 100%;">
+				<div style="height: 100%; width: 100%; overflow: auto; float: left;">
+					<div class="table data"style="width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 20%;  border-bottom: none"></div>
+							<div class="cell fromAirportText" style="width: 40%; border-bottom: none"></div>
+							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>
+						</div>
+					</div>
+					<div class="table data" id="rivalLoyaltyAwarenessTable" style="max-height: 100%; width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 20%"></div>
+							<div class="cell" style="width: 20%" align="right">Loyalty</div>
+							<div class="cell" style="width: 20%" align="right">Awareness</div>
+							<div class="cell" style="width: 20%" align="right">Loyalty</div>
+							<div class="cell" style="width: 20%" align="right">Awareness</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<h3 style="margin-bottom: 10px;">Network Capacity (Self + Alliance)</h3>
+			<div style="height: 250px; width: 100%;">
+				<div style="height: 100%; width: 100%; overflow: auto; float: left;">
+					<div class="table data"style="width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 20%;  border-bottom: none"></div>
+							<div class="cell fromAirportText" style="width: 40%; border-bottom: none"></div>
+							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>
+						</div>
+					</div>
+					<div class="table data" id="networkCapacity" style="max-height: 100%; width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 16%"></div>
+							<div class="cell" style="width: 14%" align="right">Economy</div>
+							<div class="cell" style="width: 14%" align="right">Business</div>
+							<div class="cell" style="width: 14%" align="right">First</div>
+							<div class="cell" style="width: 14%" align="right">Economy</div>
+							<div class="cell" style="width: 14%" align="right">Business</div>
+							<div class="cell" style="width: 14%" align="right">First</div>
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
 					    		
 	
 	<!-- Modal for loading -->

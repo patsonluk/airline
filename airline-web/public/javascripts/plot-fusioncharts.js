@@ -768,3 +768,4 @@ function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkCla
 	   }
 	})
 }
+top

@@ -766,7 +766,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
   
   
-  def getLinkComposition(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
+  def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) {
     val consumptionEntries : List[LinkConsumptionHistory]= ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
     val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
@@ -790,7 +790,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       case(preferenceType, passengerCount) => preferenceTypeJson = preferenceTypeJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "passengerCount" -> passengerCount)) 
     }
 
-    var result = Json.obj("country" -> countryJson, "passengerType" -> passengerTypeJson, "preferenceType" -> preferenceTypeJson)
+    Ok(Json.obj("country" -> countryJson, "passengerType" -> passengerTypeJson, "preferenceType" -> preferenceTypeJson))
+  }
+
+  def getLinkRivalHistory(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
+    var result = Json.obj()
     //get competitor history
     LinkSource.loadLinkById(linkId).foreach { link =>
       //find all link with same from and to
@@ -804,6 +808,22 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
       result = result + ("overlappingLinks" -> overlappingLinksJson)
+    }
+
+    Ok(result)
+  }
+
+  def getLinkRivalDetails(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
+    var result = Json.obj()
+    //get competitor history
+    LinkSource.loadLinkById(linkId).foreach { link =>
+      //find all link with same from and to
+      val overlappingLinks = LinkSource.loadLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadLinksByAirports(link.to.id, link.from.id)
+      val rivals = scala.collection.mutable.HashSet[Airline]()
+
+      overlappingLinks.filter(_.capacity.total > 0).foreach { overlappingLink => //only work on links that have capacity
+        rivals += overlappingLink.airline
+      }
 
       val fromAirportLinks = LinkSource.loadLinksByFromAirport(link.from.id) ++ LinkSource.loadLinksByToAirport(link.from.id)
       val toAirportLinks =  LinkSource.loadLinksByFromAirport(link.to.id) ++ LinkSource.loadLinksByToAirport(link.to.id)
@@ -836,11 +856,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         toAirportInfo = toAirportInfo.append(Json.obj("airline" -> rival, "network" -> toAirportAllianceNetworkCapacity, "awareness" -> toAirport.getAirlineAwareness(rival.id), "loyalty" -> toAirport.getAirlineLoyalty(rival.id)))
       }
 
-      result = result + ("fromAirport" -> fromAirportInfo)
-      result = result + ("toAirport" -> toAirportInfo)
+      result = result ++ Json.obj("fromAirport" -> fromAirportInfo, "fromAirportName" -> fromAirport.name, "fromCity" -> fromAirport.city)
+      result = result ++ Json.obj("toAirport" -> toAirportInfo, "toAirportName" -> toAirport.name, "toCity" -> toAirport.city)
     }
 
-    
     Ok(result)
   }
   
