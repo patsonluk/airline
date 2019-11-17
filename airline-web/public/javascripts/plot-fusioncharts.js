@@ -686,4 +686,86 @@ function plotOilPriceChart(oilPrices, container) {
 	})
 }
 
+function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkClass, field, numberPrefix, currentAirlineId) {
+	priceContainer.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
 
+	var priceByAirline = {}
+
+	var category = []
+
+	var maxWeek = 24
+	var maxCycle = 0
+
+    var dataSet = []
+    var maxValue = -1
+    var minValue = 99999
+	if (!jQuery.isEmptyObject(allRivalLinkConsumptions)) { //link consumptions is array (by each rival link) of array (by cycle),
+        $.each(allRivalLinkConsumptions, function(key, linkConsumptions) {
+            var newCategory = []
+            var linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek) //link consumptions for each rival link
+            var airlineName = linkConsumptions[0].airlineName
+            var linkId = linkConsumptions[0].linkId
+            priceHistory = []
+            var lineColor = linkConsumptions[0].airlineId == currentAirlineId ? "#d84f4f" : "#f6bf1b"
+            $.each(linkConsumptions.reverse(), function(key, linkConsumption) {
+                var currentValue = linkConsumption[field][linkClass]
+                if (currentValue > maxValue) {
+                    maxValue = currentValue
+                }
+                if (currentValue < minValue) {
+                    minValue = currentValue
+                }
+                priceHistory.push({ value : currentValue , color : lineColor})
+                var month = Math.floor(linkConsumption.cycle / 4)
+                //var week = linkConsumption.cycle % 4 + 1
+                newCategory.push({ label : month.toString()})
+            })
+            dataSet.push({ "seriesName": airlineName, "data" : priceHistory})
+            if (newCategory.length > category.length) { //take the longest length one
+                category = newCategory
+            }
+       })
+	}
+
+
+     var yAxisMax = Math.round(maxValue * 1.1)
+     var yAxisMin = Math.round(minValue * 0.8)
+
+	var priceChart = priceContainer.insertFusionCharts( {
+    	type: 'msline',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+	    containerBackgroundOpacity :'0',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": "Month",
+	    		//"sYAxisName": "Load Factor %",
+	    		"numberPrefix": numberPrefix,
+	    		"sYAxisMaxValue" : "100",
+	    		"useroundedges": "1",
+	    		"transposeAxis":"1",
+	    		"animation": "0",
+	    		"showBorder":"0",
+	    		"drawAnchors": "0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "bgAlpha":"0",
+                "showLegend": "0",
+                "showValues":"0",
+                "canvasPadding":"0",
+                "labelDisplay":"wrap",
+	            "labelStep": "4",
+	            "formatNumber" : "0",
+	            "formatNumberScale" : "0",
+	            "yAxisMaxValue": yAxisMax,
+                "yAxisMinValue": yAxisMin
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : dataSet
+	   }
+	})
+}
+top

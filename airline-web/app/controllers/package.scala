@@ -219,6 +219,29 @@ package object controllers {
         "quality" -> JsNumber(linkConsumption.link.computedQuality)))
     }
   }
+
+  /**
+    * Do not expose sold seats
+    */
+  object MinimumLinkConsumptionWrite extends Writes[LinkConsumptionDetails] {
+    def writes(linkConsumption : LinkConsumptionDetails): JsValue = {
+      var priceJson = Json.obj()
+      LinkClass.values.foreach { linkClass =>
+        if (linkConsumption.link.capacity(linkClass) > 0) { //do not report price for link class that has no capacity
+          priceJson = priceJson + (linkClass.label -> JsNumber(linkConsumption.link.price(linkClass)))
+        }
+      }
+
+
+      JsObject(List(
+        "cycle" -> JsNumber(linkConsumption.cycle),
+        "linkId" -> JsNumber(linkConsumption.link.id),
+        "airlineId" -> JsNumber(linkConsumption.link.airline.id),
+        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
+        "price" -> priceJson,
+        "capacity" -> Json.toJson(linkConsumption.link.capacity)))
+    }
+  }
   
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {

@@ -71,6 +71,7 @@ function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput
 	}
 }
 
+
 function shimmeringDiv(div) {
 	var originalBackgroundColor = div.css("backgroundColor")
 	var originalColor = div.css("color")
