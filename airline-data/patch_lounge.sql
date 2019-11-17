@@ -17,7 +17,7 @@ ADD COLUMN `lounge_income` BIGINT(20) NULL DEFAULT '0' AFTER `lounge_cost`;
 CREATE TABLE lounge (
       airport INTEGER, 
       airline INTEGER, 
-      name VARCHAR(255),
+      name VARCHAR(256),
       level INTEGER,
       status VARCHAR(16), 
       founded_cycle INTEGER,

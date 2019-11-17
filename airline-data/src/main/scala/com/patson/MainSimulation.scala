@@ -31,6 +31,8 @@ object MainSimulation extends App {
   
   def startCycle(cycle : Int) = {
       val cycleStart = System.currentTimeMillis()
+      println("Rebuild inactive users!")
+      UserInspector.resetInactiveUsers()
       println("cycle " + cycle + " starting!")
       SimulationEventStream.publish(CycleStart(cycle), None)
       println("Oil simulation")
