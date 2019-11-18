@@ -7,7 +7,8 @@ import com.patson.data.AirlineSource
 import com.patson.data.AirplaneSource
 
 object Bank {
-  val LOAN_TERMS = Map(52 -> 0.25 , 2 * 52 -> 0.28, 3 *52 -> 0.32, 5 * 52 -> 0.35)
+  //val LOAN_TERMS = Map(52 -> 0.25 , 2 * 52 -> 0.28, 3 *52 -> 0.32, 5 * 52 -> 0.35)
+  val LOAN_TERMS = List[Int](52, 2 * 52, 3 * 52, 5 * 52)
   val MAX_LOANS = 10
   val MIN_LOAN_AMOUNT = 10000
   val MAX_LOAN_AMOUNT = 500000000 //500 million as max
@@ -56,13 +57,22 @@ object Bank {
   }
  
   def getLoanOptions(loanAmount : Long) : List[Loan] = {
-    LOAN_TERMS.map {
-      case(term, interestRate) => {
-        val interest = (loanAmount * interestRate).toLong
-        val total = loanAmount + interest
-        Loan(airlineId = 0, borrowedAmount = loanAmount, interest = interest, remainingAmount = total, creationCycle = 0, loanTerm = term)   
-      }
-    }.toList
+    val currentCycle = CycleSource.loadCycle()
+    BankSource.loadLoanInterestRateByCycle(currentCycle) match {
+      case Some(currentRate) =>
+        val rateIncrementPerYear = 0.02 //2% more every extra year
+        LOAN_TERMS.map { term =>
+          val baseAnnualRate = currentRate.annualRate
+          val extraYears : Int = term / 52 - 1
+          val interestRate = baseAnnualRate + extraYears * rateIncrementPerYear
+          val interest = (loanAmount * interestRate).toLong
+          val total = loanAmount + interest
+          Loan(airlineId = 0, borrowedAmount = loanAmount, interest = interest, remainingAmount = total, creationCycle = 0, loanTerm = term)
+        }
+      case None =>
+        List.empty[Loan]
+    }
+
   }
   
   def getAssets(airlineId : Int) : Long = {

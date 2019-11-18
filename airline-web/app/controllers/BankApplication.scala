@@ -1,33 +1,16 @@
 package controllers
 
-import scala.math.BigDecimal.int2bigDecimal
-import com.patson.data.AirlineSource
-import com.patson.data.AirplaneSource
-import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane._
-import com.patson.model._
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsObject
-import play.api.libs.json.JsString
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
-import play.api.libs.json.Writes
+import com.patson.data.{AirlineSource, BankSource, CycleSource}
+import com.patson.model.{Loan, _}
+import com.patson.model.bank.LoanInterestRate
+import controllers.AuthenticationObject.AuthenticatedAirline
+import javax.inject.Inject
+import play.api.data.{Form, Forms}
+import play.api.libs.json._
+import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
 
-import scala.collection.mutable.ListBuffer
-import com.patson.data.CycleSource
-import controllers.AuthenticationObject.AuthenticatedAirline
-import com.patson.data.CountrySource
-import com.patson.data.AirportSource
-import play.api.libs.json.Format
-import play.api.libs.json.JsResult
-import play.api.libs.json.JsSuccess
-import com.patson.data.BankSource
-import com.patson.model.Loan
-import javax.inject.Inject
-import play.api.data.Form
-import play.api.data.Forms
-import play.api.mvc.Security.AuthenticatedRequest
+import scala.math.BigDecimal.int2bigDecimal
 
 
 
@@ -46,6 +29,15 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       "creationCycle" -> JsNumber(loan.creationCycle),
       "loanTerm" ->  JsNumber(loan.loanTerm),
       "id" -> JsNumber(loan.id)))
+  }
+  implicit object LoanInterestRateWrites extends Writes[LoanInterestRate] {
+    def writes(rate: LoanInterestRate): JsValue = {
+
+      JsObject(List(
+        "rate" -> JsNumber(rate.annualRate),
+        "cycle" -> JsNumber(rate.cycle)))
+
+    }
   }
   
   case class LoanRequest(requestedAmount: Long, requestedTerm: Int)
@@ -121,7 +113,10 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       case None => NotFound
     }
   }
-  
 
-  
+  def getLoanInterestRates() = Action {
+    val currentCycle = CycleSource.loadCycle()
+    val rates = BankSource.loadLoanInterestRatesFromCycle(currentCycle - 100).sortBy(_.cycle)
+    Ok(Json.toJson(rates))
+  }
 }

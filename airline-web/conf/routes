@@ -97,7 +97,7 @@ GET		 /airlines/:airlineId/set-oil-inventory-option  controllers.OilApplication.
 GET		 /airlines/:airlineId/logs  controllers.LogApplication.getLogs(airlineId : Int)
 GET		 /airlines/:airlineId/alerts  controllers.AlertApplication.getAlerts(airlineId : Int)
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
-
+GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()
 
 GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
