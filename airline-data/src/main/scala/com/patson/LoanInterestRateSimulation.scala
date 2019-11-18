@@ -16,7 +16,7 @@ object LoanInterestRateSimulation {
     val rates = BankSource.loadLoanInterestRatesFromCycle(fromCycle).sortBy(_.cycle).map(_.annualRate)
     val nextRate = getNextRate(rates)
     if (!rates.isEmpty) {
-      println(s"Interest rate simulation [previous rate: $rates.last, new rate: $nextRate]")
+      println(s"Interest rate simulation [previous rate : ${rates.last}, new rate : $nextRate]")
     }
 
     BankSource.saveLoanInterestRate(LoanInterestRate(nextRate, cycle))
