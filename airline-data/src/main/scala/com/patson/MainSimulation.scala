@@ -35,6 +35,8 @@ object MainSimulation extends App {
       SimulationEventStream.publish(CycleStart(cycle), None)
       println("Oil simulation")
       OilSimulation.simulate(cycle)
+      println("Loan simulation")
+      LoanInterestRateSimulation.simulate(cycle)
       println("Loading all links")
       val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
       println("Finished loading all links")
