@@ -8,6 +8,8 @@ import java.text.SimpleDateFormat
 import java.sql.Statement
 import java.util.Date
 
+import com.patson.model.UserStatus.UserStatus
+
 object UserSource {
   val dateFormat = new ThreadLocal[SimpleDateFormat]() {
     override def initialValue() = {
@@ -172,12 +174,26 @@ object UserSource {
   def updateUserLastActive(user: User) = {
     val connection = Meta.getConnection()
     try {    
-        val preparedStatement = connection.prepareStatement("UPDATE " + USER_TABLE + " SET last_active = ? WHERE id = ?")
+        val preparedStatement = connection.prepareStatement("UPDATE " + USER_TABLE + " SET last_active = ?, status = 'ACTIVE' WHERE id = ?")
         preparedStatement.setTimestamp(1, new java.sql.Timestamp(new Date().getTime()))
         preparedStatement.setInt(2, user.id)
         val updateCount = preparedStatement.executeUpdate()
         
         preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def setUserStatus(user: User, status: UserStatus) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("UPDATE " + USER_TABLE + " SET status = ? WHERE id = ?")
+      preparedStatement.setString(1, status.toString)
+      preparedStatement.setInt(2, user.id)
+      val updateCount = preparedStatement.executeUpdate()
+
+      preparedStatement.close()
     } finally {
       connection.close()
     }
