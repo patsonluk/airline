@@ -3,8 +3,28 @@ var loadedLoans = {}
 function showBankCanvas() {
 	setActiveDiv($("#bankCanvas"))
 	highlightTab($('#bankCanvasTab'))
+	loadInterestRateChart()
 	loadNewLoanDetails() 
     loadOutstandingLoans()
+}
+
+function loadInterestRateChart() {
+	var url = "loan-interest-rates"
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(oilPrices) {
+	    	plotLoanInterestRatesChart(oilPrices, $("#bankCanvas #loanInterestRateChart"))
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+
+
 }
 
 function loadNewLoanDetails() {

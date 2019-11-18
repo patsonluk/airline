@@ -686,6 +686,70 @@ function plotOilPriceChart(oilPrices, container) {
 	})
 }
 
+
+function plotLoanInterestRatesChart(rates, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+
+	var data = []
+	var category = []
+	var total = 0
+	var count = 0
+
+	$.each(rates, function(key, rate) {
+	    var annualRate = rate.rate * 100 //to percentage based
+		data.push({ value : annualRate })
+		category.push({ "label" : rate.cycle.toString() })
+		total += annualRate
+		count ++;
+	})
+
+	var average
+	if (count > 0)  {
+		average = total / count
+	} else {
+		average = 0
+	}
+
+
+	var chart = container.insertFusionCharts({
+		type: 'msline',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": "Week",
+	    		"yAxisName": "Base Annual Rate",
+	    		"numberSuffix": "%",
+	    		"useroundedges": "1",
+	    		"animation": "1",
+	    		"showBorder":"0",
+	    		"showValues": "0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "bgAlpha":"0",
+                "setAdaptiveYMin":"1",
+                "labelStep": "4"
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : [{ "seriesname": "Rate", "data" : data}],
+			"trendlines": [{
+	            "line": [
+	                {
+	                    "startvalue": average,
+	                    "color": "#A1D490",
+	                    "displayvalue": "Average",
+	                    "valueOnRight": "1",
+	                    "thickness": "2"
+	                }
+	            ]
+	        }]
+	    }
+	})
+}
+
 function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkClass, field, numberPrefix, currentAirlineId) {
 	priceContainer.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
