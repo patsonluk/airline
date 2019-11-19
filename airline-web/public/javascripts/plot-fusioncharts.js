@@ -698,8 +698,8 @@ function plotLoanInterestRatesChart(rates, container) {
 	var count = 0
 
 	$.each(rates, function(key, rate) {
-	    var annualRate = (rate.rate * 100).toFixed(1) //to percentage based
-		data.push({ value : annualRate })
+	    var annualRate = rate.rate * 100 //to percentage based
+		data.push({ value : annualRate.toFixed(1) })
 		category.push({ "label" : rate.cycle.toString() })
 		total += annualRate
 		count ++;
@@ -711,9 +711,6 @@ function plotLoanInterestRatesChart(rates, container) {
 	} else {
 		average = 0
 	}
-
-	average = average.toFixed(1)
-
 
 	var chart = container.insertFusionCharts({
 		type: 'msline',
@@ -740,7 +737,7 @@ function plotLoanInterestRatesChart(rates, container) {
 			"trendlines": [{
 	            "line": [
 	                {
-	                    "startvalue": average,
+	                    "startvalue": average.toFixed(1),
 	                    "color": "#A1D490",
 	                    "displayvalue": "Average",
 	                    "valueOnRight": "1",

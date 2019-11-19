@@ -154,11 +154,11 @@ function updateOutstandingLoansTable() {
 	loansTable.children("div.table-row").remove()
 	
 	$.each(loadedLoans, function(index, loan) {
-	    var interestRate = (loan.interest / loan.borrowedAmount * 100).toFixed(2)
+	    var interestRate = loan.interest / loan.borrowedAmount * 100
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.borrowedAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.interest) + "</div>")
-		row.append("<div class='cell' align='right'>" + '$' + interestRate + "%</div>")
+		row.append("<div class='cell' align='right'>" + '$' + interestRate.toFixed(1) + "%</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.remainingAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.weeklyPayment) + " remaining " + loan.remainingTerm + " week(s)</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.earlyRepaymentFee) + "</div>")
