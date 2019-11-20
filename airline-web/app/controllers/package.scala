@@ -429,4 +429,6 @@ package object controllers {
         "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
     }
   }
+
+  val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)
 }

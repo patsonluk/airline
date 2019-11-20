@@ -89,6 +89,9 @@ object Constants {
   val LOG_INDEX_1 = "log_index_1"
   val ALERT_TABLE = "alert"
   val ALERT_INDEX_1 = "alert_index_1"
+
+  //Christmas Event
+  val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"
