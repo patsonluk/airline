@@ -453,7 +453,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
   }
   
-  def getLinkConsumption(airlineId : Int, linkId : Int, cycleCount : Int) = Action {
+  def getLinkConsumption(airlineId : Int, linkId : Int, cycleCount : Int) = AuthenticatedAirline(airlineId) { request =>
     LinkSource.loadLinkById(linkId) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
