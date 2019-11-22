@@ -1,6 +1,5 @@
 package com.patson.model.christmas
 
-import com.patson.AirlineSimulation.getNewQuality
 import com.patson.data.{AirlineSource, AirportSource, ChristmasSource}
 import com.patson.model.{Airline, AirlineAppeal, Airport}
 
@@ -60,7 +59,7 @@ class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(san
 }
 
 class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
-  override val getType: SantaClausAwardType.Value = SantaClausAwardType.HQ_LOYALTY
+  override val getType: SantaClausAwardType.Value = SantaClausAwardType.AIRPORT_LOYALTY
   val BONUS = 10
   override def applyAward(): Unit = {
     val airline = santaClausInfo.airline
@@ -71,7 +70,7 @@ class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
 
 
   }
-  override val description: String = "Santa Claus is going to print your airline logo on all the gifts for this city! Loyalty bonus +" + BONUS + " in " + santaClausInfo.airport.name + "!"
+  override val description: String = "Santa Claus is going to print your airline logo on all the gifts shipping for " + santaClausInfo.airport.name + "! Loyalty bonus +" + BONUS + " in " + santaClausInfo.airport.name + "!"
 }
 
 class ReputationAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {

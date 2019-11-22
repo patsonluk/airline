@@ -1,4 +1,5 @@
 var map
+var airportMap
 var markers
 var baseMarkers = []
 var activeAirline
@@ -272,7 +273,6 @@ function initMap() {
 //  linkControlDiv.index = 1;
 //  map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
 //  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(hideLinkHistoryButton);
-  
 }
 
 function LinkHistoryControl(controlDiv, map) {

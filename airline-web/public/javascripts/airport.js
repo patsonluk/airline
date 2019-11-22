@@ -2,6 +2,9 @@ var airportLinkPaths = {}
 var activeAirport
 var activeAirportId
 var activeAirportPopupInfoWindow
+var airportMapMarkers = []
+var airportMapCircle
+
 
 function showAirportDetails(airportId) {
 	setActiveDiv($("#airportCanvas"))
@@ -153,15 +156,11 @@ function updateAirportDetails(airport) {
 	}
 }
 
-
-
-
-function populateAirportDetails(airport) {
-	 
-	var airportMap = new google.maps.Map(document.getElementById('airportMap'), {
+function initAirportMap() { //only called once, see https://stackoverflow.com/questions/10485582/what-is-the-proper-way-to-destroy-a-map-instance
+    airportMap = new google.maps.Map(document.getElementById('airportMap'), {
 		//center: {lat: airport.latitude, lng: airport.longitude},
-	   	zoom : 6,
-	   	minZoom : 6,
+	   	//zoom : 6,
+	   	minZoom : 2,
 	   	maxZoom : 9,
 //	   	scrollwheel: false,
 //	    navigationControl: false,
@@ -173,24 +172,49 @@ function populateAirportDetails(airport) {
 	   	streetViewControl: false,
         zoomControl: true,
 	   	styles: getMapStyles()
-	  });
-	if (airport) {
+	});
+
+    $("#santaClausButton").index = 1
+    airportMap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#santaClausButton")[0]);
+
+}
+
+
+function populateAirportDetails(airport) {
+    if (!airportMap) {
+        initAirportMap()
+    }
+
+    // cleanup first
+    for (var i = 0; i < airportMapMarkers.length; i++ ) {
+        airportMapMarkers[i].setMap(null);
+    }
+    airportMapMarkers = []
+
+    if (airportMapCircle) { //remove the old circle
+        airportMapCircle.setMap(null)
+    }
+
+
+
+    if (airport) {
 		addCityMarkers(airportMap, airport)
-		google.maps.event.addListenerOnce(airportMap, 'idle', function() {
-		    google.maps.event.trigger(airportMap, 'resize');
-		    airportMap.setCenter({lat: airport.latitude, lng: airport.longitude}); 
-		});
-		
+		airportMap.setZoom(6)
+        airportMap.setCenter({lat: airport.latitude, lng: airport.longitude}); //this would eventually trigger an idle
+
 		var airportMarkerIcon = $("#airportMap").data("airportMarker")
-		new google.maps.Marker({
+		var airportMarker = new google.maps.Marker({
 		    position: {lat: airport.latitude, lng: airport.longitude},
 		    map: airportMap,
 		    title: airport.name,
 		    icon : airportMarkerIcon,
 		    zIndex : 999
 		  });
+
+		airportMapMarkers.push(airportMarker)
+
 		
-		new google.maps.Circle({
+		airportMapCircle = new google.maps.Circle({
 		        center: {lat: airport.latitude, lng: airport.longitude},
 		        radius: airport.radius * 1000, //in meter
 		        strokeColor: "#32CF47",
@@ -201,7 +225,21 @@ function populateAirportDetails(airport) {
 		        map: airportMap
 		    });
 		loadAirportStatistics(airport)
+
+		google.maps.event.addListenerOnce(airportMap, 'idle', function() {
+           setTimeout(function() { //set a timeout here, otherwise it might not render part of the map...
+             airportMap.setCenter({lat: airport.latitude, lng: airport.longitude}); //this would eventually trigger an idle
+             google.maps.event.trigger(airportMap, 'resize'); //this refreshes the map
+           }, 2000);
+        });
+
+        if (christmasFlag) {
+            initSantaClaus()
+        }
 	}
+
+
+
 }
 
 
@@ -479,6 +517,7 @@ function addCityMarkers(airportMap, airport) {
 			    cityInfo : city,
 			    icon : icon
 			  });
+		  airportMapMarkers.push(marker)
 		  
 		  marker.addListener('click', function() {
 			  infoWindow.close();

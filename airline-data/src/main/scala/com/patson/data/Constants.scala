@@ -92,6 +92,7 @@ object Constants {
 
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"
+  val SANTA_CLAUS_GUESS_TABLE = "santa_claus_guess"
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"

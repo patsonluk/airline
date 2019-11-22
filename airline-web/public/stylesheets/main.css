@@ -17,6 +17,11 @@ body {
 	
 }
 
+.modal-content.snow-background, div.section.snow-background {
+    background: url(../images/background/snow-4.jpg);
+    //background: url(../images/background/snow.gif);
+}
+
 //#main {
 //	margin-top: 50px;
 //}
@@ -110,6 +115,20 @@ div.button, .ajax-file-upload {
 	margin: 5px 5px;
 	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
 }
+
+div.button.glow, div.googleMapIcon.glow{
+    animation: glow 1s infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px -10px #eb8f34f;
+  }
+  to {
+    box-shadow: 0 0 10px 10px #ff6c52;
+  }
+}
+
 
 div.button.selected, div.selectedSection {
 	background-color: #A1D490;
@@ -230,6 +249,17 @@ div.section, .modal-content {
 	cursor: pointer;
 	background-color: rgb(255, 255, 255);
 	height: 28px;
+	margin-right: 10px;
+	font-size: 11px;
+}
+
+.googleMapIcon {
+	box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px;
+	border-radius: 2px;
+	cursor: pointer;
+	background-color: rgb(255, 255, 255);
+	height: 40px;
+	width: 40px;
 	margin-right: 10px;
 	font-size: 11px;
 }
