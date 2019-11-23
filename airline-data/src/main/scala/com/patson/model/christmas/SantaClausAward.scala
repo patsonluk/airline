@@ -39,7 +39,7 @@ class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
 
 class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.HQ_LOYALTY
-  val BONUS = 5
+  val BONUS = 3
   override def applyAward(): Unit = {
     AirlineSource.loadAirlineById(santaClausInfo.airline.id, fullLoad = true).foreach { airline =>
       airline.getHeadQuarter().foreach { hq =>
