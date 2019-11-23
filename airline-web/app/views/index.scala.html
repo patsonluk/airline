@@ -2507,43 +2507,6 @@
 
 	<!-- Santa Claus modal -->
 	<div id="santaClausModal" class="modal christmas-event" aria-hidden="true">
-		<div class="snowflake">
-			❅
-		</div>
-		<div class="snowflake">
-			❆
-		</div>
-		<div class="snowflake">
-			❅
-		</div>
-		<div class="snowflake">
-			❆
-		</div>
-		<div class="snowflake">
-			❅
-		</div>
-		<div class="snowflake">
-			❆
-		</div>
-		<div class="snowflake">
-			❅
-		</div>
-		<div class="snowflake">
-			❆
-		</div>
-		<div class="snowflake">
-			❅
-		</div>
-		<div class="snowflake">
-			❆
-		</div>
-		<div class="snowflake">
-			❅
-		</div>
-		<div class="snowflake">
-			❆
-		</div>
-
 		<div class="modal-content snow-background"  style="width : 500px;">
 			<span class="close" onclick="closeModal($('#santaClausModal'))">&times;</span>
 			<div style="margin-bottom: 30px"><h2>Santa, Where are you?</h2></div>
@@ -2578,7 +2541,7 @@
 
 			<div id = "santaClausRewardOptions" style="display: none;">
 				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
-				<div style="float:left"> <h4>Nice! You have found Santa!</h4></div>
+				<div style="float:left"> <h4>Woohoo! You have found Santa!</h4></div>
 				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
 				<div style="clear:both; margin-bottom: 15px"></div>
 
@@ -2591,11 +2554,14 @@
 				</div>
 			</div>
 			<div id="santaClausPickedReward" style="display: none;">
-				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
-				<div style="float:left"> <h4>Nice! You have found Santa!</h4></div>
-				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
+				<div style="float:left"> <h4>You have picked the reward as below</h4></div>
 				<div style="clear:both; margin-bottom: 15px"></div>
-				<span id="santaClausPickedRewardText" class="text"></span>
+				<div class="table data" style="width: 100%">
+					<div class="table-row">
+						<div class="cell label" style="width: 100%"><span id="santaClausPickedRewardText" class="text"></span></div>
+					</div>
+				</div>
+
 			</div>
 		</div>
 	</div>

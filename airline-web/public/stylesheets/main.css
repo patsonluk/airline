@@ -507,10 +507,82 @@ img.flag {
 }
 
 .snowflake {
-  color: #fff;
-  font-size: 1em;
+  /*color: #fff;*/
+  /*font-size: 1em;*/
   font-family: Arial, sans-serif;
-  text-shadow: 0 0 5px #000;
+  color: rgba(255, 255, 255, 0);
+  /*text-shadow: #fff 0 0 2px;*/
 }
 
-@-webkit-keyframes snowflakes-fall{0%{top:-10%}100%{top:100%}}@-webkit-keyframes snowflakes-shake{0%,100%{-webkit-transform:translateX(0);transform:translateX(0)}50%{-webkit-transform:translateX(80px);transform:translateX(80px)}}@keyframes snowflakes-fall{0%{top:-10%}100%{top:100%}}@keyframes snowflakes-shake{0%,100%{transform:translateX(0)}50%{transform:translateX(80px)}}.snowflake{position:fixed;top:-10%;z-index:9999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;-webkit-animation-name:snowflakes-fall,snowflakes-shake;-webkit-animation-duration:10s,3s;-webkit-animation-timing-function:linear,ease-in-out;-webkit-animation-iteration-count:infinite,infinite;-webkit-animation-play-state:running,running;animation-name:snowflakes-fall,snowflakes-shake;animation-duration:10s,3s;animation-timing-function:linear,ease-in-out;animation-iteration-count:infinite,infinite;animation-play-state:running,running}.snowflake:nth-of-type(0){left:1%;-webkit-animation-delay:0s,0s;animation-delay:0s,0s}.snowflake:nth-of-type(1){left:10%;-webkit-animation-delay:1s,1s;animation-delay:1s,1s}.snowflake:nth-of-type(2){left:20%;-webkit-animation-delay:6s,.5s;animation-delay:6s,.5s}.snowflake:nth-of-type(3){left:30%;-webkit-animation-delay:4s,2s;animation-delay:4s,2s}.snowflake:nth-of-type(4){left:40%;-webkit-animation-delay:2s,2s;animation-delay:2s,2s}.snowflake:nth-of-type(5){left:50%;-webkit-animation-delay:8s,3s;animation-delay:8s,3s}.snowflake:nth-of-type(6){left:60%;-webkit-animation-delay:6s,2s;animation-delay:6s,2s}.snowflake:nth-of-type(7){left:70%;-webkit-animation-delay:2.5s,1s;animation-delay:2.5s,1s}.snowflake:nth-of-type(8){left:80%;-webkit-animation-delay:1s,0s;animation-delay:1s,0s}.snowflake:nth-of-type(9){left:90%;-webkit-animation-delay:3s,1.5s;animation-delay:3s,1.5s}.snowflake:nth-of-type(10){left:25%;-webkit-animation-delay:2s,0s;animation-delay:2s,0s}.snowflake:nth-of-type(11){left:65%;-webkit-animation-delay:4s,2.5s;animation-delay:4s,2.5s}
+@-webkit-keyframes snowflakes-fall{0%{top:-10%}100%{top:100%}}
+@keyframes snowflakes-fall{0%{top:-10%}100%{top:100%}}
+@-webkit-keyframes snowflakes-shimmer{0%{opacity : 1},100%{ opacity : 1}50%{opacity : 0.2}}
+@keyframes snowflakes-shimmer{0%{opacity : 1},100%{ opacity : 1}50%{opacity : 0.2}}
+
+/*@-webkit-keyframes snowflakes-shake-0{0%,100%{-webkit-transform:translateX(0);transform:translateX(0)}50%{-webkit-transform:translateX(80px);transform:translateX(80px)}}*/
+@keyframes snowflakes-shake-1{0%,100%{transform:translateX(0)}50%{transform:translateX(80px)}}
+/*@-webkit-keyframes snowflakes-shake-1{0%,100%{-webkit-transform:translateX(0);transform:translateX(0)}50%{-webkit-transform:translateX(40px);transform:translateX(40px)}}*/
+@keyframes snowflakes-shake-2{0%,100%{transform:translateX(0)}50%{transform:translateX(40px)}}
+/*@-webkit-keyframes snowflakes-shake-2{0%,100%{-webkit-transform:translateX(0);transform:translateX(0)}50%{-webkit-transform:translateX(20px);transform:translateX(20px)}}*/
+@keyframes snowflakes-shake-3{0%,100%{transform:translateX(0)}50%{transform:translateX(20px)}}
+/*@-webkit-keyframes snowflakes-shake-3{0%,100%{-webkit-transform:translateX(0);transform:translateX(0)}50%{-webkit-transform:translateX(10px);transform:translateX(10px)}}*/
+@keyframes snowflakes-shake-4{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
+@keyframes snowflakes-shake-5{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+
+
+
+.snowflake{
+    position:fixed;top:-10%;z-index:9999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;
+    /*-webkit-animation-name:snowflakes-fall,snowflakes-shake,snowflakes-shimmer;/
+    -webkit-animation-duration:10s,3s,10s;
+    -webkit-animation-timing-function:linear,ease-in-out,ease-in-out;
+    -webkit-animation-iteration-count:infinite,infinite,infinite;
+    -webkit-animation-play-state:running,running,running;*/
+    /*animation-name:snowflakes-fall,snowflakes-shake, snowflakes-shimmer;*/
+    animation-duration:10s,3s,10s;
+    animation-timing-function:linear,ease-in-out,ease-in-out;
+    animation-iteration-count:infinite,infinite,infinite;
+    animation-play-state:running,running,running
+}
+
+
+
+.round-button{
+    background-image: -webkit-linear-gradient(top, #f4f1ee, #fff);
+    background-image: linear-gradient(top, #f4f1ee, #fff);
+    border-radius: 50%;
+    box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, .3), inset 0px 4px 1px 1px white, inset 0px -3px 1px 1px rgba(204,198,197,.5);
+
+    position: relative;
+    display: inline-block;
+    height: 35px;
+    width: 35px;
+    -webkit-transition: all .1s linear;
+    transition: all .1s linear;
+}
+
+.round-button:after{
+    color:#e9e6e4;
+    content: "";
+    display: block;
+    font-size: 20px;
+    text-decoration: none;
+    text-shadow: 0px -1px 1px #bdb5b4, 1px 1px 1px white;
+    position: relative;
+
+}
+
+.round-button:hover {
+    border-radius: 50% !important;
+}
+
+.tick:after{
+    content: "✔";
+    left:10px;
+    top:9px;
+}
+
+.tick:hover:after{
+    color:#83d244;
+    text-shadow:0px 0px 6px #83d244;
+}

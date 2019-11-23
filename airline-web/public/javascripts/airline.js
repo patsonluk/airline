@@ -415,59 +415,6 @@ function toggleMapAnimation() {
 	refreshLinks(true)	
 }
 
-var christmasMarker = false
-function toggleChristmasMarker() {
-	if (!christmasMarker) {
-		currentAnimationStatus = true
-		christmasMarker = true
-		document.getElementById('christmasMusic').play()
-		$("body").addClass('christmas')
-	} else {
-		christmasMarker = false
-		document.getElementById('christmasMusic').pause()
-		$.each(flightMarkers, function(index, markersByLinkId) {
-			$.each(markersByLinkId.markers, function(index2, marker) {
-				marker.icon = {
-			        url: "assets/images/markers/dot.png",
-			        origin: new google.maps.Point(0, 0),
-			        anchor: new google.maps.Point(6, 6),
-			    };
-			})
-		})
-		$("body").removeClass('christmas')
-	}
-}
-
-var flightMarkerImageWeight = {
-	"assets/images/markers/dot.png" : 2000,
-	"assets/images/markers/christmas/snowflake.png" : 200,
-	"assets/images/markers/christmas/star.png" : 50,
-	"assets/images/markers/christmas/holly.png" : 20,
-	"assets/images/markers/christmas/bauble.png" : 20,
-	"assets/images/markers/christmas/candy-cane.png" : 10,
-	"assets/images/markers/christmas/gingerbread-man.png" : 10,
-	"assets/images/markers/christmas/santa-hat.png" : 2,
-}
-
-var flightMarkerWeightTotal = 0
-
-$.each(flightMarkerImageWeight, function(image, weight) {
-	flightMarkerWeightTotal += weight
-})
-
-function randomFlightMarker() {
-	var random = Math.random()
-	var acc = 0
-	var pickedImage = ""
-	$.each(flightMarkerImageWeight, function(image, weight) {
-		acc += weight / flightMarkerWeightTotal
-		if (acc >= random) {
-			pickedImage = image 
-			return false;
-		}
-	})
-	return pickedImage
-}
 
 //Use the DOM setInterval() function to change the offset of the symbol
 //at fixed intervals.
