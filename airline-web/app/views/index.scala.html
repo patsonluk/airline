@@ -71,6 +71,7 @@
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/christmas.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/confetti.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
     <script>
     	if (window.location.hostname != 'localhost') {
@@ -2508,7 +2509,7 @@
 	<!-- Santa Claus modal -->
 	<div id="santaClausModal" class="modal christmas-event" aria-hidden="true">
 		<div class="modal-content snow-background"  style="width : 500px;">
-			<span class="close" onclick="closeModal($('#santaClausModal'))">&times;</span>
+			<span class="close" onclick="closeSantaClausModal()">&times;</span>
 			<div style="margin-bottom: 30px"><h2>Santa, Where are you?</h2></div>
 			<h3 style="margin-bottom: 10px;">Search History</h3>
 			<div style="width: 100%;">

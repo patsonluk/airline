@@ -586,3 +586,19 @@ img.flag {
     color:#83d244;
     text-shadow:0px 0px 6px #83d244;
 }
+
+.confetti {
+    position: absolute;
+}
+
+.confetti.red {
+  background-color: #E94A3F;
+}
+
+.confetti.yellow {
+  background-color: #FAA040;
+}
+
+.confetti.blue {
+  background-color: #5FC9F5;
+}

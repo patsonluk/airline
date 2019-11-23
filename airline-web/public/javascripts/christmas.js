@@ -1,9 +1,17 @@
 var christmasFlag = true
+var santaFound = false
 
 function initSantaClaus() {
     $('#santaClausModal').hide()
     $("#santaClausButton").hide() //valid target
     updateSantaClausModal()
+}
+
+function closeSantaClausModal() {
+
+    closeModal($('#santaClausModal'))
+    removeSnowflakes($('#santaClausModal'))
+    removeConfetti($('#santaClausModal'))
 }
 
 function updateSantaClausModal() {
@@ -38,6 +46,13 @@ function updateSantaClausModal() {
                  pickedRewardDiv.hide()
                  exhaustedDiv.hide()
                  guessButton.hide()
+
+                 var flipped = santaFound != result.found
+                 santaFound = result.found
+                 if ($("#santaClausModal").is(":visible") && flipped) { //a flip of result, and current modal is visible, apply confetti/snowflake
+                    refreshBackgroundAnimation()
+                 }
+
                  if (result.found) {
                     if (result.pickedAwardDescription) { //found and award is chosen
                         $("#santaClausPickedRewardText").text(result.pickedAwardDescription)
@@ -64,9 +79,20 @@ function updateSantaClausModal() {
 }
 
 function showSantaClausAttemptStatus() {
-    putSnowflakes($("#santaClausModal"), snowflakeCount)
+    refreshBackgroundAnimation()
+
     $('#santaClausModal').fadeIn(200)
 
+}
+
+function refreshBackgroundAnimation() {
+    removeSnowflakes($('#santaClausModal'))
+    removeConfetti($('#santaClausModal'))
+    if (santaFound) {
+        showConfetti($("#santaClausModal"))
+    } else {
+        putSnowflakes($("#santaClausModal"), snowflakeCount)
+    }
 }
 
 function getAwardOptionsTable() {
@@ -220,3 +246,24 @@ function randomFlightMarker() {
 	})
 	return pickedImage
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -318,7 +318,7 @@ function updateAllPanels(airlineId) {
 //		} else {
 //			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
 		} else if (christmasFlag) {
-		    printConsole("Breaking news - Santa went missing!!! Whoever that finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
+		    printConsole("Breaking news - Santa went missing!!! Whoever finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
 		}
 		
 	}
