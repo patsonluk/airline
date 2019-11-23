@@ -70,6 +70,8 @@
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/christmas.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/confetti.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
     <script>
     	if (window.location.hostname != 'localhost') {
@@ -214,11 +216,13 @@
 			</ul>
 		</div>
 		
-<!--   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
-<!-- 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
-<!--		<div id="toggleMapChristmasButton" class="googleMapButton" onclick="toggleChristmasMarker()" align="center" style="width: 28px; height: 28px; display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/bauble.png")' title='Merry Christmas!' style="vertical-align: middle;"/></div>-->
-		<div id="toggleMapAnimationButton" class="googleMapButton" onclick="toggleMapAnimation()" align="center" style="width: 28px; height: 28px; display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>
-		<div id="toggleMapLightButton" class="googleMapButton" onclick="toggleMapLight()" align="center" style="width: 28px; height: 28px; display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>
+<!--   		<div id="linkHistoryButton" class="googleMapIcon" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
+<!-- 		<div id="vipButton" class="googleMapIcon" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
+		<div id="toggleMapChristmasButton" class="googleMapIcon" onclick="toggleChristmasMarker()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/bauble.png")' title='Merry Christmas!' style="vertical-align: middle;"/></div>
+		<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>
+		<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style="display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>
+		<div id="santaClausButton" class="googleMapIcon glow" onclick="showSantaClausAttemptStatus()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/markers/christmas/santa-hat.png")' title='Santa, where are you?' style="vertical-align: middle;"/></div>
+
   	<!-- main canvas start -->
   		<div id="canvas" style="float: left; overflow-x: auto; overflow-y: scroll;" >
   			<div id="worldMapCanvas" style="height: 100%;">
@@ -711,8 +715,8 @@
 <!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
   					</div>
   					<div id="airportDetails" class="section" style="width: 90%; float:left;">
-  						<h4>Airport Details</h4>
-  						<div class="table" style="width: 50%; float: left">
+						<h4>Airport Details</h4>
+						<div class="table" style="width: 50%; float: left">
   							<div class="table-row">
 			    				<div class="label" style="width:50%;"><h5>Airport:</h5></div>
 			    				<div class="value" id="airportDetailsName" style="width:50%;"></div>
@@ -2500,6 +2504,67 @@
 	    <div class="button downgradeButton" onclick="buildFacility($('#facilityModal').data('facility'), -1)">Downgrade</div>
 	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
 	  </div>
+	</div>
+
+	<!-- Santa Claus modal -->
+	<div id="santaClausModal" class="modal christmas-event" aria-hidden="true">
+		<div class="modal-content snow-background"  style="width : 500px;">
+			<span class="close" onclick="closeSantaClausModal()">&times;</span>
+			<div style="margin-bottom: 30px"><h2>Santa, Where are you?</h2></div>
+			<h3 style="margin-bottom: 10px;">Search History</h3>
+			<div style="width: 100%;">
+				<div style="width: 100%; overflow: auto; float: left;">
+					<div class="table data"style="width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 50%; border-bottom: none">Airport</div>
+							<div class="cell" style="width: 50%;  border-bottom: none">Clue</div>
+						</div>
+					</div>
+					<div class="table data" id="santaClausGuessTable" style="max-height: 100%; width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 50%"></div>
+							<div class="cell" style="width: 50%"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="warning" style="margin-bottom: 15px;">
+				<span>Attempts Left: </span><span id="santaClausAttemptsLeft"></span>
+			</div>
+			<div class="button guessButton glow" onclick="guessSantaClaus()">Search for Santa here</div>
+			<div id="santaClausExhausted" style="display: none;">
+				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/balloon-smiley-sad.png")'></div>
+				<div style="float:left"><h4>You have exhausted all your attempts! Try again next week!</h4></div>
+				<div style="clear:both; margin-bottom: 15px"></div>
+			</div>
+
+
+
+			<div id = "santaClausRewardOptions" style="display: none;">
+				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
+				<div style="float:left"> <h4>Woohoo! You have found Santa!</h4></div>
+				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
+				<div style="clear:both; margin-bottom: 15px"></div>
+
+				<h4> Please pick your reward as below, you can always come back later to make your choice!</h4>
+				<div class="table data" id="santaClausRewardOptionsTable" style="height: 300px; width: 100%">
+					<div class="table-header">
+						<div class="cell" style="width: 10%"></div>
+						<div class="cell" style="width: 90%"></div>
+					</div>
+				</div>
+			</div>
+			<div id="santaClausPickedReward" style="display: none;">
+				<div style="float:left"> <h4>You have picked the reward as below</h4></div>
+				<div style="clear:both; margin-bottom: 15px"></div>
+				<div class="table data" style="width: 100%">
+					<div class="table-row">
+						<div class="cell label" style="width: 100%"><span id="santaClausPickedRewardText" class="text"></span></div>
+					</div>
+				</div>
+
+			</div>
+		</div>
 	</div>
 	
 	<!-- airport passenger quality expectation model -->

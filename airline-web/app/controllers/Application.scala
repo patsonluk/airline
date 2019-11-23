@@ -201,8 +201,6 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     Ok(views.html.test())
   }
   
-  val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)
-  
   def getAirports(count : Int) = Action {
     val selectedAirports = cachedAirportsByPower.takeRight(count)
     Ok(Json.toJson(selectedAirports))

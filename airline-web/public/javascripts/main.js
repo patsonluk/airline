@@ -1,4 +1,5 @@
 var map
+var airportMap
 var markers
 var baseMarkers = []
 var activeAirline
@@ -272,7 +273,6 @@ function initMap() {
 //  linkControlDiv.index = 1;
 //  map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
 //  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(hideLinkHistoryButton);
-  
 }
 
 function LinkHistoryControl(controlDiv, map) {
@@ -317,6 +317,8 @@ function updateAllPanels(airlineId) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
 //		} else {
 //			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
+		} else if (christmasFlag) {
+		    printConsole("Breaking news - Santa went missing!!! Whoever finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
 		}
 		
 	}

@@ -281,6 +281,7 @@ object Meta {
     createResetUser(connection)
     createLog(connection)
     createAlert(connection)
+    createSantaClaus(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -948,6 +949,40 @@ object Meta {
     statement = connection.prepareStatement("CREATE INDEX " + ALERT_INDEX_1 + " ON " + ALERT_TABLE + "(airline)")
     statement.execute()
     statement.close()
+  }
+
+  def createSantaClaus(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + SANTA_CLAUS_INFO_TABLE)
+    statement.execute()
+    statement.close()
+
+    //case class SantaClausInfo(airport : Airport, airline : Airline, attemptsLeft : Int, guesses : List[SantaClausGuess], found : Boolean, pickedAward : Option[SantaClausAwardType.Value], var id : Int = 0)
+    statement = connection.prepareStatement("CREATE TABLE " + SANTA_CLAUS_INFO_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "airline INTEGER, " +
+      "airport  INTEGER," +
+      "attempts_left INTEGER," +
+      "found TINYINT(1)," +
+      "picked_award INTEGER," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + SANTA_CLAUS_GUESS_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + SANTA_CLAUS_GUESS_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "airline INTEGER, " +
+      "airport  INTEGER," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
   }
 
   def createResetUser(connection : Connection) {
