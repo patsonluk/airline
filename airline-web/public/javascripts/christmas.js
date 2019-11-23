@@ -32,22 +32,22 @@ function updateSantaClausModal() {
 
                  var awardOptionsDiv = $("#santaClausRewardOptions")
                  var pickedRewardDiv = $("#santaClausPickedReward")
+                 var exhaustedDiv = $("#santaClausExhausted")
+                 var guessButton = $("#santaClausModal .guessButton")
+                 awardOptionsDiv.hide()
+                 pickedRewardDiv.hide()
+                 exhaustedDiv.hide()
+                 guessButton.hide()
                  if (result.found) {
-                    $("#santaClausModal .guessButton").hide()
                     if (result.pickedAwardDescription) { //found and award is chosen
-                        awardOptionsDiv.hide()
                         $("#santaClausPickedRewardText").text(result.pickedAwardDescription)
                         pickedRewardDiv.show()
                     } else { //show award options
-                        pickedRewardDiv.hide()
                         getAwardOptionsTable()
                         awardOptionsDiv.show()
                     }
                  } else {
-                    pickedRewardDiv.hide()
-                    awardOptionsDiv.hide()
                     if (result.attemptsLeft <= 0) {
-                        $("#santaClausModal .guessButton").hide()
                         $("#santaClausExhausted").show()
                     } else {
                         $("#santaClausModal .guessButton").show()
