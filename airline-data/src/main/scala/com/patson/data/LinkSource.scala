@@ -490,6 +490,10 @@ object LinkSource {
   def deleteAllLinks() = {
     deleteLinksByCriteria(List.empty)
   }
+
+  def deleteLinksByAirlineId(airlineId : Int) = {
+    deleteLinksByCriteria(List(("airline", airlineId)))
+  }
   
   def deleteLinksByCriteria(criteria : List[(String, Any)]) = {
       //open the hsqldb

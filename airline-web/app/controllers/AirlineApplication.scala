@@ -612,9 +612,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         case None =>
           val resetBalance = if (keepAssets) Computation.getResetAmount(airlineId).overall else EntrepreneurProfile.INITIAL_BALANCE //do it here before deleting everything
           
-          LinkSource.loadLinksByAirlineId(airlineId).foreach { link => //remove all links
-            LinkSource.deleteLink(link.id)
-          }
+          LinkSource.deleteLinksByAirlineId(airlineId)//remove all links
+
           //remove all airplanes
           AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
           //remove all bases
