@@ -766,6 +766,9 @@ function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkCla
     var minValue = 99999
 	if (!jQuery.isEmptyObject(allRivalLinkConsumptions)) { //link consumptions is array (by each rival link) of array (by cycle),
         $.each(allRivalLinkConsumptions, function(key, linkConsumptions) {
+            if (linkConsumptions.length == 0) {
+                return; //no consumptions yet
+            }
             var newCategory = []
             var linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek) //link consumptions for each rival link
             var airlineName = linkConsumptions[0].airlineName
