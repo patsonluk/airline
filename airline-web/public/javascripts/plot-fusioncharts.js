@@ -802,7 +802,8 @@ function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkCla
        //now pad at the beginning for those that have been around less than weekCount
        $.each(dataSet, function(index, dataEntry) {
             if (dataEntry["data"].length < weekCount) {
-                for (i = 0; i < weekCount - dataEntry["data"].length; i++) {
+                var padLength = weekCount - dataEntry["data"].length
+                for (i = 0; i < padLength; i++) {
                     dataEntry["data"].unshift({ "data" : ""})
                 }
             }
