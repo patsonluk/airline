@@ -519,7 +519,7 @@ object LinkSource {
 
       println("Deleted " + deletedCount + " link records")
       //purge alert records
-      val purgingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION).filter( alert => purgingLinkIds.contains(alert.targetId.get))
+      val purgingAlerts = AlertSource.loadAlertsByCategoryAndTargetIds(AlertCategory.LINK_CANCELLATION, purgingLinkIds)
       AlertSource.deleteAlerts(purgingAlerts)
 
       println("Purged " + purgingAlerts.size + " alert records")

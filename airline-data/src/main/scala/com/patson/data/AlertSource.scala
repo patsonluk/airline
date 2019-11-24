@@ -121,6 +121,20 @@ object AlertSource {
   def loadAlertsByCategory(category : AlertCategory.Value, fullLoad : Boolean = false) = {
     loadAlertsByCriteria(List(("category", category.id)), fullLoad)
   }
+
+  def loadAlertsByCategoryAndTargetIds(category : AlertCategory.Value, targetIds : List[Int], fullLoad : Boolean = false) : List[Alert] = {
+    if (targetIds.isEmpty) {
+      List.empty
+    } else {
+      var queryString = "SELECT * FROM " + ALERT_TABLE + " WHERE category = ? AND target_id IN ("
+      for (i <- 0 until targetIds.size - 1) {
+        queryString += "?,"
+      }
+      queryString += "?)"
+      val parameters = List(category.id) ++ targetIds
+      loadAlertsByQueryString(queryString, parameters, fullLoad)
+    }
+  }
   
   def loadAlertsByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
       var queryString = "SELECT * FROM " + ALERT_TABLE
