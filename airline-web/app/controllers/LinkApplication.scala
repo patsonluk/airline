@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.Calendar
+
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Map
 import scala.math.BigDecimal.double2bigDecimal
@@ -15,7 +17,6 @@ import play.api.data.Forms.number
 import play.api.libs.json._
 import play.api.libs.json.JsBoolean
 import play.api.libs.json.JsNumber
-import play.api.libs.json.JsObject
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
@@ -150,13 +151,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     
   }
   
-  implicit object LinkWithProfitWrites extends Writes[(Link, Int, Int, LinkClassValues)] {
-    def writes(linkWithProfit: (Link, Int, Int, LinkClassValues)): JsValue = { 
-      val link = linkWithProfit._1
-      val profit = linkWithProfit._2
-      val revenue = linkWithProfit._3
-      val passengers = linkWithProfit._4;
-      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue)) + ("passengers" -> Json.toJson(passengers))
+  implicit object LinkExtendedInfoWrites extends Writes[LinkExtendedInfo] {
+    def writes(entry: LinkExtendedInfo): JsValue = {
+      val link = entry.link
+      val profit = entry.profit
+      val revenue = entry.revenue
+      val passengers = entry.soldSeats
+      val lastUpdate = entry.lastUpdate
+      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue)) + ("passengers" -> Json.toJson(passengers)) + ("lastUpdate" -> JsNumber(lastUpdate.getTimeInMillis))
     }
   }
 
@@ -414,8 +416,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(immutable.Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
         foldMap + (linkConsumptionDetails.link.id -> linkConsumptionDetails)
       }
-      val linksWithProfit = links.map { link =>  
-        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats))  
+      val lastUpdates : scala.collection.immutable.Map[Int, Calendar] = LinkSource.loadLinkLastUpdates(links.map(_.id))
+
+      val linksWithProfit: Seq[LinkExtendedInfo] = links.map { link =>
+        //(link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats))
+        LinkExtendedInfo(link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats), lastUpdates(link.id))
       }
       Ok(Json.toJson(linksWithProfit)).withHeaders(
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
@@ -423,6 +428,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
      
   }
+
+  case class LinkExtendedInfo(link : Link, profit : Int, revenue : Int, soldSeats : LinkClassValues, lastUpdate : Calendar)
   
   def deleteAllLinks() = Action {
     val count = LinkSource.deleteAllLinks()

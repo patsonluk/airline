@@ -627,9 +627,13 @@
 <!--   			end world map canvas -->
 			<div id="linksCanvas" style="display: none; height: 100%">
 				<div style="height: 90% ; width : 50%; float: left;" class="mainPanel">
-  					<div class="section" style="height: 95% ; width : 95%; float: left;"> 
+  					<div class="section" style="height: 95% ; width : 95%; float: left;">
+						<div style="height: 20px">
+							<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
+						</div>
 		  	  			<div class="table data" style="height: 20px; width: 100%">
 		 	  				<div class="table-header" id="linksTableSortHeader">
+								<div class="cell clickable" style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></div> <!--hidden column for last update -->
 		 	  					<div class="cell clickable selected" style="width: 18%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
 		 	  					<div class="cell clickable" style="width: 18%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
 		 	  					<div class="cell clickable" style="width: 17%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
@@ -641,7 +645,7 @@
 		 	  					<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 							</div>
 	         			</div>
-	         			<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+	         			<div style="height: calc(100% - 20px - 20px); width: 100%; overflow: auto;">
 		         			<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
 			 	  				<div class="table-header">
 			 	  					<div class="cell" style="width: 18%; border-bottom: none;"></div>
