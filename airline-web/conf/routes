@@ -14,6 +14,7 @@ POST	 /login							  controllers.UserApplication.login
 POST	 /logout						  controllers.UserApplication.logout
 #GET	 	 /login							  controllers.UserApplication.login
 #PUT		 /users							  controllers.UserApplication.putUser
+GET      /current-cycle                   controllers.Application.getCurrentCycle()
 GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
 GET		 /airports/:airportId 		  	  controllers.Application.getAirport(airportId : Int)
 #GET		 /airports/:airportId/details  	  controllers.Application.getAirportDetails(airportId : Int)

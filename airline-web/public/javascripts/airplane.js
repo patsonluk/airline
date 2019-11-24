@@ -405,7 +405,23 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
 	
 	var airlineId = activeAirline.id 
 	$("#actionAirplaneId").val(airplaneId)
-	//load link
+	var currentCycle
+	$.ajax({
+        type: 'GET',
+        url: "current-cycle",
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        async: false,
+        success: function(result) {
+            currentCycle = result.cycle
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+
+
 	$.ajax({
 		type: 'GET',
 		url: "airlines/" + airlineId + "/airplanes/" + airplaneId + "?getAssignedLink=true",
@@ -420,13 +436,14 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
     		} else if (airplane.condition < selectedModel.badConditionThreshold) {
     			$("#airplaneDetailsCondition").addClass("warning")
     		}
-    		
-    		if (airplane.age >= 0) {
-    			$("#airplaneDetailsAge").text(getYearMonthText(airplane.age))
+    		var age = currentCycle - airplane.constructedCycle
+
+    		if (age >= 0) {
+    			$("#airplaneDetailsAge").text(getYearMonthText(age))
     			$("#airplaneDetailsAgeRow").show()
     			$("#airplaneDetailsDeliveryRow").hide()
     		} else {
-    			$("#airplaneDetailsDelivery").text(airplane.age * -1 + "week(s)")
+    			$("#airplaneDetailsDelivery").text(age * -1 + "week(s)")
     			$("#airplaneDetailsAgeRow").hide()
     			$("#airplaneDetailsDeliveryRow").show()
     		}
@@ -439,7 +456,7 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
 	    		$("#sellAirplaneButton").hide()
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
-	    		if (airplane.age >= 0) {
+	    		if (age >= 0) {
 	    			$("#sellAirplaneButton").show()
 	    		} else {
 	    			$("#sellAirplaneButton").hide()
@@ -447,7 +464,7 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
 	    	}
 	    	
 	    	$('#ownedAirplaneDetail .rejection').hide()
-	    	if (airplane.age >= 0) {
+	    	if (age >= 0) {
 	    		if (activeAirline.balance >= replaceCost) { 
 	    			$("#replaceAirplaneButton").show()
 	    		} else {

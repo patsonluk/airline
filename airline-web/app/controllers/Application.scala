@@ -4,16 +4,11 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.json.Json
 import com.patson.model._
-import com.patson.data.AirportSource
-import com.patson.Util
+import com.patson.data.{AirlineSource, AirportSource, CitySource, CycleSource, LinkSource, LinkStatisticsSource, LoungeHistorySource}
 import com.patson.model.Link
-import com.patson.data.LinkSource
-import com.patson.data.AirlineSource
 import play.api.data.Form
 import play.api.data.Forms.mapping
 import play.api.data.Forms.number
-import com.patson.data.CitySource
-import com.patson.data.LinkStatisticsSource
 
 import scala.collection.mutable.LinkedHashMap
 import scala.collection.mutable.ListBuffer
@@ -30,7 +25,6 @@ import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
 import controllers.WeatherUtil.Coordinates
 import controllers.WeatherUtil.Weather
-import com.patson.data.LoungeHistorySource
 import controllers.AuthenticationObject.AuthenticatedAirline
 import javax.inject.Inject
 
@@ -199,6 +193,10 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   }
   def test = Action {
     Ok(views.html.test())
+  }
+
+  def getCurrentCycle() = Action  {
+    Ok(Json.obj("cycle" -> CycleSource.loadCycle()))
   }
   
   def getAirports(count : Int) = Action {

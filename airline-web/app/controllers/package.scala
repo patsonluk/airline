@@ -102,7 +102,7 @@ package object controllers {
       "range" -> JsNumber(airplane.model.range),
       "price" -> JsNumber(airplane.model.price),
       "condition" -> JsNumber(airplane.condition),
-      "age" -> JsNumber(Computation.calculateAge(airplane.constructedCycle)),
+      "constructedCycle" -> JsNumber(airplane.constructedCycle),
       "value" -> JsNumber(airplane.value),
       "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane)),
       "dealerValue" -> JsNumber(airplane.dealerValue)
