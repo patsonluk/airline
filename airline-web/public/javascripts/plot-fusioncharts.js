@@ -726,6 +726,7 @@ function plotLoanInterestRatesChart(rates, container) {
 	    		"animation": "1",
 	    		"showBorder":"0",
 	    		"showValues": "0",
+	    		"drawAnchors": "0",
                 "toolTipBorderRadius": "2",
                 "toolTipPadding": "5",
                 "bgAlpha":"0",
@@ -759,18 +760,22 @@ function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkCla
 	var category = []
 
 	var maxWeek = 24
-	var maxCycle = 0
+	var weekCount = 0 //the rival with the most week count, usually this is just maxWeek
 
     var dataSet = []
     var maxValue = -1
     var minValue = 99999
-	if (!jQuery.isEmptyObject(allRivalLinkConsumptions)) { //link consumptions is array (by each rival link) of array (by cycle),
-        $.each(allRivalLinkConsumptions, function(key, linkConsumptions) {
+    if (!jQuery.isEmptyObject(allRivalLinkConsumptions)) { //link consumptions is array (by each rival link) of array (by cycle),
+	    $.each(allRivalLinkConsumptions, function(key, linkConsumptions) {
             if (linkConsumptions.length == 0) {
                 return; //no consumptions yet
             }
             var newCategory = []
             var linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek) //link consumptions for each rival link
+            if (linkConsumptions.length > weekCount) { //check which rival has the longest history
+                weekCount = linkConsumptions.length
+            }
+
             var airlineName = linkConsumptions[0].airlineName
             var linkId = linkConsumptions[0].linkId
             priceHistory = []
@@ -791,6 +796,15 @@ function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkCla
             dataSet.push({ "seriesName": airlineName, "data" : priceHistory})
             if (newCategory.length > category.length) { //take the longest length one
                 category = newCategory
+            }
+       })
+
+       //now pad at the beginning for those that have been around less than weekCount
+       $.each(dataSet, function(index, dataEntry) {
+            if (dataEntry["data"].length < weekCount) {
+                for (i = 0; i < weekCount - dataEntry["data"].length; i++) {
+                    dataEntry["data"].unshift({ "data" : ""})
+                }
             }
        })
 	}
@@ -834,4 +848,3 @@ function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkCla
 	   }
 	})
 }
-top
