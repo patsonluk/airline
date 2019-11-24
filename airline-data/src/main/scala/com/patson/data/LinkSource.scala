@@ -1,14 +1,22 @@
 package com.patson.data
 import com.patson.data.Constants._
+
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Set
 import java.sql.DriverManager
+
 import com.patson.model.airplane.Airplane
 import java.sql.PreparedStatement
+
 import com.patson.model._
 import java.sql.Statement
+
 import scala.collection.mutable.HashSet
 import java.sql.Connection
+import java.util.{Calendar, Date}
+
+import com.patson.data.UserSource.dateFormat
+
 import scala.collection.mutable.HashMap
  
 
@@ -106,7 +114,7 @@ object LinkSource {
         val airline = airlineCache.get(airlineId)
         
         if (fromAirport.isDefined && toAirport.isDefined && airline.isDefined) {
-          val link = Link( 
+          val link = Link(
             fromAirport.get,
             toAirport.get,
             airline.get,
@@ -135,6 +143,48 @@ object LinkSource {
       links.toList
     } finally {
       connection.close()
+    }
+  }
+
+  /**
+    * Do not put this as a part of the Link instance as this field is not really used most of the time
+    * @param linkIds
+    * @return
+    */
+  def loadLinkLastUpdates(linkIds : List[Int]) : Map[Int, Calendar] = {
+    if (linkIds.isEmpty) {
+      Map.empty
+    } else {
+      val queryString = new StringBuilder(BASE_QUERY + " where id IN (");
+      for (i <- 0 until linkIds.size - 1) {
+        queryString.append("?,")
+      }
+
+      queryString.append("?)")
+
+      val connection = Meta.getConnection()
+      try {
+        val preparedStatement = connection.prepareStatement(queryString.toString())
+
+        for (i <- 0 until linkIds.size) {
+          preparedStatement.setInt(i + 1, linkIds(i))
+        }
+
+        val resultSet = preparedStatement.executeQuery()
+
+        val lastUpdatesByLinkId = HashMap[Int, Calendar]()
+        while (resultSet.next()) {
+          val lastUpdate = Calendar.getInstance()
+          lastUpdate.setTime(dateFormat.get().parse(resultSet.getString("last_update")))
+
+          lastUpdatesByLinkId.put(resultSet.getInt("id"), lastUpdate)
+        }
+        resultSet.close()
+        preparedStatement.close()
+        lastUpdatesByLinkId.toMap
+      } finally {
+        connection.close()
+      }
     }
   }
   
@@ -340,7 +390,7 @@ object LinkSource {
   def updateLink(link : Link) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, last_update = ? WHERE id = ?")
 
     try {
       preparedStatement.setInt(1, link.price(ECONOMY))
@@ -354,7 +404,8 @@ object LinkSource {
       preparedStatement.setInt(9, link.frequency)
       preparedStatement.setInt(10, link.flightType.id)
       preparedStatement.setInt(11, link.flightNumber)
-      preparedStatement.setInt(12, link.id)
+      preparedStatement.setTimestamp(12, new java.sql.Timestamp(new Date().getTime()))
+      preparedStatement.setInt(13, link.id)
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
@@ -374,7 +425,7 @@ object LinkSource {
   def updateLinks(links : List[Link]) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, last_update = ? WHERE id = ?")
 
     connection.setAutoCommit(false)
     try {
@@ -390,7 +441,8 @@ object LinkSource {
         preparedStatement.setInt(9, link.frequency)
         preparedStatement.setInt(10, link.flightType.id)
         preparedStatement.setInt(11, link.flightNumber)
-        preparedStatement.setInt(12, link.id)
+        preparedStatement.setTimestamp(12, new java.sql.Timestamp(new Date().getTime()))
+        preparedStatement.setInt(13, link.id)
         preparedStatement.addBatch()
       }
       
