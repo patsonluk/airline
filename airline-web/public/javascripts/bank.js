@@ -85,7 +85,7 @@ function updateNewLoanOptionsTable(loanOptions) {
 	optionsTable.children(".table-row").remove()
 	$.each(loanOptions, function(index, loanOption) {
 		var weeklyPayment = Math.ceil((loanOption.borrowedAmount + loanOption.interest) / loanOption.loanTerm)
-		var interestRate = Math.round(loanOption.interest / loanOption.borrowedAmount * 100)
+		var interestRate = Math.round(loanOption.interest / loanOption.borrowedAmount * 1000) / 10 //1 decimal point
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.borrowedAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + interestRate  + "%</div>")

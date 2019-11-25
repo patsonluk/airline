@@ -323,6 +323,8 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 		business : [],
         first : []
 	}
+
+
 		
 	var category = []
 	 
@@ -330,6 +332,17 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	
 	if (!jQuery.isEmptyObject(linkConsumptions)) {
 		linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
+        var hasCapacity = {} //check if there's any capacity for this link class at all
+        hasCapacity.economy = $.grep(linkConsumptions, function(entry, index) {
+            return entry.capacity.economy > 0
+        }).length > 0
+        hasCapacity.business = $.grep(linkConsumptions, function(entry, index) {
+            return entry.capacity.business > 0
+        }).length > 0
+        hasCapacity.first = $.grep(linkConsumptions, function(entry, index) {
+            return entry.capacity.first > 0
+        }).length > 0
+
 		$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
 			var capacity = linkConsumption.capacity.economy + linkConsumption.capacity.business + linkConsumption.capacity.first
 			var soldSeats = linkConsumption.soldSeats.economy + linkConsumption.soldSeats.business + linkConsumption.soldSeats.first
@@ -344,10 +357,16 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 			revenueByClass.economy.push({ value : linkConsumption.price.economy * linkConsumption.soldSeats.economy })
 			revenueByClass.business.push({ value : linkConsumption.price.business * linkConsumption.soldSeats.business })
 			revenueByClass.first.push({ value : linkConsumption.price.first * linkConsumption.soldSeats.first })
-			
-			priceByClass.economy.push({ value : linkConsumption.price.economy })
-			priceByClass.business.push({ value : linkConsumption.price.business })
-			priceByClass.first.push({ value : linkConsumption.price.first })
+
+			if (hasCapacity.economy) {
+			    priceByClass.economy.push({ value : linkConsumption.price.economy })
+			}
+			if (hasCapacity.business) {
+			    priceByClass.business.push({ value : linkConsumption.price.business })
+            }
+            if (hasCapacity.first) {
+			    priceByClass.first.push({ value : linkConsumption.price.first })
+			}
 			
 			var month = Math.floor(linkConsumption.cycle / 4)
 			//var week = linkConsumption.cycle % 4 + 1
