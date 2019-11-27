@@ -135,7 +135,6 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
   var chat = this;
   chat.gmessages = []; // Global
   chat.amessages = []; // Alliance
-  chat.currentMessage = "";
   chat.username = "";
 
   // what happens when user enters message
@@ -145,11 +144,12 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
         return;
       }
       limit.tick('myevent_id');
-      if (activeAirline && (chat.currentMessage.length > 0) && (limit.count('myevent_id') <= 20)) {
+      var currentMessage = $('#chattext').val()
+      if (activeAirline && (currentMessage !== "") && (limit.count('myevent_id') <= 20)) {
         var active_tab = $("li.tab-link.current").attr('data-tab');
-        var text = { room: active_tab, text: chat.currentMessage, airlineId: activeAirline.id };
+        var text = { room: active_tab, text: currentMessage, airlineId: activeAirline.id };
         //chat.messages.push(text);
-        chat.currentMessage = "";
+        $('#chattext').val("");
         // send it to the server through websockets
         ws.send(JSON.stringify(text));
 
@@ -163,7 +163,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
             scroller.scrollTop = scroller.scrollHeight;
           });
 
-          chat.currentMessage = "";
+          $('#chattext').val("");
       }
   };
 
@@ -222,6 +222,8 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
     lastMessageId = r_msg.id
   };
 });
+
+
 
 emojify.setConfig({img_dir : 'assets/images/emoji'});
 

@@ -36,8 +36,9 @@ $( document ).ready(function() {
 	});
 
 	$('#chattext').jemoji({
-	    folder : 'assets/images/emoji/',
-	});
+        folder : 'assets/images/emoji/',
+        btn:    $('#emojiButton')
+    });
 
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
