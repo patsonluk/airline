@@ -18,10 +18,8 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
-	<link rel="icon" type="image/png"  href='@routes.Assets.versioned("images/icons/globe-green.png")'>
-	
-	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/emoji/jquery.emojipicker.css")">
-	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/emoji/jquery.emojipicker.a.css")">
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
 
     
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
@@ -34,12 +32,11 @@
 			  crossorigin="anonymous"></script>
 			  
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/chat.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")"></script>	
-	<script type="text/javascript" src="@routes.Assets.versioned("javascripts/emoji/jquery.emojipicker.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.versioned("javascripts/emoji/jquery.emojipicker.a.js")"></script>
 
-	
+    <script src="@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")"></script>	
+	<script src="@routes.Assets.versioned("javascripts/jemoji/jemoji.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/emojify/emojify.js")"></script>
+
     <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")"></script>
@@ -70,6 +67,7 @@
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/chat.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/christmas.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/confetti.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
@@ -92,14 +90,6 @@
 			})(window,document,window['_fs_namespace'],'script','user');
     	}
 	</script>
-	  <script type="text/javascript">
-		$(document).ready(function(e) {
-		  $('.emojiable-option').emojiPicker({
-			width: '250px',
-			height: '300px'
-		  });
-		});
-  </script>
   </head>
   <body>
   
@@ -168,7 +158,7 @@
 						</span>
 						<span class="notify-bubble">0</span>
 					</header>
-					<div class="chat" style="display: none;">
+					<div class="chat" id="chat-box" style="display: none;">
 						<div class="chat-history tab-content current" id="chatBox-1">
 							<ul>
 								<li ng-repeat="msg in chat.gmessages track by $index">
@@ -187,7 +177,7 @@
 						<form autocomplete="off">
 							<input autocomplete="false" name="hidden" type="text" style="display:none;">
 							<input type="text" maxlength="250" placeholder="Enter message..."
-								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()" id="chattext" class="emojiable-option" />
+								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage($event)" id="chattext"/>
 						</form>
 					</div> <!-- end chat -->
 				</div>

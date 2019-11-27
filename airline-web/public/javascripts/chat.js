@@ -104,6 +104,8 @@ RateLimit.prototype = {
     }
 };
 
+var isFromEmoji = false; //yike ugly!
+
 angular.module("ChatApp", []).controller("ChatController", function($scope, $timeout){
    // var ws = new WebSocket("ws://localhost:9000/chat");
    // connect to websockets endpoint of our server
@@ -137,28 +139,32 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
   chat.username = "";
 
   // what happens when user enters message
-  chat.sendMessage = function() {
-	  limit.tick('myevent_id');
-	  if (activeAirline && (chat.currentMessage.length > 0) && (limit.count('myevent_id') <= 20)) {
-		var active_tab = $("li.tab-link.current").attr('data-tab');
-		var text = { room: active_tab, text: chat.currentMessage, airlineId: activeAirline.id };
-	    //chat.messages.push(text);
-	    chat.currentMessage = "";
-	    // send it to the server through websockets
-	    ws.send(JSON.stringify(text));
-		
-	  } else {
-		  $timeout(function(){ 
-			$scope.chat.gmessages.push("Message Not Sent : Rate Filter or Invalid Message");
-		  });
-		  
-		  $timeout(function(){ 
-			var scroller = document.getElementById("chatBox-1");
-		    scroller.scrollTop = scroller.scrollHeight;
-		  });
-		  
-		  chat.currentMessage = "";
-	  }
+  chat.sendMessage = function(event) {
+      if (isFromEmoji) {
+        isFromEmoji = false;
+        return;
+      }
+      limit.tick('myevent_id');
+      if (activeAirline && (chat.currentMessage.length > 0) && (limit.count('myevent_id') <= 20)) {
+        var active_tab = $("li.tab-link.current").attr('data-tab');
+        var text = { room: active_tab, text: chat.currentMessage, airlineId: activeAirline.id };
+        //chat.messages.push(text);
+        chat.currentMessage = "";
+        // send it to the server through websockets
+        ws.send(JSON.stringify(text));
+
+      } else {
+          $timeout(function(){
+            $scope.chat.gmessages.push("Message Not Sent : Rate Filter or Invalid Message");
+          });
+
+          $timeout(function(){
+            var scroller = document.getElementById("chatBox-1");
+            scroller.scrollTop = scroller.scrollHeight;
+          });
+
+          chat.currentMessage = "";
+      }
   };
 
    ws.onopen = function () {
@@ -211,11 +217,11 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 		$('.notify-bubble').show(400);
 		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
 	}
+	emojify.run($('.chat-history.current')[0]);             // translate emoji to images
 
     lastMessageId = r_msg.id
   };
 });
 
-
-
+emojify.setConfig({img_dir : 'assets/images/emoji'});
 

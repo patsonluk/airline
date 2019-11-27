@@ -34,7 +34,11 @@ $( document ).ready(function() {
 	{
   		$('#floatBackButton').animate({top: ($(window).scrollTop() + 100) + "px" },{queue: false, duration: 350});
 	});
-	
+
+	$('#chattext').jemoji({
+	    folder : 'assets/images/emoji/',
+	});
+
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 

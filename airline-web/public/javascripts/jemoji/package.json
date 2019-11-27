@@ -1,0 +1,28 @@
+{
+  "name": "jEmoji",
+  "version": "1.0.0",
+  "description": "jEmoji is a plugin which provides you a simple way to let your users type emojis in your input forms",
+  "author": "Fran Verona <franverona@gmail.com>",
+  "homepage": "http://franverona.com/jemoji",
+  "keywords": [
+    "jquery",
+    "plugin",
+    "jemoji",
+    "emoji",
+    "selector",
+    "input",
+    "form"
+  ],
+  "demo": "http://franverona.com/jemoji",
+  "docs": "http://franverona.com/jemoji",
+  "bugs": "https://github.com/franverona/jemoji/issues",
+  "license":  "MIT",
+  "contributors":   [],
+  "repository":  {
+    "type":   "git",
+    "url":    "https://github.com/franverona/jemoji.git"
+  },
+  "dependencies": {
+    "jquery": ">=1.11.3"
+  }
+}
