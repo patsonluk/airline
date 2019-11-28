@@ -64,12 +64,15 @@ if (typeof(jQuery) === 'undefined') {
       return $(menuContainer).is(':visible');
     };
 
+    var iconMenuOpenOnClick
+
     /**
      * Open emoji menu.
      */
-    this.open = function () {
-
+    this.open = function (openOnClick) { //whether this menu is opened by clicking on the smiley or from :filtering
+      iconMenuOpenOnClick = openOnClick
       $(menuContainer).show();
+      selectedEmoji = false; //have to reset it since when the menu first open, the first selected item does not replace the current input
       var $icons = $(menuContainer).find('.jemoji-icons');
 
       if ($icons.html() === '') {
@@ -113,6 +116,12 @@ if (typeof(jQuery) === 'undefined') {
             }
           }
         });
+      }
+
+      var selectedDiv = $(".jemoji-icons .active") //on open always scroll to the selected icon
+      if (selectedDiv) {
+          selectedDiv[0].scrollIntoView();
+          selectedDiv.parent()[0].scrollTop -= 10;
       }
     };
 
@@ -194,10 +203,14 @@ if (typeof(jQuery) === 'undefined') {
     $.fn.jemojiKeydown = newKeyUpDown($.fn.keydown, 'keydown');
     $.fn.jemojiKeypress = newKeyUpDown($.fn.keypress, 'keypress');
 
-    $el.data('jemojiclick', function () {
+    $el.data('jemojiclick', function () { //openOnClick whether the menu was brought up my clicking the smiley icon. As the string replacement handling should be different
       $(d).find('div').off('click').on('click', function () {
         var emojiCode = $(this).find('img').attr('alt'), cursor = getCursorPosition(), value = $el.val();
-        value = value.slice(0, value.lastIndexOf(':', cursor)) + ':' + emojiCode + ': ' + value.slice(cursor);
+        if (iconMenuOpenOnClick) { //simply insert :emojiCode:<space> at current cursor position
+            value = value.slice(0, cursor) + ':' + emojiCode + ': ' + value.slice(cursor);
+        } else {
+            value = value.slice(0, value.lastIndexOf(':', cursor)) + ':' + emojiCode + ': ' + value.slice(cursor);
+        }
         $el.val(value);
         $el.focus();
         menuOpened = false;
@@ -283,7 +296,7 @@ if (typeof(jQuery) === 'undefined') {
 
       btn.on('click', function () {
         if (!_this.isOpen()) {
-          _this.open();
+          _this.open(true);
         }
         else {
           _this.close();
@@ -377,10 +390,15 @@ if (typeof(jQuery) === 'undefined') {
             if (hasnavigation) {
               // Left arrow
               $divs.removeClass('active');
+              var selectedDiv
               if ($index > 0)
-                $($divs.get($index - 1)).addClass('active');
+                selectedDiv = $($divs.get($index - 1))
               else
-                $($divs.get($divs.length - 1)).addClass('active');
+                selectedDiv = $($divs.get($divs.length - 1))
+
+              selectedDiv.addClass('active');
+              selectedDiv.get(0).scrollIntoView()
+              selectedDiv.parent()[0].scrollTop -= 10;
 
               currentEmoji = $(d).find('div.active img').attr('alt');
               if (arrowsCursorBegin === -1)
@@ -406,10 +424,15 @@ if (typeof(jQuery) === 'undefined') {
             if (hasnavigation) {
               // Right arrow
               $divs.removeClass('active');
+              var selectedDiv
               if ($index < ($divs.length - 1))
-                $($divs.get($index + 1)).addClass('active');
+                selectedDiv = $($divs.get($index + 1))
               else
-                $($divs.get(0)).addClass('active');
+                selectedDiv = $($divs.get(0))
+
+              selectedDiv.addClass('active');
+              selectedDiv.get(0).scrollIntoView()
+              selectedDiv.parent()[0].scrollTop -= 10;
 
               currentEmoji = $(d).find('div.active img').attr('alt');
               if (arrowsCursorBegin === -1)
