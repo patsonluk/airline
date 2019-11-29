@@ -28,6 +28,7 @@ object SimulationEventStream{
     var previousCycleStartTime : Long = 0
     var cycleDurationAverage : Long = 0
     var cycleCount : Int = 0
+
     //keep stats of all the cycles so far
 
     def receive = {
@@ -47,8 +48,10 @@ object SimulationEventStream{
           case CycleStart(cycle, newCycleStartTime) => //notified by the simulation process that a cycle has started
             currentCycle = cycle
             if (cycleCount > 0) { //with previous record, calculate the average then
+              val cycleWithDurationCount = cycleCount - 1 //as first cycle has no duration (nothing to compare to before first cycle)
               val durationSinceLastCycle = newCycleStartTime - previousCycleStartTime
-              cycleDurationAverage = (cycleDurationAverage * cycleCount + durationSinceLastCycle) / (cycleCount + 1)
+
+              cycleDurationAverage = (cycleDurationAverage * cycleWithDurationCount + durationSinceLastCycle) / (cycleWithDurationCount + 1)
             }
             previousCycleStartTime = newCycleStartTime
             cycleCount += 1
