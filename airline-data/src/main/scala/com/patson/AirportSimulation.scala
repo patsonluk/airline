@@ -115,9 +115,6 @@ object AirportSimulation {
     }.toMap
 
     allAirports.foreach { airport =>
-      if ("FSM".equals(airport.iata)) {
-        println("STOP HERE");
-      }
       val soldLinksOfThisAirport = airportSoldLinks.get(airport.id).getOrElse(Seq.empty[LinkConsumptionDetails])
       val soldLinksByAirline = scala.collection.mutable.Map(soldLinksOfThisAirport.groupBy { _.link.airline.id }.toSeq: _*)
       airport.getAirlineAppeals().foreach {
