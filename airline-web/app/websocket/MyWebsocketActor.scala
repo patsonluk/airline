@@ -26,13 +26,13 @@ class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
           if (user.hasAccessToAirline(airlineId.toInt)) {
             val subscriberId = MyWebSocketActor.nextSubscriberId(userId)
             RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
-              case CycleCompleted(cycle) => 
-                //println("Received cycle completed: " + cycle)
-                out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
-              case CycleStart(cycle) =>
-                out ! Json.obj("messageType" -> "cycleStart", "cycle" -> cycle)
-              case CycleInfo(cycle, fraction) =>  
-                out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction)
+//              case CycleCompleted(cycle) =>
+//                //println("Received cycle completed: " + cycle)
+//                out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
+//              case CycleStart(cycle) =>
+//                out ! Json.obj("messageType" -> "cycleStart", "cycle" -> cycle)
+              case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
+                out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
             }, subscriberId)
             
             this.subscriberId = Some(subscriberId)

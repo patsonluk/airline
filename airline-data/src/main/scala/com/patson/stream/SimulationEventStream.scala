@@ -25,30 +25,43 @@ object SimulationEventStream{
   
   class BridgeActor extends Actor {
     var currentCycle : Int = 0
-    var cycleStartTime : Long = 0
-    
+    var previousCycleStartTime : Long = 0
+    var cycleDurationAverage : Long = 0
+    var cycleCount : Int = 0
+    //keep stats of all the cycles so far
+
     def receive = {
       case "subscribe" =>
-        println("subcribing actor " + sender().path)
-        val elapsedFraction = (System.currentTimeMillis() - cycleStartTime).toDouble / (MainSimulation.CYCLE_DURATION * 1000)
-        sender() ! (CycleInfo(currentCycle, elapsedFraction), None)
+        println("subscribing actor " + sender().path)
+        var elapsedFraction = (System.currentTimeMillis() - previousCycleStartTime).toDouble / cycleDurationAverage
+        if (elapsedFraction > 1) { //if this time is slower than average, it could be bigger than 1
+          elapsedFraction = 1
+        }
+        sender() ! (CycleInfo(currentCycle, elapsedFraction, cycleDurationAverage), None)
         registeredActors += sender()
       case "unsubscribe" =>
         println("unsubcribing actor " + sender().path)
         registeredActors -= sender()
       case (topic: SimulationEvent, payload: Any) =>
         topic match {
-          case CycleStart(cycle) =>
+          case CycleStart(cycle, newCycleStartTime) => //notified by the simulation process that a cycle has started
             currentCycle = cycle
-            cycleStartTime = System.currentTimeMillis()
+            if (cycleCount > 0) { //with previous record, calculate the average then
+              val durationSinceLastCycle = newCycleStartTime - previousCycleStartTime
+              cycleDurationAverage = (cycleDurationAverage * cycleCount + durationSinceLastCycle) / (cycleCount + 1)
+            }
+            previousCycleStartTime = newCycleStartTime
+            cycleCount += 1
+            registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
+              println("forwarding message back to " + registeredActor.path)
+              registeredActor ! (topic, CycleInfo(currentCycle, 0, cycleDurationAverage))
+            }
+
           case _ => //nothing
         }
         
         println("received " + topic)
-        registeredActors.foreach { registeredActor =>
-          println("forwarding message back to " + registeredActor.path)
-          registeredActor ! (topic, payload) 
-        }
+
       case "ping" => //do nothing
       case _ => println("UNKNOWN message")
       
@@ -59,5 +72,5 @@ object SimulationEventStream{
 
 class SimulationEvent
 case class CycleCompleted(cycle : Int) extends SimulationEvent
-case class CycleStart(cycle: Int) extends SimulationEvent
-case class CycleInfo(cycle: Int, fraction : Double) extends SimulationEvent
+case class CycleStart(cycle: Int, cycleStartTime : Long) extends SimulationEvent
+case class CycleInfo(cycle: Int, fraction : Double, cycleDurationEstimation : Long) extends SimulationEvent

@@ -359,22 +359,48 @@ function refreshPanels(airlineId) {
 }
 
 var totalmillisecPerWeek = 7 * 24 * 60 * 60 * 1000
-var refreshInterval = 1000 //every second
-var incrementPerInterval = totalmillisecPerWeek / (15 * 60 * 1000) * refreshInterval //current 15 minutes per week
-var refreshIntervalId
+var refreshInterval = 5000 //every 5 second
+var incrementPerInterval = totalmillisecPerWeek / (15 * 60 * 1000) * refreshInterval //by default 15 minutes per week
+var durationTillNextTick
+var hasTickEstimation = false
+var refreshIntervalTimer
 var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 
-function updateTime(cycle, fraction) {
+function updateTime(cycle, fraction, cycleDurationEstimation) {
 	currrentCycle = cycle
 	currentTime = (cycle + fraction) * totalmillisecPerWeek 
-	if (!refreshIntervalId) { //start incrementing
-		refreshIntervalId = setInterval( function() {
+	if (refreshIntervalTimer) {
+	    //cancel old timer
+	    clearInterval(refreshIntervalTimer)
+	 }
+
+	 if (cycleDurationEstimation > 0) { //update incrementPerInterval
+	    incrementPerInterval = totalmillisecPerWeek / cycleDurationEstimation * refreshInterval
+	    durationTillNextTick = cycleDurationEstimation * (1 - fraction)
+	    hasTickEstimation = true
+	 }
+	 //start incrementing
+	refreshIntervalTimer = setInterval( function() {
 			currentTime += incrementPerInterval
+			if (hasTickEstimation) {
+			    durationTillNextTick -= refreshInterval
+			}
 			var date = new Date(currentTime)
 			$("#currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) +  " " + padBefore(date.getHours(), "0", 2) + ":00")
+
+			if (hasTickEstimation) {
+			    var minutesLeft = Math.round(durationTillNextTick / 1000 / 60)
+			    if (minutesLeft <= 0) {
+			        $("#nextTickEstimation").text("Very soon")
+			    } else if (minutesLeft == 1) {
+			        $("#nextTickEstimation").text("1 minute")
+			    } else {
+			        $("#nextTickEstimation").text(minutesLeft + " minutes")
+			    }
+            }
 		}, refreshInterval);
-	}
+
 }
 
 
