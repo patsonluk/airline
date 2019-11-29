@@ -47,9 +47,11 @@ object MainSimulation extends App {
       AirlineSimulation.airlineSimulation(cycle, linkResult, loungeResult, airplanes)
       
       //purge log
+      println("Purging logs")
       LogSource.deleteLogsBeforeCycle(cycle - 100)
       
       //notify the websockets via EventStream
+      println("Publish Cycle Complete message")
       SimulationEventStream.publish(CycleCompleted(cycle), None)
       val cycleEnd = System.currentTimeMillis()
       

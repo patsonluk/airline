@@ -55,7 +55,12 @@ object SimulationEventStream{
             registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
               val message = CycleInfo(currentCycle, 0, cycleDurationAverage)
               println("Bridge actor: forwarding " + message + " back to " + registeredActor.path)
-              registeredActor ! (topic, message)
+              registeredActor ! (message, None) //send to actors on the airline-web side
+            }
+          case cycleCompleted: CycleCompleted =>
+            registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
+              println("Bridge actor: forwarding " + cycleCompleted + " back to " + registeredActor.path)
+              registeredActor ! (cycleCompleted, None)
             }
 
           case _ => //nothing
@@ -72,6 +77,6 @@ object SimulationEventStream{
 
 
 class SimulationEvent
-case class CycleCompleted(cycle : Int) extends SimulationEvent
-case class CycleStart(cycle: Int, cycleStartTime : Long) extends SimulationEvent
-case class CycleInfo(cycle: Int, fraction : Double, cycleDurationEstimation : Long) extends SimulationEvent
+case class CycleCompleted(cycle : Int) extends SimulationEvent //main simulation send this, this will be relayed directly to client
+case class CycleStart(cycle: Int, cycleStartTime : Long) extends SimulationEvent //main simulation send this, this will NOT be relay back to client
+case class CycleInfo(cycle: Int, fraction : Double, cycleDurationEstimation : Long) extends SimulationEvent  //bridge actor convert a CycleStart into CycleInfo and send back to client
