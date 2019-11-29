@@ -53,14 +53,15 @@ object SimulationEventStream{
             previousCycleStartTime = newCycleStartTime
             cycleCount += 1
             registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
-              println("forwarding message back to " + registeredActor.path)
-              registeredActor ! (topic, CycleInfo(currentCycle, 0, cycleDurationAverage))
+              val message = CycleInfo(currentCycle, 0, cycleDurationAverage)
+              println("Bridge actor: forwarding " + message + " back to " + registeredActor.path)
+              registeredActor ! (topic, message)
             }
 
           case _ => //nothing
         }
         
-        println("received " + topic)
+        println("Bridge actor: received from simulation that " + topic)
 
       case "ping" => //do nothing
       case _ => println("UNKNOWN message")
