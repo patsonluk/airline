@@ -38,14 +38,16 @@ function initWebSocket(airlineId) {
 
 function onClose(evt) {}  
 function onMessage(evt) { //right now the message is just the cycle #, so refresh the panels
-	
-	console.log("websocket received message : " + evt.data)
 	var json = JSON.parse(evt.data)
+	if (json.ping) { //ok
+        return
+    }
+	console.log("websocket received message : " + evt.data)
 	
 	if (json.messageType == "cycleInfo") { //update time
-		updateTime(json.cycle, json.fraction)
-	} else if (json.messageType == "cycleStart") { //update time
-		updateTime(json.cycle, 0)
+		updateTime(json.cycle, json.fraction, json.cycleDurationEstimation)
+//	} else if (json.messageType == "cycleStart") { //update time
+//		updateTime(json.cycle, 0)
 	} else if (json.messageType == "cycleCompleted") {
 		if (selectedAirlineId) {
 			refreshPanels(selectedAirlineId)

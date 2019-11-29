@@ -15,6 +15,7 @@ import scala.concurrent.duration.Duration
 object MainSimulation extends App {
   val CYCLE_DURATION : Int = 15 * 60
   var currentWeek: Int = 0
+
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 
 //  import actorSystem.dispatcher
@@ -30,9 +31,9 @@ object MainSimulation extends App {
 
   
   def startCycle(cycle : Int) = {
-      val cycleStart = System.currentTimeMillis()
+      val cycleStartTime = System.currentTimeMillis()
       println("cycle " + cycle + " starting!")
-      SimulationEventStream.publish(CycleStart(cycle), None)
+      SimulationEventStream.publish(CycleStart(cycle, cycleStartTime), None)
       println("Oil simulation")
       OilSimulation.simulate(cycle)
       println("Loan simulation")
@@ -46,13 +47,15 @@ object MainSimulation extends App {
       AirlineSimulation.airlineSimulation(cycle, linkResult, loungeResult, airplanes)
       
       //purge log
+      println("Purging logs")
       LogSource.deleteLogsBeforeCycle(cycle - 100)
       
       //notify the websockets via EventStream
+      println("Publish Cycle Complete message")
       SimulationEventStream.publish(CycleCompleted(cycle), None)
       val cycleEnd = System.currentTimeMillis()
       
-      println("cycle " + cycle + " spent " + (cycleEnd - cycleStart) / 1000 + " secs")
+      println("cycle " + cycle + " spent " + (cycleEnd - cycleStartTime) / 1000 + " secs")
   }
   
   

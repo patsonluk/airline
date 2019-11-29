@@ -8,7 +8,6 @@ import akka.util.Timeout
 import com.patson.stream.SimulationEvent
 import com.typesafe.config.ConfigFactory
 
-import scala.concurrent.ExecutionContext.Implicits.global
 
 sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
   override def receive = { 
