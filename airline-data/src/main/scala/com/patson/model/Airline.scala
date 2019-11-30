@@ -96,9 +96,13 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   	  AirlineGrade.TOP_INTERNATIONAL_4
   	} else if (reputation < 200) {
   	  AirlineGrade.TOP_INTERNATIONAL_5
-  	} else {
+  	} else if (reputation < 225) {
   	  AirlineGrade.LEGENDARY
-  	}
+  	} else if (reputation < 250) {
+      AirlineGrade.ULTIMATE
+    } else {
+      AirlineGrade.CELESTIAL
+    }
   }
   
   case class AirlineGrade(value : Int, description: String) {
@@ -132,6 +136,8 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     val TOP_INTERNATIONAL_4 = AirlineGrade(13, "Top International Airline IV")
     val TOP_INTERNATIONAL_5 = AirlineGrade(14, "Top International Airline V")
     val LEGENDARY = AirlineGrade(15, "Legendary Airline")
+    val ULTIMATE = AirlineGrade(16, "Ultimate Airline")
+    val CELESTIAL = AirlineGrade(17, "Celestial Spaceline")
   }
   
   def getBases() = bases

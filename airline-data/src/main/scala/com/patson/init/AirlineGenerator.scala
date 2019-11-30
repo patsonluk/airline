@@ -7,14 +7,20 @@ import com.patson.data.Constants._
 import com.patson.model._
 import com.patson.model.airplane._
 import java.util.Calendar
+
 import com.patson.Authentication
+
 import scala.util.Random
 import com.patson.DemandGenerator
 import com.patson.data._
 import com.patson.data.airplane._
+
 import scala.collection.mutable.ArrayBuffer
 import com.patson.util.LogoGenerator
 import java.awt.Color
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 
 object AirlineGenerator extends App {
@@ -24,8 +30,8 @@ object AirlineGenerator extends App {
     generateAirlines(250)
     
     println("DONE Creating airlines")
-    
-    actorSystem.shutdown()
+
+    Await.result(actorSystem.terminate(), Duration.Inf)
   }
   
   def generateAirlines(count: Int) : Unit = {

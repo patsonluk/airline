@@ -1,23 +1,14 @@
 package com.patson
 
+import java.util.{ArrayList, Collections}
+
+import com.patson.data.{AirportSource, CountrySource}
+import com.patson.model.{PassengerType, _}
+
 import scala.collection.immutable.Map
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent.duration.Duration
-import com.patson.data.AirportSource
-import akka.actor.ActorSystem
-import akka.stream.FlowMaterializer
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import com.patson.model._
-import com.patson.model.PassengerType
+import scala.collection.parallel.CollectionConverters._
 import scala.util.Random
-import com.patson.data.CountrySource
-import java.util.ArrayList
-import java.util.Collections
 
 
 object DemandGenerator {
@@ -51,7 +42,7 @@ object DemandGenerator {
   def computeDemand() = {
     println("Loading airports")
     //val allAirports = AirportSource.loadAllAirports(true)
-    val airports = AirportSource.loadAllAirports(true).filter { airport => airport.iata != "" && airport.power > 0 }
+    val airports: List[Airport] = AirportSource.loadAllAirports(true).filter { airport => airport.iata != "" && airport.power > 0 }
     println("Loaded " + airports.size + " airports")
     
     val allDemands = new ArrayList[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
@@ -80,9 +71,10 @@ object DemandGenerator {
 	  
 	  
 	  val allDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
+    var oneCount = 0
 	  allDemands.asScala.foreach {
 	    case (fromAirport, toAirportsWithDemand) =>
-	      //for each city generate different preferences
+        //for each city generate different preferences
         val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
 
         val demandListFromThisAiport = toAirportsWithDemand.foreach {
@@ -90,7 +82,7 @@ object DemandGenerator {
             LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
-                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize) 
+                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
                 while (remainingDemand > demandChunkSize) {
                   allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, demandChunkSize))
                   remainingDemand -= demandChunkSize
@@ -102,7 +94,7 @@ object DemandGenerator {
         }
 	      
 	  }
-	  
+
 	  
     allDemandChunks.toList
   }
@@ -131,7 +123,7 @@ object DemandGenerator {
         
       val fromAirportAdjustedPower = fromAirportAdjustedIncome * fromAirport.population
       
-      var baseDemand = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
+      var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
         case PassengerType.BUSINESS => 6
         case PassengerType.TOURIST => 1
       })
@@ -156,8 +148,8 @@ object DemandGenerator {
       
       //bonus for domestic and short-haul flight
       adjustedDemand += baseDemand * (flightType match {
-        case SHORT_HAUL_DOMESTIC => 4 //people would just drive or take other transit
-        case LONG_HAUL_DOMESTIC => 7 
+        case SHORT_HAUL_DOMESTIC => 4.0 //people would just drive or take other transit
+        case LONG_HAUL_DOMESTIC => 7.0
         case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
         case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.5
         case ULTRA_LONG_HAUL_INTERCONTINENTAL => -0.75

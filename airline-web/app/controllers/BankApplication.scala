@@ -1,34 +1,20 @@
 package controllers
 
-import scala.math.BigDecimal.int2bigDecimal
-import com.patson.data.AirlineSource
-import com.patson.data.AirplaneSource
-import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane._
-import com.patson.model._
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsObject
-import play.api.libs.json.JsString
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
-import play.api.libs.json.Writes
-import play.api.mvc._
-import scala.collection.mutable.ListBuffer
-import com.patson.data.CycleSource
+import com.patson.data.{AirlineSource, BankSource, CycleSource}
+import com.patson.model.{Loan, _}
+import com.patson.model.bank.LoanInterestRate
 import controllers.AuthenticationObject.AuthenticatedAirline
-import com.patson.data.CountrySource
-import com.patson.data.AirportSource
-import play.api.libs.json.Format
-import play.api.libs.json.JsResult
-import play.api.libs.json.JsSuccess
-import com.patson.data.BankSource
-import com.patson.model.Loan
-import play.api.data.Form
-import play.api.data.Forms
+import javax.inject.Inject
+import play.api.data.{Form, Forms}
+import play.api.libs.json._
+import play.api.mvc.Security.AuthenticatedRequest
+import play.api.mvc._
+
+import scala.math.BigDecimal.int2bigDecimal
 
 
 
-class BankApplication extends Controller {
+class BankApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object LoanWrites extends Writes[Loan] {
     //case class Loan(airlineId : Int, borrowedAmount : Long, interest : Long, var remainingAmount : Long, creationCycle : Int, loanTerm : Int, var id : Int = 0) extends IdObject
     def writes(loan: Loan): JsValue = JsObject(List(
@@ -44,6 +30,15 @@ class BankApplication extends Controller {
       "loanTerm" ->  JsNumber(loan.loanTerm),
       "id" -> JsNumber(loan.id)))
   }
+  implicit object LoanInterestRateWrites extends Writes[LoanInterestRate] {
+    def writes(rate: LoanInterestRate): JsValue = {
+
+      JsObject(List(
+        "rate" -> JsNumber(rate.annualRate),
+        "cycle" -> JsNumber(rate.cycle)))
+
+    }
+  }
   
   case class LoanRequest(requestedAmount: Long, requestedTerm: Int)
   val loanForm = Form(
@@ -52,9 +47,8 @@ class BankApplication extends Controller {
       "requestedTerm" -> Forms.number
     )(LoanRequest.apply)(LoanRequest.unapply)
   )
-  
-  
-  def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+
+  def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request : AuthenticatedRequest[Any, Airline] =>
     Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id)))
   }
   
@@ -119,7 +113,10 @@ class BankApplication extends Controller {
       case None => NotFound
     }
   }
-  
 
-  
+  def getLoanInterestRates() = Action {
+    val currentCycle = CycleSource.loadCycle()
+    val rates = BankSource.loadLoanInterestRatesFromCycle(currentCycle - 100).sortBy(_.cycle)
+    Ok(Json.toJson(rates))
+  }
 }

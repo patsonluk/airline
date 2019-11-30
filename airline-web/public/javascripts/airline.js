@@ -415,59 +415,6 @@ function toggleMapAnimation() {
 	refreshLinks(true)	
 }
 
-var christmasMarker = false
-function toggleChristmasMarker() {
-	if (!christmasMarker) {
-		currentAnimationStatus = true
-		christmasMarker = true
-		document.getElementById('christmasMusic').play()
-		$("body").addClass('christmas')
-	} else {
-		christmasMarker = false
-		document.getElementById('christmasMusic').pause()
-		$.each(flightMarkers, function(index, markersByLinkId) {
-			$.each(markersByLinkId.markers, function(index2, marker) {
-				marker.icon = {
-			        url: "assets/images/markers/dot.png",
-			        origin: new google.maps.Point(0, 0),
-			        anchor: new google.maps.Point(6, 6),
-			    };
-			})
-		})
-		$("body").removeClass('christmas')
-	}
-}
-
-var flightMarkerImageWeight = {
-	"assets/images/markers/dot.png" : 2000,
-	"assets/images/markers/christmas/snowflake.png" : 200,
-	"assets/images/markers/christmas/star.png" : 50,
-	"assets/images/markers/christmas/holly.png" : 20,
-	"assets/images/markers/christmas/bauble.png" : 20,
-	"assets/images/markers/christmas/candy-cane.png" : 10,
-	"assets/images/markers/christmas/gingerbread-man.png" : 10,
-	"assets/images/markers/christmas/santa-hat.png" : 2,
-}
-
-var flightMarkerWeightTotal = 0
-
-$.each(flightMarkerImageWeight, function(image, weight) {
-	flightMarkerWeightTotal += weight
-})
-
-function randomFlightMarker() {
-	var random = Math.random()
-	var acc = 0
-	var pickedImage = ""
-	$.each(flightMarkerImageWeight, function(image, weight) {
-		acc += weight / flightMarkerWeightTotal
-		if (acc >= random) {
-			pickedImage = image 
-			return false;
-		}
-	})
-	return pickedImage
-}
 
 //Use the DOM setInterval() function to change the offset of the symbol
 //at fixed intervals.
@@ -2105,7 +2052,7 @@ function showLinkComposition(linkId) {
 	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
 	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
 	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
-	    	
+
 	    	$('#linkCompositionModal').fadeIn(200)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -2119,6 +2066,192 @@ function showLinkComposition(linkId) {
 	    	$('body .loadingSpinner').hide()
 	    }
 	});
+}
+
+function showLinkRivalHistory(linkId) {
+	var url = "airlines/" + activeAirline.id + "/link-rival-history/" + linkId + "?cycleCount=30"
+
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	plotRivalHistoryChart(result.overlappingLinks, $("#rivalEconomyPriceChart"), "economy", "price", "$", activeAirline.id)
+	    	plotRivalHistoryChart(result.overlappingLinks, $("#rivalBusinessPriceChart"), "business", "price", "$", activeAirline.id)
+	    	plotRivalHistoryChart(result.overlappingLinks, $("#rivalFirstPriceChart"), "first", "price", "$", activeAirline.id)
+	    	plotRivalHistoryChart(result.overlappingLinks, $("#rivalEconomyCapacityChart"), "economy", "capacity", "", activeAirline.id)
+            plotRivalHistoryChart(result.overlappingLinks, $("#rivalBusinessCapacityChart"), "business", "capacity", "", activeAirline.id)
+            plotRivalHistoryChart(result.overlappingLinks, $("#rivalFirstCapacityChart"), "first", "capacity", "", activeAirline.id)
+
+	    	$('#linkRivalHistoryModal').fadeIn(200)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    },
+	    beforeSend: function() {
+	    	$('body .loadingSpinner').show()
+	    },
+	    complete: function(){
+	    	$('body .loadingSpinner').hide()
+	    }
+	});
+}
+
+function showLinkRivalDetails(linkId) {
+	var url = "airlines/" + activeAirline.id + "/link-rival-details/" + linkId
+
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	        updateRivalTables(result)
+
+	    	$('#linkRivalDetailsModal').fadeIn(200)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    },
+	    beforeSend: function() {
+	    	$('body .loadingSpinner').show()
+	    },
+	    complete: function(){
+	    	$('body .loadingSpinner').hide()
+	    }
+	});
+}
+
+function updateRivalTables(result) {
+    var loyaltyAwarenessTable = $("#rivalLoyaltyAwarenessTable")
+    var networkCapacityTable = $("#networkCapacity")
+    loyaltyAwarenessTable.children(".table-row").remove()
+    networkCapacityTable.children(".table-row").remove()
+	var fromAirportText = getAirportText(result.fromCity, result.fromAirportName)
+    var toAirportText = getAirportText(result.toCity, result.toAirportName)
+    $("#linkRivalDetailsModal .fromAirportText").text(fromAirportText)
+    $("#linkRivalDetailsModal .toAirportText").text(toAirportText)
+
+
+	var airlineNameById = {}
+	var fromAirportLoyalty = {}
+	var toAirportLoyalty = {}
+	var fromAirportAwareness = {}
+    var toAirportAwareness = {}
+    var fromAirportCapacity = {}
+    var toAirportCapacity = {}
+
+
+
+    $.each(result.fromAirport, function(index, entry) {
+	     var airlineId = entry.airline.id
+	     airlineNameById[airlineId] = entry.airline.name
+	     fromAirportAwareness[airlineId] = entry.awareness
+	     fromAirportLoyalty[airlineId] = entry.loyalty
+	     fromAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
+     })
+
+    $.each(result.toAirport, function(index, entry) {
+         var airlineId = entry.airline.id
+         toAirportAwareness[airlineId] = entry.awareness
+         toAirportLoyalty[airlineId] = entry.loyalty
+         toAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
+    })
+
+
+    var fullHeartSource = "assets/images/icons/heart.png"
+    var halfHeartSource = "assets/images/icons/heart-half.png"
+    var fullStarSource = "assets/images/icons/star.png"
+    var halfStarSource = "assets/images/icons/star-half.png"
+    var greenManSource = "assets/images/icons/man-green.png"
+    var blueManSource = "assets/images/icons/man-blue.png"
+    var yellowManSource = "assets/images/icons/man-yellow.png"
+    $.each(airlineNameById, function(airlineId, airlineName) {
+     	var row = $("<div class='table-row'></div>")
+		row.append("<div class='cell' align='left'>" + getAirlineLogoImg(airlineId) + airlineName + "</div>")
+		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, fromAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, fromAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, toAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, toAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+		loyaltyAwarenessTable.append(row)
+
+		row = $("<div class='table-row'></div>")
+
+		row.append("<div class='cell' align='left'>" + getAirlineLogoImg(airlineId) + airlineName + "</div>")
+        getCapacityImageBar(greenManSource, fromAirportCapacity[airlineId].economy, "economy").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+        getCapacityImageBar(blueManSource, fromAirportCapacity[airlineId].business, "business").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+        getCapacityImageBar(yellowManSource, fromAirportCapacity[airlineId].first, "first").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+        getCapacityImageBar(greenManSource, toAirportCapacity[airlineId].economy, "economy").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+        getCapacityImageBar(blueManSource, toAirportCapacity[airlineId].business, "business").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+        getCapacityImageBar(yellowManSource, toAirportCapacity[airlineId].first, "first").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+
+        networkCapacityTable.append(row)
+	});
+
+}
+
+function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStepAmount, value) {
+    var containerDiv = $("<div>")
+	containerDiv.prop("title", value)
+
+    var halfSteps = Math.floor(value / halfStepAmount)
+    var fullSteps = Math.floor(halfSteps / 2)
+    var hasRemainder = halfSteps % 2;
+    for (i = 0 ; i < fullSteps ; i ++) {
+		var image = $("<img src='" + fullStepImageSrc + "'>")
+		containerDiv.append(image)
+    }
+    if (hasRemainder) {
+        var image = $("<img src='" + halfStepImageSrc + "'>")
+    	containerDiv.append(image)
+    }
+
+    return containerDiv
+}
+
+function getCapacityImageBar(imageSrc, value, linkClass) {
+    var containerDiv = $("<div>")
+	containerDiv.prop("title", value)
+
+    if (linkClass == "business") {
+        value *= 5
+    } else if (linkClass == "first") {
+        value *= 20
+    }
+    var count;
+    if (value >= 200000) {
+        count = 10
+    } else if (value >= 100000) {
+        count = 9
+    } else if (value >= 50000) {
+        count = 8
+    } else if (value >= 30000) {
+        count = 7
+    } else if (value >= 20000) {
+        count = 6
+    } else if (value >= 10000) {
+        count = 5
+    } else if (value >= 8000) {
+        count = 4
+    } else if (value >= 5000) {
+        count = 3
+    } else if (value >= 2000) {
+        count = 2
+    } else if (value > 0) {
+        count = 1
+    } else {
+        count = 0
+    }
+
+    for (i = 0 ; i < count ; i ++) {
+		var image = $("<img src='" + imageSrc + "'>")
+		containerDiv.append(image)
+    }
+
+    return containerDiv
 }
 
 function updateTopCountryComposition(countryComposition) {

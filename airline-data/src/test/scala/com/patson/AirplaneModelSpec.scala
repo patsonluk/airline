@@ -1,18 +1,9 @@
 package com.patson
 
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
-import akka.actor.ActorSystem
-import akka.testkit.ImplicitSender
-import akka.testkit.TestKit
 import com.patson.model._
-import scala.collection.mutable.Set
-import scala.collection.mutable.ListBuffer
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import com.patson.model.airplane.Model.Type._
 import com.patson.model.airplane._
-import Model.Type._
+import org.scalatest.{Matchers, WordSpecLike}
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
   private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.25, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1)
@@ -57,12 +48,12 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
     val airline = Airline.fromId(1)
     airline.setMaintainenceQuality(Airline.MAX_MAINTENANCE_QUALITY)
     
-    val link = Link(fromAirport, toAirport, airline, price = price, distance = distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(flightType, ECONOMY), duration, frequency, flightType)
+    val link = Link(fromAirport, toAirport, airline, price = price, distance = distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(flightType, ECONOMY), duration, frequency, flightType)
     val airplane = Airplane(airplaneModel, airline, constructedCycle = 0 , Airplane.MAX_CONDITION, depreciationRate = 0, value = airplaneModel.price)
     
     val updatedAirplane = AirplaneSimulation.decayAirplanesByAirline(List((airplane, Some(link))), airline)(0)
     link.setAssignedAirplanes(List(updatedAirplane))
-    link.addSoldSeats(LinkClassValues(Map(ECONOMY -> (capacity * loadFactor).toInt)))
+    link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity * loadFactor).toInt)))
     
     LinkSimulation.computeLinkConsumptionDetail(link, 0)
     

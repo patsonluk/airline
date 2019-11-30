@@ -1,14 +1,13 @@
 package controllers
 
+import java.util.Calendar
+
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Map
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.int2bigDecimal
 import com.patson.Util
-import com.patson.data.AirlineSource
-import com.patson.data.AirplaneSource
-import com.patson.data.AirportSource
-import com.patson.data.LinkSource
+import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, ConsumptionHistorySource, CountrySource, CycleSource, LinkSource}
 import com.patson.model._
 import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
@@ -19,7 +18,6 @@ import play.api.libs.json._
 import play.api.libs.json.JsBoolean
 import play.api.libs.json.JsNumber
 import play.api.libs.json.JsObject
-import play.api.libs.json.JsObject
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.mvc._
@@ -27,20 +25,19 @@ import com.patson.data.airplane.ModelSource
 import play.api.mvc.Security.AuthenticatedRequest
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.DemandGenerator
-import com.patson.data.ConsumptionHistorySource
-import com.patson.data.CountrySource
-import scala.collection.SortedMap
+
+import scala.collection.{SortedMap, immutable}
 import scala.collection.immutable.ListMap
-import com.patson.data.CycleSource
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 import com.patson.model.LinkConsumptionHistory
 import com.patson.model.FlightPreferenceType
+import javax.inject.Inject
 import scala.collection.mutable.LinkedHashSet
 import models.AirplaneWithReadyStatus
 
-class LinkApplication extends Controller {
+class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -102,7 +99,29 @@ class LinkApplication extends Controller {
       
     }
   }
-  
+
+  implicit object RelatedLinkWrites extends Writes[RelatedLink] {
+    def writes(relatedLink : RelatedLink): JsValue = {
+      JsObject(List(
+        "linkId" -> JsNumber(relatedLink.relatedLinkId),
+        "fromAirportId" -> JsNumber(relatedLink.fromAirport.id),
+        "fromAirportCode" -> JsString(relatedLink.fromAirport.iata),
+        "fromAirportName" -> JsString(relatedLink.fromAirport.name),
+        "toAirportId" -> JsNumber(relatedLink.toAirport.id),
+        "toAirportCode" -> JsString(relatedLink.toAirport.iata),
+        "toAirportName" -> JsString(relatedLink.toAirport.name),
+        "fromAirportCity" -> JsString(relatedLink.fromAirport.city),
+        "toAirportCity" -> JsString(relatedLink.toAirport.city),
+        "fromLatitude" -> JsNumber(relatedLink.fromAirport.latitude),
+        "fromLongitude" -> JsNumber(relatedLink.fromAirport.longitude),
+        "toLatitude" -> JsNumber(relatedLink.toAirport.latitude),
+        "toLongitude" -> JsNumber(relatedLink.toAirport.longitude),
+        "airlineId" -> JsNumber(relatedLink.airline.id),
+        "airlineName" -> JsString(relatedLink.airline.name),
+        "passenger" -> JsNumber(relatedLink.passengers)))
+    }
+  }
+
   implicit object LinkHistoryWrites extends Writes[LinkHistory] {
     def writes(linkHistory: LinkHistory): JsValue = {
           JsObject(List(
@@ -111,33 +130,11 @@ class LinkApplication extends Controller {
       "invertedRelatedLinks" -> Json.toJson(linkHistory.invertedRelatedLinks)))
     }
   }
-  
-  implicit object RelatedLinkWrites extends Writes[RelatedLink] {
-    def writes(relatedLink : RelatedLink): JsValue = {
-          JsObject(List(
-      "linkId" -> JsNumber(relatedLink.relatedLinkId),
-      "fromAirportId" -> JsNumber(relatedLink.fromAirport.id),
-      "fromAirportCode" -> JsString(relatedLink.fromAirport.iata),
-      "fromAirportName" -> JsString(relatedLink.fromAirport.name),
-      "toAirportId" -> JsNumber(relatedLink.toAirport.id),
-      "toAirportCode" -> JsString(relatedLink.toAirport.iata),
-      "toAirportName" -> JsString(relatedLink.toAirport.name),
-      "fromAirportCity" -> JsString(relatedLink.fromAirport.city),
-      "toAirportCity" -> JsString(relatedLink.toAirport.city),
-      "fromLatitude" -> JsNumber(relatedLink.fromAirport.latitude),
-      "fromLongitude" -> JsNumber(relatedLink.fromAirport.longitude),
-      "toLatitude" -> JsNumber(relatedLink.toAirport.latitude),
-      "toLongitude" -> JsNumber(relatedLink.toAirport.longitude),
-      "airlineId" -> JsNumber(relatedLink.airline.id),
-      "airlineName" -> JsString(relatedLink.airline.name),
-      "passenger" -> JsNumber(relatedLink.passengers)))
-    }
-  }
-  
+
   implicit object ModelPlanLinkInfoWrites extends Writes[ModelPlanLinkInfo] {
     def writes(modelPlanLinkInfo : ModelPlanLinkInfo): JsValue = {
-      JsObject(List(
-      "modelId" -> JsNumber(modelPlanLinkInfo.model.id), 
+      val jsObject = JsObject(List(
+      "modelId" -> JsNumber(modelPlanLinkInfo.model.id),
       "modelName" -> JsString(modelPlanLinkInfo.model.name),
       "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION),
@@ -148,33 +145,29 @@ class LinkApplication extends Controller {
       "isAssigned" -> JsBoolean(modelPlanLinkInfo.isAssigned)))
     }
   }
-  
+
   implicit object LinkAirplaneCompositionWrites extends Writes[LinkAirplaneComposition] {
     def writes(composition : LinkAirplaneComposition): JsValue = {
       JsObject(List(
-      "existingAssignedAirplanes" -> Json.toJson(composition.existingAssignedAirplanes.map(airplane => AirplaneWithReadyStatus(airplane, airplane.isReady(composition.currentCycle)))), 
+      "existingAssignedAirplanes" -> Json.toJson(composition.existingAssignedAirplanes.map(airplane => AirplaneWithReadyStatus(airplane, airplane.isReady(composition.currentCycle)))),
       "newAssignedAirplanes" -> Json.toJson(composition.newAssignedAirplanes.map(airplane => AirplaneWithReadyStatus(airplane, airplane.isReady(composition.currentCycle)))),
       "purchasingAirplanes" -> JsNumber(composition.purchasingAirplanes),
       "model" -> Json.toJson(composition.model)))
-      
+
     }
   }
   
-  implicit object LinkWithProfitWrites extends Writes[(Link, Int, Int, LinkClassValues)] {
-    def writes(linkWithProfit: (Link, Int, Int, LinkClassValues)): JsValue = { 
-      val link = linkWithProfit._1
-      val profit = linkWithProfit._2
-      val revenue = linkWithProfit._3
-      val passengers = linkWithProfit._4;
-      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue)) + ("passengers" -> Json.toJson(passengers))
+  implicit object LinkExtendedInfoWrites extends Writes[LinkExtendedInfo] {
+    def writes(entry: LinkExtendedInfo): JsValue = {
+      val link = entry.link
+      val profit = entry.profit
+      val revenue = entry.revenue
+      val passengers = entry.soldSeats
+      val lastUpdate = entry.lastUpdate
+      Json.toJson(link).asInstanceOf[JsObject] + ("profit" -> JsNumber(profit)) + ("revenue" -> JsNumber(revenue)) + ("passengers" -> Json.toJson(passengers)) + ("lastUpdate" -> JsNumber(lastUpdate.getTimeInMillis))
     }
   }
-  
-  implicit object RouteWrites extends Writes[Route] {
-    def writes(route : Route): JsValue = { 
-      Json.toJson(route.links)
-    }
-  }
+
   implicit object LinkWithDirectionWrites extends Writes[LinkConsideration] {
     def writes(linkWithDirection : LinkConsideration): JsValue = {
       JsObject(List(
@@ -193,7 +186,14 @@ class LinkApplication extends Controller {
         "toLongitude" -> JsNumber(linkWithDirection.to.longitude)))
     }
   }
-  
+
+  implicit object RouteWrites extends Writes[Route] {
+    def writes(route : Route): JsValue = {
+      Json.toJson(route.links)
+    }
+  }
+
+
   implicit object UpdateLinkReads extends Reads[UpdateLinkData] {
     def reads(json: JsValue): JsResult[UpdateLinkData] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -203,23 +203,23 @@ class LinkApplication extends Controller {
       val price = LinkClassValues.getInstance(json.\("price").\("economy").as[Int], json.\("price").\("business").as[Int], json.\("price").\("first").as[Int])
       val frequency = json.\("frequency").as[Int]
       val modelId = json.\("model").as[Int]
-      
+
       val capacity = LinkClassValues.getInstance(frequency * json.\("configuration").\("economy").as[Int],
                                               frequency * json.\("configuration").\("business").as[Int],
                                               frequency * json.\("configuration").\("first").as[Int])
-                                
+
       var rawQuality =  json.\("rawQuality").as[Int]
       if (rawQuality > Link.MAX_QUALITY) {
         rawQuality = Link.MAX_QUALITY
       } else if (rawQuality < 0) {
         rawQuality = 0
       }
-         
+
       //airlineId : Int, fromAirportId : Int, toAirportId : Int, modelId: Int, frequency : Int, capacity : LinkClassValues, price : LinkClassValues
       JsSuccess(UpdateLinkData(airlineId, fromAirportId, toAirportId, modelId, frequency, rawQuality, capacity, price))
     }
   }
-  
+
   case class PlanLinkData(fromAirportId: Int, toAirportId: Int)
   val planLinkForm = Form(
     mapping(
@@ -244,9 +244,9 @@ class LinkApplication extends Controller {
       BadRequest("Cannot insert link")
     }
   }
-  
+
   case class UpdateLinkData(airlineId : Int, fromAirportId : Int, toAirportId : Int, modelId: Int, frequency : Int, rawQuality : Int, capacity : LinkClassValues, price : LinkClassValues)
-  
+
   def addLinkBlock(request : AuthenticatedRequest[AnyContent, Airline]) : Result = {
     if (request.body.isInstanceOf[AnyContentAsJson]) {
       val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[UpdateLinkData]
@@ -257,7 +257,7 @@ class LinkApplication extends Controller {
         return Forbidden
       }
       val airline = request.user
-      
+
 //      if (incomingLink.getAssignedAirplanes.isEmpty) {
 //        return BadRequest("Cannot insert link - no airplane assigned")
 //      }
@@ -267,15 +267,15 @@ class LinkApplication extends Controller {
 //      if (existingLink.isDefined) {
 //        incomingLink.id = existingLink.get.id
 //      }
-      
+
       val fromAirport = AirportSource.loadAirportById(incomingLink.fromAirportId, true).getOrElse(return BadRequest("From airport not found"))
       val toAirport = AirportSource.loadAirportById(incomingLink.toAirportId, true).getOrElse(return BadRequest("To airport not found"))
       
       val distance = Computation.calculateDistance(fromAirport, toAirport)
-      
+
       //validate frequency by duration
       val model = ModelSource.loadModelById(incomingLink.modelId).getOrElse(return BadRequest("Model not found"))
-      
+
       
       val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
       if (incomingLink.frequency > maxFrequencyAbsolute) {
@@ -298,10 +298,10 @@ class LinkApplication extends Controller {
         return BadRequest("Cannot insert link - airport size does not allow that!")
       }
       
-      
+
       val currentCycle = CycleSource.loadCycle()
       
-      
+
       
       //validate configuration is valid
       if ((incomingLink.capacity(ECONOMY) * ECONOMY.spaceMultiplier + 
@@ -328,29 +328,29 @@ class LinkApplication extends Controller {
       }
       
       val flightNumber = existingLinkOption match {
-        case Some(link) => link.flightNumber 
+        case Some(link) => link.flightNumber
         case None =>  LinkApplication.getNextAvailableFlightNumber(request.user)
       }
-      
+
       val airplaneComposition = getLinkAirplaneComposition(airline, distance, existingLinkOption, model, incomingLink.frequency)
       val updatingAirplanes = ListBuffer[Airplane]()
       updatingAirplanes ++= airplaneComposition.existingAssignedAirplanes
       updatingAirplanes ++= airplaneComposition.newAssignedAirplanes
-      
-      
+
+
       if (airplaneComposition.purchasingAirplanes > 0) { //need to purchase airlines first
         AirplaneUtil.buyNewAirplanes(airline, model, airplaneComposition.purchasingAirplanes) match {
           case Left(rejection) => return BadRequest(rejection)
           case Right(newAirplanes) => updatingAirplanes ++= newAirplanes
         }
       }
-      
-      
+
+
       val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
       //validate balance
-      
+
       val negotiationInfo = LinkApplication.getLinkNegotationInfo(airline, existingLinkOption, fromAirport, toAirport, incomingLink.capacity, incomingLink.frequency)
-      val negotiationResultOption = 
+      val negotiationResultOption =
         if (negotiationInfo.requiredPoints > 0) { //then negotiation is required
           Some(NegotiationUtil.negotiate(negotiationInfo))
         } else {
@@ -358,28 +358,28 @@ class LinkApplication extends Controller {
         }
       
       println("PUT " + incomingLink)
-      
-      
+
+
       if (negotiationResultOption.isDefined && !negotiationResultOption.get.isSuccessful) {
         return Ok(Json.obj("negotiationResult" -> negotiationResultOption.get))
       }
-        
+
       val updatingLink : Link = existingLinkOption match {
-        case Some(existingLink) => 
+        case Some(existingLink) =>
           existingLink.copy(frequency = incomingLink.frequency, price = incomingLink.price, capacity = incomingLink.capacity, rawQuality = incomingLink.rawQuality)
-        case None => 
+        case None =>
           val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
           val duration = Computation.calculateDuration(model, distance)
           Link(fromAirport, toAirport, airline, price = incomingLink.price, distance = distance, capacity = incomingLink.capacity, rawQuality = incomingLink.rawQuality, duration = duration, frequency = incomingLink.frequency, flightType = flightType, flightNumber = flightNumber)
       }
-      
+
       updatingLink.setAssignedAirplanes(updatingAirplanes.toList)
       if (existingLinkOption.isEmpty) {
         LinkSource.saveLink(updatingLink) match {
           case Some(link) =>  {
             AirlineSource.adjustAirlineBalance(request.user.id, cost * -1)
             AirlineSource.saveCashFlowItem(AirlineCashFlowItem(request.user.id, CashFlowType.CREATE_LINK, cost * -1))
-            
+
             if (toAirport.getAirlineAwareness(airlineId) < 5) { //update to 5 for link creation
                toAirport.setAirlineAwareness(airlineId, 5)
                AirportSource.updateAirlineAppeal(List(toAirport))
@@ -388,19 +388,19 @@ class LinkApplication extends Controller {
             negotiationResultOption.foreach { negotiationResult =>
               result = result + ("negotiationResult" -> Json.toJson(negotiationResult))
             }
-            
+
             Created(result)
           }
           case None => UnprocessableEntity("Cannot insert link")
         }
       } else {
         LinkSource.updateLink(updatingLink) match {
-          case 1 => 
+          case 1 =>
             var result : JsObject = Json.toJson(updatingLink).asInstanceOf[JsObject]
             negotiationResultOption.foreach { negotiationResult =>
               result = result + ("negotiationResult" -> Json.toJson(negotiationResult))
             }
-            Accepted(result)      
+            Accepted(result)
           case _ => UnprocessableEntity("Cannot update link")
         }
       }
@@ -462,11 +462,14 @@ class LinkApplication extends Controller {
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
       )
     } else {
-      val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
+      val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(immutable.Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
         foldMap + (linkConsumptionDetails.link.id -> linkConsumptionDetails)
       }
-      val linksWithProfit = links.map { link =>  
-        (link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats))  
+      val lastUpdates : scala.collection.immutable.Map[Int, Calendar] = LinkSource.loadLinkLastUpdates(links.map(_.id))
+
+      val linksWithProfit: Seq[LinkExtendedInfo] = links.map { link =>
+        //(link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats))
+        LinkExtendedInfo(link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats), lastUpdates(link.id))
       }
       Ok(Json.toJson(linksWithProfit)).withHeaders(
         ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
@@ -474,7 +477,9 @@ class LinkApplication extends Controller {
     }
      
   }
-  
+
+  case class LinkExtendedInfo(link : Link, profit : Int, revenue : Int, soldSeats : LinkClassValues, lastUpdate : Calendar)
+
   def deleteAllLinks() = Action {
     val count = LinkSource.deleteAllLinks()
     Ok(Json.obj("count" -> count))
@@ -504,7 +509,7 @@ class LinkApplication extends Controller {
     }
   }
   
-  def getLinkConsumption(airlineId : Int, linkId : Int, cycleCount : Int) = Action {
+  def getLinkConsumption(airlineId : Int, linkId : Int, cycleCount : Int) = AuthenticatedAirline(airlineId) { request =>
     LinkSource.loadLinkById(linkId) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
@@ -539,38 +544,38 @@ class LinkApplication extends Controller {
               val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
               val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
               val linkAirplaneComposition = getLinkAirplaneComposition(airline, distance, existingLinkOption, model, frequency)
-              
-              var result = Json.obj("airplaneComposition" -> 
-                                    (Json.toJson(linkAirplaneComposition).asInstanceOf[JsObject] + 
-                                    ("economySpaceMultiplier" -> JsNumber(ECONOMY.spaceMultiplier)) + 
+
+              var result = Json.obj("airplaneComposition" ->
+                                    (Json.toJson(linkAirplaneComposition).asInstanceOf[JsObject] +
+                                    ("economySpaceMultiplier" -> JsNumber(ECONOMY.spaceMultiplier)) +
                                     ("businessSpaceMultiplier" -> JsNumber(BUSINESS.spaceMultiplier)) +
-                                    ("firstSpaceMultiplier" -> JsNumber(FIRST.spaceMultiplier)))) 
-              
-              existingLinkOption match  { 
-                case Some(link) => 
+                                    ("firstSpaceMultiplier" -> JsNumber(FIRST.spaceMultiplier))))
+
+              existingLinkOption match  {
+                case Some(link) =>
                   //result = result + ("existingLink" -> Json.toJson(link))
                    //if it already has X airplanes, allow X + 1
-                  result = result + ("possibleAirplanes" -> JsNumber(link.getAssignedAirplanes().length + 1))    
+                  result = result + ("possibleAirplanes" -> JsNumber(link.getAssignedAirplanes().length + 1))
                 case None =>
                   result = result + ("possibleAirplanes" -> JsNumber(1))
               }
-              
-              Ok(result)  
+
+              Ok(result)
             case None => BadRequest("unknown Airplane Model")
           }
       case None => BadRequest("unknown Airport")
     }
   }
-  
+
   def previewLinkNegotiation(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
     val airline = request.user
-    
+
     val fromAirportId = request.body.asInstanceOf[AnyContentAsJson].json.\("fromAirportId").as[Int]
     val toAirportId = request.body.asInstanceOf[AnyContentAsJson].json.\("toAirportId").as[Int]
     val frequency = request.body.asInstanceOf[AnyContentAsJson].json.\("frequency").as[Int]
     val configuration = request.body.asInstanceOf[AnyContentAsJson].json.\("configuration").as[LinkClassValues]
     val airplaneModelId = request.body.asInstanceOf[AnyContentAsJson].json.\("airplaneModelId").as[Int]
-    
+
     loadAirports(fromAirportId, toAirportId) match {
       case Some((fromAirport, toAirport)) =>
           ModelSource.loadModelById(airplaneModelId) match {
@@ -578,18 +583,18 @@ class LinkApplication extends Controller {
               val capacity = configuration * frequency
               val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
               val negotiationInfo = LinkApplication.getLinkNegotationInfo(airline, existingLinkOption, fromAirport, toAirport, capacity, frequency)
-              
-              Ok(Json.toJson(negotiationInfo))  
+
+              Ok(Json.toJson(negotiationInfo))
             case None => BadRequest("unknown Airplane Model")
           }
       case None => BadRequest("unknown Airport")
     }
-    
+
   }
-  
-  
-  
-  
+
+
+
+
   private[this] def getLinkAirplaneComposition(airline : Airline, distance : Int, existingLinkOption : Option[Link], model : Model, newFrequency : Int) : LinkAirplaneComposition = {
     val maxFrequencyPerAirplane = Computation.calculateMaxFrequencyDouble(model, distance)
     val airplanesRequired = Math.ceil(newFrequency / maxFrequencyPerAirplane).toInt
@@ -597,38 +602,38 @@ class LinkApplication extends Controller {
 //                case Some(existingLink) => existingLink.getAssignedAirplanes().length
 //                case None => 0
 //              }
-    
+
 
     val currentCycle = CycleSource.loadCycle()
     val airplanesWithAssignedLinks : List[(Airplane, Option[Link])] = AirplaneSource.loadAirplanesWithAssignedLinkByCriteria(List(("owner", airline.id), ("model", model.id)))
     val availableAirplanes = airplanesWithAssignedLinks.filter {
-      case (airplane, assignedLinkOption) => assignedLinkOption.isEmpty 
+      case (airplane, assignedLinkOption) => assignedLinkOption.isEmpty
     }.map(_._1) //ok if some airplanes is not ready yet
-    
-    
+
+
     var existingAssignedAirplanes = airplanesWithAssignedLinks.filter {
-      case (airplane, assignedLinkOption) => existingLinkOption.isDefined && assignedLinkOption.isDefined && existingLinkOption.get.id == assignedLinkOption.get.id 
+      case (airplane, assignedLinkOption) => existingLinkOption.isDefined && assignedLinkOption.isDefined && existingLinkOption.get.id == assignedLinkOption.get.id
     }.map(_._1).sortBy(_.condition).sortBy(_.isReady(currentCycle)).reverse
-    
-    
+
+
     var shortCount = airplanesRequired - existingAssignedAirplanes.length
     val newAssignedReadyAirplanes = ListBuffer[Airplane]()
     val newAssignedBuildingAirplanes = ListBuffer[Airplane]()
-    
-    
+
+
     if (shortCount < 0) { //have excessive airplanse
       existingAssignedAirplanes = existingAssignedAirplanes.take(airplanesRequired)
     }
-    
+
     if (shortCount > 0) { //need more airplanes
       //check available ones first
       val readyAirplanes = availableAirplanes.filter(_.isReady(currentCycle)).sortBy(_.condition)
       if (readyAirplanes.length >= shortCount) {
         newAssignedReadyAirplanes ++= readyAirplanes.takeRight(shortCount)
       } else {
-        newAssignedReadyAirplanes ++= readyAirplanes                  
+        newAssignedReadyAirplanes ++= readyAirplanes
       }
-      
+
       shortCount -= newAssignedReadyAirplanes.length
     }
     if (shortCount > 0) { //still need more
@@ -637,17 +642,17 @@ class LinkApplication extends Controller {
       if (buildingAirplanes.length >= shortCount) {
         newAssignedBuildingAirplanes ++= buildingAirplanes.takeRight(shortCount)
       } else {
-        newAssignedBuildingAirplanes ++= buildingAirplanes                  
-      } 
-      
+        newAssignedBuildingAirplanes ++= buildingAirplanes
+      }
+
       shortCount -= newAssignedBuildingAirplanes.length
     }
     val purchasingAirplanes = shortCount
-    
+
     LinkAirplaneComposition(model, existingAssignedAirplanes, newAssignedReadyAirplanes.toList ++ newAssignedBuildingAirplanes.toList, purchasingAirplanes, currentCycle)
   }
-  
-    
+
+
   /**
    * Loads a pair of aiports, only return Some(fromAirport, toAirport) if BOTH airports are found
    */
@@ -679,14 +684,14 @@ class LinkApplication extends Controller {
             val airlineCountryCode = request.user.getCountryCode().get
             val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLinkOption.isEmpty)
               
+
             
-            
-            val assignedModel = existingLinkOption.flatMap(_.getAssignedModel()) 
+            val assignedModel = existingLinkOption.flatMap(_.getAssignedModel())
             val airlineCountryRelationships = CountrySource.getCountryRelationshipsByAirline(request.user)
             val availableModels = ModelSource.loadModelsWithinRange(distance).filter { model =>
               fromAirport.allowsModel(model) && toAirport.allowsModel(model) && model.purchasable(airlineCountryRelationships.getOrElse(model.countryCode, 0))
             }
-                      
+
             val planLinkInfoByModel = ListBuffer[ModelPlanLinkInfo]()
             
             availableModels.foreach { model =>
@@ -741,7 +746,7 @@ class LinkApplication extends Controller {
                                         "mutualRelationship" -> relationship,
                                         "distance" -> distance, 
                                         "suggestedPrice" -> suggestedPrice,
-//                                        "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
+//                                        "maxFrequencyFromAirport" -> maxFrequencyFromAirport,
 //                                        "maxFrequencyToAirport" -> maxFrequencyToAirport,
                                         "maxFrequencyAbsolute" -> maxFrequencyAbsolute,
                                         "directDemand" -> directDemand,
@@ -759,17 +764,17 @@ class LinkApplication extends Controller {
             if (existingLinkOption.isDefined) {
               val currentCycle = CycleSource.loadCycle
               val sortedAssignedAirplanes = existingLinkOption.get.getAssignedAirplanes.sortBy(_.condition).sortBy(_.isReady(currentCycle)).reverse
-              val airplaneCompositionJson = 
+              val airplaneCompositionJson =
                 Json.toJson(LinkAirplaneComposition(assignedModel.get, existingAssignedAirplanes = sortedAssignedAirplanes, newAssignedAirplanes = List.empty, purchasingAirplanes = 0, currentCycle = currentCycle)).asInstanceOf[JsObject] +
-                ("economySpaceMultiplier" -> JsNumber(ECONOMY.spaceMultiplier)) + 
+                ("economySpaceMultiplier" -> JsNumber(ECONOMY.spaceMultiplier)) +
                 ("businessSpaceMultiplier" -> JsNumber(BUSINESS.spaceMultiplier)) +
-                ("firstSpaceMultiplier" -> JsNumber(FIRST.spaceMultiplier)) 
-                
-                
-              val existingLinkJson = Json.toJson(existingLinkOption.get).asInstanceOf[JsObject] + ("airplaneComposition" -> airplaneCompositionJson) 
-              
-                
-              
+                ("firstSpaceMultiplier" -> JsNumber(FIRST.spaceMultiplier))
+
+
+              val existingLinkJson = Json.toJson(existingLinkOption.get).asInstanceOf[JsObject] + ("airplaneComposition" -> airplaneCompositionJson)
+
+
+
               resultObject = resultObject + ("existingLink", existingLinkJson)
               val deleteRejection = getDeleteLinkRejection(existingLinkOption.get, request.user)
               if (deleteRejection.isDefined) {
@@ -825,7 +830,7 @@ class LinkApplication extends Controller {
       
       
       //check airline grade limit
-      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).mapValues(_.size)
+      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).view.mapValues(_.size).toMap
       val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
       airline.getLinkLimit(flightCategory).foreach { limit =>//if there's limit
         if (limit <= existingFlightCategoryCounts.getOrElse(flightCategory, 0)) {
@@ -924,11 +929,9 @@ class LinkApplication extends Controller {
   
   def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) {
     val consumptionEntries : List[LinkConsumptionHistory]= ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
-    val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).mapValues(entries => entries.map(_.passengerCount).sum)
-    val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).mapValues(entries => entries.map(_.passengerCount).sum)
-    val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).mapValues(entries => entries.map(_.passengerCount).sum)
-    
-    
+    val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).view.mapValues(entries => entries.map(_.passengerCount).sum)
     
     var countryJson = Json.arr()
     consumptionByCountry.foreach {
@@ -947,10 +950,80 @@ class LinkApplication extends Controller {
     consumptionByPreferenceType.foreach {
       case(preferenceType, passengerCount) => preferenceTypeJson = preferenceTypeJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "passengerCount" -> passengerCount)) 
     }
-    
+
     Ok(Json.obj("country" -> countryJson, "passengerType" -> passengerTypeJson, "preferenceType" -> preferenceTypeJson))
   }
-  
+
+  def getLinkRivalHistory(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
+    var result = Json.obj()
+    //get competitor history
+    LinkSource.loadLinkById(linkId).foreach { link =>
+      //find all link with same from and to
+      val overlappingLinks = LinkSource.loadLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadLinksByAirports(link.to.id, link.from.id)
+      val rivals = scala.collection.mutable.HashSet[Airline]()
+
+      var overlappingLinksJson = Json.arr()
+      overlappingLinks.filter(_.capacity.total > 0).foreach { overlappingLink => //only work on links that have capacity
+        overlappingLinksJson = overlappingLinksJson.append(Json.toJson(LinkSource.loadLinkConsumptionsByLinkId(overlappingLink.id, cycleCount))(Writes.traversableWrites(MinimumLinkConsumptionWrite)))
+        rivals += overlappingLink.airline
+      }
+
+      result = result + ("overlappingLinks" -> overlappingLinksJson)
+    }
+
+    Ok(result)
+  }
+
+  def getLinkRivalDetails(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
+    var result = Json.obj()
+    //get competitor history
+    LinkSource.loadLinkById(linkId).foreach { link =>
+      //find all link with same from and to
+      val overlappingLinks = LinkSource.loadLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadLinksByAirports(link.to.id, link.from.id)
+      val rivals = scala.collection.mutable.HashSet[Airline]()
+
+      overlappingLinks.filter(_.capacity.total > 0).foreach { overlappingLink => //only work on links that have capacity
+        rivals += overlappingLink.airline
+      }
+
+      val fromAirportLinks = LinkSource.loadLinksByFromAirport(link.from.id) ++ LinkSource.loadLinksByToAirport(link.from.id)
+      val toAirportLinks =  LinkSource.loadLinksByFromAirport(link.to.id) ++ LinkSource.loadLinksByToAirport(link.to.id)
+
+      val fromAirport = AirportSource.loadAirportById(link.from.id, fullLoad = true).get
+      val toAirport = AirportSource.loadAirportById(link.to.id, fullLoad = true).get
+
+      //check the network capacity of rival (including self here)
+      var fromAirportInfo = Json.arr()
+      var toAirportInfo = Json.arr()
+      rivals.foreach { rival => //check alliance
+        val networkAirlineIds : List[Int] =
+          (AllianceSource.loadAllianceMemberByAirline(rival) match {
+            case Some(allianceMember) => AllianceSource.loadAllianceById(allianceMember.allianceId).get.members.map(_.airline)
+            case None => List(rival)
+          }).map(_.id)
+
+        //now check network capacity on the from Airport
+        val fromAirportAllianceLinks = fromAirportLinks.filter(fromAirportLink => networkAirlineIds.contains(fromAirportLink.airline.id) && fromAirportLink.id != link.id)
+        val toAirportAllianceLinks = toAirportLinks.filter(toAirportLink => networkAirlineIds.contains(toAirportLink.airline.id) && toAirportLink.id != link.id)
+
+        val fromAirportAllianceNetworkCapacity = fromAirportAllianceLinks.foldLeft(LinkClassValues.getInstance()) { (container, link) =>
+          container + link.capacity
+        }
+        val toAirportAllianceNetworkCapacity = toAirportAllianceLinks.foldLeft(LinkClassValues.getInstance()) { (container, link) =>
+          container + link.capacity
+        }
+
+        fromAirportInfo = fromAirportInfo.append(Json.obj("airline" -> rival, "network" -> fromAirportAllianceNetworkCapacity, "awareness" -> fromAirport.getAirlineAwareness(rival.id), "loyalty" -> fromAirport.getAirlineLoyalty(rival.id)))
+        toAirportInfo = toAirportInfo.append(Json.obj("airline" -> rival, "network" -> toAirportAllianceNetworkCapacity, "awareness" -> toAirport.getAirlineAwareness(rival.id), "loyalty" -> toAirport.getAirlineLoyalty(rival.id)))
+      }
+
+      result = result ++ Json.obj("fromAirport" -> fromAirportInfo, "fromAirportName" -> fromAirport.name, "fromCity" -> fromAirport.city)
+      result = result ++ Json.obj("toAirport" -> toAirportInfo, "toAirportName" -> toAirport.name, "toCity" -> toAirport.city)
+    }
+
+    Ok(result)
+  }
+
   val getPassengerTypeTitle = (passengerType : PassengerType.Value) =>  passengerType match {
     case PassengerType.BUSINESS => "Business"
     case PassengerType.TOURIST => "Tourist"
@@ -986,16 +1059,16 @@ object LinkApplication {
     
     return candidate
   }
-  
+
   def getLinkNegotationInfo(airline : Airline, existingLinkOption : Option[Link], fromAirport : Airport, toAirport : Airport, newCapacity : LinkClassValues, newFrequency : Int) : NegotiationInfo = {
      import FlightType._
-     
+
      existingLinkOption.foreach{ link =>
        if (link.capacity == newCapacity) {
            return NegotiationUtil.NO_NEGOTIATION_REQUIRED
        }
      }
-     
+
      val flightTypeMultiplier = Computation.getFlightType(fromAirport, toAirport) match {
        case SHORT_HAUL_DOMESTIC => 1
        case LONG_HAUL_DOMESTIC => 1.5
@@ -1009,30 +1082,30 @@ object LinkApplication {
      val baseNegotationCost = if (existingLinkOption.isDefined) 0 else NEW_LINK_BASE_COST
      val existingCapacity = existingLinkOption.map(_.capacity).getOrElse(LinkClassValues.getInstance())
      val capacityChange : Double = normalizedCapacity(newCapacity) - normalizedCapacity(existingCapacity)
-     val capacityChangeCost = 
+     val capacityChangeCost =
        if (capacityChange < 0) { //reducing capacity
          Math.ceil(capacityChange * -1 / 100)
        } else {
-          Math.ceil(capacityChange / 100) 
+          Math.ceil(capacityChange / 100)
        }
-      
+
      val cost = ((baseNegotationCost + capacityChangeCost) * flightTypeMultiplier).toInt
-     
+
      val countryRelationships = CountrySource.getCountryRelationshipsByAirline(airline)
      val fromCountryRelationship = countryRelationships.getOrElse(fromAirport.countryCode, 0)
      val toCountryRelationship = countryRelationships.getOrElse(toAirport.countryCode, 0)
-     
+
      val odds = new NegotiationOdds()
-     
-     existingLinkOption match { 
-       case Some(link) => 
+
+     existingLinkOption match {
+       case Some(link) =>
          if (capacityChange <= 0) {
            odds.addFactor(NegotationFactor.DECREASE_CAPACITY, 1.0)
          } else {
            odds.addFactor(NegotationFactor.INCREASE_CAPACITY, 0.75)
          }
          //existing LF
-       case None => 
+       case None =>
          odds.addFactor(NegotationFactor.COUNTRY_RELATIONSHIP, Math.min(fromCountryRelationship, toCountryRelationship) match {
            case x if x >=5 => 1
            case 4 => 0.9
@@ -1047,23 +1120,23 @@ object LinkApplication {
          val competingLinks = LinkSource.loadLinksByAirports(fromAirport.id, toAirport.id, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirport.id, fromAirport.id, LinkSource.ID_LOAD)
          val competingLinksCount = competingLinks.filter(_.capacity.total > 0).size
          if (competingLinksCount >= 2) {
-           odds.addFactor(NegotationFactor.EXISTING_LINKS, -0.05 * (competingLinksCount - 1))  
+           odds.addFactor(NegotationFactor.EXISTING_LINKS, -0.05 * (competingLinksCount - 1))
          }
-         
+
          val airlineLinksCount = LinkSource.loadLinksByAirlineId(airline.id, LinkSource.ID_LOAD).size
          if (airlineLinksCount <= 9) { //first 10 routes bonus
-           odds.addFactor(NegotationFactor.INITIAL_LINKS, (10 - airlineLinksCount) * 0.1)  
+           odds.addFactor(NegotationFactor.INITIAL_LINKS, (10 - airlineLinksCount) * 0.1)
          }
-         
-       
+
+
      }
-     
+
      val info = NegotiationInfo(odds, cost)
      return info
    }
-  
+
    val normalizedCapacity : LinkClassValues => Double = (capacity : LinkClassValues) => {
-    capacity(ECONOMY) * ECONOMY.spaceMultiplier + capacity(BUSINESS) * BUSINESS.spaceMultiplier + capacity(FIRST) * FIRST.spaceMultiplier  
+    capacity(ECONOMY) * ECONOMY.spaceMultiplier + capacity(BUSINESS) * BUSINESS.spaceMultiplier + capacity(FIRST) * FIRST.spaceMultiplier
    }
 
   

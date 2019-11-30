@@ -53,7 +53,7 @@ public class LogoGenerator {
 		Map<Integer, byte[]> templates = new HashMap<Integer, byte[]>();
 		for (int i = 0 ; i < TEMPLATE_COUNT; i ++) {
 			String fileName = "/logo/p" + i + ".bmp";
-			
+
 			try (InputStream in = LogoGenerator.class.getResourceAsStream(fileName)) {
 				templates.put(i, ByteStreams.toByteArray(in));
 			} catch (IOException e) {

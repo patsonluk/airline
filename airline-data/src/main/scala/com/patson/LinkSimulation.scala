@@ -26,6 +26,7 @@ object LinkSimulation {
     simulateLinkError(links)
     
     val consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int] = PassengerSimulation.passengerConsume(demand, links)
+    
     //generate statistic 
     println("Generating stats")
     val linkStatistics = generateLinkStatistics(consumptionResult, cycle)
@@ -63,8 +64,10 @@ object LinkSimulation {
       linkConsumptionDetails += linkResult
       loungeConsumptionDetails ++= loungeResult
     }
-      
-    
+
+    purgeAlerts()
+    checkLoadFactor(links, cycle)
+
     LinkSource.deleteLinkConsumptionsByCycle(30)
     LinkSource.saveLinkConsumptions(linkConsumptionDetails.toList)
     
@@ -176,7 +179,7 @@ object LinkSimulation {
     val depreciation = link.getAssignedAirplanes().foldLeft(0)(_ + _.depreciationRate)
     
     var inflightCost, crewCost, revenue = 0 
-    link.capacity.map.keys.foreach { linkClass =>
+    LinkClass.values.foreach { linkClass =>
       val capacity = link.capacity(linkClass)
       val soldSeats = link.soldSeats(linkClass)
       
@@ -222,6 +225,92 @@ object LinkSimulation {
     val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, loungeCost = loungeCost, revenue, profit, cycle)
     //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     (result, loungeConsumptionDetails.toList)
+  }
+  
+  val LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD = 3 //how many airlines before load factor is checked
+  val LOAD_FACTOR_ALERT_THRESHOLD = 0.5 //LF threshold
+  val LOAD_FACTOR_ALERT_DURAION = 52
+
+  /**
+    * Purge alerts that are no longer valid
+    */
+  def purgeAlerts() = {
+    //only purge link cancellation alerts for now
+    val existingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION)
+
+    //try to purge the alerts, as some alerts might get inserted while the link is deleted during the simulation time
+    val liveLinkIds : List[Int] = LinkSource.loadAllLinks(LinkSource.ID_LOAD).map(_.id)
+    val deadAlerts = existingAlerts.filter(alert => alert.targetId.isDefined && !liveLinkIds.contains(alert.targetId.get))
+    AlertSource.deleteAlerts(deadAlerts)
+    println("Purged alerts with no corresponding links... " + deadAlerts.size)
+  }
+
+  def checkLoadFactor(links : List[Link], cycle : Int) = {
+    val existingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION)
+
+    //group links by from and to airport ID Tuple(id1, id2), smaller ID goes first in the tuple
+    val linksByAirportIds = links.filter(_.capacity.total > 0).groupBy( link =>
+      if (link.from.id < link.to.id) (link.from.id, link.to.id) else (link.to.id, link.from.id)
+    )
+
+    val existingAlertsByLinkId : scala.collection.immutable.Map[Int, Alert] = existingAlerts.map(alert => (alert.targetId.get, alert)).toMap
+    
+    val updatingAlerts = ListBuffer[Alert]()
+    val newAlerts = ListBuffer[Alert]()
+    val deletingAlerts = ListBuffer[Alert]()
+    val deletingLinks = ListBuffer[Link]()
+    val newLogs = ListBuffer[Log]()
+    
+    linksByAirportIds.foreach {
+      case((airportId1, airportId2), links) =>
+        if (links.size >= LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD) {
+          links.foreach { link =>
+            val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
+            if (loadFactor < LOAD_FACTOR_ALERT_THRESHOLD) {
+              existingAlertsByLinkId.get(link.id) match {
+                case Some(existingAlert) => //continue to have problem
+                  if (existingAlert.duration <= 1) { //kaboom! deleting
+                    deletingAlerts.append(existingAlert)
+                    deletingLinks.append(link)
+                    val message = "Airport authorities have revoked license of " + link.airline.name + " to operate route between " +  link.from.displayText + " and " + link.to.displayText + " due to prolonged low load factor"
+                    newLogs += Log(airline = link.airline, message = message, category = LogCategory.LINK, severity = LogSeverity.WARN, cycle = cycle)
+                    //notify competitors too with lower severity
+                    links.filter(_.id != link.id).foreach { competitorLink =>
+                      newLogs += Log(airline = competitorLink.airline, message = message, category = LogCategory.LINK, severity = LogSeverity.INFO, cycle = cycle)
+                    }
+                  } else { //clock is ticking!
+                     updatingAlerts.append(existingAlert.copy(duration = existingAlert.duration -1))
+                  }
+                case None => //new warning
+                  val message = "Airport authorities have issued warning to " + link.airline.name + " on low load factor of route between " +  link.from.displayText + " and " + link.to.displayText + ". If the load factor remains lower than " + LOAD_FACTOR_ALERT_THRESHOLD * 100 + "% for the remaining duration, the license to operate this route will be revoked!"
+                  val alert = Alert(airline = link.airline, message = message, category = AlertCategory.LINK_CANCELLATION, targetId = Some(link.id), cycle = cycle, duration = LOAD_FACTOR_ALERT_DURAION)
+                  newAlerts.append(alert)
+              }
+            } else { //LF good, delete existing alert if any
+              existingAlertsByLinkId.get(link.id).foreach { existingAlert =>
+                deletingAlerts.append(existingAlert)
+              }
+            }
+          }
+        } else { //not enough competitor, check if alert should be removed
+          links.foreach { link =>
+            existingAlertsByLinkId.get(link.id).foreach { existingAlert =>
+              deletingAlerts.append(existingAlert)
+            }
+          }
+        }
+    }
+
+    
+    deletingLinks.foreach { link =>
+       println("Revoked link: " + link)
+       LinkSource.deleteLink(link.id)
+    }
+    AlertSource.updateAlerts(updatingAlerts.toList)
+    AlertSource.insertAlerts(newAlerts.toList)
+    AlertSource.deleteAlerts(deletingAlerts.toList)
+    
+    LogSource.insertLogs(newLogs.toList)
   }
   
   def generateLinkStatistics(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : List[LinkStatistics] = {

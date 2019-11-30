@@ -74,7 +74,7 @@ import FlightPreferenceType._
  */
 case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, preferredLinkClass: LinkClass) extends FlightPreference {
   def computeCost(link : Link, linkClass : LinkClass) = {
-    val standardPrice = Pricing.computeStandardPrice(link, linkClass)
+    val standardPrice = link.standardPrice(linkClass)
     val deltaFromStandardPrice = link.price(linkClass) - standardPrice 
     
     var cost = standardPrice + deltaFromStandardPrice * priceSensitivity
@@ -109,16 +109,20 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
 
 case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass) extends FlightPreference {
   def computeCost(link : Link, linkClass : LinkClass) = {
-    val standardPrice = Pricing.computeStandardPrice(link, linkClass)
-    val deltaFromStandardPrice = link.price(linkClass) - standardPrice 
-    
+    val standardPrice = link.standardPrice(linkClass)
+    val deltaFromStandardPrice = link.price(linkClass) - standardPrice
+
     var cost = standardPrice + deltaFromStandardPrice * 0.5 //care much less about price
-    val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 1) / 2  //dampen the effect
+    val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 1) / 2 //dampen the effect
     cost = (cost * qualityAdjustedRatio).toInt
-    
-    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) { //less than twice a day. I NEED THE FLIGHT NOW! extra penalty up to double if frequency is min 
-      cost = cost * (1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD / 5)  
+
+    //I NEED THE FLIGHT NOW! extra penalty up to 1.2 if frequency is min, boost if very frequent
+    var frequencyAdjustRatio: Double = 1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD / 5
+    if (frequencyAdjustRatio < 0.5) { //only reduce by 50% max
+      frequencyAdjustRatio = 0.5
     }
+    cost = cost *  frequencyAdjustRatio
+
     
     val noise = 0.8 + getFlatTopBellRandom(0.2, 0.1)
 
@@ -157,8 +161,13 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     
     var perceivedPrice = link.price(linkClass);
     if (linkClass.level != preferredLinkClass.level) {
-      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * 2).toInt //have to normalize the price to match the preferred link class, * 2 for unwillingness to downgrade
+      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * 2.5).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
     }
+
+    val standardPrice = link.standardPrice(preferredLinkClass)
+    val deltaFromStandardPrice = perceivedPrice - standardPrice
+
+    perceivedPrice = (standardPrice + deltaFromStandardPrice * preferredLinkClass.priceSensitivity).toInt
     
     val loyalty = appeal.loyalty
     //the maxReduceFactorForThisAirline, if at max loyalty, it is the same as maxReduceFactorAtMaxLoyalty, at 0 loyalty, this is at maxReduceFactorAtMinLoyalty
@@ -191,7 +200,7 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     
     //adjust by lounge
-    if (linkClass.level >= BUSINESS.level) {
+    if (preferredLinkClass.level >= BUSINESS.level) {
       val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
       val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
         
@@ -288,13 +297,13 @@ object AppealPreference {
 class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]) {
   val pool : Map[LinkClass, List[FlightPreference]] = preferencesWithWeight.groupBy {
     case (flightPrefernce, weight) => flightPrefernce.preferredLinkClass
-  }.mapValues { 
+  }.view.mapValues {
     _.flatMap {
       case (flightPreference, weight) => (0 until weight).foldRight(List[FlightPreference]()) { (_, foldList) =>
         flightPreference :: foldList 
       }
     }
-  }
+  }.toMap
   
   
   

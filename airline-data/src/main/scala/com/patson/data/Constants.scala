@@ -76,6 +76,8 @@ object Constants {
   val VIP_ROUTE_TABLE = "vip_route"
   val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"
   val PASSENGER_HISTORY_TABLE = "passenger_history"
+  val PASSENGER_HISTORY_INDEX_1 = "passenger_history_index_1"
+  val PASSENGER_HISTORY_INDEX_2 = "passenger_history_index_2"
   val LOAN_TABLE = "loan"
   val LOUNGE_TABLE = "lounge"
   val LOUNGE_CONSUMPTION_TABLE = "lounge_consumption"
@@ -83,10 +85,19 @@ object Constants {
   val OIL_PRICE_TABLE = "oil_price"
   val OIL_CONSUMPTION_HISTORY_TABLE = "oil_consumption_history"
   val OIL_INVENTORY_POLICY_TABLE = "oil_inventory_policy"
+  val LOAN_INTEREST_RATE_TABLE = "loan_interest_rate"
   val LOG_TABLE = "log"
   val LOG_INDEX_1 = "log_index_1"
   val LOG_INDEX_2 = "log_index_2"
-  
+  val ALERT_TABLE = "alert"
+  val ALERT_INDEX_1 = "alert_index_1"
+
+  //Christmas Event
+  val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"
+  val SANTA_CLAUS_GUESS_TABLE = "santa_claus_guess"
+  val LOG_TABLE = "log"
+
+
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"
   val configFactory = ConfigFactory.load()

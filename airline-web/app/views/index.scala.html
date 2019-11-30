@@ -18,10 +18,8 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
-	<link rel="icon" type="image/png"  href='@routes.Assets.versioned("images/icons/globe-green.png")'>
-	
-	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/emoji/jquery.emojipicker.css")">
-	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/emoji/jquery.emojipicker.a.css")">
+	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
 
     
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
@@ -34,12 +32,11 @@
 			  crossorigin="anonymous"></script>
 			  
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/chat.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")"></script>	
-	<script type="text/javascript" src="@routes.Assets.versioned("javascripts/emoji/jquery.emojipicker.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.versioned("javascripts/emoji/jquery.emojipicker.a.js")"></script>
 
-	
+    <script src="@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")"></script>	
+	<script src="@routes.Assets.versioned("javascripts/jemoji/jemoji.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/emojify/emojify.js")"></script>
+
     <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")"></script>
@@ -64,11 +61,15 @@
     <script src="@routes.Assets.versioned("javascripts/oil.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/log.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/chat.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/christmas.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/confetti.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
     <script>
     	if (window.location.hostname != 'localhost') {
@@ -89,14 +90,6 @@
 			})(window,document,window['_fs_namespace'],'script','user');
     	}
 	</script>
-	  <script type="text/javascript">
-		$(document).ready(function(e) {
-		  $('.emojiable-option').emojiPicker({
-			width: '250px',
-			height: '300px'
-		  });
-		});
-  </script>
   </head>
   <body>
   
@@ -106,7 +99,8 @@
   		<div style="float: left;">
   			<span id="topBarDetails" style="display: none;">
 	  			<span id="currentTime" class="label" style="margin: 0px 10px"></span>
-	  			<span id="currentAirline" class="label" style="margin: 0px 10px; font-weight: bold"></span> 
+				<span style="margin: 0px 10px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span id="nextTickEstimation" class="label" style="font-weight: bold;">-</span></span>
+	  			<span id="currentAirline" class="label" style="margin: 0px 10px; font-weight: bold"></span>
 	  			<span style="margin: 0px 10px">Balance: $<span id="balance" class="label"></span></span> 
 	  			<span style="margin: 0px 10px">Reputation: <span id="reputation" class="label"></span> <span id="reputationLevel" class="label"></span> <span id="reputationStars"></span></span>
 	  			<span style="margin: 0px 10px">Service Quality: <span id="serviceQuality" class="label"></span></span>
@@ -165,7 +159,7 @@
 						</span>
 						<span class="notify-bubble">0</span>
 					</header>
-					<div class="chat" style="display: none;">
+					<div class="chat" id="chat-box" style="display: none;">
 						<div class="chat-history tab-content current" id="chatBox-1">
 							<ul>
 								<li ng-repeat="msg in chat.gmessages track by $index">
@@ -180,12 +174,14 @@
 								</li>
 							</ul>
 						</div> <!-- end chat-history -->
-						
-						<form autocomplete="off">
-							<input autocomplete="false" name="hidden" type="text" style="display:none;">
-							<input type="text" maxlength="250" placeholder="Enter message..."
-								   ng-model="chat.currentMessage"  ng-keyup="$event.keyCode == 13 && chat.sendMessage()" id="chattext" class="emojiable-option" />
-						</form>
+                       <form autocomplete="off">
+                           <input autocomplete="false" name="hidden" type="text" style="display:none;">
+                           <div style="display: inline-block; position: relative; width: 95%;">
+                            <input type="text" maxlength="250" placeholder="Enter message..." ng-keyup="$event.keyCode == 13 && chat.sendMessage($event)" id="chattext"/>
+                               <img src='@routes.Assets.versioned("images/emoji/smiley.png")' id="emojiButton" title='Emoji Menu' style="position : absolute; right: -10px; height:25px; width:25px;" class="button"/>
+                           </div>
+
+                        </form>
 					</div> <!-- end chat -->
 				</div>
 			</div>
@@ -207,16 +203,19 @@
 			  <li class="button left-tab user-specific-tab" id="oilCanvasTab" onclick="showOilCanvas();"><span>Oil</span></li>
 			  <li class="button left-tab user-specific-tab" id="rivalsCanvasTab" onclick="showRivalsCanvas();"><span>Rivals</span></li>
 			  <li class="button left-tab" id="rankingCanvasTab" onclick="showRankingCanvas();"><span>Ranking</span></li>
-			  <li class="button left-tab" id="allianceCanvasTab" onclick="showAllianceCanvas();"><span>Alliance</span></li>
+			  	<li class="button left-tab" id="allianceCanvasTab" onclick="showAllianceCanvas();"><span>Alliance</span></li>
+				<li class="button left-tab  user-specific-tab" id="logCanvasTab" onclick="showLogCanvas();"><span>Log</span></li>
 			  
 			</ul>
 		</div>
 		
-<!--   		<div id="linkHistoryButton" class="googleMapButton" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
-<!-- 		<div id="vipButton" class="googleMapButton" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
-		<div id="toggleMapChristmasButton" class="googleMapButton" onclick="toggleChristmasMarker()" align="center" style="width: 28px; height: 28px; display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/bauble.png")' title='Merry Christmas!' style="vertical-align: middle;"/></div>
-		<div id="toggleMapAnimationButton" class="googleMapButton" onclick="toggleMapAnimation()" align="center" style="width: 28px; height: 28px; display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>
-		<div id="toggleMapLightButton" class="googleMapButton" onclick="toggleMapLight()" align="center" style="width: 28px; height: 28px; display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>
+<!--   		<div id="linkHistoryButton" class="googleMapIcon" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
+<!-- 		<div id="vipButton" class="googleMapIcon" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
+		<div id="toggleMapChristmasButton" class="googleMapIcon" onclick="toggleChristmasMarker()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/bauble.png")' title='Merry Christmas!' style="vertical-align: middle;"/></div>
+		<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>
+		<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style="display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>
+		<div id="santaClausButton" class="googleMapIcon glow" onclick="showSantaClausAttemptStatus()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/markers/christmas/santa-hat.png")' title='Santa, where are you?' style="vertical-align: middle;"/></div>
+
   	<!-- main canvas start -->
   		<div id="canvas" style="float: left; overflow-x: auto; overflow-y: scroll;" >
   			<div id="worldMapCanvas" style="height: 100%;">
@@ -355,7 +354,11 @@
 				    			</div>
 				    			<div class="button" id="toggleLinkHistoryButton" onclick="toggleLinkHistoryView()">View Passenger Map</div>
 				    			<div class="divider"></div>
-				    			<h4>Direct Competitions</h4>
+				    			<h4>
+									<span>Direct Competitions</span>
+									<img src='@routes.Assets.versioned("images/icons/chart-up.png")' class="button" title="View Rival History"onclick="showLinkRivalHistory($('#actionLinkId').val())" style="vertical-align: text-bottom">
+									<img src='@routes.Assets.versioned("images/icons/magnifier.png")' class="button" title="View Rival Details"onclick="showLinkRivalDetails($('#actionLinkId').val())" style="vertical-align: text-bottom">
+								</h4>
 				    			<div class="table data" id="linkCompetitons" style="width: 100%">
 			    					<div class='table-header'>
 			    						<div class="cell" style="width: 35%;"><h5>Airline</h5></div>
@@ -447,7 +450,7 @@
 									<div class="value" id="planLinkAirplanes"></div>
 					    		</div>
 					    	</div>
-					    	<div class="table" style="width: 100%; padding-top: 15px;">	
+					    	<div class="table" style="width: 100%; padding-top: 15px;">
 					    		<h4>Route Settings</h4>
 					    		<div class="table-row" id="planLinkModelRow">
 					    			<div class="label"><h5>Airplane Model (available):</h5></div>
@@ -512,7 +515,7 @@
 					    				</h6>
 					    			</div>
 					    		</div>
-					    		
+
 					    		<div class="table-row">
 					    			<div class="label">
 					    				<h5>
@@ -610,9 +613,13 @@
 <!--   			end world map canvas -->
 			<div id="linksCanvas" style="display: none; height: 100%">
 				<div style="height: 90% ; width : 50%; float: left;" class="mainPanel">
-  					<div class="section" style="height: 95% ; width : 95%; float: left;"> 
+  					<div class="section" style="height: 95% ; width : 95%; float: left;">
+						<div style="height: 20px">
+							<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
+						</div>
 		  	  			<div class="table data" style="height: 20px; width: 100%">
 		 	  				<div class="table-header" id="linksTableSortHeader">
+								<div class="cell clickable" style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></div> <!--hidden column for last update -->
 		 	  					<div class="cell clickable selected" style="width: 18%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
 		 	  					<div class="cell clickable" style="width: 18%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
 		 	  					<div class="cell clickable" style="width: 17%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
@@ -624,7 +631,7 @@
 		 	  					<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 							</div>
 	         			</div>
-	         			<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+	         			<div style="height: calc(100% - 20px - 20px); width: 100%; overflow: auto;">
 		         			<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
 			 	  				<div class="table-header">
 			 	  					<div class="cell" style="width: 18%; border-bottom: none;"></div>
@@ -698,8 +705,8 @@
 <!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
   					</div>
   					<div id="airportDetails" class="section" style="width: 90%; float:left;">
-  						<h4>Airport Details</h4>
-  						<div class="table" style="width: 50%; float: left">
+						<h4>Airport Details</h4>
+						<div class="table" style="width: 50%; float: left">
   							<div class="table-row">
 			    				<div class="label" style="width:50%;"><h5>Airport:</h5></div>
 			    				<div class="value" id="airportDetailsName" style="width:50%;"></div>
@@ -1578,7 +1585,13 @@
 <!--   			end office canvas -->
 
 			<div id="bankCanvas" style="height: 100%; display: none;">
-				<div style="width : 70%; float: left;">
+				<div style="width : 40%; float: left;">
+					<div style="width : 95%; float: left;" class="section">
+						<h4>Interest Rate History</h4>
+						<div id="loanInterestRateChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
+					</div>
+				</div>
+				<div style="width : 60%; float: left;">
 				<!--  new loan -->
 					<div style="width : 95%; float: left;" class="section">
 						<h4>New Loan</h4>
@@ -1612,19 +1625,18 @@
 			   				</div>
 			   			</div>
 					</div>
-				</div>
-				<div style="width : 70%; float: left;">
 					<div style="width : 95%; float: left;" class="section">
 						<h4>Outstanding Loans</h4>
 						<div class="table data" id="outstandingLoansTable" style="height: 100%; width: 100%">
 		 	  				<div class="table-header">
 		 	  					<div class="cell" style="width: 15%" align="right">Principal Amount</div>
-		 	  					<div class="cell" style="width: 15%" align="right">Interest</div>
+		 	  					<div class="cell" style="width: 10%" align="right">Interest</div>
+								<div class="cell" style="width: 10%" align="right">Interest Rate</div>
 		 	  					<div class="cell" style="width: 15%" align="right">Remaining Payment</div>
-		 	  					<div class="cell" style="width: 15%" align="right">Weekly Payment</div>
-		 	  					<div class="cell" style="width: 15%" align="right">Early Repayment Fee</div>
+		 	  					<div class="cell" style="width: 20%" align="right">Weekly Payment</div>
+		 	  					<div class="cell" style="width: 10%" align="right">Early Repayment Fee</div>
 		 	  					<div class="cell" style="width: 15%" align="right">Early Repayment Amount</div>
-		 	  					<div class="cell" style="width: 10%"></div>
+		 	  					<div class="cell" style="width: 5%"></div>
 							</div>
 						</div>
          			</div>
@@ -1885,20 +1897,23 @@
 <!--   			end ranking canvas -->
 			<div id="rivalsCanvas" style="height: 100%; display: none;">
 				<div style="float: left; width : 50%; height : 100%" class="mainPanel">
-	  				<div style="width : 95%; height: 95%" class="section"> 
-		  	  			<div id = "rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
-		 	  				<div class="table-header">
+					<div style="width : 95%; height: 95%" class="section">
+						<div style="height: 20px;"><input type="checkbox" id="hideInactive" onchange="toggleHideInactive(this.checked)" checked/><span class="label">Hide Inactive Airlines</span></div>
+						<div id = "rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+							<div class="table-header">
+								<div class="cell clickable" style="width: 5%" data-sort-property="loginStatus" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Status</div>
 		 	  					<div class="cell clickable" style="width: 30%" data-sort-property="name" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Name</div>
-		 	  					<div class="cell clickable" style="width: 50%" data-sort-property="headquartersCity" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Headquarters</div>
+		 	  					<div class="cell clickable" style="width: 45%" data-sort-property="headquartersCity" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Headquarters</div>
 		 	  					<div class="cell clickable selected" style="width: 10%" align="right" data-sort-property="reputation" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Reputation</div>
 		 	  					<div class="cell clickable" style="width: 10%" align="right" data-sort-property="baseCount" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Number of bases</div>
 							</div>
 	         			</div>
-	         			<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+	         			<div style="height: calc(100% - 40px); width: 100%; overflow: auto;">
 		         			<div id="rivalsTable" class="table data" style="height: 100%; width: 100%;">
 		         			 	<div class="table-header">
+									<div class="cell" style="width: 5%; border-bottom: none;"></div>
 			 	  					<div class="cell" style="width: 30%; border-bottom: none;"></div>
-			 	  					<div class="cell" style="width: 50%; border-bottom: none;"></div>
+			 	  					<div class="cell" style="width: 45%; border-bottom: none;"></div>
 			 	  					<div class="cell" style="width: 10%; border-bottom: none;"></div>
 			 	  					<div class="cell" style="width: 10%; border-bottom: none;"></div>
 								</div>
@@ -2104,6 +2119,57 @@
 				<div style="clear: both;"></div>
   			</div>
 	<!-- end alliance canvas -->
+			<div id="logCanvas" style="height: 100%; display: none;">
+				<div style="width : 95%; height: 200px" class="section">
+					<h4>Alerts</h4>
+					<div id = "alertTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+						<div class="table-header">
+							<div class="cell clickable selected" style="width: 10%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleAlertTableSortOrder($(this))">Week</div>
+							<div class="cell clickable" style="width: 10%" data-sort-property="category" data-sort-order="ascending" onclick="toggleAlertTableSortOrder($(this))">Category</div>
+							<div class="cell clickable" style="width: 10%" data-sort-property="duration" data-sort-order="ascending" onclick="toggleAlertTableSortOrder($(this))">Duration</div>
+							<div class="cell clickable" style="width: 20%" data-sort-property="airlineName" data-sort-order="ascending" onclick="toggleAlertTableSortOrder($(this))">Airline</div>
+							<div class="cell clickable" style="width: 50%" data-sort-property="message" data-sort-order="ascending" onclick="toggleAlertTableSortOrder($(this))">Message</div>
+						</div>
+					</div>
+					<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+						<div class="table data" id="alertTable" style="width: 100%; max-height: 100%">
+							<div class="table-header">
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 20%; border-bottom: none;"></div>
+								<div class="cell" style="width: 50%; border-bottom: none;"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div style="width : 95%; height: 500px" class="section">
+					<h4>Logs</h4>
+					<div id = "logTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+						<div class="table-header">
+							<div class="cell clickable selected" style="width: 10%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Week</div>
+							<div class="cell clickable" style="width: 10%" data-sort-property="severity" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Category</div>
+							<div class="cell clickable" style="width: 10%" data-sort-property="category" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Severity</div>
+							<div class="cell clickable" style="width: 20%" data-sort-property="airlineName" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Airline</div>
+							<div class="cell clickable" style="width: 50%" data-sort-property="message" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Message</div>
+						</div>
+					</div>
+					<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+						<div class="table data" id="logTable" style="width: 100%; max-height: 100%">
+							<div class="table-header">
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 10%; border-bottom: none;"></div>
+								<div class="cell" style="width: 20%; border-bottom: none;"></div>
+								<div class="cell" style="width: 50%; border-bottom: none;"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+			<!-- end log canvas -->
 			<div style="clear: both;"></div>
   		</div>
   	<!-- main canvas end -->
@@ -2393,7 +2459,70 @@
 	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
 	  </div>
 	</div>
-	
+
+	<!-- Santa Claus modal -->
+	<div id="santaClausModal" class="modal christmas-event" aria-hidden="true">
+		<div class="modal-content snow-background"  style="width : 500px;">
+			<span class="close" onclick="closeSantaClausModal()">&times;</span>
+			<div style="margin-bottom: 30px"><h2>Santa, Where are you?</h2></div>
+			<h3 style="margin-bottom: 10px;">Search History</h3>
+			<div style="width: 100%;">
+				<div style="width: 100%; overflow: auto; float: left;">
+					<div class="table data"style="width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 50%; border-bottom: none">Airport</div>
+							<div class="cell" style="width: 50%;  border-bottom: none">Clue</div>
+						</div>
+					</div>
+					<div class="table data" id="santaClausGuessTable" style="max-height: 100%; width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 50%"></div>
+							<div class="cell" style="width: 50%"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="warning" style="margin-bottom: 15px;">
+				<span>Attempts Left: </span><span id="santaClausAttemptsLeft"></span>
+			</div>
+			<div class="button guessButton glow" onclick="guessSantaClaus()">Search for Santa here</div>
+			<div id="santaClausExhausted" style="display: none;">
+				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/balloon-smiley-sad.png")'></div>
+				<div style="float:left"><h4>You have exhausted all your attempts! Try again next week!</h4></div>
+				<div style="clear:both; margin-bottom: 15px"></div>
+			</div>
+
+
+
+			<div id = "santaClausRewardOptions" style="display: none;">
+				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
+				<div style="float:left"> <h4>Woohoo! You have found Santa!</h4></div>
+				<div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
+				<div style="clear:both; margin-bottom: 15px"></div>
+
+				<h4> Please pick your reward as below, you can always come back later to make your choice!</h4>
+
+				<div class="warning">Other than the cash price, all the other boosts are one-time only. The value will drop back to normal after a while</div>
+				<div class="table data" id="santaClausRewardOptionsTable" style="height: 300px; width: 100%">
+					<div class="table-header">
+						<div class="cell" style="width: 10%"></div>
+						<div class="cell" style="width: 90%"></div>
+					</div>
+				</div>
+			</div>
+			<div id="santaClausPickedReward" style="display: none;">
+				<div style="float:left"> <h4>You have picked the reward as below</h4></div>
+				<div style="clear:both; margin-bottom: 15px"></div>
+				<div class="table data" style="width: 100%">
+					<div class="table-row">
+						<div class="cell label" style="width: 100%"><span id="santaClausPickedRewardText" class="text"></span></div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
 	<!-- airport passenger quality expectation model -->
 	<div id="expectedQualityModal" class="modal">
 		<div class="modal-content"  style="width : 500px;">
@@ -2429,31 +2558,31 @@
 	</div>
 	
 	<!-- link passenger composition modal -->
-	<div id="linkCompositionModal" class="modal">
-		<div class="modal-content"  style="width : 800px; height: 350px;">
-			<span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
-			<h3 style="margin-bottom: 10px;">Passenger Composition</h3>
-			<div style="width: 100%; float: left;">
-  				<div style="float: left;">
-  					<h5 align="center">Country</h5>
-  					<div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
-  					<div class="table data topCountryTable" style="width: 95%;">
-  					</div>
-  				</div>
-  				<div style="float: left;">	
-  					<h5 align="center">Passenger Type</h5>
-  					<div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
-  					<div class="table data passengerTypeTable" style="width: 95%;"></div>
-  				</div>
-  				<div style="float: left;">
-  					<h5 align="center">
-  						Travel Preference
-  						<div class="tooltip">
-	    					<img src='@routes.Assets.versioned("images/icons/information.png")'>
-	    					<span class="tooltiptext" style="width: 600px;">
+    <div id="linkCompositionModal" class="modal">
+        <div class="modal-content"  style="width : 800px; height: 350px;">
+            <span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
+            <h3 style="margin-bottom: 10px;">Passenger Composition</h3>
+            <div style="width: 100%; float: left;">
+                <div style="float: left;">
+                    <h5 align="center">Country</h5>
+                    <div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
+                    <div class="table data topCountryTable" style="width: 95%;">
+                    </div>
+                </div>
+                <div style="float: left;">
+                    <h5 align="center">Passenger Type</h5>
+                    <div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
+                    <div class="table data passengerTypeTable" style="width: 95%;"></div>
+                </div>
+                <div style="float: left;">
+                    <h5 align="center">
+                        Travel Preference
+                        <div class="tooltip">
+                            <img src='@routes.Assets.versioned("images/icons/information.png")'>
+                            <span class="tooltiptext" style="width: 600px;">
 		    					Passengers all have different preferences and emphasis when choosing their flights. <br/>
 		    					<br/>
-		    					
+
 		         				<div class="table data" style="width: 100%;">
 			         			 	<div class="table-header">
 				 	  					<div class="cell" style="width: 10%;"></div>
@@ -2513,103 +2642,197 @@
 									</div>
 			        			</div>
 			        		</span>
-	    				</div>	
-  					</h5>	
-  					<div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
-  					<div class="table data preferenceTypeTable" style="width: 95%;"></div>
- 				</div>
-			</div>
-			
-	    </div>
+                        </div>
+                    </h5>
+                    <div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
+                    <div class="table data preferenceTypeTable" style="width: 95%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- link confirmation modal -->
+    <div id="linkConfirmationModal" class="modal">
+        <div class="modal-content" style="height: 700px; width : 600px">
+            <span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
+            <h3 style="margin-bottom: 10px;" class="modalHeader"></h3>
+            <div style="width: 100%;" class="existingLink table data">
+                <div class='table-header'>
+                    <div class="cell" style="width: 40%;"></div>
+                    <div class="cell" style="width: 30%;"><h5>Existing Settings</h5></div>
+                    <div class="cell" style="width: 30%;"><h5>New Settings</h5></div>
+                </div>
+                <div class="table-row">
+                    <div class="cell"><h5>Airplane Model:</h5></div>
+                    <div class="cell existing model"></div>
+                    <div class="cell updating model"></div>
+                </div>
+                <div class="table-row">
+                    <div class="cell"><h5>Flight Duration:</h5></div>
+                    <div class="cell existing duration"></div>
+                    <div class="cell updating duration"></div>
+                </div>
+                <div class="table-row">
+                    <div class="cell"><h5>Assigned Airplanes:</h5></div>
+                    <div class="cell existing airplanes"></div>
+                    <div class="cell updating airplanes"></div>
+                </div>
+                <div class="table-row">
+                    <div class="cell"><h5>Flight Frequency:</h5></div>
+                    <div class="cell existing frequency"></div>
+                    <div class="cell updating frequency"></div>
+                </div>
+                <div class="table-row">
+                    <div class="cell"><h5>Full Capacity (Y/J/F):</h5></div>
+                    <div class="cell existing fullCapacity"></div>
+                    <div class="cell updating fullCapacity"></div>
+                </div>
+                <div class="table-row">
+                    <div class="cell"><h5>Price (Y/J/F):</h5></div>
+                    <div class="cell existing price"></div>
+                    <div class="cell updating price"></div>
+                </div>
+                <div class="table-row">
+                    <div class="cell"><h5>Seat Configuration (Y/J/F):</h5></div>
+                    <div class="cell existing configuration"></div>
+                    <div class="cell updating configuration"></div>
+                </div>
+            </div>
+            <div class="negotationInfo">
+                <h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation Required</h3>
+                <div style="width: 100%;" class="table data">
+                    <div class="table-header">
+                        <div class="cell"></div>
+                        <div class="cell">Factor</div>
+                        <div class="cell">Value</div>
+                    </div>
+                    <div class="table-row">
+                        <div class="cell"><h5>Success Rate:</h5></div>
+                        <div class="cell"></div>
+                        <div class="cell successRate"></div>
+                    </div>
+                    <div class="table-row">
+                        <div class="cell"><h5>Negotiation Points:</h5></div>
+                        <div class="cell"></div>
+                        <div class="cell requiredPoints"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="negotiationAnimation" style="width: 100%; height: 300px;">
+                <h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation in progress...</h3>
+                <div class="negotiationIcons" style="width: 50%; height: 50px; float:left;"></div>
+                <h3>
+                    <div class="negotiationDescriptions" style="width: 40%; height: 50px; float:left;"></div>
+                </h3>
+                <div class="negotiationBar" style="width: 100%;"></div>
+                <div class="negotiationResult" style="width: 100%">
+                    <div class="button result" onclick="closeModal($('#linkConfirmationModal'))"></div>
+                </div>
+
+            </div>
+
+            <div class="controlButtons">
+                <div class="button confirmButton" onclick="createLink()">Confirm</div>
+                <div class="button negotiateButton" onclick="createLink()">Negotiate</div>
+                <div class="button cancel" onclick="closeModal($('#linkConfirmationModal'))">Cancel</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- link rival awareness/loyalty modal -->
+    <div id="linkRivalHistoryModal" class="modal">
+        <div class="modal-content"  style="width : 800px; height: 450px;">
+            <span class="close" onclick="closeModal($('#linkRivalHistoryModal'))">&times;</span>
+            <h3 style="margin-bottom: 10px;">Ticket Price History</h3>
+            <div style="width: 100%; float: left;">
+                <div style="float: left;">
+                    <div style="float: left;">
+                        <h5 align="center">Economy</h5>
+                        <div id="rivalEconomyPriceChart" style="height: 150px; width: 250px" align="center"></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 align="center">Business</h5>
+                        <div id="rivalBusinessPriceChart" style="height: 150px; width: 250px;" align="center"></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 align="center">First</h5>
+                        <div id="rivalFirstPriceChart" style="height: 150px; width: 250px;" align="center"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 10px;">Capacity History</h3>
+            <div style="width: 100%; float: left;">
+                <div style="float: left;">
+                    <div style="float: left;">
+                        <h5 align="center">Economy</h5>
+                        <div id="rivalEconomyCapacityChart" style="height: 150px; width: 250px" align="center"></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 align="center">Business</h5>
+                        <div id="rivalBusinessCapacityChart" style="height: 150px; width: 250px;" align="center"></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 align="center">First</h5>
+                        <div id="rivalFirstCapacityChart" style="height: 150px; width: 250px;" align="center"></div>
+                    </div>
+
+                </div>
+            </div>
+		</div>
 	</div>
-	
-	<!-- link confirmation modal -->
-	<div id="linkConfirmationModal" class="modal">
-		<div class="modal-content" style="height: 700px; width : 600px">
-			<span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
-			<h3 style="margin-bottom: 10px;" class="modalHeader"></h3>
-			<div style="width: 100%;" class="existingLink table data">
-				<div class='table-header'>
-					<div class="cell" style="width: 40%;"></div>
-					<div class="cell" style="width: 30%;"><h5>Existing Settings</h5></div>
-					<div class="cell" style="width: 30%;"><h5>New Settings</h5></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"><h5>Airplane Model:</h5></div>
-					<div class="cell existing model"></div>
-					<div class="cell updating model"></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"><h5>Flight Duration:</h5></div>
-					<div class="cell existing duration"></div>
-					<div class="cell updating duration"></div>
-			    </div>
-			    <div class="table-row">
-					<div class="cell"><h5>Assigned Airplanes:</h5></div>
-					<div class="cell existing airplanes"></div>
-					<div class="cell updating airplanes"></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"><h5>Flight Frequency:</h5></div>
-					<div class="cell existing frequency"></div>
-					<div class="cell updating frequency"></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"><h5>Full Capacity (Y/J/F):</h5></div>
-					<div class="cell existing fullCapacity"></div>
-					<div class="cell updating fullCapacity"></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"><h5>Price (Y/J/F):</h5></div>
-					<div class="cell existing price"></div>
-					<div class="cell updating price"></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"><h5>Seat Configuration (Y/J/F):</h5></div>
-					<div class="cell existing configuration"></div>
-					<div class="cell updating configuration"></div>
-				</div>
-  			</div>
-  			<div class="negotationInfo">
-  				<h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation Required</h3>
-  				<div style="width: 100%;" class="table data">
-					<div class="table-header">
-						<div class="cell"></div>
-						<div class="cell">Factor</div>
-						<div class="cell">Value</div>
+	<!-- link rival network modal -->
+	<div id="linkRivalDetailsModal" class="modal">
+		<div class="modal-content"  style="width : 800px; height: 600px;">
+			<span class="close" onclick="closeModal($('#linkRivalDetailsModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;">Loyalty/Awareness</h3>
+			<div style="height: 250px; width: 100%;">
+				<div style="height: 100%; width: 100%; overflow: auto; float: left;">
+					<div class="table data"style="width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 20%;  border-bottom: none"></div>
+							<div class="cell fromAirportText" style="width: 40%; border-bottom: none"></div>
+							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>
+						</div>
 					</div>
-					<div class="table-row">
-						<div class="cell"><h5>Success Rate:</h5></div>
-						<div class="cell"></div>
-						<div class="cell successRate"></div>
-				    </div>
-					<div class="table-row">
-						<div class="cell"><h5>Negotiation Points:</h5></div>
-						<div class="cell"></div>
-						<div class="cell requiredPoints"></div>
-				    </div>
-  				</div>
-  			</div>
-  			<div class="negotiationAnimation" style="width: 100%; height: 300px;">
-  				<h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation in progress...</h3>
-  				<div class="negotiationIcons" style="width: 50%; height: 50px; float:left;"></div>
-  				<h3>
-  					<div class="negotiationDescriptions" style="width: 40%; height: 50px; float:left;"></div>
-  				</h3>
-  				<div class="negotiationBar" style="width: 100%;"></div>
-  				<div class="negotiationResult" style="width: 100%">
-  					<div class="button result" onclick="closeModal($('#linkConfirmationModal'))"></div>
-  			    </div>
-  				
-  			</div>
-  					
-			<div class="controlButtons">  				
-  				<div class="button confirmButton" onclick="createLink()">Confirm</div>
-	    		<div class="button negotiateButton" onclick="createLink()">Negotiate</div>
-	    		<div class="button cancel" onclick="closeModal($('#linkConfirmationModal'))">Cancel</div>
-	    	</div>
-	    </div>
-	</div>
+					<div class="table data" id="rivalLoyaltyAwarenessTable" style="max-height: 100%; width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 20%"></div>
+							<div class="cell" style="width: 20%" align="right">Loyalty</div>
+							<div class="cell" style="width: 20%" align="right">Awareness</div>
+							<div class="cell" style="width: 20%" align="right">Loyalty</div>
+							<div class="cell" style="width: 20%" align="right">Awareness</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<h3 style="margin-bottom: 10px;">Network Capacity (Self + Alliance)</h3>
+			<div style="height: 250px; width: 100%;">
+				<div style="height: 100%; width: 100%; overflow: auto; float: left;">
+					<div class="table data"style="width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 20%;  border-bottom: none"></div>
+							<div class="cell fromAirportText" style="width: 40%; border-bottom: none"></div>
+							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>
+						</div>
+					</div>
+					<div class="table data" id="networkCapacity" style="max-height: 100%; width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 16%"></div>
+							<div class="cell" style="width: 14%" align="right">Economy</div>
+							<div class="cell" style="width: 14%" align="right">Business</div>
+							<div class="cell" style="width: 14%" align="right">First</div>
+							<div class="cell" style="width: 14%" align="right">Economy</div>
+							<div class="cell" style="width: 14%" align="right">Business</div>
+							<div class="cell" style="width: 14%" align="right">First</div>
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
 					    		
 	
 	<!-- Modal for loading -->

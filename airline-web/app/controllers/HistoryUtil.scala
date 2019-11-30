@@ -10,45 +10,33 @@ import com.patson.model.LinkConsideration
 import com.patson.model.RelatedLink
 import com.patson.model.Airport
 
+import scala.collection.mutable
+
 object HistoryUtil {
   var loadedCycle = 0
-  var allConsumptions : List[(PassengerType.Value, Int, Route)] = List() 
+  var consumptionCache : java.util.Map[Int, Map[Route, (PassengerType.Value, Int)]] = new java.util.concurrent.ConcurrentHashMap[Int, Map[Route, (PassengerType.Value, Int)]]() //key is Link
   
   def loadConsumptionByLink(link : Link, selfOnly : Boolean = false) : LinkHistory = {
-    checkCache()
-    
+    val relatedConsumptions = loadRelatedRoutesFromCache(link.id)
     val airlineId = link.airline.id
-    val relatedConsumptions = allConsumptions.filter {
-      case(_, _, route) => {
-        route.links.exists { linkConsideration => 
-          linkConsideration.link.id == link.id
-        }
-      }
-    }
-    
+
     println("Finished loading related consumption for " + link)
-    
+
     val relatedFowardLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
-        case(_, _, route) => route.links.find { linkConsideration => !linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
-      }, airlineId, selfOnly    
+        case(route, _) => route.links.find { linkConsideration => !linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
+      }.toList, airlineId, selfOnly
     ) 
     
     val relatedReverseLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
-        case(_, _, route) => route.links.find { linkConsideration => linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
-      }, airlineId, selfOnly
+        case(route, _) => route.links.find { linkConsideration => linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
+      }.toList, airlineId, selfOnly
     )
        
     LinkHistory(0, relatedFowardLinks.toSet, relatedReverseLinks.toSet)
   }
   
   def loadConsumptionByAirport(airportId : Int) : Map[Airport, Int] = {
-    checkCache()
-    val linksWithPassengers = allConsumptions.flatMap {
-      case(_, passengers, route) => {
-        val activeLinks = route.links.filter( linkConsideration => linkConsideration.from.id == airportId || linkConsideration.to.id == airportId).map(_.link)
-        activeLinks.map((_, passengers))
-      }
-    }
+    val linksWithPassengers = ConsumptionHistorySource.loadConsumptionsByAirport(airportId)
     //find all the "other" airport and sum up passenger count
     val passengersByOtherAirport = scala.collection.mutable.Map[Airport, Int]()
     linksWithPassengers.foreach {
@@ -66,9 +54,9 @@ object HistoryUtil {
     passengersByOtherAirport.toMap
   }
   
-  private def computeRelatedLinks(relatedConsumption : List[(PassengerType.Value, Int, Route)], airlineId : Int, selfOnly : Boolean) : List[RelatedLink] = {
+  private def computeRelatedLinks(relatedConsumption : List[(Route, (PassengerType.Value, Int))], airlineId : Int, selfOnly : Boolean) : List[RelatedLink] = {
     val relatedLinkConsumptions : List[(PassengerType.Value, Int, LinkConsideration)] = relatedConsumption.flatMap {
-      case(passengerType, passengerCount, route) => route.links.map { (passengerType, passengerCount, _) }.filter {
+      case(route, (passengerType, passengerCount)) => route.links.map { (passengerType, passengerCount, _) }.filter {
         case(_, _, link) => !selfOnly || link.link.airline.id == airlineId  
       }
     } //flat map by expanding the route to the links of the route
@@ -78,9 +66,9 @@ object HistoryUtil {
     val groupedLinkConsumptions = relatedLinkConsumptions.groupBy { case(passengerType, _, linkConsideration) => (linkConsideration.link, linkConsideration.inverted, passengerType) }
     
     //fold the value of the grouped map, we only care about passenger count now
-    val computedConsumedLinks = groupedLinkConsumptions.mapValues{
+    val computedConsumedLinks = groupedLinkConsumptions.view.mapValues{
       _.foldLeft(0)( (totalPassengerCount, entry) => totalPassengerCount + entry._2)
-    }
+    }.toMap
     
     //now it should have a nice map of 
     //key: Link, inverted, passengerType
@@ -102,15 +90,21 @@ object HistoryUtil {
   }
   
   
-  private def checkCache() = {
+  private def loadRelatedRoutesFromCache(linkId : Int) : Map[Route, (PassengerType.Value, Int)] = {
     val currentCycle = CycleSource.loadCycle()
     synchronized {
       if (currentCycle != loadedCycle) {
-        println("Updating link history cache on cycle " + currentCycle)
-        allConsumptions = ConsumptionHistorySource.loadAllConsumptions
-        println("Updated link history cache on cycle " + currentCycle)
+        consumptionCache.clear();
       }
-      loadedCycle = currentCycle
+    }
+
+    if (consumptionCache.containsKey(linkId)) {
+      consumptionCache.get(linkId)
+    } else {
+      println("Updating link history cache on cycle " + currentCycle + " for link " + linkId )
+      val result = ConsumptionHistorySource.loadRelatedConsumptionByLinkId(linkId)
+      consumptionCache.put(linkId, result)
+      result
     }
   }
 }

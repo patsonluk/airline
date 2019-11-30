@@ -1,14 +1,22 @@
 package com.patson.data
 import com.patson.data.Constants._
+
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Set
 import java.sql.DriverManager
+
 import com.patson.model.airplane.Airplane
 import java.sql.PreparedStatement
+
 import com.patson.model._
 import java.sql.Statement
+
 import scala.collection.mutable.HashSet
 import java.sql.Connection
+import java.util.{Calendar, Date}
+
+import com.patson.data.UserSource.dateFormat
+
 import scala.collection.mutable.HashMap
  
 
@@ -106,13 +114,13 @@ object LinkSource {
         val airline = airlineCache.get(airlineId)
         
         if (fromAirport.isDefined && toAirport.isDefined && airline.isDefined) {
-          val link = Link( 
+          val link = Link(
             fromAirport.get,
             toAirport.get,
             airline.get,
-            LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first"))),
+            LinkClassValues.getInstance(resultSet.getInt("price_economy"), resultSet.getInt("price_business"), resultSet.getInt("price_first")),
             resultSet.getInt("distance"),
-            LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first"))),
+            LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
             resultSet.getInt("quality"),
             resultSet.getInt("duration"),
             resultSet.getInt("frequency"),
@@ -135,6 +143,48 @@ object LinkSource {
       links.toList
     } finally {
       connection.close()
+    }
+  }
+
+  /**
+    * Do not put this as a part of the Link instance as this field is not really used most of the time
+    * @param linkIds
+    * @return
+    */
+  def loadLinkLastUpdates(linkIds : List[Int]) : Map[Int, Calendar] = {
+    if (linkIds.isEmpty) {
+      Map.empty
+    } else {
+      val queryString = new StringBuilder(BASE_QUERY + " where id IN (");
+      for (i <- 0 until linkIds.size - 1) {
+        queryString.append("?,")
+      }
+
+      queryString.append("?)")
+
+      val connection = Meta.getConnection()
+      try {
+        val preparedStatement = connection.prepareStatement(queryString.toString())
+
+        for (i <- 0 until linkIds.size) {
+          preparedStatement.setInt(i + 1, linkIds(i))
+        }
+
+        val resultSet = preparedStatement.executeQuery()
+
+        val lastUpdatesByLinkId = HashMap[Int, Calendar]()
+        while (resultSet.next()) {
+          val lastUpdate = Calendar.getInstance()
+          lastUpdate.setTime(dateFormat.get().parse(resultSet.getString("last_update")))
+
+          lastUpdatesByLinkId.put(resultSet.getInt("id"), lastUpdate)
+        }
+        resultSet.close()
+        preparedStatement.close()
+        lastUpdatesByLinkId.toMap
+      } finally {
+        connection.close()
+      }
     }
   }
   
@@ -340,7 +390,7 @@ object LinkSource {
   def updateLink(link : Link) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, last_update = ? WHERE id = ?")
 
     try {
       preparedStatement.setInt(1, link.price(ECONOMY))
@@ -354,7 +404,8 @@ object LinkSource {
       preparedStatement.setInt(9, link.frequency)
       preparedStatement.setInt(10, link.flightType.id)
       preparedStatement.setInt(11, link.flightNumber)
-      preparedStatement.setInt(12, link.id)
+      preparedStatement.setTimestamp(12, new java.sql.Timestamp(new Date().getTime()))
+      preparedStatement.setInt(13, link.id)
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
@@ -374,7 +425,7 @@ object LinkSource {
   def updateLinks(links : List[Link]) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, last_update = ? WHERE id = ?")
 
     connection.setAutoCommit(false)
     try {
@@ -390,7 +441,8 @@ object LinkSource {
         preparedStatement.setInt(9, link.frequency)
         preparedStatement.setInt(10, link.flightType.id)
         preparedStatement.setInt(11, link.flightNumber)
-        preparedStatement.setInt(12, link.id)
+        preparedStatement.setTimestamp(12, new java.sql.Timestamp(new Date().getTime()))
+        preparedStatement.setInt(13, link.id)
         preparedStatement.addBatch()
       }
       
@@ -438,11 +490,17 @@ object LinkSource {
   def deleteAllLinks() = {
     deleteLinksByCriteria(List.empty)
   }
+
+  def deleteLinksByAirlineId(airlineId : Int) = {
+    deleteLinksByCriteria(List(("airline", airlineId)))
+  }
   
   def deleteLinksByCriteria(criteria : List[(String, Any)]) = {
       //open the hsqldb
     val connection = Meta.getConnection()
-    try {  
+    try {
+      val purgingLinkIds = loadLinksByCriteria(criteria, ID_LOAD).map(_.id)
+
       var queryString = "DELETE FROM link "
       
       if (!criteria.isEmpty) {
@@ -458,11 +516,18 @@ object LinkSource {
       for (i <- 0 until criteria.size) {
         preparedStatement.setObject(i + 1, criteria(i)._2)
       }
-      
+
       val deletedCount = preparedStatement.executeUpdate()
       
       preparedStatement.close()
+
       println("Deleted " + deletedCount + " link records")
+      //purge alert records
+      val purgingAlerts = AlertSource.loadAlertsByCategoryAndTargetIds(AlertCategory.LINK_CANCELLATION, purgingLinkIds)
+      AlertSource.deleteAlerts(purgingAlerts)
+
+      println("Purged " + purgingAlerts.size + " alert records")
+
       deletedCount
     } finally {
       connection.close()
@@ -613,13 +678,13 @@ object LinkSource {
           case Some(currentLink) =>
             //need to update current link with history link data
             val frequency = resultSet.getInt("frequency")
-            val price = LinkClassValues(Map(ECONOMY -> resultSet.getInt("price_economy"), BUSINESS -> resultSet.getInt("price_business"), FIRST -> resultSet.getInt("price_first")))
+            val price = LinkClassValues.getInstance(resultSet.getInt("price_economy"), resultSet.getInt("price_business"), resultSet.getInt("price_first"))
             val quality = resultSet.getInt("quality")
-            val capacity =  LinkClassValues(Map(ECONOMY -> resultSet.getInt("capacity_economy"), BUSINESS -> resultSet.getInt("capacity_business"), FIRST -> resultSet.getInt("capacity_first")))
+            val capacity =  LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"),resultSet.getInt("capacity_first"))
             
             val link = currentLink.copy(price = price, frequency = frequency, capacity = capacity)
             link.setQuality(quality)
-            link.addSoldSeats(LinkClassValues(Map(ECONOMY -> resultSet.getInt("sold_seats_economy"), BUSINESS -> resultSet.getInt("sold_seats_business"), FIRST -> resultSet.getInt("sold_seats_first"))))
+            link.addSoldSeats(LinkClassValues.getInstance(resultSet.getInt("sold_seats_economy"), resultSet.getInt("sold_seats_business"), resultSet.getInt("sold_seats_first")))
             link.minorDelayCount = resultSet.getInt("minor_delay_count")
             link.majorDelayCount = resultSet.getInt("major_delay_count")
             link.cancellationCount = resultSet.getInt("cancellation_count")

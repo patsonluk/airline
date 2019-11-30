@@ -1,31 +1,20 @@
 package controllers
 
-import play.api._
-import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
-import javax.inject._
-import views._
-import models._
-import com.patson.data.UserSource
-import com.patson.model._
-import com.patson.Authentication
-import java.util.Calendar
-import com.patson.data.AirlineSource
-import play.api.libs.ws.WS
-import play.api.libs.ws.WSClient
-import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
-import scala.concurrent.Await
-import play.api.libs.json.Writes
-import play.api.libs.json.Json
-import play.api.libs.json.JsValue
-import play.api.libs.json.JsObject
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsString
 import java.util.UUID
 
-class AccountApplication extends Controller {
+import com.patson.Authentication
+import com.patson.data.UserSource
+import com.patson.model._
+import javax.inject.{Inject, Singleton}
+import models._
+import play.api.data.Forms._
+import play.api.data._
+import play.api.libs.json.Json
+import play.api.mvc._
+import views._
+
+@Singleton
+class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) with play.api.i18n.I18nSupport {
   /**
    * Sign Up Form definition.
    *
@@ -103,7 +92,7 @@ class AccountApplication extends Controller {
   /**
    * Display an empty form.
    */
-  def passwordResetForm(resetToken : String) = Action {
+  def passwordResetForm(resetToken : String) = Action { implicit request =>
     println("token is " + resetToken)
     UserSource.loadResetUser(resetToken) match {
     case Some(username) => {
@@ -115,11 +104,11 @@ class AccountApplication extends Controller {
     
   }
   
-  def forgotId() = Action {
+  def forgotId() = Action { implicit request =>
     Ok(html.forgotId(forgotIdForm.fill(ForgotId(""))))
   }
   
-  def forgotPassword() = Action {
+  def forgotPassword() = Action { implicit request =>
     Ok(html.forgotPassword(forgotPasswordForm.fill(ForgotPassword("", ""))))
   }
   

@@ -1,4 +1,5 @@
 var map
+var airportMap
 var markers
 var baseMarkers = []
 var activeAirline
@@ -33,7 +34,12 @@ $( document ).ready(function() {
 	{
   		$('#floatBackButton').animate({top: ($(window).scrollTop() + 100) + "px" },{queue: false, duration: 350});
 	});
-	
+
+	$('#chattext').jemoji({
+        folder : 'assets/images/emoji/',
+        btn:    $('#emojiButton')
+    });
+
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
@@ -272,7 +278,6 @@ function initMap() {
 //  linkControlDiv.index = 1;
 //  map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
 //  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(hideLinkHistoryButton);
-  
 }
 
 function LinkHistoryControl(controlDiv, map) {
@@ -317,6 +322,8 @@ function updateAllPanels(airlineId) {
 			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
 //		} else {
 //			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
+		} else if (christmasFlag) {
+		    printConsole("Breaking news - Santa went missing!!! Whoever finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
 		}
 		
 	}
@@ -352,22 +359,48 @@ function refreshPanels(airlineId) {
 }
 
 var totalmillisecPerWeek = 7 * 24 * 60 * 60 * 1000
-var refreshInterval = 1000 //every second
-var incrementPerInterval = totalmillisecPerWeek / (15 * 60 * 1000) * refreshInterval //current 15 minutes per week
-var refreshIntervalId
+var refreshInterval = 5000 //every 5 second
+var incrementPerInterval = totalmillisecPerWeek / (15 * 60 * 1000) * refreshInterval //by default 15 minutes per week
+var durationTillNextTick
+var hasTickEstimation = false
+var refreshIntervalTimer
 var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 
-function updateTime(cycle, fraction) {
+function updateTime(cycle, fraction, cycleDurationEstimation) {
 	currrentCycle = cycle
 	currentTime = (cycle + fraction) * totalmillisecPerWeek 
-	if (!refreshIntervalId) { //start incrementing
-		refreshIntervalId = setInterval( function() {
+	if (refreshIntervalTimer) {
+	    //cancel old timer
+	    clearInterval(refreshIntervalTimer)
+	 }
+
+	 if (cycleDurationEstimation > 0) { //update incrementPerInterval
+	    incrementPerInterval = totalmillisecPerWeek / cycleDurationEstimation * refreshInterval
+	    durationTillNextTick = cycleDurationEstimation * (1 - fraction)
+	    hasTickEstimation = true
+	 }
+	 //start incrementing
+	refreshIntervalTimer = setInterval( function() {
 			currentTime += incrementPerInterval
+			if (hasTickEstimation) {
+			    durationTillNextTick -= refreshInterval
+			}
 			var date = new Date(currentTime)
 			$("#currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) +  " " + padBefore(date.getHours(), "0", 2) + ":00")
+
+			if (hasTickEstimation) {
+			    var minutesLeft = Math.round(durationTillNextTick / 1000 / 60)
+			    if (minutesLeft <= 0) {
+			        $("#nextTickEstimation").text("Very soon")
+			    } else if (minutesLeft == 1) {
+			        $("#nextTickEstimation").text("1 minute")
+			    } else {
+			        $("#nextTickEstimation").text(minutesLeft + " minutes")
+			    }
+            }
 		}, refreshInterval);
-	}
+
 }
 
 

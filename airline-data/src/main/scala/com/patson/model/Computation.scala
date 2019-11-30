@@ -48,11 +48,6 @@ object Computation {
     
   }
   
-  def calculateAge(fromCycle : Int) = {
-    val currentCycle = CycleSource.loadCycle()
-    currentCycle - fromCycle 
-  }
-  
   val SELL_RATE = 0.8
   
   def calculateAirplaneSellValue(airplane : Airplane) : Int = {

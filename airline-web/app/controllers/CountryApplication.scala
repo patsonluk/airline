@@ -13,15 +13,17 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.CountrySource
 import com.patson.data.AirportSource
 import com.patson.util.ChampionUtil
+import javax.inject.Inject
 
 
-class CountryApplication extends Controller {
+class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   def getAllCountries(homeCountryCode : Option[String]) = Action {
     val countries = CountrySource.loadAllCountries()
     

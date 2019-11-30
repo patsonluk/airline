@@ -41,14 +41,14 @@ object Pricing {
     val priceByLinkClass : List[(LinkClass, Int)] = LinkClass.values.map { linkClass =>
       (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), linkClass))
     }
-    LinkClassValues(priceByLinkClass.toMap)
+    LinkClassValues.getInstanceByMap(priceByLinkClass.toMap)
   }
   
   def computeStandardPriceForAllClass(distance : Int, flightType : FlightType.Value) : LinkClassValues = {
     val priceByLinkClass : List[(LinkClass, Int)] = LinkClass.values.map { linkClass =>
       (linkClass, computeStandardPrice(distance, flightType, linkClass))
     }
-    LinkClassValues(priceByLinkClass.toMap)
+    LinkClassValues.getInstanceByMap(priceByLinkClass.toMap)
   }
   
   /**

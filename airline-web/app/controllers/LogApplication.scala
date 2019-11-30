@@ -13,6 +13,7 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -26,17 +27,20 @@ import com.patson.model.Loan
 import play.api.data.Form
 import play.api.data.Forms
 import com.patson.data.LogSource
+import javax.inject.Inject
 
 
 
-class LogApplication extends Controller {
+class LogApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object LogWrites extends Writes[Log] {
     def writes(log: Log): JsValue = JsObject(List(
-      "airlineId" -> JsString(log.airline.name),
-      "airlineName" -> JsNumber(log.airline.id),
+      "airlineName" -> JsString(log.airline.name),
+      "airlineId" -> JsNumber(log.airline.id),
       "message" -> JsString(log.message),
-      "category" -> JsString(LogCategory.getDescription(log.category)),
-      "severity" -> JsString(LogSeverity.getDescription(log.severity)),
+      "category" -> JsNumber(log.category.id),
+      "categoryText" -> JsString(LogCategory.getDescription(log.category)),
+      "severity" -> JsNumber(log.severity.id),
+      "severityText" -> JsString(LogSeverity.getDescription(log.severity)),
       "cycle" -> JsNumber(log.cycle)
       ))
   }
@@ -46,7 +50,7 @@ class LogApplication extends Controller {
   
   
   def getLogs(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, CycleSource.loadCycle)))
+    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, CycleSource.loadCycle - LOG_RANGE)))
   }
   
   

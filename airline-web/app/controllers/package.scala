@@ -1,3 +1,5 @@
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.patson.data._
 import com.patson.data.airplane._
 import com.patson.model._
@@ -25,9 +27,16 @@ import models.FacilityType.FacilityType
 import com.patson.util.ChampionInfo
 import models.AirplaneWithReadyStatus
 
+import scala.concurrent.ExecutionContext
+
 
 
 package object controllers {
+  implicit val ec: ExecutionContext = ExecutionContext.global
+  implicit val actorSystem = ActorSystem("patson-web-app-system")
+  implicit val materializer = ActorMaterializer()
+  implicit val order = Ordering.Double.IeeeOrdering
+
   implicit object AirlineFormat extends Format[Airline] {
     def reads(json: JsValue): JsResult[Airline] = {
       val airline = Airline.fromId((json \ "id").as[Int])
@@ -94,7 +103,7 @@ package object controllers {
       "range" -> JsNumber(airplane.model.range),
       "price" -> JsNumber(airplane.model.price),
       "condition" -> JsNumber(airplane.condition),
-      "age" -> JsNumber(Computation.calculateAge(airplane.constructedCycle)),
+      "constructedCycle" -> JsNumber(airplane.constructedCycle),
       "value" -> JsNumber(airplane.value),
       "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane)),
       "dealerValue" -> JsNumber(airplane.dealerValue)
@@ -107,7 +116,7 @@ package object controllers {
       val value = LinkClassValues.getInstance((json \ "economy").as[Int], (json \ "business").as[Int], (json \ "first").as[Int])
       JsSuccess(value)
     }
-    
+
     def writes(linkClassValues: LinkClassValues): JsValue = JsObject(List(
       "economy" -> JsNumber(linkClassValues(ECONOMY)),
       "business" -> JsNumber(linkClassValues(BUSINESS)),
@@ -149,9 +158,9 @@ package object controllers {
       link.getAssignedModel().foreach { model =>
         json = json + ("modelId" -> JsNumber(model.id)) + ("modelName" -> JsString(model.name))
       }
-      
-      
-      
+
+
+
       json
     }
   }
@@ -176,7 +185,30 @@ package object controllers {
         "quality" -> JsNumber(linkConsumption.link.computedQuality)))
     }
   }
-  
+
+  /**
+    * Do not expose sold seats
+    */
+  object MinimumLinkConsumptionWrite extends Writes[LinkConsumptionDetails] {
+    def writes(linkConsumption : LinkConsumptionDetails): JsValue = {
+      var priceJson = Json.obj()
+      LinkClass.values.foreach { linkClass =>
+        if (linkConsumption.link.capacity(linkClass) > 0) { //do not report price for link class that has no capacity
+          priceJson = priceJson + (linkClass.label -> JsNumber(linkConsumption.link.price(linkClass)))
+        }
+      }
+
+
+      JsObject(List(
+        "cycle" -> JsNumber(linkConsumption.cycle),
+        "linkId" -> JsNumber(linkConsumption.link.id),
+        "airlineId" -> JsNumber(linkConsumption.link.airline.id),
+        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
+        "price" -> priceJson,
+        "capacity" -> Json.toJson(linkConsumption.link.capacity)))
+    }
+  }
+
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {
       val airport = AirportSource.loadAirportById((json \ "airportId").as[Int]).get
@@ -348,26 +380,26 @@ package object controllers {
               "reputationBoost" -> JsNumber(info.reputationBoost))
     }
   }
-  
+
   implicit object AirplaneWithReadyStatusWrites extends Writes[AirplaneWithReadyStatus] {
     def writes(airplaneWithStatus: AirplaneWithReadyStatus): JsValue = {
-      Json.toJson(airplaneWithStatus.airplane).asInstanceOf[JsObject] + 
-        ("isReady" -> JsBoolean(airplaneWithStatus.isReady)) 
+      Json.toJson(airplaneWithStatus.airplane).asInstanceOf[JsObject] +
+        ("isReady" -> JsBoolean(airplaneWithStatus.isReady))
     }
   }
-  
+
   implicit object NegotiationOddsWrites extends Writes[NegotiationOdds] {
     def writes(odds : NegotiationOdds): JsValue = {
       var result = Json.arr()
       odds.getFactors.foreach {
-        case (factor, value) => 
+        case (factor, value) =>
           result = result.append(Json.obj("description" -> JsString(NegotationFactor.description(factor)),
                                      "value"-> JsNumber(value)))
       }
       result
     }
   }
-  
+
   implicit object NegotiationInfoWrites extends Writes[NegotiationInfo] {
     def writes(info : NegotiationInfo): JsValue = {
       Json.obj(
@@ -376,9 +408,9 @@ package object controllers {
               "requiredPoints" -> JsNumber(info.requiredPoints))
     }
   }
-  
-  
-  
+
+
+
   implicit object NegotiationResultWrites extends Writes[NegotiationResult] {
     def writes(result : NegotiationResult): JsValue = {
       val negotationSessions = result.getNegotiationSessions()
@@ -388,5 +420,22 @@ package object controllers {
               "isSuccessful" -> JsBoolean(result.isSuccessful))
     }
   }
-  
+
+
+  implicit object CityWrites extends Writes[City] {
+    def writes(city: City): JsValue = {
+      val averageIncome = city.income
+      val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
+      JsObject(List(
+        "id" -> JsNumber(city.id),
+        "name" -> JsString(city.name),
+        "latitude" -> JsNumber(city.latitude),
+        "longitude" -> JsNumber(city.longitude),
+        "countryCode" -> JsString(city.countryCode),
+        "population" -> JsNumber(city.population),
+        "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
+    }
+  }
+
+  val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)
 }

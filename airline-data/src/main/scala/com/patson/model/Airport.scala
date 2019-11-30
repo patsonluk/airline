@@ -1,15 +1,14 @@
 package com.patson.model
 
 import com.patson.model.airplane.Model
-import com.patson.model.airplane.Model.Type
 import scala.collection.mutable.ListBuffer
-import scala.collection.JavaConversions._
 import com.patson.data.AirlineSource
 import com.patson.data.CountrySource
+import scala.jdk.CollectionConverters._
 
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
-  val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
+  val citiesServed = scala.collection.mutable.ListBuffer[(City, Double)]()
   private[this] val airlineAppeals = new java.util.HashMap[Int, AirlineAppeal]()//scala.collection.mutable.Map[Int, AirlineAppeal]()
   private[this] var airlineAppealsLoaded = false
 //  private[this] val slotAssignments = scala.collection.mutable.Map[Int, Int]()
@@ -46,21 +45,21 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    airlineAppeals.toMap
+    airlineAppeals.asScala.toMap
   }
   
   def setAirlineLoyalty(airlineId : Int, value : Double) = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    val oldAppeal = airlineAppeals.getOrElse(airlineId, AirlineAppeal(0, 0))
+    val oldAppeal = airlineAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
     airlineAppeals.put(airlineId, AirlineAppeal(value, oldAppeal.awareness))
   }
   def setAirlineAwareness(airlineId : Int, value : Double) = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    val oldAppeal = airlineAppeals.getOrElse(airlineId, AirlineAppeal(0, 0))
+    val oldAppeal = airlineAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
     airlineAppeals.put(airlineId, AirlineAppeal(oldAppeal.loyalty, value))
   }
   def getAirlineLoyalty(airlineId : Int) : Double = {
@@ -147,7 +146,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   
   def initAirlineAppeals(airlineAppeals : Map[Int, AirlineAppeal]) = {
     this.airlineAppeals.clear()
-    this.airlineAppeals ++= airlineAppeals
+    this.airlineAppeals.asScala ++= airlineAppeals
     airlineAppealsLoaded = true
   }
   def initAirlineBases(airlineBases : List[AirlineBase]) = {
@@ -240,6 +239,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case _ => 0
     }
   }
+  
+  val displayText = city + "(" + iata + ")"
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)
@@ -262,13 +263,13 @@ object Airport {
   
   import FlightType._
   val qualityExpectationFlightTypeAdjust = 
-  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, 0, 15),
-        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 5, 20),
-        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 10, 25),
-        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 30),
-        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 20, 35),
-        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 25, 40),
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 25, 40))
+  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
+        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
+        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 5, 15),
+        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 5, 15),
+        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 10, 20),
+        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20),
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20))
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)
