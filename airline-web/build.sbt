@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
 //  "com.typesafe.akka" %% "akka-actor" % "2.5.26",
 //  "com.typesafe.akka"          %%  "akka-stream" % "2.5.26",
   "com.typesafe.akka" %% "akka-remote" % "2.5.26",
-  "default" %% "airline-data" % "1.1-SNAPSHOT",
+  "default" %% "airline-data" % "2.0",
   "com.google.api-client" % "google-api-client" % "1.30.4",
   "com.google.oauth-client" % "google-oauth-client-jetty" % "1.30.4",
   "com.google.apis" % "google-api-services-gmail" % "v1-rev103-1.25.0",
