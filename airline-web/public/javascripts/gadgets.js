@@ -409,3 +409,18 @@ function highlightSwitch(selectedSwitch) {
 function closeModal(modal) {
 	modal.fadeOut(200)
 }
+
+function isIe() {
+   if (/MSIE 10/i.test(navigator.userAgent)) {
+      // This is internet explorer 10
+      return true;
+   }
+
+   if (/MSIE 9/i.test(navigator.userAgent) || /rv:11.0/i.test(navigator.userAgent)) {
+      return true;
+   }
+
+   if (/Edge\/\d./i.test(navigator.userAgent)){
+      return true;
+   }
+}

@@ -22,6 +22,7 @@ $( document ).ready(function() {
 		refreshLoginBar()
 		getAirports();
 		printConsole("Please log in")
+        showAbout();
 	}
 	
 	loadAllCountries()
@@ -39,6 +40,12 @@ $( document ).ready(function() {
         folder : 'assets/images/emoji/',
         btn:    $('#emojiButton')
     });
+
+    Splitting();
+    if (isIe()) {
+        //remove all laser elements, as IE cannot handle it
+        $(".laser").hide()
+    }
 
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
@@ -130,6 +137,7 @@ function loadUser(isLogin) {
 	  async: false,
 	  success: function(user) {
 		  if (user) {
+		    closeAbout()
 			  activeUser = user
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
@@ -156,6 +164,7 @@ function loadUser(isLogin) {
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
 			  loadAllCountries() //load country again for relationship
+			  loadAllLogs()
 		  }
 		  
 	  },

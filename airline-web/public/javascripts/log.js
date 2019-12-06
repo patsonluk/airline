@@ -1,9 +1,6 @@
 var loadedLogs = []
 var loadedAlerts = []
 
-$( document ).ready(function() {
-	loadAllLogs()
-})
 
 function showLogCanvas() {
 	setActiveDiv($("#logCanvas"))
