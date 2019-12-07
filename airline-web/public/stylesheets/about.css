@@ -1,4 +1,4 @@
-#about {
+#landing {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
@@ -10,17 +10,18 @@
     background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
 }
 
-#about-content {
+#landing-content {
     color: #fff;
     margin: 10% auto; /* 10% from the top and centered */
     width: 60%; /* Could be more or less, depending on screen size */
 }
 
-a.about-link:hover {
-    border-radius: 0px;
+a.landing-link:hover {
+   border-radius: 0px;
    background-color: transparent ;
    text-shadow: 0 0 0.5em #0ff, 0 -1px 0 #000;
 }
+
 
 
 .title {
@@ -44,7 +45,7 @@ a.about-link:hover {
   animation: write linear both;
 }
 
-a.about-link {
+a.landing-link, #about-canvas a {
    color: hsl(0, 0%, 80%);
    text-shadow: 0 0 0.1em #0ff, 0 -1px 0 #000;
    text-transform: uppercase;
@@ -119,6 +120,7 @@ a.about-link {
   font-size: 14px;
   text-shadow: 0 0 0.1em #0ff, 0 -1px 0 #000;
 }
+
 .frost-section:before {
   width: calc(100% + 50px);
   height: calc(100% + 50px);
@@ -134,9 +136,46 @@ a.about-link {
   filter: blur(10px);
 }
 
-#about-canvas div.content{
-  width: 100%;
+.about-contents p{
+    color: hsl(0, 0%, 80%);
+    font-size: 1.1em;
+    line-height: 1.3;
+    padding: .8em 0 .25em;
+    font-family: "Noto Sans", Arial, sans-serif;
+    text-shadow: none;
+}
+
+.about-contents img {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin: 5px;
+}
+
+#about-canvas div.display-area{
   max-width: 100%;
-  padding: 20px;
+  max-height: 100%;
+  padding: 40px;
   position: relative;
+  font-family: "Noto Sans", Arial, sans-serif;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+-webkit-mask-image: linear-gradient(to bottom, black 0%,  black 70%, transparent 90%);
+  mask-image: linear-gradient(to bottom, black 0%,  black 70%, transparent 90%);
+  /*-webkit-mask-image: -webkit-gradient(linear, left 90%, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+  mask-image: linear-gradient(rgba(255, 0, 0, 1.0), transparent);*/
+}
+
+.about-title {
+    display: block;
+    font-size: 2em;
+    margin-block-start: 0.67em;
+    margin-block-end: 0.67em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: bold;
+}
+
+.about-section {
+    margin-block-end: 3em;
 }

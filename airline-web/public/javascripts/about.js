@@ -2,12 +2,12 @@
 
 function showAbout() {
     $("#main").addClass("blur")
-    $("#about").show()
+    $("#landing").show()
 }
 
 function closeAbout(){
     $("#main").removeClass("blur")
-    $("#about").fadeOut(200)
+    $("#landing").fadeOut(200)
 
 }
 

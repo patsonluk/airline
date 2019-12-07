@@ -621,3 +621,8 @@ img.flag {
 ::-webkit-scrollbar-thumb {
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 }
+
+div {
+     scrollbar-width: thin;
+     scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
+}
