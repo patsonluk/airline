@@ -110,7 +110,17 @@ function updateUsedAirplaneTable(sortProperty, sortOrder) {
 	$.each(loadedUsedAirplanes, function(index, usedAirplane) {
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell'>" + usedAirplane.id + "</div>")
-		row.append("<div class='cell' align='right'>$" + commaSeparateNumber(usedAirplane.dealerValue) + "</div>")
+		var priceColor
+		if (usedAirplane.dealerRatio >= 1.1) { //expensive
+		    priceColor = "#D46A6A"
+		} else if (usedAirplane.dealerRatio <= 0.9) { //cheap
+		    priceColor = "#68A357"
+		}
+		var priceDiv = $("<div class='cell' align='right'>$" + commaSeparateNumber(usedAirplane.dealerValue) + "</div>")
+		if (priceColor) {
+		    priceDiv.css("color", priceColor)
+	    }
+		row.append(priceDiv)
 		row.append("<div class='cell' align='right'>" + usedAirplane.condition.toFixed(2) + "%</div>")
 		if (!usedAirplane.rejection) {
 			row.append("<div class='cell' align='right'><img class='clickable' src='assets/images/icons/airplane-plus.png' title='Purchase this airplane' onclick='buyUsedAirplane(" + usedAirplane.id + ")'></div>")
@@ -201,25 +211,25 @@ function sellAirplane(airplaneId) {
 	});
 }
 
-function replaceAirplane(airplaneId) {
-	var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/airplanes/" + airplaneId 
-	$.ajax({
-		type: 'PUT',
-		data: JSON.stringify({}),
-		url: url,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(response) {
-	    	refreshPanels(airlineId)
-	    	showAirplaneCanvas()
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
-}
+//function replaceAirplane(airplaneId) {
+//	var airlineId = activeAirline.id
+//	var url = "airlines/" + airlineId + "/airplanes/" + airplaneId
+//	$.ajax({
+//		type: 'PUT',
+//		data: JSON.stringify({}),
+//		url: url,
+//	    contentType: 'application/json; charset=utf-8',
+//	    dataType: 'json',
+//	    success: function(response) {
+//	    	refreshPanels(airlineId)
+//	    	showAirplaneCanvas()
+//	    },
+//        error: function(jqXHR, textStatus, errorThrown) {
+//	            console.log(JSON.stringify(jqXHR));
+//	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+//	    }
+//	});
+//}
 
 function buyUsedAirplane(airplaneId) {
 	var airlineId = activeAirline.id
@@ -448,8 +458,6 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
     			$("#airplaneDetailsDeliveryRow").show()
     		}
 	    	$("#airplaneDetailsSellValue").text("$" + commaSeparateNumber(airplane.sellValue))
-	    	var replaceCost = airplane.price - airplane.sellValue
-	    	$("#airplaneDetailsReplaceCost").text("$" + commaSeparateNumber(replaceCost))
 	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.link) {
 	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='showWorldMap(); selectLinkFromMap(" + airplane.link.id + ", true)'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
@@ -464,17 +472,7 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
 	    	}
 	    	
 	    	$('#ownedAirplaneDetail .rejection').hide()
-	    	if (age >= 0) {
-	    		if (activeAirline.balance >= replaceCost) { 
-	    			$("#replaceAirplaneButton").show()
-	    		} else {
-	    			$("#replaceAirplaneButton").hide()
-	    			$('#ownedAirplaneDetail .rejection').show()
-	    		}
-	    	} else {
-	    		$("#replaceAirplaneButton").hide()
-	    	}
-	    	
+
 	    	$("#airplaneCanvas #ownedAirplaneDetail").fadeIn(200)
 	    	
 	    },
