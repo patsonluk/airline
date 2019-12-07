@@ -528,6 +528,7 @@ object Meta {
       "model INTEGER, " +
       "owner INTEGER, " +
       "constructed_cycle INTEGER, " +
+      "purchased_cycle INTEGER, " +
       "airplane_condition DECIMAL(7,4), " +
       "depreciation_rate INTEGER, " +
       "value INTEGER," +

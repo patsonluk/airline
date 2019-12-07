@@ -36,11 +36,11 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   val mediumModel = Model.modelByName("Boeing 787-8 Dreamliner")
   val largeAirplaneModel = Model.modelByName("Boeing 747-400")
                       
-  val lightAirplane = Airplane(lightModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(lightModel, Airplane.MAX_CONDITION.toDouble / lightModel.lifespan), lightModel.price)      
-  val regionalAirplane = Airplane(regionalModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(regionalModel, Airplane.MAX_CONDITION.toDouble / regionalModel.lifespan), regionalModel.price)
-  val smallAirplane = Airplane(smallModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(smallModel, Airplane.MAX_CONDITION.toDouble / smallModel.lifespan), smallModel.price)
-  val mediumAirplane = Airplane(mediumModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(mediumModel, Airplane.MAX_CONDITION.toDouble / mediumModel.lifespan), mediumModel.price)
-  val largeAirplane = Airplane(largeAirplaneModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
+  val lightAirplane = Airplane(lightModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(lightModel, Airplane.MAX_CONDITION.toDouble / lightModel.lifespan), lightModel.price)
+  val regionalAirplane = Airplane(regionalModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(regionalModel, Airplane.MAX_CONDITION.toDouble / regionalModel.lifespan), regionalModel.price)
+  val smallAirplane = Airplane(smallModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(smallModel, Airplane.MAX_CONDITION.toDouble / smallModel.lifespan), smallModel.price)
+  val mediumAirplane = Airplane(mediumModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(mediumModel, Airplane.MAX_CONDITION.toDouble / mediumModel.lifespan), mediumModel.price)
+  val largeAirplane = Airplane(largeAirplaneModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
   
   import Model.Type._
   //LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, JUMBO
@@ -506,7 +506,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity * loadFactor).toInt)))
     
     link.setAssignedAirplanes((0 until airplaneCount).foldRight(List[Airplane]()) { 
-      case (_, foldList) => Airplane(airplaneModel, testAirline1, 0, 100, AirplaneSimulation.computeDepreciationRate(airplaneModel, Airplane.MAX_CONDITION.toDouble / airplaneModel.lifespan), airplaneModel.price) :: foldList  
+      case (_, foldList) => Airplane(airplaneModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(airplaneModel, Airplane.MAX_CONDITION.toDouble / airplaneModel.lifespan), airplaneModel.price) :: foldList
     })
     
     val consumptionResult = LinkSimulation.computeLinkConsumptionDetail(link , 0)
