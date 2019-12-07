@@ -49,30 +49,37 @@ object AirplaneSimulation {
     updatingAirplanes.toList
   }
 
-  val SECOND_HAND_MAX_AIRPLANE_COUNT = 50 //only 50 max at a time
+  val SECOND_HAND_MAX_AIRPLANE_PER_MODEL_COUNT = 50 //only 50 max at a time
   def secondHandAirplaneSimulate(cycle : Int) = {
     var secondHandAirplanes = AirplaneSource.loadAirplanesCriteria(List(("is_sold", true)))
-    secondHandAirplanes = secondHandAirplanes.map(airplane => airplane.copy(dealerRatio = airplane.dealerRatio - DEALER_RATIO_DROP_RATE))
+    val secondHandAirplanesByModelId = secondHandAirplanes.map(airplane => airplane.copy(dealerRatio = airplane.dealerRatio - DEALER_RATIO_DROP_RATE)).groupBy(_.model.id)
     
-    var updatingAirplanes = ListBuffer[Airplane]()
-    val removingAirplanes = ListBuffer[Airplane]()
-    secondHandAirplanes.foreach { airplane =>
-      if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THERSHOLD) {
-        updatingAirplanes.append(airplane)
-      } else {
-        removingAirplanes.append(airplane)
-      }
-    }
-    if (updatingAirplanes.length > SECOND_HAND_MAX_AIRPLANE_COUNT) {
-      val removalCount = updatingAirplanes.length - SECOND_HAND_MAX_AIRPLANE_COUNT
-      updatingAirplanes = Random.shuffle(updatingAirplanes) //randomly drop some airplanes
-      removingAirplanes.appendAll(updatingAirplanes.take(removalCount))
-      updatingAirplanes = updatingAirplanes.drop(removalCount)
+
+    val allUpdatingAirplanes = ListBuffer[Airplane]()
+    val allRemovingAirplanes = ListBuffer[Airplane]()
+
+    secondHandAirplanesByModelId.foreach {
+      case(modelId, airplanesByModelId) =>
+        var updatingAirplanesByModel = ListBuffer[Airplane]()
+        airplanesByModelId.foreach { airplane =>
+          if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THERSHOLD) {
+            updatingAirplanesByModel.append(airplane)
+          } else {
+            allRemovingAirplanes.append(airplane)
+          }
+        }
+        if (updatingAirplanesByModel.length > SECOND_HAND_MAX_AIRPLANE_PER_MODEL_COUNT) {
+          val removalCount = updatingAirplanesByModel.length - SECOND_HAND_MAX_AIRPLANE_PER_MODEL_COUNT
+          updatingAirplanesByModel = Random.shuffle(updatingAirplanesByModel)
+          allRemovingAirplanes.appendAll(updatingAirplanesByModel.take(removalCount))
+          updatingAirplanesByModel = updatingAirplanesByModel.drop(removalCount)
+        }
+
+        allUpdatingAirplanes.appendAll(updatingAirplanesByModel)
     }
 
-
-    AirplaneSource.updateAirplanesDetails(updatingAirplanes.toList)
-    removingAirplanes.foreach { airplane =>
+    AirplaneSource.updateAirplanesDetails(allUpdatingAirplanes.toList)
+    allRemovingAirplanes.foreach { airplane =>
       AirplaneSource.deleteAirplanesByCriteria(List(("id", airplane.id), ("is_sold", true))) //need to be careful here, make sure it is still in 2nd hand market
     }
     
