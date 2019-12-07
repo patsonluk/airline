@@ -11,8 +11,6 @@ libraryDependencies ++= Seq(
   ws,
   guice,
   specs2 % Test,
-//  "com.typesafe.akka" %% "akka-actor" % "2.5.26",
-//  "com.typesafe.akka"          %%  "akka-stream" % "2.5.26",
   "com.typesafe.akka" %% "akka-remote" % "2.5.26",
   "default" %% "airline-data" % "1.1-SNAPSHOT",
   "com.google.api-client" % "google-api-client" % "1.30.4",

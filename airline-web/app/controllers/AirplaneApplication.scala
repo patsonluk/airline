@@ -198,7 +198,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                 } else {
                   val dealerValue = airplane.dealerValue
                   val actualValue = airplane.value
-                  airplane.buyFromDealer(airline)
+                  airplane.buyFromDealer(airline, CycleSource.loadCycle())
                   if (AirplaneSource.updateAirplanes(List(airplane)) == 1) {
                     val capitalGain = actualValue - dealerValue
                     AirlineSource.adjustAirlineBalance(airline.id, dealerValue * -1)
@@ -272,41 +272,41 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
   
-  def replaceAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) { request =>
-    AirplaneSource.loadAirplaneById(airplaneId) match {
-      case Some(airplane) => 
-        if (airplane.owner.id == airlineId) {
-          if (!airplane.isReady(CycleSource.loadCycle)) {
-            BadRequest("airplane is not yet constructed")
-          } else {
-            val sellValue = Computation.calculateAirplaneSellValue(airplane)
-            val replaceCost = airplane.model.price - sellValue
-            if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
-              BadRequest("Not enough money")   
-            } else {
-//               if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
-//                  AirplaneSource.saveAirplanes(List(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0)))
-//               }
-              
-              val replacingAirplane = airplane.copy(constructedCycle = CycleSource.loadCycle(), condition = Airplane.MAX_CONDITION, value = airplane.model.price)
-               
-              AirplaneSource.updateAirplanes(List(replacingAirplane)) //TODO MAKE SURE SYNCHONRIZE WITH AIRPLANE UPDATE SIMULATION
-              AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
-              AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
-              
-              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellValue))
-              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, airplane.model.price * -1))
-                
-              Ok(Json.toJson(airplane))
-            }
-          }
-        } else {
-          Forbidden
-        }
-      case None =>
-        BadRequest("airplane not found")
-    }
-  }
+//  def replaceAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) { request =>
+//    AirplaneSource.loadAirplaneById(airplaneId) match {
+//      case Some(airplane) =>
+//        if (airplane.owner.id == airlineId) {
+//          if (!airplane.isReady(CycleSource.loadCycle)) {
+//            BadRequest("airplane is not yet constructed")
+//          } else {
+//            val sellValue = Computation.calculateAirplaneSellValue(airplane)
+//            val replaceCost = airplane.model.price - sellValue
+//            if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
+//              BadRequest("Not enough money")
+//            } else {
+////               if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
+////                  AirplaneSource.saveAirplanes(List(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0)))
+////               }
+//
+//              val replacingAirplane = airplane.copy(constructedCycle = CycleSource.loadCycle(), condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+//
+//              AirplaneSource.updateAirplanes(List(replacingAirplane)) //TODO MAKE SURE SYNCHONRIZE WITH AIRPLANE UPDATE SIMULATION
+//              AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
+//              AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
+//
+//              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellValue))
+//              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, airplane.model.price * -1))
+//
+//              Ok(Json.toJson(airplane))
+//            }
+//          }
+//        } else {
+//          Forbidden
+//        }
+//      case None =>
+//        BadRequest("airplane not found")
+//    }
+//  }
   
   def addAirplane(airlineId : Int, model : Int, quantity : Int) = AuthenticatedAirline(airlineId) { request =>
     val modelGet = ModelSource.loadModelById(model)
@@ -317,7 +317,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       val currentCycle = CycleSource.loadCycle()
       val constructedCycle = currentCycle + modelGet.get.constructionTime
       
-      val airplane = Airplane(modelGet.get, airline, constructedCycle = constructedCycle , Airplane.MAX_CONDITION, depreciationRate = 0, value = modelGet.get.price)
+      val airplane = Airplane(modelGet.get, airline, constructedCycle = constructedCycle , purchasedCycle = constructedCycle, Airplane.MAX_CONDITION, depreciationRate = 0, value = modelGet.get.price)
       
       val rejectionOption = getRejection(modelGet.get, airline)
       if (rejectionOption.isDefined) {
