@@ -65,8 +65,8 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
       val smallAirplaneModel = Model.modelByName("Bombardier CS100")
       val largeAirplaneModel = Model.modelByName("Boeing 747-400")
       
-      val smallAirplane = Airplane(smallAirplaneModel, Airline.fromId(1), 0, 100, AirplaneSimulation.computeDepreciationRate(smallAirplaneModel, Airplane.MAX_CONDITION.toDouble / smallAirplaneModel.lifespan), smallAirplaneModel.price)
-      val largeAirplane = Airplane(largeAirplaneModel, Airline.fromId(1), 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
+      val smallAirplane = Airplane(smallAirplaneModel, Airline.fromId(1), 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(smallAirplaneModel, Airplane.MAX_CONDITION.toDouble / smallAirplaneModel.lifespan), smallAirplaneModel.price)
+      val largeAirplane = Airplane(largeAirplaneModel, Airline.fromId(1), 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
       
       val consumptions = ListBuffer[LinkConsumptionDetails]()
       List(smallAirplane, largeAirplane).foreach { airplane =>

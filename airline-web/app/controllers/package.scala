@@ -103,9 +103,11 @@ package object controllers {
       "price" -> JsNumber(airplane.model.price),
       "condition" -> JsNumber(airplane.condition),
       "constructedCycle" -> JsNumber(airplane.constructedCycle),
+      "purchasedCycle" ->  JsNumber(airplane.purchasedCycle),
       "value" -> JsNumber(airplane.value),
       "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane)),
-      "dealerValue" -> JsNumber(airplane.dealerValue)
+      "dealerValue" -> JsNumber(airplane.dealerValue),
+      "dealerRatio" -> JsNumber(airplane.dealerRatio)
       ))
     }
   }

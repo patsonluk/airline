@@ -49,7 +49,7 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
     airline.setMaintainenceQuality(Airline.MAX_MAINTENANCE_QUALITY)
     
     val link = Link(fromAirport, toAirport, airline, price = price, distance = distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(flightType, ECONOMY), duration, frequency, flightType)
-    val airplane = Airplane(airplaneModel, airline, constructedCycle = 0 , Airplane.MAX_CONDITION, depreciationRate = 0, value = airplaneModel.price)
+    val airplane = Airplane(airplaneModel, airline, constructedCycle = 0 , purchasedCycle = 0, Airplane.MAX_CONDITION, depreciationRate = 0, value = airplaneModel.price)
     
     val updatedAirplane = AirplaneSimulation.decayAirplanesByAirline(List((airplane, Some(link))), airline)(0)
     link.setAssignedAirplanes(List(updatedAirplane))

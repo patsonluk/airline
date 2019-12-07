@@ -4,7 +4,9 @@ import scala.collection.mutable.ListBuffer
 import com.patson.data._
 import com.patson.model._
 import com.patson.model.airplane._
+
 import scala.collection.mutable.Map
+import scala.util.Random
 
 
 object AirplaneSimulation {
@@ -36,7 +38,7 @@ object AirplaneSimulation {
     println("Finished updating all airplanes")
     
     println("Start renewing airplanes")
-    updatingAirplanes = renewAirplanes(updatingAirplanes)
+    updatingAirplanes = renewAirplanes(updatingAirplanes, cycle)
     println("Finished renewing airplanes")
     
     println("Start retiring airplanes")
@@ -46,22 +48,38 @@ object AirplaneSimulation {
     
     updatingAirplanes.toList
   }
-  
+
+  val SECOND_HAND_MAX_AIRPLANE_PER_MODEL_COUNT = 50 //only 50 max at a time
   def secondHandAirplaneSimulate(cycle : Int) = {
     var secondHandAirplanes = AirplaneSource.loadAirplanesCriteria(List(("is_sold", true)))
-    secondHandAirplanes = secondHandAirplanes.map(airplane => airplane.copy(dealerRatio = airplane.dealerRatio - DEALER_RATIO_DROP_RATE))
+    val secondHandAirplanesByModelId = secondHandAirplanes.map(airplane => airplane.copy(dealerRatio = airplane.dealerRatio - DEALER_RATIO_DROP_RATE)).groupBy(_.model.id)
     
-    val updatingAirplanes = ListBuffer[Airplane]()
-    val removingAirplanes = ListBuffer[Airplane]()
-    secondHandAirplanes.foreach { airplane =>
-      if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THERSHOLD) {
-        updatingAirplanes.append(airplane)
-      } else {
-        removingAirplanes.append(airplane)
-      }
+
+    val allUpdatingAirplanes = ListBuffer[Airplane]()
+    val allRemovingAirplanes = ListBuffer[Airplane]()
+
+    secondHandAirplanesByModelId.foreach {
+      case(modelId, airplanesByModelId) =>
+        var updatingAirplanesByModel = ListBuffer[Airplane]()
+        airplanesByModelId.foreach { airplane =>
+          if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THERSHOLD) {
+            updatingAirplanesByModel.append(airplane)
+          } else {
+            allRemovingAirplanes.append(airplane)
+          }
+        }
+        if (updatingAirplanesByModel.length > SECOND_HAND_MAX_AIRPLANE_PER_MODEL_COUNT) {
+          val removalCount = updatingAirplanesByModel.length - SECOND_HAND_MAX_AIRPLANE_PER_MODEL_COUNT
+          updatingAirplanesByModel = Random.shuffle(updatingAirplanesByModel)
+          allRemovingAirplanes.appendAll(updatingAirplanesByModel.take(removalCount))
+          updatingAirplanesByModel = updatingAirplanesByModel.drop(removalCount)
+        }
+
+        allUpdatingAirplanes.appendAll(updatingAirplanesByModel)
     }
-    AirplaneSource.updateAirplanesDetails(updatingAirplanes.toList)
-    removingAirplanes.foreach { airplane =>
+
+    AirplaneSource.updateAirplanesDetails(allUpdatingAirplanes.toList)
+    allRemovingAirplanes.foreach { airplane =>
       AirplaneSource.deleteAirplanesByCriteria(List(("id", airplane.id), ("is_sold", true))) //need to be careful here, make sure it is still in 2nd hand market
     }
     
@@ -71,17 +89,20 @@ object AirplaneSimulation {
   val DEALER_RATIO_LOWER_THERSHOLD = Computation.SELL_RATE //at this ratio, the dealer would just scrap the airplane
   
   
-  def renewAirplanes(airplanes : List[Airplane]) : List[Airplane] = {
+  def renewAirplanes(airplanes : List[Airplane], currentCycle : Int) : List[Airplane] = {
     val renewalThresholdsByAirline : scala.collection.immutable.Map[Int, Int] = AirlineSource.loadAirplaneRenewals()
     val costsByAirline : Map[Int, (Long, Long, Long, Long)] = Map[Int, (Long, Long, Long, Long)]()
     val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
     val renewedAirplanes : ListBuffer[Airplane] = ListBuffer[Airplane]() 
     val secondHandAirplanes  = ListBuffer[Airplane]()
-    
-    val updatingAirplanes = airplanes.map { airplane => 
+
+
+    val updatingAirplanes = airplanes.map { airplane =>
       renewalThresholdsByAirline.get(airplane.owner.id) match {
         case Some(threshold) =>
-          if (airplane.condition < threshold ) {
+
+          if (airplane.condition < threshold
+            && airplane.purchasedCycle <= currentCycle - airplane.model.constructionTime) { //only renew airplane if it has been purchased longer than the construction time required
              val airlineId = airplane.owner.id 
              val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalLost) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
              val sellValue = Computation.calculateAirplaneSellValue(airplane)
@@ -97,7 +118,7 @@ object AirplaneSimulation {
                if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
                  secondHandAirplanes.append(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0))
                }
-               val renewedAirplane = airplane.copy(constructedCycle = MainSimulation.currentWeek, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+               val renewedAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
                renewedAirplanes.append(renewedAirplane)
                renewedAirplane
              } else { //not enough fund

@@ -46,9 +46,9 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   airline1Link.setQuality(fromAirport.expectedQuality(flightType, FIRST))
   airline2Link.setQuality(fromAirport.expectedQuality(flightType, FIRST))
   val topAirlineLink = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 100, 600, 1, flightType) 
-  airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline1, 0, 100, 0, 0)))
-  airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline2, 0, 100, 0, 0)))
-  topAirlineLink.setAssignedAirplanes(List(Airplane(Model.fromId(0), topAirline, 0, 100, 0, 0)))
+  airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline1, 0, purchasedCycle = 0, 100, 0, 0)))
+  airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), testAirline2, 0, purchasedCycle = 0, 100, 0, 0)))
+  topAirlineLink.setAssignedAirplanes(List(Airplane(Model.fromId(0), topAirline, 0, purchasedCycle = 0, 100, 0, 0)))
   
   "An AppealPreference".must {
     "generate similar cost if price and distance is the same, and small differece in loyalty".in {
@@ -365,8 +365,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100, 0, 0)))
-      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100, 0, 0)))
+      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0)))
+      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0)))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
       toAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -394,8 +394,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100, 0, 0)))
-      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100, 0, 0)))
+      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0)))
+      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0)))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
       toAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, toAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -423,8 +423,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100, 0, 0)))
-      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100, 0, 0)))
+      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0)))
+      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0)))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
       toAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -452,8 +452,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100, 0, 0)))
-      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100, 0, 0)))
+      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0)))
+      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0)))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 2, status = LoungeStatus.ACTIVE, foundedCycle = 0),
                                    Lounge(adjustedAirline2, allianceId = None, fromAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -482,8 +482,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, 100, 0, 0)))
-      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, 100, 0, 0)))
+      airline2Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0)))
+      airline1Link.setAssignedAirplanes(List(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0)))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
       toAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))

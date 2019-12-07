@@ -127,7 +127,7 @@ object AirlineGenerator extends App {
               
               //make airplanes :)
               for (i <- 0 until airplanesRequired) {
-                val newAirplane = Airplane(model = model, owner = airline, constructedCycle = 0 , condition =  Airplane.MAX_CONDITION, depreciationRate = 0, value = model.price)
+                val newAirplane = Airplane(model = model, owner = airline, constructedCycle = 0 , purchasedCycle = 0, condition =  Airplane.MAX_CONDITION, depreciationRate = 0, value = model.price)
                 AirplaneSource.saveAirplanes(List(newAirplane))
                 airplanes += newAirplane
               }
