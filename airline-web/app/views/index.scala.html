@@ -18,8 +18,11 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/about.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")">
 
     
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
@@ -36,6 +39,7 @@
     <script src="@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")"></script>	
 	<script src="@routes.Assets.versioned("javascripts/jemoji/jemoji.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/emojify/emojify.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/splitting/splitting.min.js")"></script>
 
     <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
     <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
@@ -70,6 +74,7 @@
 	<script src="@routes.Assets.versioned("javascripts/chat.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/christmas.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/confetti.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/about.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
     <script>
     	if (window.location.hostname != 'localhost') {
@@ -136,12 +141,50 @@
 			</div>
 		</div>
   	</div>
-  	<div id="main" style="width: 100%;" >
-  		<div id="console" class="marquee" style="width: 100%; position: relative; float: left;" align="center">
-  			<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
-  			<span id="consoleMessage"></span>
-  		</div>
-  		 
+	<div id="console" class="marquee" style="width: 100%; position: relative; float: left;" align="center">
+		<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
+		<span id="consoleMessage"></span>
+	</div>
+	<div id="landing">
+		<div id="landing-content">
+			<div class="title" style="display: flex; ">
+<!--				<span class="text write" data-splitting="lines">-->
+<!--					Become the legendary Airline<br/>-->
+<!--					Compete with <br/>-->
+<!--					With the most sophisticated passenger simulation<br/>-->
+<!--					<br/>-->
+<!--					Completely free and open source and ad free!-->
+<!--				 </span>-->
+<!--				<span aria-hidden="true" class="text laser" data-splitting="lines">-->
+<!--					Become the legendary Airline<br/>-->
+<!--					Compete with <br/>-->
+<!--					With the most sophisticated passenger simulation<br/>-->
+<!--					<br/>-->
+<!--					Completely free and open source and ad free!-->
+<!--				</span>-->
+
+				<span class="text write" data-splitting="lines">
+					The most sophisticated airline sim ever made.<br/>
+					Track pax movement throughout your network,<br/>
+					join an alliance and become the Ultimate airline!<br/>
+					<br/>
+					100% free and open source!
+				 </span>
+				<span aria-hidden="true" class="text laser" data-splitting="lines">
+					The most sophisticated airline sim ever made.<br/>
+					Track pax movement throughout your network,<br/>
+					join an alliance and become the Ultimate airline!<br/>
+					<br/>
+					100% free and open source!
+				</span>
+			</div>
+				<div><a href="about" class="landing-link">&gt;&gt; Tell me more</a></div>
+				<div><a href="signup" class="landing-link">&gt;&gt; Sign me up</a></div>
+				<div><a href="#"  class="landing-link" onclick="closeAbout()">&gt;&gt; Check out the game world</a></div>
+
+		</div>
+	</div>
+	<div id="main" style="width: 100%;" >
 		<!-- Chat Window -->
 		<div id="live-chat" class="user-specific-tab">
 			<div ng-app="ChatApp">
