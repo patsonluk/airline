@@ -3,9 +3,10 @@
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
     left: 0;
-    top: 70px;
+    top: 0px;
     width: 100%; /* Full width */
-    height: calc(100% - 70px);
+    /*height: calc(100% - 70px);*/
+    height: 100%;
     overflow: auto; /* Enable scroll if needed */
     background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
 }
