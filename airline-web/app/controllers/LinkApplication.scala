@@ -483,159 +483,176 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
      Ok(Json.toJson(linkConsumptions))
   }
 
-
-  
-  def planLink(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
-    val PlanLinkData(fromAirportId, toAirportId) = planLinkForm.bindFromRequest.get
+  def preparePlanLink(airline : Airline, fromAirportId : Int, toAirportId : Int) : Either[String, (Airport, Airport)] = {
     AirportSource.loadAirportById(fromAirportId, true) match {
       case Some(fromAirport) =>
         AirportSource.loadAirportById(toAirportId, true) match {
           case Some(toAirport) =>
-            val airline = request.user
-            var existingLink : Option[Link] = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
-            
-            val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
-            val (maxFrequencyFromAirport, maxFrequencyToAirport) = getMaxFrequencyByAirports(fromAirport, toAirport, Airline.fromId(airlineId), existingLink)
-            
-            //check relationship
-            val airlineCountryCode = request.user.getCountryCode().get
-            val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink.isEmpty)
-              
-            
-            //group airplanes by model, also add boolean to indicated whether the airplane is assigned to this link
-            val availableAirplanesByModel = Map[Model, ListBuffer[(Airplane, Boolean)]]()
-            
-            val modelsWithinRange : List[Model] = ModelSource.loadModelsWithinRange(distance)
-            modelsWithinRange.foreach {
-              availableAirplanesByModel.put(_, ListBuffer[(Airplane, Boolean)]())
+            if (airline.getBases().map(_.airport.id).contains(fromAirportId)) { //make sure it has a base for the from Airport
+              Right((fromAirport, toAirport))
+            } else {
+              Left(s"from Airport $fromAirportId is not a base of ${airline.name}")
             }
-            
-            
-            val airplanesWithAssignedLinks : List[(Airplane, Option[Link])] = AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
-            
-            val currentCycle = CycleSource.loadCycle
-            //val airplaneModelsWithinRange = AirplaneSource.load
-            val availableAirplanes = airplanesWithAssignedLinks.filter(_._1.isReady(currentCycle)).filter {
-              case (_ , Some(_)) => false
-              case (airplane, None) => 
-                airplane.model.range >= distance
-            }.map(_._1)
-            
-            val assignedToThisLinkAirplanes = existingLink match {
-              case Some(link) => airplanesWithAssignedLinks.filter {
-                case (airplane, Some(assignedLink)) if (link.id == assignedLink.id) => true
-                case _ => false
-              }.map(_._1)
-              case _ => List.empty 
-            }               
-               
-            
-            var assignedModel : Option[Model] = existingLink match {
-              case Some(link) => link.getAssignedModel()
-              case None => None
-            }
-            
-            availableAirplanes.foreach { availableAirplane => 
-              availableAirplanesByModel(availableAirplane.model).append((availableAirplane, false)) 
-            }
-            assignedToThisLinkAirplanes.foreach { assignedAirplane => 
-              availableAirplanesByModel(assignedAirplane.model).append((assignedAirplane, true))
-            }
-            val planLinkInfoByModel = ListBuffer[ModelPlanLinkInfo]()
-            
-            val sortedAirplanesByModel = ListMap(availableAirplanesByModel.filter{
-              case (model, _) => fromAirport.allowsModel(model) && toAirport.allowsModel(model) 
-            }.toSeq.sortBy(_._1.range):_*)
-            
-            sortedAirplanesByModel.foreach {
-              case(model, airplaneList) => 
-                val duration = Computation.calculateDuration(model, distance)
-                val existingSlotsUsedByThisModel= if (assignedModel.isDefined && assignedModel.get.id == model.id) { existingLink.get.frequency } else { 0 } 
-                val maxFrequencyByModel : Double = Computation.calculateMaxFrequencyDouble(model, distance)
-                
-                planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, maxFrequencyByModel, assignedModel.isDefined && assignedModel.get.id == model.id, airplaneList.toList))
-            }
-            
-            
-            var suggestedPrice : LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), ECONOMY),
-                                                                   Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), BUSINESS),
-                                                                   Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), FIRST))
-                                                                                                                                      
-            //adjust suggestedPrice with Lounge
-            toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
-              suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
-                                                       (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor(distance)).toInt,
-                                                       (suggestedPrice(FIRST) / lounge.getPriceReduceFactor(distance)).toInt)
-                                                           
-            }
-            
-            fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
-              suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY), 
-                                                       (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor(distance)).toInt,
-                                                       (suggestedPrice(FIRST) / lounge.getPriceReduceFactor(distance)).toInt)
-            }
-            val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
-            val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.BUSINESS)
-            val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.TOURIST)
-            
-            val directDemand = directBusinessDemand + directTouristDemand
-            //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum 
-            
-            val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
-            val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
-            val flightCode = LinkApplication.getFlightCode(request.user, flightNumber)
-            val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
-            
-            var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
-                                        "fromAirportName" -> fromAirport.name,
-                                        "fromAirportCity" -> fromAirport.city,
-                                        "fromAirportLatitude" -> fromAirport.latitude,
-                                        "fromAirportLongitude" -> fromAirport.longitude,
-                                        "fromCountryCode" -> fromAirport.countryCode,
-                                        "toAirportId" -> toAirport.id,
-                                        "toAirportName" -> toAirport.name,
-                                        "toAirportCity" -> toAirport.city,
-                                        "toAirportLatitude" -> toAirport.latitude,
-                                        "toAirportLongitude" -> toAirport.longitude,
-                                        "toCountryCode" -> toAirport.countryCode,
-                                        "flightCode" -> flightCode,
-                                        "mutualRelationship" -> relationship,
-                                        "distance" -> distance, 
-                                        "suggestedPrice" -> suggestedPrice,
-                                        "economySpaceMultiplier" -> ECONOMY.spaceMultiplier, 
-                                        "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
-                                        "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
-                                        "maxFrequencyFromAirport" -> maxFrequencyFromAirport, 
-                                        "maxFrequencyToAirport" -> maxFrequencyToAirport,
-                                        "maxFrequencyAbsolute" -> maxFrequencyAbsolute,
-                                        "directDemand" -> directDemand,
-                                        "businessPassengers" -> directBusinessDemand.total,
-                                        "touristPassengers" -> directTouristDemand.total,
-                                        "cost" -> cost).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
-                                                  
-            
-            val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
-              LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
-            }
-            var otherLinkArray = Json.toJson(competitorLinkConsumptions.filter( _.link.capacity.total > 0).map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq)
-            resultObject = resultObject + ("otherLinks", otherLinkArray)
-                                        
-            if (existingLink.isDefined) {
-              resultObject = resultObject + ("existingLink", Json.toJson(existingLink))
-              val deleteRejection = getDeleteLinkRejection(existingLink.get, request.user)
-              if (deleteRejection.isDefined) {
-                resultObject = resultObject + ("deleteRejection", Json.toJson(deleteRejection.get))
-              }
-            }
-            
-            if (rejectionReason.isDefined) {
-              resultObject = resultObject + ("rejection", Json.toJson(rejectionReason.get))
-            }
-            
-            Ok(resultObject)
-          case None => BadRequest("unknown toAirport")
+          case None =>
+            Left(s"from Airport $fromAirportId is not found")
         }
-        case None => BadRequest("unknown toAirport")
+      case None =>
+        Left(s"to Airport $toAirportId is not found")
+    }
+  }
+
+
+  
+  def planLink(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
+    val PlanLinkData(fromAirportId, toAirportId) = planLinkForm.bindFromRequest.get
+    val airline = request.user
+    preparePlanLink(airline, fromAirportId, toAirportId) match {
+      case Right((fromAirport, toAirport)) => {
+        var existingLink: Option[Link] = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
+
+        val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
+        val (maxFrequencyFromAirport, maxFrequencyToAirport) = getMaxFrequencyByAirports(fromAirport, toAirport, Airline.fromId(airlineId), existingLink)
+
+        val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink.isEmpty)
+
+
+        //group airplanes by model, also add boolean to indicated whether the airplane is assigned to this link
+        val availableAirplanesByModel = Map[Model, ListBuffer[(Airplane, Boolean)]]()
+
+        val modelsWithinRange: List[Model] = ModelSource.loadModelsWithinRange(distance)
+        modelsWithinRange.foreach {
+          availableAirplanesByModel.put(_, ListBuffer[(Airplane, Boolean)]())
+        }
+
+
+        val airplanesWithAssignedLinks: List[(Airplane, Option[Link])] = AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
+
+        val currentCycle = CycleSource.loadCycle
+        //val airplaneModelsWithinRange = AirplaneSource.load
+        val availableAirplanes = airplanesWithAssignedLinks.filter(_._1.isReady(currentCycle)).filter {
+          case (_, Some(_)) => false
+          case (airplane, None) =>
+            airplane.model.range >= distance
+        }.map(_._1)
+
+        val assignedToThisLinkAirplanes = existingLink match {
+          case Some(link) => airplanesWithAssignedLinks.filter {
+            case (airplane, Some(assignedLink)) if (link.id == assignedLink.id) => true
+            case _ => false
+          }.map(_._1)
+          case _ => List.empty
+        }
+
+
+        var assignedModel: Option[Model] = existingLink match {
+          case Some(link) => link.getAssignedModel()
+          case None => None
+        }
+
+        availableAirplanes.foreach { availableAirplane =>
+          availableAirplanesByModel(availableAirplane.model).append((availableAirplane, false))
+        }
+        assignedToThisLinkAirplanes.foreach { assignedAirplane =>
+          availableAirplanesByModel(assignedAirplane.model).append((assignedAirplane, true))
+        }
+        val planLinkInfoByModel = ListBuffer[ModelPlanLinkInfo]()
+
+        val sortedAirplanesByModel = ListMap(availableAirplanesByModel.filter {
+          case (model, _) => fromAirport.allowsModel(model) && toAirport.allowsModel(model)
+        }.toSeq.sortBy(_._1.range): _*)
+
+        sortedAirplanesByModel.foreach {
+          case (model, airplaneList) =>
+            val duration = Computation.calculateDuration(model, distance)
+            val existingSlotsUsedByThisModel = if (assignedModel.isDefined && assignedModel.get.id == model.id) {
+              existingLink.get.frequency
+            } else {
+              0
+            }
+            val maxFrequencyByModel: Double = Computation.calculateMaxFrequencyDouble(model, distance)
+
+            planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, maxFrequencyByModel, assignedModel.isDefined && assignedModel.get.id == model.id, airplaneList.toList))
+        }
+
+
+        var suggestedPrice: LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), ECONOMY),
+          Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), BUSINESS),
+          Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), FIRST))
+
+        //adjust suggestedPrice with Lounge
+        toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
+          suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY),
+            (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor(distance)).toInt,
+            (suggestedPrice(FIRST) / lounge.getPriceReduceFactor(distance)).toInt)
+
+        }
+
+        fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
+          suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY),
+            (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor(distance)).toInt,
+            (suggestedPrice(FIRST) / lounge.getPriceReduceFactor(distance)).toInt)
+        }
+        val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+        val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.BUSINESS)
+        val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, relationship, PassengerType.TOURIST)
+
+        val directDemand = directBusinessDemand + directTouristDemand
+        //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum
+
+        val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
+        val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
+        val flightCode = LinkApplication.getFlightCode(request.user, flightNumber)
+        val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
+
+        var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
+          "fromAirportName" -> fromAirport.name,
+          "fromAirportCity" -> fromAirport.city,
+          "fromAirportLatitude" -> fromAirport.latitude,
+          "fromAirportLongitude" -> fromAirport.longitude,
+          "fromCountryCode" -> fromAirport.countryCode,
+          "toAirportId" -> toAirport.id,
+          "toAirportName" -> toAirport.name,
+          "toAirportCity" -> toAirport.city,
+          "toAirportLatitude" -> toAirport.latitude,
+          "toAirportLongitude" -> toAirport.longitude,
+          "toCountryCode" -> toAirport.countryCode,
+          "flightCode" -> flightCode,
+          "mutualRelationship" -> relationship,
+          "distance" -> distance,
+          "suggestedPrice" -> suggestedPrice,
+          "economySpaceMultiplier" -> ECONOMY.spaceMultiplier,
+          "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
+          "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
+          "maxFrequencyFromAirport" -> maxFrequencyFromAirport,
+          "maxFrequencyToAirport" -> maxFrequencyToAirport,
+          "maxFrequencyAbsolute" -> maxFrequencyAbsolute,
+          "directDemand" -> directDemand,
+          "businessPassengers" -> directBusinessDemand.total,
+          "touristPassengers" -> directTouristDemand.total,
+          "cost" -> cost).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
+
+
+        val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
+          LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
+        }
+        var otherLinkArray = Json.toJson(competitorLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq)
+        resultObject = resultObject + ("otherLinks", otherLinkArray)
+
+        if (existingLink.isDefined) {
+          resultObject = resultObject + ("existingLink", Json.toJson(existingLink))
+          val deleteRejection = getDeleteLinkRejection(existingLink.get, request.user)
+          if (deleteRejection.isDefined) {
+            resultObject = resultObject + ("deleteRejection", Json.toJson(deleteRejection.get))
+          }
+        }
+
+        if (rejectionReason.isDefined) {
+          resultObject = resultObject + ("rejection", Json.toJson(rejectionReason.get))
+        }
+
+        Ok(resultObject)
+      }
+      case Left(error) => BadRequest(error)
     }
   }
   
