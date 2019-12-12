@@ -1,6 +1,6 @@
 An opensource airline game. 
 
-Live at http://www.airline-club.com/
+Live at https://www.airline-club.com/
 
 
 Screenshots of earlier release:
