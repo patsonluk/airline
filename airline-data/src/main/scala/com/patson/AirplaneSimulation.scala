@@ -5,6 +5,7 @@ import com.patson.data._
 import com.patson.model._
 import com.patson.model.airplane._
 
+import scala.collection.mutable
 import scala.collection.mutable.Map
 import scala.util.Random
 
@@ -62,7 +63,7 @@ object AirplaneSimulation {
       case(modelId, airplanesByModelId) =>
         var updatingAirplanesByModel = ListBuffer[Airplane]()
         airplanesByModelId.foreach { airplane =>
-          if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THERSHOLD) {
+          if (airplane.dealerRatio >= DEALER_RATIO_LOWER_THRESHOLD) {
             updatingAirplanesByModel.append(airplane)
           } else {
             allRemovingAirplanes.append(airplane)
@@ -82,61 +83,92 @@ object AirplaneSimulation {
     allRemovingAirplanes.foreach { airplane =>
       AirplaneSource.deleteAirplanesByCriteria(List(("id", airplane.id), ("is_sold", true))) //need to be careful here, make sure it is still in 2nd hand market
     }
-    
+
   }
-  
+
   val DEALER_RATIO_DROP_RATE = 0.0025
-  val DEALER_RATIO_LOWER_THERSHOLD = Computation.SELL_RATE //at this ratio, the dealer would just scrap the airplane
+  val DEALER_RATIO_LOWER_THRESHOLD = Computation.SELL_RATE //at this ratio, the dealer would just scrap the airplane
   
   
   def renewAirplanes(airplanes : List[Airplane], currentCycle : Int) : List[Airplane] = {
     val renewalThresholdsByAirline : scala.collection.immutable.Map[Int, Int] = AirlineSource.loadAirplaneRenewals()
     val costsByAirline : Map[Int, (Long, Long, Long, Long)] = Map[Int, (Long, Long, Long, Long)]()
-    val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
+    val airlinesById = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
     val renewedAirplanes : ListBuffer[Airplane] = ListBuffer[Airplane]() 
     val secondHandAirplanes  = ListBuffer[Airplane]()
 
+    val currentExplicitRenewals : scala.collection.immutable.Map[Int, Int] = AirplaneSource.loadAllExplicitRenewals()
+    val updatingExplicitRenewals = mutable.HashMap[Int, Int]()
+    val removingExplicitRenewals = mutable.HashSet[Int]()
 
-    val updatingAirplanes = airplanes.map { airplane =>
-      renewalThresholdsByAirline.get(airplane.owner.id) match {
-        case Some(threshold) =>
+    val updatingAirplanes = airplanes
+      .sortBy(_.condition) //sort by - renewal lower condition ones first
+      .sortWith((airplane1, airplane2) => currentExplicitRenewals.getOrElse(airplane1.id, Int.MaxValue) < currentExplicitRenewals.getOrElse(airplane2.id, Int.MaxValue)) //airplane with shortest explicit renewal get processed first
+      .map { airplane => //final order. Shortest explicit renewal first than lowest condition
+        val explicitRenewalOption = currentExplicitRenewals.get(airplane.id)
 
-          if (airplane.condition < threshold
-            && airplane.purchasedCycle <= currentCycle - airplane.model.constructionTime) { //only renew airplane if it has been purchased longer than the construction time required
-             val airlineId = airplane.owner.id 
-             val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalLost) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
-             val sellValue = Computation.calculateAirplaneSellValue(airplane)
-             val renewCost = airplane.model.price - sellValue
-             val newCost = existingCost + renewCost
-             val newBuyPlane = existingBuyPlane + airplane.model.price
-             val newSellPlane = existingSellPlane + sellValue 
-             
-             if (newCost <= airlinesByid(airplane.owner.id).getBalance()) {
-               println("auto renewing " + airplane)
-               val newCapitalLost = existingCapitalLost + (airplane.value - sellValue)
-               costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalLost))
-               if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
-                 secondHandAirplanes.append(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0))
-               }
-               val renewedAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
-               renewedAirplanes.append(renewedAirplane)
-               renewedAirplane
-             } else { //not enough fund
-               airplane
-             }
-          } else {
-            airplane
+        val shouldRenew : Boolean =
+        explicitRenewalOption match {
+          case Some(remainingWeek) =>
+            if (remainingWeek == -1) { //explicitly state that NO renewal
+              false
+            } else if (remainingWeek == 0) {
+              true
+            } else { //explicitly marked for renewal but not yet at the week
+              false
+            }
+          case None => //no explicit renewal, check auto renewal
+            renewalThresholdsByAirline.get(airplane.owner.id) match {
+              case Some(threshold) =>
+                airplane.condition < threshold && airplane.purchasedCycle <= currentCycle - airplane.model.constructionTime //only renew airplane if it has been purchased longer than the construction time required
+              case None =>
+                false
+            }
+        }
+
+        var isRenewed = false
+
+        var resultAirplane = airplane
+        if (shouldRenew) { //then try to renew, this might fail if there's not enough cash
+          val airlineId = airplane.owner.id
+          val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalLost) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
+          val sellValue = Computation.calculateAirplaneSellValue(airplane)
+          val renewCost = airplane.model.price - sellValue
+          val newCost = existingCost + renewCost
+          val newBuyPlane = existingBuyPlane + airplane.model.price
+          val newSellPlane = existingSellPlane + sellValue
+
+          if (newCost <= airlinesById(airplane.owner.id).getBalance()) {
+            println("auto renewing " + airplane)
+            val newCapitalLost = existingCapitalLost + (airplane.value - sellValue)
+            costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalLost))
+            if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
+              secondHandAirplanes.append(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0))
+            }
+            val renewedAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+            isRenewed = true
+            renewedAirplanes.append(renewedAirplane)
+            resultAirplane = renewedAirplane
           }
-        case None => airplane
+        }
+
+        //update explicit renewals
+        explicitRenewalOption.foreach { remainingWeek =>
+          if (remainingWeek > 0) {
+            updatingExplicitRenewals.put(airplane.id, remainingWeek - 1)
+          } else if (remainingWeek == 0 && isRenewed) { //successfully renewed, remove from explicit renewals
+            removingExplicitRenewals.add(airplane.id)
+          }
+        }
+        resultAirplane
       }
-    }
     
     //now deduct money
     costsByAirline.foreach {
-      case(airlineId, (cost, buyAirplane, sellAirplane, captialLoss)) => {
-        println("Deducting " + cost + " from " + airlinesByid(airlineId) + " for renewal")
+      case(airlineId, (cost, buyAirplane, sellAirplane, capitalLoss)) => {
+        println("Deducting " + cost + " from " + airlinesById(airlineId) + " for renewal")
         AirlineSource.adjustAirlineBalance(airlineId, cost * -1)
-        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, captialLoss * -1))
+        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, capitalLoss * -1))
         AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellAirplane))
         AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, buyAirplane * -1))
       }
@@ -146,6 +178,9 @@ object AirplaneSimulation {
     AirplaneSource.saveAirplanes(secondHandAirplanes.toList)
     //save the renewed airplanes
     AirplaneSource.updateAirplanes(renewedAirplanes.toList)
+
+    AirplaneSource.saveExplicitRenewals(updatingExplicitRenewals.toMap)
+    AirplaneSource.deleteExplicitRenewals(removingExplicitRenewals.toSet)
       
     updatingAirplanes
   }

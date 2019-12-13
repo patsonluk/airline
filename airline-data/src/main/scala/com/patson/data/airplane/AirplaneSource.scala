@@ -1,7 +1,9 @@
 package com.patson.data
 import com.patson.data.Constants._
+
 import scala.collection.mutable.ListBuffer
 import java.sql.DriverManager
+
 import com.patson.model.Airport
 import com.patson.model.Link
 import com.patson.model.Airline
@@ -9,6 +11,8 @@ import com.patson.model.airplane.Airplane
 import com.patson.model.airplane.Model
 import com.patson.data.airplane.ModelSource
 import java.sql.Statement
+
+import scala.collection.mutable
 
 object AirplaneSource {
   val LINK_FULL_LOAD = Map(DetailType.LINK -> true)
@@ -308,6 +312,110 @@ object AirplaneSource {
     }
     
     updateCount
+  }
+
+  val BASE_EXPLICIT_RENEWAL_QUERY = "SELECT * FROM " + AIRPLANE_EXPLICIT_RENEWAL_TABLE
+
+  /**
+    * Key airplane ID, value cycle left before renewal
+    * @return
+    */
+  def loadExplicitRenewalByAirplaneId(airplaneId : Int) : Option[Int] = {
+    val result = loadExplicitRenewalsByCriteria(List(("airplane", airplaneId)))
+    if (result.size > 0) {
+      Some(result(0))
+    } else {
+      None
+    }
+  }
+
+  def loadAllExplicitRenewals() = {
+    loadExplicitRenewalsByCriteria(List.empty)
+  }
+
+  def loadExplicitRenewalsByCriteria(criteria : List[(String, Any)]): Map[Int, Int] = {
+    var queryString = BASE_EXPLICIT_RENEWAL_QUERY
+
+    if (!criteria.isEmpty) {
+      queryString += " WHERE "
+      for (i <- 0 until criteria.size - 1) {
+        queryString += criteria(i)._1 + " = ? AND "
+      }
+      queryString += criteria.last._1 + " = ?"
+    }
+
+    loadExplicitRenewalsByQueryString(queryString, criteria.map(_._2))
+  }
+
+  def loadExplicitRenewalsByQueryString(queryString: String, parameters : List[Any]): Map[Int, Int] = {
+    val connection = Meta.getConnection()
+
+    val preparedStatement = connection.prepareStatement(queryString)
+
+    for (i <- 0 until parameters.size) {
+      preparedStatement.setObject(i + 1, parameters(i))
+    }
+
+    val resultSet = preparedStatement.executeQuery()
+
+    val renewals = new mutable.HashMap[Int, Int]()
+
+
+    while (resultSet.next()) {
+      renewals.put(resultSet.getInt("airplane"), resultSet.getInt("remaining_weeks"))
+    }
+
+    resultSet.close()
+    preparedStatement.close()
+    connection.close()
+
+    //println("Loaded " + airplanes.length + " airplane records")
+    renewals.toList.toMap
+  }
+
+
+  def saveExplicitRenewal(airplaneId : Int, remainingWeeks : Int) = {
+    saveExplicitRenewals(Map(airplaneId -> remainingWeeks))
+  }
+
+  def saveExplicitRenewals(renewals : Map[Int, Int]) = {
+    val connection = Meta.getConnection()
+
+    try {
+      connection.setAutoCommit(false)
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_EXPLICIT_RENEWAL_TABLE + "(airplane, remaining_weeks) VALUES(?,?)")
+
+      renewals.foreach {
+        case (airplaneId, remainingWeeks) =>
+          preparedStatement.setInt(1, airplaneId)
+          preparedStatement.setInt(2, remainingWeeks)
+          preparedStatement.executeUpdate()
+      }
+
+      connection.commit()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteExplicitRenewals(renewals : Set[Int]) = {
+    val connection = Meta.getConnection()
+
+    try {
+      connection.setAutoCommit(false)
+      val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRPLANE_EXPLICIT_RENEWAL_TABLE + " WHERE airplane = ?")
+
+      renewals.foreach { airplaneId =>
+          preparedStatement.setInt(1, airplaneId)
+          preparedStatement.executeUpdate()
+      }
+
+      connection.commit()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
   }
   
   

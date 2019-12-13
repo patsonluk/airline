@@ -273,6 +273,7 @@ object Meta {
     createCountryMarketShare(connection)
     createAirlineLogo(connection)
     createAirplaneRenewal(connection)
+    createAirplaneExplicitRenewal(connection)
     createAlliance(connection)
     createLounge(connection)
     createLoungeConsumption(connection)
@@ -1073,6 +1074,18 @@ object Meta {
       "rate DECIMAL(5,2), " +
       "cycle INTEGER," +
       "PRIMARY KEY (cycle)" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirplaneExplicitRenewal(connection : Connection): Unit = {
+    val statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_EXPLICIT_RENEWAL_TABLE + "(" +
+      //"id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airplane INTEGER, " +
+      "remaining_weeks INTEGER, " +
+      "PRIMARY KEY (airplane)," +
+      "FOREIGN KEY(airplane) REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()
