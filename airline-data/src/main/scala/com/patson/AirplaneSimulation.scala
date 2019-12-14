@@ -97,20 +97,21 @@ object AirplaneSimulation {
     val secondHandAirplanes  = ListBuffer[Airplane]()
 
 
-    val updatingAirplanes = airplanes.map { airplane =>
+    val updatingAirplanes = airplanes
+        .sortBy(_.condition) //lowest conditional airplane gets renewal first
+        .map { airplane =>
       renewalThresholdsByAirline.get(airplane.owner.id) match {
         case Some(threshold) =>
-
           if (airplane.condition < threshold
             && airplane.purchasedCycle <= currentCycle - airplane.model.constructionTime) { //only renew airplane if it has been purchased longer than the construction time required
-             val airlineId = airplane.owner.id 
+             val airlineId = airplane.owner.id
              val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalLost) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
              val sellValue = Computation.calculateAirplaneSellValue(airplane)
              val renewCost = airplane.model.price - sellValue
              val newCost = existingCost + renewCost
              val newBuyPlane = existingBuyPlane + airplane.model.price
-             val newSellPlane = existingSellPlane + sellValue 
-             
+             val newSellPlane = existingSellPlane + sellValue
+
              if (newCost <= airlinesByid(airplane.owner.id).getBalance()) {
                println("auto renewing " + airplane)
                val newCapitalLost = existingCapitalLost + (airplane.value - sellValue)
