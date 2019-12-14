@@ -211,25 +211,25 @@ function sellAirplane(airplaneId) {
 	});
 }
 
-//function replaceAirplane(airplaneId) {
-//	var airlineId = activeAirline.id
-//	var url = "airlines/" + airlineId + "/airplanes/" + airplaneId
-//	$.ajax({
-//		type: 'PUT',
-//		data: JSON.stringify({}),
-//		url: url,
-//	    contentType: 'application/json; charset=utf-8',
-//	    dataType: 'json',
-//	    success: function(response) {
-//	    	refreshPanels(airlineId)
-//	    	showAirplaneCanvas()
-//	    },
-//        error: function(jqXHR, textStatus, errorThrown) {
-//	            console.log(JSON.stringify(jqXHR));
-//	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-//	    }
-//	});
-//}
+function replaceAirplane(airplaneId) {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/airplanes/" + airplaneId
+	$.ajax({
+		type: 'PUT',
+		data: JSON.stringify({}),
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(response) {
+	    	refreshPanels(airlineId)
+	    	showAirplaneCanvas()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
 
 function buyUsedAirplane(airplaneId) {
 	var airlineId = activeAirline.id
@@ -458,6 +458,8 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
     			$("#airplaneDetailsDeliveryRow").show()
     		}
 	    	$("#airplaneDetailsSellValue").text("$" + commaSeparateNumber(airplane.sellValue))
+	    	var replaceCost = airplane.price - airplane.sellValue
+            $("#airplaneDetailsReplaceCost").text("$" + commaSeparateNumber(replaceCost))
 	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.link) {
 	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='showWorldMap(); selectLinkFromMap(" + airplane.link.id + ", true)'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
@@ -470,8 +472,26 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
 	    			$("#sellAirplaneButton").hide()
 	    		}
 	    	}
-	    	
+
+            var weeksRemainingBeforeReplacement = airplane.constructionTime - (currentCycle - airplane.purchasedCycle)
+	    	if (weeksRemainingBeforeReplacement <= 0) {
+	    	    $("#replaceAirplaneButton").show()
+	    	} else {
+
+	    	    $("#replaceAirplaneButton").hide()
+	    	}
 	    	$('#ownedAirplaneDetail .rejection').hide()
+	    	$('#ownedAirplaneDetail .rejection .warning').hide()
+
+	    	if (activeAirline.balance < replaceCost) {
+	    	    $('#ownedAirplaneDetail .rejection .warning.cash').show()
+	    	    $('#ownedAirplaneDetail .rejection').show()
+	    	} else if (weeksRemainingBeforeReplacement > 0) {
+	    	    $('#ownedAirplaneDetail .rejection .warning.purchasedCycle').show()
+	    	    $('#ownedAirplaneDetail .rejection .warning.purchasedCycle .replaceRemainingWeek').text(weeksRemainingBeforeReplacement)
+            	$('#ownedAirplaneDetail .rejection').show()
+	    	}
+
 
 	    	$("#airplaneCanvas #ownedAirplaneDetail").fadeIn(200)
 	    	

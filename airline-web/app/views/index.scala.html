@@ -1175,38 +1175,45 @@
 								<h4>Inventory</h4>
 								<div id="airplaneInventoryList"></div>
 							</div>
-							<div id="ownedAirplaneDetail" class="table section" style="width: 95%; display: none;">
+							<div id="ownedAirplaneDetail" class="section" style="width: 95%; float:left; display: none;">
 								<h4>Owned Airplane Details</h4>
-								<div class="table-row">
-									<div class="label"><h5>Airplane ID:</h5></div>
-									<div class="value" id="airplaneDetailsId"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Condition:</h5></div>
-									<div class="value" id="airplaneDetailsCondition"></div>
-								</div>
-								<div class="table-row" id="airplaneDetailsAgeRow">
-									<div class="label"><h5>Age:</h5></div>
-									<div class="value" id="airplaneDetailsAge"></div>
-								</div>
-								<div class="table-row" id="airplaneDetailsDeliveryRow">
-									<div class="label"><h5>Deliver in:</h5></div>
-									<div class="value" id="airplaneDetailsDelivery" style="font-weight: bold;"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Selling Value:</h5></div>
-									<div class="value" id="airplaneDetailsSellValue"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Assigned Route:</h5></div>
-									<div class="value" id="airplaneDetailsLink"></div>
+								<div class="table" style="width: 100%">
+									<div class="table-row">
+										<div class="label"><h5>Airplane ID:</h5></div>
+										<div class="value" id="airplaneDetailsId"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Condition:</h5></div>
+										<div class="value" id="airplaneDetailsCondition"></div>
+									</div>
+									<div class="table-row" id="airplaneDetailsAgeRow">
+										<div class="label"><h5>Age:</h5></div>
+										<div class="value" id="airplaneDetailsAge"></div>
+									</div>
+									<div class="table-row" id="airplaneDetailsDeliveryRow">
+										<div class="label"><h5>Deliver in:</h5></div>
+										<div class="value" id="airplaneDetailsDelivery" style="font-weight: bold;"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Selling Value:</h5></div>
+										<div class="value" id="airplaneDetailsSellValue"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Replace Cost:</h5></div>
+										<div class="value" id="airplaneDetailsReplaceCost"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Assigned Route:</h5></div>
+										<div class="value" id="airplaneDetailsLink"></div>
+									</div>
 								</div>
 								<input type="hidden" id="actionAirplaneId">
 								<div class="rejection">
-									<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning">Not enough cash to replace this airplane</span>
+									<span class="warning cash"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'>Not enough cash to replace this airplane</span>
+									<span class="warning purchasedCycle"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'>Can only replace this airplane <span class="replaceRemainingWeek"></span> week(s) from now </span>
 								</div>
 								<div class="button" id ="sellAirplaneButton" onclick="sellAirplane($('#actionAirplaneId').val())">Sell</div>
-	<!--			   				<div class="button" id ="replaceAirplaneButton" onclick="replaceAirplane($('#actionAirplaneId').val())">Replace</div>-->
+				   				<div class="button" id ="replaceAirplaneButton" onclick="replaceAirplane($('#actionAirplaneId').val())">Replace</div>
 							</div>
 						</div>
 					</div>
