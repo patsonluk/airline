@@ -1,0 +1,8 @@
+# in format of iata, icao, name, latitude, longitude, countryCode, city, zone, size
+EPSY SZY Olsztyn Olsztyn-Mazury Airport Poland 2
+ACI,EGJA,St. Anne Alderney Airport,49.7088, 2.2148,UK,Alderney,EU,1
+GCI,EGJB,St. Peter Port Guernsey Airport,49.4341, 2.5995,UK,Guernsey,EU,2
+JER,EGJJ,Saint Helier Jersey Airport,49.2075, 2.1952,UK,Saint Peter,EU,2
+IOM,EGNS,Ronaldsway Isle of Man Airport,54.0866,4.6339,UK,Isle of Man,EU,2
+LYR,ENSB,Longyear Svalbard Airport,78.2461,15.4656,NO,Longyearbyen,EU,2
+SZY,EPSY,Olsztyn-Mazury Airport,53.4879,20.9465,PL,Olsztyn,EU,2
