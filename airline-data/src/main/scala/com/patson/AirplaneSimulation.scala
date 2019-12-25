@@ -156,8 +156,13 @@ object AirplaneSimulation {
     val updatedAirplanesById = airplanes.map( airplane => (airplane.id, airplane)).toMap
     links.foreach {
       link => {
-        val updatedAssignedAirplanes : List[Airplane] = link.getAssignedAirplanes().map( airplane => updatedAirplanesById.getOrElse(airplane.id, airplane)) //update the list of assigned airplanes
-        
+
+
+
+        val updatedAssignedAirplanes : List[Airplane] = link.getAssignedAirplanes().toList.map {
+          case(airplane, frequency) => updatedAirplanesById.getOrElse(airplane.id, airplane)
+        } //update the list of assigned airplanes
+
         val okAirplanes : List[Airplane] = updatedAssignedAirplanes.filter( _.condition > 0)
         
         val retiringAirplanesCount = updatedAssignedAirplanes.size - okAirplanes.size
@@ -165,15 +170,18 @@ object AirplaneSimulation {
         if (retiringAirplanesCount > 0) {
            println("retiring " + retiringAirplanesCount + " airplanes for link " + link)
            //now see if frequency should be reduced
-           val maxFrequency = if (okAirplanes.isEmpty) 0 else { Computation.calculateMaxFrequency(okAirplanes(0).model, link.distance, airplaneCount = okAirplanes.length) }
-           val updatingLink = 
-             if (maxFrequency < link.frequency) {
-               val capacityPerFlight = link.capacity / link.frequency
-               link.copy(capacity = capacityPerFlight * maxFrequency, frequency = maxFrequency)
-             } else {
-               link
-             }
-          
+           var newCapacity = LinkClassValues.getInstance()
+           var newFrequency = 0
+
+           okAirplanes.foreach { airplane =>
+             val frequency = airplane.getLinkAssignments().getOrElse(link, 0)
+             newFrequency += frequency
+             newCapacity = newCapacity + airplane.getConfiguration() * frequency
+           }
+
+
+           val updatingLink = link.copy(capacity = newCapacity, frequency = newFrequency)
+
            updatingLinks.append(updatingLink)
         }
       }

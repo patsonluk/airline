@@ -106,9 +106,9 @@ object LinkSimulation {
       link => {
         var i = 0
         for ( i <- 0 until link.frequency) {
-          var airplaneCount = link.getAssignedAirplanes().length
+          var airplaneCount : Int = link.getAssignedAirplanes().size
           if (airplaneCount > 0) {
-            val airplane = link.getAssignedAirplanes()(i % airplaneCount)           //round robin
+            val airplane = link.getAssignedAirplanes().toList.map(_._1)(i % airplaneCount)           //round robin
             val errorValue = Random.nextDouble()
             val conditionMultipler = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
             var minorDelayThreshold : Double = 0
@@ -168,7 +168,7 @@ object LinkSimulation {
       case None => 0
     }
 
-    val maintenanceCost = (link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
+    val maintenanceCost = (link.getAssignedAirplanes.toList.map(_._1).foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
     val airportFees = link.getAssignedModel() match {
       case Some(model) =>
         val airline = link.airline
@@ -176,7 +176,7 @@ object LinkSimulation {
       case None => 0 
     }
     
-    val depreciation = link.getAssignedAirplanes().foldLeft(0)(_ + _.depreciationRate)
+    val depreciation = link.getAssignedAirplanes().toList.map(_._1).foldLeft(0)(_ + _.depreciationRate)
     
     var inflightCost, crewCost, revenue = 0 
     LinkClass.values.foreach { linkClass =>

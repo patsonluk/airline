@@ -52,7 +52,7 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
     val airplane = Airplane(airplaneModel, airline, constructedCycle = 0 , purchasedCycle = 0, Airplane.MAX_CONDITION, depreciationRate = 0, value = airplaneModel.price)
     
     val updatedAirplane = AirplaneSimulation.decayAirplanesByAirline(List((airplane, Some(link))), airline)(0)
-    link.setAssignedAirplanes(List(updatedAirplane))
+    link.setAssignedAirplanes(Map(updatedAirplane -> frequency))
     link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity * loadFactor).toInt)))
     
     LinkSimulation.computeLinkConsumptionDetail(link, 0)

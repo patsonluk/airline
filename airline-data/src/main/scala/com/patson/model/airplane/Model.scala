@@ -16,7 +16,7 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
       case _ => JUMBO
     }
   }
-  val turnoverTime : Int = {
+  val turnaroundTime : Int = {
     airplaneType match {
       case LIGHT => 45
       case REGIONAL => 70

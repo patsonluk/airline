@@ -19,6 +19,7 @@ import scala.collection.mutable.ArrayBuffer
 import com.patson.util.LogoGenerator
 import java.awt.Color
 
+import scala.collection.mutable
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
@@ -117,19 +118,23 @@ object AirlineGenerator extends App {
             }
 //            val availableSlots = Math.min(fromAirport.availableSlots, toAirport.availableSlots) //don't care about slots, as reputation/loyalty is too low might always be 1
 //            frequency = Math.min(frequency, availableSlots)
-            
+
+            val maxFrequencyPerAirplane = Computation.calculateMaxFrequency(model, distance)
             if (frequency > 0) {
-              val airplanes = ListBuffer[Airplane]()
-              var airplanesRequired = frequency / Computation.calculateMaxFrequency(model, distance)
-              if (frequency % Computation.calculateMaxFrequency(model, distance) > 0) {
+              val assignedAirplanes = mutable.HashMap[Airplane, Int]()
+              var airplanesRequired = frequency / maxFrequencyPerAirplane
+              if (frequency % maxFrequencyPerAirplane > 0) {
                 airplanesRequired += 1
               }
               
               //make airplanes :)
+              var remainingFrequency = frequency
               for (i <- 0 until airplanesRequired) {
                 val newAirplane = Airplane(model = model, owner = airline, constructedCycle = 0 , purchasedCycle = 0, condition =  Airplane.MAX_CONDITION, depreciationRate = 0, value = model.price)
                 AirplaneSource.saveAirplanes(List(newAirplane))
-                airplanes += newAirplane
+                val frequencyForThis = if (remainingFrequency > maxFrequencyPerAirplane) maxFrequencyPerAirplane else remainingFrequency
+                assignedAirplanes.put(newAirplane, frequencyForThis)
+                remainingFrequency -= frequencyForThis
               }
               
               val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
@@ -138,7 +143,7 @@ object AirlineGenerator extends App {
               val duration = Computation.calculateDuration(model, distance)
               val newLink = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(price), distance, LinkClassValues.getInstance(capacity), rawQuality = 40, duration = duration, frequency = frequency, flightType = flightType)
               
-              newLink.setAssignedAirplanes(airplanes.toList)
+              newLink.setAssignedAirplanes(assignedAirplanes.toMap)
               newLinks += newLink
               
               
