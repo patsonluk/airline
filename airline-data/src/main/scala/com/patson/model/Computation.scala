@@ -31,7 +31,7 @@ object Computation {
     duration
   }
 
-  def calculateFlightHoursRequired(airplaneModel : Model, distance : Int) : Double = {
+  def calculateFlightMinutesRequired(airplaneModel : Model, distance : Int) : Int = {
     val duration = calculateDuration(airplaneModel, distance)
     val roundTripTime = (duration + airplaneModel.turnaroundTime) * 2
     roundTripTime
@@ -41,8 +41,8 @@ object Computation {
     if (airplaneModel.range < distance) {
       0
     } else {
-      val roundTripTime = calculateFlightHoursRequired(airplaneModel, distance)
-      (Airplane.MAX_FLIGHT_HOURS / roundTripTime).toInt
+      val roundTripTime = calculateFlightMinutesRequired(airplaneModel, distance)
+      (Airplane.MAX_FLIGHT_MINUTES / roundTripTime).toInt
     }
   }
   

@@ -44,5 +44,5 @@ object Airplane {
   val BAD_CONDITION = 40
   val CRITICAL_CONDITION = 20
   val DEFAULT_DEALER_RATIO = 1.2
-  val MAX_FLIGHT_HOURS = 24 * 7 * 3.5 //TODO make it a bit higher
+  val MAX_FLIGHT_MINUTES = 24 * 60 * 3.5 //TODO make it a bit higher ...right now assume each airplane can fly for 3.5 days per week
 }
