@@ -471,12 +471,14 @@ object LinkSource {
 
 
       assignedAirplanes.foreach { case(airplane, frequency) =>
-        val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane, frequency) VALUES(?,?,?)")
-        insertStatement.setInt(1, linkId)
-        insertStatement.setInt(2, airplane.id)
-        insertStatement.setInt(3, frequency)
-        insertStatement.executeUpdate()
-        insertStatement.close
+        if (frequency > 0) {
+          val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane, frequency) VALUES(?,?,?)")
+          insertStatement.setInt(1, linkId)
+          insertStatement.setInt(2, airplane.id)
+          insertStatement.setInt(3, frequency)
+          insertStatement.executeUpdate()
+          insertStatement.close
+        }
       }    
       
       connection.commit()

@@ -119,6 +119,17 @@ package object controllers {
       "business" -> JsNumber(linkClassValues(BUSINESS)),
       "first" -> JsNumber(linkClassValues(FIRST))))
   }
+  object AirplaneAssignmentsRead extends Reads[Map[Airplane, Int]] {
+    def reads(json : JsValue) : JsResult[Map[Airplane, Int]] = {
+      JsSuccess(json.asInstanceOf[JsObject].keys.map { airplaneId =>
+        val frequency = json.\(airplaneId).as[Int]
+        AirplaneSource.loadAirplaneById(airplaneId.toInt) match {
+          case Some(airplane) => (airplane, frequency)
+          case None => throw new IllegalStateException("Airplane with id " + airplaneId + " does not exist")
+        }
+      }.toMap)
+    }
+  }
   
   implicit object LinkFormat extends Format[Link] {
     def reads(json: JsValue): JsResult[Link] = {
@@ -132,7 +143,7 @@ package object controllers {
       val airline = AirlineSource.loadAirlineById(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val airplaneIds = json.\("airplanes").as[Array[Int]]
+      val airplaneAssignments = json.\("airplanes").as[Map[Airplane, Int]](AirplaneAssignmentsRead)
       val frequency = json.\("frequency").as[Int]
       val modelId = json.\("model").as[Int]
       
@@ -141,17 +152,9 @@ package object controllers {
                                               frequency * json.\("configuration").\("first").as[Int])
                                 
       val duration = ModelSource.loadModelById(modelId).fold(Integer.MAX_VALUE)(Computation.calculateDuration(_, distance))
-       
-      val airplanes = airplaneIds.foldRight(List[Airplane]()) { (airplaneId, foldList) =>
-        AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId, AirplaneSource.LINK_SIMPLE_LOAD) match { 
-          case Some((airplane, Some(link))) if (link.from.id != fromAirport.id || link.to.id != toAirport.id) =>
-            throw new IllegalStateException("Airplane with id " + airplaneId + " is assigned to other link")
-          case Some((airplane, _)) =>
-            airplane :: foldList
-          case None => 
-            throw new IllegalStateException("Airplane with id " + airplaneId + " does not exist")
-        }
-      }
+
+
+
       var rawQuality =  json.\("rawQuality").as[Int]
       if (rawQuality > Link.MAX_QUALITY) {
         rawQuality = Link.MAX_QUALITY
@@ -160,7 +163,7 @@ package object controllers {
       }
          
       val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency, flightType)
-      link.setAssignedAirplanes(airplanes)
+      link.setAssignedAirplanes(airplaneAssignments)
       //(json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
@@ -192,9 +195,16 @@ package object controllers {
       "toLatitude" -> JsNumber(link.to.latitude),
       "toLongitude" -> JsNumber(link.to.longitude),
       "flightType" -> JsString(link.flightType.toString()),
-      "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber)),
-      "assignedAirplanes" -> Json.toJson(link.getAssignedAirplanes())))
-      
+      "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber))
+      ))
+
+      var airplanesJson = Json.arr()
+      link.getAssignedAirplanes().foreach {
+        case (airplane, frequency) => airplanesJson = airplanesJson.append(Json.obj("airplane" -> airplane, "frequency" -> frequency))
+      }
+
+      json = json + ("assignedAirplanes" -> airplanesJson)
+
       link.getAssignedModel().foreach { model =>
         json = json + ("modelId" -> JsNumber(model.id))
       }

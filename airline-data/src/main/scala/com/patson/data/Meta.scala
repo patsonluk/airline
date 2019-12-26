@@ -273,6 +273,7 @@ object Meta {
     createCountryMarketShare(connection)
     createAirlineLogo(connection)
     createAirplaneRenewal(connection)
+    createAirplaneConfiguration(connection)
     createAlliance(connection)
     createLounge(connection)
     createLoungeConsumption(connection)
@@ -535,6 +536,7 @@ object Meta {
       "value INTEGER," +
       "is_sold TINYINT(1)," +
       "dealer_ratio DECIMAL(3,2)," +
+      "available_flight_minutes INTEGER," +
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(owner) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -828,6 +830,23 @@ object Meta {
       "threshold INTEGER, " +
       "PRIMARY KEY (airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirplaneConfiguration(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_CONFIGURATION_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_CONFIGURATION_TABLE + "(" +
+      "airplane INTEGER, " +
+      "economy INTEGER, " +
+      "business INTEGER, " +
+      "first INTEGER, " +
+      "PRIMARY KEY (airplane)," +
+      "FOREIGN KEY(airplane) REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

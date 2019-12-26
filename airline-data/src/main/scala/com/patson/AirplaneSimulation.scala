@@ -5,7 +5,7 @@ import com.patson.data._
 import com.patson.model._
 import com.patson.model.airplane._
 
-import scala.collection.mutable.Map
+import scala.collection.mutable
 import scala.util.Random
 
 
@@ -17,17 +17,21 @@ object AirplaneSimulation {
     secondHandAirplaneSimulate(cycle)
     
     //do decay
-    val allAirplanes = AirplaneSource.loadAirplanesWithAssignedLinkByCriteria(List.empty)
+    val allAirplanes = AirplaneSource.loadAirplanesCriteria(List.empty)
+    val linkAssignments: Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
     
     println("finished loading all airplanes")
     
     val updatingAirplanesListBuffer = ListBuffer[Airplane]()
-    allAirplanes.groupBy { _._1.owner }.foreach {
+    allAirplanes.groupBy { _.owner }.foreach {
       case (owner, airplanes) => {
         AirlineSource.loadAirlineById(owner.id, true) match {
           case Some(airline) =>
-            val readyAirplanes = airplanes.filter(_._1.isReady(cycle))
-            updatingAirplanesListBuffer ++= decayAirplanesByAirline(readyAirplanes, airline)
+            val readyAirplanes = airplanes.filter(_.isReady(cycle))
+            val readyAirplanesWithAssignedLinks : Map[Airplane, LinkAssignments] = readyAirplanes.map { airplane =>
+              (airplane, linkAssignments.getOrElse(airplane.id, LinkAssignments(Map.empty)))
+            }.toMap
+            updatingAirplanesListBuffer ++= decayAirplanesByAirline(readyAirplanesWithAssignedLinks, airline)
           case None => println("airline " + owner.id + " has airplanes but the airline cannot be loaded!")//invalid airline?
         }
       }
@@ -42,7 +46,7 @@ object AirplaneSimulation {
     println("Finished renewing airplanes")
     
     println("Start retiring airplanes")
-    removeAgingAirplaneFromLinks(links, updatingAirplanes) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
+    removeAgingAirplaneFromLinks(links, updatingAirplanes, linkAssignments) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
     retireAgingAirplanes(updatingAirplanes.toList)
     println("Finished retiring airplanes")
     
@@ -91,7 +95,7 @@ object AirplaneSimulation {
   
   def renewAirplanes(airplanes : List[Airplane], currentCycle : Int) : List[Airplane] = {
     val renewalThresholdsByAirline : scala.collection.immutable.Map[Int, Int] = AirlineSource.loadAirplaneRenewals()
-    val costsByAirline : Map[Int, (Long, Long, Long, Long)] = Map[Int, (Long, Long, Long, Long)]()
+    val costsByAirline : scala.collection.mutable.Map[Int, (Long, Long, Long, Long)] = mutable.HashMap[Int, (Long, Long, Long, Long)]()
     val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
     val renewedAirplanes : ListBuffer[Airplane] = ListBuffer[Airplane]() 
     val secondHandAirplanes  = ListBuffer[Airplane]()
@@ -151,14 +155,11 @@ object AirplaneSimulation {
     updatingAirplanes
   }
   
-   def removeAgingAirplaneFromLinks(links : List[Link], airplanes : List[Airplane]) = {
+   def removeAgingAirplaneFromLinks(links : List[Link], airplanes : List[Airplane], linkAssignments : Map[Int, LinkAssignments]) = {
     val updatingLinks = ListBuffer[Link]()
     val updatedAirplanesById = airplanes.map( airplane => (airplane.id, airplane)).toMap
     links.foreach {
       link => {
-
-
-
         val updatedAssignedAirplanes : List[Airplane] = link.getAssignedAirplanes().toList.map {
           case(airplane, frequency) => updatedAirplanesById.getOrElse(airplane.id, airplane)
         } //update the list of assigned airplanes
@@ -174,9 +175,13 @@ object AirplaneSimulation {
            var newFrequency = 0
 
            okAirplanes.foreach { airplane =>
-             val frequency = airplane.getLinkAssignments().getOrElse(link, 0)
+             val frequency =
+               linkAssignments.get(airplane.id) match {
+                 case Some(linkAssignmentsForThisAirplane) => linkAssignmentsForThisAirplane.getFrequencyByLink(link.id)
+                 case None => 0
+               }
              newFrequency += frequency
-             newCapacity = newCapacity + airplane.getConfiguration() * frequency
+             newCapacity = newCapacity + airplane.configuration * frequency
            }
 
 
@@ -202,17 +207,17 @@ object AirplaneSimulation {
     depreciationRate
   }
   
-  def decayAirplanesByAirline(airplanesWithAssignedLink : List[(Airplane, Option[Link])], owner : Airline) : List[Airplane] = {
+  def decayAirplanesByAirline(airplanesWithAssignedLink : Map[Airplane, LinkAssignments], owner : Airline) : List[Airplane] = {
     val updatingAirplanes = ListBuffer[Airplane]()
     
     
     airplanesWithAssignedLink.foreach { 
-      case(airplane, assignedLink) =>
+      case(airplane, linkAssignments) =>
         val minDecay = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
         val maxDecay = minDecay * 2
         val baseDecayRate = maxDecay - (maxDecay - minDecay) * (owner.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
         var decayRate =
-          if (assignedLink.isEmpty) { //not assigned to any links, decay slower
+          if (linkAssignments.isEmpty) { //not assigned to any links, decay slower
             baseDecayRate / 3 
           } else {
             baseDecayRate

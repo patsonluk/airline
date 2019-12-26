@@ -2,7 +2,7 @@ package com.patson.model.airplane
 
 import com.patson.model.{Airline, IdObject, Link, LinkClassValues}
 
-case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, var id : Int = 0) extends IdObject {
+case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, availableFlightMinutes : Int = Airplane.MAX_FLIGHT_MINUTES, configuration : LinkClassValues = LinkClassValues.getInstance(), var id : Int = 0) extends IdObject {
   val isReady = (currentCycle : Int) => currentCycle >= constructedCycle && !isSold
   val dealerValue = {
     (value * dealerRatio).toInt
@@ -24,19 +24,9 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
 //    case ((link, hours)) => hours
 //  }.sum
 
-  private[this] var linkAssignments : Map[Link, Int] = Map.empty
-  def setLinkAssignments(linkAssignments : Map[Link, Int]) = this.linkAssignments = linkAssignments
-  def getLinkAssignments() = linkAssignments
-
-  private[this] var configuration : LinkClassValues = LinkClassValues.getInstance()
-  def setConfiguration(configuration : LinkClassValues): Unit = {
-    this.configuration = configuration
-  }
-
-  def getConfiguration() : LinkClassValues = {
-    configuration
-  }
-
+//  private[this] var linkAssignments : Map[Link, Int] = Map.empty
+//  def setLinkAssignments(linkAssignments : Map[Link, Int]) = this.linkAssignments = linkAssignments
+//  def getLinkAssignments() = linkAssignments
 }
 
 object Airplane {
@@ -44,5 +34,5 @@ object Airplane {
   val BAD_CONDITION = 40
   val CRITICAL_CONDITION = 20
   val DEFAULT_DEALER_RATIO = 1.2
-  val MAX_FLIGHT_MINUTES = 24 * 60 * 3.5 //TODO make it a bit higher ...right now assume each airplane can fly for 3.5 days per week
+  val MAX_FLIGHT_MINUTES : Int = (24 * 60 * 3.5).toInt //TODO make it a bit higher ...right now assume each airplane can fly for 3.5 days per week
 }

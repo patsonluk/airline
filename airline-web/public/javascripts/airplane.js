@@ -461,8 +461,12 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem) {
 	    	var replaceCost = airplane.price - airplane.sellValue
             $("#airplaneDetailsReplaceCost").text("$" + commaSeparateNumber(replaceCost))
 	    	$("#airplaneDetailsLink").empty()
-	    	if (airplane.link) {
-	    		$("#airplaneDetailsLink").append("<a href='javascript:void(0)' onclick='showWorldMap(); selectLinkFromMap(" + airplane.link.id + ", true)'>" + airplane.link.fromAirportName + "(" + airplane.link.fromAirportCity + ") => " + airplane.link.toAirportName + "(" + airplane.link.toAirportCity + ")</a>" )
+	    	if (airplane.links) {
+	    	    $.each(airplane.links, function(index, linkEntry) {
+	    	        var link = linkEntry.link
+	    	        $("#airplaneDetailsLink").append("<div><a href='javascript:void(0)' onclick='showWorldMap(); selectLinkFromMap(" + link.id + ", true)'>" + link.fromAirportName + "(" + link.fromAirportCity + ") => " + link.toAirportName + "(" + link.toAirportCity + ")</a></div>" )
+	    	    })
+
 	    		$("#sellAirplaneButton").hide()
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
