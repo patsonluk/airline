@@ -1648,7 +1648,7 @@ function loadLinksTable() {
 				link.totalLoadFactor = link.totalCapacity > 0 ? Math.round(link.totalPassengers / link.totalCapacity * 100) : 0
 				var assignedModel 
 				if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
-					assignedModel = link.assignedAirplanes[0].name
+					assignedModel = link.assignedAirplanes[0].airplane.name
 				} else {
 					assignedModel = "-"
 				}
