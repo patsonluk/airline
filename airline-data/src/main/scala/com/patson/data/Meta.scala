@@ -537,6 +537,7 @@ object Meta {
       "is_sold TINYINT(1)," +
       "dealer_ratio DECIMAL(3,2)," +
       "available_flight_minutes INTEGER," +
+      "home INTEGER," +
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(owner) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -840,12 +841,37 @@ object Meta {
     statement.execute()
     statement.close()
 
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_CONFIGURATION_TABLE + "(" +
-      "airplane INTEGER, " +
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airline INTEGER, " +
+      "model INTEGER, " +
       "economy INTEGER, " +
       "business INTEGER, " +
       "first INTEGER, " +
+      "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE INDEX " + AIRPLANE_CONFIGURATION_TEMPLATE_INDEX_1 + " ON " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("CREATE INDEX " + AIRPLANE_CONFIGURATION_TEMPLATE_INDEX_2 + " ON " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(model)")
+    statement.execute()
+    statement.close()
+
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_CONFIGURATION_TABLE + "(" +
+      "airplane INTEGER, " +
+      "configuration INTEGER, " +
       "PRIMARY KEY (airplane)," +
+      "FOREIGN KEY(configuration) REFERENCES " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(id) ON DELETE RESTRICT ON UPDATE CASCADE, " +
       "FOREIGN KEY(airplane) REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()

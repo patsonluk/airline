@@ -54,6 +54,7 @@ object Constants {
   val AIRLINE_TRANSACTION_INDEX_1 = "airline_transaction_index_1"
   val AIRLINE_TRANSACTION_INDEX_2 = "airline_transaction_index_2"
   val AIRLINE_CASH_FLOW_ITEM_TABLE = "airline_cash_flow_item"
+
   
   val INCOME_TABLE = "income"
   val CASH_FLOW_TABLE = "cash_flow"
@@ -63,6 +64,9 @@ object Constants {
   val ALLIANCE_HISTORY_TABLE = "alliance_history"
   val AIRPLANE_RENEWAL_TABLE = "airline_renewal"
   val AIRPLANE_CONFIGURATION_TABLE = "airplane_configuration"
+  val AIRPLANE_CONFIGURATION_TEMPLATE_TABLE = "airplane_configuration_template"
+  val AIRPLANE_CONFIGURATION_TEMPLATE_INDEX_1 ="airplane_configuration_template_index_1"
+  val AIRPLANE_CONFIGURATION_TEMPLATE_INDEX_2 = "airplane_configuration_template_index_2"
   val LINKS_INCOME_TABLE = "links_income"
   val TRANSACTIONS_INCOME_TABLE = "transactions_income"
   val OTHERS_INCOME_TABLE = "others_income"

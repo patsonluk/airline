@@ -132,6 +132,7 @@ object AirlineGenerator extends App {
               for (i <- 0 until airplanesRequired) {
                 val newAirplane = Airplane(model = model, owner = airline, constructedCycle = 0 , purchasedCycle = 0, condition =  Airplane.MAX_CONDITION, depreciationRate = 0, value = model.price)
                 AirplaneSource.saveAirplanes(List(newAirplane))
+                newAirplane.assignDefaultConfiguration()
                 val frequencyForThis = if (remainingFrequency > maxFrequencyPerAirplane) maxFrequencyPerAirplane else remainingFrequency
                 assignedAirplanes.put(newAirplane, frequencyForThis)
                 remainingFrequency -= frequencyForThis

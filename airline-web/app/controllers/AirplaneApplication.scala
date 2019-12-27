@@ -249,9 +249,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
             val updateCount =
               if (airplane.condition >= Airplane.BAD_CONDITION) { //then put in 2nd handmarket
-                airplane.isSold = true
-                airplane.dealerRatio = Airplane.DEFAULT_DEALER_RATIO
-                AirplaneSource.updateAirplanes(List(airplane))
+                airplane.sellToDealer()
+                AirplaneSource.updateAirplanes(List(airplane.copy()))
               } else {
                 AirplaneSource.deleteAirplane(airplaneId)
               }
@@ -340,9 +339,10 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         
         val updateCount = AirplaneSource.saveAirplanes(airplanes.toList)
         if (updateCount > 0) {
-            Accepted(Json.obj("updateCount" -> updateCount))
+          airplanes.foreach(_.assignDefaultConfiguration())
+          Accepted(Json.obj("updateCount" -> updateCount))
         } else {
-            UnprocessableEntity("Cannot save airplane")
+          UnprocessableEntity("Cannot save airplane")
         }
       }
     }

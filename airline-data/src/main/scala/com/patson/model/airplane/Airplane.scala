@@ -1,8 +1,9 @@
 package com.patson.model.airplane
 
-import com.patson.model.{Airline, IdObject, Link, LinkClassValues}
+import com.patson.data.AirplaneSource
+import com.patson.model.{Airline, Airport, IdObject, Link, LinkClassValues}
 
-case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, availableFlightMinutes : Int = Airplane.MAX_FLIGHT_MINUTES, configuration : LinkClassValues = LinkClassValues.getInstance(), var id : Int = 0) extends IdObject {
+case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, availableFlightMinutes : Int = Airplane.MAX_FLIGHT_MINUTES, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, home : Airport = Airport.fromId(0), var id : Int = 0) extends IdObject {
   val isReady = (currentCycle : Int) => currentCycle >= constructedCycle && !isSold
   val dealerValue = {
     (value * dealerRatio).toInt
@@ -11,13 +12,30 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
   def sellToDealer() = {
     dealerRatio = Airplane.DEFAULT_DEALER_RATIO
     isSold = true
+    configuration = AirplaneConfiguration.empty
   }
   
   def buyFromDealer(airline : Airline, currentCycle : Int) = {
     owner = airline
     dealerRatio = Airplane.DEFAULT_DEALER_RATIO
     isSold = false
+
     purchasedCycle = currentCycle
+
+    assignDefaultConfiguration()
+  }
+
+  def assignDefaultConfiguration() = {
+    val configurationOptions = AirplaneSource.loadAirplaneConfigurationsByCriteria(List(("airline", owner.id), ("model", model.id)))
+    val pickedConfiguration =
+      if (configurationOptions.isEmpty) { //create one for this airline
+        val newConfiguration = AirplaneConfiguration.default(owner, model)
+        AirplaneSource.saveAirplaneConfigurations(List(newConfiguration))
+        newConfiguration
+      } else {
+        configurationOptions(0) //just get the first one
+      }
+    configuration = pickedConfiguration
   }
 
 //  lazy val remainingFlightHour = usableFlightHour - linkAssignments.map {
