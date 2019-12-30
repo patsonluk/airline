@@ -468,7 +468,7 @@ function getAirplaneIcon(condition, badConditionThreshold, isAssigned, airplaneI
     return img
 }
 
-function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback) {
+function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disableChangeHome) {
 	//highlight the selected model
 	if (selectedItem) {
 	    selectedItem.addClass("selected")
@@ -502,9 +502,9 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback) {
 	    	$("#airplaneDetailsId").text(airplane.id)
     		$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
     		$("#airplaneDetailsCondition").removeClass("warning fatal")
-    		if (airplane.condition < selectedModel.criticalConditionThreshold) {
+    		if (airplane.condition < airplane.criticalConditionThreshold) {
     			$("#airplaneDetailsCondition").addClass("fatal")
-    		} else if (airplane.condition < selectedModel.badConditionThreshold) {
+    		} else if (airplane.condition < airplane.badConditionThreshold) {
     			$("#airplaneDetailsCondition").addClass("warning")
     		}
     		var age = currentCycle - airplane.constructedCycle
@@ -525,7 +525,8 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback) {
 	    	if (airplane.links.length > 0) {
 	    	    $.each(airplane.links, function(index, linkEntry) {
 	    	        var link = linkEntry.link
-	    	        $("#airplaneDetailsLink").append("<div><a href='javascript:void(0)' onclick='closeModal($(\"#ownedAirplaneDetailModal\")); showWorldMap(); selectLinkFromMap(" + link.id + ", true)'>" + link.fromAirportName + "(" + link.fromAirportCity + ") => " + link.toAirportName + "(" + link.toAirportCity + ")</a></div>" )
+	    	        var linkDescription = "<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "<img src='assets/images/icons/arrow.png'>" + getAirportText(link.toAirportCity, link.toAirportCode) + " " + linkEntry.frequency + " flight(s) per week</div>"
+	    	        $("#airplaneDetailsLink").append("<div><a href='javascript:void(0)' onclick='closeModal($(\"#ownedAirplaneDetailModal\")); showWorldMap(); selectLinkFromMap(" + link.id + ", true)'>" + linkDescription + "</a></div>" )
 	    	    })
 
 	    		$("#sellAirplaneButton").hide()
@@ -537,7 +538,8 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback) {
 	    			$("#sellAirplaneButton").hide()
 	    		}
 	    	}
-	    	populateAirplaneHome(airplane)
+	    	$("#ownedAirplaneDetail .availableFlightMinutes").text(airplane.availableFlightMinutes)
+	    	populateAirplaneHome(airplane, disableChangeHome)
 
             var weeksRemainingBeforeReplacement = airplane.constructionTime - (currentCycle - airplane.purchasedCycle)
 	    	if (weeksRemainingBeforeReplacement <= 0) {
@@ -627,27 +629,31 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback) {
 	});
 }
 
-function populateAirplaneHome(airplane) {
+function populateAirplaneHome(airplane, disableChangeHome) {
     var homeAirportId = airplane.homeAirportId
     var hasLinks = airplane.links.length > 0
     var currentAirport
     var homeOptionsSelect = $("#ownedAirplaneDetail .homeEdit .homeOptions").empty()
     $.each(activeAirline.baseAirports, function(index, baseAirport) {
-        if (!hasLinks) { //only allow switching home if the airplane is free
+        if (baseAirport.airportId == homeAirportId) {
+            currentAirport = baseAirport
+        }
+    })
+
+    if (!hasLinks && !disableChangeHome) { //only allow switching home if the airplane is free
+        $.each(activeAirline.baseAirports, function(index, baseAirport) {
             var option = $("<option value='" + baseAirport.airportId + "'>" + getAirportText(baseAirport.city, baseAirport.airportName) + "</option>")
             if (baseAirport.headquarter) {
                 homeOptionsSelect.prepend(option)
             } else {
                 homeOptionsSelect.append(option)
             }
-        }
-        if (baseAirport.airportId == homeAirportId) {
-            currentAirport = baseAirport
-            if (!hasLinks) {
+
+            if (baseAirport.airportId == homeAirportId) {
                 option.attr("selected", "selected")
             }
-        }
-    })
+        })
+    }
 
 
     if (currentAirport) {
@@ -655,7 +661,10 @@ function populateAirplaneHome(airplane) {
     } else {
         $("#ownedAirplaneDetail .homeView .home").text("-")
     }
-    if (hasLinks) {
+    if (disableChangeHome) { //explicitly disabled it, do not even show any reason
+        $("#ownedAirplaneDetail .homeView .editDisabled").hide()
+        $("#ownedAirplaneDetail .homeView .edit").hide()
+    } else if (hasLinks) {
         $("#ownedAirplaneDetail .homeView .editDisabled").show()
         $("#ownedAirplaneDetail .homeView .edit").hide()
     } else {

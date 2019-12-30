@@ -1,9 +1,9 @@
 package com.patson.model.airplane
 
-import com.patson.data.AirplaneSource
-import com.patson.model.{Airline, Airport, IdObject, Link, LinkClassValues}
+import com.patson.data.{AirplaneSource, LinkSource}
+import com.patson.model.{Airline, Airport, Computation, IdObject, Link, LinkClassValues}
 
-case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, availableFlightMinutes : Int = Airplane.MAX_FLIGHT_MINUTES, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, var home : Airport = Airport.fromId(0), var id : Int = 0) extends IdObject {
+case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, var home : Airport = Airport.fromId(0), var id : Int = 0) extends IdObject {
   val isReady = (currentCycle : Int) => currentCycle >= constructedCycle && !isSold
   val dealerValue = {
     (value * dealerRatio).toInt
@@ -38,6 +38,17 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
         configurationOptions(0) //just get the first one
       }
     configuration = pickedConfiguration
+  }
+
+  lazy val availableFlightMinutes : Int = {
+    val occupiedFlightMinutes = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(id).assignments.toList.map {
+      case(linkId, frequency) => LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
+        case Some(link) => Computation.calculateFlightMinutesRequired(model, link.distance) * frequency
+        case None => 0
+      }
+    }.sum
+
+    Airplane.MAX_FLIGHT_MINUTES - occupiedFlightMinutes
   }
 
 //  lazy val remainingFlightHour = usableFlightHour - linkAssignments.map {

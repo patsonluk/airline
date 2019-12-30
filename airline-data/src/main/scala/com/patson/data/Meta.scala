@@ -536,7 +536,6 @@ object Meta {
       "value INTEGER," +
       "is_sold TINYINT(1)," +
       "dealer_ratio DECIMAL(3,2)," +
-      "available_flight_minutes INTEGER," +
       "home INTEGER," +
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(owner) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +

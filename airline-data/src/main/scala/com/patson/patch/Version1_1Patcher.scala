@@ -63,7 +63,7 @@ object Version1_1Patcher extends App {
           var remainingFrequency = existingFrequency
 
           val newAirplaneAssignments = new mutable.HashMap[Airplane, Int]()
-          airplanes = airplanes.map { airplane =>
+          airplanes.foreach { airplane =>
             val frequencyForThisAirplane =
               if (remainingFrequency > maxFrequencyPerAirplane) {
                 maxFrequencyPerAirplane
@@ -74,12 +74,11 @@ object Version1_1Patcher extends App {
             if (frequencyForThisAirplane > 0) {
               newAirplaneAssignments.put(airplane, frequencyForThisAirplane)
             }
-
-            val availableFlightMinutes = Airplane.MAX_FLIGHT_MINUTES - Computation.calculateFlightMinutesRequired(airplane.model, link.distance) * frequencyForThisAirplane
-            airplane.copy(availableFlightMinutes = availableFlightMinutes)
+//            val availableFlightMinutes = Airplane.MAX_FLIGHT_MINUTES - Computation.calculateFlightMinutesRequired(airplane.model, link.distance) * frequencyForThisAirplane
+//            airplane.copy(availableFlightMinutes = availableFlightMinutes)
           }
 
-          AirplaneSource.updateAirplanes(airplanes)
+          //AirplaneSource.updateAirplanes(airplanes)
 
           System.out.println(link.id + " has remainingFrequency " + remainingFrequency)
 
@@ -203,10 +202,7 @@ object Version1_1Patcher extends App {
   def patchUnassignedAirplanes() = {
     println("Patching Unassigned airplanes (flight minutes, configuration)")
     val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
-    val unassignedAirplanes = AirplaneSource.loadAllAirplanes().filter(airplane => !linkAssignments.contains(airplane.id)).map { airplane =>
-      airplane.copy(availableFlightMinutes = Airplane.MAX_FLIGHT_MINUTES)
-    }
-    AirplaneSource.updateAirplanes(unassignedAirplanes)
+    val unassignedAirplanes = AirplaneSource.loadAllAirplanes().filter(airplane => !linkAssignments.contains(airplane.id))
 
     unassignedAirplanes.filter(!_.isSold).groupBy(airplane => (airplane.owner, airplane.model)).foreach {
       case ((owner, model), airplanes) =>

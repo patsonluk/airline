@@ -9,8 +9,7 @@ import scala.math.BigDecimal.int2bigDecimal
 import com.patson.Util
 import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, ConsumptionHistorySource, CountrySource, CycleSource, LinkSource}
 import com.patson.model._
-import com.patson.model.airplane.Airplane
-import com.patson.model.airplane.Model
+import com.patson.model.airplane.{Airplane, LinkAssignments, Model}
 import play.api.data.Form
 import play.api.data.Forms.mapping
 import play.api.data.Forms.number
@@ -128,6 +127,17 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       "invertedRelatedLinks" -> Json.toJson(linkHistory.invertedRelatedLinks)))
     }
   }
+
+  implicit object LinkAssignmentsWrites extends Writes[LinkAssignments] {
+    def writes(assignments : LinkAssignments): JsValue = {
+      var result = Json.obj()
+
+      assignments.assignments.foreach {
+        case(linkId, frequency) => result = result + (linkId.toString -> JsNumber(frequency))
+      }
+      result
+    }
+  }
   
   implicit object ModelPlanLinkInfoWrites extends Writes[ModelPlanLinkInfo] {
     def writes(modelPlanLinkInfo : ModelPlanLinkInfo): JsValue = {
@@ -137,19 +147,22 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION),
       "capacity" -> JsNumber(modelPlanLinkInfo.model.capacity),
-      "duration" -> JsNumber(modelPlanLinkInfo.duration), 
+      "duration" -> JsNumber(modelPlanLinkInfo.duration),
       "flightMinutesRequired" -> JsNumber(modelPlanLinkInfo.flightMinutesRequired),
       "isAssigned" -> JsBoolean(modelPlanLinkInfo.isAssigned)))
       
       var airplaneArray = JsArray()
+
       modelPlanLinkInfo.airplanes.foreach {
         case(airplane, frequency) =>
-          airplaneArray = airplaneArray.append(JsObject(List("airplaneId" -> JsNumber(airplane.id), "frequency" -> JsNumber(frequency), "condition" -> JsNumber(airplane.condition))))
+          val assignments = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplane.id)
+          val airplaneJson = Json.toJson(airplane).asInstanceOf[JsObject] + ("linkAssignments" -> Json.toJson(assignments))
+          airplaneArray = airplaneArray.append(JsObject(List("airplane" -> airplaneJson, "frequency" -> JsNumber(frequency))))
       }
       jsObject + ("airplanes" -> airplaneArray)
     }
-    
   }
+
   
   implicit object LinkExtendedInfoWrites extends Writes[LinkExtendedInfo] {
     def writes(entry: LinkExtendedInfo): JsValue = {
@@ -245,26 +258,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //      }
 
       //validate slots      
-      val existingFrequency = existingLink.fold(0)(_.frequency)
-      val frequencyChange = incomingLink.frequency - existingFrequency
-      if ((incomingLink.from.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.from.getMaxSlotAssignment(airlineId)) {
-        println("max slot exceeded, tried to add " + frequencyChange + " but from airport slot at " + incomingLink.from.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.from.getMaxSlotAssignment(airlineId))
-        return BadRequest("Cannot insert link - frequency exceeded limit - from airport does not have enough slots")
-      }
-      if ((incomingLink.to.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.to.getMaxSlotAssignment(airlineId)) {
-        println("max slot exceeded, tried to add " + frequencyChange + " but to airport slot at " + incomingLink.to.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.to.getMaxSlotAssignment(airlineId))
-        return BadRequest("Cannot insert link - frequency exceeded limit - to airport does not have enough slots")
-      }
-      
-      val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
-      if (incomingLink.frequency > maxFrequencyAbsolute) {
-        return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
-      }
-      
-      if (incomingLink.frequency == 0) {
-        return BadRequest("Cannot insert link - frequency is 0")
-      }
-      
       val airplanesForThisLink = incomingLink.getAssignedAirplanes
       //validate all airplanes are same model
       val airplaneModels = airplanesForThisLink.foldLeft(Set[Model]())(_ + _._1.model) //should be just one element
@@ -286,20 +279,55 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       val flightMinutesRequiredPerFrequency = Computation.calculateFlightMinutesRequired(model, incomingLink.distance)
 
       //check if the assigned planes are owned by this airline and have minutes left for this
+      var totalFrequency = 0
+      var totalCapacity = LinkClassValues.getInstance()
+
       incomingLink.getAssignedAirplanes().foreach {
         case(airplane, frequency) =>
           if (airplane.owner.id != airlineId){
             return BadRequest(s"Cannot insert link - airplane $airplane is not owned by ${request.user}")
           }
+          if (airplane.home.id != incomingLink.from.id) {
+            return BadRequest(s"Cannot insert link - airplane $airplane is not based in ${incomingLink.from}")
+          }
+
           val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplane.id)
           val existingFrequency = linkAssignments.getFrequencyByLink(incomingLink.id)
-          val frequencyIncrement = frequency - existingFrequency
-          if (frequencyIncrement > 0) {
-            val flightMinutesRequired = flightMinutesRequiredPerFrequency * frequencyIncrement
-            if (airplane.availableFlightMinutes < flightMinutesRequired) {
-              return BadRequest(s"Cannot insert link - airplane has flight minutes left : $flightMinutesRequired, but only have ${airplane.availableFlightMinutes} left")
+          val frequencyDelta = frequency - existingFrequency
+          val flightMinutesDelta = flightMinutesRequiredPerFrequency * frequencyDelta
+          if (frequencyDelta > 0) {
+            if (airplane.availableFlightMinutes < flightMinutesDelta) {
+              return BadRequest(s"Cannot insert link - airplane require flight minutes : $flightMinutesDelta, but only have ${airplane.availableFlightMinutes} left")
             }
           }
+
+          totalFrequency += frequency
+          totalCapacity = totalCapacity + (airplane.configuration * frequency)
+      }
+
+      //update capacity and frequency
+      incomingLink.capacity = totalCapacity
+      incomingLink.frequency = totalFrequency
+
+      //validate the frequency change is valid
+      val existingFrequency = existingLink.fold(0)(_.frequency)
+      val frequencyChange = incomingLink.frequency - existingFrequency
+      if ((incomingLink.from.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.from.getMaxSlotAssignment(airlineId)) {
+        println("max slot exceeded, tried to add " + frequencyChange + " but from airport slot at " + incomingLink.from.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.from.getMaxSlotAssignment(airlineId))
+        return BadRequest("Cannot insert link - frequency exceeded limit - from airport does not have enough slots")
+      }
+      if ((incomingLink.to.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.to.getMaxSlotAssignment(airlineId)) {
+        println("max slot exceeded, tried to add " + frequencyChange + " but to airport slot at " + incomingLink.to.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.to.getMaxSlotAssignment(airlineId))
+        return BadRequest("Cannot insert link - frequency exceeded limit - to airport does not have enough slots")
+      }
+
+      val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
+      if (incomingLink.frequency > maxFrequencyAbsolute) {
+        return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
+      }
+
+      if (incomingLink.frequency == 0) {
+        return BadRequest("Cannot insert link - frequency is 0")
       }
 
       //validate configuration is valid
@@ -325,13 +353,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       if (rejectionReason.isDefined) {
         return BadRequest("Link is rejected: " + rejectionReason.get);
       }
-      
+
       if (existingLink.isEmpty) {
         incomingLink.flightNumber = LinkApplication.getNextAvailableFlightNumber(request.user)
       } else {
         incomingLink.flightNumber = existingLink.get.flightNumber
       }
-      
+
       println("PUT " + incomingLink)
             
       if (existingLink.isEmpty) {
@@ -346,23 +374,25 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
                toAirport.setAirlineAwareness(airlineId, 5)
                AirportSource.updateAirlineAppeal(List(toAirport))
             }
-            
-            
-            Created(Json.toJson(link))
+
+            return Created(Json.toJson(link))
           }
-          case None => UnprocessableEntity("Cannot insert link")
+          case None =>
+            return UnprocessableEntity("Cannot insert link")
         }
       } else {
         LinkSource.updateLink(incomingLink) match {
           case 1 =>
             //update assignments
             LinkSource.updateAssignedPlanes(incomingLink.id, incomingLink.getAssignedAirplanes())
-            Accepted(Json.toJson(incomingLink))
-          case _ => UnprocessableEntity("Cannot update link")
+
+            return Accepted(Json.toJson(incomingLink))
+          case _ =>
+            return UnprocessableEntity("Cannot update link")
         }
       }
     } else {
-      BadRequest("Cannot put link")
+      return BadRequest("Cannot put link")
     }
   }
   
@@ -440,11 +470,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   case class LinkExtendedInfo(link : Link, profit : Int, revenue : Int, soldSeats : LinkClassValues, lastUpdate : Calendar)
   
-  def deleteAllLinks() = Action {
-    val count = LinkSource.deleteAllLinks()
-    Ok(Json.obj("count" -> count))
-  }
-  
   def deleteLink(airlineId : Int, linkId: Int) = AuthenticatedAirline(airlineId) { request =>
     //verify the airline indeed has that link
     LinkSource.loadLinkById(linkId) match {
@@ -458,7 +483,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
               BadRequest(reason)
             }
             case None => {
-              val count = LinkSource.deleteLink(linkId)  
+              val count = LinkSource.deleteLink(linkId)
+              if (count == 1) { //update airplane available minutes too
+                link.getAssignedAirplanes()
+              }
               Ok(Json.obj("count" -> count))
             }
           }
@@ -552,7 +580,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val availableAirplanesByModel : immutable.Map[Model, List[(Airplane, Int)]] = modelsWithinRange.map { model =>
           val ownedAirplanesOfThisModel = ownedAirplanesByModel.getOrElse(model, List.empty)
           val flightMinutesRequired = Computation.calculateFlightMinutesRequired(model, distance)
-          val availableAirplanesOfThisModel = ownedAirplanesOfThisModel.filter( airplane => airplane.availableFlightMinutes >= flightMinutesRequired || airplanesAssignedToThisLink.isDefinedAt(airplane.id))
+          val availableAirplanesOfThisModel = ownedAirplanesOfThisModel.filter(airplane => (airplane.home.id == fromAirportId && airplane.availableFlightMinutes >= flightMinutesRequired) || airplanesAssignedToThisLink.isDefinedAt(airplane.id))
 
           (model, availableAirplanesOfThisModel.map(airplane => (airplane, airplanesAssignedToThisLink.getOrElse(airplane.id, 0))))
         }.toMap

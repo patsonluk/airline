@@ -117,9 +117,8 @@ GET		 /santa-claus/award-options/:airlineId  controllers.ChristmasApplication.ge
 GET      /santa-claus/pick-award/:airlineId/:optionId   controllers.ChristmasApplication.pickAwardOption(airlineId : Int, optionId : Int)
 
 
-PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
-GET		 /links							  controllers.LinkApplication.getAllLinks
-DELETE   /links							  controllers.LinkApplication.deleteAllLinks
+#PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
+#GET		 /links							  controllers.LinkApplication.getAllLinks
 #GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels

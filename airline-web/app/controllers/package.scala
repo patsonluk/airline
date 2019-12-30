@@ -17,13 +17,10 @@ import play.api.libs.json.JsSuccess
 import play.api.libs.json.Json
 import play.api.libs.json.JsBoolean
 import com.patson.model.AirlineIncome
-import com.patson.model.AirlineIncome
 import com.patson.model.AirlineCashFlow
 import play.api.libs.json.Reads
-import models.AirportFacility
 import models.FacilityType
 import models.AirportFacility
-import models.FacilityType.FacilityType
 import com.patson.util.ChampionInfo
 
 import scala.concurrent.ExecutionContext
@@ -110,7 +107,11 @@ package object controllers {
       "dealerValue" -> JsNumber(airplane.dealerValue),
       "dealerRatio" -> JsNumber(airplane.dealerRatio),
       "configurationId" -> JsNumber(airplane.configuration.id),
-      "homeAirportId" -> JsNumber(airplane.home.id)
+      "configuration" -> Json.obj("economy" -> airplane.configuration.economyVal, "business" -> airplane.configuration.businessVal, "first" -> airplane.configuration.firstVal),
+      "availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes),
+      "homeAirportId" -> JsNumber(airplane.home.id),
+      "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
+      "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION)
       ))
     }
   }
@@ -146,13 +147,8 @@ package object controllers {
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
       val airplaneAssignments = json.\("airplanes").as[Map[Airplane, Int]](AirplaneAssignmentsRead)
-      val frequency = json.\("frequency").as[Int]
+
       val modelId = json.\("model").as[Int]
-      
-      val capacity = LinkClassValues.getInstance(frequency * json.\("configuration").\("economy").as[Int],
-                                              frequency * json.\("configuration").\("business").as[Int],
-                                              frequency * json.\("configuration").\("first").as[Int])
-                                
       val duration = ModelSource.loadModelById(modelId).fold(Integer.MAX_VALUE)(Computation.calculateDuration(_, distance))
 
 
@@ -164,7 +160,7 @@ package object controllers {
         rawQuality = 0
       }
          
-      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency, flightType)
+      val link = Link(fromAirport, toAirport, airline, price, distance, capacity = LinkClassValues.getInstance(), rawQuality, duration, frequency = 0, flightType) //compute frequency and capacity after validating the assigned airplanes
       link.setAssignedAirplanes(airplaneAssignments)
       //(json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)

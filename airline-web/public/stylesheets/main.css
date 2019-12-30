@@ -60,6 +60,10 @@ body {
 	display: table-cell;
 }
 
+.table.frequencyDetail .cell, .table.frequencyDetailTotal .cell{
+   padding : 1px 2px 1px 2px;
+}
+
 .table .table-row {
 	display: table-row;
 	width: 100%;
@@ -633,4 +637,12 @@ div {
 
 input:disabled {
   background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+}
+
+.button.disabled {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+}
+
+.button.disabled:hover {
+  cursor: not-allowed
 }

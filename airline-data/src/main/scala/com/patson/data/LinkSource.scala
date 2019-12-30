@@ -481,8 +481,7 @@ object LinkSource {
       connection.close()
     }
   }
-  
-  
+
   def deleteLink(linkId : Int) = {
     deleteLinksByCriteria(List(("id", linkId)))
   }
