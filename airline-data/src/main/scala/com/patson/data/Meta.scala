@@ -852,6 +852,7 @@ object Meta {
       "economy INTEGER, " +
       "business INTEGER, " +
       "first INTEGER, " +
+      "is_default TINYINT(1), " +
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

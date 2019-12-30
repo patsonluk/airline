@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
  * 
  * Frequency sum of all assigned plane
  */
-case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends IdObject{
+case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, var capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends IdObject{
   @volatile var availableSeats : LinkClassValues = capacity.copy()
   @volatile var soldSeats : LinkClassValues = LinkClassValues.getInstance()
   @volatile var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
@@ -130,6 +130,17 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       standardPrice.put(linkClass, price)
     }
     price
+  }
+
+  /**
+    * Recomputes capacity base on assigned airplanes
+    */
+  def recomputeCapacity() = {
+    var newCapacity = LinkClassValues.getInstance()
+    assignedAirplanes.foreach {
+      case(airplane, frequency) => newCapacity = newCapacity + (LinkClassValues(airplane.configuration.economyVal, airplane.configuration.businessVal, airplane.configuration.firstVal) * frequency)
+    }
+    capacity = newCapacity
   }
   
   

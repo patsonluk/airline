@@ -3,7 +3,7 @@ package com.patson.model.airplane
 import com.patson.data.AirplaneSource
 import com.patson.model.{Airline, Airport, IdObject, Link, LinkClassValues}
 
-case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, availableFlightMinutes : Int = Airplane.MAX_FLIGHT_MINUTES, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, home : Airport = Airport.fromId(0), var id : Int = 0) extends IdObject {
+case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, availableFlightMinutes : Int = Airplane.MAX_FLIGHT_MINUTES, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, var home : Airport = Airport.fromId(0), var id : Int = 0) extends IdObject {
   val isReady = (currentCycle : Int) => currentCycle >= constructedCycle && !isSold
   val dealerValue = {
     (value * dealerRatio).toInt
@@ -13,6 +13,7 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
     dealerRatio = Airplane.DEFAULT_DEALER_RATIO
     isSold = true
     configuration = AirplaneConfiguration.empty
+    home = Airport.fromId(0)
   }
   
   def buyFromDealer(airline : Airline, currentCycle : Int) = {
@@ -21,6 +22,7 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
     isSold = false
 
     purchasedCycle = currentCycle
+    home = airline.getHeadQuarter().get.airport
 
     assignDefaultConfiguration()
   }

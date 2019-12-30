@@ -10,20 +10,22 @@ import com.patson.model._
 import com.patson.model.airplane._
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 /**
   * patcher for v1.1
   */
-object AirplaneAssignmentPatcher extends App {
+object Version1_1Patcher extends App {
   mainFlow
 
   def mainFlow() {
     createSchema()
-//    patchLinkFrequency()
-//    patchAirplaneConfiguration()
+    patchLinkFrequency()
+    patchAirplaneConfiguration()
     patchUnassignedAirplanes()
+    patchAirplaneHomeAirport()
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }
@@ -89,8 +91,8 @@ object AirplaneAssignmentPatcher extends App {
               link
             }
 
-          newLink.setAssignedAirplanes(newAirplaneAssignments.toMap)
           LinkSource.updateLink(newLink)
+          LinkSource.updateAssignedPlanes(link.id, newAirplaneAssignments.toMap)
         }
       }
     }
@@ -108,7 +110,7 @@ object AirplaneAssignmentPatcher extends App {
         if (link.capacity.total > 0) {
           val configurationsForThisModel = existingConfigurationsByModel.getOrElseUpdate(link.getAssignedModel().get, new mutable.HashSet[AirplaneConfiguration]())
           val seats = link.capacity / link.frequency
-          val configuration = AirplaneConfiguration(seats.economyVal, seats.businessVal, seats.firstVal, link.airline, link.getAssignedModel().get)
+          val configuration = AirplaneConfiguration(seats.economyVal, seats.businessVal, seats.firstVal, link.airline, link.getAssignedModel().get, false)
           configurationsForThisModel.add(configuration)
         }
       }
@@ -130,10 +132,15 @@ object AirplaneAssignmentPatcher extends App {
         templatesOfThisModel.addAll(trimmedTemplates)
       }
 
+
+
       //save the configurations
       existingConfigurationsByModel.values.foreach { templatesOfThisModel =>
         val templates = templatesOfThisModel.toList.sortBy(computeLuxuryPoints)
-        AirplaneSource.saveAirplaneConfigurations(templates)
+        if (templates.length > 0) {
+          AirplaneSource.saveAirplaneConfigurations(templates)
+          AirplaneSource.updateAirplaneConfiguration(templates(0).copy(isDefault = true)) //set the first one as default
+        }
       }
 
 
@@ -157,7 +164,8 @@ object AirplaneAssignmentPatcher extends App {
           if (newCapacity != link.capacity) {
             println(s"Capacity : ${link.capacity} => $newCapacity")
           }
-          LinkSource.updateLink(link.copy(capacity = newCapacity))
+          val updateLink = link.copy(capacity = newCapacity)
+          LinkSource.updateLink(updateLink)
         }
       }
 
@@ -193,20 +201,21 @@ object AirplaneAssignmentPatcher extends App {
 
 
   def patchUnassignedAirplanes() = {
+    println("Patching Unassigned airplanes (flight minutes, configuration)")
     val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
-    val unassignedAirplanes = AirplaneSource.loadAllAirplanes().filter(airplane => !linkAssignments.contains(airplane.id) && !airplane.isSold).map { airplane =>
+    val unassignedAirplanes = AirplaneSource.loadAllAirplanes().filter(airplane => !linkAssignments.contains(airplane.id)).map { airplane =>
       airplane.copy(availableFlightMinutes = Airplane.MAX_FLIGHT_MINUTES)
     }
     AirplaneSource.updateAirplanes(unassignedAirplanes)
 
-    unassignedAirplanes.groupBy(airplane => (airplane.owner, airplane.model)).foreach {
+    unassignedAirplanes.filter(!_.isSold).groupBy(airplane => (airplane.owner, airplane.model)).foreach {
       case ((owner, model), airplanes) =>
         //try to locate configuration for that model
         val configurations = AirplaneSource.loadAirplaneConfigurationsByCriteria(List(("airline", owner.id), ("model", model.id))).sortBy(computeLuxuryPoints)
         val pickedConfiguration =
           if (configurations.isEmpty) {
             //then create one all economy
-            val newConfiguration = AirplaneConfiguration(economyVal = model.capacity, 0, 0, owner, model)
+            val newConfiguration = AirplaneConfiguration(economyVal = model.capacity, 0, 0, owner, model, true)
             AirplaneSource.saveAirplaneConfigurations(List(newConfiguration))
             newConfiguration
           } else {
@@ -215,9 +224,29 @@ object AirplaneAssignmentPatcher extends App {
         val updatingAirplanes = airplanes.map(airplane => airplane.copy(configuration = pickedConfiguration))
         AirplaneSource.updateAirplanes(updatingAirplanes)
     }
+    println("Finished patching unassigned airplanes")
+  }
 
+  def patchAirplaneHomeAirport() = {
+    println("Patching airplane home airports")
+    val linkAssignments: Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
+    val airlinesById = AirlineSource.loadAllAirlines(fullLoad = true).map(airline => (airline.id, airline)).toMap
+    val updatingAirplanes = ListBuffer[Airplane]()
+    AirplaneSource.loadAllAirplanes().foreach { airplane =>
+      if (!airplane.isSold) { //only patched owned airplane
+        val homeBase : Option[Airport] = linkAssignments.get(airplane.id) match {
+          case Some(assignments) => LinkSource.loadLinkById(assignments.assignedLinkIds(0)).map(link => link.from)
+          case None => airlinesById(airplane.owner.id).getHeadQuarter().map { _.airport } //unassigned airplanes, find HQ
+        }
+        homeBase.foreach { base => //if a home base can be determined
+          airplane.home = base
+          updatingAirplanes.append(airplane)
+        }
+      }
+    }
 
-
+    val updateCount = AirplaneSource.updateAirplanes(updatingAirplanes.toList)
+    println("Finished patching airplane home airports, update count " + updateCount)
   }
   
 

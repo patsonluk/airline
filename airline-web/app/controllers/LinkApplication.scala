@@ -354,7 +354,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         }
       } else {
         LinkSource.updateLink(incomingLink) match {
-          case 1 => Accepted(Json.toJson(incomingLink))      
+          case 1 =>
+            //update assignments
+            LinkSource.updateAssignedPlanes(incomingLink.id, incomingLink.getAssignedAirplanes())
+            Accepted(Json.toJson(incomingLink))
           case _ => UnprocessableEntity("Cannot update link")
         }
       }

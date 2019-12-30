@@ -88,6 +88,7 @@ GET		 /airlines/:airlineId/accept-alliance-member/:targetAirlineId  controllers.
 GET		 /airlines/:airlineId/promote-alliance-member/:targetAirlineId  controllers.AllianceApplication.promoteToAllianceLeader(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/used-airplanes/models/:modelId	controllers.AirplaneApplication.getUsedAirplanes(airlineId : Int, modelId : Int)
 PUT		 /airlines/:airlineId/used-airplanes/airplanes/:airplaneId	controllers.AirplaneApplication.buyUsedAirplane(airlineId : Int, airplaneId : Int)
+PUT		 /airlines/:airlineId/airplanes/:airplaneId/home/:airportId  controllers.AirplaneApplication.updateAirplaneHome(airlineId : Int, airplaneId : Int, airportId: Int)
 GET		 /airlines/:airlineId/oil-contracts	controllers.OilApplication.getContracts(airlineId : Int)
 GET		 /airlines/:airlineId/oil-details	controllers.OilApplication.getDetails(airlineId : Int)
 GET		 /airlines/:airlineId/oil-contract-consideration	controllers.OilApplication.getContractConsideration(airlineId : Int, volume : Int, duration : Int)			
@@ -97,6 +98,13 @@ GET	 	 /airlines/:airlineId/oil-inventory-options		controllers.OilApplication.ge
 GET		 /airlines/:airlineId/set-oil-inventory-option  controllers.OilApplication.setInventoryOption(airlineId : Int, optionId : Int)
 GET		 /airlines/:airlineId/logs  controllers.LogApplication.getLogs(airlineId : Int)
 GET		 /airlines/:airlineId/alerts  controllers.AlertApplication.getAlerts(airlineId : Int)
+GET		 /airlines/:airlineId/configurations                   controllers.AirplaneConfigurationApplication.getConfigurations(airlineId : Int, modelId : Int)
+GET		 /airlines/:airlineId/configurations/:configurationId  controllers.AirplaneConfigurationApplication.getConfiguration(airlineId : Int, configurationId : Int)
+PUT		 /airlines/:airlineId/configurations                   controllers.AirplaneConfigurationApplication.putConfiguration(airlineId : Int, modelId : Int, configurationId: Int ?= 0, economy : Int, business : Int, first : Int, isDefault : Boolean)
+PUT		 /airlines/:airlineId/airplanes/:airplaneId/configuration/:configurationId  controllers.AirplaneConfigurationApplication.updateAirplaneConfiguration(airlineId : Int, airplaneId : Int, configurationId: Int)
+DELETE	 /airlines/:airlineId/configurations/:configurationId  controllers.AirplaneConfigurationApplication.deleteConfiguration(airlineId : Int, configurationId : Int)
+
+
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
 GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()
 

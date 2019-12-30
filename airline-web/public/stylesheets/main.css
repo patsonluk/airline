@@ -630,3 +630,7 @@ div {
      scrollbar-width: thin;
      scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
 }
+
+input:disabled {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+}

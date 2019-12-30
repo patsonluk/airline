@@ -353,6 +353,14 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         linksFromThisAirport.foreach { link =>
           LinkSource.deleteLink(link.id)
         }
+
+        //assign all airplanes on this base to HQ
+        val headquarters = request.user.getHeadQuarter().get
+        val updatingAirplanes = AirplaneSource.loadAirplanesCriteria(List(("home", airportId), ("owner", airlineId))).map { airplane =>
+          airplane.home = headquarters.airport
+          airplane
+        }
+        AirplaneSource.updateAirplanes(updatingAirplanes)
         
         AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId).foreach { lounge =>
           AirlineSource.deleteLounge(lounge)

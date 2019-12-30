@@ -407,7 +407,12 @@ function highlightSwitch(selectedSwitch) {
 }
 
 function closeModal(modal) {
-	modal.fadeOut(200)
+    modal.fadeOut(200)
+    var callback = modal.data("close-callback")
+    if (callback) {
+        callback()
+        modal.removeData("close-callback")
+    }
 }
 
 function isIe() {

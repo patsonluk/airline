@@ -411,19 +411,14 @@ object LinkSource {
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
-      
-      if (updateCount > 0) {
-          //try to save assigned airplanes if any
-          updateAssignedPlanes(link.id, link.getAssignedAirplanes())
-      }
-      
+
       updateCount
     } finally {
       preparedStatement.close()
       connection.close()
     }
   }
-  
+
   def updateLinks(links : List[Link]) = {
     //open the hsqldb
     val connection = Meta.getConnection()

@@ -16,7 +16,7 @@ object AirplaneSource {
   val LINK_SIMPLE_LOAD = Map(DetailType.LINK -> false)
   val LINK_ID_LOAD : Map[DetailType.Value, Boolean] = Map.empty
   
-  private[this] val BASE_QUERY = "SELECT owner, a.id as id, a.model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, purchased_cycle, airplane_condition, a.depreciation_rate, a.value, is_sold, dealer_ratio, available_flight_minutes, configuration, home, economy, business, first FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + AIRPLANE_CONFIGURATION_TABLE + " c ON c.airplane = a.id LEFT JOIN " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + " t ON c.configuration = t.id"
+  private[this] val BASE_QUERY = "SELECT owner, a.id as id, a.model as model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, purchased_cycle, airplane_condition, a.depreciation_rate, a.value, is_sold, dealer_ratio, available_flight_minutes, configuration, home, economy, business, first, is_default FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + AIRPLANE_CONFIGURATION_TABLE + " c ON c.airplane = a.id LEFT JOIN " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + " t ON c.configuration = t.id"
   
   val allModels = ModelSource.loadAllModels().map(model => (model.id, model)).toMap
   
@@ -61,7 +61,7 @@ object AirplaneSource {
       while (resultSet.next()) {
         val airline = Airline.fromId(resultSet.getInt("owner"))
         val model = allModels(resultSet.getInt("a.model"))
-        val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), airline, model, id = resultSet.getInt("configuration"))
+        val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), airline, model, resultSet.getBoolean("is_default"), id = resultSet.getInt("configuration"))
         val airplane = Airplane(model, airline, resultSet.getInt("constructed_cycle"), resultSet.getInt("purchased_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"), isSold = resultSet.getBoolean("is_sold"), dealerRatio = resultSet.getDouble("dealer_ratio"), availableFlightMinutes = resultSet.getInt("available_flight_minutes"), configuration = configuration, home = Airport.fromId(resultSet.getInt("home")))
         airplane.id = resultSet.getInt("id")
         airplanes.append(airplane)
@@ -211,7 +211,7 @@ object AirplaneSource {
       
     try {
       connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, purchased_cycle, airplane_condition, depreciation_rate, value, is_sold, dealer_ratio, available_flight_minutes) VALUES(?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, purchased_cycle, airplane_condition, depreciation_rate, value, is_sold, dealer_ratio, available_flight_minutes, home) VALUES(?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       val configurationStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_CONFIGURATION_TABLE + "(airplane, configuration) VALUES(?,?)")
       
       airplanes.foreach { 
@@ -307,7 +307,7 @@ object AirplaneSource {
       
     try {
       connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET airplane_condition = ?, depreciation_rate = ?, value = ?, dealer_ratio = ? WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET airplane_condition = ?, depreciation_rate = ?, value = ?, dealer_ratio = ?, home = ? WHERE id = ?")
       
       airplanes.foreach { 
         airplane =>
@@ -315,7 +315,8 @@ object AirplaneSource {
           preparedStatement.setInt(2, airplane.depreciationRate)
           preparedStatement.setInt(3, airplane.value)
           preparedStatement.setDouble(4, airplane.dealerRatio)
-          preparedStatement.setInt(5, airplane.id)
+          preparedStatement.setInt(5, airplane.home.id)
+          preparedStatement.setInt(6, airplane.id)
           updateCount += preparedStatement.executeUpdate()
       }
       
@@ -335,7 +336,7 @@ object AirplaneSource {
 
     try {
       connection.setAutoCommit(false)
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(airline, model, economy, business, first) VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(airline, model, economy, business, first, is_default) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
       configurations.foreach {
         configuration =>
@@ -344,6 +345,7 @@ object AirplaneSource {
           preparedStatement.setInt(3, configuration.economyVal)
           preparedStatement.setInt(4, configuration.businessVal)
           preparedStatement.setInt(5, configuration.firstVal)
+          preparedStatement.setBoolean(6, configuration.isDefault)
           updateCount += preparedStatement.executeUpdate()
 
           val generatedKeys = preparedStatement.getGeneratedKeys
@@ -360,19 +362,20 @@ object AirplaneSource {
     updateCount
   }
 
-  def updateAirplaneConfigurations(configuration: AirplaneConfiguration) = {
+  def updateAirplaneConfiguration(configuration: AirplaneConfiguration) = {
     val connection = Meta.getConnection()
 
     try {
       connection.setAutoCommit(false)
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + " SET economy = ?, business = ?, first = ? WHERE id = ? AND airline = ? AND model = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + " SET economy = ?, business = ?, first = ?, is_default = ? WHERE id = ? AND airline = ? AND model = ?")
 
       preparedStatement.setInt(1, configuration.economyVal)
       preparedStatement.setDouble(2, configuration.businessVal)
       preparedStatement.setInt(3, configuration.firstVal)
-      preparedStatement.setInt(4, configuration.id)
-      preparedStatement.setInt(5, configuration.airline.id) //not necessary but just to play safe...
-      preparedStatement.setInt(6, configuration.model.id)//not necessary but just to play safe...
+      preparedStatement.setBoolean(4, configuration.isDefault)
+      preparedStatement.setInt(5, configuration.id)
+      preparedStatement.setInt(6, configuration.airline.id) //not necessary but just to play safe...
+      preparedStatement.setInt(7, configuration.model.id)//not necessary but just to play safe...
       preparedStatement.executeUpdate()
 
       connection.commit()
@@ -398,6 +401,19 @@ object AirplaneSource {
       preparedStatement.close()
     } finally {
       connection.close()
+    }
+  }
+
+  def loadAirplaneConfigurationById(airlineId : Int, modelId : Int) = {
+    loadAirplaneConfigurationsByCriteria(List(("airline", airlineId), ("model", modelId)))
+  }
+
+  def loadAirplaneConfigurationById(id : Int) = {
+    val result = loadAirplaneConfigurationsByCriteria(List(("id", id)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
     }
   }
 
@@ -433,7 +449,7 @@ object AirplaneSource {
 
 
     while (resultSet.next()) {
-      val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), Airline.fromId(resultSet.getInt("airline")), Model.fromId(resultSet.getInt("model")), id = resultSet.getInt("id"))
+      val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), Airline.fromId(resultSet.getInt("airline")), Model.fromId(resultSet.getInt("model")), resultSet.getBoolean("is_default"), id = resultSet.getInt("id"))
       configurations.append(configuration)
     }
 
