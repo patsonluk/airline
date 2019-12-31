@@ -175,7 +175,7 @@ object AirportSimulation {
         println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + currentLoyalty + " to " + newLoyalty)
       }
     }
-    AirportSource.updateAirlineAppeals(airport.id, newAppeals)
+    AirportSource.updateAirlineAppeals(airport.id, newAppeals.toMap)
 
     
     if (!airport.getLounges().isEmpty) {
