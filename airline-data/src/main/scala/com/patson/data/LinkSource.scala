@@ -482,6 +482,42 @@ object LinkSource {
     }
   }
 
+  def updateAssignedPlanes(assignedAirplanesByLinkId : Map[Int, Map[Airplane, Int]]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val removeStatement = connection.prepareStatement("DELETE FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
+      val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane, frequency) VALUES(?,?,?)")
+      assignedAirplanesByLinkId.foreach  {
+        case (linkId, assignedAirplanes) =>
+          //remove all the existing ones assigned to this link
+          removeStatement.setInt(1, linkId)
+          removeStatement.addBatch()
+          assignedAirplanes.foreach { case(airplane, frequency) =>
+            if (frequency > 0) {
+
+              insertStatement.setInt(1, linkId)
+              insertStatement.setInt(2, airplane.id)
+              insertStatement.setInt(3, frequency)
+              insertStatement.addBatch()
+
+            }
+          }
+
+      }
+      removeStatement.executeBatch()
+      insertStatement.executeBatch()
+
+      removeStatement.close
+      insertStatement.close
+
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+
   def deleteLink(linkId : Int) = {
     deleteLinksByCriteria(List(("id", linkId)))
   }

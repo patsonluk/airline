@@ -56,6 +56,8 @@ object Version1_1Patcher extends App {
   def patchLinkFrequency() = {
     // frequency adjust, should be per airplane now
     AirlineSource.loadAllAirlines().foreach { airline =>
+      val updatingLinks = ListBuffer[Link]()
+      val updatingAssignedAirplanes = mutable.HashMap[Int, Map[Airplane, Int]]()
       LinkSource.loadLinksByAirlineId(airline.id).foreach { link =>
         if (link.capacity.total > 0) {
           val capacityPerAirplane = link.capacity / link.frequency
@@ -83,7 +85,6 @@ object Version1_1Patcher extends App {
           }
 
           //AirplaneSource.updateAirplanes(airplanes)
-
           System.out.println(link.id + " has remainingFrequency " + remainingFrequency)
 
           val newLink =
@@ -93,11 +94,15 @@ object Version1_1Patcher extends App {
             } else {
               link
             }
-
-          LinkSource.updateLink(newLink)
-          LinkSource.updateAssignedPlanes(link.id, newAirplaneAssignments.toMap)
+            updatingLinks.append(newLink)
+            updatingAssignedAirplanes.put(link.id, newAirplaneAssignments.toMap)
+//          LinkSource.updateLink(newLink)
+//          LinkSource.updateAssignedPlanes(link.id, newAirplaneAssignments.toMap)
         }
+        LinkSource.updateLinks(updatingLinks.toList)
+        LinkSource.updateAssignedPlanes(updatingAssignedAirplanes.toMap)
       }
+      println("Updated $airline")
     }
 
     println("Finished adjusting frequency")
