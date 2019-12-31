@@ -73,19 +73,21 @@ object Version1_1Patcher extends App {
             val frequencyForThisAirplane =
               if (remainingFrequency > maxFrequencyPerAirplane) {
                 maxFrequencyPerAirplane
-              } else  {
+              } else {
                 remainingFrequency
               }
             remainingFrequency -= frequencyForThisAirplane
             if (frequencyForThisAirplane > 0) {
               newAirplaneAssignments.put(airplane, frequencyForThisAirplane)
             }
-//            val availableFlightMinutes = Airplane.MAX_FLIGHT_MINUTES - Computation.calculateFlightMinutesRequired(airplane.model, link.distance) * frequencyForThisAirplane
-//            airplane.copy(availableFlightMinutes = availableFlightMinutes)
+            //            val availableFlightMinutes = Airplane.MAX_FLIGHT_MINUTES - Computation.calculateFlightMinutesRequired(airplane.model, link.distance) * frequencyForThisAirplane
+            //            airplane.copy(availableFlightMinutes = availableFlightMinutes)
           }
 
           //AirplaneSource.updateAirplanes(airplanes)
-          System.out.println(link.id + " has remainingFrequency " + remainingFrequency)
+          if (remainingFrequency > 0) {
+            System.out.println(s"${link.id} has remainingFrequency $remainingFrequency out of $existingFrequency . Distance is ${link.distance}")
+          }
 
           val newLink =
             if (remainingFrequency > 0) { //update frequency and capacity if we cannot accommodate everything
@@ -102,7 +104,7 @@ object Version1_1Patcher extends App {
         LinkSource.updateLinks(updatingLinks.toList)
         LinkSource.updateAssignedPlanes(updatingAssignedAirplanes.toMap)
       }
-      println("Updated $airline")
+      println(s"Updated $airline")
     }
 
     println("Finished adjusting frequency")
@@ -171,9 +173,9 @@ object Version1_1Patcher extends App {
           val newCapacity = LinkClassValues(matchingConfiguration.economyVal * link.frequency, matchingConfiguration.businessVal * link.frequency, matchingConfiguration.firstVal * link.frequency)
           if (newCapacity != link.capacity) {
             println(s"Capacity : ${link.capacity} => $newCapacity")
+            val updateLink = link.copy(capacity = newCapacity)
+            LinkSource.updateLink(updateLink)
           }
-          val updateLink = link.copy(capacity = newCapacity)
-          LinkSource.updateLink(updateLink)
         }
       }
 
