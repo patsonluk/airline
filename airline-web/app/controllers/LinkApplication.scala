@@ -370,9 +370,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             AirlineSource.saveCashFlowItem(AirlineCashFlowItem(request.user.id, CashFlowType.CREATE_LINK, cost * -1))
             
             val toAirport = incomingLink.to
-            if (toAirport.getAirlineAwareness(airlineId) < 5) { //update to 5 for link creation
-               toAirport.setAirlineAwareness(airlineId, 5)
-               AirportSource.updateAirlineAppeal(List(toAirport))
+            val existingAppeal = toAirport.getAirlineBaseAppeal(airlineId)
+            if (existingAppeal.awareness < 5) { //update to 5 for link creation
+               AirportSource.updateAirlineAppeal(toAirport.id, airlineId, AirlineAppeal(existingAppeal.loyalty, 5))
             }
 
             return Created(Json.toJson(link))

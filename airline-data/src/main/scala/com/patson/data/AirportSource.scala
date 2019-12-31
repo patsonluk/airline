@@ -3,9 +3,12 @@ package com.patson.data
 import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
 import com.patson.model._
-import scala.collection.mutable.Map
+
 import com.patson.model.AirlineAppeal
 import java.sql.Statement
+
+import scala.collection.mutable
+import scala.collection.immutable
 
 object AirportSource {
   private[this] val BASE_QUERY = "SELECT * FROM airport"
@@ -40,7 +43,17 @@ object AirportSource {
       
       loadAirportsByQueryString(queryString, criteria.map(_._2), fullLoad)
   }
-  
+
+  def getAirlineBonuses(airport : Airport, countryAirlineTitleCache : mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]) = {
+    //get airport bonus //for now no db
+    val airlineTitles: Map[Int, CountryAirlineTitle] = countryAirlineTitleCache.getOrElseUpdate(airport.countryCode, CountrySource.loadCountryAirlineTitlesByCountryCode(airport.countryCode).map(entry => (entry.airline.id, entry)).toMap)
+
+    //map airline titles to bonues
+    airlineTitles.view.mapValues { countryAirlineTitle =>
+      List(AirlineBonus(bonusType = CountryAirlineTitle.getBonusType(countryAirlineTitle.title), bonus = AirlineAppeal(CountryAirlineTitle.getLoyaltyBonus(countryAirlineTitle.title), 0), expirationCycle = None))
+    }.toMap
+  }
+
   def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) = {
       //open the hsqldb
     val connection = Meta.getConnection()
@@ -56,8 +69,8 @@ object AirportSource {
       
       val airportData = new ListBuffer[Airport]()
       //val airlineMap : Map[Int, Airline] = AirlineSource.loadAllAirlines().foldLeft(Map[Int, Airline]())( (container, airline) => container + Tuple2(airline.id, airline))
-      
-      
+      val countryAirlineTitleCache = mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]()
+
       while (resultSet.next()) {
         val airport = Airport( 
           resultSet.getString("iata"),
@@ -75,7 +88,7 @@ object AirportSource {
         airport.id = resultSet.getInt("id")
         airportData += airport
         if (fullLoad) {
-          val airlineAppeals = Map[Int, AirlineAppeal]()
+          val airlineAppeals = mutable.Map[Int, AirlineAppeal]()
           val loyaltyStatement = connection.prepareStatement("SELECT airline, loyalty, awareness FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
           loyaltyStatement.setInt(1, airport.id)
           val loyaltyResultSet = loyaltyStatement.executeQuery()
@@ -83,10 +96,13 @@ object AirportSource {
             val airlineId = loyaltyResultSet.getInt("airline")
             airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
           }
-          airport.initAirlineAppeals(airlineAppeals.toMap)
+
+          val airlineBonuses = getAirlineBonuses(airport, countryAirlineTitleCache)
+
+          airport.initAirlineAppeals(airlineAppeals.toMap,airlineBonuses)
           loyaltyStatement.close()
           
-          val slotAssignments = Map[Int, Int]()
+          val slotAssignments = mutable.Map[Int, Int]()
           val slotStatement = connection.prepareStatement("SELECT airline, SUM(frequency) as total_frequency FROM " + LINK_TABLE + " WHERE (from_airport = ? OR to_airport = ?) GROUP BY airline")
           slotStatement.setInt(1, airport.id)
           slotStatement.setInt(2, airport.id)
@@ -204,38 +220,55 @@ object AirportSource {
   def loadAirportsByCountry(countryCode : String) = {
     loadAirportsByCriteria(List(("country_code", countryCode)))
   }
-  
-  
-  def updateAirlineAppeal(airports: List[Airport]) = {
-   airports.foreach { airport => //make sure all loaded properly
-     if (!airport.isAirlineAppealsInitialized) {
-       throw new IllegalStateException("cannot save airline appeal as it's not initialized properly!")
-     }
-   }
-   val connection = Meta.getConnection()
-   try {  
-     connection.setAutoCommit(false)
-     airports.foreach { airport => 
+
+  def replaceAirlineAppeals(airportId : Int, airlineAppeals : Map[Int, AirlineAppeal]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
       val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
-      purgeStatement.setInt(1, airport.id)
+      purgeStatement.setInt(1, airportId)
       purgeStatement.executeUpdate()
       purgeStatement.close()
-      
-      
-      
-      airport.getAirlineAppeals.foreach { 
+
+      airlineAppeals.foreach {
         case(airlineId, airlineAppeal) =>
           if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
             val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
-            insertStatement.setInt(1, airport.id)
+            insertStatement.setInt(1, airportId)
             insertStatement.setInt(2, airlineId)
             insertStatement.setDouble(3, airlineAppeal.loyalty)
             insertStatement.setDouble(4, airlineAppeal.awareness)
             insertStatement.executeUpdate()
             insertStatement.close()
           }
-        }
-     }
+      }
+
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+  
+  def updateAirlineAppeal(airportId : Int, airlineId : Int, airlineAppeal : AirlineAppeal) = {
+   val connection = Meta.getConnection()
+   try {  
+     connection.setAutoCommit(false)
+      if (airlineAppeal.awareness == 0 && airlineAppeal.loyalty == 0) {
+        val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ? AND airline = ?")
+        purgeStatement.setInt(1, airportId)
+        purgeStatement.setInt(2, airlineId)
+        purgeStatement.executeUpdate()
+        purgeStatement.close()
+      } else {
+        val insertStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
+        insertStatement.setInt(1, airportId)
+        insertStatement.setInt(2, airlineId)
+        insertStatement.setDouble(3, airlineAppeal.loyalty)
+        insertStatement.setDouble(4, airlineAppeal.awareness)
+        insertStatement.executeUpdate()
+        insertStatement.close()
+      }
      connection.commit()
    } finally {
      connection.close()
@@ -540,7 +573,7 @@ object AirportSource {
       val resultSet = preparedStatement.executeQuery()
       
       val projects = ListBuffer[AirportProject]()
-      val airports = Map[Int, Airport]()
+      val airports = mutable.Map[Int, Airport]()
       
       import ProjectStatus._
       import ProjectType._

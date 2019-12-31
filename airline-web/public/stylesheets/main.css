@@ -88,7 +88,11 @@ body {
 	background-color: #A1D490;
 }
 
-.table.data div.table-row:nth-child(odd) {
+.table.colored div.table-row:nth-child(even){
+    background-color: #FFF;
+}
+
+.table.data div.table-row:nth-child(odd), .table.colored  div.table-row:nth-child(odd){
 	background: #DDD
 }
  

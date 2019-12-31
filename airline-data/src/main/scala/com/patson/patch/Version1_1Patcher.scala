@@ -3,6 +3,7 @@ package com.patson.patch
 import java.sql.Connection
 
 import com.mchange.v2.c3p0.ComboPooledDataSource
+import com.patson.CountrySimulation
 import com.patson.data.Constants.{DATABASE_CONNECTION, DATABASE_PASSWORD, DATABASE_USER, DB_DRIVER}
 import com.patson.data.{AirlineSource, AirplaneSource, LinkSource, Meta}
 import com.patson.init.actorSystem
@@ -26,6 +27,8 @@ object Version1_1Patcher extends App {
     patchAirplaneConfiguration()
     patchUnassignedAirplanes()
     patchAirplaneHomeAirport()
+    
+    patchCountryAirlineTitles()
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }
@@ -46,6 +49,7 @@ object Version1_1Patcher extends App {
     dataSource.setMaxPoolSize(100)
     val connection = dataSource.getConnection
     Meta.createAirplaneConfiguration(connection)
+    Meta.createCountryAirlineTitle(connection)
     connection.close
   }
 
@@ -243,6 +247,12 @@ object Version1_1Patcher extends App {
 
     val updateCount = AirplaneSource.updateAirplanes(updatingAirplanes.toList)
     println("Finished patching airplane home airports, update count " + updateCount)
+  }
+
+  def patchCountryAirlineTitles() = {
+    println("Simulating country airline titles")
+    CountrySimulation.simulate(0)
+    println("Finished country airline simulation")
   }
   
 

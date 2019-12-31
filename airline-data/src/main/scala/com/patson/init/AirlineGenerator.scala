@@ -67,9 +67,7 @@ object AirlineGenerator extends App {
       
       AirlineSource.saveAirplaneRenewal(newAirline.id, 50)
       
-      baseAirport.setAirlineAwareness(newAirline.id, 100)
-      baseAirport.setAirlineLoyalty(newAirline.id, 100)
-      AirportSource.updateAirlineAppeal(airports)
+      AirportSource.updateAirlineAppeal(baseAirport.id, newAirline.id, AirlineAppeal(0, 100))
       
       println(i + " generated user " + user.userName)
                   

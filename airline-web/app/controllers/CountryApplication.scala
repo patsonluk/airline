@@ -76,6 +76,21 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   //        }
           
           jsonObject = jsonObject.asInstanceOf[JsObject] + ("champions" -> championsJson)
+
+          var nationalAirlinesJson = Json.arr()
+          var parternedAirlinesJson = Json.arr()
+          CountrySource.loadCountryAirlineTitlesByCountryCode(countryCode).foreach {
+            case CountryAirlineTitle(_, airline, title) =>
+              val share : Long = marketShares.airlineShares.getOrElse(airline.id, 0L)
+              title match {
+                case Title.NATIONAL_AIRLINE =>
+                  nationalAirlinesJson = nationalAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> CountryAirlineTitle.getLoyaltyBonus(title)))
+                case Title.PARTNERED_AIRLINE =>
+                  parternedAirlinesJson = parternedAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> CountryAirlineTitle.getLoyaltyBonus(title)))
+              }
+          }
+
+          jsonObject = jsonObject + ("nationalAirlines" -> nationalAirlinesJson) + ("partneredAirlines" -> parternedAirlinesJson)
           
           jsonObject = jsonObject.asInstanceOf[JsObject] + ("marketShares" -> Json.toJson(marketShares.airlineShares.map { 
               case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
@@ -86,6 +101,7 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       case None => NotFound
     } 
   }
+
   
   object AirlineSharesWrites extends Writes[List[(Airline, Long)]] {
     def writes(shares: List[(Airline, Long)]): JsValue = {

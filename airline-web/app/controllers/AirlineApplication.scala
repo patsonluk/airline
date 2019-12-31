@@ -406,9 +406,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                    airport => //TODO for now. Maybe update to Ad event later on
                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
                    AirlineSource.saveAirlineBase(newBase)
-                   if (airport.getAirlineAwareness(airlineId) < 20) { //update to 10 for hq
-                     airport.setAirlineAwareness(airlineId, 20)
-                     AirportSource.updateAirlineAppeal(List(airport))
+                   val existingAppeal = airport.getAirlineBaseAppeal(airlineId)
+                   if (existingAppeal.awareness < 20) { //update to 10 for hq
+                     AirportSource.updateAirlineAppeal(airport.id, airlineId, AirlineAppeal(existingAppeal.loyalty, 20))
                    }
                    
                    airline.setCountryCode(newBase.countryCode)
@@ -610,7 +610,15 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     
     Ok(Json.toJson(championedCountryByThisAirline))
   }
-  
+
+  def getCountryAirlineTitles(airlineId : Int) = Authenticated { implicit request =>
+    val titles  = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId)))
+    val nationalAirlineCountryJson = Json.toJson(titles.filter(_.title == Title.NATIONAL_AIRLINE).map(_.countryCode))
+    val partneredAirlineCountryJson = Json.toJson(titles.filter(_.title == Title.PARTNERED_AIRLINE).map(_.countryCode))
+
+    Ok(Json.obj("nationalAirlineCountries" -> nationalAirlineCountryJson, "partneredAirlineCountries" -> partneredAirlineCountryJson))
+  }
+
   def resetAirline(airlineId : Int, keepAssets : Boolean) = AuthenticatedAirline(airlineId) { request =>
     if (airlineId != request.user.id) {
       Forbidden

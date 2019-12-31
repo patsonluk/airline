@@ -271,6 +271,7 @@ object Meta {
     createAirportImage(connection)
     createLoan(connection)
     createCountryMarketShare(connection)
+    createCountryAirlineTitle(connection)
     createAirlineLogo(connection)
     createAirplaneRenewal(connection)
     createAirplaneConfiguration(connection)
@@ -820,6 +821,19 @@ object Meta {
                                             "PRIMARY KEY (country, airline)," +
                                             "FOREIGN KEY(country) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE," +
                                             "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
+    statement.execute()
+    statement.close()
+  }
+
+  def createCountryAirlineTitle(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + COUNTRY_AIRLINE_TITLE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_AIRLINE_TITLE_TABLE + "(country CHAR(2), airline INT(11), title TINYINT," +
+      "PRIMARY KEY (country, airline)," +
+      "FOREIGN KEY(country) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
     statement.execute()
     statement.close()
   }
