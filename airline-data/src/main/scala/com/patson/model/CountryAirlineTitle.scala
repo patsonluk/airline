@@ -9,7 +9,7 @@ object Title extends Enumeration {
 
 object CountryAirlineTitle {
   val getLoyaltyBonus : (Title.Value => Int) = {
-    case Title.NATIONAL_AIRLINE => 15
+    case Title.NATIONAL_AIRLINE => 10
     case Title.PARTNERED_AIRLINE => 5
   }
 
