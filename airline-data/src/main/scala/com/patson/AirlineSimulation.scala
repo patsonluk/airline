@@ -3,6 +3,7 @@ package com.patson
 import com.patson.model._
 import com.patson.data._
 import scala.collection.mutable._
+import scala.collection.immutable
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.patson.model.airplane.Airplane
@@ -41,6 +42,7 @@ object AirlineSimulation {
      
     val currentCycle = MainSimulation.currentWeek
     val champions : scala.collection.immutable.Map[Airline, List[ChampionInfo]] = ChampionUtil.getAllChampionInfo().groupBy(_.airline)
+    val titlesByCountryCodeAndAirlineId : immutable.Map[(String, Int), List[CountryAirlineTitle]]= CountrySource.loadCountryAirlineTitlesByCriteria(List.empty).groupBy(entry => (entry.countryCode, entry.airline.id)) //key is (CountryCode, AirlineId)
     val cashFlows = Map[Airline, Long]() //cash flow for actual deduction
     
     val alliances = AllianceSource.loadAllAlliances()
@@ -111,6 +113,32 @@ object AirlineSimulation {
         
         othersSummary.put(OtherIncomeItemType.BASE_UPKEEP, -1 * baseUpkeep) //negative number
         totalCashExpense += baseUpkeep
+
+      //overtime compensation
+        val linksByFromAirportId = allLinks.get(airline.id).getOrElse(List.empty).groupBy(_.from.id)
+
+        var overtimeCompensation = 0
+        airline.bases.foreach { base =>
+          val linkCountOfThisBase = linksByFromAirportId.get(base.airport.id) match {
+            case Some(links) => links.length
+            case None => 0
+          }
+          val titleOption : Option[Title.Value] = titlesByCountryCodeAndAirlineId.get((base.airport.countryCode, airline.id)) match {
+            case Some(titles) =>
+              if (titles.length > 0) Some(titles(0).title) else None //now only 1 title per airline per country
+            case None => None
+          }
+          val linkLimitOfThisBase = base.getLinkLimit(titleOption)
+          val compensationOfThisBase = base.getOvertimeCompensation(linkLimitOfThisBase, linkCountOfThisBase)
+          if (compensationOfThisBase > 0) {
+            println(s"${airline.name} Overtime compensation $compensationOfThisBase : limit $linkLimitOfThisBase ; count $linkCountOfThisBase")
+          }
+          overtimeCompensation += compensationOfThisBase
+        }
+
+        othersSummary.put(OtherIncomeItemType.OVERTIME_COMPENSATION, -1 * overtimeCompensation) //negative number
+        totalCashExpense += overtimeCompensation
+
         
         val allAirplanesDepreciation = airplanesByAirline.getOrElse(airline.id, List.empty).foldLeft(0L) {
           case(depreciation, airplane) => (depreciation + airplane.depreciationRate)  
@@ -208,6 +236,7 @@ object AirlineSimulation {
         val othersIncome = OthersIncome(airline.id, othersRevenue - othersExpense, othersRevenue, othersExpense
             , loanInterest = othersSummary.getOrElse(OtherIncomeItemType.LOAN_INTEREST, 0)
             , baseUpkeep = othersSummary.getOrElse(OtherIncomeItemType.BASE_UPKEEP, 0)
+            , overtimeCompensation = othersSummary.getOrElse(OtherIncomeItemType.OVERTIME_COMPENSATION, 0)
             , serviceInvestment = othersSummary.getOrElse(OtherIncomeItemType.SERVICE_INVESTMENT, 0)
             , maintenanceInvestment = othersSummary.getOrElse(OtherIncomeItemType.MAINTENANCE_INVESTMENT, 0)
             , advertisement = othersSummary.getOrElse(OtherIncomeItemType.ADVERTISEMENT, 0)

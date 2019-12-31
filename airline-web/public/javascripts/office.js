@@ -50,9 +50,61 @@ function showOfficeCanvas() {
 	updateChampionedCountriesDetails()
 	updateServiceFundingDetails()
 	updateAirplaneRenewalDetails()
+	updateAirlineBases()
 	updateMaintenanceLevelDetails()
 	updateAirlineColorPicker()
 	updateResetAirlineInfo()
+}
+
+function updateAirlineBases() {
+    $('#officeCanvas .bases').children('.table-row').remove()
+
+    var airlineId = activeAirline.id
+    	var url = "airlines/" + airlineId + "/link-limits"
+        $.ajax({
+    		type: 'GET',
+    		url: url,
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(linkLimits) {
+    	    	 $(activeAirline.baseAirports).each(function(index, base) {
+                    var row = $("<div class='table-row'></div>")
+                    if (base.headquarter) {
+                        row.append($("<div class='cell'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
+
+                    } else {
+                        row.append($("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
+                    }
+                    var limitInfo = linkLimits[base.airportId]
+                    row.append($("<div class='cell'>" + limitInfo.linkLimit + "</div>"))
+                    if (limitInfo.linkLimit < limitInfo.linkCount) {
+                        row.append($("<div class='cell fatal'>" + limitInfo.linkCount + "</div>"))
+                    } else {
+                        row.append($("<div class='cell'>" + limitInfo.linkCount + "</div>"))
+                    }
+
+                    if (limitInfo.overtimeCompensation == 0) {
+                        row.append($("<div class='cell'>-</div>"))
+                     } else {
+                        row.append($("<div class='cell'>$" + commaSeparateNumber(limitInfo.overtimeCompensation) + "</div>"))
+                     }
+                    if (base.headquarter) {
+                        $('#officeCanvas .bases .table-header').after(row)
+                    } else {
+                       $('#officeCanvas .bases').append(row)
+                    }
+                })
+                if (!activeAirline.baseAirports || activeAirline.baseAirports.length == 0) {
+                    $('#officeCanvas .bases').append("<div class='table-row'><div class='cell'></div></div>")
+                }
+    	    },
+            error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    }
+    	});
+
+
 }
 
 function updateAirlineColorPicker() {
@@ -226,6 +278,7 @@ function updateIncomeSheet(airlineIncome) {
         $("#othersExpense").text('$' + commaSeparateNumber(airlineIncome.othersExpense))
         $("#othersLoanInterest").text('$' + commaSeparateNumber(airlineIncome.othersLoanInterest))
         $("#othersBaseUpkeep").text('$' + commaSeparateNumber(airlineIncome.othersBaseUpkeep))
+        $("#othersOvertimeCompensation").text('$' + commaSeparateNumber(airlineIncome.othersOvertimeCompensation))
         $("#othersLoungeUpkeep").text('$' + commaSeparateNumber(airlineIncome.othersLoungeUpkeep))
         $("#othersLoungeCost").text('$' + commaSeparateNumber(airlineIncome.othersLoungeCost))
         $("#othersLoungeIncome").text('$' + commaSeparateNumber(airlineIncome.othersLoungeIncome))

@@ -1447,10 +1447,10 @@ function updateTotalValues() {
     $('#planLinkCapacity').text(totalCapacity.economy + "/" + totalCapacity.business + "/" + totalCapacity.first)
     var frequencyLimit = $("#planLinkDetails").data("frequencyLimit")
     if (frequencyLimit < totalFrequency) { //warning
-        $(".frequencyDetailTotal .warning").show();
+        $(".frequencyDetailTotal .fatal").show();
         disableButton($("#planLinkDetails #updateLinkButton"), "Flight frequency exceeding limit")
     } else {
-        $(".frequencyDetailTotal .warning").hide();
+        $(".frequencyDetailTotal .fatal").hide();
         enableButton($("#planLinkDetails #updateLinkButton"))
     }
 

@@ -267,6 +267,7 @@ package object controllers {
       var jsObject = JsObject(List(
       "airportId" -> JsNumber(base.airport.id),
       "airportName" -> JsString(base.airport.name),
+      "airportCode" -> JsString(base.airport.iata),
       "countryCode" -> JsString(base.airport.countryCode),
       "airportZone" -> JsString(base.airport.zone),
       "city" -> JsString(base.airport.city),
@@ -356,6 +357,7 @@ package object controllers {
         "othersExpense" -> JsNumber(airlineIncome.others.expense),
         "othersLoanInterest" -> JsNumber(airlineIncome.others.loanInterest),
         "othersBaseUpkeep" -> JsNumber(airlineIncome.others.baseUpkeep),
+        "othersOvertimeCompensation" -> JsNumber(airlineIncome.others.overtimeCompensation),
         "othersLoungeUpkeep" -> JsNumber(airlineIncome.others.loungeUpkeep),
         "othersLoungeCost" -> JsNumber(airlineIncome.others.loungeCost),
         "othersLoungeIncome" -> JsNumber(airlineIncome.others.loungeIncome),

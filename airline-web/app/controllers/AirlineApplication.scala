@@ -7,7 +7,7 @@ import java.util.Calendar
 import com.patson.AirlineSimulation
 import com.patson.data._
 import com.patson.model.Computation.ResetAmountInfo
-import com.patson.model._
+import com.patson.model.{Title, _}
 import com.patson.util.{ChampionUtil, LogoGenerator}
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
 import javax.inject.Inject
@@ -568,6 +568,19 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     } else {
       BadRequest("Cannot build facitilty")
     }
+  }
+
+  def getLinkLimits(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val airline = request.user
+    val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId))).map(entry => (entry.countryCode, entry.title)).toMap
+    var result = Json.obj()
+    airline.getBases().foreach { base =>
+      val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.ID_LOAD).length
+      val linkLimit = base.getLinkLimit(titlesByCountryCode.get(base.countryCode))
+      val overtimeCompensation = base.getOvertimeCompensation(linkLimit, linkCount)
+      result = result + (base.airport.id.toString() -> Json.obj("linkLimit" -> linkLimit, "linkCount" -> linkCount, "overtimeCompensation" -> overtimeCompensation))
+    }
+    Ok(result)
   }
   
   

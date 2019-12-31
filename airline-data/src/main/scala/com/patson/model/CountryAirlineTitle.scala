@@ -17,4 +17,9 @@ object CountryAirlineTitle {
     case Title.NATIONAL_AIRLINE => BonusType.NATIONAL_AIRLINE
     case Title.PARTNERED_AIRLINE => BonusType.PARTNERED_AIRLINE
   }
+
+  val getLinkLimitBonus : (Title.Value => Int) = {
+    case Title.NATIONAL_AIRLINE => 20
+    case Title.PARTNERED_AIRLINE => 10
+  }
 }
