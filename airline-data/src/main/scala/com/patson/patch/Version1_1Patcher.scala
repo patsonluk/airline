@@ -242,7 +242,7 @@ object Version1_1Patcher extends App {
     AirplaneSource.loadAllAirplanes().foreach { airplane =>
       if (!airplane.isSold) { //only patched owned airplane
         val homeBase : Option[Airport] = linkAssignments.get(airplane.id) match {
-          case Some(assignments) => LinkSource.loadLinkById(assignments.assignedLinkIds(0)).map(link => link.from)
+          case Some(assignments) => LinkSource.loadLinkById(assignments.assignedLinkIds(0), LinkSource.ID_LOAD).map(link => link.from)
           case None => airlinesById(airplane.owner.id).getHeadQuarter().map { _.airport } //unassigned airplanes, find HQ
         }
         homeBase.foreach { base => //if a home base can be determined
