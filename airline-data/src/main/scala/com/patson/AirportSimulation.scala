@@ -136,8 +136,10 @@ object AirportSimulation {
         }
       }
       //now the soldLinksByAirline should contain all the sold flights of this airport grouped by airline, if the airline no longer offer flights, it will be empty
-      updateAirportBySoldLinks(airport, soldLinksByAirline)
+      updateAirlineAppealsBySoldLinks(airport, soldLinksByAirline)
     }
+    println("Finished simulation of loyalty by link consumption")
+
 
     println("Finished loyalty and awareness simulation")
     airportProjectSimulation(allAirports)
@@ -150,7 +152,8 @@ object AirportSimulation {
     val inProgressProjects = AirportSource.loadAllAirportProjects().filter { _.status != COMPLETED }
   }
   
-  private def updateAirportBySoldLinks(airport : Airport, soldLinksByAirline : Map[Int, Seq[LinkConsumptionDetails]]) = {
+  private def updateAirlineAppealsBySoldLinks(airport : Airport, soldLinksByAirline : Map[Int, Seq[LinkConsumptionDetails]]) = {
+    val newAppeals = mutable.HashMap[Int, AirlineAppeal]()
     soldLinksByAirline.foreach {
       case(airlineId, soldLinksByAirline) => {
         val targetLoyalty = getTargetLoyalty(soldLinksByAirline, airport.population)
@@ -167,10 +170,13 @@ object AirportSimulation {
         }
         
         //airport.setAirlineLoyalty(airlineId, newLoyalty)
-        AirportSource.updateAirlineAppeal(airport.id, airlineId, AirlineAppeal(newLoyalty, appeal.awareness))
-        //println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + existingLoyalty + " to " + airport.getAirlineLoyalty(airlineId))
+        //AirportSource.updateAirlineAppeal(airport.id, airlineId, AirlineAppeal(newLoyalty, appeal.awareness))
+        newAppeals.put(airlineId, AirlineAppeal(newLoyalty, appeal.awareness))
+        println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + currentLoyalty + " to " + newLoyalty)
       }
     }
+    AirportSource.updateAirlineAppeals(airport.id, newAppeals)
+
     
     if (!airport.getLounges().isEmpty) {
       val airlinesByPassengers = soldLinksByAirline.mapValues( consumptionDetails => consumptionDetails.map {_.link.soldSeats.total}.sum).toList.sortBy(_._2) //Map[airlineId, totalPassengersForThisAirport]

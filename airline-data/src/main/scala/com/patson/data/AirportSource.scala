@@ -231,18 +231,20 @@ object AirportSource {
       purgeStatement.executeUpdate()
       purgeStatement.close()
 
+      val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
       airlineAppeals.foreach {
         case(airlineId, airlineAppeal) =>
           if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
-            val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
+
             insertStatement.setInt(1, airportId)
             insertStatement.setInt(2, airlineId)
             insertStatement.setDouble(3, airlineAppeal.loyalty)
             insertStatement.setDouble(4, airlineAppeal.awareness)
-            insertStatement.executeUpdate()
-            insertStatement.close()
+            insertStatement.addBatch()
           }
       }
+      insertStatement.executeBatch()
+      insertStatement.close()
 
       connection.commit()
     } finally {
@@ -274,6 +276,39 @@ object AirportSource {
      connection.close()
    }
   }
+
+
+  def updateAirlineAppeals(airportId : Int, airlineAppeals : Map[Int, AirlineAppeal]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ? AND airline = ?")
+      val insertStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
+      airlineAppeals.foreach {
+        case (airlineId, airlineAppeal) =>
+          if (airlineAppeal.awareness == 0 && airlineAppeal.loyalty == 0) {
+            purgeStatement.setInt(1, airportId)
+            purgeStatement.setInt(2, airlineId)
+            purgeStatement.addBatch()
+          } else {
+            insertStatement.setInt(1, airportId)
+            insertStatement.setInt(2, airlineId)
+            insertStatement.setDouble(3, airlineAppeal.loyalty)
+            insertStatement.setDouble(4, airlineAppeal.awareness)
+            insertStatement.addBatch()
+          }
+      }
+      purgeStatement.executeBatch()
+      insertStatement.executeBatch()
+      purgeStatement.close()
+      insertStatement.close()
+
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+
   
   def saveAirports(airports : List[Airport]) = {
             Class.forName(DB_DRIVER);
