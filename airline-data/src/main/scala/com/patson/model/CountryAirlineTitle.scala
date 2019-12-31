@@ -1,6 +1,22 @@
 package com.patson.model
 
-case class CountryAirlineTitle(countryCode : String, airline : Airline, title : Title.Value)
+case class CountryAirlineTitle(country : Country, airline : Airline, title : Title.Value) {
+
+  lazy val loyaltyBonus : Int = {
+    val modelPower = 97499995L * 54629L //US
+    val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
+
+    val ratio: Double = math.log10(ratioToModelPower * 100) / 2
+
+    import CountryAirlineTitle._
+    val loyaltyBonus = MIN_LOYALTY_BONUS + (MAX_LOYALTY_BONUS - MIN_LOYALTY_BONUS) * (1 - ratio)
+
+    Math.round(loyaltyBonus / (title match {
+      case Title.NATIONAL_AIRLINE => 1
+      case Title.PARTNERED_AIRLINE => 3
+    })).toInt
+  }
+}
 
 object Title extends Enumeration {
   type Title = Value
@@ -8,10 +24,8 @@ object Title extends Enumeration {
 }
 
 object CountryAirlineTitle {
-  val getLoyaltyBonus : (Title.Value => Int) = {
-    case Title.NATIONAL_AIRLINE => 10
-    case Title.PARTNERED_AIRLINE => 5
-  }
+  val MAX_LOYALTY_BONUS = 20
+  val MIN_LOYALTY_BONUS = 5
 
   val getBonusType : (Title.Value => BonusType.Value) = {
     case Title.NATIONAL_AIRLINE => BonusType.NATIONAL_AIRLINE

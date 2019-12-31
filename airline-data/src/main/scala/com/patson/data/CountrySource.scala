@@ -379,7 +379,7 @@ object CountrySource {
 
       val replaceStatement = connection.prepareStatement("REPLACE INTO " + COUNTRY_AIRLINE_TITLE_TABLE + "(country, airline, title) VALUES (?,?,?)")
       countryAirlineTitles.foreach { countryAirlineTitle =>
-        replaceStatement.setString(1, countryAirlineTitle.countryCode)
+        replaceStatement.setString(1, countryAirlineTitle.country.countryCode)
         replaceStatement.setInt(2, countryAirlineTitle.airline.id)
         replaceStatement.setInt(3, countryAirlineTitle.title.id)
         replaceStatement.addBatch()
@@ -421,14 +421,15 @@ object CountrySource {
 
       val titles = ListBuffer[CountryAirlineTitle]()
       val airlines = mutable.HashMap[Int, Airline]()
+      val countryCache =  mutable.HashMap[String, Country]()
 
       while (resultSet.next()) {
         val countryCode = resultSet.getString("country")
         val airlineId = resultSet.getInt("airline")
         val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId).getOrElse(Airline.fromId(airlineId)))
         val title = Title(resultSet.getInt("title"))
-
-        titles.append(CountryAirlineTitle(countryCode, airline, title))
+        val country = countryCache.getOrElseUpdate(countryCode, loadCountryByCode(countryCode).getOrElse(Country.fromCode(countryCode)))
+        titles.append(CountryAirlineTitle(country, airline, title))
       }
       resultSet.close()
       preparedStatement.close()

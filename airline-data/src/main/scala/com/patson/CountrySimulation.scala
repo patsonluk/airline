@@ -49,10 +49,10 @@ object CountrySimulation {
           case (airlineId, _) =>
             val airline = airlinesById(airlineId)
             if (nationalAirlineQuota > 0 && airline.getCountryCode() == Some(countryCode)) {
-              countryAirlineTitles.append(CountryAirlineTitle(countryCode, airline, Title.NATIONAL_AIRLINE))
+              countryAirlineTitles.append(CountryAirlineTitle(Country.fromCode(countryCode), airline, Title.NATIONAL_AIRLINE))
               nationalAirlineQuota -= 1
             } else if (partneredAirlineQuota > 0) {
-              countryAirlineTitles.append(CountryAirlineTitle(countryCode, airline, Title.PARTNERED_AIRLINE))
+              countryAirlineTitles.append(CountryAirlineTitle(Country.fromCode(countryCode), airline, Title.PARTNERED_AIRLINE))
               partneredAirlineQuota -= 1
             } //shortcut out?
         }

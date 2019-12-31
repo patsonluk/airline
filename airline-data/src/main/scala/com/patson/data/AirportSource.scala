@@ -50,7 +50,7 @@ object AirportSource {
 
     //map airline titles to bonues
     airlineTitles.view.mapValues { countryAirlineTitle =>
-      List(AirlineBonus(bonusType = CountryAirlineTitle.getBonusType(countryAirlineTitle.title), bonus = AirlineAppeal(CountryAirlineTitle.getLoyaltyBonus(countryAirlineTitle.title), 0), expirationCycle = None))
+      List(AirlineBonus(bonusType = CountryAirlineTitle.getBonusType(countryAirlineTitle.title), bonus = AirlineAppeal(countryAirlineTitle.loyaltyBonus, 0), expirationCycle = None))
     }.toMap
   }
 

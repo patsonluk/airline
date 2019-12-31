@@ -42,7 +42,7 @@ object AirlineSimulation {
      
     val currentCycle = MainSimulation.currentWeek
     val champions : scala.collection.immutable.Map[Airline, List[ChampionInfo]] = ChampionUtil.getAllChampionInfo().groupBy(_.airline)
-    val titlesByCountryCodeAndAirlineId : immutable.Map[(String, Int), List[CountryAirlineTitle]]= CountrySource.loadCountryAirlineTitlesByCriteria(List.empty).groupBy(entry => (entry.countryCode, entry.airline.id)) //key is (CountryCode, AirlineId)
+    val titlesByCountryCodeAndAirlineId : immutable.Map[(String, Int), List[CountryAirlineTitle]]= CountrySource.loadCountryAirlineTitlesByCriteria(List.empty).groupBy(entry => (entry.country.countryCode, entry.airline.id)) //key is (CountryCode, AirlineId)
     val cashFlows = Map[Airline, Long]() //cash flow for actual deduction
     
     val alliances = AllianceSource.loadAllAlliances()
