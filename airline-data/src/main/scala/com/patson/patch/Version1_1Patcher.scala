@@ -249,6 +249,12 @@ object Version1_1Patcher extends App {
           airplane.home = base
           updatingAirplanes.append(airplane)
         }
+
+        if (updatingAirplanes.length >= 1000) { //update in batches
+          println("updating " + updatingAirplanes.length + " airplanes")
+          AirplaneSource.updateAirplanes(updatingAirplanes.toList)
+          updatingAirplanes.clear()
+        }
       }
     }
 
