@@ -39,7 +39,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
       var compensation = 0
       for (i <- 1 until delta) {
         val multiplier = if (i < 10) i else 10 //first 10 increasingly more expensive, then max out at 10
-        compensation += multiplier * CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0)
+        compensation += multiplier * (10000 + CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0))
       }
       compensation
     }
