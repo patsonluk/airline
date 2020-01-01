@@ -24,9 +24,9 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     def writes(linkAssignments: LinkAssignments) : JsValue = {
       var result = Json.arr()
       linkAssignments.assignments.foreach {
-        case(linkId, frequency) =>
+        case(linkId, assignment) =>
           val link = LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD).getOrElse(Link.fromId(linkId))
-          result = result.append(Json.obj("link" -> Json.toJson(link), "frequency" -> frequency))
+          result = result.append(Json.obj("link" -> Json.toJson(link), "frequency" -> assignment.frequency))
       }
       result
     }

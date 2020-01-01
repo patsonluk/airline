@@ -130,7 +130,7 @@ object AirplaneSource {
     */
   def loadAirplaneLinkAssignmentsByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = LINK_ID_LOAD) : Map[Int, LinkAssignments]= {
     val connection = Meta.getConnection()
-      var queryString = "SELECT airplane, link, frequency FROM " + LINK_ASSIGNMENT_TABLE + " l LEFT JOIN " + AIRPLANE_TABLE + " a ON l.airplane = a.id"
+      var queryString = "SELECT airplane, link, frequency, flight_minutes FROM " + LINK_ASSIGNMENT_TABLE + " l LEFT JOIN " + AIRPLANE_TABLE + " a ON l.airplane = a.id"
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "

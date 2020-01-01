@@ -149,8 +149,15 @@ package object controllers {
       val airplaneAssignments = json.\("airplanes").as[Map[Airplane, Int]](AirplaneAssignmentsRead)
 
       val modelId = json.\("model").as[Int]
-      val duration = ModelSource.loadModelById(modelId).fold(Integer.MAX_VALUE)(Computation.calculateDuration(_, distance))
-
+      val modelOption = ModelSource.loadModelById(modelId)
+      val duration = modelOption match {
+        case Some(model) => Computation.calculateDuration(model, distance)
+        case None => 0
+      }
+      val flightMinutesRequiredPerFlight = modelOption match {
+        case Some(model) => Computation.calculateFlightMinutesRequired(model, distance)
+        case None => 0
+      }
 
 
       var rawQuality =  json.\("rawQuality").as[Int]
@@ -161,7 +168,9 @@ package object controllers {
       }
          
       val link = Link(fromAirport, toAirport, airline, price, distance, capacity = LinkClassValues.getInstance(), rawQuality, duration, frequency = 0, flightType) //compute frequency and capacity after validating the assigned airplanes
-      link.setAssignedAirplanes(airplaneAssignments)
+      link.setAssignedAirplanes(airplaneAssignments.toList.map {
+        case(airplane, frequency) => (airplane, LinkAssignment(frequency, frequency * flightMinutesRequiredPerFlight))
+      }.toMap)
       //(json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
@@ -198,7 +207,7 @@ package object controllers {
 
       var airplanesJson = Json.arr()
       link.getAssignedAirplanes().foreach {
-        case (airplane, frequency) => airplanesJson = airplanesJson.append(Json.obj("airplane" -> airplane, "frequency" -> frequency))
+        case (airplane, assignment: LinkAssignment) => airplanesJson = airplanesJson.append(Json.obj("airplane" -> airplane, "frequency" -> assignment.frequency))
       }
 
       json = json + ("assignedAirplanes" -> airplanesJson)
