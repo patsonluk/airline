@@ -113,7 +113,7 @@ function addAirplaneInventoryDivByConfiguration(configurationDiv, modelId) {
         if (airplane.configurationId == configurationId) {
             var airplaneId = airplane.id
             var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshConfigurationAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-            li.append(getAirplaneIcon(airplane.condition, info.badConditionThreshold, true))
+            li.append(getAirplaneIcon(airplane, info.badConditionThreshold, true))
          }
     });
 
@@ -121,7 +121,7 @@ function addAirplaneInventoryDivByConfiguration(configurationDiv, modelId) {
         if (airplane.configurationId == configurationId) {
             var airplaneId = airplane.id
             var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshConfigurationAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-            li.append(getAirplaneIcon(airplane.condition, info.badConditionThreshold, false))
+            li.append(getAirplaneIcon(airplane, info.badConditionThreshold, false))
         }
     });
 

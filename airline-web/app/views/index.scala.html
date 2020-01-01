@@ -647,8 +647,10 @@
 										<div class="label"><h5>Delivery Time:</h5></div>
 										<div class="value delivery"></div>
 									</div>
-									<div class="button add" onclick="addAirplane($('#airplaneModelDetails #selectedModel').val(), 1, true)">Purchase</div>
-									<input type="hidden" id="selectedModel"/>
+									<div class="button add" onclick="addAirplane($('#airplaneModelDetails .selectedModel').val(), 1, true)">Purchase</div>
+									<div class="button" onclick="showAirplaneInventory($('#airplaneModelDetails .selectedModel').val())">Inventory</div>
+									<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneModelDetails .selectedModel').val())">Config</div>
+									<input type="hidden" class="selectedModel"/>
 								</div>
 								<div class="rejection">
 									<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
@@ -1171,14 +1173,14 @@
 										<div class="label"><h5>Delivery Time:</h5></div>
 										<div class="value delivery"></div>
 									</div>
-									<input type="hidden" id="selectedModel"/>
+									<input type="hidden" class="selectedModel"/>
 								</div>
 								<div class="rejection">
 									<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
 								</div>
-								<div class="button add" onclick="addAirplane($('#airplaneCanvas #selectedModel').val(), 1, false)">Purchase</div>
-								<div class="button" onclick="showAirplaneInventory($('#airplaneCanvas #selectedModel').val())">Inventory</div>
-								<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneCanvas #selectedModel').val())">Config</div>
+								<div class="button add" onclick="addAirplane($('#airplaneCanvas .selectedModel').val(), 1, false)">Purchase</div>
+								<div class="button" onclick="showAirplaneInventory($('#airplaneCanvas .selectedModel').val())">Inventory</div>
+								<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneCanvas .selectedModel').val())">Config</div>
 							</div>
 							<div class="section" style="width : 95%; float: left; overflow: auto;">
 								<h4>Used Airplane Market</h4>
@@ -2034,14 +2036,16 @@
 							<h4>National Airline of</h4>
 							<div class="table data nationalAirlineCountryList" style="width: 100%;">
 								<div class="table-header">
-									<div class="cell" style="width: 100%"></div>
+									<div class="cell" style="width: 70%"></div>
+									<div class="cell" style="width: 30%">Loyalty Bonus</div>
 								</div>
 							</div>
 
 							<h4>Partnered Airline of</h4>
 							<div class="table data partneredAirlineCountryList" style="width: 100%;">
 								<div class="table-header">
-									<div class="cell" style="width: 100%"></div>
+									<div class="cell" style="width: 70%"></div>
+									<div class="cell" style="width: 30%">Loyalty Bonus</div>
 								</div>
 							</div>
 

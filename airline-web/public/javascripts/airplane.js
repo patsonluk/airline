@@ -24,6 +24,11 @@ function loadAirplaneModels() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+
+	if (activeAirline) {
+	    loadAirplaneModelOwnerInfo()
+    }
+
 }
 
 
@@ -261,7 +266,7 @@ function buyUsedAirplane(airplaneId) {
 function updateModelInfo(modelId) {
 	loadAirplaneModels()
 	model = loadedModelsById[modelId]
-	$('#airplaneModelDetails #selectedModel').val(modelId)
+	$('#airplaneModelDetails .selectedModel').val(modelId)
 	$('#airplaneModelDetails #modelName').text(model.name)
 	$('#airplaneModelDetails #capacity').text(model.capacity)
 	$('#airplaneModelDetails #airplaneType').text(model.airplaneType)
@@ -315,7 +320,7 @@ function selectAirplaneModel(model) {
 		$('#modelIllustration').hide()
 	}
 	
-	$('#airplaneCanvas #selectedModel').val(model.id)
+	$('#airplaneCanvas .selectedModel').val(model.id)
 	$('#airplaneCanvas #modelName').text(model.name)
 	$('#airplaneCanvas #capacity').text(model.capacity)
 	$('#airplaneCanvas #airplaneType').text(model.airplaneType)
@@ -416,7 +421,7 @@ function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue
         if (airplane[compareKey] == compareValue) {
             var airplaneId = airplane.id
             var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), " + closeCallback + ")'></div>").appendTo(airplanesDiv)
-            li.append(getAirplaneIcon(airplane.condition, info.badConditionThreshold, true, airplaneId))
+            li.append(getAirplaneIcon(airplane, info.badConditionThreshold, true))
             empty = false
          }
     });
@@ -425,7 +430,7 @@ function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue
         if (airplane[compareKey] == compareValue) {
             var airplaneId = airplane.id
             var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), " + closeCallback + ")'></div>").appendTo(airplanesDiv)
-            li.append(getAirplaneIcon(airplane.condition, info.badConditionThreshold, false, airplaneId))
+            li.append(getAirplaneIcon(airplane, info.badConditionThreshold, false))
             empty = false
         }
     });
@@ -446,7 +451,9 @@ function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue
     containerDiv.append(airplanesDiv)
 }
 
-function getAirplaneIcon(condition, badConditionThreshold, isAssigned, airplaneId) {
+function getAirplaneIcon(airplane, badConditionThreshold, isAssigned) {
+    var condition = airplane.condition
+    var airplaneId = airplane.id
     var img = $("<img>")
     var src
     if (condition < badConditionThreshold) {

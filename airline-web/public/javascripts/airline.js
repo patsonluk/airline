@@ -1237,7 +1237,8 @@ function updateFrequencyBar(frequencyBar, valueContainer, airplane, currentFrequ
     generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequency, frequencyBar, valueContainer, null, null, updateTotalValues)
 }
 
-function updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId) {
+function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
+    selectedModelId = newModelId //modify the global one
 	if (selectedModelId) {
 		var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
 		
@@ -1417,6 +1418,10 @@ function removeAirplaneFromLink(airplaneId) {
             $(row).remove()
         }
     })
+    if ($("#planLinkDetails .frequencyDetail .airplaneRow").length == 0) {
+        $("#planLinkDetails .frequencyDetail").append("<div class='table-row empty'><div class='cell'></div><div class='cell'>-</div><div class='cell'>-</div></div>")
+    }
+
     updateTotalValues()
 
     //update the available airplane list
@@ -1459,7 +1464,7 @@ function updateTotalValues() {
 
 function getAssignedAirplaneIcon(airplane) {
 	var badConditionThreshold = $('#planLinkAirplaneSelect').data('badConditionThreshold')
-	return getAirplaneIcon(airplane.condition, badConditionThreshold, airplane.isAssigned, airplane.id)
+	return getAirplaneIcon(airplane, badConditionThreshold, airplane.isAssigned)
 }
 
 

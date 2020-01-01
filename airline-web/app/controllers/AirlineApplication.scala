@@ -572,7 +572,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
   def getLinkLimits(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline = request.user
-    val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId))).map(entry => (entry.countryCode, entry.title)).toMap
+    val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId))).map(entry => (entry.country.countryCode, entry.title)).toMap
     var result = Json.obj()
     airline.getBases().foreach { base =>
       val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.ID_LOAD).length
@@ -626,10 +626,17 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
   def getCountryAirlineTitles(airlineId : Int) = Authenticated { implicit request =>
     val titles  = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId)))
-    val nationalAirlineCountryJson = Json.toJson(titles.filter(_.title == Title.NATIONAL_AIRLINE).map(_.countryCode))
-    val partneredAirlineCountryJson = Json.toJson(titles.filter(_.title == Title.PARTNERED_AIRLINE).map(_.countryCode))
+    var nationalAirlinesJson = Json.arr()
+    var partneredAirlinesJson = Json.arr()
+    titles.foreach { title =>
+      val valueJson = Json.obj("countryCode" -> title.country.countryCode, "bonus" -> title.loyaltyBonus)
+      title.title match {
+        case Title.NATIONAL_AIRLINE => nationalAirlinesJson = nationalAirlinesJson.append(valueJson)
+        case Title.PARTNERED_AIRLINE => partneredAirlinesJson = partneredAirlinesJson.append(valueJson)
+      }
+    }
 
-    Ok(Json.obj("nationalAirlineCountries" -> nationalAirlineCountryJson, "partneredAirlineCountries" -> partneredAirlineCountryJson))
+    Ok(Json.obj("nationalAirlines" -> nationalAirlinesJson, "partneredAirlines" -> partneredAirlinesJson))
   }
 
   def resetAirline(airlineId : Int, keepAssets : Boolean) = AuthenticatedAirline(airlineId) { request =>

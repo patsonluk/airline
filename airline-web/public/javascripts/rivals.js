@@ -270,26 +270,28 @@ function updateRivalCountriesAirlineTitles(airlineId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(titles) {
-	    	$(titles.nationalAirlineCountries).each(function(index, countryCode) {
-	    		var country = loadedCountriesByCode[countryCode]
-	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
-	    		row.append("<div class='cell'>" + getCountryFlagImg(countryCode) + country.name + "</div>")
+	    	$(titles.nationalAirlines).each(function(index, entry) {
+	    	    var country = loadedCountriesByCode[entry.countryCode]
+	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + entry.countryCode + "'); showCountryView();\"></div>")
+	    		row.append("<div class='cell'>" + getCountryFlagImg(entry.countryCode) + country.name + "</div>")
+	    		row.append("<div class='cell'>" + entry.bonus + "</div>")
 	    		$('#rivalsCanvas .nationalAirlineCountryList').append(row)
 	    	})
 
-	    	if (titles.nationalAirlineCountries.length == 0) {
-	    		$('#rivalsCanvas .nationalAirlineCountryList').append($("<div class='table-row'><div class='cell'>-</div></div>"))
+	    	if (titles.nationalAirlines.length == 0) {
+	    		$('#rivalsCanvas .nationalAirlineCountryList').append($("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div></div>"))
 	    	}
 
-	    	$(titles.partneredAirlineCountries).each(function(index, countryCode) {
-                var country = loadedCountriesByCode[countryCode]
-                var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
-                row.append("<div class='cell'>" + getCountryFlagImg(countryCode) + country.name + "</div>")
+	    	$(titles.partneredAirlines).each(function(index, entry) {
+                var country = loadedCountriesByCode[entry.countryCode]
+                var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + entry.countryCode + "'); showCountryView();\"></div>")
+                row.append("<div class='cell'>" + getCountryFlagImg(entry.countryCode) + country.name + "</div>")
+                row.append("<div class='cell'>" + entry.bonus + "</div>")
                 $('#rivalsCanvas .partneredAirlineCountryList').append(row)
             })
 
-            if (titles.partneredAirlineCountries.length == 0) {
-	    		$('#rivalsCanvas .partneredAirlineCountryList').append($("<div class='table-row'><div class='cell'>-</div></div>"))
+            if (titles.partneredAirlines.length == 0) {
+	    		$('#rivalsCanvas .partneredAirlineCountryList').append($("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div></div>"))
 	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
