@@ -18,7 +18,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   
   val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
-    (10000 + airport.income) / 10 * airport.size * (Math.pow(2, adjustedScale - 1)).toInt  / (if (headquarter) 1 else 2) 
+    (10000 + airport.income) / 10 * airport.size * (Math.pow(2, adjustedScale - 1)).toInt  / (if (headquarter) 1 else 2)
   }
 
   def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
@@ -37,9 +37,9 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     } else {
       val delta = linkCount - linkLimit
       var compensation = 0
-      for (i <- 1 until delta) {
+      for (i <- 1 to delta) {
         val multiplier = if (i < 10) i else 10 //first 10 increasingly more expensive, then max out at 10
-        compensation += multiplier * (10000 + CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0))
+        compensation += multiplier * (20000 + CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0))
       }
       compensation
     }
