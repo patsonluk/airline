@@ -610,10 +610,21 @@ function updateAirportExtendedDetails(airportId) {
 		    		var hasMatch = false
 			    	$.each(airport.appealList, function( key, appeal ) {
 			    		if (appeal.airlineId == airlineId) {
-			    			$(".airportAwareness").text(appeal.awareness)
-			    			$(".airportLoyalty").text(appeal.loyalty)
+			    		    var awarenessText = appeal.awareness
+			    		    var loyaltyText = appeal.loyalty
+			    		    if (airport.bonusList[airlineId]) {
+                                if (airport.bonusList[airlineId].awareness > 0) {
+                                    awarenessText = awarenessText + " (with +" + airport.bonusList[airlineId].awareness + " bonus)"
+                                }
+                                if (airport.bonusList[airlineId].loyalty > 0) {
+                                    loyaltyText = loyaltyText + " (with +" + airport.bonusList[airlineId].loyalty + " bonus)"
+                                }
+                            }
+			    			$(".airportAwareness").text(awarenessText)
+			    			$(".airportLoyalty").text(loyaltyText)
 			    			hasMatch = true
 			    		}
+
 			  		});
 			    	if (!hasMatch) {
 			    		$(".airportAwareness").text("0")

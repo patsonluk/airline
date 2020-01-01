@@ -271,8 +271,10 @@ object Meta {
     createAirportImage(connection)
     createLoan(connection)
     createCountryMarketShare(connection)
+    createCountryAirlineTitle(connection)
     createAirlineLogo(connection)
     createAirplaneRenewal(connection)
+    createAirplaneConfiguration(connection)
     createAlliance(connection)
     createLounge(connection)
     createLoungeConsumption(connection)
@@ -493,6 +495,7 @@ object Meta {
       //"id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "link INTEGER, " +
       "airplane INTEGER, " +
+      "frequency INTEGER, " +
       "PRIMARY KEY (link, airplane)," +
       "FOREIGN KEY(link) REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airplane) REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
@@ -534,6 +537,7 @@ object Meta {
       "value INTEGER," +
       "is_sold TINYINT(1)," +
       "dealer_ratio DECIMAL(3,2)," +
+      "home INTEGER," +
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(owner) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -740,6 +744,7 @@ object Meta {
       "lounge_income LONG, " +
       "fuel_profit LONG, " +
       "depreciation LONG," +
+      "overtime_compensation LONG," +
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +
@@ -821,12 +826,68 @@ object Meta {
     statement.close()
   }
 
+  def createCountryAirlineTitle(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + COUNTRY_AIRLINE_TITLE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + COUNTRY_AIRLINE_TITLE_TABLE + "(country CHAR(2), airline INT(11), title TINYINT," +
+      "PRIMARY KEY (country, airline)," +
+      "FOREIGN KEY(country) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE)")
+    statement.execute()
+    statement.close()
+  }
+
   def createAirplaneRenewal(connection : Connection) {
     var statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_RENEWAL_TABLE + "(" +
       "airline INTEGER, " +
       "threshold INTEGER, " +
       "PRIMARY KEY (airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirplaneConfiguration(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_CONFIGURATION_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airline INTEGER, " +
+      "model INTEGER, " +
+      "economy INTEGER, " +
+      "business INTEGER, " +
+      "first INTEGER, " +
+      "is_default TINYINT(1), " +
+      "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE INDEX " + AIRPLANE_CONFIGURATION_TEMPLATE_INDEX_1 + " ON " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("CREATE INDEX " + AIRPLANE_CONFIGURATION_TEMPLATE_INDEX_2 + " ON " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(model)")
+    statement.execute()
+    statement.close()
+
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_CONFIGURATION_TABLE + "(" +
+      "airplane INTEGER, " +
+      "configuration INTEGER, " +
+      "PRIMARY KEY (airplane)," +
+      "FOREIGN KEY(configuration) REFERENCES " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(id) ON DELETE RESTRICT ON UPDATE CASCADE, " +
+      "FOREIGN KEY(airplane) REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

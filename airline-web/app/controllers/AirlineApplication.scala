@@ -7,7 +7,7 @@ import java.util.Calendar
 import com.patson.AirlineSimulation
 import com.patson.data._
 import com.patson.model.Computation.ResetAmountInfo
-import com.patson.model._
+import com.patson.model.{Title, _}
 import com.patson.util.{ChampionUtil, LogoGenerator}
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
 import javax.inject.Inject
@@ -353,6 +353,14 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         linksFromThisAirport.foreach { link =>
           LinkSource.deleteLink(link.id)
         }
+
+        //assign all airplanes on this base to HQ
+        val headquarters = request.user.getHeadQuarter().get
+        val updatingAirplanes = AirplaneSource.loadAirplanesCriteria(List(("home", airportId), ("owner", airlineId))).map { airplane =>
+          airplane.home = headquarters.airport
+          airplane
+        }
+        AirplaneSource.updateAirplanes(updatingAirplanes)
         
         AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId).foreach { lounge =>
           AirlineSource.deleteLounge(lounge)
@@ -398,9 +406,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                    airport => //TODO for now. Maybe update to Ad event later on
                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
                    AirlineSource.saveAirlineBase(newBase)
-                   if (airport.getAirlineAwareness(airlineId) < 20) { //update to 10 for hq
-                     airport.setAirlineAwareness(airlineId, 20)
-                     AirportSource.updateAirlineAppeal(List(airport))
+                   val existingAppeal = airport.getAirlineBaseAppeal(airlineId)
+                   if (existingAppeal.awareness < 20) { //update to 10 for hq
+                     AirportSource.updateAirlineAppeal(airport.id, airlineId, AirlineAppeal(existingAppeal.loyalty, 20))
                    }
                    
                    airline.setCountryCode(newBase.countryCode)
@@ -561,6 +569,19 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       BadRequest("Cannot build facitilty")
     }
   }
+
+  def getLinkLimits(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val airline = request.user
+    val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId))).map(entry => (entry.country.countryCode, entry.title)).toMap
+    var result = Json.obj()
+    airline.getBases().foreach { base =>
+      val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.ID_LOAD).length
+      val linkLimit = base.getLinkLimit(titlesByCountryCode.get(base.countryCode))
+      val overtimeCompensation = base.getOvertimeCompensation(linkLimit, linkCount)
+      result = result + (base.airport.id.toString() -> Json.obj("linkLimit" -> linkLimit, "linkCount" -> linkCount, "overtimeCompensation" -> overtimeCompensation))
+    }
+    Ok(result)
+  }
   
   
   def getAirlineFinances(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
@@ -602,7 +623,22 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     
     Ok(Json.toJson(championedCountryByThisAirline))
   }
-  
+
+  def getCountryAirlineTitles(airlineId : Int) = Authenticated { implicit request =>
+    val titles  = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId)))
+    var nationalAirlinesJson = Json.arr()
+    var partneredAirlinesJson = Json.arr()
+    titles.foreach { title =>
+      val valueJson = Json.obj("countryCode" -> title.country.countryCode, "bonus" -> title.loyaltyBonus)
+      title.title match {
+        case Title.NATIONAL_AIRLINE => nationalAirlinesJson = nationalAirlinesJson.append(valueJson)
+        case Title.PARTNERED_AIRLINE => partneredAirlinesJson = partneredAirlinesJson.append(valueJson)
+      }
+    }
+
+    Ok(Json.obj("nationalAirlines" -> nationalAirlinesJson, "partneredAirlines" -> partneredAirlinesJson))
+  }
+
   def resetAirline(airlineId : Int, keepAssets : Boolean) = AuthenticatedAirline(airlineId) { request =>
     if (airlineId != request.user.id) {
       Forbidden

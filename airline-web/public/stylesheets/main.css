@@ -60,6 +60,10 @@ body {
 	display: table-cell;
 }
 
+.table.frequencyDetail .cell, .table.frequencyDetailTotal .cell{
+   padding : 1px 2px 1px 2px;
+}
+
 .table .table-row {
 	display: table-row;
 	width: 100%;
@@ -84,7 +88,11 @@ body {
 	background-color: #A1D490;
 }
 
-.table.data div.table-row:nth-child(odd) {
+.table.colored div.table-row:nth-child(even){
+    background-color: #FFF;
+}
+
+.table.data div.table-row:nth-child(odd), .table.colored  div.table-row:nth-child(odd){
 	background: #DDD
 }
  
@@ -629,4 +637,16 @@ img.flag {
 div {
      scrollbar-width: thin;
      scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
+}
+
+input:disabled {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+}
+
+.button.disabled {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+}
+
+.button.disabled:hover {
+  cursor: not-allowed
 }

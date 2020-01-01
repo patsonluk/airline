@@ -142,7 +142,7 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
 }
 
 case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, loungeLevelRequired : Int, loyaltyRatio : Double, id : Int)  extends FlightPreference{
-  val appealList : Map[Int, AirlineAppeal] = homeAirport.getAirlineAppeals
+  val appealList : Map[Int, AirlineAppeal] = homeAirport.getAirlineAdjustedAppeals
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   //val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  

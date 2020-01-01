@@ -71,10 +71,24 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
         ))
       }
       if (airport.isAirlineAppealsInitialized) {
-        airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAppeals().toList.map {  
+        airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAdjustedAppeals().toList.map {
           case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
           }
         ))
+
+        var bonusJson = Json.obj()
+        airport.getAllAirlineBonuses.toList.foreach {
+          case (airlineId, bonuses) => {
+            var totalLoyaltyBonus = 0.0
+            var totalAwarenessBonus = 0.0
+            bonuses.foreach { entry =>
+              totalLoyaltyBonus += entry.bonus.loyalty
+              totalAwarenessBonus += entry.bonus.awareness
+            }
+            bonusJson = bonusJson + (airlineId.toString -> Json.obj("loyalty" -> totalLoyaltyBonus, "awareness" -> totalAwarenessBonus))
+          }
+        }
+        airportObject = airportObject + ("bonusList" -> bonusJson)
       }
       if (airport.isFeaturesLoaded) {
         airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().map { airportFeature =>

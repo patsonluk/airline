@@ -17,13 +17,10 @@ import play.api.libs.json.JsSuccess
 import play.api.libs.json.Json
 import play.api.libs.json.JsBoolean
 import com.patson.model.AirlineIncome
-import com.patson.model.AirlineIncome
 import com.patson.model.AirlineCashFlow
 import play.api.libs.json.Reads
-import models.AirportFacility
 import models.FacilityType
 import models.AirportFacility
-import models.FacilityType.FacilityType
 import com.patson.util.ChampionInfo
 
 import scala.concurrent.ExecutionContext
@@ -108,7 +105,13 @@ package object controllers {
       "value" -> JsNumber(airplane.value),
       "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane)),
       "dealerValue" -> JsNumber(airplane.dealerValue),
-      "dealerRatio" -> JsNumber(airplane.dealerRatio)
+      "dealerRatio" -> JsNumber(airplane.dealerRatio),
+      "configurationId" -> JsNumber(airplane.configuration.id),
+      "configuration" -> Json.obj("economy" -> airplane.configuration.economyVal, "business" -> airplane.configuration.businessVal, "first" -> airplane.configuration.firstVal),
+      "availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes),
+      "homeAirportId" -> JsNumber(airplane.home.id),
+      "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
+      "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION)
       ))
     }
   }
@@ -118,6 +121,17 @@ package object controllers {
       "economy" -> JsNumber(linkClassValues(ECONOMY)),
       "business" -> JsNumber(linkClassValues(BUSINESS)),
       "first" -> JsNumber(linkClassValues(FIRST))))
+  }
+  object AirplaneAssignmentsRead extends Reads[Map[Airplane, Int]] {
+    def reads(json : JsValue) : JsResult[Map[Airplane, Int]] = {
+      JsSuccess(json.asInstanceOf[JsObject].keys.map { airplaneId =>
+        val frequency = json.\(airplaneId).as[Int]
+        AirplaneSource.loadAirplaneById(airplaneId.toInt) match {
+          case Some(airplane) => (airplane, frequency)
+          case None => throw new IllegalStateException("Airplane with id " + airplaneId + " does not exist")
+        }
+      }.toMap)
+    }
   }
   
   implicit object LinkFormat extends Format[Link] {
@@ -132,26 +146,13 @@ package object controllers {
       val airline = AirlineSource.loadAirlineById(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val airplaneIds = json.\("airplanes").as[Array[Int]]
-      val frequency = json.\("frequency").as[Int]
+      val airplaneAssignments = json.\("airplanes").as[Map[Airplane, Int]](AirplaneAssignmentsRead)
+
       val modelId = json.\("model").as[Int]
-      
-      val capacity = LinkClassValues.getInstance(frequency * json.\("configuration").\("economy").as[Int],
-                                              frequency * json.\("configuration").\("business").as[Int],
-                                              frequency * json.\("configuration").\("first").as[Int])
-                                
       val duration = ModelSource.loadModelById(modelId).fold(Integer.MAX_VALUE)(Computation.calculateDuration(_, distance))
-       
-      val airplanes = airplaneIds.foldRight(List[Airplane]()) { (airplaneId, foldList) =>
-        AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId, AirplaneSource.LINK_SIMPLE_LOAD) match { 
-          case Some((airplane, Some(link))) if (link.from.id != fromAirport.id || link.to.id != toAirport.id) =>
-            throw new IllegalStateException("Airplane with id " + airplaneId + " is assigned to other link")
-          case Some((airplane, _)) =>
-            airplane :: foldList
-          case None => 
-            throw new IllegalStateException("Airplane with id " + airplaneId + " does not exist")
-        }
-      }
+
+
+
       var rawQuality =  json.\("rawQuality").as[Int]
       if (rawQuality > Link.MAX_QUALITY) {
         rawQuality = Link.MAX_QUALITY
@@ -159,8 +160,8 @@ package object controllers {
         rawQuality = 0
       }
          
-      val link = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration, frequency, flightType)
-      link.setAssignedAirplanes(airplanes)
+      val link = Link(fromAirport, toAirport, airline, price, distance, capacity = LinkClassValues.getInstance(), rawQuality, duration, frequency = 0, flightType) //compute frequency and capacity after validating the assigned airplanes
+      link.setAssignedAirplanes(airplaneAssignments)
       //(json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
@@ -192,9 +193,16 @@ package object controllers {
       "toLatitude" -> JsNumber(link.to.latitude),
       "toLongitude" -> JsNumber(link.to.longitude),
       "flightType" -> JsString(link.flightType.toString()),
-      "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber)),
-      "assignedAirplanes" -> Json.toJson(link.getAssignedAirplanes())))
-      
+      "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber))
+      ))
+
+      var airplanesJson = Json.arr()
+      link.getAssignedAirplanes().foreach {
+        case (airplane, frequency) => airplanesJson = airplanesJson.append(Json.obj("airplane" -> airplane, "frequency" -> frequency))
+      }
+
+      json = json + ("assignedAirplanes" -> airplanesJson)
+
       link.getAssignedModel().foreach { model =>
         json = json + ("modelId" -> JsNumber(model.id))
       }
@@ -259,6 +267,7 @@ package object controllers {
       var jsObject = JsObject(List(
       "airportId" -> JsNumber(base.airport.id),
       "airportName" -> JsString(base.airport.name),
+      "airportCode" -> JsString(base.airport.iata),
       "countryCode" -> JsString(base.airport.countryCode),
       "airportZone" -> JsString(base.airport.zone),
       "city" -> JsString(base.airport.city),
@@ -348,6 +357,7 @@ package object controllers {
         "othersExpense" -> JsNumber(airlineIncome.others.expense),
         "othersLoanInterest" -> JsNumber(airlineIncome.others.loanInterest),
         "othersBaseUpkeep" -> JsNumber(airlineIncome.others.baseUpkeep),
+        "othersOvertimeCompensation" -> JsNumber(airlineIncome.others.overtimeCompensation),
         "othersLoungeUpkeep" -> JsNumber(airlineIncome.others.loungeUpkeep),
         "othersLoungeCost" -> JsNumber(airlineIncome.others.loungeCost),
         "othersLoungeIncome" -> JsNumber(airlineIncome.others.loungeIncome),

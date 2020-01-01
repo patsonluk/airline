@@ -1,6 +1,10 @@
 var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
 
 function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, callback) {
+    generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, 10, callback)
+}
+
+function generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, rowSize, callback) {
 	containerDiv.empty()
 	var images = []
 	
@@ -8,10 +12,10 @@ function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput
 		indexToValueFunction = function(index) { return index + 1 }
 		valueToIndexFunction = function(value) { return value - 1 }
 	}
-	
+
 	if (valueInput.val()) { //validate the input, set the value to boundaries allowed by this bar
-		if (valueToIndexFunction(valueInput.val()) < 0) {
-			valueInput.val(indexToValueFunction(0))
+		if (valueToIndexFunction(valueInput.val()) < 0) { //-1 is still valid, that means none selected
+			valueInput.val(indexToValueFunction(-1))
 		} else if (valueToIndexFunction(valueInput.val()) >= count) {
 			valueInput.val(indexToValueFunction(count - 1))
 		}
@@ -39,7 +43,7 @@ function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput
 		containerDiv.append(image)
 		images.push(image)
 		
-		if ((i + 1) % 10 == 0) {
+		if ((i + 1) % rowSize == 0) {
 			containerDiv.append("<br/>")
 		}
 	}
@@ -407,7 +411,28 @@ function highlightSwitch(selectedSwitch) {
 }
 
 function closeModal(modal) {
-	modal.fadeOut(200)
+    modal.fadeOut(200)
+    var callback = modal.data("close-callback")
+    if (callback) {
+        callback()
+        modal.removeData("close-callback")
+    }
+}
+
+function disableButton(button, reason) {
+    $(button).addClass("disabled")
+    $(button).data("clickFunction", $(button).attr("onclick"))
+    $(button).data("oldTitle", $(button).attr("title"))
+    if (reason) {
+        $(button).attr("title", reason)
+    }
+    $(button).removeAttr("onclick") //remove on click function
+}
+
+function enableButton(button) {
+    $(button).removeClass("disabled")
+    $(button).attr("onclick", $(button).data("clickFunction")) //set it back
+    $(button).attr("title", $(button).data("oldTitle"))
 }
 
 function isIe() {

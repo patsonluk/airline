@@ -44,9 +44,9 @@ class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(san
     AirlineSource.loadAirlineById(santaClausInfo.airline.id, fullLoad = true).foreach { airline =>
       airline.getHeadQuarter().foreach { hq =>
         val airport = AirportSource.loadAirportById(hq.airport.id, fullLoad = true).get //need full load for appeal
-        val newLoyalty = Math.min(airport.getAirlineLoyalty(airline.id) + BONUS, AirlineAppeal.MAX_LOYALTY)
-        airport.setAirlineLoyalty(airline.id, newLoyalty)
-        AirportSource.updateAirlineAppeal(List(airport))
+        val existingAppeal = airport.getAirlineBaseAppeal(airline.id)
+        val newLoyalty = Math.min(existingAppeal.loyalty + BONUS, AirlineAppeal.MAX_LOYALTY)
+        AirportSource.updateAirlineAppeal(airport.id, airline.id, AirlineAppeal(newLoyalty, existingAppeal.awareness))
       }
     }
   }
@@ -64,9 +64,9 @@ class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
   override def applyAward(): Unit = {
     val airline = santaClausInfo.airline
     val airport = AirportSource.loadAirportById(santaClausInfo.airport.id, fullLoad = true).get //need full load for appeal
-    val newLoyalty = Math.min(airport.getAirlineLoyalty(airline.id) + BONUS, AirlineAppeal.MAX_LOYALTY)
-    airport.setAirlineLoyalty(airline.id, newLoyalty)
-    AirportSource.updateAirlineAppeal(List(airport))
+    val existingAppeal = airport.getAirlineBaseAppeal(airline.id)
+    val newLoyalty = Math.min(existingAppeal.loyalty + BONUS, AirlineAppeal.MAX_LOYALTY)
+    AirportSource.updateAirlineAppeal(airport.id, airline.id, AirlineAppeal(newLoyalty, existingAppeal.awareness))
 
 
   }

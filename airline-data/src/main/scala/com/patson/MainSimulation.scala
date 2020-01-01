@@ -45,6 +45,7 @@ object MainSimulation extends App {
       AirportSimulation.airportSimulation(cycle, linkResult)
       val airplanes = AirplaneSimulation.airplaneSimulation(cycle, links)
       AirlineSimulation.airlineSimulation(cycle, linkResult, loungeResult, airplanes)
+      CountrySimulation.simulate(cycle)
       
       //purge log
       println("Purging logs")

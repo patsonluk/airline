@@ -111,16 +111,13 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
     }
     "get more slots based on loyalty".in {
       airport.initSlotAssignments(Map())
-      airport.initAirlineAppeals(Map())
-      airport.setAirlineLoyalty(highReputationForeignHqAirline.id, 100)
-      airport.setAirlineLoyalty(lowReputationForeignHqAirline.id, 20)
+      airport.initAirlineAppeals(Map(highReputationForeignHqAirline.id -> AirlineAppeal(100, 0), lowReputationForeignHqAirline.id -> AirlineAppeal(20, 0)))
       airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe( > (airport.getMaxSlotAssignment(lowReputationForeignHqAirline)))
       assert(airport.getMaxSlotAssignment(highReputationForeignHqAirline) == Airport.NON_BASE_MAX_SLOT)
     }
     "get correct slot when in reserved range yet with available slots".in {
       airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 50, lowReputationLocalHqAirline.id -> 45))
-      airport.initAirlineAppeals(Map())
-      airport.setAirlineLoyalty(highReputationLocalHqAirline.id, 100)
+      airport.initAirlineAppeals(Map(highReputationLocalHqAirline.id -> AirlineAppeal(100, 0)))
       airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(50) //no change, into reserved range
       airport.getPreferredSlotAssignment(highReputationLocalHqAirline).shouldBe(35) //airport want to reduce it to 20% empty so 45 + 35 = 80 = 80% of 100
       airport.getMaxSlotAssignment(lowReputationLocalHqAirline).shouldBe(45) //no change, into reserved range
@@ -130,8 +127,7 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
     }
     "get correct slot when close to reserved range".in {
       airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 5, lowReputationLocalHqAirline.id -> 70))
-      airport.initAirlineAppeals(Map())
-      airport.setAirlineLoyalty(highReputationLocalHqAirline.id, 100)
+      airport.initAirlineAppeals(Map(highReputationLocalHqAirline.id -> AirlineAppeal(100, 0)))
       airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(20) //HQ always get 20 at least  
       airport.getPreferredSlotAssignment(highReputationLocalHqAirline).shouldBe(20) //HQ always get 20 at least
       airport.getMaxSlotAssignment(lowReputationLocalHqAirline).shouldBe(70) //keep what u had...
@@ -141,9 +137,7 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
     }
     "get max slot limited by base type".in {
       airport.initSlotAssignments(Map())
-      airport.initAirlineAppeals(Map())
-      airport.setAirlineLoyalty(highReputationLocalHqAirline.id, 100)
-      airport.setAirlineLoyalty(highReputationForeignHqAirline.id, 100)
+      airport.initAirlineAppeals(Map(highReputationLocalHqAirline.id -> AirlineAppeal(100, 0), highReputationForeignHqAirline.id -> AirlineAppeal(100, 0)))
       airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(80)  // give up to reserved range
       airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe(Airport.NON_BASE_MAX_SLOT)
     }

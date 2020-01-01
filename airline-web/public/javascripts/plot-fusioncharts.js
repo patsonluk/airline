@@ -73,6 +73,80 @@ function plotMaintenanceLevelGauge(container, maintenanceLevelInput, onchangeFun
 	
 }
 
+//unmodifiable seat configuration bar
+function plotSeatConfigurationBar(container, configuration, maxSeats, spaceMultipliers, hideValues, height) {
+    container.children(':FusionCharts').each((function(i) {
+          $(this)[0].dispose();
+    }))
+    container.empty()
+
+    var dataSource = {
+        "chart": {
+            "theme": "fint",
+            "lowerLimit": "0",
+            "upperLimit": "100",
+            "showTickMarks": "0",
+            "showTickValues": "0",
+            "showborder": "0",
+            "chartBottomMargin": "0",
+            "bgAlpha":"0",
+            "valueFontSize": "11",
+            "valueFontBold": "0",
+            "animation": "0",
+            "editMode": "0",
+            "containerBackgroundOpacity" :'0',
+            "pointerBgAlpha":"0",
+            "pointerBorderAlpha":"0",
+            "chartLeftMargin": "0",
+            "chartTopMargin": "0",
+            "chartRightMargin": "0",
+            "chartBottomMargin": "0",
+            "baseFontColor": "#FFFFFF"
+        }
+    }
+
+
+    var businessPosition = configuration.economy / maxSeats * 100
+    var firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
+
+    var economyRange = {
+                         "minValue": "0",
+                         "maxValue": businessPosition,
+                         "code": "#6baa01"
+                       }
+    var businessRange = {
+                          "minValue": businessPosition,
+                          "maxValue": firstPosition,
+                          "code": "#0077CC"
+                         }
+    var firstRange = {
+                      "minValue": firstPosition,
+                      "maxValue": "100",
+                      "code": "#FFE62B"
+                      }
+    if (!hideValues) {
+        economyRange.label = "Y : " + configuration.economy
+        businessRange.label = "J : " + configuration.business
+        firstRange.label = "F : " + configuration.first
+    }
+
+    dataSource["colorRange"] = { "color": [economyRange, businessRange, firstRange] }
+
+    if (!height) {
+        height = "20px"
+    }
+
+    var chart = container.insertFusionCharts(
+    {
+        type: 'hlineargauge',
+        width: '100%',
+        height: height,
+        dataFormat: 'json',
+        dataSource: dataSource,
+    })
+
+}
+
 function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMultipliers, callback) {
 	container.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
@@ -93,43 +167,51 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	        "valueFontSize": "11",  
 	        "valueFontBold": "0",
 	        "animation": "0",
-	        "editMode": "1",
+	        "editMode": "0",
+	        "pointerBgAlpha":"0",
+            "pointerBorderAlpha":"0",
 	        containerBackgroundOpacity :'0',
 	        "baseFontColor": "#FFFFFF"
-	    },
-	    "pointers": {
-	        //Multiple pointers defined here
-	        "pointer": [
-	            {
-	                "bgColor": "#FFE62B",
-	                "bgAlpha": "50",
-	                "showValue": "0",
-	                //"sides" : "4",
-	                "borderColor": "#FFE62B",
-	                "borderAlpha": "20",
-	            },
-	            {
-	                "bgColor": "#0077CC",
-	                "bgAlpha": "50",
-	                "showValue": "0",
-	                //"sides" : "3",
-	                "borderColor": "#0077CC",
-	                "borderAlpha": "20",
-	            }
-	        ]
 	    }
+//	    ,
+//	    "pointers": {
+//	        //Multiple pointers defined here
+//	        "pointer": [
+//	            {
+//	                "bgColor": "#FFE62B",
+//	                "bgAlpha": "50",
+//	                "showValue": "0",
+//	                //"sides" : "4",
+//	                "borderColor": "#FFE62B",
+//	                "borderAlpha": "20",
+//	            },
+//	            {
+//	                "bgColor": "#0077CC",
+//	                "bgAlpha": "50",
+//	                "showValue": "0",
+//	                //"sides" : "3",
+//	                "borderColor": "#0077CC",
+//	                "borderAlpha": "20",
+//	            }
+//	        ]
+//	    }
 	}
 	
 	function updateDataSource(configuration) {
 		var businessPosition = configuration.economy / maxSeats * 100
-		var firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
+		var firstPosition
+		 if (configuration.business == 0) {
+		    firstPosition = businessPosition
+		 } else {
+		    firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
+		 }
 		dataSource["colorRange"] = {
             "color": [
                       {
                           "minValue": "0",
                           "maxValue": businessPosition,
                           "label": "Y : " + configuration.economy,
-                          "tooltext": "Business Class",
+                          "tooltext": "Economy Class",
                           "code": "#6baa01"
                       },
                       {
@@ -143,13 +225,13 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
                           "minValue": firstPosition,
                           "maxValue": "100",
                           "label": "F : " + configuration.first,
-                          "tooltext": "Business Class",
+                          "tooltext": "First Class",
                           "code": "#FFE62B"
                       }
                   ]
               }
-	    dataSource["pointers"]["pointer"][0].value = firstPosition
-	    dataSource["pointers"]["pointer"][1].value = businessPosition
+//	    dataSource["pointers"]["pointer"][0].value = firstPosition
+//	    dataSource["pointers"]["pointer"][1].value = businessPosition
 	}
 	
 	updateDataSource(configuration)
@@ -160,38 +242,39 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
         width: '100%',
         height: '40px',
         dataFormat: 'json',
-	    dataSource: dataSource,
-        "events": {
-            "realTimeUpdateComplete" : function (evt, arg){
-                var firstPosition = evt.sender.getData(1)
-                var businessPosition = evt.sender.getData(2)
-                
-                var tinyAdjustment = 0.001 //the tiny adjustment is to avoid precision problem that causes floor to truncate number like 0.99999
-                configuration["first"] = Math.floor(tinyAdjustment + maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
-                
-                if (firstPosition < businessPosition) {  //dragging first past business to the left => eliminate all business
-                	configuration["business"] = 0
-                } else {
-                	configuration["business"] = Math.floor(tinyAdjustment + (maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
-                }
-                
-                if (businessPosition == 0) { //allow elimination of all economy seats
-                	configuration["economy"] = 0
-                } else {
-                	configuration["economy"] = Math.floor(tinyAdjustment + (maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
-                }
-                
-                
-                //console.log(configuration)
-                
-                updateDataSource(configuration)
-                callback(configuration)
-                
-                container.updateFusionCharts({
-                	"dataSource": dataSource
-                });
-            }
-        }
+	    dataSource: dataSource
+//	    ,
+//        "events": {
+//            "realTimeUpdateComplete" : function (evt, arg){
+//                var firstPosition = evt.sender.getData(1)
+//                var businessPosition = evt.sender.getData(2)
+//
+//                var tinyAdjustment = 0.001 //the tiny adjustment is to avoid precision problem that causes floor to truncate number like 0.99999
+//                configuration["first"] = Math.floor(tinyAdjustment + maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
+//
+//                if (firstPosition < businessPosition) {  //dragging first past business to the left => eliminate all business
+//                	configuration["business"] = 0
+//                } else {
+//                	configuration["business"] = Math.floor(tinyAdjustment + (maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
+//                }
+//
+//                if (businessPosition == 0) { //allow elimination of all economy seats
+//                	configuration["economy"] = 0
+//                } else {
+//                	configuration["economy"] = Math.floor(tinyAdjustment + (maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
+//                }
+//
+//
+//                //console.log(configuration)
+//
+//                updateDataSource(configuration)
+//                callback(configuration)
+//
+//                container.updateFusionCharts({
+//                	"dataSource": dataSource
+//                });
+//            }
+//        }
 	})
 }
 

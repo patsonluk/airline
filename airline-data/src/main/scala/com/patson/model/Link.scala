@@ -9,14 +9,14 @@ import java.util.concurrent.ConcurrentHashMap
  * 
  * Frequency sum of all assigned plane
  */
-case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, capacity: LinkClassValues, rawQuality : Int, duration : Int, frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends IdObject{
+case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, var capacity: LinkClassValues, rawQuality : Int, duration : Int, var frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends IdObject{
   @volatile var availableSeats : LinkClassValues = capacity.copy()
   @volatile var soldSeats : LinkClassValues = LinkClassValues.getInstance()
   @volatile var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
   @volatile var cancellationCount = 0
   @volatile var majorDelayCount = 0
   @volatile var minorDelayCount = 0
-  @volatile private var assignedAirplanes : List[Airplane] = List.empty
+  @volatile private var assignedAirplanes : Map[Airplane, Int] = Map.empty
   @volatile private var assignedModel : Option[Model] = None
   
   @volatile private var hasComputedQuality = false
@@ -25,10 +25,10 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 
   private val standardPrice : ConcurrentHashMap[LinkClass, Int] = new ConcurrentHashMap[LinkClass, Int]()
 
-  def setAssignedAirplanes(assignedAirplanes : List[Airplane]) = {
+  def setAssignedAirplanes(assignedAirplanes : Map[Airplane, Int]) = {
     this.assignedAirplanes = assignedAirplanes
     if (!assignedAirplanes.isEmpty) {
-      assignedModel = Some(assignedAirplanes(0).model)
+      assignedModel = Some(assignedAirplanes.toList(0)._1.model)
     }
   }
   
@@ -69,8 +69,10 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       if (assignedAirplanes.isEmpty) {
         0
       } else {
-        
-        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.serviceQuality.toDouble / Airline.MAX_SERVICE_QUALITY * 50 + (assignedAirplanes.foldLeft(0.0)( _ + _.condition.toDouble)) / assignedAirplanes.size / Airplane.MAX_CONDITION * 20).toInt
+        val airplaneConditionQuality = assignedAirplanes.toList.map {
+          case ((airplane, frequencyPerAirplane)) => airplane.condition / Airplane.MAX_CONDITION * frequencyPerAirplane
+        }.sum / frequency * 20
+        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.serviceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
 //        println("computed quality " + computedQualityStore)
         hasComputedQuality = true
         computedQualityStore
@@ -128,6 +130,17 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       standardPrice.put(linkClass, price)
     }
     price
+  }
+
+  /**
+    * Recomputes capacity base on assigned airplanes
+    */
+  def recomputeCapacity() = {
+    var newCapacity = LinkClassValues.getInstance()
+    assignedAirplanes.foreach {
+      case(airplane, frequency) => newCapacity = newCapacity + (LinkClassValues(airplane.configuration.economyVal, airplane.configuration.businessVal, airplane.configuration.firstVal) * frequency)
+    }
+    capacity = newCapacity
   }
   
   

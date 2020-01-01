@@ -61,6 +61,7 @@ GET		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.get
 PUT		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.updateAirplaneRenewal(airlineId: Int)
 PUT		 /airlines/:airlineId/maintenanceQuality			controllers.LinkApplication.updateMaintenanceQuality(airlineId: Int)
 POST	 /airlines/:airlineId/plan-link	  controllers.LinkApplication.planLink(airlineId : Int)
+GET	     /airlines/:airlineId/link-limits	  controllers.AirlineApplication.getLinkLimits(airlineId : Int)
 GET		 /airlines/:airlineId/finances  controllers.AirlineApplication.getAirlineFinances(airlineId : Int)
 GET		 /airlines/:airlineId/loans  controllers.BankApplication.viewLoans(airlineId : Int)
 POST	 /airlines/:airlineId/loans  controllers.BankApplication.takeOutLoan(airlineId : Int)
@@ -68,6 +69,7 @@ DELETE   /airlines/:airlineId/loans/:loanId	  controllers.BankApplication.repayL
 GET		 /airlines/:airlineId/loan-options  controllers.BankApplication.getLoanOptions(airlineId : Int, loanAmount : Long)
 GET		 /airlines/:airlineId/max-loan  controllers.BankApplication.getMaxLoan(airlineId : Int)
 GET		 /airlines/:airlineId/championed-countries  controllers.AirlineApplication.getChampionedCountries(airlineId : Int)
+GET		 /airlines/:airlineId/country-airline-titles  controllers.AirlineApplication.getCountryAirlineTitles(airlineId : Int)
 GET		 /airlines/:airlineId/reset-consideration   controllers.AirlineApplication.resetAirlineConsideration(airlineId : Int)
 GET		 /airlines/:airlineId/reset	   controllers.AirlineApplication.resetAirline(airlineId : Int, keepAssets : Boolean)
 GET		 /airlines/:airlineId/logo	controllers.AirlineApplication.getLogo(airlineId : Int)
@@ -88,6 +90,7 @@ GET		 /airlines/:airlineId/accept-alliance-member/:targetAirlineId  controllers.
 GET		 /airlines/:airlineId/promote-alliance-member/:targetAirlineId  controllers.AllianceApplication.promoteToAllianceLeader(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/used-airplanes/models/:modelId	controllers.AirplaneApplication.getUsedAirplanes(airlineId : Int, modelId : Int)
 PUT		 /airlines/:airlineId/used-airplanes/airplanes/:airplaneId	controllers.AirplaneApplication.buyUsedAirplane(airlineId : Int, airplaneId : Int)
+PUT		 /airlines/:airlineId/airplanes/:airplaneId/home/:airportId  controllers.AirplaneApplication.updateAirplaneHome(airlineId : Int, airplaneId : Int, airportId: Int)
 GET		 /airlines/:airlineId/oil-contracts	controllers.OilApplication.getContracts(airlineId : Int)
 GET		 /airlines/:airlineId/oil-details	controllers.OilApplication.getDetails(airlineId : Int)
 GET		 /airlines/:airlineId/oil-contract-consideration	controllers.OilApplication.getContractConsideration(airlineId : Int, volume : Int, duration : Int)			
@@ -97,6 +100,13 @@ GET	 	 /airlines/:airlineId/oil-inventory-options		controllers.OilApplication.ge
 GET		 /airlines/:airlineId/set-oil-inventory-option  controllers.OilApplication.setInventoryOption(airlineId : Int, optionId : Int)
 GET		 /airlines/:airlineId/logs  controllers.LogApplication.getLogs(airlineId : Int)
 GET		 /airlines/:airlineId/alerts  controllers.AlertApplication.getAlerts(airlineId : Int)
+GET		 /airlines/:airlineId/configurations                   controllers.AirplaneConfigurationApplication.getConfigurations(airlineId : Int, modelId : Int)
+GET		 /airlines/:airlineId/configurations/:configurationId  controllers.AirplaneConfigurationApplication.getConfiguration(airlineId : Int, configurationId : Int)
+PUT		 /airlines/:airlineId/configurations                   controllers.AirplaneConfigurationApplication.putConfiguration(airlineId : Int, modelId : Int, configurationId: Int ?= 0, economy : Int, business : Int, first : Int, isDefault : Boolean)
+PUT		 /airlines/:airlineId/airplanes/:airplaneId/configuration/:configurationId  controllers.AirplaneConfigurationApplication.updateAirplaneConfiguration(airlineId : Int, airplaneId : Int, configurationId: Int)
+DELETE	 /airlines/:airlineId/configurations/:configurationId  controllers.AirplaneConfigurationApplication.deleteConfiguration(airlineId : Int, configurationId : Int)
+
+
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
 GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()
 
@@ -109,9 +119,8 @@ GET		 /santa-claus/award-options/:airlineId  controllers.ChristmasApplication.ge
 GET      /santa-claus/pick-award/:airlineId/:optionId   controllers.ChristmasApplication.pickAwardOption(airlineId : Int, optionId : Int)
 
 
-PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
-GET		 /links							  controllers.LinkApplication.getAllLinks
-DELETE   /links							  controllers.LinkApplication.deleteAllLinks
+#PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
+#GET		 /links							  controllers.LinkApplication.getAllLinks
 #GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels

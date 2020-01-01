@@ -86,70 +86,76 @@ function toggleCountryTableSortOrder(sortHeader) {
 	updateCountryTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
-function loadCountryDetails(countryId) {
-	$("#countryDetails .value").empty()
+function loadCountryDetails(countryCode) {
+    $("#countryCanvas #countryTable div.selected").removeClass("selected")
+	//highlight the selected country
+	$("#countryCanvas #countryTable div[data-country-code='" + countryCode +"']").addClass("selected")
+
 	$("#countryDetailsSharesChart").hide()
 	$.ajax({
 		type: 'GET',
-		url: "countries/" + countryId,
+		url: "countries/" + countryCode,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(country) {
 	    	$("#countryDetailsName").text(country.name)
 	    	$("#countryDetailsIncomeLevel").text(country.incomeLevel)
 	    	$("#countryDetailsOpenness").html(getOpennessSpan(country.openness))
-	    	
+
 	    	var loadedCountry = loadedCountries.filter(function(obj) {
-	    		  return obj.countryCode == countryId;
+	    		  return obj.countryCode == countryCode;
 	    	})[0];
-	    	
+
 	    	var mutualRelationship
 	    	if (typeof loadedCountry.mutualRelationship != 'undefined') {
 	    		mutualRelationship = getRelationshipDescription(loadedCountry.mutualRelationship)
 	    	} else {
 	    		mutualRelationship = '-'
 	    	}
-	    	
+
 	    	$("#countryDetailsMutualRelationship").text(mutualRelationship)
 	    	$("#countryDetailsLargeAirportCount").text(country.largeAirportCount)
 	    	$("#countryDetailsMediumAirportCount").text(country.mediumAirportCount)
 	    	$("#countryDetailsSmallAirportCount").text(country.smallAirportCount)
 	    	$("#countryDetailsSmallAirportCount").text(country.smallAirportCount)
-	    	
-	    	
-//	    	if (country.headquarters.length > 0) {
-//		    	$.each(country.headquarters, function(index, headquarter) {
-//		    		$("#countryDetailsAirlineHeadquarters").append("<div>" + headquarter.airlineName + "(" + getAirportText(headquarter.city, headquarter.airportName) + ")</div>")
-//		    	})
-	    		$("#countryDetailsAirlineHeadquarters").text(country.headquarters.length)
-//	    	} else {
-//	    		$("#countryDetailsAirlineHeadquarters").text("-")
-//	    	}
-	    	
-//	    	if (country.bases.length > 0) {
-//		    	$.each(country.bases, function(index, base) {
-//		    		$("#countryDetailsAirlineBases").append("<div>" + base.airlineName + "(" + getAirportText(base.city, base.airportName) + ")</div>")
-//		    	})
-	    		$("#countryDetailsAirlineBases").text(country.bases.length)
-//	    	} else {
-//	    		$("#countryDetailsAirlineBases").text("-")
-//	    	}
+    		$("#countryDetailsAirlineHeadquarters").text(country.headquarters.length)
+    		$("#countryDetailsAirlineBases").text(country.bases.length)
+
+    		$("#countryCanvas .nationalAirlines").empty()
+            if (country.nationalAirlines && country.nationalAirlines.length > 0) {
+                $.each(country.nationalAirlines, function(index, nationalAirline) {
+                    var championRow = $("<div class='table-row'><div class='cell'><img src='assets/images/icons/star.png' style='vertical-align:middle;'>" + getAirlineLogoImg(nationalAirline.airlineId) + "<span style='font-weight: bold;'>" + nationalAirline.airlineName + "</span> (" + nationalAirline.passengerCount + " passengers, " + nationalAirline.loyaltyBonus + " loyalty bonus)</div></div>")
+                    $("#countryCanvas .nationalAirlines").append(championRow)
+                })
+            } else {
+                $("#countryCanvas .nationalAirlines").append($("<div class='table-row'><div class='cell'>-</div></div>"))
+            }
+
+            $("#countryCanvas .partneredAirlines").empty()
+            if (country.partneredAirlines && country.partneredAirlines.length > 0) {
+                $.each(country.partneredAirlines, function(index, partneredAirline) {
+                    var championRow = $("<div class='table-row'><div class='cell'><img src='assets/images/icons/hand-shake.png' style='vertical-align:middle;'>" + getAirlineLogoImg(partneredAirline.airlineId) + "<span style='font-weight: bold;'>" + partneredAirline.airlineName + "</span> (" + partneredAirline.passengerCount + " passengers, " + partneredAirline.loyaltyBonus + " loyalty bonus)</div></div>")
+                    $("#countryCanvas .partneredAirlines").append(championRow)
+                })
+            } else {
+                $("#countryCanvas .partneredAirlines").append($("<div class='table-row'><div class='cell'>-</div></div>"))
+            }
+
+            $("#countryCanvas .countryDetailsChampion").empty()
 	    	if (country.champions) {
-	    		var championDivs = ""
-	    			
-    			$.each(country.champions, function(index, champion) {
-    				championDivs += "<div>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airlineId) + "<span style='font-weight: bold;'>" + champion.airlineName + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div>"
+	    		$.each(country.champions, function(index, champion) {
+	    		    var championRow = $("<div class='table-row'><div class='cell'>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airlineId) + "<span style='font-weight: bold;'>" + champion.airlineName + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div></div>")
+    				$("#countryCanvas .countryDetailsChampion").append(championRow)
     			})
-	    		
-	    		$("#countryDetailsChampion").html(championDivs)
 	    	} else {
-	    		$("#countryDetailsChampion").text("-")
+	    		$("#countryCanvas .countryDetailsChampion").append($("<div class='table-row'><div class='cell'>-</div></div>"))
 	    	}
+
 	    	assignAirlineColors(country.marketShares, "airlineId")
 	    	plotPie(country.marketShares, activeAirline ? activeAirline.name : null , $("#countryDetailsSharesChart"), "airlineName", "passengerCount")
 	    	$("#countryDetailsSharesChart").show()
-	    	
-	    	$("#countryDetails").fadeIn(200);
+
+	    	$("#countryCanvas .sidePanel").fadeIn(200);
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
