@@ -32,7 +32,6 @@ object AirportSimulation {
     println("loading all airports")
     //do decay
     var allAirports = AirportSource.loadAllAirports(true)
-    val allAirportsMap = allAirports.map( airport => airport.id -> airport).toMap
     println("finished loading all airports")
     
     println("Decay awareness")
@@ -81,34 +80,38 @@ object AirportSimulation {
     println("Adjust awareness by links")
     //reload the airports after update
     allAirports = AirportSource.loadAllAirports(true)
+    val allAirportsMap = allAirports.map( airport => airport.id -> airport).toMap
 
     //increment of awareness by links
-    val links = LinkSource.loadAllLinks() 
+    val links = LinkSource.loadAllLinks(LinkSource.ID_LOAD)
     
-    val airportWithLinks = Map[(Int, Int), Set[Link]]() //(airportId, airlineId)
+    val airportWithLinks = mutable.HashMap[Int, mutable.Set[Int]]() //(airportId, Set[airlineId])
     links.foreach { link =>
-      val airlinesFlyiesFromThisAirport = airportWithLinks.getOrElseUpdate((link.from.id, link.airline.id), Set[Link]())
-      airlinesFlyiesFromThisAirport.add(link)
+      val airlinesFliesFromThisAirport = airportWithLinks.getOrElseUpdate(link.from.id, mutable.HashSet[Int]())
+      airlinesFliesFromThisAirport.add(link.airline.id)
       
-      val airlinesFlyiesToThisAirport = airportWithLinks.getOrElseUpdate((link.to.id, link.airline.id), Set[Link]())
-      airlinesFlyiesToThisAirport.add(link)
+      val airlinesFliesToThisAirport = airportWithLinks.getOrElseUpdate(link.to.id, mutable.HashSet[Int]())
+      airlinesFliesToThisAirport.add(link.airline.id)
     }
     
     //add awareness based on airline with some links to/from an airport
-    airportWithLinks.keySet.foreach {
-      case(airportId, airlineId) =>
-        val airport = allAirportsMap(airportId)
-        val appeal = airport.getAirlineBaseAppeal(airlineId)
-        val existingAwareness = appeal.awareness
-        val newAwareness = 
-          if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
-            AirlineAppeal.MAX_AWARENESS   
-          } else {
-            existingAwareness + AWARENESS_INCREMENT_WITH_LINKS
-          }
-
-        AirportSource.updateAirlineAppeal(airportId, airlineId, AirlineAppeal(appeal.loyalty, newAwareness))
-        //airport.setAirlineAwareness(airlineId, newAwareness)
+    airportWithLinks.foreach {
+      case(airportId, airlineIds) =>
+        val updatingAppeals = mutable.HashMap[Int, AirlineAppeal]()
+        airlineIds.foreach { airlineId =>
+          val airport = allAirportsMap(airportId)
+          val appeal = airport.getAirlineBaseAppeal(airlineId)
+          val existingAwareness = appeal.awareness
+          val newAwareness =
+            if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
+              AirlineAppeal.MAX_AWARENESS
+            } else {
+              existingAwareness + AWARENESS_INCREMENT_WITH_LINKS
+            }
+          //airport.setAirlineAwareness(airlineId, newAwareness)
+          updatingAppeals.put(airlineId, AirlineAppeal(appeal.loyalty, newAwareness))
+        }
+        AirportSource.updateAirlineAppeals(airportId, updatingAppeals.toMap)
     }
 
     println("Adjust loyalty by link consumptions")
