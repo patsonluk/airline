@@ -5,7 +5,7 @@ import scala.collection.mutable.ListBuffer
 import java.sql.DriverManager
 
 import com.patson.model.{Airline, Airport, Link, LinkClassValues}
-import com.patson.model.airplane.{Airplane, LinkAssignments, Model, AirplaneConfiguration}
+import com.patson.model.airplane.{Airplane, LinkAssignments, Model, AirplaneConfiguration, LinkAssignment}
 import com.patson.data.airplane.ModelSource
 import java.sql.Statement
 
@@ -149,13 +149,13 @@ object AirplaneSource {
       
       val resultSet = preparedStatement.executeQuery()
       
-      val airplanesWithAssignedLink = new mutable.HashMap[Int, mutable.HashMap[Int, Int]]()
+      val airplanesWithAssignedLink = new mutable.HashMap[Int, mutable.HashMap[Int, LinkAssignment]]()
       while (resultSet.next()) {
         val airplaneId = resultSet.getInt("airplane")
         val linkId =  resultSet.getInt("link")
 
-        val assignedLinks = airplanesWithAssignedLink.getOrElseUpdate(airplaneId, new mutable.HashMap[Int, Int]())
-        assignedLinks.put(linkId, resultSet.getInt("frequency"))
+        val assignedLinks = airplanesWithAssignedLink.getOrElseUpdate(airplaneId, new mutable.HashMap[Int, LinkAssignment]())
+        assignedLinks.put(linkId, LinkAssignment(resultSet.getInt("frequency"), resultSet.getInt("flight_minutes")))
       }
       
       resultSet.close()

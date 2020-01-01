@@ -63,7 +63,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       
       var link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstanceByMap(Map(ECONOMY -> price)), distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, FlightType.SHORT_HAUL_DOMESTIC)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(Map(airplane -> frequency))
+      link.setTestingAssignedAirplanes(Map(airplane -> frequency))
       
       val consumptionResultHighFequency = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
@@ -71,7 +71,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       capacity = frequency * airplane.model.capacity
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(Map(airplane -> frequency))
+      link.setTestingAssignedAirplanes(Map(airplane -> frequency))
       val consumptionResultLowFequency = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       consumptionResultHighFequency.profit.should(be > consumptionResultLowFequency.profit)
@@ -235,9 +235,9 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       businessLink.addSoldSeats(allBusinessCapacity) //all consumed
       firstLink.addSoldSeats(allFirstCapacity) //all consumed
     
-      economylink.setAssignedAirplanes(Map(airplane -> frequency))
-      businessLink.setAssignedAirplanes(Map(airplane -> frequency))
-      firstLink.setAssignedAirplanes(Map(airplane -> frequency))
+      economylink.setTestingAssignedAirplanes(Map(airplane -> frequency))
+      businessLink.setTestingAssignedAirplanes(Map(airplane -> frequency))
+      firstLink.setTestingAssignedAirplanes(Map(airplane -> frequency))
       
     
       val economyResult = LinkSimulation.computeLinkConsumptionDetail(economylink , 0)
@@ -280,9 +280,9 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       businessLink.addSoldSeats(allBusinessCapacity) //all consumed
       firstLink.addSoldSeats(allFirstCapacity) //all consumed
     
-      economylink.setAssignedAirplanes(Map(airplane -> frequency))
-      businessLink.setAssignedAirplanes(Map(airplane -> frequency))
-      firstLink.setAssignedAirplanes(Map(airplane -> frequency))
+      economylink.setTestingAssignedAirplanes(Map(airplane -> frequency))
+      businessLink.setTestingAssignedAirplanes(Map(airplane -> frequency))
+      firstLink.setTestingAssignedAirplanes(Map(airplane -> frequency))
       
     
       val economyResult = LinkSimulation.computeLinkConsumptionDetail(economylink , 0)
@@ -325,9 +325,9 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       businessLink.addSoldSeats(allBusinessCapacity) //all consumed
       firstLink.addSoldSeats(allFirstCapacity) //all consumed
     
-      economylink.setAssignedAirplanes(Map(airplane -> frequency))
-      businessLink.setAssignedAirplanes(Map(airplane -> frequency))
-      firstLink.setAssignedAirplanes(Map(airplane -> frequency))
+      economylink.setTestingAssignedAirplanes(Map(airplane -> frequency))
+      businessLink.setTestingAssignedAirplanes(Map(airplane -> frequency))
+      firstLink.setTestingAssignedAirplanes(Map(airplane -> frequency))
       
     
       val economyResult = LinkSimulation.computeLinkConsumptionDetail(economylink , 0)
@@ -361,61 +361,61 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       var link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstanceByMap(Map(ECONOMY -> price)), distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(LONG_HAUL_INTERCONTINENTAL, ECONOMY), duration, frequency, FlightType.LONG_HAUL_INTERCONTINENTAL)
       println("delay link " + link)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       val consumptionResultNoDelays = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.minorDelayCount = 1
       val consumptionResultSingleMinorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.majorDelayCount = 1
       val consumptionResultSingleMajorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity - airplane.model.capacity * 1))))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.cancellationCount = 1
       val consumptionResultSingleCancellation = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.minorDelayCount = frequency / 2
       val consumptionResultHalfMinorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.majorDelayCount = frequency / 2
       val consumptionResultHalfMajorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity / 2))))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.cancellationCount = frequency / 2 
       val consumptionResultHalfCancellation = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.minorDelayCount = frequency 
       val consumptionResultAllMinorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)))
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.majorDelayCount = frequency 
       val consumptionResultAllMajorDelay = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
       link = link.copy(capacity = LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), frequency = frequency)
       //link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity))) no sold seats
-      link.setAssignedAirplanes(airplanes)
+      link.setTestingAssignedAirplanes(airplanes)
       link.cancellationCount = frequency 
       val consumptionResultAllCancelled = LinkSimulation.computeLinkConsumptionDetail(link , 0)
       
@@ -463,8 +463,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       economylink1.addSoldSeats(allEconomyCapacity) //all consumed
       economylink2.addSoldSeats(allEconomyCapacity) //all consumed
       
-      economylink1.setAssignedAirplanes(Map(airplane -> frequency))
-      economylink2.setAssignedAirplanes(Map(airplane -> frequency))
+      economylink1.setTestingAssignedAirplanes(Map(airplane -> frequency))
+      economylink2.setTestingAssignedAirplanes(Map(airplane -> frequency))
       
     
       val economyResult1 = LinkSimulation.computeLinkConsumptionDetail(economylink1 , 0)
@@ -507,7 +507,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
     val link = Link(fromAirportClone, toAirportClone, testAirline1, LinkClassValues.getInstanceByMap(Map(ECONOMY -> price)), distance = distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(flightType, ECONOMY), duration, frequency, flightType)
     link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity * loadFactor).toInt)))
     
-    link.setAssignedAirplanes((0 until airplaneCount).foldRight(Map[Airplane, Int]()) {
+    link.setTestingAssignedAirplanes((0 until airplaneCount).foldRight(Map[Airplane, Int]()) {
       case (_, foldList) => {
         val airplane = Airplane(airplaneModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(airplaneModel, Airplane.MAX_CONDITION.toDouble / airplaneModel.lifespan), airplaneModel.price)
         foldList + ((airplane, maxFrequencyPerAirplane))
