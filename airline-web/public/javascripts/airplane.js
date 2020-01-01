@@ -207,7 +207,7 @@ function sellAirplane(airplaneId) {
 	    success: function(response) {
 	        refreshPanels(activeAirline.id)
 	    	showAirplaneCanvas()
-	    	$("#ownedAirplaneDetailModal").data("hasChange")
+	    	$("#ownedAirplaneDetailModal").data("hasChange", true)
 	    	closeModal($('#ownedAirplaneDetailModal'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -227,10 +227,11 @@ function replaceAirplane(airplaneId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(response) {
+	        $("#ownedAirplaneDetailModal").data("hasChange", true)
 	        closeModal($('#ownedAirplaneDetailModal'))
-	    	refreshPanels(airlineId)
+	        refreshPanels(airlineId)
 	    	showAirplaneCanvas()
-	    	$("#ownedAirplaneDetailModal").data("hasChange")
+
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
