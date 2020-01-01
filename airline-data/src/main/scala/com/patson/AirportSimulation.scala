@@ -175,7 +175,7 @@ object AirportSimulation {
         //airport.setAirlineLoyalty(airlineId, newLoyalty)
         //AirportSource.updateAirlineAppeal(airport.id, airlineId, AirlineAppeal(newLoyalty, appeal.awareness))
         newAppeals.put(airlineId, AirlineAppeal(newLoyalty, appeal.awareness))
-        println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + currentLoyalty + " to " + newLoyalty)
+       // println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + currentLoyalty + " to " + newLoyalty)
       }
     }
     AirportSource.updateAirlineAppeals(airport.id, newAppeals.toMap)
