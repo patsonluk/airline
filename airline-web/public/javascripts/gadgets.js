@@ -412,10 +412,10 @@ function highlightSwitch(selectedSwitch) {
 
 function closeModal(modal) {
     modal.fadeOut(200)
-    var callback = modal.data("close-callback")
+    var callback = modal.data("closeCallback")
     if (callback) {
         callback()
-        modal.removeData("close-callback")
+        modal.removeData("closeCallback")
     }
 }
 

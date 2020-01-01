@@ -207,6 +207,7 @@ function sellAirplane(airplaneId) {
 	    success: function(response) {
 	        refreshPanels(activeAirline.id)
 	    	showAirplaneCanvas()
+	    	$("#ownedAirplaneDetailModal").data("hasChange")
 	    	closeModal($('#ownedAirplaneDetailModal'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -229,6 +230,7 @@ function replaceAirplane(airplaneId) {
 	        closeModal($('#ownedAirplaneDetailModal'))
 	    	refreshPanels(airlineId)
 	    	showAirplaneCanvas()
+	    	$("#ownedAirplaneDetailModal").data("hasChange")
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -388,7 +390,7 @@ function showAirplaneInventory(modelId) {
         }
 
         var assignedAirplanesCount = getAssignedAirplanesCount("homeAirportId", base.airportId, model.id)
-        addAirplaneInventoryDiv(inventoryDiv, model.id, "homeAirportId", base.airportId, "refreshInventoryAfterAirplaneUpdate")
+        addAirplaneInventoryDiv(inventoryDiv, model.id, "homeAirportId", base.airportId)
 
         if (base.headquarter) {
             $("#airplaneInventoryModal .inventoryContainer").prepend(inventoryDiv)
@@ -406,20 +408,16 @@ function refreshInventoryAfterAirplaneUpdate() {
     showAirplaneInventory(selectedModelId)
 }
 
-function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue, closeCallback) {
+function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue) {
     var airplanesDiv = $("<div style= 'width : 100%; height : 50px; overflow: auto;'></div>")
     var info = loadedModelsOwnerInfoById[modelId]
-
-    if (!closeCallback) {
-        closeCallback = "null"
-    }
 
     var empty = true
 
     $.each(info.assignedAirplanes, function( key, airplane ) {
         if (airplane[compareKey] == compareValue) {
             var airplaneId = airplane.id
-            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), " + closeCallback + ")'></div>").appendTo(airplanesDiv)
+            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshInventoryAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
             li.append(getAirplaneIcon(airplane, info.badConditionThreshold, true))
             empty = false
          }
@@ -428,7 +426,7 @@ function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue
     $.each(info.availableAirplanes, function( key, airplane ) {
         if (airplane[compareKey] == compareValue) {
             var airplaneId = airplane.id
-            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), " + closeCallback + ")'></div>").appendTo(airplanesDiv)
+            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshInventoryAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
             li.append(getAirplaneIcon(airplane, info.badConditionThreshold, false))
             empty = false
         }
@@ -437,7 +435,7 @@ function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue
     $.each(info.constructingAirplanes, function( key, airplane ) {
         if (airplane[compareKey] == compareValue) {
             var airplaneId = airplane.id
-            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), " + closeCallback + ")'></div>").appendTo(airplanesDiv)
+            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshInventoryAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
             li.append("<img src='assets/images/icons/airplane-empty-construct.png'/>")
             empty = false
         }
@@ -476,9 +474,9 @@ function getAirplaneIcon(airplane, badConditionThreshold, isAssigned) {
 
 function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disableChangeHome) {
 	//highlight the selected model
-	if (selectedItem) {
-	    selectedItem.addClass("selected")
-    }
+//	if (selectedItem) {
+//	    selectedItem.addClass("selected")
+//    }
 	
 	var airlineId = activeAirline.id 
 	$("#actionAirplaneId").val(airplaneId)
@@ -622,9 +620,14 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
                     $("#ownedAirplaneDetail .configuration-edit").hide()
 
                     if (closeCallback) {
-                        $("#ownedAirplaneDetailModal").data("close-callback", closeCallback)
+                        $("#ownedAirplaneDetailModal").data("closeCallback", function() {
+                            if ($("#ownedAirplaneDetailModal").data("hasChange")) { //only trigger close callback if there are changes
+                                closeCallback()
+                                $("#ownedAirplaneDetailModal").removeData("hasChange")
+                            }
+                        })
                     } else {
-                        $("#ownedAirplaneDetailModal").removeData("close-callback")
+                        $("#ownedAirplaneDetailModal").removeData("closeCallback")
                     }
                     $("#ownedAirplaneDetailModal").fadeIn(200)
                 },
@@ -757,6 +760,7 @@ function confirmAirplaneConfigurationOption() {
                 async: false,
                 success: function(result) {
                     loadOwnedAirplaneDetails(result.id, null, $("#ownedAirplaneDetailModal").data("close-callback"))
+                    $("#ownedAirplaneDetailModal").data("hasChange", true)
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                         console.log(JSON.stringify(jqXHR));
@@ -783,6 +787,7 @@ function confirmAirplaneHome() {
                 async: false,
                 success: function(result) {
                     loadOwnedAirplaneDetails(result.id, null, $("#ownedAirplaneDetailModal").data("close-callback"))
+                    $("#ownedAirplaneDetailModal").data("hasChange", true)
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                         console.log(JSON.stringify(jqXHR));
