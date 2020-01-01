@@ -117,6 +117,20 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
     LinkSource.updateLinks(affectedLinks.toList)
   }
 
+  def adjustLinksAfterAirplaneConfigurationChange(airplaneId : Int) = {
+    val affectedLinkIds = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplaneId).assignedLinkIds
+
+    val affectedLinks = ListBuffer[Link]()
+    affectedLinkIds.foreach { linkId =>
+      LinkSource.loadLinkById(linkId).foreach { link =>
+        link.recomputeCapacity()
+        affectedLinks.append(link)
+      }
+    }
+
+    LinkSource.updateLinks(affectedLinks.toList)
+  }
+
   def deleteConfiguration(airlineId : Int, configurationId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
     AirplaneSource.loadAirplaneConfigurationById(configurationId) match {
       case Some(configuration) =>
@@ -160,7 +174,7 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
               } else {
                 airplane.configuration = configuration
                 AirplaneSource.updateAirplanes(List(airplane))
-                adjustLinksAfterConfigurationChanges(configurationId)
+                adjustLinksAfterAirplaneConfigurationChange(airplaneId)
                 Ok(Json.toJson(airplane))
               }
 
