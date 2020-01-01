@@ -639,6 +639,8 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkDepreciation").text("-")
 		    	$("#linkCompensation").text("-")
 		    	$("#linkLoungeCost").text("-")
+		    	$("#linkServiceSupplies").text("-")
+		    	$("#linkMaintenance").text("-")
 		    	$("#linkOtherCosts").text("-")
 		    	$("#linkDelays").text("-")
 		    	$("#linkCancellations").text("-")
