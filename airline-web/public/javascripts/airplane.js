@@ -313,11 +313,11 @@ function selectAirplaneModel(model) {
 	//model = loadedModels[modelId]
 	if (model.imageUrl) {
 		var imageLocation = 'assets/images/airplanes/' + model.name.replace(/\s+/g, '-').toLowerCase() + '.png'
-		$('#modelIllustration img').attr('src', imageLocation)
-		$('#modelIllustration a').attr('href', model.imageUrl)
-		$('#modelIllustration').show()
+		$('#airplaneCanvas .modelIllustration img').attr('src', imageLocation)
+		$('#airplaneCanvas .modelIllustration a').attr('href', model.imageUrl)
+		$('#airplaneCanvas .modelIllustration').show()
 	} else {
-		$('#modelIllustration').hide()
+		$('#airplaneCanvas .modelIllustration').hide()
 	}
 	
 	$('#airplaneCanvas .selectedModel').val(model.id)
@@ -506,6 +506,16 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airplane) {
+	        var model = loadedModelsById[airplane.modelId]
+            if (model.imageUrl) {
+                var imageLocation = 'assets/images/airplanes/' + model.name.replace(/\s+/g, '-').toLowerCase() + '.png'
+                $('#ownedAirplaneDetail .modelIllustration img').attr('src', imageLocation)
+                $('#ownedAirplaneDetail .modelIllustration a').attr('href', model.imageUrl)
+                $('#ownedAirplaneDetail .modelIllustration').show()
+            } else {
+                $('#ownedAirplaneDetail .modelIllustration').hide()
+            }
+
 	    	$("#airplaneDetailsId").text(airplane.id)
     		$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
     		$("#airplaneDetailsCondition").removeClass("warning fatal")
