@@ -1,5 +1,5 @@
 var loadedModelsById = {}
-var loadedModelsOwnerInfo = []
+var loadedModelsOwnerInfo
 var loadedModelsOwnerInfoById = {}
 var loadedUsedAirplanes = []
 var selectedModelId
@@ -24,11 +24,6 @@ function loadAirplaneModels() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
-
-	if (activeAirline) {
-	    loadAirplaneModelOwnerInfo()
-    }
-
 }
 
 
@@ -375,6 +370,10 @@ function loadUsedAirplanes(modelInfo) {
 
 
 function showAirplaneInventory(modelId) {
+    if (!loadedModelsOwnerInfo) {
+        loadAirplaneModelOwnerInfo()
+    }
+
     $("#airplaneInventoryModal .inventoryContainer").empty()
     var model = loadedModelsById[modelId]
 
