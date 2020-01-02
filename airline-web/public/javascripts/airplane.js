@@ -265,6 +265,11 @@ function promptBuyAirplane(modelId, condition, price, explicitHomeAirportId, buy
                     }
                     plotSeatConfigurationBar(barDiv, option, model.capacity, result.spaceMultipliers)
                 }
+                if (result.configurations.length == 1) { //then hide the arrows buttons
+                    $("#buyAirplaneModal .seatConfiguration .button").hide()
+                } else {
+                    $("#buyAirplaneModal .seatConfiguration .button").show()
+                }
                 $('#buyAirplaneModal .table-row.seatConfiguration').show()
             }
             $('#buyAirplaneModal .add').unbind("click").bind("click", function() {
@@ -831,36 +836,36 @@ function showAirplaneCanvas() {
 function toggleAirplaneConfiguration() {
   $("#ownedAirplaneDetail .configuration-view").hide()
   $("#ownedAirplaneDetail .configuration-edit").show()
-  refreshAirplaneConfigurationOption()
+  refreshAirplaneConfigurationOption($("#ownedAirplaneDetail"))
 }
 
 
-function switchAirplaneConfigurationOption(indexDiff) {
-    var currentIndex = $(".configuration-options").data("selectedIndex")
-    var optionCount =  $(".configuration-options").data("optionCount")
+function switchAirplaneConfigurationOption(containerDiv, indexDiff) {
+    var currentIndex = containerDiv.find(".configuration-options").data("selectedIndex")
+    var optionCount =  containerDiv.find(".configuration-options").data("optionCount")
     var index = currentIndex + indexDiff
     if (index < 0) {
       index = optionCount - 1
     } else if (index >= optionCount) {
       index = 0
     }
-    $(".configuration-options").data("selectedIndex", index)
-    refreshAirplaneConfigurationOption()
+    containerDiv.find(".configuration-options").data("selectedIndex", index)
+    refreshAirplaneConfigurationOption(containerDiv)
 }
 function cancelAirplaneConfigurationOption() {
     $("#ownedAirplaneDetail .configuration-options").data("selectedIndex", 0)
     $("#ownedAirplaneDetail .configuration-edit").hide()
     $("#ownedAirplaneDetail .configuration-view").show()
 }
-function refreshAirplaneConfigurationOption() {
-    var currentIndex = $(".configuration-options").data("selectedIndex")
-    var optionCount =  $(".configuration-options").data("optionCount")
+function refreshAirplaneConfigurationOption(containerDiv) {
+    var currentIndex = containerDiv.find(".configuration-options").data("selectedIndex")
+    var optionCount =  containerDiv.find(".configuration-options").data("optionCount")
 
     for (i = 0 ; i < optionCount; i++) {
         if (currentIndex == i) {
-            $($(".configuration-options").children()[i]).show()
+            $(containerDiv.find(".configuration-options").children()[i]).show()
         } else {
-            $($(".configuration-options").children()[i]).hide()
+            $(containerDiv.find(".configuration-options").children()[i]).hide()
         }
     }
 }

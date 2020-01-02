@@ -2902,9 +2902,9 @@
 				<div class="table-row seatConfiguration">
 					<div class="cell"><h5>Seat configuration:</h5></div>
 					<div class="cell">
-						<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption(-1)"/>
+						<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption($('#buyAirplaneModal'), -1)"/>
 						<div class="configuration-options" style="display : inline-block; width: 80%"></div>
-						<img src='@routes.Assets.versioned("images/icons/arrow.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption(1)"/>
+						<img src='@routes.Assets.versioned("images/icons/arrow.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption($('#buyAirplaneModal'), 1)"/>
 					</div>
 				</div>
 			</div>
@@ -2983,9 +2983,9 @@
 							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;" title="Need at least 2 configurations for changes"/></div>
 						</div>
 						<div class="cell configuration-edit"; style="display:none">
-							<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption(-1)"/>
+							<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption($('#ownedAirplaneDetail'), -1)"/>
 							<div class="configuration-options" style="display : inline-block; width: 80%"></div>
-							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption(1)"/>
+							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption($('#ownedAirplaneDetail'), 1)"/>
 							<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="confirmAirplaneConfigurationOption()"/>
 							<img src='@routes.Assets.versioned("images/icons/cross.png")' class='button' style="vertical-align: middle;" onclick="cancelAirplaneConfigurationOption()"/>
 						</div>
