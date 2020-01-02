@@ -647,7 +647,7 @@
 										<div class="label"><h5>Delivery Time:</h5></div>
 										<div class="value delivery"></div>
 									</div>
-									<div class="button add" onclick="addAirplane($('#airplaneModelDetails .selectedModel').val(), 1, true)">Purchase</div>
+									<div class="button add" onclick="promptBuyNewAirplane($('#airplaneModelDetails .selectedModel').val(), true, $('#planLinkFromAirportId').val())">Purchase</div>
 									<div class="button" onclick="showAirplaneInventory($('#airplaneModelDetails .selectedModel').val())">Inventory</div>
 									<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneModelDetails .selectedModel').val())">Config</div>
 									<input type="hidden" class="selectedModel"/>
@@ -1178,7 +1178,7 @@
 								<div class="rejection">
 									<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
 								</div>
-								<div class="button add" onclick="addAirplane($('#airplaneCanvas .selectedModel').val(), 1, false)">Purchase</div>
+								<div class="button add" onclick="promptBuyNewAirplane($('#airplaneCanvas .selectedModel').val(), false)">Purchase</div>
 								<div class="button" onclick="showAirplaneInventory($('#airplaneCanvas .selectedModel').val())">Inventory</div>
 								<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneCanvas .selectedModel').val())">Config</div>
 							</div>
@@ -2870,6 +2870,49 @@
 		</div>
 	</div>
 
+	<!--	airplane inventory by base-->
+	<div id="buyAirplaneModal" class="modal">
+		<div class="modal-content" style="width : 400px;">
+			<span class="close" onclick="closeModal($('#buyAirplaneModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;">Confirm Purchase of <span class="modelName"></span></h3>
+			<div class="modelIllustration" style="width:100%; position: relative; max-width: 500px;">
+				<img src='#' style="width: 100%;">
+				<div class="label" style="right: 0px; bottom: 0px; position: absolute; font-style: italic;"><a href='#' target="_blank">Illustration courtesy of Norebbo</a></div>
+			</div>
+
+			<div class="table" style="width: 100%;">
+				<div class="table-row">
+					<div class="label"><h5>Price:</h5></div>
+					<div class="value price"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Condition:</h5></div>
+					<div class="value condition"></div>
+				</div>
+				<div class="table-row">
+					<div class="label"><h5>Delivery Time:</h5></div>
+					<div class="value delivery"></div>
+				</div>
+				<div class="table-row">
+					<div class="cell"><h5>Home airport:</h5></div>
+					<div class="cell">
+						<select class="homeOptions"></select>
+					</div>
+				</div>
+				<div class="table-row seatConfiguration">
+					<div class="cell"><h5>Seat configuration:</h5></div>
+					<div class="cell">
+						<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption(-1)"/>
+						<div class="configuration-options" style="display : inline-block; width: 80%"></div>
+						<img src='@routes.Assets.versioned("images/icons/arrow.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption(1)"/>
+					</div>
+				</div>
+			</div>
+			<div class="button add">Purchase</div>
+			<div class="button" onclick="closeModal($('#buyAirplaneModal'))")>Cancel</div>
+		</div>
+	</div>
+
 	<!-- popup of owned airplane details and control -->
 	<div id="ownedAirplaneDetailModal" class="modal">
 		<div class="modal-content"  style="width : 600px;">
@@ -2957,8 +3000,8 @@
 					<span class="warning cash"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'>Not enough cash to replace this airplane</span>
 					<span class="warning purchasedCycle"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'>Can only replace this airplane <span class="replaceRemainingWeek"></span> week(s) from now </span>
 				</div>
-				<div class="button" id ="sellAirplaneButton" onclick="sellAirplane($('#actionAirplaneId').val())">Sell</div>
-				<div class="button" id ="replaceAirplaneButton" onclick="replaceAirplane($('#actionAirplaneId').val())">Replace</div>
+				<div class="button" id ="sellAirplaneButton" onclick="promptConfirm('Sell this airplane?', sellAirplane, $('#actionAirplaneId').val())">Sell</div>
+				<div class="button" id ="replaceAirplaneButton" onclick="promptConfirm('Replace this airplane?', replaceAirplane, $('#actionAirplaneId').val())">Replace</div>
 			</div>
 		</div>
 	</div>
