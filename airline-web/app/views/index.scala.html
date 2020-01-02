@@ -494,7 +494,23 @@
                                     <div class="table-row">
                                         <div class="label"><h5>Available Airplanes:</h5></div>
                                         <!-- 					    			<div class="value"><select id="planLinkAirplaneSelect" multiple="multiple" onchange="updateFrequencyBar($('#planLinkModelSelect').val())"></select></div> -->
-                                        <div class="value" id="planLinkAirplaneSelect"></div>
+                                        <div class="value">
+                                            <div class="noAirplaneHelp" style="display: none">
+												<div class="tooltip">
+                                                    <img src='@routes.Assets.versioned("images/icons/information.png")'>
+													<h5>
+														<span class="tooltiptext below">
+															Purchase airplane
+															<img src='@routes.Assets.versioned("images/clips/buy-airplane.gif")'>
+															Or assign airplane to this airport
+															<img src='@routes.Assets.versioned("images/clips/change-airplane-base.gif")'>
+														 </span>
+													</h5>
+                                                </div>
+                                                No airplane with this model based in this airport
+                                            </div>
+                                            <div id="planLinkAirplaneSelect"></div>
+                                        </div>
                                     </div>
 									<div class="table-row">
 										<div class="label">
@@ -502,7 +518,7 @@
 												<span>Flight Frequency:</span>
 												<div class="tooltip">
 													<img src='@routes.Assets.versioned("images/icons/information.png")'>
-													<span class="tooltiptext">
+													<span class="tooltiptext below">
 														Increase/decrease the flight frequency by selecting/deselecting the airplane icons. <br/>
 														<br/>
 														Take note that the max frequency is limited by airplanes assigned and time slots allocated by both the departure and destination airports.<br/>
@@ -538,7 +554,7 @@
 												<div class="tooltip">
 													<img src='@routes.Assets.versioned("images/icons/information.png")'>
 													<h6>
-													<span class="tooltiptext" style="width: 450px;">
+													<span class="tooltiptext below" style="width: 450px;">
 																		Max Flight Freuency is determined by the lowest number below: <br/>
 																		<div style='display:table; width: 100%;'>
 																			<div style='display:table-row'>

@@ -1256,13 +1256,19 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 //			option.appendTo($("#planLinkAirplaneSelect"))
 			var airplane = airplaneEntry.airplane
 			airplane.isAssigned = airplaneEntry.frequency >  0
-			var span =  $('<span class="button airplaneButton" onclick="toggleAssignedAirplane(this)"></span>')
-			span.append(getAssignedAirplaneIcon(airplane))
-			span.data('airplane', airplane)
-			span.data('existingFrequency', airplaneEntry.frequency)
+			var div =  $('<div class="clickable airplaneButton" onclick="toggleAssignedAirplane(this)" style="float: left;"></div>')
+			div.append(getAssignedAirplaneIcon(airplane))
+			div.data('airplane', airplane)
+			div.data('existingFrequency', airplaneEntry.frequency)
 
-			$('#planLinkAirplaneSelect').append(span)
+			$('#planLinkAirplaneSelect').append(div)
 		})
+		if (thisModelPlanLinkInfo.airplanes.length == 0) {
+		    $('#planLinkDetails .noAirplaneHelp').show()
+		} else {
+		    $('#planLinkDetails .noAirplaneHelp').hide()
+		}
+
 
 		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))
 		
@@ -1431,7 +1437,7 @@ function removeAirplaneFromLink(airplaneId) {
       var airplane = $(airplaneIcon).data('airplane')
       if (airplane.id == airplaneId) {
         airplane.isAssigned = false
-        $(airplaneIcon).children('img').replaceWith(getAssignedAirplaneIcon(airplane))
+        $(airplaneIcon).find('img').replaceWith(getAssignedAirplaneIcon(airplane))
       }
     })
 }
@@ -1478,7 +1484,7 @@ function toggleAssignedAirplane(iconSpan) {
 	} else {
 		airplane.isAssigned = true
 	}
-	$(iconSpan).children('img').replaceWith(getAssignedAirplaneIcon(airplane))
+	$(iconSpan).find('img').replaceWith(getAssignedAirplaneIcon(airplane))
 
 	if (airplane.isAssigned) { //add to the airplane frequency detail
         addAirplaneToLink(airplane, existingFrequency)
