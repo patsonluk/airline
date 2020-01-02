@@ -501,7 +501,7 @@ object LinkSource {
               insertStatement.setInt(1, linkId)
               insertStatement.setInt(2, airplane.id)
               insertStatement.setInt(3, assignment.frequency)
-              insertStatement.setInt(3, assignment.flightMinutes)
+              insertStatement.setInt(4, assignment.flightMinutes)
               insertStatement.addBatch()
 
             }
