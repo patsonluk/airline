@@ -432,6 +432,10 @@ div#canvas {
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
+.modal#confirmationModal {
+    z-index: 2; /* Confirmation always sits on top, even about modal */
+}
+
 /* Modal Content/Box */
 .modal-content {
     margin: 15% auto; /* 15% from the top and centered */

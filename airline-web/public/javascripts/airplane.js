@@ -113,6 +113,7 @@ function updateUsedAirplaneTable(sortProperty, sortOrder) {
 	
 	$.each(loadedUsedAirplanes, function(index, usedAirplane) {
 		var row = $("<div class='table-row'></div>")
+		row.data("airplane", usedAirplane)
 		row.append("<div class='cell'>" + usedAirplane.id + "</div>")
 		var priceColor
 		if (usedAirplane.dealerRatio >= 1.1) { //expensive
@@ -127,7 +128,7 @@ function updateUsedAirplaneTable(sortProperty, sortOrder) {
 		row.append(priceDiv)
 		row.append("<div class='cell' align='right'>" + usedAirplane.condition.toFixed(2) + "%</div>")
 		if (!usedAirplane.rejection) {
-			row.append("<div class='cell' align='right'><img class='clickable' src='assets/images/icons/airplane-plus.png' title='Purchase this airplane' onclick='buyUsedAirplane(" + usedAirplane.id + ")'></div>")
+			row.append("<div class='cell' align='right'><img class='clickable' src='assets/images/icons/airplane-plus.png' title='Purchase this airplane' onclick='promptBuyUsedAirplane($(this).closest(\".table-row\").data(\"airplane\"))'></div>")
 		} else {
 			row.append("<div class='cell' align='right'><img src='assets/images/icons/prohibition.png' title='" + usedAirplane.rejection + "'/></div>")
 		}
@@ -171,11 +172,126 @@ function toggleUsedAirplaneTableSortOrder(sortHeader) {
 	updateUsedAirplaneTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
+function promptBuyUsedAirplane(airplane) {
+    var buyAirplaneFunction = function(homeAirportId, selectedConfigurationId) {
+        buyUsedAirplane(airplane.id, homeAirportId, selectedConfigurationId)
+    }
+    promptBuyAirplane(airplane.modelId, airplane.condition.toFixed(2), airplane.dealerValue, null, buyAirplaneFunction)
+}
 
-function addAirplane(modelId, quantity, fromPlanLink) {
+function promptBuyNewAirplane(modelId, fromPlanLink, explicitHomeAirportId) {
+    var buyAirplaneFunction = function(homeAirportId, selectedConfigurationId) {
+        buyAirplane(modelId, homeAirportId, selectedConfigurationId, fromPlanLink)
+    }
+
+    promptBuyAirplane(modelId, 100, loadedModelsById[modelId].price, explicitHomeAirportId, buyAirplaneFunction)
+}
+
+function promptBuyAirplane(modelId, condition, price, explicitHomeAirportId, buyAirplaneFunction) {
+    var model = loadedModelsById[modelId]
+    if (model.imageUrl) {
+        var imageLocation = 'assets/images/airplanes/' + model.name.replace(/\s+/g, '-').toLowerCase() + '.png'
+        $('#buyAirplaneModal .modelIllustration img').attr('src', imageLocation)
+        $('#buyAirplaneModal .modelIllustration a').attr('href', model.imageUrl)
+        $('#buyAirplaneModal .modelIllustration').show()
+
+    } else {
+        $('#buyAirplaneModal .modelIllustration').hide()
+    }
+
+    $('#buyAirplaneModal .modelName').text(model.name)
+    if (model.constructionTime == 0) {
+		$('#buyAirplaneModal .delivery').text("immediate")
+		$('#buyAirplaneModal .delivery').removeClass('warning')
+		$('#buyAirplaneModal .add').text('Purchase')
+	} else {
+		$('#buyAirplaneModal .delivery').text(model.constructionTime + " weeks")
+        $('#buyAirplaneModal .delivery').addClass('warning')
+        $('#buyAirplaneModal .add').text('Place Order')
+	}
+
+	$('#buyAirplaneModal .price').text("$" + commaSeparateNumber(model.price))
+	$('#buyAirplaneModal .condition').text(condition + "%")
+
+    var homeOptionsSelect = $("#buyAirplaneModal .homeOptions").empty()
+    $.each(activeAirline.baseAirports, function(index, baseAirport) {
+        var option = $("<option value='" + baseAirport.airportId + "'>" + getAirportText(baseAirport.city, baseAirport.airportCode) + "</option>")
+        if (baseAirport.headquarter) {
+            homeOptionsSelect.prepend(option)
+        } else {
+            homeOptionsSelect.append(option)
+        }
+        if (explicitHomeAirportId) { //if an explicit home is provided
+            if (explicitHomeAirportId == baseAirport.airport) {
+                option.attr("selected", "selected")
+            }
+        } else { //otherwise look for HQ
+            if (baseAirport.airportId == activeAirline.headquarterAirport.airportId) {
+                option.attr("selected", "selected")
+            }
+        }
+    })
+    var airlineId = activeAirline.id
+
+    $.ajax({
+        type: 'GET',
+        url: "airlines/" + airlineId + "/configurations?modelId=" + modelId,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            if (result.configurations.length == 0) {
+                $('#buyAirplaneModal .table-row.seatConfiguration').hide()
+            } else {
+                $("#buyAirplaneModal .configuration-options").empty()
+                $("#buyAirplaneModal .configuration-options").data("selectedIndex", 0)
+                $("#buyAirplaneModal .configuration-options").data("optionCount", result.configurations.length)
+
+                var defaultIndex = 0
+                $.each(result.configurations, function(index, option) {
+                    if (option.isDefault) {
+                        defaultIndex = index
+                    }
+                })
+
+                for (i = 0 ; i < result.configurations.length; i ++) {
+                    //start from the default
+                    var index = (i + defaultIndex) % result.configurations.length
+                    var option = result.configurations[index]
+                    var barDiv = $("<div style='width : 100%' class='configuration-option'></div>")
+                    $("#buyAirplaneModal .configuration-options").append(barDiv)
+                    barDiv.data("configurationId", option.id)
+                    if (i != 0) { //if not the matching one, hide by default
+                        barDiv.hide()
+                    }
+                    plotSeatConfigurationBar(barDiv, option, model.capacity, result.spaceMultipliers)
+                }
+                $('#buyAirplaneModal .table-row.seatConfiguration').show()
+            }
+            $('#buyAirplaneModal .add').unbind("click").bind("click", function() {
+                var selectedIndex = $("#buyAirplaneModal .configuration-options").data("selectedIndex")
+                var selectedConfigurationId
+                if (selectedIndex === undefined) {
+                    selectedConfigurationId = -1
+                } else {
+                    selectedConfigurationId = $($("#buyAirplaneModal .configuration-options").children()[selectedIndex]).data("configurationId")
+                }
+
+                buyAirplaneFunction($("#buyAirplaneModal .homeOptions").find(":selected").val(), selectedConfigurationId)
+            })
+            $('#buyAirplaneModal').fadeIn(200)
+        },
+         error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(JSON.stringify(jqXHR));
+                        console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+}
+
+
+function buyAirplane(modelId, homeAirportId, configurationId, fromPlanLink) {
 	fromPlanLink = fromPlanLink || false
 	var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/airplanes?model=" + modelId + "&quantity=" + quantity + "&airlineId=" + airlineId 
+	var url = "airlines/" + airlineId + "/airplanes?model=" + modelId + "&quantity=1&airlineId=" + airlineId + "&homeAirportId=" + homeAirportId + "&configurationId=" + configurationId
 	$.ajax({
 		type: 'PUT',
 		data: JSON.stringify({}),
@@ -190,6 +306,7 @@ function addAirplane(modelId, quantity, fromPlanLink) {
 	    	} else {
 	    		showAirplaneCanvas()
 	    	}
+	    	closeModal($('#buyAirplaneModal'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -240,9 +357,9 @@ function replaceAirplane(airplaneId) {
 	});
 }
 
-function buyUsedAirplane(airplaneId) {
+function buyUsedAirplane(airplaneId, homeAirportId, configurationId) {
 	var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/used-airplanes/airplanes/" + airplaneId 
+	var url = "airlines/" + airlineId + "/used-airplanes/airplanes/" + airplaneId + "?homeAirportId=" + homeAirportId + "&configurationId=" + configurationId
 	$.ajax({
 		type: 'PUT',
 		data: JSON.stringify({}),
@@ -252,6 +369,7 @@ function buyUsedAirplane(airplaneId) {
 	    success: function(response) {
 	    	refreshPanels(airlineId)
 	    	showAirplaneCanvas()
+	    	closeModal($('#buyAirplaneModal'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -662,7 +780,7 @@ function populateAirplaneHome(airplane, disableChangeHome) {
 
     if (!hasLinks && !disableChangeHome) { //only allow switching home if the airplane is free
         $.each(activeAirline.baseAirports, function(index, baseAirport) {
-            var option = $("<option value='" + baseAirport.airportId + "'>" + getAirportText(baseAirport.city, baseAirport.airportName) + "</option>")
+            var option = $("<option value='" + baseAirport.airportId + "'>" + getAirportText(baseAirport.city, baseAirport.airportCode) + "</option>")
             if (baseAirport.headquarter) {
                 homeOptionsSelect.prepend(option)
             } else {
@@ -718,15 +836,15 @@ function toggleAirplaneConfiguration() {
 
 
 function switchAirplaneConfigurationOption(indexDiff) {
-    var currentIndex = $("#ownedAirplaneDetail .configuration-options").data("selectedIndex")
-    var optionCount =  $("#ownedAirplaneDetail .configuration-options").data("optionCount")
+    var currentIndex = $(".configuration-options").data("selectedIndex")
+    var optionCount =  $(".configuration-options").data("optionCount")
     var index = currentIndex + indexDiff
     if (index < 0) {
       index = optionCount - 1
     } else if (index >= optionCount) {
       index = 0
     }
-    $("#ownedAirplaneDetail .configuration-options").data("selectedIndex", index)
+    $(".configuration-options").data("selectedIndex", index)
     refreshAirplaneConfigurationOption()
 }
 function cancelAirplaneConfigurationOption() {
@@ -735,14 +853,14 @@ function cancelAirplaneConfigurationOption() {
     $("#ownedAirplaneDetail .configuration-view").show()
 }
 function refreshAirplaneConfigurationOption() {
-    var currentIndex = $("#ownedAirplaneDetail .configuration-options").data("selectedIndex")
-    var optionCount =  $("#ownedAirplaneDetail .configuration-options").data("optionCount")
+    var currentIndex = $(".configuration-options").data("selectedIndex")
+    var optionCount =  $(".configuration-options").data("optionCount")
 
     for (i = 0 ; i < optionCount; i++) {
         if (currentIndex == i) {
-            $($("#ownedAirplaneDetail .configuration-options").children()[i]).show()
+            $($(".configuration-options").children()[i]).show()
         } else {
-            $($("#ownedAirplaneDetail .configuration-options").children()[i]).hide()
+            $($(".configuration-options").children()[i]).hide()
         }
     }
 }
