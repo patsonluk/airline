@@ -176,7 +176,7 @@ function promptBuyUsedAirplane(airplane) {
     var buyAirplaneFunction = function(homeAirportId, selectedConfigurationId) {
         buyUsedAirplane(airplane.id, homeAirportId, selectedConfigurationId)
     }
-    promptBuyAirplane(airplane.modelId, airplane.condition.toFixed(2), airplane.dealerValue, null, buyAirplaneFunction)
+    promptBuyAirplane(airplane.modelId, airplane.condition.toFixed(2), airplane.dealerValue, 0, null, buyAirplaneFunction)
 }
 
 function promptBuyNewAirplane(modelId, fromPlanLink, explicitHomeAirportId) {
@@ -184,10 +184,10 @@ function promptBuyNewAirplane(modelId, fromPlanLink, explicitHomeAirportId) {
         buyAirplane(modelId, homeAirportId, selectedConfigurationId, fromPlanLink)
     }
 
-    promptBuyAirplane(modelId, 100, loadedModelsById[modelId].price, explicitHomeAirportId, buyAirplaneFunction)
+    promptBuyAirplane(modelId, 100, loadedModelsById[modelId].price, loadedModelsById[modelId].constructionTime, explicitHomeAirportId, buyAirplaneFunction)
 }
 
-function promptBuyAirplane(modelId, condition, price, explicitHomeAirportId, buyAirplaneFunction) {
+function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHomeAirportId, buyAirplaneFunction) {
     var model = loadedModelsById[modelId]
     if (model.imageUrl) {
         var imageLocation = 'assets/images/airplanes/' + model.name.replace(/\s+/g, '-').toLowerCase() + '.png'
@@ -200,12 +200,12 @@ function promptBuyAirplane(modelId, condition, price, explicitHomeAirportId, buy
     }
 
     $('#buyAirplaneModal .modelName').text(model.name)
-    if (model.constructionTime == 0) {
+    if (deliveryTime == 0) {
 		$('#buyAirplaneModal .delivery').text("immediate")
 		$('#buyAirplaneModal .delivery').removeClass('warning')
 		$('#buyAirplaneModal .add').text('Purchase')
 	} else {
-		$('#buyAirplaneModal .delivery').text(model.constructionTime + " weeks")
+		$('#buyAirplaneModal .delivery').text(deliveryTime + " weeks")
         $('#buyAirplaneModal .delivery').addClass('warning')
         $('#buyAirplaneModal .add').text('Place Order')
 	}
