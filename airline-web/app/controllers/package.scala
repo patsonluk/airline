@@ -109,6 +109,7 @@ package object controllers {
       "configurationId" -> JsNumber(airplane.configuration.id),
       "configuration" -> Json.obj("economy" -> airplane.configuration.economyVal, "business" -> airplane.configuration.businessVal, "first" -> airplane.configuration.firstVal),
       "availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes),
+      "maxFlightMinutes" -> JsNumber(Airplane.MAX_FLIGHT_MINUTES),
       "homeAirportId" -> JsNumber(airplane.home.id),
       "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION)

@@ -494,6 +494,14 @@ function loadUsedAirplanes(modelInfo) {
 	});
 }
 
+function toggleUtilizationRate(container, checkbox) {
+    if (checkbox.is(':checked')) {
+        container.find('.utilization').show()
+    } else {
+        container.find('.utilization').hide()
+    }
+}
+
 
 function showAirplaneInventory(modelId) {
     if (!loadedModelsOwnerInfo) {
@@ -575,6 +583,7 @@ function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue
 function getAirplaneIcon(airplane, badConditionThreshold, isAssigned) {
     var condition = airplane.condition
     var airplaneId = airplane.id
+    var div = $("<div style='position: relative;'></div>")
     var img = $("<img>")
     var src
     if (condition < badConditionThreshold) {
@@ -592,8 +601,25 @@ function getAirplaneIcon(airplane, badConditionThreshold, isAssigned) {
 	}
 
 	img.attr("src", src)
-	img.attr("title", "#"+ airplaneId + " " + condition.toFixed(2) + "%")
-    return img
+	img.attr("title", "#"+ airplaneId + " condition: " + condition.toFixed(2) + "%")
+	div.append(img)
+
+	var utilization = Math.round((airplane.maxFlightMinutes - airplane.availableFlightMinutes) / airplane.maxFlightMinutes * 100)
+	var color
+	if (utilization < 25) {
+	    color = "#FF9973"
+	} else if (utilization < 50) {
+	    color = "#FFC273"
+    } else if (utilization < 75) {
+        color = "#59C795"
+    } else {
+        color = "#8CB9D9"
+    }
+
+	var utilizationDiv = $("<div class='utilization' style='position: absolute; right: 0; bottom: 0; background-color: " + color + "; font-size: 8px; display: none;'></div>")
+	utilizationDiv.text(utilization)
+	div.append(utilizationDiv)
+    return div;
 }
 
 function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disableChangeHome) {
