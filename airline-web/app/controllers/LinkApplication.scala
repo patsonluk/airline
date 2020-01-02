@@ -133,7 +133,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       var result = Json.obj()
 
       assignments.assignments.foreach {
-        case(linkId, frequency) => result = result + (linkId.toString -> JsNumber(frequency))
+        case(linkId, assignment) => result = result + (linkId.toString -> JsNumber(assignment.frequency))
       }
       result
     }
@@ -283,7 +283,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       var totalCapacity = LinkClassValues.getInstance()
 
       incomingLink.getAssignedAirplanes().foreach {
-        case(airplane, frequency) =>
+        case(airplane, assignment) =>
           if (airplane.owner.id != airlineId){
             return BadRequest(s"Cannot insert link - airplane $airplane is not owned by ${request.user}")
           }
@@ -293,7 +293,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
           val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplane.id)
           val existingFrequency = linkAssignments.getFrequencyByLink(incomingLink.id)
-          val frequencyDelta = frequency - existingFrequency
+          val frequencyDelta = assignment.frequency - existingFrequency
           val flightMinutesDelta = flightMinutesRequiredPerFrequency * frequencyDelta
           if (frequencyDelta > 0) {
             if (airplane.availableFlightMinutes < flightMinutesDelta) {
@@ -301,8 +301,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             }
           }
 
-          totalFrequency += frequency
-          totalCapacity = totalCapacity + (airplane.configuration * frequency)
+          totalFrequency += assignment.frequency
+          totalCapacity = totalCapacity + (airplane.configuration * assignment.frequency)
       }
 
       //update capacity and frequency

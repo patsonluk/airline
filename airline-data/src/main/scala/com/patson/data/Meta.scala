@@ -496,6 +496,7 @@ object Meta {
       "link INTEGER, " +
       "airplane INTEGER, " +
       "frequency INTEGER, " +
+      "flight_minutes INTEGER, " +
       "PRIMARY KEY (link, airplane)," +
       "FOREIGN KEY(link) REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airplane) REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +

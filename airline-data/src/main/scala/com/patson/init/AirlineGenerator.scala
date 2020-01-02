@@ -119,12 +119,13 @@ object AirlineGenerator extends App {
 
             val maxFrequencyPerAirplane = Computation.calculateMaxFrequency(model, distance)
             if (frequency > 0) {
-              val assignedAirplanes = mutable.HashMap[Airplane, Int]()
+              val assignedAirplanes = mutable.HashMap[Airplane, LinkAssignment]()
               var airplanesRequired = frequency / maxFrequencyPerAirplane
               if (frequency % maxFrequencyPerAirplane > 0) {
                 airplanesRequired += 1
               }
-              
+
+              val flightMinutesRequired = Computation.calculateFlightMinutesRequired(model, distance)
               //make airplanes :)
               var remainingFrequency = frequency
               for (i <- 0 until airplanesRequired) {
@@ -132,7 +133,8 @@ object AirlineGenerator extends App {
                 AirplaneSource.saveAirplanes(List(newAirplane))
                 newAirplane.assignDefaultConfiguration()
                 val frequencyForThis = if (remainingFrequency > maxFrequencyPerAirplane) maxFrequencyPerAirplane else remainingFrequency
-                assignedAirplanes.put(newAirplane, frequencyForThis)
+                val flightMinutesForThis = frequencyForThis * flightMinutesRequired
+                assignedAirplanes.put(newAirplane, LinkAssignment(frequencyForThis, flightMinutesForThis))
                 remainingFrequency -= frequencyForThis
               }
               

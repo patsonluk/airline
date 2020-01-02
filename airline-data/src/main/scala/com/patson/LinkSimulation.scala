@@ -2,10 +2,13 @@ package com.patson
 
 import com.patson.model._
 import com.patson.data._
+
 import scala.collection.mutable._
+import scala.collection.immutable
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import com.patson.model.airplane.Airplane
+import com.patson.model.airplane.{Airplane, LinkAssignments}
+
 import scala.util.Random
 import com.patson.model.oil.OilPrice
 
@@ -58,9 +61,9 @@ object LinkSimulation {
     println("Calculating profits by links")
     val linkConsumptionDetails = ListBuffer[LinkConsumptionDetails]()
     val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
-      
+    val allAirplaneAssignments: immutable.Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
     links.foreach { link =>
-      val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle)
+      val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle, allAirplaneAssignments)
       linkConsumptionDetails += linkResult
       loungeConsumptionDetails ++= loungeResult
     }
@@ -147,12 +150,22 @@ object LinkSimulation {
       }
     }
   }
-  
+
+  /**
+    * Only called by test cases
+    * @param link
+    * @param cycle
+    * @return
+    */
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
-    computeLinkAndLoungeConsumptionDetail(link, cycle)._1
+    //for testing, assuming all airplanes are only assigned to this link
+    val assignmentsToThis = link.getAssignedAirplanes().toList.map {
+      case(airplane, assignment) => (airplane.id, LinkAssignments(immutable.Map(link.id -> assignment)))
+    }.toMap
+    computeLinkAndLoungeConsumptionDetail(link, cycle, assignmentsToThis)._1
   }
   
-  def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
+  def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int, allAirplaneAssignments : immutable.Map[Int, LinkAssignments]) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
     
     val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
     
@@ -168,7 +181,29 @@ object LinkSimulation {
       case None => 0
     }
 
-    val maintenanceCost = (link.getAssignedAirplanes.toList.map(_._1).foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
+
+
+    //the % of time spent on this link for each airplane
+    val assignmentWeights : immutable.Map[Airplane, Double] = { //0 to 1
+      link.getAssignedAirplanes().view.map {
+        case(airplane, assignment) =>
+          allAirplaneAssignments.get(airplane.id) match {
+            case Some(linkAssignmentsToThisAirplane) =>
+              val weight : Double = assignment.flightMinutes.toDouble / linkAssignmentsToThisAirplane.assignments.values.map(_.flightMinutes).sum
+              (airplane, weight)
+            case None => (airplane, 1.0) //100%
+          } //it shouldn't be else...but just to play safe, if it's not found in "all" table, assume this is the only link assigned
+      }.toMap
+    }
+    var maintenanceCost = 0
+    link.getAssignedAirplanes().foreach {
+      case(airplane, _) =>
+      //val maintenanceCost = (link.getAssignedAirplanes.toList.map(_._1).foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
+        maintenanceCost += (airplane.model.maintenanceCost * assignmentWeights(airplane) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
+    }
+
+
+
     val airportFees = link.getAssignedModel() match {
       case Some(model) =>
         val airline = link.airline
@@ -176,8 +211,13 @@ object LinkSimulation {
       case None => 0 
     }
     
-    val depreciation = link.getAssignedAirplanes().toList.map(_._1).foldLeft(0)(_ + _.depreciationRate)
-    
+    var depreciation = 0
+    link.getAssignedAirplanes().foreach {
+      case(airplane, _) =>
+        //link.getAssignedAirplanes().toList.map(_._1).foldLeft(0)(_ + _.depreciationRate)
+        depreciation += (airplane.depreciationRate * assignmentWeights(airplane)).toInt
+    }
+
     var inflightCost, crewCost, revenue = 0 
     LinkClass.values.foreach { linkClass =>
       val capacity = link.capacity(linkClass)

@@ -5,10 +5,20 @@ package com.patson.model.airplane
   * value - frequency for that link
   * @param assignments
   */
-case class LinkAssignments(assignments : Map[Int, Int]){
+case class LinkAssignments(assignments : Map[Int, LinkAssignment]){
   val getFrequencyByLink : (Int => Int) = { (linkId : Int) =>
-    assignments.getOrElse(linkId, 0)
+    assignments.get(linkId) match {
+      case Some(linkAssignment) => linkAssignment.frequency
+      case None => 0
+    }
   }
+  val getFlightMinutesByLink : (Int => Int) = { (linkId : Int) =>
+    assignments.get(linkId) match {
+      case Some(linkAssignment) => linkAssignment.flightMinutes
+      case None => 0
+    }
+  }
+
   val assignedLinkIds = assignments.keys.toList
   val isEmpty = assignments.isEmpty
 }

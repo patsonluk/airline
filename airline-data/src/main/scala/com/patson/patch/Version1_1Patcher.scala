@@ -57,7 +57,7 @@ object Version1_1Patcher extends App {
     // frequency adjust, should be per airplane now
     AirlineSource.loadAllAirlines().foreach { airline =>
       val updatingLinks = ListBuffer[Link]()
-      val updatingAssignedAirplanes = mutable.HashMap[Int, Map[Airplane, Int]]()
+      val updatingAssignedAirplanes = mutable.HashMap[Int, Map[Airplane, LinkAssignment]]()
       LinkSource.loadLinksByAirlineId(airline.id).foreach { link =>
         if (link.capacity.total > 0) {
           val capacityPerAirplane = link.capacity / link.frequency
@@ -68,8 +68,9 @@ object Version1_1Patcher extends App {
           val maxFrequencyPerAirplane = Computation.calculateMaxFrequency(link.getAssignedModel().get, link.distance)
           var remainingFrequency = existingFrequency
 
-          val newAirplaneAssignments = new mutable.HashMap[Airplane, Int]()
+          val newAirplaneAssignments = new mutable.HashMap[Airplane, LinkAssignment]()
           airplanes.foreach { airplane =>
+            val flightMinutesRequired = Computation.calculateFlightMinutesRequired(airplane.model, link.distance)
             val frequencyForThisAirplane =
               if (remainingFrequency > maxFrequencyPerAirplane) {
                 maxFrequencyPerAirplane
@@ -78,7 +79,7 @@ object Version1_1Patcher extends App {
               }
             remainingFrequency -= frequencyForThisAirplane
             if (frequencyForThisAirplane > 0) {
-              newAirplaneAssignments.put(airplane, frequencyForThisAirplane)
+              newAirplaneAssignments.put(airplane, LinkAssignment(frequencyForThisAirplane, frequencyForThisAirplane * flightMinutesRequired))
             }
             //            val availableFlightMinutes = Airplane.MAX_FLIGHT_MINUTES - Computation.calculateFlightMinutesRequired(airplane.model, link.distance) * frequencyForThisAirplane
             //            airplane.copy(availableFlightMinutes = availableFlightMinutes)
