@@ -259,7 +259,7 @@ function drawFlightPath(link, linkColor) {
      path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}],
      geodesic: true,
      strokeColor: linkColor,
-     strokeOpacity: 0.6,
+     strokeOpacity: pathOpacityByStyle[currentStyles].normal,
      strokeWeight: 2,
      frequency : link.frequency,
      modelId : link.modelId,
@@ -276,7 +276,7 @@ function drawFlightPath(link, linkColor) {
 	     geodesic: true,
 	     map: map,
 	     strokeColor: getLinkColor(link.profit, link.revenue),
-	     strokeOpacity: 0.01,
+	     strokeOpacity: 0.001,
 	     strokeWeight: 15,
 	     zIndex: 100
 	   });
@@ -302,7 +302,7 @@ function refreshFlightPath(link, forceRedraw) {
 			
 			drawFlightMarker(path, link)
 		} 
-		path.setOptions({ strokeColor : getLinkColor(link.profit, link.revenue)})
+		path.setOptions({ strokeColor : getLinkColor(link.profit, link.revenue), strokeOpacity : pathOpacityByStyle[currentStyles].normal })
 	
 		//flightPaths[link.id].setOptions({ strokeColor : getLinkColor(link)})
 	}
@@ -338,6 +338,13 @@ function getLinkColor(profit, revenue) {
 	   } else { 
 		   greenHex = 220 
 	   }
+	   if (currentStyles === "light") {
+	      redHex -= 50
+	      greenHex -= 50
+	   }
+	   if (redHex < 0) redHex = 0
+	   if (greenHex < 0) greenHex = 0
+
 	   
 	   var redHexString = parseInt(redHex).toString(16)
 	   if (redHexString.length == 1) { redHexString = "0" + redHexString }
@@ -355,8 +362,10 @@ function highlightPath(path, refocus) {
 	if (refocus) {
 		map.setCenter(path.getPath().getAt(0))
 	}
+
 	
 	if (!path.highlighted) { //only highlight again if it's not already done so
+	    path.setOptions({ strokeOpacity : pathOpacityByStyle[currentStyles].highlight })
 		var originalColorString = path.strokeColor
 		path.originalColor = originalColorString
 		var totalFrames = 20
@@ -401,7 +410,7 @@ function highlightPath(path, refocus) {
 function unhighlightPath(path) {
 	window.clearInterval(path.animation)
 	path["animation"] = undefined
-	path.setOptions({ strokeColor : path.originalColor , strokeWeight : 2, zIndex : 90})
+	path.setOptions({ strokeColor : path.originalColor , strokeWeight : 2, zIndex : 90, strokeOpacity : pathOpacityByStyle[currentStyles].normal})
 	
 	delete path.highlighted
 }
