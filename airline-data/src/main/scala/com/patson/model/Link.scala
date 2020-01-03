@@ -20,8 +20,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   
   @volatile private var hasComputedQuality = false
   @volatile private var computedQualityStore : Int = 0
-  lazy val inServiceAirplanes = assignedAirplanes.filter(_._1.isReady)
 
+  var inServiceAirplanes : Map[Airplane, LinkAssignment] = Map.empty
 
   private val standardPrice : ConcurrentHashMap[LinkClass, Int] = new ConcurrentHashMap[LinkClass, Int]()
 
@@ -30,6 +30,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     if (!assignedAirplanes.isEmpty) {
       assignedModel = Some(assignedAirplanes.toList(0)._1.model)
     }
+    inServiceAirplanes = this.assignedAirplanes.filter(_._1.isReady)
   }
 
   /**
