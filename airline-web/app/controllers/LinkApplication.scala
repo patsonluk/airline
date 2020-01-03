@@ -279,9 +279,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       val flightMinutesRequiredPerFrequency = Computation.calculateFlightMinutesRequired(model, incomingLink.distance)
 
       //check if the assigned planes are owned by this airline and have minutes left for this
-      var totalFrequency = 0
-      var totalCapacity = LinkClassValues.getInstance()
-
       incomingLink.getAssignedAirplanes().foreach {
         case(airplane, assignment) =>
           if (airplane.owner.id != airlineId){
@@ -300,18 +297,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
               return BadRequest(s"Cannot insert link - airplane require flight minutes : $flightMinutesDelta, but only have ${airplane.availableFlightMinutes} left")
             }
           }
-
-          totalFrequency += assignment.frequency
-          totalCapacity = totalCapacity + (airplane.configuration * assignment.frequency)
       }
 
-      //update capacity and frequency
-      incomingLink.capacity = totalCapacity
-      incomingLink.frequency = totalFrequency
+      incomingLink.recomputeCapacityAndFrequency()
+
 
       //validate the frequency change is valid
       val existingFrequency = existingLink.fold(0)(_.frequency)
-      val frequencyChange = incomingLink.frequency - existingFrequency
+      val frequencyChange = incomingLink.futureFrequency() - existingFrequency //use future frequency here
       if ((incomingLink.from.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.from.getMaxSlotAssignment(airlineId)) {
         println("max slot exceeded, tried to add " + frequencyChange + " but from airport slot at " + incomingLink.from.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.from.getMaxSlotAssignment(airlineId))
         return BadRequest("Cannot insert link - frequency exceeded limit - from airport does not have enough slots")
@@ -326,14 +319,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
       }
 
-      if (incomingLink.frequency == 0) {
-        return BadRequest("Cannot insert link - frequency is 0")
+      if (incomingLink.futureFrequency() == 0) {
+        return BadRequest("Cannot insert link - future frequency is 0")
       }
 
       //validate configuration is valid
-      if ((incomingLink.capacity(ECONOMY) * ECONOMY.spaceMultiplier + 
-           incomingLink.capacity(BUSINESS) * BUSINESS.spaceMultiplier + 
-           incomingLink.capacity(FIRST) * FIRST.spaceMultiplier) > incomingLink.frequency * model.capacity) {
+      if ((incomingLink.futureCapacity()(ECONOMY) * ECONOMY.spaceMultiplier +
+           incomingLink.futureCapacity()(BUSINESS) * BUSINESS.spaceMultiplier +
+           incomingLink.futureCapacity()(FIRST) * FIRST.spaceMultiplier) > incomingLink.futureFrequency() * model.capacity) {
         return BadRequest("Requested capacity exceed the allowed limit, invalid configuration!")
       }
       
@@ -569,11 +562,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           }
         }
 
-
-        val currentCycle = CycleSource.loadCycle
-
-
-        val ownedAirplanesByModel = AirplaneSource.loadAirplanesByOwner(airlineId).filter(_.isReady(currentCycle)).groupBy(_.model)
+        val ownedAirplanesByModel = AirplaneSource.loadAirplanesByOwner(airlineId).groupBy(_.model)
 
         //available airplanes are either the ones that are already assigned to this link or have available flight minutes that is >= required minutes
         //group airplanes by model, also add Int to indicated how many frequency is this airplane currently assigned to this link

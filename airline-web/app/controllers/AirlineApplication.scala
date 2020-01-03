@@ -161,7 +161,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        val destinations = if (airportsServed > 0) airportsServed - 1 else 0 //minus home base
        
        val currentCycle = CycleSource.loadCycle()
-       val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId).filter(_.isReady(currentCycle))
+       val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId).filter(_.isReady)
        
        val fleetSize = airplanes.length
        val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0

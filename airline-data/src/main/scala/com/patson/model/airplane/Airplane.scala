@@ -3,8 +3,8 @@ package com.patson.model.airplane
 import com.patson.data.{AirplaneSource, LinkSource}
 import com.patson.model.{Airline, Airport, Computation, IdObject, Link, LinkClassValues}
 
-case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, var home : Airport = Airport.fromId(0), var id : Int = 0) extends IdObject {
-  val isReady = (currentCycle : Int) => currentCycle >= constructedCycle && !isSold
+case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, var home : Airport = Airport.fromId(0), isReady : Boolean = true, var id : Int = 0) extends IdObject {
+  //val isReady = (currentCycle : Int) => currentCycle >= constructedCycle && !isSold
   val dealerValue = {
     (value * dealerRatio).toInt
   }

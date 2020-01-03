@@ -589,6 +589,12 @@ function refreshLinkDetails(linkId) {
 	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").html(getGradeStarsImgs(Math.round(link.computedQuality / 10)) + link.computedQuality)
 	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
+	    	if (link.future) {
+	    	    $("#linkCurrentDetails .future .capacity").text(toLinkClassValueString(link.future.capacity))
+	    	    $("#linkCurrentDetails .future").show()
+	    	} else {
+	    	    $("#linkCurrentDetails .future").hide()
+	    	}
 	    	$("#linkCurrentDetails").show()
 	    	$("#linkToAirportId").val(link.toAirportId)
 	    	$("#linkFromAirportId").val(link.fromAirportId)
@@ -1403,6 +1409,10 @@ function addAirplaneRow(container, airplane, frequency) {
         airplaneCell.append($('<img src="assets/images/icons/information.png" title="Shared with ' + sharedLinkCount + ' other route(s)">'))
     }
 
+    if (!airplane.isReady) {
+        airplaneCell.append($('<img src="assets/images/icons/construction.png" title="Under construction">'))
+    }
+
     airplaneRow.append(airplaneCellOuter)
 
 
@@ -1454,21 +1464,39 @@ function removeAirplaneFromLink(airplaneId) {
 
 // Update total frequency and capacity
 function updateTotalValues() {
-    var totalFrequency = 0
-    var totalCapacity = { "economy" : 0, "business" : 0, "first" : 0}
+    var currentCapacity = { "economy" : 0, "business" : 0, "first" : 0}
+    var futureFrequency = 0
+    var futureCapacity = { "economy" : 0, "business" : 0, "first" : 0}
+    var hasUnderConstructionAirplanes = false
     $("#planLinkDetails .frequencyDetail .airplaneRow").each(function(index, airplaneRow) {
        frequency = parseInt($(airplaneRow).find(".frequency").val())
        configuration = $(airplaneRow).data("airplane").configuration
 
-       totalFrequency += frequency
-       totalCapacity.economy += configuration.economy * frequency
-       totalCapacity.business += configuration.business * frequency
-       totalCapacity.first += configuration.first * frequency
+       futureFrequency += frequency
+       futureCapacity.economy += configuration.economy * frequency
+       futureCapacity.business += configuration.business * frequency
+       futureCapacity.first += configuration.first * frequency
+
+       if ($(airplaneRow).data("airplane").isReady) {
+           currentCapacity.economy += configuration.economy * frequency
+           currentCapacity.business += configuration.business * frequency
+           currentCapacity.first += configuration.first * frequency
+       } else {
+            hasUnderConstructionAirplanes = true
+       }
     })
-    $(".frequencyDetailTotal .total").text(totalFrequency)
-    $('#planLinkCapacity').text(totalCapacity.economy + "/" + totalCapacity.business + "/" + totalCapacity.first)
+    $(".frequencyDetailTotal .total").text(futureFrequency)
+
+    $('#planLinkCapacity').text(toLinkClassValueString(currentCapacity))
+    if (hasUnderConstructionAirplanes) {
+        $("#planLinkDetails .future .capacity").text(toLinkClassValueString(futureCapacity))
+        $("#planLinkDetails .future").show()
+    } else {
+        $("#planLinkDetails .future").hide()
+    }
+
     var frequencyLimit = $("#planLinkDetails").data("frequencyLimit")
-    if (frequencyLimit < totalFrequency) { //warning
+    if (frequencyLimit < futureFrequency) { //warning
         $(".frequencyDetailTotal .fatal").show();
         disableButton($("#planLinkDetails #updateLinkButton"), "Flight frequency exceeding limit")
     } else {

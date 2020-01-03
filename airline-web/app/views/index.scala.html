@@ -308,7 +308,14 @@
 										</div>
 										<div class="table-row">
 											<div class="label"><h5>Capacity (Y/J/F):</h5></div>
-											<div class="value" id="linkCurrentCapacity"></div>
+											<div class="value">
+												<span id="linkCurrentCapacity"></span>
+												<div class="future" style="color : #68A357; display:inline-block;">
+													<div style="display:flex; align-items: center;">
+														&nbsp;(<img class="awaitingAirplanes" src='@routes.Assets.versioned("images/icons/information.png")' title="Capacity when all airplanes are delivered"><span class="capacity"></span>)
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 									<input type="hidden" id="actionLinkId">
@@ -579,7 +586,14 @@
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Capacity (Y/J/F):</h5></div>
-										<div class="value" id="planLinkCapacity"></div>
+										<div class="value">
+											<span id="planLinkCapacity"></span>
+											<div class="future" style="color : #68A357; display:inline-block;">
+												<div style="display:flex; align-items: center;">
+													&nbsp;(<img class="awaitingAirplanes" src='@routes.Assets.versioned("images/icons/information.png")' title="Capacity when all airplanes are delivered"><span class="capacity"></span>)
+												</div>
+											</div>
+										</div>
 									</div>
 <!--									<div class="table-row">-->
 <!--										<div class="label">-->

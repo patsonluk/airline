@@ -27,7 +27,7 @@ object AirplaneSimulation {
       case (owner, airplanes) => {
         AirlineSource.loadAirlineById(owner.id, true) match {
           case Some(airline) =>
-            val readyAirplanes = airplanes.filter(_.isReady(cycle))
+            val readyAirplanes = airplanes.filter(_.isReady)
             val readyAirplanesWithAssignedLinks : Map[Airplane, LinkAssignments] = readyAirplanes.map { airplane =>
               (airplane, linkAssignments.getOrElse(airplane.id, LinkAssignments(Map.empty)))
             }.toMap
@@ -46,7 +46,7 @@ object AirplaneSimulation {
     println("Finished renewing airplanes")
     
     println("Start retiring airplanes")
-    removeAgingAirplaneFromLinks(links, updatingAirplanes, linkAssignments) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
+    adjustLinksBasedOnAirplaneStatus(links, updatingAirplanes, linkAssignments, cycle) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
     retireAgingAirplanes(updatingAirplanes.toList)
     println("Finished retiring airplanes")
     
@@ -154,40 +154,45 @@ object AirplaneSimulation {
       
     updatingAirplanes
   }
-  
-   def removeAgingAirplaneFromLinks(links : List[Link], airplanes : List[Airplane], linkAssignments : Map[Int, LinkAssignments]) = {
+
+  /**
+    * Adjust link's capacity and total based on retiring airplanes and add ready airplanes
+    * @param links
+    * @param airplanes
+    * @param linkAssignments
+    */
+   def adjustLinksBasedOnAirplaneStatus(links : List[Link], airplanes : List[Airplane], linkAssignments : Map[Int, LinkAssignments], cycle: Int) = {
     val updatingLinks = ListBuffer[Link]()
     val updatedAirplanesById = airplanes.map( airplane => (airplane.id, airplane)).toMap
     links.foreach {
       link => {
-        val updatedAssignedAirplanes : List[Airplane] = link.getAssignedAirplanes().toList.map {
-          case(airplane, frequency) => updatedAirplanesById.getOrElse(airplane.id, airplane)
-        } //update the list of assigned airplanes
+        var updatedAssignedAirplanes : Map[Airplane, LinkAssignment] = link.getAssignedAirplanes().toList.map {
+          case(airplane, linkAssignment) => (updatedAirplanesById.getOrElse(airplane.id, airplane), linkAssignment)
+        }.toMap //update the list of assigned airplanes - since some of them are decayed
 
-        val okAirplanes : List[Airplane] = updatedAssignedAirplanes.filter( _.condition > 0)
-        
-        val retiringAirplanesCount = updatedAssignedAirplanes.size - okAirplanes.size
-        
-        if (retiringAirplanesCount > 0) {
-           println("retiring " + retiringAirplanesCount + " airplanes for link " + link)
-           //now see if frequency should be reduced
-           var newCapacity = LinkClassValues.getInstance()
-           var newFrequency = 0
+        var hasRetiringAirplanes = false
 
-           okAirplanes.foreach { airplane =>
-             val frequency =
-               linkAssignments.get(airplane.id) match {
-                 case Some(linkAssignmentsForThisAirplane) => linkAssignmentsForThisAirplane.getFrequencyByLink(link.id)
-                 case None => 0
-               }
-             newFrequency += frequency
-             newCapacity = newCapacity + airplane.configuration * frequency
-           }
+        //now filter the retiring airplanes
+        updatedAssignedAirplanes = updatedAssignedAirplanes.filter {
+          case (airplane, _) =>
+            if (airplane.condition > 0) {
+              true
+            } else {
+              hasRetiringAirplanes = true
+              false
+            }
+        }
 
+        val hasNewlyArrivedAirplanes = updatedAssignedAirplanes.find {
+          case (airplane, _) => airplane.constructedCycle == cycle && airplane.model.constructionTime > 0
+        }.isDefined
 
-           val updatingLink = link.copy(capacity = newCapacity, frequency = newFrequency)
+        if (hasRetiringAirplanes || hasNewlyArrivedAirplanes) {
+           println(s"$link has new $hasNewlyArrivedAirplanes or has retiring $hasRetiringAirplanes airplanes")
 
-           updatingLinks.append(updatingLink)
+           link.recomputeCapacityAndFrequency()
+
+           updatingLinks.append(link)
         }
       }
     }

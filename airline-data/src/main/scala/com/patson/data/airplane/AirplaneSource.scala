@@ -57,12 +57,15 @@ object AirplaneSource {
       
       val airplanes = new ListBuffer[Airplane]()
       
-      
+      val currentCycle = CycleSource.loadCycle()
       while (resultSet.next()) {
         val airline = Airline.fromId(resultSet.getInt("owner"))
         val model = allModels(resultSet.getInt("a.model"))
         val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), airline, model, resultSet.getBoolean("is_default"), id = resultSet.getInt("configuration"))
-        val airplane = Airplane(model, airline, resultSet.getInt("constructed_cycle"), resultSet.getInt("purchased_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"), isSold = resultSet.getBoolean("is_sold"), dealerRatio = resultSet.getDouble("dealer_ratio"), configuration = configuration, home = Airport.fromId(resultSet.getInt("home")))
+        val isSold = resultSet.getBoolean("is_sold")
+        val constructedCycle = resultSet.getInt("constructed_cycle")
+        val isReady = !isSold && currentCycle >= constructedCycle
+        val airplane = Airplane(model, airline, constructedCycle, resultSet.getInt("purchased_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"), isSold = isSold, dealerRatio = resultSet.getDouble("dealer_ratio"), configuration = configuration, home = Airport.fromId(resultSet.getInt("home")), isReady = isReady)
         airplane.id = resultSet.getInt("id")
         airplanes.append(airplane)
       }

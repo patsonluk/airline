@@ -108,10 +108,11 @@ object LinkSimulation {
     links.foreach {
       link => {
         var i = 0
+        val assignedInServiceAirplanes = link.getAssignedAirplanes().filter(_._1.isReady)
         for ( i <- 0 until link.frequency) {
-          var airplaneCount : Int = link.getAssignedAirplanes().size
+          var airplaneCount : Int = assignedInServiceAirplanes.size
           if (airplaneCount > 0) {
-            val airplane = link.getAssignedAirplanes().toList.map(_._1)(i % airplaneCount)           //round robin
+            val airplane = assignedInServiceAirplanes.toList.map(_._1)(i % airplaneCount)           //round robin
             val errorValue = Random.nextDouble()
             val conditionMultipler = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
             var minorDelayThreshold : Double = 0
@@ -159,7 +160,7 @@ object LinkSimulation {
     */
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
     //for testing, assuming all airplanes are only assigned to this link
-    val assignmentsToThis = link.getAssignedAirplanes().toList.map {
+    val assignmentsToThis = link.getAssignedAirplanes().filter(_._1.isReady).toList.map {
       case(airplane, assignment) => (airplane.id, LinkAssignments(immutable.Map(link.id -> assignment)))
     }.toMap
     computeLinkAndLoungeConsumptionDetail(link, cycle, assignmentsToThis)._1
@@ -182,10 +183,10 @@ object LinkSimulation {
     }
 
 
-
+    val inServiceAssignedAirplanes = link.getAssignedAirplanes().filter(_._1.isReady)
     //the % of time spent on this link for each airplane
     val assignmentWeights : immutable.Map[Airplane, Double] = { //0 to 1
-      link.getAssignedAirplanes().view.map {
+      inServiceAssignedAirplanes.view.map {
         case(airplane, assignment) =>
           allAirplaneAssignments.get(airplane.id) match {
             case Some(linkAssignmentsToThisAirplane) =>
@@ -196,7 +197,7 @@ object LinkSimulation {
       }.toMap
     }
     var maintenanceCost = 0
-    link.getAssignedAirplanes().foreach {
+    inServiceAssignedAirplanes.foreach {
       case(airplane, _) =>
       //val maintenanceCost = (link.getAssignedAirplanes.toList.map(_._1).foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
         maintenanceCost += (airplane.model.maintenanceCost * assignmentWeights(airplane) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
@@ -212,7 +213,7 @@ object LinkSimulation {
     }
     
     var depreciation = 0
-    link.getAssignedAirplanes().foreach {
+    inServiceAssignedAirplanes.foreach {
       case(airplane, _) =>
         //link.getAssignedAirplanes().toList.map(_._1).foldLeft(0)(_ + _.depreciationRate)
         depreciation += (airplane.depreciationRate * assignmentWeights(airplane)).toInt

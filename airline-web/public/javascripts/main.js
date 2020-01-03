@@ -493,7 +493,7 @@ function promptConfirm(prompt, targetFunction, param) {
 		$('#confirmationModal .confirmationButton').data('targetFunctionParam', param)
 	}
 	$('#confirmationPrompt').html(prompt)
-	$('#confirmationModal').fadeIn(1000)
+	$('#confirmationModal').fadeIn(200)
 }
 
 function executeConfirmationTarget() {

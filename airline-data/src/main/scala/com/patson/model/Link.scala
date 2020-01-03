@@ -20,7 +20,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   
   @volatile private var hasComputedQuality = false
   @volatile private var computedQualityStore : Int = 0
-  @volatile private var computedQualityPriceAdjust : ConcurrentHashMap[LinkClass, Double] = new ConcurrentHashMap[LinkClass, Double]()
+  lazy val inServiceAirplanes = assignedAirplanes.filter(_._1.isReady)
+
 
   private val standardPrice : ConcurrentHashMap[LinkClass, Int] = new ConcurrentHashMap[LinkClass, Int]()
 
@@ -75,10 +76,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   
   def computedQuality : Int= {
     if (!hasComputedQuality) {
-      if (assignedAirplanes.isEmpty) {
+
+      if (inServiceAirplanes.isEmpty) {
         0
       } else {
-        val airplaneConditionQuality = assignedAirplanes.toList.map {
+        val airplaneConditionQuality = inServiceAirplanes.toList.map {
           case ((airplane, assignmentPerAirplane)) => airplane.condition / Airplane.MAX_CONDITION * assignmentPerAirplane.frequency
         }.sum / frequency * 20
         computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.serviceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
@@ -144,15 +146,34 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   /**
     * Recomputes capacity base on assigned airplanes
     */
-  def recomputeCapacity() = {
+  def recomputeCapacityAndFrequency() = {
     var newCapacity = LinkClassValues.getInstance()
-    assignedAirplanes.foreach {
-      case(airplane, assignment) => newCapacity = newCapacity + (LinkClassValues(airplane.configuration.economyVal, airplane.configuration.businessVal, airplane.configuration.firstVal) * assignment.frequency)
+    var newFrequency = 0
+    inServiceAirplanes.foreach {
+      case(airplane, assignment) =>
+        newCapacity = newCapacity + (LinkClassValues(airplane.configuration.economyVal, airplane.configuration.businessVal, airplane.configuration.firstVal) * assignment.frequency)
+        newFrequency += assignment.frequency
     }
     capacity = newCapacity
+    frequency = newFrequency
+  }
+
+  def futureCapacity() = {
+    var futureCapacity = LinkClassValues.getInstance()
+    assignedAirplanes.foreach {
+      case(airplane, assignment) => futureCapacity = futureCapacity + (LinkClassValues(airplane.configuration.economyVal, airplane.configuration.businessVal, airplane.configuration.firstVal) * assignment.frequency)
+    }
+    futureCapacity
+  }
+
+  def futureFrequency() = {
+    assignedAirplanes.values.map(_.frequency).sum
   }
   
-  
+  override def toString() = {
+    s"$id ${airline.name} ${from.name}(${from.iata}) => ${to.name}(${to.iata}) ; distance $distance; freq $frequency; capacity $capacity; price $price"
+  }
+
   lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
 }
 
