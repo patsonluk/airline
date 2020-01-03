@@ -6,7 +6,7 @@ case class CountryAirlineTitle(country : Country, airline : Airline, title : Tit
     val modelPower = 97499995L * 54629L //US
     val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
 
-    val ratio: Double = math.log10(ratioToModelPower * 100) / 2
+    val ratio: Double = Math.max(0, math.log10(ratioToModelPower * 100) / 2)
 
     import CountryAirlineTitle._
     val loyaltyBonus = MIN_LOYALTY_BONUS + (MAX_LOYALTY_BONUS - MIN_LOYALTY_BONUS) * (1 - ratio)

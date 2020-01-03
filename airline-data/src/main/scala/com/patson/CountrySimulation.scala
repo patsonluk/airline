@@ -19,7 +19,7 @@ object CountrySimulation {
     val ratio: Double = math.log10(ratioToModelPower * 100) / 2
 
     val result = Math.round(MAX_NATIONAL_AIRLINE_COUNT * ratio).toInt
-    if (result == 0) 1 else result
+    if (result <= 0) 1 else result
   }
 
   def computePartneredAirlineCount(country: Country) : Int = {
@@ -29,7 +29,7 @@ object CountrySimulation {
     val ratio: Double = math.log10(ratioToModelPower * 100) / 2
 
     val result = Math.round(MAX_PARTNERED_AIRLINE_COUNT * ratio).toInt
-    if (result == 0) 1 else result
+    if (result <= 0) 1 else result
   }
 
   def simulate(cycle: Int) = {
