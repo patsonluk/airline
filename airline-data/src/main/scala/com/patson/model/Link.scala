@@ -171,7 +171,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   override def toString() = {
-    s"$id ${airline.name} ${from.name}(${from.iata}) => ${to.name}(${to.iata}) ; distance $distance; freq $frequency; capacity $capacity; price $price"
+    s"$id; ${airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); distance $distance; freq $frequency; capacity $capacity; price $price"
   }
 
   lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
