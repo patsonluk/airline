@@ -2,7 +2,7 @@ var currentStyles
 var pathOpacityByStyle = {
     "dark" : {
         highlight : "0.8",
-        normal : "0.3"
+        normal : "0.4"
     },
     "light" : {
         highlight : "1.0",
