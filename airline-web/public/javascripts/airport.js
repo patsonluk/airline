@@ -786,8 +786,8 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 		     zIndex : 1100,
 		});
 		
-	var fromAirport = getAirportText(localAirport.city, localAirport.name)
-	var toAirport = getAirportText(remoteAirport.city, remoteAirport.name)
+	var fromAirport = getAirportText(localAirport.city, localAirport.iata)
+	var toAirport = getAirportText(remoteAirport.city, remoteAirport.iata)
 	
 	
 	shadowPath = new google.maps.Polyline({

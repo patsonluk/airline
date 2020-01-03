@@ -352,11 +352,11 @@ function padBefore(str, padChar, max) {
 	return str.length < max ? padBefore(padChar + str, padChar, max) : str;
 }
 
-function getAirportText(city, airportName) {
+function getAirportText(city, airportCode) {
 	if (city) {
-		return city + "(" + airportName + ")"
+		return city + "(" + airportCode + ")"
 	} else {
-		return airportName
+		return airportCode
 	}
 }
 

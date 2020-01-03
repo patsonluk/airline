@@ -832,7 +832,7 @@ function populateAirplaneHome(airplane, disableChangeHome) {
 
 
     if (currentAirport) {
-        $("#ownedAirplaneDetail .homeView .home").text(getAirportText(currentAirport.city, currentAirport.airportName))
+        $("#ownedAirplaneDetail .homeView .home").text(getAirportText(currentAirport.city, currentAirport.airportCode))
     } else {
         $("#ownedAirplaneDetail .homeView .home").text("-")
     }
@@ -954,6 +954,11 @@ function confirmAirplaneHome() {
         $("#ownedAirplaneDetail .homeView").show()
         $("#ownedAirplaneDetail .homeEdit").hide()
     }
+}
+
+function cancelAirplaneHome() {
+    $("#ownedAirplaneDetail .homeView").show()
+    $("#ownedAirplaneDetail .homeEdit").hide()
 }
 
 function getAssignedAirplanesCount(compareKey, compareValue, modelId) {
