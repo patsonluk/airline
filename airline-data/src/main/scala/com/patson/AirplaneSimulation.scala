@@ -184,12 +184,13 @@ object AirplaneSimulation {
         }
 
         val hasNewlyArrivedAirplanes = updatedAssignedAirplanes.find {
-          case (airplane, _) => airplane.constructedCycle == cycle && airplane.model.constructionTime > 0
+          case (airplane, _) => airplane.constructedCycle == cycle && airplane.model.constructionTime > 0 //replacement will be counted too... but it's okay for now...as recompute is always safe
         }.isDefined
 
         if (hasRetiringAirplanes || hasNewlyArrivedAirplanes) {
            println(s"$link has new $hasNewlyArrivedAirplanes or has retiring $hasRetiringAirplanes airplanes")
 
+           link.setAssignedAirplanes(updatedAssignedAirplanes)
            link.recomputeCapacityAndFrequency()
 
            updatingLinks.append(link)
