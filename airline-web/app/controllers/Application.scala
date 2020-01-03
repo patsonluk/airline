@@ -114,6 +114,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
       JsObject(List(
       "id" -> JsNumber(airport.id),
       "name" -> JsString(airport.name),
+      "iata" -> JsString(airport.iata),
       "city" -> JsString(airport.city),
       "latitude" -> JsNumber(airport.latitude),
       "longitude" -> JsNumber(airport.longitude),
