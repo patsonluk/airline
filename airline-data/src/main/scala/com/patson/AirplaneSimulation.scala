@@ -10,7 +10,7 @@ import scala.util.Random
 
 
 object AirplaneSimulation {
-  def airplaneSimulation(cycle: Int, links : List[Link]) : List[Airplane] = {
+  def airplaneSimulation(cycle: Int) : List[Airplane] = {
     println("starting airplane simulation")
     println("loading all airplanes")
     //do 2nd hand market adjustment
@@ -46,7 +46,7 @@ object AirplaneSimulation {
     println("Finished renewing airplanes")
     
     println("Start retiring airplanes")
-    adjustLinksBasedOnAirplaneStatus(links, updatingAirplanes, linkAssignments, cycle) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
+    //adjustLinksBasedOnAirplaneStatus(updatingAirplanes, cycle)
     retireAgingAirplanes(updatingAirplanes.toList)
     println("Finished retiring airplanes")
     
@@ -160,8 +160,8 @@ object AirplaneSimulation {
     * @param links
     * @param airplanes
     * @param linkAssignments
-    */
-   def adjustLinksBasedOnAirplaneStatus(links : List[Link], airplanes : List[Airplane], linkAssignments : Map[Int, LinkAssignments], cycle: Int) = {
+
+   def adjustLinksBasedOnAirplaneStatus(airplanes : List[Airplane]) = {
     val updatingLinks = ListBuffer[Link]()
     val updatedAirplanesById = airplanes.map( airplane => (airplane.id, airplane)).toMap
     links.foreach {
@@ -183,23 +183,25 @@ object AirplaneSimulation {
             }
         }
 
-        val hasNewlyArrivedAirplanes = updatedAssignedAirplanes.find {
-          case (airplane, _) => airplane.constructedCycle == cycle && airplane.model.constructionTime > 0 //replacement will be counted too... but it's okay for now...as recompute is always safe
+        //TODO this logic is problematic...should we consider it right before link simulation? this would revert people's change or even screw up frequency/capacity if poeple make change between cycle start and to this point!
+        //solution would be at least reload the assignment to double confirm??
+        val hasAirplanesArrivingNextTurn = updatedAssignedAirplanes.find {
+          case (airplane, _) => airplane.constructedCycle == cycle + 1 && airplane.model.constructionTime > 0 //replacement will be counted too... but it's okay for now...as recompute is always safe
         }.isDefined
 
-        if (hasRetiringAirplanes || hasNewlyArrivedAirplanes) {
-           println(s"$link has new $hasNewlyArrivedAirplanes or has retiring $hasRetiringAirplanes airplanes")
+        if (hasRetiringAirplanes || hasAirplanesArrivingNextTurn) {
+           println(s"$link has new $hasAirplanesArrivingNextTurn or has retiring $hasRetiringAirplanes airplanes")
 
            link.setAssignedAirplanes(updatedAssignedAirplanes)
-           link.recomputeCapacityAndFrequency()
 
            updatingLinks.append(link)
         }
       }
     }
     
-    LinkSource.updateLinks(updatingLinks.toList)
+    LinkSource.updateLinks(updatingLinks.toList) //this only triggers updating the capacity/frequency but not the actual assignments
   }
+    */
    
   def retireAgingAirplanes(airplanes : List[Airplane]) {
     airplanes.filter(_.condition <= 0).foreach { airplane =>

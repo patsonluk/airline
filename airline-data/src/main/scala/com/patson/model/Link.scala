@@ -31,10 +31,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       assignedModel = Some(assignedAirplanes.toList(0)._1.model)
     }
     inServiceAirplanes = this.assignedAirplanes.filter(_._1.isReady)
+    recomputeCapacityAndFrequency()
   }
 
   /**
-    * for testing only
+    * for testing only. would not recompute frequency and capacity
     * @param assignedAirplanes
     */
   def setTestingAssignedAirplanes(assignedAirplanes : Map[Airplane, Int]) = {
@@ -147,7 +148,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   /**
     * Recomputes capacity base on assigned airplanes
     */
-  def recomputeCapacityAndFrequency() = {
+  private def recomputeCapacityAndFrequency() = {
     var newCapacity = LinkClassValues.getInstance()
     var newFrequency = 0
     inServiceAirplanes.foreach {

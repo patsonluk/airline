@@ -109,7 +109,6 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
     val affectedLinks = ListBuffer[Link]()
     affectedLinkIds.foreach { linkId =>
       LinkSource.loadLinkById(linkId).foreach { link =>
-        link.recomputeCapacityAndFrequency()
         affectedLinks.append(link)
       }
     }
@@ -123,7 +122,6 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
     val affectedLinks = ListBuffer[Link]()
     affectedLinkIds.foreach { linkId =>
       LinkSource.loadLinkById(linkId).foreach { link =>
-        link.recomputeCapacityAndFrequency()
         affectedLinks.append(link)
       }
     }

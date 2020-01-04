@@ -299,9 +299,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           }
       }
 
-      incomingLink.recomputeCapacityAndFrequency()
-
-
       //validate the frequency change is valid
       val existingFrequency = existingLink.fold(0)(_.frequency)
       val frequencyChange = incomingLink.futureFrequency() - existingFrequency //use future frequency here

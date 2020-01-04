@@ -13,12 +13,18 @@ import scala.util.Random
 import com.patson.model.oil.OilPrice
 
 object LinkSimulation {
+
+
   private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
   private val CREW_UNIT_COST = 12 //for now...
   
   private[this] val VIP_COUNT = 5
   
-  def linkSimulation(cycle: Int, links : List[Link]) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
+  def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
+    println("Loading all links")
+    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
+    println("Finished loading all links")
+
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
     val demand = DemandGenerator.computeDemand()
     println("DONE with demand total demand: " + demand.foldLeft(0) {
@@ -406,6 +412,26 @@ object LinkSimulation {
         CountryMarketShare(countryCode, airlinePassengers.toMap)
       }
     }.toList
-    
+
+  }
+
+  /**
+    * Refresh link capacity and frequency if necessary
+    */
+  def refreshLinksPostCycle() = {
+    println("Refreshing link capacity and frequency to find discrepancies")
+    val simpleLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD)
+    val fullLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).map(link => (link.id, link)).toMap
+    println("Finished loading both the simple and full links")
+    //not too ideal, but even if someone update the link assignment when this is in progress, it should be okay, as that assignment
+    //is suppose to update the link capacity and frequency anyway
+    simpleLinks.foreach { simpleLink =>
+      fullLinks.get(simpleLink.id).foreach { fullLink =>
+        if (simpleLink.frequency != fullLink.frequency || simpleLink.capacity != fullLink.capacity) {
+          println(s"Adjusting capacity/frequency of  $simpleLink to $fullLink")
+          LinkSource.updateLink(fullLink)
+        }
+      }
+    }
   }
 }
