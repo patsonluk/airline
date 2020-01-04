@@ -219,6 +219,7 @@ case class LinksIncome(airlineId : Int, profit : Long = 0, revenue : Long = 0, e
         fuelCost = fuelCost + income2.fuelCost,
         crewCost = crewCost + income2.crewCost,
         inflightCost = inflightCost + income2.inflightCost,
+        delayCompensation = delayCompensation + income2.delayCompensation,
         maintenanceCost = maintenanceCost + income2.maintenanceCost,
         loungeCost = loungeCost + income2.loungeCost,
         depreciation = depreciation + income2.depreciation,
