@@ -432,7 +432,12 @@ function disableButton(button, reason) {
 function enableButton(button) {
     $(button).removeClass("disabled")
     $(button).attr("onclick", $(button).data("clickFunction")) //set it back
-    $(button).attr("title", $(button).data("oldTitle"))
+    if ($(button).data("oldTitle")) {
+        $(button).attr("title",  $(button).data("oldTitle"))
+    } else {
+        $(button).removeAttr("title")
+    }
+
 }
 
 function isIe() {

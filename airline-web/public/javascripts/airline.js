@@ -1499,10 +1499,10 @@ function updateTotalValues() {
     var frequencyLimit = $("#planLinkDetails").data("frequencyLimit")
     if (frequencyLimit < futureFrequency) { //warning
         $(".frequencyDetailTotal .fatal").show();
-        disableButton($("#planLinkDetails #updateLinkButton"), "Flight frequency exceeding limit")
+        disableButton($("#planLinkDetails .updateLinkButton"), "Flight frequency exceeding limit")
     } else {
         $(".frequencyDetailTotal .fatal").hide();
-        enableButton($("#planLinkDetails #updateLinkButton"))
+        enableButton($("#planLinkDetails .updateLinkButton"))
     }
 
 }
