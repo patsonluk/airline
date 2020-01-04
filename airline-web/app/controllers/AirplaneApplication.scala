@@ -146,11 +146,23 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
     return rejections.toMap
   }
-  
-  
-  
-  def getAirplanes(airlineId : Int, simpleResult : Boolean) = AuthenticatedAirline(airlineId) {
-    val ownedAirplanes: List[Airplane] = AirplaneSource.loadAirplanesByOwner(airlineId)
+
+  def getOwnedAirplanes(airlineId : Int, simpleResult : Boolean) = {
+    getAirplanes(airlineId, None, simpleResult)
+  }
+
+  def getOwnedAirplanesWithModelId(airlineId : Int, modelId : Int, simpleResult : Boolean) = {
+    getAirplanes(airlineId, Some(modelId), simpleResult)
+  }
+
+
+  private def getAirplanes(airlineId : Int, modelIdOption : Option[Int], simpleResult : Boolean) = AuthenticatedAirline(airlineId) {
+    val queryCriteria = ListBuffer(("owner", airlineId), ("is_sold", false))
+    modelIdOption.foreach { modelId =>
+      queryCriteria.append(("a.model", modelId))
+    }
+
+    val ownedAirplanes: List[Airplane] = AirplaneSource.loadAirplanesCriteria(queryCriteria.toList)
     val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByOwner(airlineId)
     if (simpleResult) {
       //now split the list of airplanes by with and w/o assignedLinks
@@ -158,7 +170,6 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         airplanes => airplanes.partition(airplane => linkAssignments.isDefinedAt(airplane.id) && airplane.isReady) //for this list do NOT include assigned airplanes that are still under construction, as it's already under the construction list
           //TODO the front end should do the splitting...
       }.toMap
-
 
       val airplanesByModelList = airplanesByModel.toList.map {
         case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, availableAirplanes = freeAirplanes.filter(_.isReady), constructingAirplanes=freeAirplanes.filter(!_.isReady))
@@ -171,6 +182,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       Ok(Json.toJson(airplanesWithLink))
     }
   }
+
   
   def getUsedAirplanes(airlineId : Int, modelId : Int) = AuthenticatedAirline(airlineId) { request =>
       ModelSource.loadModelById(modelId) match {

@@ -26,13 +26,44 @@ function loadAirplaneModels() {
 	});
 }
 
+//load model info on airplanes that matches the model ID
+function loadAirplaneModelOwnerInfoByModelId(modelId) {
+    var airlineId = activeAirline.id
+	$.ajax({
+		type: 'GET',
+		url: "airlines/"+ airlineId + "/airplanes/model/" + modelId + "?simpleResult=true",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    async: false,
+	    success: function(result) {
+            existingInfo = loadedModelsOwnerInfoById[modelId] //find the existing info
+            //update the existing info with the newly loaded result
+            if (result.length == 1) { //then has owned airplanes with this model
+                var newInfo = result[0]
+	            existingInfo.assignedAirplanes = newInfo.assignedAirplanes
+	            existingInfo.assignedAirplanes.sort(sortByProperty('condition'))
+                existingInfo.availableAirplanes = newInfo.availableAirplanes
+                existingInfo.availableAirplanes.sort(sortByProperty('condition'))
+                existingInfo.constructingAirplanes = newInfo.constructingAirplanes
+
+                existingInfo.totalOwned = existingInfo.assignedAirplanes.length + existingInfo.availableAirplanes.length + existingInfo.constructingAirplanes.length
+	        } else { //no longer owned this model
+	            existingInfo.assignedAirplanes = []
+                existingInfo.availableAirplanes = []
+                existingInfo.constructingAirplanes = []
+                existingInfo.totalOwned = 0
+	        }
+        },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
 
 
+//load model info on all airplanes
 function loadAirplaneModelOwnerInfo() {
-	if ($("#airplaneCanvas #airplaneModelTable div.selected").length !== 0) {
-		selectedModelId = $("#airplaneCanvas #airplaneModelTable div.selected").data("modelId")
-	}
-	
 	var airlineId = activeAirline.id
 	var ownedModelIds = []
 	loadedModelsOwnerInfo = []
@@ -76,6 +107,11 @@ function loadAirplaneModelOwnerInfo() {
 
 
 function updateAirplaneModelTable(sortProperty, sortOrder) {
+    if (!sortProperty && !sortOrder) {
+        var selectedSortHeader = $('#airplaneModelSortHeader .cell.selected')
+        sortProperty = selectedSortHeader.data('sort-property')
+        sortOrder = selectedSortHeader.data('sort-order')
+    }
 	//sort the list
 	loadedModelsOwnerInfo.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
 	
@@ -328,7 +364,6 @@ function sellAirplane(airplaneId) {
 	    dataType: 'json',
 	    success: function(response) {
 	        refreshPanels(activeAirline.id)
-	    	showAirplaneCanvas()
 	    	$("#ownedAirplaneDetailModal").data("hasChange", true)
 	    	closeModal($('#ownedAirplaneDetailModal'))
 	    },
@@ -352,8 +387,6 @@ function replaceAirplane(airplaneId) {
 	        $("#ownedAirplaneDetailModal").data("hasChange", true)
 	        closeModal($('#ownedAirplaneDetailModal'))
 	        refreshPanels(airlineId)
-	    	showAirplaneCanvas()
-
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -536,7 +569,8 @@ function showAirplaneInventory(modelId) {
 }
 
 function refreshInventoryAfterAirplaneUpdate() {
-    loadAirplaneModelOwnerInfo() //refresh the loaded airplanes
+    loadAirplaneModelOwnerInfoByModelId(selectedModelId) //refresh the loaded airplanes on the selected model
+    updateAirplaneModelTable()
     showAirplaneInventory(selectedModelId)
 }
 
@@ -859,11 +893,10 @@ function toggleAirplaneHome() {
 function showAirplaneCanvas() {
 	setActiveDiv($("#airplaneCanvas"))
 	highlightTab($('#airplaneCanvasTab'))
-	
-	var selectedSortHeader = $('#airplaneModelSortHeader .cell.selected')
+
 	loadAirplaneModels()
     loadAirplaneModelOwnerInfo()
-    updateAirplaneModelTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
+    updateAirplaneModelTable()
 }
 
 function toggleAirplaneConfiguration() {
