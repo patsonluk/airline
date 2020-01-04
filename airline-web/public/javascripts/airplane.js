@@ -530,7 +530,7 @@ function showAirplaneInventory(modelId) {
             $("#airplaneInventoryModal .inventoryContainer").append(inventoryDiv)
         }
     })
-
+    toggleUtilizationRate($("#airplaneInventoryModal .inventoryContainer"), $("#airplaneInventoryModal .toggleUtilizationRateBox"))
     $('#airplaneInventoryModal').css( "zIndex", 0) //as there could be other modals on top of this
     $('#airplaneInventoryModal').fadeIn(200)
 }

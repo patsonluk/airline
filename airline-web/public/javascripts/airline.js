@@ -1283,6 +1283,7 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 		} else {
 		    $('#planLinkDetails .noAirplaneHelp').hide()
 		}
+		toggleUtilizationRate($('#planLinkAirplaneSelect'), $('#planLinkExtendedDetails .toggleUtilizationRateBox'))
 
 
 		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))

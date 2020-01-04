@@ -94,6 +94,7 @@ function showAirplaneModelConfigurationsModal(modelConfigurationInfo) {
         configurationDiv.append(promptDiv)
         $("#modelConfigurationModal .configContainer").append(configurationDiv)
     }
+    toggleUtilizationRate($("#modelConfigurationModal"), $("#modelConfigurationModal .toggleUtilizationRateBox"))
 
     $('#modelConfigurationModal').css( "zIndex", 0) //as there could be other modals on top of this
     $('#modelConfigurationModal').fadeIn(200)
@@ -132,7 +133,6 @@ function addAirplaneInventoryDivByConfiguration(configurationDiv, modelId) {
             li.append("<img src='assets/images/icons/airplane-empty-construct.png'/>")
         }
     });
-
     configurationDiv.append(airplanesDiv)
 }
 

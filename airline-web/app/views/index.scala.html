@@ -499,7 +499,18 @@
 										</div>
 									</div>
                                     <div class="table-row">
-                                        <div class="label"><h5>Available Airplanes:</h5></div>
+                                        <div class="label">
+											<h5>
+                                                <span>Available Airplanes:</span>
+                                                <div style="display: inline-block">
+                                                    <div style="display:flex ; align-items: baseline;">
+                                                        <input type="checkbox" onclick="toggleUtilizationRate($('#planLinkAirplaneSelect'), $(this))" class="toggleUtilizationRateBox"/>
+                                                        <img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate">
+											        </div>
+                                                </div>
+                                            </h5>
+
+										</div>
                                         <!-- 					    			<div class="value"><select id="planLinkAirplaneSelect" multiple="multiple" onchange="updateFrequencyBar($('#planLinkModelSelect').val())"></select></div> -->
                                         <div class="value">
                                             <div class="noAirplaneHelp" style="display: none">
@@ -2887,7 +2898,7 @@
 		<div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto;">
 			<span class="close" onclick="closeModal($('#modelConfigurationModal'))">&times;</span>
 			<h3 style="margin-bottom: 10px;"><span class="modelName"></span>&nbsp;Configuration</h3>
-			<div><input type="checkbox" onclick="toggleUtilizationRate($('#modelConfigurationModal'), $(this))">Toggle Utilization Rate</div>
+			<div><input type="checkbox" onclick="toggleUtilizationRate($('#modelConfigurationModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/></div>
 			<div class="configContainer" style="width: 100%"></div>
 		</div>
 	</div>
@@ -2897,7 +2908,8 @@
 		<div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto;">
 			<span class="close" onclick="closeModal($('#airplaneInventoryModal'))">&times;</span>
 			<h3 style="margin-bottom: 10px;"><span class="modelName"></span>&nbsp;Inventory</h3>
-			<div><input type="checkbox" onclick="toggleUtilizationRate($('#airplaneInventoryModal'), $(this))">Toggle Utilization Rate</div>
+			<div><input type="checkbox" onclick="toggleUtilizationRate($('#airplaneInventoryModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/></div>
+
 			<div class="inventoryContainer" style="width: 100%; height: 95%; overflow: auto;"></div>
 		</div>
 	</div>
