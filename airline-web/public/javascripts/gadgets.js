@@ -419,6 +419,14 @@ function closeModal(modal) {
     }
 }
 
+function closeAllModals() {
+    $.each($(".modal"), function(index, modal) {
+        if ($(modal).is(":visible")) {
+            closeModal($(modal))
+        }
+    });
+}
+
 function disableButton(button, reason) {
     $(button).addClass("disabled")
     $(button).data("clickFunction", $(button).attr("onclick"))

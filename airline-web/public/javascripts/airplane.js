@@ -731,7 +731,7 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
 	    	    $.each(airplane.links, function(index, linkEntry) {
 	    	        var link = linkEntry.link
 	    	        var linkDescription = "<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "<img src='assets/images/icons/arrow.png'>" + getAirportText(link.toAirportCity, link.toAirportCode) + " " + linkEntry.frequency + " flight(s) per week</div>"
-	    	        $("#airplaneDetailsLink").append("<div><a href='javascript:void(0)' onclick='closeModal($(\"#ownedAirplaneDetailModal\")); showWorldMap(); selectLinkFromMap(" + link.id + ", true)'>" + linkDescription + "</a></div>" )
+	    	        $("#airplaneDetailsLink").append("<div><a href='javascript:void(0)' onclick='closeAllModals(); showWorldMap(); selectLinkFromMap(" + link.id + ", true)'>" + linkDescription + "</a></div>" )
 	    	    })
 
 	    		$("#sellAirplaneButton").hide()
