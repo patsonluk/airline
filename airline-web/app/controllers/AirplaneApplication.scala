@@ -155,13 +155,13 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     if (simpleResult) {
       //now split the list of airplanes by with and w/o assignedLinks
       val airplanesByModel: Map[Model, (List[Airplane], List[Airplane])] = ownedAirplanes.groupBy(_.model).view.mapValues {
-        airplanes => airplanes.partition(airplane => linkAssignments.isDefinedAt(airplane.id))
+        airplanes => airplanes.partition(airplane => linkAssignments.isDefinedAt(airplane.id) && airplane.isReady) //for this list do NOT include assigned airplanes that are still under construction, as it's already under the construction list
+          //TODO the front end should do the splitting...
       }.toMap
 
-      val currentCycle = CycleSource.loadCycle()
-      
+
       val airplanesByModelList = airplanesByModel.toList.map {
-        case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, availableAirplanes = freeAirplanes.filter(_.isReady(currentCycle)), constructingAirplanes=freeAirplanes.filter(!_.isReady(currentCycle)))
+        case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, availableAirplanes = freeAirplanes.filter(_.isReady), constructingAirplanes=freeAirplanes.filter(!_.isReady))
       }
       Ok(Json.toJson(airplanesByModelList))
     } else {
@@ -266,7 +266,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       case Some(airplane) =>
         if (airplane.owner.id != airlineId || airplane.isSold) {
           Forbidden
-        } else if (!airplane.isReady(CycleSource.loadCycle)) {
+        } else if (!airplane.isReady) {
           BadRequest("airplane is not yet constructed or is sold")
         } else {
           val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplaneId)
@@ -306,7 +306,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       case Some(airplane) =>
         if (airplane.owner.id == airlineId) {
           val currentCycle = CycleSource.loadCycle
-          if (!airplane.isReady(currentCycle)) {
+          if (!airplane.isReady) {
             BadRequest("airplane is not yet constructed")
           } else if (airplane.purchasedCycle > (currentCycle - airplane.model.constructionTime)) {
             BadRequest("airplane is not yet ready to be replaced")

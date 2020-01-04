@@ -10,7 +10,7 @@ import scala.util.Random
 
 
 object AirplaneSimulation {
-  def airplaneSimulation(cycle: Int, links : List[Link]) : List[Airplane] = {
+  def airplaneSimulation(cycle: Int) : List[Airplane] = {
     println("starting airplane simulation")
     println("loading all airplanes")
     //do 2nd hand market adjustment
@@ -27,7 +27,7 @@ object AirplaneSimulation {
       case (owner, airplanes) => {
         AirlineSource.loadAirlineById(owner.id, true) match {
           case Some(airline) =>
-            val readyAirplanes = airplanes.filter(_.isReady(cycle))
+            val readyAirplanes = airplanes.filter(_.isReady)
             val readyAirplanesWithAssignedLinks : Map[Airplane, LinkAssignments] = readyAirplanes.map { airplane =>
               (airplane, linkAssignments.getOrElse(airplane.id, LinkAssignments(Map.empty)))
             }.toMap
@@ -46,7 +46,7 @@ object AirplaneSimulation {
     println("Finished renewing airplanes")
     
     println("Start retiring airplanes")
-    removeAgingAirplaneFromLinks(links, updatingAirplanes, linkAssignments) //need to pass the airplanes here as the airplanes in the `links` are not updated yet
+    //adjustLinksBasedOnAirplaneStatus(updatingAirplanes, cycle)
     retireAgingAirplanes(updatingAirplanes.toList)
     println("Finished retiring airplanes")
     
@@ -154,46 +154,54 @@ object AirplaneSimulation {
       
     updatingAirplanes
   }
-  
-   def removeAgingAirplaneFromLinks(links : List[Link], airplanes : List[Airplane], linkAssignments : Map[Int, LinkAssignments]) = {
+
+  /**
+    * Adjust link's capacity and total based on retiring airplanes and add ready airplanes
+    * @param links
+    * @param airplanes
+    * @param linkAssignments
+
+   def adjustLinksBasedOnAirplaneStatus(airplanes : List[Airplane]) = {
     val updatingLinks = ListBuffer[Link]()
     val updatedAirplanesById = airplanes.map( airplane => (airplane.id, airplane)).toMap
     links.foreach {
       link => {
-        val updatedAssignedAirplanes : List[Airplane] = link.getAssignedAirplanes().toList.map {
-          case(airplane, frequency) => updatedAirplanesById.getOrElse(airplane.id, airplane)
-        } //update the list of assigned airplanes
+        var updatedAssignedAirplanes : Map[Airplane, LinkAssignment] = link.getAssignedAirplanes().toList.map {
+          case(airplane, linkAssignment) => (updatedAirplanesById.getOrElse(airplane.id, airplane), linkAssignment)
+        }.toMap //update the list of assigned airplanes - since some of them are decayed
 
-        val okAirplanes : List[Airplane] = updatedAssignedAirplanes.filter( _.condition > 0)
-        
-        val retiringAirplanesCount = updatedAssignedAirplanes.size - okAirplanes.size
-        
-        if (retiringAirplanesCount > 0) {
-           println("retiring " + retiringAirplanesCount + " airplanes for link " + link)
-           //now see if frequency should be reduced
-           var newCapacity = LinkClassValues.getInstance()
-           var newFrequency = 0
+        var hasRetiringAirplanes = false
 
-           okAirplanes.foreach { airplane =>
-             val frequency =
-               linkAssignments.get(airplane.id) match {
-                 case Some(linkAssignmentsForThisAirplane) => linkAssignmentsForThisAirplane.getFrequencyByLink(link.id)
-                 case None => 0
-               }
-             newFrequency += frequency
-             newCapacity = newCapacity + airplane.configuration * frequency
-           }
+        //now filter the retiring airplanes
+        updatedAssignedAirplanes = updatedAssignedAirplanes.filter {
+          case (airplane, _) =>
+            if (airplane.condition > 0) {
+              true
+            } else {
+              hasRetiringAirplanes = true
+              false
+            }
+        }
 
+        //TODO this logic is problematic...should we consider it right before link simulation? this would revert people's change or even screw up frequency/capacity if poeple make change between cycle start and to this point!
+        //solution would be at least reload the assignment to double confirm??
+        val hasAirplanesArrivingNextTurn = updatedAssignedAirplanes.find {
+          case (airplane, _) => airplane.constructedCycle == cycle + 1 && airplane.model.constructionTime > 0 //replacement will be counted too... but it's okay for now...as recompute is always safe
+        }.isDefined
 
-           val updatingLink = link.copy(capacity = newCapacity, frequency = newFrequency)
+        if (hasRetiringAirplanes || hasAirplanesArrivingNextTurn) {
+           println(s"$link has new $hasAirplanesArrivingNextTurn or has retiring $hasRetiringAirplanes airplanes")
 
-           updatingLinks.append(updatingLink)
+           link.setAssignedAirplanes(updatedAssignedAirplanes)
+
+           updatingLinks.append(link)
         }
       }
     }
     
-    LinkSource.updateLinks(updatingLinks.toList)
+    LinkSource.updateLinks(updatingLinks.toList) //this only triggers updating the capacity/frequency but not the actual assignments
   }
+    */
    
   def retireAgingAirplanes(airplanes : List[Airplane]) {
     airplanes.filter(_.condition <= 0).foreach { airplane =>

@@ -128,8 +128,8 @@ object LinkSource {
             resultSet.getInt("flight_number"))
           link.id = resultSet.getInt("id")
           
-          assignedAirplaneCache.get(link.id).foreach {
-            link.setAssignedAirplanes(_)
+          assignedAirplaneCache.get(link.id).foreach { airplaneAssignments =>
+            link.setAssignedAirplanes(airplaneAssignments)
           }
           
           links += link          

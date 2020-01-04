@@ -514,8 +514,8 @@ function drawAllianceLink(link) {
 		     zIndex : 1100,
 		});
 		
-	var fromAirport = getAirportText(link.fromAirportCity, link.fromAirportName)
-	var toAirport = getAirportText(link.toAirportCity, link.toAirportName)
+	var fromAirport = getAirportText(link.fromAirportCity, link.fromAirportCode)
+	var toAirport = getAirportText(link.toAirportCity, link.toAirportCode)
 	
 	
 	shadowPath = new google.maps.Polyline({

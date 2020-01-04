@@ -74,7 +74,9 @@ object AirportSimulation {
         updatingAppeals.put(airline.id, AirlineAppeal(loyalty, awareness))
       }
 
-      AirportSource.replaceAirlineAppeals(airport.id, updatingAppeals.toMap)
+      if (!updatingAppeals.isEmpty || !airport.getAirlineBaseAppeals().isEmpty) { //2nd or is for removal of existing appeals
+        AirportSource.replaceAirlineAppeals(airport.id, updatingAppeals.toMap)
+      }
     }
 
     println("Adjust awareness by links")

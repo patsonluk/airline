@@ -77,7 +77,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) + airline.name + getUserLevelImg(airline.userLevel) 
 				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>")
 		if (airline.headquartersAirportName) {
-			row.append("<div class='cell'>" + getAirportText(airline.headquartersCity, airline.headquartersAirportName) + "</div>")
+			row.append("<div class='cell'>" + getAirportText(airline.headquartersCity, airline.headquartersAirportIata) + "</div>")
 		} else {
 			row.append("<div class='cell'>-</div>")
 		}
@@ -317,10 +317,10 @@ function updateRivalBaseList(airlineId) {
 	    		var row = $("<div class='table-row'></div>")
 	    		hasBases = true
 	    		if (base.headquarter) {
-	    			row.append("<div class='cell'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportName) + "</div>")
+	    			row.append("<div class='cell'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>")
 	    			$('#rivalBases').prepend(row)
 	    		} else {
-	    			row.append("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportName) + "</div>")
+	    			row.append("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>")
 	    			$('#rivalBases').append(row)
 	    		}
 	    		

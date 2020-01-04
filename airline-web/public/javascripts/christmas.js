@@ -30,7 +30,7 @@ function updateSantaClausModal() {
     	        }
     	        $.each(result.guesses, function(index, guess) {
                          	var row = $("<div class='table-row'></div>")
-                    		row.append("<div class='cell label'>" + getAirportText(guess.city, guess.airportName) + "</div>")
+                    		row.append("<div class='cell label'>" + getAirportText(guess.city, guess.airportCode) + "</div>")
                             row.append("<div class='cell label'>" + guess.distanceText + "</div>")
                     		table.append(row)
                     	});

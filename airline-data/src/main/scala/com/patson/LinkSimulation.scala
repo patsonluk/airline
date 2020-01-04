@@ -13,12 +13,18 @@ import scala.util.Random
 import com.patson.model.oil.OilPrice
 
 object LinkSimulation {
+
+
   private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
   private val CREW_UNIT_COST = 12 //for now...
   
   private[this] val VIP_COUNT = 5
   
-  def linkSimulation(cycle: Int, links : List[Link]) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
+  def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
+    println("Loading all links")
+    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
+    println("Finished loading all links")
+
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
     val demand = DemandGenerator.computeDemand()
     println("DONE with demand total demand: " + demand.foldLeft(0) {
@@ -108,10 +114,11 @@ object LinkSimulation {
     links.foreach {
       link => {
         var i = 0
+        val assignedInServiceAirplanes = link.getAssignedAirplanes().filter(_._1.isReady)
         for ( i <- 0 until link.frequency) {
-          var airplaneCount : Int = link.getAssignedAirplanes().size
+          var airplaneCount : Int = assignedInServiceAirplanes.size
           if (airplaneCount > 0) {
-            val airplane = link.getAssignedAirplanes().toList.map(_._1)(i % airplaneCount)           //round robin
+            val airplane = assignedInServiceAirplanes.toList.map(_._1)(i % airplaneCount)           //round robin
             val errorValue = Random.nextDouble()
             val conditionMultipler = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
             var minorDelayThreshold : Double = 0
@@ -159,7 +166,7 @@ object LinkSimulation {
     */
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
     //for testing, assuming all airplanes are only assigned to this link
-    val assignmentsToThis = link.getAssignedAirplanes().toList.map {
+    val assignmentsToThis = link.getAssignedAirplanes().filter(_._1.isReady).toList.map {
       case(airplane, assignment) => (airplane.id, LinkAssignments(immutable.Map(link.id -> assignment)))
     }.toMap
     computeLinkAndLoungeConsumptionDetail(link, cycle, assignmentsToThis)._1
@@ -182,10 +189,10 @@ object LinkSimulation {
     }
 
 
-
+    val inServiceAssignedAirplanes = link.getAssignedAirplanes().filter(_._1.isReady)
     //the % of time spent on this link for each airplane
     val assignmentWeights : immutable.Map[Airplane, Double] = { //0 to 1
-      link.getAssignedAirplanes().view.map {
+      inServiceAssignedAirplanes.view.map {
         case(airplane, assignment) =>
           allAirplaneAssignments.get(airplane.id) match {
             case Some(linkAssignmentsToThisAirplane) =>
@@ -196,7 +203,7 @@ object LinkSimulation {
       }.toMap
     }
     var maintenanceCost = 0
-    link.getAssignedAirplanes().foreach {
+    inServiceAssignedAirplanes.foreach {
       case(airplane, _) =>
       //val maintenanceCost = (link.getAssignedAirplanes.toList.map(_._1).foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
         maintenanceCost += (airplane.model.maintenanceCost * assignmentWeights(airplane) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
@@ -212,7 +219,7 @@ object LinkSimulation {
     }
     
     var depreciation = 0
-    link.getAssignedAirplanes().foreach {
+    inServiceAssignedAirplanes.foreach {
       case(airplane, _) =>
         //link.getAssignedAirplanes().toList.map(_._1).foldLeft(0)(_ + _.depreciationRate)
         depreciation += (airplane.depreciationRate * assignmentWeights(airplane)).toInt
@@ -405,6 +412,26 @@ object LinkSimulation {
         CountryMarketShare(countryCode, airlinePassengers.toMap)
       }
     }.toList
-    
+
+  }
+
+  /**
+    * Refresh link capacity and frequency if necessary
+    */
+  def refreshLinksPostCycle() = {
+    println("Refreshing link capacity and frequency to find discrepancies")
+    val simpleLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD)
+    val fullLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).map(link => (link.id, link)).toMap
+    println("Finished loading both the simple and full links")
+    //not too ideal, but even if someone update the link assignment when this is in progress, it should be okay, as that assignment
+    //is suppose to update the link capacity and frequency anyway
+    simpleLinks.foreach { simpleLink =>
+      fullLinks.get(simpleLink.id).foreach { fullLink =>
+        if (simpleLink.frequency != fullLink.frequency || simpleLink.capacity != fullLink.capacity) {
+          println(s"Adjusting capacity/frequency of  $simpleLink to $fullLink")
+          LinkSource.updateLink(fullLink)
+        }
+      }
+    }
   }
 }

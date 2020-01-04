@@ -575,9 +575,9 @@ function refreshLinkDetails(linkId) {
 	    	availableFromSlot -= link.frequency
 	    	availableToSlot -= link.frequency
 	    	
-	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportName) + '&nbsp;' + availableFromSlot + " available slot(s)")
+	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode) + '&nbsp;' + availableFromSlot + " available slot(s)")
 	    	//$("#linkFromAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.fromAirportId + ")")
-	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportName)+ '&nbsp;' + availableToSlot + " available slot(s)")
+	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode)+ '&nbsp;' + availableToSlot + " available slot(s)")
 	    	//$("#linkToAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.toAirportId + ")")
 	    	$("#linkFlightCode").text(link.flightCode)
 	    	if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
@@ -589,6 +589,12 @@ function refreshLinkDetails(linkId) {
 	    	$("#linkDistance").text(link.distance + " km")
 	    	$("#linkQuality").html(getGradeStarsImgs(Math.round(link.computedQuality / 10)) + link.computedQuality)
 	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
+	    	if (link.future) {
+	    	    $("#linkCurrentDetails .future .capacity").text(toLinkClassValueString(link.future.capacity))
+	    	    $("#linkCurrentDetails .future").show()
+	    	} else {
+	    	    $("#linkCurrentDetails .future").hide()
+	    	}
 	    	$("#linkCurrentDetails").show()
 	    	$("#linkToAirportId").val(link.toAirportId)
 	    	$("#linkFromAirportId").val(link.fromAirportId)
@@ -1014,7 +1020,7 @@ function updatePlanLinkInfo(linkInfo) {
 		availableToSlotText = '<span>' + availableToSlot + ' available slot(s)</span>'
 	}
 	
-	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportName) + '&nbsp;' + availableFromSlotText)
+	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportCode) + '&nbsp;' + availableFromSlotText)
 	if (activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
@@ -1022,8 +1028,8 @@ function updatePlanLinkInfo(linkInfo) {
 		$.each(activeAirline.baseAirports, function(index, base) {
 			var airportId = base.airportId
 			var cityName = base.city
-			var airportName = base.airportName
-			var option = $("<option></option>").attr("value", airportId).text(getAirportText(cityName, airportName))
+			var airportCode = base.airportCode
+			var option = $("<option></option>").attr("value", airportId).text(getAirportText(cityName, airportCode))
 			
 			if ($('#planLinkFromAirportId').val() == airportId) {
 				option.prop("selected", true)
@@ -1036,7 +1042,7 @@ function updatePlanLinkInfo(linkInfo) {
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	//$('#planLinkFromAirportExpectedQuality').attr("onclick", "loadLinkExpectedQuality(" + linkInfo.fromAirportId + "," + linkInfo.toAirportId + "," + linkInfo.fromAirportId + ")")
 	
-	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportName) + '&nbsp;' + availableToSlotText)
+	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportCode) + '&nbsp;' + availableToSlotText)
 	//$('#planLinkToAirportExpectedQuality').attr("onclick", "loadLinkExpectedQuality(" + linkInfo.fromAirportId + "," + linkInfo.toAirportId + "," + linkInfo.toAirportId + ")")
 	$('#planLinkFlightCode').text(linkInfo.flightCode)
 	$('#planLinkMutualRelationship').text(getRelationshipDescription(linkInfo.mutualRelationship))
@@ -1403,6 +1409,10 @@ function addAirplaneRow(container, airplane, frequency) {
         airplaneCell.append($('<img src="assets/images/icons/information.png" title="Shared with ' + sharedLinkCount + ' other route(s)">'))
     }
 
+    if (!airplane.isReady) {
+        airplaneCell.append($('<img src="assets/images/icons/construction.png" title="Under construction">'))
+    }
+
     airplaneRow.append(airplaneCellOuter)
 
 
@@ -1454,21 +1464,39 @@ function removeAirplaneFromLink(airplaneId) {
 
 // Update total frequency and capacity
 function updateTotalValues() {
-    var totalFrequency = 0
-    var totalCapacity = { "economy" : 0, "business" : 0, "first" : 0}
+    var currentCapacity = { "economy" : 0, "business" : 0, "first" : 0}
+    var futureFrequency = 0
+    var futureCapacity = { "economy" : 0, "business" : 0, "first" : 0}
+    var hasUnderConstructionAirplanes = false
     $("#planLinkDetails .frequencyDetail .airplaneRow").each(function(index, airplaneRow) {
        frequency = parseInt($(airplaneRow).find(".frequency").val())
        configuration = $(airplaneRow).data("airplane").configuration
 
-       totalFrequency += frequency
-       totalCapacity.economy += configuration.economy * frequency
-       totalCapacity.business += configuration.business * frequency
-       totalCapacity.first += configuration.first * frequency
+       futureFrequency += frequency
+       futureCapacity.economy += configuration.economy * frequency
+       futureCapacity.business += configuration.business * frequency
+       futureCapacity.first += configuration.first * frequency
+
+       if ($(airplaneRow).data("airplane").isReady) {
+           currentCapacity.economy += configuration.economy * frequency
+           currentCapacity.business += configuration.business * frequency
+           currentCapacity.first += configuration.first * frequency
+       } else {
+            hasUnderConstructionAirplanes = true
+       }
     })
-    $(".frequencyDetailTotal .total").text(totalFrequency)
-    $('#planLinkCapacity').text(totalCapacity.economy + "/" + totalCapacity.business + "/" + totalCapacity.first)
+    $(".frequencyDetailTotal .total").text(futureFrequency)
+
+    $('#planLinkCapacity').text(toLinkClassValueString(currentCapacity))
+    if (hasUnderConstructionAirplanes) {
+        $("#planLinkDetails .future .capacity").text(toLinkClassValueString(futureCapacity))
+        $("#planLinkDetails .future").show()
+    } else {
+        $("#planLinkDetails .future").hide()
+    }
+
     var frequencyLimit = $("#planLinkDetails").data("frequencyLimit")
-    if (frequencyLimit < totalFrequency) { //warning
+    if (frequencyLimit < futureFrequency) { //warning
         $(".frequencyDetailTotal .fatal").show();
         disableButton($("#planLinkDetails #updateLinkButton"), "Flight frequency exceeding limit")
     } else {
@@ -2048,8 +2076,8 @@ function updateRivalTables(result) {
     var networkCapacityTable = $("#networkCapacity")
     loyaltyAwarenessTable.children(".table-row").remove()
     networkCapacityTable.children(".table-row").remove()
-	var fromAirportText = getAirportText(result.fromCity, result.fromAirportName)
-    var toAirportText = getAirportText(result.toCity, result.toAirportName)
+	var fromAirportText = getAirportText(result.fromCity, result.fromAirportCode)
+    var toAirportText = getAirportText(result.toCity, result.toAirportCode)
     $("#linkRivalDetailsModal .fromAirportText").text(fromAirportText)
     $("#linkRivalDetailsModal .toAirportText").text(toAirportText)
 

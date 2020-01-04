@@ -43,6 +43,7 @@ class ChristmasApplication @Inject()(cc: ControllerComponents) extends AbstractC
                 Json.obj(
                   "airportId" -> JsNumber(guess.airport.id),
                   "airportName" -> JsString(guess.airport.name),
+                  "airportCode" -> JsString(guess.airport.iata),
                   "city" -> JsString(guess.airport.city),
                   "distanceText" -> JsString(getDistanceText(Computation.calculateDistance(entry.airport, guess.airport)))))
             }

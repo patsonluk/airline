@@ -222,7 +222,7 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
             homeOptionsSelect.append(option)
         }
         if (explicitHomeAirportId) { //if an explicit home is provided
-            if (explicitHomeAirportId == baseAirport.airport) {
+            if (explicitHomeAirportId == baseAirport.airportId) {
                 option.attr("selected", "selected")
             }
         } else { //otherwise look for HQ
@@ -586,7 +586,13 @@ function getAirplaneIcon(airplane, badConditionThreshold, isAssigned) {
     var div = $("<div style='position: relative;'></div>")
     var img = $("<img>")
     var src
-    if (condition < badConditionThreshold) {
+    if (!airplane.isReady) {
+        if (isAssigned) {
+            src = 'assets/images/icons/airplane-construct.png'
+        } else {
+            src = 'assets/images/icons/airplane-empty-construct.png'
+        }
+    } else if (condition < badConditionThreshold) {
 		if (isAssigned) {
 			src = 'assets/images/icons/airplane-exclamation.png'
 		} else {
@@ -826,7 +832,7 @@ function populateAirplaneHome(airplane, disableChangeHome) {
 
 
     if (currentAirport) {
-        $("#ownedAirplaneDetail .homeView .home").text(getAirportText(currentAirport.city, currentAirport.airportName))
+        $("#ownedAirplaneDetail .homeView .home").text(getAirportText(currentAirport.city, currentAirport.airportCode))
     } else {
         $("#ownedAirplaneDetail .homeView .home").text("-")
     }
@@ -948,6 +954,11 @@ function confirmAirplaneHome() {
         $("#ownedAirplaneDetail .homeView").show()
         $("#ownedAirplaneDetail .homeEdit").hide()
     }
+}
+
+function cancelAirplaneHome() {
+    $("#ownedAirplaneDetail .homeView").show()
+    $("#ownedAirplaneDetail .homeEdit").hide()
 }
 
 function getAssignedAirplanesCount(compareKey, compareValue, modelId) {

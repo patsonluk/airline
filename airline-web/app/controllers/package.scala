@@ -101,6 +101,7 @@ package object controllers {
       "condition" -> JsNumber(airplane.condition),
       "constructedCycle" -> JsNumber(airplane.constructedCycle),
       "purchasedCycle" ->  JsNumber(airplane.purchasedCycle),
+      "isReady" ->  JsBoolean(airplane.isReady),
       "constructionTime" -> JsNumber(airplane.model.constructionTime),
       "value" -> JsNumber(airplane.value),
       "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane)),
@@ -216,6 +217,13 @@ package object controllers {
       link.getAssignedModel().foreach { model =>
         json = json + ("modelId" -> JsNumber(model.id))
       }
+
+      val constructingAirplanes = link.getAssignedAirplanes().filter(!_._1.isReady)
+      if (!constructingAirplanes.isEmpty) {
+        val waitTime = CycleSource.loadCycle() - constructingAirplanes.keys.map(_.constructedCycle).max
+        json = json + ("future" -> Json.obj("frequency" -> link.futureFrequency(), "capacity" -> link.futureCapacity(), "waitTime" -> waitTime))
+      }
+
       json
     }
   }

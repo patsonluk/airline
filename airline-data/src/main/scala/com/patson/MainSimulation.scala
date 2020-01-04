@@ -38,12 +38,9 @@ object MainSimulation extends App {
       OilSimulation.simulate(cycle)
       println("Loan simulation")
       LoanInterestRateSimulation.simulate(cycle)
-      println("Loading all links")
-      val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
-      println("Finished loading all links")
-      val (linkResult, loungeResult) = LinkSimulation.linkSimulation(cycle, links)
+      val (linkResult, loungeResult) = LinkSimulation.linkSimulation(cycle)
       AirportSimulation.airportSimulation(cycle, linkResult)
-      val airplanes = AirplaneSimulation.airplaneSimulation(cycle, links)
+      val airplanes = AirplaneSimulation.airplaneSimulation(cycle)
       AirlineSimulation.airlineSimulation(cycle, linkResult, loungeResult, airplanes)
       CountrySimulation.simulate(cycle)
       
@@ -58,6 +55,11 @@ object MainSimulation extends App {
       
       println("cycle " + cycle + " spent " + (cycleEnd - cycleStartTime) / 1000 + " secs")
   }
+
+  def postCycle() = {
+    //now update the link capacity if necessary
+    LinkSimulation.refreshLinksPostCycle()
+  }
   
   
   
@@ -70,6 +72,7 @@ object MainSimulation extends App {
         startCycle(currentWeek)
         currentWeek += 1
         CycleSource.setCycle(currentWeek)
+        postCycle()
     }
   }
    
