@@ -606,21 +606,22 @@ function getAirplaneIcon(airplane, badConditionThreshold, isAssigned) {
 		}
 	}
 
-	img.attr("src", src)
-	img.attr("title", "#"+ airplaneId + " condition: " + condition.toFixed(2) + "%")
-	div.append(img)
-
 	var utilization = Math.round((airplane.maxFlightMinutes - airplane.availableFlightMinutes) / airplane.maxFlightMinutes * 100)
-	var color
-	if (utilization < 25) {
-	    color = "#FF9973"
-	} else if (utilization < 50) {
-	    color = "#FFC273"
+    var color
+    if (utilization < 25) {
+        color = "#FF9973"
+    } else if (utilization < 50) {
+        color = "#FFC273"
     } else if (utilization < 75) {
         color = "#59C795"
     } else {
         color = "#8CB9D9"
     }
+
+	img.attr("src", src)
+	div.attr("title", "#"+ airplaneId + " condition: " + condition.toFixed(2) + "% util: " + utilization + "%")
+	div.append(img)
+
 
 	var utilizationDiv = $("<div class='utilization' style='position: absolute; right: 0; bottom: 0; background-color: " + color + "; font-size: 8px; display: none;'></div>")
 	utilizationDiv.text(utilization)
