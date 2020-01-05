@@ -4,7 +4,9 @@ var santaFound = false
 function initSantaClaus() {
     $('#santaClausModal').hide()
     $("#santaClausButton").hide() //valid target
-    updateSantaClausModal()
+    if (activeAirline) {
+        updateSantaClausModal()
+    }
 }
 
 function closeSantaClausModal() {
