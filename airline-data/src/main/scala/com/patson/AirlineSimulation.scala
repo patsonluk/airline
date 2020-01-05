@@ -16,7 +16,7 @@ import com.patson.util.ChampionUtil
 
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
-  val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
+  val MAX_SERVICE_QUALITY_INCREMENT : Double = 10
   val MAX_REPUATION_DELTA = 0.5
   
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane]) = {
