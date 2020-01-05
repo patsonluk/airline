@@ -85,7 +85,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
         val airplaneConditionQuality = inServiceAirplanes.toList.map {
           case ((airplane, assignmentPerAirplane)) => airplane.condition / Airplane.MAX_CONDITION * assignmentPerAirplane.frequency
         }.sum / frequency * 20
-        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.serviceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
+        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
 //        println("computed quality " + computedQualityStore)
         hasComputedQuality = true
         computedQualityStore

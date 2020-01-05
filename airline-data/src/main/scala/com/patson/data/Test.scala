@@ -10,7 +10,6 @@ import scala.concurrent.duration.Duration
 import scala.util.Random
 
 object Test extends App {
-     
 //       println(WikiUtil.queryProfilePicture("Charles de Gaulle Airport", List.empty))
 //       println(WikiUtil.queryOtherPicture("Charles de Gaulle Airport", AirportProfilePicturePatcher.airportPreferredWords))
        
@@ -29,7 +28,7 @@ object Test extends App {
 //    AirlineSource.loadAllAirlines(false).foreach(println)
 //    Patchers.patchAirlineCode()
 //    Patchers.patchFlightNumber()
-    Patchers.airplaneModelPatcher()
+//    Patchers.airplaneModelPatcher()
 //  Patchers.patchAirlineLogos()
 //  IsolatedAirportPatcher.patchIsolatedAirports()
   

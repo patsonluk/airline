@@ -207,7 +207,7 @@ object Meta {
       "airline INTEGER PRIMARY KEY, " +
       "balance LONG," +
       "service_quality DECIMAL(5,2)," +
-      "service_funding INTEGER," +
+      "target_service_quality INTEGER," +
       "maintenance_quality DECIMAL(5,2)," +
       "reputation DECIMAL(5,2)," +
       "country_code CHAR(2)," +

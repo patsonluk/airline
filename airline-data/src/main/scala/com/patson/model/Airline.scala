@@ -8,30 +8,30 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setBalance(balance : Long) = { 
     airlineInfo.balance = balance 
   }
-  def setServiceQuality(serviceQuality : Double) {
-    airlineInfo.serviceQuality = serviceQuality
+  def setCurrentServiceQuality(serviceQuality : Double) {
+    airlineInfo.currentServiceQuality = serviceQuality
   }
-  def setServiceFunding(serviceFunding : Int) {
-    airlineInfo.serviceFunding = serviceFunding
+  def setTargetServiceQuality(targetServiceQuality : Int) {
+    airlineInfo.targetServiceQuality = targetServiceQuality
   }
   def setReputation(reputation : Double) {
     airlineInfo.reputation = reputation
   }
-  def setMaintainenceQuality(maintainenceQuality : Double) {
-    airlineInfo.maintenanceQuality = maintainenceQuality
+  def setMaintenanceQuality(maintenanceQuality : Double) {
+    airlineInfo.maintenanceQuality = maintenanceQuality
   }
-  
+
   def removeCountryCode() = {
     airlineInfo.countryCode = None
   }
-  
+
   def setCountryCode(countryCode : String) = {
     airlineInfo.countryCode = Some(countryCode)
   }
   def getCountryCode() = {
     airlineInfo.countryCode
   }
-  
+
   def setAirlineCode(airlineCode : String) = {
     airlineInfo.airlineCode = airlineCode
   }
@@ -42,17 +42,17 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setAllianceId(allianceId : Int) = {
     this.allianceId = Some(allianceId)
   }
-  
+
   def getAllianceId() : Option[Int] = {
     allianceId
   }
-  
-  
-  
+
+
+
   def setBases(bases : List[AirlineBase]) {
     this.bases = bases
   }
-  
+
   import FlightCategory._
   val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
       case DOMESTIC => None
@@ -64,14 +64,14 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
           Some((airlineGrade.value - 4) * 3)
         }
   }
-  
-  
+
+
   def airlineGrade : AirlineGrade = {
     val reputation = airlineInfo.reputation
     if (reputation < 10) {
   		AirlineGrade.NEW
   	} else if (reputation < 20) {
-  	  AirlineGrade.LOCAL  
+  	  AirlineGrade.LOCAL
   	} else if (reputation < 30) {
   		AirlineGrade.MUNICIPAL
   	} else if (reputation < 40) {
@@ -104,7 +104,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
       AirlineGrade.CELESTIAL
     }
   }
-  
+
   case class AirlineGrade(value : Int, description: String) {
     val getBaseLimit = {
       if (value <= 2) {
@@ -112,14 +112,14 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
       } else {
         value - 1
       }
-      
+
     }
-    
+
     val getModelsLimit =  {
-      if (value >= 10) 10 else value 
+      if (value >= 10) 10 else value
     }
   }
-  
+
   object AirlineGrade {
     val NEW = AirlineGrade(1, "New Airline")
     val LOCAL = AirlineGrade(2, "Local Airline")
@@ -139,16 +139,17 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     val ULTIMATE = AirlineGrade(16, "Ultimate Airline")
     val CELESTIAL = AirlineGrade(17, "Celestial Spaceline")
   }
-  
+
   def getBases() = bases
   def getHeadQuarter() = bases.find( _.headquarter )
-  
+
   def getBalance() = airlineInfo.balance
-  def getServiceQuality() = airlineInfo.serviceQuality
-  def getServiceFunding() = airlineInfo.serviceFunding
+  def getCurrentServiceQuality() = airlineInfo.currentServiceQuality
+  def getTargetServiceQuality() : Int = airlineInfo.targetServiceQuality
+
   def getReputation() = airlineInfo.reputation
   def getMaintenanceQuality() = airlineInfo.maintenanceQuality
-  
+
   def getDefaultAirlineCode() : String = {
     var code = name.split("\\s+").foldLeft("")( (foldString, nameToken) => {
       val firstCharacter = nameToken.charAt(0)
@@ -158,7 +159,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
         foldString
       }
     })
-      
+
     if (code.length() > 2) {
       code = code.substring(0, 2)
     } else if (code.length() < 2) {
@@ -168,7 +169,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   }
 }
 
-case class AirlineInfo(var balance : Long, var serviceQuality : Double, var maintenanceQuality : Double, var serviceFunding : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "")
+case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "")
 
 object TransactionType extends Enumeration {
   type TransactionType = Value

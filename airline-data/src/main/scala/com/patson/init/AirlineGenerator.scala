@@ -51,8 +51,8 @@ object AirlineGenerator extends App {
       
       val newAirline = Airline("Air " + baseAirport.city + " - " + baseAirport.iata, isGenerated = true)
       newAirline.setBalance(0)
-      newAirline.setMaintainenceQuality(100)
-      newAirline.setServiceFunding(100000)
+      newAirline.setMaintenanceQuality(100)
+      newAirline.setTargetServiceQuality(30)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
       
