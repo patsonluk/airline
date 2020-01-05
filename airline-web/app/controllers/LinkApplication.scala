@@ -900,8 +900,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         toAirportInfo = toAirportInfo.append(Json.obj("airline" -> rival, "network" -> toAirportAllianceNetworkCapacity, "awareness" -> toAirport.getAirlineAwareness(rival.id), "loyalty" -> toAirport.getAirlineLoyalty(rival.id)))
       }
 
-      result = result ++ Json.obj("fromAirport" -> fromAirportInfo, "fromAirportName" -> fromAirport.name, "fromCity" -> fromAirport.city)
-      result = result ++ Json.obj("toAirport" -> toAirportInfo, "toAirportName" -> toAirport.name, "toCity" -> toAirport.city)
+      result = result ++ Json.obj("fromAirport" -> fromAirportInfo, "fromAirportCode" -> fromAirport.iata, "fromCity" -> fromAirport.city)
+      result = result ++ Json.obj("toAirport" -> toAirportInfo, "toAirportCode" -> toAirport.iata, "toCity" -> toAirport.city)
     }
 
     Ok(result)
