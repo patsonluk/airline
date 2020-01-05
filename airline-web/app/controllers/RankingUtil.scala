@@ -178,14 +178,14 @@ object RankingUtil {
     }
   }
   private[this] def getServiceQualityRanking(airlinesById : Map[Int, Airline]) : List[Ranking] = {
-    val airlinesBySortedServiceQuality = airlinesById.values.toList.sortBy(_.getServiceQuality())(Ordering[Double].reverse)
+    val airlinesBySortedServiceQuality = airlinesById.values.toList.sortBy(_.getCurrentServiceQuality())(Ordering[Double].reverse)
     
     airlinesBySortedServiceQuality.zipWithIndex.map {
       case(airline, index) =>  Ranking(RankingType.SERVICE_QUALITY,
                                                       key = airline.id,
                                                       entry = airline,
                                                       ranking = index + 1,
-                                                      rankedValue = airline.getServiceQuality())
+                                                      rankedValue = airline.getCurrentServiceQuality())
     }
   }
   
