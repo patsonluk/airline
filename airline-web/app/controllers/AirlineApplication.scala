@@ -415,6 +415,13 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                    AirlineSource.saveAirlineInfo(airline, updateBalance = false)
                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
                    AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
+
+                     //assign airlinese that are not yet assigned
+                   AirplaneSource.updateAirplanesDetails(AirplaneSource.loadAirplanesByOwner(airlineId).map {
+                     airplane => airplane.home = airport
+                     airplane
+                   })
+
                    Created(Json.toJson(newBase))
                  }
               }
