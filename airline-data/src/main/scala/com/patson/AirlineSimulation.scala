@@ -16,7 +16,8 @@ import com.patson.util.ChampionUtil
 
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
-  val MAX_SERVICE_QUALITY_INCREMENT : Double = 10
+  val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
+  val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUATION_DELTA = 0.5
   
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane]) = {
@@ -522,7 +523,7 @@ object AirlineSimulation {
       if (delta >= 0) { //going up, slower when current quality is already high
         MAX_SERVICE_QUALITY_INCREMENT * (1 - (currentQuality / Airline.MAX_SERVICE_QUALITY * 0.9)) //at current quality 0, multiplier 1x; current quality 100, multiplier 0.1x
       } else { //going down, faster when current quality is already high
-        -1 * MAX_SERVICE_QUALITY_INCREMENT * (0.1 + (currentQuality / Airline.MAX_SERVICE_QUALITY * 0.9)) //at current quality 0, multiplier 0.1x; current quality 100, multiplier 1x
+        -1 * MAX_SERVICE_QUALITY_DECREMENT * (0.1 + (currentQuality / Airline.MAX_SERVICE_QUALITY * 0.9)) //at current quality 0, multiplier 0.1x; current quality 100, multiplier 1x
       }
     if (adjustment >= 0) {
       if (adjustment + currentQuality >= targetQuality) {
