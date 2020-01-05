@@ -347,10 +347,14 @@ function updateCashFlowSheet(airlineCashFlow) {
 	}
 }
 
-function setServiceFunding(funding) {
+function setTargetServiceQuality(targetServiceQuality) {
 	var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/serviceFunding"
-    var data = { "serviceFunding" : parseInt(funding) }
+	var url = "airlines/" + airlineId + "/target-service-quality"
+	if (!checkTargetServiceQualityInput(targetServiceQuality)) { //if invalid, then return
+	    return;
+	}
+
+    var data = { "targetServiceQuality" : parseInt(targetServiceQuality) }
 	$.ajax({
 		type: 'PUT',
 		url: url,
@@ -358,7 +362,7 @@ function setServiceFunding(funding) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
-	    	activeAirline.serviceFunding = result.serviceFunding
+	    	activeAirline.targetServiceQuality = result.targetServiceQuality
 	    	updateServiceFundingDetails()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -366,6 +370,22 @@ function setServiceFunding(funding) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function checkTargetServiceQualityInput(input) {
+    var value = parseInt(input)
+    if (value === undefined) {
+        $("#serviceFundingInputSpan .warning").show()
+        return false;
+    } else {
+        if (input < 0 || input > 100) {
+            $("#serviceFundingInputSpan .warning").show()
+            return false;
+        } else { //ok
+            $("#serviceFundingInputSpan .warning").hide()
+            return true;
+        }
+    }
 }
 
 function setAirplaneRenewal(threshold) {
@@ -558,7 +578,7 @@ function updateLogoUpload() {
 	});
 }
 
-function editServiceFunding() {
+function editTargetServiceQuality() {
 	$('#serviceFundingDisplaySpan').hide()
 	$('#serviceFundingInputSpan').show()
 }
@@ -567,20 +587,20 @@ function editServiceFunding() {
 function updateServiceFundingDetails() {
 	$('#currentServiceQuality').text(activeAirline.serviceQuality)
 	
-	$('#serviceFunding').text('$' + commaSeparateNumber(activeAirline.serviceFunding))
-	$('#serviceFundingInput').val(activeAirline.serviceFunding)
+	$('#targetServiceQuality').text(activeAirline.targetServiceQuality)
+	$('#targetServiceQualityInput').val(activeAirline.targetServiceQuality)
 	
 	$('#serviceFundingDisplaySpan').show()
 	$('#serviceFundingInputSpan').hide()
 
-	$('#servicePrediction').text('...')
+	$('#fundingProjection').text('...')
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + activeAirline.id + "/servicePrediction",
+		url: "airlines/" + activeAirline.id + "/service-funding-projection",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(servicePrediction) {
-	    	$('#servicePrediction').text(servicePrediction.prediction)
+	    success: function(result) {
+	    	$('#fundingProjection').text(commaSeparateNumber(result.fundingProjection))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

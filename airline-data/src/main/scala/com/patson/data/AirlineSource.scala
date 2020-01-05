@@ -62,9 +62,9 @@ object AirlineSource {
           airline.id = resultSet.getInt("id")
           airline.setBalance(resultSet.getLong("balance"))
           airline.setReputation(resultSet.getDouble("reputation"))
-          airline.setServiceQuality(resultSet.getDouble("service_quality"))
-          airline.setServiceFunding(resultSet.getInt("service_funding"))
-          airline.setMaintainenceQuality(resultSet.getDouble("maintenance_quality"))
+          airline.setCurrentServiceQuality(resultSet.getDouble("service_quality"))
+          airline.setTargetServiceQuality(resultSet.getInt("target_service_quality"))
+          airline.setMaintenanceQuality(resultSet.getDouble("maintenance_quality"))
           airline.setAirlineCode(resultSet.getString("airline_code"))
           val countryCode = resultSet.getString("country_code")
           if (countryCode != null) {
@@ -127,11 +127,11 @@ object AirlineSource {
             airline.id = generatedId
             
             //insert airline info too
-            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, service_funding, maintenance_quality, reputation, country_code, airline_code) VALUES(?,?,?,?,?,?,?,?)")
+            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, target_service_quality, maintenance_quality, reputation, country_code, airline_code) VALUES(?,?,?,?,?,?,?,?)")
             infoStatement.setInt(1, airline.id)
             infoStatement.setLong(2, airline.getBalance())
-            infoStatement.setDouble(3, airline.getServiceQuality())
-            infoStatement.setInt(4, airline.getServiceFunding())
+            infoStatement.setDouble(3, airline.getCurrentServiceQuality())
+            infoStatement.setInt(4, airline.getTargetServiceQuality())
             infoStatement.setDouble(5, airline.getMaintenanceQuality())
             infoStatement.setDouble(6, airline.getReputation())
             infoStatement.setString(7, airline.getCountryCode().getOrElse(null))
@@ -172,7 +172,7 @@ object AirlineSource {
       if (updateBalance) {
         query += "balance = ?, "
       }
-      query += "service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
       
       try {
         val updateStatement = connection.prepareStatement(query)
@@ -183,9 +183,9 @@ object AirlineSource {
           updateStatement.setLong(index, airline.getBalance())
         }
         index += 1
-        updateStatement.setDouble(index, airline.getServiceQuality())
+        updateStatement.setDouble(index, airline.getCurrentServiceQuality())
         index += 1
-        updateStatement.setInt(index, airline.getServiceFunding())
+        updateStatement.setInt(index, airline.getTargetServiceQuality())
         index += 1
         updateStatement.setDouble(index, airline.getMaintenanceQuality())
         index += 1
@@ -227,7 +227,7 @@ object AirlineSource {
       if (updateBalance) {
         query += "balance = ?, "
       }
-      query += "service_quality = ?, service_funding = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
       
       
       try {
@@ -242,9 +242,9 @@ object AirlineSource {
             updateStatement.setLong(index, airline.getBalance())
           }
           index += 1
-          updateStatement.setDouble(index, airline.getServiceQuality())
+          updateStatement.setDouble(index, airline.getCurrentServiceQuality())
           index += 1
-          updateStatement.setInt(index, airline.getServiceFunding())
+          updateStatement.setInt(index, airline.getTargetServiceQuality())
           index += 1
           updateStatement.setDouble(index, airline.getMaintenanceQuality())
           index += 1

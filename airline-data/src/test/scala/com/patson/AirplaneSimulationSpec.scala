@@ -7,9 +7,9 @@ import org.scalatest.{Matchers, WordSpecLike}
 class AirplaneSimulationSpec extends WordSpecLike with Matchers {
   private[this] val model = Model.modelByName("Cessna 421")
   val airline1 = Airline("test-1")
-  airline1.setMaintainenceQuality(80)
+  airline1.setMaintenanceQuality(80)
   val airline2 = Airline("test-2")
-  airline2.setMaintainenceQuality(70)
+  airline2.setMaintenanceQuality(70)
    
   val airplane1 = Airplane(model, airline1, 0, 0, 100, 0, model.price)
   val airplane2 = Airplane(model, airline2, 0, 0, 100, 0, model.price)
@@ -32,7 +32,7 @@ class AirplaneSimulationSpec extends WordSpecLike with Matchers {
     }
     "not decay beyond 0% in lifespan".in {
        val badAirline = Airline("bad-airline")
-       badAirline.setMaintainenceQuality(0)
+       badAirline.setMaintenanceQuality(0)
        
        var airplane = airplane1.copy(owner = badAirline)
        val link = link1.copy(airline = badAirline)

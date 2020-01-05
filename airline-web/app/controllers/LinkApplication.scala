@@ -715,7 +715,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       //check airline grade limit
       val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).view.mapValues(_.size).toMap
       val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
-      airline.getLinkLimit(flightCategory).foreach { limit =>//if there's limit
+      airline.getLinkLimit(flightCategory).foreach { limit => //if there's limit
         if (limit <= existingFlightCategoryCounts.getOrElse(flightCategory, 0)) {
           return Some("Cannot create more route of category " + flightCategory + " until your airline reaches next grade")  
         }  
@@ -768,19 +768,19 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //    }
 //  }
   
-  def updateServiceFunding(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def setTargetServiceQuality(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
-      val serviceFundingTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("serviceFunding").as[Int])
-      
-      serviceFundingTry match {
-        case Success(serviceFunding) =>
-          if (serviceFunding < 0) {
-            BadRequest("Cannot have negative service funding")
+      Try(request.body.asInstanceOf[AnyContentAsJson].json.\("targetServiceQuality").as[Int]) match {
+        case Success(targetServiceQuality) =>
+          if (targetServiceQuality < 0) {
+            BadRequest("Cannot have negative targetServiceQuality")
+          } else if (targetServiceQuality > 100) {
+            BadRequest(s"Cannot have targetServiceQuality $targetServiceQuality")
           } else {
             val airline = request.user
-            airline.setServiceFunding(serviceFunding)
+            airline.setTargetServiceQuality(targetServiceQuality)
             AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-            Ok(Json.obj("serviceFunding" -> JsNumber(serviceFunding)))
+            Ok(Json.obj("targetServiceQuality" -> JsNumber(targetServiceQuality)))
           }
         case Failure(_) =>
           BadRequest("Cannot Update service funding")
@@ -797,7 +797,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       maintenanceQualityTry match {
         case Success(maintenanceQuality) =>
           val airline = request.user
-          airline.setMaintainenceQuality(maintenanceQuality)
+          airline.setMaintenanceQuality(maintenanceQuality)
           AirlineSource.saveAirlineInfo(airline, updateBalance = false)
           Ok(Json.obj("serviceFunding" -> JsNumber(maintenanceQuality)))
         case Failure(_) =>

@@ -29,9 +29,9 @@ class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.SERVICE_QUALITY
   val BONUS = 5
   override def applyAward(): Unit = {
-    val newQuality = Math.min(santaClausInfo.airline.getServiceQuality() + BONUS, Airline.MAX_SERVICE_QUALITY)
+    val newQuality = Math.min(santaClausInfo.airline.getCurrentServiceQuality() + BONUS, Airline.MAX_SERVICE_QUALITY)
 
-    santaClausInfo.airline.setServiceQuality(newQuality)
+    santaClausInfo.airline.setCurrentServiceQuality(newQuality)
     AirlineSource.saveAirlineInfo(santaClausInfo.airline, updateBalance = false)
   }
   override val description: String = "Santa Claus offers you his pro tips on making your flights magical! Overall Airline Service Quality bonus +" + BONUS + " !"

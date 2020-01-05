@@ -1327,21 +1327,22 @@
                                         <div id="currentServiceQuality" class="cell value"></div>
                                     </div>
                                     <div class="table-row">
-                                        <div class="cell label">Service Funding (weekly):</div>
+                                        <div class="cell label">Target Service Quality:</div>
                                         <div class="cell value">
                                             <span id="serviceFundingDisplaySpan">
-                                                <span id="serviceFunding"></span>
-                                                <img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editServiceFunding()"/>
+                                                <span id="targetServiceQuality"></span>
+                                                <img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editTargetServiceQuality()"/>
                                             </span>
                                             <span id="serviceFundingInputSpan">
-                                                <input id="serviceFundingInput" type="text"/>
-                                                <img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setServiceFunding($('#serviceFundingInput').val())"/>
+                                                <input id="targetServiceQualityInput" type="text" size="3" maxlength="3" onkeyup="checkTargetServiceQualityInput($(this).val())"/>
+												<span class="warning" style="display: none;">Value must be an integer 0 - 100</span>
+                                                <img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setTargetServiceQuality($('#targetServiceQualityInput').val())"/>
                                             </span>
                                         </div>
                                     </div>
                                     <div class="table-row">
-                                        <div class="cell label">Change Prediction:</div>
-                                        <div id="servicePrediction" class="cell value"></div>
+                                        <div class="cell label">Projected Service Funding (weekly):</div>
+                                        <div class="cell value">$<span id="fundingProjection"></span></div>
                                     </div>
                                     <div class="table-row">
                                         <div class="cell label">Auto Airplane Renewal:</div>

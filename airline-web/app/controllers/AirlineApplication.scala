@@ -27,8 +27,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "name" -> JsString(airline.name),
       "balance" -> JsNumber(airline.airlineInfo.balance),
       "reputation" -> JsNumber(BigDecimal(airline.airlineInfo.reputation).setScale(2, BigDecimal.RoundingMode.HALF_EVEN)),
-      "serviceQuality" -> JsNumber(airline.airlineInfo.serviceQuality),
-      "serviceFunding" -> JsNumber(airline.airlineInfo.serviceFunding),
+      "serviceQuality" -> JsNumber(airline.airlineInfo.currentServiceQuality),
+      "targetServiceQuality" -> JsNumber(airline.airlineInfo.targetServiceQuality),
       "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
       "gradeValue" -> JsNumber(airline.airlineGrade.value),
@@ -591,30 +591,13 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      Ok(Json.obj("incomes" -> Json.toJson(incomes), "cashFlows" -> Json.toJson(cashFlows)))
   }
   
-  def getServicePrediction(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-     val airline = request.user
-     val targetQuality = AirlineSimulation.getTargetQuality(airline.getServiceFunding(), LinkSource.loadLinksByAirlineId(airlineId, LinkSource.FULL_LOAD))
-     
-     val delta = targetQuality - airline.getServiceQuality()
-     val prediction =  
-       if (delta >= 20) {
-         "Increase rapidly"
-       } else if (delta >= 10) {
-         "Increase steadily"
-       } else if (delta >= 5) {
-         "Increase slightly"
-       } else if (delta >= -5) {
-         "Steady"
-       } else if (delta >= -10) {
-         "Decrease slightly"
-       } else if (delta >= -20) {
-         "Decrease steadily"
-       } else {
-         "Decrease rapidly"
-       }
+  def getServiceFundingProjection(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+     val targetQuality = request.user.getTargetServiceQuality()
+
+     val funding = AirlineSimulation.getServiceFunding(targetQuality, LinkSource.loadLinksByAirlineId(airlineId))
      
      
-     Ok(JsObject(List("prediction" -> JsString(prediction))))
+     Ok(JsObject(List("fundingProjection" -> JsNumber(funding))))
   }
   
   def getChampionedCountries(airlineId : Int) = Authenticated { implicit request =>
@@ -679,8 +662,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           //unset country code
           airline.removeCountryCode()
           //unset service investment
-          airline.setServiceFunding(0)
-          airline.setServiceQuality(0)
+          airline.setTargetServiceQuality(0)
+          airline.setCurrentServiceQuality(0)
           
           AirlineSource.saveAirlineInfo(airline)
           Ok(Json.toJson(airline))
