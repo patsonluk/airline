@@ -372,7 +372,7 @@ function updateFacilityList(statistics) {
 
 
 function getAirports() {
-	$.getJSON( "airports?count=4000", function( data ) {
+	$.getJSON( "airports", function( data ) {
 		  addMarkers(data)
 	});
 }

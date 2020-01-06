@@ -213,10 +213,31 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   def getCurrentCycle() = Action  {
     Ok(Json.obj("cycle" -> CycleSource.loadCycle()))
   }
-  
-  def getAirports(count : Int) = Action {
-    val selectedAirports = cachedAirportsByPower.takeRight(count)
-    Ok(Json.toJson(selectedAirports))
+
+  private val airportByPowerCount = 4000
+  val visibleAirports = getVisibleAirports(airportByPowerCount)
+
+  def getVisibleAirports(airportByPowerCount : Int) : List[Airport] = {
+    val powerfulAirports : Map[Int, Airport] = cachedAirportsByPower.takeRight(airportByPowerCount).map(airport => (airport.id, airport)).toMap
+    val mostPowerfulAirportsPerCountry = cachedAirportsByPower.groupBy(_.countryCode).values.flatMap { airportsOfACountry =>
+      if (airportsOfACountry.length > 0) {
+        List(airportsOfACountry.reverse.apply(0))
+      } else {
+        List()
+      }
+    }
+    val result = (powerfulAirports.values ++ mostPowerfulAirportsPerCountry.filter { mostPowerfulAirportOfACountry =>
+      val alreadyInList = powerfulAirports.contains(mostPowerfulAirportOfACountry.id)
+      //println(s"$alreadyInList ? $mostPowerfulAirportOfACountry")
+      !alreadyInList
+    }).toList
+    result
+  }
+
+
+  def getAirports(@deprecated count : Int) = Action { //count is no longer used
+    //val selectedAirports = cachedAirportsByPower.takeRight(count)
+    Ok(Json.toJson(visibleAirports))
   }
   
   def getAirport(airportId : Int) = Action {
