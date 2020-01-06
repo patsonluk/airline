@@ -611,8 +611,9 @@ function refreshLinkDetails(linkId) {
     	    			if (linkConsumption.airlineId != airlineId) {
     	    				$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
 		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
-		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity) 
-		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality + "</div></div>")
+		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity)
+		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality
+		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.frequency + "</div></div>")
     	    			}
 	    	    	})
 	    	    	if ($("#linkCompetitons .data-row").length == 0) {
