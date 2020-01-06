@@ -45,10 +45,11 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   val airline2Link = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 0, 600, 1, flightType)  
   airline1Link.setQuality(fromAirport.expectedQuality(flightType, FIRST))
   airline2Link.setQuality(fromAirport.expectedQuality(flightType, FIRST))
-  val topAirlineLink = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 100, 600, 1, flightType) 
-  airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), testAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
-  airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), testAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
-  topAirlineLink.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), topAirline, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+  val topAirlineLink = Link(fromAirport, toAirport, testAirline2, defaultPrice, distance = distance, defaultCapacity, rawQuality = 100, 600, 1, flightType)
+  val model = Model.modelByName("Boeing 737 MAX 9")
+  airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, testAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+  airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, testAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+  topAirlineLink.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, topAirline, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
   
   "An AppealPreference".must {
     "generate similar cost if price and distance is the same, and small differece in loyalty".in {
@@ -334,8 +335,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
-      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
       toAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -361,8 +362,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
-      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
       toAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, toAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -388,8 +389,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
-      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
       toAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -415,8 +416,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
-      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 2, status = LoungeStatus.ACTIVE, foundedCycle = 0),
                                    Lounge(adjustedAirline2, allianceId = None, fromAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -443,8 +444,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       airline1Link.setQuality(100)
       val airline2Link = Link(fromAirport, toAirport, adjustedAirline2, defaultPrice, 10000, defaultCapacity, 0, 600, 1, flightType)
       airline2Link.setQuality(100)
-      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
-      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(Model.fromId(0), adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline2Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline1, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
+      airline1Link.setTestingAssignedAirplanes(scala.collection.immutable.Map(Airplane(model, adjustedAirline2, 0, purchasedCycle = 0, 100, 0, 0) -> 1))
       
       fromAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, fromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
       toAirport.initLounges(List(Lounge(adjustedAirline1, allianceId = None, toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
@@ -561,12 +562,12 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
       assert(ratio > 1)
-      assert(ratio < 2)
+      assert(ratio < 2.5)
      }
      
-      "mostly overlap if frequency diff is small". in {
-      val link1 = airline1Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD)
-      val link2 = airline2Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD - 4)
+      "mostly overlap if frequency diff is small (low frequency)". in {
+      val link1 = airline1Link.copy(frequency = 3)
+      val link2 = airline2Link.copy(frequency = 1)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -579,6 +580,22 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       assert(ratio > 1)
       assert(ratio < 1.2)
      }
+
+    "mostly overlap if frequency diff is small". in {
+      val link1 = airline1Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD + 4)
+      val link2 = airline2Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      var airline1Picked = 0
+      var airline2Picked = 0
+      for (i <- 0 until 100000) {
+        val preference = AppealPreference(fromAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 0, 0)
+        val link1Cost = preference.computeCost(link1, ECONOMY)
+        val link2Cost = preference.computeCost(link2, ECONOMY)
+        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+      }
+      val ratio = airline1Picked.toDouble / airline2Picked
+      assert(ratio > 1)
+      assert(ratio < 1.2)
+    }
 
     "higher link class should care less about price".in {
       val airline1Link = Link(fromAirport, toAirport, testAirline1, defaultPrice, 10000, defaultCapacity, 0, 600, Link.HIGH_FREQUENCY_THRESHOLD, flightType)
@@ -640,6 +657,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
       assert(ratio > 10)
+      assert(ratio <  50)
      }
      
       "some overlap if frequency diff is small". in {
@@ -721,7 +739,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       
       val link1 = airline1Link.copy(price = defaultPrice * 1.5, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
       val link2 = airline2Link.copy(price = defaultPrice, frequency = 1)
-      link1.setQuality(80)    
+      link1.setQuality(60)
       link2.setQuality(40)
       val pool = DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport)
       
@@ -747,7 +765,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
                                                testAirline2.id -> AirlineAppeal(loyalty = 0, 0)))
       
       val link1 = airline1Link.copy(price = defaultPrice * 1.1, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
-      val link2 = airline2Link.copy(price = defaultPrice, frequency = 1)
+      val link2 = airline2Link.copy(price = defaultPrice, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
       link1.setQuality(80)    
       link2.setQuality(40)
       val pool = DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport)
@@ -765,6 +783,50 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       val ratio = airline1Picked.toDouble / airline2Picked 
       assert(ratio > 0.9)
       assert(ratio < 1.2)
+    }
+
+    "generate preference that compute to some overlapping but differentiating cost if frequency has considerable difference)".in {
+      val link1 = airline1Link.copy(price = defaultPrice, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val link2 = airline2Link.copy(price = defaultPrice, frequency = 5)
+      link1.setQuality(50)
+      link2.setQuality(50)
+      val pool = DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport)
+
+      var airline1Picked = 0
+      var airline2Picked = 0
+
+      for (i <- 0 until 100000) {
+        val preference = pool.draw(ECONOMY, fromAirport, link1.to)
+        val link1Cost = preference.computeCost(link1, ECONOMY)
+        val link2Cost = preference.computeCost(link2, ECONOMY)
+        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+      }
+
+      val ratio = airline1Picked.toDouble / airline2Picked
+      assert(ratio > 1.2)
+      assert(ratio < 2)
+    }
+
+    "generate preference that compute to some overlapping but differentiating cost if frequency/loyalty has huge difference but make up in ticket price)".in {
+      val link1 = airline1Link.copy(price = defaultPrice, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val link2 = airline2Link.copy(price = defaultPrice * 0.85, frequency = 1)
+      link1.setQuality(70)
+      link2.setQuality(20)
+      val pool = DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport)
+
+      var airline1Picked = 0
+      var airline2Picked = 0
+
+      for (i <- 0 until 100000) {
+        val preference = pool.draw(ECONOMY, fromAirport, link1.to)
+        val link1Cost = preference.computeCost(link1, ECONOMY)
+        val link2Cost = preference.computeCost(link2, ECONOMY)
+        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+      }
+
+      val ratio = airline1Picked.toDouble / airline2Picked
+      assert(ratio > 5)
+      assert(ratio < 20)
     }
   }
 }
