@@ -81,6 +81,12 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     
     val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 2) / 3  //dampen the effect
     cost = (cost * qualityAdjustedRatio).toInt
+
+    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
+      cost = (cost * (1.1 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.1)).toInt
+    } else {
+      cost = (cost * (0.9 + 0.1 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
+    }
     
     val noise = 0.9 + getFlatTopBellRandom(0.2, 0.1)
     
@@ -117,13 +123,12 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
     cost = (cost * qualityAdjustedRatio).toInt
 
     //I NEED THE FLIGHT NOW! extra penalty up to 1.2 if frequency is min, boost if very frequent
-    var frequencyAdjustRatio: Double = 1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD / 5
-    if (frequencyAdjustRatio < 0.5) { //only reduce by 50% max
-      frequencyAdjustRatio = 0.5
+    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
+      cost = (cost * (1.2 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.2)).toInt
+    } else {
+      cost = (cost * (0.5 + 0.5 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
     }
-    cost = cost *  frequencyAdjustRatio
 
-    
     val noise = 0.8 + getFlatTopBellRandom(0.2, 0.1)
 
     //NOISE?
@@ -193,9 +198,13 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     
     perceivedPrice = (perceivedPrice * getQualityAdjustRatio(homeAirport, link, linkClass)).toInt
     
-    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {  
-      perceivedPrice = (perceivedPrice * (1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD / 15)).toInt  
+
+    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
+      perceivedPrice = (perceivedPrice * (1.05 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.05)).toInt
+    } else {
+      perceivedPrice = (perceivedPrice * (0.95 + 0.05 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
     }
+
         
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     

@@ -251,13 +251,13 @@ object DemandGenerator {
     }
     
     flightPreferences.append((SpeedPreference(homeAirport, ECONOMY), 2))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 2))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4))
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.5), 2))
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 2), 1))
     
     
-    //BUSINSES prefs
+    //BUSINESS prefs
     for (i <- 0 until 2) { //bit more randomness - set variation per group
       flightPreferences.append((SpeedPreference(homeAirport, BUSINESS), 3))
       flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0), 2))
