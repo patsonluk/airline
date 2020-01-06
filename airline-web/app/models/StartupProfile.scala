@@ -35,6 +35,7 @@ class RevivalProfile extends StartupProfile(title = "Revival of past glory",
 		      Airplane(model, owner = airline, constructedCycle = cycle, purchasedCycle = cycle, condition = Airplane.MAX_CONDITION / 2, depreciationRate = 0, value = model.price / 2))
 		  AirplaneSource.saveAirplanes(airplanes)
 			airplanes.foreach(airplane => airplane.assignDefaultConfiguration())
+			AirplaneSource.updateAirplanes(airplanes)
 		  val loan = Loan(airline.id, borrowedAmount = 100000000, interest = 0, remainingAmount = 100000000, creationCycle = 0, loanTerm = 10 * 52)
 		  BankSource.saveLoan(loan)
 		}
@@ -74,6 +75,7 @@ class CommuterProfile extends StartupProfile(title = "A humble beginning",
 		      
 		  AirplaneSource.saveAirplanes(airplanes)
 			airplanes.foreach(airplane => airplane.assignDefaultConfiguration())
+			AirplaneSource.updateAirplanes(airplanes)
 		  val loan = Loan(airline.id, borrowedAmount = 50000000, interest = 0, remainingAmount = 50000000, creationCycle = 0, loanTerm = 10 * 52)
 		  BankSource.saveLoan(loan)
 		}
