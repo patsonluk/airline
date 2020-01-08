@@ -429,21 +429,51 @@ function closeAllModals() {
 
 function disableButton(button, reason) {
     $(button).addClass("disabled")
-    $(button).data("clickFunction", $(button).attr("onclick"))
+    $(button).data("originalClickFunction", $(button).attr("onclick"))
     $(button).data("oldTitle", $(button).attr("title"))
     if (reason) {
         $(button).attr("title", reason)
     }
     $(button).removeAttr("onclick") //remove on click function
+
+
+    if (isTouchDevice()) {
+        $(button).find(".touchTitle").remove()
+        if (reason) {
+            $(button).css({position: 'relative'});
+            var touchTitleSpan = $("<span style='display: none;' class='touchTitle'>" + reason + "</span>");
+            $(button).append(touchTitleSpan)
+            var addedClickFunction = function() {
+                 if (touchTitleSpan.is(":visible")) {
+                     touchTitleSpan.hide()
+                 } else {
+                     touchTitleSpan.show()
+                 }
+             }
+            $(button).click(addedClickFunction)
+            $(button).data("addedClickFunction", addedClickFunction)
+        }
+    }
 }
 
 function enableButton(button) {
     $(button).removeClass("disabled")
-    $(button).attr("onclick", $(button).data("clickFunction")) //set it back
+    var addedClickFunction = $(button).data("addedClickFunction")
+    if (addedClickFunction) {
+        $(button).unbind("click", addedClickFunction)
+    }
+    var originalClickFunction = $(button).data("originalClickFunction")
+    if (originalClickFunction) {
+        $(button).attr("onclick", originalClickFunction) //set it back
+    }
     if ($(button).data("oldTitle")) {
         $(button).attr("title",  $(button).data("oldTitle"))
     } else {
         $(button).removeAttr("title")
+    }
+
+    if (isTouchDevice()) {
+        $(button).find(".touchTitle").remove()
     }
 
 }
@@ -461,4 +491,13 @@ function isIe() {
    if (/Edge\/\d./i.test(navigator.userAgent)){
       return true;
    }
+}
+
+function isTouchDevice() {
+  try {
+    document.createEvent("TouchEvent");
+    return true;
+  } catch (e) {
+    return false;
+  }
 }

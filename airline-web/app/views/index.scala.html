@@ -695,9 +695,6 @@
 									<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneModelDetails .selectedModel').val())">Config</div>
 									<input type="hidden" class="selectedModel"/>
 								</div>
-								<div class="rejection">
-									<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
-								</div>
 							</div>
 						</div>
 	<!-- 				end extended panel -->
@@ -783,12 +780,6 @@
 									<div class="label"><h5>Facilities:</h5></div>
 									<div class="value" id="airportDetailsFacilities"></div>
 								</div>
-							</div>
-							<div id="baseRejection" style="display:none;">
-								<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="baseRejectionReason" class="warning"></span>
-							</div>
-							<div id="downgradeRejection" style="display:none;">
-								<img src='@routes.Assets.versioned("images/icons/information.png")'><span id="downgradeRejectionReason"></span>
 							</div>
 							<div class="button" id="buildHeadquarterButton" style="display: none;" onclick='promptConfirm("Build your headquarters at this airport?", data => buildBase(true))'>Build Headquarter</div>
 							<div class="button" id="buildBaseButton" style="display: none;" onclick='promptConfirm("Build a base at this airport?", data => buildBase(false))'>Build Base</div>
@@ -1217,9 +1208,6 @@
 										<div class="value delivery"></div>
 									</div>
 									<input type="hidden" class="selectedModel"/>
-								</div>
-								<div class="rejection">
-									<img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning rejectionSpan"></span>
 								</div>
 								<div class="button add" onclick="promptBuyNewAirplane($('#airplaneCanvas .selectedModel').val(), false)">Purchase</div>
 								<div class="button" onclick="showAirplaneInventory($('#airplaneCanvas .selectedModel').val())">Inventory</div>
@@ -2601,9 +2589,7 @@
 			    				<div class="value upgradeUpkeep"></div>
 			    			</div>
 						</div>
-		<div class="upgradeRejectionDiv" style="display:none;"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning upgradeRejectionReason"></span></div>						
-	    
-	    <div class="button buildButton" onclick="buildFacility($('#facilityModal').data('facility'), 1)">Build</div>
+		<div class="button buildButton" onclick="buildFacility($('#facilityModal').data('facility'), 1)">Build</div>
 	    <div class="button upgradeButton" onclick="buildFacility($('#facilityModal').data('facility'), 1)">Upgrade</div>
 	    <div class="button downgradeButton" onclick="buildFacility($('#facilityModal').data('facility'), -1)">Downgrade</div>
 	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
@@ -3043,10 +3029,6 @@
 <!--					</div>-->
 				</div>
 				<input type="hidden" id="actionAirplaneId">
-				<div class="rejection">
-					<span class="warning cash"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'>Not enough cash to replace this airplane</span>
-					<span class="warning purchasedCycle"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'>Can only replace this airplane <span class="replaceRemainingWeek"></span> week(s) from now </span>
-				</div>
 				<div class="button" id ="sellAirplaneButton" onclick="promptConfirm('Sell this airplane?', sellAirplane, $('#actionAirplaneId').val())">Sell</div>
 				<div class="button" id ="replaceAirplaneButton" onclick="promptConfirm('Replace this airplane?', replaceAirplane, $('#actionAirplaneId').val())">Replace</div>
 			</div>
