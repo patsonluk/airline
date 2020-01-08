@@ -102,18 +102,24 @@ function updateAirportDetails(airport) {
 	    		
 	    		//update buttons and reject reasons
 	    		if (baseDetails.rejection) {
-	    			$('#baseRejectionReason').text(baseDetails.rejection)
-	    			$('#baseRejection').show()
 	    			$('#buildHeadquarterButton').hide()
 	    			$('#buildBaseButton').hide()
-	    			$('#upgradeBaseButton').hide()
-	    		} else{
-	    			$('#baseRejection').hide()
+                    $('#upgradeBaseButton').hide()
+	    			if (!airportBase) {
+	    			    disableButton($('#buildBaseButton'), baseDetails.rejection)
+	    			    $('#buildBaseButton').show()
+	    			} else {
+	    			    disableButton($('#upgradeBaseButton'), baseDetails.rejection)
+	    			    $('#upgradeBaseButton').show()
+	    			}
+	    		} else {
 	    			if (!airportBase) {
 	    				if (activeAirline.headquarterAirport) {
 		    				$('#buildHeadquarterButton').hide()
+		    				enableButton($('#buildBaseButton'))
 		    				$('#buildBaseButton').show()
 	    				} else {
+	    				    enableButton($('#buildHeadquarterButton'))
 	    					$('#buildHeadquarterButton').show()
 		    				$('#buildBaseButton').hide()
 	    				}
@@ -121,17 +127,17 @@ function updateAirportDetails(airport) {
 	    			} else {
 	    				$('#buildHeadquarterButton').hide()
 	    				$('#buildBaseButton').hide()
+	    				enableButton($('#upgradeBaseButton'))
 	    				$('#upgradeBaseButton').show()
 	    			}
 	    		}
 		    	
 		    	if (baseDetails.downgradeRejection) {
-		    		$('#downgradeRejectionReason').text(baseDetails.downgradeRejection)
-	    			$('#downgradeRejection').show()
-	    			$('#downgradeBaseButton').hide()
+                    disableButton($('#downgradeBaseButton'), baseDetails.downgradeRejection)
+	    			$('#downgradeBaseButton').show()
 		    	} else {
-		    		$('#downgradeRejection').hide()
 		    		if (airportBase) {
+                        enableButton($('#downgradeBaseButton'))
 		    			$('#downgradeBaseButton').show()
 		    		} else {
 		    			$('#downgradeBaseButton').hide()

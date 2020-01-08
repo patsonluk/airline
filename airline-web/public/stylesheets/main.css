@@ -654,3 +654,16 @@ input:disabled {
 .button.disabled:hover {
   cursor: not-allowed
 }
+
+.touchTitle {
+    position: absolute;
+    top: 20px;
+    padding: 4px;
+    left: 0;
+    z-index: 1;
+    white-space: nowrap;
+    background: linear-gradient(#F0E069 0%, #FFF6B3 10%);
+    color : #454544;
+    border-radius: 3px 3px 3px 3px;
+    text-transform: none !important;
+}

@@ -443,13 +443,9 @@ function updateModelInfo(modelId) {
 	}
 	
 	if (model.rejection) {
-		$('#airplaneModelDetails .rejectionSpan').text(model.rejection)
-		$('#airplaneModelDetails .rejection').show()
-		$('#airplaneModelDetails .add').hide()
+		disableButton($('#airplaneModelDetails .add'), model.rejection)
 	} else {
-		$('#airplaneModelDetails .rejectionSpan').text('')
-		$('#airplaneModelDetails .rejection').hide()
-		$('#airplaneModelDetails .add').show()
+		enableButton($('#airplaneModelDetails .add'))
 	}
 }
 
@@ -496,13 +492,9 @@ function selectAirplaneModel(model) {
 		$('#airplaneCanvas .add').text('Place Order')
 	}
 	if (model.rejection) {
-		$('#airplaneCanvas .rejectionSpan').text(model.rejection)
-		$('#airplaneCanvas .rejection').show()
-		$('#airplaneCanvas .add').hide()
+		disableButton($('#airplaneCanvas .add'), model.rejection)
 	} else {
-		$('#airplaneCanvas .rejectionSpan').text('')
-		$('#airplaneCanvas .rejection').hide()
-		$('#airplaneCanvas .add').show()
+		enableButton($('#airplaneCanvas .add'))
 	}
 
 	$('#airplaneCanvas #airplaneModelDetail').fadeIn(200)
@@ -733,37 +725,30 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
 	    	        var linkDescription = "<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "<img src='assets/images/icons/arrow.png'>" + getAirportText(link.toAirportCity, link.toAirportCode) + " " + linkEntry.frequency + " flight(s) per week</div>"
 	    	        $("#airplaneDetailsLink").append("<div><a href='javascript:void(0)' onclick='closeAllModals(); showWorldMap(); selectLinkFromMap(" + link.id + ", true)'>" + linkDescription + "</a></div>" )
 	    	    })
-
-	    		$("#sellAirplaneButton").hide()
+	    		disableButton("#sellAirplaneButton", "Cannot sell airplanes with route assigned")
 	    	} else {
 	    		$("#airplaneDetailsLink").text("-")
 	    		if (age >= 0) {
-	    			$("#sellAirplaneButton").show()
+	    		    enableButton("#sellAirplaneButton")
 	    		} else {
-	    			$("#sellAirplaneButton").hide()
+	    			disableButton("#sellAirplaneButton", "Cannot sell airplanes that are still under construction")
 	    		}
+
 	    	}
 	    	$("#ownedAirplaneDetail .availableFlightMinutes").text(airplane.availableFlightMinutes)
 	    	populateAirplaneHome(airplane, disableChangeHome)
 
             var weeksRemainingBeforeReplacement = airplane.constructionTime - (currentCycle - airplane.purchasedCycle)
 	    	if (weeksRemainingBeforeReplacement <= 0) {
-	    	    $("#replaceAirplaneButton").show()
+	    	    if (activeAirline.balance < replaceCost) {
+            	    disableButton("#replaceAirplaneButton", "Not enough cash to replace this airplane")
+            	} else {
+	    	        enableButton("#replaceAirplaneButton")
+                }
 	    	} else {
-
-	    	    $("#replaceAirplaneButton").hide()
+                disableButton("#replaceAirplaneButton", "Can only replace this airplane " + weeksRemainingBeforeReplacement + " week(s) from now")
 	    	}
-	    	$('#ownedAirplaneDetail .rejection').hide()
-	    	$('#ownedAirplaneDetail .rejection .warning').hide()
 
-	    	if (activeAirline.balance < replaceCost) {
-	    	    $('#ownedAirplaneDetail .rejection .warning.cash').show()
-	    	    $('#ownedAirplaneDetail .rejection').show()
-	    	} else if (weeksRemainingBeforeReplacement > 0) {
-	    	    $('#ownedAirplaneDetail .rejection .warning.purchasedCycle').show()
-	    	    $('#ownedAirplaneDetail .rejection .warning.purchasedCycle .replaceRemainingWeek').text(weeksRemainingBeforeReplacement)
-            	$('#ownedAirplaneDetail .rejection').show()
-	    	}
 	    	$("#ownedAirplaneDetail").data("airplane", airplane)
 
             $.ajax({
