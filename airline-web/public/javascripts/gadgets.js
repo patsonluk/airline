@@ -430,9 +430,14 @@ function closeAllModals() {
 function disableButton(button, reason) {
     $(button).addClass("disabled")
     $(button).data("originalClickFunction", $(button).attr("onclick"))
-    $(button).data("oldTitle", $(button).attr("title"))
+
+    if (!$(button).data("replacedTitle")) { //only store the title if it was NOT replaced (ie the original one)
+        $(button).data("originalTitle", $(button).attr("title"))
+    }
+
     if (reason) {
         $(button).attr("title", reason)
+        $(button).data("replacedTitle", true)
     }
     $(button).removeAttr("onclick") //remove on click function
 
@@ -466,11 +471,13 @@ function enableButton(button) {
     if (originalClickFunction) {
         $(button).attr("onclick", originalClickFunction) //set it back
     }
-    if ($(button).data("oldTitle")) {
-        $(button).attr("title",  $(button).data("oldTitle"))
+    if ($(button).data("originalTitle")) {
+        $(button).attr("title",  $(button).data("originalTitle"))
     } else {
         $(button).removeAttr("title")
     }
+
+    $(button).data("replacedTitle", false)
 
     if (isTouchDevice()) {
         $(button).find(".touchTitle").remove()
