@@ -374,11 +374,6 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           if (rejectionOption.isDefined) {
             BadRequest(rejectionOption.get)
           } else {
-
-            val amount = -1 * airplane.model.price * quantity
-            AirlineSource.adjustAirlineBalance(airlineId, amount)
-            AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, amount))
-
             val airplanes = ListBuffer[Airplane]()
             for (i <- 0 until quantity) {
               airplanes.append(airplane.copy())
@@ -402,6 +397,9 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
               }
               val updateCount = AirplaneSource.saveAirplanes(airplanes.toList)
               if (updateCount > 0) {
+                val amount = -1 * airplane.model.price * updateCount
+                AirlineSource.adjustAirlineBalance(airlineId, amount)
+                AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, amount))
                 Accepted(Json.obj("updateCount" -> updateCount))
               } else {
                 UnprocessableEntity("Cannot save airplane")
