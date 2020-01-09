@@ -103,7 +103,10 @@ object AirportSource {
           loyaltyStatement.close()
           
           val slotAssignments = mutable.Map[Int, Int]()
-          val slotStatement = connection.prepareStatement("SELECT airline, SUM(frequency) as total_frequency FROM " + LINK_TABLE + " WHERE (from_airport = ? OR to_airport = ?) GROUP BY airline")
+
+          //val slotStatement = connection.prepareStatement("SELECT airline, SUM(frequency) as total_frequency FROM " + LINK_TABLE + " WHERE (from_airport = ? OR to_airport = ?) GROUP BY airline")
+          val slotStatement = connection.prepareStatement("SELECT airline, sum(a.frequency) as total_frequency FROM " + LINK_TABLE + " l INNER JOIN " + LINK_ASSIGNMENT_TABLE +  " a ON l.id = a.link AND (l.from_airport = ? OR l.to_airport = ?) GROUP BY airline")
+
           slotStatement.setInt(1, airport.id)
           slotStatement.setInt(2, airport.id)
           

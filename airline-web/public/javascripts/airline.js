@@ -572,8 +572,13 @@ function refreshLinkDetails(linkId) {
 	    success: function(link) {
 	    	var availableFromSlot = link.maxFrequencyFromAirport
 	    	var availableToSlot = link.maxFrequencyToAirport
-	    	availableFromSlot -= link.frequency
-	    	availableToSlot -= link.frequency
+	    	if (link.future) {
+                availableFromSlot -= link.future.frequency
+                availableToSlot -= link.future.frequency
+	    	} else {
+                availableFromSlot -= link.frequency
+                availableToSlot -= link.frequency
+            }
 	    	
 	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode) + '&nbsp;' + availableFromSlot + " available slot(s)")
 	    	//$("#linkFromAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.fromAirportId + ")")

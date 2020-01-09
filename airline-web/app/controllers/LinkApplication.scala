@@ -240,7 +240,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         return BadRequest("Cannot insert link - no airplane assigned")
       }
       
-      val existingLink : Option[Link] = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId, LinkSource.ID_LOAD)
+      val existingLink : Option[Link] = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
       
       if (existingLink.isDefined) {
         incomingLink.id = existingLink.get.id
@@ -300,7 +300,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
       //validate the frequency change is valid
-      val existingFrequency = existingLink.fold(0)(_.frequency)
+      val existingFrequency = existingLink.fold(0)(_.futureFrequency())
       val frequencyChange = incomingLink.futureFrequency() - existingFrequency //use future frequency here
       if ((incomingLink.from.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.from.getMaxSlotAssignment(airlineId)) {
         println("max slot exceeded, tried to add " + frequencyChange + " but from airport slot at " + incomingLink.from.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.from.getMaxSlotAssignment(airlineId))
@@ -312,7 +312,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
       val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
-      if (incomingLink.frequency > maxFrequencyAbsolute) {
+      if (incomingLink.futureFrequency() > maxFrequencyAbsolute) {
         return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
       }
 
@@ -921,7 +921,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   private def getMaxFrequencyByAirports(fromAirport : Airport, toAirport : Airport, airline : Airline, existingLink : Option[Link]) : (Int, Int) =  {
     val airlineId = airline.id
     
-    val existingSlotsByThisLink = existingLink.fold(0)(_.frequency)
+    val existingSlotsByThisLink = existingLink.fold(0)(_.futureFrequency())
     val maxFrequencyFromAirport : Int = fromAirport.getMaxSlotAssignment(airlineId) - fromAirport.getAirlineSlotAssignment(airlineId) + existingSlotsByThisLink 
     val maxFrequencyToAirport : Int = toAirport.getMaxSlotAssignment(airlineId) - toAirport.getAirlineSlotAssignment(airlineId) + existingSlotsByThisLink
     
