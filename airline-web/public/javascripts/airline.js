@@ -1,5 +1,6 @@
 var flightPaths = {} //key: link id, value : { path, shadow }
 var flightMarkers = {} //key: link id, value: { markers : array[], animation}
+var historyFlightMarkers = []
 //var flightMarkerAnimations = []
 var historyPaths = {}
 var linkHistoryState = "hidden"
@@ -493,9 +494,9 @@ function drawFlightMarker(line, link) {
 					marker.setPosition(from)
 					marker.setMap(map)
 				} else if (marker.isActive) {
-					marker.elapsedDuration += 1
+					marker.elapsedDuration += 5
 					
-					if (marker.elapsedDuration == marker.totalDuration) { //arrived
+					if (marker.elapsedDuration >= marker.totalDuration) { //arrived
 						marker.setMap(null)
 						marker.isActive = false
 						marker.nextDepartureFrame = (marker.nextDepartureFrame + marker.departureInterval) % totalIntervals
@@ -507,7 +508,7 @@ function drawFlightMarker(line, link) {
 				}
 			})
 			count = (count + 1) % totalIntervals;
-		}, 20)
+		}, 100)
 		
 		flightMarkers[linkId].animation = animation;
 	}
@@ -749,13 +750,18 @@ function toggleLinkHistory(linkId) {
 		    dataType: 'json',
 		    async: true,
 		    success: function(linkHistory) {
+
 		    	if (!jQuery.isEmptyObject(linkHistory)) {
-		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, false, linkId)
-		    		})
-		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, true, linkId)
-		    		})
+		    		$.each(linkHistory.relatedLinks, function(step, relatedLinksOnStep) {
+		    		    $.each(relatedLinksOnStep, function(key, relatedLink) {
+		    		        drawLinkHistoryPath(relatedLink, false, linkId, step)
+                        })
+                	})
+		    		$.each(linkHistory.invertedRelatedLinks, function(step, relatedLinksOnStep) {
+		    		    $.each(relatedLinksOnStep, function(key, relatedLink) {
+		    			    drawLinkHistoryPath(relatedLink, true, linkId, step)
+                        })
+                	})
 		    	}
 		    	showLinkHistoryPaths(linkHistoryState)
 		    },
@@ -817,7 +823,7 @@ function toggleLinkHistoryState() {
 
 
 
-function drawLinkHistoryPath(link, inverted, watchedLinkId) {
+function drawLinkHistoryPath(link, inverted, watchedLinkId, step) {
 	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
 	var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
 	var pathKey = link.fromAirportId + "|"  + link.toAirportId + "|" + inverted
@@ -842,7 +848,8 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 			    }],
 		     zIndex : 1100,
 		     inverted : inverted,
-		     watched : isWatchedLink
+		     watched : isWatchedLink,
+		     step : step
 		});
 		
 		var fromAirport
@@ -907,9 +914,95 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 	}
 }
 
+function clearHistoryFlightMarkers() {
+    $.each(historyFlightMarkers, function(index, markersOnAStep) {
+        $.each(markersOnAStep, function(index, marker) {
+        //window.clearInterval(marker.animation)
+    	    marker.setMap(null)
+        })
+    })
+    historyFlightMarkers = []
+
+    if (historyFlightMarkerAnimation) {
+        window.clearInterval(historyFlightMarkerAnimation)
+        historyFlightMarkerAnimation = null
+    }
+}
+var historyFlightMarkerAnimation
+
+function animateHistoryFlightMarkers(framesPerAnimation) {
+    var currentStep = 0
+    var currentFrame = 0
+    historyFlightMarkerAnimation = window.setInterval(function() {
+        $.each(historyFlightMarkers[currentStep], function(index, marker) {
+            if (!marker.isActive) {
+                marker.isActive = true
+                marker.elapsedDuration = 0
+                marker.setPosition(marker.from)
+                marker.setMap(map)
+            } else  {
+                marker.elapsedDuration += 1
+
+                if (marker.elapsedDuration == marker.totalDuration) { //arrived
+                    marker.setMap(null)
+                    marker.isActive = false
+                    //console.log("next departure " + marker.nextDepartureFrame)
+                } else {
+                    var newPosition = google.maps.geometry.spherical.interpolate(marker.from, marker.to, marker.elapsedDuration / marker.totalDuration)
+                    marker.setPosition(newPosition)
+                }
+            }
+  		})
+  		if (currentFrame == framesPerAnimation) {
+           currentStep = (++ currentStep) % historyFlightMarkers.length
+           currentFrame = 0
+        } else {
+           currentFrame ++
+        }
+    }, 40)
+
+}
+
+function drawHistoryFlightMarker(line, framesPerAnimation) {
+	if (currentAnimationStatus) {
+		var from = line.getPath().getAt(0)
+		var to = line.getPath().getAt(1)
+		var image = {
+	        url: "assets/images/markers/dot.png",
+	        origin: new google.maps.Point(0, 0),
+	        anchor: new google.maps.Point(6, 6),
+	    };
+
+        var marker = new google.maps.Marker({
+            position: from,
+            from : from,
+            to : to,
+            icon : image,
+            elapsedDuration : 0,
+            totalDuration : framesPerAnimation,
+            isActive: false,
+            clickable: false
+        });
+
+        //flightMarkers.push(marker)
+        var step = line.step
+        var historyFlightMarkersOfThisStep = historyFlightMarkers[step]
+        if (!historyFlightMarkersOfThisStep) {
+            historyFlightMarkersOfThisStep = []
+            historyFlightMarkers[step] = historyFlightMarkersOfThisStep
+        }
+        historyFlightMarkersOfThisStep.push(marker)
+	}
+}
+
+
+
+
 function showLinkHistoryPaths(state) {
+    var framesPerAnimation = 50
+    clearHistoryFlightMarkers()
 	$.each(historyPaths, function(key, historyPath) {
-		if ((state == "showInverted" && historyPath.inverted) || 
+	    if ((state == "showInverted" && historyPath.inverted) ||
 		    (state == "show" && !historyPath.inverted) ||
 		    (state == "showInvertedAlliance" && historyPath.inverted && (historyPath.shadowPath.thisAlliancePassengers > 0 || historyPath.shadowPath.thisAirlinePassengers > 0)) ||
 		    (state == "showAlliance" && !historyPath.inverted && (historyPath.shadowPath.thisAlliancePassengers > 0 || historyPath.shadowPath.thisAirlinePassengers > 0)) ||
@@ -940,6 +1033,8 @@ function showLinkHistoryPaths(state) {
 			if (historyPath.watched) {
 				highlightPath(historyPath)
 			}
+
+			drawHistoryFlightMarker(historyPath, framesPerAnimation)
 			
 			historyPath.setMap(map)
 			historyPath.shadowPath.setMap(map)
@@ -950,6 +1045,7 @@ function showLinkHistoryPaths(state) {
 			historyPath.shadowPath.setMap(null)
 		}
 	})
+	animateHistoryFlightMarkers(framesPerAnimation)
 }
 
 

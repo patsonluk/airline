@@ -10,6 +10,7 @@ import com.patson.Util
 import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, ConsumptionHistorySource, CountrySource, CycleSource, LinkSource}
 import com.patson.model._
 import com.patson.model.airplane.{Airplane, LinkAssignments, Model}
+import models.{LinkHistory, RelatedLink}
 import play.api.data.Form
 import play.api.data.Forms.mapping
 import play.api.data.Forms.number

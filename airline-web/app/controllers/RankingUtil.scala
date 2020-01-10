@@ -1,23 +1,7 @@
 package controllers
 
-import com.patson.data.CycleSource
-import com.patson.data.ConsumptionHistorySource
-import com.patson.model.PassengerType
-import com.patson.model.Route
-import com.patson.model.Link
-import com.patson.model.LinkHistory
-import com.patson.model.LinkConsideration
-import com.patson.model.RelatedLink
-import com.patson.data.LinkSource
-import com.patson.model.Airline
-import com.patson.model.LinkConsumptionDetails
-import com.patson.data.AirlineSource
-import java.io.File
-import java.awt.Color
-import play.api.libs.json.Json
-import com.patson.model.LoungeConsumptionDetails
-import com.patson.data.LoungeHistorySource
-import com.patson.model.Airport
+import com.patson.data.{AirlineSource, CycleSource, LinkSource, LoungeHistorySource}
+import com.patson.model._
  
 
 object RankingUtil {
