@@ -246,7 +246,7 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
         $('#buyAirplaneModal .add').text('Place Order')
 	}
 
-	$('#buyAirplaneModal .price').text("$" + commaSeparateNumber(model.price))
+	$('#buyAirplaneModal .price').text("$" + commaSeparateNumber(price))
 	$('#buyAirplaneModal .condition').text(condition + "%")
 
     var homeOptionsSelect = $("#buyAirplaneModal .homeOptions").empty()
