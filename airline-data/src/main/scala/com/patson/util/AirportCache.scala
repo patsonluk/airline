@@ -25,6 +25,11 @@ object AirportCache {
     simpleCache.invalidate(airportId)
   }
 
+  def invalidateAll() = {
+    detailedCache.invalidateAll()
+    simpleCache.invalidateAll()
+  }
+
   class DetailedLoader extends CacheLoader[Int, Option[Airport]] {
     override def load(airportId: Int) = {
       AirportSource.loadAirportById(airportId, true)
