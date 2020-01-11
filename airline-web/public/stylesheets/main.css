@@ -201,6 +201,25 @@ dd.error {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 }
 
+#linkHistoryControlPanel {
+	position: absolute;
+	bottom: 100px;
+	left: 50%;
+	z-index: 1;
+	width: 500px;
+	margin-left: -250px;
+	background-image: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.8) 90%, rgba(232,232,216,0.8));
+}
+
+#hideAirportLinksButton {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    width: 150px;
+    margin-left: -75px;
+    z-index: 1;
+}
+
 #floatBackButton {
 	position: absolute;
 	top: 100px;
