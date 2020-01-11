@@ -21,7 +21,7 @@ import com.patson.model.AirlineCashFlow
 import play.api.libs.json.Reads
 import models.FacilityType
 import models.AirportFacility
-import com.patson.util.ChampionInfo
+import com.patson.util.{AirlineCache, AirportCache, ChampionInfo}
 
 import scala.concurrent.ExecutionContext
 
@@ -143,9 +143,9 @@ package object controllers {
       val airlineId = json.\("airlineId").as[Int]
       //val capacity = json.\("capacity").as[Int]
       val price = LinkClassValues.getInstance(json.\("price").\("economy").as[Int], json.\("price").\("business").as[Int], json.\("price").\("first").as[Int])
-      val fromAirport = AirportSource.loadAirportById(fromAirportId, true).get
-      val toAirport = AirportSource.loadAirportById(toAirportId, true).get
-      val airline = AirlineSource.loadAirlineById(airlineId).get
+      val fromAirport = AirportCache.getAirport(fromAirportId, true).get
+      val toAirport = AirportCache.getAirport(toAirportId, true).get
+      val airline = AirlineCache.getAirline(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
       val airplaneAssignments = json.\("airplanes").as[Map[Airplane, Int]](AirplaneAssignmentsRead)
@@ -241,7 +241,7 @@ package object controllers {
       JsObject(List(
         "linkId" -> JsNumber(linkConsumption.link.id),
         "airlineId" -> JsNumber(linkConsumption.link.airline.id),
-        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
+        "airlineName" -> JsString(AirlineCache.getAirline(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
         "price" -> priceJson,
         "capacity" -> Json.toJson(linkConsumption.link.capacity),
         "frequency" -> JsNumber(linkConsumption.link.frequency),
@@ -267,7 +267,7 @@ package object controllers {
         "cycle" -> JsNumber(linkConsumption.cycle),
         "linkId" -> JsNumber(linkConsumption.link.id),
         "airlineId" -> JsNumber(linkConsumption.link.airline.id),
-        "airlineName" -> JsString(AirlineSource.loadAirlineById(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
+        "airlineName" -> JsString(AirlineCache.getAirline(linkConsumption.link.airline.id).fold("<unknown airline>") { _.name }),
         "price" -> priceJson,
         "capacity" -> Json.toJson(linkConsumption.link.capacity)))
     }
@@ -275,7 +275,7 @@ package object controllers {
   
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {
-      val airport = AirportSource.loadAirportById((json \ "airportId").as[Int]).get
+      val airport = AirportCache.getAirport((json \ "airportId").as[Int]).get
       val airline = Airline.fromId((json \ "airlineId").as[Int])
       val scale = (json \ "scale").as[Int]
       val headquarter = (json \ "headquarter").as[Boolean]
@@ -309,7 +309,7 @@ package object controllers {
   
   implicit object FacilityReads extends Reads[AirportFacility] {
     def reads(json: JsValue): JsResult[AirportFacility] = {
-      val airport = AirportSource.loadAirportById((json \ "airportId").as[Int]).get
+      val airport = AirportCache.getAirport((json \ "airportId").as[Int]).get
       val airline = Airline.fromId((json \ "airlineId").as[Int])
       val name = (json \ "name").as[String]
       val level = (json \ "level").as[Int]

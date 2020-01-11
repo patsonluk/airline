@@ -1,9 +1,14 @@
 package com.patson.data
 import com.patson.data.Constants._
+
 import scala.collection.mutable.ListBuffer
 import java.sql.DriverManager
+
 import com.patson.model._
 import java.sql.PreparedStatement
+
+import com.patson.util.{AirlineCache, AirportCache}
+
 import scala.collection.mutable.Map
 
 object LinkStatisticsSource {
@@ -55,21 +60,21 @@ object LinkStatisticsSource {
           val airportId = resultSet.getInt("from_airport")
           
           fromAirport = airports.getOrElseUpdate(airportId, loadDetails.get(DetailType.AIRPORT) match {
-            case Some(fullLoad) => AirportSource.loadAirportById(airportId, fullLoad).get
+            case Some(fullLoad) => AirportCache.getAirport(airportId, fullLoad).get
             case None => Airport.fromId(airportId)
           })
         }
         if (!isSingleToAirport || toAirport == null) {
           val airportId = resultSet.getInt("to_airport")
           toAirport = airports.getOrElseUpdate(airportId, loadDetails.get(DetailType.AIRPORT) match {
-            case Some(fullLoad) => AirportSource.loadAirportById(airportId, fullLoad).get
+            case Some(fullLoad) => AirportCache.getAirport(airportId, fullLoad).get
             case None => Airport.fromId(airportId)
           })
         }
         if (!isSingleAirline || airline == null) {
           val airlineId = resultSet.getInt("airline")
           airline = airlines.getOrElseUpdate(airlineId, loadDetails.get(DetailType.AIRLINE) match {
-            case Some(fullLoad) => AirlineSource.loadAirlineById(airlineId, fullLoad).getOrElse(Airline.fromId(airlineId))
+            case Some(fullLoad) => AirlineCache.getAirline(airlineId, fullLoad).getOrElse(Airline.fromId(airlineId))
             case None => Airline.fromId(airlineId)
           })
         }

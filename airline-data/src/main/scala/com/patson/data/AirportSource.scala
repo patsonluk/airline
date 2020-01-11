@@ -3,9 +3,10 @@ package com.patson.data
 import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
 import com.patson.model._
-
 import com.patson.model.AirlineAppeal
 import java.sql.Statement
+
+import com.patson.util.{AirlineCache, AirportCache}
 
 import scala.collection.mutable
 import scala.collection.immutable
@@ -142,7 +143,8 @@ object AirportSource {
           val airlineBaseResultSet = airlineBaseStatement.executeQuery()
           val airlineBases = ListBuffer[AirlineBase]()
           while (airlineBaseResultSet.next()) {
-             val airline = AirlineSource.loadAirlineById(airlineBaseResultSet.getInt("airline")).get
+             val airlineId = airlineBaseResultSet.getInt("airline")
+             val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
              val scale = airlineBaseResultSet.getInt("scale")
              val foundedCycle = airlineBaseResultSet.getInt("founded_cycle")
              val headquarter = airlineBaseResultSet.getBoolean("headquarter")
@@ -250,6 +252,7 @@ object AirportSource {
       insertStatement.close()
 
       connection.commit()
+      AirportCache.invalidateAirport(airportId)
     } finally {
       connection.close()
     }
@@ -274,6 +277,7 @@ object AirportSource {
         insertStatement.executeUpdate()
         insertStatement.close()
       }
+     AirportCache.invalidateAirport(airportId)
      connection.commit()
    } finally {
      connection.close()
@@ -305,6 +309,7 @@ object AirportSource {
       insertStatement.executeBatch()
       purgeStatement.close()
       insertStatement.close()
+      AirportCache.invalidateAirport(airportId)
 
       connection.commit()
     } finally {
@@ -419,6 +424,7 @@ object AirportSource {
             featureStatement.executeUpdate()
             featureStatement.close()
           }
+          AirportCache.invalidateAirport(airport.id)
       }
       preparedStatement.executeBatch()
       preparedStatement.close()
@@ -479,6 +485,8 @@ object AirportSource {
             featureStatement.executeUpdate()
             featureStatement.close()
           }
+
+          AirportCache.invalidateAirport(airport.id)
       }
       preparedStatement.executeBatch()
       preparedStatement.close()
@@ -506,6 +514,7 @@ object AirportSource {
           featureStatement.executeUpdate()
         }
         featureStatement.close()
+        AirportCache.invalidateAirport(airport.id)
       }
       connection.commit()
     } finally {
@@ -530,6 +539,8 @@ object AirportSource {
         featureStatement.executeUpdate()
         
         featureStatement.close()
+
+        AirportCache.invalidateAirport(airport.id)
       }
       connection.commit()
     } finally {
@@ -573,7 +584,7 @@ object AirportSource {
           val airportShareList = new ListBuffer[(Airport, Double)]()
           
           while (resultSet.next()) {
-            loadAirportById(resultSet.getInt("airport")).foreach { airport => //TODO optimization? 
+            AirportCache.getAirport(resultSet.getInt("airport")).foreach { airport =>
               airportShareList.append((airport, resultSet.getDouble("share")))
             } 
           }
@@ -617,7 +628,7 @@ object AirportSource {
       import ProjectType._
       while (resultSet.next()) {
         val airportId = resultSet.getInt("airport")
-        val airport = airports.getOrElseUpdate(airportId, loadAirportById(airportId, false).get)
+        val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, false).get)
         projects += AirportProject(airport = airport, 
                                    projectType = ProjectType.withName(resultSet.getString("project_type")),
                                    status = ProjectStatus.withName(resultSet.getString("project_status")),
@@ -688,6 +699,7 @@ object AirportSource {
           preparedStatement.setInt(3, project.id)
           
           preparedStatement.executeUpdate()
+          AirportCache.invalidateAirport(project.airport.id)
       }
       
       preparedStatement.close()

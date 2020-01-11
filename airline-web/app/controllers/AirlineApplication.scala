@@ -8,7 +8,7 @@ import com.patson.AirlineSimulation
 import com.patson.data._
 import com.patson.model.Computation.ResetAmountInfo
 import com.patson.model.{Title, _}
-import com.patson.util.{ChampionUtil, LogoGenerator}
+import com.patson.util.{AirportCache, ChampionUtil, LogoGenerator}
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
 import javax.inject.Inject
 import models.{AirportFacility, Consideration, EntrepreneurProfile, FacilityType}
@@ -177,7 +177,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
   def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     var result = Json.obj().asInstanceOf[JsObject]
-    AirportSource.loadAirportById(airportId) match {
+    AirportCache.getAirport(airportId) match {
       case Some(airport) => {
         val existingBase = AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId)
         if (existingBase.isDefined) {
@@ -325,7 +325,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      if (base.scale == 1) { //cannot downgrade any further
        return Some("Cannot downgrade this base any further")
      }
-     val airport = AirportSource.loadAirportById(base.airport.id, true).get
+     val airport = AirportCache.getAirport(base.airport.id, true).get
      val assignedSlots = airport.getAirlineSlotAssignment(base.airline.id)
      val preferredSlots = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = 0)
      val preferredSlotsAfterDowngrade = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = -1)
@@ -400,7 +400,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                  Created(Json.toJson(updateBase))
                }
                case None => //ok to add then
-                 AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+                 AirportCache.getAirport(inputBase.airport.id, true).fold {
                    BadRequest("airport id " +  inputBase.airport.id + " not found!")
                  } {
                    airport => //TODO for now. Maybe update to Ad event later on
@@ -426,7 +426,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                  }
               }
           } else {
-            AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+            AirportCache.getAirport(inputBase.airport.id, true).fold {
               BadRequest("airport id " +  inputBase.airport.id + " not found!")
             } { airport =>
                   AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
@@ -437,7 +437,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                     AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
                     Created(Json.toJson(updateBase))
                   case None => //ok to add
-                    AirportSource.loadAirportById(inputBase.airport.id, true).fold {
+                    AirportCache.getAirport(inputBase.airport.id, true).fold {
                          BadRequest("airport id " +  inputBase.airport.id + " not found!")
                     } { airport =>
                       val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
@@ -474,7 +474,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   
   def getFacilities(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline : Airline = request.user
-    AirportSource.loadAirportById(airportId) match {
+    AirportCache.getAirport(airportId) match {
       case Some(airport) =>
         AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId) match {
           case Some(lounge) =>
@@ -503,7 +503,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   def getFacilityConsideration(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline : Airline = request.user
     val inputFacility = request.body.asInstanceOf[AnyContentAsJson].json.as[AirportFacility]
-    AirportSource.loadAirportById(airportId) match {
+    AirportCache.getAirport(airportId) match {
       case Some(airport) =>
         inputFacility.facilityType match {
           case FacilityType.LOUNGE =>

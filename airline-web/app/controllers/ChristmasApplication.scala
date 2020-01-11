@@ -3,6 +3,7 @@ package controllers
 import com.patson.data.{AirportSource, AlertSource, ChristmasSource}
 import com.patson.model._
 import com.patson.model.christmas._
+import com.patson.util.AirportCache
 import controllers.AuthenticationObject.AuthenticatedAirline
 import javax.inject.Inject
 import play.api.libs.json._
@@ -80,7 +81,7 @@ class ChristmasApplication @Inject()(cc: ControllerComponents) extends AbstractC
           BadRequest(Json.obj())
         } else {
           val santaClausAirport = entry.airport
-          val selectedAirport = AirportSource.loadAirportById(airportId).get
+          val selectedAirport = AirportCache.getAirport(airportId).get
 
           //check if it's a match!
           var found = false

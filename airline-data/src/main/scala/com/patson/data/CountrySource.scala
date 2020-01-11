@@ -8,6 +8,8 @@ import scala.collection.mutable.Map
 import com.patson.model.AirlineAppeal
 import java.sql.Statement
 
+import com.patson.util.AirlineCache
+
 import scala.collection.mutable
 
 object CountrySource {
@@ -259,7 +261,7 @@ object CountrySource {
         val countryCode = resultSet.getString("country")
         val country = countries.getOrElseUpdate(countryCode, loadCountryByCode(countryCode).get)
         val airlineId = resultSet.getInt("airline")
-        val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+        val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
         
         relationShipData.getOrElseUpdate(country, Map()).put(airline, resultSet.getInt("relationship"))
       }    
@@ -426,7 +428,7 @@ object CountrySource {
       while (resultSet.next()) {
         val countryCode = resultSet.getString("country")
         val airlineId = resultSet.getInt("airline")
-        val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId).getOrElse(Airline.fromId(airlineId)))
+        val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId)))
         val title = Title(resultSet.getInt("title"))
         val country = countryCache.getOrElseUpdate(countryCode, loadCountryByCode(countryCode).getOrElse(Country.fromCode(countryCode)))
         titles.append(CountryAirlineTitle(country, airline, title))

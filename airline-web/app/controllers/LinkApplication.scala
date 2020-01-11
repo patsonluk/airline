@@ -33,6 +33,7 @@ import scala.util.Success
 import scala.util.Failure
 import com.patson.model.LinkConsumptionHistory
 import com.patson.model.FlightPreferenceType
+import com.patson.util.{AirlineCache, AirportCache}
 import javax.inject.Inject
 
 class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -43,9 +44,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       val airlineId = json.\("airlineId").as[Int]
       val capacity = json.\("capacity").as[Int]
       val price = json.\("price").as[Int]
-      val fromAirport = AirportSource.loadAirportById(fromAirportId).get
-      val toAirport = AirportSource.loadAirportById(toAirportId).get
-      val airline = AirlineSource.loadAirlineById(airlineId).get
+      val fromAirport = AirportCache.getAirport(fromAirportId).get
+      val toAirport = AirportCache.getAirport(toAirportId).get
+      val airline = AirlineCache.getAirline(airlineId).get
       val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
       val rawQuality = json.\("quality").as[Int]
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
@@ -61,9 +62,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   
   implicit object LinkConsumptionFormat extends Writes[LinkConsumptionDetails] {
     def writes(linkConsumption: LinkConsumptionDetails): JsValue = {
-//      val fromAirport = AirportSource.loadAirportById(linkConsumption.fromAirportId)
-//      val toAirport = AirportSource.loadAirportById(linkConsumption.toAirportId)
-//      val airline = AirlineSource.loadAirlineById(linkConsumption.airlineId)
+//      val fromAirport = AirportCache.getAirport(linkConsumption.fromAirportId)
+//      val toAirport = AirportCache.getAirport(linkConsumption.toAirportId)
+//      val airline = AirlineCache.getAirline(linkConsumption.airlineId)
           JsObject(List(
       "linkId" -> JsNumber(linkConsumption.link.id),
 //      "fromAirportCode" -> JsString(fromAirport.map(_.iata).getOrElse("XXX")),
@@ -408,9 +409,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
   
   def getExpectedQuality(airlineId : Int, fromAirportId : Int, toAirportId : Int, queryAirportId : Int) = AuthenticatedAirline(airlineId) { request =>
-    AirportSource.loadAirportById(fromAirportId) match {
+    AirportCache.getAirport(fromAirportId) match {
       case Some(fromAirport) =>
-        AirportSource.loadAirportById(toAirportId) match {
+        AirportCache.getAirport(toAirportId) match {
           case Some(toAirport) =>
             val flightType = Computation.getFlightType(fromAirport, toAirport, Computation.calculateDistance(fromAirport, toAirport))
             val airport = if (fromAirportId == queryAirportId) fromAirport else toAirport
@@ -514,9 +515,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
 
   def preparePlanLink(airline : Airline, fromAirportId : Int, toAirportId : Int) : Either[String, (Airport, Airport)] = {
-    AirportSource.loadAirportById(fromAirportId, true) match {
+    AirportCache.getAirport(fromAirportId, true) match {
       case Some(fromAirport) =>
-        AirportSource.loadAirportById(toAirportId, true) match {
+        AirportCache.getAirport(toAirportId, true) match {
           case Some(toAirport) =>
             if (airline.getBases().map(_.airport.id).contains(fromAirportId)) { //make sure it has a base for the from Airport
               Right((fromAirport, toAirport))
@@ -875,8 +876,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       val fromAirportLinks = LinkSource.loadLinksByFromAirport(link.from.id) ++ LinkSource.loadLinksByToAirport(link.from.id)
       val toAirportLinks =  LinkSource.loadLinksByFromAirport(link.to.id) ++ LinkSource.loadLinksByToAirport(link.to.id)
 
-      val fromAirport = AirportSource.loadAirportById(link.from.id, fullLoad = true).get
-      val toAirport = AirportSource.loadAirportById(link.to.id, fullLoad = true).get
+      val fromAirport = AirportCache.getAirport(link.from.id, fullLoad = true).get
+      val toAirport = AirportCache.getAirport(link.to.id, fullLoad = true).get
 
       //check the network capacity of rival (including self here)
       var fromAirportInfo = Json.arr()

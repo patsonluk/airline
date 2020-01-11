@@ -8,6 +8,7 @@ import com.patson.data.AirplaneSource
 import com.patson.data.AirlineSource
 import com.patson.data.BankSource
 import com.patson.data.OilSource
+import com.patson.util.{AirlineCache, AllianceRankingUtil}
 
 object Computation {
   //distance vs max speed
@@ -187,9 +188,7 @@ object Computation {
      AllianceSource.loadAllianceMemberByAirline(airline) match {
        case Some(allianceMember) => {
          if (allianceMember.role != AllianceRole.APPLICANT) {
-           val alliances = AllianceSource.loadAllAlliances(false)
-           val alliance = alliances.find( allianceMember.allianceId == _.id).get
-           Alliance.getRankings(alliances).get(alliance) match {
+           AllianceRankingUtil.getRanking(allianceMember.allianceId) match {
              case Some((ranking, _)) => {
                val maxFrequencyBonus = Alliance.getMaxFrequencyBonus(ranking)
                MAX_FREQUENCY_ABSOLUTE_BASE + maxFrequencyBonus
@@ -209,7 +208,7 @@ object Computation {
     val amountFromBases = AirlineSource.loadAirlineBasesByAirline(airlineId).map(_.getValue * 0.2).sum.toLong //only get 20% back
     val amountFromLoans = BankSource.loadLoansByAirline(airlineId).map(_.earlyRepayment * -1).sum //repay all loans now
     val amountFromOilContracts = OilSource.loadOilContractsByAirline(airlineId).map(_.contractTerminationPenalty(CycleSource.loadCycle()) * -1).sum //termination penalty
-    val existingBalance = AirlineSource.loadAirlineById(airlineId).get.airlineInfo.balance
+    val existingBalance = AirlineCache.getAirline(airlineId).get.airlineInfo.balance
     
     ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromLoans, amountFromOilContracts, existingBalance)
   }

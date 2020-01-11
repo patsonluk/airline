@@ -4,6 +4,7 @@ import scala.collection.mutable.ListBuffer
 import com.patson.data._
 import com.patson.model._
 import com.patson.model.airplane._
+import com.patson.util.AirlineCache
 
 import scala.collection.mutable
 import scala.util.Random
@@ -25,7 +26,7 @@ object AirplaneSimulation {
     val updatingAirplanesListBuffer = ListBuffer[Airplane]()
     allAirplanes.groupBy { _.owner }.foreach {
       case (owner, airplanes) => {
-        AirlineSource.loadAirlineById(owner.id, true) match {
+        AirlineCache.getAirline(owner.id, true) match {
           case Some(airline) =>
             val readyAirplanes = airplanes.filter(_.isReady)
             val readyAirplanesWithAssignedLinks : Map[Airplane, LinkAssignments] = readyAirplanes.map { airplane =>
