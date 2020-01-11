@@ -332,6 +332,7 @@ function showLinkHistory() {
     var showAlliance = $("#linkHistoryControlPanel .showAlliance").is(":checked")
     var showOther = $("#linkHistoryControlPanel .showOther").is(":checked")
     var showForward = $("#linkHistoryControlPanel").data("showForward")
+    var showAnimation = $("#linkHistoryControlPanel .showAnimation").is(":checked")
 
     $("#linkHistoryControlPanel .transitAirlineList .table-row").hide()
     if (showForward) {
@@ -342,19 +343,19 @@ function showLinkHistory() {
 
     var framesPerAnimation = 50
     clearHistoryFlightMarkers()
-	$.each(historyPaths, function(key, historyPath) {
-	    if (((showForward && !historyPath.inverted) || (!showForward && historyPath.inverted))  //match direction
-	    && (historyPath.shadowPath.thisAirlinePassengers > 0
-	     || (showAlliance && historyPath.shadowPath.thisAlliancePassengers > 0)
-	     || (showOther && historyPath.shadowPath.otherAirlinePassengers))) {
-	    	var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.thisAlliancePassengers + historyPath.shadowPath.otherAirlinePassengers
-			if (totalPassengers < 100) {
-				var newOpacity = 0.2 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.2)
-				if (!historyPath.watched) {
-					historyPath.setOptions({strokeOpacity : newOpacity})
-				}
-			}
-			var infowindow;
+    $.each(historyPaths, function(key, historyPath) {
+        if (((showForward && !historyPath.inverted) || (!showForward && historyPath.inverted))  //match direction
+        && (historyPath.shadowPath.thisAirlinePassengers > 0
+         || (showAlliance && historyPath.shadowPath.thisAlliancePassengers > 0)
+         || (showOther && historyPath.shadowPath.otherAirlinePassengers))) {
+            var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.thisAlliancePassengers + historyPath.shadowPath.otherAirlinePassengers
+            if (totalPassengers < 100) {
+                var newOpacity = 0.2 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.2)
+                if (!historyPath.watched) {
+                    historyPath.setOptions({strokeOpacity : newOpacity})
+                }
+            }
+            var infowindow;
             historyPath.shadowPath.addListener('mouseover', function(event) {
                 var link = this.link
 
@@ -386,31 +387,35 @@ function showLinkHistory() {
             })
 
 
-			if (historyPath.shadowPath.thisAirlinePassengers > 0) {
-				historyPath.setOptions({strokeColor: "#DC83FC"})
-			} else if (showAlliance && historyPath.shadowPath.thisAlliancePassengers > 0) {
-				historyPath.setOptions({strokeColor: "#E28413"})
-			} else {
-				historyPath.setOptions({strokeColor: "#888888"})
-			}
+            if (historyPath.shadowPath.thisAirlinePassengers > 0) {
+                historyPath.setOptions({strokeColor: "#DC83FC"})
+            } else if (showAlliance && historyPath.shadowPath.thisAlliancePassengers > 0) {
+                historyPath.setOptions({strokeColor: "#E28413"})
+            } else {
+                historyPath.setOptions({strokeColor: "#888888"})
+            }
 
 
-			if (historyPath.watched) {
-				highlightPath(historyPath)
-			}
+            if (historyPath.watched) {
+                highlightPath(historyPath)
+            }
 
-			drawHistoryFlightMarker(historyPath, framesPerAnimation, totalPassengers)
+            if (showAnimation) {
+                drawHistoryFlightMarker(historyPath, framesPerAnimation, totalPassengers)
+            }
 
-			historyPath.setMap(map)
-			historyPath.shadowPath.setMap(map)
-			polylines.push(historyPath)
-			polylines.push(historyPath.shadowPath)
-	     } else {
-			historyPath.setMap(null)
-			historyPath.shadowPath.setMap(null)
-		 }
-	})
+            historyPath.setMap(map)
+            historyPath.shadowPath.setMap(map)
+            polylines.push(historyPath)
+            polylines.push(historyPath.shadowPath)
+         } else {
+            historyPath.setMap(null)
+            historyPath.shadowPath.setMap(null)
+         }
+    })
+    if (showAnimation) {
+        animateHistoryFlightMarkers(framesPerAnimation)
+    }
 
-	animateHistoryFlightMarkers(framesPerAnimation)
 }
 
