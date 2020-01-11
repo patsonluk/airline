@@ -1,14 +1,9 @@
 package controllers
 
-import com.patson.data.CycleSource
-import com.patson.data.ConsumptionHistorySource
-import com.patson.model.PassengerType
-import com.patson.model.Route
-import com.patson.model.Link
-import com.patson.model.LinkConsideration
-import models.LinkHistory
-import models.RelatedLink
-import com.patson.model.Airport
+import com.patson.data.{ConsumptionHistorySource, CycleSource}
+import com.patson.model._
+import models.{LinkHistory, RelatedLink}
+
 import scala.collection.mutable.ListBuffer
 
 object HistoryUtil {
@@ -31,52 +26,51 @@ object HistoryUtil {
     * @param relatedLinksOriginal
     * @return
     */
-  def groupLinksByStep(fromAirport : Airport, toAirport : Airport, relatedLinksOriginal: List[RelatedLink]) : List[List[RelatedLink]] = {
+  def groupLinksByStep(fromAirport : Airport, toAirport : Airport, selectedAirline : Airline, relatedLinksOriginal: List[RelatedLink]) : List[List[RelatedLink]] = {
     val groupedLinks = ListBuffer[List[RelatedLink]]()
 
     var relatedLinks = ListBuffer[RelatedLink]()
     relatedLinks.appendAll(relatedLinksOriginal)
 
-    //first find the target link
-    relatedLinks.find(link => link.fromAirport.id == fromAirport.id && link.toAirport.id == toAirport.id) match {
-      case Some(matchingLink) =>
-        groupedLinks.append(List(matchingLink))
-        relatedLinks.remove(relatedLinks.indexOf(matchingLink))
-
-        //traverse backwards
-        var shouldContinue = true
-        var backwardsAirportIds = List(fromAirport.id)
-        while (shouldContinue) {
-          relatedLinks.partition(link => backwardsAirportIds.contains(link.toAirport.id)) match {
-            case (matchingLinks, remainingLinks) =>
-              relatedLinks = remainingLinks
-              if (matchingLinks.isEmpty) {
-                shouldContinue = false
-              } else {
-                groupedLinks.prepend(matchingLinks.toList)
-                backwardsAirportIds = matchingLinks.map(_.fromAirport.id).toList
-              }
-          }
-        }
-
-        //traverse forward
-        shouldContinue = true
-        var forwardsAirportIds = List(toAirport.id)
-        while (shouldContinue) {
-          relatedLinks.partition(link => forwardsAirportIds.contains(link.fromAirport.id)) match {
-            case (matchingLinks, remainingLinks) =>
-              relatedLinks = remainingLinks
-              if (matchingLinks.isEmpty) {
-                shouldContinue = false
-              } else {
-                groupedLinks.append(matchingLinks.toList)
-                forwardsAirportIds = matchingLinks.map(_.toAirport.id).toList
-              }
-          }
-        }
-        groupedLinks.toList
-      case None => groupedLinks.toList //should not be this ... unless there's no consumption at all
+    //first find the links matching from/to
+    relatedLinks.partition(link => link.fromAirport.id == fromAirport.id && link.toAirport.id == toAirport.id && link.airline.id == selectedAirline.id) match {
+      case(originalLinks, remainingLinks) =>
+        groupedLinks.append(originalLinks.toList)
+        relatedLinks = remainingLinks
     }
+
+    //traverse backwards
+    var shouldContinue = true
+    var backwardsAirportIds = List(fromAirport.id)
+    while (shouldContinue) {
+      relatedLinks.partition(link => backwardsAirportIds.contains(link.toAirport.id)) match {
+        case (matchingLinks, remainingLinks) =>
+          relatedLinks = remainingLinks
+          if (matchingLinks.isEmpty) {
+            shouldContinue = false
+          } else {
+            groupedLinks.prepend(matchingLinks.toList)
+            backwardsAirportIds = matchingLinks.map(_.fromAirport.id).toList
+          }
+      }
+    }
+
+    //traverse forward
+    shouldContinue = true
+    var forwardsAirportIds = List(toAirport.id)
+    while (shouldContinue) {
+      relatedLinks.partition(link => forwardsAirportIds.contains(link.fromAirport.id)) match {
+        case (matchingLinks, remainingLinks) =>
+          relatedLinks = remainingLinks
+          if (matchingLinks.isEmpty) {
+            shouldContinue = false
+          } else {
+            groupedLinks.append(matchingLinks.toList)
+            forwardsAirportIds = matchingLinks.map(_.toAirport.id).toList
+          }
+      }
+    }
+    groupedLinks.toList
   }
 
   def loadConsumptionByLink(link : Link, selfOnly : Boolean = false) : LinkHistory = {
@@ -89,14 +83,14 @@ object HistoryUtil {
         case(route, _) => route.links.find { linkConsideration => !linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
       }.toList, airlineId, selfOnly
     )
-    val groupedForwardLinks = groupLinksByStep(link.from, link.to, relatedForwardLinks)
+    val groupedForwardLinks = groupLinksByStep(link.from, link.to, link.airline, relatedForwardLinks)
     
     val relatedReverseLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
         case(route, _) => route.links.find { linkConsideration => linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
       }.toList, airlineId, selfOnly
     )
 
-    val groupedReverseLinks = groupLinksByStep(link.to, link.from, relatedReverseLinks)
+    val groupedReverseLinks = groupLinksByStep(link.to, link.from, link.airline, relatedReverseLinks)
        
     LinkHistory(0, groupedForwardLinks, groupedReverseLinks)
   }
