@@ -819,7 +819,7 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 		$("#airportLinkPopupPassengers").text(this.passengers)
 		infowindow = new google.maps.InfoWindow({
              content: $("#airportLinkPopup").html(),
-             maxWidth : 600});
+             maxWidth : 400});
 		
 		infowindow.setPosition(event.latLng);
 		infowindow.open(map);
