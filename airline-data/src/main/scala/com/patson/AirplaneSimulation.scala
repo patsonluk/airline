@@ -155,54 +155,6 @@ object AirplaneSimulation {
     updatingAirplanes
   }
 
-  /**
-    * Adjust link's capacity and total based on retiring airplanes and add ready airplanes
-    * @param links
-    * @param airplanes
-    * @param linkAssignments
-
-   def adjustLinksBasedOnAirplaneStatus(airplanes : List[Airplane]) = {
-    val updatingLinks = ListBuffer[Link]()
-    val updatedAirplanesById = airplanes.map( airplane => (airplane.id, airplane)).toMap
-    links.foreach {
-      link => {
-        var updatedAssignedAirplanes : Map[Airplane, LinkAssignment] = link.getAssignedAirplanes().toList.map {
-          case(airplane, linkAssignment) => (updatedAirplanesById.getOrElse(airplane.id, airplane), linkAssignment)
-        }.toMap //update the list of assigned airplanes - since some of them are decayed
-
-        var hasRetiringAirplanes = false
-
-        //now filter the retiring airplanes
-        updatedAssignedAirplanes = updatedAssignedAirplanes.filter {
-          case (airplane, _) =>
-            if (airplane.condition > 0) {
-              true
-            } else {
-              hasRetiringAirplanes = true
-              false
-            }
-        }
-
-        //TODO this logic is problematic...should we consider it right before link simulation? this would revert people's change or even screw up frequency/capacity if poeple make change between cycle start and to this point!
-        //solution would be at least reload the assignment to double confirm??
-        val hasAirplanesArrivingNextTurn = updatedAssignedAirplanes.find {
-          case (airplane, _) => airplane.constructedCycle == cycle + 1 && airplane.model.constructionTime > 0 //replacement will be counted too... but it's okay for now...as recompute is always safe
-        }.isDefined
-
-        if (hasRetiringAirplanes || hasAirplanesArrivingNextTurn) {
-           println(s"$link has new $hasAirplanesArrivingNextTurn or has retiring $hasRetiringAirplanes airplanes")
-
-           link.setAssignedAirplanes(updatedAssignedAirplanes)
-
-           updatingLinks.append(link)
-        }
-      }
-    }
-    
-    LinkSource.updateLinks(updatingLinks.toList) //this only triggers updating the capacity/frequency but not the actual assignments
-  }
-    */
-   
   def retireAgingAirplanes(airplanes : List[Airplane]) {
     airplanes.filter(_.condition <= 0).foreach { airplane =>
       println("Deleting airplane " + airplane)

@@ -1,5 +1,6 @@
 var flightPaths = {} //key: link id, value : { path, shadow }
 var flightMarkers = {} //key: link id, value: { markers : array[], animation}
+var historyFlightMarkers = []
 //var flightMarkerAnimations = []
 var historyPaths = {}
 var linkHistoryState = "hidden"
@@ -444,35 +445,42 @@ function drawFlightMarker(line, link) {
 	        origin: new google.maps.Point(0, 0),
 	        anchor: new google.maps.Point(6, 6),
 	    };
-	
-		var totalIntervals = 60 * 24 * 7 //min in a week
+
+
+
 		var frequency = link.frequency
-		var airplaneCount = link.assignedAirplanes.length
-		var frequencyByAirplane = {}
-		$.each(link.assignedAirplanes, function(key, airplane) {
-			frequencyByAirplane[key] = Math.floor(frequency / airplaneCount)
-		})
-		for (i = 0; i < frequency % airplaneCount; i++) { //assign the remainder
-			frequencyByAirplane[i] = frequencyByAirplane[i] + 1
-		}
-		 
+//		var airplaneCount = link.assignedAirplanes.length
+//		var frequencyByAirplane = {}
+//		$.each(link.assignedAirplanes, function(key, airplane) {
+//			frequencyByAirplane[key] = Math.floor(frequency / airplaneCount)
+//		})
+//		for (i = 0; i < frequency % airplaneCount; i++) { //assign the remainder
+//			frequencyByAirplane[i] = frequencyByAirplane[i] + 1
+//		}
+        var animationInterval = 100
+        var minsPerInterval = 2
+        var minutesPerWeek = 60 * 24 * 7
+        var maxTripsPerMarker = (60 * 24 * 7) / (link.duration * 2) //how many round trips can a marker make in a week, assuming a marker go back and forth right the way
+        var markersRequired = Math.ceil(frequency / maxTripsPerMarker)
+        var totalIntervalsPerWeek = minutesPerWeek / minsPerInterval //min in a week, assume each interval is 1 mins
+
 		var markersOfThisLink = []
-		$.each(frequencyByAirplane, function(key, airplane) {
+		for (i = 0; i < markersRequired; i ++) {
 			var marker = new google.maps.Marker({
 			    position: from,
 			    icon : image, 
-			    totalDistance : link.distance,
-			    totalDuration : link.duration * 2, //make it X2 duration as we dont show return trip. so a single trip should animate double the duration
+			    totalDuration : link.duration * 2, //round trip
 			    elapsedDuration : 0,
-			    nextDepartureFrame : Math.floor(key * link.duration * 2 / airplaneCount),
-				departureInterval : Math.floor(totalIntervals / frequencyByAirplane[key]),
+			    nextDepartureFrame : Math.floor((i + 0.1) * totalIntervalsPerWeek / frequency) % totalIntervalsPerWeek, //i + 0.1 so they wont all depart at the same time
+				departureInterval : Math.floor(totalIntervalsPerWeek / markersRequired),
+				status : "forward",
 			    isActive: false,
-			    clickable: false
+			    clickable: false,
 			});
 			
 			//flightMarkers.push(marker)
 			markersOfThisLink.push(marker)
-		})
+		}
 		
 		flightMarkers[linkId] = {} //initialize
 		flightMarkers[linkId].markers = markersOfThisLink
@@ -487,27 +495,45 @@ function drawFlightMarker(line, link) {
 						        origin: new google.maps.Point(0, 0),
 						        anchor: new google.maps.Point(6, 6),
 						    };
-					} 
+					}
+					marker.status = "forward"
 					marker.isActive = true
 					marker.elapsedDuration = 0
 					marker.setPosition(from)
 					marker.setMap(map)
 				} else if (marker.isActive) {
-					marker.elapsedDuration += 1
+					marker.elapsedDuration += minsPerInterval
 					
-					if (marker.elapsedDuration == marker.totalDuration) { //arrived
-						marker.setMap(null)
+					if (marker.elapsedDuration >= marker.totalDuration) { //finished a round trip
+						//marker.setMap(null)
+						fadeOutMarker(marker, animationInterval)
 						marker.isActive = false
-						marker.nextDepartureFrame = (marker.nextDepartureFrame + marker.departureInterval) % totalIntervals
+						marker.nextDepartureFrame = (marker.nextDepartureFrame + marker.departureInterval) % totalIntervalsPerWeek
 						//console.log("next departure " + marker.nextDepartureFrame)
 					} else {
-						var newPosition = google.maps.geometry.spherical.interpolate(from, to, marker.elapsedDuration / marker.totalDuration)
-						marker.setPosition(newPosition)
+					    if (marker.status === "forward") {
+					         if (marker.elapsedDuration / marker.totalDuration >= 0.45) { //finished forward, now go into turnaround
+                                marker.status = "turnaround"
+					         } else {
+					            var newPosition = google.maps.geometry.spherical.interpolate(from, to, marker.elapsedDuration / marker.totalDuration / 0.45)
+                                marker.setPosition(newPosition)
+                             }
+                        }
+                        if (marker.status === "turnaround") {
+                             if (marker.elapsedDuration / marker.totalDuration >= 0.55) { //finished turnaround, now go into backward
+                                marker.status = "backward"
+                             }
+                        }
+                        if (marker.status === "backward") {
+                            var newPosition = google.maps.geometry.spherical.interpolate(to, from, (marker.elapsedDuration / marker.totalDuration - 0.55) / 0.45)
+                            marker.setPosition(newPosition)
+                        }
+
 					}
 				}
 			})
-			count = (count + 1) % totalIntervals;
-		}, 20)
+			count = (count + 1) % totalIntervalsPerWeek;
+		}, animationInterval)
 		
 		flightMarkers[linkId].animation = animation;
 	}
@@ -749,13 +775,18 @@ function toggleLinkHistory(linkId) {
 		    dataType: 'json',
 		    async: true,
 		    success: function(linkHistory) {
+
 		    	if (!jQuery.isEmptyObject(linkHistory)) {
-		    		$.each(linkHistory.relatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, false, linkId)
-		    		})
-		    		$.each(linkHistory.invertedRelatedLinks, function(key, relatedLink) {
-		    			drawLinkHistoryPath(relatedLink, true, linkId)
-		    		})
+		    		$.each(linkHistory.relatedLinks, function(step, relatedLinksOnStep) {
+		    		    $.each(relatedLinksOnStep, function(key, relatedLink) {
+		    		        drawLinkHistoryPath(relatedLink, false, linkId, step)
+                        })
+                	})
+		    		$.each(linkHistory.invertedRelatedLinks, function(step, relatedLinksOnStep) {
+		    		    $.each(relatedLinksOnStep, function(key, relatedLink) {
+		    			    drawLinkHistoryPath(relatedLink, true, linkId, step)
+                        })
+                	})
 		    	}
 		    	showLinkHistoryPaths(linkHistoryState)
 		    },
@@ -817,7 +848,7 @@ function toggleLinkHistoryState() {
 
 
 
-function drawLinkHistoryPath(link, inverted, watchedLinkId) {
+function drawLinkHistoryPath(link, inverted, watchedLinkId, step) {
 	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
 	var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
 	var pathKey = link.fromAirportId + "|"  + link.toAirportId + "|" + inverted
@@ -842,7 +873,8 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 			    }],
 		     zIndex : 1100,
 		     inverted : inverted,
-		     watched : isWatchedLink
+		     watched : isWatchedLink,
+		     step : step
 		});
 		
 		var fromAirport
@@ -884,7 +916,7 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 			$("#linkHistoryOtherAirlinePassengers").text(this.otherAirlinePassengers)
 			infowindow = new google.maps.InfoWindow({
 	             content: $("#linkHistoryPopup").html(),
-	             maxWidth : 600});
+	             maxWidth : 400});
 			
 			infowindow.setPosition(event.latLng);
 			infowindow.open(map);
@@ -907,19 +939,151 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId) {
 	}
 }
 
+function clearHistoryFlightMarkers() {
+    $.each(historyFlightMarkers, function(index, markersOnAStep) {
+        $.each(markersOnAStep, function(index, marker) {
+        //window.clearInterval(marker.animation)
+    	    marker.setMap(null)
+        })
+    })
+    historyFlightMarkers = []
+
+    if (historyFlightMarkerAnimation) {
+        window.clearInterval(historyFlightMarkerAnimation)
+        historyFlightMarkerAnimation = null
+    }
+}
+var historyFlightMarkerAnimation
+
+function animateHistoryFlightMarkers(framesPerAnimation) {
+    var currentStep = 0
+    var currentFrame = 0
+    var animationInterval = 40
+    historyFlightMarkerAnimation = window.setInterval(function() {
+        $.each(historyFlightMarkers[currentStep], function(index, marker) {
+            if (!marker.isActive) {
+                marker.isActive = true
+                marker.elapsedDuration = 0
+                marker.setPosition(marker.from)
+                marker.setMap(map)
+            } else  {
+                marker.elapsedDuration += 1
+
+                if (marker.elapsedDuration == marker.totalDuration) { //arrived
+                    marker.isActive = false
+                    //console.log("next departure " + marker.nextDepartureFrame)
+                } else {
+                    var newPosition = google.maps.geometry.spherical.interpolate(marker.from, marker.to, marker.elapsedDuration / marker.totalDuration)
+                    marker.setPosition(newPosition)
+                }
+            }
+  		})
+  		if (currentFrame == framesPerAnimation) {
+      	   fadeOutMarkers(historyFlightMarkers[currentStep], animationInterval)
+  		   currentStep = (++ currentStep) % historyFlightMarkers.length
+           currentFrame = 0
+        } else {
+           currentFrame ++
+        }
+    }, animationInterval)
+
+}
+
+function fadeOutMarkers(markers, animationInterval) {
+    var opacity = 1.0
+    var animation = window.setInterval(function () {
+        if (opacity < 0) {
+            $.each(markers, function(index, marker) {
+                marker.setMap(null)
+                marker.setOpacity(1)
+            })
+            window.clearInterval(animation)
+        } else {
+            $.each(markers, function(index, marker) {
+                marker.setOpacity(opacity)
+            })
+        }
+        opacity -= 0.1
+    }, animationInterval)
+}
+
+function fadeOutMarker(marker, animationInterval) {
+    var opacity = 1.0
+    var animation = window.setInterval(function () {
+        if (opacity < 0) {
+            marker.setMap(null)
+            marker.setOpacity(1)
+            window.clearInterval(animation)
+        } else {
+            marker.setOpacity(opacity)
+        }
+        opacity -= 0.1
+    }, animationInterval)
+}
+
+function drawHistoryFlightMarker(line, framesPerAnimation, totalPassengers) {
+	if (currentAnimationStatus) {
+		var from = line.getPath().getAt(0)
+		var to = line.getPath().getAt(1)
+		var icon
+        if (totalPassengers > 200) {
+	       icon = "dot-5.png"
+        } else if (totalPassengers > 100) {
+           icon = "dot-4.png"
+        } else if (totalPassengers > 50) {
+           icon = "dot-3.png"
+        } else if (totalPassengers > 25) {
+           icon = "dot-2.png"
+        } else {
+           icon = "dot-1.png"
+        }
+
+		var image = {
+	        url: "assets/images/markers/" + icon,
+	        origin: new google.maps.Point(0, 0),
+	        anchor: new google.maps.Point(6, 6),
+	    };
+
+        var marker = new google.maps.Marker({
+            position: from,
+            from : from,
+            to : to,
+            icon : image,
+            elapsedDuration : 0,
+            totalDuration : framesPerAnimation,
+            isActive: false,
+            clickable: false
+        });
+
+        //flightMarkers.push(marker)
+        var step = line.step
+        var historyFlightMarkersOfThisStep = historyFlightMarkers[step]
+        if (!historyFlightMarkersOfThisStep) {
+            historyFlightMarkersOfThisStep = []
+            historyFlightMarkers[step] = historyFlightMarkersOfThisStep
+        }
+        historyFlightMarkersOfThisStep.push(marker)
+	}
+}
+
+
+
+
 function showLinkHistoryPaths(state) {
+    var framesPerAnimation = 50
+    clearHistoryFlightMarkers()
 	$.each(historyPaths, function(key, historyPath) {
-		if ((state == "showInverted" && historyPath.inverted) || 
+	    if ((state == "showInverted" && historyPath.inverted) ||
 		    (state == "show" && !historyPath.inverted) ||
 		    (state == "showInvertedAlliance" && historyPath.inverted && (historyPath.shadowPath.thisAlliancePassengers > 0 || historyPath.shadowPath.thisAirlinePassengers > 0)) ||
 		    (state == "showAlliance" && !historyPath.inverted && (historyPath.shadowPath.thisAlliancePassengers > 0 || historyPath.shadowPath.thisAirlinePassengers > 0)) ||
 		    (state == "showInvertedSelf" && historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0) ||
 		    (state == "showSelf" && !historyPath.inverted && historyPath.shadowPath.thisAirlinePassengers > 0)) {
 			var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.thisAlliancePassengers + historyPath.shadowPath.otherAirlinePassengers
-			if (totalPassengers > 1000) {
-				historyPath.setOptions({strokeWeight : 3})
-			} else if (totalPassengers > 2000) {
+			if (totalPassengers > 500) {
 				historyPath.setOptions({strokeWeight : 4})
+			} else if (totalPassengers > 200) {
+				historyPath.setOptions({strokeWeight : 3})
 			} else if (totalPassengers < 100) {
 				var newOpacity = 0.2 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.2)
 				if (!historyPath.watched) {
@@ -940,6 +1104,8 @@ function showLinkHistoryPaths(state) {
 			if (historyPath.watched) {
 				highlightPath(historyPath)
 			}
+
+			drawHistoryFlightMarker(historyPath, framesPerAnimation, totalPassengers)
 			
 			historyPath.setMap(map)
 			historyPath.shadowPath.setMap(map)
@@ -950,6 +1116,7 @@ function showLinkHistoryPaths(state) {
 			historyPath.shadowPath.setMap(null)
 		}
 	})
+	animateHistoryFlightMarkers(framesPerAnimation)
 }
 
 
