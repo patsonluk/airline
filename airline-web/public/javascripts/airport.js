@@ -732,14 +732,9 @@ function updateAirportMarkers(airline) { //set different markers for head quarte
 function toggleAirportLinksView() {
 	clearAirportLinkPaths() //clear previous ones if exist
 	deselectLink()
-	
-	//push here otherwise it's not centered
-	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
-		map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Airport Flight Map', 'hideAirportLinksView()', 'hideAirportLinksButton')[0]);
-	}
-	
-	
-	
+
+	$("#hideAirportLinksButton").show();
+
 	toggleAirportLinks(activeAirport)
 }
 
@@ -814,8 +809,8 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 	
 	var infowindow; 
 	shadowPath.addListener('mouseover', function(event) {
-		$("#airportLinkPopupFrom").html(this.fromAirport + "&nbsp;" + getCountryFlagImg(this.fromCountry))
-		$("#airportLinkPopupTo").html(this.toAirport + "&nbsp;" + getCountryFlagImg(this.toCountry))
+		$("#airportLinkPopupFrom").html(getCountryFlagImg(this.fromCountry) + this.fromAirport)
+		$("#airportLinkPopupTo").html(getCountryFlagImg(this.toCountry) + this.toAirport)
 		$("#airportLinkPopupPassengers").text(this.passengers)
 		infowindow = new google.maps.InfoWindow({
              content: $("#airportLinkPopup").html(),
@@ -834,12 +829,8 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 function showAirportLinkPaths() {
 	$.each(airportLinkPaths, function(key, airportLinkPath) {
 		var totalPassengers = airportLinkPath.shadowPath.passengers
-		if (totalPassengers > 5000) {
-			airportLinkPath.setOptions({strokeWeight : 3})
-		} else if (totalPassengers > 10000) {
-			airportLinkPath.setOptions({strokeWeight : 4})
-		} else if (totalPassengers < 1000) {
-			var newOpacity = 0.2 + totalPassengers / 1000 * (airportLinkPath.strokeOpacity - 0.2)
+		if (totalPassengers < 2000) {
+			var newOpacity = 0.2 + totalPassengers / 2000 * (airportLinkPath.strokeOpacity - 0.2)
 			airportLinkPath.setOptions({strokeOpacity : newOpacity})
 		}
 			
@@ -865,12 +856,7 @@ function hideAirportLinksView() {
 	clearAirportLinkPaths()
 	updateLinksInfo() //redraw all flight paths
 		
-//	$("#linkHistoryPanel").fadeOut(200);
-//	$("#hideAirportLinksButton").hide()
-	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
-	
-//	map.controls[google.maps.ControlPosition.TOP_CENTER].clear();
-//	map.controls[google.maps.ControlPosition.RIGHT_TOP].clear();
+    $("#hideAirportLinksButton").hide();
 	
 }
 

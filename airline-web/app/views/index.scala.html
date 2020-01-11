@@ -59,6 +59,7 @@
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/model-configuration.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/link-history.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/country.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/office.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
@@ -98,9 +99,28 @@
 	</script>
   </head>
   <body>
-  
   	<input type="hidden" id="floatMessage" value="@message"/>
   	<div id="floatMessageBox" style="height: 30px; width: 400px; display: none;"></div>
+	<div id="linkHistoryControlPanel" class="section" style="display: none;">
+		<div style="float: left; width : 50%">
+			<h4>Top Transit PAX</h4>
+			<div style="width : 90%" class="transitAirlineList table data">
+			</div>
+		</div>
+		<div style="float: left; width : 50%">
+			<input class="showAlliance" type="checkbox" checked="checked" onclick="showLinkHistory()">Alliance
+			<input class="showOther" type="checkbox" checked="checked" onclick="showLinkHistory()">Other Airlines
+			<div style="width : 100%" class="routeList">
+			</div>
+			<div class="button glow" onclick="hideLinkHistoryView()" style="margin-top : 10px">Exit Passenger Map</div>
+		</div>
+	</div>
+	<div id="hideAirportLinksButton" class="button glow" style="display: none;" onclick="hideAirportLinksView()">
+		Exit Airport Flight Map
+	</div>
+
+
+	</div>
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div style="float: left;">
   			<span id="topBarDetails" style="display: none;">
@@ -391,7 +411,8 @@
 											<div class="value" id="linkCancellations"></div>
 										</div>
 									</div>
-									<div class="button" id="toggleLinkHistoryButton" onclick="toggleLinkHistoryView()">View Passenger Map</div>
+									<div class="button viewLinkHistory" onclick="showLinkHistoryView()">View Passenger Map</div>
+
 									<div class="divider"></div>
 									<h4>
 										<span>Direct Competitions</span>
@@ -2408,15 +2429,15 @@
    				<div class="value" id="linkHistoryPopupTo"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Passengers of your airline:</h5></div>
+   				<div class="label"><h5>Your Passengers:</h5></div>
    				<div class="value" id="linkHistoryThisAirlinePassengers"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Passengers of other airlines within your alliance:</h5></div>
+   				<div class="label"><h5>Alliance Passengers:</h5></div>
    				<div class="value" id="linkHistoryThisAlliancePassengers"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Passengers of other airlines:</h5></div>
+   				<div class="label"><h5>Other Passengers:</h5></div>
    				<div class="value" id="linkHistoryOtherAirlinePassengers"></div>
    			</div>
 		</div>
