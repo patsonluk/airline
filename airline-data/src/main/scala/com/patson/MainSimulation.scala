@@ -8,8 +8,9 @@ import akka.actor.Props
 import akka.actor.Actor
 import com.patson.data._
 import com.patson.stream.{CycleCompleted, CycleStart, SimulationEventStream}
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.patson.util.{AirlineCache, AirportCache}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 object MainSimulation extends App {
@@ -29,11 +30,17 @@ object MainSimulation extends App {
     actorSystem.scheduler.schedule(Duration.Zero, Duration(CYCLE_DURATION, TimeUnit.SECONDS), actor, Start)
   }
 
-  
+
+  def invalidateCaches() = {
+    AirlineCache.invalidateAll()
+    AirportCache.invalidateAll()
+  }
+
   def startCycle(cycle : Int) = {
       val cycleStartTime = System.currentTimeMillis()
       println("cycle " + cycle + " starting!")
       SimulationEventStream.publish(CycleStart(cycle, cycleStartTime), None)
+      invalidateCaches()
       println("Oil simulation")
       OilSimulation.simulate(cycle)
       println("Loan simulation")
