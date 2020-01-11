@@ -5,6 +5,7 @@ import com.patson.model.airplane.Model
 import scala.collection.mutable.ListBuffer
 import com.patson.data.AirlineSource
 import com.patson.data.CountrySource
+import com.patson.util.AirlineCache
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
@@ -152,14 +153,14 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   
   
   def getMaxSlotAssignment(airlineId : Int) : Int = {
-    AirlineSource.loadAirlineById(airlineId, true) match {
+    AirlineCache.getAirline(airlineId, true) match {
       case Some(airline) => getMaxSlotAssignment(airline)
       case None => 0
     }
     
   }
   def getPreferredSlotAssignment(airlineId : Int) : Int = {
-     AirlineSource.loadAirlineById(airlineId, true) match {
+     AirlineCache.getAirline(airlineId, true) match {
       case Some(airline) => getPreferredSlotAssignment(airline)
       case None => 0
     }

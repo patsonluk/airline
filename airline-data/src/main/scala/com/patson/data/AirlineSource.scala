@@ -9,6 +9,8 @@ import java.sql.Statement
 import java.io.ByteArrayInputStream
 import java.sql.Blob
 
+import com.patson.util.{AirlineCache, AirportCache}
+
 
 object AirlineSource {
   private[this] val BASE_QUERY = "SELECT a.id AS id, a.name AS name, a.is_generated AS is_generated, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
@@ -158,6 +160,7 @@ object AirlineSource {
   	      updateStatement.setInt(2, airlineId)
   	      updateStatement.executeUpdate()
   	      updateStatement.close()
+          AirlineCache.invalidateAirline(airlineId)
 	      } finally {
   	      connection.close()
 	      }
@@ -198,6 +201,7 @@ object AirlineSource {
         updateStatement.setInt(index, airline.id)
         updateStatement.executeUpdate()
         updateStatement.close()
+        AirlineCache.invalidateAirline(airline.id)
       } finally {
         connection.close()
       }
@@ -213,6 +217,8 @@ object AirlineSource {
         updateStatement.setInt(2, airlineId)
         updateStatement.executeUpdate()
         updateStatement.close()
+
+        AirlineCache.invalidateAirline(airlineId)
       } finally {
         connection.close()
       }
@@ -258,6 +264,7 @@ object AirlineSource {
           
           //updateStatement.executeUpdate()
           updateStatement.addBatch()
+          AirlineCache.invalidateAirline(airline.id)
         }
         updateStatement.executeBatch()
         updateStatement.close()
@@ -270,6 +277,7 @@ object AirlineSource {
   
   def deleteAirline(airlineId : Int) = {
     deleteAirlinesByCriteria(List(("id", airlineId)))
+    AirlineCache.invalidateAirline(airlineId)
   }
   
   def deleteAllAirlines() = {
@@ -395,7 +403,7 @@ object AirlineSource {
         resultSet.beforeFirst()
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
-          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           //val airport = Airport.fromId(resultSet.getInt("airport"))
           val airportId = resultSet.getInt("airport")
           val airport = airports(airportId)
@@ -431,6 +439,8 @@ object AirlineSource {
       preparedStatement.setString(6, airlineBase.countryCode)
       preparedStatement.executeUpdate()
       preparedStatement.close()
+
+      AirlineCache.invalidateAirline(airlineBase.airline.id)
     } finally {
       connection.close()
     }
@@ -438,6 +448,7 @@ object AirlineSource {
   
   def deleteAirlineBase(airlineBase : AirlineBase) = {
     deleteAirlineBaseByCriteria(List(("airline", airlineBase.airline.id), ("airport", airlineBase.airport.id)))
+    AirlineCache.invalidateAirline(airlineBase.airline.id)
   }
   
   def deleteAirlineBaseByCriteria(criteria : List[(String, Any)]) = {
@@ -532,14 +543,14 @@ object AirlineSource {
         val airlines = Map[Int, Airline]()
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
-          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           AllianceSource.loadAllianceMemberByAirline(airline).foreach { member =>
             airline.setAllianceId(member.allianceId)
           }
           
           //val airport = Airport.fromId(resultSet.getInt("airport"))
           val airportId = resultSet.getInt("airport")
-          val airport = airports.getOrElseUpdate(airportId, AirportSource.loadAirportById(airportId, false).get)
+          val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, false).get)
           val name = resultSet.getString("name")
           val level = resultSet.getInt("level")
           val foundedCycle = resultSet.getInt("founded_cycle")
@@ -573,6 +584,8 @@ object AirlineSource {
       preparedStatement.setInt(6, lounge.foundedCycle)
       preparedStatement.executeUpdate()
       preparedStatement.close()
+
+      AirlineCache.invalidateAirline(lounge.airline.id)
     } finally {
       connection.close()
     }
@@ -580,6 +593,7 @@ object AirlineSource {
   
   def deleteLounge(lounge : Lounge) = {
     deleteLoungeByCriteria(List(("airline", lounge.airline.id), ("airport", lounge.airport.id)))
+    AirlineCache.invalidateAirline(lounge.airline.id)
   }
   
   def deleteLoungeByCriteria(criteria : List[(String, Any)]) = {
@@ -753,6 +767,7 @@ object AirlineSource {
         preparedStatement.executeUpdate()
         
         preparedStatement.close()
+
     } finally {
       connection.close()
       logoStream.close()
@@ -791,6 +806,7 @@ object AirlineSource {
         preparedStatement.executeUpdate()
         
         preparedStatement.close()
+        AirlineCache.invalidateAirline(airlineId)
     } finally {
       connection.close()
     }

@@ -8,11 +8,13 @@ import com.patson.MainSimulation
 import java.sql.Statement
 import java.io.ByteArrayInputStream
 import java.sql.Blob
+
 import com.patson.model.oil.OilContract
 import com.patson.model.oil.OilPrice
 import com.patson.model.oil.OilInventoryPolicy
 import com.patson.model.oil.OilConsumptionHistory
 import com.patson.model.oil.OilConsumptionType
+import com.patson.util.AirlineCache
 
 
 object OilSource {
@@ -64,7 +66,7 @@ object OilSource {
         val airlines = Map[Int, Airline]()
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
-          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           
           //airline : Airline, contractPrice : OilPrice, volume : Int, contractCost : Long, startCycle : Int, contractDuration : Int
           contracts += OilContract(airline = airline, contractPrice = resultSet.getDouble("price"), volume = resultSet.getInt("volume"), startCycle = resultSet.getInt("start_cycle"), contractDuration = resultSet.getInt("duration"), id = resultSet.getInt("id"))
@@ -245,7 +247,7 @@ object OilSource {
         val airlines = Map[Int, Airline]()
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
-          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           
           //airline : Airline, contractPrice : OilPrice, volume : Int, contractCost : Long, startCycle : Int, contractDuration : Int
           result += OilInventoryPolicy(airline = airline, factor = resultSet.getDouble("factor"), startCycle = resultSet.getInt("start_cycle"))
@@ -309,7 +311,7 @@ object OilSource {
         val airlines = Map[Int, Airline]()
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
-          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           
           //(airline : Airline, price : Double, volume : Int, consumptionType : OilConsumptionType.Value, cycle : Int
           result += OilConsumptionHistory(airline = airline, 

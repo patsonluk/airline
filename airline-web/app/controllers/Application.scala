@@ -23,6 +23,7 @@ import java.util.Random
 
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
+import com.patson.util.{AirlineCache, AirportCache}
 import controllers.WeatherUtil.Coordinates
 import controllers.WeatherUtil.Weather
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -66,13 +67,13 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
       if (airport.isSlotAssignmentsInitialized) {
         airportObject = airportObject + ("availableSlots" -> JsNumber(airport.availableSlots))
         airportObject = airportObject + ("slotAssignmentList" -> JsArray(airport.getAirlineSlotAssignments().toList.map {  
-          case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
+          case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
           }
         ))
       }
       if (airport.isAirlineAppealsInitialized) {
         airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAdjustedAppeals().toList.map {
-          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
+          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
           }
         ))
 
@@ -241,7 +242,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   }
   
   def getAirport(airportId : Int) = Action {
-     AirportSource.loadAirportById(airportId, true) match {
+     AirportCache.getAirport(airportId, true) match {
        case Some(airport) =>
          //find links going to this airport too, send simplified data
          val links = LinkSource.loadLinksByFromAirport(airportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByToAirport(airportId, LinkSource.ID_LOAD)
@@ -254,7 +255,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
      }
   }
   def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
-    AirportSource.loadAirportById(airportId, true) match {  
+    AirportCache.getAirport(airportId, true) match {  
        case Some(airport) =>  
          val maxSlots = airport.getMaxSlotAssignment(airlineId)
          val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
@@ -269,7 +270,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   }
   
   def getAirportLinkStatistics(airportId : Int) = Action {
-    AirportSource.loadAirportById(airportId, true) match {
+    AirportCache.getAirport(airportId, true) match {
       case Some(airport) => { 
         //group things up
         val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId, LinkStatisticsSource.SIMPLE_LOAD)
@@ -356,7 +357,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     
     val linkConsumptions : Map[Int, LinkConsumptionDetails] = LinkSource.loadLinkConsumptionsByLinksId(links.map(_.id)).map( linkConsumption => (linkConsumption.link.id, linkConsumption)).toMap
     
-    val airport = AirportSource.loadAirportById(airportId, false).get
+    val airport = AirportCache.getAirport(airportId, false).get
     val weather = WeatherUtil.getWeather(new Coordinates(airport.latitude, airport.longitude))
     
     val random = new Random()
