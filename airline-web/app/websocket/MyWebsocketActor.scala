@@ -7,6 +7,7 @@ import com.patson.data.UserSource
 import com.patson.stream._
 import java.util.concurrent.atomic.AtomicLong
 
+import com.patson.util.{AirlineCache, AirportCache}
 import play.api.libs.json.JsNumber
 import play.api.libs.json.Json
 import websocket.chat.TriggerPing
@@ -47,6 +48,9 @@ class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
             val subscriberId = MyWebSocketActor.nextSubscriberId(userId)
             RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
               case CycleCompleted(cycle) =>
+                //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
+                AirlineCache.invalidateAll()
+                AirportCache.invalidateAll()
                 //println("Received cycle completed: " + cycle)
                 out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
               case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
