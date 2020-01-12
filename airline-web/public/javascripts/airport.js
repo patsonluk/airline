@@ -387,11 +387,18 @@ function addMarkers(airports) {
 	var infoWindow = new google.maps.InfoWindow({
 		maxWidth : 450
 	})
+	var originalOpacity = 0.7
 	currentZoom = map.getZoom()
 	var largeAirportMarkerIcon = $("#map").data("largeAirportMarker")
 	var mediumAirportMarkerIcon = $("#map").data("mediumAirportMarker")
 	var smallAirportMarkerIcon = $("#map").data("smallAirportMarker")
-	
+
+	google.maps.event.addListener(infoWindow, 'closeclick',function(){
+       if (infoWindow.marker) {
+        infoWindow.marker.setOpacity(originalOpacity)
+       }
+    });
+
 	var resultMarkers = {}
 	for (i = 0; i < airports.length; i++) {
 		  var airportInfo = airports[i]
@@ -419,6 +426,7 @@ function addMarkers(airports) {
 //		  		airportCountryCode: airportInfo.countryCode,
 //		  		airportZone : airportInfo.zone,
 //		  		airportAvailableSlots: airportInfo.availableSlots,
+                opacity: originalOpacity,
 		  		airport : airportInfo,
 		  		icon: icon
 			  });
@@ -431,9 +439,12 @@ function addMarkers(airports) {
 		  zIndex += sizeAdjust
 		  
 		  marker.setZIndex(zIndex); //major airport should have higher index
-		  
+
 		  marker.addListener('click', function() {
 			  infoWindow.close();
+			  if (infoWindow.marker) {
+			    infoWindow.marker.setOpacity(originalOpacity)
+              }
 			  
 			  activeAirport = this.airport
 			  
@@ -456,6 +467,7 @@ function addMarkers(airports) {
 			  $("#airportPopupId").val(this.airport.id)
 			  infoWindow.setContent($("#airportPopup").html())
 			  infoWindow.open(map, this);
+			  infoWindow.marker = this
 			  
 			  activeAirportPopupInfoWindow = infoWindow
 			  
@@ -472,7 +484,20 @@ function addMarkers(airports) {
 			  }
 			  
 		  });
+
+		  marker.addListener('mouseover', function(event) {
+               this.setOpacity(0.9)
+            })
+            marker.addListener('mouseout', function(event) {
+                if (infoWindow.marker != this) {
+                    this.setOpacity(originalOpacity)
+                }
+            })
+
+
 		  marker.setVisible(isShowMarker(marker, currentZoom))
+
+
 		  resultMarkers[airportInfo.id] = marker
 	}
 	//now assign it to markers to indicate that it's ready
@@ -480,7 +505,7 @@ function addMarkers(airports) {
 }
 
 function planToAirportFromInfoWindow() {
-	activeAirportPopupInfoWindow.close();
+	closeAirportInfoPopup();
 	planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
 }
 
@@ -722,6 +747,29 @@ function updateAirportMarkers(airline) { //set different markers for head quarte
 			marker.setZIndex(999)
 			marker.isBase = true
 			marker.setVisible(true)
+			var originalOpacity = marker.getOpacity()
+			marker.addListener('mouseover', function(event) {
+			            $.each(flightPaths, function(linkId, pathEntry) {
+			                var path = pathEntry.path
+			                var link = pathEntry.path.link
+                            if (link.fromAirportId != baseAirport.airportId) {
+                                if (!$(path).data("originalOpacity")) {
+                                    $(path).data("originalOpacity", path.strokeOpacity)
+                                }
+                                path.setOptions({ strokeOpacity : 0.1 })
+                            }
+			            })
+			       	})
+            marker.addListener('mouseout', function(event) {
+                $.each(flightPaths, function(linkId, pathEntry) {
+                    var path = pathEntry.path
+                    var originalOpacity = $(path).data("originalOpacity")
+                    if (originalOpacity !== undefined) {
+                        path.setOptions({ strokeOpacity : originalOpacity })
+                    }
+                })
+            })
+
 			baseMarkers.push(marker)			
 		})
 	}
@@ -738,11 +786,19 @@ function toggleAirportLinksView() {
 	toggleAirportLinks(activeAirport)
 }
 
+function closeAirportInfoPopup() {
+    if (activeAirportPopupInfoWindow) {
+        activeAirportPopupInfoWindow.close(map)
+        if (activeAirportPopupInfoWindow.marker) {
+            activeAirportPopupInfoWindow.marker.setOpacity(0.7)
+        }
+        activeAirportPopupInfoWindow = undefined
+    }
+}
 
 function toggleAirportLinks(airport) {
 	clearAllPaths()
-	activeAirportPopupInfoWindow.close(map)
-	activeAirportPopupInfoWindow = undefined
+	closeAirportInfoPopup()
 	$.ajax({
 		type: 'GET',
 		url: "airports/" + airport.id + "/link-consumptions",

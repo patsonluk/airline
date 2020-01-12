@@ -27,6 +27,7 @@ $( document ).ready(function() {
 	
 	loadAllCountries()
 	updateAirlineColors()
+	populateTooltips()
 	
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())
@@ -463,9 +464,7 @@ function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
 	highlightTab($('#worldMapCanvasTab'))
 	$('#sidePanel').appendTo($('#worldMapCanvas'))
-	if (activeAirportPopupInfoWindow) {
-		activeAirportPopupInfoWindow.close(map)
-	}
+	closeAirportInfoPopup()
 	if (selectedLink) {
 		selectLinkFromMap(selectedLink, true)
 	}
@@ -479,6 +478,17 @@ function showAnnoucement() {
 	$('#annoucementContainer').load('assets/html/annoucement.html')
 
 	modal.fadeIn(1000)
+}
+
+function populateTooltips() {
+    //scan for all tooltips
+    $.each($(".tooltip"), function() {
+        var htmlSource = $(this).data("html")
+        if (htmlSource) { //then load the html, otherwise leave it alone (older tooltips)
+            $(this).empty()
+            $(this).load("assets/html/tooltip/" + htmlSource + ".html")
+        }
+    })
 }
 
 function showTutorial() {
