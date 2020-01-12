@@ -636,13 +636,18 @@ function refreshLinkDetails(linkId) {
 	    	    success: function(linkConsumptions) {
 	    	    	$("#linkCompetitons .data-row").remove()
 	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
-    	    			if (linkConsumption.airlineId != airlineId) {
-    	    				$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
-		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
-		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity)
-		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality
-		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.frequency + "</div></div>")
-    	    			}
+    	    			var row = $("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+                                  		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
+                                  		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity)
+                                  		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality
+                                  		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.frequency + "</div></div>")
+
+                        if (linkConsumption.airlineId == airlineId) {
+                            $("#linkCompetitons").prepend(row) //self is always on top
+                        } else {
+                            $("#linkCompetitons").append(row)
+                        }
+
 	    	    	})
 	    	    	if ($("#linkCompetitons .data-row").length == 0) {
 	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
@@ -1533,7 +1538,7 @@ function updateLinksTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
 		row.append("<div class='cell'>" + link.model + "</div>")
 		row.append("<div class='cell' align='right'>" + link.distance + "km</div>")
-		row.append("<div class='cell' align='right'>" + link.totalCapacity + "</div>")
+		row.append("<div class='cell' align='right'>" + link.totalCapacity + "(" + link.frequency + ")</div>")
 		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
 		row.append("<div class='cell' align='right'>" + link.totalLoadFactor + '%' + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.revenue) + "</div>")
