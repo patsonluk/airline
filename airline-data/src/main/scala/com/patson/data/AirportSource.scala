@@ -252,7 +252,7 @@ object AirportSource {
       insertStatement.close()
 
       connection.commit()
-      AirportCache.invalidateAirport(airportId)
+      //AirportCache.invalidateAirport(airportId)
     } finally {
       connection.close()
     }
@@ -277,7 +277,7 @@ object AirportSource {
         insertStatement.executeUpdate()
         insertStatement.close()
       }
-     AirportCache.invalidateAirport(airportId)
+     //AirportCache.invalidateAirport(airportId)
      connection.commit()
    } finally {
      connection.close()
@@ -309,7 +309,7 @@ object AirportSource {
       insertStatement.executeBatch()
       purgeStatement.close()
       insertStatement.close()
-      AirportCache.invalidateAirport(airportId)
+      //AirportCache.invalidateAirport(airportId)
 
       connection.commit()
     } finally {
@@ -540,7 +540,7 @@ object AirportSource {
         
         featureStatement.close()
 
-        AirportCache.invalidateAirport(airport.id)
+        //AirportCache.invalidateAirport(airport.id)
       }
       connection.commit()
     } finally {
@@ -699,7 +699,7 @@ object AirportSource {
           preparedStatement.setInt(3, project.id)
           
           preparedStatement.executeUpdate()
-          AirportCache.invalidateAirport(project.airport.id)
+          //AirportCache.invalidateAirport(project.airport.id)
       }
       
       preparedStatement.close()
