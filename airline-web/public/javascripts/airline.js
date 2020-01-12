@@ -261,6 +261,7 @@ function drawFlightPath(link, linkColor) {
      strokeWeight: 2,
      frequency : link.frequency,
      modelId : link.modelId,
+     link : link,
      zIndex: 90
    });
    
@@ -643,7 +644,7 @@ function refreshLinkDetails(linkId) {
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.frequency + "</div></div>")
 
                         if (linkConsumption.airlineId == airlineId) {
-                            $("#linkCompetitons").prepend(row) //self is always on top
+                            $("#linkCompetitons .table-header").after(row) //self is always on top
                         } else {
                             $("#linkCompetitons").append(row)
                         }

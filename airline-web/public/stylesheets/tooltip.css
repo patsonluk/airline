@@ -2,7 +2,19 @@
     position: relative;
     display: inline-block;
     vertical-align: middle;
+    /*font-size: 14px;*/
 }
+
+
+.tooltip li {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+}
+.tooltip li:before {
+    content: url('/assets/images/markers/dot.png');
+}
+
 
 .tooltip .tooltiptext {
     visibility: hidden;
@@ -53,3 +65,4 @@
     visibility: visible;
     opacity: 1;
 }
+
