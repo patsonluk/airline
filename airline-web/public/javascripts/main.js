@@ -38,8 +38,8 @@ $( document ).ready(function() {
 	});
 
 	$('#chattext').jemoji({
-        folder : 'assets/images/emoji/',
-        btn:    $('#emojiButton')
+        folder : 'assets/images/emoji/'
+        //btn:    $('#emojiButton') //button is buggy and hard to select (not categorized), lets not enable it now
     });
 
     Splitting();
