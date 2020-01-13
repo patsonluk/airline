@@ -130,7 +130,6 @@ if (typeof(jQuery) === 'undefined') {
      */
     this.close = function () {
       $(menuContainer).hide();
-      tokenStart = -1
       tokenEnd = -1
     };
 
@@ -321,7 +320,6 @@ if (typeof(jQuery) === 'undefined') {
     var currentChars = '', currentVal, currentEmoji;
 
     var filterEmoji = function () {
-        console.log(currentChars)
       // Use emojis after two character are typed
       if (currentChars.length >= 2) {
         // Escape especial characters
@@ -358,6 +356,8 @@ if (typeof(jQuery) === 'undefined') {
         $el.data('jemojiclick').call();
 
         _this.open();
+      } else {
+        _this.close();
       }
     };
 
@@ -373,7 +373,6 @@ if (typeof(jQuery) === 'undefined') {
       // Close menu on ESC
       if (event.which === 27 && _this.isOpen()) {
         _this.close();
-        tokenStart = -1
         tokenEnd = -1
         return;
       }
@@ -440,8 +439,14 @@ if (typeof(jQuery) === 'undefined') {
           currentChars = currentChars.slice(0, -1);
 
           var $divs = $(d).find('div'), $index = $divs.index($(d).find('div.active'));
-
-          filterEmoji();
+          if (getCursorPosition() - 1 == tokenStart) { //removing the colon soon, switch the menuOpened state back to false
+             menuOpened = false;
+             currentChars = '';
+             tokenStart = -1;
+             tokenEnd = -1;
+          } else {
+            filterEmoji();
+          }
         }
       }
     });
@@ -480,12 +485,22 @@ if (typeof(jQuery) === 'undefined') {
         }
       }
 
+      if (event.which == 32 || event.which == 13) { //space and enter reset the : state
+         currentChars = '';
+         menuOpened = false;
+         _this.close();
+         return;
+      }
+
+
       // Open emoji menu on press ':' key
       if (event.which === 58) {
         if (!menuOpened) {
           menuOpened = true;
-          tokenStart = tokenEnd = -1;
+          tokenStart = getCursorPosition();
+          tokenEnd = -1;
           completeToken = false
+          console.log(tokenStart)
         }
         return;
       }
@@ -501,9 +516,7 @@ if (typeof(jQuery) === 'undefined') {
 
     function replaceEmojiToken(newEmojiString) {
         var currentVal = $el.val();
-        if (tokenStart === -1) {
-            tokenStart = currentVal.slice(0, getCursorPosition()).lastIndexOf(':')
-        }
+
         if (tokenEnd === -1) {
             tokenEnd = getCursorPosition();
             completeToken = false
@@ -511,9 +524,10 @@ if (typeof(jQuery) === 'undefined') {
 
         if (completeToken) { //just replace the whole token
             currentVal = currentVal.slice(0, tokenStart) + ':' + newEmojiString + currentVal.slice(tokenEnd);
+            $el[0].setSelectionRange(tokenEnd + 2, tokenEnd + 2)
         } else { //not yet a complete token, make it a complete token
             var prefix
-            if (currentVal.charAt(tokenStart - 1) === ':') { //check if it's double :: if so, add a space
+            if (tokenStart > 0 && currentVal.charAt(tokenStart - 1) !== ' ') { //check if it's preceded by a space, if not add one
                 prefix = " :"
             } else {
                 prefix = ":"
@@ -525,11 +539,13 @@ if (typeof(jQuery) === 'undefined') {
             }
             currentVal = currentVal.slice(0, tokenStart) + prefix + newEmojiString + suffix + currentVal.slice(tokenEnd);
             completeToken = true
+            tokenStart += (prefix.length - 1) //if the prefix replacement for ':' is longer, then need to adjust the token start value
+            $el[0].setSelectionRange(tokenEnd + suffix.length, tokenEnd + suffix.length)
         }
 
         tokenEnd = tokenStart + currentEmoji.length + 1
         $el.val(currentVal);
-        $el[0].setSelectionRange(tokenEnd + suffix.length, tokenEnd + suffix.length)
+
     }
 
   };
