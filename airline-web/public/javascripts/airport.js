@@ -442,7 +442,7 @@ function addMarkers(airports) {
 
 		  marker.addListener('click', function() {
 			  infoWindow.close();
-			  if (infoWindow.marker) {
+			  if (infoWindow.marker && infoWindow.marker != this) {
 			    infoWindow.marker.setOpacity(originalOpacity)
               }
 			  
