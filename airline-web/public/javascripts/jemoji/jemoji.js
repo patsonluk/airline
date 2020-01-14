@@ -75,49 +75,6 @@ if (typeof(jQuery) === 'undefined') {
       //selectedEmoji = false; //have to reset it since when the menu first open, the first selected item does not replace the current input
       var $icons = $(menuContainer).find('.jemoji-icons');
 
-//      if ($icons.html() === '') {
-//
-//        var dir = this._defaults.folder;
-//        if (this._options.folder) {
-//          dir = this._options.folder;
-//        }
-//
-//        var dom = $icons[0], innerHTML = '', ext = (typeof(this._options.extension))? this._options.extension : this._defaults;
-//        for (var i = 0, l = 100; i < l; i++) {
-//          var element = _this._icons[i], classActive = '';
-//          if (innerHTML === '')
-//            classActive = 'class="active"';   // First emoji set as 'active'
-//
-//          innerHTML += '<div ' + classActive + '>' +
-//                          '<img src="' + dir + element + '.' + ext + '" alt="' + element + '" />' +
-//                          '<span>:' + element + ':</span>' +
-//                        '</div>';
-//        }
-//        dom.innerHTML = innerHTML;
-//
-//        $el.data('jemojiclick').call();
-//
-//        var index = 0;
-//        $icons.on('scroll', function () {
-//          if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-//            if (100 * (++index) < _this._icons.length) {
-//              var innerHTML = '';
-//              for (var i = 100 * index, l = 100 + 100 * index; i < l; i++) {
-//                var element = _this._icons[i];
-//                if (element) {
-//                  innerHTML += '<div>' +
-//                                      '<img src="' + dir + element + '.' + ext + '" alt="' + element + '" />' +
-//                                      '<span>:' + element + ':</span>' +
-//                                    '</div>';
-//                }
-//              }
-//              dom.innerHTML += innerHTML;
-//              $el.data('jemojiclick').call();
-//            }
-//          }
-//        });
-//      }
-
       var selectedDiv = $(".jemoji-icons .active") //on open always scroll to the selected icon
       if (selectedDiv) {
           selectedDiv[0].scrollIntoView();
@@ -211,7 +168,7 @@ if (typeof(jQuery) === 'undefined') {
         replaceEmojiToken(emojiCode)
 
         $el.focus();
-        menuOpened = false;
+        inColonMode = false;
         currentChars = '';
         _this.close();
       });
@@ -284,7 +241,7 @@ if (typeof(jQuery) === 'undefined') {
       $el.after($menuContainer);
     }
 
-    var menuOpened = false
+
 
     // Trigger open/close emoji menu
     var btn = (typeof(this._options.btn) !== 'undefined')? this._options.btn : this._defaults.btn;
@@ -317,13 +274,15 @@ if (typeof(jQuery) === 'undefined') {
       }
     });
 
-    var currentChars = '', currentVal, currentEmoji;
+    var currentEmoji;
 
-    var filterEmoji = function () {
+    var filterEmoji = function (filterString) {
       // Use emojis after two character are typed
-      if (currentChars.length >= 2) {
+      console.log("Filter string : " + filterString)
+      if (filterString.length >= 2) {
+       filterString = filterString.toLowerCase()
         // Escape especial characters
-        var regex = new RegExp('^([a-zA-Z0-9]|_?)*' + currentChars.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") + '([a-zA-Z0-9]|_?)*');
+        var regex = new RegExp('^([a-zA-Z0-9]|_?)*' + filterString.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") + '([a-zA-Z0-9]|_?)*');
 
         var $domMenu = $(d), dom = $domMenu[0];
 
@@ -349,13 +308,17 @@ if (typeof(jQuery) === 'undefined') {
         }
         dom.innerHTML = innerHTML;
 
-        $el.data('jemojiContainer', $domMenu.closest('.jemoji-menu')[0]);
+        if (innerHTML === '') {
+           _this.close();
+        } else {
+            $el.data('jemojiContainer', $domMenu.closest('.jemoji-menu')[0]);
 
 
-        // Insert emojis on click
-        $el.data('jemojiclick').call();
+            // Insert emojis on click
+            //$el.data('jemojiclick').call();
 
-        _this.open();
+            _this.open();
+         }
       } else {
         _this.close();
       }
@@ -365,19 +328,25 @@ if (typeof(jQuery) === 'undefined') {
     // Keydown to detect arrows, esc and backspace
     //
 
-    var tokenStart
-    var tokenEnd
-    var completeToken = false //:abc: is a completeToken while :abc is not
+
+
+    var explicitDisable = false
+    /**
+        keys here are the one that we potentially want to block propagation (enter/tab/navigation/esc) when menu is active
+    */
     $el.jemojiKeydown(function (event) {
+        // Close menu on ESC
+        if (event.which === 27 && _this.isOpen()) {
+            explicitDisable = true
+            closeMenu()
+            return;
+        }
 
-      // Close menu on ESC
-      if (event.which === 27 && _this.isOpen()) {
-        _this.close();
-        tokenEnd = -1
-        return;
-      }
+        if ((event.which == 32 || event.which === 13)) { //space or enter
+            explicitDisable = false //reset explicit disable
+        }
 
-      if (menuOpened) {
+
         var $divs = $(d).find('div'), $index = $divs.index($(d).find('div.active'));
 
         if (_this.isOpen()) {
@@ -395,18 +364,13 @@ if (typeof(jQuery) === 'undefined') {
               selectedDiv.get(0).scrollIntoView()
               selectedDiv.parent()[0].scrollTop -= 10;
 
-              currentEmoji = $(d).find('div.active img').attr('alt');
-
-              replaceEmojiToken(currentEmoji)
-
-              currentChars = '';
               event.preventDefault();
             }
 
             return;
           }
 
-          if (event.which === 39 || event.which === 40 || event.which === 9) {
+          if (event.which === 39 || event.which === 40) {
             if (hasnavigation) {
               // Right arrow
               $divs.removeClass('active');
@@ -420,135 +384,136 @@ if (typeof(jQuery) === 'undefined') {
               selectedDiv.get(0).scrollIntoView()
               selectedDiv.parent()[0].scrollTop -= 10;
 
-              currentEmoji = $(d).find('div.active img').attr('alt');
-              replaceEmojiToken(currentEmoji)
-
               // Scroll to selected emoji container
               //$(d).scrollTop($(d).find('div.active img').position().top);
 
-              currentChars = '';
-
-              event.preventDefault();
+               event.preventDefault();
             }
             return;
           }
-        }
 
-        // Backspace
-        if (event.which === 8) {
-          currentChars = currentChars.slice(0, -1);
+          // Type selected emoji on Enter if menu is opened
+          if ((event.which == 9 || event.which === 13)) { //tab or enter
+             replaceEmojiToken()
+             closeMenu()
+             isFromEmoji = true; //so that chat.js would not send the message out
 
-          var $divs = $(d).find('div'), $index = $divs.index($(d).find('div.active'));
-          if (getCursorPosition() - 1 == tokenStart) { //removing the colon soon, switch the menuOpened state back to false
-             menuOpened = false;
-             currentChars = '';
-             tokenStart = -1;
-             tokenEnd = -1;
-          } else {
-            filterEmoji();
+             event.preventDefault();
+             event.stopPropagation();
+             return;
           }
         }
-      }
     });
 
     //
-    // Keypress for rest of keys
+    // Keyup for the rest of the key that it WILL update the currentVal
     //
-    $el.jemojiKeypress(function (event) {
-
-      // Type selected emoji on Enter if menu is opened
-      if (event.which === 13 && _this.isOpen()) {
-        $el.focus();
-        _this.close();
-        menuOpened = false;
-        currentChars = '';
-
-        if (!completeToken) { //then complete it
-          currentEmoji = $(d).find('div.active img').attr('alt');
-          replaceEmojiToken(currentEmoji)
+    //$el.jemojiKeypress(function (event) {
+    $el.jemojiKeyup(function (event) {
+        if ((event.which >= 37 && event.which <= 40) || explicitDisable) { //navigation or explicitly disable for this current token
+            return
         }
 
-        $(menuContainer).find('.jemoji-icons').html('');
-        isFromEmoji = true; //so that chat.js would not send the message out
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
-
-      if (menuOpened) { //emoji is completed and menu is open, now press any other key (non navigation), then it should reset
-        if (completeToken) {
-            $el.focus();
-            menuOpened = false;
-            currentChars = '';
-             _this.close();
-             return;
-        }
-      }
-
-      if (event.which == 32 || event.which == 13) { //space and enter reset the : state
-         currentChars = '';
-         menuOpened = false;
-         _this.close();
-         return;
-      }
-
-
-      // Open emoji menu on press ':' key
-      if (event.which === 58) {
-        if (!menuOpened) {
-          menuOpened = true;
-          tokenStart = getCursorPosition();
-          tokenEnd = -1;
-          completeToken = false
-          console.log(tokenStart)
-        }
-        return;
-      }
-
-      // Menu opened
-      if (menuOpened) {
-        var $divs = $(d).find('div'), $index = $divs.index($(d).find('div.active'));
-        currentChars += String.fromCharCode(event.which).toLowerCase();
-        filterEmoji();
-      }
-      
-    });
-
-    function replaceEmojiToken(newEmojiString) {
         var currentVal = $el.val();
 
-        if (tokenEnd === -1) {
-            tokenEnd = getCursorPosition();
-            completeToken = false
-        }
+        var tokenInfo = getTokenAtCursor()
+        console.log(tokenInfo)
 
-        if (completeToken) { //just replace the whole token
-            currentVal = currentVal.slice(0, tokenStart) + ':' + newEmojiString + currentVal.slice(tokenEnd);
-            $el[0].setSelectionRange(tokenEnd + 2, tokenEnd + 2)
-        } else { //not yet a complete token, make it a complete token
-            var prefix
-            if (tokenStart > 0 && currentVal.charAt(tokenStart - 1) !== ' ') { //check if it's preceded by a space, if not add one
-                prefix = " :"
+        if (!tokenInfo) { //token has been complete or not a token at cursor anymore
+            closeMenu()
+        } else {
+            var filterString;
+            if (tokenInfo.complete) {
+                filterString = currentVal.slice(tokenInfo.start + 1, tokenInfo.end - 1) //+1 to exclude the leading, -1 to exclude the trailing :
             } else {
-                prefix = ":"
+                filterString = currentVal.slice(tokenInfo.start + 1, tokenInfo.end) //+1 to exclude the leading
             }
-            if (currentVal.length - 1 == tokenEnd || currentVal.charAt(tokenEnd) !== ' ') {
-                suffix = ": "
-            } else {
-                suffix = ":"
-            }
-            currentVal = currentVal.slice(0, tokenStart) + prefix + newEmojiString + suffix + currentVal.slice(tokenEnd);
-            completeToken = true
-            tokenStart += (prefix.length - 1) //if the prefix replacement for ':' is longer, then need to adjust the token start value
-            $el[0].setSelectionRange(tokenEnd + suffix.length, tokenEnd + suffix.length)
+
+            filterEmoji(filterString);
         }
+    });
 
-        tokenEnd = tokenStart + currentEmoji.length + 1
-        $el.val(currentVal);
-
+    function closeMenu() {
+        $el.focus();
+        _this.close();
     }
 
-  };
+
+    function replaceEmojiToken() {
+        var selectedEmoji = $(d).find('div.active img').attr('alt');
+        var currentVal = $el.val();
+
+        var tokenInfo = getTokenAtCursor()
+
+        var spaceAppended = false
+        if (tokenInfo) {
+            var suffix
+            if (currentVal.charAt(tokenInfo.end) === ' ') { //already has a trailing space
+                suffix = ":"
+            } else {
+                suffix = ": "
+            }
+            var prefix
+            if (tokenInfo.start == 0 || currentVal.charAt(tokenInfo.start - 1) === ' ') { //already has a leading space or at the beginning
+                prefix = ":"
+            } else {
+                prefix = " :"
+            }
+
+            if (tokenInfo.complete) { //already complete, just replace the value between the colons
+                currentVal = currentVal.slice(0, tokenInfo.start) + prefix + selectedEmoji + suffix + currentVal.slice(tokenInfo.end);
+            } else {
+                currentVal = currentVal.slice(0, tokenInfo.start) + prefix + selectedEmoji + suffix + currentVal.slice(tokenInfo.end);
+            }
+        }
+        $el.val(currentVal);
+        //now adjust cursor
+        var newTokenEnd = (prefix.length) + tokenInfo.start + selectedEmoji.length + 2 //2 as the ending colon and space
+        $el[0].setSelectionRange(newTokenEnd, newTokenEnd)
+    }
+
+    /**
+        This returns a Token info in form of { start : x, end : y, complete : b } start, end is the index of the currentVal
+    */
+    function getTokenAtCursor() {
+        var currentVal = $el.val();
+
+        if (currentVal.length == 0
+        || currentVal.charAt(getCursorPosition() - 1) === ':') { //then it is either AT the starting colon, ending colon, not in any token, anyway, this is NOT a token at cursor
+          return null
+        } else {
+          var walker = getCursorPosition() - 1;
+          while (walker >= 0) {
+              if (currentVal.charAt(walker) === ' ') { //nope
+                  return null
+              } else if (currentVal.charAt(walker) === ':') { //find a token start
+                 var tokenStart = walker
+                 walker += 1 //now scan forward until hitting a space or ':'
+                 while (walker < currentVal.length) {
+                    if (currentVal.charAt(walker) === ':') { //this could potentially a trailing colon, but can as well be a leading colon for another token
+                        if (currentVal.charAt(walker) + 1 == currentVal.length || currentVal.charAt(walker + 1) === ' ') { //then this is indeed a trailing colon for current token
+                            return { "start" : tokenStart, "end" : walker + 1, "complete" : true} //include the colon
+                        } else { //it's a leading colon for another token
+                            return { "start" : tokenStart, "end" : walker, "complete" : false}
+                        }
+                    } else if (currentVal.charAt(walker) === ' ') {
+                        return { "start" : tokenStart, "end" : walker, "complete" : false}
+                    }
+                    walker ++;
+                 }
+                 return { "start" : tokenStart, "end" : walker, "complete" : false}
+              }
+              walker --;
+          }
+          return null
+        }
+    }
+
+
+  }; //end var emoji
+
+
+
 
   $.fn.jemoji = function(methodOrOptions) {
 
