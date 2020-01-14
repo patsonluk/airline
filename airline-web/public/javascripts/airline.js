@@ -836,8 +836,13 @@ function updatePlanLinkInfo(linkInfo) {
 	var availableFromSlot = linkInfo.maxFrequencyFromAirport
 	var availableToSlot = linkInfo.maxFrequencyToAirport
 	if (linkInfo.existingLink) {
-		availableFromSlot -= linkInfo.existingLink.frequency
-		availableToSlot -= linkInfo.existingLink.frequency
+	    if (linkInfo.existingLink.future) {
+	        availableFromSlot -= linkInfo.existingLink.future.frequency
+            availableToSlot -= linkInfo.existingLink.future.frequency
+	    } else {
+            availableFromSlot -= linkInfo.existingLink.frequency
+            availableToSlot -= linkInfo.existingLink.frequency
+        }
 	}
 	var availableFromSlotText
 	if (availableFromSlot == 0) {
