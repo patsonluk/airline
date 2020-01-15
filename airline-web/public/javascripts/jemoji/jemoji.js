@@ -475,21 +475,21 @@ if (typeof(jQuery) === 'undefined') {
     */
     function getTokenAtCursor() {
         var currentVal = $el.val();
-
+        var cursorPosition = getCursorPosition()
         if (currentVal.length == 0
-        || currentVal.charAt(getCursorPosition() - 1) === ':') { //then it is either AT the starting colon, ending colon, not in any token, anyway, this is NOT a token at cursor
+        || currentVal.charAt(cursorPosition - 1) === ':') { //then it is either AT the starting colon, ending colon, not in any token, anyway, this is NOT a token at cursor
           return null
         } else {
-          var walker = getCursorPosition() - 1;
+          var walker = cursorPosition - 1;
           while (walker >= 0) {
               if (currentVal.charAt(walker) === ' ') { //nope
                   return null
               } else if (currentVal.charAt(walker) === ':') { //find a token start
                  var tokenStart = walker
                  walker += 1 //now scan forward until hitting a space or ':'
-                 while (walker < currentVal.length) {
+                 while (walker < cursorPosition) {
                     if (currentVal.charAt(walker) === ':') { //this could potentially a trailing colon, but can as well be a leading colon for another token
-                        if (currentVal.charAt(walker) + 1 == currentVal.length || currentVal.charAt(walker + 1) === ' ') { //then this is indeed a trailing colon for current token
+                        if (currentVal.charAt(walker) + 1 == cursorPosition || currentVal.charAt(walker + 1) === ' ') { //then this is indeed a trailing colon for current token
                             return { "start" : tokenStart, "end" : walker + 1, "complete" : true} //include the colon
                         } else { //it's a leading colon for another token
                             return { "start" : tokenStart, "end" : walker, "complete" : false}
