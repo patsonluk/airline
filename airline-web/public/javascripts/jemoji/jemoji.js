@@ -276,7 +276,7 @@ if (typeof(jQuery) === 'undefined') {
 
     var filterEmoji = function (filterString) {
       // Use emojis after two character are typed
-      console.log("Filter string : " + filterString)
+      //console.log("Filter string : " + filterString)
       if (filterString.length >= 2) {
        filterString = filterString.toLowerCase()
         // Escape especial characters
@@ -415,7 +415,7 @@ if (typeof(jQuery) === 'undefined') {
         var currentVal = $el.val();
 
         var tokenInfo = getTokenAtCursor()
-        console.log(tokenInfo)
+        //console.log(tokenInfo)
 
         if (!tokenInfo) { //token has been complete or not a token at cursor anymore
             closeMenu()
