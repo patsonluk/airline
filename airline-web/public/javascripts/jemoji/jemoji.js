@@ -164,13 +164,11 @@ if (typeof(jQuery) === 'undefined') {
     $el.data('jemojiclick', function () { //openOnClick whether the menu was brought up my clicking the smiley icon. As the string replacement handling should be different
       $(d).find('div').off('click').on('click', function () {
         var emojiCode = $(this).find('img').attr('alt');
+        $(d).find('div').removeClass("active")
+        $(this).addClass("active")
+        replaceEmojiToken()
 
-        replaceEmojiToken(emojiCode)
-
-        $el.focus();
-        inColonMode = false;
-        currentChars = '';
-        _this.close();
+        closeMenu()
       });
     });
 
@@ -315,7 +313,7 @@ if (typeof(jQuery) === 'undefined') {
 
 
             // Insert emojis on click
-            //$el.data('jemojiclick').call();
+            $el.data('jemojiclick').call();
 
             _this.open();
          }
