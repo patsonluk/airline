@@ -551,6 +551,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    		"transposeAxis":"1",
 	    		"animation": "0",
 	    		"showBorder":"0",
+	    		"drawAnchors": "0",
                 "toolTipBorderRadius": "2",
                 "toolTipPadding": "5",
                 "paletteColors": "#007849,#0375b4,#ffce00",
