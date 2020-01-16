@@ -30,7 +30,7 @@ function showAirplaneModelConfigurationsModal(modelConfigurationInfo) {
     $("#modelConfigurationModal .modelName").text(model.name)
 
     $.each(modelConfigurationInfo.configurations, function(index, configuration) {
-        var configurationDiv = $("<div style='width : 95%; height : 130px;' class='section config'></div>")
+        var configurationDiv = $("<div style='width : 95%; min-height : 130px;' class='section config'></div>")
         configurationDiv.data("existingConfiguration", { "economy" : configuration.economy, "business" : configuration.business, "first" : configuration.first}) //for revert
         configurationDiv.data("spaceMultipliers", spaceMultipliers) //for revert
         configurationDiv.data("configuration", configuration)
@@ -87,7 +87,7 @@ function showAirplaneModelConfigurationsModal(modelConfigurationInfo) {
     })
 
     for (i = 0 ; i < modelConfigurationInfo.maxConfigurationCount - modelConfigurationInfo.configurations.length; i ++) { //pad the rest with empty div
-        var configurationDiv = $("<div style='width : 95%; height : 130px; position: relative;' class='section config'></div>")
+        var configurationDiv = $("<div style='width : 95%; min-height : 130px; position: relative;' class='section config'></div>")
         var promptDiv = ("<div style='position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);'><span class='button' onclick='toggleNewConfiguration(selectedModel, " + (modelConfigurationInfo.configurations.length == 0 ? "true" : "false") + ")'><img src='assets/images/icons/24px/plus.png' title='Add new configuration'><div style='float:right'><h3>Add New Configuration</h3></div></span></div>")
 
 
@@ -96,7 +96,6 @@ function showAirplaneModelConfigurationsModal(modelConfigurationInfo) {
     }
     toggleUtilizationRate($("#modelConfigurationModal"), $("#modelConfigurationModal .toggleUtilizationRateBox"))
 
-    $('#modelConfigurationModal').css( "zIndex", 0) //as there could be other modals on top of this
     $('#modelConfigurationModal').fadeIn(200)
 }
 

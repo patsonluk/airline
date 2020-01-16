@@ -35,7 +35,7 @@ body {
 .menubar {
 	//position: fixed;
 	top: 0px;
-	height: 40px;
+	min-height: 40px;
 	width: 100%;
 	z-index: 999;
 	background-color: #FFF;
@@ -425,7 +425,6 @@ div#canvas {
     height: -webkit-calc(100vh - 70px); 
     height: -moz-calc(100vh - 70px);
     height: calc(100vh - 70px);
-//	background-image:url("../../assets/images/background/brushedsteel.jpg");
 }
 
 #main-tabs {
@@ -442,7 +441,7 @@ div#canvas {
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    z-index: 11; /* Sit on top */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
@@ -453,11 +452,12 @@ div#canvas {
 }
 
 .modal#confirmationModal {
-    z-index: 2; /* Confirmation always sits on top, even about modal */
+    z-index: 12; /* Confirmation always sits on top, even about modal */
 }
 
 /* Modal Content/Box */
 .modal-content {
+    z-index: 11;
     margin: 15% auto; /* 15% from the top and centered */
     width: 50%; /* Could be more or less, depending on screen size */
 }

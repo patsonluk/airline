@@ -8,6 +8,7 @@
     <meta name="keywords" content="Airline Simulation Game,Airline Strategy Game,Airline Management Game,Free Online Game,Open Source">
 	<meta name="author" content="Patson Luk">
 	<meta name="google-site-verification" content="EyjPyE3kaprSp7umZW58OuLwb-viMRBYx1lUh50ozAk" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	  <style type="text/css">
       html, body { height: 100%; margin: 0; padding: 0; }
@@ -121,7 +122,7 @@
 	</div>
 
 
-	</div>
+
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div style="float: left;">
   			<span id="topBarDetails" style="display: none;">
@@ -133,34 +134,36 @@
   			</span>
   		</div>
   		<div style="float: right;">
-  		<div style="float: right; margin: 5px;">
-  			<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
-  				<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
-  			</a>
-  		</div>
-  		<div style="float: right" class="button"><a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a></div>
-	  		<div style="float: right;">
-	  			<div style="display: hidden;" id="loginDiv">
-		  			<span class="label">User Name</span>
-		  			<input type="text" id="loginUserName" tabindex=1/>
-		  			<a href="/forgot-id"  target="_blank">
-		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
-		  			</a> 
-		  			<span class="label">Password</span>
-		  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2/>
-		  			<a href="/forgot-password"  target="_blank">
-		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
-		  			</a>
-		  			<div class="button" onclick="login()" tabindex=3>Login</div>
-	<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
-                    <div class="button" onclick="" tabindex=4><a href="signup">Sign Up</a></div>
-	  			</div>
-	  			<div style="float: right; display: none;" id="logoutDiv">
-	  				<span id="currentUserName" class="label"></span>
-	  				<div class="button" onclick="logout()">Logout</div> 
-	  			</div>
+			<div style="float: right; margin: 5px;">
+				<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
+					<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
+				</a>
 			</div>
+			<div style="float: right" class="button">
+				<a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a>
+			</div>
+			<div style="float: right; display: none;" id="loginDiv">
+				<span class="label">User Name</span>
+				<input type="text" id="loginUserName" tabindex=1/>
+				<a href="/forgot-id"  target="_blank">
+					<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
+				</a>
+				<span class="label">Password</span>
+				<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2/>
+				<a href="/forgot-password"  target="_blank">
+					<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
+				</a>
+				<div class="button" onclick="login()" tabindex=3>Login</div>
+<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
+				<div class="button" onclick="" tabindex=4><a href="signup">Sign Up</a></div>
+			</div>
+			<div style="float: right; display: none;" id="logoutDiv">
+				<span id="currentUserName" class="label"></span>
+				<div class="button" onclick="logout()">Logout</div>
+			</div>
+			<div style="clear: both;"></div>
 		</div>
+		<div style="clear: both;"></div>
   	</div>
 	<div id="console" class="marquee" style="width: 100%; position: relative;" align="center">
 		<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
@@ -241,7 +244,7 @@
 			<!-- end live-chat -->
 
 
-			<div style="width: 80px; float: left;">
+			<div style="width: 80px; float: left;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
 				<ul class="tabs" id="main-tabs">
 
@@ -1265,11 +1268,11 @@
 				</div>
 	<!--   			end airplane canvas -->
 				<div id="officeCanvas" style="height: 100%; display: none;">
-					<div style="width : 70%; float: left;">
+					<div style="width : 70%; float: left;" class="verticalGroup">
 						<div class="section" style="width: 95%; float: left;">
-                            <div style="width: 50%; float: left;">
+                            <div style="width: 50%; float: left;" class="verticalGroup">
                                 <h4>Airline Details</h4>
-                                <div class="table" style="width: 50%; float: left;">
+                                <div class="table verticalGroup" style="width: 50%; float: left;">
                                     <div class="table-row">
                                         <div class="cell label">Airline Code:</div>
                                         <div class="cell value">
@@ -1320,7 +1323,7 @@
                                         <div id="assets" class="cell value"></div>
                                     </div>
                                 </div>
-                                <div class="table" style="width: 50%; float: left;">
+                                <div class="table verticalGroup" style="width: 50%; float: left;">
                                     <div class="table-row">
                                         <div class="cell label" style="width: 60%">Domestic Route (current):</div>
                                         <div id="domesticLinkCount" class="cell value" style="width: 40%"></div>
@@ -1371,7 +1374,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="table" style="width: 50%; float: left;">
+                            <div class="table" style="width: 50%; float: left;"  class="verticalGroup">
                                 <h4>Airline Bases</h4>
                                 <div style="width: 100%; height: 150px; overflow-y:auto;">
                                     <div style="width: 100%;" class="table data bases">
@@ -1409,7 +1412,7 @@
 
 								<div id="totalProfitChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
-								<div style="height: 100%; width: 50%; float: left;">
+								<div style="height: 100%; width: 50%; float: left;" class="verticalGroup">
 									<div class="table section" style="width: 90%;">
 										<h4>Total Income</h4>
 										<div class="table-row">
@@ -1482,7 +1485,7 @@
 									</div>
 								</div>
 			<!-- 					right column -->
-								<div style="height: 100%; width: 50%; float: right;">
+								<div style="height: 100%; width: 50%; float: right;" class="verticalGroup">
 									<div class="table section" style="width: 90%;">
 										<h4>Transactions</h4>
 										<div class="table-row">
@@ -1655,7 +1658,7 @@
 	<!-- 					end statements -->
 					</div>
 	<!-- 				end left section  -->
-					<div style="width : 30%; float: left;">
+					<div style="width : 30%; float: left;" class="verticalGroup">
 						<div class="section" style="width: 90%;">
 							<h4>Championed Countries</h4>
 							<div id="championedCountriesList" class="table data" style="width: 100%; height: 20px;">
@@ -1722,13 +1725,13 @@
 	<!--   			end office canvas -->
 
 				<div id="bankCanvas" style="height: 100%; display: none;">
-					<div style="width : 40%; float: left;">
+					<div style="width : 40%; float: left;" class="verticalGroup">
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Interest Rate History</h4>
 							<div id="loanInterestRateChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
 						</div>
 					</div>
-					<div style="width : 60%; float: left;">
+					<div style="width : 60%; float: left;" class="verticalGroup">
 					<!--  new loan -->
 						<div style="width : 95%; float: left;" class="section">
 							<h4>New Loan</h4>
@@ -1783,13 +1786,13 @@
 	<!--   			end bank canvas -->
 
 				<div id="oilCanvas" style="height: 100%; display: none;">
-					<div style="width : 60%; float: left;">
+					<div style="width : 60%; float: left;" class="verticalGroup">
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Oil Price History</h4>
 							<div id="oilPriceChart" style="width: 90%; height: 500px; margin: 0 auto;"></div>
 						</div>
 					</div>
-					<div style="width : 40%; float: left;">
+					<div style="width : 40%; float: left;" class="verticalGroup">
 					<!--  new loan -->
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Fuel Consumption History
@@ -1914,7 +1917,7 @@
 
 
 				<div id="rankingCanvas" style="height: 100%; display: none;">
-					<div style="width : 50%; float: left;">
+					<div style="width : 50%; float: left;" class="verticalGroup">
 						<div class="table data section" id="passengerRank" style="width: 95%">
 							<div class="table-header">
 								<div class="cell" style="width: 10%">Rank</div>
@@ -1972,7 +1975,7 @@
 							</div>
 						</div>
 					</div>
-					<div style="width : 50%; float: right;">
+					<div style="width : 50%; float: right;" class="verticalGroup">
 						<div class="table data section" id="passengerMileRank" style="width: 95%">
 							<div class="table-header">
 								<div class="cell" style="width: 10%">Rank</div>
@@ -2908,7 +2911,7 @@
 
 	<!-- airplane model configuration -->
 	<div id="modelConfigurationModal" class="modal">
-		<div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto;">
+		<div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto; overflow:auto;">
 			<span class="close" onclick="closeModal($('#modelConfigurationModal'))">&times;</span>
 			<h3 style="margin-bottom: 10px;"><span class="modelName"></span>&nbsp;Configuration</h3>
 			<div><input type="checkbox" onclick="toggleUtilizationRate($('#modelConfigurationModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/></div>
