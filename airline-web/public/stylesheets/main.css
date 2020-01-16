@@ -35,7 +35,7 @@ body {
 .menubar {
 	//position: fixed;
 	top: 0px;
-	height: 40px;
+	min-height: 40px;
 	width: 100%;
 	z-index: 999;
 	background-color: #FFF;
@@ -425,7 +425,6 @@ div#canvas {
     height: -webkit-calc(100vh - 70px); 
     height: -moz-calc(100vh - 70px);
     height: calc(100vh - 70px);
-//	background-image:url("../../assets/images/background/brushedsteel.jpg");
 }
 
 #main-tabs {

@@ -57,24 +57,30 @@ function recordDimensions() {
 		$(panel).data("old-height", $(panel).css('height'))
 	})
 	
-	$('.sidePanel').each(function(index, panel) {
-		$(panel).data("old-width", $(panel).css('width'))
+	$('.sidePanel, .verticalGroup, .mainPanel>div, .sidePanel>div, #tabGroup').each(function(index, element) {
+		$(element).data("old-width", $(element).css('width'))
 	})
 
-	$(".verticalGroup").each(function(index, group) {
-        $(group).data("old-width", $(group).css('width'))
+	$("#tabGroup .tabs li").each(function(index, element) {
+        $(element).data("old-padding", $(element).css('padding'))
     })
-	
+
+    $("#oilPriceChart").data("old-height", $("#oilPriceChart").css("height"))
+
 	//workaround, hardcode % for id sidePanel for now, for some unknown(?) reason, it returns 512px instead of 50%
 	$('#sidePanel').data("old-width", '50%')
+
+	//google modifies it to a px unit width, so we need to store the original value here
+	$('#map').data("old-width", '50%')
+	$("#topBar").data("old-height", $("#topBar").css("height"))
+
 }
+
 
 function mobileCheck() {
 	if (window.screen.availWidth < 1024) { //assume it's a less powerful device
 		refreshMobileLayout()
-		$('.button, .button a').css('fontSize', 16)
-		$('input').css('fontSize', 16)
-		
+
 		//turn off animation by default
 		currentAnimationStatus = false
 	}
@@ -84,28 +90,52 @@ function refreshMobileLayout() {
 	if (window.screen.availWidth < window.screen.availHeight) { //only toggle layout change if it's landscape
 		$('.mainPanel').css('width', '100%')
 		$('.mainPanel').css('max-width', '100%')
-		$('.mainPanel').css('height', '35%')
+		$('.mainPanel').css('height', '50%')
+		$(".mainPanel>div, .sidePanel>div").css('width', '')
+
 		$('.sidePanel').css('width', '100%')
 		$('.sidePanel').css('max-width', '100%')
         $('.verticalGroup').css('width', '100%')
     	$('.verticalGroup').css('max-width', '100%')
-	} else {
+    	$('#tabGroup').css('width', "50px")
+        $("#tabGroup .tabs li").css("padding", "10px 2px 10px 2px")
+        $('#canvas').css('width', "calc(100% - 50px)")
+        $("#oilPriceChart").css("height", "200px")
+        $("#reputationLevel").hide()
+        //$("#topBar").css("height", "auto")
+//        $('.table-header .cell').css("writing-mode", "vertical-rl")
+//        $('.table-header .cell').css("transform", "rotate(-90deg)")
+
+    } else {
 		$('.mainPanel').each(function(index, panel) {
 			$(panel).css('width', $(panel).data("old-width"))
-			$(panel).css('max-width', $(panel).data("old-width"))
 			$(panel).css('height', $(panel).data("old-height"))
 		})
-		
-		$('.sidePanel').each(function(index, panel) {
-			$(panel).css('width', $(panel).data("old-width"))
-			$(panel).css('max-width', $(panel).data("old-width"))
-		})
 
-		$(".verticalGroup").each(function(index, panel) {
-            $(panel).css('width', $(panel).data("old-width"))
-            $(panel).css('max-width', $(panel).data("old-width"))
+		$(".sidePanel, .mainPanel>div, .sidePanel>div, .verticalGroup, #tabGroup").each(function(index, element) {
+		    if ($(element).data("old-width")) {
+                $(element).css('width', $(element).data("old-width"))
+            }
         })
+
+		$("#tabGroup .tabs li").each(function(index, element) {
+            $(element).css('padding', $(element).data("old-padding"))
+        })
+        $("#oilPriceChart").css('height', $("#oilPriceChart").data("old-height"))
+        //$("#topBar").css('height', $("#topBar").data("old-height"))
+
+        $("#canvas").css("width", "calc(100% - " + $("#tabGroup").css("width") + ")")
+
+        $("#reputationLevel").show()
 	}
+	delete(map)
+	//yike, what if we miss something...the list below is kinda random
+	initMap()
+	getAirports()
+	if (activeAirline) {
+	    updateLinksInfo()
+	    updateAirportMarkers(activeAirline)
+    }
 }
 
 function showFloatMessage(message, timeout) {

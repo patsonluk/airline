@@ -122,7 +122,7 @@
 	</div>
 
 
-	</div>
+
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div style="float: left;">
   			<span id="topBarDetails" style="display: none;">
@@ -133,35 +133,36 @@
 	  			<span style="margin: 0px 10px">Reputation: <span id="reputation" class="label"></span> <span id="reputationLevel" class="label"></span> <span id="reputationStars"></span></span>
   			</span>
   		</div>
-  		<div style="float: right;">
   		<div style="float: right; margin: 5px;">
   			<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
   				<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
   			</a>
   		</div>
-  		<div style="float: right" class="button"><a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a></div>
-	  		<div style="float: right;">
-	  			<div style="display: hidden;" id="loginDiv">
-		  			<span class="label">User Name</span>
-		  			<input type="text" id="loginUserName" tabindex=1/>
-		  			<a href="/forgot-id"  target="_blank">
-		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
-		  			</a> 
-		  			<span class="label">Password</span>
-		  			<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2/>
-		  			<a href="/forgot-password"  target="_blank">
-		  				<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
-		  			</a>
-		  			<div class="button" onclick="login()" tabindex=3>Login</div>
-	<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
-                    <div class="button" onclick="" tabindex=4><a href="signup">Sign Up</a></div>
-	  			</div>
-	  			<div style="float: right; display: none;" id="logoutDiv">
-	  				<span id="currentUserName" class="label"></span>
-	  				<div class="button" onclick="logout()">Logout</div> 
-	  			</div>
+  		<div style="float: right" class="button">
+			<a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a>
+		</div>
+		<div style="float: right;">
+			<div style="display: hidden;" id="loginDiv">
+				<span class="label">User Name</span>
+				<input type="text" id="loginUserName" tabindex=1/>
+				<a href="/forgot-id"  target="_blank">
+					<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
+				</a>
+				<span class="label">Password</span>
+				<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2/>
+				<a href="/forgot-password"  target="_blank">
+					<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
+				</a>
+				<div class="button" onclick="login()" tabindex=3>Login</div>
+<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
+				<div class="button" onclick="" tabindex=4><a href="signup">Sign Up</a></div>
+			</div>
+			<div style="float: right; display: none;" id="logoutDiv">
+				<span id="currentUserName" class="label"></span>
+				<div class="button" onclick="logout()">Logout</div>
 			</div>
 		</div>
+		<div style="clear: both;"></div>
   	</div>
 	<div id="console" class="marquee" style="width: 100%; position: relative;" align="center">
 		<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
@@ -242,7 +243,7 @@
 			<!-- end live-chat -->
 
 
-			<div style="width: 80px; float: left;">
+			<div style="width: 80px; float: left;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
 				<ul class="tabs" id="main-tabs">
 
@@ -1268,9 +1269,9 @@
 				<div id="officeCanvas" style="height: 100%; display: none;">
 					<div style="width : 70%; float: left;" class="verticalGroup">
 						<div class="section" style="width: 95%; float: left;">
-                            <div style="width: 50%; float: left;">
+                            <div style="width: 50%; float: left;" class="verticalGroup">
                                 <h4>Airline Details</h4>
-                                <div class="table" style="width: 50%; float: left;">
+                                <div class="table verticalGroup" style="width: 50%; float: left;">
                                     <div class="table-row">
                                         <div class="cell label">Airline Code:</div>
                                         <div class="cell value">
@@ -1321,7 +1322,7 @@
                                         <div id="assets" class="cell value"></div>
                                     </div>
                                 </div>
-                                <div class="table" style="width: 50%; float: left;">
+                                <div class="table verticalGroup" style="width: 50%; float: left;">
                                     <div class="table-row">
                                         <div class="cell label" style="width: 60%">Domestic Route (current):</div>
                                         <div id="domesticLinkCount" class="cell value" style="width: 40%"></div>
@@ -1372,7 +1373,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="table" style="width: 50%; float: left;">
+                            <div class="table" style="width: 50%; float: left;"  class="verticalGroup">
                                 <h4>Airline Bases</h4>
                                 <div style="width: 100%; height: 150px; overflow-y:auto;">
                                     <div style="width: 100%;" class="table data bases">
@@ -1410,7 +1411,7 @@
 
 								<div id="totalProfitChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
-								<div style="height: 100%; width: 50%; float: left;">
+								<div style="height: 100%; width: 50%; float: left;" class="verticalGroup">
 									<div class="table section" style="width: 90%;">
 										<h4>Total Income</h4>
 										<div class="table-row">
@@ -1483,7 +1484,7 @@
 									</div>
 								</div>
 			<!-- 					right column -->
-								<div style="height: 100%; width: 50%; float: right;">
+								<div style="height: 100%; width: 50%; float: right;" class="verticalGroup">
 									<div class="table section" style="width: 90%;">
 										<h4>Transactions</h4>
 										<div class="table-row">

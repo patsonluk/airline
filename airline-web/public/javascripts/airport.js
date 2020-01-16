@@ -378,13 +378,14 @@ function updateFacilityList(statistics) {
 
 
 function getAirports() {
+    markers = undefined
 	$.getJSON( "airports", function( data ) {
 		  addMarkers(data)
 	});
 }
 
 function addMarkers(airports) {
-	var infoWindow = new google.maps.InfoWindow({
+    var infoWindow = new google.maps.InfoWindow({
 		maxWidth : 450
 	})
 	var originalOpacity = 0.7

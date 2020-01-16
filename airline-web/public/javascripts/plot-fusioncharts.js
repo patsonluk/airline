@@ -769,6 +769,7 @@ function plotOilPriceChart(oilPrices, container) {
                 "toolTipBorderRadius": "2",
                 "toolTipPadding": "5",
                 "bgAlpha":"0",
+                "drawAnchors": "0",
                 "setAdaptiveYMin":"1",
                 "labelStep": "4"
 	    	},
