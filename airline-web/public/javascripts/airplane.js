@@ -539,7 +539,7 @@ function showAirplaneInventory(modelId) {
     $("#airplaneInventoryModal .modelName").text(model.name)
 
     $.each(activeAirline.baseAirports, function(index, base) {
-        var inventoryDiv = $("<div style='width : 95%; height : 85px;' class='section config'></div>")
+        var inventoryDiv = $("<div style='width : 95%; min-height : 85px;' class='section config'></div>")
         if (base.headquarter) {
             inventoryDiv.append("<div style='display : inline-block;'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'></div>&nbsp;<div style='display : inline-block;'><h4>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportName) + "</h4></div>")
         } else {
@@ -556,7 +556,6 @@ function showAirplaneInventory(modelId) {
         }
     })
     toggleUtilizationRate($("#airplaneInventoryModal .inventoryContainer"), $("#airplaneInventoryModal .toggleUtilizationRateBox"))
-    $('#airplaneInventoryModal').css( "zIndex", 0) //as there could be other modals on top of this
     $('#airplaneInventoryModal').fadeIn(200)
 }
 

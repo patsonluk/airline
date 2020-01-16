@@ -133,16 +133,16 @@
 	  			<span style="margin: 0px 10px">Reputation: <span id="reputation" class="label"></span> <span id="reputationLevel" class="label"></span> <span id="reputationStars"></span></span>
   			</span>
   		</div>
-  		<div style="float: right; margin: 5px;">
-  			<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
-  				<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
-  			</a>
-  		</div>
-  		<div style="float: right" class="button">
-			<a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a>
-		</div>
-		<div style="float: right;">
-			<div style="display: hidden;" id="loginDiv">
+  		<div style="float: right;">
+			<div style="float: right; margin: 5px;">
+				<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
+					<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
+				</a>
+			</div>
+			<div style="float: right" class="button">
+				<a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a>
+			</div>
+			<div style="float: right; display: none;" id="loginDiv">
 				<span class="label">User Name</span>
 				<input type="text" id="loginUserName" tabindex=1/>
 				<a href="/forgot-id"  target="_blank">
@@ -161,6 +161,7 @@
 				<span id="currentUserName" class="label"></span>
 				<div class="button" onclick="logout()">Logout</div>
 			</div>
+			<div style="clear: both;"></div>
 		</div>
 		<div style="clear: both;"></div>
   	</div>
@@ -2910,7 +2911,7 @@
 
 	<!-- airplane model configuration -->
 	<div id="modelConfigurationModal" class="modal">
-		<div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto;">
+		<div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto; overflow:auto;">
 			<span class="close" onclick="closeModal($('#modelConfigurationModal'))">&times;</span>
 			<h3 style="margin-bottom: 10px;"><span class="modelName"></span>&nbsp;Configuration</h3>
 			<div><input type="checkbox" onclick="toggleUtilizationRate($('#modelConfigurationModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/></div>

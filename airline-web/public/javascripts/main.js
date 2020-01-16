@@ -105,6 +105,7 @@ function refreshMobileLayout() {
         //$("#topBar").css("height", "auto")
 //        $('.table-header .cell').css("writing-mode", "vertical-rl")
 //        $('.table-header .cell').css("transform", "rotate(-90deg)")
+        $(".modal-content").css("max-width", "300px")
 
     } else {
 		$('.mainPanel').each(function(index, panel) {
@@ -126,6 +127,7 @@ function refreshMobileLayout() {
 
         $("#canvas").css("width", "calc(100% - " + $("#tabGroup").css("width") + ")")
 
+        $(".modal-content").css("max-width", "")
         $("#reputationLevel").show()
 	}
 	delete(map)
@@ -164,11 +166,13 @@ function showFloatMessage(message, timeout) {
 
 function refreshLoginBar() {
 	if (!activeUser) {
-		setActiveDiv($("#loginDiv"))
+		$("#loginDiv").show();
+		$("#logoutDiv").hide();
 	} else {
 		$("#currentUserName").empty()
 		$("#currentUserName").append(activeUser.userName + getUserLevelImg(activeUser.level))
-		setActiveDiv($("#logoutDiv"))
+		$("#logoutDiv").show();
+        $("#loginDiv").hide();
 	}
 }
 
