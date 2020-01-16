@@ -60,6 +60,10 @@ function recordDimensions() {
 	$('.sidePanel').each(function(index, panel) {
 		$(panel).data("old-width", $(panel).css('width'))
 	})
+
+	$(".verticalGroup").each(function(index, group) {
+        $(group).data("old-width", $(group).css('width'))
+    })
 	
 	//workaround, hardcode % for id sidePanel for now, for some unknown(?) reason, it returns 512px instead of 50%
 	$('#sidePanel').data("old-width", '50%')
@@ -83,6 +87,8 @@ function refreshMobileLayout() {
 		$('.mainPanel').css('height', '35%')
 		$('.sidePanel').css('width', '100%')
 		$('.sidePanel').css('max-width', '100%')
+        $('.verticalGroup').css('width', '100%')
+    	$('.verticalGroup').css('max-width', '100%')
 	} else {
 		$('.mainPanel').each(function(index, panel) {
 			$(panel).css('width', $(panel).data("old-width"))
@@ -94,6 +100,11 @@ function refreshMobileLayout() {
 			$(panel).css('width', $(panel).data("old-width"))
 			$(panel).css('max-width', $(panel).data("old-width"))
 		})
+
+		$(".verticalGroup").each(function(index, panel) {
+            $(panel).css('width', $(panel).data("old-width"))
+            $(panel).css('max-width', $(panel).data("old-width"))
+        })
 	}
 }
 
