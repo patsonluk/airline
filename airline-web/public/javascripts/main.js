@@ -105,8 +105,6 @@ function refreshMobileLayout() {
         //$("#topBar").css("height", "auto")
 //        $('.table-header .cell').css("writing-mode", "vertical-rl")
 //        $('.table-header .cell').css("transform", "rotate(-90deg)")
-        $(".modal-content").css("max-width", "300px")
-
     } else {
 		$('.mainPanel').each(function(index, panel) {
 			$(panel).css('width', $(panel).data("old-width"))
