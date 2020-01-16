@@ -1105,6 +1105,14 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 		
 		
 		$('#planLinkAirplaneSelect').data('badConditionThreshold', thisModelPlanLinkInfo.badConditionThreshold)
+		thisModelPlanLinkInfo.airplanes.sort(function(a, b) {
+		    var result = a.airplane.condition - b.airplane.condition //lowest condition ones first
+		    if (result == 0) {
+		        return b.airplane.frequency - a.airplane.frequency //highest frequency first
+		    } else {
+		        return result
+		    }
+		})
 		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplaneEntry) {
 //			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
 //			option.appendTo($("#planLinkAirplaneSelect"))
