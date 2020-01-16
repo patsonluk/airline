@@ -460,6 +460,7 @@ div#canvas {
     z-index: 11;
     margin: 15% auto; /* 15% from the top and centered */
     width: 50%; /* Could be more or less, depending on screen size */
+    max-width: 95%;
 }
 
 

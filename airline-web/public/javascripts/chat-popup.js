@@ -10,7 +10,7 @@ $('#live-chat header span i').on('click', function() {
 				$("#scroll_lock").hide();
 			} else {
 				//Expanded
-				$("#live-chat").css({"left":"24px", "width":"500px"});
+				$("#live-chat").css({"left":"10px", "width":"500px", "max-width": "95%"});
 				//$("#live-chat h4").text("Game Chat");
 				$("#live-chat h4").show();
 				$("#scroll_lock").show();
