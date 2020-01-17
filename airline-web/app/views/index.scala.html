@@ -43,10 +43,10 @@
     <script src="@routes.Assets.versioned("javascripts/splitting/splitting.min.js")"></script>
 
     <!-- <script src="@routes.Assets.versioned("javascripts/libs/highcharts.js")"></script> -->
-    <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")" defer></script>
+    <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")" defer></script>
+	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")" defer></script>
+	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")" defer></script>
 	<script src="@routes.Assets.versioned("javascripts/plot-fusioncharts.js")"></script>
 	
 	<script type="text/javascript" src="@routes.Assets.versioned("tinycolorpicker/jquery.tinycolorpicker.js")"></script>
@@ -322,7 +322,7 @@
 														- Service Star level per route<br/>
 														- Company wide Service Quality<br/>
 														<br/>
-														<img src='@routes.Assets.versioned("images/clips/service-quality.gif")'>
+														<img src='@routes.Assets.versioned("images/clips/service-quality.gif")' loading="lazy">
 													</span>
 												</div>
 												</h5>
@@ -545,9 +545,9 @@
 													<h5>
 														<span class="tooltiptext below">
 															Purchase airplane
-															<img src='@routes.Assets.versioned("images/clips/buy-airplane.gif")'>
+															<img src='@routes.Assets.versioned("images/clips/buy-airplane.gif")' loading="lazy">
 															Or assign airplane to this airport
-															<img src='@routes.Assets.versioned("images/clips/change-airplane-base.gif")'>
+															<img src='@routes.Assets.versioned("images/clips/change-airplane-base.gif")' loading="lazy">
 														 </span>
 													</h5>
                                                 </div>
@@ -568,7 +568,7 @@
 														Take note that the max frequency is limited by airplanes assigned and time slots allocated by both the departure and destination airports.<br/>
 														<br/>
 														Once flight service is established, airports will eventually open up more slots. Check regularly to increase flight frequency<br/>
-														<img src='@routes.Assets.versioned("images/clips/flight-frequency.gif")'>
+														<img src='@routes.Assets.versioned("images/clips/flight-frequency.gif")' loading="lazy">
 													</span>
 												</div>
 											</h5>
@@ -2508,7 +2508,7 @@
 			<li class="label" style="padding: 5px;">2. Select another airport to fly to</li>
 			<li class="label" style="padding: 5px;">3. Establish the route</li>
 		</ul>
-	    <img src='@routes.Assets.versioned("images/clips/tutorial.gif")'>
+	    <img src='@routes.Assets.versioned("images/clips/tutorial.gif")' loading="lazy">
 	  </div>
 	</div>
 	<!-- Confirmation Modal -->
@@ -3065,7 +3065,7 @@
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>
 	
-	<audio id="christmasMusic" loop>
+	<audio id="christmasMusic" preload="none" loop>
 	    <source src='@routes.Assets.versioned("music/silent-night.mp3")' type="audio/mp3" />
 	</audio>
 	
