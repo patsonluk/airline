@@ -93,6 +93,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 	});
 	
 	if (selectedRow) {
+	    selectedRow[0].scrollIntoView()
 		loadRivalDetails(selectedRow, selectedAirline)
 	}
 }
@@ -238,7 +239,7 @@ function updateRivalChampionedCountriesDetails(airlineId) {
 	    success: function(championedCountries) {
 	    	$(championedCountries).each(function(index, championDetails) {
 	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
+	    		var row = $("<div class='table-row clickable' onclick=\" showCountryView('" + country.countryCode + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
 	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
@@ -272,7 +273,7 @@ function updateRivalCountriesAirlineTitles(airlineId) {
 	    success: function(titles) {
 	    	$(titles.nationalAirlines).each(function(index, entry) {
 	    	    var country = loadedCountriesByCode[entry.countryCode]
-	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + entry.countryCode + "'); showCountryView();\"></div>")
+	    		var row = $("<div class='table-row clickable' onclick=\" showCountryView('" + country.countryCode + "');\"></div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(entry.countryCode) + country.name + "</div>")
 	    		row.append("<div class='cell'>" + entry.bonus + "</div>")
 	    		$('#rivalsCanvas .nationalAirlineCountryList').append(row)
@@ -284,7 +285,7 @@ function updateRivalCountriesAirlineTitles(airlineId) {
 
 	    	$(titles.partneredAirlines).each(function(index, entry) {
                 var country = loadedCountriesByCode[entry.countryCode]
-                var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + entry.countryCode + "'); showCountryView();\"></div>")
+                var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
                 row.append("<div class='cell'>" + getCountryFlagImg(entry.countryCode) + country.name + "</div>")
                 row.append("<div class='cell'>" + entry.bonus + "</div>")
                 $('#rivalsCanvas .partneredAirlineCountryList').append(row)

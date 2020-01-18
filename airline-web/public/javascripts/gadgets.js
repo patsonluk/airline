@@ -360,18 +360,20 @@ function getAirportText(city, airportCode) {
 	}
 }
 
-function setActiveDiv(activeDiv) {
+function setActiveDiv(activeDiv, callback) {
 	var existingActiveDiv = activeDiv.siblings(":visible").filter(function (index) {
 		return $(this).css("clear") != "both"
 	})
 	if (existingActiveDiv.length > 0){
-		existingActiveDiv.fadeOut(200, function() { activeDiv.fadeIn(200) })
+		existingActiveDiv.fadeOut(200, function() {
+		    activeDiv.fadeIn(200, callback)
+        })
 	} else {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
 			return false;
 		} else {
 			activeDiv.siblings().hide();
-			activeDiv.fadeIn(200)
+    	    activeDiv.fadeIn(200, callback);
 		}
 	}
 	

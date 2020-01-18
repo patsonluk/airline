@@ -320,7 +320,7 @@ function updateAllianceChampionContries(allianceId) {
 	    	var applicantChampions = championedCountries.applicants
 	    	$(approvedMembersChampions).each(function(index, championDetails) {
 	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
+	    		var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
 	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
@@ -331,7 +331,7 @@ function updateAllianceChampionContries(allianceId) {
 	    	
 	    	$(applicantChampions).each(function(index, championDetails) {
 	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
+	    		var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
 	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
