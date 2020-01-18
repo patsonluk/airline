@@ -773,15 +773,8 @@
 
 				<div id="airportCanvas" style="display: none;">
 					<!-- left panel -->
-					<div style="width: 30%; float: left;">
-						<div id="airportMap" style="width: 100%; padding-top: 100%; postition: relative;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
-		<!--   				<div id="airportSchedule" style="width: 900px; height: 400px; float: left;"></div> -->
-						<div id="airportDetailsCityImage" style="width: 50%; float:left;"></div>
-						<div id="airportDetailsAirportImage" style="width: 50%;  float:left;"></div>
-						<div style="clear: both;"></div>
-					</div>
-					<div style="width: 70%; float: right;"> <!-- take up whatever is left -->
-						<div id="airportBaseDetails" class="section" style="width: 90%; float:left;">
+					<div style="width: 70%; float: left; padding: 0 10px 0 10px; box-sizing: border-box;" class="verticalGroup">
+						<div id="airportBaseDetails" class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
 							<h4>Your Airline Headquarter/Base</h4>
 							<div class="table" style="width: 50%">
 								<div class="table-row">
@@ -817,9 +810,9 @@
 
 	<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
 						</div>
-						<div id="airportDetails" class="section" style="width: 90%; float:left;">
+						<div id="airportDetails" class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
 							<h4>Airport Details</h4>
-							<div class="table" style="width: 50%; float: left">
+							<div class="table verticalGroup" style="width: 50%; float: left">
 								<div class="table-row">
 									<div class="label" style="width:50%;"><h5>Airport:</h5></div>
 									<div class="value" id="airportDetailsName" style="width:50%;"></div>
@@ -916,7 +909,7 @@
 									<div class="value" id="airportDetailsOpenness"></div>
 								</div>
 							</div>
-							<div class="table" style="width: 50%; float: left">
+							<div class="table verticalGroup" style="width: 50%; float: left;">
 								<div class="table-row">
 									<div class="label"><h5>Country:</h5></div>
 									<div class="value"><span id="airportDetailsCountry"></span></div>
@@ -974,7 +967,7 @@
 							</div>
 						</div>
 	<!-- 		    		end main details -->
-						<div class="section" style="width: 90%; float:left;">
+						<div class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
 							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
 							<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table data">
 								<div class="table-header">
@@ -1007,6 +1000,14 @@
 								</div>
 							</div>
 						</div>
+					</div>
+					<!-- airport map, pictures -->
+					<div style="width: 30%; float: left;" class="verticalGroup">
+						<div id="airportMap" style="width: 100%; padding-top: 100%; postition: relative;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
+						<!--   				<div id="airportSchedule" style="width: 900px; height: 400px; float: left;"></div> -->
+						<div id="airportDetailsCityImage" style="width: 50%; float:left;"></div>
+						<div id="airportDetailsAirportImage" style="width: 50%;  float:left;"></div>
+						<div style="clear: both;"></div>
 					</div>
 					<div style="clear: both;"></div>
 				</div>
@@ -2491,7 +2492,7 @@
     
     <!-- The Annoucement Modal -->
 	<div id="annoucementModal" class="modal">
-	  <div class="modal-content">
+	  <div class="modal-content" style="width: 500px;">
 	    <span class="close" onclick="closeModal($('#annoucementModal'))">&times;</span>
 	    <div style="margin-bottom: 10px;">
 	    	<img src='@routes.Assets.versioned("images/icons/32px/balloon.png")'><span style="font-size: 20px;">Announcements</span>

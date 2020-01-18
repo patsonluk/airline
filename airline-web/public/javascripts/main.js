@@ -126,7 +126,6 @@ function refreshMobileLayout() {
 
         $("#canvas").css("width", "calc(100% - " + $("#tabGroup").css("width") + ")")
 
-        $(".modal-content").css("max-width", "")
         $("#reputationLevel").show()
 	}
 	delete(map)

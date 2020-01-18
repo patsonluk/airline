@@ -380,6 +380,7 @@ function updateFacilityList(statistics) {
 function getAirports() {
     markers = undefined
 	$.getJSON( "airports", function( data ) {
+	      airports = data
 		  addMarkers(data)
 	});
 }
