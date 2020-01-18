@@ -652,7 +652,7 @@ function updateChampionedCountriesDetails() {
 	    success: function(championedCountries) {
 	    	$(championedCountries).each(function(index, championDetails) {
 	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\"loadCountryDetails('" + country.countryCode + "'); showCountryView();\"></div>")
+	    		var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
 	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 

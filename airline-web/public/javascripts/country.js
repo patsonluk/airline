@@ -2,13 +2,22 @@ var loadedCountries = []
 var loadedCountriesByCode = {}
 var zoneById = { "AS" : "Asia", "NA" : "North America", "SA" : "South America", "AF" : "Africa", "OC" : "Oceania", "EU" : "Europe" }
 
-function showCountryView() {
-	setActiveDiv($("#countryCanvas"))
+function showCountryView(selectedCountry) {
 	highlightTab($('#countryCanvasTab'))
 	
 	$("#countryList").empty()
    	var selectedSortHeader = $('#countryTableHeader .table-header .cell.selected') 
-    updateCountryTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
+    updateCountryTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'), selectedCountry)
+
+    var callback
+    if (selectedCountry) {
+        callback = function() {
+            $("#countryCanvas #countryTable div.table-row.selected")[0].scrollIntoView()
+        }
+    }
+    setActiveDiv($("#countryCanvas"), callback)
+
+
 }
 
 function loadAllCountries() {
@@ -38,17 +47,20 @@ function loadAllCountries() {
 	});
 }
 
-function updateCountryTable(sortProperty, sortOrder) {
-	var selectedCountry = $("#countryCanvas #countryTable div.table-row.selected").data('country-code')
+function updateCountryTable(sortProperty, sortOrder, selectedCountry) {
+    if (!selectedCountry) {
+        selectedCountry = $("#countryCanvas #countryTable div.table-row.selected").data('country-code')
+    }
 	var countryTable = $("#countryCanvas #countryTable")
 	
 	countryTable.children("div.table-row").remove()
 	
 	//sort the list
 	loadedCountries.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
-	
+
+	var selectedRow
 	$.each(loadedCountries, function(index, country) {
-		var row = $("<div class='table-row clickable' data-country-code='" + country.countryCode + "' onclick=\"loadCountryDetails('" + country.countryCode + "')\"></div>")
+		var row = $("<div class='table-row clickable' data-country-code='" + country.countryCode + "' onclick=\"selectCountry('" + country.countryCode + "', false)\"></div>")
 		var countryFlagUrl = getCountryFlagUrl(country.countryCode)
 		if (countryFlagUrl) {
 			row.append("<div class='cell'><img src='" + countryFlagUrl + "'/></div>")
@@ -66,11 +78,16 @@ function updateCountryTable(sortProperty, sortOrder) {
 		row.append("<div class='cell' align='right'>" + getRelationshipDescription(mutualRelationship) + "</div>")
 		
 		if (selectedCountry == country.countryCode) {
-			row.addClass("selected")
+		    row.addClass("selected")
+		    selectedRow = row
 		}
 		
 		countryTable.append(row)
 	});
+
+	if (selectedRow) {
+        loadCountryDetails(selectedCountry)
+	}
 }
 
 function toggleCountryTableSortOrder(sortHeader) {
@@ -86,11 +103,14 @@ function toggleCountryTableSortOrder(sortHeader) {
 	updateCountryTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
-function loadCountryDetails(countryCode) {
+function selectCountry(countryCode) {
     $("#countryCanvas #countryTable div.selected").removeClass("selected")
 	//highlight the selected country
 	$("#countryCanvas #countryTable div[data-country-code='" + countryCode +"']").addClass("selected")
+	loadCountryDetails(countryCode)
+}
 
+function loadCountryDetails(countryCode) {
 	$("#countryDetailsSharesChart").hide()
 	$.ajax({
 		type: 'GET',
