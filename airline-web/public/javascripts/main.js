@@ -9,6 +9,7 @@ var currentTime
 var currentCycle
 var airlineColors = {}
 var polylines = []
+var airports = undefined
 
 $( document ).ready(function() {
 	recordDimensions()
@@ -131,7 +132,9 @@ function refreshMobileLayout() {
 	delete(map)
 	//yike, what if we miss something...the list below is kinda random
 	initMap()
-	getAirports()
+	if (airports) {
+	    addMarkers(airports)
+    }
 	if (activeAirline) {
 	    updateLinksInfo()
 	    updateAirportMarkers(activeAirline)
