@@ -1,7 +1,7 @@
 /* mobile (portrait) ----------- */
 @media only screen
-and (max-device-width : 1024px)
-and (orientation : portrait) {
+and (max-device-width : 640px) {
+/*and (orientation : portrait or max-device-width : 1024px) {*/
     .mainPanel, #map {
         height: 50%;
         width: 100%;
@@ -26,7 +26,7 @@ and (orientation : portrait) {
         width: calc(100% - 50px)
     }
 
-    #oilPriceChart {
-        height: 200px
+    #oilPriceChart, #loanInterestRateChart {
+        height: 30vh
     }
 }
