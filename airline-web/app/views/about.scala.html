@@ -4,6 +4,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Airline Club - about the game</title>
     <style type="text/css">
       html, body { height: 100%; margin: 0; padding: 0; }
       #map { height: 100%; }
@@ -17,6 +18,7 @@
     <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departure-board/departure-board.js")"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
 
 
@@ -114,7 +116,6 @@
         var titleText = $(div).text()
         //remove original text
         $(div).text("")
-        $(div).css("font-size", "1.7em")
         var board = new DepartureBoard (div, { rowCount: 1, letterCount: titleText.length });
 		board.setValue ([titleText]);
      })

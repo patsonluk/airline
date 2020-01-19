@@ -169,7 +169,7 @@ a.landing-link, #about-canvas a {
 
 .about-title {
     display: block;
-    font-size: 2em;
+    font-size: 1.7em;
     margin-block-start: 0.67em;
     margin-block-end: 0.67em;
     margin-inline-start: 0px;
@@ -179,4 +179,29 @@ a.landing-link, #about-canvas a {
 
 .about-section {
     margin-block-end: 3em;
+}
+
+img {
+    max-width: 100%;
+}
+
+/* mobile (portrait) ----------- */
+@media only screen
+and (max-device-width : 1024px)
+and (orientation : portrait) {
+    .about-title {
+        font-size: 0.9em;
+    }
+    .about-section {
+        margin-block-end: 1em;
+    }
+
+    #about-canvas div.display-area {
+        padding: 10px;
+    }
+
+    .about-contents p{
+        font-size: 1em;
+        padding: .5em 0 .25em;
+    }
 }
