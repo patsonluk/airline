@@ -62,12 +62,12 @@ function updateCountryTable(sortProperty, sortOrder, selectedCountry) {
 	$.each(loadedCountries, function(index, country) {
 		var row = $("<div class='table-row clickable' data-country-code='" + country.countryCode + "' onclick=\"selectCountry('" + country.countryCode + "', false)\"></div>")
 		var countryFlagUrl = getCountryFlagUrl(country.countryCode)
+
 		if (countryFlagUrl) {
-			row.append("<div class='cell'><img src='" + countryFlagUrl + "'/></div>")
+		    row.append("<div class='cell'><img src='" + countryFlagUrl + "'/>&nbsp;" + country.name + "</div>")
 		} else {
-			row.append("<div class='cell'></div>")
-		}
-		row.append("<div class='cell'>" + country.name + "</div>")
+		    row.append("<div class='cell'>" + country.name + "</div>")
+        }
 		row.append("<div class='cell' align='right'>" + country.airportPopulation + "</div>")
 		row.append("<div class='cell' align='right'>" + country.incomeLevel + "</div>")
 		row.append("<div class='cell' align='right'>" + country.openness + "</div>")
