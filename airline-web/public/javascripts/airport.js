@@ -865,14 +865,15 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 	
 	airportLinkPath.shadowPath = shadowPath
 	
-	var infowindow; 
+	var infowindow;
 	shadowPath.addListener('mouseover', function(event) {
 		$("#airportLinkPopupFrom").html(getCountryFlagImg(this.fromCountry) + this.fromAirport)
 		$("#airportLinkPopupTo").html(getCountryFlagImg(this.toCountry) + this.toAirport)
 		$("#airportLinkPopupPassengers").text(this.passengers)
 		infowindow = new google.maps.InfoWindow({
              content: $("#airportLinkPopup").html(),
-             maxWidth : 400});
+             maxWidth : 400
+             });
 		
 		infowindow.setPosition(event.latLng);
 		infowindow.open(map);

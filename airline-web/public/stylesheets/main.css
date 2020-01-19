@@ -12,6 +12,62 @@ body {
     background-size: cover;
 }
 
+#map {
+    height: 100%;
+    width: 50%;
+    box-sizing: border-box;
+}
+
+#tabGroup {
+    width: 80px
+}
+
+.mainPanel {
+  width: 50%;
+  height: 100%;
+}
+
+.sidePanel {
+  width: 50%;
+}
+
+.airplaneCanvasLeftGroup {
+   width: 65%;
+   height: 90%
+}
+
+.bankCanvasLeftGroup, .oilCanvasRightGroup {
+   width: 40%;
+}
+
+.bankCanvasRightGroup, .oilCanvasLeftGroup {
+   width: 60%;
+}
+
+.airplaneCanvasRightGroup {
+   width: 35%;
+}
+
+.airportCanvasLeftGroup, .officeCanvasLeftGroup  {
+    width: 70%;
+}
+
+.airportCanvasLeftGroup {
+    padding: 0 10px 0 10px;
+    box-sizing: border-box;
+}
+
+.airportCanvasRightGroup, .officeCanvasRightGroup {
+    width: 30%;
+}
+
+#airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup {
+    width: 50%;
+}
+
+
+
+
 .christmas {
 	background: linear-gradient(to bottom, rgba(117, 114, 113, 0.8) 10%, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(../images/background/snow.gif);
  	background-size: cover;
@@ -294,6 +350,7 @@ div.section, .modal-content {
 	height: 40px;
 	width: 40px;
 	margin-right: 10px;
+	margin-left: 10px;
 	font-size: 11px;
 }
 
@@ -422,7 +479,7 @@ div#canvas {
 	width: -webkit-calc(100% - 80px);
     width:    -moz-calc(100% - 80px);
     width:         calc(100% - 80px);
-    height: -webkit-calc(100vh - 70px); 
+    height: -webkit-calc(100vh - 70px);
     height: -moz-calc(100vh - 70px);
     height: calc(100vh - 70px);
 }

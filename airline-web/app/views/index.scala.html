@@ -12,10 +12,10 @@
 
 	  <style type="text/css">
       html, body { height: 100%; margin: 0; padding: 0; }
-      #map { height: 100%; }
     </style>
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/mobile.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
@@ -244,7 +244,7 @@
 			<!-- end live-chat -->
 
 
-			<div style="width: 80px; float: left;" id="tabGroup">
+			<div style="float: left;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
 				<ul class="tabs" id="main-tabs">
 
@@ -267,15 +267,15 @@
 	<!--   		<div id="linkHistoryButton" class="googleMapIcon" onclick="toggleLinkHistory()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/footprints.png")' style="vertical-align: middle;"/></div> -->
 	<!-- 		<div id="vipButton" class="googleMapIcon" onclick="showVipRoutes()" align="center"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/star.png")' style="vertical-align: middle;"/></div> -->
 <!--			<div id="toggleMapChristmasButton" class="googleMapIcon" onclick="toggleChristmasMarker()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/bauble.png")' title='Merry Christmas!' style="vertical-align: middle;"/></div>-->
-			<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>
-			<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style="display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>
+<!--			<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>-->
+<!--			<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style="display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>-->
 <!--			<div id="santaClausButton" class="googleMapIcon glow" onclick="showSantaClausAttemptStatus()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/markers/christmas/santa-hat.png")' title='Santa, where are you?' style="vertical-align: middle;"/></div>-->
 
 		<!-- main canvas start -->
 			<div id="canvas" style="float: left; overflow-x: auto; overflow-y: scroll;" >
 				<div id="worldMapCanvas" style="height: 100%;">
-					<div id="map" class="mainPanel" style="height: 100%; width: 50%; float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
-					<div id="sidePanel" class="sidePanel" style="width: 50% ; float: left; display:none;" >
+					<div id="map" class="mainPanel" style="float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
+					<div id="sidePanel" class="sidePanel" style="float: left; display:none;" >
 						<div id="detailsPanel" class="section" style="width: 95% ; float: left;">
 							<div id="linkDetails" style="width: 100%;;">
 								<div style="width: 50%; float: left">
@@ -731,7 +731,7 @@
 				</div>
 	<!--   			end world map canvas -->
 				<div id="linksCanvas" style="display: none; height: 100%">
-					<div style="height: 90% ; width : 50%; float: left;" class="mainPanel">
+					<div style="float: left;" class="mainPanel">
 						<div class="section" style="height: 95% ; width : 95%; float: left;">
 							<div style="height: 20px">
 								<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
@@ -773,7 +773,7 @@
 
 				<div id="airportCanvas" style="display: none;">
 					<!-- left panel -->
-					<div style="width: 70%; float: left; padding: 0 10px 0 10px; box-sizing: border-box;" class="verticalGroup">
+					<div style="float:left" class="verticalGroup airportCanvasLeftGroup">
 						<div id="airportBaseDetails" class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
 							<h4>Your Airline Headquarter/Base</h4>
 							<div class="table" style="width: 50%">
@@ -812,7 +812,7 @@
 						</div>
 						<div id="airportDetails" class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
 							<h4>Airport Details</h4>
-							<div class="table verticalGroup" style="width: 50%; float: left">
+							<div class="table verticalGroup" style="float: left">
 								<div class="table-row">
 									<div class="label" style="width:50%;"><h5>Airport:</h5></div>
 									<div class="value" id="airportDetailsName" style="width:50%;"></div>
@@ -909,7 +909,7 @@
 									<div class="value" id="airportDetailsOpenness"></div>
 								</div>
 							</div>
-							<div class="table verticalGroup" style="width: 50%; float: left;">
+							<div class="table verticalGroup" style="float: left;">
 								<div class="table-row">
 									<div class="label"><h5>Country:</h5></div>
 									<div class="value"><span id="airportDetailsCountry"></span></div>
@@ -1002,7 +1002,7 @@
 						</div>
 					</div>
 					<!-- airport map, pictures -->
-					<div style="width: 30%; float: left;" class="verticalGroup">
+					<div style="float: left;" class="verticalGroup airportCanvasRightGroup">
 						<div id="airportMap" style="width: 100%; padding-top: 100%; postition: relative;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
 						<!--   				<div id="airportSchedule" style="width: 900px; height: 400px; float: left;"></div> -->
 						<div id="airportDetailsCityImage" style="width: 50%; float:left;"></div>
@@ -1058,7 +1058,7 @@
 				</div>
 				<!--  end departures canvas -->
 				<div id="countryCanvas" style="height: 100%; display: none;">
-					<div class="mainPanel" style="width : 50%; float: left; height: 95%">
+					<div class="mainPanel" style="float: left;">
 						<div style="height: 95% ; width : 95%; float: left;" class="section">
 							<div id="countryTableHeader" class="table data" style="width: 100%; height: 20px;">
 								<div class="table-header">
@@ -1084,7 +1084,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="sidePanel" style="width: 50%; float: left; display: none;">
+					<div class="sidePanel" style="float: left; display: none;">
 						<div class="section" style="width: 95%; float: left;">
 							<div id="countryDetails" class="table" style="width: 100%;">
 								<div class="table-row">
@@ -1151,7 +1151,7 @@
 				</div>
 	<!--   			end country canvas -->
 				<div id="airplaneCanvas" style="height: 100%; display: none;">
-					<div style="height: 90% ; width : 65%; float: left;" class="mainPanel">
+					<div style="float: left;" class="mainPanel airplaneCanvasLeftGroup">
 						<div style="height: 95% ; width : 95%; float: left;" class="section">
 							<div class="table data" style="height: 20px; width: 100%">
 								<div class="table-header" id="airplaneModelSortHeader">
@@ -1182,7 +1182,7 @@
 						</div>
 					</div>
 	<!-- 				end left panel				  					 -->
-					<div style="width: 35%; float: left" class="sidePanel">
+					<div style="float: left" class="sidePanel airplaneCanvasRightGroup">
 						<div id="airplaneModelDetail" style="width: 100%; float: left; display: none;">
 							<div class="section" style="width: 95%;">
 								<div class="modelIllustration" style="width:100%; position: relative; max-width: 500px;">
@@ -1273,11 +1273,11 @@
 				</div>
 	<!--   			end airplane canvas -->
 				<div id="officeCanvas" style="height: 100%; display: none;">
-					<div style="width : 70%; float: left;" class="verticalGroup">
+					<div style="float: left;" class="verticalGroup officeCanvasLeftGroup">
 						<div class="section" style="width: 95%; float: left;">
-                            <div style="width: 50%; float: left;" class="verticalGroup">
+                            <div style="float: left;" class="verticalGroup">
                                 <h4>Airline Details</h4>
-                                <div class="table verticalGroup" style="width: 50%; float: left;">
+                                <div class="table verticalGroup" style="float: left;">
                                     <div class="table-row">
                                         <div class="cell label">Airline Code:</div>
                                         <div class="cell value">
@@ -1328,7 +1328,7 @@
                                         <div id="assets" class="cell value"></div>
                                     </div>
                                 </div>
-                                <div class="table verticalGroup" style="width: 50%; float: left;">
+                                <div class="table verticalGroup" style="float: left;">
                                     <div class="table-row">
                                         <div class="cell label" style="width: 60%">Domestic Route (current):</div>
                                         <div id="domesticLinkCount" class="cell value" style="width: 40%"></div>
@@ -1379,7 +1379,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="table" style="width: 50%; float: left;"  class="verticalGroup">
+                            <div class="table verticalGroup" style="float: left;">
                                 <h4>Airline Bases</h4>
                                 <div style="width: 100%; height: 150px; overflow-y:auto;">
                                     <div style="width: 100%;" class="table data bases">
@@ -1417,7 +1417,7 @@
 
 								<div id="totalProfitChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
-								<div style="height: 100%; width: 50%; float: left;" class="verticalGroup">
+								<div style="height: 100%; float: left;" class="verticalGroup">
 									<div class="table section" style="width: 90%;">
 										<h4>Total Income</h4>
 										<div class="table-row">
@@ -1490,7 +1490,7 @@
 									</div>
 								</div>
 			<!-- 					right column -->
-								<div style="height: 100%; width: 50%; float: right;" class="verticalGroup">
+								<div style="height: 100%; float: right;" class="verticalGroup">
 									<div class="table section" style="width: 90%;">
 										<h4>Transactions</h4>
 										<div class="table-row">
@@ -1606,7 +1606,7 @@
 								<div id="totalCashFlowChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
 								<div style="height: 100%; width: 100%; float: left;">
-									<div style="float: left; width: 50%">
+									<div style="float: left;" class="verticalGroup">
 										<h4>Total Cash Flow</h4>
 										<div class="table section" style="width: 90%;">
 											<div class="table-row">
@@ -1615,7 +1615,7 @@
 											</div>
 										</div>
 									</div>
-									<div style="float: left; width: 50%">
+									<div style="float: left;" class="verticalGroup">
 										<h4>Cash Flow Details</h4>
 										<div class="table section" style="width: 90%;">
 											<div class="table-row">
@@ -1663,7 +1663,7 @@
 	<!-- 					end statements -->
 					</div>
 	<!-- 				end left section  -->
-					<div style="width : 30%; float: left;" class="verticalGroup">
+					<div style="float: left;" class="verticalGroup officeCanvasRightGroup">
 						<div class="section" style="width: 90%;">
 							<h4>Championed Countries</h4>
 							<div id="championedCountriesList" class="table data" style="width: 100%; height: 20px;">
@@ -1730,13 +1730,13 @@
 	<!--   			end office canvas -->
 
 				<div id="bankCanvas" style="height: 100%; display: none;">
-					<div style="width : 40%; float: left;" class="verticalGroup">
+					<div style="float: left;" class="verticalGroup bankCanvasLeftGroup">
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Interest Rate History</h4>
 							<div id="loanInterestRateChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
 						</div>
 					</div>
-					<div style="width : 60%; float: left;" class="verticalGroup">
+					<div style="float: left;" class="verticalGroup bankCanvasRightGroup">
 					<!--  new loan -->
 						<div style="width : 95%; float: left;" class="section">
 							<h4>New Loan</h4>
@@ -1791,13 +1791,13 @@
 	<!--   			end bank canvas -->
 
 				<div id="oilCanvas" style="height: 100%; display: none;">
-					<div style="width : 60%; float: left;" class="verticalGroup">
+					<div style="float: left;" class="verticalGroup oilCanvasLeftGroup">
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Oil Price History</h4>
 							<div id="oilPriceChart" style="width: 90%; height: 500px; margin: 0 auto;"></div>
 						</div>
 					</div>
-					<div style="width : 40%; float: left;" class="verticalGroup">
+					<div style="float: left;" class="verticalGroup oilCanvasRightGroup">
 					<!--  new loan -->
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Fuel Consumption History
@@ -1922,7 +1922,7 @@
 
 
 				<div id="rankingCanvas" style="height: 100%; display: none;">
-					<div style="width : 50%; float: left;" class="verticalGroup">
+					<div style="float: left;" class="verticalGroup">
 						<div class="table data section" id="passengerRank" style="width: 95%">
 							<div class="table-header">
 								<div class="cell" style="width: 10%">Rank</div>
@@ -1980,7 +1980,7 @@
 							</div>
 						</div>
 					</div>
-					<div style="width : 50%; float: right;" class="verticalGroup">
+					<div style="float: right;" class="verticalGroup">
 						<div class="table data section" id="passengerMileRank" style="width: 95%">
 							<div class="table-header">
 								<div class="cell" style="width: 10%">Rank</div>
@@ -2041,8 +2041,8 @@
 				</div>
 	<!--   			end ranking canvas -->
 				<div id="rivalsCanvas" style="height: 100%; display: none;">
-					<div style="float: left; width : 50%; height : 100%" class="mainPanel">
-						<div style="width : 95%; height: 95%" class="section">
+					<div style="float: left;" class="mainPanel">
+						<div style="width : 95%; height: 95%; float: left;" class="section">
 							<div style="height: 20px;"><input type="checkbox" id="hideInactive" onchange="toggleHideInactive(this.checked)" checked/><span class="label">Hide Inactive Airlines</span></div>
 							<div id = "rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 								<div class="table-header">
@@ -2066,9 +2066,10 @@
 							</div>
 						</div>
 					</div>
-					<div id="rivalDetails" class="sidePanel" style="float: left; width : 50%; height : 100%; display: none;">
+
+					<div id="rivalDetails" class="sidePanel" style="float: left; display: none;">
 						<div class="section" style="width: 95%;">
-							<h4><span class="airlineName"></h4>
+							<h4><span class="airlineName"></span></h4>
 
 							<div class="table" style="width: 100%;">
 								<div class="table-row">
@@ -2148,7 +2149,7 @@
 				</div>
 	<!--   			end rival canvas -->
 				<div id="allianceCanvas" style="height: 100%; display: none;">
-					<div style="float: left; width : 50%; height : 100%" class="mainPanel">
+					<div style="float: left;" class="mainPanel">
 						<div id="currentAirlineMemberDetails" style="width : 95%;" class="section">
 							<div style="width: 50%; margin-bottom: 15px; float: left;">
 								<h4>Your Airline Alliance</h4>
@@ -2212,7 +2213,7 @@
 							</div>
 						</div>
 					</div>
-					<div id="allianceDetails" class="sidePanel" style="float: left; width : 50%; height : 100%; display: none;">
+					<div id="allianceDetails" class="sidePanel" style="float: left; display: none;">
 						<div class="section" style="width: 95%;">
 							<div>
 								<h4>Alliance Details</h4>

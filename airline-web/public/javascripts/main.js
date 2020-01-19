@@ -12,7 +12,6 @@ var polylines = []
 var airports = undefined
 
 $( document ).ready(function() {
-	recordDimensions()
 	mobileCheck()
 	window.addEventListener('orientationchange', refreshMobileLayout)
 	
@@ -52,31 +51,6 @@ $( document ).ready(function() {
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
-function recordDimensions() {
-	$('.mainPanel').each(function(index, panel) {
-		$(panel).data("old-width", $(panel).css('width'))
-		$(panel).data("old-height", $(panel).css('height'))
-	})
-	
-	$('.sidePanel, .verticalGroup, .mainPanel>div, .sidePanel>div, #tabGroup').each(function(index, element) {
-		$(element).data("old-width", $(element).css('width'))
-	})
-
-	$("#tabGroup .tabs li").each(function(index, element) {
-        $(element).data("old-padding", $(element).css('padding'))
-    })
-
-    $("#oilPriceChart").data("old-height", $("#oilPriceChart").css("height"))
-
-	//workaround, hardcode % for id sidePanel for now, for some unknown(?) reason, it returns 512px instead of 50%
-	$('#sidePanel').data("old-width", '50%')
-
-	//google modifies it to a px unit width, so we need to store the original value here
-	$('#map').data("old-width", '50%')
-	$("#topBar").data("old-height", $("#topBar").css("height"))
-
-}
-
 
 function mobileCheck() {
 	if (window.screen.availWidth < 1024) { //assume it's a less powerful device
@@ -89,48 +63,13 @@ function mobileCheck() {
 
 function refreshMobileLayout() {
 	if (window.screen.availWidth < window.screen.availHeight) { //only toggle layout change if it's landscape
-		$('.mainPanel').css('width', '100%')
-		$('.mainPanel').css('max-width', '100%')
-		$('.mainPanel').css('height', '50%')
-		$(".mainPanel>div, .sidePanel>div").css('width', '')
-
-		$('.sidePanel').css('width', '100%')
-		$('.sidePanel').css('max-width', '100%')
-        $('.verticalGroup').css('width', '100%')
-    	$('.verticalGroup').css('max-width', '100%')
-    	$('#tabGroup').css('width', "50px")
-        $("#tabGroup .tabs li").css("padding", "10px 2px 10px 2px")
-        $('#canvas').css('width', "calc(100% - 50px)")
-        $("#oilPriceChart").css("height", "200px")
-        $("#reputationLevel").hide()
-        //$("#topBar").css("height", "auto")
-//        $('.table-header .cell').css("writing-mode", "vertical-rl")
-//        $('.table-header .cell').css("transform", "rotate(-90deg)")
+		$("#reputationLevel").hide()
     } else {
-		$('.mainPanel').each(function(index, panel) {
-			$(panel).css('width', $(panel).data("old-width"))
-			$(panel).css('height', $(panel).data("old-height"))
-		})
-
-		$(".sidePanel, .mainPanel>div, .sidePanel>div, .verticalGroup, #tabGroup").each(function(index, element) {
-		    if ($(element).data("old-width")) {
-                $(element).css('width', $(element).data("old-width"))
-            }
-        })
-
-		$("#tabGroup .tabs li").each(function(index, element) {
-            $(element).css('padding', $(element).data("old-padding"))
-        })
-        $("#oilPriceChart").css('height', $("#oilPriceChart").data("old-height"))
-        //$("#topBar").css('height', $("#topBar").data("old-height"))
-
-        $("#canvas").css("width", "calc(100% - " + $("#tabGroup").css("width") + ")")
-
         $("#reputationLevel").show()
 	}
 	delete(map)
 	//yike, what if we miss something...the list below is kinda random
-	initMap()
+	//initMap()
 	if (airports) {
 	    addMarkers(airports)
     }
@@ -188,7 +127,7 @@ function loadUser(isLogin) {
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
 			  $("#loginPassword").val("")
-			  
+
 			  if (isLogin) {
 				  showFloatMessage("Successfully logged in")
 				  showAnnoucement()
@@ -297,7 +236,10 @@ function initMap() {
    	zoom : 2,
    	minZoom : 2,
    	gestureHandling: 'greedy',
-   	styles: getMapStyles() 
+   	styles: getMapStyles(),
+   	restriction: {
+                latLngBounds: { north: 85, south: -85, west: -180, east: 180 },
+              }
   });
 	
   google.maps.event.addListener(map, 'zoom_changed', function() {
@@ -306,33 +248,37 @@ function initMap() {
 	    $.each(markers, function( key, marker ) {
 	        marker.setVisible(isShowMarker(marker, zoom));
 	    })
-  });  
+  });
 
-  $("#toggleMapLightButton").index = 1
-  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapLightButton")[0]);
-  $("#toggleMapLightButton").show()
-  
-  $("#toggleMapAnimationButton").index = 2
-  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapAnimationButton")[0]);
-  $("#toggleMapAnimationButton").show()
-  
-  $("#toggleMapChristmasButton").index = 3
-  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapChristmasButton")[0]);
-  $("#toggleMapChristmasButton").show()
-  
-//  $("#linkHistoryButton").index = 2
-//  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
-  
-//  map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
-//  var linkControlDiv = document.createElement('div');
-//  linkControlDiv.id = 'linkControlDiv';
-//  var linkControl = new LinkHistoryControl(linkControlDiv, map);
-//
-//  $(linkControlDiv).hide()
-//  
-//  linkControlDiv.index = 1;
-//  map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
-//  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(hideLinkHistoryButton);
+  addCustomMapControls(map)
+}
+
+function addCustomMapControls(map) {
+//			<div id="toggleMapChristmasButton" class="googleMapIcon" onclick="toggleChristmasMarker()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/bauble.png")' title='Merry Christmas!' style="vertical-align: middle;"/></div>-->
+//			<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>-->
+//			<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style="display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>-->
+   //var toggleMapChristmasButton = $('<div id="toggleMapChristmasButton" class="googleMapIcon" onclick="toggleChristmasMarker()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src=\'@routes.Assets.versioned("images/icons/bauble.png")\' title=\'Merry Christmas!\' style="vertical-align: middle;"/></div>')
+   var toggleMapAnimationButton = $('<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/icons/arrow-step-over.png" title=\'toggle flight marker animation\' style="vertical-align: middle;"/></div>')
+   var toggleMapLightButton = $('<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style=""><span class="alignHelper"></span><img src="assets/images/icons/switch.png" title=\'toggle dark/light themed map\' style="vertical-align: middle;"/></div>')
+
+
+  toggleMapLightButton.index = 1
+
+
+  toggleMapAnimationButton.index = 2
+
+
+  if ($("#map").height() > 400) {
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapLightButton[0]);
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapAnimationButton[0]);
+  } else {
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleMapLightButton[0]);
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleMapAnimationButton[0]);
+  }
+
+//  toggleMapChristmasButton.index = 3
+//  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapChristmasButton[0]);
+
 }
 
 function LinkHistoryControl(controlDiv, map) {
