@@ -1,0 +1,32 @@
+/* mobile (portrait) ----------- */
+@media only screen
+and (max-device-width : 1024px)
+and (orientation : portrait) {
+    .mainPanel, #map {
+        height: 50%;
+        width: 100%;
+    }
+    .mainPanel>div.section, .sidePanel>div.section, .bankCanvasRightGroup>div.section {
+        width: auto !important;
+    }
+
+    .verticalGroup, .sidePanel, #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup {
+        width: 100%
+    }
+
+    #tabGroup {
+        width: 50px;
+    }
+
+    #tabGroup .tabs li {
+        padding: 10px 2px 10px 2px;
+    }
+
+    div#canvas {
+        width: calc(100% - 50px)
+    }
+
+    #oilPriceChart {
+        height: 200px
+    }
+}
