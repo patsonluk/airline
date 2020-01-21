@@ -14,6 +14,8 @@ var airports = undefined
 $( document ).ready(function() {
 	mobileCheck()
 	populateNavigation()
+    history.replaceState({"onclickFunction" : "showWorldMap()"}, null, "/") //set the initial state
+
 	window.addEventListener('orientationchange', refreshMobileLayout)
 	
 	if ($.cookie('sessionActive')) {
@@ -560,7 +562,7 @@ function populateNavigation(parent) { //change all the tabs to do fake url
 
 
 window.addEventListener('popstate', function(e) {
-    if (e.state.onclickFunction) {
+    if (e.state && e.state.onclickFunction) {
         eval(e.state.onclickFunction)
     }
 });
