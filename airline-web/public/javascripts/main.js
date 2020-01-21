@@ -537,10 +537,15 @@ function assignAirlineColors(dataSet, colorProperty) {
 	})
 }
 
-function populateNavigation() { //change all the tabs to do fake url
-    $('[data-link]').each(function() {
+function populateNavigation(parent) { //change all the tabs to do fake url
+    if (!parent) {
+        parent = $(":root")
+    }
+
+    parent.find('[data-link]').each(function() {
         var onclickFunction = $(this).attr("onclick")
         var path = $(this).data("link")
+        console.log(path + " " + onclickFunction)
 
         $(this).click(function() {
             history.pushState({ "onclickFunction" : onclickFunction }, null, path);

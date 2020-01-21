@@ -2398,9 +2398,9 @@
    			</div>
 		</div>
 		<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()" >Plan Flight</div>
-		<div class="button" id="viewAirportButton" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
+		<div class="button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
 		<div class="button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
-		<div class="button" id="toggleDeparturesButton" onclick="showDeparturesCanvas()">Departures</div>
+		<div class="button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
     </div>
     
      <div style="display: none; width: 100%;" id="cityPopup">

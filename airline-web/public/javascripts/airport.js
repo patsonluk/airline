@@ -467,7 +467,10 @@ function addMarkers(airports) {
 			  updateAirportSlots(this.airport.id)
 			  
 			  $("#airportPopupId").val(this.airport.id)
-			  infoWindow.setContent($("#airportPopup").html())
+			  var popup = $("#airportPopup").clone()
+			  populateNavigation(popup)
+			  popup.show()
+			  infoWindow.setContent(popup[0])
 			  infoWindow.open(map, this);
 			  infoWindow.marker = this
 			  

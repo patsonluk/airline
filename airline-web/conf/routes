@@ -167,4 +167,6 @@ GET /rival       controllers.Application.redirect(path : String = "/")
 GET /ranking       controllers.Application.redirect(path : String = "/")
 GET /alliance       controllers.Application.redirect(path : String = "/")
 GET /log       controllers.Application.redirect(path : String = "/")
+GET /departure       controllers.Application.redirect(path : String = "/")
+GET /airport       controllers.Application.redirect(path : String = "/")
 
