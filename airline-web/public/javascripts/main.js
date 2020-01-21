@@ -13,6 +13,7 @@ var airports = undefined
 
 $( document ).ready(function() {
 	mobileCheck()
+	populateNavigation()
 	window.addEventListener('orientationchange', refreshMobileLayout)
 	
 	if ($.cookie('sessionActive')) {
@@ -114,6 +115,7 @@ function refreshLoginBar() {
         $("#loginDiv").hide();
 	}
 }
+
 
 function loadUser(isLogin) {
 	var ajaxCall = {
@@ -535,3 +537,25 @@ function assignAirlineColors(dataSet, colorProperty) {
 	})
 }
 
+function populateNavigation() { //change all the tabs to do fake url
+    $('[data-link]').each(function() {
+        var onclickFunction = $(this).attr("onclick")
+        var path = $(this).data("link")
+
+        $(this).click(function() {
+            history.pushState({ "onclickFunction" : onclickFunction }, null, path);
+        })
+//
+//        if (onclickFunction) {
+//            eval(onclickFunction)
+//        }
+    })
+}
+
+
+
+window.addEventListener('popstate', function(e) {
+    if (e.state.onclickFunction) {
+        eval(e.state.onclickFunction)
+    }
+});
