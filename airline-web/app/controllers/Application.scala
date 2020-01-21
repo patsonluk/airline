@@ -548,5 +548,9 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     )
   }
 
+  def redirect(path: String) = Action {
+    Redirect(path)
+  }
+
   case class LinkInfo(fromId : Int, toId : Int, price : Double, capacity : Int)
 }

@@ -155,3 +155,16 @@ GET  /favicon.ico        controllers.Assets.at(path="/public/images/icons", file
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+#front-end fake links...use redirect instead of telling them not found
+GET /link       controllers.Application.redirect(path : String = "/")
+GET /country       controllers.Application.redirect(path : String = "/")
+GET /airplane       controllers.Application.redirect(path : String = "/")
+GET /office       controllers.Application.redirect(path : String = "/")
+GET /bank       controllers.Application.redirect(path : String = "/")
+GET /oil       controllers.Application.redirect(path : String = "/")
+GET /rival       controllers.Application.redirect(path : String = "/")
+GET /ranking       controllers.Application.redirect(path : String = "/")
+GET /alliance       controllers.Application.redirect(path : String = "/")
+GET /log       controllers.Application.redirect(path : String = "/")
+
