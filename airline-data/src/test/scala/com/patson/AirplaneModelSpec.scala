@@ -6,8 +6,8 @@ import com.patson.model.airplane._
 import org.scalatest.{Matchers, WordSpecLike}
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
-  private val GOOD_PROFIT_MARGIN = Map(CLASS_A -> 0.25, CLASS_B -> 0.25, CLASS_C -> 0.15, CLASS_D -> 0.05, CLASS_E -> 0.0,  CLASS_F -> -0.1)
-  private val MAX_PROFIT_MARGIN = Map(CLASS_A -> 0.5, CLASS_B -> 0.5, CLASS_C -> 0.4, CLASS_D -> 0.3, CLASS_E -> 0.25, CLASS_F -> 0.15)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.25, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.25, X_LARGE -> 0.2, JUMBO -> 0.15)
   
   "all airplane models".must {
     "Generate good profit at MAX LF at suitable range".in {
@@ -29,13 +29,13 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
   def simulateStandard(airplaneModel : Model, loadFactor : Double) : LinkConsumptionDetails = {
     val distance = if (airplaneModel.range > 10000)  10000 else airplaneModel.range //cap at 10000, otherwise frequency will be very low
     val (flightType, airportSize) = airplaneModel.airplaneType match {
-      case CLASS_A => (FlightType.SHORT_HAUL_DOMESTIC, 3)
-      case CLASS_B => (FlightType.LONG_HAUL_DOMESTIC, 4)
-      case CLASS_C => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
-      case CLASS_D => (FlightType.LONG_HAUL_INTERCONTINENTAL, 7)
-      case CLASS_E => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
+      case LIGHT => (FlightType.SHORT_HAUL_DOMESTIC, 3)
+      case REGIONAL => (FlightType.LONG_HAUL_DOMESTIC, 4)
+      case SMALL => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
+      case MEDIUM => (FlightType.LONG_HAUL_INTERCONTINENTAL, 7)
+      case LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
       case X_LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
-      case CLASS_F => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
+      case JUMBO => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
     }
     val duration = Computation.calculateDuration(airplaneModel, distance)
     val frequency = Computation.calculateMaxFrequency(airplaneModel, distance)

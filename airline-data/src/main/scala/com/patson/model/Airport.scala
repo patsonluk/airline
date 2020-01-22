@@ -396,12 +396,13 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     
     import Model.Type._
     val multipler = airplaneModel.airplaneType match {
-      case CLASS_A => 1
-      case CLASS_B => 1
-      case CLASS_C => 3
-      case CLASS_D => 8
-      case CLASS_E => 12
-      case CLASS_F => 18
+      case LIGHT => 1
+      case REGIONAL => 1
+      case SMALL => 3
+      case MEDIUM => 8
+      case LARGE => 12
+      case X_LARGE => 15
+      case JUMBO => 18
     }
     
     //apply discount if it's a base
