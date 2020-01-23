@@ -199,11 +199,27 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	var r_text = msg.data;
 	//console.log(r_text);
 	var r_msg = JSON.parse(r_text);
-	
+
+	var date = new Date(r_msg.timestamp)
+	var hourString = date.getHours()
+	var minuteString = date.getMinutes()
+	var secondString = date.getSeconds()
+
+	if (hourString < 10) {
+	    hourString = "0" + hourString
+    }
+    if (minuteString < 10) {
+        minuteString = "0" + minuteString
+    }
+    if (secondString < 10) {
+        secondString = "0" + secondString
+    }
+
+	var dateString = hourString + ":" + minuteString + ":" + secondString
 	if (!r_msg.allianceRoomId) {
-		chat.gmessages.push(r_msg.text);
+		chat.gmessages.push("[" + dateString + "]" + r_msg.text);
 	} else {
-		chat.amessages.push(r_msg.text);
+		chat.amessages.push("[" + dateString + "]" + r_msg.text);
 	}
     $scope.$digest();
 	

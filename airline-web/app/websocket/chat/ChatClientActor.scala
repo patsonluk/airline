@@ -37,7 +37,7 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User,
 	    user.getAccessibleAirlines().find( _.id == airlineId) match {
 	      case None => logger.warn("user " + user + " has no access to airline " + airlineId + " airline is not found")
 	      case Some(airline) =>
-	        val otext =  "[" + sdf.format(Calendar.getInstance().getTime())+ "] " + airline.name + ": " + json_text.\("text").as[String]
+	        val otext =  airline.name + ": " + json_text.\("text").as[String]
     		  val room = json_text.\("room").as[String]
     		  
 	        val allianceRoomIdOption =  
@@ -51,9 +51,9 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User,
 		  
   	  
   	// handles message writes to websocket
-    case OutgoingMessage(id, text, allianceRoomIdOption) => {
+    case OutgoingMessage(id, timestamp, text, allianceRoomIdOption) => {
       if (allianceRoomIdOption.isEmpty || (allianceRoomIdOption == allianceId)) { 
-        var jsonMessage = Json.obj("text" -> text, "id" -> id)
+        var jsonMessage = Json.obj("timestamp" -> timestamp, "text" -> text, "id" -> id)
         allianceRoomIdOption.foreach { allianceRoomId =>
           jsonMessage = jsonMessage + ("allianceRoomId" -> JsNumber(allianceRoomId))
         }

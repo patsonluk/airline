@@ -24,7 +24,7 @@ class Message
 final case class ClientSentMessage(text: String)
 
 final case class IncomingMessage(text: String, allianceId : Option[Int])
-final case class OutgoingMessage(id: Long, text: String, allianceId : Option[Int])
+final case class OutgoingMessage(id: Long, timestamp : Long, text: String, allianceId : Option[Int])
 
 
 
@@ -86,7 +86,7 @@ class ChatControllerActor extends Actor {
     }
 
     case IncomingMessage(text, allianceRoomIdOption) => {
-      val outMessage = OutgoingMessage(messageIdCounter.incrementAndGet(), text, allianceRoomIdOption)
+      val outMessage = OutgoingMessage(messageIdCounter.incrementAndGet(), System.currentTimeMillis(), text, allianceRoomIdOption)
 		  
       //put message into history and send to subscribers
       allianceRoomIdOption match {
