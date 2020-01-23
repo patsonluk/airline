@@ -29,4 +29,12 @@ and (max-device-width : 640px) {
     #oilPriceChart, #loanInterestRateChart {
         height: 30vh
     }
+
+    .mobileOnly {
+        display: unset !important;
+    }
+
+    .desktopOnly {
+        display: none !important;
+    }
 }

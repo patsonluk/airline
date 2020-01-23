@@ -1486,7 +1486,7 @@ function showLinksDetails() {
 	selectedLink = undefined
 	loadLinksTable()
 	setActiveDiv($('#linksCanvas'));
-	highlightTab($('#linksCanvasTab'))
+	highlightTab($('.linksCanvasTab'))
 	$('#sidePanel').fadeOut(200);
 	$('#sidePanel').appendTo($('#linksCanvas'))
 }

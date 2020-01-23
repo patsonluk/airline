@@ -8,7 +8,7 @@ $( document ).ready(function() {
 
 function showAllianceCanvas() {
 	setActiveDiv($("#allianceCanvas"))
-	highlightTab($('#allianceCanvasTab'))
+	highlightTab($('.allianceCanvasTab'))
 	loadAllAlliances()
 	if (!activeAirline) {
 		$('#currentAirlineMemberDetails').hide()

@@ -4,7 +4,7 @@ var loadedAlerts = []
 
 function showLogCanvas() {
 	setActiveDiv($("#logCanvas"))
-	highlightTab($('#logCanvasTab'))
+	highlightTab($('.logCanvasTab'))
 	loadAllLogs()
 	loadAllAlerts()
 }

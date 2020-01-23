@@ -3,7 +3,7 @@ var loadedCountriesByCode = {}
 var zoneById = { "AS" : "Asia", "NA" : "North America", "SA" : "South America", "AF" : "Africa", "OC" : "Oceania", "EU" : "Europe" }
 
 function showCountryView(selectedCountry) {
-	highlightTab($('#countryCanvasTab'))
+	highlightTab($('.countryCanvasTab'))
 	
 	$("#countryList").empty()
    	var selectedSortHeader = $('#countryTableHeader .table-header .cell.selected') 

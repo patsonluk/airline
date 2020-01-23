@@ -13,17 +13,19 @@
 	  <style type="text/css">
       html, body { height: 100%; margin: 0; padding: 0; }
     </style>
-    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
+<!--    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">-->
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/mobile.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/about.css")">
+      <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/side-bar.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")">
+
 
     
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js" defer></script>
@@ -54,6 +56,11 @@
 	<script type="text/javascript" src="@routes.Assets.versioned("jquery-upload-file/jquery.uploadfile.min.js")" defer></script>
 	<link rel="stylesheet" href="@routes.Assets.versioned("jquery-upload-file/uploadfile.css")" type="text/css" />
 	<script src="@routes.Assets.versioned("javascripts/lazysizes/lazysizes.min.js")" async></script>
+
+	<link rel="stylesheet" href='@routes.Assets.versioned("bootstrap/css/bootstrap.min.css")' type="text/css" />
+	<script src='@routes.Assets.versioned("bootstrap/js/bootstrap.min.js")'></script>
+
+
 	
 	<script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
@@ -98,6 +105,7 @@
 			})(window,document,window['_fs_namespace'],'script','user');
     	}
 	</script>
+
   </head>
   <body>
   	<input type="hidden" id="floatMessage" value="@message"/>
@@ -243,24 +251,35 @@
 			</div>
 			<!-- end live-chat -->
 
-
 			<div style="float: left;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
-				<ul class="tabs" id="main-tabs">
+				<ul class="tabs list-unstyled components" id="main-tabs">
 
-				  <li class="button left-tab" id="worldMapCanvasTab" data-link="/" onclick="showWorldMap();"><span class="selected">World</span></li>
-				  <li class="button left-tab user-specific-tab" id="linksCanvasTab" data-link="link" onclick="showLinksDetails();"><span>Routes</span></li>
+				  <li class="button left-tab worldMapCanvasTab" data-link="/" onclick="showWorldMap();"><span class="selected">World</span></li>
+				  <li class="button left-tab user-specific-tab linksCanvasTab" data-link="link" onclick="showLinksDetails();"><span>Routes</span></li>
 	<!-- 			  <li class="button left-tab" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li> -->
-				  <li class="button left-tab user-specific-tab" id="countryCanvasTab" data-link="country" onclick="showCountryView();"><span>Country</span></li>
-				  <li class="button left-tab user-specific-tab" id="airplaneCanvasTab" data-link="airplane" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
-				  <li class="button left-tab user-specific-tab" id="officeCanvasTab" data-link="office" onclick="showOfficeCanvas();"><span>Office</span></li>
-				  <li class="button left-tab user-specific-tab" id="bankCanvasTab" data-link="bank" onclick="showBankCanvas();"><span>Bank</span></li>
-				  <li class="button left-tab user-specific-tab" id="oilCanvasTab" data-link="oil" onclick="showOilCanvas();"><span>Oil</span></li>
-				  <li class="button left-tab user-specific-tab" id="rivalsCanvasTab" data-link="rival" onclick="showRivalsCanvas();"><span>Rivals</span></li>
-				  <li class="button left-tab" id="rankingCanvasTab" data-link="ranking" onclick="showRankingCanvas();"><span>Ranking</span></li>
-					<li class="button left-tab" id="allianceCanvasTab" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
-					<li class="button left-tab  user-specific-tab" id="logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
-
+				  <li class="button left-tab user-specific-tab countryCanvasTab" data-link="country" onclick="showCountryView();"><span>Country</span></li>
+				  <li class="button left-tab user-specific-tab airplaneCanvasTab" data-link="airplane" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
+				  <li class="button left-tab user-specific-tab officeCanvasTab" data-link="office" onclick="showOfficeCanvas();"><span>Office</span></li>
+				  <li class="button left-tab user-specific-tab bankCanvasTab desktopOnly" data-link="bank" onclick="showBankCanvas();"><span>Bank</span></li>
+				  <li class="button left-tab user-specific-tab oilCanvasTab desktopOnly" data-link="oil" onclick="showOilCanvas();"><span>Oil</span></li>
+				  <li class="button left-tab user-specific-tab rivalsCanvasTab desktopOnly" data-link="rival" onclick="showRivalsCanvas();"><span>Rivals</span></li>
+				  <li class="button left-tab rankingCanvasTab desktopOnly" data-link="ranking" onclick="showRankingCanvas();"><span>Ranking</span></li>
+					<li class="button left-tab allianceCanvasTab desktopOnly" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
+					<li class="button left-tab  user-specific-tab logCanvasTab desktopOnly" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
+					<li class="button left-tab mobileOnly">
+						<a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+							Other
+						</a>
+						<ul class="collapse list-unstyled" id="pageSubmenu">
+							<li class="button bankCanvasTab" data-link="bank" onclick="showBankCanvas();"><span>Bank</span></li>
+							<li class="button user-specific-tab oilCanvasTab" data-link="oil" onclick="showOilCanvas();"><span>Oil</span></li>
+							<li class="button user-specific-tab rivalsCanvasTab" data-link="rival" onclick="showRivalsCanvas();"><span>Rivals</span></li>
+							<li class="button rankingCanvasTab" data-link="ranking" onclick="showRankingCanvas();"><span>Ranking</span></li>
+							<li class="button allianceCanvasTab" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
+							<li class="button user-specific-tab logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
+						</ul>
+					</li>
 				</ul>
 			</div>
 

@@ -457,7 +457,7 @@ function toggleConsoleMessage() {
 
 function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
-	highlightTab($('#worldMapCanvasTab'))
+	highlightTab($('.worldMapCanvasTab'))
 	$('#sidePanel').appendTo($('#worldMapCanvas'))
 	closeAirportInfoPopup()
 	if (selectedLink) {

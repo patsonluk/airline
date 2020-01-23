@@ -876,7 +876,7 @@ function toggleAirplaneHome() {
 
 function showAirplaneCanvas() {
 	setActiveDiv($("#airplaneCanvas"))
-	highlightTab($('#airplaneCanvasTab'))
+	highlightTab($('.airplaneCanvasTab'))
 
 	loadAirplaneModels()
     loadAirplaneModelOwnerInfo()
