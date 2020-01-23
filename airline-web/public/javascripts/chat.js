@@ -217,9 +217,9 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 
 	var dateString = hourString + ":" + minuteString + ":" + secondString
 	if (!r_msg.allianceRoomId) {
-		chat.gmessages.push("[" + dateString + "]" + r_msg.text);
+		chat.gmessages.push("[" + dateString + "] " + r_msg.text);
 	} else {
-		chat.amessages.push("[" + dateString + "]" + r_msg.text);
+		chat.amessages.push("[" + dateString + "] " + r_msg.text);
 	}
     $scope.$digest();
 	
