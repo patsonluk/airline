@@ -181,9 +181,11 @@ a.landing-link, #about-canvas a {
     margin-block-end: 3em;
 }
 
-img {
+
+#about-canvas img {
     max-width: 100%;
 }
+
 
 /* mobile (portrait) ----------- */
 @media only screen
