@@ -2,10 +2,23 @@ package com.patson.model.airplane
 
 import com.patson.model.IdObject
 import com.patson.model.Airline
+import com.patson.model.airplane.Model.AClass.AClass
 
-case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, range : Int, wingspan : Int, /* not implemented yet*/ price : Int, lifespan : Int, constructionTime : Int, countryCode : String, imageUrl : String = "", var id : Int = 0) extends IdObject {
+case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, range : Int, wingspan : Int,  price : Int, lifespan : Int, constructionTime : Int, countryCode : String, imageUrl : String = "", var id : Int = 0) extends IdObject {
   import Model.Type._
   val airplaneType : Type = {
+    capacity match {
+      case x if (x <= 15) => LIGHT
+      case x if (x <= 60) => REGIONAL
+      case x if (x <= 150) => SMALL
+      case x if (x <= 250) => MEDIUM
+      case x if (x <= 350) => LARGE
+      case x if (x <= 500) => X_LARGE
+      case _ => JUMBO
+    }
+  }
+  import Model.AClass._
+  val airplaneClass : AClass = {
     wingspan match {
       case x if (x < 15) => CLASS_A
       case x if (x <= 24) => CLASS_B
@@ -17,17 +30,18 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
   }
   val turnaroundTime : Int = {
     airplaneType match {
-      case CLASS_A => 45
-      case CLASS_B => 70
-      case CLASS_C => 100
-      case CLASS_D => 140
-      case CLASS_E => 180
-      case CLASS_F => 220
+      case LIGHT => 45
+      case REGIONAL => 70
+      case SMALL => 100
+      case MEDIUM => 140
+      case LARGE => 180
+      case X_LARGE => 200
+      case JUMBO => 220
     }
   }
 
   val minAirportSize : Int = {
-    airplaneType match {
+    airplaneClass match {
       case CLASS_A => 1
       case CLASS_B => 1
       case CLASS_C => 2
@@ -39,12 +53,13 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
 
   val airplaneTypeLabel : String = {
     airplaneType match {
-      case CLASS_A => "Light"
-      case CLASS_B => "Regional"
-      case CLASS_C => "Small"
-      case CLASS_D => "Medium"
-      case CLASS_E => "Large"
-      case CLASS_F => "Jumbo"
+      case LIGHT => "Light"
+      case REGIONAL => "Regional"
+      case SMALL => "Small"
+      case MEDIUM => "Medium"
+      case LARGE => "Large"
+      case X_LARGE => "Extra Large"
+      case JUMBO => "Jumbo"
     }
   }
 
@@ -52,16 +67,22 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
   val maintenanceCost : Int = {
     (capacity * 100).toInt //for now
   }
+
+
 }
 
 object Model {
   def fromId(id : Int) = {
-    val modelWithJustId = Model("", 0, 0, 0, 0, 0, 0, 0, countryCode = "")
+    val modelWithJustId = Model("", 0, 0, 0, 0, 0, 0, 0, 0, countryCode = "")
     modelWithJustId.id = id
     modelWithJustId
   }
   object Type extends Enumeration {
     type Type = Value
+    val LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, X_LARGE, JUMBO = Value
+  }
+  object AClass extends Enumeration {
+    type AClass = Value
     val CLASS_A, CLASS_B, CLASS_C, CLASS_D, CLASS_E, CLASS_F = Value
   }
   //https://en.wikipedia.org/wiki/List_of_jet_airliners

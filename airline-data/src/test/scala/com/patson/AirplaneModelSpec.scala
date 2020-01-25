@@ -2,12 +2,13 @@ package com.patson
 
 import com.patson.model._
 import com.patson.model.airplane.Model.Type._
+import com.patson.model.airplane.Model.AClass
 import com.patson.model.airplane._
 import org.scalatest.{Matchers, WordSpecLike}
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
-  private val GOOD_PROFIT_MARGIN = Map(CLASS_A -> 0.25, CLASS_B -> 0.25, CLASS_C -> 0.15, CLASS_D -> 0.05, CLASS_E -> 0.0,  CLASS_F -> -0.1)
-  private val MAX_PROFIT_MARGIN = Map(CLASS_A -> 0.5, CLASS_B -> 0.5, CLASS_C -> 0.4, CLASS_D -> 0.3, CLASS_E -> 0.25, CLASS_F -> 0.15)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.25, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.25, X_LARGE -> 0.2, JUMBO -> 0.15)
   
   "all airplane models".must {
     "Generate good profit at MAX LF at suitable range".in {
