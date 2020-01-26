@@ -5,7 +5,7 @@ var hideInactive = true
 
 function showRivalsCanvas(selectedAirline) {
 	setActiveDiv($("#rivalsCanvas"))
-	highlightTab($('#rivalsCanvasTab'))
+	highlightTab($('.rivalsCanvasTab'))
 	$('#rivalDetails').hide()
 	loadAllRivals(selectedAirline)
 }

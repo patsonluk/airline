@@ -61,6 +61,8 @@ function mobileCheck() {
 
 		//turn off animation by default
 		currentAnimationStatus = false
+
+		//registerSwipe()
 	}
 }
 
@@ -224,12 +226,12 @@ function logout() {
 
 function showUserSpecificElements() {
 	$('.user-specific-tab').show()
-	$('#topBarDetails').show()
+	$('.topBarDetails').show()
 }
 
 function hideUserSpecificElements() {
 	$('.user-specific-tab').hide()
-	$('#topBarDetails').hide()
+	$('.topBarDetails').hide()
 }
 
 
@@ -392,16 +394,16 @@ function updateTime(cycle, fraction, cycleDurationEstimation) {
 			    durationTillNextTick -= refreshInterval
 			}
 			var date = new Date(currentTime)
-			$("#currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) +  " " + padBefore(date.getHours(), "0", 2) + ":00")
+			$(".currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) +  " " + padBefore(date.getHours(), "0", 2) + ":00")
 
 			if (hasTickEstimation) {
 			    var minutesLeft = Math.round(durationTillNextTick / 1000 / 60)
 			    if (minutesLeft <= 0) {
-			        $("#nextTickEstimation").text("Very soon")
+			        $(".nextTickEstimation").text("Very soon")
 			    } else if (minutesLeft == 1) {
-			        $("#nextTickEstimation").text("1 minute")
+			        $(".nextTickEstimation").text("1 minute")
 			    } else {
-			        $("#nextTickEstimation").text(minutesLeft + " minutes")
+			        $(".nextTickEstimation").text(minutesLeft + " minutes")
 			    }
             }
 		}, refreshInterval);
@@ -457,7 +459,7 @@ function toggleConsoleMessage() {
 
 function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
-	highlightTab($('#worldMapCanvasTab'))
+	highlightTab($('.worldMapCanvasTab'))
 	$('#sidePanel').appendTo($('#worldMapCanvas'))
 	closeAirportInfoPopup()
 	if (selectedLink) {

@@ -43,7 +43,7 @@ $( document ).ready(function() {
 
 function showOfficeCanvas() {
 	setActiveDiv($("#officeCanvas"))
-	highlightTab($('#officeCanvasTab'))
+	highlightTab($('.officeCanvasTab'))
 	
 	updateAirlineDetails()
 	loadSheets();

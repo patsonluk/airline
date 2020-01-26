@@ -2,7 +2,7 @@ var loadedLoans = {}
 
 function showBankCanvas() {
 	setActiveDiv($("#bankCanvas"))
-	highlightTab($('#bankCanvasTab'))
+	highlightTab($('.bankCanvasTab'))
 	loadInterestRateChart()
 	loadNewLoanDetails() 
     loadOutstandingLoans()
