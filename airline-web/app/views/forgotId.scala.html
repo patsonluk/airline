@@ -12,15 +12,16 @@
       #map { height: 100%; }
     </style>
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
-    
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/new-style.css")">
     <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
   </head>
   <body>
 
     @helper.form(action = routes.AccountApplication.forgotIdSubmit) {
-        <div class="section">
+	<div class="frost-section">
+		<div class="display-area">
         	<h1>Forgot User Name</h1>
 	        <fieldset>
 	            <div style="padding: 10px;">
@@ -38,6 +39,7 @@
 	            <a href="@routes.Application.index" class="btn">Cancel</a>
 	        </div>
         </div>
+	</div>
     }
 </body>    
 </html>
