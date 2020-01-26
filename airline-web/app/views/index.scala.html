@@ -13,7 +13,7 @@
 	  <style type="text/css">
       html, body { height: 100%; margin: 0; padding: 0; }
     </style>
-<!--    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">-->
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/mobile.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
@@ -57,11 +57,6 @@
 	<link rel="stylesheet" href="@routes.Assets.versioned("jquery-upload-file/uploadfile.css")" type="text/css" />
 	<script src="@routes.Assets.versioned("javascripts/lazysizes/lazysizes.min.js")" async></script>
 
-	<link rel="stylesheet" href='@routes.Assets.versioned("bootstrap/css/bootstrap.min.css")' type="text/css" />
-	<script src='@routes.Assets.versioned("bootstrap/js/bootstrap.min.js")'></script>
-
-
-	
 	<script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
@@ -86,6 +81,7 @@
 	<script src="@routes.Assets.versioned("javascripts/confetti.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/about.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/mobile.js")" defer></script>
     <script>
     	if (window.location.hostname != 'localhost') {
 			window['_fs_debug'] = false;
@@ -109,7 +105,7 @@
   </head>
   <body>
   	<input type="hidden" id="floatMessage" value="@message"/>
-  	<div id="floatMessageBox" style="height: 30px; width: 400px; display: none;"></div>
+  	<div id="floatMessageBox" style="height: 30px; width: 300px; display: none;"></div>
 	<div id="linkHistoryControlPanel" class="section" style="display: none;">
 		<div style="float: left; width : 50%">
 			<h4>Top Transit PAX</h4>
@@ -129,57 +125,90 @@
 		Exit Airport Flight Map
 	</div>
 
-
-
+	<div style="width: 100%; display: none;" class="extendedTopBarDetails">
+		<div>
+			<span class="currentTime" class="label" style="margin: 0px 10px"></span>
+			<span style="margin: 0px 10px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span class="nextTickEstimation label" style="font-weight: bold;">-</span></span>
+		</div>
+		<div>
+			<span style="margin: 0px 10px">Reputation: <span class="reputation label"></span> <span class="reputationLevel label"></span></span>
+		</div>
+	</div>
   	<div id="topBar" data-scroll="false" class="menubar">
-  		<div style="float: left;">
-  			<span id="topBarDetails" style="display: none;">
-	  			<span id="currentTime" class="label" style="margin: 0px 10px"></span>
-				<span style="margin: 0px 10px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span id="nextTickEstimation" class="label" style="font-weight: bold;">-</span></span>
-	  			<span id="currentAirline" class="label" style="margin: 0px 10px; font-weight: bold"></span> 
-	  			<span style="margin: 0px 10px">Balance: $<span id="balance" class="label"></span></span> 
-	  			<span style="margin: 0px 10px">Reputation: <span id="reputation" class="label"></span> <span id="reputationLevel" class="label"></span> <span id="reputationStars"></span></span>
+  		<div class="desktopOnly">
+  			<span class="topBarDetails" style="display: none;">
+	  			<span class="currentTime label" style="margin: 0px 10px"></span>
+				<span style="margin: 0px 10px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span class="nextTickEstimation label" style="font-weight: bold;">-</span></span>
+	  			<span class="currentAirline label" style="margin: 0px 10px; font-weight: bold"></span>
+	  			<span style="margin: 0px 10px">Balance: $<span class="balance label"></span></span>
+	  			<span style="margin: 0px 10px">Reputation: <span class="reputation label"></span> <span class="reputationLevel label"></span> <span class="reputationStars"></span></span>
   			</span>
   		</div>
-  		<div style="float: right;">
-			<div style="float: right; margin: 5px;">
+		<div style="max-width: 70%;" class="mobileOnly">
+			<div class="topBarDetails">
+				<span class="currentAirline label" style="margin-left: 0px 5px; font-weight: bold"></span>
+				<span>$<span class="balance label"></span></span>
+			</div>
+		</div>
+  		<div>
+			<div class="topBarItem" id="patreonDiv" style="float: right;">
 				<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
-					<img src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
+					<img class="desktopOnly" src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
+					<img class="mobileOnly" src='@routes.Assets.versioned("images/buttons/patreon_mark_coral.jpg")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
 				</a>
 			</div>
-			<div style="float: right" class="button">
-				<a href="https://airlineclub.createaforum.com/" target="_blank">Forums</a>
+			<div style="float: right" class="button desktopOnly topBarItem">
+				<a href="https://airlineclub.createaforum.com/" target="_blank">
+					Forums
+				</a>
 			</div>
-			<div style="float: right; display: none;" id="loginDiv">
-				<span class="label">User Name</span>
-				<input type="text" id="loginUserName" tabindex=1/>
+			<div style="float: right" class="mobileOnly topBarItem">
+				<a href="https://airlineclub.createaforum.com/" target="_blank">
+					<img src='@routes.Assets.versioned("images/icons/users.png")' style="vertical-align: middle;" title="Forums">
+				</a>
+			</div>
+
+			<div style="float: right; display: none;" id="loginDiv" class="topBarItem">
+				<input type="text" id="loginUserName" placeholder="username" tabindex=1/>
 				<a href="/forgot-id"  target="_blank">
 					<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
 				</a>
-				<span class="label">Password</span>
-				<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2/>
+				<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2 placeholder="password"/>
 				<a href="/forgot-password"  target="_blank">
 					<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
 				</a>
-				<div class="button" onclick="login()" tabindex=3>Login</div>
-<!-- 	  			<div class="g-signin2" data-onsuccess="onGoogleLogin()"></div> -->
-				<div class="button" onclick="" tabindex=4><a href="signup">Sign Up</a></div>
+				<div class="button desktopOnly" onclick="login()" tabindex=3>Login</div>
+				<div class="mobileOnly" onclick="login()"><img src='@routes.Assets.versioned("images/icons/door-open-in.png")' title="Login"></div>
+
+				<div class="button desktopOnly" onclick="" tabindex=4><a href="signup">Sign Up</a></div>
 			</div>
-			<div style="float: right; display: none;" id="logoutDiv">
-				<span id="currentUserName" class="label"></span>
-				<div class="button" onclick="logout()">Logout</div>
+			<div style="float: right; display: none;" id="logoutDiv" class="topBarItem">
+				<span id="currentUserName" class="label desktopOnly"></span>
+				<div class="button desktopOnly" onclick="logout()">Logout</div>
+				<div class="mobileOnly" onclick="logout()"><img src='@routes.Assets.versioned("images/icons/door-open-out.png")' title="Login"></div>
 			</div>
 			<div style="clear: both;"></div>
 		</div>
-		<div style="clear: both;"></div>
-  	</div>
+	</div>
+	<div id="moreTopBarTab" class="mobileOnly" onclick="showExtendedTopBarDetails()">
+		<ul class="moreRow">
+			<li>
+				<span></span>
+				<span></span>
+				<span></span>
+			</li>
+		</ul>
+	</div>
+
+
+
 	<div id="console" class="marquee" style="width: 100%; position: relative;" align="center">
 		<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
 		<span id="consoleMessage"></span>
 	</div>
 
 
-	<div style="width: 100%; position: relative" > <!-- Main container for the contents + the landing masks-->
+	<div style="position: relative;" id="mainContainer" > <!-- Main container for the contents + the landing masks-->
 		<div id="landing">
 			<div id="landing-content">
 				<div class="title" style="display: flex; ">
@@ -253,7 +282,7 @@
 
 			<div style="float: left;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
-				<ul class="tabs list-unstyled components" id="main-tabs">
+				<ul class="tabs" id="main-tabs">
 
 				  <li class="button left-tab worldMapCanvasTab" data-link="/" onclick="showWorldMap();"><span class="selected">World</span></li>
 				  <li class="button left-tab user-specific-tab linksCanvasTab" data-link="link" onclick="showLinksDetails();"><span>Routes</span></li>
@@ -261,25 +290,12 @@
 				  <li class="button left-tab user-specific-tab countryCanvasTab" data-link="country" onclick="showCountryView();"><span>Country</span></li>
 				  <li class="button left-tab user-specific-tab airplaneCanvasTab" data-link="airplane" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
 				  <li class="button left-tab user-specific-tab officeCanvasTab" data-link="office" onclick="showOfficeCanvas();"><span>Office</span></li>
-				  <li class="button left-tab user-specific-tab bankCanvasTab desktopOnly" data-link="bank" onclick="showBankCanvas();"><span>Bank</span></li>
-				  <li class="button left-tab user-specific-tab oilCanvasTab desktopOnly" data-link="oil" onclick="showOilCanvas();"><span>Oil</span></li>
-				  <li class="button left-tab user-specific-tab rivalsCanvasTab desktopOnly" data-link="rival" onclick="showRivalsCanvas();"><span>Rivals</span></li>
-				  <li class="button left-tab rankingCanvasTab desktopOnly" data-link="ranking" onclick="showRankingCanvas();"><span>Ranking</span></li>
-					<li class="button left-tab allianceCanvasTab desktopOnly" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
-					<li class="button left-tab  user-specific-tab logCanvasTab desktopOnly" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
-					<li class="button left-tab mobileOnly">
-						<a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-							Other
-						</a>
-						<ul class="collapse list-unstyled" id="pageSubmenu">
-							<li class="button bankCanvasTab" data-link="bank" onclick="showBankCanvas();"><span>Bank</span></li>
-							<li class="button user-specific-tab oilCanvasTab" data-link="oil" onclick="showOilCanvas();"><span>Oil</span></li>
-							<li class="button user-specific-tab rivalsCanvasTab" data-link="rival" onclick="showRivalsCanvas();"><span>Rivals</span></li>
-							<li class="button rankingCanvasTab" data-link="ranking" onclick="showRankingCanvas();"><span>Ranking</span></li>
-							<li class="button allianceCanvasTab" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
-							<li class="button user-specific-tab logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
-						</ul>
-					</li>
+				  <li class="button left-tab user-specific-tab bankCanvasTab" data-link="bank" onclick="showBankCanvas();"><span>Bank</span></li>
+				  <li class="button left-tab user-specific-tab oilCanvasTab" data-link="oil" onclick="showOilCanvas();"><span>Oil</span></li>
+				  <li class="button left-tab user-specific-tab rivalsCanvasTab" data-link="rival" onclick="showRivalsCanvas();"><span>Rivals</span></li>
+				  <li class="button left-tab rankingCanvasTab" data-link="ranking" onclick="showRankingCanvas();"><span>Ranking</span></li>
+				  <li class="button left-tab allianceCanvasTab" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
+				  <li class="button left-tab  user-specific-tab logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
 				</ul>
 			</div>
 

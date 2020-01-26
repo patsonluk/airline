@@ -15,7 +15,8 @@ function updateAirlineInfo(airlineId) {
 	    async: false,
 	    success: function(airline) {
 	    	refreshTopBar(airline)
-	    	$("#currentAirline").html(getAirlineLogoImg(airline.id) + airline.name)
+	    	$(".currentAirline").html(getAirlineLogoImg(airline.id) + airline.name)
+
 	    	if (airline.headquarterAirport) {
                         $("#currentAirlineCountry").html("<img class='flag' src='assets/images/flags/" + airline.headquarterAirport.countryCode + ".png' />")
 	    	} else {
@@ -40,10 +41,10 @@ function updateAirlineLogo() {
 	
 	
 function refreshTopBar(airline) {
-	changeColoredElementValue($("#balance"), airline.balance)
-	changeColoredElementValue($("#reputation"), airline.reputation)
-	$("#reputationLevel").text("(" + airline.gradeDescription + ")")
-	$("#reputationStars").html(getGradeStarsImgs(airline.gradeValue))
+	changeColoredElementValue($(".balance"), airline.balance)
+	changeColoredElementValue($(".reputation"), airline.reputation)
+	$(".reputationLevel").text("(" + airline.gradeDescription + ")")
+	$(".reputationStars").html(getGradeStarsImgs(airline.gradeValue))
 }
 
 function getGradeStarsImgs(gradeValue) {
