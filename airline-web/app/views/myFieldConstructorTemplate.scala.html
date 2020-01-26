@@ -1,0 +1,12 @@
+@(elements: helper.FieldElements)
+
+<div>
+    <dl class="@if(elements.hasErrors) {error}" id="email_field">
+<!--        <dt><label for="@elements.id">@elements.label</label></dt>-->
+        <dd>
+            @elements.input
+        </dd>
+        <dd class="error">@elements.errors.mkString(", ")</dd>
+        <dd class="info">@elements.infos.mkString(", ")</dd>
+    </dl>
+</div>
