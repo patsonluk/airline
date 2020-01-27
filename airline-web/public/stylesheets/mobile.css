@@ -59,7 +59,7 @@ and (max-device-width : 640px) {
     }
 
     .topBarItem, #patreonDiv {
-        margin: 2px;
+        margin: 0px 4px;
     }
 
     .extendedTopBarDetails {

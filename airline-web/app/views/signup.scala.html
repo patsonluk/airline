@@ -51,27 +51,27 @@
 					signupForm("username"),
 					Symbol("_help") -> "Please choose a valid username.",
 					Symbol("_error") -> signupForm.error("username"),
-					'placeholder -> "username"
+					Symbol("placeholder") -> "username"
 					)
 				</div>
 				<div style="padding: 10px;">
 					@inputText(
 					signupForm("email"),
-					'placeholder -> "email address",
+					Symbol("placeholder") -> "email address",
 					Symbol("_help") -> "Enter a valid email address."
 					)
 				</div>
 				<div style="padding: 10px;">
 					@inputPassword(
 					signupForm("password.main"),
-					'placeholder -> "password",
+					Symbol("placeholder") -> "password",
 					Symbol("_help") -> "A password must be at least 6 characters. "
 					)
 				</div>
 				<div style="padding: 10px;">
 					@inputPassword(
 					signupForm("password.confirm"),
-					'placeholder -> "repeat password",
+					Symbol("placeholder") -> "repeat password",
 					Symbol("_help") -> "Please repeat your password again.",
 					Symbol("_error") -> signupForm.error("password")
 					)
@@ -79,7 +79,7 @@
 				<div style="padding: 10px;">
 					@inputText(
 					signupForm("airlineName"),
-					'placeholder -> "airline name",
+					Symbol("placeholder") -> "airline name",
 					Symbol("_help") -> "Please enter your airline name.",
 					Symbol("_error") -> signupForm.error("airlineName")
 					)
