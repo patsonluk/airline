@@ -163,28 +163,28 @@
 			</div>
 			<div style="float: right" class="mobileOnly topBarItem">
 				<a href="https://airlineclub.createaforum.com/" target="_blank">
-					<img src='@routes.Assets.versioned("images/icons/users.png")' style="vertical-align: middle;" title="Forums">
+					<img src='@routes.Assets.versioned("images/icons/24px/forums.png")' style="vertical-align: middle;" title="Forums">
 				</a>
 			</div>
 
-			<div style="float: right; display: none;" id="loginDiv" class="topBarItem">
+			<div style="float: right; display: none; display: flex; align-items: center;" id="loginDiv" class="topBarItem">
 				<input type="text" id="loginUserName" placeholder="username" tabindex=1/>
-				<a href="/forgot-id"  target="_blank">
-					<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot User Name?">
+				<a href="/forgot-id"  target="_blank" style="margin-right: 4px">
+					<img src='@routes.Assets.versioned("images/icons/question-frame.png")' title="Forgot User Name?">
 				</a>
 				<input type="password" id="loginPassword" onkeydown="passwordLogin(event)" tabindex=2 placeholder="password"/>
-				<a href="/forgot-password"  target="_blank">
-					<img src='@routes.Assets.versioned("images/icons/12px/question.png")' title="Forgot Password?">
+				<a href="/forgot-password"  target="_blank" style="margin-right: 4px">
+					<img src='@routes.Assets.versioned("images/icons/question-frame.png")' title="Forgot Password?">
 				</a>
 				<div class="button desktopOnly" onclick="login()" tabindex=3>Login</div>
-				<div class="mobileOnly" onclick="login()"><img src='@routes.Assets.versioned("images/icons/door-open-in.png")' title="Login"></div>
+				<div class="mobileOnly" onclick="login()"><img src='@routes.Assets.versioned("images/icons/24px/login.png")' title="Login"></div>
 
 				<div class="button desktopOnly" onclick="" tabindex=4><a href="signup">Sign Up</a></div>
 			</div>
 			<div style="float: right; display: none;" id="logoutDiv" class="topBarItem">
 				<span id="currentUserName" class="label desktopOnly"></span>
 				<div class="button desktopOnly" onclick="logout()">Logout</div>
-				<div class="mobileOnly" onclick="logout()"><img src='@routes.Assets.versioned("images/icons/door-open-out.png")' title="Login"></div>
+				<div class="mobileOnly" onclick="logout()"><img src='@routes.Assets.versioned("images/icons/24px/logout.png")' title="Login"></div>
 			</div>
 			<div style="clear: both;"></div>
 		</div>
