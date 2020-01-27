@@ -1,11 +1,20 @@
 package com.patson.init
 
+import java.nio.file.Paths
+
+import akka.NotUsed
+
 import scala.concurrent.Future
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 import akka.actor.ActorSystem
-import akka.stream.FlowMaterializer
-import akka.stream.scaladsl.{Source, Sink}
-import akka.stream.scaladsl.Flow
+import akka.stream.IOResult
+
+import scala.collection.mutable.ListBuffer
+import scala.sys.process.ProcessImpl
+//import akka.stream.scaladsl.{FileIO, Flow, Framing, RunnableGraph, Sink, Source}
+import scala.io.Source
+import akka.util.ByteString
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 import com.patson.data.Constants._
@@ -17,6 +26,7 @@ import com.patson.Util
 import com.patson.model.Runway
 import com.patson.model.RunwayType
 import com.patson.model.Computation
+
 import scala.collection.mutable.ArrayBuffer
 import com.patson.model.Country
 import com.patson.data.CountrySource
@@ -27,14 +37,14 @@ object GeoDataGenerator extends App {
 
   //implicit val materializer = FlowMaterializer()
 
-  private val DEFAULT_UNKNOWN_INCOME = 1000
-  
   mainFlow
   
   def mainFlow() {
-    val getCityFuture = getCity(getIncomeInfo())
+    val incomeInfo = getIncomeInfo()
+    val getCityFuture = getCity(incomeInfo)
     
-    val cities = Await.result(getCityFuture, Duration.Inf)  
+    var cities = Await.result(getCityFuture, Duration.Inf)  
+    cities = cities ++ AdditionalLoader.loadAdditionalCities(incomeInfo)
         
     //make sure cities are saved first as we need the id for airport info
     try {
@@ -48,33 +58,26 @@ object GeoDataGenerator extends App {
     val airports = buildAirportData(getAirport(), getRunway(), cities)
     
     buildCountryData(airports)
-    
-    actorSystem.shutdown()
+
+    Await.result(actorSystem.terminate(), Duration.Inf)
   }
   
 
   def getCity(incomeInfo : Map[String, Int]): Future[List[City]] = {
-    val citySource = Source(scala.io.Source.fromFile("cities1000.txt").getLines())
-    val splitFlow: Flow[String, Array[String]] = Flow[String].map(_.split("\\t"))
-    val parseFlow: Flow[Array[String], City] = Flow[Array[String]].filter { infoArray =>
-      infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0  
-    }.map {
-      info =>
-        {  
-          if (incomeInfo.get(info(8)).isEmpty) {
-            println(info(8) + " has no income info")
+    //val citySource : Source[String, NotUsed] = Source(scala.io.Source.fromFile("cities1000.txt").getLines())
+    Future {
+      val result = ListBuffer[City]()
+      for (line: String <- Source.fromFile("cities1000.txt").getLines) {
+        val infoArray = line.split("\\t")
+        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
+          if (incomeInfo.get(infoArray(8)).isEmpty) {
+            println(infoArray(8) + " has no income info")
           }
-          new City(info(1), info(4).toDouble, info(5).toDouble, info(8), info(14).toInt, incomeInfo.get(info(8)).getOrElse(DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
+          result += new City(infoArray(1), infoArray(4).toDouble, infoArray(5).toDouble, infoArray(8), infoArray(14).toInt, incomeInfo.get(infoArray(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
         }
+      }
+      result.toList
     }
-    
-    
-
-    val resultSink = Sink.fold(List[City]())((cityList, City : City) => (City :: cityList))
-    
-    val completeFlow = citySource.via(splitFlow).via(parseFlow).to(resultSink)
-    val materializedFlow = completeFlow.run()
-    materializedFlow.get(resultSink)
   }
   
   def isCity(placeCode : String, countryCode : String) : Boolean = {
@@ -82,109 +85,79 @@ object GeoDataGenerator extends App {
   }
   
   def getRunway() : Future[Map[String, List[Runway]]] = {
-    val runwaySource = Source(scala.io.Source.fromFile("runways.csv").getLines())
-    val splitFlow: Flow[String, Array[String]] = Flow[String].map {
-      _.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).transform { 
-          token : String =>  
-            if (token.startsWith("\"") && token.endsWith("\"")) { 
-              token.substring(1, token.length() - 1) 
-            } else {
-              token
-            }
-      }.toArray
-    }
+    Future {
+      val result = scala.collection.mutable.HashMap[String, collection.mutable.ListBuffer[Runway]]()
+      val asphaltPattern = "(asp.*)".r
+      val concretePattern = "(con.*|pem.*)".r
+      val gravelPattern = "(gvl.*|.*gravel.*)".r
+      for (line: String <- Source.fromFile("runways.csv").getLines) {
+        val info = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map { token =>
+          if (token.startsWith("\"") && token.endsWith("\"")) {
+            token.substring(1, token.length() - 1)
+          } else {
+            token
+          }
+        }
 
-    var headerLine = true
-    
-    val asphaltPattern  = "(asp.*)".r
-    val concretePattern = "(con.*|pem.*)".r
-    val gravelPattern = "(gvl.*|.*gravel.*)".r
-    val constructRunwayFlow : Flow[Array[String], Option[(String, Runway)]] = Flow[Array[String]].map {
-      info => 
+
         val lighted = info(6) == "1"
         if (lighted) {
-          try{
+          try {
             val length = info(3).toInt
             val icao = info(2)
-            val runway =
-            info(5).toLowerCase() match { 
-              case asphaltPattern(_) =>
-                Some((icao, Runway(length, RunwayType.Asphalt))) 
-              case concretePattern(_) => Some((icao, Runway(length, RunwayType.Concrete)))
-              case gravelPattern(_) => Some((icao, Runway(length, RunwayType.Gravel)))
-              case unknown  =>
-                None
+            val runwayOption =
+              info(5).toLowerCase() match {
+                case asphaltPattern(_) =>
+                  Some(Runway(length, RunwayType.Asphalt))
+                case concretePattern(_) => Some(Runway(length, RunwayType.Concrete))
+                case gravelPattern(_) => Some(Runway(length, RunwayType.Gravel))
+                case _ => None
+              }
+            runwayOption.foreach {
+              case (runway) =>
+                val list = result.getOrElseUpdate(icao, ListBuffer[Runway]())
+                list += runway
             }
-            runway
           } catch {
-            case _ : NumberFormatException => None
+            case _: NumberFormatException => None
           }
-        } else {
-          None
         }
-    }
-
-    val resultSink = Sink.fold(Map[String, List[Runway]]()) { (foldMap, runwayEntry : Option[(String, Runway)]) =>
-      runwayEntry match {
-        case Some((icao, runway)) =>
-          val existingList = foldMap.getOrElse(icao, List[Runway]())
-          foldMap + Tuple2(icao, runway :: existingList)
-        case None =>
-          foldMap
+        //
+        //        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
+        //          if (incomeInfo.get(infoArray(8)).isEmpty) {
+        //            println(infoArray(8) + " has no income info")
+        //          }
+        //          result += new City(infoArray(1), infoArray(4).toDouble, infoArray(5).toDouble, infoArray(8), infoArray(14).toInt, incomeInfo.get(infoArray(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
+        //        }
       }
+      result.view.mapValues(_.toList).toMap
     }
-    
-    val completeFlow = runwaySource.via(splitFlow).via(constructRunwayFlow).to(resultSink)
-    val materializedFlow = completeFlow.run()
-    materializedFlow.get(resultSink)
-    
   }
-  
-  def getAirport() : Future[List[Airport]]= {
-    val airportSource = Source(scala.io.Source.fromFile("airports.csv").getLines())
-//    val airportSource = Source(scala.io.Source.fromFile("short-airports.csv").getLines())
-//    val pattern = Pattern.compile("(?:^|,)(?=[^\"]|(\")?)\"?((?(1)[^\"]*|[^,\"]*))\"?(?=,|$)");
-//    pattern.matcher("test1,\"test2\",\"test3,test4\"").find
-//    val splitFlow: Flow[String, Array[String]] = Flow[String].map {
-//       inputLine =>   
-//         val tokens = Nil
-//         val matcher = pattern.matcher(inputLine)
-//         while (matcher.find()) {
-//           matcher.group(3) :: tokens 
-//         }
-//         tokens.toArray[String]        
-//    }
-    
-    val splitFlow: Flow[String, Array[String]] = Flow[String].map {
-      _.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).transform { 
-          token : String =>  
-            if (token.startsWith("\"") && token.endsWith("\"")) { 
-              token.substring(1, token.length() - 1) 
-            } else {
-              token
-            }
-      }.toArray
-    }
 
-    var headerLine = true
-    
-    val constructAirportFlow : Flow[Array[String], Airport] = Flow[Array[String]].map {
-      info => 
-        val airportSize = 
+  def getAirport() : Future[List[Airport]]= {
+    Future {
+      val result = ListBuffer[Airport]()
+      for (line: String <- Source.fromFile("airports.csv").getLines) {
+        val info = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map { token =>
+          if (token.startsWith("\"") && token.endsWith("\"")) {
+            token.substring(1, token.length() - 1)
+          } else {
+            token
+          }
+        }
+
+        val airportSize =
           info(2) match {
             case "small_airport" => 1
             case "medium_airport" => 2
             case "large_airport" => 3
             case _ => 0
           }
-        new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), zone = info(7), airportSize, 0, 0, 0) //2 - size, 3 - name, 4 - lat, 5 - long, 7 - zone, 8 - country, 10 - city, 12 - code1, 13- code2
-    }
+        result += new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), zone = info(7), airportSize, 0, 0, 0) //2 - size, 3 - name, 4 - lat, 5 - long, 7 - zone, 8 - country, 10 - city, 12 - code1, 13- code2
 
-    val resultSink = Sink.fold(List[Airport]())((airportList, Airport : Airport) => (Airport :: airportList))
-    
-    val completeFlow = airportSource.via(splitFlow).via(constructAirportFlow).to(resultSink)
-    val materializedFlow = completeFlow.run()
-    materializedFlow.get(resultSink)
+      }
+      result.toList
+    }
   }
   
   def getIncomeInfo() = {
@@ -208,7 +181,7 @@ object GeoDataGenerator extends App {
           index -= 1
         }
         if (income == 0) {
-          income = DEFAULT_UNKNOWN_INCOME
+          income = Country.DEFAULT_UNKNOWN_INCOME
 //          println("unknown: " + tokens(0))
         }
         (countryCode, income)
@@ -237,7 +210,11 @@ object GeoDataGenerator extends App {
          airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
       }, runwayResult)
       
-    airportResult = adjustAirportSize(airportResult)  
+    airportResult = adjustAirportSize(airportResult)
+    
+    val additionalAirports : List[Airport] = AdditionalLoader.loadAdditionalAirports()
+    
+    airportResult = airportResult ++ additionalAirports
     
     val airportsSortedByLongitude = airportResult.sortBy(_.longitude)
     val citiesSortedByLongitude = citites.sortBy(_.longitude)
@@ -250,7 +227,7 @@ object GeoDataGenerator extends App {
     for (city <- citiesSortedByLongitude) {
       //calculate max and min longitude that we should kick off the calculation
       val boundaryLongitude = calculateLongitudeBoundary(city.latitude, city.longitude, 300)
-      val potentialAirports = scala.collection.mutable.MutableList[(Airport, Double)]()
+      val potentialAirports = scala.collection.mutable.ListBuffer[(Airport, Double)]()
       for (airport <- airportsSortedByLongitude) {
         if (airport.size > 0 &&
             airport.countryCode == city.countryCode &&
@@ -334,6 +311,7 @@ object GeoDataGenerator extends App {
 
     //patch features
     AirportFeaturePatcher.patchFeatures()
+    IsolatedAirportPatcher.patchIsolatedAirports()
     
     airports
   }

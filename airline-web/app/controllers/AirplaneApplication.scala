@@ -1,37 +1,45 @@
 package controllers
 
 import scala.math.BigDecimal.int2bigDecimal
-import com.patson.data.AirlineSource
-import com.patson.data.AirplaneSource
+import com.patson.data.{AirlineSource, AirplaneSource, CashFlowSource, CountrySource, CycleSource, LinkSource}
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane._
 import com.patson.model._
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsObject
-import play.api.libs.json.JsString
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
-import play.api.libs.json.Writes
+import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, JsValue, Json, Writes}
 import play.api.mvc._
+
 import scala.collection.mutable.ListBuffer
-import com.patson.data.CycleSource
 import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.model.AirlineTransaction
-import com.patson.data.CountrySource
+import com.patson.model.AirlineCashFlow
+import com.patson.model.CashFlowType
+import com.patson.model.CashFlowType
+import com.patson.model.AirlineCashFlowItem
+import javax.inject.Inject
 
 
-class AirplaneApplication extends Controller {
+class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   val BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD = 0
-  
-  implicit object AirplaneWithAssignedLinkWrites extends Writes[(Airplane, Option[Link])] {
-    def writes(airplaneWithAssignedLink : (Airplane, Option[Link])): JsValue = {
-      val airplane = airplaneWithAssignedLink._1
-      val jsObject = Json.toJson(airplane).asInstanceOf[JsObject]
-      airplaneWithAssignedLink._2.fold( jsObject ) { link =>
-        jsObject + ("link", Json.toJson(link))
+  implicit object LinkAssignmentWrites extends Writes[LinkAssignments] {
+    def writes(linkAssignments: LinkAssignments) : JsValue = {
+      var result = Json.arr()
+      linkAssignments.assignments.foreach {
+        case(linkId, assignment) =>
+          val link = LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD).getOrElse(Link.fromId(linkId))
+          result = result.append(Json.obj("link" -> Json.toJson(link), "frequency" -> assignment.frequency))
       }
+      result
     }
   }
+  
+  implicit object AirplaneWithAssignedLinkWrites extends Writes[(Airplane, LinkAssignments)] {
+    def writes(airplaneWithAssignedLink : (Airplane, LinkAssignments)): JsValue = {
+      val airplane = airplaneWithAssignedLink._1
+      val jsObject = Json.toJson(airplane).asInstanceOf[JsObject]
+      jsObject + ("links" -> Json.toJson(airplaneWithAssignedLink._2))
+    }
+  }
+
   
   implicit object AirplanesByModelWrites extends Writes[AirplanesByModel] {
     def writes(airplanesByModel: AirplanesByModel): JsValue = {
@@ -67,8 +75,8 @@ class AirplaneApplication extends Controller {
   def getRejections(models : List[Model], airline : Airline) : Map[Model, Option[String]] = {
      
     val countryRelations : Map[String, Int] = airline.getCountryCode() match {
-      case Some(homeCountry) => CountrySource.getCountryMutualRelationShips(homeCountry).map {
-        case ((homeCountry, otherCountry), relationship) => (otherCountry, relationship)
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationShips(homeCountry).toList.map {
+        case ((_, otherCountry), relationship) => (otherCountry, relationship)
       }.toMap
       case None => Map.empty
     }    
@@ -91,6 +99,9 @@ class AirplaneApplication extends Controller {
   }
   
   def getRejection(model: Model, countryRelationship : Int, ownedModels : Set[Model], airline : Airline) : Option[String]= {
+    if (airline.getHeadQuarter().isEmpty) { //no HQ
+      return Some("Must build HQs before purchasing any airplanes")
+    }
     if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
       return Some("The company refuses to sell " + model.name + " to your airline due to bad country relationship")
     }
@@ -106,38 +117,154 @@ class AirplaneApplication extends Controller {
     return None
   }
   
-  
-  
-  def getAirplanes(airlineId : Int, simpleResult : Boolean) = AuthenticatedAirline(airlineId) {
-    if (simpleResult) {
-      val airplanesWithLink : List[(Airplane, Option[Link])]= AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
-      
-      val airplanesByModel: Map[Model, (List[Airplane], List[Airplane])] = airplanesWithLink.groupBy( _._1.model ).mapValues { airplanesWithLink : List[(Airplane, Option[Link])] =>
-        airplanesWithLink.partition {
-          case (_, linkOption) => linkOption.isDefined
-        }
-      }.mapValues {
-        case (assignedAirplanes, freeAirplanes) =>
-          (assignedAirplanes.map(_._1), freeAirplanes.map(_._1)) //get rid of the Option[Link] now as we have 2 lists already
+  def getUsedRejections(usedAirplanes : List[Airplane], model : Model, airline : Airline) : Map[Airplane, String] = {
+    if (airline.getHeadQuarter().isEmpty) { //no HQ
+      return usedAirplanes.map((_, "Must build HQs before purchasing any airplanes")).toMap
+    }
+
+    val countryRelationship = airline.getCountryCode() match {
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationship(homeCountry, model.countryCode)
+      case None => 0
+    }
+    
+    if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
+      val rejection = "Cannot buy used airplane of " + model.name + " as your home country has bad relationship with manufacturer's country"
+      return usedAirplanes.map((_, rejection)).toMap
+    }
+    
+    val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
+    if (!ownedModels.contains(model) && ownedModels.size >= airline.airlineGrade.getModelsLimit) {
+      val rejection = "Can only own up to " + airline.airlineGrade.getModelsLimit + " different airplane model(s) at current airline grade"
+      return usedAirplanes.map((_, rejection)).toMap
+    }
+    
+    val rejections = scala.collection.mutable.Map[Airplane, String]()
+    usedAirplanes.foreach { airplane =>
+      if (airplane.dealerValue > airline.getBalance()) {
+         rejections.put(airplane, "Not enough cash to purchase this airplane")  
       }
-      
-      val currentCycle = CycleSource.loadCycle()
-      
-      val airplanesByModelList = airplanesByModel.map {
-        case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, availableAirplanes = freeAirplanes.filter(_.isReady(currentCycle)), constructingAirplanes=freeAirplanes.filter(!_.isReady(currentCycle)))
+    }
+    return rejections.toMap
+  }
+
+  def getOwnedAirplanes(airlineId : Int, simpleResult : Boolean) = {
+    getAirplanes(airlineId, None, simpleResult)
+  }
+
+  def getOwnedAirplanesWithModelId(airlineId : Int, modelId : Int, simpleResult : Boolean) = {
+    getAirplanes(airlineId, Some(modelId), simpleResult)
+  }
+
+
+  private def getAirplanes(airlineId : Int, modelIdOption : Option[Int], simpleResult : Boolean) = AuthenticatedAirline(airlineId) {
+    val queryCriteria = ListBuffer(("owner", airlineId), ("is_sold", false))
+    modelIdOption.foreach { modelId =>
+      queryCriteria.append(("a.model", modelId))
+    }
+
+    val ownedAirplanes: List[Airplane] = AirplaneSource.loadAirplanesCriteria(queryCriteria.toList)
+    val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByOwner(airlineId)
+    if (simpleResult) {
+      //now split the list of airplanes by with and w/o assignedLinks
+      val airplanesByModel: Map[Model, (List[Airplane], List[Airplane])] = ownedAirplanes.groupBy(_.model).view.mapValues {
+        airplanes => airplanes.partition(airplane => linkAssignments.isDefinedAt(airplane.id) && airplane.isReady) //for this list do NOT include assigned airplanes that are still under construction, as it's already under the construction list
+          //TODO the front end should do the splitting...
+      }.toMap
+
+      val airplanesByModelList = airplanesByModel.toList.map {
+        case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, availableAirplanes = freeAirplanes.filter(_.isReady), constructingAirplanes=freeAirplanes.filter(!_.isReady))
       }
       Ok(Json.toJson(airplanesByModelList))
     } else {
-      val airplanesWithLink : List[(Airplane, Option[Link])]= AirplaneSource.loadAirplanesWithAssignedLinkByOwner(airlineId)
+      val airplanesWithLink : List[(Airplane, LinkAssignments)]= ownedAirplanes.map { airplane =>
+        (airplane, linkAssignments.getOrElse(airplane.id, LinkAssignments.empty))
+      }
       Ok(Json.toJson(airplanesWithLink))
     }
   }
+
+  
+  def getUsedAirplanes(airlineId : Int, modelId : Int) = AuthenticatedAirline(airlineId) { request =>
+      ModelSource.loadModelById(modelId) match {
+        case Some(model) => 
+          val usedAirplanes = AirplaneSource.loadAirplanesCriteria(List(("a.model", modelId), ("is_sold", true)))
+          
+          val rejections = getUsedRejections(usedAirplanes, model, request.user)
+          var result = Json.arr()
+          usedAirplanes.foreach { airplane =>
+            var airplaneJson = Json.toJson(airplane).asInstanceOf[JsObject]
+            if (rejections.contains(airplane)) {
+              airplaneJson = airplaneJson + ("rejection" -> JsString(rejections(airplane)))
+            }
+            result = result :+ airplaneJson
+          }
+          Ok(result)
+        case None => BadRequest("model not found")
+      }
+  }
+  
+  def buyUsedAirplane(airlineId : Int, airplaneId : Int, homeAirportId : Int, configurationId : Int) = AuthenticatedAirline(airlineId) { request =>
+      this.synchronized {
+        AirplaneSource.loadAirplaneById(airplaneId) match {
+          case Some(airplane) =>
+            val airline = request.user
+            getUsedRejections(List(airplane), airplane.model, airline).get(airplane) match {
+              case Some(rejection) => BadRequest(rejection)
+              case None =>
+                if (!airplane.isSold) {
+                  BadRequest("Airplane is no longer for sale " + airlineId)
+                } else {
+                  val homeBase = request.user.getBases().find(_.airport.id == homeAirportId)
+                  homeBase match {
+                    case None =>
+                      BadRequest(s"Home airport ID $homeAirportId is not valid")
+                    case Some(homeBase) =>
+                      val configuration: Option[AirplaneConfiguration] =
+                        if (configurationId == -1) {
+                          None
+                        } else {
+                          AirplaneSource.loadAirplaneConfigurationById(configurationId)
+                        }
+
+                      if (configuration.isDefined && (configuration.get.airline.id != airlineId || configuration.get.model.id != airplane.model.id)) {
+                        BadRequest("Configuration is not owned by this airline/model")
+                      } else {
+                        val dealerValue = airplane.dealerValue
+                        val actualValue = airplane.value
+                        airplane.buyFromDealer(airline, CycleSource.loadCycle())
+                        airplane.home = homeBase.airport
+                        configuration.foreach { configuration =>
+                          airplane.configuration = configuration
+                        }
+
+                        if (AirplaneSource.updateAirplanes(List(airplane)) == 1) {
+                          val capitalGain = actualValue - dealerValue
+                          AirlineSource.adjustAirlineBalance(airline.id, dealerValue * -1)
+                          AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = capitalGain))
+                          AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, dealerValue * -1))
+                          Ok(Json.obj())
+                        } else {
+                          BadRequest("Failed to buy used airplane " + airlineId)
+                        }
+                      }
+                  }
+                }
+            }
+
+          case None => BadRequest("airplane not found")
+        }
+      }
+  }
+  
+  
   
   def getAirplane(airlineId : Int, airplaneId : Int) =  AuthenticatedAirline(airlineId) {
-    AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId, AirplaneSource.LINK_FULL_LOAD) match {
-      case Some(airplaneWithLink) =>
-        if (airplaneWithLink._1.owner.id == airlineId) {
-          Ok(Json.toJson(airplaneWithLink))     
+    AirplaneSource.loadAirplaneById(airplaneId) match {
+      case Some(airplane) =>
+        if (airplane.owner.id == airlineId) {
+          //load link assignments
+          val airplaneWithLinkAssignments : (Airplane, LinkAssignments) = (airplane, AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplane.id))
+          Ok(Json.toJson(airplaneWithLinkAssignments))
         } else {
           Forbidden
         }
@@ -147,27 +274,39 @@ class AirplaneApplication extends Controller {
   }
   
   def sellAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) {
-    AirplaneSource.loadAirplanesWithAssignedLinkByAirplaneId(airplaneId) match {
-      case Some((airplane, Some(link))) => //still assigned to some link, do not allow selling
-        BadRequest("airplane still assigned to link " + link)
-      case Some((airplane, None)) =>
-        if (airplane.owner.id == airlineId) {
-          if (!airplane.isReady(CycleSource.loadCycle)) {
-            BadRequest("airplane is not yet constructed")
+    AirplaneSource.loadAirplaneById(airplaneId) match {
+      case Some(airplane) =>
+        if (airplane.owner.id != airlineId || airplane.isSold) {
+          Forbidden
+        } else if (!airplane.isReady) {
+          BadRequest("airplane is not yet constructed or is sold")
+        } else {
+          val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplaneId)
+          if (!linkAssignments.isEmpty) { //still assigned to some link, do not allow selling
+            BadRequest("airplane " + airplane + " still assigned to link " + linkAssignments)
           } else {
             val sellValue = Computation.calculateAirplaneSellValue(airplane)
-            if (AirplaneSource.deleteAirplane(airplaneId) == 1) {
+
+            val updateCount =
+              if (airplane.condition >= Airplane.BAD_CONDITION) { //then put in 2nd handmarket
+                airplane.sellToDealer()
+                AirplaneSource.updateAirplanes(List(airplane.copy()))
+              } else {
+                AirplaneSource.deleteAirplane(airplaneId)
+              }
+
+            if (updateCount == 1) {
               AirlineSource.adjustAirlineBalance(airlineId, sellValue)
-              
+
               AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
-              
+              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellValue))
+
+
               Ok(Json.toJson(airplane))
             } else {
               NotFound
             }
           }
-        } else {
-          Forbidden
         }
       case None =>
         BadRequest("airplane not found")
@@ -176,22 +315,32 @@ class AirplaneApplication extends Controller {
   
   def replaceAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirplaneSource.loadAirplaneById(airplaneId) match {
-      case Some(airplane) => 
+      case Some(airplane) =>
         if (airplane.owner.id == airlineId) {
-          if (!airplane.isReady(CycleSource.loadCycle)) {
+          val currentCycle = CycleSource.loadCycle
+          if (!airplane.isReady) {
             BadRequest("airplane is not yet constructed")
+          } else if (airplane.purchasedCycle > (currentCycle - airplane.model.constructionTime)) {
+            BadRequest("airplane is not yet ready to be replaced")
           } else {
             val sellValue = Computation.calculateAirplaneSellValue(airplane)
             val replaceCost = airplane.model.price - sellValue
             if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
-              BadRequest("Not enough money")   
+              BadRequest("Not enough money")
             } else {
-              val replacingAirplane = airplane.copy(constructedCycle = CycleSource.loadCycle(), condition = Airplane.MAX_CONDITION, value = airplane.model.price)
-              
+//               if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
+//                  AirplaneSource.saveAirplanes(List(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0)))
+//               }
+
+              val replacingAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+
               AirplaneSource.updateAirplanes(List(replacingAirplane)) //TODO MAKE SURE SYNCHONRIZE WITH AIRPLANE UPDATE SIMULATION
               AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
               AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellValue - airplane.value))
-                
+
+              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellValue))
+              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, airplane.model.price * -1))
+
               Ok(Json.toJson(airplane))
             }
           }
@@ -203,7 +352,7 @@ class AirplaneApplication extends Controller {
     }
   }
   
-  def addAirplane(airlineId : Int, model : Int, quantity : Int) = AuthenticatedAirline(airlineId) { request =>
+  def addAirplane(airlineId : Int, model : Int, quantity : Int, homeAirportId : Int, configurationId : Int) = AuthenticatedAirline(airlineId) { request =>
     val modelGet = ModelSource.loadModelById(model)
     if (modelGet.isEmpty) {
       BadRequest("unknown model or airline")
@@ -211,31 +360,79 @@ class AirplaneApplication extends Controller {
       val airline = request.user
       val currentCycle = CycleSource.loadCycle()
       val constructedCycle = currentCycle + modelGet.get.constructionTime
-      
-      val airplane = Airplane(modelGet.get, airline, constructedCycle = constructedCycle , Airplane.MAX_CONDITION, depreciationRate = 0, value = modelGet.get.price)
-      
-      val rejectionOption = getRejection(modelGet.get, airline)
-      if (rejectionOption.isDefined) {
-        BadRequest(rejectionOption.get)   
-      } else {
-        
-        val amount = -1 * airplane.model.price * quantity
-        AirlineSource.adjustAirlineBalance(airlineId, amount)
-        
-        val airplanes = ListBuffer[Airplane]()
-        for (i <- 0 until quantity) {
-          airplanes.append(airplane.copy())
-        }
-        
-        val updateCount = AirplaneSource.saveAirplanes(airplanes.toList)
-        if (updateCount > 0) {
-            Accepted(Json.obj("updateCount" -> updateCount))
-        } else {
-            UnprocessableEntity("Cannot save airplane")
-        }
+
+      val homeBase = request.user.getBases().find(_.airport.id == homeAirportId)
+
+
+      homeBase match {
+        case None =>
+          BadRequest(s"Home airport ID $homeAirportId is not valid")
+        case Some(homeBase) =>
+          val airplane = Airplane(modelGet.get, airline, constructedCycle = constructedCycle , purchasedCycle = constructedCycle, Airplane.MAX_CONDITION, depreciationRate = 0, value = modelGet.get.price, home = homeBase.airport)
+
+          val rejectionOption = getRejection(modelGet.get, airline)
+          if (rejectionOption.isDefined) {
+            BadRequest(rejectionOption.get)
+          } else {
+            val airplanes = ListBuffer[Airplane]()
+            for (i <- 0 until quantity) {
+              airplanes.append(airplane.copy())
+            }
+
+            val configuration : Option[AirplaneConfiguration] =
+              if (configurationId == -1) {
+                None
+              } else {
+                AirplaneSource.loadAirplaneConfigurationById(configurationId)
+              }
+
+            if (configuration.isDefined && (configuration.get.airline.id != airlineId || configuration.get.model.id != model)) {
+              BadRequest("Configuration is not owned by this airline/model")
+            } else {
+              airplanes.foreach { airplane =>
+                configuration match {
+                  case None => airplane.assignDefaultConfiguration()
+                  case Some(configuration) => airplane.configuration = configuration
+                }
+              }
+              val updateCount = AirplaneSource.saveAirplanes(airplanes.toList)
+              if (updateCount > 0) {
+                val amount = -1 * airplane.model.price * updateCount
+                AirlineSource.adjustAirlineBalance(airlineId, amount)
+                AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, amount))
+                Accepted(Json.obj("updateCount" -> updateCount))
+              } else {
+                UnprocessableEntity("Cannot save airplane")
+              }
+            }
+          }
       }
+
     }
   }
 
-  sealed case class AirplanesByModel(model : Model, assignedAirplanes : List[Airplane], availableAirplanes : List[Airplane], constructingAirplanes: List[Airplane]) 
+  sealed case class AirplanesByModel(model : Model, assignedAirplanes : List[Airplane], availableAirplanes : List[Airplane], constructingAirplanes: List[Airplane])
+
+  def updateAirplaneHome(airlineId : Int, airplaneId : Int, airportId: Int) = AuthenticatedAirline(airlineId) { request =>
+    AirplaneSource.loadAirplaneById(airplaneId) match {
+      case Some(airplane) =>
+        if (airplane.owner.id != airlineId) {
+          BadRequest(s"Cannot update Home on airplane $airplane as it is not owned by ${request.user.name}")
+        } else {
+          if (!AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplane.id).isEmpty) {
+            BadRequest(s"Cannot update Home on airplane $airplane as it has assigned links")
+          } else {
+            request.user.getBases().find(_.airport.id == airportId) match {
+              case Some(base) =>
+                airplane.home = base.airport
+                AirplaneSource.updateAirplanesDetails(List(airplane))
+                Ok(Json.toJson(airplane))
+              case None =>
+                BadRequest(s"Cannot update Home on airplane $airplaneId as base $airportId is not found")
+            }
+          }
+        }
+      case None => BadRequest(s"Cannot update Configuration on airplane $airplaneId as it is not found")
+    }
+  }
 }

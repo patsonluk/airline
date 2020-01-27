@@ -2,19 +2,29 @@ package com.patson
 
 import com.patson.model._
 import com.patson.data._
+
 import scala.collection.mutable._
+import scala.collection.immutable
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import com.patson.model.airplane.Airplane
+import com.patson.model.airplane.{Airplane, LinkAssignments}
+
 import scala.util.Random
+import com.patson.model.oil.OilPrice
 
 object LinkSimulation {
-  private val FUEL_UNIT_COST = 0.08//for now...
+
+
+  private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
   private val CREW_UNIT_COST = 12 //for now...
   
   private[this] val VIP_COUNT = 5
   
-  def linkSimulation(cycle: Int, links : List[Link]) : List[LinkConsumptionDetails] = {
+  def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
+    println("Loading all links")
+    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
+    println("Finished loading all links")
+
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
     val demand = DemandGenerator.computeDemand()
     println("DONE with demand total demand: " + demand.foldLeft(0) {
@@ -25,6 +35,7 @@ object LinkSimulation {
     simulateLinkError(links)
     
     val consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int] = PassengerSimulation.passengerConsume(demand, links)
+    
     //generate statistic 
     println("Generating stats")
     val linkStatistics = generateLinkStatistics(consumptionResult, cycle)
@@ -54,15 +65,39 @@ object LinkSimulation {
 //    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
     
     println("Calculating profits by links")
-    val linkConsumptionDetails = links.foldRight(List[LinkConsumptionDetails]()) {
-      (link, foldList) =>
-        computeLinkConsumptionDetail(link, cycle) :: foldList
+    val linkConsumptionDetails = ListBuffer[LinkConsumptionDetails]()
+    val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
+    val allAirplaneAssignments: immutable.Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
+    links.foreach { link =>
+      val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle, allAirplaneAssignments)
+      linkConsumptionDetails += linkResult
+      loungeConsumptionDetails ++= loungeResult
     }
-    
+
+    purgeAlerts()
+    checkLoadFactor(links, cycle)
+
     LinkSource.deleteLinkConsumptionsByCycle(30)
-    LinkSource.saveLinkConsumptions(linkConsumptionDetails)
+    LinkSource.saveLinkConsumptions(linkConsumptionDetails.toList)
     
-    linkConsumptionDetails
+    println("Calculating Lounge usage")
+    //condense the lounge result
+    val loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails] = loungeConsumptionDetails.groupBy(_.lounge).map{ 
+      case (lounge, consumptionsForThisLounge) => 
+        var totalSelfVisitors = 0
+        var totalAllianceVistors = 0
+        consumptionsForThisLounge.foreach {
+          case LoungeConsumptionDetails(_, selfVisitors, allianceVisitors, _) =>  
+            totalSelfVisitors += selfVisitors
+            totalAllianceVistors += allianceVisitors
+        }
+        (lounge, LoungeConsumptionDetails(lounge, totalSelfVisitors, totalAllianceVistors, cycle))
+    }.toMap
+    
+    LoungeHistorySource.updateConsumptions(loungeResult.map(_._2).toList)
+    
+    
+    (linkConsumptionDetails.toList, loungeResult) 
   }
   
   val minorDelayNormalThreshold = 0.4  // so it's around 24% at 40% condition (multiplier at 0.6) to run into minor delay OR worse
@@ -79,10 +114,11 @@ object LinkSimulation {
     links.foreach {
       link => {
         var i = 0
+        val assignedInServiceAirplanes = link.getAssignedAirplanes().filter(_._1.isReady)
         for ( i <- 0 until link.frequency) {
-          var airplaneCount = link.getAssignedAirplanes().length
+          var airplaneCount : Int = assignedInServiceAirplanes.size
           if (airplaneCount > 0) {
-            val airplane = link.getAssignedAirplanes()(i % airplaneCount)           //round robin
+            val airplane = assignedInServiceAirplanes.toList.map(_._1)(i % airplaneCount)           //round robin
             val errorValue = Random.nextDouble()
             val conditionMultipler = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
             var minorDelayThreshold : Double = 0
@@ -121,8 +157,22 @@ object LinkSimulation {
       }
     }
   }
-  
+
+  /**
+    * Only called by test cases
+    * @param link
+    * @param cycle
+    * @return
+    */
   def computeLinkConsumptionDetail(link : Link, cycle : Int) : LinkConsumptionDetails = {
+    //for testing, assuming all airplanes are only assigned to this link
+    val assignmentsToThis = link.getAssignedAirplanes().filter(_._1.isReady).toList.map {
+      case(airplane, assignment) => (airplane.id, LinkAssignments(immutable.Map(link.id -> assignment)))
+    }.toMap
+    computeLinkAndLoungeConsumptionDetail(link, cycle, assignmentsToThis)._1
+  }
+  
+  def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int, allAirplaneAssignments : immutable.Map[Int, LinkAssignments]) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
     
     val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
     
@@ -138,7 +188,29 @@ object LinkSimulation {
       case None => 0
     }
 
-    val maintenanceCost = (link.getAssignedAirplanes.foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
+
+    val inServiceAssignedAirplanes = link.getAssignedAirplanes().filter(_._1.isReady)
+    //the % of time spent on this link for each airplane
+    val assignmentWeights : immutable.Map[Airplane, Double] = { //0 to 1
+      inServiceAssignedAirplanes.view.map {
+        case(airplane, assignment) =>
+          allAirplaneAssignments.get(airplane.id) match {
+            case Some(linkAssignmentsToThisAirplane) =>
+              val weight : Double = assignment.flightMinutes.toDouble / linkAssignmentsToThisAirplane.assignments.values.map(_.flightMinutes).sum
+              (airplane, weight)
+            case None => (airplane, 1.0) //100%
+          } //it shouldn't be else...but just to play safe, if it's not found in "all" table, assume this is the only link assigned
+      }.toMap
+    }
+    var maintenanceCost = 0
+    inServiceAssignedAirplanes.foreach {
+      case(airplane, _) =>
+      //val maintenanceCost = (link.getAssignedAirplanes.toList.map(_._1).foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
+        maintenanceCost += (airplane.model.maintenanceCost * assignmentWeights(airplane) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
+    }
+
+
+
     val airportFees = link.getAssignedModel() match {
       case Some(model) =>
         val airline = link.airline
@@ -146,14 +218,19 @@ object LinkSimulation {
       case None => 0 
     }
     
-    val depreciation = link.getAssignedAirplanes().foldLeft(0)(_ + _.depreciationRate)
-    
+    var depreciation = 0
+    inServiceAssignedAirplanes.foreach {
+      case(airplane, _) =>
+        //link.getAssignedAirplanes().toList.map(_._1).foldLeft(0)(_ + _.depreciationRate)
+        depreciation += (airplane.depreciationRate * assignmentWeights(airplane)).toInt
+    }
+
     var inflightCost, crewCost, revenue = 0 
-    link.capacity.map.keys.foreach { linkClass =>
+    LinkClass.values.foreach { linkClass =>
       val capacity = link.capacity(linkClass)
       val soldSeats = link.soldSeats(linkClass)
       
-      inflightCost += (linkClass.resourceMultiplier * (10 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2).toInt //10 hours, on top quality flight, cost is 100 per passenger + $10 basic cost . Roundtrip X 2
+      inflightCost += (linkClass.resourceMultiplier * (20 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2).toInt //10 hours, on top quality flight, cost is 100 per passenger + $30 basic cost . Roundtrip X 2
       crewCost += (linkClass.resourceMultiplier * capacity * link.duration / 60 * CREW_UNIT_COST).toInt 
       revenue += soldSeats * link.price(linkClass)
     }
@@ -161,12 +238,126 @@ object LinkSimulation {
     // delays incur extra cost
     var delayCompensation = Computation.computeCompensation(link)
     
-    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - delayCompensation - depreciation
+    // lounge cost
+    val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId(), activeOnly = true)
+    val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId(), activeOnly = true)
+    var loungeCost = 0
+    val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]() 
+    if (fromLounge.isDefined || toLounge.isDefined) {
+      val visitorCount = link.soldSeats(BUSINESS) + link.soldSeats(FIRST)
+      if (fromLounge.isDefined) {
+        loungeCost += visitorCount * Lounge.PER_VISITOR_CHARGE
+        loungeConsumptionDetails += (
+          if (fromLounge.get.airline.id == link.airline.id) { 
+            LoungeConsumptionDetails(fromLounge.get, selfVisitors = visitorCount, allianceVisitors = 0, cycle) 
+          } else {
+            LoungeConsumptionDetails(fromLounge.get, selfVisitors = 0, allianceVisitors = visitorCount, cycle)
+          })
+      }
+      if (toLounge.isDefined) {
+        loungeCost += visitorCount * Lounge.PER_VISITOR_CHARGE
+        loungeConsumptionDetails += (
+          if (toLounge.get.airline.id == link.airline.id) { 
+            LoungeConsumptionDetails(toLounge.get, selfVisitors = visitorCount, allianceVisitors = 0, cycle) 
+          } else {
+            LoungeConsumptionDetails(toLounge.get, selfVisitors = 0, allianceVisitors = visitorCount, cycle)
+          })
+      }
+       
+    }
+      
+    val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - delayCompensation - depreciation - loungeCost
 
     //val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, link.cancellationCount, linklink.from.id, link.to.id, link.airline.id, link.distance, cycle)
-    val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, cycle)
+    val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, loungeCost = loungeCost, revenue, profit, cycle)
     //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
-    result
+    (result, loungeConsumptionDetails.toList)
+  }
+  
+  val LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD = 3 //how many airlines before load factor is checked
+  val LOAD_FACTOR_ALERT_THRESHOLD = 0.5 //LF threshold
+  val LOAD_FACTOR_ALERT_DURAION = 52
+
+  /**
+    * Purge alerts that are no longer valid
+    */
+  def purgeAlerts() = {
+    //only purge link cancellation alerts for now
+    val existingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION)
+
+    //try to purge the alerts, as some alerts might get inserted while the link is deleted during the simulation time
+    val liveLinkIds : List[Int] = LinkSource.loadAllLinks(LinkSource.ID_LOAD).map(_.id)
+    val deadAlerts = existingAlerts.filter(alert => alert.targetId.isDefined && !liveLinkIds.contains(alert.targetId.get))
+    AlertSource.deleteAlerts(deadAlerts)
+    println("Purged alerts with no corresponding links... " + deadAlerts.size)
+  }
+
+  def checkLoadFactor(links : List[Link], cycle : Int) = {
+    val existingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION)
+
+    //group links by from and to airport ID Tuple(id1, id2), smaller ID goes first in the tuple
+    val linksByAirportIds = links.filter(_.capacity.total > 0).groupBy( link =>
+      if (link.from.id < link.to.id) (link.from.id, link.to.id) else (link.to.id, link.from.id)
+    )
+
+    val existingAlertsByLinkId : scala.collection.immutable.Map[Int, Alert] = existingAlerts.map(alert => (alert.targetId.get, alert)).toMap
+    
+    val updatingAlerts = ListBuffer[Alert]()
+    val newAlerts = ListBuffer[Alert]()
+    val deletingAlerts = ListBuffer[Alert]()
+    val deletingLinks = ListBuffer[Link]()
+    val newLogs = ListBuffer[Log]()
+    
+    linksByAirportIds.foreach {
+      case((airportId1, airportId2), links) =>
+        if (links.size >= LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD) {
+          links.foreach { link =>
+            val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
+            if (loadFactor < LOAD_FACTOR_ALERT_THRESHOLD) {
+              existingAlertsByLinkId.get(link.id) match {
+                case Some(existingAlert) => //continue to have problem
+                  if (existingAlert.duration <= 1) { //kaboom! deleting
+                    deletingAlerts.append(existingAlert)
+                    deletingLinks.append(link)
+                    val message = "Airport authorities have revoked license of " + link.airline.name + " to operate route between " +  link.from.displayText + " and " + link.to.displayText + " due to prolonged low load factor"
+                    newLogs += Log(airline = link.airline, message = message, category = LogCategory.LINK, severity = LogSeverity.WARN, cycle = cycle)
+                    //notify competitors too with lower severity
+                    links.filter(_.id != link.id).foreach { competitorLink =>
+                      newLogs += Log(airline = competitorLink.airline, message = message, category = LogCategory.LINK, severity = LogSeverity.INFO, cycle = cycle)
+                    }
+                  } else { //clock is ticking!
+                     updatingAlerts.append(existingAlert.copy(duration = existingAlert.duration -1))
+                  }
+                case None => //new warning
+                  val message = "Airport authorities have issued warning to " + link.airline.name + " on low load factor of route between " +  link.from.displayText + " and " + link.to.displayText + ". If the load factor remains lower than " + LOAD_FACTOR_ALERT_THRESHOLD * 100 + "% for the remaining duration, the license to operate this route will be revoked!"
+                  val alert = Alert(airline = link.airline, message = message, category = AlertCategory.LINK_CANCELLATION, targetId = Some(link.id), cycle = cycle, duration = LOAD_FACTOR_ALERT_DURAION)
+                  newAlerts.append(alert)
+              }
+            } else { //LF good, delete existing alert if any
+              existingAlertsByLinkId.get(link.id).foreach { existingAlert =>
+                deletingAlerts.append(existingAlert)
+              }
+            }
+          }
+        } else { //not enough competitor, check if alert should be removed
+          links.foreach { link =>
+            existingAlertsByLinkId.get(link.id).foreach { existingAlert =>
+              deletingAlerts.append(existingAlert)
+            }
+          }
+        }
+    }
+
+    
+    deletingLinks.foreach { link =>
+       println("Revoked link: " + link)
+       LinkSource.deleteLink(link.id)
+    }
+    AlertSource.updateAlerts(updatingAlerts.toList)
+    AlertSource.insertAlerts(newAlerts.toList)
+    AlertSource.deleteAlerts(deletingAlerts.toList)
+    
+    LogSource.insertLogs(newLogs.toList)
   }
   
   def generateLinkStatistics(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : List[LinkStatistics] = {
@@ -221,6 +412,26 @@ object LinkSimulation {
         CountryMarketShare(countryCode, airlinePassengers.toMap)
       }
     }.toList
-    
+
+  }
+
+  /**
+    * Refresh link capacity and frequency if necessary
+    */
+  def refreshLinksPostCycle() = {
+    println("Refreshing link capacity and frequency to find discrepancies")
+    val simpleLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD)
+    val fullLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).map(link => (link.id, link)).toMap
+    println("Finished loading both the simple and full links")
+    //not too ideal, but even if someone update the link assignment when this is in progress, it should be okay, as that assignment
+    //is suppose to update the link capacity and frequency anyway
+    simpleLinks.foreach { simpleLink =>
+      fullLinks.get(simpleLink.id).foreach { fullLink =>
+        if (simpleLink.frequency != fullLink.frequency || simpleLink.capacity != fullLink.capacity) {
+          println(s"Adjusting capacity/frequency of  $simpleLink to $fullLink")
+          LinkSource.updateLink(fullLink)
+        }
+      }
+    }
   }
 }

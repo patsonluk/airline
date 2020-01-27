@@ -1,22 +1,15 @@
 package com.patson.data
 
-import com.patson.init.IsolatedAirportPatcher
-import com.patson.init.WikiUtil
-import com.patson.init.AirportProfilePicturePatcher
-import com.patson.model.Bank
-import com.patson.model.Airport
-import com.patson.init.AirportFeaturePatcher
-import com.patson.Util
-import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane.Model
-import com.patson.model.CountryMarketShare
-import com.patson.model.Country
-import com.patson.model.Computation
-import java.awt.Color
-import com.patson.util.LogoGenerator
+
+import scala.concurrent.Future
+import java.util.concurrent.TimeUnit
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+import scala.util.Random
 
 object Test extends App {
-     
 //       println(WikiUtil.queryProfilePicture("Charles de Gaulle Airport", List.empty))
 //       println(WikiUtil.queryOtherPicture("Charles de Gaulle Airport", AirportProfilePicturePatcher.airportPreferredWords))
        
@@ -30,13 +23,14 @@ object Test extends App {
 //     println(WikiUtil.queryOtherPicture("Vancouver"))
      
 //        println(AirportProfilePicturePatcher.getCityProfilePictureUrl(Airport.fromId(0).copy(city="Barrow", countryCode="US")))
-//       AirportFeaturePatcher.patchFeatures()
-    
+
+// AirportProfilePicturePatcher.patchProfilePictures()
+//    AirlineSource.loadAllAirlines(false).foreach(println)
 //    Patchers.patchAirlineCode()
 //    Patchers.patchFlightNumber()
-  Patchers.airplaneModelPatcher()
+//    Patchers.airplaneModelPatcher()
 //  Patchers.patchAirlineLogos()
-  
+//  IsolatedAirportPatcher.patchIsolatedAirports()
   
   
 }

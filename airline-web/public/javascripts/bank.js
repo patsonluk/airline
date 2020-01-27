@@ -2,9 +2,29 @@ var loadedLoans = {}
 
 function showBankCanvas() {
 	setActiveDiv($("#bankCanvas"))
-	highlightTab($('#bankCanvasTab'))
+	highlightTab($('.bankCanvasTab'))
+	loadInterestRateChart()
 	loadNewLoanDetails() 
     loadOutstandingLoans()
+}
+
+function loadInterestRateChart() {
+	var url = "loan-interest-rates"
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(oilPrices) {
+	    	plotLoanInterestRatesChart(oilPrices, $("#bankCanvas #loanInterestRateChart"))
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+
+
 }
 
 function loadNewLoanDetails() {
@@ -65,7 +85,7 @@ function updateNewLoanOptionsTable(loanOptions) {
 	optionsTable.children(".table-row").remove()
 	$.each(loanOptions, function(index, loanOption) {
 		var weeklyPayment = Math.ceil((loanOption.borrowedAmount + loanOption.interest) / loanOption.loanTerm)
-		var interestRate = Math.round(loanOption.interest / loanOption.borrowedAmount * 100)
+		var interestRate = Math.round(loanOption.interest / loanOption.borrowedAmount * 1000) / 10 //1 decimal point
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.borrowedAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + interestRate  + "%</div>")
@@ -134,14 +154,16 @@ function updateOutstandingLoansTable() {
 	loansTable.children("div.table-row").remove()
 	
 	$.each(loadedLoans, function(index, loan) {
-		var weeklyPayment = Math.ceil((loan.borrowedAmount + loan.interest) / loan.loanTerm)
-		var remainingTerm = Math.ceil(loan.remainingAmount / weeklyPayment)
+	    var interestRate = loan.interest / loan.borrowedAmount * 100
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.borrowedAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.interest) + "</div>")
+		row.append("<div class='cell' align='right'>" + '$' + interestRate.toFixed(1) + "%</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.remainingAmount) + "</div>")
-		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(weeklyPayment) + " remaining " + remainingTerm + " week(s)</div>")
-		if (loan.remainingAmount <= activeAirline.balance) {
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.weeklyPayment) + " remaining " + loan.remainingTerm + " week(s)</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.earlyRepaymentFee) + "</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.earlyRepayment) + "</div>")
+		if (loan.earlyRepayment <= activeAirline.balance) {
 			row.append("<div class='cell'><img src='assets/images/icons/money--minus.png' title='Pay off early' class='button' onclick='repayLoan(" + loan.id + ")'/></div>")
 		} else {
 			row.append("<div class='cell'></div>")
@@ -153,6 +175,8 @@ function updateOutstandingLoansTable() {
 	if (jQuery.isEmptyObject(loadedLoans)) {
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell'>-</div>")
+		row.append("<div class='cell' align='right'>-</div>")
+		row.append("<div class='cell' align='right'>-</div>")
 		row.append("<div class='cell' align='right'>-</div>")
 		row.append("<div class='cell' align='right'>-</div>")
 		row.append("<div class='cell' align='right'>-</div>")

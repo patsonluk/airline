@@ -1,37 +1,36 @@
 package controllers
 
-import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.json.Json
 import com.patson.model._
-import com.patson.data.AirportSource
-import com.patson.Util
+import com.patson.data.{AirlineSource, AirportSource, CitySource, CycleSource, LinkSource, LinkStatisticsSource, LoungeHistorySource}
 import com.patson.model.Link
-import com.patson.data.LinkSource
-import com.patson.data.AirlineSource
 import play.api.data.Form
 import play.api.data.Forms.mapping
 import play.api.data.Forms.number
-import com.patson.data.CitySource
-import com.patson.data.LinkStatisticsSource
+
 import scala.collection.mutable.LinkedHashMap
 import scala.collection.mutable.ListBuffer
 import com.patson.model.Scheduling.TimeSlot
-import controllers.AuthenticationObject.AuthenticatedAirline
+
 import scala.collection.mutable.Set
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
 import java.util.Random
+
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.Scheduling.TimeSlotStatus
+import com.patson.util.{AirlineCache, AirportCache}
 import controllers.WeatherUtil.Coordinates
 import controllers.WeatherUtil.Weather
+import controllers.AuthenticationObject.AuthenticatedAirline
+import javax.inject.Inject
 
 
-class Application extends Controller {
+class Application @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
  implicit object AirportFormat extends Format[Airport] {
     def reads(json: JsValue): JsResult[Airport] = {
       val airport = Airport.fromId((json \ "id").as[Int])
@@ -68,15 +67,29 @@ class Application extends Controller {
       if (airport.isSlotAssignmentsInitialized) {
         airportObject = airportObject + ("availableSlots" -> JsNumber(airport.availableSlots))
         airportObject = airportObject + ("slotAssignmentList" -> JsArray(airport.getAirlineSlotAssignments().toList.map {  
-          case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
+          case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
           }
         ))
       }
       if (airport.isAirlineAppealsInitialized) {
-        airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAppeals().toList.map {  
-          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
+        airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAdjustedAppeals().toList.map {
+          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
           }
         ))
+
+        var bonusJson = Json.obj()
+        airport.getAllAirlineBonuses.toList.foreach {
+          case (airlineId, bonuses) => {
+            var totalLoyaltyBonus = 0.0
+            var totalAwarenessBonus = 0.0
+            bonuses.foreach { entry =>
+              totalLoyaltyBonus += entry.bonus.loyalty
+              totalAwarenessBonus += entry.bonus.awareness
+            }
+            bonusJson = bonusJson + (airlineId.toString -> Json.obj("loyalty" -> totalLoyaltyBonus, "awareness" -> totalAwarenessBonus))
+          }
+        }
+        airportObject = airportObject + ("bonusList" -> bonusJson)
       }
       if (airport.isFeaturesLoaded) {
         airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().map { airportFeature =>
@@ -91,7 +104,7 @@ class Application extends Controller {
         airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
       }
       
-      airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.toList.map(_._1)))
+      airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.map(_._1).toList))
       
       airportObject
     }
@@ -102,6 +115,7 @@ class Application extends Controller {
       JsObject(List(
       "id" -> JsNumber(airport.id),
       "name" -> JsString(airport.name),
+      "iata" -> JsString(airport.iata),
       "city" -> JsString(airport.city),
       "latitude" -> JsNumber(airport.latitude),
       "longitude" -> JsNumber(airport.longitude),
@@ -111,21 +125,6 @@ class Application extends Controller {
     }
   }
  
-  implicit object CityWrites extends Writes[City] {
-    def writes(city: City): JsValue = {
-      val averageIncome = city.income
-      val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
-      JsObject(List(
-      "id" -> JsNumber(city.id),    
-      "name" -> JsString(city.name),
-      "latitude" -> JsNumber(city.latitude),
-      "longitude" -> JsNumber(city.longitude),
-      "countryCode" -> JsString(city.countryCode),
-      "population" -> JsNumber(city.population),
-      "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
-    }
-  }
-  
   implicit object AirportShareWrites extends Writes[(Airport, Double)] {
     def writes(airportShare: (Airport, Double)): JsValue = {
       JsObject(List(
@@ -211,15 +210,39 @@ class Application extends Controller {
   def test = Action {
     Ok(views.html.test())
   }
-  
-  def getAirports(count : Int) = Action {
-    val airports = AirportSource.loadAllAirports()
-    val selectedAirports = airports.takeRight(count)
-    Ok(Json.toJson(selectedAirports))
+
+  def getCurrentCycle() = Action  {
+    Ok(Json.obj("cycle" -> CycleSource.loadCycle()))
+  }
+
+  private val airportByPowerCount = 4000
+  val visibleAirports = getVisibleAirports(airportByPowerCount)
+
+  def getVisibleAirports(airportByPowerCount : Int) : List[Airport] = {
+    val powerfulAirports : Map[Int, Airport] = cachedAirportsByPower.takeRight(airportByPowerCount).map(airport => (airport.id, airport)).toMap
+    val mostPowerfulAirportsPerCountry = cachedAirportsByPower.groupBy(_.countryCode).values.flatMap { airportsOfACountry =>
+      if (airportsOfACountry.length > 0) {
+        List(airportsOfACountry.reverse.apply(0))
+      } else {
+        List()
+      }
+    }
+    val result = (powerfulAirports.values ++ mostPowerfulAirportsPerCountry.filter { mostPowerfulAirportOfACountry =>
+      val alreadyInList = powerfulAirports.contains(mostPowerfulAirportOfACountry.id)
+      //println(s"$alreadyInList ? $mostPowerfulAirportOfACountry")
+      !alreadyInList
+    }).toList
+    result
+  }
+
+
+  def getAirports(@deprecated count : Int) = Action { //count is no longer used
+    //val selectedAirports = cachedAirportsByPower.takeRight(count)
+    Ok(Json.toJson(visibleAirports))
   }
   
   def getAirport(airportId : Int) = Action {
-     AirportSource.loadAirportById(airportId, true) match {
+     AirportCache.getAirport(airportId, true) match {
        case Some(airport) =>
          //find links going to this airport too, send simplified data
          val links = LinkSource.loadLinksByFromAirport(airportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByToAirport(airportId, LinkSource.ID_LOAD)
@@ -232,11 +255,12 @@ class Application extends Controller {
      }
   }
   def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
-    AirportSource.loadAirportById(airportId, true) match {  
+    AirportCache.getAirport(airportId, true) match {  
        case Some(airport) =>  
          val maxSlots = airport.getMaxSlotAssignment(airlineId)
          val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
-         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots)))
+         val preferredSlots = airport.getPreferredSlotAssignment(airlineId)
+         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots), "preferredSlots" -> JsNumber(preferredSlots)))
        case None => NotFound
      }
   }
@@ -246,11 +270,11 @@ class Application extends Controller {
   }
   
   def getAirportLinkStatistics(airportId : Int) = Action {
-    AirportSource.loadAirportById(airportId, true) match {
+    AirportCache.getAirport(airportId, true) match {
       case Some(airport) => { 
         //group things up
-        val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId)
-        val flightsToThisAirport = LinkStatisticsSource.loadLinkStatisticsByToAirport(airportId)
+        val flightsFromThisAirport = LinkStatisticsSource.loadLinkStatisticsByFromAirport(airportId, LinkStatisticsSource.SIMPLE_LOAD)
+        val flightsToThisAirport = LinkStatisticsSource.loadLinkStatisticsByToAirport(airportId, LinkStatisticsSource.SIMPLE_LOAD)
         val departureOrArrivalFlights = flightsFromThisAirport.filter { _.key.isDeparture} ++ flightsToThisAirport.filter { _.key.isDestination }
         val connectionFlights = flightsFromThisAirport.filterNot { _.key.isDeparture} ++ flightsToThisAirport.filterNot { _.key.isDestination }
         
@@ -278,7 +302,7 @@ class Application extends Controller {
         val servedAirports = Set[Airport]()
         val airlines = Set[Airline]()
         var flightFrequency = 0;
-        val linkCountByAirline = links.groupBy(_.airline.id).mapValues(_.size)
+        val linkCountByAirline = links.groupBy(_.airline.id).view.mapValues(_.size).toMap
         
         links.foreach { link =>
           servedCountries.add(link.from.countryCode)
@@ -292,6 +316,16 @@ class Application extends Controller {
           flightFrequency = flightFrequency + link.frequency
         }
         
+        val loungesStats = LoungeHistorySource.loadLoungeConsumptionsByAirportId(airport.id)
+        val loungesWithVisitors = loungesStats.map { _.lounge.airline.id }
+        val emptyLoungesStats = ListBuffer[LoungeConsumptionDetails]() 
+        //now some lounge might be newly built or have no visitors
+        AirlineSource.loadLoungesByAirportId(airportId).foreach { lounge =>
+          if (!loungesWithVisitors.contains(lounge.airline.id)) {
+            emptyLoungesStats += LoungeConsumptionDetails(lounge = lounge, selfVisitors = 0, allianceVisitors = 0, cycle = 0)
+          }
+        }
+         
         
         
         Ok(Json.obj("connectedCountryCount" -> servedCountries.size,
@@ -303,6 +337,7 @@ class Application extends Controller {
                     },
                     "flightFrequency" -> flightFrequency,
                     "bases" -> Json.toJson(airport.getAirlineBases().values),
+                    "lounges" -> Json.toJson(loungesStats ++ emptyLoungesStats),
                     "departureOrArrivalPassengers" -> departureOrArrivalPassengers, 
                     "transitPassengers" -> transitPassengers,
                     "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),
@@ -322,7 +357,7 @@ class Application extends Controller {
     
     val linkConsumptions : Map[Int, LinkConsumptionDetails] = LinkSource.loadLinkConsumptionsByLinksId(links.map(_.id)).map( linkConsumption => (linkConsumption.link.id, linkConsumption)).toMap
     
-    val airport = AirportSource.loadAirportById(airportId, false).get
+    val airport = AirportCache.getAirport(airportId, false).get
     val weather = WeatherUtil.getWeather(new Coordinates(airport.latitude, airport.longitude))
     
     val random = new Random()
@@ -484,7 +519,7 @@ class Application extends Controller {
   
   def getLinkConsumptionsByAirport(airportId : Int) = Action {
     val passengersByRemoteAirport : Map[Airport, Int] = HistoryUtil.loadConsumptionByAirport(airportId)
-    Ok(Json.toJson(passengersByRemoteAirport.map {
+    Ok(Json.toJson(passengersByRemoteAirport.toList.map {
       case (remoteAirport, passengers) => Json.obj("remoteAirport" -> Json.toJson(remoteAirport)(AirportSimpleWrites), ("passengers" -> JsNumber(passengers)))
     }))
   }
@@ -511,6 +546,10 @@ class Application extends Controller {
       "Access-Control-Allow-Credentials" -> "true",
       "Access-Control-Max-Age" -> (60 * 60 * 24).toString
     )
+  }
+
+  def redirect(path: String) = Action {
+    Redirect(path)
   }
 
   case class LinkInfo(fromId : Int, toId : Int, price : Double, capacity : Int)

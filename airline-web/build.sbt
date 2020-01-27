@@ -4,15 +4,20 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.13.0"
 
 libraryDependencies ++= Seq(
   jdbc,
-  cache,
   ws,
+  guice,
   specs2 % Test,
-  "com.typesafe.akka" %% "akka-remote" % "2.3.11",
-  "default" %% "airline-data" % "1.1-SNAPSHOT"
+  "com.typesafe.akka" %% "akka-remote" % "2.5.26",
+  "default" %% "airline-data" % "1.1-SNAPSHOT",
+  "com.google.api-client" % "google-api-client" % "1.30.4",
+  "com.google.oauth-client" % "google-oauth-client-jetty" % "1.30.4",
+  "com.google.apis" % "google-api-services-gmail" % "v1-rev103-1.25.0",
+  "javax.mail" % "javax.mail-api" % "1.6.2",
+  "com.sun.mail" % "javax.mail" % "1.6.2"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"

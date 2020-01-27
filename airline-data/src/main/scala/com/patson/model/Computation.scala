@@ -3,6 +3,12 @@ package com.patson.model
 import com.patson.model.airplane._
 import com.patson.data.CycleSource
 import com.patson.Util
+import com.patson.data.AllianceSource
+import com.patson.data.AirplaneSource
+import com.patson.data.AirlineSource
+import com.patson.data.BankSource
+import com.patson.data.OilSource
+import com.patson.util.{AirlineCache, AllianceRankingUtil}
 
 object Computation {
   //distance vs max speed
@@ -26,26 +32,27 @@ object Computation {
     duration
   }
 
-  def calculateMaxFrequency(airplaneModel: Model, distance : Int) : Int = {
+  def calculateFlightMinutesRequired(airplaneModel : Model, distance : Int) : Int = {
+    val duration = calculateDuration(airplaneModel, distance)
+    val roundTripTime = (duration + airplaneModel.turnaroundTime) * 2
+    roundTripTime
+  }
+
+  def calculateMaxFrequency(airplaneModel : Model, distance : Int) : Int = {
     if (airplaneModel.range < distance) {
       0
     } else {
-      val duration = calculateDuration(airplaneModel, distance)
-      val roundTripTime = (duration + airplaneModel.turnoverTime) * 2
-      val availableFlightTimePerWeek = (3.5 * 24 * 60).toInt //assume per week only 3 days are "flyable"
-      //println(airplaneModel + " distance " + distance + " freq: " + availableFlightTimePerWeek / roundTripTime + " times")
-      availableFlightTimePerWeek / roundTripTime
+      val roundTripTime = calculateFlightMinutesRequired(airplaneModel, distance)
+      (Airplane.MAX_FLIGHT_MINUTES / roundTripTime).toInt
     }
   }
   
-  def calculateAge(fromCycle : Int) = {
-    val currentCycle = CycleSource.loadCycle()
-    currentCycle - fromCycle 
-  }
+
+  val SELL_RATE = 0.8
   
   def calculateAirplaneSellValue(airplane : Airplane) : Int = {
     //80% off
-    val value = airplane.value * 0.8
+    val value = airplane.value * SELL_RATE
     if (value < 0) 0 else value.toInt
   }
   
@@ -82,9 +89,10 @@ object Computation {
   
   import FlightCategory._
   def getFlightCategory(fromAirport : Airport, toAirport : Airport) : FlightCategory.Value = {
+    val distance = calculateDistance(fromAirport, toAirport)
     if (fromAirport.countryCode == toAirport.countryCode) {
       DOMESTIC
-    } else if (fromAirport.zone == toAirport.zone) {
+    } else if (fromAirport.zone == toAirport.zone || distance <= 1000) {
       REGIONAL
     } else {
       INTERCONTINENTAL
@@ -117,16 +125,42 @@ object Computation {
     (baseCost * airportSizeMultiplier * distanceMultiplier * internationalMultiplier).toInt 
   }
   
-  def computeReputationBoost(country : Country, ranking : Int) : Double = {
-    //US gives 30 boost if 1st rank, 20 if 2nd and 10 if 3rd  pop 97499995 income 54629
+  val reputationBoostTop10 = Map(
+      1 -> 30,
+      2 -> 24,
+      3 -> 19,
+      4 -> 16,
+      5 -> 13,
+      6 -> 10,
+      7 -> 8,
+      8 -> 6,
+      9 -> 4,
+      10 -> 2
+      )
     
+  def computeReputationBoost(country : Country, ranking : Int) : Double = {
+    //US gives boost of (rank : boost)  
+    // 1st : 30
+    // 2nd : 24 
+    // 3rd : 19
+    // 4th : 16
+    // 5th : 13
+    // 6th : 10
+    // 7th : 8
+    // 8th : 6
+    // 9th : 4
+    // 10th : 2
+    
+    //pop 97499995 income 54629
     val modelPower = 97499995L * 54629L
     val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
     
-    val boost = math.log10(ratioToModelPower * 100) / 2 * 10 * (4 - ranking)
+    val boost = math.log10(ratioToModelPower * 100) / 2 * reputationBoostTop10(ranking)
     
-    if (boost < 1) {
+    if (boost < 1 && ranking <= 3) {
       1
+    } else if (boost < 0.5) {
+      0.5
     } else {
       BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
     }
@@ -134,19 +168,53 @@ object Computation {
   
   
   def computeCompensation(link : Link) : Int = {
-    if (link.majorDelayCount > 0 || link.minorDelayCount > 0) {
+    if (link.majorDelayCount > 0 || link.minorDelayCount > 0 || link.cancellationCount > 0 ) {
       val soldSeatsPerFlight = link.soldSeats / link.frequency
       val halfCapacityPerFlight = link.capacity / link.frequency * 0.5
       
       val affectedSeatsPerFlight = if (soldSeatsPerFlight.total > halfCapacityPerFlight.total) soldSeatsPerFlight else halfCapacityPerFlight //if less than 50% LF, considered that as 50% LF
       var compensation = (affectedSeatsPerFlight * link.cancellationCount * 0.5 * link.price).total  //50% of ticket price, as there's some penalty for that already
-      compensation = compensation + (affectedSeatsPerFlight * link.majorDelayCount * 0.5 * link.price).total //50% of ticket price
-      compensation = compensation + (affectedSeatsPerFlight * link.minorDelayCount * 0.2 * link.price).total //20% of ticket price
+      compensation = compensation + (affectedSeatsPerFlight * link.majorDelayCount * 0.3 * link.price).total //30% of ticket price
+      compensation = compensation + (affectedSeatsPerFlight * link.minorDelayCount * 0.05 * link.price).total //5% of ticket price
       
       compensation.toInt
     } else {
       0
     }
+  }
+  
+  val MAX_FREQUENCY_ABSOLUTE_BASE = 30
+  def getMaxFrequencyAbsolute(airline : Airline) : Int = {
+     AllianceSource.loadAllianceMemberByAirline(airline) match {
+       case Some(allianceMember) => {
+         if (allianceMember.role != AllianceRole.APPLICANT) {
+           AllianceRankingUtil.getRanking(allianceMember.allianceId) match {
+             case Some((ranking, _)) => {
+               val maxFrequencyBonus = Alliance.getMaxFrequencyBonus(ranking)
+               MAX_FREQUENCY_ABSOLUTE_BASE + maxFrequencyBonus
+             }
+             case None => MAX_FREQUENCY_ABSOLUTE_BASE
+           }
+         } else {
+           MAX_FREQUENCY_ABSOLUTE_BASE
+         }
+       }
+       case None => MAX_FREQUENCY_ABSOLUTE_BASE
+     }
+  }
+  
+  def getResetAmount(airlineId : Int) : ResetAmountInfo = {
+    val amountFromAirplanes = AirplaneSource.loadAirplanesByOwner(airlineId, false).map(Computation.calculateAirplaneSellValue(_).toLong).sum
+    val amountFromBases = AirlineSource.loadAirlineBasesByAirline(airlineId).map(_.getValue * 0.2).sum.toLong //only get 20% back
+    val amountFromLoans = BankSource.loadLoansByAirline(airlineId).map(_.earlyRepayment * -1).sum //repay all loans now
+    val amountFromOilContracts = OilSource.loadOilContractsByAirline(airlineId).map(_.contractTerminationPenalty(CycleSource.loadCycle()) * -1).sum //termination penalty
+    val existingBalance = AirlineCache.getAirline(airlineId).get.airlineInfo.balance
+    
+    ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromLoans, amountFromOilContracts, existingBalance)
+  }
+  
+  case class ResetAmountInfo(airplanes : Long, bases : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
+    val overall = airplanes + bases + loans + oilContracts + existingBalance
   }
   
 //  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {

@@ -34,7 +34,7 @@ object Scheduling {
       
       timeSlots.toArray
     } else {
-      println("This link has zero frequency: " + link)
+      //println("This link has zero frequency: " + link)
       Array()
     }
   }

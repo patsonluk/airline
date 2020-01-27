@@ -1,5 +1,7 @@
 package com.patson.data
 
+import com.typesafe.config.ConfigFactory
+
 object Constants {
   val CYCLE_TABLE = "cycle"
   val CITY_TABLE = "city"
@@ -19,6 +21,7 @@ object Constants {
   val COUNTRY_AIRLINE_RELATIONSHIP_INDEX_2 = "country_airline_relationship_index_2"
   val COUNTRY_MUTUAL_RELATIONSHIP_TABLE = "country_mutual_relationship"
   val COUNTRY_MARKET_SHARE_TABLE = "country_market_share"
+  val COUNTRY_AIRLINE_TITLE_TABLE = "country_airline_title"
   val LINK_TABLE = "link"
   val LINK_INDEX_1 = "link_index_1"
   val LINK_INDEX_2 = "link_index_2"
@@ -27,6 +30,7 @@ object Constants {
   val LINK_CONSUMPTION_TABLE = "link_consumption"
   val LINK_CONSUMPTION_INDEX_1 = "link_consumption_index_1"
   val LINK_CONSUMPTION_INDEX_2 = "link_consumption_index_2"
+  val LINK_CONSUMPTION_INDEX_3 = "link_consumption_index_3"
   val LINK_ASSIGNMENT_TABLE = "link_assignment"
   val LINK_ASSIGNMENT_INDEX_1 = "link_assignment_index_1"
   val LINK_ASSIGNMENT_INDEX_2 = "link_assignment_index_2"
@@ -50,9 +54,20 @@ object Constants {
   val AIRLINE_TRANSACTION_TABLE = "airline_transaction"
   val AIRLINE_TRANSACTION_INDEX_1 = "airline_transaction_index_1"
   val AIRLINE_TRANSACTION_INDEX_2 = "airline_transaction_index_2"
+  val AIRLINE_CASH_FLOW_ITEM_TABLE = "airline_cash_flow_item"
+
+  
   val INCOME_TABLE = "income"
+  val CASH_FLOW_TABLE = "cash_flow"
   val AIRLINE_LOGO_TABLE = "airline_logo"
+  val ALLIANCE_TABLE = "alliance"
+  val ALLIANCE_MEMBER_TABLE = "alliance_member"
+  val ALLIANCE_HISTORY_TABLE = "alliance_history"
   val AIRPLANE_RENEWAL_TABLE = "airline_renewal"
+  val AIRPLANE_CONFIGURATION_TABLE = "airplane_configuration"
+  val AIRPLANE_CONFIGURATION_TEMPLATE_TABLE = "airplane_configuration_template"
+  val AIRPLANE_CONFIGURATION_TEMPLATE_INDEX_1 ="airplane_configuration_template_index_1"
+  val AIRPLANE_CONFIGURATION_TEMPLATE_INDEX_2 = "airplane_configuration_template_index_2"
   val LINKS_INCOME_TABLE = "links_income"
   val TRANSACTIONS_INCOME_TABLE = "transactions_income"
   val OTHERS_INCOME_TABLE = "others_income"
@@ -62,16 +77,37 @@ object Constants {
   val AIRPLANE_INDEX_2 = "airplane_index_2"
   val USER_TABLE = "user"
   val USER_SECRET_TABLE = "user_secret"
+  val RESET_USER_TABLE = "reset_user"
   val USER_AIRLINE_TABLE = "user_airline"
   val VIP_ROUTE_TABLE = "vip_route"
   val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"
   val PASSENGER_HISTORY_TABLE = "passenger_history"
+  val PASSENGER_HISTORY_INDEX_1 = "passenger_history_index_1"
+  val PASSENGER_HISTORY_INDEX_2 = "passenger_history_index_2"
   val LOAN_TABLE = "loan"
-  
+  val LOUNGE_TABLE = "lounge"
+  val LOUNGE_CONSUMPTION_TABLE = "lounge_consumption"
+  val OIL_CONTRACT_TABLE = "oil_contract"
+  val OIL_PRICE_TABLE = "oil_price"
+  val OIL_CONSUMPTION_HISTORY_TABLE = "oil_consumption_history"
+  val OIL_INVENTORY_POLICY_TABLE = "oil_inventory_policy"
+  val LOAN_INTEREST_RATE_TABLE = "loan_interest_rate"
+  val LOG_TABLE = "log"
+  val LOG_INDEX_1 = "log_index_1"
+  val ALERT_TABLE = "alert"
+  val ALERT_INDEX_1 = "alert_index_1"
+
+  //Christmas Event
+  val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"
+  val SANTA_CLAUS_GUESS_TABLE = "santa_claus_guess"
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"
-  val DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/airline?useSSL=false&autoReconnect=true"
+  val configFactory = ConfigFactory.load()
+  val DB_HOST = if (configFactory.hasPath("mysqldb.host")) configFactory.getString("mysqldb.host") else "localhost:3306"
+  println("!!!!!!!!!!!!!!!DB HOST IS " + DB_HOST)
+  
+  val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
   val DB_DRIVER = "com.mysql.jdbc.Driver"
   val DATABASE_USER = "sa" 
   val DATABASE_PASSWORD = "admin"

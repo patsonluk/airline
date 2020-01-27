@@ -13,14 +13,14 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
-import scala.collection.mutable.ListBuffer
-import com.patson.data.CycleSource
-import controllers.AuthenticationObject.AuthenticatedAirline
+
 import com.patson.data.CountrySource
 import com.patson.data.AirportSource
+import com.patson.util.ChampionUtil
+import javax.inject.Inject
 
 
-class CountryApplication extends Controller {
+class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   def getAllCountries(homeCountryCode : Option[String]) = Action {
     val countries = CountrySource.loadAllCountries()
     
@@ -43,7 +43,7 @@ class CountryApplication extends Controller {
   def getCountry(countryCode : String) = Action {
     CountrySource.loadCountryByCode(countryCode) match {
       case Some(country) =>
-        var jsonObject= Json.toJson(country)
+        var jsonObject : JsObject = Json.toJson(country).asInstanceOf[JsObject]
         val airports = AirportSource.loadAirportsByCountry(countryCode)
         val smallAirportCount = airports.count { airport => airport.size <= 2 }
         val mediumAirportCount = airports.count { airport => airport.size >= 3 && airport.size <= 4 }
@@ -61,29 +61,45 @@ class CountryApplication extends Controller {
                    "bases" -> Json.toJson(bases))
         val allAirlines = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
         CountrySource.loadMarketSharesByCountryCode(countryCode).foreach { marketShares => //if it has market share data
+          val champions = ChampionUtil.getChampionInfoByCountryCode(countryCode).sortBy(_.ranking)
+          var championsJson = Json.toJson(champions)
+  //        var x = 0
+  //        for (x <- 0 until champions.size) {
+  //          val airline = allAirlines(champions(x)._1)
+  //          val passengerCount = champions(x)._2
+  //          val ranking = x + 1
+  //          val reputationBoost = Computation.computeReputationBoost(country, ranking) 
+  //          championsJson = championsJson :+ Json.obj("airline" -> Json.toJson(airline), "passengerCount" -> JsNumber(passengerCount), "ranking" -> JsNumber(ranking), "reputationBoost" -> JsNumber(reputationBoost))
+  //        }
           
-        val champions = marketShares.airlineShares.toList.sortBy(_._2)(Ordering[Long].reverse).take(3)
-        var championsJson = Json.arr()
-        var x = 0
-        for (x <- 0 until champions.size) {
-          val airline = allAirlines(champions(x)._1)
-          val passengerCount = champions(x)._2
-          val ranking = x + 1
-          val reputationBoost = Computation.computeReputationBoost(country, ranking) 
-          championsJson = championsJson :+ Json.obj("airline" -> Json.toJson(airline), "passengerCount" -> JsNumber(passengerCount), "ranking" -> JsNumber(ranking), "reputationBoost" -> JsNumber(reputationBoost))
-        }
-        
-        jsonObject = jsonObject.asInstanceOf[JsObject] + ("champions" -> championsJson)
-        
-        jsonObject = jsonObject.asInstanceOf[JsObject] + ("marketShares" -> Json.toJson(marketShares.airlineShares.map { 
-            case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
-          }.toList)(AirlineSharesWrites))
+          jsonObject = jsonObject.asInstanceOf[JsObject] + ("champions" -> championsJson)
+
+          var nationalAirlinesJson = Json.arr()
+          var parternedAirlinesJson = Json.arr()
+          CountrySource.loadCountryAirlineTitlesByCountryCode(countryCode).foreach {
+            case countryAirlineTitle =>
+              val CountryAirlineTitle(country, airline, title) = countryAirlineTitle
+              val share : Long = marketShares.airlineShares.getOrElse(airline.id, 0L)
+              title match {
+                case Title.NATIONAL_AIRLINE =>
+                  nationalAirlinesJson = nationalAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> countryAirlineTitle.loyaltyBonus))
+                case Title.PARTNERED_AIRLINE =>
+                  parternedAirlinesJson = parternedAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> countryAirlineTitle.loyaltyBonus))
+              }
+          }
+
+          jsonObject = jsonObject + ("nationalAirlines" -> nationalAirlinesJson) + ("partneredAirlines" -> parternedAirlinesJson)
+          
+          jsonObject = jsonObject.asInstanceOf[JsObject] + ("marketShares" -> Json.toJson(marketShares.airlineShares.map { 
+              case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
+            }.toList)(AirlineSharesWrites))
         }
           
         Ok(jsonObject)
       case None => NotFound
     } 
   }
+
   
   object AirlineSharesWrites extends Writes[List[(Airline, Long)]] {
     def writes(shares: List[(Airline, Long)]): JsValue = {

@@ -28,26 +28,27 @@ object Pricing {
       }
       remainDistance -= priceBracket._1
     }
-    ((flightType match {
+    price = ((flightType match {
       case SHORT_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL => (price * INTERNATIONAL_PRICE_MULTIPLIER)
       case SHORT_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => (price * INTERCONTINENTAL_PRICE_MULTIPLIER)
       case _ => price
     }) * linkClass.priceMultiplier).toInt
     
+    (price * 1.5).toInt //increase the standard price by 50%
   }
   
   def computeStandardPriceForAllClass(distance : Int, fromAirport : Airport, toAirport : Airport) : LinkClassValues = {
     val priceByLinkClass : List[(LinkClass, Int)] = LinkClass.values.map { linkClass =>
       (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), linkClass))
     }
-    LinkClassValues(priceByLinkClass.toMap)
+    LinkClassValues.getInstanceByMap(priceByLinkClass.toMap)
   }
   
   def computeStandardPriceForAllClass(distance : Int, flightType : FlightType.Value) : LinkClassValues = {
     val priceByLinkClass : List[(LinkClass, Int)] = LinkClass.values.map { linkClass =>
       (linkClass, computeStandardPrice(distance, flightType, linkClass))
     }
-    LinkClassValues(priceByLinkClass.toMap)
+    LinkClassValues.getInstanceByMap(priceByLinkClass.toMap)
   }
   
   /**

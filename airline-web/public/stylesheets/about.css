@@ -1,0 +1,216 @@
+body {
+    background: linear-gradient(to bottom, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(../images/background/city1.gif);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+#landing {
+    display: none; /* Hidden by default */
+    position: absolute; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0px;
+    width: 100%; /* Full width */
+    /*height: calc(100% - 70px);*/
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+}
+
+#landing-content {
+    color: #fff;
+    margin: 10% auto; /* 10% from the top and centered */
+    width: 60%; /* Could be more or less, depending on screen size */
+}
+
+a.landing-link:hover {
+   border-radius: 0px;
+   background-color: transparent ;
+   text-shadow: 0 0 0.5em #0ff, 0 -1px 0 #000;
+}
+
+
+
+.title {
+  position: relative;
+  text-align: center;
+  transform: translateZ(0);
+  transform-style: preserve-3d;
+}
+
+.title .text {
+  font-family: sans-serif;
+  font-weight: 400;
+  font-size: calc(70vw / var(--word-total) );
+  line-height: 1.3;
+}
+
+.title .write .word {
+  color: hsl(0, 0%, 80%);
+  text-shadow: 0 0 0.1em #0ff;
+  transform-style: preserve-3d;
+  animation: write linear both;
+}
+
+a.landing-link, #about-canvas a {
+   color: hsl(0, 0%, 80%);
+   text-shadow: 0 0 0.1em #0ff, 0 -1px 0 #000;
+   text-transform: uppercase;
+   line-height: 2;
+   font-size: 14px;
+}
+
+.title .laser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* To avoid the blur getting masked by the clip-path we had to duplicate the element */
+  filter: blur(4px) contrast(10);
+  pointer-events: none;
+}
+
+.title .laser .word {
+  display: inline-block;
+  text-shadow: 0 0 0.1em #0ff;
+}
+
+.title .laser .word {
+  color: hsl(0, 100%, 75%);
+  text-shadow: 0 0 0.1em #0ff;
+  transform: translateZ(5px);
+  animation: laser linear both;
+}
+
+.title .write .word,
+.title .laser .word {
+  animation-duration: 4s;
+  animation-delay: calc(0.3s + var(--word-index) * 160ms);
+  animation-iteration-count: 1;
+}
+
+
+
+/*.title:hover .word,
+.title:hover .word {
+  animation-play-state: paused;
+}*/
+
+/* .title .text .word,
+.title .text .word::before {
+  animation-play-state: paused;
+  animation-delay: -0.4s;
+} */
+
+@keyframes write {
+  from, 30% { clip-path: polygon(-20% 0%, -15% 0%, -15% 100%, -20% 100%) }
+  70%, to { clip-path: polygon(-15% 0%, 120% 0%, 120% 100%, -15% 100%) }
+}
+
+@keyframes laser {
+  from, 30% { clip-path: polygon(-20% 0%, -15% 0%, -15% 100%, -20% 100%) }
+  70%, to { clip-path: polygon(115% 0%, 120% 0%, 120% 100%, 115% 100%) }
+}
+
+
+
+.frost-section {
+  width: 90%;
+  height: 90%;
+  background: inherit;
+  position: absolute;
+  overflow: hidden;
+  top: 30px;
+  left: 50%;
+  margin-left: -45%;
+  border-radius: 8px;
+  color: hsl(0, 0%, 80%);
+  font-size: 14px;
+  text-shadow: 0 0 0.1em #0ff, 0 -1px 0 #000;
+}
+
+.frost-section:before {
+  width: calc(100% + 50px);
+  height: calc(100% + 50px);
+  content: "";
+  position: absolute;
+  top: -25px;
+  left: -25px;
+  bottom: 0;
+  right: 0;
+  background: inherit;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2000px rgba(0,0,0,0.1);
+  filter: blur(10px);
+}
+
+.about-contents p{
+    color: hsl(0, 0%, 80%);
+    font-size: 1.1em;
+    line-height: 1.3;
+    padding: .8em 0 .25em;
+    font-family: "Noto Sans", Arial, sans-serif;
+    text-shadow: none;
+}
+
+.about-contents img {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin: 5px;
+}
+
+#about-canvas div.display-area{
+  max-width: 100%;
+  max-height: 100%;
+  padding: 40px;
+  position: relative;
+  font-family: "Noto Sans", Arial, sans-serif;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+-webkit-mask-image: linear-gradient(to bottom, black 0%,  black 70%, transparent 90%);
+  mask-image: linear-gradient(to bottom, black 0%,  black 70%, transparent 90%);
+  /*-webkit-mask-image: -webkit-gradient(linear, left 90%, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+  mask-image: linear-gradient(rgba(255, 0, 0, 1.0), transparent);*/
+}
+
+.about-title {
+    display: block;
+    font-size: 1.7em;
+    margin-block-start: 0.67em;
+    margin-block-end: 0.67em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: bold;
+}
+
+.about-section {
+    margin-block-end: 3em;
+}
+
+
+#about-canvas img {
+    max-width: 100%;
+}
+
+
+/* mobile (portrait) ----------- */
+@media only screen
+and (max-device-width : 1024px)
+and (orientation : portrait) {
+    .about-title {
+        font-size: 0.9em;
+    }
+    .about-section {
+        margin-block-end: 1em;
+    }
+
+    #about-canvas div.display-area {
+        padding: 10px;
+    }
+
+    .about-contents p{
+        font-size: 1em;
+        padding: .5em 0 .25em;
+    }
+}

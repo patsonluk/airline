@@ -1,17 +1,12 @@
 package com.patson.data
 import com.patson.data.Constants._
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Set
-import java.sql.DriverManager
-import com.patson.model.airplane.Airplane
-import java.sql.PreparedStatement
+
+import scala.collection.mutable.{HashMap, HashSet, ListBuffer, Map, Set}
 import com.patson.model._
-import java.sql.Statement
-import scala.collection.mutable.HashSet
 import java.sql.Connection
-import scala.collection.mutable.HashMap
-import com.patson.MainSimulation
- 
+
+import com.patson.model.bank.LoanInterestRate
+
 
 
 object BankSource {
@@ -116,6 +111,76 @@ object BankSource {
         preparedStatement.setObject(i + 1, criteria(i)._2)
     }
     preparedStatement
+  }
+
+  def loadLoanInterestRatesFromCycle(fromCycle : Int) : List[LoanInterestRate] = {
+    var queryString = "SELECT * FROM " + LOAN_INTEREST_RATE_TABLE + " WHERE cycle >= ?"
+    loadLoanInterestRatesByQueryString(queryString, List(fromCycle))
+  }
+
+  def loadLoanInterestRateByCycle(cycle : Int) : Option[LoanInterestRate] = {
+    var queryString = "SELECT * FROM " + LOAN_INTEREST_RATE_TABLE + " WHERE cycle = ?"
+    val result = loadLoanInterestRatesByQueryString(queryString, List(cycle))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+
+
+  def loadLoanInterestRatesByQueryString(queryString : String, parameters : List[Any]) : List[LoanInterestRate] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 1, parameters(i))
+      }
+
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val rates = new ListBuffer[LoanInterestRate]()
+
+      while (resultSet.next()) {
+        rates += LoanInterestRate(annualRate = resultSet.getDouble("rate"), cycle = resultSet.getInt("cycle"))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      rates.toList
+    } finally {
+      connection.close()
+    }
+  }
+  def saveLoanInterestRate(rate : LoanInterestRate) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + LOAN_INTEREST_RATE_TABLE + "(rate, cycle) VALUES(?, ?)")
+
+      preparedStatement.setBigDecimal(1, rate.annualRate.bigDecimal)
+      preparedStatement.setInt(2, rate.cycle)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteLoanInterestRatesUpToCycle(toCycle : Int) : Int = {
+    var queryString = "DELETE FROM " + LOAN_INTEREST_RATE_TABLE + " WHERE cycle < ?"
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(queryString)
+      preparedStatement.setInt(1, toCycle)
+      val updateCount = preparedStatement.executeUpdate()
+      preparedStatement.close()
+      updateCount
+    } finally {
+      connection.close()
+    }
   }
   
 }

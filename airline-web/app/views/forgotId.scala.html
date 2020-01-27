@@ -1,0 +1,45 @@
+@(forgotForm: Form[ForgotId])(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+@import helper._
+@import play.api.Play.current
+@import play.api.i18n.Messages.Implicits._
+<!DOCTYPE html>
+<html>
+  <head>
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+      html, body { height: 100%; margin: 0; padding: 0; }
+      #map { height: 100%; }
+    </style>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/new-style.css")">
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
+  </head>
+  <body>
+
+    @helper.form(action = routes.AccountApplication.forgotIdSubmit) {
+	<div class="frost-section">
+		<div class="display-area">
+        	<h1>Forgot User Name</h1>
+	        <fieldset>
+	            <div style="padding: 10px;">
+	             @inputText(
+	                forgotForm("email"),
+	                Symbol("_label") -> "Email",
+					Symbol("_help") -> "Please enter the email you registered with",
+					Symbol("_error") -> forgotForm.error("email")
+	            )
+	            </div>
+	        </fieldset>
+	        <div class="actions">
+	        	<div class="button" onclick="$(this).parents('form:first').submit()">Submit</div>
+	            <!--  <input type="submit" class="button" value="Sign Up"> -->
+	            <a href="@routes.Application.index" class="btn">Cancel</a>
+	        </div>
+        </div>
+	</div>
+    }
+</body>    
+</html>

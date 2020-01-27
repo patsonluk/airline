@@ -9,17 +9,32 @@ import com.patson.model.User
 import com.patson.model.Airline
 import play.api.libs.json._
 import com.patson.data.UserSource
+import com.patson.data.AllianceSource
+import javax.inject.Inject
 
-class UserApplication extends Controller {
+class UserApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object UserWrites extends Writes[User] {
     def writes(user: User): JsValue = {
-      JsObject(List(
+      var result = JsObject(List(
         "id" -> JsNumber(user.id),
         "userName" -> JsString(user.userName),
         "email" -> JsString(user.email),
         "status" -> JsString(user.status.toString()),
+        "level" -> JsNumber(user.level),
         "creationTime" -> JsString(user.creationTime.getTime.toString()),
+        "lastActiveTime" -> JsString(user.lastActiveTime.getTime.toString()),
         "airlineIds" -> JsArray(user.getAccessibleAirlines().map { airline => JsNumber(airline.id) })))
+      
+      if (user.getAccessibleAirlines().isDefinedAt(0)) {
+        AllianceSource.loadAllianceMemberByAirline(user.getAccessibleAirlines()(0)).foreach { allianceMember => //if this airline belongs to an alliance
+          val allianceId = allianceMember.allianceId
+          AllianceSource.loadAllianceById(allianceId).foreach { alliance =>
+            result = result + ("allianceId" -> JsNumber(allianceId)) + ("allianceName" -> JsString(alliance.name))  
+          }
+        }
+      }
+        
+      result
     }
   }
   // then in a controller

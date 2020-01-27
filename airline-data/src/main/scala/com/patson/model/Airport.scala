@@ -1,15 +1,21 @@
 package com.patson.model
 
 import com.patson.model.airplane.Model
-import com.patson.model.airplane.Model.Type
+
 import scala.collection.mutable.ListBuffer
-import scala.collection.JavaConversions._
 import com.patson.data.AirlineSource
 import com.patson.data.CountrySource
+import com.patson.util.AirlineCache
+
+import scala.collection.mutable
+import scala.jdk.CollectionConverters._
+
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
-  val citiesServed = scala.collection.mutable.MutableList[(City, Double)]()
-  private[this] val airlineAppeals = new java.util.HashMap[Int, AirlineAppeal]()//scala.collection.mutable.Map[Int, AirlineAppeal]()
+  val citiesServed = scala.collection.mutable.ListBuffer[(City, Double)]()
+  private[this] val airlineBaseAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals
+  private[this] val airlineAdjustedAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals + bonus
+  private[this] val allAirlineBonuses = new java.util.HashMap[Int, List[AirlineBonus]]() //bonus appeals
   private[this] var airlineAppealsLoaded = false
   private[this] val slotAssignments = scala.collection.mutable.Map[Int, Int]()
   private[this] var slotAssignmentsLoaded = false
@@ -17,14 +23,18 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var airlineBasesLoaded = false
   private[this] val features = ListBuffer[AirportFeature]()
   private[this] var featuresLoaded = false
-  
+  private[this] val loungesByAirline = scala.collection.mutable.Map[Int, Lounge]()
+  private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
+  //private[this] var loungesLoaded = false
+
   private[this] var airportImageUrl : Option[String] = None
   private[this] var cityImageUrl : Option[String] = None
-  
+
   private[model] var country : Option[Country] = None
-  
+
   val income = if (population > 0) (power / population).toInt  else 0
-  
+  lazy val incomeLevel = Computation.getIncomeLevel(income)
+
   def availableSlots : Int = {
     if (slotAssignmentsLoaded) {
       slots - slotAssignments.foldLeft(0)(_ + _._2)
@@ -32,37 +42,70 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       throw new IllegalStateException("airline slot assignment is not properly initialized! If loaded from DB, please use fullload")
     }
   }
-  
+
   def addCityServed(city : City, share : Double) {
     citiesServed += Tuple2(city, share)
   }
-  
-  def getAirlineAppeals() : Map[Int, AirlineAppeal] = {
+
+  def getAirlineAdjustedAppeals() : Map[Int, AirlineAppeal] = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    airlineAppeals.toMap
+    airlineAdjustedAppeals.asScala.toMap
+  }
+
+  def getAirlineBaseAppeals() : Map[Int, AirlineAppeal] = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    airlineBaseAppeals.asScala.toMap
+  }
+
+  def getAirlineBaseAppeal(airlineId : Int) : AirlineAppeal = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    val result = airlineBaseAppeals.get(airlineId)
+    if (result != null) {
+      result
+    } else {
+      AirlineAppeal(0, 0)
+    }
+  }
+
+  def getAirlineBonuses(airlineId : Int) : List[AirlineBonus] = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    allAirlineBonuses.asScala.getOrElse(airlineId, List.empty)
+  }
+
+  def getAllAirlineBonuses() : Map[Int, List[AirlineBonus]] = {
+    if (!airlineAppealsLoaded) {
+      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+    }
+    allAirlineBonuses.asScala.toMap
   }
   
-  def setAirlineLoyalty(airlineId : Int, value : Double) = {
-    if (!airlineAppealsLoaded) {
-      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
-    }
-    val oldAppeal = airlineAppeals.getOrElse(airlineId, AirlineAppeal(0, 0))
-    airlineAppeals.put(airlineId, AirlineAppeal(value, oldAppeal.awareness))
-  }
-  def setAirlineAwareness(airlineId : Int, value : Double) = {
-    if (!airlineAppealsLoaded) {
-      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
-    }
-    val oldAppeal = airlineAppeals.getOrElse(airlineId, AirlineAppeal(0, 0))
-    airlineAppeals.put(airlineId, AirlineAppeal(oldAppeal.loyalty, value))
-  }
+//  def setAirlineBaseLoyalty(airlineId : Int, value : Double) = {
+//    if (!airlineAppealsLoaded) {
+//      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+//    }
+//    val oldAppeal = airlineBaseAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
+//    airlineBaseAppeals.put(airlineId, AirlineAppeal(value, oldAppeal.awareness))
+//  }
+//  def setAirlineBaseAwareness(airlineId : Int, value : Double) = {
+//    if (!airlineAppealsLoaded) {
+//      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
+//    }
+//    val oldAppeal = airlineAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
+//    airlineBaseAppeals.put(airlineId, AirlineAppeal(oldAppeal.loyalty, value))
+//  }
   def getAirlineLoyalty(airlineId : Int) : Double = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    val appeal = airlineAppeals.get(airlineId)
+    val appeal = airlineAdjustedAppeals.get(airlineId)
     if (appeal != null) {
       appeal.loyalty
     } else {
@@ -73,7 +116,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
     }
-    val appeal = airlineAppeals.get(airlineId)
+    val appeal = airlineAdjustedAppeals.get(airlineId)
     if (appeal != null) {
       appeal.awareness
     } else {
@@ -110,19 +153,24 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   
   
   def getMaxSlotAssignment(airlineId : Int) : Int = {
-    AirlineSource.loadAirlineById(airlineId, true) match {
+    AirlineCache.getAirline(airlineId, true) match {
       case Some(airline) => getMaxSlotAssignment(airline)
       case None => 0
     }
     
   }
+  def getPreferredSlotAssignment(airlineId : Int) : Int = {
+     AirlineCache.getAirline(airlineId, true) match {
+      case Some(airline) => getPreferredSlotAssignment(airline)
+      case None => 0
+    }
+  }
+  
   /**
-   * Get max slots that can be assigned to this airline (including existing ones)
+   * Get slots that an airport would have offered without consideration of existing assignment
    */
-  def getMaxSlotAssignment(airline : Airline) : Int = {
+  def getPreferredSlotAssignment(airline : Airline, scaleAdjustment : Int = 0) : Int = {
     val airlineId = airline.id
-    val reservedSlots = (slots * 0.2).toInt //airport always keep 20% spare
-    val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airlineId)
     
     //find out the country where this airline is from
     val airlineFromCountry = airline.getCountryCode() match {
@@ -136,75 +184,90 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       return 0
     }
     
+    val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airlineId)
     
-    if (availableSlots < reservedSlots) { //at reserved range already...cannot assign any new slots to existing airline
-      if (currentAssignedSlotToThisAirline > 0) {
-        currentAssignedSlotToThisAirline
-      } else if (availableSlots > 0) { //some hope for new airline...
-        getGuaranteedSlots(airlineFromCountry, countryRelationship)
-      } else { //sry all full
-        0
-      } 
-    } else { //calculate how many can be assigned
-      val airlineBaseAtThisAirportOption = getAirlineBase(airlineId)
-      
-      
-      //calculate guaranteed slots
-      val guaranteedSlots = airlineBaseAtThisAirportOption match {
-        case Some(base) if (base.headquarter) => 10 //at least 10 slots for HQ
-        case Some(base) if (!base.headquarter) => 5 //at least 5 slots for base
-        case None => getGuaranteedSlots(airlineFromCountry, countryRelationship)
+    
+    val airlineBaseAtThisAirportOption = getAirlineBase(airlineId)
+    
+    
+    val maxSlotsByBase =
+      getAirlineBase(airlineId) match {
+        case Some(base) if (base.headquarter) => 100 + 100 * (base.scale + scaleAdjustment)
+        case Some(base) if (!base.headquarter) => 50 + 50 * (base.scale + scaleAdjustment)
+        case None => Airport.NON_BASE_MAX_SLOT  
       }
-      
-      
-       //if it's not a base, give it 50 slots max
-      val maxSlotsByBase =
-        getAirlineBase(airlineId) match {
-          case Some(base) if (base.headquarter) => 100 + 100 * (base.scale)
-          case Some(base) if (!base.headquarter) => 50 + 50 * (base.scale)
-          case None => 50  
-          
-        }
-      
-      val maxSlotsByLoyalty = (maxSlotsByBase * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at full loyalty get 100% of max slot available
+    
+    val maxSlotsByLoyalty = (maxSlotsByBase * (getAirlineLoyalty(airlineId) / AirlineAppeal.MAX_LOYALTY)).toInt //base on loyalty, at full loyalty get 100% of max slot available
 //      val maxSlotsByAwareness = (getAirlineAwareness(airlineId) * 30 / AirlineAppeal.MAX_AWARENESS).toInt + minSlots// +30 at max awareness
-      var maxSlotsByReputation : Int = (airline.getReputation() / Airline.MAX_REPUTATION * 9).toInt + 1 //max 10 with 100% reputation
-      if (airlineFromCountry != countryCode) { //from a foreign country, openness affects slots by reputation
-        //max openness 100 %, min openness 20 %
-        maxSlotsByReputation = (maxSlotsByReputation * (0.2 + (getCountry().openness.toDouble / Country.MAX_OPENNESS * 0.8))).toInt 
-      }
-      
-      
-      var maxSlots = Math.max(maxSlotsByLoyalty, maxSlotsByReputation)
-      
-      if (maxSlots > 1 && countryRelationship < 0) {
-        maxSlots /= 2
-      }
-      
-      maxSlots = Math.max(maxSlots, guaranteedSlots)
-      
-      //now see whether this new max slot would violate anything
-      if (maxSlots <= currentAssignedSlotToThisAirline) { //you can keep what you have but we cannot give u more as we don't like you anymore than before
-        currentAssignedSlotToThisAirline
-      } else {
-        var increment = maxSlots - currentAssignedSlotToThisAirline
-        if (availableSlots - increment < reservedSlots) { //nah cannot assign into the reserved range
-           increment = availableSlots - reservedSlots  //can give u what is left before reserved range at most   
-        }
-        currentAssignedSlotToThisAirline + increment
-      }
+    var maxSlotsByReputation : Int = (airline.getReputation() / Airline.MAX_REPUTATION * 9).toInt + 1 //max 10 with 100% reputation
+    if (airlineFromCountry != countryCode) { //from a foreign country, openness affects slots by reputation
+      //max openness 100 %, min openness 20 %
+      maxSlotsByReputation = (maxSlotsByReputation * (0.2 + (getCountry().openness.toDouble / Country.MAX_OPENNESS * 0.8))).toInt 
     }
+    
+    var maxSlots = Math.max(maxSlotsByLoyalty, maxSlotsByReputation)
+    
+    if (maxSlots > 1 && countryRelationship < 0) {
+      maxSlots /= 2
+    }
+    
+    //maxSlots = Math.max(maxSlots, guaranteedSlots)
+    
+    
+    //now see whether this new max slot would violate reserved slots
+    var increment = maxSlots - currentAssignedSlotToThisAirline
+    //val reservedSlots = (slots * 0.1).toInt //airport always keep 10% spare
+    
+//    if (availableSlots - increment < reservedSlots) { //at reserved range
+//      increment =  availableSlots - reservedSlots
+//    } 
+    
+    maxSlots = currentAssignedSlotToThisAirline + increment
+    
+     //calculate guaranteed slots
+    val guaranteedSlots = airlineBaseAtThisAirportOption match {
+      case Some(base) if (base.headquarter) => Airport.HQ_GUARANTEED_SLOTS 
+      case Some(base) if (!base.headquarter) => Airport.BASE_GUARANTEED_SLOTS 
+      case None => getGuaranteedSlots(airlineFromCountry, countryRelationship)
+    }
+    
+    maxSlots = Math.max(maxSlots, guaranteedSlots)
+    
+    //now double check if it violated limit
+    increment = maxSlots - currentAssignedSlotToThisAirline
+    
+//    if (increment > availableSlots) {
+//      increment = availableSlots
+//    }
+    
+    currentAssignedSlotToThisAirline + increment
+  }
+  
+  /**
+   * Get max slots that can be assigned to this airline (including existing ones)
+   */
+  def getMaxSlotAssignment(airline : Airline) : Int = {
+    val currentAssignedSlotToThisAirline = getAirlineSlotAssignment(airline.id)
+    
+    val preferredSlots = getPreferredSlotAssignment(airline)
+      
+    if (preferredSlots <= currentAssignedSlotToThisAirline) { //you can keep what you have but we cannot give u more as we don't like you like before :<
+      currentAssignedSlotToThisAirline
+    } else {
+      preferredSlots
+    }
+   
   }
   
   def getGuaranteedSlots(airlineFromCountryCode : String, countryMutualRelationship: Int) : Int = {
-    if (airlineFromCountryCode == this.countryCode) { //always at least 2 slots for home country airline
-      2
+    if (airlineFromCountryCode == this.countryCode) { //always at least 7 slots for home country airline
+      7
     } else if (countryMutualRelationship < 0) {
       0
     } else if (getCountry.openness >= Country.SIXTH_FREEDOM_MIN_OPENNESS) { //only very free country will open up slots for ANY airline
-      1
+      5
     } else {
-      0
+      3
     }
   }
   
@@ -237,15 +300,59 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     airlineBases.toMap
   }
   
+  def getLoungeByAirline(airlineId : Int, activeOnly : Boolean = false) : Option[Lounge] = {
+    loungesByAirline.get(airlineId).filter(!activeOnly || _.status == LoungeStatus.ACTIVE)
+  }
+  
+  def getLounges() : List[Lounge] = {
+    loungesByAirline.values.toList
+  }
+  
+  def getLoungeByAlliance(alliance : Int, activeOnly : Boolean = false) : Option[Lounge] = {
+    loungesByAlliance.get(alliance).filter(!activeOnly || _.status == LoungeStatus.ACTIVE)
+  }
+  
+  def getLounge(airlineId : Int, allianceIdOption : Option[Int], activeOnly : Boolean = false) : Option[Lounge] = {
+     getLoungeByAirline(airlineId, activeOnly) match {
+       case Some(lounge) => Some(lounge)
+       case None => allianceIdOption match {
+         case Some(allianceId) => getLoungeByAlliance(allianceId, activeOnly)
+         case None => None
+       }
+     }
+     
+  }
+  
   def isFeaturesLoaded = featuresLoaded
   
   def getFeatures() : List[AirportFeature] = {
     features.toList
   }
   
-  def initAirlineAppeals(airlineAppeals : Map[Int, AirlineAppeal]) = {
-    this.airlineAppeals.clear()
-    this.airlineAppeals ++= airlineAppeals
+  def initAirlineAppeals(airlineBaseAppeals : Map[Int, AirlineAppeal], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty) = {
+    this.airlineBaseAppeals.clear()
+    this.airlineBaseAppeals.asScala ++= airlineBaseAppeals
+
+    this.airlineAdjustedAppeals.clear()
+    this.airlineAdjustedAppeals.asScala ++= airlineBaseAppeals
+
+    this.allAirlineBonuses.clear()
+    airlineBonuses.foreach {
+      case(airlineId, bonuses) =>
+        allAirlineBonuses.put(airlineId, bonuses)
+        //add the adjustments
+        bonuses.foreach { bonus =>
+          val existingAppeal = this.airlineAdjustedAppeals.get(airlineId)
+          if (existingAppeal != null) {
+            val newLoyalty = Math.min(existingAppeal.loyalty + bonus.bonus.loyalty, AirlineAppeal.MAX_LOYALTY)
+            val newAwareness = Math.min(existingAppeal.awareness + bonus.bonus.awareness, AirlineAppeal.MAX_AWARENESS)
+            this.airlineAdjustedAppeals.put(airlineId, AirlineAppeal(newLoyalty, newAwareness))
+          } else { //not yet has appeal data, add one
+            this.airlineAdjustedAppeals.put(airlineId, bonus.bonus)
+          }
+        }
+    }
+
     airlineAppealsLoaded = true
   }
   def initSlotAssignments(slotAssignments : Map[Int, Int]) = {
@@ -266,6 +373,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     featuresLoaded = true
   }
   
+  def initLounges(lounges : List[Lounge]) = {
+    this.loungesByAirline.clear()
+    lounges.foreach { lounge =>
+      this.loungesByAirline.put(lounge.airline.id, lounge)
+      lounge.allianceId.foreach {
+         allianceId => this.loungesByAlliance.put(allianceId, lounge)  
+      }
+    }
+  }
+  
   def slotFee(airplaneModel : Model, airline : Airline) : Int = { 
     val baseSlotFee = size match {
       case 1 => 50 //small
@@ -282,9 +399,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case LIGHT => 1
       case REGIONAL => 1
       case SMALL => 3
-      case MEDIUM => 15
-      case LARGE => 20
-      case JUMBO => 25
+      case MEDIUM => 8
+      case LARGE => 12
+      case X_LARGE => 15
+      case JUMBO => 18
     }
     
     //apply discount if it's a base
@@ -310,16 +428,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   
   def allowsModel(airplaneModel : Model) : Boolean = {
-    import Model.Type._
-    airplaneModel.airplaneType match {
-      case LIGHT => true   
-      case REGIONAL => true
-      case SMALL => size >= 2
-      case MEDIUM => size >= 3
-      case LARGE => size >= 4
-      case JUMBO => size >= 5
-    }
-    
+    size >= airplaneModel.minAirportSize
+  }
+  
+  val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
+    Math.max(0, Math.min(incomeLevel, 50) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //50% on income level, 50% on flight adjust
   }
   
   private[this] def getCountry() : Country = {
@@ -337,12 +450,23 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case _ => 0
     }
   }
+  
+  val displayText = city + "(" + iata + ")"
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)
 object AirlineAppeal {
   val MAX_LOYALTY = 100
   val MAX_AWARENESS = 100
+}
+case class AirlineBonus(bonusType : BonusType.Value, bonus : AirlineAppeal, expirationCycle : Option[Int]) {
+  val isExpired : Int => Boolean = currentCycle => expirationCycle.isDefined && currentCycle > expirationCycle.get
+}
+
+
+object BonusType extends Enumeration {
+  type BonusType = Value
+  val NATIONAL_AIRLINE, PARTNERED_AIRLINE = Value
 }
 
 object Airport {
@@ -353,6 +477,19 @@ object Airport {
   }
   
   val MAJOR_AIRPORT_LOWER_THRESHOLD = 5
+  val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
+  val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
+  val NON_BASE_MAX_SLOT = 70
+  
+  import FlightType._
+  val qualityExpectationFlightTypeAdjust = 
+  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
+        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
+        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 5, 15),
+        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 5, 15),
+        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 10, 20),
+        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20),
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20))
 }
 
 case class Runway(length : Int, runwayType : RunwayType.Value)

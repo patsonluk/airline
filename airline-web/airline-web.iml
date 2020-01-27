@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="root [file:/C:/Users/Patson/git/airline/airline-web/]" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$" external.system.id="SBT" type="JAVA_MODULE" version="4">
+  <component name="EclipseModuleManager">
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/twirl-api_2.11/jars/twirl-api_2.11-1.1.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.apache.commons/commons-lang3/jars/commons-lang3-3.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-server_2.11/jars/play-server_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/jars/play_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/build-link/jars/build-link-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-exceptions/jars/play-exceptions-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.javassist/javassist/bundles/javassist-3.19.0-GA.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-iteratees_2.11/jars/play-iteratees_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scala-stm/scala-stm_2.11/jars/scala-stm_2.11-0.7.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe/config/bundles/config-1.3.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-json_2.11/jars/play-json_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-functional_2.11/jars/play-functional_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-datacommons_2.11/jars/play-datacommons_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/joda-time/joda-time/jars/joda-time-2.8.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.joda/joda-convert/jars/joda-convert-1.7.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/bundles/jackson-core-2.5.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/bundles/jackson-annotations-2.5.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/bundles/jackson-databind-2.5.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/bundles/jackson-datatype-jdk8-2.5.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/bundles/jackson-datatype-jsr310-2.5.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-netty-utils/jars/play-netty-utils-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.12.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.slf4j/jul-to-slf4j/jars/jul-to-slf4j-1.7.12.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.slf4j/jcl-over-slf4j/jars/jcl-over-slf4j-1.7.12.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/ch.qos.logback/logback-core/jars/logback-core-1.1.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/ch.qos.logback/logback-classic/jars/logback-classic-1.1.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.akka/akka-actor_2.11/jars/akka-actor_2.11-2.3.13.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.akka/akka-slf4j_2.11/jars/akka-slf4j_2.11-2.3.13.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/commons-codec/commons-codec/jars/commons-codec-1.10.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/xerces/xercesImpl/jars/xercesImpl-2.11.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/xml-apis/xml-apis/jars/xml-apis-1.4.01.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/javax.transaction/jta/jars/jta-1.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.inject/guice/jars/guice-4.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/javax.inject/javax.inject/jars/javax.inject-1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/aopalliance/aopalliance/jars/aopalliance-1.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.inject.extensions/guice-assistedinject/jars/guice-assistedinject-4.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/jars/play-netty-server_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/io.netty/netty/bundles/netty-3.10.4.Final.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.netty/netty-http-pipelining/jars/netty-http-pipelining-1.1.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-jdbc_2.11/jars/play-jdbc_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-jdbc-api_2.11/jars/play-jdbc-api_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.jolbox/bonecp/bundles/bonecp-0.8.0.RELEASE.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.zaxxer/HikariCP/bundles/HikariCP-2.3.7.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.h2database/h2/jars/h2-1.4.187.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/tyrex/tyrex/jars/tyrex-1.0.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-cache_2.11/jars/play-cache_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/net.sf.ehcache/ehcache-core/jars/ehcache-core-2.6.11.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-ws_2.11/jars/play-ws_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.guava/guava/bundles/guava-18.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.ning/async-http-client/jars/async-http-client-1.9.21.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/oauth.signpost/signpost-core/jars/signpost-core-1.2.1.2.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/oauth.signpost/signpost-commonshttp4/jars/signpost-commonshttp4-1.2.1.2.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.akka/akka-remote_2.11/jars/akka-remote_2.11-2.3.11.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.protobuf/protobuf-java/bundles/protobuf-java-2.5.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.uncommons.maths/uncommons-maths/jars/uncommons-maths-1.2.2a.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/local/default/airline-data_2.11/1.1-SNAPSHOT/jars/airline-data_2.11.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/mysql/mysql-connector-java/jars/mysql-connector-java-5.1.38.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.mchange/c3p0/jars/c3p0-0.9.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.mchange/mchange-commons-java/jars/mchange-commons-java-0.2.9.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.akka/akka-stream-experimental_2.11/jars/akka-stream-experimental_2.11-0.10.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.akka/akka-persistence-experimental_2.11/jars/akka-persistence-experimental_2.11-2.3.6.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.iq80.leveldb/leveldb/jars/leveldb-0.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.iq80.leveldb/leveldb-api/jars/leveldb-api-0.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fusesource.leveldbjni/leveldbjni-all/bundles/leveldbjni-all-1.7.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fusesource.leveldbjni/leveldbjni/jars/leveldbjni-1.7.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fusesource.hawtjni/hawtjni-runtime/jars/hawtjni-runtime-1.8.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fusesource.leveldbjni/leveldbjni-osx/jars/leveldbjni-osx-1.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fusesource.leveldbjni/leveldbjni-linux32/jars/leveldbjni-linux32-1.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fusesource.leveldbjni/leveldbjni-linux64/jars/leveldbjni-linux64-1.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fusesource.leveldbjni/leveldbjni-win32/jars/leveldbjni-win32-1.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fusesource.leveldbjni/leveldbjni-win64/jars/leveldbjni-win64-1.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.reactivestreams/reactive-streams/jars/reactive-streams-0.4.0.M2.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.api-client/google-api-client/jars/google-api-client-1.23.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.oauth-client/google-oauth-client/jars/google-oauth-client-1.23.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.http-client/google-http-client/jars/google-http-client-1.23.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.http-client/google-http-client-jackson2/jars/google-http-client-jackson2-1.23.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.guava/guava-jdk5/bundles/guava-jdk5-17.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.oauth-client/google-oauth-client-jetty/jars/google-oauth-client-jetty-1.23.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.oauth-client/google-oauth-client-java6/jars/google-oauth-client-java6-1.23.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.mortbay.jetty/jetty/jars/jetty-6.1.26.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.mortbay.jetty/jetty-util/jars/jetty-util-6.1.26.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.mortbay.jetty/servlet-api/jars/servlet-api-2.5-20081211.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.apis/google-api-services-gmail/jars/google-api-services-gmail-v1-rev83-1.23.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/javax.mail/javax.mail-api/jars/javax.mail-api-1.6.2.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-test_2.11/jars/play-test_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/junit/junit/jars/junit-4.12.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.hamcrest/hamcrest-core/jars/hamcrest-core-1.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.novocode/junit-interface/jars/junit-interface-0.11.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scala-sbt/test-interface/jars/test-interface-1.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.code.findbugs/jsr305/jars/jsr305-2.0.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.fluentlenium/fluentlenium-core/jars/fluentlenium-core-0.10.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-java/jars/selenium-java-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-chrome-driver/jars/selenium-chrome-driver-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-remote-driver/jars/selenium-remote-driver-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/cglib/cglib-nodep/jars/cglib-nodep-2.1_3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.google.code.gson/gson/jars/gson-2.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-api/jars/selenium-api-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.apache.httpcomponents/httpclient/jars/httpclient-4.3.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.apache.httpcomponents/httpcore/jars/httpcore-4.3.2.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/commons-logging/commons-logging/jars/commons-logging-1.1.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.apache.commons/commons-exec/jars/commons-exec-1.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/net.java.dev.jna/jna/jars/jna-3.4.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/net.java.dev.jna/platform/jars/platform-3.4.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-htmlunit-driver/jars/selenium-htmlunit-driver-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/net.sourceforge.htmlunit/htmlunit/jars/htmlunit-2.15.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/xalan/xalan/jars/xalan-2.7.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/xalan/serializer/jars/serializer-2.7.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/commons-collections/commons-collections/jars/commons-collections-3.2.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.apache.httpcomponents/httpmime/jars/httpmime-4.3.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/net.sourceforge.htmlunit/htmlunit-core-js/jars/htmlunit-core-js-2.15.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/net.sourceforge.nekohtml/nekohtml/jars/nekohtml-1.9.21.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/net.sourceforge.cssparser/cssparser/jars/cssparser-0.9.14.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.w3c.css/sac/jars/sac-1.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/commons-io/commons-io/jars/commons-io-2.4.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.eclipse.jetty/jetty-websocket/jars/jetty-websocket-8.1.15.v20140411.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.eclipse.jetty/jetty-util/jars/jetty-util-8.1.15.v20140411.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.eclipse.jetty/jetty-io/jars/jetty-io-8.1.15.v20140411.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.eclipse.jetty/jetty-http/jars/jetty-http-8.1.15.v20140411.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-firefox-driver/jars/selenium-firefox-driver-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-ie-driver/jars/selenium-ie-driver-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-safari-driver/jars/selenium-safari-driver-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.webbitserver/webbit/jars/webbit-0.4.14.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.seleniumhq.selenium/selenium-support/jars/selenium-support-2.44.0.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/com.typesafe.play/play-specs2_2.11/jars/play-specs2_2.11-2.4.3.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.specs2/specs2-core_2.11/jars/specs2-core_2.11-3.6.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.specs2/specs2-matcher_2.11/jars/specs2-matcher_2.11-3.6.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.specs2/specs2-common_2.11/jars/specs2-common_2.11-3.6.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scalaz/scalaz-core_2.11/bundles/scalaz-core_2.11-7.1.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11/bundles/scala-parser-combinators_2.11-1.0.2.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11/bundles/scala-xml_2.11-1.0.2.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scalaz/scalaz-concurrent_2.11/bundles/scalaz-concurrent_2.11-7.1.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scalaz/scalaz-effect_2.11/bundles/scalaz-effect_2.11-7.1.1.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scalaz.stream/scalaz-stream_2.11/bundles/scalaz-stream_2.11-0.7a.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.scodec/scodec-bits_2.11/bundles/scodec-bits_2.11-1.0.6.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.specs2/specs2-junit_2.11/jars/specs2-junit_2.11-3.6.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.specs2/specs2-mock_2.11/jars/specs2-mock_2.11-3.6.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.mockito/mockito-core/jars/mockito-core-1.9.5.jar!/" />
+    <libelement value="jar://$USER_HOME$/.ivy2/cache/org.objenesis/objenesis/jars/objenesis-1.0.jar!/" />
+    <conelement value="org.scala-ide.sdt.launching.SCALA_CONTAINER" />
+    <src_description expected_position="0">
+      <src_folder value="file://$MODULE_DIR$/app" expected_position="0" />
+      <src_folder value="file://$MODULE_DIR$/conf" expected_position="1" />
+      <src_folder value="file://$MODULE_DIR$/target/scala-2.11/twirl/main" expected_position="2" />
+      <src_folder value="file://$MODULE_DIR$/target/scala-2.11/routes/main" expected_position="3" />
+      <src_folder value="file://$MODULE_DIR$/test" expected_position="4" />
+    </src_description>
+  </component>
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+    <output url="file://$MODULE_DIR$/target/scala-2.11/classes" />
+    <output-test url="file://$MODULE_DIR$/target/scala-2.11/test-classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/app" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/conf" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/scala-2.11/twirl/main" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/scala-2.11/routes/main" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/scala-2.11/src_managed/main" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/target/scala-2.11/routes/test" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/target/scala-2.11/src_managed/test" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/target/scala-2.11/twirl/test" isTestSource="true" generated="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target/resolution-cache" />
+      <excludeFolder url="file://$MODULE_DIR$/target/streams" />
+      <excludeFolder url="file://$MODULE_DIR$/target/web" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="library" name="sbt: aopalliance:aopalliance:1.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: xml-apis:xml-apis:1.4.01:jar" level="project" />
+    <orderEntry type="library" name="sbt: xerces:xercesImpl:2.11.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: xalan:xalan:2.7.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: xalan:serializer:2.7.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: tyrex:tyrex:1.0.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.webbitserver:webbit:0.4.14:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.w3c.css:sac:1.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.uncommons.maths:uncommons-maths:1.2.2a:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.specs2:specs2-mock_2.11:3.6:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.specs2:specs2-matcher_2.11:3.6:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.specs2:specs2-junit_2.11:3.6:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.specs2:specs2-core_2.11:3.6:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.specs2:specs2-common_2.11:3.6:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.slf4j:slf4j-api:1.7.12:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.slf4j:jul-to-slf4j:1.7.12:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.slf4j:jcl-over-slf4j:1.7.12:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-support:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-safari-driver:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-remote-driver:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-java:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-ie-driver:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-htmlunit-driver:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-firefox-driver:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-chrome-driver:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.seleniumhq.selenium:selenium-api:2.44.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scodec:scodec-bits_2.11:1.0.6:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scalaz.stream:scalaz-stream_2.11:0.7a:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scalaz:scalaz-effect_2.11:7.1.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scalaz:scalaz-core_2.11:7.1.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scalaz:scalaz-concurrent_2.11:7.1.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-stm:scala-stm_2.11:0.7:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scala-sbt:test-interface:1.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scala-lang.modules:scala-xml_2.11:1.0.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-lang.modules:scala-xml_2.11:1.0.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-lang:scala-reflect:2.11.6:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.11.6:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.reactivestreams:reactive-streams:0.4.0.M2:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.objenesis:objenesis:1.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.mortbay.jetty:servlet-api:2.5-20081211:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.mortbay.jetty:jetty-util:6.1.26:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.mortbay.jetty:jetty:6.1.26:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.mockito:mockito-core:1.9.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.joda:joda-convert:1.7:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.javassist:javassist:3.19.0-GA:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.iq80.leveldb:leveldb-api:0.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.iq80.leveldb:leveldb:0.5:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.hamcrest:hamcrest-core:1.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.leveldbjni:leveldbjni-win64:1.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.leveldbjni:leveldbjni-win32:1.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.leveldbjni:leveldbjni-osx:1.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.leveldbjni:leveldbjni-linux64:1.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.leveldbjni:leveldbjni-linux32:1.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.leveldbjni:leveldbjni-all:1.7:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.leveldbjni:leveldbjni:1.7:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.fusesource.hawtjni:hawtjni-runtime:1.8:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.fluentlenium:fluentlenium-core:0.10.3:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.eclipse.jetty:jetty-websocket:8.1.15.v20140411:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.eclipse.jetty:jetty-util:8.1.15.v20140411:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.eclipse.jetty:jetty-io:8.1.15.v20140411:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.eclipse.jetty:jetty-http:8.1.15.v20140411:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.apache.httpcomponents:httpmime:4.3.3:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.apache.httpcomponents:httpcore:4.3.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.httpcomponents:httpcore:4.0.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.apache.httpcomponents:httpclient:4.3.4:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.httpcomponents:httpclient:4.0.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.apache.commons:commons-lang3:3.4:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.apache.commons:commons-exec:1.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: oauth.signpost:signpost-core:1.2.1.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: oauth.signpost:signpost-commonshttp4:1.2.1.2:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: net.sourceforge.nekohtml:nekohtml:1.9.21:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: net.sourceforge.htmlunit:htmlunit-core-js:2.15:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: net.sourceforge.htmlunit:htmlunit:2.15:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: net.sourceforge.cssparser:cssparser:0.9.14:jar" level="project" />
+    <orderEntry type="library" name="sbt: net.sf.ehcache:ehcache-core:2.6.11:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: net.java.dev.jna:platform:3.4.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: net.java.dev.jna:jna:3.4.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: mysql:mysql-connector-java:5.1.38:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: junit:junit:4.12:jar" level="project" />
+    <orderEntry type="library" name="sbt: joda-time:joda-time:2.8.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: javax.transaction:jta:1.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: javax.mail:javax.mail-api:1.6.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: javax.inject:javax.inject:1:jar" level="project" />
+    <orderEntry type="library" name="sbt: javax.activation:activation:1.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: io.netty:netty:3.10.4.Final:jar" level="project" />
+    <orderEntry type="library" name="sbt: default:airline-data_2.11:1.1-SNAPSHOT:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: commons-logging:commons-logging:1.1.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: commons-logging:commons-logging:1.1.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: commons-io:commons-io:2.4:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: commons-collections:commons-collections:3.2.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: commons-codec:commons-codec:1.10:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.zaxxer:HikariCP:2.3.7:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:twirl-api_2.11:1.1.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-ws_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: com.typesafe.play:play-test_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: com.typesafe.play:play-specs2_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-server_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-netty-utils:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-netty-server_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-json_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-jdbc_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-jdbc-api_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-iteratees_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-functional_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-exceptions:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-datacommons_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:play-cache_2.11:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.play:build-link:2.4.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.netty:netty-http-pipelining:1.1.4:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.akka:akka-stream-experimental_2.11:0.10:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.akka:akka-slf4j_2.11:2.3.13:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.akka:akka-remote_2.11:2.3.11:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.akka:akka-persistence-experimental_2.11:2.3.6:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe.akka:akka-actor_2.11:2.3.13:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.typesafe:config:1.3.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.sun.mail:javax.mail:1.6.2:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: com.novocode:junit-interface:0.11:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.ning:async-http-client:1.9.21:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.mchange:mchange-commons-java:0.2.9:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.mchange:c3p0:0.9.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.jolbox:bonecp:0.8.0.RELEASE:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.h2database:h2:1.4.187:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.protobuf:protobuf-java:2.5.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.oauth-client:google-oauth-client-jetty:1.23.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.oauth-client:google-oauth-client-java6:1.23.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.oauth-client:google-oauth-client:1.23.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.inject.extensions:guice-assistedinject:4.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.inject:guice:4.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.http-client:google-http-client-jackson2:1.23.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.http-client:google-http-client:1.23.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.guava:guava-jdk5:17.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.guava:guava:18.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: com.google.code.gson:gson:2.3:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: com.google.code.findbugs:jsr305:2.0.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.code.findbugs:jsr305:1.3.9:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.apis:google-api-services-gmail:v1-rev83-1.23.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.api-client:google-api-client:1.23.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.5.4:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.5.4:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-databind:2.5.4:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-core:2.5.4:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-annotations:2.5.4:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.appoptics.agent.java:appoptics-sdk:6.0.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: ch.qos.logback:logback-core:1.1.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: ch.qos.logback:logback-classic:1.1.3:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: cglib:cglib-nodep:2.1_3:jar" level="project" />
+  </component>
+</module>

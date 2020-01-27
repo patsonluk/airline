@@ -3,26 +3,32 @@ package controllers
 import play.api.mvc.Security.AuthenticatedBuilder
 import play.api.mvc.Results._
 import play.api.mvc.RequestHeader
+
 import scala.util.Random
 import java.security.spec.KeySpec
+
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.SecretKeyFactory
 import java.util.Base64
+
 import com.patson.Authentication
 import com.patson.data.UserSource
 import com.patson.model._
 import play.api.mvc._
+
 import scala.concurrent.Future
 import play.api.mvc.Security.AuthenticatedRequest
 import com.patson.data.AirlineSource
+import com.patson.util.AirlineCache
 
 object AuthenticationObject {
 //  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), _ => 
 //    Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured Area"""")) {
 //  }
-  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req))
+  val defaultBodyParser = new BodyParsers.Default
+  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), defaultBodyParser)
   
-  case class AuthenticatedAirline(airlineId : Int) extends AuthenticatedBuilder(req => getUserAirlineFromRequest(req, airlineId))
+  case class AuthenticatedAirline(airlineId : Int) extends AuthenticatedBuilder(req => getUserAirlineFromRequest(req, airlineId), defaultBodyParser)
   
   def getUserFromRequest(request : RequestHeader) : Option[User] = {
     if (!request.session.isEmpty && request.session.get("userId").isDefined) {
@@ -57,7 +63,7 @@ object AuthenticationObject {
     getUserFromRequest(request) match {
       case Some(user) =>
         if (user.hasAccessToAirline(airlineId)) {
-          AirlineSource.loadAirlineById(airlineId, true)
+          AirlineCache.getAirline(airlineId, true)
         } else {
           println(user.userName + " trying to access airline " + airlineId + " which he does not have access to!")
           None
@@ -67,7 +73,7 @@ object AuthenticationObject {
     }
   }
   
-  def getHashedPassword(plainPassword : String) {
+  def getHashedPassword(plainPassword : String) : Unit = {
     val salt = new Array[Byte](16);
     Random.nextBytes(salt);
     val spec = new PBEKeySpec(plainPassword.toCharArray(), salt, 65536, 128);

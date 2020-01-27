@@ -3,6 +3,7 @@ package com.patson.init
 import com.patson.data.AirportSource
 import com.patson.model.Airport
 import com.patson.data.CountrySource
+import scala.collection.parallel.CollectionConverters._
 
 object AirportProfilePicturePatcher {
   val cityPreferredWords = List("montage", "montaje", "downtown", "skyline")  

@@ -1,22 +1,14 @@
 package com.patson
 
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
-import akka.actor.ActorSystem
-import akka.testkit.ImplicitSender
-import akka.testkit.TestKit
 import com.patson.model._
-import scala.collection.mutable.Set
-import scala.collection.mutable.ListBuffer
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import com.patson.model.airplane._
-import com.patson.data.LinkSource
+import org.scalatest.{Matchers, WordSpecLike}
+
+import scala.collection.mutable.ListBuffer
  
 class AirportSimulationSpec extends WordSpecLike with Matchers {
   val sampleLink = Link.fromId(1)
-  val sampleConsumption = LinkConsumptionDetails(link = sampleLink, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, depreciation = 0, revenue = 0, profit = 0,  cycle = 0)
+  val sampleConsumption = LinkConsumptionDetails(link = sampleLink, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, loungeCost = 0, depreciation = 0, revenue = 0, profit = 0,  cycle = 0)
   
   "getTargetLoyalty".must {
     "get target loyalty based on average quality link consumption if volume is huge".in {
@@ -73,8 +65,8 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
       val smallAirplaneModel = Model.modelByName("Bombardier CS100")
       val largeAirplaneModel = Model.modelByName("Boeing 747-400")
       
-      val smallAirplane = Airplane(smallAirplaneModel, Airline.fromId(1), 0, 100, AirplaneSimulation.computeDepreciationRate(smallAirplaneModel, Airplane.MAX_CONDITION.toDouble / smallAirplaneModel.lifespan), smallAirplaneModel.price)
-      val largeAirplane = Airplane(largeAirplaneModel, Airline.fromId(1), 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
+      val smallAirplane = Airplane(smallAirplaneModel, Airline.fromId(1), 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(smallAirplaneModel, Airplane.MAX_CONDITION.toDouble / smallAirplaneModel.lifespan), smallAirplaneModel.price)
+      val largeAirplane = Airplane(largeAirplaneModel, Airline.fromId(1), 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
       
       val consumptions = ListBuffer[LinkConsumptionDetails]()
       List(smallAirplane, largeAirplane).foreach { airplane =>
@@ -86,14 +78,14 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
         val capacity = frequency * airplane.model.capacity
         val fromAirport = Airport.fromId(1)
         val toAirport = Airport.fromId(2)
-        val link = Link(fromAirport, toAirport, Airline.fromId(1), LinkClassValues(Map(ECONOMY -> price)), distance, LinkClassValues(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, Computation.getFlightType(fromAirport, toAirport, distance))
-        link.setAssignedAirplanes(List(airplane))
-        consumptions.append(LinkConsumptionDetails(link = link, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, depreciation = 0, revenue = 0, profit = 0,  cycle = 0))
+        val link = Link(fromAirport, toAirport, Airline.fromId(1), LinkClassValues.getInstanceByMap(Map(ECONOMY -> price)), distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, Computation.getFlightType(fromAirport, toAirport, distance))
+        link.setTestingAssignedAirplanes(Map(airplane -> frequency))
+        consumptions.append(LinkConsumptionDetails(link = link, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, loungeCost = 0, depreciation = 0, revenue = 0, profit = 0,  cycle = 0))
       }
       
       val consumption = 
        //no penalty
-       assert(AirportSimulation.getPenalty(consumptions) == 0)
+       assert(AirportSimulation.getPenalty(consumptions.toList) == 0)
        
        val singleMinorDelaySmallAirplaneConsumptions = consumptions.map { consumption =>
          if (consumption.link.getAssignedModel().get == smallAirplaneModel) {
@@ -259,51 +251,51 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
          })
        }
       
-       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions) > 0)
-       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
-       assert(AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions) > 0)
-       assert(AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
-       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions) > 0)
-       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
-       assert(AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions) > 0)
-       assert(AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
-       assert(AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions) > 0)
-       assert(AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
-       assert(AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions) > 0)
-       assert(AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
+       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions.toList) > 0)
+       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
+       assert(AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions.toList) > 0)
+       assert(AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
+       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions.toList) > 0)
+       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
+       assert(AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions.toList) > 0)
+       assert(AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
+       assert(AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions.toList) > 0)
+       assert(AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
+       assert(AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions.toList) > 0)
+       assert(AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
        
        //compare severity
-       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions) < AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions) < AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions) < AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions) < AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions))
+       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions.toList) < AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions.toList) < AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions.toList))
        
        //compare plane size
-       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions) < AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions) < AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions) < AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions))
+       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions.toList) < AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions.toList))
        
        
        //compare occurrence count
-       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions) < AirportSimulation.getPenalty(allMinorDelaySmallAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions) < AirportSimulation.getPenalty(allMajorDelaySmallAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions) < AirportSimulation.getPenalty(allCancellationSmallAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions) < AirportSimulation.getPenalty(allMinorDelayLargeAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions) < AirportSimulation.getPenalty(allMajorDelayLargeAirplaneConsumptions))
-       assert(AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions) < AirportSimulation.getPenalty(allCancellationLargeAirplaneConsumptions))
+       assert(AirportSimulation.getPenalty(singleMinorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.getPenalty(allMinorDelaySmallAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleMajorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.getPenalty(allMajorDelaySmallAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleCancellationSmallAirplaneConsumptions.toList) < AirportSimulation.getPenalty(allCancellationSmallAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleMinorDelayLargeAirplaneConsumptions.toList) < AirportSimulation.getPenalty(allMinorDelayLargeAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleMajorDelayLargeAirplaneConsumptions.toList) < AirportSimulation.getPenalty(allMajorDelayLargeAirplaneConsumptions.toList))
+       assert(AirportSimulation.getPenalty(singleCancellationLargeAirplaneConsumptions.toList) < AirportSimulation.getPenalty(allCancellationLargeAirplaneConsumptions.toList))
        
        //compare all
-       assert(AirportSimulation.getPenalty(allMinorDelaySmallAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
-       assert(AirportSimulation.getPenalty(allMajorDelaySmallAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
-       assert(AirportSimulation.getPenalty(allCancellationSmallAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
+       assert(AirportSimulation.getPenalty(allMinorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
+       assert(AirportSimulation.getPenalty(allMajorDelaySmallAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
+       assert(AirportSimulation.getPenalty(allCancellationSmallAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
        
-       assert(AirportSimulation.getPenalty(allMinorDelayLargeAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
-       assert(AirportSimulation.getPenalty(allMajorDelayLargeAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
-       assert(AirportSimulation.getPenalty(allCancellationLargeAirplaneConsumptions) < AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
+       assert(AirportSimulation.getPenalty(allMinorDelayLargeAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
+       assert(AirportSimulation.getPenalty(allMajorDelayLargeAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
+       assert(AirportSimulation.getPenalty(allCancellationLargeAirplaneConsumptions.toList) < AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
        
-       assert(AirportSimulation.getPenalty(allMinorDelayConsumptions) == AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
-       assert(AirportSimulation.getPenalty(allMajorDelayConsumptions) == AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
-       assert(AirportSimulation.getPenalty(allCancellationConsumptions) == AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
+       assert(AirportSimulation.getPenalty(allMinorDelayConsumptions.toList) == AirportSimulation.LOYALTY_DECREMENT_BY_MINOR_DELAY)
+       assert(AirportSimulation.getPenalty(allMajorDelayConsumptions.toList) == AirportSimulation.LOYALTY_DECREMENT_BY_MAJOR_DELAY)
+       assert(AirportSimulation.getPenalty(allCancellationConsumptions.toList) == AirportSimulation.LOYALTY_DECREMENT_BY_CANCELLATION)
     }
   }
   "getNewLoyalty".must {

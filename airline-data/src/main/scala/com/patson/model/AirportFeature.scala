@@ -128,11 +128,11 @@ object AirportFeatureType extends Enumeration {
     val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, ISOLATED_TOWN, UNKNOWN = Value
     def getDescription(featureType : AirportFeatureType) = {
       featureType match {
-        case INTERNATIONAL_HUB => "International Hub"
-        case VACATION_HUB => "Vacation Hub"
-        case FINANCIAL_HUB => "Financial Hub"
+        case INTERNATIONAL_HUB => "International Hub - Attracts more international passengers especially business travelers"
+        case VACATION_HUB => "Vacation Hub - Attracts more tourist passengers"
+        case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers"
         case DOMESTIC_AIRPORT => "Domestic Airport"
-        case ISOLATED_TOWN => "Isolated Town"
+        case ISOLATED_TOWN => "Isolated Town - Increases demand flying to domestic airport with at least 100000 pop within 1000km"
         case UNKNOWN => "Unknown"
       }
     }

@@ -120,6 +120,11 @@ object AirportSizeAdjust {
         "YVR" -> 7,
         "YUL" -> 7,
         "YYC" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Africa
+        "JNB" -> 7,
+        "CSX" -> 6,
+        "KHN" -> 5,
+        
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Thailand
         "HKT" -> 5,
         
@@ -230,8 +235,13 @@ object AirportSizeAdjust {
         "DRW" -> 5, //Darwin
         "CLO" -> 4,
         "GYE" -> 4,
-        "UIO" -> 4
-        
+        "UIO" -> 4,
+        "JTR" -> 3, //Santorini
+        "YLW" -> 3, //Kelowna
+        "MDE" -> 5, //https://en.wikipedia.org/wiki/Jos%C3%A9_Mar%C3%ADa_C%C3%B3rdova_International_Airport around 7 mil passengers
+        "BDA" -> 5, // Bermuda
+        "DUB" -> 5, // Dublin
+        "BHX" -> 5 //https://en.wikipedia.org/wiki/Birmingham_Airport around 13 mil passengers, A380 capable
       )
       
   

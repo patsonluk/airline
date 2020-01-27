@@ -1,0 +1,68 @@
+.tooltip {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    /*font-size: 14px;*/
+}
+
+
+.tooltip li {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+}
+.tooltip li:before {
+    content: url('/assets/images/markers/dot.png');
+}
+
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    background-color: #555;
+    color: #fff;
+    border-radius: 6px;
+    padding: 10px 10px;
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    transform:translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext:not(.below) {
+	bottom: 125%;	
+}
+
+.tooltip .tooltiptext.below {
+	top: 125%;
+}
+
+.tooltip .tooltiptext img {
+	border-radius: 0.5em 0.5em 0.5em 0.5em;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+}
+
+.tooltip .tooltiptext:not(.below)::after {
+	top: 100%;
+	border-color: #555 transparent transparent transparent;
+}
+
+.tooltip .tooltiptext.below::after {
+	bottom: 100%;
+	border-color: transparent transparent #555 transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+

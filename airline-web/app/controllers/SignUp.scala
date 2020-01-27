@@ -1,6 +1,5 @@
 package controllers
 
-import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
@@ -12,7 +11,6 @@ import com.patson.model._
 import com.patson.Authentication
 import java.util.Calendar
 import com.patson.data.AirlineSource
-import play.api.libs.ws.WS
 import play.api.libs.ws.WSClient
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
@@ -24,7 +22,7 @@ import play.api.libs.json.JsObject
 import play.api.libs.json.JsNumber
 import play.api.libs.json.JsString
 
-class SignUp @Inject() (ws: WSClient) extends Controller {
+class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractController(cc) with play.api.i18n.I18nSupport {
   private[this] val recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify"
   private[this] val recaptchaAction = "signup"
   private[this] val recaptchaSecret = "6LespV8UAAAAAErZ7LWP51SWmYaYrnAz6Z61jKBC"
@@ -59,7 +57,7 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
         "Airline name can only contain space and characters",
         airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
         "This airline name  is not available",  
-        airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase() }.contains(airlineName.toLowerCase())
+        airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase() }.contains(airlineName.trim().toLowerCase())
       ),
       "profileId" -> number
     )
@@ -78,7 +76,7 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
   /**
    * Display an empty form.
    */
-  def form = Action {
+  def form = Action { implicit request =>
     Ok(html.signup(signupForm))
   }
   
@@ -114,13 +112,13 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
         
         if (isValidRecaptcha(userInput.recaptchaToken)) {
           // We got a valid User value, display the summary
-          val user = User(userInput.username, userInput.email, Calendar.getInstance, UserStatus.ACTIVE)
+          val user = User(userInput.username, userInput.email, Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0)
           UserSource.saveUser(user)
           Authentication.createUserSecret(userInput.username, userInput.password)
           
           val newAirline = Airline(userInput.airlineName)
 //          newAirline.setBalance(50000000) //initial balance 50 million
-          newAirline.setMaintainenceQuality(100)
+          newAirline.setMaintenanceQuality(100)
           newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
           AirlineSource.saveAirlines(List(newAirline))
           UserSource.setUserAirline(user, newAirline)
@@ -137,11 +135,9 @@ class SignUp @Inject() (ws: WSClient) extends Controller {
     )
   }
   
-  implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
-  
   def isValidRecaptcha(recaptchaToken: String) : Boolean = {
     println("checking token " + recaptchaToken)
-    val request = ws.url(recaptchaUrl).withQueryString("secret" -> recaptchaSecret, "response" -> recaptchaToken)
+    val request = ws.url(recaptchaUrl).withQueryStringParameters("secret" -> recaptchaSecret, "response" -> recaptchaToken)
     
     val (successJs, scoreJs, actionJs, responseBody) = Await.result(request.get().map { response =>
       ((response.json \ "success"), (response.json \ "score"), (response.json \ "action"), response.body)

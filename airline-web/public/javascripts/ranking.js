@@ -1,16 +1,18 @@
 function showRankingCanvas() {
 	setActiveDiv($("#rankingCanvas"))
-	highlightTab($('#rankingCanvasTab'))
+	highlightTab($('.rankingCanvasTab'))
 	
 	loadRanking()
 }
 
 function loadRanking() {
 	var airlineId = activeAirline ? activeAirline.id : null
+    var url = activeAirline ? "rankings/" + airlineId : "rankings" 
+
 	$('#rankingCanvas .table').hide() //hide all tables until they are loaded
 	$.ajax({
 		type: 'GET',
-		url: "rankings",
+		url: url,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(allRankings) {
@@ -22,6 +24,12 @@ function loadRanking() {
 	    error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
             console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    },
+	    beforeSend: function() {
+	    	$('body .loadingSpinner').show()
+	    },
+	    complete: function(){
+	    	$('body .loadingSpinner').hide()
 	    }
 	});
 }
@@ -39,6 +47,24 @@ function updateRankingTable(rankingType, rankings) {
 		rankingTable = $('#serviceQualityRank')
 	} else if (rankingType == "LINK_COUNT") {
 		rankingTable = $('#linkCountRank')
+	} else if (rankingType == "LINK_PROFIT") {
+		rankingTable = $('#linkProfitRank')
+	} else if (rankingType == "LOUNGE") {
+		rankingTable = $('#loungeRank')
+	} else if (rankingType == "AIRPORT") {
+		rankingTable = $('#airportRank')
+	} else if (rankingType == "PASSENGER_AS") {
+		rankingTable = $('#passengerRankAs')
+	} else if (rankingType == "PASSENGER_AF") {
+		rankingTable = $('#passengerRankAf')
+	} else if (rankingType == "PASSENGER_OC") {
+		rankingTable = $('#passengerRankOc')
+	} else if (rankingType == "PASSENGER_EU") {
+		rankingTable = $('#passengerRankEu')
+	} else if (rankingType == "PASSENGER_NA") {
+		rankingTable = $('#passengerRankNa')
+	} else if (rankingType == "PASSENGER_SA") {
+		rankingTable = $('#passengerRankSa')
 	} else {
 		console.log("Unknown ranking type " + rankingType)
 	}
@@ -51,7 +77,7 @@ function updateRankingTable(rankingType, rankings) {
 			if (index < maxEntry) {
 				rankingTable.append(getRankingRow(ranking))
 			}
-			if (activeAirline && ranking.airlineId == activeAirline.id) {
+			if (activeAirline && !currentAirlineRanking && ranking.airlineId == activeAirline.id) {
 				currentAirlineRanking = ranking
 			}
 		})
@@ -68,8 +94,17 @@ function getRankingRow(ranking) {
 	var row = $("<div class='table-row'></div>")
 	row.append("<div class='cell'>" + ranking.rank + "</div>")
 	row.append("<div class='cell'>" + getMovementLabel(ranking.movement) + "</div>")
-	row.append("<div class='cell'>" + getAirlineLogoImg(ranking.airlineId) + ranking.airlineName + "</div>")
-	row.append("<div class='cell' style='text-align: right;'>" + ranking.rankedValue + "</div>")
+	if (ranking.airlineId) {
+		var entry = getAirlineLogoImg(ranking.airlineId) + ranking.airlineName
+		if (ranking.rankInfo) {
+			entry += ' : ' + ranking.rankInfo
+		}
+		row.append("<div class='cell'>" + entry + "</div>")
+	} else if (ranking.airportId) {
+		var entry = getCountryFlagImg(ranking.countryCode) + ranking.iata + " : " + ranking.airportName 
+		row.append("<div class='cell'>" + entry + "</div>")
+	}
+	row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(ranking.rankedValue) + "</div>")
 	
 	
 	return row

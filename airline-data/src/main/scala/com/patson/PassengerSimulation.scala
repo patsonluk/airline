@@ -2,24 +2,16 @@
 
 package com.patson
 
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Set
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import akka.actor.ActorSystem
-import akka.stream.FlowMaterializer
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import scala.util.Random
-import scala.concurrent.Future
-import com.patson.data.AirportSource
-import com.patson.data.LinkSource
-import com.patson.model._
-import scala.collection.mutable.ArrayBuffer
-import scala.util.control.Breaks._
-import com.patson.data.CountrySource
+import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicInteger
+
+import com.patson.data.{AllianceSource, CountrySource, LinkSource}
+import com.patson.model._
+
+import scala.collection.mutable.{ListBuffer, Set}
+import scala.util.Random
+
+import scala.collection.parallel.CollectionConverters._
 
 object PassengerSimulation {
 
@@ -58,7 +50,7 @@ object PassengerSimulation {
         case (_, soldSeats) => soldSeats 
       }
       
-    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + Pricing.computeStandardPrice(link, ECONOMY) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
+    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + link.standardPrice(ECONOMY) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
     println("seats sold: " + soldLinks.foldLeft(0) {
       case (holder, (link, soldSeats)) => holder + soldSeats
     })
@@ -141,9 +133,9 @@ object PassengerSimulation {
                  //val affordableCost = totalDistance * (1.25 - Random.nextFloat() / 2)
                  //val affordableCost = totalDistance * (Util.getBellRandom(1))
                  //val MIN_AIPLANE_SPEED = 300.0
-                 val linkClass = passengerGroup.preference.linkClass
+                 //val linkClass = passengerGroup.preference.preferredLinkClass
                  
-                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport, linkClass)) {
+                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport, passengerGroup.preference.preferredLinkClass)) {
                    val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
                      val actualLinkClass = linkConsideration.linkClass
                      val availableSeats = linkConsideration.link.availableSeats(actualLinkClass) 
@@ -207,10 +199,10 @@ object PassengerSimulation {
 //    
 //    LinkSource.saveLinkConsumptions(soldLinks)
     
-    collapsedMap
+    collapsedMap.toMap
   }
   
-  def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, linkClass: LinkClass) : Boolean = {
+  def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
     val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
     val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
@@ -226,11 +218,17 @@ object PassengerSimulation {
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
     
       val LINK_COST_TOLERANCE_FACTOR = 1.3;
+      val incomeAdjustedFactor : Double = 
+        if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
+          1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.4 //can reduce down to 0.6 
+        } else {
+          1
+        }
       val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
-          val link = linkConsideration.link
+          val link = linkConsideration.link 
           
           
-          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, linkConsideration.linkClass) * LINK_COST_TOLERANCE_FACTOR
+          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass) * LINK_COST_TOLERANCE_FACTOR * incomeAdjustedFactor
           
 //          if (linkConsideration.linkClass == BUSINESS) {
 //            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 
@@ -344,17 +342,36 @@ object PassengerSimulation {
     val progressCount = new AtomicInteger(0)
     val progressChunk = requiredRoutes.size / 100
     
-    val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.par.map {
-      case(passengerGroup, toAirports) => {
-        val linkClass = passengerGroup.preference.linkClass
+    val establishedAlliances = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED)
+    val establishedAllianceIdByAirlineId :java.util.Map[Int, Int] = new java.util.HashMap[Int, Int]()
+
+    establishedAlliances.foreach { alliance => alliance.members.filter(_.role != AllianceRole.APPLICANT).foreach(member => establishedAllianceIdByAirlineId.put(member.airline.id, alliance.id)) }
+
+//    val traceTimestampMap = new ConcurrentHashMap[Long, Long]()
+//    val maxTraceDuration = 60 * 1000; //1 min
+//    println("Agent ready? : " + AgentChecker.waitUntilAgentReady(10, TimeUnit.SECONDS))
+    val routeMaps : Map[PassengerGroup, Map[Airport, Route]] = requiredRoutes.toList.par.map {
+      case((passengerGroup : PassengerGroup, toAirports)) => {
+//        val currentThreadId = Thread.currentThread().getId
+//        val currentTime = System.currentTimeMillis()
+//        if (!traceTimestampMap.containsKey(currentThreadId) || (currentTime - traceTimestampMap.get(currentThreadId)) > maxTraceDuration) {
+//          if (TraceContext.isSampled(Trace.getCurrentXTraceID)) {
+//            println("ending " + currentThreadId)
+//            Trace.endTrace("thread-" + currentThreadId)
+//          }
+//          Trace.startTrace("thread-" + currentThreadId).report()
+//          println("tracing " + currentThreadId + " : " + Trace.getCurrentXTraceID)
+//          traceTimestampMap.put(currentThreadId, currentTime)
+//        }
+
+        val preferredLinkClass = passengerGroup.preference.preferredLinkClass
         //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
-        val linkConsiderations = ArrayBuffer[LinkConsideration]()
-        
-        var walker = 0
+        val linkConsiderations = new ArrayList[LinkConsideration]()
+
         linksList.foreach { link =>
           
           //see if there are any seats for that class (or lower) left
-          link.availableSeatsAtOrBelowClass(linkClass).foreach { 
+          link.availableSeatsAtOrBelowClass(preferredLinkClass).foreach { 
             case(matchingLinkClass, seatsLeft) =>
               //from the perspective of the passenger group, how well does it know each link
               val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
@@ -363,25 +380,16 @@ object PassengerSimulation {
               val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
               
               if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
-                var cost =
-                  if (matchingLinkClass == linkClass) {
-                    passengerGroup.preference.computeCost(link)
-                  } else { //cannot pass the link as is, cause it might have really cheap higher class but sold out/not available
-                    val normalizedLink = link.copy(price = Pricing.getNormalizedPrice(link.price(matchingLinkClass), matchingLinkClass, 2)) //2 multiplier to indicate unwillingness to downgrade
-                    normalizedLink.setQuality(link.computedQuality)
-                    passengerGroup.preference.computeCost(normalizedLink) 
-                  }
-                
-                
+                var cost = passengerGroup.preference.computeCost(link, matchingLinkClass)
                 
                 //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
                 val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)
                 val linkConsideration2 = LinkConsideration(link, cost, matchingLinkClass, true)
                 if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
-                  linkConsiderations += linkConsideration1
+                  linkConsiderations.add(linkConsideration1)
                 }
                 if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
-                  linkConsiderations += linkConsideration2
+                  linkConsiderations.add(linkConsideration2)
                 }
               }
           }
@@ -389,7 +397,7 @@ object PassengerSimulation {
         
         //then find the shortest route based on the cost
         
-        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup.fromAirport, toAirports, activeAirportIds, linkConsiderations, 4)
+        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
         if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
           print(".")
           if (progressCount.incrementAndGet() % 10 == 0) {
@@ -494,8 +502,8 @@ object PassengerSimulation {
    * Returns a map with valid route in format of
    * Map[toAiport, Route]
    */
-  def findShortestRoute(from : Airport, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : Seq[LinkConsideration], maxHop : Int) : Map[Airport, Route] = {
-   
+  def findShortestRoute(passengerGroup : PassengerGroup, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : java.util.Map[Int, Int], maxIteration : Int) : Map[Airport, Route] = {
+    val from = passengerGroup.fromAirport
 
     //     // Step 1: initialize graph
 //   for each vertex v in vertices:
@@ -520,24 +528,40 @@ object PassengerSimulation {
 //           if distance[u] + w < distance[v]:
 //               distance[v] := distance[u] + w
 //               predecessor[v] := u
-    for (i <- 0 until maxHop) {
+    for (i <- 0 until maxIteration) {
       //val updatingLinks = ArrayBuffer[LinkConsideration]()
-      linkConsiderations.foreach { linkConsideration =>
-        if (linkConsideration.from.id == from.id || predecessorMap.containsKey(linkConsideration.from.id)) {
+      val linkConsiderationsIterator = linkConsiderations.iterator()
+      while (linkConsiderationsIterator.hasNext) {
+        val linkConsideration = linkConsiderationsIterator.next()
+        val predecessorLinkConsideration = predecessorMap.get(linkConsideration.from.id)
+        if (linkConsideration.from.id == from.id || predecessorLinkConsideration != null) {
           var connectionCost = 0.0
           if (linkConsideration.from.id != from.id) { //then it should be a connection flight
-              //connectionCost += 20 * 500 / 60 //at least 20 mins to make the connection
-              connectionCost += 50 //like adding $30 to ticket at least
+              connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
-              val frequency = Math.max(predecessorMap.get(linkConsideration.from.id).link.frequency, linkConsideration.link.frequency)
+              val predecessorLink = predecessorLinkConsideration.link
+              
+              val frequency = Math.max(predecessorLink.frequency, linkConsideration.link.frequency)
               //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
-              if (frequency < 42) {
-                connectionCost += (3.5 * 24 * 10) / frequency //each extra hour wait is like $10 more
+              if (frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
+                connectionCost += (3.5 * 24 * 5) / frequency //each extra hour wait is like $5 more
               }
+              
+              val previousLinkAirlineId = predecessorLink.airline.id
+              val currentLinkAirlineId = linkConsideration.link.airline.id
+              if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
+                connectionCost += 75
+              }
+              
+              connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
           }
+          
+          
           val cost = linkConsideration.cost + connectionCost
-          if (distanceMap.get(linkConsideration.from.id) + cost < distanceMap.get(linkConsideration.to.id)) {
-            distanceMap.put(linkConsideration.to.id, distanceMap.get(linkConsideration.from.id) + cost)
+          val fromCost = distanceMap.get(linkConsideration.from.id)
+          val newCost = fromCost + cost
+          if (newCost < distanceMap.get(linkConsideration.to.id)) {
+            distanceMap.put(linkConsideration.to.id, newCost)
             predecessorMap.put(linkConsideration.to.id, linkConsideration.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
           }  
         }
@@ -546,16 +570,17 @@ object PassengerSimulation {
     
     //println("cost found : " + distanceMap(to))
     
-    val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]() 
+    val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]()
+    val maxHop = maxIteration * (maxIteration + 1) / 2
     toAirports.foreach{ to =>  
       var walker = to.id
       var noSolution = false;
       var foundSolution = false
       var route = ListBuffer[LinkConsideration]()
       var hopCounter = 0
-      while (!foundSolution && !noSolution && hopCounter < maxHop) {
-        if (predecessorMap.containsKey(walker)) {
-          val link = predecessorMap.get(walker)
+      while (!foundSolution && !noSolution && hopCounter < maxIteration) {
+        val link = predecessorMap.get(walker)
+        if (link != null) {
           route.prepend(link)
           walker = link.from.id
           if (walker == from.id) {

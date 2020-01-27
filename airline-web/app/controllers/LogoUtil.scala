@@ -1,17 +1,8 @@
 package controllers
 
-import com.patson.data.CycleSource
-import com.patson.data.ConsumptionHistorySource
-import com.patson.model.PassengerType
-import com.patson.model.Route
-import com.patson.model.Link
-import com.patson.model.LinkHistory
-import com.patson.model.LinkConsideration
-import com.patson.model.RelatedLink
-import com.patson.model.Airport
+import java.nio.file.Path
+
 import com.patson.data.AirlineSource
-import java.io.ByteArrayOutputStream
-import java.io.File
 import javax.imageio.ImageIO
 
 object LogoUtil {
@@ -32,8 +23,8 @@ object LogoUtil {
     logos.put(airlineId, logo) //update cache
   }
   
-  def validateUpload(logoFile : File) : Option[String] = {
-    val image = ImageIO.read(logoFile)
+  def validateUpload(logoFile : Path) : Option[String] = {
+    val image = ImageIO.read(logoFile.toFile)
     println("!!!!!!!!!!!!!!!!!!!!" + image.getHeight + " X " + image.getWidth)
     if (image.getHeight() != imageHeight || image.getWidth() != imageWidth) {
       Some("Image should be " + imageWidth + "px wide and " + imageHeight + "px tall") 
@@ -43,8 +34,8 @@ object LogoUtil {
   }
   
   def getBlankLogo() = {
-    val buffer = new ByteArrayOutputStream();
-    val is = play.Play.application().resourceAsStream("/logo/blank.png")
+    //val buffer = new ByteArrayOutputStream();
+    val is = play.Environment.simple().resourceAsStream("/logo/blank.png")
 
     val targetArray = new Array[Byte](is.available());
     is.read(targetArray);
