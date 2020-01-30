@@ -2,7 +2,7 @@ package com.patson
 
 import com.patson.model._
 import com.patson.model.airplane.Model.Type._
-import com.patson.model.airplane.Model.AClass
+import com.patson.model.airplane.Model.IcaoClass
 import com.patson.model.airplane._
 import org.scalatest.{Matchers, WordSpecLike}
  

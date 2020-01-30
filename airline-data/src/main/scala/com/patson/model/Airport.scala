@@ -394,7 +394,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case _ => 500 //mega airports - not suitable for tiny jets
     }
     
-    import Model.AClass._
+    import Model.IcaoClass._
     val multipler = airplaneModel.airplaneClass match {
       case CLASS_A => 1
       case CLASS_B => 1

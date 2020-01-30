@@ -2,7 +2,7 @@ package com.patson.model.airplane
 
 import com.patson.model.IdObject
 import com.patson.model.Airline
-import com.patson.model.airplane.Model.AClass.AClass
+import com.patson.model.airplane.Model.IcaoClass.IcaoClass
 
 case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, range : Int, wingspan : Int,  price : Int, lifespan : Int, constructionTime : Int, countryCode : String, imageUrl : String = "", var id : Int = 0) extends IdObject {
   import Model.Type._
@@ -17,8 +17,8 @@ case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, ran
       case _ => JUMBO
     }
   }
-  import Model.AClass._
-  val airplaneClass : AClass = {
+  import Model.IcaoClass._
+  val airplaneClass : IcaoClass = {
     wingspan match {
       case x if (x < 15) => CLASS_A
       case x if (x <= 24) => CLASS_B
@@ -81,8 +81,8 @@ object Model {
     type Type = Value
     val LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, X_LARGE, JUMBO = Value
   }
-  object AClass extends Enumeration {
-    type AClass = Value
+  object IcaoClass extends Enumeration {
+    type IcaoClass = Value
     val CLASS_A, CLASS_B, CLASS_C, CLASS_D, CLASS_E, CLASS_F = Value
   }
   //https://en.wikipedia.org/wiki/List_of_jet_airliners
