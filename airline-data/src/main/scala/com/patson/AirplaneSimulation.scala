@@ -100,14 +100,15 @@ object AirplaneSimulation {
     val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
     val renewedAirplanes : ListBuffer[Airplane] = ListBuffer[Airplane]() 
     val secondHandAirplanes  = ListBuffer[Airplane]()
-
+    val fundsExhaustedAirlineIds = mutable.HashSet[Int]()
 
     val updatingAirplanes = airplanes
         .sortBy(_.condition) //lowest conditional airplane gets renewal first
         .map { airplane =>
       renewalThresholdsByAirline.get(airplane.owner.id) match {
         case Some(threshold) =>
-          if (airplane.condition < threshold
+          if (!fundsExhaustedAirlineIds.contains(airplane.owner.id)
+            && airplane.condition < threshold
             && airplane.purchasedCycle <= currentCycle - airplane.model.constructionTime) { //only renew airplane if it has been purchased longer than the construction time required
              val airlineId = airplane.owner.id
              val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalLost) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
@@ -128,6 +129,7 @@ object AirplaneSimulation {
                renewedAirplanes.append(renewedAirplane)
                renewedAirplane
              } else { //not enough fund
+               fundsExhaustedAirlineIds.add(airplane.owner.id) //funds exhausted, do not attempt to renew more airplanes for this airline, otherwise it might never have enough money for the worst condition one
                airplane
              }
           } else {
