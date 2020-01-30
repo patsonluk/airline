@@ -45,6 +45,9 @@ object MainSimulation extends App {
       OilSimulation.simulate(cycle)
       println("Loan simulation")
       LoanInterestRateSimulation.simulate(cycle)
+      println("Event simulation")
+      EventSimulation.simulate(cycle)
+
       val (linkResult, loungeResult) = LinkSimulation.linkSimulation(cycle)
       AirportSimulation.airportSimulation(cycle, linkResult)
       val airplanes = AirplaneSimulation.airplaneSimulation(cycle)

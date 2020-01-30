@@ -283,6 +283,7 @@ object Meta {
     createResetUser(connection)
     createLog(connection)
     createAlert(connection)
+    createEvent(connection)
     createSantaClaus(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
@@ -1011,6 +1012,69 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + ALERT_INDEX_1 + " ON " + ALERT_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
+  }
+
+  def createEvent(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + EVENT_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + EVENT_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "event_type INTEGER," +
+      "start_cycle INTEGER, " +
+      "duration INTEGER" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_CANDIDATE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + OLYMPIC_CANDIDATE_TABLE + "(" +
+      "event INTEGER," +
+      "airport INTEGER," +
+      "PRIMARY KEY (event, airport), " +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_AIRLINE_VOTE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + OLYMPIC_AIRLINE_VOTE_TABLE + "(" +
+      "event INTEGER," +
+      "airline INTEGER," +
+      "airport INTEGER," +
+      "vote_weight INTEGER," +
+      "priority INTEGER," +
+      "PRIMARY KEY (event, airport, airline), " +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_VOTE_ROUND_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + OLYMPIC_VOTE_ROUND_TABLE + "(" +
+      "event INTEGER," +
+      "airport INTEGER," +
+      "round INTEGER," +
+      "vote INTEGER," +
+      "PRIMARY KEY (event, airport, round), " +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
     statement.execute()
     statement.close()
   }
