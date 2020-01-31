@@ -4,7 +4,7 @@ import java.sql.Statement
 
 import com.patson.data.Constants._
 import com.patson.model.{Airline, Airport}
-import com.patson.model.event.{Event, Olympics, OlympicsAirlineVote, OlympicsVoteRound}
+import com.patson.model.event.{Event, EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound}
 import com.patson.util.{AirlineCache, AirportCache}
 
 import scala.collection.mutable
@@ -86,6 +86,27 @@ object EventSource {
     }
   }
 
+  def saveOlympicsAffectedAirports(eventId: Int, airports : List[Airport]) = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("INSERT INTO " + OLYMPIC_AFFECTED_AIRPORT_TABLE + "(event, airport) VALUES(?,?)")
+
+    connection.setAutoCommit(false)
+
+    try {
+      airports.foreach { airport =>
+        statement.setInt(1, eventId)
+        statement.setInt(2, airport.id)
+
+        statement.executeUpdate()
+      }
+
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
 
   def loadOlympicsVoteRounds(eventId: Int): List[OlympicsVoteRound] = {
     val connection = Meta.getConnection()
@@ -109,7 +130,7 @@ object EventSource {
 
       result.view.map {
         case (round, airportVotes) => OlympicsVoteRound(round, airportVotes.toMap)
-      }.toMap
+      }.toList.orderBy(_.round)
     } finally {
       connection.close()
     }
@@ -175,9 +196,57 @@ object EventSource {
     }
   }
 
-  val insertEvents = (events : List[Event]) => {
+  def loadOlympicsAffectedAirports(eventId: Int): List[Airport] =  {
     val connection = Meta.getConnection()
-    //case class Alert(airline : Airline, message : String, category : AlertCategory.Value, targetId : Option[Int], cycle : Int, duration : Int, var id : Int)
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_AFFECTED_AIRPORT_TABLE + " WHERE event = ?")
+
+      preparedStatement.setInt(1, eventId)
+      val resultSet = preparedStatement.executeQuery()
+      val airports = ListBuffer[Airport]()
+      while (resultSet.next()) {
+        val airportId = resultSet.getInt("airport")
+        airports.append(AirportCache.getAirport(airportId).getOrElse(Airport.fromId(airportId)))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      airports.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def loadEvents(): List[Event] =  {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + EVENT_TABLE)
+
+      val resultSet = preparedStatement.executeQuery()
+      val events = ListBuffer[Event]()
+
+      while (resultSet.next()) {
+        val eventType = EventType(resultSet.getInt("event_type"))
+        val event = eventType match {
+          case EventType.OLYMPICS =>
+            Olympics(resultSet.getInt("start_cycle"), resultSet.getInt("duration"), resultSet.getInt("id"))
+        }
+        events.append(event)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      events.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  val saveEvents = (events : List[Event]) => {
+    val connection = Meta.getConnection()
     val statement = connection.prepareStatement("INSERT INTO " + EVENT_TABLE + "(event_type, start_cycle, duration) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS)
     
     connection.setAutoCommit(false)
@@ -209,7 +278,6 @@ object EventSource {
 
   
   def deleteEventsBeforeCycle(cutoffCycle : Int) = {
-      //open the hsqldb
     val connection = Meta.getConnection()
     try {  
       val queryString = "DELETE FROM " + EVENT_TABLE + " WHERE start_cycle < ?"

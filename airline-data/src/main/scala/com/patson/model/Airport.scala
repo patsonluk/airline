@@ -372,6 +372,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     this.features ++= features
     featuresLoaded = true
   }
+
+  def addFeature(feature : AirportFeature) = {
+    this.features += feature
+  }
   
   def initLounges(lounges : List[Lounge]) = {
     this.loungesByAirline.clear()

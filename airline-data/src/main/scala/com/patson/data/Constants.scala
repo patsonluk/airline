@@ -98,6 +98,7 @@ object Constants {
   val ALERT_INDEX_1 = "alert_index_1"
   val EVENT_TABLE = "event"
   val OLYMPIC_CANDIDATE_TABLE = "olympics_candidate"
+  val OLYMPIC_AFFECTED_AIRPORT_TABLE = "olympics_affected_airport"
   val OLYMPIC_AIRLINE_VOTE_TABLE = "olympics_airline_vote"
   val OLYMPIC_VOTE_ROUND_TABLE = "olympics_vote_round"
 

@@ -2,10 +2,12 @@ package com.patson
 
 import java.util.{ArrayList, Collections}
 
-import com.patson.data.{AirportSource, CountrySource}
+import com.patson.data.{AirportSource, CountrySource, EventSource}
+import com.patson.model.event.{EventType, Olympics}
 import com.patson.model.{PassengerType, _}
 
 import scala.collection.immutable.Map
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.collection.parallel.CollectionConverters._
 import scala.util.Random
@@ -38,8 +40,10 @@ object DemandGenerator {
 //    actorSystem.shutdown()
 //  }
   import scala.collection.JavaConverters._
-  
-  def computeDemand() = {
+
+
+
+  def computeDemand(cycle: Int) = {
     println("Loading airports")
     //val allAirports = AirportSource.loadAllAirports(true)
     val airports: List[Airport] = AirportSource.loadAllAirports(true).filter { airport => airport.iata != "" && airport.power > 0 }
@@ -66,18 +70,21 @@ object DemandGenerator {
 	    }
 	    allDemands.add((fromAirport, demandList.asScala.toList))
     }
-	  
+
+    val allDemandsAsScala = allDemands.asScala
+
+    allDemandsAsScala.appendAll(generateEventDemand(cycle, airports))
+
 	  val baseDemandChunkSize = 10
-	  
 	  
 	  val allDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
     var oneCount = 0
-	  allDemands.asScala.foreach {
+	  allDemandsAsScala.foreach {
 	    case (fromAirport, toAirportsWithDemand) =>
         //for each city generate different preferences
         val flightPreferencesPool = getFlightPreferencePoolOnAirport(fromAirport)
 
-        val demandListFromThisAiport = toAirportsWithDemand.foreach {
+        toAirportsWithDemand.foreach {
           case (toAirport, (passengerType, demand)) =>
             LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
@@ -92,13 +99,15 @@ object DemandGenerator {
               }
             }
         }
-	      
+
 	  }
 
-	  
+
     allDemandChunks.toList
   }
-  
+
+
+
   def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {
     val distance = Computation.calculateDistance(fromAirport, toAirport)
     if (fromAirport == toAirport || fromAirport.population == 0 || toAirport.population == 0 || distance <= MIN_DISTANCE) {
@@ -125,7 +134,7 @@ object DemandGenerator {
       
       var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
         case PassengerType.BUSINESS => 6
-        case PassengerType.TOURIST => 1
+        case PassengerType.TOURIST || PassengerType.OLYMPICS => 1
       })
       
       if (fromAirport.countryCode != toAirport.countryCode) {
@@ -158,7 +167,7 @@ object DemandGenerator {
       
       //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
       val incomeLevel = Computation.getIncomeLevel(fromAirport.income)
-      if (passengerType == PassengerType.TOURIST && incomeLevel > 25) { 
+      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && incomeLevel > 25) {
         adjustedDemand += baseDemand * (((incomeLevel - 25).toDouble / 10) * 2)       
       }
       
@@ -227,6 +236,78 @@ object DemandGenerator {
       
       LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
     }
+  }
+
+
+  def generateEventDemand(cycle : Int, airports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])] = {
+    val eventDemand = ListBuffer[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
+    EventSource.loadEvents().filter(_.isActive(cycle)).foreach { event =>
+      event match {
+        case olympics : Olympics => eventDemand.appendAll(generateOlympicsDemand(cycle, olympics, airports))
+        case _ => //
+      }
+
+    }
+    eventDemand.toList
+  }
+
+
+  val OLYMPICS_DEMAND_BASE = 50000
+  def generateOlympicsDemand(cycle: Int, olympics : Olympics, airports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]  = {
+    if (olympics.currentYear == 4) { //only has special demand on 4th year
+      val week = (cycle - olympics.startCycle) % 52 //which week is this
+      val demandMultiplier =
+        if (week < 40) {
+          1
+        } else if (week < 48) {
+          4
+        } else { //last 4 weeks
+          10
+        }
+
+      val totalDemand = OLYMPICS_DEMAND_BASE * demandMultiplier
+
+      val countryRelationships = CountrySource.getCountryMutualRelationShips()
+      //use existing logic, just scale the total back to totalDemand at the end
+      val unscaledDemands = ListBuffer[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
+      Olympics.getAffectedAirport(olympics.id).foreach { affectedAirport =>
+        val unscaledDemandsOfThisToAirport = ListBuffer[(Airport, (PassengerType.Value, LinkClassValues))]()
+        val toAirport = affectedAirport
+        toAirport.addFeature(VacationHubFeature(30)) //just to make small to-airport more attractive
+        airports.foreach { airport =>
+          if (airport.id != affectedAirport.id) {
+            val fromAirport = airport
+            val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
+            val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
+            if (computedDemand.total > 0) {
+              unscaledDemandsOfThisToAirport.append((toAirport, (PassengerType.OLYMPICS, computedDemand)))
+            }
+          }
+        }
+        unscaledDemands.append((toAirport, unscaledDemandsOfThisToAirport.toList))
+      }
+
+      //now scale all the demands based on the totalDemand
+      val unscaledTotalDemands = unscaledDemands.map {
+        case (toAirport, unscaledDemandsOfThisToAirport) => unscaledDemandsOfThisToAirport.map {
+          case (fromAirport, (passengerType, demand)) => demand.total
+        }.sum
+      }.sum
+      val multiplier = totalDemand.toDouble / unscaledTotalDemands
+      println(s"olympics scale multiplier is $multiplier")
+      val scaledDemands = unscaledDemands.map {
+        case (toAirport, unscaledDemandsOfThisToAirport) =>
+          (toAirport, unscaledDemandsOfThisToAirport.map {
+            case (fromAirport, (passengerType, unscaledDemand)) =>
+              (fromAirport, (passengerType, unscaledDemand * multiplier))
+          })
+      }.toList
+
+      scaledDemands
+    } else {
+      List.empty
+    }
+
   }
   
   def getFlightPreferencePoolOnAirport(homeAirport : Airport) : FlightPreferencePool = {

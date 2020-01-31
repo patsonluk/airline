@@ -7,11 +7,13 @@ abstract class Event(val eventType : EventType.Value, val startCycle : Int, val 
   val isActive = (currentCycle : Int) => startCycle + duration > currentCycle
 }
 
-class Olympics(override val startCycle : Int) extends Event(EventType.OLYMPICS, startCycle, 52 * 4) {
-  val currentYear = (currentCycle : Int) => (currentCycle - startCycle) /  52
+case class Olympics(override val startCycle : Int, override val duration : Int = Olympics.WEEKS_PER_YEAR * 4, override var id : Int = 0) extends Event(EventType.OLYMPICS, startCycle, duration, id) {
+  val currentYear = (currentCycle : Int) => (currentCycle - startCycle) /  Olympics.WEEKS_PER_YEAR + 1
+  val isNewYear = (currentCycle : Int) => (currentCycle - startCycle) % Olympics.WEEKS_PER_YEAR == 0
 }
 
 object Olympics {
+  val WEEKS_PER_YEAR = 52
   def getCandidates(eventId : Int) : List[Airport] = {
     EventSource.loadOlympicsCandidates(eventId)
   }
@@ -33,6 +35,9 @@ object Olympics {
     }
   }
 
+  def getAffectedAirport(eventId : Int) : List[Airport] = {
+    EventSource.loadOlympicsAffectedAirports(eventId)
+  }
 }
 
 /**

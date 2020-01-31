@@ -1044,6 +1044,20 @@ object Meta {
     statement.execute()
     statement.close()
 
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_AFFECTED_AIRPORT_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + OLYMPIC_AFFECTED_AIRPORT_TABLE + "(" +
+      "event INTEGER," +
+      "airport INTEGER," +
+      "PRIMARY KEY (event, airport), " +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_AIRLINE_VOTE_TABLE)
     statement.execute()
     statement.close()
