@@ -13,14 +13,108 @@ import scala.collection.immutable
 
 
 object EventSource {
-  def saveOlympicsVoteRounds(eventId: Int, rounds : List[OlympicsVoteRound]) = ???
+  def saveOlympicsVoteRounds(eventId: Int, rounds : List[OlympicsVoteRound]) = {
+    val connection = Meta.getConnection()
 
-  def saveOlympicsAirlineVote(eventId: Int, vote : OlympicsAirlineVote) = ???
+    val statement = connection.prepareStatement("INSERT INTO " + OLYMPIC_VOTE_ROUND_TABLE + "(event, airport, round, vote) VALUES(?,?,?,?)")
 
-  def saveOlympicsCandidates(eventId: Int): List[Airport] = ???
+    connection.setAutoCommit(false)
+
+    try {
+      rounds.foreach { voteRound =>
+        voteRound.votes.foreach {
+          case(airport, vote) =>
+            statement.setInt(1, eventId)
+            statement.setInt(2, airport.id)
+            statement.setInt(3, voteRound.round)
+            statement.setInt(4, vote)
+            statement.executeUpdate()
+        }
+      }
+
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
+  def saveOlympicsAirlineVote(eventId: Int, vote : OlympicsAirlineVote) = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("INSERT INTO " + OLYMPIC_AIRLINE_VOTE_TABLE + "(event, airline, airport, vote_weight, priority) VALUES(?,?,?,?,?)")
+
+    connection.setAutoCommit(false)
+
+    try {
+      var priority = 1
+      vote.voteList.foreach { airport =>
+        statement.setInt(1, eventId)
+        statement.setInt(2, vote.airline.id)
+        statement.setInt(3, airport.id)
+        statement.setInt(4, vote.voteWeight)
+        statement.setInt(5, priority)
+
+        statement.executeUpdate()
+        priority += 1
+      }
+
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
+  def saveOlympicsCandidates(eventId: Int, airports : List[Airport]) = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("INSERT INTO " + OLYMPIC_CANDIDATE_TABLE + "(event, airport) VALUES(?,?)")
+
+    connection.setAutoCommit(false)
+
+    try {
+      airports.foreach { airport =>
+        statement.setInt(1, eventId)
+        statement.setInt(2, airport.id)
+
+        statement.executeUpdate()
+      }
+
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
 
 
-  def loadOlympicsVoteRounds(eventId: Int): List[OlympicsVoteRound] = ???
+  def loadOlympicsVoteRounds(eventId: Int): List[OlympicsVoteRound] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_VOTE_ROUND_TABLE + " WHERE event = ?")
+
+      preparedStatement.setInt(1, eventId)
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = mutable.HashMap[Int, mutable.HashMap[Airport, Int]]()
+      while (resultSet.next()) {
+        val round = resultSet.getInt("round")
+        val vote = resultSet.getInt("priority")
+        val airportId = resultSet.getInt("airport")
+        val airport = AirportCache.getAirport(airportId).getOrElse(Airport.fromId(airportId))
+        result.getOrElseUpdate(round, mutable.HashMap()).put(airport, vote)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.view.map {
+        case (round, airportVotes) => OlympicsVoteRound(round, airportVotes.toMap)
+      }.toMap
+    } finally {
+      connection.close()
+    }
+
+  }
 
   def loadOlympicsAirlineVotes(eventId: Int): immutable.Map[Airline, OlympicsAirlineVote] = {
     val connection = Meta.getConnection()
@@ -118,7 +212,7 @@ object EventSource {
       //open the hsqldb
     val connection = Meta.getConnection()
     try {  
-      var queryString = "DELETE FROM " + EVENT_TABLE + " WHERE start_cycle < ?"
+      val queryString = "DELETE FROM " + EVENT_TABLE + " WHERE start_cycle < ?"
       
       val preparedStatement = connection.prepareStatement(queryString)
       
