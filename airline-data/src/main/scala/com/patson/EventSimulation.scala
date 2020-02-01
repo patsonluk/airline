@@ -35,7 +35,7 @@ object EventSimulation {
 
 
     if (olympics.isNewYear(cycle)) { //then action!
-      olympics.currentYear match {
+      olympics.currentYear(cycle) match {
         case 1 =>
           simulateOlympicsCandidates(cycle, olympics)
         case 2 =>

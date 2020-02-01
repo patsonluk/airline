@@ -130,7 +130,7 @@ object EventSource {
 
       result.view.map {
         case (round, airportVotes) => OlympicsVoteRound(round, airportVotes.toMap)
-      }.toList.orderBy(_.round)
+      }.toList.sortBy(_.round)
     } finally {
       connection.close()
     }

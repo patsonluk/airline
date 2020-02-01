@@ -22,10 +22,10 @@ object DemandGenerator {
 //  implicit val materializer = FlowMaterializer()
   private[this] val FIRST_CLASS_INCOME_MIN = 15000
   private[this] val FIRST_CLASS_INCOME_MAX = 100000
-  private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02) //max 8% first (Business passenger), 2% first (Tourist)
+  private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100000
-  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.30, PassengerType.TOURIST -> 0.10) //max 30% business (Business passenger), 10% business (Tourist)
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.30, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
   
   val MIN_DISTANCE = 50
   
@@ -134,7 +134,7 @@ object DemandGenerator {
       
       var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
         case PassengerType.BUSINESS => 6
-        case PassengerType.TOURIST || PassengerType.OLYMPICS => 1
+        case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
       })
       
       if (fromAirport.countryCode != toAirport.countryCode) {
@@ -254,7 +254,7 @@ object DemandGenerator {
 
   val OLYMPICS_DEMAND_BASE = 50000
   def generateOlympicsDemand(cycle: Int, olympics : Olympics, airports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]  = {
-    if (olympics.currentYear == 4) { //only has special demand on 4th year
+    if (olympics.currentYear(cycle) == 4) { //only has special demand on 4th year
       val week = (cycle - olympics.startCycle) % 52 //which week is this
       val demandMultiplier =
         if (week < 40) {
@@ -264,49 +264,58 @@ object DemandGenerator {
         } else { //last 4 weeks
           10
         }
-
-      val totalDemand = OLYMPICS_DEMAND_BASE * demandMultiplier
-
-      val countryRelationships = CountrySource.getCountryMutualRelationShips()
-      //use existing logic, just scale the total back to totalDemand at the end
-      val unscaledDemands = ListBuffer[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
-      Olympics.getAffectedAirport(olympics.id).foreach { affectedAirport =>
-        val unscaledDemandsOfThisToAirport = ListBuffer[(Airport, (PassengerType.Value, LinkClassValues))]()
-        val toAirport = affectedAirport
-        toAirport.addFeature(VacationHubFeature(30)) //just to make small to-airport more attractive
-        airports.foreach { airport =>
-          if (airport.id != affectedAirport.id) {
-            val fromAirport = airport
-            val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-            val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
-            if (computedDemand.total > 0) {
-              unscaledDemandsOfThisToAirport.append((toAirport, (PassengerType.OLYMPICS, computedDemand)))
-            }
-          }
-        }
-        unscaledDemands.append((toAirport, unscaledDemandsOfThisToAirport.toList))
-      }
-
-      //now scale all the demands based on the totalDemand
-      val unscaledTotalDemands = unscaledDemands.map {
-        case (toAirport, unscaledDemandsOfThisToAirport) => unscaledDemandsOfThisToAirport.map {
-          case (fromAirport, (passengerType, demand)) => demand.total
-        }.sum
-      }.sum
-      val multiplier = totalDemand.toDouble / unscaledTotalDemands
-      println(s"olympics scale multiplier is $multiplier")
-      val scaledDemands = unscaledDemands.map {
-        case (toAirport, unscaledDemandsOfThisToAirport) =>
-          (toAirport, unscaledDemandsOfThisToAirport.map {
-            case (fromAirport, (passengerType, unscaledDemand)) =>
-              (fromAirport, (passengerType, unscaledDemand * multiplier))
-          })
-      }.toList
-
-      scaledDemands
+      generateOlympicsDemand(cycle, demandMultiplier, Olympics.getAffectedAirport(olympics.id), airports)
     } else {
       List.empty
     }
+
+  }
+
+  def generateOlympicsDemand(cycle: Int, demandMultiplier : Int, olympicsAirports : List[Airport], allAirports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]  = {
+    val totalDemand = OLYMPICS_DEMAND_BASE * demandMultiplier
+
+    val countryRelationships = CountrySource.getCountryMutualRelationShips()
+    //use existing logic, just scale the total back to totalDemand at the end
+    val unscaledDemands = ListBuffer[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
+    val otherAirports = allAirports.filter(airport => !olympicsAirports.map(_.id).contains(airport.id))
+
+//    val patchedOlympicsAirports = olympicsAirports.map{ olympicsAirport =>
+//      olympicsAirport.copy().addFeature(VacationHubFeature(30)) //just to make small to-airport more attractive //TODO how to we remove the charm? it might accumulate!
+//
+//      olympicsAirport
+//    }
+
+    otherAirports.foreach { airport =>
+      val unscaledDemandsOfThisFromAirport = ListBuffer[(Airport, (PassengerType.Value, LinkClassValues))]()
+      val fromAirport = airport
+      olympicsAirports.foreach {  olympicsAirport =>
+        val toAirport = olympicsAirport
+        val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
+        val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
+        if (computedDemand.total > 0) {
+          unscaledDemandsOfThisFromAirport.append((toAirport, (PassengerType.OLYMPICS, computedDemand)))
+        }
+      }
+      unscaledDemands.append((fromAirport, unscaledDemandsOfThisFromAirport.toList))
+    }
+
+    //now scale all the demands based on the totalDemand
+    val unscaledTotalDemands = unscaledDemands.map {
+      case (toAirport, unscaledDemandsOfThisToAirport) => unscaledDemandsOfThisToAirport.map {
+        case (fromAirport, (passengerType, demand)) => demand.total
+      }.sum
+    }.sum
+    val multiplier = totalDemand.toDouble / unscaledTotalDemands
+    println(s"olympics scale multiplier is $multiplier")
+    val scaledDemands = unscaledDemands.map {
+      case (toAirport, unscaledDemandsOfThisToAirport) =>
+        (toAirport, unscaledDemandsOfThisToAirport.map {
+          case (fromAirport, (passengerType, unscaledDemand)) =>
+            (fromAirport, (passengerType, unscaledDemand * multiplier))
+        })
+    }.toList
+
+    scaledDemands
 
   }
   

@@ -7,7 +7,7 @@ abstract class Event(val eventType : EventType.Value, val startCycle : Int, val 
   val isActive = (currentCycle : Int) => startCycle + duration > currentCycle
 }
 
-case class Olympics(override val startCycle : Int, override val duration : Int = Olympics.WEEKS_PER_YEAR * 4, override var id : Int = 0) extends Event(EventType.OLYMPICS, startCycle, duration, id) {
+case class Olympics(override val startCycle : Int, override val duration : Int = Olympics.WEEKS_PER_YEAR * 4, var olympicsId : Int = 0) extends Event(EventType.OLYMPICS, startCycle, duration, olympicsId) {
   val currentYear = (currentCycle : Int) => (currentCycle - startCycle) /  Olympics.WEEKS_PER_YEAR + 1
   val isNewYear = (currentCycle : Int) => (currentCycle - startCycle) % Olympics.WEEKS_PER_YEAR == 0
 }

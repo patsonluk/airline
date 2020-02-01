@@ -26,7 +26,7 @@ object LinkSimulation {
     println("Finished loading all links")
 
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
-    val demand = DemandGenerator.computeDemand()
+    val demand = DemandGenerator.computeDemand(cycle)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
         holder + demandValue
