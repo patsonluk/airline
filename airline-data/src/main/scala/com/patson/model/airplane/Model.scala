@@ -3,7 +3,7 @@ package com.patson.model.airplane
 import com.patson.model.IdObject
 import com.patson.model.Airline
 
-case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, lifespan : Int, constructionTime : Int, countryCode : String, imageUrl : String = "", var id : Int = 0) extends IdObject {
+case class Model(name : String, capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, lifespan : Int, constructionTime : Int, countryCode : String, imageUrl : String = "", series : Series, var id : Int = 0) extends IdObject {
   import Model.Type._
   val airplaneType : Type = {
     capacity match {
