@@ -1,8 +1,8 @@
 package com.patson
 
 import com.patson.data.{AirportSource, EventSource}
-import com.patson.model.event.{EventType, Olympics, OlympicsVoteRound}
-import com.patson.model.{Airport, Computation}
+import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound}
+import com.patson.model.{Airline, Airport, Computation}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -37,16 +37,19 @@ object EventSimulation {
     if (olympics.isNewYear(cycle)) { //then action!
       olympics.currentYear(cycle) match {
         case 1 =>
-          simulateOlympicsCandidates(cycle, olympics)
+          EventSource.saveOlympicsCandidates(olympics.id, selectCandidates())
         case 2 =>
           //tally vote using exhaustive
-          val selectedAirport = simulateOlympicsVoteRounds(cycle, olympics)
-          selectedAirport match {
-            case Some(airport) =>
-              simulateOlympicsAffectedAirport(olympics, airport)
-            case None =>
-          }
+          val voteRounds = simulateOlympicsVoteRounds(olympics)
+          EventSource.saveOlympicsVoteRounds(olympics.id, voteRounds)
 
+          if (voteRounds.size > 0) {
+            val selectedAirport = voteRounds.last.votes.toList.sortBy(_._2).last._1
+            val affectedAirports = simulateOlympicsAffectedAirport(olympics, selectedAirport)
+            println(s"Olympics airport: $selectedAirport")
+            println(s"Olympics airport(s) within radius: $affectedAirports")
+            EventSource.saveOlympicsAffectedAirports(olympics.id, affectedAirports)
+          }
         case 3 =>
           //nothing?
         case 4 =>
@@ -57,55 +60,66 @@ object EventSimulation {
 
   }
 
-  def simulateOlympicsCandidates(cycle: Int, olympics: Olympics) = {
-    val candidates = selectCandidates()
-    EventSource.saveOlympicsCandidates(olympics.id, candidates)
+  def simulateOlympicsCandidates() = {
+    selectCandidates()
   }
 
   val MAX_CANDIDATES_COUNT = 6
   val CANDIDATE_MIN_SIZE = 5
 
   def selectCandidates() : List[Airport] = {
-    val randomizedAirports = Random.shuffle(AirportSource.loadAllAirports().filter(_.size >= CANDIDATE_MIN_SIZE))
+    selectCandidates(AirportSource.loadAllAirports())
+  }
+
+  def selectCandidates(allAirports : List[Airport]) : List[Airport] = {
+    val randomizedAirports = Random.shuffle(allAirports.filter(_.size >= CANDIDATE_MIN_SIZE))
     val candidates = ListBuffer[Airport]()
     val candidateCountryCodes = mutable.HashSet[String]()
     randomizedAirports.foreach { airport =>
       if (!candidateCountryCodes.contains(airport.countryCode)) {
         candidates.append(airport)
       }
+      candidateCountryCodes.add(airport.countryCode)
       if (candidates.length >= MAX_CANDIDATES_COUNT) {
-        return candidates.toList
+        return candidates.sortBy(_.id).toList //sort by id for more predictable result
       }
     }
-    return candidates.toList
+    return candidates.sortBy(_.id).toList //sort by id for more predictable result
   }
 
   val AFFECT_RADIUS = 150 //150km
-  def simulateOlympicsAffectedAirport(olympics: Olympics, selectedAirport : Airport): Unit = {
+  def simulateOlympicsAffectedAirport(olympics: Olympics, selectedAirport : Airport): List[Airport] = {
     val affectedAirports = ListBuffer[Airport]()
     AirportSource.loadAirportsByCountry(selectedAirport.countryCode).foreach { airport =>
       if (Computation.calculateDistance(selectedAirport, airport) <= AFFECT_RADIUS) {
         affectedAirports.append(airport)
       }
     }
-
-    EventSource.saveOlympicsAffectedAirports(olympics.id, affectedAirports.toList)
+    affectedAirports.toList
   }
 
+  def simulateOlympicsVoteRounds(olympics: Olympics) : List[OlympicsVoteRound] = {
+    val airlineVotes: Map[Airline, OlympicsAirlineVote] = EventSource.loadOlympicsAirlineVotes(olympics.id)
+    val candidates: List[Airport] = EventSource.loadOlympicsCandidates(olympics.id)
+    simulateOlympicsVoteRounds(candidates, airlineVotes)
+  }
 
-  def simulateOlympicsVoteRounds(cycle: Int, olympics: Olympics) : Option[Airport] = {
-    val airlineVotes = EventSource.loadOlympicsAirlineVotes(olympics.id)
-    var candidates = EventSource.loadOlympicsCandidates(olympics.id)
-
+  def simulateOlympicsVoteRounds(candidates: List[Airport], airlineVotes: Map[Airline, OlympicsAirlineVote]) : List[OlympicsVoteRound]  = {
     val voteRoundResults = ListBuffer[OlympicsVoteRound]()
     var voteRound = 1
-    while (candidates.size > 2) {
-      val votesByAirport = mutable.HashMap[Airport, Int]()
+    val remainingCandidates = ListBuffer[Airport]()
+    remainingCandidates.appendAll(candidates)
+
+    while (remainingCandidates.size >= 2) {
+      val votesByAirport = mutable.LinkedHashMap[Airport, Int]()
+      remainingCandidates.foreach { candidate => //initialize the map
+        votesByAirport.put(candidate, 0)
+      }
       airlineVotes.foreach {
         case (airline, airlineVote) =>
-          airlineVote.voteList.find(votedAirport => candidates.contains(votedAirport)) match { //go down by the list (highest priority first), find the first one that is still in the candidates list
+          airlineVote.voteList.find(votedAirport => remainingCandidates.contains(votedAirport)) match { //go down by the list (highest priority first), find the first one that is still in the candidates list
             case Some(legitVotedAirport) =>
-              val currentVotesForThisAirport = votesByAirport.getOrElse(legitVotedAirport, 0)
+              val currentVotesForThisAirport = votesByAirport(legitVotedAirport)
               votesByAirport.put(legitVotedAirport, currentVotesForThisAirport + airlineVote.voteWeight)
             case None => //should not be this
           }
@@ -116,13 +130,12 @@ object EventSimulation {
       voteRoundResults.append(resultOfThisRound)
 
       //eliminate the candidate with least votes
-      candidates = votesByAirport.toList.sortBy(_._2).drop(1).map(_._1)
+      val evictingCandidate : Airport = votesByAirport.toList.sortBy(_._1.id).sortBy(_._2).apply(0)._1 //sort by airport Id first for more predictable result
+      remainingCandidates.remove(remainingCandidates.indexOf(evictingCandidate))
 
       voteRound += 1
     }
-    val selectedAirport = Olympics.getSelectedAirport(olympics.id)
-    println(s"Olympic winning bid: $selectedAirport")
-    selectedAirport
+    voteRoundResults.toList
   }
   
 }
