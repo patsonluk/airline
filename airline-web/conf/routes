@@ -129,7 +129,10 @@ GET		 /rankings  		  		      controllers.RankingApplication.getRankings()
 GET		 /rankings/:airlineId  		      controllers.RankingApplication.getRankingsWithAirline(airlineId : Int)
 GET		 /logos/templates 				  controllers.LogoApplication.getTemplates()	
 GET		 /logos/templates/:id			  controllers.LogoApplication.getTemplate(id : Int)
-GET		 /logos/preview					  controllers.LogoApplication.getPreview(templateIndex : Int, color1 : String, color2 : String)	
+GET		 /logos/preview					  controllers.LogoApplication.getPreview(templateIndex : Int, color1 : String, color2 : String)
+
+GET     /event/olympics             controllers.OlympicsApplication.getAll()
+GET     /event/olympics/:eventId             controllers.OlympicsApplication.getOlympicsDetails(eventId : Int)
 
 # Signup
 GET     /signup                     controllers.SignUp.form
@@ -157,16 +160,5 @@ GET  /favicon.ico        controllers.Assets.at(path="/public/images/icons", file
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 #front-end fake links...use redirect instead of telling them not found
-GET /link       controllers.Application.redirect(path : String = "/")
-GET /country       controllers.Application.redirect(path : String = "/")
-GET /airplane       controllers.Application.redirect(path : String = "/")
-GET /office       controllers.Application.redirect(path : String = "/")
-GET /bank       controllers.Application.redirect(path : String = "/")
-GET /oil       controllers.Application.redirect(path : String = "/")
-GET /rival       controllers.Application.redirect(path : String = "/")
-GET /ranking       controllers.Application.redirect(path : String = "/")
-GET /alliance       controllers.Application.redirect(path : String = "/")
-GET /log       controllers.Application.redirect(path : String = "/")
-GET /departure       controllers.Application.redirect(path : String = "/")
-GET /airport       controllers.Application.redirect(path : String = "/")
+GET /nav-*any       controllers.Application.redirect(path : String = "/", any)
 

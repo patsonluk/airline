@@ -255,16 +255,19 @@ object DemandGenerator {
   val OLYMPICS_DEMAND_BASE = 50000
   def generateOlympicsDemand(cycle: Int, olympics : Olympics, airports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]  = {
     if (olympics.currentYear(cycle) == 4) { //only has special demand on 4th year
-      val week = (cycle - olympics.startCycle) % 52 //which week is this
+      val week = (cycle - olympics.startCycle) % Olympics.WEEKS_PER_YEAR //which week is this
       val demandMultiplier =
-        if (week < 40) {
+        if (week < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 2) {
           1
-        } else if (week < 48) {
+        } else if (week < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION) {
           4
-        } else { //last 4 weeks
+        } else { //game is on
           10
         }
-      generateOlympicsDemand(cycle, demandMultiplier, Olympics.getAffectedAirport(olympics.id), airports)
+      Olympics.getSelectedAirport(olympics.id) match {
+        case Some(selectedAirport) => generateOlympicsDemand(cycle, demandMultiplier, Olympics.getAffectedAirport(olympics.id, selectedAirport), airports)
+        case None => List.empty
+      }
     } else {
       List.empty
     }

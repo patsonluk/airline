@@ -14,6 +14,7 @@ case class Olympics(override val startCycle : Int, override val duration : Int =
 
 object Olympics {
   val WEEKS_PER_YEAR = 52
+  val GAMES_DURATION = 4
   def getCandidates(eventId : Int) : List[Airport] = {
     EventSource.loadOlympicsCandidates(eventId)
   }
@@ -35,8 +36,12 @@ object Olympics {
     }
   }
 
-  def getAffectedAirport(eventId : Int) : List[Airport] = {
+  def getAffectedAirport(eventId : Int) : Map[Airport, List[Airport]] = {
     EventSource.loadOlympicsAffectedAirports(eventId)
+  }
+
+  def getAffectedAirport(eventId : Int, principalAirport : Airport) : List[Airport] = {
+    EventSource.loadOlympicsAffectedAirports(eventId).apply(principalAirport)
   }
 }
 

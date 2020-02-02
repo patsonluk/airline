@@ -7,9 +7,8 @@ import com.patson.model.{Airline, Airport}
 import com.patson.model.event.{Event, EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound}
 import com.patson.util.{AirlineCache, AirportCache}
 
-import scala.collection.mutable
-import scala.collection.mutable.{ListBuffer, Map}
-import scala.collection.immutable
+import scala.collection.{immutable, mutable}
+import scala.collection.mutable.{ListBuffer}
 
 
 object EventSource {
@@ -86,19 +85,22 @@ object EventSource {
     }
   }
 
-  def saveOlympicsAffectedAirports(eventId: Int, airports : List[Airport]) = {
+  def saveOlympicsAffectedAirports(eventId: Int, airports : Map[Airport, List[Airport]]) = {
     val connection = Meta.getConnection()
-    val statement = connection.prepareStatement("INSERT INTO " + OLYMPIC_AFFECTED_AIRPORT_TABLE + "(event, airport) VALUES(?,?)")
+    val statement = connection.prepareStatement("REPLACE INTO " + OLYMPIC_AFFECTED_AIRPORT_TABLE + "(event, principal_airport, affected_airport) VALUES(?,?,?)")
 
     connection.setAutoCommit(false)
 
     try {
-      airports.foreach { airport =>
-        statement.setInt(1, eventId)
-        statement.setInt(2, airport.id)
-
-        statement.executeUpdate()
-      }
+      airports.foreach {
+        case(principalAirport, affectedAirports) =>
+          affectedAirports.foreach { affectedAirport =>
+            statement.setInt(1, eventId)
+            statement.setInt(2, principalAirport.id)
+            statement.setInt(3, affectedAirport.id)
+            statement.executeUpdate()
+          }
+     }
 
       connection.commit()
     } finally {
@@ -145,8 +147,8 @@ object EventSource {
       preparedStatement.setInt(1, eventId)
       val resultSet = preparedStatement.executeQuery()
 
-      val votesByAirline : Map[Airline, ListBuffer[(Int, Airport)]] = mutable.HashMap() //List is (priority, airport)
-      val weightsByAirline : Map[Airline, Int] = mutable.HashMap()
+      val votesByAirline : mutable.Map[Airline, ListBuffer[(Int, Airport)]] = mutable.HashMap() //List is (priority, airport)
+      val weightsByAirline : mutable.Map[Airline, Int] = mutable.HashMap()
       while (resultSet.next()) {
         val airportId = resultSet.getInt("airport")
         val airlineId = resultSet.getInt("airline")
@@ -196,23 +198,33 @@ object EventSource {
     }
   }
 
-  def loadOlympicsAffectedAirports(eventId: Int): List[Airport] =  {
+  /**
+    *
+    * @param eventId
+    * @return key as principal airport, value as the list of affected airports
+    */
+  def loadOlympicsAffectedAirports(eventId: Int): immutable.Map[Airport, List[Airport]] =  {
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_AFFECTED_AIRPORT_TABLE + " WHERE event = ?")
 
       preparedStatement.setInt(1, eventId)
       val resultSet = preparedStatement.executeQuery()
-      val airports = ListBuffer[Airport]()
+      val result = mutable.HashMap[Airport, ListBuffer[Airport]]()
       while (resultSet.next()) {
-        val airportId = resultSet.getInt("airport")
-        airports.append(AirportCache.getAirport(airportId).getOrElse(Airport.fromId(airportId)))
+        val principalAirportId = resultSet.getInt("principal_airport")
+        val affectedAirportId = resultSet.getInt("affected_airport")
+
+        val principalAirport = AirportCache.getAirport(principalAirportId).getOrElse(Airport.fromId(principalAirportId))
+        val affectedAirport = AirportCache.getAirport(affectedAirportId).getOrElse(Airport.fromId(affectedAirportId))
+        val airportsOfThisPrincipal = result.getOrElseUpdate(principalAirport, ListBuffer[Airport]())
+        airportsOfThisPrincipal.append(affectedAirport)
       }
 
       resultSet.close()
       preparedStatement.close()
 
-      airports.toList
+      result.view.mapValues(_.toList).toMap
     } finally {
       connection.close()
     }

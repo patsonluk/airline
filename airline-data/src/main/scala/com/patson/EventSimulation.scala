@@ -37,7 +37,16 @@ object EventSimulation {
     if (olympics.isNewYear(cycle)) { //then action!
       olympics.currentYear(cycle) match {
         case 1 =>
-          EventSource.saveOlympicsCandidates(olympics.id, selectCandidates())
+          val candidates = selectCandidates()
+          EventSource.saveOlympicsCandidates(olympics.id, candidates)
+
+          val affectedAirports = candidates.map { principalAirport =>
+            (principalAirport, simulateOlympicsAffectedAirport(principalAirport))
+          }.toMap
+
+          println(s"Olympics airport(s) within radius: $affectedAirports")
+          EventSource.saveOlympicsAffectedAirports(olympics.id, affectedAirports)
+
         case 2 =>
           //tally vote using exhaustive
           val voteRounds = simulateOlympicsVoteRounds(olympics)
@@ -45,10 +54,7 @@ object EventSimulation {
 
           if (voteRounds.size > 0) {
             val selectedAirport = voteRounds.last.votes.toList.sortBy(_._2).last._1
-            val affectedAirports = simulateOlympicsAffectedAirport(olympics, selectedAirport)
             println(s"Olympics airport: $selectedAirport")
-            println(s"Olympics airport(s) within radius: $affectedAirports")
-            EventSource.saveOlympicsAffectedAirports(olympics.id, affectedAirports)
           }
         case 3 =>
           //nothing?
@@ -87,11 +93,11 @@ object EventSimulation {
     return candidates.sortBy(_.id).toList //sort by id for more predictable result
   }
 
-  val AFFECT_RADIUS = 150 //150km
-  def simulateOlympicsAffectedAirport(olympics: Olympics, selectedAirport : Airport): List[Airport] = {
+  val AFFECT_RADIUS = 80 //80km
+  def simulateOlympicsAffectedAirport(principalAirport : Airport): List[Airport] = {
     val affectedAirports = ListBuffer[Airport]()
-    AirportSource.loadAirportsByCountry(selectedAirport.countryCode).foreach { airport =>
-      if (Computation.calculateDistance(selectedAirport, airport) <= AFFECT_RADIUS) {
+    AirportSource.loadAirportsByCountry(principalAirport.countryCode).foreach { airport =>
+      if (Computation.calculateDistance(principalAirport, airport) <= AFFECT_RADIUS) {
         affectedAirports.append(airport)
       }
     }
@@ -110,7 +116,7 @@ object EventSimulation {
     val remainingCandidates = ListBuffer[Airport]()
     remainingCandidates.appendAll(candidates)
 
-    while (remainingCandidates.size >= 2) {
+    while (remainingCandidates.size >= 1) {
       val votesByAirport = mutable.LinkedHashMap[Airport, Int]()
       remainingCandidates.foreach { candidate => //initialize the map
         votesByAirport.put(candidate, 0)

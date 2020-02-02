@@ -70,6 +70,7 @@
     <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/log.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/event.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
@@ -102,7 +103,7 @@
 	</script>
 
   </head>
-  <body>
+  <div>
   	<input type="hidden" id="floatMessage" value="@message"/>
   	<div id="floatMessageBox" style="height: 30px; width: 300px; display: none;"></div>
 	<div id="linkHistoryControlPanel" class="section" style="display: none;">
@@ -294,7 +295,8 @@
 				  <li class="button left-tab user-specific-tab rivalsCanvasTab" data-link="rival" onclick="showRivalsCanvas();"><span>Rivals</span></li>
 				  <li class="button left-tab rankingCanvasTab" data-link="ranking" onclick="showRankingCanvas();"><span>Ranking</span></li>
 				  <li class="button left-tab allianceCanvasTab" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
-				  <li class="button left-tab  user-specific-tab logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
+				  <li class="button left-tab user-specific-tab logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
+				  <li class="button left-tab user-specific-tab eventCanvasTab" data-link="event" onclick="showEventCanvas();"><span>Event</span></li>
 				</ul>
 			</div>
 
@@ -2364,6 +2366,52 @@
 
 				</div>
 				<!-- end log canvas -->
+
+
+				<div id="eventCanvas" style="height: 100%; display: none;">
+					<div style="width : 30%; height: 200px; float:left;">
+						<div style="width : 90%" class="section">
+							<h4>Olympics</h4>
+							<div id = "olympicsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+								<div class="table-header">
+									<div class="cell clickable selected" style="width: 15%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleOlympicTableSortOrder($(this))">Start Week</div>
+									<div class="cell clickable" style="width: 30%" data-sort-property="hostCity" data-sort-order="descending" onclick="toggleOlympicTableSortOrder($(this))">Host City</div>
+									<div class="cell" style="width: 15%">Remaining Duration</div>
+									<div class="cell" style="width: 40%">Status</div>
+								</div>
+							</div>
+							<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+								<div class="table data" id="olympicsTable" style="width: 100%; max-height: 100%">
+									<div class="table-header">
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
+										<div class="cell" style="width: 30%; border-bottom: none;"></div>
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
+										<div class="cell" style="width: 40%; border-bottom: none;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div style="width : 70%; float:left;">
+						<div id="olympicsDetails" style="width : 90%; display: none;" class="section">
+							<h4>Candidates</h4>
+							<div class="table data" id="olympicsCandidatesTable" style="width: 100%; max-height: 100%">
+								<div class="table-header">
+									<div class="cell" style="width: 100%">City</div>
+								</div>
+							</div>
+							<div class="button vote glow">Vote</div>
+							<h4>Voting Rounds</h4>
+							<div class="table data" id="olympicsVotingRoundsTable" style="width: 100%; max-height: 100%">
+
+							</div>
+							<div class="result"></div>
+						</div>
+  					</div>
+	  				<div style="clear: both;"></div>
+				</div>
+				<!-- end event canvas -->
+
 				<div style="clear: both;"></div>
 			</div>
   			<!-- main canvas end -->

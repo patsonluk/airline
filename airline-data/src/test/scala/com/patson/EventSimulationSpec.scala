@@ -22,8 +22,6 @@ class EventSimulationSpec extends WordSpecLike with Matchers {
     }
   }
 
-
-  
   "olympicsSimulation".must {
     "select 6 random candidates with different country".in {
        val airports = this.airports.toList
@@ -61,12 +59,13 @@ class EventSimulationSpec extends WordSpecLike with Matchers {
       //third round: 0, 5, 1, 2 => 0 is dropped (1, 2, 5)
       //forth round: 1, 5, 1, 2 => 2 is dropped (1, 5)
       //firth round: 1, 5, 1, 1 => 0 is dropped, 1 is winner
-      assert(result.length == 5)
+      assert(result.length == 6)
       assert(result(0) == OlympicsVoteRound(1, Map(candidates(0) -> 1, candidates(5) -> 1, candidates(1) -> 1, candidates(2) -> 1, candidates(3) -> 0, candidates(4) -> 0)))
       assert(result(1) == OlympicsVoteRound(2, Map(candidates(0) -> 1, candidates(5) -> 1, candidates(1) -> 1, candidates(2) -> 1, candidates(4) -> 0)))
       assert(result(2) == OlympicsVoteRound(3, Map(candidates(0) -> 1, candidates(5) -> 1, candidates(1) -> 1, candidates(2) -> 1)))
       assert(result(3) == OlympicsVoteRound(4, Map(candidates(1) -> 2, candidates(5) -> 1, candidates(2) -> 1)))
       assert(result(4) == OlympicsVoteRound(5, Map(candidates(1) -> 3, candidates(5) -> 1)))
+      assert(result(5) == OlympicsVoteRound(6, Map(candidates(1) -> 4)))
 
       airline1Vote = OlympicsAirlineVote(airline1, 1, List(candidates(0), candidates(1), candidates(2), candidates(3), candidates(4), candidates(5)))
       airline2Vote = OlympicsAirlineVote(airline2, 2, List(candidates(5), candidates(4), candidates(3), candidates(2), candidates(1), candidates(0))) //2 VOTES
@@ -79,12 +78,13 @@ class EventSimulationSpec extends WordSpecLike with Matchers {
       //third round: 0, 5, 5, 0, 1 => 4 is dropped (0, 1, 5)
       //forth round: 0, 5, 5, 0, 1 => 1 is dropped (0, 5)
       //fifth round: 0, 5, 5, 0, 5 => 0 is dropped, 5 is winner
-      assert(result.length == 5)
+      assert(result.length == 6)
       assert(result(0) == OlympicsVoteRound(1, Map(candidates(0) -> 2, candidates(5) -> 2, candidates(1) -> 1, candidates(2) -> 0, candidates(3) -> 0, candidates(4) -> 0)))
       assert(result(1) == OlympicsVoteRound(2, Map(candidates(0) -> 2, candidates(5) -> 2, candidates(1) -> 1, candidates(3) -> 0, candidates(4) -> 0)))
       assert(result(2) == OlympicsVoteRound(3, Map(candidates(0) -> 2, candidates(5) -> 2, candidates(1) -> 1, candidates(4) -> 0)))
       assert(result(3) == OlympicsVoteRound(4, Map(candidates(0) -> 2, candidates(5) -> 2, candidates(1) -> 1)))
       assert(result(4) == OlympicsVoteRound(5, Map(candidates(0) -> 2, candidates(5) -> 3)))
+      assert(result(5) == OlympicsVoteRound(6, Map(candidates(5) -> 5)))
     }
     "do not error out if no votes".in {
       val airports = this.airports.toList
@@ -92,12 +92,13 @@ class EventSimulationSpec extends WordSpecLike with Matchers {
 
 
       val result = EventSimulation.simulateOlympicsVoteRounds(candidates, Map())
-      assert(result.length == 5)
+      assert(result.length == 6)
       assert(result(0) == OlympicsVoteRound(1, Map(candidates(0) -> 0, candidates(1) -> 0, candidates(2) -> 0, candidates(3) -> 0, candidates(4) -> 0, candidates(5) -> 0)))
       assert(result(1) == OlympicsVoteRound(2, Map(candidates(1) -> 0, candidates(2) -> 0, candidates(3) -> 0, candidates(4) -> 0, candidates(5) -> 0)))
       assert(result(2) == OlympicsVoteRound(3, Map(candidates(2) -> 0, candidates(3) -> 0, candidates(4) -> 0, candidates(5) -> 0)))
       assert(result(3) == OlympicsVoteRound(4, Map(candidates(3) -> 0, candidates(4) -> 0, candidates(5) -> 0)))
       assert(result(4) == OlympicsVoteRound(5, Map(candidates(4) -> 0, candidates(5) -> 0)))
+      assert(result(5) == OlympicsVoteRound(6, Map(candidates(5) -> 0)))
     }
   }
 }
