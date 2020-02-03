@@ -40,21 +40,21 @@ object EventSource {
 
   def saveOlympicsAirlineVote(eventId: Int, vote : OlympicsAirlineVote) = {
     val connection = Meta.getConnection()
-    val statement = connection.prepareStatement("INSERT INTO " + OLYMPIC_AIRLINE_VOTE_TABLE + "(event, airline, airport, vote_weight, priority) VALUES(?,?,?,?,?)")
+    val statement = connection.prepareStatement("REPLACE INTO " + OLYMPIC_AIRLINE_VOTE_TABLE + "(event, airline, airport, vote_weight, precedence) VALUES(?,?,?,?,?)")
 
     connection.setAutoCommit(false)
 
     try {
-      var priority = 1
+      var precedence = 1
       vote.voteList.foreach { airport =>
         statement.setInt(1, eventId)
         statement.setInt(2, vote.airline.id)
         statement.setInt(3, airport.id)
         statement.setInt(4, vote.voteWeight)
-        statement.setInt(5, priority)
+        statement.setInt(5, precedence)
 
         statement.executeUpdate()
-        priority += 1
+        precedence += 1
       }
 
       connection.commit()
@@ -63,6 +63,25 @@ object EventSource {
       connection.close()
     }
   }
+
+
+  def deleteOlympicsAirlineVote(eventId: Int, airlineId : Int) = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("DELETE FROM " + OLYMPIC_AIRLINE_VOTE_TABLE + " WHERE event = ? AND airline = ?")
+
+    connection.setAutoCommit(false)
+
+    try {
+      statement.setInt(1, eventId)
+      statement.setInt(2, airlineId)
+      statement.executeUpdate()
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
 
   def saveOlympicsCandidates(eventId: Int, airports : List[Airport]) = {
     val connection = Meta.getConnection()
@@ -121,7 +140,7 @@ object EventSource {
       val result = mutable.HashMap[Int, mutable.HashMap[Airport, Int]]()
       while (resultSet.next()) {
         val round = resultSet.getInt("round")
-        val vote = resultSet.getInt("priority")
+        val vote = resultSet.getInt("precedence")
         val airportId = resultSet.getInt("airport")
         val airport = AirportCache.getAirport(airportId).getOrElse(Airport.fromId(airportId))
         result.getOrElseUpdate(round, mutable.HashMap()).put(airport, vote)
@@ -139,31 +158,58 @@ object EventSource {
 
   }
 
+  def loadOlympicsAirlineVotes(eventId: Int, airlineId : Int): Option[OlympicsAirlineVote] = {
+    val result = loadOlympicsAirlineVotesByCriteria(List(("event", eventId), ("airline", airlineId)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result.iterator.next()._2)
+    }
+  }
+
   def loadOlympicsAirlineVotes(eventId: Int): immutable.Map[Airline, OlympicsAirlineVote] = {
+    loadOlympicsAirlineVotesByCriteria(List(("event", eventId)))
+  }
+
+  def loadOlympicsAirlineVotesByCriteria(criteria : List[(String, Any)]): immutable.Map[Airline, OlympicsAirlineVote] = {
+
+    var queryString = "SELECT * FROM " + OLYMPIC_AIRLINE_VOTE_TABLE
+
+    if (!criteria.isEmpty) {
+      queryString += " WHERE "
+      for (i <- 0 until criteria.size - 1) {
+        queryString += criteria(i)._1 + " = ? AND "
+      }
+      queryString += criteria.last._1 + " = ?"
+    }
+
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_AIRLINE_VOTE_TABLE + " WHERE event = ?")
+      val preparedStatement = connection.prepareStatement(queryString)
 
-      preparedStatement.setInt(1, eventId)
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+
       val resultSet = preparedStatement.executeQuery()
 
-      val votesByAirline : mutable.Map[Airline, ListBuffer[(Int, Airport)]] = mutable.HashMap() //List is (priority, airport)
+      val votesByAirline : mutable.Map[Airline, ListBuffer[(Int, Airport)]] = mutable.HashMap() //List is (precedence, airport)
       val weightsByAirline : mutable.Map[Airline, Int] = mutable.HashMap()
       while (resultSet.next()) {
         val airportId = resultSet.getInt("airport")
         val airlineId = resultSet.getInt("airline")
-        val priority = resultSet.getInt("priority")
-        val weight = resultSet.getInt("weight")
+        val precedence = resultSet.getInt("precedence")
+        val weight = resultSet.getInt("vote_weight")
         val airport = AirportCache.getAirport(airportId).getOrElse(Airport.fromId(airportId))
         val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
         weightsByAirline.put(airline, weight) //put multiple times of same value...okay for now...
         val votesOfThisAirline = votesByAirline.getOrElseUpdate(airline, ListBuffer())
-        votesOfThisAirline.append((priority, airport))
+        votesOfThisAirline.append((precedence, airport))
       }
 
       val result = votesByAirline.view.map {
-        case (airline, votesWithPriority) =>
-          val sortedVotes = votesWithPriority.sortBy(_._1).map(_._2)
+        case (airline, votesWithPrecedence) =>
+          val sortedVotes = votesWithPrecedence.sortBy(_._1).map(_._2)
           (airline, OlympicsAirlineVote(airline, weightsByAirline(airline), sortedVotes.toList))
       }.toMap
 

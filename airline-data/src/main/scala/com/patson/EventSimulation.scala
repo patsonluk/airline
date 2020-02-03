@@ -123,7 +123,7 @@ object EventSimulation {
       }
       airlineVotes.foreach {
         case (airline, airlineVote) =>
-          airlineVote.voteList.find(votedAirport => remainingCandidates.contains(votedAirport)) match { //go down by the list (highest priority first), find the first one that is still in the candidates list
+          airlineVote.voteList.find(votedAirport => remainingCandidates.contains(votedAirport)) match { //go down by the list (highest precedence first), find the first one that is still in the candidates list
             case Some(legitVotedAirport) =>
               val currentVotesForThisAirport = votesByAirport(legitVotedAirport)
               votesByAirport.put(legitVotedAirport, currentVotesForThisAirport + airlineVote.voteWeight)

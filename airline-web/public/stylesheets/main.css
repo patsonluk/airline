@@ -703,7 +703,22 @@ img.flag {
     top:9px;
 }
 
-.tick:hover:after{
+#olympicsCityVoteTable span {
+    font-size: 1.2em;
+    font-weight: heavy;
+}
+.number-button {
+    margin: 5px;
+}
+.number-button span {
+    position: absolute;
+    left: 13px;
+    top: 10px;
+    font-size: 1.2em;
+    font-weight: heavy;
+}
+
+.tick:hover:after, .number-button span {
     color:#83d244;
     text-shadow:0px 0px 6px #83d244;
 }

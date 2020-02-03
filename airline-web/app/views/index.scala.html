@@ -2552,6 +2552,12 @@
    			</div>
 		</div>
     </div>
+
+	  <div style="display: none; width: 100%;" id="olympicAirportPopup">
+		  <h5 class="airportName"></h5>
+	  </div>
+
+
     
     <div style="display: none; width: 100%;" id="allianceLinkPopup">
     	<input type="hidden" id="airportLinkPopupId">
@@ -3148,6 +3154,17 @@
 			</div>
 		</div>
 	</div>
+
+	<div id="olympicsVoteModal" class="modal">
+		<div class="modal-content"  style="width : 900px; height: 800px; margin: 5% auto; overflow-y: auto;">
+			<span class="close" onclick="closeModal($('#olympicsVoteModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;">Olympics Host City Voting (1 : highest precedence)</h3>
+			<div class="table data" id="olympicsCityVoteTable" style="width: 100%">
+			</div>
+			<div class="button confirm" onclick="confirmOlympicsVotes()">Confirm</div>
+			<div class="button" onclick="revertOlympicsVotes()">Revert</div>
+	  	</div>
+  	</div>
 
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>

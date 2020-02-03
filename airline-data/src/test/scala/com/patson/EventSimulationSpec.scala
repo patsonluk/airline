@@ -39,7 +39,7 @@ class EventSimulationSpec extends WordSpecLike with Matchers {
       val airports = this.airports.toList
       val candidates = EventSimulation.selectCandidates(airports)
 
-      //4 airlines votes (from highest priority to lowest)
+      //4 airlines votes (from highest precedence to lowest)
       //Airline 1 : 0 1 2 3 4 5
       //Airline 2 : 5 4 3 2 1 0
       //Airline 3 : 1 2 3 4 5 0

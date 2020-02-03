@@ -133,6 +133,8 @@ GET		 /logos/preview					  controllers.LogoApplication.getPreview(templateIndex 
 
 GET     /event/olympics             controllers.OlympicsApplication.getAll()
 GET     /event/olympics/:eventId             controllers.OlympicsApplication.getOlympicsDetails(eventId : Int)
+GET		/event/olympics/:eventId/airlines/:airlineId/votes  controllers.OlympicsApplication.getOlympicsAirlineVotes(airlineId : Int, eventId : Int)
+PUT		/event/olympics/:eventId/airlines/:airlineId/votes  controllers.OlympicsApplication.putOlympicsAirlineVotes(airlineId : Int, eventId : Int)
 
 # Signup
 GET     /signup                     controllers.SignUp.form

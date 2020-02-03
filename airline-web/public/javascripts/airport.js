@@ -922,3 +922,17 @@ function hideAirportLinksView() {
 	
 }
 
+function getAirportIcon(airportInfo) {
+    var largeAirportMarkerIcon = $("#map").data("largeAirportMarker")
+    var mediumAirportMarkerIcon = $("#map").data("mediumAirportMarker")
+    var smallAirportMarkerIcon = $("#map").data("smallAirportMarker")
+
+    if (airportInfo.size <= 3) {
+      icon = smallAirportMarkerIcon
+    } else if (airportInfo.size <= 6) {
+      icon = mediumAirportMarkerIcon
+    } else {
+      icon = largeAirportMarkerIcon
+    }
+    return icon
+}

@@ -3,6 +3,8 @@ package controllers
 import com.patson.data.{CycleSource, EventSource, LogSource}
 import com.patson.model.Airport
 import com.patson.model.event._
+import com.patson.util.AirportCache
+import controllers.AuthenticationObject.AuthenticatedAirline
 import javax.inject.Inject
 import play.api.libs.json._
 import play.api.mvc._
@@ -53,11 +55,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       result
     }
   }
-  
-  
-  val LOG_RANGE = 100 //load 100 weeks worth of logs
-  
-  
+
   def getAll() = Action {
     val allOlympics : List[Olympics] = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).map(_.asInstanceOf[Olympics])
 
@@ -65,10 +63,18 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
 
   def getOlympicsDetails(eventId : Int) = Action {
-    val candidates = EventSource.loadOlympicsCandidates(eventId)
 
     var result = Json.obj()
-    result = result + ("candidates" -> Json.toJson(candidates))
+
+    var candidatesJson = Json.arr()
+
+    EventSource.loadOlympicsAffectedAirports(eventId).foreach {
+      case(principalAirport, affectedAirports) =>
+        val airportJson = Json.toJson(principalAirport).asInstanceOf[JsObject] + ("affectedAirports" -> Json.toJson(affectedAirports))
+        candidatesJson = candidatesJson.append(airportJson)
+    }
+
+    result = result + ("candidates" -> candidatesJson)
 
     val votingRounds = EventSource.loadOlympicsVoteRounds(eventId)
     if (!votingRounds.isEmpty) {
@@ -90,8 +96,40 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
     Ok(result)
   }
-  
-  
 
-  
+  def getOlympicsAirlineVotes(airlineId : Int, eventId : Int) = AuthenticatedAirline(airlineId) { request =>
+    var result = Json.obj("weight" -> 1) //TODO
+    EventSource.loadOlympicsAirlineVotes(eventId, airlineId) match {
+      case Some(vote) =>
+        var precedenceJson = Json.obj()
+        var precedenceIndex = 1
+        vote.voteList.foreach { airport =>
+          precedenceJson = precedenceJson + (airport.id.toString -> JsNumber(precedenceIndex))
+          precedenceIndex += 1
+        }
+        result = result + ("precedence" -> precedenceJson)
+      case None =>
+    }
+
+    Ok(result)
+  }
+
+  def putOlympicsAirlineVotes(airlineId : Int, eventId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val precedenceJson = request.body.asInstanceOf[AnyContentAsJson].json.asInstanceOf[JsObject]
+    val airportIdPrecedences = precedenceJson.fields.sortBy(_._2.as[Int]).map(_._1.toInt)
+
+    val candidateAirportIds = EventSource.loadOlympicsCandidates(eventId).map(_.id)
+    //validates
+    if (!airportIdPrecedences.filter(id => !candidateAirportIds.contains(id)).isEmpty) {
+      BadRequest("Voted airport that is not a valid candidate")
+    } else {
+      val airportPrecedences = airportIdPrecedences.map(airportId => AirportCache.getAirport(airportId).get)
+      if (airportPrecedences.isEmpty) {
+        EventSource.deleteOlympicsAirlineVote(eventId, airlineId)
+      } else {
+        EventSource.saveOlympicsAirlineVote(eventId, OlympicsAirlineVote(request.user, 1, airportPrecedences.toList)) //TODO vote weight
+      }
+      Ok(precedenceJson)
+    }
+  }
 }

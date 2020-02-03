@@ -1069,7 +1069,7 @@ object Meta {
       "airline INTEGER," +
       "airport INTEGER," +
       "vote_weight INTEGER," +
-      "priority INTEGER," +
+      "precedence INTEGER," +
       "PRIMARY KEY (event, airport, airline), " +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
