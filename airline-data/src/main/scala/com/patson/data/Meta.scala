@@ -889,7 +889,7 @@ object Meta {
       "airplane INTEGER, " +
       "configuration INTEGER, " +
       "PRIMARY KEY (airplane)," +
-      "FOREIGN KEY(configuration) REFERENCES " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(id) ON DELETE RESTRICT ON UPDATE CASCADE, " +
+      "FOREIGN KEY(configuration) REFERENCES " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "FOREIGN KEY(airplane) REFERENCES " + AIRPLANE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
