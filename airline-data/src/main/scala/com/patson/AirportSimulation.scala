@@ -148,8 +148,10 @@ object AirportSimulation {
 
     println("Finished loyalty and awareness simulation")
     airportProjectSimulation(allAirports)
+
+    AirportSource.purgeAirlineAppealBonus(cycle)
   }
-  
+
   def airportProjectSimulation(allAirports : List[Airport]) = {
     import ProjectStatus._
     println("simulating airport projects")

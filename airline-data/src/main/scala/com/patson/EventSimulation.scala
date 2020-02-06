@@ -11,9 +11,6 @@ import scala.util.Random
 
 object EventSimulation {
 
-
-
-
   def simulate(cycle: Int): Unit = {
     val events = EventSource.loadEvents().sortBy(_.startCycle).reverse
 

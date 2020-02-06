@@ -159,6 +159,21 @@ object AirportSource {
     }
   }
 
+  def purgeAirlineAppealBonus(atOrBeforeCycle : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE + " where expiration_cycle IS NOT NULL AND expiration_cycle <= ?")
+
+      preparedStatement.setInt(1, atOrBeforeCycle)
+
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+    }
+  }
+
 
 
   def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) = {
