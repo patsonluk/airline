@@ -914,6 +914,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   val getPassengerTypeTitle = (passengerType : PassengerType.Value) =>  passengerType match {
     case PassengerType.BUSINESS => "Business"
     case PassengerType.TOURIST => "Tourist"
+    case PassengerType.OLYMPICS => "Olympics"
   }
   
 

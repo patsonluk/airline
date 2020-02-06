@@ -63,6 +63,8 @@ function updateOlympicTable(sortProperty, sortOrder) {
 }
 
 function loadOlympicsDetails(event) {
+    $("#olympicsVoteModal").data("eventId", event.id)
+
     var candidatesTable = $('#olympicsCandidatesTable')
   	candidatesTable.children("div.table-row").remove()
     var eventId = event.id
@@ -129,11 +131,43 @@ function loadOlympicsDetails(event) {
                 }
 
                 if (activeAirline) {
-                    populateCityVoteModal(eventId, details.candidates, event.votingActive, details.selectedAirport)
                     $("#olympicsDetails .button.vote").show();
                     $("#olympicsDetails .button.vote").off("click").on("click", function() {
                         showOlympicsVoteModal()
                     })
+
+                    $.ajax({
+                        type: 'GET',
+                        url: "event/olympics/" + eventId + "/airlines/" + activeAirline.id + "/votes",
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        success: function(votes) {
+                            populateCityVoteModal(details.candidates, votes, event.votingActive)
+
+
+                            //find out with airport this airline has voted for
+                            $("#olympicsDetails .votedCityReward").hide()
+                            if (votes.votedAirport) {
+                                var votedAirport = votes.votedAirport
+                                $("#olympicsDetails .votedCity").html(getCountryFlagImg(votedAirport.countryCode) + votedAirport.city)
+                                if (event.currentYear) { //still active
+                                    if (details.selectedAirport && details.selectedAirport.id == votedAirport.id) { //yay
+                                        $("#olympicsDetails .votedCityReward").data("eventId", eventId)
+                                        $("#olympicsDetails .votedCityReward").show()
+                                    }
+                                }
+                            } else {
+                                $("#olympicsDetails .votedCity").html("-")
+                            }
+
+                            refreshCityVoteModalButtons()
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                                        console.log(JSON.stringify(jqXHR));
+                                        console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                                }
+                    })
+
                 } else {
                     $("#olympicsDetails .button.vote").hide();
                 }
@@ -153,70 +187,41 @@ function loadOlympicsDetails(event) {
     	});
 }
 
-function populateCityVoteModal(eventId, candidates, votingActive, selectedAirport) {
-    $("#olympicsVoteModal").data("eventId", eventId)
-    $.ajax({
-        type: 'GET',
-        url: "event/olympics/" + eventId + "/airlines/" + activeAirline.id + "/votes",
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
-        success: function(result) {
-            var table = $("#olympicsCityVoteTable")
+function populateCityVoteModal(candidates, votes, votingActive) {
+    var table = $("#olympicsCityVoteTable")
 
-            table.data("weight", result.weight)
-            table.data("votingActive", votingActive)
+    table.data("weight", votes.weight)
+    table.data("votingActive", votingActive)
 
-            if (!olympicsVoteMaps) {
-                var mapDivs = initVoteLayout(table, candidates.length)
-                initOlympicsVoteMaps(mapDivs)
-            }
+    if (!olympicsVoteMaps) {
+        var mapDivs = initVoteLayout(table, candidates.length)
+        initOlympicsVoteMaps(mapDivs)
+    }
 
-            var airport = candidates[0]
+    var airport = candidates[0]
 
-            table.find(".cityName").each(function(index) {
-                $(this).html(getCountryFlagImg(candidates[index].countryCode) + candidates[index].city)
-            })
+    table.find(".cityName").each(function(index) {
+        $(this).html(getCountryFlagImg(candidates[index].countryCode) + candidates[index].city)
+    })
 
-            $.each(olympicsMapElements, function() { this.setMap(null)})
-            olympicsMapElements = []
+    $.each(olympicsMapElements, function() { this.setMap(null)})
+    olympicsMapElements = []
 
-            var votedCandidate
-            table.find(".number-button").each(function(index) {
-                var airportId = candidates[index].id
-                $(this).data("airportId", airportId)
-                $(this).empty()
-                if (result.precedence) {
-                    if (result.precedence[airportId] == 1) {
-                        votedCandidate = candidates[index]
-                    }
-                    $(this).data("precedence", result.precedence[airportId])
-                    $(this).append("<span>" + result.precedence[airportId] + "</span>")
-                }
-            })
+    table.find(".number-button").each(function(index) {
+        var airportId = candidates[index].id
+        $(this).data("airportId", airportId)
+        $(this).empty()
+        if (votes.precedence) {
+            $(this).data("precedence", votes.precedence[airportId])
+            $(this).append("<span>" + votes.precedence[airportId] + "</span>")
+        } else {
+            $(this).removeData("precedence")
+        }
+    })
 
-            $.each(olympicsVoteMaps, function(index, map) {
-                var candidateInfo = candidates[index]
-                populateOlympicsCityMap(map, candidateInfo)
-            })
-
-            //find out with airport this airline has voted for
-            $("#olympicsDetails .votedCityReward").hide()
-            if (votedCandidate) {
-                $("#olympicsDetails .votedCity").html(getCountryFlagImg(votedCandidate.countryCode) + votedCandidate.city)
-                if (selectedAirport && selectedAirport.id == votedCandidate.id) { //yay
-                    $("#olympicsDetails .votedCityReward").data("eventId", eventId)
-                    $("#olympicsDetails .votedCityReward").show()
-                }
-            } else {
-                $("#olympicsDetails .votedCity").html("-")
-            }
-
-            refreshCityVoteModalButtons()
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-        	            console.log(JSON.stringify(jqXHR));
-        	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-        	    }
+    $.each(olympicsVoteMaps, function(index, map) {
+        var candidateInfo = candidates[index]
+        populateOlympicsCityMap(map, candidateInfo)
     })
 }
 

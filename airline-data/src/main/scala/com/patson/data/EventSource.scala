@@ -15,6 +15,10 @@ object EventSource {
   def saveOlympicsVoteRounds(eventId: Int, rounds : List[OlympicsVoteRound]) = {
     val connection = Meta.getConnection()
 
+    val purgeStatement = connection.prepareStatement("DELETE FROM " + OLYMPIC_VOTE_ROUND_TABLE + " WHERE event = ?")
+    purgeStatement.setInt(1, eventId)
+    purgeStatement.execute()
+
     val statement = connection.prepareStatement("REPLACE INTO " + OLYMPIC_VOTE_ROUND_TABLE + "(event, airport, round, vote) VALUES(?,?,?,?)")
 
     connection.setAutoCommit(false)
@@ -33,6 +37,7 @@ object EventSource {
 
       connection.commit()
     } finally {
+      purgeStatement.close()
       statement.close()
       connection.close()
     }

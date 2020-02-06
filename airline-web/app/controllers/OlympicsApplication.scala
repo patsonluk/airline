@@ -133,6 +133,9 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           precedenceIndex += 1
         }
         result = result + ("precedence" -> precedenceJson)
+        if (!vote.voteList.isEmpty) {
+          result = result + ("votedAirport" -> Json.toJson(vote.voteList(0)))
+        }
       case None =>
     }
 
