@@ -136,6 +136,10 @@ GET     /event/olympics/:eventId             controllers.OlympicsApplication.get
 GET		/event/olympics/:eventId/airlines/:airlineId/votes  controllers.OlympicsApplication.getOlympicsAirlineVotes(airlineId : Int, eventId : Int)
 PUT		/event/olympics/:eventId/airlines/:airlineId/votes  controllers.OlympicsApplication.putOlympicsAirlineVotes(airlineId : Int, eventId : Int)
 
+PUT     /event/:eventId/airline/:airlineId/reward/:optionId     controllers.EventApplication.pickRewardOption(airlineId : Int, eventId : Int, optionId : Int)
+GET     /event/:eventId/airline/:airlineId/reward               controllers.EventApplication.getRewardOptions(airlineId : Int, eventId : Int)
+
+
 # Signup
 GET     /signup                     controllers.SignUp.form
 GET		/signup/profiles            controllers.SignUp.profiles

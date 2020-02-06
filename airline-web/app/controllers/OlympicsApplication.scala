@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.{CycleSource, EventSource, LogSource}
+import com.patson.data.{CycleSource, EventSource}
 import com.patson.model.Airport
 import com.patson.model.event._
 import com.patson.util.AirportCache
@@ -23,9 +23,10 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           olympics.startCycle + olympics.duration - currentCycle
         }
 
+      val currentYear = olympics.currentYear(currentCycle)
       val status =
         if (remainingDuration > 0) {
-          olympics.currentYear(currentCycle) match {
+          currentYear match {
             case 1 => "Voting for Host City"
             case 2 => "Host City Voted"
             case 3 => "Preparation for the Games"
@@ -42,14 +43,20 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         } else {
           "Concluded"
         }
+      val votingActive = remainingDuration > 0 && currentYear == 1
       var result = JsObject(List(
         "id" -> JsNumber(olympics.id),
         "startCycle" -> JsNumber(olympics.startCycle),
+        "votingActive" -> JsBoolean(votingActive),
         "remainingDuration" -> JsNumber(remainingDuration),
         "status" -> JsString(status)))
 
       Olympics.getSelectedAirport(olympics.id).foreach { airport =>
         result = result + ("hostCity" -> JsString(airport.city))
+      }
+
+      if (remainingDuration > 0) {
+        result = result + ("currentYear" -> JsNumber(currentYear))
       }
 
       result
@@ -86,19 +93,37 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         eliminatedCandidatesByRound.append(previousCandidates.toSet.removedAll(currentCandidates).iterator.next())
       }
 
-      var roundsJson = Json.arr()
-      for (i <- 0 until votingRounds.length) {
+      var votingRoundsJson = Json.arr()
 
+
+      votingRounds.foreach { round =>
+        var votesJson = Json.obj()
+        round.votes.foreach {
+          case (airport, vote) => votesJson = votesJson + (airport.id.toString -> JsNumber(vote))
+        }
+
+        var votingRoundJson = Json.obj("votes" -> votesJson)
+
+        val eliminatedIndex = round.round - 1
+        if (eliminatedIndex < eliminatedCandidatesByRound.size) {
+          val eliminatedAirport = eliminatedCandidatesByRound(eliminatedIndex)
+          votingRoundJson = votingRoundJson +  ("eliminatedAirport" -> Json.toJson(eliminatedAirport))
+        }
+
+        votingRoundsJson = votingRoundsJson.append(votingRoundJson)
       }
 
-      result = result + ("votingRounds" -> roundsJson)
+      result = result + ("votingRounds" -> votingRoundsJson)
+      Olympics.getSelectedAirport(eventId).foreach { selectedAirport =>
+        result = result + ("selectedAirport", Json.toJson(selectedAirport))
+      }
     }
 
     Ok(result)
   }
 
   def getOlympicsAirlineVotes(airlineId : Int, eventId : Int) = AuthenticatedAirline(airlineId) { request =>
-    var result = Json.obj("weight" -> 1) //TODO
+    var result = Json.obj("weight" -> Olympics.getVoteWeight(request.user))
     EventSource.loadOlympicsAirlineVotes(eventId, airlineId) match {
       case Some(vote) =>
         var precedenceJson = Json.obj()
@@ -127,7 +152,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       if (airportPrecedences.isEmpty) {
         EventSource.deleteOlympicsAirlineVote(eventId, airlineId)
       } else {
-        EventSource.saveOlympicsAirlineVote(eventId, OlympicsAirlineVote(request.user, 1, airportPrecedences.toList)) //TODO vote weight
+        EventSource.saveOlympicsAirlineVote(eventId, OlympicsAirlineVote(request.user, airportPrecedences.toList))
       }
       Ok(precedenceJson)
     }

@@ -2394,18 +2394,22 @@
 					</div>
 					<div style="width : 70%; float:left;">
 						<div id="olympicsDetails" style="width : 90%; display: none;" class="section">
-							<h4>Candidates</h4>
+							<h3><img class="year1 yearStatus">Year 1 - Host City Voting</h3>
 							<div class="table data" id="olympicsCandidatesTable" style="width: 100%; max-height: 100%">
 								<div class="table-header">
 									<div class="cell" style="width: 100%">City</div>
 								</div>
 							</div>
-							<div class="button vote glow">Vote</div>
-							<h4>Voting Rounds</h4>
+							<div class="button vote">Vote</div>
+							<h3 style="margin-top: 15px"><img class="year2 yearStatus">Year 2 - Winning City Bid Announcement</h3>
 							<div class="table data" id="olympicsVotingRoundsTable" style="width: 100%; max-height: 100%">
 
 							</div>
-							<div class="result"></div>
+							<h4>Host City: <span class="hostCity"></span></h4>
+							<h4>Voted City: <span class="votedCity"></span></h4>
+							<div class="button glow votedCityReward" onclick="clickVotedCityReward">Claim Reward</div>
+							<h3 style="margin-top: 15px"><img class="year3 yearStatus">Year 3 - Games Preparation</h3>
+							<h3 style="margin-top: 15px"><img class="year4 yearStatus">Year 4 - Year of Summer Olympics</h3>
 						</div>
   					</div>
 	  				<div style="clear: both;"></div>
@@ -3165,6 +3169,37 @@
 			<div class="button" onclick="revertOlympicsVotes()">Revert</div>
 	  	</div>
   	</div>
+
+      <div id="eventRewardModal" class="modal" aria-hidden="true">
+          <div class="modal-content"  style="width : 500px;">
+              <span class="close" onclick="closeEventRewardModal()">&times;</span>
+              <div class="rewardOptions" >
+                  <div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
+                  <div style="float:left"> <h4 class="rewardTitle"></h4></div>
+                  <div style="float:left"><img src='@routes.Assets.versioned("images/icons/rubber-balloons.png")'></div>
+                  <div style="clear:both; margin-bottom: 15px"></div>
+
+                  <h4> Please pick your reward as below, you can always come back later to make your choice!</h4>
+
+                  <div class="table data rewardOptionsTable" style="height: 300px; width: 100%">
+                      <div class="table-header">
+                          <div class="cell" style="width: 10%"></div>
+                          <div class="cell" style="width: 90%"></div>
+                      </div>
+                  </div>
+              </div>
+              <div class="pickedReward" style="display: none;">
+                  <div style="float:left"> <h4>You have picked the reward as below</h4></div>
+                  <div style="clear:both; margin-bottom: 15px"></div>
+                  <div class="table data" style="width: 100%">
+                      <div class="table-row">
+                          <div class="cell label" style="width: 100%"><span class="text pickedRewardText"></span></div>
+                      </div>
+                  </div>
+
+              </div>
+          </div>
+      </div>
 
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>

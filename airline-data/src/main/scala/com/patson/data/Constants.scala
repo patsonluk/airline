@@ -15,6 +15,8 @@ object Constants {
   val AIRPORT_PROJECT_TABLE = "airport_project"
   val AIRPORT_PROJECT_INDEX_1 = "airport_project_index_1"
   val AIRPORT_IMAGE_TABLE = "airport_image"
+  val AIRPORT_AIRLINE_APPEAL_BONUS_TABLE = "airport_airline_appeal_bonus"
+  val AIRPORT_AIRLINE_APPEAL_BONUS_INDEX_1 =  "airport_airline_appeal_bonus_index_1"
   val COUNTRY_TABLE = "country"
   val COUNTRY_AIRLINE_RELATIONSHIP_TABLE = "country_airline_relationship"
   val COUNTRY_AIRLINE_RELATIONSHIP_INDEX_1 = "country_airline_relationship_index_1"
@@ -101,6 +103,7 @@ object Constants {
   val OLYMPIC_AFFECTED_AIRPORT_TABLE = "olympics_affected_airport"
   val OLYMPIC_AIRLINE_VOTE_TABLE = "olympics_airline_vote"
   val OLYMPIC_VOTE_ROUND_TABLE = "olympics_vote_round"
+  val EVENT_PICKED_REWARD_TABLE = "event_picked_reward"
 
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"

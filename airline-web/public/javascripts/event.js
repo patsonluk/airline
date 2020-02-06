@@ -51,7 +51,7 @@ function updateOlympicTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + event.status + "</div>")
 
 		row.click(function() {
-		   loadOlympicsDetails(event.id)
+		   loadOlympicsDetails(event)
 		})
 
 		olympicsTable.append(row)
@@ -62,10 +62,10 @@ function updateOlympicTable(sortProperty, sortOrder) {
 	}
 }
 
-function loadOlympicsDetails(eventId) {
+function loadOlympicsDetails(event) {
     var candidatesTable = $('#olympicsCandidatesTable')
   	candidatesTable.children("div.table-row").remove()
-
+    var eventId = event.id
   	var votingRoundsTable = $("#olympicsVotingRoundsTable")
   	votingRoundsTable.empty()
 
@@ -88,26 +88,33 @@ function loadOlympicsDetails(eventId) {
 
                     //populate header for votingRoundsTable
                     votingRoundHeaderRow.append("<div class='cell' style='width: 13%'>" + getCountryFlagImg(candidate.countryCode) + candidate.city + "</div>")
-                    votingRoundColumns.push(candidate.airportId)
+                    votingRoundColumns.push(candidate.id)
                 })
                 votingRoundHeaderRow.append("<div class='cell' style='width: 13%'>Eliminated</div>")
                 votingRoundsTable.append(votingRoundHeaderRow)
 
                 if (details.votingRounds) {
                     $.each(details.votingRounds, function(index, votingRound) {
-                        var votes = votingRound.votes
-                        var row = $("<div class='table-row'><div class='cell'>" + (index + 1) + "</div></div>")
-                        $.each(votingRoundColumns, function(columnIndex, airportId) {
-                            if (votingRound.has(airportId)) {
-                                row.append($("<div class='cell'>" + votes[airportId] + "</div>"))
-                            } else {
-                                row.append("<div class='cell'>-</div>")
-                            }
-                        })
-                        row.append("<div class='cell'>" + votingRound.eliminatedAirport.city + "</div>")
-                        votingRoundsTable.append(row)
+                        if (votingRound.eliminatedAirport) { //otherwise it's the last round
+                            var votes = votingRound.votes
+                            var row = $("<div class='table-row'><div class='cell'>" + (index + 1) + "</div></div>")
+                            $.each(votingRoundColumns, function(columnIndex, airportId) {
+                                if (votes[airportId] !== undefined) {
+                                    if (votingRound.eliminatedAirport.id == airportId) {
+                                        row.append($("<div class='cell warning'>" + votes[airportId] + "</div>"))
+                                    } else {
+                                        row.append($("<div class='cell'>" + votes[airportId] + "</div>"))
+                                    }
+                                } else {
+                                    row.append("<div class='cell'>-</div>")
+                                }
+                            })
+
+                            row.append("<div class='cell'>" + votingRound.eliminatedAirport.city + "</div>")
+                            votingRoundsTable.append(row)
+                        }
                     })
-                    $("#olympicsDetails .result").text(details.selectedAirport.city)
+                    $("#olympicsDetails .hostCity").html(getCountryFlagImg(details.selectedAirport.countryCode) + details.selectedAirport.city)
                 } else { //fill with empty rows
                     for (i = 1 ; i < details.candidates.length; i ++) {
                         var emptyRow = $("<div class='table-row'></div>")
@@ -118,16 +125,23 @@ function loadOlympicsDetails(eventId) {
                         emptyRow.append($("<div class='cell'>-</div>")) //eliminated column
                         votingRoundsTable.append(emptyRow)
                     }
+                    $("#olympicsDetails .hostCity").html("-")
                 }
 
                 if (activeAirline) {
+                    populateCityVoteModal(eventId, details.candidates, event.votingActive, details.selectedAirport)
                     $("#olympicsDetails .button.vote").show();
                     $("#olympicsDetails .button.vote").off("click").on("click", function() {
-                        populateCityVoteModal(eventId, details.candidates)
                         showOlympicsVoteModal()
                     })
                 } else {
                     $("#olympicsDetails .button.vote").hide();
+                }
+
+                if (event.currentYear) { //then it's active
+                    var highlightClass = "img.year" + event.currentYear
+                    $("#olympicsDetails img.yearStatus").attr("src", "assets/images/icons/12px/status-grey.png")
+                    $("#olympicsDetails").find(highlightClass).attr("src", "assets/images/icons/12px/status-green.png")
                 }
 
     	    	$("#olympicsDetails").fadeIn(200)
@@ -139,7 +153,7 @@ function loadOlympicsDetails(eventId) {
     	});
 }
 
-function populateCityVoteModal(eventId, candidates) {
+function populateCityVoteModal(eventId, candidates, votingActive, selectedAirport) {
     $("#olympicsVoteModal").data("eventId", eventId)
     $.ajax({
         type: 'GET',
@@ -147,8 +161,10 @@ function populateCityVoteModal(eventId, candidates) {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(result) {
-            //TODO weight
             var table = $("#olympicsCityVoteTable")
+
+            table.data("weight", result.weight)
+            table.data("votingActive", votingActive)
 
             if (!olympicsVoteMaps) {
                 var mapDivs = initVoteLayout(table, candidates.length)
@@ -157,7 +173,6 @@ function populateCityVoteModal(eventId, candidates) {
 
             var airport = candidates[0]
 
-
             table.find(".cityName").each(function(index) {
                 $(this).html(getCountryFlagImg(candidates[index].countryCode) + candidates[index].city)
             })
@@ -165,11 +180,15 @@ function populateCityVoteModal(eventId, candidates) {
             $.each(olympicsMapElements, function() { this.setMap(null)})
             olympicsMapElements = []
 
+            var votedCandidate
             table.find(".number-button").each(function(index) {
                 var airportId = candidates[index].id
                 $(this).data("airportId", airportId)
                 $(this).empty()
                 if (result.precedence) {
+                    if (result.precedence[airportId] == 1) {
+                        votedCandidate = candidates[index]
+                    }
                     $(this).data("precedence", result.precedence[airportId])
                     $(this).append("<span>" + result.precedence[airportId] + "</span>")
                 }
@@ -179,14 +198,46 @@ function populateCityVoteModal(eventId, candidates) {
                 var candidateInfo = candidates[index]
                 populateOlympicsCityMap(map, candidateInfo)
             })
+
+            //find out with airport this airline has voted for
+            $("#olympicsDetails .votedCityReward").hide()
+            if (votedCandidate) {
+                $("#olympicsDetails .votedCity").html(getCountryFlagImg(votedCandidate.countryCode) + votedCandidate.city)
+                if (selectedAirport && selectedAirport.id == votedCandidate.id) { //yay
+                    $("#olympicsDetails .votedCityReward").show()
+                }
+            } else {
+                $("#olympicsDetails .votedCity").html("-")
+            }
+
+            refreshCityVoteModalButtons()
         },
         error: function(jqXHR, textStatus, errorThrown) {
         	            console.log(JSON.stringify(jqXHR));
         	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
         	    }
     })
+}
 
-
+function refreshCityVoteModalButtons() {
+    if (!$("#olympicsCityVoteTable").data("votingActive")) {
+        disableButton($("#olympicsVoteModal .confirm"), "Voting closed")
+        $("#olympicsVoteModal .revert").hide()
+    } else {
+        $("#olympicsVoteModal .revert").show()
+        if ($("#olympicsCityVoteTable").data("weight") > 0) {
+            if (currentVotePrecedence > candidateCount || currentVotePrecedence == 1) {
+                enableButton($("#olympicsVoteModal .confirm"))
+                enableButton($("#olympicsVoteModal .revert"))
+            } else {
+                disableButton($("#olympicsVoteModal .confirm"), "Must fill in precedence for all cities")
+                enableButton($("#olympicsVoteModal .revert"))
+            }
+        } else {
+            disableButton($("#olympicsVoteModal .confirm"), "Can only vote if airline's reputation is at least 40")
+            disableButton($("#olympicsVoteModal .revert"), "Can only vote if airline's reputation is at least 40")
+        }
+    }
 }
 
 var currentVotePrecedence = 1
@@ -262,13 +313,7 @@ function voteOlympicsCity(numberButton) {
         numberButton.data("precedence", currentVotePrecedence)
         currentVotePrecedence ++
     }
-
-    if (currentVotePrecedence > candidateCount) {
-        enableButton($("#olympicsVoteModal .confirm"))
-    } else {
-        disableButton($("#olympicsVoteModal .confirm"), "Must fill in precedence for all cities")
-    }
-
+    refreshCityVoteModalButtons()
 }
 
 function initVoteLayout(table, candidateCount) {
@@ -366,13 +411,90 @@ function revertOlympicsVotes() {
     currentVotePrecedence = 1
     $("#olympicsCityVoteTable .number-button").each(function() {
         $(this).empty()
-        $(this).removeData()
+        $(this).removeData("precedence")
     })
 
 
-    enableButton($("#olympicsVoteModal .button.confirm"))
+    refreshCityVoteModalButtons()
 }
 
 function showOlympicsVoteModal() {
     $("#olympicsVoteModal").fadeIn(200)
+}
+
+function showEventRewardModal(eventId) {
+    updateEventRewardModal(eventId)
+    showConfetti($("#eventRewardModal"))
+}
+
+function updateEventRewardModal(eventId) {
+    $("#eventRewardModal .rewardOptionsTable").hide()
+    $("#eventRewardModal .pickedReward").hide()
+    $.ajax({
+    		type: 'GET',
+    		url: "event/" + eventId + "/airline/" + activeAirline.id + "/reward",
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(result) {
+    	        if (result.pickedOption !== undefined) {
+                    showPickedEventReward(result.options[result.pickedOption])
+    	        } else {
+                    showEventRewardOptionsTable(eventId, result.options)
+    	        }
+
+    	    	$.each(result, function(index, option) {
+                    var row = $("<div class='table-row'></div>")
+                    row.append("<div class='cell'><a href='#' class='round-button tick' onclick=pickEventReward(" + option.id + ")></a></div>")
+                    row.append("<div class='cell label'>" + option.description + "</div>")
+                    table.append(row)
+                });
+    	    },
+            error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    }
+    });
+}
+
+
+function closeEventRewardModal() {
+    removeConfetti($('#eventRewardModal'))
+    closeModal($("#eventRewardModal"))
+}
+
+function showEventRewardOptionsTable(eventId, rewardOptions) {
+
+    var table = $("#eventRewardModal .rewardOptionsTable")
+    table.children(".table-row").remove()
+
+    $.each(rewardOptions, function(index, option) {
+        var row = $("<div class='table-row'></div>")
+        row.append("<div class='cell'><a href='#' class='round-button tick' onclick=pickEventReward(" + option.id + ")></a></div>")
+        row.append("<div class='cell label'>" + option.description + "</div>")
+        table.append(row)
+    });
+
+    table.show();
+}
+
+function showPickedEventReward(pickedOption) {
+    $("#eventRewardModal .pickedReward .pickedRewardText").text(pickedOption.description)
+    $("#eventRewardModal .pickedReward").show()
+}
+
+function pickEventReward(eventId, optionId) {
+	s$.ajax({
+        type: 'PUT',
+        url: url: "event/" + eventId + "/airline/" + activeAirline.id + "/reward/" + optionId,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            updateEventRewardModal(eventId)
+            updateAirlineInfo(activeAirline.id)
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
 }

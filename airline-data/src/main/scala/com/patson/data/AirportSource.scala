@@ -6,6 +6,7 @@ import com.patson.model._
 import com.patson.model.AirlineAppeal
 import java.sql.Statement
 
+import com.patson.model.event.EventReward
 import com.patson.util.{AirlineCache, AirportCache}
 
 import scala.collection.mutable
@@ -45,15 +46,119 @@ object AirportSource {
       loadAirportsByQueryString(queryString, criteria.map(_._2), fullLoad)
   }
 
-  def getAirlineBonuses(airport : Airport, countryAirlineTitleCache : mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]) = {
+  def getAirlineBonuses(airport : Airport, countryAirlineTitleCache : mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]): Map[Int, List[AirlineBonus]] = {
     //get airport bonus //for now no db
     val airlineTitles: Map[Int, CountryAirlineTitle] = countryAirlineTitleCache.getOrElseUpdate(airport.countryCode, CountrySource.loadCountryAirlineTitlesByCountryCode(airport.countryCode).map(entry => (entry.airline.id, entry)).toMap)
 
-    //map airline titles to bonues
-    airlineTitles.view.mapValues { countryAirlineTitle =>
-      List(AirlineBonus(bonusType = CountryAirlineTitle.getBonusType(countryAirlineTitle.title), bonus = AirlineAppeal(countryAirlineTitle.loyaltyBonus, 0), expirationCycle = None))
-    }.toMap
+    //map airline titles to bonus
+    val bonusByAirlineId =  mutable.HashMap[Int, ListBuffer[AirlineBonus]]()
+
+    airlineTitles.foreach {
+      case(airlineId, countryAirlineTitle) =>
+        val list = bonusByAirlineId.getOrElseUpdate(airlineId, ListBuffer())
+        list.append(AirlineBonus(bonusType = CountryAirlineTitle.getBonusType(countryAirlineTitle.title), bonus = AirlineAppeal(countryAirlineTitle.loyaltyBonus, 0), expirationCycle = None))
+    }
+
+    AirportSource.loadAirlineAppealBonusByAirport(airport.id).foreach {
+      case (airline, bonusList) =>
+        val list = bonusByAirlineId.getOrElseUpdate(airline.id, ListBuffer())
+        list.appendAll(bonusList)
+    }
+
+    bonusByAirlineId.view.mapValues(_.toList).toMap
   }
+
+  def saveAirlineAppealBonus(airportId : Int, airlineId : Int, bonus : AirlineBonus) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE + "(airport, airline, loyalty_bonus, awareness_bonus, expiration_cycle) VALUES(?,?,?,?,?)")
+      preparedStatement.setInt(1, airportId)
+      preparedStatement.setInt(2, airlineId)
+      preparedStatement.setInt(3, bonus.bonus.loyalty.toInt)
+      preparedStatement.setInt(4, bonus.bonus.awareness.toInt)
+      bonus.expirationCycle match {
+        case Some(cycle) =>
+          preparedStatement.setInt(5, cycle)
+        case None =>
+          preparedStatement.setNull(5, java.sql.Types.INTEGER)
+      }
+
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadAirlineAppealBonusByAirportAndAirline(airportId : Int, airlineId : Int) : List[AirlineBonus] = {
+    val result = loadAirlineAppealBonusByCriteria(List(("airport", airportId), ("airline", airlineId)))
+    if (result.isEmpty) {
+      List.empty
+    } else {
+      result.last._2.last._2
+    }
+  }
+
+  def loadAirlineAppealBonusByAirport(airportId : Int) : Map[Airline, List[AirlineBonus]] = {
+    val result = loadAirlineAppealBonusByCriteria(List(("airport", airportId)))
+    if (result.isEmpty) {
+      Map.empty
+    } else {
+      result.last._2
+    }
+  }
+
+  def loadAirlineAppealBonusByCriteria(criteria : List[(String, Any)]): Map[Airport, Map[Airline, List[AirlineBonus]]] = {
+    val connection = Meta.getConnection()
+    try {
+      var queryString = "SELECT * FROM " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE
+
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = mutable.HashMap[Airport, mutable.HashMap[Airline, ListBuffer[AirlineBonus]]]()
+
+
+      while (resultSet.next()) {
+        val airportId = resultSet.getInt("airport")
+        val airport = AirportCache.getAirport(airportId, false).getOrElse(Airport.fromId(airportId))
+        val airlineId = resultSet.getInt("airline")
+        val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
+
+        val bonusList = result.getOrElseUpdate(airport, mutable.HashMap()).getOrElseUpdate(airline, ListBuffer())
+        val expirationCycle = resultSet.getObject("expiration_cycle")
+        bonusList.append(AirlineBonus(
+          bonusType = BonusType(resultSet.getInt("bonus_type")),
+          bonus = AirlineAppeal(loyalty = resultSet.getInt("loyalty_bonus"), awareness = resultSet.getInt("awareness_bonus")),
+          expirationCycle = if (expirationCycle == null) None else Some(expirationCycle.asInstanceOf[Int])))
+      }
+      resultSet.close()
+      preparedStatement.close()
+
+      result.view.mapValues { airlineAppealBonusMap =>
+        airlineAppealBonusMap.view.mapValues(_.toList).toMap
+      }.toMap
+    } finally {
+      connection.close()
+    }
+  }
+
+
 
   def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) = {
       //open the hsqldb

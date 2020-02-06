@@ -47,7 +47,8 @@ object QuickCreateSchema extends App {
   def createSchema(connection : Connection) = {
 //    Meta.createLog(connection)
 //    Meta.createAlert(connection)
-    Meta.createEvent(connection)
+    //Meta.createEvent(connection)
+    Meta.createAirportAirlineBonus(connection)
   }
   
   

@@ -3,6 +3,10 @@ package com.patson.data
 
 import scala.concurrent.Future
 import java.util.concurrent.TimeUnit
+
+import com.patson.EventSimulation
+import com.patson.model.event.Olympics
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
@@ -31,8 +35,9 @@ object Test extends App {
 //    Patchers.airplaneModelPatcher()
 //  Patchers.patchAirlineLogos()
 //  IsolatedAirportPatcher.patchIsolatedAirports()
-  
-  
+  val olympics = EventSource.loadEvents().last.asInstanceOf[Olympics]
+  val voteRounds = EventSimulation.simulateOlympicsVoteRounds(olympics)
+  EventSource.saveOlympicsVoteRounds(olympics.id, voteRounds)
 }
 
 

@@ -1,7 +1,7 @@
 package com.patson
 
 import com.patson.data.{AirportSource, EventSource}
-import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound}
+import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVote, OlympicsAirlineVoteWithWeight, OlympicsVoteRound}
 import com.patson.model.{Airline, Airport, Computation}
 
 import scala.collection.mutable
@@ -105,12 +105,18 @@ object EventSimulation {
   }
 
   def simulateOlympicsVoteRounds(olympics: Olympics) : List[OlympicsVoteRound] = {
-    val airlineVotes: Map[Airline, OlympicsAirlineVote] = EventSource.loadOlympicsAirlineVotes(olympics.id)
+    val voteWeights = Olympics.getVoteWeights().view.map {
+      case(airline, weight) => (airline.id, weight)
+    }.toMap
+
+    val airlineVotes: Map[Airline, OlympicsAirlineVoteWithWeight] = EventSource.loadOlympicsAirlineVotes(olympics.id).view.mapValues {
+      airlineVote => airlineVote.withWeight(voteWeights.getOrElse(airlineVote.airline.id, 0))
+    }.toMap
     val candidates: List[Airport] = EventSource.loadOlympicsCandidates(olympics.id)
     simulateOlympicsVoteRounds(candidates, airlineVotes)
   }
 
-  def simulateOlympicsVoteRounds(candidates: List[Airport], airlineVotes: Map[Airline, OlympicsAirlineVote]) : List[OlympicsVoteRound]  = {
+  def simulateOlympicsVoteRounds(candidates: List[Airport], airlineVotes: Map[Airline, OlympicsAirlineVoteWithWeight]) : List[OlympicsVoteRound]  = {
     val voteRoundResults = ListBuffer[OlympicsVoteRound]()
     var voteRound = 1
     val remainingCandidates = ListBuffer[Airport]()
@@ -126,7 +132,7 @@ object EventSimulation {
           airlineVote.voteList.find(votedAirport => remainingCandidates.contains(votedAirport)) match { //go down by the list (highest precedence first), find the first one that is still in the candidates list
             case Some(legitVotedAirport) =>
               val currentVotesForThisAirport = votesByAirport(legitVotedAirport)
-              votesByAirport.put(legitVotedAirport, currentVotesForThisAirport + airlineVote.voteWeight)
+              votesByAirport.put(legitVotedAirport, currentVotesForThisAirport + airlineVote.weight)
             case None => //should not be this
           }
       }

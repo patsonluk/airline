@@ -1,6 +1,6 @@
 package com.patson
 
-import com.patson.model.event.{OlympicsAirlineVote, OlympicsVoteRound}
+import com.patson.model.event.{OlympicsAirlineVote, OlympicsAirlineVoteWithWeight, OlympicsVoteRound}
 import com.patson.model.{PassengerType, _}
 import org.scalatest.{Matchers, WordSpecLike}
 
@@ -48,10 +48,10 @@ class EventSimulationSpec extends WordSpecLike with Matchers {
       val airline2 = Airline.fromId(2)
       val airline3 = Airline.fromId(3)
       val airline4 = Airline.fromId(4)
-      var airline1Vote = OlympicsAirlineVote(airline1, 1, List(candidates(0), candidates(1), candidates(2), candidates(3), candidates(4), candidates(5)))
-      var airline2Vote = OlympicsAirlineVote(airline2, 1, List(candidates(5), candidates(4), candidates(3), candidates(2), candidates(1), candidates(0)))
-      var airline3Vote = OlympicsAirlineVote(airline3, 1, List(candidates(1), candidates(2), candidates(3), candidates(4), candidates(5), candidates(0)))
-      var airline4Vote = OlympicsAirlineVote(airline4, 1, List(candidates(2), candidates(1), candidates(4), candidates(3), candidates(5), candidates(0)))
+      var airline1Vote = OlympicsAirlineVoteWithWeight(airline1, 1, List(candidates(0), candidates(1), candidates(2), candidates(3), candidates(4), candidates(5)))
+      var airline2Vote = OlympicsAirlineVoteWithWeight(airline2, 1, List(candidates(5), candidates(4), candidates(3), candidates(2), candidates(1), candidates(0)))
+      var airline3Vote = OlympicsAirlineVoteWithWeight(airline3, 1, List(candidates(1), candidates(2), candidates(3), candidates(4), candidates(5), candidates(0)))
+      var airline4Vote = OlympicsAirlineVoteWithWeight(airline4, 1, List(candidates(2), candidates(1), candidates(4), candidates(3), candidates(5), candidates(0)))
 
       var result = EventSimulation.simulateOlympicsVoteRounds(candidates, Map(airline1 -> airline1Vote, airline2 -> airline2Vote, airline3 -> airline3Vote, airline4 -> airline4Vote))
       //first round: 0, 5, 1, 2 => 3 is dropped  (0, 1, 2, 4, 5)
@@ -67,10 +67,10 @@ class EventSimulationSpec extends WordSpecLike with Matchers {
       assert(result(4) == OlympicsVoteRound(5, Map(candidates(1) -> 3, candidates(5) -> 1)))
       assert(result(5) == OlympicsVoteRound(6, Map(candidates(1) -> 4)))
 
-      airline1Vote = OlympicsAirlineVote(airline1, 1, List(candidates(0), candidates(1), candidates(2), candidates(3), candidates(4), candidates(5)))
-      airline2Vote = OlympicsAirlineVote(airline2, 2, List(candidates(5), candidates(4), candidates(3), candidates(2), candidates(1), candidates(0))) //2 VOTES
-      airline3Vote = OlympicsAirlineVote(airline3, 1, List(candidates(0), candidates(1), candidates(2), candidates(3), candidates(4), candidates(5)))
-      airline4Vote = OlympicsAirlineVote(airline4, 1, List(candidates(1), candidates(5), candidates(4), candidates(3), candidates(2), candidates(0)))
+      airline1Vote = OlympicsAirlineVoteWithWeight(airline1, 1, List(candidates(0), candidates(1), candidates(2), candidates(3), candidates(4), candidates(5)))
+      airline2Vote = OlympicsAirlineVoteWithWeight(airline2, 2, List(candidates(5), candidates(4), candidates(3), candidates(2), candidates(1), candidates(0))) //2 VOTES
+      airline3Vote = OlympicsAirlineVoteWithWeight(airline3, 1, List(candidates(0), candidates(1), candidates(2), candidates(3), candidates(4), candidates(5)))
+      airline4Vote = OlympicsAirlineVoteWithWeight(airline4, 1, List(candidates(1), candidates(5), candidates(4), candidates(3), candidates(2), candidates(0)))
 
       result = EventSimulation.simulateOlympicsVoteRounds(candidates, Map(airline1 -> airline1Vote, airline2 -> airline2Vote, airline3 -> airline3Vote, airline4 -> airline4Vote))
       //first round: 0, 5, 5, 0, 1 => 2 is dropped (0, 1, 3, 4, 5)

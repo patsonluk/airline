@@ -204,8 +204,8 @@ div.button:hover {
     color: #6093e7;
 }
 
-div.button.glow, div.googleMapIcon.glow{
-    animation: glow 1s infinite alternate;
+div.glow {
+    animation: glow 2s infinite alternate;
 }
 
 @keyframes glow {

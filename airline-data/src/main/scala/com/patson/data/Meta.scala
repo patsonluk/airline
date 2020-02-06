@@ -285,6 +285,7 @@ object Meta {
     createAlert(connection)
     createEvent(connection)
     createSantaClaus(connection)
+    createAirportAirlineBonus(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1029,9 +1030,13 @@ object Meta {
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_VOTE_ROUND_TABLE)
     statement.execute()
     statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + EVENT_PICKED_REWARD_TABLE)
+    statement.execute()
+    statement.close()
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + EVENT_TABLE)
     statement.execute()
     statement.close()
+
 
     statement = connection.prepareStatement("CREATE TABLE " + EVENT_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
@@ -1090,6 +1095,41 @@ object Meta {
       ")")
     statement.execute()
     statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + EVENT_PICKED_REWARD_TABLE + "(" +
+      "event INTEGER," +
+      "airline INTEGER," +
+      "reward_option INTEGER," +
+      "PRIMARY KEY (event, airline), " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirportAirlineBonus(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE)
+    statement.execute()
+    statement.close()
+
+    //case class AirlineAppealBonus(loyalty : Double, awareness : Double, bonusType: BonusType.Value, expirationCycle : Option[Int])
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE + "(" +
+      "airline INTEGER," +
+      "airport INTEGER," +
+      "loyalty INTEGER, " +
+      "awareness  INTEGER," +
+      "attempts_left INTEGER," +
+      "INDEX " + AIRPORT_AIRLINE_APPEAL_BONUS_INDEX_1 + " (airline,airport)," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+
+
   }
 
   def createSantaClaus(connection : Connection) {
