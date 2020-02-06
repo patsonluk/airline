@@ -2,7 +2,8 @@ package com.patson.model.event
 
 import com.patson.data.{AirlineSource, AirportSource, CountrySource, EventSource}
 import com.patson.model._
-import play.api.libs.json.Json
+
+import scala.collection.mutable
 
 abstract class Event(val eventType : EventType.Value, val startCycle : Int, val duration : Int, var id : Int = 0) {
   val isActive = (currentCycle : Int) => startCycle + duration > currentCycle
@@ -71,7 +72,7 @@ object Olympics {
     }.toMap
   }
 
-
+  val voteRewardOptions : List[EventReward] = List(OlympicsVoteCashReward(), OlympicsVoteLoyaltyReward())
 }
 
 /**
@@ -99,17 +100,36 @@ object EventType extends Enumeration {
     val OLYMPICS = Value
 }
 
-abstract class EventReward(eventType : EventType.Value, optionId : Int) {
+object RewardCategory extends Enumeration {
+  type RewardCategory = Value
+  val OLYMPICS_VOTE = Value
+}
+
+object RewardOption extends Enumeration {
+  type RewardOption = Value
+  val CASH, LOYALTY = Value
+}
+
+abstract class EventReward(val eventType : EventType.Value, val rewardCategory : RewardCategory.Value, val rewardOption : RewardOption.Value) {
+  EventReward.lookup.put(rewardOption, this)
+
   def apply(event: Event, airline : Airline): Unit = {
     applyReward(event, airline)
-    EventSource.savePickedRewardOption(event.id, airline.id, optionId)
+    EventSource.savePickedRewardOption(event.id, airline.id, this)
   }
   protected def applyReward(event: Event, airline : Airline)
 
   val description : String
 }
 
-case class OlympicsVoteCashReward() extends EventReward(EventType.OLYMPICS, 0) {
+object EventReward {
+  private val lookup = mutable.HashMap[RewardOption.Value, EventReward]()
+  def fromOptionId(optionId : Int) = {
+    lookup.get(RewardOption(optionId))
+  }
+}
+
+case class OlympicsVoteCashReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_VOTE, RewardOption.CASH) {
   val CASH_BONUS = 10000000 //10 millions
   override def applyReward(event: Event, airline : Airline) = {
     AirlineSource.adjustAirlineBalance(airline.id, CASH_BONUS)
@@ -118,7 +138,7 @@ case class OlympicsVoteCashReward() extends EventReward(EventType.OLYMPICS, 0) {
   override val description: String = "$10,000,000 subsidy in cash"
 }
 
-case class OlympicsVoteLoyaltyReward() extends EventReward(EventType.OLYMPICS, 0) {
+case class OlympicsVoteLoyaltyReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_VOTE, RewardOption.LOYALTY) {
   val LOYALTY_BONUS = 2
   override def applyReward(event: Event, airline : Airline) = {
     val bonus = AirlineBonus(BonusType.OLYMPICS_VOTE, AirlineAppeal(loyalty = LOYALTY_BONUS, awareness = 0), Some(event.startCycle + event.duration))
@@ -127,7 +147,7 @@ case class OlympicsVoteLoyaltyReward() extends EventReward(EventType.OLYMPICS, 0
     }
   }
 
-  override val description: String = "$10,000,000 subsidy in cash"
+  override val description: String = "+2 loyalty bonus on airports around the host city until the end of Olympics"
 }
 
 

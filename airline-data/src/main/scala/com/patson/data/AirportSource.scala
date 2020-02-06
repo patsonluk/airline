@@ -71,16 +71,17 @@ object AirportSource {
   def saveAirlineAppealBonus(airportId : Int, airlineId : Int, bonus : AirlineBonus) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE + "(airport, airline, loyalty_bonus, awareness_bonus, expiration_cycle) VALUES(?,?,?,?,?)")
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE + "(airport, airline, bonus_type, loyalty_bonus, awareness_bonus, expiration_cycle) VALUES(?,?,?,?,?,?)")
       preparedStatement.setInt(1, airportId)
       preparedStatement.setInt(2, airlineId)
-      preparedStatement.setInt(3, bonus.bonus.loyalty.toInt)
-      preparedStatement.setInt(4, bonus.bonus.awareness.toInt)
+      preparedStatement.setInt(3, bonus.bonusType.id)
+      preparedStatement.setInt(4, bonus.bonus.loyalty.toInt)
+      preparedStatement.setInt(5, bonus.bonus.awareness.toInt)
       bonus.expirationCycle match {
         case Some(cycle) =>
-          preparedStatement.setInt(5, cycle)
+          preparedStatement.setInt(6, cycle)
         case None =>
-          preparedStatement.setNull(5, java.sql.Types.INTEGER)
+          preparedStatement.setNull(6, java.sql.Types.INTEGER)
       }
 
       preparedStatement.executeUpdate()

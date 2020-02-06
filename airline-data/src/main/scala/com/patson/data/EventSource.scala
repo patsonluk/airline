@@ -4,11 +4,11 @@ import java.sql.Statement
 
 import com.patson.data.Constants._
 import com.patson.model.{Airline, Airport}
-import com.patson.model.event.{Event, EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound}
+import com.patson.model.event.{Event, EventReward, EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound, RewardOption, RewardCategory}
 import com.patson.util.{AirlineCache, AirportCache}
 
 import scala.collection.{immutable, mutable}
-import scala.collection.mutable.{ListBuffer}
+import scala.collection.mutable.ListBuffer
 
 
 object EventSource {
@@ -127,16 +127,17 @@ object EventSource {
     }
   }
 
-  def savePickedRewardOption(eventId: Int, airlineId : Int, option : Int) = {
+  def savePickedRewardOption(eventId: Int, airlineId : Int, option : EventReward) = {
     val connection = Meta.getConnection()
-    val statement = connection.prepareStatement("REPLACE INTO " + EVENT_PICKED_REWARD_TABLE + "(event, airline, reward_option) VALUES(?,?,?)")
+    val statement = connection.prepareStatement("REPLACE INTO " + EVENT_PICKED_REWARD_TABLE + "(event, airline, reward_category, reward_option) VALUES(?,?,?,?)")
 
     connection.setAutoCommit(false)
 
     try {
       statement.setInt(1, eventId)
       statement.setInt(2, airlineId)
-      statement.setInt(3, option)
+      statement.setInt(3, option.rewardCategory.id)
+      statement.setInt(4, option.rewardOption.id)
       statement.executeUpdate()
 
       connection.commit()
@@ -146,17 +147,18 @@ object EventSource {
     }
   }
 
-  def loadPickedRewardOption(eventId: Int, airlineId : Int) : Option[Int] = {
+  def loadPickedRewardOption(eventId: Int, airlineId : Int, rewardCategory: RewardCategory.Value) : Option[EventReward] = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("SELECT * FROM " + EVENT_PICKED_REWARD_TABLE + " WHERE event = ? AND airline = ?")
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + EVENT_PICKED_REWARD_TABLE + " WHERE event = ? AND airline = ? AND reward_category = ?")
 
       preparedStatement.setInt(1, eventId)
       preparedStatement.setInt(2, airlineId)
+      preparedStatement.setInt(3, rewardCategory.id)
       val resultSet = preparedStatement.executeQuery()
-      val result : Option[Int] =
+      val result : Option[EventReward] =
         if (resultSet.next()) {
-          Some(resultSet.getInt("reward_option"))
+          EventReward.fromOptionId(resultSet.getInt("reward_option"))
         } else {
           None
         }

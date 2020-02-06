@@ -210,10 +210,10 @@ div.glow {
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 10px -10px #eb8f34f;
+    box-shadow: 0 0 5px -5px #C0D4F8;
   }
   to {
-    box-shadow: 0 0 10px 10px #ff6c52;
+    box-shadow: 0 0 5px 5px #6495ED;
   }
 }
 

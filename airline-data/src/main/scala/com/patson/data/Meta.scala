@@ -1099,8 +1099,9 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + EVENT_PICKED_REWARD_TABLE + "(" +
       "event INTEGER," +
       "airline INTEGER," +
+      "reward_category INTEGER," +
       "reward_option INTEGER," +
-      "PRIMARY KEY (event, airline), " +
+      "PRIMARY KEY (event, airline, reward_category), " +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -1117,10 +1118,11 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE + "(" +
       "airline INTEGER," +
       "airport INTEGER," +
-      "loyalty INTEGER, " +
-      "awareness  INTEGER," +
-      "attempts_left INTEGER," +
-      "INDEX " + AIRPORT_AIRLINE_APPEAL_BONUS_INDEX_1 + " (airline,airport)," +
+      "bonus_type INTEGER," +
+      "loyalty_bonus INTEGER, " +
+      "awareness_bonus  INTEGER," +
+      "expiration_cycle INTEGER," +
+      "INDEX " + AIRPORT_AIRLINE_APPEAL_BONUS_INDEX_1 + " (airline,airport,bonus_type)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

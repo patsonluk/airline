@@ -204,6 +204,7 @@ function populateCityVoteModal(eventId, candidates, votingActive, selectedAirpor
             if (votedCandidate) {
                 $("#olympicsDetails .votedCity").html(getCountryFlagImg(votedCandidate.countryCode) + votedCandidate.city)
                 if (selectedAirport && selectedAirport.id == votedCandidate.id) { //yay
+                    $("#olympicsDetails .votedCityReward").data("eventId", eventId)
                     $("#olympicsDetails .votedCityReward").show()
                 }
             } else {
@@ -422,33 +423,40 @@ function showOlympicsVoteModal() {
     $("#olympicsVoteModal").fadeIn(200)
 }
 
-function showEventRewardModal(eventId) {
-    updateEventRewardModal(eventId)
+function showOlympicsVoteRewardModal(eventId) {
+    showEventRewardModal(eventId, "olympics-vote")
+}
+
+function showEventRewardModal(eventId, rewardCategory) {
+    updateEventRewardModal(eventId, rewardCategory)
+    $("#eventRewardModal").show()
     showConfetti($("#eventRewardModal"))
 }
 
-function updateEventRewardModal(eventId) {
-    $("#eventRewardModal .rewardOptionsTable").hide()
+function updateEventRewardModal(eventId, rewardCategory) {
+    $("#eventRewardModal .rewardOptions").hide()
     $("#eventRewardModal .pickedReward").hide()
+
+    if (rewardCategory === undefined) {
+        rewardCategory = $("#eventRewardModal").data("rewardCategory")
+    } else {
+        $("#eventRewardModal").data("rewardCategory", rewardCategory)
+    }
+
     $.ajax({
     		type: 'GET',
-    		url: "event/" + eventId + "/airline/" + activeAirline.id + "/reward",
+    		url: "event/" + eventId + "/airline/" + activeAirline.id + "/reward/" + rewardCategory,
     	    contentType: 'application/json; charset=utf-8',
+    	    async: false,
     	    dataType: 'json',
     	    success: function(result) {
+    	        $("#eventRewardModal .rewardTitle").text(result.title)
     	        if (result.pickedOption !== undefined) {
-                    showPickedEventReward(result.options[result.pickedOption])
+                    showPickedEventReward(result.pickedOption)
     	        } else {
                     showEventRewardOptionsTable(eventId, result.options)
     	        }
-
-    	    	$.each(result, function(index, option) {
-                    var row = $("<div class='table-row'></div>")
-                    row.append("<div class='cell'><a href='#' class='round-button tick' onclick=pickEventReward(" + option.id + ")></a></div>")
-                    row.append("<div class='cell label'>" + option.description + "</div>")
-                    table.append(row)
-                });
-    	    },
+            },
             error: function(jqXHR, textStatus, errorThrown) {
     	            console.log(JSON.stringify(jqXHR));
     	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
@@ -469,12 +477,12 @@ function showEventRewardOptionsTable(eventId, rewardOptions) {
 
     $.each(rewardOptions, function(index, option) {
         var row = $("<div class='table-row'></div>")
-        row.append("<div class='cell'><a href='#' class='round-button tick' onclick=pickEventReward(" + option.id + ")></a></div>")
+        row.append("<div class='cell'><a href='#' class='round-button tick' onclick='pickEventReward(" + eventId + ", " + option.id + ")'></a></div>")
         row.append("<div class='cell label'>" + option.description + "</div>")
         table.append(row)
     });
 
-    table.show();
+    $("#eventRewardModal .rewardOptions").show();
 }
 
 function showPickedEventReward(pickedOption) {
@@ -483,9 +491,9 @@ function showPickedEventReward(pickedOption) {
 }
 
 function pickEventReward(eventId, optionId) {
-	s$.ajax({
+	$.ajax({
         type: 'PUT',
-        url: url: "event/" + eventId + "/airline/" + activeAirline.id + "/reward/" + optionId,
+        url: "event/" + eventId + "/airline/" + activeAirline.id + "/reward/" + optionId,
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(result) {

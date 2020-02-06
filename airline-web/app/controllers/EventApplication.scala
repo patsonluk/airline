@@ -1,19 +1,20 @@
 package controllers
 
-import com.patson.data.{CycleSource, EventSource}
-import com.patson.model.Airport
+import com.patson.data.EventSource
 import com.patson.model.event._
-import com.patson.util.AirportCache
 import controllers.AuthenticationObject.AuthenticatedAirline
 import javax.inject.Inject
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.collection.mutable.ListBuffer
-
 
 class EventApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-
+  implicit object EventRewardWrite extends Writes[EventReward] {
+    def writes(reward : EventReward): JsValue = JsObject(List(
+      "description" -> JsString(reward.description),
+      "id" -> JsNumber(reward.rewardOption.id)
+    ))
+  }
 
   def isOlympicsVoteMatch(airlineId: Int, eventId: Int): Boolean = {
     EventSource.loadOlympicsAirlineVotes(eventId, airlineId) match {
@@ -32,43 +33,53 @@ class EventApplication @Inject()(cc: ControllerComponents) extends AbstractContr
     }
   }
 
-  def getRewardOptions(airlineId : Int, eventId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def getOlympicsVoteRewardOptions(airlineId : Int, eventId : Int) = AuthenticatedAirline(airlineId) { request =>
     //make sure that it is found and reward has NOT been claimed yet
-    val airline = request.user
-    EventSource.loadEventById(eventId) match {
-      case Some(event) =>
-        event match {
-          case EventType.OLYMPICS =>
-            if (isOlympicsVoteMatch(airlineId, eventId)) {
-
-            } else {
-              BadRequest("No rewards as the vote does not match!")
-            }
+    EventSource.loadPickedRewardOption(eventId, airlineId, RewardCategory.OLYMPICS_VOTE) match {
+      case Some(pickedOption) =>
+        Ok(Json.obj("title" -> "Reward of voting for the host city", "pickedOption" -> Json.toJson(pickedOption)))
+      case None =>
+        if (isOlympicsVoteMatch(airlineId, eventId)) {
+          Ok(Json.obj("title" -> "Reward of voting for the host city", "options" -> Olympics.voteRewardOptions))
+        } else {
+          BadRequest("No rewards as the vote does not match!")
         }
-      case None => NotFound
+
     }
+
   }
 
 
 
 
-  def pickRewardOption(airlineId : Int, eventId: Int, optionId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def pickRewardOption(airlineId : Int, eventId: Int,  optionId : Int) = AuthenticatedAirline(airlineId) { request =>
     //make sure that it is found and reward has NOT been claimed yet
-    val airline = request.user
-    ChristmasSource.loadSantaClausInfoByAirline(airline.id) match {
-      case Some(entry) => {
-        if (!entry.found || entry.pickedAward.isDefined) {
-          BadRequest("Either not found yet or reward has already been redeemed!")
-        } else {
-          val pickedAward = SantaClausAward.getRewardByType(entry, SantaClausAwardType(optionId))
-          pickedAward.apply
 
-          ChristmasSource.updateSantaClausInfo(entry.copy(pickedAward = Some(pickedAward.getType)))
+    EventReward.fromOptionId(optionId) match {
+      case None => BadRequest("Reward option not valid")
+      case Some(pickedReward) =>
+        val rewardCategory = pickedReward.rewardCategory
+        EventSource.loadPickedRewardOption(eventId, airlineId, rewardCategory) match {
+          case Some(existingReward) => BadRequest("Reward has already been claimed")
+          case None =>
+            rewardCategory match {
+              case RewardCategory.OLYMPICS_VOTE =>
+                if (isOlympicsVoteMatch(airlineId, eventId)) {
+                  val validOptions = Olympics.voteRewardOptions
+                  if (validOptions.contains(pickedReward)) {
+                    pickedReward.apply(EventSource.loadEventById(eventId).get, request.user)
+                    EventSource.savePickedRewardOption(eventId, airlineId, pickedReward)
+                    Ok(Json.toJson(pickedReward))
+                  } else {
+                    BadRequest("Reward option not valid")
+                  }
+                } else {
+                  BadRequest("No rewards as the vote does not match!")
+                }
+            }
 
-          Ok(Json.obj())
+
         }
-      }
-      case None => NotFound
     }
   }
 }
