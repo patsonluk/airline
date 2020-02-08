@@ -15,7 +15,7 @@ case class Olympics(override val startCycle : Int, override val duration : Int =
 }
 
 object Olympics {
-  val WEEKS_PER_YEAR = 52
+  val WEEKS_PER_YEAR = 4
   val GAMES_DURATION = 4
   def getCandidates(eventId : Int) : List[Airport] = {
     EventSource.loadOlympicsCandidates(eventId)
@@ -38,15 +38,22 @@ object Olympics {
     }
   }
 
+  def getSelectedAffectedAirports(eventId : Int) : List[Airport] = {
+    Olympics.getSelectedAirport(eventId) match {
+      case Some(principalAirport) => Olympics.getAffectedAirport(eventId, principalAirport)
+      case None => List.empty
+    }
+  }
+
   def getAffectedAirport(eventId : Int) : Map[Airport, List[Airport]] = {
     EventSource.loadOlympicsAffectedAirports(eventId)
   }
 
+  val VOTE_REPUTATION_THRESHOLD = 40
+
   def getAffectedAirport(eventId : Int, principalAirport : Airport) : List[Airport] = {
     EventSource.loadOlympicsAffectedAirports(eventId).apply(principalAirport)
   }
-
-  val VOTE_REPUTATION_THRESHOLD = 40
 
   def getVoteWeight(airline : Airline) : Int = {
     val nationalAirlineTitles = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airline.id), ("title", Title.NATIONAL_AIRLINE)))
@@ -73,6 +80,18 @@ object Olympics {
   }
 
   val voteRewardOptions : List[EventReward] = List(OlympicsVoteCashReward(), OlympicsVoteLoyaltyReward())
+
+  val getDemandMultiplier = (weekOfYear: Int) => {
+      if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 2) {
+        1
+      } else if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION) {
+        4
+      } else if (weekOfYear < Olympics.WEEKS_PER_YEAR) { //game is on
+        10
+      } else {
+        0
+      }
+  }
 }
 
 /**

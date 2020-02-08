@@ -24,6 +24,8 @@ object AirportFeature {
       case FINANCIAL_HUB => FinancialHubFeature(strength)
       case DOMESTIC_AIRPORT => DomesticAirportFeature(strength)
       case ISOLATED_TOWN => IsolatedTownFeature(strength)
+      case OLYMPICS_PREPARATIONS => OlympicsPreparationsFeature(strength)
+      case OLYMPICS_IN_PROGRESS => OlympicsInProgressFeature(strength)
     }
   }
 }
@@ -123,9 +125,24 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
   }
 }
 
+sealed case class OlympicsPreparationsFeature(strength : Int) extends AirportFeature {
+  val featureType = AirportFeatureType.OLYMPICS_PREPARATIONS
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+    rawDemand
+  }
+}
+
+sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeature {
+  val featureType = AirportFeatureType.OLYMPICS_IN_PROGRESS
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+    rawDemand
+  }
+}
+
+
 object AirportFeatureType extends Enumeration {
     type AirportFeatureType = Value
-    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, ISOLATED_TOWN, UNKNOWN = Value
+    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, ISOLATED_TOWN, OLYMPICS_PREPARATIONS, OLYMPICS_IN_PROGRESS, UNKNOWN = Value
     def getDescription(featureType : AirportFeatureType) = {
       featureType match {
         case INTERNATIONAL_HUB => "International Hub - Attracts more international passengers especially business travelers"
@@ -133,6 +150,8 @@ object AirportFeatureType extends Enumeration {
         case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers"
         case DOMESTIC_AIRPORT => "Domestic Airport"
         case ISOLATED_TOWN => "Isolated Town - Increases demand flying to domestic airport with at least 100000 pop within 1000km"
+        case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games"
+        case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games"
         case UNKNOWN => "Unknown"
       }
     }

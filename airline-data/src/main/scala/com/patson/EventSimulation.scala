@@ -1,10 +1,12 @@
 package com.patson
 
-import com.patson.data.{AirportSource, EventSource}
+import com.patson.data.{AirportSource, EventSource, LinkStatisticsSource}
 import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVote, OlympicsAirlineVoteWithWeight, OlympicsVoteRound}
-import com.patson.model.{Airline, Airport, Computation}
+import com.patson.model.{Airline, Airport, AirportFeatureType, Computation, OlympicsInProgressFeature, OlympicsPreparationsFeature}
+import com.patson.util.AirportCache
+import org.joda.time.Weeks
 
-import scala.collection.mutable
+import scala.collection.{MapView, mutable}
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
@@ -19,6 +21,13 @@ object EventSimulation {
   }
 
   def simulateOlympics(cycle: Int, currentOlympicsOption : Option[Olympics]): Unit = {
+    currentOlympicsOption.foreach { currentOlympics =>
+      if (!currentOlympics.isActive(cycle) && !currentOlympics.isActive(cycle - 1)) { //just finished last turn
+        simulateOlympicsEnding(currentOlympics)
+      }
+    }
+
+
     val createNewOlympics = currentOlympicsOption.isEmpty || !currentOlympicsOption.get.isActive(cycle)
 
     val olympics =
@@ -53,12 +62,24 @@ object EventSimulation {
             val selectedAirport = voteRounds.last.votes.toList.sortBy(_._2).last._1
             println(s"Olympics airport: $selectedAirport")
           }
-        case 3 =>
-          //nothing?
-        case 4 =>
-          //nothing?
-      }
+          //mark airports as in preparations
+          Olympics.getSelectedAffectedAirports(olympics.id).foreach { airport =>
+            AirportSource.saveAirportFeature(airport.id, OlympicsPreparationsFeature(1))
+          }
 
+          //set airline target
+          val goals = simulateOlympicsPassengerGoals(olympics)
+          EventSource.saveOlympicsAirlinePassengerGoals(olympics.id, goals)
+        case 3 =>
+
+
+        case 4 =>
+          //mark airports as in progress
+          Olympics.getSelectedAffectedAirports(olympics.id).foreach { airport =>
+            AirportSource.deleteAirportFeature(airport.id, AirportFeatureType.OLYMPICS_PREPARATIONS)
+            AirportSource.saveAirportFeature(airport.id, OlympicsInProgressFeature(1))
+          }
+      }
     }
 
   }
@@ -145,6 +166,32 @@ object EventSimulation {
       voteRound += 1
     }
     voteRoundResults.toList
+  }
+
+  val BASE_PASSENGER_GOAL = 2000
+  def simulateOlympicsPassengerGoals(olympics: Olympics) = {
+    val allLinkStats = LinkStatisticsSource.loadLinkStatisticsByCriteria(List.empty)
+    val passengersByAirline: MapView[Airline, Int] = allLinkStats.groupBy(_.key.airline).view.mapValues(_.map(_.passengers).sum)
+    val totalPassengers = passengersByAirline.values.sum
+
+    var olympicsTotalPassengers = 0
+    for (i <- 0 until Olympics.WEEKS_PER_YEAR) {
+      olympicsTotalPassengers += Olympics.getDemandMultiplier(i) * DemandGenerator.OLYMPICS_DEMAND_BASE
+    }
+
+    val passengerGoalByAirline = passengersByAirline.mapValues { passengers =>
+      val goal = (passengers.toDouble / totalPassengers * olympicsTotalPassengers * 0.8).toInt //80% of the max possible pax?
+      Math.max(BASE_PASSENGER_GOAL, goal)
+    }.toMap
+
+    passengerGoalByAirline
+  }
+
+  def simulateOlympicsEnding(olympics : Olympics) = {
+    Olympics.getSelectedAffectedAirports(olympics.id).foreach { airport =>
+      AirportSource.deleteAirportFeature(airport.id, AirportFeatureType.OLYMPICS_IN_PROGRESS)
+    }
+    //TODO tally
   }
   
 }

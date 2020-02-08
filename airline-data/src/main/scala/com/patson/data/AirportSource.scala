@@ -642,7 +642,44 @@ object AirportSource {
       connection.close()
     }
   }
-  
+
+  def saveAirportFeature(airportId : Int, feature : AirportFeature) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val featureStatement = connection.prepareStatement("REPLACE INTO " + AIRPORT_FEATURE_TABLE + "(airport, feature_type, strength) VALUES(?,?,?)")
+      featureStatement.setInt(1, airportId)
+      featureStatement.setString(2, feature.featureType.toString())
+      featureStatement.setInt(3, feature.strength)
+      featureStatement.executeUpdate()
+
+      featureStatement.close()
+      AirportCache.invalidateAirport(airportId)
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteAirportFeature(airportId : Int, featureType : AirportFeatureType.Value) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val featureStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ? AND feature_type = ?")
+      featureStatement.setInt(1, airportId)
+      featureStatement.setString(2, featureType.toString())
+      featureStatement.executeUpdate()
+
+      featureStatement.close()
+      AirportCache.invalidateAirport(airportId)
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+
   def updateAirportImages(airports : List[Airport]) = {
     val connection = Meta.getConnection()
     try {

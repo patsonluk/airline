@@ -2,9 +2,10 @@ package com.patson.data
 
 import java.sql.Statement
 
+import com.patson.LinkSimulation.PassengerTransportStats
 import com.patson.data.Constants._
 import com.patson.model.{Airline, Airport}
-import com.patson.model.event.{Event, EventReward, EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound, RewardOption, RewardCategory}
+import com.patson.model.event.{Event, EventReward, EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound, RewardCategory, RewardOption}
 import com.patson.util.{AirlineCache, AirportCache}
 
 import scala.collection.{immutable, mutable}
@@ -12,6 +13,54 @@ import scala.collection.mutable.ListBuffer
 
 
 object EventSource {
+  def saveOlympicsAirlinePassengerGoals(eventId : Int, goals: Map[Airline, Int]) = {
+    val connection = Meta.getConnection()
+
+    val statement = connection.prepareStatement("REPLACE INTO " + OLYMPIC_AIRLINE_GOAL_TABLE + "(event, airline, goal) VALUES(?,?,?)")
+
+    connection.setAutoCommit(false)
+
+    try {
+      goals.foreach {
+        case (airline, goal) =>
+          statement.setInt(1, eventId)
+          statement.setInt(2, airline.id)
+          statement.setInt(3, goal)
+          statement.executeUpdate()
+      }
+
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
+  def saveOlympicsCountryStats(eventId : Int, olympicsCountryStats: Map[String, PassengerTransportStats]) = {
+    val connection = Meta.getConnection()
+
+    val statement = connection.prepareStatement("REPLACE INTO " + OLYMPIC_COUNTRY_STATS_TABLE + "(event, cycle, country_code, transported, total) VALUES(?,?,?,?,?)")
+
+    connection.setAutoCommit(false)
+
+    try {
+      olympicsCountryStats.foreach {
+        case (countryCode, PassengerTransportStats(cycle, transported, total)) =>
+            statement.setInt(1, eventId)
+            statement.setInt(2, cycle)
+            statement.setString(3, countryCode)
+            statement.setInt(4, transported)
+            statement.setInt(5, total)
+            statement.executeUpdate()
+      }
+
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
   def saveOlympicsVoteRounds(eventId: Int, rounds : List[OlympicsVoteRound]) = {
     val connection = Meta.getConnection()
 
@@ -38,6 +87,30 @@ object EventSource {
       connection.commit()
     } finally {
       purgeStatement.close()
+      statement.close()
+      connection.close()
+    }
+  }
+
+  def saveOlympicsAirlineStats(eventId : Int, olympicsAirlineStats: Map[Airline, (Int, BigDecimal)]) = {
+    val connection = Meta.getConnection()
+
+    val statement = connection.prepareStatement("REPLACE INTO " + OLYMPIC_AIRLINE_STATS_TABLE + "(event, cycle, airline, score) VALUES(?,?,?,?)")
+
+    connection.setAutoCommit(false)
+
+    try {
+      olympicsAirlineStats.foreach {
+        case (airline, (cycle, score)) =>
+          statement.setInt(1, eventId)
+          statement.setInt(2, cycle)
+          statement.setInt(3, airline.id)
+          statement.setBigDecimal(4, score.bigDecimal)
+          statement.executeUpdate()
+      }
+
+      connection.commit()
+    } finally {
       statement.close()
       connection.close()
     }
@@ -89,6 +162,11 @@ object EventSource {
 
   def saveOlympicsCandidates(eventId: Int, airports : List[Airport]) = {
     val connection = Meta.getConnection()
+
+    val purgeStatement = connection.prepareStatement("DELETE FROM " + OLYMPIC_CANDIDATE_TABLE + " WHERE event = ?")
+    purgeStatement.setInt(1, eventId)
+    purgeStatement.execute()
+
     val statement = connection.prepareStatement("INSERT INTO " + OLYMPIC_CANDIDATE_TABLE + "(event, airport) VALUES(?,?)")
 
     connection.setAutoCommit(false)
@@ -110,6 +188,11 @@ object EventSource {
 
   def saveOlympicsAffectedAirports(eventId: Int, airports : Map[Airport, List[Airport]]) = {
     val connection = Meta.getConnection()
+
+    val purgeStatement = connection.prepareStatement("DELETE FROM " + OLYMPIC_AFFECTED_AIRPORT_TABLE + " WHERE event = ?")
+    purgeStatement.setInt(1, eventId)
+    purgeStatement.execute()
+
     val statement = connection.prepareStatement("REPLACE INTO " + OLYMPIC_AFFECTED_AIRPORT_TABLE + "(event, principal_airport, affected_airport) VALUES(?,?,?)")
 
     connection.setAutoCommit(false)
@@ -322,6 +405,142 @@ object EventSource {
     } finally {
       connection.close()
     }
+  }
+
+  def loadOlympicsCountryStats(eventId: Int): Map[String, PassengerTransportStats] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_COUNTRY_STATS_TABLE + " WHERE event = ?")
+
+      preparedStatement.setInt(1, eventId)
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = mutable.HashMap[String, PassengerTransportStats]()
+      while (resultSet.next()) {
+        val countryCode = resultSet.getString("country_code")
+        val cycle = resultSet.getInt("cycle")
+        val transported = resultSet.getInt("transported")
+        val total = resultSet.getInt("total")
+        result.put(countryCode, PassengerTransportStats(cycle, transported, total))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toMap
+    } finally {
+      connection.close()
+    }
+  }
+
+  /**
+    *
+    * @param eventId
+    * @return Map[airline, (cycle, score)]
+    */
+  def loadOlympicsAirlineStats(eventId: Int): Map[Airline, (Int, BigDecimal)] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_AIRLINE_STATS_TABLE + " WHERE event = ?")
+
+      preparedStatement.setInt(1, eventId)
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = mutable.HashMap[Airline, (Int, BigDecimal)]()
+      while (resultSet.next()) {
+        val airlineId = resultSet.getInt("airline")
+        val cycle = resultSet.getInt("cycle")
+        val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
+        val score = resultSet.getBigDecimal("score")
+        result.put(airline, (cycle, score))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toMap
+    } finally {
+      connection.close()
+    }
+
+  }
+
+  def loadOlympicsAirlineStats(eventId: Int, airlineId : Int): List[(Int, BigDecimal)] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_AIRLINE_STATS_TABLE + " WHERE event = ? AND airline = ?")
+
+      preparedStatement.setInt(1, eventId)
+      preparedStatement.setInt(2, airlineId)
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = ListBuffer[(Int, BigDecimal)]()
+      while (resultSet.next()) {
+        val cycle = resultSet.getInt("cycle")
+        val score = resultSet.getBigDecimal("score")
+        result.append((cycle, score))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
+    } finally {
+      connection.close()
+    }
+
+  }
+
+  def loadOlympicsAirlineGoals(eventId: Int): Map[Airline, Int] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_AIRLINE_GOAL_TABLE + " WHERE event = ?")
+
+      preparedStatement.setInt(1, eventId)
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = mutable.HashMap[Airline, Int]()
+      while (resultSet.next()) {
+        val airlineId = resultSet.getInt("airline")
+        val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
+        val goal = resultSet.getInt("goal")
+        result.put(airline, goal)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toMap
+    } finally {
+      connection.close()
+    }
+
+  }
+
+  def loadOlympicsAirlineGoal(eventId: Int, airlineId : Int): Option[Int] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_AIRLINE_GOAL_TABLE + " WHERE event = ? AND airline = ?")
+
+      preparedStatement.setInt(1, eventId)
+      preparedStatement.setInt(2, airlineId)
+      val resultSet = preparedStatement.executeQuery()
+
+      val result =
+        if (resultSet.next()) {
+          Some(resultSet.getInt("goal"))
+        } else {
+          None
+        }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result
+    } finally {
+      connection.close()
+    }
+
   }
 
 

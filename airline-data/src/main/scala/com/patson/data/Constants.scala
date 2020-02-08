@@ -103,6 +103,9 @@ object Constants {
   val OLYMPIC_AFFECTED_AIRPORT_TABLE = "olympics_affected_airport"
   val OLYMPIC_AIRLINE_VOTE_TABLE = "olympics_airline_vote"
   val OLYMPIC_VOTE_ROUND_TABLE = "olympics_vote_round"
+  val OLYMPIC_COUNTRY_STATS_TABLE = "olympics_country_stats"
+  val OLYMPIC_AIRLINE_STATS_TABLE = "olympics_airline_stats"
+  val OLYMPIC_AIRLINE_GOAL_TABLE = "olympics_airline_goal"
   val EVENT_PICKED_REWARD_TABLE = "event_picked_reward"
 
   //Christmas Event

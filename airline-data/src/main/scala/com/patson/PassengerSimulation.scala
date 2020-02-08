@@ -62,8 +62,9 @@ object PassengerSimulation {
     //findRandomRoutes(airportGroups(0)(0), airportGroups(4)(0), links.toList, 10)
   }
   
-  def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : Map[(PassengerGroup, Airport, Route), Int] = {
+  def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : (Map[(PassengerGroup, Airport, Route), Int], Map[(PassengerGroup, Airport), Int]) = {
      val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
+    val missedDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
      val consumptionCycleMax = 10; //try and rebuild routes 10 times
      var consumptionCycleCount = 0;
      //start consumption cycles
@@ -77,14 +78,20 @@ object PassengerSimulation {
      println("Total active airports: " + activeAirportIds.size)
      
      println("Remove demand that is not covered by active airports, before " + demand.size);
-     
+
      //randomize the demand chunks so later on it's consumed in a random (relatively even) manner
-     var demandChunks = Random.shuffle(demand.filter {
-       case(passengerGroup, toAirport, _) => activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
-     })
+     var demandChunks = Random.shuffle(demand.filter { demandChunk =>
+       val (passengerGroup, toAirport, chunkSize) = demandChunk
+         val isConnected = activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
+         if (!isConnected) {
+           missedDemandChunks.append(demandChunk)
+         }
+         isConnected
+     }).sortWith((entry1, entry2) => entry1._1.passengerType == PassengerType.OLYMPICS) //olympics always come first
      
      println("After pruning : " + demandChunks.size);
-     
+
+
      while (consumptionCycleCount < consumptionCycleMax) {
        println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
        println("links: " + links.size)
@@ -114,6 +121,7 @@ object PassengerSimulation {
        
        //we want to randomize the order and go chunk by chunk as we want to evenly/randomly distribute seats to each PassengerGroup
        val remainingDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
+
        demandChunks.foreach {
          case (passengerGroup, toAirport, chunkSize) => 
            allRoutesMap.get(passengerGroup).foreach { toAirportRouteMap =>
@@ -160,12 +168,11 @@ object PassengerSimulation {
                      //put a updated demand chunk
                      remainingDemandChunks.append((passengerGroup, toAirport, chunkSize - consumptionSize));
                    }
-                 } else { //try next time!???
-                   //println("rejected! affordableCost: " + affordableCost + " cost: " + pickedRoute.cost + " pref: " + passengerGroup.preference);
-                   //remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
+                 } else {
+                   missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
                  }
                case None => //no route
-
+                 missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
              }
            }
         }
@@ -177,6 +184,7 @@ object PassengerSimulation {
      }
      
     println("Total chunks that consume something " + consumptionResult.size)
+    println("Total missed chunks " + missedDemandChunks.size)
     
     //collapse it now
     val collapsedMap = consumptionResult.groupBy { 
@@ -185,7 +193,11 @@ object PassengerSimulation {
     
     
     println("Collasped consumption map size: " + collapsedMap.size)
-        
+
+    val missedMap = missedDemandChunks.groupBy {
+      case(passengerGroup, toAirport, passengerCount) => (passengerGroup, toAirport)
+    }.view.mapValues( missedChunks => missedChunks.map(_._3).sum).toMap
+
 //    val soldLinks = links.filter{ link => link.availableSeats < link.capacity  }.map { link =>
 //      (link, link.capacity - link.availableSeats)
 //      }.sortBy {
@@ -199,7 +211,7 @@ object PassengerSimulation {
 //    
 //    LinkSource.saveLinkConsumptions(soldLinks)
     
-    collapsedMap.toMap
+    (collapsedMap.toMap, missedMap)
   }
   
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {

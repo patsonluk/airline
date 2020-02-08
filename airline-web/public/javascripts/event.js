@@ -168,6 +168,7 @@ function loadOlympicsDetails(event) {
                                 }
                     })
 
+                    populateGoalAndAirlineStats(event)
                 } else {
                     $("#olympicsDetails .button.vote").hide();
                 }
@@ -185,6 +186,45 @@ function loadOlympicsDetails(event) {
     	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
     	    }
     	});
+}
+
+function populateGoalAndAirlineStats(event) {
+    var eventId = event.id
+     $.ajax({
+        type: 'GET',
+        url: "event/olympics/" + eventId + "/airlines/" + activeAirline.id + "/passenger-details",
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            if (result.goal !== undefined) {
+                $("#olympicsDetails .goal").text(result.goal)
+            } else {
+                $("#olympicsDetails .goal").text("-")
+            }
+
+            if (result.previousCycleScore !== undefined) {
+                $("olympicsDetails .previousCycleScore").text(result.previousCycleScore)
+            } else {
+                $("#olympicsDetails .previousCycleScore").text("-")
+            }
+
+            if (result.totalScore !== undefined) {
+                if (result.goal !== undefined) {
+                    var accomplishPercentage = Math.floor(result.totalScore / result.goal * 100)
+                    $("#olympicsDetails .totalScore").text(result.totalScore + " (" + accomplishPercentage + "% of goal)")
+                } else {
+                    $("#olympicsDetails .totalScore").text("-")
+                }
+            } else {
+                $("#olympicsDetails .totalScore").text("-")
+            }
+
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(JSON.stringify(jqXHR));
+                        console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                }
+    })
 }
 
 function populateCityVoteModal(candidates, votes, votingActive) {

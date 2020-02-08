@@ -34,7 +34,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
               val week = olympics.duration % Olympics.WEEKS_PER_YEAR
               val weeksBeforeGames = Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION - week
               if (weeksBeforeGames > 0) {
-                weeksBeforeGames + " week(s) before the Games"
+                s"$weeksBeforeGames week(s) before the Games"
               } else {
                 "Olympic Games in Progress"
               }
@@ -138,6 +138,27 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         }
       case None =>
     }
+
+    Ok(result)
+  }
+
+  def getOlympicsAirlinePassengerDetails(airlineId : Int, eventId : Int) = AuthenticatedAirline(airlineId) { request =>
+    var result = Json.obj()
+
+    EventSource.loadOlympicsAirlineGoal(eventId, airlineId) match {
+      case Some(goal) =>
+        result = result + ("goal" -> JsNumber(goal))
+      case None =>
+    }
+
+    val stats : Map[Int, BigDecimal] = EventSource.loadOlympicsAirlineStats(eventId, airlineId).toMap
+    val previousCycle = CycleSource.loadCycle() - 1
+    stats.get(previousCycle).foreach { previousCycleScore =>
+      result = result + ("previousCycleScore" -> JsNumber(previousCycleScore))
+    }
+
+    val totalScore = stats.view.values.sum
+    result = result + ("totalScore" -> JsNumber(totalScore))
 
     Ok(result)
   }

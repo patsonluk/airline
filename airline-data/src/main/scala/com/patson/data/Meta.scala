@@ -1030,6 +1030,15 @@ object Meta {
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_VOTE_ROUND_TABLE)
     statement.execute()
     statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_COUNTRY_STATS_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_AIRLINE_STATS_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + OLYMPIC_AIRLINE_GOAL_TABLE)
+    statement.execute()
+    statement.close()
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + EVENT_PICKED_REWARD_TABLE)
     statement.execute()
     statement.close()
@@ -1091,6 +1100,42 @@ object Meta {
       "vote INTEGER," +
       "PRIMARY KEY (event, airport, round), " +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + OLYMPIC_COUNTRY_STATS_TABLE + "(" +
+      "event INTEGER," +
+      "cycle INTEGER," +
+      "country_code CHAR(2)," +
+      "transported INTEGER," +
+      "total INTEGER," +
+      "PRIMARY KEY (event, cycle, country_code), " +
+      "FOREIGN KEY(country_code) REFERENCES " + COUNTRY_TABLE + "(code) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + OLYMPIC_AIRLINE_STATS_TABLE + "(" +
+      "event INTEGER," +
+      "cycle INTEGER," +
+      "airline INTEGER," +
+      "score DECIMAL(15,2)," +
+      "PRIMARY KEY (event, cycle, airline), " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + OLYMPIC_AIRLINE_GOAL_TABLE + "(" +
+      "event INTEGER," +
+      "airline INTEGER," +
+      "goal INTEGER," +
+      "PRIMARY KEY (event, airline), " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()

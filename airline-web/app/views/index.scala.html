@@ -2374,7 +2374,7 @@
 							<h4>Olympics</h4>
 							<div id = "olympicsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 								<div class="table-header">
-									<div class="cell clickable selected" style="width: 15%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleOlympicTableSortOrder($(this))">Start Week</div>
+									<div class="cell clickable selected" style="width: 15%" data-sort-property="startCycle" data-sort-order="descending" onclick="toggleOlympicTableSortOrder($(this))">Start Week</div>
 									<div class="cell clickable" style="width: 30%" data-sort-property="hostCity" data-sort-order="descending" onclick="toggleOlympicTableSortOrder($(this))">Host City</div>
 									<div class="cell" style="width: 15%">Remaining Duration</div>
 									<div class="cell" style="width: 40%">Status</div>
@@ -2409,7 +2409,11 @@
 							<h4>Voted City: <span class="votedCity"></span></h4>
 							<div class="button glow votedCityReward" onclick="showOlympicsVoteRewardModal($(this).data('eventId'))">Claim Reward</div>
 							<h3 style="margin-top: 15px"><img class="year3 yearStatus">Year 3 - Games Preparation</h3>
+							<h4>Olympics Passenger Score Goal: <span class="goal"></span></h4>
 							<h3 style="margin-top: 15px"><img class="year4 yearStatus">Year 4 - Year of Summer Olympics</h3>
+							<h4>Olympics Passenger Score from previous week: <span class="previousCycleScore"></span></h4>
+							<h4>Total Olympics Passenger Score: <span class="totalScore"></span></h4>
+
 						</div>
   					</div>
 	  				<div style="clear: both;"></div>
