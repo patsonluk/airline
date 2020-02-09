@@ -9,6 +9,7 @@ import com.patson.model.Computation
 import com.patson.Util
 import com.patson.model.AirlineIncome
 import com.patson.model.AirlineCashFlow
+import com.patson.model.event.EventReward
 import models.FacilityType
 import models.AirportFacility
 import com.patson.util.{AirlineCache, AirportCache, ChampionInfo}
@@ -529,6 +530,14 @@ package object controllers {
 
       airportObject
     }
+  }
+
+  implicit object EventRewardWrite extends Writes[EventReward] {
+    def writes(reward : EventReward): JsValue = JsObject(List(
+      "description" -> JsString(reward.description),
+      "optionId" -> JsNumber(reward.rewardOption.id),
+      "categoryId" -> JsNumber(reward.rewardCategory.id)
+    ))
   }
 
   val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)

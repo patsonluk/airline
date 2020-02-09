@@ -87,7 +87,9 @@ object PassengerSimulation {
            missedDemandChunks.append(demandChunk)
          }
          isConnected
-     }).sortWith((entry1, entry2) => entry1._1.passengerType == PassengerType.OLYMPICS) //olympics always come first
+     }).sortWith((entry1, entry2) =>
+       if (entry1._1.passengerType == PassengerType.OLYMPICS && entry2._1.passengerType == PassengerType.OLYMPICS) false else entry1._1.passengerType == PassengerType.OLYMPICS
+     ) //olympics always come first
      
      println("After pruning : " + demandChunks.size);
 

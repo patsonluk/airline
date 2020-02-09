@@ -1,10 +1,8 @@
 package com.patson
 
-import com.patson.data.{AirportSource, EventSource, LinkStatisticsSource}
+import com.patson.data.{AirportSource, CycleSource, EventSource, LinkStatisticsSource}
 import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVote, OlympicsAirlineVoteWithWeight, OlympicsVoteRound}
 import com.patson.model.{Airline, Airport, AirportFeatureType, Computation, OlympicsInProgressFeature, OlympicsPreparationsFeature}
-import com.patson.util.AirportCache
-import org.joda.time.Weeks
 
 import scala.collection.{MapView, mutable}
 import scala.collection.mutable.ListBuffer
@@ -12,8 +10,10 @@ import scala.util.Random
 
 
 object EventSimulation {
-
+  val MAX_HISTORY_DURATION = 40 * Olympics.WEEKS_PER_YEAR //40 years
   def simulate(cycle: Int): Unit = {
+    //purge
+    EventSource.deleteEventsBeforeCycle(CycleSource.loadCycle() - MAX_HISTORY_DURATION)
     val events = EventSource.loadEvents().sortBy(_.startCycle).reverse
 
     val currentOlympicsOption = events.find(_.eventType == EventType.OLYMPICS)map(_.asInstanceOf[Olympics])
@@ -169,6 +169,7 @@ object EventSimulation {
   }
 
   val BASE_PASSENGER_GOAL = 2000
+  val GOAL_BASE_FACTOR = 0.80 //80% of the max possible pax?
   def simulateOlympicsPassengerGoals(olympics: Olympics) = {
     val allLinkStats = LinkStatisticsSource.loadLinkStatisticsByCriteria(List.empty)
     val passengersByAirline: MapView[Airline, Int] = allLinkStats.groupBy(_.key.airline).view.mapValues(_.map(_.passengers).sum)
@@ -180,7 +181,7 @@ object EventSimulation {
     }
 
     val passengerGoalByAirline = passengersByAirline.mapValues { passengers =>
-      val goal = (passengers.toDouble / totalPassengers * olympicsTotalPassengers * 0.8).toInt //80% of the max possible pax?
+      val goal = (passengers.toDouble / totalPassengers * olympicsTotalPassengers * GOAL_BASE_FACTOR).toInt
       Math.max(BASE_PASSENGER_GOAL, goal)
     }.toMap
 
@@ -191,7 +192,6 @@ object EventSimulation {
     Olympics.getSelectedAffectedAirports(olympics.id).foreach { airport =>
       AirportSource.deleteAirportFeature(airport.id, AirportFeatureType.OLYMPICS_IN_PROGRESS)
     }
-    //TODO tally
   }
   
 }

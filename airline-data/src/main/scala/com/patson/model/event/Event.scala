@@ -10,12 +10,15 @@ abstract class Event(val eventType : EventType.Value, val startCycle : Int, val 
 }
 
 case class Olympics(override val startCycle : Int, override val duration : Int = Olympics.WEEKS_PER_YEAR * 4, var olympicsId : Int = 0) extends Event(EventType.OLYMPICS, startCycle, duration, olympicsId) {
-  val currentYear = (currentCycle : Int) => (currentCycle - startCycle) /  Olympics.WEEKS_PER_YEAR + 1
-  val isNewYear = (currentCycle : Int) => (currentCycle - startCycle) % Olympics.WEEKS_PER_YEAR == 0
+  val currentYear = (currentCycle : Int) => {
+    (currentCycle - startCycle) /  Olympics.WEEKS_PER_YEAR + 1
+  } //start from 1 to 4
+  val isNewYear = (currentCycle : Int) => currentWeek(currentCycle) == 0
+  val currentWeek = (currentCycle : Int) => (currentCycle - startCycle) % Olympics.WEEKS_PER_YEAR //start from 0 to WEEKS_PER_YEAR
 }
 
 object Olympics {
-  val WEEKS_PER_YEAR = 4
+  val WEEKS_PER_YEAR = 52
   val GAMES_DURATION = 4
   def getCandidates(eventId : Int) : List[Airport] = {
     EventSource.loadOlympicsCandidates(eventId)
@@ -79,12 +82,28 @@ object Olympics {
     }.toMap
   }
 
+  def getGoalByCycle(eventId : Int, airlineId : Int, cycle : Int): Option[Int] = {
+    EventSource.loadEventById(eventId) match {
+      case Some(olympics: Olympics) =>
+        EventSource.loadOlympicsAirlineGoal(eventId, airlineId) match {
+          case Some(goal) =>
+            Some(goal * getDemandMultiplier(olympics.currentWeek(cycle)) / demandMultiplierSum)
+          case None => None
+        }
+      case _ =>
+        None
+    }
+  }
+
   val voteRewardOptions : List[EventReward] = List(OlympicsVoteCashReward(), OlympicsVoteLoyaltyReward())
+  val passengerRewardOptions : List[EventReward] = List(OlympicsPassengerCashReward(), OlympicsPassengerLoyaltyReward(), OlympicsPassengerReputationReward())
 
   val getDemandMultiplier = (weekOfYear: Int) => {
-      if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 2) {
+      if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 12) {
         1
-      } else if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION) {
+      } else if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 4) { //3 months before the game
+        2
+      } else if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION) { //1 momnth beofre the game
         4
       } else if (weekOfYear < Olympics.WEEKS_PER_YEAR) { //game is on
         10
@@ -92,6 +111,7 @@ object Olympics {
         0
       }
   }
+  val demandMultiplierSum = (0 until WEEKS_PER_YEAR).map(getDemandMultiplier(_)).sum
 }
 
 /**
@@ -121,16 +141,16 @@ object EventType extends Enumeration {
 
 object RewardCategory extends Enumeration {
   type RewardCategory = Value
-  val OLYMPICS_VOTE = Value
+  val OLYMPICS_VOTE, OLYMPICS_PASSENGER = Value
 }
 
 object RewardOption extends Enumeration {
   type RewardOption = Value
-  val CASH, LOYALTY = Value
+  val CASH, LOYALTY, REPUTATION = Value
 }
 
 abstract class EventReward(val eventType : EventType.Value, val rewardCategory : RewardCategory.Value, val rewardOption : RewardOption.Value) {
-  EventReward.lookup.put(rewardOption, this)
+  EventReward.lookup.put((rewardCategory, rewardOption), this)
 
   def apply(event: Event, airline : Airline): Unit = {
     applyReward(event, airline)
@@ -142,9 +162,9 @@ abstract class EventReward(val eventType : EventType.Value, val rewardCategory :
 }
 
 object EventReward {
-  private val lookup = mutable.HashMap[RewardOption.Value, EventReward]()
-  def fromOptionId(optionId : Int) = {
-    lookup.get(RewardOption(optionId))
+  private val lookup = mutable.HashMap[(RewardCategory.Value, RewardOption.Value), EventReward]()
+  def fromId(categoryId : Int, optionId : Int) = {
+    lookup.get((RewardCategory(categoryId), RewardOption(optionId)))
   }
 }
 
@@ -169,4 +189,33 @@ case class OlympicsVoteLoyaltyReward() extends EventReward(EventType.OLYMPICS, R
   override val description: String = "+2 loyalty bonus on airports around the host city until the end of Olympics"
 }
 
+case class OlympicsPassengerCashReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.CASH) {
+  val CASH_BONUS = 20000000 //20 millions
+  override def applyReward(event: Event, airline : Airline) = {
+    AirlineSource.adjustAirlineBalance(airline.id, CASH_BONUS)
+  }
+
+  override val description: String = s"$$$CASH_BONUS cash reward"
+}
+
+case class OlympicsPassengerLoyaltyReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.LOYALTY) {
+  val LOYALTY_BONUS = 3
+  override def applyReward(event: Event, airline : Airline) = {
+    val bonus = AirlineBonus(BonusType.OLYMPICS_PASSENGER, AirlineAppeal(loyalty = LOYALTY_BONUS, awareness = 0), Some(event.startCycle + event.duration * 2))
+    Olympics.getAffectedAirport(event.id, Olympics.getSelectedAirport(event.id).get).foreach { affectedAirport =>
+      AirportSource.saveAirlineAppealBonus(affectedAirport.id, airline.id, bonus)
+    }
+  }
+
+  override val description: String = s"+$LOYALTY_BONUS loyalty bonus on airports around the host city for 4 years after the Olympics Games ended"
+}
+
+case class OlympicsPassengerReputationReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.REPUTATION) {
+  val REPUTATION_BONUS = 5
+  override def applyReward(event: Event, airline : Airline) = {
+    AirlineSource.adjustAirlineReputation(airline.id, REPUTATION_BONUS)
+  }
+
+  override val description: String = s"+$REPUTATION_BONUS reputation boost (one time only, reputation will eventually drop back to normal level)"
+}
 

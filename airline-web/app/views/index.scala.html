@@ -2405,15 +2405,48 @@
 							<div class="table data" id="olympicsVotingRoundsTable" style="width: 100%; max-height: 100%">
 
 							</div>
-							<h4>Host City: <span class="hostCity"></span></h4>
-							<h4>Voted City: <span class="votedCity"></span></h4>
-							<div class="button glow votedCityReward" onclick="showOlympicsVoteRewardModal($(this).data('eventId'))">Claim Reward</div>
-							<h3 style="margin-top: 15px"><img class="year3 yearStatus">Year 3 - Games Preparation</h3>
-							<h4>Olympics Passenger Score Goal: <span class="goal"></span></h4>
-							<h3 style="margin-top: 15px"><img class="year4 yearStatus">Year 4 - Year of Summer Olympics</h3>
-							<h4>Olympics Passenger Score from previous week: <span class="previousCycleScore"></span></h4>
-							<h4>Total Olympics Passenger Score: <span class="totalScore"></span></h4>
+							<div class="table">
+								<div class="table-row">
+									<div class="label">Host City: </div>
+									<div class="value hostCity"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Voted City: </div>
+									<div class="value votedCity"></div>
+								</div>
+								<div class="table-row claimedVoteRewardRow" style="display: none;">
+									<div class="label">Claimed Reward: </div>
+									<div class="value claimedVoteReward"></div>
+								</div>
+							</div>
 
+							<div class="button glow votedCityReward" onclick="showOlympicsVoteRewardModal()">Claim Reward</div>
+							<h3 style="margin-top: 15px"><img class="year3 yearStatus">Year 3 - Games Preparation</h3>
+							<h3 style="margin-top: 15px"><img class="year4 yearStatus">Year 4 - Year of Summer Olympics</h3>
+							<div class="table">
+								<div class="table-row">
+									<div class="label">Olympics Passenger Score from previous week: </div>
+									<div class="value previousCycleScore"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Current Olympics Passenger Score: </div>
+									<div class="value totalScore"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Target Olympics Passenger Score of this week: </div>
+									<div class="value currentCycleGoal"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Olympics Passenger Score Goal: </div>
+									<div class="value goal"></div>
+								</div>
+								<div class="table-row claimedPassengerRewardRow" style="display: none;">
+									<div class="label">Claimed Reward: </div>
+									<div class="value claimedPassengerReward"></div>
+								</div>
+							</div>
+							<div class="button" onclick="showOlympicsRankingModal()">Ranking</div>
+							<div class="button glow passengerReward" onclick="showOlympicsPassengerRewardModal()">Claim Reward</div>
 						</div>
   					</div>
 	  				<div style="clear: both;"></div>
@@ -3184,7 +3217,7 @@
 			  <div style="clear:both; margin-bottom: 15px"></div>
 
 			  <div class="rewardOptions" style="width: 100%">
-				  <h4> Please pick your reward as below, you can always come back later to make your choice!</h4>
+				  <h4> Please pick your reward as below: </h4>
 				  <div class="table data rewardOptionsTable" style="width: 100%">
 					  <div class="table-header">
 						  <div class="cell" style="width: 10%"></div>
@@ -3192,17 +3225,40 @@
 					  </div>
 				  </div>
 			  </div>
-			  <div class="pickedReward" style="display: none;">
-				  <div style="float:left"> <h4>You have picked the reward as below</h4></div>
-				  <div style="clear:both; margin-bottom: 15px"></div>
-				  <div class="table data" style="width: 100%">
-					  <div class="table-row">
-						  <div class="cell label" style="width: 100%"><span class="text pickedRewardText"></span></div>
-					  </div>
-				  </div>
-			  </div>
           </div>
       </div>
+
+	  <div id="olympicsRankingsModal" class="modal">
+		  <div class="modal-content"  style="width : 500px; height: 800px; margin: 5% auto; overflow-y: auto;">
+			  <span class="close" onclick="closeModal($('#olympicsRankingsModal'))">&times;</span>
+			  <h3>Top Airlines</h3>
+			  <div class="table data section topAirlines" style="width: 95%">
+				  <div class="table-header">
+					  <div class="cell" style="width: 10%">Rank</div>
+					  <div class="cell" style="width: 60%">Airline</div>
+					  <div class="cell" style="width: 30%" align="right">Total Score</div>
+				  </div>
+			  </div>
+			  <h3>Top Countries of Olympics Passengers transported</h3>
+			  <div class="table data section topTransportedCountries" style="width: 95%">
+				  <div class="table-header">
+					  <div class="cell" style="width: 10%">Rank</div>
+					  <div class="cell" style="width: 30%">Country</div>
+					  <div class="cell" style="width: 30%" align="right">Total Olympics Passengers transported</div>
+					  <div class="cell" style="width: 30%" align="right">Transported Percentage</div>
+				  </div>
+			  </div>
+			  <h3>Top Countries of Olympics Passengers missed</h3>
+			  <div class="table data section topMissedCountries" style="width: 95%">
+				  <div class="table-header">
+					  <div class="cell" style="width: 10%">Rank</div>
+					  <div class="cell" style="width: 30%">Country</div>
+					  <div class="cell" style="width: 30%" align="right">Total Olympics Passengers missed</div>
+					  <div class="cell" style="width: 30%" align="right">Missed Percentage</div>
+				  </div>
+			  </div>
+		  </div>
+	  </div>
 
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>

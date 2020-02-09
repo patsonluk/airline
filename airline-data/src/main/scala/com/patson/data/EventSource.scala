@@ -246,7 +246,7 @@ object EventSource {
       val resultSet = preparedStatement.executeQuery()
       val result : Option[EventReward] =
         if (resultSet.next()) {
-          EventReward.fromOptionId(resultSet.getInt("reward_option"))
+          EventReward.fromId(resultSet.getInt("reward_category"), resultSet.getInt("reward_option"))
         } else {
           None
         }
@@ -407,7 +407,7 @@ object EventSource {
     }
   }
 
-  def loadOlympicsCountryStats(eventId: Int): Map[String, PassengerTransportStats] = {
+  def loadOlympicsCountryStats(eventId: Int): Map[String, List[PassengerTransportStats]] = {
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_COUNTRY_STATS_TABLE + " WHERE event = ?")
@@ -415,19 +415,20 @@ object EventSource {
       preparedStatement.setInt(1, eventId)
       val resultSet = preparedStatement.executeQuery()
 
-      val result = mutable.HashMap[String, PassengerTransportStats]()
+      val result = mutable.HashMap[String, ListBuffer[PassengerTransportStats]]()
       while (resultSet.next()) {
         val countryCode = resultSet.getString("country_code")
         val cycle = resultSet.getInt("cycle")
         val transported = resultSet.getInt("transported")
         val total = resultSet.getInt("total")
-        result.put(countryCode, PassengerTransportStats(cycle, transported, total))
+        val existing = result.getOrElseUpdate(countryCode, ListBuffer())
+        existing.append(PassengerTransportStats(cycle, transported, total))
       }
 
       resultSet.close()
       preparedStatement.close()
 
-      result.toMap
+      result.view.mapValues(_.toList).toMap
     } finally {
       connection.close()
     }
@@ -438,7 +439,7 @@ object EventSource {
     * @param eventId
     * @return Map[airline, (cycle, score)]
     */
-  def loadOlympicsAirlineStats(eventId: Int): Map[Airline, (Int, BigDecimal)] = {
+  def loadOlympicsAirlineStats(eventId: Int): Map[Airline, List[(Int, BigDecimal)]] = {
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement("SELECT * FROM " + OLYMPIC_AIRLINE_STATS_TABLE + " WHERE event = ?")
@@ -446,19 +447,20 @@ object EventSource {
       preparedStatement.setInt(1, eventId)
       val resultSet = preparedStatement.executeQuery()
 
-      val result = mutable.HashMap[Airline, (Int, BigDecimal)]()
+      val result = mutable.HashMap[Airline, ListBuffer[(Int, BigDecimal)]]()
       while (resultSet.next()) {
         val airlineId = resultSet.getInt("airline")
         val cycle = resultSet.getInt("cycle")
         val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
         val score = resultSet.getBigDecimal("score")
-        result.put(airline, (cycle, score))
+        val existing = result.getOrElseUpdate(airline, ListBuffer())
+        existing.append((cycle, score))
       }
 
       resultSet.close()
       preparedStatement.close()
 
-      result.toMap
+      result.view.mapValues(_.toList).toMap
     } finally {
       connection.close()
     }

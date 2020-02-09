@@ -12,6 +12,7 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.util.Random
+import com.patson.model._
 
 object Test extends App {
 //       println(WikiUtil.queryProfilePicture("Charles de Gaulle Airport", List.empty))
@@ -35,9 +36,9 @@ object Test extends App {
 //    Patchers.airplaneModelPatcher()
 //  Patchers.patchAirlineLogos()
 //  IsolatedAirportPatcher.patchIsolatedAirports()
-  val olympics = EventSource.loadEvents().last.asInstanceOf[Olympics]
-  val voteRounds = EventSimulation.simulateOlympicsVoteRounds(olympics)
-  EventSource.saveOlympicsVoteRounds(olympics.id, voteRounds)
+//  val olympics = EventSource.loadEvents().last.asInstanceOf[Olympics]
+//  val voteRounds = EventSimulation.simulateOlympicsVoteRounds(olympics)
+//  EventSource.saveOlympicsVoteRounds(olympics.id, voteRounds)
 }
 
 

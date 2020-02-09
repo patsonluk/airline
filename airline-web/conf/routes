@@ -136,9 +136,11 @@ GET     /event/olympics/:eventId             controllers.OlympicsApplication.get
 GET		/event/olympics/:eventId/airlines/:airlineId/votes  controllers.OlympicsApplication.getOlympicsAirlineVotes(airlineId : Int, eventId : Int)
 PUT		/event/olympics/:eventId/airlines/:airlineId/votes  controllers.OlympicsApplication.putOlympicsAirlineVotes(airlineId : Int, eventId : Int)
 GET		/event/olympics/:eventId/airlines/:airlineId/passenger-details  controllers.OlympicsApplication.getOlympicsAirlinePassengerDetails(airlineId : Int, eventId : Int)
+GET		/event/olympics/:eventId/airlines/:airlineId/ranking    controllers.OlympicsApplication.getOlympicsRanking(airlineId : Int, eventId : Int)
 
-PUT     /event/:eventId/airline/:airlineId/reward/:optionId     controllers.EventApplication.pickRewardOption(airlineId : Int, eventId : Int, optionId : Int)
-GET     /event/:eventId/airline/:airlineId/reward/olympics-vote  controllers.EventApplication.getOlympicsVoteRewardOptions(airlineId : Int, eventId : Int)
+PUT     /event/:eventId/airline/:airlineId/reward/category/:categoryId/option/:optionId     controllers.OlympicsApplication.pickOlympicsRewardOption(airlineId : Int, eventId : Int, categoryId : Int, optionId : Int)
+GET     /event/:eventId/airline/:airlineId/reward/olympics-vote  controllers.OlympicsApplication.getOlympicsVoteRewardOptions(airlineId : Int, eventId : Int)
+GET     /event/:eventId/airline/:airlineId/reward/olympics-passenger  controllers.OlympicsApplication.getOlympicsPassengerRewardOptions(airlineId : Int, eventId : Int)
 
 
 # Signup
