@@ -166,6 +166,22 @@ object AirlineSource {
 	      }
 	    }
 	  }
+
+  def adjustAirlineReputation(airlineId : Int, delta : Double) = {
+    this.synchronized {
+      val connection = Meta.getConnection()
+      try {
+        val updateStatement = connection.prepareStatement("UPDATE " + AIRLINE_INFO_TABLE + " SET reputation = reputation + ? WHERE airline = ?")
+        updateStatement.setDouble(1, delta)
+        updateStatement.setInt(2, airlineId)
+        updateStatement.executeUpdate()
+        updateStatement.close()
+        AirlineCache.invalidateAirline(airlineId)
+      } finally {
+        connection.close()
+      }
+    }
+  }
   
   
   def saveAirlineInfo(airline : Airline, updateBalance : Boolean = true) = {

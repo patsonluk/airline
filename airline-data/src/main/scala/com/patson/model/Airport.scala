@@ -372,6 +372,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     this.features ++= features
     featuresLoaded = true
   }
+
+  def addFeature(feature : AirportFeature) = {
+    this.features += feature
+  }
   
   def initLounges(lounges : List[Lounge]) = {
     this.loungesByAirline.clear()
@@ -466,7 +470,7 @@ case class AirlineBonus(bonusType : BonusType.Value, bonus : AirlineAppeal, expi
 
 object BonusType extends Enumeration {
   type BonusType = Value
-  val NATIONAL_AIRLINE, PARTNERED_AIRLINE = Value
+  val NATIONAL_AIRLINE, PARTNERED_AIRLINE, OLYMPICS_VOTE, OLYMPICS_PASSENGER = Value
 }
 
 object Airport {

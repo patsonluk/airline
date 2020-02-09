@@ -1,6 +1,6 @@
 package com.patson
 
-import com.patson.model._
+import com.patson.model.{PassengerType, _}
 import org.scalatest.{Matchers, WordSpecLike}
  
 class DemandGeneratorSpec extends WordSpecLike with Matchers {
@@ -206,6 +206,51 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
          assert(demandBusiness(relationship).total < demandBusiness(relationship + 1).total)
          assert(demandTourist(relationship).total < demandTourist(relationship + 1).total)
        }
+    }
+    "Generate expected base demand for olympics".in {
+      val population = 10000000
+      val highIncome : Long = 50000
+      val lowIncome : Long = 25000
+
+      val fromAirport1 = Airport("", "", "", latitude = 0, longitude = 180, "f1", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
+      val fromAirport2 = Airport("", "", "", latitude = 0, longitude = 180, "f2", "", "", size = 5, power = population * 5 * highIncome, population = population * 5, 0, id = 2)
+      val fromAirport3 = Airport("", "", "", latitude = 0, longitude = 180, "f3", "", "", size = 5, power = population * 5 * lowIncome, population = population * 5, 0, id = 3)
+      val olympicsAirport1 = Airport("", "", "", latitude= 0, longitude = 0, "o1", "", "", size = 5, power = population * highIncome, population = population, 0, id = 4)
+      val olympicsAirport2 = Airport("", "", "", latitude= 0, longitude = 0, "o2", "", "", size = 7, power = population * 5 * highIncome, population = population * 5, 0, id = 5)
+
+      //all 4 airports
+      val result: List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])] = DemandGenerator.generateOlympicsDemand(cycle = 0, demandMultiplier = 1, olympicsAirports = List(olympicsAirport1, olympicsAirport2), allAirports = List(fromAirport1, fromAirport2, fromAirport3, olympicsAirport1, olympicsAirport2))
+
+      val resultMap: Map[Airport, Map[Airport, (PassengerType.Value, LinkClassValues)]] = result.toMap.view.mapValues(_.toMap).toMap
+
+      val listEntryCount = result.map(_._2.size).sum
+      val mapEntryCount = resultMap.toList.map(_._2.size).sum
+      println(s"result: $result")
+      println(s"resultMap: $resultMap")
+
+      assert(listEntryCount == mapEntryCount)
+
+      assert(resultMap.get(olympicsAirport1) == None) //olympic airport as from airport should have no demand
+      assert(resultMap.get(olympicsAirport2) == None)
+      assert(resultMap(fromAirport1)(olympicsAirport1)._1 == PassengerType.OLYMPICS)
+      assert(resultMap(fromAirport1)(olympicsAirport1)._2.total > 0)
+      assert(resultMap(fromAirport1)(olympicsAirport2)._2.total > 0)
+      assert(resultMap(fromAirport2)(olympicsAirport1)._2.total > 0)
+      assert(resultMap(fromAirport2)(olympicsAirport2)._2.total > 0)
+      assert(resultMap(fromAirport3)(olympicsAirport1)._2.total > 0)
+      assert(resultMap(fromAirport3)(olympicsAirport2)._2.total > 0)
+
+      assert(resultMap(fromAirport1)(olympicsAirport1)._2.total < resultMap(fromAirport2)(olympicsAirport1)._2.total) //bigger from city has higher demand
+      assert(resultMap(fromAirport1)(olympicsAirport1)._2.total < resultMap(fromAirport1)(olympicsAirport2)._2.total) //bigger olympics city has higher demand
+      assert(resultMap(fromAirport2)(olympicsAirport1)._2.total > resultMap(fromAirport3)(olympicsAirport1)._2.total) //higher income from city has higher demand
+
+      //assert total, should be similar to the base
+      val totalDemand = resultMap.toList.map(_._2.toList.map {
+        case (airport, (passengerType, demand)) => demand.total
+      }.sum).sum
+
+      assert(totalDemand > DemandGenerator.OLYMPICS_DEMAND_BASE * 0.99 && totalDemand < DemandGenerator.OLYMPICS_DEMAND_BASE * 1.01) //should be similar
+
     }
   }
 }

@@ -4,21 +4,12 @@ import com.patson.data._
 import com.patson.data.airplane._
 import com.patson.model._
 import com.patson.model.airplane._
-import play.api.libs.json.Writes
-import play.api.libs.json.JsObject
-import play.api.libs.json.JsString
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsValue
+import play.api.libs.json.{Format, JsArray, JsBoolean, JsNumber, JsObject, JsResult, JsString, JsSuccess, JsValue, Json, Reads, Writes}
 import com.patson.model.Computation
-import play.api.libs.json.Format
-import play.api.libs.json.JsResult
 import com.patson.Util
-import play.api.libs.json.JsSuccess
-import play.api.libs.json.Json
-import play.api.libs.json.JsBoolean
 import com.patson.model.AirlineIncome
 import com.patson.model.AirlineCashFlow
-import play.api.libs.json.Reads
+import com.patson.model.event.EventReward
 import models.FacilityType
 import models.AirportFacility
 import com.patson.util.{AirlineCache, AirportCache, ChampionInfo}
@@ -460,6 +451,93 @@ package object controllers {
         "population" -> JsNumber(city.population),
         "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
     }
+  }
+
+  implicit object AirportFormat extends Format[Airport] {
+    def reads(json: JsValue): JsResult[Airport] = {
+      val airport = Airport.fromId((json \ "id").as[Int])
+      JsSuccess(airport)
+    }
+
+    def writes(airport: Airport): JsValue = {
+      val averageIncome = if (airport.population > 0) { airport.power / airport.population } else 0
+      val incomeLevel = Computation.getIncomeLevel(airport.income)
+      //      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
+      //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)
+      //      }
+      //      val awarenessMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
+      //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.awareness)
+      //      }
+
+      var airportObject = JsObject(List(
+        "id" -> JsNumber(airport.id),
+        "name" -> JsString(airport.name),
+        "iata" -> JsString(airport.iata),
+        "icao" -> JsString(airport.icao),
+        "city" -> JsString(airport.city),
+        "size" -> JsNumber(airport.size),
+        "latitude" -> JsNumber(airport.latitude),
+        "longitude" -> JsNumber(airport.longitude),
+        "countryCode" -> JsString(airport.countryCode),
+        "population" -> JsNumber(airport.population),
+        "slots" -> JsNumber(airport.slots),
+        "radius" -> JsNumber(airport.airportRadius),
+        "zone" -> JsString(airport.zone),
+        "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
+
+
+      if (airport.isSlotAssignmentsInitialized) {
+        airportObject = airportObject + ("availableSlots" -> JsNumber(airport.availableSlots))
+        airportObject = airportObject + ("slotAssignmentList" -> JsArray(airport.getAirlineSlotAssignments().toList.map {
+          case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
+        }
+        ))
+      }
+      if (airport.isAirlineAppealsInitialized) {
+        airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAdjustedAppeals().toList.map {
+          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
+        }
+        ))
+
+        var bonusJson = Json.obj()
+        airport.getAllAirlineBonuses.toList.foreach {
+          case (airlineId, bonuses) => {
+            var totalLoyaltyBonus = 0.0
+            var totalAwarenessBonus = 0.0
+            bonuses.foreach { entry =>
+              totalLoyaltyBonus += entry.bonus.loyalty
+              totalAwarenessBonus += entry.bonus.awareness
+            }
+            bonusJson = bonusJson + (airlineId.toString -> Json.obj("loyalty" -> totalLoyaltyBonus, "awareness" -> totalAwarenessBonus))
+          }
+        }
+        airportObject = airportObject + ("bonusList" -> bonusJson)
+      }
+      if (airport.isFeaturesLoaded) {
+        airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().map { airportFeature =>
+          Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> AirportFeatureType.getDescription(airportFeature.featureType))
+        }
+        ))
+      }
+      if (airport.getAirportImageUrl.isDefined) {
+        airportObject = airportObject + ("airportImageUrl" -> JsString(airport.getAirportImageUrl.get))
+      }
+      if (airport.getCityImageUrl.isDefined) {
+        airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
+      }
+
+      airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.map(_._1).toList))
+
+      airportObject
+    }
+  }
+
+  implicit object EventRewardWrite extends Writes[EventReward] {
+    def writes(reward : EventReward): JsValue = JsObject(List(
+      "description" -> JsString(reward.description),
+      "optionId" -> JsNumber(reward.rewardOption.id),
+      "categoryId" -> JsNumber(reward.rewardCategory.id)
+    ))
   }
 
   val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)

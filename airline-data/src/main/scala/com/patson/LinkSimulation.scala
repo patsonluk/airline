@@ -4,10 +4,11 @@ import com.patson.model._
 import com.patson.data._
 
 import scala.collection.mutable._
-import scala.collection.immutable
+import scala.collection.{immutable, mutable}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.patson.model.airplane.{Airplane, LinkAssignments}
+import com.patson.model.event.Olympics
 
 import scala.util.Random
 import com.patson.model.oil.OilPrice
@@ -19,14 +20,16 @@ object LinkSimulation {
   private val CREW_UNIT_COST = 12 //for now...
   
   private[this] val VIP_COUNT = 5
-  
+
+
+
   def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
     println("Loading all links")
     val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
     println("Finished loading all links")
 
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
-    val demand = DemandGenerator.computeDemand()
+    val demand = DemandGenerator.computeDemand(cycle)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
         holder + demandValue
@@ -34,7 +37,7 @@ object LinkSimulation {
 
     simulateLinkError(links)
     
-    val consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int] = PassengerSimulation.passengerConsume(demand, links)
+    val (consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], missedPassengerResult : immutable.Map[(PassengerGroup, Airport), Int])= PassengerSimulation.passengerConsume(demand, links)
     
     //generate statistic 
     println("Generating stats")
@@ -48,6 +51,28 @@ object LinkSimulation {
     val countryMarketShares = generateCountryMarketShares(consumptionResult)
     println("Saving country market share to DB")
     CountrySource.saveMarketShares(countryMarketShares)
+
+    //generate Olympics stats
+    EventSource.loadEvents().filter(_.isActive(cycle)).foreach { event =>
+      event match {
+        case olympics : Olympics =>
+          println("Generating Olympics stats")
+          val olympicsConsumptions = consumptionResult.filter {
+            case ((passengerGroup, _, _), _) => passengerGroup.passengerType == PassengerType.OLYMPICS
+          }
+          val missedOlympicsPassengers = missedPassengerResult.filter {
+            case ((passengerGroup, _), _) => passengerGroup.passengerType == PassengerType.OLYMPICS
+          }
+          val olympicsCountryStats = generateOlympicsCountryStats(cycle, olympicsConsumptions, missedOlympicsPassengers)
+          EventSource.saveOlympicsCountryStats(olympics.id, olympicsCountryStats)
+          val olympicsAirlineStats = generateOlympicsAirlineStats(cycle, olympicsConsumptions)
+          EventSource.saveOlympicsAirlineStats(olympics.id, olympicsAirlineStats)
+          println("Generated olympics country stats")
+        case _ => //
+      }
+
+    }
+
     
     //save all consumptions
     println("Saving " + consumptionResult.size +  " consumptions")
@@ -404,15 +429,75 @@ object LinkSimulation {
           airlinePassengers.put(airline.id, currentSum + passengerCount)
         }
     }
-    
-    
-    
+
     countryAirlinePassengers.map {
       case ((countryCode, airlinePassengers)) => { 
         CountryMarketShare(countryCode, airlinePassengers.toMap)
       }
     }.toList
 
+  }
+
+  case class PassengerTransportStats(cycle : Int, transported : Int, total : Int)
+  /**
+    * Stats on how much pax from a country was carried/missed
+    * @param olympicsConsumptions
+    * @param missedOlympicsPassengers
+    * @return Map[countryCode, transportRate]
+    */
+  def generateOlympicsCountryStats(cycle : Int, olympicsConsumptions: immutable.Map[(PassengerGroup, Airport, Route), Int], missedOlympicsPassengers: immutable.Map[(PassengerGroup, Airport), Int]) : immutable.Map[String, PassengerTransportStats] = {
+    val passengersByCountry = mutable.HashMap[String, Int]()
+    val missedPassengersByCountry = mutable.HashMap[String, Int]()
+
+    val allCountries = mutable.HashSet[String]()
+    olympicsConsumptions.foreach {
+      case ((passengerGroup, _, _), passengerCount) =>
+        val countryCode = passengerGroup.fromAirport.countryCode
+        val currentCount = passengersByCountry.getOrElse(countryCode, 0)
+        passengersByCountry.put(countryCode, currentCount + passengerCount)
+        allCountries.add(countryCode)
+    }
+
+    missedOlympicsPassengers.foreach {
+      case ((passengerGroup, _), passengerCount) =>
+        val countryCode = passengerGroup.fromAirport.countryCode
+        val currentCount = missedPassengersByCountry.getOrElse(countryCode, 0)
+        missedPassengersByCountry.put(countryCode, currentCount + passengerCount)
+        allCountries.add(countryCode)
+    }
+
+
+    allCountries.map { countryCode =>
+      val transportStats =
+        passengersByCountry.get(countryCode) match {
+          case Some(passengers) => missedPassengersByCountry.get(countryCode) match {
+            case Some(missedPassengers) => PassengerTransportStats(cycle, passengers, (passengers + missedPassengers))
+            case None => PassengerTransportStats(cycle, passengers, passengers)
+          }
+          case None => PassengerTransportStats(cycle, 0, missedPassengersByCountry.getOrElse(countryCode, 0))
+        }
+      (countryCode, transportStats)
+    }.toMap
+  }
+
+
+  /**
+    *
+    * @param olympicsConsumptions
+    * @return Map[airline, scope] score if 1 if Airline A has direct flight that takes the pax to olympics city, otherwise each airline in the route get 1 / n, which n is the number of hops
+    */
+  def generateOlympicsAirlineStats(cycle : Int, olympicsConsumptions: immutable.Map[(PassengerGroup, Airport, Route), Int]) : immutable.Map[Airline, (Int, BigDecimal)] = {
+    val scoresByAirline = mutable.HashMap[Airline, BigDecimal]()
+
+    olympicsConsumptions.foreach {
+      case ((_, _, Route(links, _, _)), passengerCount) =>
+        links.foreach { link =>
+          val existingScore : BigDecimal = scoresByAirline.getOrElse(link.link.airline, 0)
+          scoresByAirline.put(link.link.airline, existingScore + passengerCount.toDouble / links.size)
+        }
+    }
+
+    scoresByAirline.view.mapValues( score => (cycle, score)).toMap
   }
 
   /**

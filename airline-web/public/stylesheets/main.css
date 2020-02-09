@@ -71,6 +71,15 @@ a {
     margin: 0 auto;
 }
 
+#eventCanvas .firstColumn {
+    width: 30%;
+}
+
+#eventCanvas .secondColumn {
+    width: 70%;
+}
+
+
 .christmas {
 	background: linear-gradient(to bottom, rgba(117, 114, 113, 0.8) 10%, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(../images/background/snow.gif);
  	background-size: cover;
@@ -204,16 +213,16 @@ div.button:hover {
     color: #6093e7;
 }
 
-div.button.glow, div.googleMapIcon.glow{
-    animation: glow 1s infinite alternate;
+div.glow {
+    animation: glow 2s infinite alternate;
 }
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 10px -10px #eb8f34f;
+    box-shadow: 0 0 5px -5px #C0D4F8;
   }
   to {
-    box-shadow: 0 0 10px 10px #ff6c52;
+    box-shadow: 0 0 5px 5px #6495ED;
   }
 }
 
@@ -703,7 +712,22 @@ img.flag {
     top:9px;
 }
 
-.tick:hover:after{
+#olympicsCityVoteTable span {
+    font-size: 1.2em;
+    font-weight: heavy;
+}
+.number-button {
+    margin: 5px;
+}
+.number-button span {
+    position: absolute;
+    left: 13px;
+    top: 10px;
+    font-size: 1.2em;
+    font-weight: heavy;
+}
+
+.tick:hover:after, .number-button span {
     color:#83d244;
     text-shadow:0px 0px 6px #83d244;
 }
