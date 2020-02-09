@@ -67,7 +67,7 @@ object LinkSimulation {
           EventSource.saveOlympicsCountryStats(olympics.id, olympicsCountryStats)
           val olympicsAirlineStats = generateOlympicsAirlineStats(cycle, olympicsConsumptions)
           EventSource.saveOlympicsAirlineStats(olympics.id, olympicsAirlineStats)
-          println("Generated olympics country stats") //TODO need to include cycle in DB save
+          println("Generated olympics country stats")
         case _ => //
       }
 

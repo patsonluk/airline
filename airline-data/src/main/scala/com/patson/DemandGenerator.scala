@@ -275,12 +275,6 @@ object DemandGenerator {
     val unscaledDemands = ListBuffer[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
     val otherAirports = allAirports.filter(airport => !olympicsAirports.map(_.id).contains(airport.id))
 
-//    val patchedOlympicsAirports = olympicsAirports.map{ olympicsAirport =>
-//      olympicsAirport.copy().addFeature(VacationHubFeature(30)) //just to make small to-airport more attractive //TODO how to we remove the charm? it might accumulate!
-//
-//      olympicsAirport
-//    }
-
     otherAirports.foreach { airport =>
       val unscaledDemandsOfThisFromAirport = ListBuffer[(Airport, (PassengerType.Value, LinkClassValues))]()
       val fromAirport = airport
