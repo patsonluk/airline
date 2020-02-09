@@ -108,8 +108,8 @@ object OilSimulation {
      var newPrice = previousPrice + newVelocity
      newPrice = Math.min(MAX_PRICE, newPrice)
      newPrice = Math.max(MIN_PRICE, newPrice)
-     
-     println(" pv " +  previousVelocity + " pp " + previousPrice  + " v " + newVelocity + " p " + newPrice)
+
+    logger.info(" pv " +  previousVelocity + " pp " + previousPrice  + " v " + newVelocity + " p " + newPrice)
      
      BigDecimal(newPrice).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }

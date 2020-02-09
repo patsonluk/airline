@@ -144,7 +144,7 @@ object AirlineSimulation {
           val linkLimitOfThisBase = base.getLinkLimit(titleOption)
           val compensationOfThisBase = base.getOvertimeCompensation(linkLimitOfThisBase, linkCountOfThisBase)
           if (compensationOfThisBase > 0) {
-            println(s"${airline.name} Overtime compensation $compensationOfThisBase : limit $linkLimitOfThisBase ; count $linkCountOfThisBase")
+            logger.info(s"${airline.name} Overtime compensation $compensationOfThisBase : limit $linkLimitOfThisBase ; count $linkCountOfThisBase")
           }
           overtimeCompensation += compensationOfThisBase
         }
@@ -342,10 +342,10 @@ object AirlineSimulation {
         }
         
         airline.setReputation(targetReputation)
-        
 
-        
-        println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
+
+
+      logger.info(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
     }
     
     AirlineSource.saveAirlinesInfo(allAirlines, updateBalance = false)

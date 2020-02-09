@@ -24,13 +24,13 @@ object LinkSimulation {
 
 
   def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
-    println("Loading all links")
+    logger.info("Loading all links")
     val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
-    println("Finished loading all links")
+    logger.info("Finished loading all links")
 
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
     val demand = DemandGenerator.computeDemand(cycle)
-    println("DONE with demand total demand: " + demand.foldLeft(0) {
+    logger.info("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
         holder + demandValue
     })
@@ -40,23 +40,23 @@ object LinkSimulation {
     val (consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], missedPassengerResult : immutable.Map[(PassengerGroup, Airport), Int])= PassengerSimulation.passengerConsume(demand, links)
     
     //generate statistic 
-    println("Generating stats")
+    logger.info("Generating stats")
     val linkStatistics = generateLinkStatistics(consumptionResult, cycle)
-    println("Saving generated stats to DB")
+    logger.info("Saving generated stats to DB")
     LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
     
     //generate country market share
-    println("Generating country market share")
+    logger.info("Generating country market share")
     val countryMarketShares = generateCountryMarketShares(consumptionResult)
-    println("Saving country market share to DB")
+    logger.info("Saving country market share to DB")
     CountrySource.saveMarketShares(countryMarketShares)
 
     //generate Olympics stats
     EventSource.loadEvents().filter(_.isActive(cycle)).foreach { event =>
       event match {
         case olympics : Olympics =>
-          println("Generating Olympics stats")
+          logger.info("Generating Olympics stats")
           val olympicsConsumptions = consumptionResult.filter {
             case ((passengerGroup, _, _), _) => passengerGroup.passengerType == PassengerType.OLYMPICS
           }
@@ -67,7 +67,7 @@ object LinkSimulation {
           EventSource.saveOlympicsCountryStats(olympics.id, olympicsCountryStats)
           val olympicsAirlineStats = generateOlympicsAirlineStats(cycle, olympicsConsumptions)
           EventSource.saveOlympicsAirlineStats(olympics.id, olympicsAirlineStats)
-          println("Generated olympics country stats")
+          logger.info("Generated olympics country stats")
         case _ => //
       }
 
@@ -75,21 +75,21 @@ object LinkSimulation {
 
     
     //save all consumptions
-    println("Saving " + consumptionResult.size +  " consumptions")
+    logger.info("Saving " + consumptionResult.size +  " consumptions")
     ConsumptionHistorySource.updateConsumptions(consumptionResult)
-    println("Saved all consumptions")
+    logger.info("Saved all consumptions")
     //generate link history
-//    println("Generating link history")
+//    logger.info("Generating link history")
 //    val linkHistory = generateLinkHistory(consumptionResult)
-//    println("Saving " + linkHistory.size + " generated history to DB")
+//    logger.info("Saving " + linkHistory.size + " generated history to DB")
 //    LinkHistorySource.updateLinkHistory(linkHistory)
     
-//    println("Generating VIP")
+//    logger.info("Generating VIP")
 //    val vipRoutes = generateVipRoutes(consumptionResult)
 //    RouteHistorySource.deleteVipRouteBeforeCycle(cycle)
 //    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
     
-    println("Calculating profits by links")
+    logger.info("Calculating profits by links")
     val linkConsumptionDetails = ListBuffer[LinkConsumptionDetails]()
     val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
     val allAirplaneAssignments: immutable.Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
@@ -105,7 +105,7 @@ object LinkSimulation {
     LinkSource.deleteLinkConsumptionsByCycle(30)
     LinkSource.saveLinkConsumptions(linkConsumptionDetails.toList)
     
-    println("Calculating Lounge usage")
+    logger.info("Calculating Lounge usage")
     //condense the lounge result
     val loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails] = loungeConsumptionDetails.groupBy(_.lounge).map{ 
       case (lounge, consumptionsForThisLounge) => 
@@ -295,7 +295,7 @@ object LinkSimulation {
 
     //val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, link.cancellationCount, linklink.from.id, link.to.id, link.airline.id, link.distance, cycle)
     val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, loungeCost = loungeCost, revenue, profit, cycle)
-    //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
+    //logger.info("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     (result, loungeConsumptionDetails.toList)
   }
   
@@ -314,7 +314,7 @@ object LinkSimulation {
     val liveLinkIds : List[Int] = LinkSource.loadAllLinks(LinkSource.ID_LOAD).map(_.id)
     val deadAlerts = existingAlerts.filter(alert => alert.targetId.isDefined && !liveLinkIds.contains(alert.targetId.get))
     AlertSource.deleteAlerts(deadAlerts)
-    println("Purged alerts with no corresponding links... " + deadAlerts.size)
+    logger.info("Purged alerts with no corresponding links... " + deadAlerts.size)
   }
 
   def checkLoadFactor(links : List[Link], cycle : Int) = {
@@ -375,7 +375,7 @@ object LinkSimulation {
 
     
     deletingLinks.foreach { link =>
-       println("Revoked link: " + link)
+       logger.info("Revoked link: " + link)
        LinkSource.deleteLink(link.id)
     }
     AlertSource.updateAlerts(updatingAlerts.toList)
@@ -504,16 +504,16 @@ object LinkSimulation {
     * Refresh link capacity and frequency if necessary
     */
   def refreshLinksPostCycle() = {
-    println("Refreshing link capacity and frequency to find discrepancies")
+    logger.info("Refreshing link capacity and frequency to find discrepancies")
     val simpleLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD)
     val fullLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).map(link => (link.id, link)).toMap
-    println("Finished loading both the simple and full links")
+    logger.info("Finished loading both the simple and full links")
     //not too ideal, but even if someone update the link assignment when this is in progress, it should be okay, as that assignment
     //is suppose to update the link capacity and frequency anyway
     simpleLinks.foreach { simpleLink =>
       fullLinks.get(simpleLink.id).foreach { fullLink =>
         if (simpleLink.frequency != fullLink.frequency || simpleLink.capacity != fullLink.capacity) {
-          println(s"Adjusting capacity/frequency of  $simpleLink to $fullLink")
+          logger.info(s"Adjusting capacity/frequency of  $simpleLink to $fullLink")
           LinkSource.updateLink(fullLink)
         }
       }

@@ -12,16 +12,16 @@ import scala.util.Random
 
 object AirplaneSimulation {
   def airplaneSimulation(cycle: Int) : List[Airplane] = {
-    println("starting airplane simulation")
-    println("loading all airplanes")
+    logger.info("starting airplane simulation")
+    logger.info("loading all airplanes")
     //do 2nd hand market adjustment
     secondHandAirplaneSimulate(cycle)
     
     //do decay
     val allAirplanes = AirplaneSource.loadAirplanesCriteria(List.empty)
     val linkAssignments: Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
-    
-    println("finished loading all airplanes")
+
+    logger.info("finished loading all airplanes")
     
     val updatingAirplanesListBuffer = ListBuffer[Airplane]()
     allAirplanes.groupBy { _.owner }.foreach {
@@ -33,23 +33,23 @@ object AirplaneSimulation {
               (airplane, linkAssignments.getOrElse(airplane.id, LinkAssignments(Map.empty)))
             }.toMap
             updatingAirplanesListBuffer ++= decayAirplanesByAirline(readyAirplanesWithAssignedLinks, airline)
-          case None => println("airline " + owner.id + " has airplanes but the airline cannot be loaded!")//invalid airline?
+          case None => logger.warn("airline " + owner.id + " has airplanes but the airline cannot be loaded!")//invalid airline?
         }
       }
     }
     
     var updatingAirplanes = updatingAirplanesListBuffer.toList 
     AirplaneSource.updateAirplanesDetails(updatingAirplanes)
-    println("Finished updating all airplanes")
+    logger.info("Finished updating all airplanes")
     
-    println("Start renewing airplanes")
+    logger.info("Start renewing airplanes")
     updatingAirplanes = renewAirplanes(updatingAirplanes, cycle)
-    println("Finished renewing airplanes")
+    logger.info("Finished renewing airplanes")
     
-    println("Start retiring airplanes")
+    logger.info("Start retiring airplanes")
     //adjustLinksBasedOnAirplaneStatus(updatingAirplanes, cycle)
     retireAgingAirplanes(updatingAirplanes.toList)
-    println("Finished retiring airplanes")
+    logger.info("Finished retiring airplanes")
     
     updatingAirplanes.toList
   }
@@ -119,7 +119,7 @@ object AirplaneSimulation {
              val newSellPlane = existingSellPlane + sellValue
 
              if (newCost <= airlinesByid(airplane.owner.id).getBalance()) {
-               println("auto renewing " + airplane)
+               logger.info("auto renewing " + airplane)
                val newCapitalLost = existingCapitalLost + (airplane.value - sellValue)
                costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalLost))
                if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
@@ -142,7 +142,7 @@ object AirplaneSimulation {
     //now deduct money
     costsByAirline.foreach {
       case(airlineId, (cost, buyAirplane, sellAirplane, captialLoss)) => {
-        println("Deducting " + cost + " from " + airlinesByid(airlineId) + " for renewal")
+        logger.info("Deducting " + cost + " from " + airlinesByid(airlineId) + " for renewal")
         AirlineSource.adjustAirlineBalance(airlineId, cost * -1)
         AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, captialLoss * -1))
         AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellAirplane))
@@ -160,7 +160,7 @@ object AirplaneSimulation {
 
   def retireAgingAirplanes(airplanes : List[Airplane]) {
     airplanes.filter(_.condition <= 0).foreach { airplane =>
-      println("Deleting airplane " + airplane)
+      logger.info("Deleting airplane " + airplane)
       AirplaneSource.deleteAirplane(airplane.id)
     }
   }

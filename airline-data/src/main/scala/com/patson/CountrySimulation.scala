@@ -33,7 +33,7 @@ object CountrySimulation {
   }
 
   def simulate(cycle: Int) = {
-    println("starting country simulation")
+    logger.info("starting country simulation")
     val marketSharesByCountryCode: Map[String, Map[Int, Long]] = CountrySource.loadMarketSharesByCriteria(List.empty).map(marketShare => (marketShare.countryCode, marketShare.airlineShares)).toMap
     val countriesByCode = CountrySource.loadAllCountries().map(entry => (entry.countryCode, entry)).toMap
     val airlinesById = AirlineSource.loadAllAirlines(fullLoad = false).map(airline => (airline.id, airline)).toMap

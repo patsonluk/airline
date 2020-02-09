@@ -50,7 +50,7 @@ object EventSimulation {
             (principalAirport, simulateOlympicsAffectedAirport(principalAirport))
           }.toMap
 
-          println(s"Olympics airport(s) within radius: $affectedAirports")
+          logger.info(s"Olympics airport(s) within radius: $affectedAirports")
           EventSource.saveOlympicsAffectedAirports(olympics.id, affectedAirports)
 
         case 2 =>
@@ -60,7 +60,7 @@ object EventSimulation {
 
           if (voteRounds.size > 0) {
             val selectedAirport = voteRounds.last.votes.toList.sortBy(_._2).last._1
-            println(s"Olympics airport: $selectedAirport")
+            logger.info(s"Olympics airport: $selectedAirport")
           }
           //mark airports as in preparations
           Olympics.getSelectedAffectedAirports(olympics.id).foreach { airport =>
@@ -154,7 +154,7 @@ object EventSimulation {
             case None => //should not be this
           }
       }
-      println(s"Round $voteRound : Olympics Votes: $votesByAirport")
+      logger.info(s"Round $voteRound : Olympics Votes: $votesByAirport")
 
       val resultOfThisRound = OlympicsVoteRound(round = voteRound, votes = votesByAirport.toMap)
       voteRoundResults.append(resultOfThisRound)

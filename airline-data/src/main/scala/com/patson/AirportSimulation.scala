@@ -28,13 +28,13 @@ object AirportSimulation {
   
   
   def airportSimulation(cycle: Int, linkConsumptions : List[LinkConsumptionDetails]) = {
-    println("starting airport simulation")
-    println("loading all airports")
+    logger.info("starting airport simulation")
+    logger.info("loading all airports")
     //do decay
     var allAirports = AirportSource.loadAllAirports(true)
-    println("finished loading all airports")
+    logger.info("finished loading all airports")
     
-    println("Decay awareness")
+    logger.info("Decay awareness")
     //decay awareness
     allAirports.foreach { airport =>
       val updatingAppeals = mutable.HashMap[Int, AirlineAppeal]()
@@ -79,7 +79,7 @@ object AirportSimulation {
       }
     }
 
-    println("Adjust awareness by links")
+    logger.info("Adjust awareness by links")
     //reload the airports after update
     allAirports = AirportSource.loadAllAirports(true)
     val allAirportsMap = allAirports.map( airport => airport.id -> airport).toMap
@@ -116,7 +116,7 @@ object AirportSimulation {
         AirportSource.updateAirlineAppeals(airportId, updatingAppeals.toMap)
     }
 
-    println("Adjust loyalty by link consumptions")
+    logger.info("Adjust loyalty by link consumptions")
     //reload the airports after update
     allAirports = AirportSource.loadAllAirports(true)
     
@@ -143,10 +143,10 @@ object AirportSimulation {
       //now the soldLinksByAirline should contain all the sold flights of this airport grouped by airline, if the airline no longer offer flights, it will be empty
       updateAirlineAppealsBySoldLinks(airport, soldLinksByAirline)
     }
-    println("Finished simulation of loyalty by link consumption")
+    logger.info("Finished simulation of loyalty by link consumption")
 
 
-    println("Finished loyalty and awareness simulation")
+    logger.info("Finished loyalty and awareness simulation")
     airportProjectSimulation(allAirports)
 
     AirportSource.purgeAirlineAppealBonus(cycle)
@@ -154,7 +154,7 @@ object AirportSimulation {
 
   def airportProjectSimulation(allAirports : List[Airport]) = {
     import ProjectStatus._
-    println("simulating airport projects")
+    logger.info("simulating airport projects")
     
     val inProgressProjects = AirportSource.loadAllAirportProjects().filter { _.status != COMPLETED }
   }
@@ -169,7 +169,7 @@ object AirportSimulation {
         var newLoyalty = getNewLoyalty(currentLoyalty, targetLoyalty)
         val penalty = getPenalty(soldLinksByAirline)
 //        if (penalty > 0) {
-//          println("penalty for " + airlineId + " at airport " + airport + " is " + penalty)
+//          logger.info("penalty for " + airlineId + " at airport " + airport + " is " + penalty)
 //        }
         newLoyalty = newLoyalty - penalty
         if (newLoyalty <= 0) {
@@ -179,7 +179,7 @@ object AirportSimulation {
         //airport.setAirlineLoyalty(airlineId, newLoyalty)
         //AirportSource.updateAirlineAppeal(airport.id, airlineId, AirlineAppeal(newLoyalty, appeal.awareness))
         newAppeals.put(airlineId, AirlineAppeal(newLoyalty, appeal.awareness))
-       // println("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + currentLoyalty + " to " + newLoyalty)
+       // logger.info("airport " + airport.name + " airline " + airlineId + " loyalty updating from " + currentLoyalty + " to " + newLoyalty)
       }
     }
     AirportSource.updateAirlineAppeals(airport.id, newAppeals.toMap)

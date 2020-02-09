@@ -38,14 +38,14 @@ object MainSimulation extends App {
 
   def startCycle(cycle : Int) = {
       val cycleStartTime = System.currentTimeMillis()
-      println("cycle " + cycle + " starting!")
+      logger.info("cycle " + cycle + " starting!")
       SimulationEventStream.publish(CycleStart(cycle, cycleStartTime), None)
       invalidateCaches()
-      println("Oil simulation")
+      logger.info("Oil simulation")
       OilSimulation.simulate(cycle)
-      println("Loan simulation")
+      logger.info("Loan simulation")
       LoanInterestRateSimulation.simulate(cycle)
-      println("Event simulation")
+      logger.info("Event simulation")
       EventSimulation.simulate(cycle)
 
       val (linkResult, loungeResult) = LinkSimulation.linkSimulation(cycle)
@@ -55,15 +55,15 @@ object MainSimulation extends App {
       CountrySimulation.simulate(cycle)
       
       //purge log
-      println("Purging logs")
+      logger.info("Purging logs")
       LogSource.deleteLogsBeforeCycle(cycle - 100)
       
       //notify the websockets via EventStream
-      println("Publish Cycle Complete message")
+      logger.info("Publish Cycle Complete message")
       SimulationEventStream.publish(CycleCompleted(cycle), None)
       val cycleEnd = System.currentTimeMillis()
       
-      println("cycle " + cycle + " spent " + (cycleEnd - cycleStartTime) / 1000 + " secs")
+      logger.info("cycle " + cycle + " spent " + (cycleEnd - cycleStartTime) / 1000 + " secs")
   }
 
   def postCycle() = {

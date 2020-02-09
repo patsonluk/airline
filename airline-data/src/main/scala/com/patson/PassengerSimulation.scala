@@ -30,7 +30,7 @@ object PassengerSimulation {
     
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
     val demand = DemandGenerator.computeDemand(0)
-    println("DONE with demand total demand: " + demand.foldLeft(0) {
+    logger.info("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
         holder + demandValue
     })
@@ -43,15 +43,15 @@ object PassengerSimulation {
     
     val consumptionResult = passengerConsume(demand, links)
     
-    println("Consumption result: ")
+    logger.info("Consumption result: ")
     val soldLinks = links.filter{ link => link.getTotalSoldSeats > 0  }.map { link =>
       (link, link.getTotalSoldSeats)
       }.sortBy {
         case (_, soldSeats) => soldSeats 
       }
       
-    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + link.standardPrice(ECONOMY) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
-    println("seats sold: " + soldLinks.foldLeft(0) {
+    soldLinks.foreach{ case(link, soldSeats) => logger.info(link.airline.name + "($" + link.price + "; recommend $" + link.standardPrice(ECONOMY) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
+    logger.info("seats sold: " + soldLinks.foldLeft(0) {
       case (holder, (link, soldSeats)) => holder + soldSeats
     })
     
@@ -75,9 +75,9 @@ object PassengerSimulation {
        activeAirportIds.add(link.from.id)
        activeAirportIds.add(link.to.id)
      }
-     println("Total active airports: " + activeAirportIds.size)
+     logger.info("Total active airports: " + activeAirportIds.size)
      
-     println("Remove demand that is not covered by active airports, before " + demand.size);
+     logger.info("Remove demand that is not covered by active airports, before " + demand.size);
 
      //randomize the demand chunks so later on it's consumed in a random (relatively even) manner
      var demandChunks = Random.shuffle(demand.filter { demandChunk =>
@@ -91,12 +91,12 @@ object PassengerSimulation {
        if (entry1._1.passengerType == PassengerType.OLYMPICS && entry2._1.passengerType == PassengerType.OLYMPICS) false else entry1._1.passengerType == PassengerType.OLYMPICS
      ) //olympics always come first
      
-     println("After pruning : " + demandChunks.size);
+     logger.info("After pruning : " + demandChunks.size);
 
 
      while (consumptionCycleCount < consumptionCycleMax) {
-       println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
-       println("links: " + links.size)
+       logger.info("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
+       logger.info("links: " + links.size)
        
        //find out required routes - which "to airports" does each passengerGroup has
        print("Find required routes...")
@@ -106,12 +106,12 @@ object PassengerSimulation {
            var toAirports : Set[Airport] = requiredRoutes.getOrElseUpdate(passengerGroup, scala.collection.mutable.Set[Airport]())
            toAirports.add(toAirport)
        }
-       println("Done!")
+       logger.info("Done!")
        
        //remove exhausted links
        val availableLinks = links.filter { _.getTotalAvailableSeats > 0 }
        
-       println("Available links: " + availableLinks.length)
+       logger.info("Available links: " + availableLinks.length)
        
 //       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
 //       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
@@ -119,7 +119,7 @@ object PassengerSimulation {
        
        //start consuming routes
        println()
-       print("Start to go through demand chunks and comsume...nom nom nom...")
+       logger.info("Start to go through demand chunks and comsume...nom nom nom...")
        
        //we want to randomize the order and go chunk by chunk as we want to evenly/randomly distribute seats to each PassengerGroup
        val remainingDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
@@ -178,15 +178,15 @@ object PassengerSimulation {
              }
            }
         }
-       println("Done!")
+       logger.info("Done!")
        
        //now process the remainingDemandChunks in next cycle 
        demandChunks = remainingDemandChunks.toList     
        consumptionCycleCount += 1
      }
      
-    println("Total chunks that consume something " + consumptionResult.size)
-    println("Total missed chunks " + missedDemandChunks.size)
+    logger.info("Total chunks that consume something " + consumptionResult.size)
+    logger.info("Total missed chunks " + missedDemandChunks.size)
     
     //collapse it now
     val collapsedMap = consumptionResult.groupBy { 
@@ -194,7 +194,7 @@ object PassengerSimulation {
     }.mapValues { consumptions => consumptions.map(_._3).sum }
     
     
-    println("Collasped consumption map size: " + collapsedMap.size)
+    logger.info("Collasped consumption map size: " + collapsedMap.size)
 
     val missedMap = missedDemandChunks.groupBy {
       case(passengerGroup, toAirport, passengerCount) => (passengerGroup, toAirport)
@@ -347,8 +347,8 @@ object PassengerSimulation {
   def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Map[PassengerGroup, Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
-    println("Total routes to compute : " + totalRequiredRoutes)
-    println("Total passenger groups : " + requiredRoutes.size)
+    logger.info("Total routes to compute : " + totalRequiredRoutes)
+    logger.info("Total passenger groups : " + requiredRoutes.size)
     
     //val links = linksList.toArray
     

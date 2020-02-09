@@ -9,12 +9,12 @@ object Util {
   private[this] val GUASSIAN_POOL_SIZE : Int= 1000000
   private[this] val gaussianPool : Array[Double] = new Array(GUASSIAN_POOL_SIZE) 
   
-  println("Generating Guassian pool...")
+  logger.info("Generating Guassian pool...")
   for (i <- 0 until GUASSIAN_POOL_SIZE) {
     gaussianPool(i) = Random.nextGaussian()
   }
   
-  println("Finished generating pool of " + GUASSIAN_POOL_SIZE)
+  logger.info("Finished generating pool of " + GUASSIAN_POOL_SIZE)
   
   def calculateDistance(lat1InDegree : Double, lon1InDegree: Double, lat2InDegree : Double, lon2InDegree : Double) = {
     val lat1 = Math.toRadians(lat1InDegree)

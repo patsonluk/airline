@@ -44,10 +44,10 @@ object DemandGenerator {
 
 
   def computeDemand(cycle: Int) = {
-    println("Loading airports")
+    logger.info("Loading airports")
     //val allAirports = AirportSource.loadAllAirports(true)
     val airports: List[Airport] = AirportSource.loadAllAirports(true).filter { airport => airport.iata != "" && airport.power > 0 }
-    println("Loaded " + airports.size + " airports")
+    logger.info("Loaded " + airports.size + " airports")
     
     val allDemands = new ArrayList[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
 	  
@@ -296,7 +296,7 @@ object DemandGenerator {
       }.sum
     }.sum
     val multiplier = totalDemand.toDouble / unscaledTotalDemands
-    println(s"olympics scale multiplier is $multiplier")
+    logger.info(s"olympics scale multiplier is $multiplier")
     val scaledDemands = unscaledDemands.map {
       case (toAirport, unscaledDemandsOfThisToAirport) =>
         (toAirport, unscaledDemandsOfThisToAirport.map {
