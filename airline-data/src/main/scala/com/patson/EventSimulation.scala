@@ -169,7 +169,7 @@ object EventSimulation {
   }
 
   val BASE_PASSENGER_GOAL = 2000
-  val GOAL_BASE_FACTOR = 0.80 //80% of the max possible pax?
+  val GOAL_BASE_FACTOR = 0.90 //90% of the max possible pax?
   def simulateOlympicsPassengerGoals(olympics: Olympics) = {
     val allLinkStats = LinkStatisticsSource.loadLinkStatisticsByCriteria(List.empty)
     val passengersByAirline: MapView[Airline, Int] = allLinkStats.groupBy(_.key.airline).view.mapValues(_.map(_.passengers).sum)

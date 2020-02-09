@@ -195,7 +195,7 @@ case class OlympicsPassengerCashReward() extends EventReward(EventType.OLYMPICS,
     AirlineSource.adjustAirlineBalance(airline.id, CASH_BONUS)
   }
 
-  override val description: String = s"$$$CASH_BONUS cash reward"
+  override val description: String = "$20,000,000 cash reward"
 }
 
 case class OlympicsPassengerLoyaltyReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.LOYALTY) {
