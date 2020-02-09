@@ -52,7 +52,7 @@ object Olympics {
     EventSource.loadOlympicsAffectedAirports(eventId)
   }
 
-  val VOTE_REPUTATION_THRESHOLD = 40
+  val VOTE_REPUTATION_THRESHOLD = 30
 
   def getAffectedAirport(eventId : Int, principalAirport : Airport) : List[Airport] = {
     EventSource.loadOlympicsAffectedAirports(eventId).apply(principalAirport)
