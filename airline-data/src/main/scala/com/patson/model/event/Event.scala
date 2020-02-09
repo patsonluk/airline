@@ -101,7 +101,7 @@ object Olympics {
   val getDemandMultiplier = (weekOfYear: Int) => {
       if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 12) {
         1
-      } else if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 4) { //3 months before the game
+      } else if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 3) { //3 months before the game
         2
       } else if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION) { //1 momnth beofre the game
         4

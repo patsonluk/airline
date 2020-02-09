@@ -132,6 +132,12 @@ function loadOlympicsDetails(row, event) {
                     $("#olympicsDetails .hostCity").html("-")
                 }
 
+                if (details.totalPassengers !== undefined) {
+                    $("#olympicsDetails .totalPassengers").text(commaSeparateNumber(details.totalPassengers))
+                } else {
+                    $("#olympicsDetails .totalPassengers").text("-")
+                }
+
                 if (activeAirline) {
                     $("#olympicsDetails .button.vote").show();
                     $("#olympicsDetails .button.vote").off("click").on("click", function() {
@@ -185,6 +191,8 @@ function loadOlympicsDetails(row, event) {
                     var highlightClass = "img.year" + event.currentYear
                     $("#olympicsDetails img.yearStatus").attr("src", "assets/images/icons/12px/status-grey.png")
                     $("#olympicsDetails").find(highlightClass).attr("src", "assets/images/icons/12px/status-green.png")
+                } else {
+                    $("#olympicsDetails img.yearStatus").attr("src", "assets/images/icons/12px/status-grey.png") //all grey
                 }
 
     	    	$("#olympicsDetails").fadeIn(200)

@@ -119,6 +119,18 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         result = result + ("selectedAirport", Json.toJson(selectedAirport))
       }
     }
+    EventSource.loadEventById(eventId) match {
+      case Some(olympics: Olympics) =>
+        val currentCycle = CycleSource.loadCycle()
+        if (!olympics.isActive(currentCycle)) { //only load total pax after the olympics is over
+          val stats = EventSource.loadOlympicsCountryStats(eventId)
+          val totalPassengers : Int = stats.view.values.map {
+            case statsOfAnCountry => statsOfAnCountry.map(_.transported).sum
+          }.sum
+          result = result + ("totalPassengers" -> JsNumber(totalPassengers))
+        }
+      case _ =>
+    }
 
     Ok(result)
   }
