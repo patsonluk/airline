@@ -342,7 +342,22 @@ object AirlineSimulation {
         }
         
         airline.setReputation(targetReputation)
-        
+
+        //check bankruptcy
+        if (airline.getBalance() < 0) {
+          val shouldReset = allLinks.get(airline.id) match {
+            case Some(links) =>
+              links.map(_.capacity.total).sum == 0
+            case None => true
+          }
+          if (shouldReset) {
+            var resetBalance = Computation.getResetAmount(airline.id).overall
+            if (resetBalance < 0) {
+              resetBalance = 0
+            }
+            Airline.resetAirline(airline.id, newBalance = resetBalance)
+          }
+        }
 
         
         println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)

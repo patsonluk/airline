@@ -637,43 +637,11 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         case Some(rejection) => Ok(Json.obj("rejection" -> rejection))
         case None =>
           val resetBalance = if (keepAssets) Computation.getResetAmount(airlineId).overall else EntrepreneurProfile.INITIAL_BALANCE //do it here before deleting everything
-          
-          LinkSource.deleteLinksByAirlineId(airlineId)//remove all links
-
-          //remove all airplanes
-          AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
-          //remove all bases
-          AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
-          //remove all loans
-          BankSource.loadLoansByAirline(airlineId).foreach { loan =>
-            BankSource.deleteLoan(loan.id)
+          Airline.resetAirline(airlineId, newBalance = resetBalance) match {
+            case Some(airline) =>
+              Ok(Json.toJson(airline))
+            case None => NotFound
           }
-          //remove all facilities
-          AirlineSource.deleteLoungeByCriteria(List(("airline", airlineId)))
-          
-          //remove all oil contract
-          OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
-          
-          AllianceSource.loadAllianceMemberByAirline(request.user).foreach { allianceMember =>
-            AllianceSource.deleteAllianceMember(airlineId)
-            if (allianceMember.role == AllianceRole.LEADER) { //remove the alliance
-               AllianceSource.deleteAlliance(allianceMember.allianceId)
-            }
-          }  
-          
-          //reset balance
-          val airline : Airline = request.user
-          
-          airline.setBalance(resetBalance) 
-          
-          //unset country code
-          airline.removeCountryCode()
-          //unset service investment
-          airline.setTargetServiceQuality(0)
-          airline.setCurrentServiceQuality(0)
-          
-          AirlineSource.saveAirlineInfo(airline)
-          Ok(Json.toJson(airline))
       }
     }
   }

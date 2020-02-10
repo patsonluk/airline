@@ -1,5 +1,7 @@
 package com.patson.model
 
+import com.patson.data.{AirlineSource, AirplaneSource, AllianceSource, BankSource, LinkSource, OilSource}
+
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
   var allianceId : Option[Int] = None
@@ -295,4 +297,47 @@ object Airline {
   val MAX_MAINTENANCE_QUALITY : Double = 100
   val MAX_REPUTATION_BY_PASSENGERS : Double = 50
   val MAX_REPUTATION : Double = 100
+
+
+  def resetAirline(airlineId : Int, newBalance : Long) : Option[Airline] = {
+    AirlineSource.loadAirlineById(airlineId, true) match {
+      case Some(airline) =>
+        LinkSource.deleteLinksByAirlineId(airlineId)//remove all links
+
+        //remove all airplanes
+        AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
+        //remove all bases
+        AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
+        //remove all loans
+        BankSource.loadLoansByAirline(airlineId).foreach { loan =>
+          BankSource.deleteLoan(loan.id)
+        }
+        //remove all facilities
+        AirlineSource.deleteLoungeByCriteria(List(("airline", airlineId)))
+
+        //remove all oil contract
+        OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
+
+        AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
+          AllianceSource.deleteAllianceMember(airlineId)
+          if (allianceMember.role == AllianceRole.LEADER) { //remove the alliance
+            AllianceSource.deleteAlliance(allianceMember.allianceId)
+          }
+        }
+
+        airline.setBalance(newBalance)
+
+        //unset country code
+        airline.removeCountryCode()
+        //unset service investment
+        airline.setTargetServiceQuality(0)
+        airline.setCurrentServiceQuality(0)
+
+        AirlineSource.saveAirlineInfo(airline)
+        println(s"Reset airline - $airline")
+        Some(airline)
+      case None =>
+        None
+    }
+  }
 }
