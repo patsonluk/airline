@@ -175,7 +175,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
         val stats: Map[Int, BigDecimal] = EventSource.loadOlympicsAirlineStats (eventId, airlineId).toMap
 
-        if (olympics.isActive(currentCycle)) {
+        if (olympics.isActive(currentCycle) && olympics.currentYear(currentCycle) == 4) {
           val previousCycle = currentCycle - 1
           stats.get(previousCycle).foreach {
             previousCycleScore =>
