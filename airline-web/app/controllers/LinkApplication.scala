@@ -554,11 +554,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val airplanesAssignedToThisLink = new mutable.HashMap[Int, Int]()
 
         if (existingLink.isDefined) {
-          AirplaneSource.loadAirplaneLinkAssignmentsByOwner(airlineId).foreach {
-            case (airplaneId, linkAssignments) =>
-              val frequencyAssignedToThisLink = linkAssignments.getFrequencyByLink(existingLink.get.id)
-              if (frequencyAssignedToThisLink > 0) {
-                airplanesAssignedToThisLink.put(airplaneId, frequencyAssignedToThisLink)
+          AirplaneSource.loadAirplaneLinkAssignmentsByLinkId(existingLink.get.id).foreach {
+            case (airplaneId, linkAssignment) =>
+              if (linkAssignment.frequency > 0) {
+                airplanesAssignedToThisLink.put(airplaneId, linkAssignment.frequency)
               }
           }
         }
