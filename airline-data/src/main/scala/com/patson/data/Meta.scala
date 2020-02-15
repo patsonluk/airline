@@ -517,6 +517,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_MODEL_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "name VARCHAR(256), " +
+      "family VARCHAR(256), " +
       "capacity INTEGER, " +
       "fuel_burn INTEGER, " +
       "speed INTEGER, " +

@@ -61,6 +61,7 @@ object ModelSource {
   def getModelFromRow(resultSet : ResultSet) = {
      val model = Model( 
           resultSet.getString("name"),
+       resultSet.getString("family"),
           resultSet.getInt("capacity"),
           resultSet.getInt("fuel_burn"),
           resultSet.getInt("speed"),
@@ -111,12 +112,12 @@ object ModelSource {
   def updateModels(models : List[Model]) = {
     val connection = Meta.getConnection()
         
-    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ?, lifespan = ?, construction_time = ?, country_code = ?, image_url = ? WHERE name = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ?, lifespan = ?, construction_time = ?, country_code = ?, image_url = ?, family = ? WHERE name = ?")
     
     connection.setAutoCommit(false)
     models.foreach { 
       model =>
-        preparedStatement.setString(10, model.name)
+        preparedStatement.setString(11, model.name)
         preparedStatement.setInt(1, model.capacity)
         preparedStatement.setInt(2, model.fuelBurn)
         preparedStatement.setInt(3, model.speed)
@@ -126,6 +127,7 @@ object ModelSource {
         preparedStatement.setInt(7, model.constructionTime)
         preparedStatement.setString(8, model.countryCode)
         preparedStatement.setString(9, model.imageUrl)
+        preparedStatement.setString(10, model.family)
         preparedStatement.executeUpdate()
     }
     connection.commit()
@@ -137,7 +139,7 @@ object ModelSource {
   def saveModels(models : List[Model]) = {
     val connection = Meta.getConnection()
         
-        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_MODEL_TABLE + "(name, capacity, fuel_burn, speed, fly_range, price, lifespan, construction_time, country_code, image_url) VALUES(?,?,?,?,?,?,?,?,?,?)")
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_MODEL_TABLE + "(name, capacity, fuel_burn, speed, fly_range, price, lifespan, construction_time, country_code, image_url, family) VALUES(?,?,?,?,?,?,?,?,?,?,?)")
         
         connection.setAutoCommit(false)
         models.foreach { 
@@ -152,6 +154,7 @@ object ModelSource {
             preparedStatement.setInt(8, model.constructionTime)
             preparedStatement.setString(9, model.countryCode)
             preparedStatement.setString(10, model.imageUrl)
+            preparedStatement.setString(11, model.family)
             preparedStatement.executeUpdate()
         }
         connection.commit()
