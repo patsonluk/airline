@@ -5,7 +5,7 @@ import com.patson.data.{AirlineSource, AirplaneSource, CashFlowSource, CountrySo
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane._
 import com.patson.model._
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, JsValue, Json, Writes}
+import play.api.libs.json.{JsArray, JsBoolean, JsNumber, JsObject, JsString, JsValue, Json, Writes}
 import play.api.mvc._
 
 import scala.collection.mutable.ListBuffer
@@ -40,17 +40,48 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
 
+  sealed case class AirplanesByModel(model : Model, assignedAirplanes : List[Airplane], availableAirplanes : List[Airplane], constructingAirplanes: List[Airplane])
   
-  implicit object AirplanesByModelWrites extends Writes[AirplanesByModel] {
-    def writes(airplanesByModel: AirplanesByModel): JsValue = {
-      Json.toJson(airplanesByModel.model).asInstanceOf[JsObject] + 
-        ("assignedAirplanes" -> Json.toJson(airplanesByModel.assignedAirplanes)) + 
-        ("availableAirplanes" -> Json.toJson(airplanesByModel.availableAirplanes)) +
-        ("constructingAirplanes" -> Json.toJson(airplanesByModel.constructingAirplanes))
+  object AirplanesByModelWrites extends Writes[List[AirplanesByModel]] {
+    def writes(airplanesByModelList: List[AirplanesByModel]): JsValue = {
+      var result = Json.arr()
+      airplanesByModelList.foreach { airplanesByModel =>
+        result = result.append(Json.toJson(airplanesByModel.model).asInstanceOf[JsObject] +
+          ("assignedAirplanes" -> Json.toJson(airplanesByModel.assignedAirplanes)) +
+          ("availableAirplanes" -> Json.toJson(airplanesByModel.availableAirplanes)) +
+          ("constructingAirplanes" -> Json.toJson(airplanesByModel.constructingAirplanes))
+        )
+      }
+      result
     }
   }
-  
-  
+  object AirplanesByModelSimpleWrites extends Writes[List[AirplanesByModel]] {
+    def writes(airplanesByModelList: List[AirplanesByModel]): JsValue = {
+      var result = Json.arr()
+      airplanesByModelList.foreach { airplanesByModel =>
+        result = result.append(Json.toJson(airplanesByModel.model).asInstanceOf[JsObject] +
+          ("assignedAirplanes" -> Json.toJson(airplanesByModel.assignedAirplanes)(SimpleAirplanesWrites)) +
+          ("availableAirplanes" -> Json.toJson(airplanesByModel.availableAirplanes)(SimpleAirplanesWrites)) +
+          ("constructingAirplanes" -> Json.toJson(airplanesByModel.constructingAirplanes)(SimpleAirplanesWrites))
+        )
+      }
+      result
+    }
+  }
+
+
+
+
+  object SimpleAirplanesWrites extends Writes[List[Airplane]] {
+    override def writes(airplanes: List[Airplane]): JsValue = {
+      var result = Json.arr()
+      airplanes.foreach { airplane =>
+        result = result.append(Json.toJson(airplane)(SimpleAirplaneWrite))
+      }
+      result
+    }
+  }
+
   def getAirplaneModels() = Action {
     val models = ModelSource.loadAllModels()
     
@@ -147,16 +178,16 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     return rejections.toMap
   }
 
-  def getOwnedAirplanes(airlineId : Int, simpleResult : Boolean) = {
-    getAirplanes(airlineId, None, simpleResult)
+  def getOwnedAirplanes(airlineId : Int, simpleResult : Boolean, groupedResult : Boolean) = {
+    getAirplanes(airlineId, None, simpleResult, groupedResult)
   }
 
-  def getOwnedAirplanesWithModelId(airlineId : Int, modelId : Int, simpleResult : Boolean) = {
-    getAirplanes(airlineId, Some(modelId), simpleResult)
+  def getOwnedAirplanesWithModelId(airlineId : Int, modelId : Int) = {
+    getAirplanes(airlineId, Some(modelId), simpleResult = false, groupedResult = true)
   }
 
 
-  private def getAirplanes(airlineId : Int, modelIdOption : Option[Int], simpleResult : Boolean) = AuthenticatedAirline(airlineId) {
+  private def getAirplanes(airlineId : Int, modelIdOption : Option[Int], simpleResult : Boolean, groupedResult : Boolean) = AuthenticatedAirline(airlineId) {
     val queryCriteria = ListBuffer(("owner", airlineId), ("is_sold", false))
     modelIdOption.foreach { modelId =>
       queryCriteria.append(("a.model", modelId))
@@ -164,7 +195,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
     val ownedAirplanes: List[Airplane] = AirplaneSource.loadAirplanesCriteria(queryCriteria.toList)
     val linkAssignments = AirplaneSource.loadAirplaneLinkAssignmentsByOwner(airlineId)
-    if (simpleResult) {
+    if (groupedResult) {
       //now split the list of airplanes by with and w/o assignedLinks
       val airplanesByModel: Map[Model, (List[Airplane], List[Airplane])] = ownedAirplanes.groupBy(_.model).view.mapValues {
         airplanes => airplanes.partition(airplane => linkAssignments.isDefinedAt(airplane.id) && airplane.isReady) //for this list do NOT include assigned airplanes that are still under construction, as it's already under the construction list
@@ -174,7 +205,11 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       val airplanesByModelList = airplanesByModel.toList.map {
         case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, availableAirplanes = freeAirplanes.filter(_.isReady), constructingAirplanes=freeAirplanes.filter(!_.isReady))
       }
-      Ok(Json.toJson(airplanesByModelList))
+      if (simpleResult) {
+        Ok(Json.toJson(airplanesByModelList)(AirplanesByModelSimpleWrites))
+      } else {
+        Ok(Json.toJson(airplanesByModelList)(AirplanesByModelWrites))
+      }
     } else {
       val airplanesWithLink : List[(Airplane, LinkAssignments)]= ownedAirplanes.map { airplane =>
         (airplane, linkAssignments.getOrElse(airplane.id, LinkAssignments.empty))
@@ -410,8 +445,6 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
     }
   }
-
-  sealed case class AirplanesByModel(model : Model, assignedAirplanes : List[Airplane], availableAirplanes : List[Airplane], constructingAirplanes: List[Airplane])
 
   def updateAirplaneHome(airlineId : Int, airplaneId : Int, airportId: Int) = AuthenticatedAirline(airlineId) { request =>
     AirplaneSource.loadAirplaneById(airplaneId) match {

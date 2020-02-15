@@ -76,36 +76,42 @@ package object controllers {
       
     }
   }
+
+  object SimpleAirplaneWrite extends Writes[Airplane] {
+    def writes(airplane: Airplane): JsValue = {
+      JsObject(List(
+        "id" -> JsNumber(airplane.id),
+        "ownerId" -> JsNumber(airplane.owner.id),
+        "name" -> JsString(airplane.model.name),
+        "modelId" -> JsNumber(airplane.model.id),
+        "capacity" -> JsNumber(airplane.model.capacity),
+        "fuelBurn" -> JsNumber(airplane.model.fuelBurn),
+        "speed" -> JsNumber(airplane.model.speed),
+        "range" -> JsNumber(airplane.model.range),
+        "price" -> JsNumber(airplane.model.price),
+        "condition" -> JsNumber(airplane.condition),
+        "constructedCycle" -> JsNumber(airplane.constructedCycle),
+        "purchasedCycle" ->  JsNumber(airplane.purchasedCycle),
+        "isReady" ->  JsBoolean(airplane.isReady),
+        "constructionTime" -> JsNumber(airplane.model.constructionTime),
+        "value" -> JsNumber(airplane.value),
+        "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane)),
+        "dealerValue" -> JsNumber(airplane.dealerValue),
+        "dealerRatio" -> JsNumber(airplane.dealerRatio),
+        "configurationId" -> JsNumber(airplane.configuration.id),
+        "configuration" -> Json.obj("economy" -> airplane.configuration.economyVal, "business" -> airplane.configuration.businessVal, "first" -> airplane.configuration.firstVal),
+        //"availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes),
+        "maxFlightMinutes" -> JsNumber(Airplane.MAX_FLIGHT_MINUTES),
+        "homeAirportId" -> JsNumber(airplane.home.id),
+        "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
+        "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION)
+      ))
+    }
+  }
   
   implicit object AirplaneWrites extends Writes[Airplane] {
     def writes(airplane: Airplane): JsValue = {
-          JsObject(List(
-      "id" -> JsNumber(airplane.id),
-      "ownerId" -> JsNumber(airplane.owner.id), 
-      "name" -> JsString(airplane.model.name),
-      "modelId" -> JsNumber(airplane.model.id),
-      "capacity" -> JsNumber(airplane.model.capacity),
-      "fuelBurn" -> JsNumber(airplane.model.fuelBurn),
-      "speed" -> JsNumber(airplane.model.speed),
-      "range" -> JsNumber(airplane.model.range),
-      "price" -> JsNumber(airplane.model.price),
-      "condition" -> JsNumber(airplane.condition),
-      "constructedCycle" -> JsNumber(airplane.constructedCycle),
-      "purchasedCycle" ->  JsNumber(airplane.purchasedCycle),
-      "isReady" ->  JsBoolean(airplane.isReady),
-      "constructionTime" -> JsNumber(airplane.model.constructionTime),
-      "value" -> JsNumber(airplane.value),
-      "sellValue" -> JsNumber(Computation.calculateAirplaneSellValue(airplane)),
-      "dealerValue" -> JsNumber(airplane.dealerValue),
-      "dealerRatio" -> JsNumber(airplane.dealerRatio),
-      "configurationId" -> JsNumber(airplane.configuration.id),
-      "configuration" -> Json.obj("economy" -> airplane.configuration.economyVal, "business" -> airplane.configuration.businessVal, "first" -> airplane.configuration.firstVal),
-      "availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes),
-      "maxFlightMinutes" -> JsNumber(Airplane.MAX_FLIGHT_MINUTES),
-      "homeAirportId" -> JsNumber(airplane.home.id),
-      "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
-      "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION)
-      ))
+      Json.toJson(airplane)(SimpleAirplaneWrite).asInstanceOf[JsObject] + ("availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes))
     }
   }
   
