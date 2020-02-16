@@ -56,6 +56,18 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
   val maintenanceCost : Int = { 
     (capacity * 100).toInt //for now
   }
+
+  val priceDiscountByFavorite : Double = {
+    airplaneType match {
+      case LIGHT => 0.20
+      case REGIONAL => 0.15
+      case SMALL => 0.10
+      case MEDIUM => 0.05
+      case LARGE => 0.03
+      case X_LARGE => 0.02
+      case JUMBO => 0.01
+    }
+  }
 }
 
 object Model {

@@ -161,4 +161,41 @@ object ModelSource {
         
         connection.close()
   }
+
+  def saveFavoriteModelId(airlineId : Int, modelId : Int, startCycle: Int): Unit = {
+    val connection = Meta.getConnection()
+
+    val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_MODEL_FAVORITE_TABLE + "(airline, model, start_cycle) VALUES(?,?,?)")
+
+    connection.setAutoCommit(false)
+    preparedStatement.setInt(1, airlineId)
+    preparedStatement.setInt(2, modelId)
+    preparedStatement.setInt(3, startCycle)
+
+    preparedStatement.executeUpdate()
+    connection.commit()
+    connection.close()
+  }
+
+  def loadFavoriteModelId(airlineId : Int) : Option[(Int, Int)] = {
+    val connection = Meta.getConnection()
+
+    val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRPLANE_MODEL_FAVORITE_TABLE)
+
+    try {
+      val resultSet = preparedStatement.executeQuery()
+
+      val result =
+        if (resultSet.next()) {
+          Some((resultSet.getInt("model"), resultSet.getInt("start_cycle")))
+        } else {
+          None
+        }
+      resultSet.close()
+      result
+    } finally {
+      preparedStatement.close()
+      connection.close()
+    }
+  }
 }

@@ -715,6 +715,10 @@
 										<div class="value" id="modelName"></div>
 									</div>
 									<div class="table-row">
+										<div class="label"><h5>Family:</h5></div>
+										<div class="value modelFamily"></div>
+									</div>
+									<div class="table-row">
 										<div class="label"><h5>Max Capacity:</h5></div>
 										<div class="value" id="capacity"></div>
 									</div>
@@ -1190,26 +1194,28 @@
 							<div class="table data" style="height: 20px; width: 100%">
 								<div class="table-header" id="airplaneModelSortHeader">
 									<div class="cell clickable" style="width: 20%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
-									<div class="cell clickable selected" style="width: 14%" align="right" data-sort-property="price" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Price</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Max Range</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="fuelBurn" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Fuel Burn</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="lifespan" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Lifespan</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="speed" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Speed</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>
+									<div class="cell clickable" style="width: 15%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
+									<div class="cell clickable selected" style="width: 11%" align="right" data-sort-property="price" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Price</div>
+									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
+									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Max Range</div>
+									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="fuelBurn" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Fuel Burn</div>
+									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="lifespan" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Lifespan</div>
+									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="speed" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Speed</div>
+									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>
 								</div>
 							</div>
 							<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
 								<div class="table data" id="airplaneModelTable" style="max-height: 100%; width: 100%">
 									<div class="table-header">
 										<div class="cell" style="width: 20%; border-bottom: none;"></div>
-										<div class="cell" style="width: 14%; border-bottom: none;"></div>
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
 										<div class="cell" style="width: 11%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
+										<div class="cell" style="width: 9%; border-bottom: none;"></div>
+										<div class="cell" style="width: 9%; border-bottom: none;"></div>
+										<div class="cell" style="width: 9%; border-bottom: none;"></div>
+										<div class="cell" style="width: 9%; border-bottom: none;"></div>
+										<div class="cell" style="width: 9%; border-bottom: none;"></div>
+										<div class="cell" style="width: 9%; border-bottom: none;"></div>
 									</div>
 								</div>
 							</div>
@@ -1228,7 +1234,11 @@
 	<!-- 								<h4>Airplane Model Details</h4> -->
 									<div class="table-row">
 										<div class="label"><h5>Model:</h5></div>
-										<div class="value" id="modelName"></div>
+										<div class="value"><span class="modelName"></span><img class="favorite"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Family:</h5></div>
+										<div class="value modelFamily"></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Max Capacity:</h5></div>
@@ -1270,6 +1280,10 @@
 										<div class="label"><h5>Delivery Time:</h5></div>
 										<div class="value delivery"></div>
 									</div>
+									<div class="table-row">
+										<div class="label"><h5>Total in Circulation:</h5></div>
+										<div class="value total"></div>
+									</div>
 									<input type="hidden" class="selectedModel"/>
 								</div>
 								<div class="button add" onclick="promptBuyNewAirplane($('#airplaneCanvas .selectedModel').val(), false)">Purchase</div>
@@ -1293,6 +1307,18 @@
 											<div class="cell" style="width: 30%; border-bottom: none;"></div>
 											<div class="cell" style="width: 20%; border-bottom: none;"></div>
 											<div class="cell" style="width: 20%; border-bottom: none;"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="section stats" style="width : 95%; float: left; overflow: auto;">
+								<h4>Top Operators</h4>
+								<div style="height: 150px; width: 100%; overflow: auto;">
+									<div class="table data topOperators" style="max-height: 100%; width: 100%">
+										<div class="table-header">
+											<div class="cell" style="width: 50%">Airline</div>
+											<div class="cell" style="width: 25%" align="right">Fleet Size</div>
+											<div class="cell" style="width: 25%" align="right">Ownership Percentage</div>
 										</div>
 									</div>
 								</div>
@@ -3199,6 +3225,27 @@
 			</div>
 		</div>
 	</div>
+
+	  <div id="setFavoriteModal" class="modal">
+		  <div class="modal-content" style="width : 400px;">
+			  <span class="close" onclick="closeModal($('#setFavoriteModal'))">&times;</span>
+			  <h3 style="margin-bottom: 10px;">Set <span class="modelName" style="font-weight: bold;"></span> as Favorite</h3>
+			  <div class="modelIllustration" style="width:100%; position: relative; max-width: 500px;">
+				  <img src='#' style="width: 100%;">
+				  <div class="label" style="right: 0px; bottom: 0px; position: absolute; font-style: italic;"><a href='#' target="_blank">Illustration courtesy of Norebbo</a></div>
+			  </div>
+
+			  <div class="table" style="width: 100%;">
+				  <div class="table-row">
+					  <div class="label"><h5>Price Discount:</h5></div>
+					  <div class="value priceDiscount"></div>
+				  </div>
+			  </div>
+			  <div class="warning existingFavorite" style="display: none;">This will replace <span class="existingFavoriteModelName"></span> as your new Favorite</div>
+			  <div class="button confirm">Confirm</div>
+			  <div class="button" onclick="closeModal($('#setFavoriteModal'))")>Cancel</div>
+		  </div>
+	  </div>
 
 	<div id="olympicsVoteModal" class="modal">
 		<div class="modal-content"  style="width : 900px; height: 800px; margin: 5% auto; overflow-y: auto;">

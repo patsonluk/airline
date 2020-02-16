@@ -59,6 +59,7 @@ package object controllers {
           JsObject(List(
       "id" -> JsNumber(airplaneModel.id),
       "name" -> JsString(airplaneModel.name),
+      "family" -> JsString(airplaneModel.family),
       "capacity" -> JsNumber(airplaneModel.capacity),
       "fuelBurn" -> JsNumber(airplaneModel.fuelBurn),
       "speed" -> JsNumber(airplaneModel.speed),

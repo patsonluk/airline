@@ -31,6 +31,7 @@ GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airli
 GET		 /airlines/:airlineId/airplane-models	  controllers.AirplaneApplication.getAirplaneModelsByAirline(airlineId : Int)
 GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getOwnedAirplanes(airlineId : Int, simpleResult : Boolean ?= false, groupedResult : Boolean ?= false)
 GET		 /airlines/:airlineId/airplanes/model/:modelId	  controllers.AirplaneApplication.getOwnedAirplanesWithModelId(airlineId : Int, modelId : Int)
+GET		 /airlines/:airlineId/airplanes/model/:modelId/stats	  controllers.AirplaneApplication.getAirplaneModelStatsByAirline(airlineId : Int, modelId : Int)
 GET		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.getAirplane(airlineId : Int, airplaneId : Int)
 DELETE	 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.sellAirplane(airlineId : Int, airplaneId : Int)
 PUT		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.replaceAirplane(airlineId : Int, airplaneId : Int)
@@ -106,6 +107,8 @@ GET		 /airlines/:airlineId/configurations/:configurationId  controllers.Airplane
 PUT		 /airlines/:airlineId/configurations                   controllers.AirplaneConfigurationApplication.putConfiguration(airlineId : Int, modelId : Int, configurationId: Int ?= 0, economy : Int, business : Int, first : Int, isDefault : Boolean)
 PUT		 /airlines/:airlineId/airplanes/:airplaneId/configuration/:configurationId  controllers.AirplaneConfigurationApplication.updateAirplaneConfiguration(airlineId : Int, airplaneId : Int, configurationId: Int)
 DELETE	 /airlines/:airlineId/configurations/:configurationId  controllers.AirplaneConfigurationApplication.deleteConfiguration(airlineId : Int, configurationId : Int)
+GET      /airlines/:airlineId/favorite-model/:modelId    controllers.AirplaneApplication.getFavoriteModelDetails(airlineId : Int, modelId : Int)
+PUT      /airlines/:airlineId/favorite-model/:modelId    controllers.AirplaneApplication.setFavoriteModel(airlineId : Int, modelId : Int)
 
 
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
@@ -125,6 +128,7 @@ GET      /santa-claus/pick-award/:airlineId/:optionId   controllers.ChristmasApp
 #GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes
 GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions	
 GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels
+GET		 /airplane-models/:modelId/stats     controllers.AirplaneApplication.getAirplaneModelStats(modelId : Int)
 GET		 /rankings  		  		      controllers.RankingApplication.getRankings()
 GET		 /rankings/:airlineId  		      controllers.RankingApplication.getRankingsWithAirline(airlineId : Int)
 GET		 /logos/templates 				  controllers.LogoApplication.getTemplates()	
