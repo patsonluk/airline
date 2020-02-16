@@ -5,9 +5,11 @@ import scala.collection.mutable.ListBuffer
 import java.sql.DriverManager
 
 import com.patson.model.{Airline, Airport, Link, LinkClassValues}
-import com.patson.model.airplane.{Airplane, LinkAssignments, Model, AirplaneConfiguration, LinkAssignment}
+import com.patson.model.airplane.{Airplane, AirplaneConfiguration, LinkAssignment, LinkAssignments, Model}
 import com.patson.data.airplane.ModelSource
 import java.sql.Statement
+
+import com.patson.data.AirplaneSource.DetailType
 
 import scala.collection.mutable
 
@@ -113,11 +115,27 @@ object AirplaneSource {
   }
   
   def loadAirplaneLinkAssignmentsByOwner(ownerId : Int)  : Map[Int, LinkAssignments] = {
-    loadAirplaneLinkAssignmentsByCriteria(List(("owner", ownerId)))
+    loadAirplaneLinkAssignmentsByCriteria(List(("owner", ownerId)), joinAirplaneTable = true)
+  }
+
+  /**
+    *
+    * @param linkId
+    *  @return Map[airplaneId, LinkAssignment]
+    */
+  def loadAirplaneLinkAssignmentsByLinkId(linkId : Int) : Map[Int, LinkAssignment] = {
+    val result: Map[Int, LinkAssignments] = loadAirplaneLinkAssignmentsByCriteria(List(("link", linkId)), joinAirplaneTable = false) //Map[airplaneId, linkAssignments]
+    if (result.isEmpty) {
+      Map.empty
+    } else {
+      result.view.mapValues { linkAssignmentsOfThisAirplane =>
+        linkAssignmentsOfThisAirplane.assignments(linkId)
+      }.toMap
+    }
   }
   
   def loadAirplaneLinkAssignmentsByAirplaneId(airplaneId : Int) : LinkAssignments = {
-    val result = loadAirplaneLinkAssignmentsByCriteria(List(("a.id", airplaneId)))
+    val result = loadAirplaneLinkAssignmentsByCriteria(List(("airplane", airplaneId)), joinAirplaneTable = false)
     if (result.isEmpty) {
       LinkAssignments(Map.empty)
     } else {
@@ -128,12 +146,19 @@ object AirplaneSource {
   /**
     *
     * @param criteria
+    * @param joinAirplaneTable whether the query require join on Airplane Table
     * @param loadDetails
-    * @return Map[airplaneId, Map[linkId, frequency]]
+    * @return Map[airplaneId, LinkAssignments]
     */
-  def loadAirplaneLinkAssignmentsByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = LINK_ID_LOAD) : Map[Int, LinkAssignments]= {
+  def loadAirplaneLinkAssignmentsByCriteria(criteria : List[(String, Any)], joinAirplaneTable : Boolean = false, loadDetails : Map[DetailType.Value, Boolean] = LINK_ID_LOAD) : Map[Int, LinkAssignments]= {
     val connection = Meta.getConnection()
-      var queryString = "SELECT airplane, link, frequency, flight_minutes FROM " + LINK_ASSIGNMENT_TABLE + " l LEFT JOIN " + AIRPLANE_TABLE + " a ON l.airplane = a.id"
+      var queryString =
+        if (joinAirplaneTable) {
+          "SELECT airplane, link, frequency, flight_minutes FROM " + LINK_ASSIGNMENT_TABLE + " l LEFT JOIN " + AIRPLANE_TABLE + " a ON l.airplane = a.id"
+        } else {
+          "SELECT airplane, link, frequency, flight_minutes FROM " + LINK_ASSIGNMENT_TABLE
+        }
+
       
       if (!criteria.isEmpty) {
         queryString += " WHERE "

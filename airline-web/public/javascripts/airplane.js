@@ -31,7 +31,7 @@ function loadAirplaneModelOwnerInfoByModelId(modelId) {
     var airlineId = activeAirline.id
 	$.ajax({
 		type: 'GET',
-		url: "airlines/"+ airlineId + "/airplanes/model/" + modelId + "?simpleResult=true",
+		url: "airlines/"+ airlineId + "/airplanes/model/" + modelId,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    async: false,
@@ -53,6 +53,7 @@ function loadAirplaneModelOwnerInfoByModelId(modelId) {
                 existingInfo.constructingAirplanes = []
                 existingInfo.totalOwned = 0
 	        }
+	        existingInfo.isFullLoad = true
         },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -70,7 +71,7 @@ function loadAirplaneModelOwnerInfo() {
 	loadedModelsOwnerInfoById = {}
 	$.ajax({
 		type: 'GET',
-		url: "airlines/"+ airlineId + "/airplanes?simpleResult=true",
+		url: "airlines/"+ airlineId + "/airplanes?simpleResult=true&groupedResult=true",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    async: false,
@@ -568,6 +569,9 @@ function refreshInventoryAfterAirplaneUpdate() {
 function addAirplaneInventoryDiv(containerDiv, modelId, compareKey, compareValue) {
     var airplanesDiv = $("<div style= 'width : 100%; height : 50px; overflow: auto;'></div>")
     var info = loadedModelsOwnerInfoById[modelId]
+    if (!info.isFullLoad) {
+        loadAirplaneModelOwnerInfoByModelId(modelId) //refresh to get the utility rate
+    }
 
     var empty = true
 

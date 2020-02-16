@@ -41,12 +41,7 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
   }
 
   lazy val availableFlightMinutes : Int = {
-    val occupiedFlightMinutes = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(id).assignments.toList.map {
-      case(linkId, assignment) => LinkSource.loadLinkById(linkId, LinkSource.ID_LOAD) match {
-        case Some(_) => assignment.flightMinutes
-        case None => 0
-      }
-    }.sum
+    val occupiedFlightMinutes = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(id).assignments.toList.map(_._2.flightMinutes).sum
 
     Airplane.MAX_FLIGHT_MINUTES - occupiedFlightMinutes
   }
