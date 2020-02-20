@@ -103,7 +103,8 @@ object AirplaneSimulation {
     val secondHandAirplanes  = ListBuffer[Airplane]()
     val fundsExhaustedAirlineIds = mutable.HashSet[Int]()
 
-    val discountsByAirlineId = ModelSource.loadAllDiscounts()
+    val discountsByAirlineId = ModelSource.loadAllAirlineDiscounts().view.mapValues(_.groupBy(_.modelId))
+    val discountsByModelId = ModelSource.loadAllModelDiscounts().groupBy(_.modelId)
 
     val updatingAirplanes = airplanes //this contains airplanes from all airlines
         .sortBy(_.condition) //lowest conditional airplane gets renewal first
@@ -118,11 +119,18 @@ object AirplaneSimulation {
              val sellValue = Computation.calculateAirplaneSellValue(airplane)
 
              val originalModel = airplane.model
-             val adjustedModel = discountsByAirlineId.get(airlineId) match {
-               case Some(discounts) => originalModel.applyDiscount(discounts)
-               case None => originalModel
+
+             val discounts = ListBuffer[ModelDiscount]()
+             discountsByAirlineId.get(airlineId).foreach { airlineDiscountsByModelId => //airline specific discounts
+               airlineDiscountsByModelId.get(originalModel.id).foreach { airlineDiscounts =>
+                 discounts.appendAll(airlineDiscounts)
+               }
+             }
+             discountsByModelId.get(originalModel.id).foreach { modelDiscounts =>
+               discounts.appendAll(modelDiscounts)
              }
 
+             val adjustedModel = originalModel.applyDiscount(discounts.toList)
              val renewCost = adjustedModel.price - sellValue
              val newCost = existingCost + renewCost
              val newBuyPlane = existingBuyPlane + adjustedModel.price

@@ -273,8 +273,10 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(result) {
+            $("#buyAirplaneModal .configuration-options").empty()
             if (result.configurations.length == 0) {
                 $('#buyAirplaneModal .table-row.seatConfiguration').hide()
+                $("#buyAirplaneModal .configuration-options").removeData("selectedIndex")
             } else {
                 $("#buyAirplaneModal .configuration-options").empty()
                 $("#buyAirplaneModal .configuration-options").data("selectedIndex", 0)

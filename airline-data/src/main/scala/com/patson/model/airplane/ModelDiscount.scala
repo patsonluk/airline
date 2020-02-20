@@ -1,6 +1,9 @@
 package com.patson.model.airplane
 
+import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.Model.Type.{JUMBO, LARGE, LIGHT, MEDIUM, REGIONAL, SMALL, X_LARGE}
+
+import scala.collection.mutable.ListBuffer
 
 case class ModelDiscount(modelId : Int, discount : Double, discountType : DiscountType.Value, discountReason : DiscountReason.Value, expirationCycle : Option[Int]) {
   val description = discountReason match {
@@ -26,7 +29,19 @@ object ModelDiscount {
     }
     List(ModelDiscount(model.id, priceDiscount, DiscountType.PRICE, DiscountReason.FAVORITE, None), constructionTimeDiscount)
   }
+
+  def getDiscounts(airlineId : Int, modelId : Int) : List[ModelDiscount] = {
+    val discounts = ListBuffer[ModelDiscount]()
+    //get airline specific discounts
+    discounts.appendAll(ModelSource.loadAirlineDiscountsByAirlineIdAndModelId(airlineId, modelId))
+    //get blanket model discounts
+    discounts.appendAll(ModelSource.loadModelDiscountsByModelId(modelId))
+    discounts.toList
+  }
+
+
 }
+
 
 
 object DiscountReason extends Enumeration {

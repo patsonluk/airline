@@ -162,16 +162,22 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     val models = ModelSource.loadAllModels()
     
     val modelWithRejections : Map[Model, Option[String]]= getRejections(models, request.user)
-    val discountsByModelId = ModelSource.loadDiscountsByAirlineId(airlineId).groupBy(_.modelId)
+    val airlineDiscountsByModelId = ModelSource.loadAirlineDiscountsByAirlineId(airlineId).groupBy(_.modelId)
+    val blanketDiscountsByModelId = ModelSource.loadAllModelDiscounts().groupBy(_.modelId)
 
     var result = Json.arr()
     val favoriteOption = ModelSource.loadFavoriteModelId(airlineId)
     modelWithRejections.toList.foreach {
       case(model, rejectionOption) =>
-        var modelJson =  discountsByModelId.get(model.id) match {
-          case Some(discounts) => Json.toJson(ModelWithDiscounts(model, discounts)).asInstanceOf[JsObject]
-          case None => Json.toJson(model).asInstanceOf[JsObject]
-        }
+        val discounts = airlineDiscountsByModelId.getOrElse(model.id, List.empty) ++ blanketDiscountsByModelId.getOrElse(model.id, List.empty)
+
+        var modelJson =
+          if (!discounts.isEmpty) {
+            Json.toJson(ModelWithDiscounts(model, discounts)).asInstanceOf[JsObject]
+          } else {
+            Json.toJson(model).asInstanceOf[JsObject]
+          }
+
 
         rejectionOption match {
           case Some(rejection) => modelJson = modelJson + ("rejection" -> JsString(rejection))
@@ -489,7 +495,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
             val originalModel = airplane.model
 
-            val model = originalModel.applyDiscount(ModelSource.loadDiscountsByAirlineIdAndModelId(airlineId, originalModel.id))
+            val model = originalModel.applyDiscount(ModelDiscount.getDiscounts(airlineId, originalModel.id))
 
             val replaceCost = model.price - sellValue
             if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
@@ -526,15 +532,9 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     ModelSource.loadModelById(modelId) match {
       case None =>
         BadRequest("unknown model or airline")
-      case Some(loadedModel) =>
+      case Some(originalModel) =>
         //now check for discounts
-        val discounts = ModelSource.loadDiscountsByAirlineIdAndModelId(airlineId, modelId)
-        val model =
-          if (discounts.isEmpty) {
-            loadedModel
-          } else {
-            loadedModel.applyDiscount(discounts)
-          }
+        val model = originalModel.applyDiscount(ModelDiscount.getDiscounts(airlineId, originalModel.id))
 
         val airline = request.user
         val currentCycle = CycleSource.loadCycle()
@@ -546,7 +546,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           case None =>
             BadRequest(s"Home airport ID $homeAirportId is not valid")
           case Some(homeBase) =>
-            val airplane = Airplane(model, airline, constructedCycle = constructedCycle , purchasedCycle = constructedCycle, Airplane.MAX_CONDITION, depreciationRate = 0, value = loadedModel.price, home = homeBase.airport)
+            val airplane = Airplane(model, airline, constructedCycle = constructedCycle , purchasedCycle = constructedCycle, Airplane.MAX_CONDITION, depreciationRate = 0, value = originalModel.price, home = homeBase.airport)
 
             val rejectionOption = getRejection(model, airline)
             if (rejectionOption.isDefined) {
@@ -579,8 +579,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                   AirlineSource.adjustAirlineBalance(airlineId, amount)
                   AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, amount))
 
-                  if (loadedModel.price != model.price) { //if discounted, count as capital gain
-                    AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = loadedModel.price - model.price))
+                  if (originalModel.price != model.price) { //if discounted, count as capital gain
+                    AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = originalModel.price - model.price))
                   }
                   Accepted(Json.obj("updateCount" -> updateCount))
                 } else {
@@ -647,12 +647,12 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         //delete existing discount on another model
         ModelSource.loadFavoriteModelId(airlineId) match {
           case Some((exitingModelId, _)) =>
-            ModelSource.deleteDiscount(airlineId, modelId, DiscountReason.FAVORITE)
+            ModelSource.deleteAirlineDiscount(airlineId, exitingModelId, DiscountReason.FAVORITE)
           case None => //
         }
         ModelSource.saveFavoriteModelId(airlineId, modelId, CycleSource.loadCycle())
         ModelDiscount.getFavoriteDiscounts(ModelSource.loadModelById(modelId).getOrElse(Model.fromId(modelId))).foreach {
-          discount => ModelSource.saveDiscount(airlineId, discount)
+          discount => ModelSource.saveAirlineDiscount(airlineId, discount)
         }
         Ok(Json.obj())
     }
