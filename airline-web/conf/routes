@@ -35,7 +35,7 @@ GET		 /airlines/:airlineId/airplanes/model/:modelId/stats	  controllers.Airplane
 GET		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.getAirplane(airlineId : Int, airplaneId : Int)
 DELETE	 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.sellAirplane(airlineId : Int, airplaneId : Int)
 PUT		 /airlines/:airlineId/airplanes/:airplaneId		controllers.AirplaneApplication.replaceAirplane(airlineId : Int, airplaneId : Int)
-PUT	     /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.addAirplane(airlineId : Int, model: Int, quantity: Int, homeAirportId : Int, configurationId :Int)
+PUT	     /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.addAirplane(airlineId : Int, modelId: Int, quantity: Int, homeAirportId : Int, configurationId :Int)
 GET		 /airlines/:airlineId/links	  	  controllers.LinkApplication.getLinks(airlineId : Int, getProfit : Boolean ?= false, toAirportId : Int = -1)
 PUT 	 /airlines/:airlineId/links 	  controllers.LinkApplication.addLink(airlineId : Int)
 DELETE   /airlines/:airlineId/links/:linkId 		 	controllers.LinkApplication.deleteLink(airlineId : Int, linkId : Int)

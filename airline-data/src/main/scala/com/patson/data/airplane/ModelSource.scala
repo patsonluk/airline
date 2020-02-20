@@ -2,9 +2,11 @@ package com.patson.data.airplane
 
 import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
-import com.patson.model.airplane.Model
+import com.patson.model.airplane._
 import com.patson.data.Meta
-import java.sql.ResultSet
+import java.sql.{ResultSet, Types}
+
+import scala.collection.mutable
 
 object ModelSource {
   private[this] val BASE_QUERY = "SELECT * FROM " + AIRPLANE_MODEL_TABLE 
@@ -197,5 +199,113 @@ object ModelSource {
       preparedStatement.close()
       connection.close()
     }
+  }
+
+  def saveDiscount(airlineId : Int, discount : ModelDiscount): Unit = {
+    val connection = Meta.getConnection()
+
+    val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_MODEL_DISCOUNT_TABLE + "(airline, model, discount, discount_type, discount_reason, expiration_cycle) VALUES(?,?,?,?,?,?)")
+
+    connection.setAutoCommit(false)
+    preparedStatement.setInt(1, airlineId)
+    preparedStatement.setInt(2, discount.modelId)
+    preparedStatement.setDouble(3, discount.discount)
+    preparedStatement.setInt(4, discount.discountType.id)
+    preparedStatement.setInt(5, discount.discountReason.id)
+    discount.expirationCycle match {
+      case Some(expirationCycle) => preparedStatement.setInt(6, expirationCycle)
+      case None => preparedStatement.setNull(6, Types.INTEGER)
+    }
+
+
+    preparedStatement.executeUpdate()
+    connection.commit()
+    connection.close()
+  }
+
+  def deleteDiscount(airlineId : Int, modelId : Int, discountReason : DiscountReason.Value) = {
+    val connection = Meta.getConnection()
+
+    val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRPLANE_MODEL_DISCOUNT_TABLE + " WHERE airline = ? AND model = ? AND discount_reason = ?")
+
+    connection.setAutoCommit(false)
+    preparedStatement.setInt(1, airlineId)
+    preparedStatement.setInt(2, modelId)
+    preparedStatement.setInt(3, discountReason.id)
+    preparedStatement.executeUpdate()
+    connection.commit()
+    connection.close()
+  }
+
+  /**
+    *
+    * @return Map[airlineId, discounts]
+    */
+  def loadAllDiscounts() : Map[Int, List[ModelDiscount]]= {
+    loadDiscountsByCriteria(List.empty)
+  }
+
+  def loadDiscountsByAirlineId(airlineId : Int) : List[ModelDiscount]= {
+    val result = loadDiscountsByCriteria(List(("airline", airlineId)))
+    result.getOrElse(airlineId, List.empty)
+  }
+  def loadDiscountsByAirlineIdAndModelId(airlineId : Int, modelId : Int) : List[ModelDiscount]= {
+    val result = loadDiscountsByCriteria(List(("airline", airlineId), ("model", modelId)))
+    result.getOrElse(airlineId, List.empty)
+  }
+
+  def loadDiscountsByCriteria(criteria : List[(String, Any)]) = {
+    val queryString = new StringBuilder("SELECT * FROM " + AIRPLANE_MODEL_DISCOUNT_TABLE)
+
+    if (!criteria.isEmpty) {
+      queryString.append(" WHERE ")
+      for (i <- 0 until criteria.size - 1) {
+        queryString.append(criteria(i)._1 + " = ? AND ")
+      }
+      queryString.append(criteria.last._1 + " = ?")
+    }
+    loadDiscountsByQuery(queryString.toString, criteria.map(_._2))
+  }
+
+  /**
+    *
+    * @param queryString
+    * @param parameters
+    * @return Map[airlineId, discounts]
+    */
+  def loadDiscountsByQuery(queryString : String, parameters : Seq[Any] = Seq.empty) = {
+    //open the hsqldb
+    val connection = Meta.getConnection()
+
+    val preparedStatement = connection.prepareStatement(queryString)
+
+    for (i <- 0 until parameters.size) {
+      preparedStatement.setObject(i + 1, parameters(i))
+    }
+
+
+    val resultSet = preparedStatement.executeQuery()
+
+
+    val discountsByAirlineId = new mutable.HashMap[Int, ListBuffer[ModelDiscount]]()
+    while (resultSet.next()) {
+      val airlineId = resultSet.getInt("airline")
+      val discounts = discountsByAirlineId.getOrElseUpdate(airlineId, ListBuffer())
+      val expirationCycleObject = resultSet.getObject("expiration_cycle")
+      val expirationCycle = if (expirationCycleObject == null) None else Some(expirationCycleObject.asInstanceOf[Int])
+      discounts.append(ModelDiscount(
+        resultSet.getInt("model"),
+        resultSet.getDouble("discount"),
+        DiscountType(resultSet.getInt("discount_type")),
+        DiscountReason(resultSet.getInt("discount_reason")),
+        expirationCycle
+      ))
+    }
+
+    resultSet.close()
+    preparedStatement.close()
+    connection.close()
+
+    discountsByAirlineId.view.mapValues(_.toList).toMap
   }
 }

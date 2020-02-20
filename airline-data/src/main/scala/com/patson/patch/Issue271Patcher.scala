@@ -25,6 +25,7 @@ object Issue271Patcher extends App {
     val connection = dataSource.getConnection()
     try {
       Meta.createAirplaneModelFavorite(connection)
+      Meta.createAirplaneModelDiscount(connection)
     } finally {
       connection.close
     }

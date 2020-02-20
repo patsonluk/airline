@@ -57,16 +57,21 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
     (capacity * 100).toInt //for now
   }
 
-  val priceDiscountByFavorite : Double = {
-    airplaneType match {
-      case LIGHT => 0.20
-      case REGIONAL => 0.15
-      case SMALL => 0.10
-      case MEDIUM => 0.05
-      case LARGE => 0.03
-      case X_LARGE => 0.02
-      case JUMBO => 0.01
+  def applyDiscount(discounts : List[ModelDiscount]) = {
+    var discountedModel = this
+    discounts.groupBy(_.discountType).foreach {
+      case(discountType, discounts) => discountType match {
+        case DiscountType.PRICE =>
+          var totalDiscount = discounts.map(_.discount).sum
+          totalDiscount = Math.min(Model.MAX_PRICE_DISCOUNT, totalDiscount)
+          discountedModel = discountedModel.copy(price = (price * (1 - totalDiscount)).toInt)
+        case DiscountType.CONSTRUCTION_TIME =>
+          var totalDiscount = discounts.map(_.discount).sum
+          totalDiscount = Math.min(1, totalDiscount)
+          discountedModel = discountedModel.copy(constructionTime = (constructionTime * (1 - totalDiscount)).toInt)
+      }
     }
+    discountedModel
   }
 }
 
@@ -123,5 +128,9 @@ object Model {
                       Model("Boeing 777-300", "Boeing 777", capacity = 550, fuelBurn = (550 * 5.5).toInt, speed = 945, range = 11121, price = 300000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US", imageUrl = "https://www.norebbo.com/2014/03/boeing-777-300-blank-illustration-templates/"),
                       Model("Boeing 747-400", "Boeing 747", capacity = 660, fuelBurn = (660 * 5.7).toInt, speed = 945, range = 13446, price = 350000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US", imageUrl = "https://www.norebbo.com/2013/09/boeing-747-400-blank-illustration-templates/"),
                       Model("Airbus A380-800", "Airbus A380", capacity = 853, fuelBurn = (853 * 6).toInt, speed = 945, range = 15700, price = 450000000, lifespan = 35 * 52, constructionTime = 54, countryCode = "NL", imageUrl = "https://www.norebbo.com/2013/06/airbus-a380-800-blank-illustration-templates/"))
-  val modelByName = models.map { model => (model.name, model) }.toMap 
+  val modelByName = models.map { model => (model.name, model) }.toMap
+
+  val MAX_PRICE_DISCOUNT = 0.2 //at most 20% off
 }
+
+

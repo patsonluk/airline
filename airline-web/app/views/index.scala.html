@@ -1,4 +1,5 @@
 @(message: String)
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -752,7 +753,7 @@
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Purchase Price:</h5></div>
-										<div class="value" id="price"></div>
+										<div class="value price"></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Delivery Time:</h5></div>
@@ -1234,7 +1235,7 @@
 	<!-- 								<h4>Airplane Model Details</h4> -->
 									<div class="table-row">
 										<div class="label"><h5>Model:</h5></div>
-										<div class="value"><span class="modelName"></span><img class="favorite"></div>
+										<div class="value"><span class="modelName"></span><img class="favorite clickable-no-highlight" onclick="promptSetFavorite()"></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Family:</h5></div>
@@ -1274,7 +1275,7 @@
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Purchase Price:</h5></div>
-										<div class="value" id="price"></div>
+										<div class="value price"></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Delivery Time:</h5></div>
@@ -3240,9 +3241,15 @@
 					  <div class="label"><h5>Price Discount:</h5></div>
 					  <div class="value priceDiscount"></div>
 				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Construction Time Discount:</h5></div>
+					  <div class="value constructionTimeDiscount"></div>
+				  </div>
 			  </div>
-			  <div class="warning existingFavorite" style="display: none;">This will replace <span class="existingFavoriteModelName"></span> as your new Favorite</div>
-			  <div class="button confirm">Confirm</div>
+			  <div style="display : flex; align-items: center;"><img src='@routes.Assets.versioned("images/icons/information.png")'>Only 1 favorite is allowed and it can only be reset every @{com.patson.model.airplane.ModelDiscount.MAKE_FAVORITE_RESET_THRESHOLD} weeks</div>
+			  <div class="existingFavorite" style="display: none;"><img src='@routes.Assets.versioned("images/icons/information.png")'>This will replace&nbsp;<span class="existingFavoriteModelName"></span>&nbsp;as your new Favorite</div>
+			  <div class="rejection" style="display: none;"><img src='@routes.Assets.versioned("images/icons/exclamation-red-frame.png")'><span class="reason"></span></div>
+			  <div class="button confirm" onclick="confirmSetFavorite($('#setFavoriteModal').data('modelId'))">Confirm</div>
 			  <div class="button" onclick="closeModal($('#setFavoriteModal'))")>Cancel</div>
 		  </div>
 	  </div>

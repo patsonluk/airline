@@ -287,6 +287,7 @@ object Meta {
     createSantaClaus(connection)
     createAirportAirlineBonus(connection)
     createAirplaneModelFavorite(connection)
+    createAirplaneModelDiscount(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1186,6 +1187,26 @@ object Meta {
       "airline INTEGER PRIMARY KEY," +
       "model INTEGER," +
       "start_cycle INTEGER," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirplaneModelDiscount(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_MODEL_DISCOUNT_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_MODEL_DISCOUNT_TABLE + "(" +
+      "airline INTEGER," +
+      "model INTEGER," +
+      "discount DECIMAL(5,2)," +
+      "discount_type INTEGER," +
+      "discount_reason INTEGER," +
+      "expiration_cycle INTEGER," +
+      "PRIMARY KEY (airline, model, discount_type, discount_reason), " +
+      "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
