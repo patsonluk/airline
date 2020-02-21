@@ -2,6 +2,7 @@ package com.patson
 
 import com.patson.model._
 import com.patson.model.airplane.Model.Type._
+import com.patson.model.airplane.Model.IcaoClass
 import com.patson.model.airplane._
 import org.scalatest.{Matchers, WordSpecLike}
  
@@ -29,13 +30,13 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
   def simulateStandard(airplaneModel : Model, loadFactor : Double) : LinkConsumptionDetails = {
     val distance = if (airplaneModel.range > 10000)  10000 else airplaneModel.range //cap at 10000, otherwise frequency will be very low
     val (flightType, airportSize) = airplaneModel.airplaneType match {
-      case LIGHT => (FlightType.SHORT_HAUL_DOMESTIC, 3)
-      case REGIONAL => (FlightType.LONG_HAUL_DOMESTIC, 4)
-      case SMALL => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
-      case MEDIUM => (FlightType.LONG_HAUL_INTERCONTINENTAL, 7)
-      case LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
+      case CLASS_A => (FlightType.SHORT_HAUL_DOMESTIC, 3)
+      case CLASS_B => (FlightType.LONG_HAUL_DOMESTIC, 4)
+      case CLASS_C => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
+      case CLASS_D => (FlightType.LONG_HAUL_INTERCONTINENTAL, 7)
+      case CLASS_E => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
       case X_LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
-      case JUMBO => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
+      case CLASS_F => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
     }
     val duration = Computation.calculateDuration(airplaneModel, distance)
     val frequency = Computation.calculateMaxFrequency(airplaneModel, distance)
