@@ -22,7 +22,7 @@ object EventSimulation {
 
   def simulateOlympics(cycle: Int, currentOlympicsOption : Option[Olympics]): Unit = {
     currentOlympicsOption.foreach { currentOlympics =>
-      if (!currentOlympics.isActive(cycle) && !currentOlympics.isActive(cycle - 1)) { //just finished last turn
+      if (!currentOlympics.isActive(cycle) && currentOlympics.isActive(cycle - 1)) { //just finished last turn
         simulateOlympicsEnding(currentOlympics)
       }
     }
