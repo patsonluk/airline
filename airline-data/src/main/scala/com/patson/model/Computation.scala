@@ -51,8 +51,8 @@ object Computation {
   val SELL_RATE = 0.8
   
   def calculateAirplaneSellValue(airplane : Airplane) : Int = {
-    //80% off
-    val value = airplane.value * SELL_RATE
+    val currentNewMarketPrice = airplane.model.applyDiscount(ModelDiscount.getDiscounts(airplane.model.id)).price
+    val value = currentNewMarketPrice * SELL_RATE
     if (value < 0) 0 else value.toInt
   }
   

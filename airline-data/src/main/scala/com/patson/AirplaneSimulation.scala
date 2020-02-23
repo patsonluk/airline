@@ -2,6 +2,7 @@ package com.patson
 
 import scala.collection.mutable.ListBuffer
 import com.patson.data._
+import com.patson.data.airplane.ModelSource
 import com.patson.model._
 import com.patson.model.airplane._
 import com.patson.util.AirlineCache
@@ -102,7 +103,10 @@ object AirplaneSimulation {
     val secondHandAirplanes  = ListBuffer[Airplane]()
     val fundsExhaustedAirlineIds = mutable.HashSet[Int]()
 
-    val updatingAirplanes = airplanes
+    val discountsByAirlineId = ModelSource.loadAllAirlineDiscounts().view.mapValues(_.groupBy(_.modelId))
+    val discountsByModelId = ModelSource.loadAllModelDiscounts().groupBy(_.modelId)
+
+    val updatingAirplanes = airplanes //this contains airplanes from all airlines
         .sortBy(_.condition) //lowest conditional airplane gets renewal first
         .map { airplane =>
       renewalThresholdsByAirline.get(airplane.owner.id) match {
@@ -111,17 +115,33 @@ object AirplaneSimulation {
             && airplane.condition < threshold
             && airplane.purchasedCycle <= currentCycle - airplane.model.constructionTime) { //only renew airplane if it has been purchased longer than the construction time required
              val airlineId = airplane.owner.id
-             val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalLost) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
+             val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalGain) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
              val sellValue = Computation.calculateAirplaneSellValue(airplane)
-             val renewCost = airplane.model.price - sellValue
+
+             val originalModel = airplane.model
+
+             val discounts = ListBuffer[ModelDiscount]()
+             discountsByAirlineId.get(airlineId).foreach { airlineDiscountsByModelId => //airline specific discounts
+               airlineDiscountsByModelId.get(originalModel.id).foreach { airlineDiscounts =>
+                 discounts.appendAll(airlineDiscounts)
+               }
+             }
+             discountsByModelId.get(originalModel.id).foreach { modelDiscounts =>
+               discounts.appendAll(modelDiscounts)
+             }
+
+             val adjustedModel = originalModel.applyDiscount(discounts.toList)
+             val renewCost = adjustedModel.price - sellValue
              val newCost = existingCost + renewCost
-             val newBuyPlane = existingBuyPlane + airplane.model.price
+             val newBuyPlane = existingBuyPlane + adjustedModel.price
              val newSellPlane = existingSellPlane + sellValue
 
              if (newCost <= airlinesByid(airplane.owner.id).getBalance()) {
                println("auto renewing " + airplane)
-               val newCapitalLost = existingCapitalLost + (airplane.value - sellValue)
-               costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalLost))
+               val lossOnSelling = sellValue - airplane.value
+               val gainOnDiscount = adjustedModel.price - originalModel.price
+               val newCapitalGain = existingCapitalGain + lossOnSelling + gainOnDiscount
+               costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalGain))
                if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
                  secondHandAirplanes.append(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, configuration = AirplaneConfiguration.empty, id = 0))
                }
@@ -141,10 +161,10 @@ object AirplaneSimulation {
     
     //now deduct money
     costsByAirline.foreach {
-      case(airlineId, (cost, buyAirplane, sellAirplane, captialLoss)) => {
+      case(airlineId, (cost, buyAirplane, sellAirplane, capitalGain)) => {
         println("Deducting " + cost + " from " + airlinesByid(airlineId) + " for renewal")
         AirlineSource.adjustAirlineBalance(airlineId, cost * -1)
-        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, captialLoss * -1))
+        AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, capitalGain))
         AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellAirplane))
         AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, buyAirplane * -1))
       }

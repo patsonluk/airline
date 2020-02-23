@@ -221,7 +221,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           case None =>
             if (olympics.isActive(currentCycle)) {
               if (isOlympicsVoteMatch(airlineId, eventId)) {
-                Right()
+                Right(())
               } else {
                 Left("vote does not match")
               }
@@ -268,7 +268,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                   case Some(pickedReward) =>
                     Left(s"Already picked reward $pickedReward")
                   case None =>
-                    Right()
+                    Right(())
                 }
               }
             } else {

@@ -465,25 +465,28 @@ object AirplaneSource {
 
     val preparedStatement = connection.prepareStatement(queryString)
 
-    for (i <- 0 until parameters.size) {
-      preparedStatement.setObject(i + 1, parameters(i))
+    try {
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 1, parameters(i))
+      }
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val configurations = new ListBuffer[AirplaneConfiguration]()
+
+
+      while (resultSet.next()) {
+        val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), Airline.fromId(resultSet.getInt("airline")), Model.fromId(resultSet.getInt("model")), resultSet.getBoolean("is_default"), id = resultSet.getInt("id"))
+        configurations.append(configuration)
+      }
+
+      resultSet.close()
+      configurations.toList
+    } finally {
+      preparedStatement.close()
+      connection.close()
     }
 
-    val resultSet = preparedStatement.executeQuery()
-
-    val configurations = new ListBuffer[AirplaneConfiguration]()
-
-
-    while (resultSet.next()) {
-      val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), Airline.fromId(resultSet.getInt("airline")), Model.fromId(resultSet.getInt("model")), resultSet.getBoolean("is_default"), id = resultSet.getInt("id"))
-      configurations.append(configuration)
-    }
-
-    resultSet.close()
-    preparedStatement.close()
-    connection.close()
-
-    configurations.toList
   }
 
   

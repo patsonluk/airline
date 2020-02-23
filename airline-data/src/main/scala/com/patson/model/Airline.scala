@@ -117,7 +117,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
 
     }
 
-    val getModelsLimit =  {
+    val getModelFamilyLimit =  {
       if (value >= 10) 10 else value
     }
   }

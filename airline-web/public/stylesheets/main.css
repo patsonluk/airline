@@ -714,7 +714,7 @@ img.flag {
 
 #olympicsCityVoteTable span {
     font-size: 1.2em;
-    font-weight: heavy;
+    font-weight: bold;
 }
 .number-button {
     margin: 5px;
@@ -724,7 +724,7 @@ img.flag {
     left: 13px;
     top: 10px;
     font-size: 1.2em;
-    font-weight: heavy;
+    font-weight: bold;
 }
 
 .tick:hover:after, .number-button span {

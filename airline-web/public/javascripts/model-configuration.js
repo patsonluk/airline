@@ -106,7 +106,7 @@ function showAirplaneModelConfigurationsModal(modelConfigurationInfo) {
 function addAirplaneInventoryDivByConfiguration(configurationDiv, modelId) {
     var airplanesDiv = $("<div style= 'width : 100%; height : 50px; overflow: auto;'></div>")
     var configurationId = configurationDiv.data("configuration").id
-    var info = loadedModelsOwnerInfoById[modelId]
+    var info = loadedModelsById[modelId]
     if (!info.isFullLoad) {
         loadAirplaneModelOwnerInfoByModelId(modelId) //refresh to get the utility rate
     }
