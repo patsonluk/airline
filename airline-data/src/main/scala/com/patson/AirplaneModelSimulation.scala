@@ -1,5 +1,6 @@
 package com.patson
 
+import com.patson.AirplaneModelSimulation.{getModelDiscountsByLowDemand, getModelLowDemandDiscountThreshold}
 import com.patson.data._
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.Model.Type.{JUMBO, LARGE, LIGHT, MEDIUM, REGIONAL, SMALL, X_LARGE}
@@ -26,12 +27,8 @@ object AirplaneModelSimulation {
     //purge all the existing discounts due to low demand
     val airplanesByModel = allAirplanes.groupBy(_.model)
     val allModelDiscounts = ListBuffer[ModelDiscount]()
-//    airplanesByModel.foreach {
-//      case (model, airplanes) =>
-//        allModelDiscounts.appendAll(getModelDiscountsByAirplaneCount(model, airplanes.length))
-//    }
     ModelSource.loadAllModels().foreach { model =>
-      allModelDiscounts.appendAll(getModelDiscountsByAirplaneCount(model, airplanesByModel.get(model) match {
+      allModelDiscounts.appendAll(getModelDiscountsByLowDemand(model, airplanesByModel.get(model) match {
         case Some(airplanes) => airplanes.length
         case None => 0
       }))
@@ -41,8 +38,8 @@ object AirplaneModelSimulation {
     ModelSource.updateModelDiscounts(allModelDiscounts.toList)
   }
 
-  def getModelDiscountsByAirplaneCount(model : Model, airplaneCount : Int) = {
-    val threshold = getModelDiscountThreshold(model)
+  def getModelDiscountsByLowDemand(model : Model, airplaneCount : Int) = {
+    val threshold = getModelLowDemandDiscountThreshold(model)
     val thresholdDelta = threshold - airplaneCount
     val discounts = ListBuffer[ModelDiscount]()
     if (thresholdDelta > 0) { //then some discounts
@@ -58,15 +55,15 @@ object AirplaneModelSimulation {
   val MAX_PRICE_DISCOUNT_PERCENTAGE = 20
   val CONSTRUCTION_TIME_DISCOUNT = 0.5 //half the construction time
 
-  val getModelDiscountThreshold = (model: Model) => { //smaller model has higher threshold. as the volume is supposed to be higher
+  val getModelLowDemandDiscountThreshold = (model: Model) => { //smaller model has higher threshold. as the volume is supposed to be higher
     model.airplaneType match {
-      case LIGHT => 2000
-      case REGIONAL => 1000
-      case SMALL => 800
-      case MEDIUM => 600
-      case LARGE => 400
-      case X_LARGE => 200
-      case JUMBO => 100
+      case LIGHT => 800
+      case REGIONAL => 600
+      case SMALL => 500
+      case MEDIUM => 300
+      case LARGE => 200
+      case X_LARGE => 150
+      case JUMBO => 80
     }
   }
 
