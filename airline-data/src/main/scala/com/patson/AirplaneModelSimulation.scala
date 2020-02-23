@@ -26,10 +26,17 @@ object AirplaneModelSimulation {
     //purge all the existing discounts due to low demand
     val airplanesByModel = allAirplanes.groupBy(_.model)
     val allModelDiscounts = ListBuffer[ModelDiscount]()
-    airplanesByModel.foreach {
-      case (model, airplanes) =>
-        allModelDiscounts.appendAll(getModelDiscountsByAirplaneCount(model, airplanes.length))
+//    airplanesByModel.foreach {
+//      case (model, airplanes) =>
+//        allModelDiscounts.appendAll(getModelDiscountsByAirplaneCount(model, airplanes.length))
+//    }
+    ModelSource.loadAllModels().foreach { model =>
+      allModelDiscounts.appendAll(getModelDiscountsByAirplaneCount(model, airplanesByModel.get(model) match {
+        case Some(airplanes) => airplanes.length
+        case None => 0
+      }))
     }
+
 
     ModelSource.updateModelDiscounts(allModelDiscounts.toList)
   }
