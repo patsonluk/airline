@@ -182,9 +182,10 @@ object ModelSource {
   def loadFavoriteModelId(airlineId : Int) : Option[(Int, Int)] = {
     val connection = Meta.getConnection()
 
-    val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRPLANE_MODEL_FAVORITE_TABLE)
+    val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRPLANE_MODEL_FAVORITE_TABLE + " WHERE airline = ?")
 
     try {
+      preparedStatement.setInt(1, airlineId)
       val resultSet = preparedStatement.executeQuery()
 
       val result =
