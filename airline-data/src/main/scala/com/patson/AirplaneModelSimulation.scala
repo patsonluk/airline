@@ -1,6 +1,5 @@
 package com.patson
 
-import com.patson.AirplaneModelSimulation.{getModelDiscountsByLowDemand, getModelLowDemandDiscountThreshold}
 import com.patson.data._
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.Model.Type.{JUMBO, LARGE, LIGHT, MEDIUM, REGIONAL, SMALL, X_LARGE}
