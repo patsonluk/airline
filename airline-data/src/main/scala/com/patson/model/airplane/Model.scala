@@ -62,8 +62,7 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
     discounts.groupBy(_.discountType).foreach {
       case(discountType, discounts) => discountType match {
         case DiscountType.PRICE =>
-          var totalDiscount = discounts.map(_.discount).sum
-          totalDiscount = Math.min(Model.MAX_PRICE_DISCOUNT, totalDiscount)
+          val totalDiscount = discounts.map(_.discount).sum
           discountedModel = discountedModel.copy(price = (price * (1 - totalDiscount)).toInt)
         case DiscountType.CONSTRUCTION_TIME =>
           var totalDiscount = discounts.map(_.discount).sum
@@ -218,8 +217,6 @@ object Model {
                       Model("Airbus A380-800", "Airbus A380", capacity = 853, fuelBurn = (853 * 6).toInt, speed = 945, range = 15700, price = 450000000, lifespan = 35 * 52, constructionTime = 54, countryCode = "NL", imageUrl = "https://www.norebbo.com/2013/06/airbus-a380-800-blank-illustration-templates/"))
 
   val modelByName = models.map { model => (model.name, model) }.toMap
-
-  val MAX_PRICE_DISCOUNT = 0.2 //at most 20% off
 }
 
 

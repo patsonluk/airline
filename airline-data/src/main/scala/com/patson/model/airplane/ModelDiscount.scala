@@ -30,10 +30,28 @@ object ModelDiscount {
     List(ModelDiscount(model.id, priceDiscount, DiscountType.PRICE, DiscountReason.FAVORITE, None), constructionTimeDiscount)
   }
 
+  /**
+    * Get discounts including both specific to airline and those blanket to model
+    * @param airlineId
+    * @param modelId
+    * @return
+    */
   def getDiscounts(airlineId : Int, modelId : Int) : List[ModelDiscount] = {
     val discounts = ListBuffer[ModelDiscount]()
     //get airline specific discounts
     discounts.appendAll(ModelSource.loadAirlineDiscountsByAirlineIdAndModelId(airlineId, modelId))
+    //get blanket model discounts
+    discounts.appendAll(getDiscounts(modelId))
+    discounts.toList
+  }
+
+  /**
+    * Get discounts that is blanket to the model
+    * @param modelId
+    * @return
+    */
+  def getDiscounts(modelId : Int)  : List[ModelDiscount] = {
+    val discounts = ListBuffer[ModelDiscount]()
     //get blanket model discounts
     discounts.appendAll(ModelSource.loadModelDiscountsByModelId(modelId))
     discounts.toList

@@ -1,12 +1,14 @@
 package com.patson.data
 
-import com.patson.model.Computation
+import com.patson.model._
 import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane.Model
+import com.patson.model.airplane._
 import java.sql.PreparedStatement
-import java.sql.Connection
+
 import com.patson.data.Constants._
 import com.mchange.v2.c3p0.ComboPooledDataSource
+import com.patson.LinkSimulation
+
 import scala.collection.mutable.ListBuffer
 import com.patson.util.LogoGenerator
 
@@ -35,18 +37,36 @@ object Patchers {
   }
 
   def airplaneModelPatcher() {
-    ModelSource.updateModels(Model.models)
-    
-    val existingModelNames = ModelSource.loadAllModels().map(_.name)
-    
+    val existingModelsByName = ModelSource.loadAllModels().map(model => (model.name, model)).toMap
+
     val newModels = ListBuffer[Model]()
     Model.models.foreach { model =>
-      if (!existingModelNames.contains(model.name)) {
-        newModels.append(model)
+      existingModelsByName.get(model.name) match {
+        case Some(existingModel) =>
+          if (existingModel.price != model.price) { //adjust existing value
+            val updatingAirplanes = AirplaneSource.loadAirplanesCriteria(List(("a.model", existingModel.id))).map { airplane =>
+              val newValue = (model.price * airplane.condition / Airplane.MAX_CONDITION).toInt
+              airplane.copy(value = newValue);
+            }
+            AirplaneSource.updateAirplanesDetails(updatingAirplanes)
+          }
+          if (existingModel.capacity != model.capacity) { //adjust configuration and then actual capacity
+            AirplaneSource.loadAirplaneConfigurationsByCriteria(List(("model", existingModel.id))).foreach { configuration =>
+              val factor = model.capacity.toDouble / existingModel.capacity
+              var newCapacity = ((configuration.economyVal * factor).toInt, (configuration.businessVal * factor).toInt , (configuration.firstVal * factor).toInt)
+              val adjustmentDelta : Int = model.capacity - (newCapacity._1 * ECONOMY.spaceMultiplier + newCapacity._2 * BUSINESS.spaceMultiplier + newCapacity._3 * FIRST.spaceMultiplier).toInt
+              val newConfiguration = configuration.copy(economyVal = newCapacity._1 + adjustmentDelta, businessVal = newCapacity._2, firstVal = newCapacity._3)
+              AirplaneSource.updateAirplaneConfiguration(newConfiguration)
+              println(s"Configuration from $configuration to $newConfiguration")
+            }
+          }
+       case None => newModels.append(model)
       }
     }
-    
+    ModelSource.updateModels(Model.models)
+    LinkSimulation.refreshLinksPostCycle()
     ModelSource.saveModels(newModels.toList)
+
   }
 
   def patchDelaySchema() = {
