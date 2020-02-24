@@ -54,7 +54,7 @@ object Patchers {
             AirplaneSource.loadAirplaneConfigurationsByCriteria(List(("model", existingModel.id))).foreach { configuration =>
               val factor = model.capacity.toDouble / existingModel.capacity
               var newCapacity = ((configuration.economyVal * factor).toInt, (configuration.businessVal * factor).toInt , (configuration.firstVal * factor).toInt)
-              val adjustmentDelta : Int = model.capacity - (newCapacity._1 * ECONOMY.spaceMultiplier + newCapacity._2 * BUSINESS.spaceMultiplier + newCapacity._3 * FIRST.spaceMultiplier).toInt
+              val adjustmentDelta : Int = model.capacity - Math.ceil(newCapacity._1 * ECONOMY.spaceMultiplier + newCapacity._2 * BUSINESS.spaceMultiplier + newCapacity._3 * FIRST.spaceMultiplier).toInt
               val newConfiguration = configuration.copy(economyVal = newCapacity._1 + adjustmentDelta, businessVal = newCapacity._2, firstVal = newCapacity._3)
               AirplaneSource.updateAirplaneConfiguration(newConfiguration)
               println(s"Configuration from $configuration to $newConfiguration")
@@ -67,6 +67,29 @@ object Patchers {
     LinkSimulation.refreshLinksPostCycle()
     ModelSource.saveModels(newModels.toList)
 
+  }
+
+  def adjustAirplaneConfigurations() = {
+    val models = ModelSource.loadAllModels().map( model => (model.id, model)).toMap
+    AirplaneSource.loadAirplaneConfigurationsByCriteria(List.empty).foreach { configuration =>
+      val totalSpace = Math.ceil(configuration.economyVal * ECONOMY.spaceMultiplier + configuration.businessVal * BUSINESS.spaceMultiplier + configuration.firstVal * FIRST.spaceMultiplier).toInt
+      if (totalSpace > models(configuration.model.id).capacity) {
+        val delta = totalSpace - models(configuration.model.id).capacity
+
+        if (configuration.economyVal - delta >= 0) {
+          val newConfiguration = configuration.copy(economyVal = configuration.economyVal - delta)
+          AirplaneSource.updateAirplaneConfiguration(newConfiguration)
+          println(s"$configuration : $totalSpace, delta : $delta => $newConfiguration")
+        } else {
+          println(s"!!!!!!!!!!! CANNOT PATCH $configuration")
+        }
+      }
+    }
+    LinkSimulation.refreshLinksPostCycle()
+  }
+
+  def calculateTotalSpace(configuration: AirplaneConfiguration) = {
+    (configuration.economyVal * ECONOMY.spaceMultiplier + configuration.businessVal * BUSINESS.spaceMultiplier + configuration.firstVal * FIRST.spaceMultiplier).toInt
   }
 
   def patchDelaySchema() = {
