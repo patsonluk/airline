@@ -159,23 +159,30 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
   
   def getAirplaneModelsByAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val models = ModelSource.loadAllModels()
-    
-    val modelWithRejections : Map[Model, Option[String]]= getRejections(models, request.user)
+    val originalModels = ModelSource.loadAllModels()
+    val originalModelsById = originalModels.map(model => (model.id, model)).toMap
     val airlineDiscountsByModelId = ModelSource.loadAirlineDiscountsByAirlineId(airlineId).groupBy(_.modelId)
     val blanketDiscountsByModelId = ModelSource.loadAllModelDiscounts().groupBy(_.modelId)
 
+    val discountedModels = originalModels.map { originalModel =>
+      val discounts = airlineDiscountsByModelId.getOrElse(originalModel.id, List.empty) ++ blanketDiscountsByModelId.getOrElse(originalModel.id, List.empty)
+      originalModel.applyDiscount(discounts)
+    }
+
+    val discountedModelWithRejections : Map[Model, Option[String]]= getRejections(discountedModels, request.user)
+
     var result = Json.arr()
     val favoriteOption = ModelSource.loadFavoriteModelId(airlineId)
-    modelWithRejections.toList.foreach {
-      case(model, rejectionOption) =>
-        val discounts = airlineDiscountsByModelId.getOrElse(model.id, List.empty) ++ blanketDiscountsByModelId.getOrElse(model.id, List.empty)
+    discountedModelWithRejections.toList.foreach {
+      case(discountedModel, rejectionOption) =>
+        val originalModel = originalModelsById(discountedModel.id)
+        val discounts = airlineDiscountsByModelId.getOrElse(originalModel.id, List.empty) ++ blanketDiscountsByModelId.getOrElse(originalModel.id, List.empty)
 
         var modelJson =
           if (!discounts.isEmpty) {
-            Json.toJson(ModelWithDiscounts(model, discounts)).asInstanceOf[JsObject]
+            Json.toJson(ModelWithDiscounts(originalModel, discounts)).asInstanceOf[JsObject]
           } else {
-            Json.toJson(model).asInstanceOf[JsObject]
+            Json.toJson(originalModel).asInstanceOf[JsObject]
           }
 
 
@@ -184,7 +191,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           case None => //
         }
 
-        if (favoriteOption.isDefined && favoriteOption.get._1 == model.id) {
+        if (favoriteOption.isDefined && favoriteOption.get._1 == originalModel.id) {
           modelJson = modelJson + ("isFavorite" -> JsBoolean(true))
         }
         result = result.append(modelJson)
@@ -230,7 +237,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
     val ownedModelFamilies = ownedModels.map(_.family)
 
-    if (!ownedModels.contains(model) && ownedModelFamilies.size >= airline.airlineGrade.getModelFamilyLimit) {
+    if (!ownedModelFamilies.contains(model.family) && ownedModelFamilies.size >= airline.airlineGrade.getModelFamilyLimit) {
       val familyToken = if (ownedModelFamilies.size <= 1) "family" else "families"
       return Some("Can only own up to " + airline.airlineGrade.getModelFamilyLimit + " different airplane " + familyToken + " at current airline grade")
     }
@@ -540,7 +547,6 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         val currentCycle = CycleSource.loadCycle()
         val constructedCycle = currentCycle + model.constructionTime
         val homeBase = request.user.getBases().find(_.airport.id == homeAirportId)
-
 
         homeBase match {
           case None =>
