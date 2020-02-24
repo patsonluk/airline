@@ -56,13 +56,13 @@ object AirplaneModelSimulation {
 
   val getModelLowDemandDiscountThreshold = (model: Model) => { //smaller model has higher threshold. as the volume is supposed to be higher
     model.airplaneType match {
-      case LIGHT => 800
-      case REGIONAL => 600
-      case SMALL => 500
-      case MEDIUM => 300
-      case LARGE => 200
-      case X_LARGE => 150
-      case JUMBO => 80
+      case LIGHT => 300
+      case REGIONAL => 300
+      case SMALL => 300
+      case MEDIUM => 200
+      case LARGE => 150
+      case X_LARGE => 100
+      case JUMBO => 50
     }
   }
 
