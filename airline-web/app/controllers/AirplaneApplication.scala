@@ -266,7 +266,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     
     val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
     val ownedModelFamilies = ownedModels.map(_.family)
-    if (!ownedModels.contains(model) && ownedModels.size >= airline.airlineGrade.getModelFamilyLimit) {
+    if (!ownedModelFamilies.contains(model.family) && ownedModelFamilies.size >= airline.airlineGrade.getModelFamilyLimit) {
       val familyToken = if (ownedModelFamilies.size <= 1) "family" else "families"
       val rejection = "Can only own up to " + airline.airlineGrade.getModelFamilyLimit + " different airplane " + familyToken + " at current airline grade"
       return usedAirplanes.map((_, rejection)).toMap
