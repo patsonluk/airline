@@ -941,7 +941,7 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#linkRejectionRow').hide()
 		$('#planLinkModelRow').show()
 	}
-	
+
 	if (!linkInfo.existingLink) {
 		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)
 		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)
@@ -961,6 +961,15 @@ function updatePlanLinkInfo(linkInfo) {
 		}
 		$('#updateLinkButton').show()
 	}
+
+    //reset/display warnings
+    $("#planLinkDetails .warningList").empty()
+    if (linkInfo.warnings) {
+        $.each(linkInfo.warnings, function(index, warning) {
+            $("#planLinkDetails .warningList").append("<div class='warning'><img src='assets/images/icons/exclamation-red-frame.png'>&nbsp;" + warning + "</div>")
+        })
+    }
+
 	
 	//populate airplane model drop down
 	var explicitlySelectedModelId = $("#planLinkModelSelect").data('explicitId')
@@ -1144,14 +1153,6 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 			$("#planLinkServiceLevel").val(1)
 		}
 	
-		if (selectedModelId == assignedModelId) {
-			$("#planLinkFrequency").val(existingLink.frequency)
-		} else {
-			$("#planLinkFrequency").val(0)
-			//$("#planLinkAirplaneSelect").val($("#planLinkAirplaneSelect option:first").val());
-		}
-
-
 		updateFrequencyDetail(thisModelPlanLinkInfo)
 
 		var serviceLevelBar = $("#serviceLevelBar")
@@ -1161,7 +1162,6 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 		$("#planLinkExtendedDetails").hide()
 	}
 }
-
 
 function updateFrequencyDetail(info) {
     var airplaneEntries = info.airplanes
@@ -1353,6 +1353,11 @@ function updateTotalValues() {
         enableButton($("#planLinkDetails .updateLinkButton"))
     }
 
+    if (futureFrequency == 0) {
+        disableButton($("#planLinkDetails .updateLinkButton"), "Must assign airplanes and frequency")
+    } else {
+        enableButton($("#planLinkDetails .updateLinkButton"))
+    }
 }
 
 

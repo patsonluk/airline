@@ -37,9 +37,10 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     } else {
       val delta = linkCount - linkLimit
       var compensation = 0
+      val income = CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0)
       for (i <- 1 to delta) {
         val multiplier = if (i < 10) i else 10 //first 10 increasingly more expensive, then max out at 10
-        compensation += multiplier * (20000 + CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0))
+        compensation += multiplier * (20000 + income)
       }
       compensation
     }
