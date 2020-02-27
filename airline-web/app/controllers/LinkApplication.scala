@@ -546,7 +546,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink.isEmpty)
 
-
+        val warnings = getWarnings(request.user, fromAirport, toAirport, existingLink.isEmpty)
 
         val modelsWithinRange: List[Model] = ModelSource.loadModelsWithinRange(distance)
 
@@ -673,6 +673,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           resultObject = resultObject + ("rejection", Json.toJson(rejectionReason.get))
         }
 
+        if (!warnings.isEmpty) {
+          resultObject = resultObject + ("warnings", Json.toJson(warnings))
+        }
+
         Ok(resultObject)
       }
       case Left(error) => BadRequest(error)
@@ -739,6 +743,24 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }  
     
     return None
+  }
+
+  def getWarnings(airline : Airline, fromAirport: Airport, toAirport : Airport, newLink : Boolean) : List[String]= {
+    val warnings = ListBuffer[String]()
+    if (newLink) { //then check the hub capacity
+      airline.getBases().find(_.airport.id == fromAirport.id) match {
+          case Some(base) =>
+            val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.ID_LOAD).length
+            val airlineCountryTitleOfFromCountry = CountrySource.loadCountryAirlineTitlesByCountryCode(fromAirport.countryCode).find(_.airline.id == airline.id)
+            val linkLimit = base.getLinkLimit(airlineCountryTitleOfFromCountry.map(_.title))
+            if (linkCount >= linkLimit) { //then we should prompt warning of over limit
+              val extraCompensation = base.getOvertimeCompensation(linkLimit, linkCount + 1) - base.getOvertimeCompensation(linkLimit, linkCount)
+              warnings.append(s"Exceeding operation capacity of current base. Extra overtime compensation of $$$extraCompensation will be charged per week for this route.")
+            }
+          case None => //should not be none
+      }
+    }
+    warnings.toList
   }
   
 //  def getVipRoutes() = Action {
