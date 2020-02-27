@@ -155,7 +155,7 @@ function loadOlympicsDetails(row, event) {
 
                             //find out with airport this airline has voted for
                             $("#olympicsDetails .button.votedCityReward").hide()
-                            $("#olympicsDetails .claimedPassengerRewardRow").hide()
+                            $("#olympicsDetails .claimedVoteRewardRow").hide()
                             if (votes.votedAirport) {
                                 var votedAirport = votes.votedAirport
                                 $("#olympicsDetails .votedCity").html(getCountryFlagImg(votedAirport.countryCode) + votedAirport.city)
