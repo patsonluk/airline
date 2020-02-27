@@ -94,9 +94,11 @@ object LinkSimulation {
     val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
     val allAirplaneAssignments: immutable.Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
     links.foreach { link =>
-      val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle, allAirplaneAssignments)
-      linkConsumptionDetails += linkResult
-      loungeConsumptionDetails ++= loungeResult
+      if (link.capacity.total > 0) {
+        val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle, allAirplaneAssignments)
+        linkConsumptionDetails += linkResult
+        loungeConsumptionDetails ++= loungeResult
+      }
     }
 
     purgeAlerts()
