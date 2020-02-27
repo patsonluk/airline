@@ -160,13 +160,13 @@ function loadOlympicsDetails(row, event) {
                                 var votedAirport = votes.votedAirport
                                 $("#olympicsDetails .votedCity").html(getCountryFlagImg(votedAirport.countryCode) + votedAirport.city)
                                 if (event.currentYear) { //still active
-                                    if (details.selectedAirport && details.selectedAirport.id == votedAirport.id && !details.claimedVoteReward) { //yay
+                                    if (details.selectedAirport && details.selectedAirport.id == votedAirport.id && !votes.claimedVoteReward) { //yay
                                         $("#olympicsDetails .button.votedCityReward").data("eventId", eventId)
                                         $("#olympicsDetails .button.votedCityReward").show()
                                     }
                                 }
-                                if (details.claimedVoteReward) {
-                                    $("#olympicsDetails .claimedVoteReward").text(details.claimedVoteReward.description)
+                                if (votes.claimedVoteReward) {
+                                    $("#olympicsDetails .claimedVoteReward").text(votes.claimedVoteReward.description)
                                     $("#olympicsDetails .claimedVoteRewardRow").show()
                                 }
 
