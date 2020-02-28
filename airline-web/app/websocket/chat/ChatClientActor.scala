@@ -74,7 +74,6 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
             if (user.isChatBanned) {
               out ! jsonMessage.toString
             }
-            println(s"sending message $chatMessage to penalty box only")
           }
         }
       }
