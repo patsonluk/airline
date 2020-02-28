@@ -23,8 +23,8 @@ case class TriggerPing()
 class Message
 final case class ClientSentMessage(text: String)
 
-final case class IncomingMessage(text: String, allianceId : Option[Int])
-final case class OutgoingMessage(id: Long, timestamp : Long, text: String, allianceId : Option[Int])
+final case class IncomingMessage(message : ChatMessage, allianceId : Option[Int])
+final case class OutgoingMessage(id: Long, timestamp : Long, message : ChatMessage, allianceId : Option[Int])
 
 
 
@@ -41,6 +41,7 @@ class ChatControllerActor extends Actor {
   val ec: ExecutionContext = ExecutionContext.global
   
   val generalMessageHistory = Queue[OutgoingMessage]()
+  val penaltyBoxMessageHistory = Queue[OutgoingMessage]()
   val allianceMessageHistory = Map[Int, Queue[OutgoingMessage]]()
   val clientActors = mutable.LinkedHashSet[ActorRef]()
   
@@ -63,7 +64,11 @@ class ChatControllerActor extends Actor {
 
 
       // resend the Archived Message
-  	  generalMessageHistory.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
+      if (!user.isChatBanned) {
+        generalMessageHistory.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
+      } else {
+        penaltyBoxMessageHistory.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
+      }
       
       user.getAccessibleAirlines().foreach { airline => 
         AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
@@ -85,16 +90,24 @@ class ChatControllerActor extends Actor {
       ChatControllerActor.removeActiveUser(chatClientActor)
     }
 
-    case IncomingMessage(text, allianceRoomIdOption) => {
-      val outMessage = OutgoingMessage(messageIdCounter.incrementAndGet(), System.currentTimeMillis(), text, allianceRoomIdOption)
+    case IncomingMessage(chatMessage, allianceRoomIdOption) => {
+      val outMessage = OutgoingMessage(messageIdCounter.incrementAndGet(), System.currentTimeMillis(), chatMessage, allianceRoomIdOption)
 		  
       //put message into history and send to subscribers
       allianceRoomIdOption match {
         case None => {
-          generalMessageHistory.enqueue(outMessage)
+          if (!chatMessage.user.isChatBanned) { //only put in main chat room if user is not banned for chats
+            generalMessageHistory.enqueue(outMessage)
+          }
+          penaltyBoxMessageHistory.enqueue(outMessage) //always put it in penalty box - penalty box can see the outside worlds
+
           while (generalMessageHistory.size > maxMessagePerRoom) { 
 		        generalMessageHistory.dequeue() 
 		      }
+          while (penaltyBoxMessageHistory.size > maxMessagePerRoom) {
+            penaltyBoxMessageHistory.dequeue()
+          }
+
           clientActors.foreach { _ ! outMessage }
         }
         case Some(allianceRoomId) =>
@@ -104,7 +117,7 @@ class ChatControllerActor extends Actor {
 		        messageQueue.dequeue() 
 		      }
 
-          clientActors.foreach { _ ! outMessage } //not the best, as we should be able to filter based on alliance Id here
+          clientActors.foreach { _ ! outMessage } //not the best, as we should be able to filter based on alliance Id and banned user here
       }
 		  //You can turn these loggers off if needed
 		  //Logger.info("Message:" + msg.text)

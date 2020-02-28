@@ -5,8 +5,9 @@ import java.util.Calendar
 import java.text.SimpleDateFormat
 
 import play.api.libs.json._
-import com.patson.data.AllianceSource
+import com.patson.data.{AllianceSource, UserSource}
 import com.patson.model.User
+import com.patson.util.UserCache
 import play.api.Logger
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
@@ -16,7 +17,7 @@ import scala.math.BigDecimal.int2bigDecimal
 /**
  * Actor that receives message from websocket and send message out
  */
-class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User, lastMessageId : Option[Long]) extends Actor {
+class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : User, lastMessageId : Option[Long]) extends Actor {
   val logger = Logger(this.getClass)
   chatControllerActor ! Join(user, lastMessageId)
 
@@ -33,11 +34,15 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User,
     case text: String =>
       val json_text: JsValue = Json.parse(text)
 		  val airlineId = json_text.\("airlineId").as[Int]
-		  
+
+      //reload user as status might have flipped
+      val user = UserCache.getUser(this.user.id).get
+
 	    user.getAccessibleAirlines().find( _.id == airlineId) match {
 	      case None => logger.warn("user " + user + " has no access to airline " + airlineId + " airline is not found")
 	      case Some(airline) =>
-	        val otext =  airline.name + ": " + json_text.\("text").as[String]
+	        //val otext =  airline.name + ": " + json_text.\("text").as[String]
+          val chatMessage = ChatMessage(airline, user, json_text.\("text").as[String])
     		  val room = json_text.\("room").as[String]
     		  
 	        val allianceRoomIdOption =  
@@ -46,18 +51,32 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, user : User,
     		    } else {
     		      None
     		    }
-	        chatControllerActor ! IncomingMessage(otext, allianceRoomIdOption) //notify the chat actor of this incoming message
+	        chatControllerActor ! IncomingMessage(chatMessage, allianceRoomIdOption) //notify the chat controller actor of this incoming message
 	    }
 		  
   	  
   	// handles message writes to websocket
-    case OutgoingMessage(id, timestamp, text, allianceRoomIdOption) => {
+    case OutgoingMessage(id, timestamp, chatMessage, allianceRoomIdOption) => {
       if (allianceRoomIdOption.isEmpty || (allianceRoomIdOption == allianceId)) { 
-        var jsonMessage = Json.obj("timestamp" -> timestamp, "text" -> text, "id" -> id)
+        var jsonMessage = Json.obj("timestamp" -> timestamp, "airlineName" -> chatMessage.airline.name, "level" -> chatMessage.user.level, "text" -> chatMessage.text, "id" -> id)
         allianceRoomIdOption.foreach { allianceRoomId =>
           jsonMessage = jsonMessage + ("allianceRoomId" -> JsNumber(allianceRoomId))
         }
-        out ! jsonMessage.toString
+
+        if (!chatMessage.user.isChatBanned) { //send to everyone
+          out ! jsonMessage.toString
+        } else {
+          if (allianceRoomIdOption == allianceId) { //alliance works for banned user
+            out ! jsonMessage.toString
+          } else { //otherwise only send to those that are also in penalty box
+            //reload user as status might have flipped
+            val user = UserCache.getUser(this.user.id).get
+            if (user.isChatBanned) {
+              out ! jsonMessage.toString
+            }
+            println(s"sending message $chatMessage to penalty box only")
+          }
+        }
       }
     }
 

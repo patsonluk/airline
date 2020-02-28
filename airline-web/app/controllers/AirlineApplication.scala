@@ -47,12 +47,17 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val ONLINE, ACTIVE_7_DAYS, ACTIVE_30_DAYS, INACTIVE = Value
   }
   
-  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance])] {
-    def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance])): JsValue = {
-      val (airline, user, loginStatus, alliance) = entry
-      var result = Json.toJson(airline).asInstanceOf[JsObject] + 
+  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance], Boolean)] {
+    def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance], Boolean)): JsValue = {
+      val (airline, user, loginStatus, alliance, isCurrentUserAdmin) = entry
+      var result = Json.toJson(airline).asInstanceOf[JsObject] +
         ("userLevel" -> JsNumber(user.level)) +
         ("username" -> JsString(user.userName))
+
+      if (isCurrentUserAdmin) {
+        result = result + ("userStatus" -> JsString(user.status.toString)) + ("userId" -> JsNumber(user.id))
+
+      }
 
       loginStatus.foreach { status => //if there's a login status
         result = result + ("loginStatus" -> JsNumber(status.id))
@@ -122,7 +127,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
     val alliances = AllianceSource.loadAllAlliances().map(alliance => (alliance.id, alliance)).toMap
     Ok(Json.toJson(airlinesByUser.toList.map {
-      case(airline, user) => (airline, user, userStatusMap.get(user), airline.getAllianceId.map(alliances(_)))
+      case(airline, user) => (airline, user, userStatusMap.get(user), airline.getAllianceId.map(alliances(_)), request.user.isAdmin)
     })).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"

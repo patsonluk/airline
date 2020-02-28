@@ -80,6 +80,7 @@
 	<script src="@routes.Assets.versioned("javascripts/chat.js")" defer></script>
 	<script src="@routes.Assets.versioned("javascripts/christmas.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/confetti.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/admin.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/about.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/mobile.js")" defer></script>
@@ -2152,6 +2153,15 @@
 									<div class="value alliance"></div>
 								</div>
 							</div>
+                            <div class="adminActions" style="display: none;">
+                                <h4>Admin Action</h4>
+                                <div>Username: <span class="username"></span></div>
+                                <div>User ID: <span class="userId"></span></div>
+                                <div>Status: <span class="status"></span></div>
+                                <div class="clickable" onclick="banChat()">Ban Chat</div>
+                                <div class="clickable" onclick="ban()">Ban</div>
+                                <div class="clickable" onclick="unban()">Un-Ban</div>
+                            </div>
 						</div>
 
 						<div class="section" style="width: 95%; height: 20%;  overflow: auto;">

@@ -2,11 +2,14 @@ package com.patson.data
 
 import com.patson.model._
 import com.patson.data.Constants._
+
 import scala.collection.mutable.ListBuffer
 import java.util.Calendar
 import java.text.SimpleDateFormat
 import java.sql.Statement
 import java.util.Date
+
+import com.patson.util.UserCache
 
 object UserSource {
   val dateFormat = new ThreadLocal[SimpleDateFormat]() {
@@ -162,7 +165,7 @@ object UserSource {
         val updateCount = preparedStatement.executeUpdate()
         
         preparedStatement.close()
-        
+        UserCache.invalidateUser(user.id)
         updateCount == 1
     } finally {
       connection.close()
@@ -176,7 +179,7 @@ object UserSource {
         preparedStatement.setTimestamp(1, new java.sql.Timestamp(new Date().getTime()))
         preparedStatement.setInt(2, user.id)
         val updateCount = preparedStatement.executeUpdate()
-        
+        UserCache.invalidateUser(user.id)
         preparedStatement.close()
     } finally {
       connection.close()

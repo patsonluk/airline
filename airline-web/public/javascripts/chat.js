@@ -201,6 +201,8 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	var r_msg = JSON.parse(r_text);
 
 	var date = new Date(r_msg.timestamp)
+	var airlineName = r_msg.airlineName
+	var userLevel = r_msg.userLevels
 	var hourString = date.getHours()
 	var minuteString = date.getMinutes()
 	var secondString = date.getSeconds()
@@ -216,10 +218,14 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
     }
 
 	var dateString = hourString + ":" + minuteString + ":" + secondString
+//	var airlineSpan = $("<span>" + airlineName + "</span>")
+//	var userIcon = getUserLevelImg(userLevel)
+//	airlineSpan.append(userIcon)
+
 	if (!r_msg.allianceRoomId) {
-		chat.gmessages.push("[" + dateString + "] " + r_msg.text);
+		chat.gmessages.push("[" + dateString + "] " + airlineName + ": " + r_msg.text);
 	} else {
-		chat.amessages.push("[" + dateString + "] " + r_msg.text);
+		chat.amessages.push("[" + dateString + "] " + airlineName + ": " + r_msg.text);
 	}
     $scope.$digest();
 	

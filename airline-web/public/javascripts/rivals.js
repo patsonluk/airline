@@ -71,8 +71,6 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 //			countryFlagImg = getCountryFlagImg(airline.countryCode)
 //		}
 
-
-
 		row.append("<div class='cell'><img src='" + getStatusLogo(airline.loginStatus) + "' title='" + getStatusTitle(airline.loginStatus) + "' style='vertical-align:middle;'/>")
 		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) + airline.name + getUserLevelImg(airline.userLevel) 
 				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>")
@@ -148,7 +146,9 @@ function loadRivalDetails(row, airlineId) {
 	loadRivalLinks(airlineId)
 	
 	updateRivalBaseList(airlineId)
-	
+
+	showAdminActions(loadedRivalsById[airlineId])
+
 	$('#rivalDetails').fadeIn(200)
 }
 

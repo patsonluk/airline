@@ -146,6 +146,9 @@ PUT     /event/:eventId/airline/:airlineId/reward/category/:categoryId/option/:o
 GET     /event/:eventId/airline/:airlineId/reward/olympics-vote  controllers.OlympicsApplication.getOlympicsVoteRewardOptions(airlineId : Int, eventId : Int)
 GET     /event/:eventId/airline/:airlineId/reward/olympics-passenger  controllers.OlympicsApplication.getOlympicsPassengerRewardOptions(airlineId : Int, eventId : Int)
 
+# Admin
+PUT		 /admin-action/:action/:targetUserId		controllers.AdminApplication.adminAction(action : String, targetUserId : Int)
+
 
 # Signup
 GET     /signup                     controllers.SignUp.form

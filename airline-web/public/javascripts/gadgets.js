@@ -211,6 +211,9 @@ function getUserLevelImg(level) {
 	} else if (level == 3) {
 		levelIcon = "assets/images/icons/medal-red-premium.png"
 		levelTitle = "Patreon : Gold"
+	} else if (level == 10 || 20) {
+		levelIcon = "assets/images/icons/star.png"
+        levelTitle = "Game Admin"
 	}
 	
 	if (levelIcon) {
