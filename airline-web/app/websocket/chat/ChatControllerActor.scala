@@ -92,15 +92,14 @@ class ChatControllerActor extends Actor {
 
     case IncomingMessage(chatMessage, allianceRoomIdOption) => {
       val outMessage = OutgoingMessage(messageIdCounter.incrementAndGet(), System.currentTimeMillis(), chatMessage, allianceRoomIdOption)
-      if (chatMessage.user.isChatBanned && allianceRoomIdOption.isEmpty) {
-        println(s"sending message ${chatMessage.text} from ${chatMessage.airline.name} user ${chatMessage.user.userName} to penalty box only")
-      }
 
       //put message into history and send to subscribers
       allianceRoomIdOption match {
         case None => {
           if (!chatMessage.user.isChatBanned) { //only put in main chat room if user is not banned for chats
             generalMessageHistory.enqueue(outMessage)
+          } else {
+            println(s"sending message ${chatMessage.text} from ${chatMessage.airline.name} user ${chatMessage.user.userName} to penalty box only")
           }
           penaltyBoxMessageHistory.enqueue(outMessage) //always put it in penalty box - penalty box can see the outside worlds
 
