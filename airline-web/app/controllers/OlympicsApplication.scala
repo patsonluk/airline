@@ -32,8 +32,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
             case 2 => "Host City Voted"
             case 3 => "Preparation for the Games"
             case 4 =>
-              val week = currentCycle % Olympics.WEEKS_PER_YEAR
-              val weeksBeforeGames = Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION - week
+              val weeksBeforeGames = Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION - olympics.currentWeek(currentCycle)
               if (weeksBeforeGames > 0) {
                 s"$weeksBeforeGames week(s) before the Games"
               } else {
