@@ -108,7 +108,11 @@ function loadAllAlliances() {
 	    	$.each(alliances, function(index, alliance) {
 	    		loadedAlliancesById[alliance.id] = alliance
 	    		alliance.memberCount = alliance.members.length
-	    		alliance.leaderAirlineName = alliance.leader.name
+			if (alliance.leader) {
+	    			alliance.leaderAirlineName = alliance.leader.name
+			} else {
+				alliance.leaderAirlineName = '-'
+			}
 	    		if (alliance.championPoints) {
 	    			alliance.championPointsValue = alliance.championPoints
 	    		} else {
