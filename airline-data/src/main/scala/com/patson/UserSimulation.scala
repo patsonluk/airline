@@ -10,7 +10,8 @@ object UserSimulation {
 
 
   def simulate(cycle: Int) = {
-    val threshold = Calendar.getInstance().add(Calendar.DAY_OF_YEAR, -1 * PURGE_USER_THRESHOLD)
+    val threshold = Calendar.getInstance()
+    threshold.add(Calendar.DAY_OF_YEAR, -1 * PURGE_USER_THRESHOLD)
     println(s"starting resetting inactive user airlines - active before $threshold")
 
     UserSource.loadUsersByCriteria(List.empty).foreach { user =>
