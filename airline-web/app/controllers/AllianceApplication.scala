@@ -131,18 +131,24 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     formAllianceForm.bindFromRequest.fold(
       // Form has errors, redisplay it
       erroredForm => Ok(Json.obj("rejection" -> JsString(erroredForm.error("allianceName").get.message))), { formAllianceInput =>
-        val allianceName = formAllianceInput.allianceName
-        val currentCycle = CycleSource.loadCycle()
-        val newAlliance = Alliance(name = allianceName, creationCycle = currentCycle, members = List())
-        AllianceSource.saveAlliance(newAlliance)
-        
-        val allianceMember = AllianceMember(allianceId = newAlliance.id, airline = request.user, role = LEADER, joinedCycle = currentCycle)
-        AllianceSource.saveAllianceMember(allianceMember)
-        
-        val history = AllianceHistory(allianceName = newAlliance.name, airline = request.user, event = FOUND_ALLIANCE, cycle = currentCycle)
-        AllianceSource.saveAllianceHistory(history)
-        
-        Ok(Json.toJson(newAlliance.copy(members = List(allianceMember))))
+        //make sure the current airline is not in any alliance
+        AllianceSource.loadAllianceMemberByAirline(request.user) match {
+          case None =>
+            val allianceName = formAllianceInput.allianceName
+            val currentCycle = CycleSource.loadCycle()
+            val newAlliance = Alliance(name = allianceName, creationCycle = currentCycle, members = List())
+            AllianceSource.saveAlliance(newAlliance)
+
+            val allianceMember = AllianceMember(allianceId = newAlliance.id, airline = request.user, role = LEADER, joinedCycle = currentCycle)
+            AllianceSource.saveAllianceMember(allianceMember)
+
+            val history = AllianceHistory(allianceName = newAlliance.name, airline = request.user, event = FOUND_ALLIANCE, cycle = currentCycle)
+            AllianceSource.saveAllianceHistory(history)
+
+            Ok(Json.toJson(newAlliance.copy(members = List(allianceMember))))s
+          case Some(currentAirlineAllianceMember) =>
+            BadRequest(s"Current airline is an alliance member of $currentAirlineAllianceMember, cannot form new alliance")
+        }
       }
     )
   }
