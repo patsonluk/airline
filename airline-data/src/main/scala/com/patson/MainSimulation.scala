@@ -41,6 +41,8 @@ object MainSimulation extends App {
       println("cycle " + cycle + " starting!")
       SimulationEventStream.publish(CycleStart(cycle, cycleStartTime), None)
       invalidateCaches()
+
+      UserSimulation.simulate(cycle)
       println("Oil simulation")
       OilSimulation.simulate(cycle)
       println("Loan simulation")
