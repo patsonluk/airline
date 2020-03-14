@@ -145,7 +145,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
             val history = AllianceHistory(allianceName = newAlliance.name, airline = request.user, event = FOUND_ALLIANCE, cycle = currentCycle)
             AllianceSource.saveAllianceHistory(history)
 
-            Ok(Json.toJson(newAlliance.copy(members = List(allianceMember))))s
+            Ok(Json.toJson(newAlliance.copy(members = List(allianceMember))))
           case Some(currentAirlineAllianceMember) =>
             BadRequest(s"Current airline is an alliance member of $currentAirlineAllianceMember, cannot form new alliance")
         }
