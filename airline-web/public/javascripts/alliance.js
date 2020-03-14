@@ -157,7 +157,11 @@ function updateAllianceTable(sortProperty, sortOrder) {
 //		}
 		
 		row.append("<div class='cell'>" + alliance.name + "</div>")
-		row.append("<div class='cell'>" + getAirlineLogoImg(alliance.leader.id) + alliance.leader.name + "</div>")
+		if (alliance.leader) {
+			row.append("<div class='cell'>" + getAirlineLogoImg(alliance.leader.id) + alliance.leader.name + "</div>")
+		} else {
+			row.append("<div class='cell'>-</div>")
+		}
 		row.append("<div class='cell' align='right'>" + alliance.members.length + "</div>")
 		if (alliance.championPoints) {
 			row.append("<div class='cell' align='right'>" + alliance.championPoints + "</div>")
