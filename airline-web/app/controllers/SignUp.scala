@@ -56,8 +56,8 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
       "airlineName" -> text(minLength = 1, maxLength = 50).verifying(
         "Airline name can only contain space and characters",
         airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
-        "This airline name  is not available",  
-        airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase() }.contains(airlineName.trim().toLowerCase())
+        "This airline name is not available",
+        airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase().replaceAll("\\s", "") }.contains(airlineName.replaceAll("\\s", "").toLowerCase())
       ),
       "profileId" -> number
     )
