@@ -6,7 +6,7 @@ import com.patson.data._
 import com.patson.model._
 
 object UserSimulation {
-  val PURGE_USER_THRESHOLD = 365 //in days
+  val PURGE_USER_THRESHOLD = 180 //in days
 
 
   def simulate(cycle: Int) = {
