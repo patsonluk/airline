@@ -149,6 +149,9 @@ object AirlineSimulation {
           overtimeCompensation += compensationOfThisBase
         }
 
+		if (airline.isGenerated) {
+			overtimeCompensation = 0
+		}
         othersSummary.put(OtherIncomeItemType.OVERTIME_COMPENSATION, -1 * overtimeCompensation) //negative number
         totalCashExpense += overtimeCompensation
 
@@ -344,7 +347,7 @@ object AirlineSimulation {
         airline.setReputation(targetReputation)
 
         //check bankruptcy
-        if (airline.getBalance() < 0) {
+        if ((airline.getBalance() < 0) && (!airline.isGenerated)) {
           val shouldReset = allLinks.get(airline.id) match {
             case Some(links) =>
               links.map(_.capacity.total).sum == 0
