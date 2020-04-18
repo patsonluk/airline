@@ -95,6 +95,7 @@ function showAirplaneModelConfigurationsModal(modelConfigurationInfo) {
         $("#modelConfigurationModal .configContainer").append(configurationDiv)
     }
     toggleUtilizationRate($("#modelConfigurationModal"), $("#modelConfigurationModal .toggleUtilizationRateBox"))
+    toggleCondition($("#modelConfigurationModal"), $("#modelConfigurationModal .toggleConditionBox"))
 
     $('#modelConfigurationModal').fadeIn(200)
 }

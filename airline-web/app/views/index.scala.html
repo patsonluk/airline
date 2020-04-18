@@ -570,11 +570,12 @@
                                                 <div style="display: inline-block">
                                                     <div style="display:flex ; align-items: baseline;">
                                                         <input type="checkbox" onclick="toggleUtilizationRate($('#planLinkAirplaneSelect'), $(this))" class="toggleUtilizationRateBox"/>
-                                                        <img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate">
+														<img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate">
+														<input type="checkbox" onclick="toggleCondition($('#planLinkAirplaneSelect'), $(this))" class="toggleConditionBox"/>
+														<img src='@routes.Assets.versioned("images/icons/gear.png")' title="Toggle Airplane Condition">
 											        </div>
                                                 </div>
                                             </h5>
-
 										</div>
                                         <!-- 					    			<div class="value"><select id="planLinkAirplaneSelect" multiple="multiple" onchange="updateFrequencyBar($('#planLinkModelSelect').val())"></select></div> -->
                                         <div class="value">
@@ -763,7 +764,7 @@
 										<div class="value delivery"></div>
 									</div>
 									<div class="button add" onclick="promptBuyNewAirplane($('#airplaneModelDetails .selectedModel').val(), true, $('#planLinkFromAirportId').val())">Purchase</div>
-									<div class="button" onclick="showAirplaneInventory($('#airplaneModelDetails .selectedModel').val())">Inventory</div>
+									<div class="button" onclick="showAirplaneBase($('#airplaneModelDetails .selectedModel').val())">Base</div>
 									<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneModelDetails .selectedModel').val())">Config</div>
 									<input type="hidden" class="selectedModel"/>
 								</div>
@@ -1291,8 +1292,9 @@
 									<input type="hidden" class="selectedModel"/>
 								</div>
 								<div class="button add" onclick="promptBuyNewAirplane($('#airplaneCanvas .selectedModel').val(), false)">Purchase</div>
-								<div class="button" onclick="showAirplaneInventory($('#airplaneCanvas .selectedModel').val())">Inventory</div>
+								<div class="button" onclick="showAirplaneBase($('#airplaneCanvas .selectedModel').val())">Base</div>
 								<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneCanvas .selectedModel').val())">Config</div>
+								<div class="button" onclick="showAllAirplaneInventory($('#airplaneCanvas .selectedModel').val())">Inventory</div>
 							</div>
 							<div class="section" style="width : 95%; float: left; overflow: auto;">
 								<h4>Used Airplane Market</h4>
@@ -1885,7 +1887,7 @@
 									<span class="tooltiptext below" style="width: 400px;">
 										Airline keeps an inventory of fuel to buffer oil price fluctuations<br/>
 										<br/>
-										Oil from inventory still fluctates with the market price but to a smaller degree depending on the policy type<br/>
+										Oil from inventory still fluctuates with the market price but to a smaller degree depending on the policy type<br/>
 										<br/>
 										In order to completely fix fuel price, Oil Contract should be signed
 									</span>
@@ -3091,23 +3093,44 @@
 		<div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto; overflow:auto;">
 			<span class="close" onclick="closeModal($('#modelConfigurationModal'))">&times;</span>
 			<h3 style="margin-bottom: 10px;"><span class="modelName"></span>&nbsp;Configuration</h3>
-			<div><input type="checkbox" onclick="toggleUtilizationRate($('#modelConfigurationModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/></div>
+			<div>
+				<input type="checkbox" onclick="toggleUtilizationRate($('#modelConfigurationModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/>
+				<input type="checkbox" onclick="toggleCondition($('#modelConfigurationModal'), $(this))" class="toggleConditionBox"><img src='@routes.Assets.versioned("images/icons/gear.png")' title="Toggle Airplane Condition"/>
+			</div>
+
 			<div class="configContainer" style="width: 100%"></div>
 		</div>
 	</div>
 
 <!--	airplane inventory by base-->
-	<div id="airplaneInventoryModal" class="modal">
+	<div id="airplaneBaseModal" class="modal">
 		<div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto;">
-			<span class="close" onclick="closeModal($('#airplaneInventoryModal'))">&times;</span>
-			<h3 style="margin-bottom: 10px;"><span class="modelName"></span>&nbsp;Inventory</h3>
-			<div><input type="checkbox" onclick="toggleUtilizationRate($('#airplaneInventoryModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/></div>
+			<span class="close" onclick="closeModal($('#airplaneBaseModal'))">&times;</span>
+			<h3 style="margin-bottom: 10px;"><span class="modelName"></span>&nbsp;Base</h3>
+			<div>
+				<input type="checkbox" onclick="toggleUtilizationRate($('#airplaneBaseModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/>
+				<input type="checkbox" onclick="toggleCondition($('#airplaneBaseModal'), $(this))" class="toggleConditionBox"><img src='@routes.Assets.versioned("images/icons/gear.png")' title="Toggle Airplane Condition"/>
+			</div>
 
 			<div class="inventoryContainer" style="width: 100%; height: 95%; overflow: auto;"></div>
 		</div>
 	</div>
 
-	<!--	airplane inventory by base-->
+  <!--	all airplane inventory -->
+  <div id="allAirplaneInventoryModal" class="modal">
+	  <div class="modal-content"  style="width : 800px; height: 800px; margin: 5% auto;">
+		  <span class="close" onclick="closeModal($('#allAirplaneInventoryModal'))">&times;</span>
+		  <h3 style="margin-bottom: 10px;"><span class="modelName"></span>&nbsp;Base</h3>
+		  <div>
+			  <input type="checkbox" onclick="toggleUtilizationRate($('#allAirplaneInventoryModal'), $(this))" class="toggleUtilizationRateBox"><img src='@routes.Assets.versioned("images/icons/clock-select-remain.png")' title="Toggle Utilization Rate"/>
+			  <input type="checkbox" onclick="toggleCondition($('#allAirplaneInventoryModal'), $(this))" class="toggleConditionBox"><img src='@routes.Assets.versioned("images/icons/gear.png")' title="Toggle Airplane Condition"/>
+		  </div>
+
+		  <div class="inventoryContainer" style="width: 100%; height: 95%; overflow: auto;"></div>
+	  </div>
+  </div>
+
+
 	<div id="buyAirplaneModal" class="modal">
 		<div class="modal-content" style="width : 400px;">
 			<span class="close" onclick="closeModal($('#buyAirplaneModal'))">&times;</span>
