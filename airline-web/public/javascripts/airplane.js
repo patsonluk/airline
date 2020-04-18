@@ -707,6 +707,8 @@ function showAirplaneBase(modelId) {
         } else {
             $("#airplaneBaseModal .inventoryContainer").append(inventoryDiv)
         }
+        inventoryDiv.attr("ondragover", "allowAirplaneIconDragOver(event)")
+        inventoryDiv.attr("ondrop", "onAirplaneIconBaseDrop(event, " + base.airportId + ")");
     })
     toggleUtilizationRate($("#airplaneBaseModal .inventoryContainer"), $("#airplaneBaseModal .toggleUtilizationRateBox"))
     toggleCondition($("#airplaneBaseModal .inventoryContainer"), $("#airplaneBaseModal .toggleConditionBox"))
@@ -733,21 +735,30 @@ function showAllAirplaneInventory(modelId) {
     $.each(info.assignedAirplanes, function( key, airplane ) {
         var airplaneId = airplane.id
         var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshAllAirplaneInventoryAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-        li.append(getAirplaneIcon(airplane, info.badConditionThreshold, true))
+        var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, true)
+        enableAirplaneIconDrag(airplaneIcon, airplaneId)
+        enableAirplaneIconDrop(airplaneIcon, airplaneId)
+        li.append(airplaneIcon)
         empty = false
     });
 
     $.each(info.availableAirplanes, function( key, airplane ) {
         var airplaneId = airplane.id
         var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshAllAirplaneInventoryAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-        li.append(getAirplaneIcon(airplane, info.badConditionThreshold, false))
+        var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, false)
+        enableAirplaneIconDrag(airplaneIcon, airplaneId)
+        enableAirplaneIconDrop(airplaneIcon, airplaneId)
+        li.append(airplaneIcon)
         empty = false
     });
 
     $.each(info.constructingAirplanes, function( key, airplane ) {
         var airplaneId = airplane.id
         var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshBaseAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-        li.append("<img src='assets/images/icons/airplane-empty-construct.png'/>")
+        var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, false)
+        enableAirplaneIconDrag(airplaneIcon, airplaneId)
+        enableAirplaneIconDrop(airplaneIcon, airplaneId)
+        li.append(airplaneIcon)
         empty = false
     });
 
@@ -790,7 +801,8 @@ function addAirplaneInventoryDivByBase(containerDiv, modelId, compareKey, compar
         if (airplane[compareKey] == compareValue) {
             var airplaneId = airplane.id
             var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshBaseAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-            li.append(getAirplaneIcon(airplane, info.badConditionThreshold, true))
+            var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, true)
+            li.append(airplaneIcon)
             empty = false
          }
     });
@@ -799,7 +811,9 @@ function addAirplaneInventoryDivByBase(containerDiv, modelId, compareKey, compar
         if (airplane[compareKey] == compareValue) {
             var airplaneId = airplane.id
             var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshBaseAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-            li.append(getAirplaneIcon(airplane, info.badConditionThreshold, false))
+            var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, false)
+            enableAirplaneIconDrag(airplaneIcon, airplaneId)
+            li.append(airplaneIcon)
             empty = false
         }
     });
@@ -808,7 +822,10 @@ function addAirplaneInventoryDivByBase(containerDiv, modelId, compareKey, compar
         if (airplane[compareKey] == compareValue) {
             var airplaneId = airplane.id
             var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshBaseAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-            li.append("<img src='assets/images/icons/airplane-empty-construct.png'/>")
+            //li.append("<img src='assets/images/icons/airplane-empty-construct.png'/>")
+            var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, false)
+            enableAirplaneIconDrag(airplaneIcon, airplaneId)
+            li.append(airplaneIcon)
             empty = false
         }
     });
@@ -824,6 +841,7 @@ function getAirplaneIcon(airplane, badConditionThreshold, isAssigned) {
     var condition = airplane.condition
     var airplaneId = airplane.id
     var div = $("<div style='position: relative;'></div>")
+    div.addClass("airplaneIcon")
     var img = $("<img>")
     var src
     if (!airplane.isReady) {
@@ -884,6 +902,80 @@ function getAirplaneIcon(airplane, badConditionThreshold, isAssigned) {
     div.append(conditionDiv)
 
     return div;
+}
+
+function enableAirplaneIconDrag(airplaneIcon, airplaneId) {
+    //airplaneIcon.attr("ondrop", "onAirplaneSwapDrop(event, " + airplaneId + ")")
+    //airplaneIcon.attr("ondragover", "event.preventDefault")
+    airplaneIcon.attr("ondragstart", "onAirplaneDragStart(event, " + airplaneId + ")")
+    airplaneIcon.attr("draggable", true)
+}
+
+function enableAirplaneIconDrop(airplaneIcon, airplaneId) {
+    airplaneIcon.attr("ondrop", "onAirplaneSwapDrop(event, " + airplaneId + ")")
+    airplaneIcon.attr("ondragover", "allowAirplaneIconDragOver(event)")
+}
+
+function isAirplaneIconEvent(event) {
+    for (i = 0 ; i < event.dataTransfer.items.length; i ++) { //hacky way. since for security reason dataTransfer.getData() also returns empty
+        if (event.dataTransfer.items[i].type === "airplane-id") {
+            return true;
+        }
+    }
+    return false;
+}
+
+function allowAirplaneIconDragOver(event) {
+    if (isAirplaneIconEvent(event)) { //only allow dropping if the item being dropped is an airplane icon
+        event.preventDefault();
+    }
+}
+
+function onAirplaneIconBaseDrop(event, airportId) {
+  event.preventDefault();
+  var airplaneId = event.dataTransfer.getData("airplane-id")
+  if (airplaneId) {
+    $.ajax({
+                type: 'PUT',
+                url: "airlines/" + activeAirline.id + "/airplanes/" + airplaneId + "/home/" + airportId,
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                async: false,
+                success: function(result) {
+                    refreshBaseAfterAirplaneUpdate()
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(JSON.stringify(jqXHR));
+                        console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                }
+            });
+  }
+}
+
+
+function onAirplaneSwapDrop(event, currentAirplaneId) {
+  event.preventDefault();
+
+  var fromAirplaneId = currentAirplaneId
+  var toAirplaneId = event.dataTransfer.getData("airplane-id")
+  $.ajax({
+          type: 'GET',
+          url: "airlines/" + activeAirline.id + "/swap-airplanes/" + fromAirplaneId + "/" + toAirplaneId,
+          contentType: 'application/json; charset=utf-8',
+          dataType: 'json',
+          success: function(result) {
+            refreshAllAirplaneInventoryAfterAirplaneUpdate()
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+                  console.log(JSON.stringify(jqXHR));
+                  console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+          }
+      });
+}
+
+function onAirplaneDragStart(event, airplaneId) {
+  //event.dataTransfer.setData("text", airplaneId);
+  event.dataTransfer.setData("airplane-id", airplaneId);
 }
 
 function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disableChangeHome) {

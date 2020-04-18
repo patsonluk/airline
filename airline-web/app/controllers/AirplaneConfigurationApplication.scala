@@ -86,7 +86,7 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
                     }
 
                     AirplaneSource.updateAirplaneConfiguration(updatingConfig)
-                    adjustLinksAfterConfigurationChanges(configurationId)
+                    LinkUtil.adjustLinksAfterConfigurationChanges(configurationId)
                     Ok(Json.toJson(updatingConfig))
                   }
                 case None =>
@@ -97,36 +97,6 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
         case None => BadRequest("model is not found")
       }
     }
-  }
-
-  def adjustLinksAfterConfigurationChanges(configurationId : Int) = {
-
-    val affectedLinkIds = AirplaneSource.loadAirplanesCriteria(List(("configuration", configurationId))).flatMap { airplane =>
-      val linkIdsFlownByThisAirplane = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplane.id).assignments.keys
-      linkIdsFlownByThisAirplane.toList
-    }.toSet
-
-    val affectedLinks = ListBuffer[Link]()
-    affectedLinkIds.foreach { linkId =>
-      LinkSource.loadLinkById(linkId).foreach { link =>
-        affectedLinks.append(link)
-      }
-    }
-
-    LinkSource.updateLinks(affectedLinks.toList)
-  }
-
-  def adjustLinksAfterAirplaneConfigurationChange(airplaneId : Int) = {
-    val affectedLinkIds = AirplaneSource.loadAirplaneLinkAssignmentsByAirplaneId(airplaneId).assignedLinkIds
-
-    val affectedLinks = ListBuffer[Link]()
-    affectedLinkIds.foreach { linkId =>
-      LinkSource.loadLinkById(linkId).foreach { link =>
-        affectedLinks.append(link)
-      }
-    }
-
-    LinkSource.updateLinks(affectedLinks.toList)
   }
 
   def deleteConfiguration(airlineId : Int, configurationId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
@@ -145,7 +115,7 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
                 airplanes.foreach(_.configuration = defaultConfiguration)
                 AirplaneSource.updateAirplanes(airplanes)
                 //adjust capacity on links
-                adjustLinksAfterConfigurationChanges(defaultConfiguration.id)
+                LinkUtil.adjustLinksAfterConfigurationChanges(defaultConfiguration.id)
                 //can safely delete the configuration
                 AirplaneSource.deleteAirplaneConfiguration(configuration)
                 Ok(Json.toJson(configuration))
@@ -172,7 +142,7 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
               } else {
                 airplane.configuration = configuration
                 AirplaneSource.updateAirplanes(List(airplane))
-                adjustLinksAfterAirplaneConfigurationChange(airplaneId)
+                LinkUtil.adjustLinksAfterAirplaneConfigurationChange(airplaneId)
                 Ok(Json.toJson(airplane))
               }
 

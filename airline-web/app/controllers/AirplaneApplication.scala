@@ -598,6 +598,40 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
 
+  def swapAirplane(airlineId : Int, fromAirplaneId : Int, toAirplaneId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val fromAirplaneOption = AirplaneSource.loadAirplaneById(fromAirplaneId)
+    val toAirplaneOption = AirplaneSource.loadAirplaneById(toAirplaneId)
+
+    if (fromAirplaneOption.isDefined && toAirplaneOption.isDefined) {
+      val fromAirplane = fromAirplaneOption.get
+      val toAirplane = toAirplaneOption.get
+      if (fromAirplane.owner.id == airlineId && toAirplane.owner.id == airlineId && fromAirplane.model.id == toAirplane.model.id) {
+        val fromConstructedCycle = fromAirplane.constructedCycle
+        val fromPurchaseCycle = fromAirplane.purchasedCycle
+        val fromCondition = fromAirplane.condition
+        val fromValue = fromAirplane.value
+
+        val toConstructedCycle = toAirplane.constructedCycle
+        val toPurchaseCycle = toAirplane.purchasedCycle
+        val toCondition = toAirplane.condition
+        val toValue = toAirplane.value
+
+        val swappedFromAirplane = fromAirplane.copy(constructedCycle = toConstructedCycle, purchasedCycle = toPurchaseCycle, condition = toCondition, value = toValue)
+        val swappedToAirplane = toAirplane.copy(constructedCycle = fromConstructedCycle, purchasedCycle = fromPurchaseCycle, condition = fromCondition, value = fromValue)
+
+        AirplaneSource.updateAirplanes(List(swappedFromAirplane, swappedToAirplane))
+        LinkUtil.adjustLinksAfterAirplaneConfigurationChange(swappedFromAirplane.id)
+        LinkUtil.adjustLinksAfterAirplaneConfigurationChange(swappedToAirplane.id)
+
+        Ok(Json.toJson(fromAirplane))
+      } else {
+        Forbidden
+      }
+    } else {
+        BadRequest("airplane not found")
+    }
+  }
+
   def updateAirplaneHome(airlineId : Int, airplaneId : Int, airportId: Int) = AuthenticatedAirline(airlineId) { request =>
     AirplaneSource.loadAirplaneById(airplaneId) match {
       case Some(airplane) =>
