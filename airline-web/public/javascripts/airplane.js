@@ -207,21 +207,52 @@ function toggleUsedAirplaneTableSortOrder(sortHeader) {
 }
 
 function promptBuyUsedAirplane(airplane) {
-    var buyAirplaneFunction = function(homeAirportId, selectedConfigurationId) {
+    var buyAirplaneFunction = function(dummyQuantity, homeAirportId, selectedConfigurationId) {
         buyUsedAirplane(airplane.id, homeAirportId, selectedConfigurationId)
     }
-    promptBuyAirplane(airplane.modelId, airplane.condition.toFixed(2), airplane.dealerValue, 0, null, buyAirplaneFunction)
+    promptBuyAirplane(airplane.modelId, airplane.condition.toFixed(2), airplane.dealerValue, 0, null, false, buyAirplaneFunction)
 }
 
 function promptBuyNewAirplane(modelId, fromPlanLink, explicitHomeAirportId) {
-    var buyAirplaneFunction = function(homeAirportId, selectedConfigurationId) {
-        buyAirplane(modelId, homeAirportId, selectedConfigurationId, fromPlanLink)
+    var buyAirplaneFunction = function(quantity, homeAirportId, selectedConfigurationId) {
+        buyAirplane(modelId, quantity, homeAirportId, selectedConfigurationId, fromPlanLink)
     }
 
-    promptBuyAirplane(modelId, 100, loadedModelsById[modelId].price, loadedModelsById[modelId].constructionTime, explicitHomeAirportId, buyAirplaneFunction)
+    promptBuyAirplane(modelId, 100, loadedModelsById[modelId].price, loadedModelsById[modelId].constructionTime, explicitHomeAirportId, true, buyAirplaneFunction)
 }
 
-function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHomeAirportId, buyAirplaneFunction) {
+function updateAirplaneTotalPrice(totalPrice) {
+    $('#buyAirplaneModal .totalPrice .value').text("$" + commaSeparateNumber(totalPrice))
+    if (totalPrice == 0) {
+        disableButton($('#buyAirplaneModal .add'))
+    } else if (totalPrice > activeAirline.balance) {
+        $('#buyAirplaneModal .add')
+        disableButton($('#buyAirplaneModal .add'), "Not enough cash")
+    } else {
+        enableButton($('#buyAirplaneModal .add'))
+    }
+}
+
+function validateAirplaneQuantity() {
+    if ($('#buyAirplaneModal .quantity .input').val() === "") {
+        return 0
+    }
+    //validate
+    var quantity = $('#buyAirplaneModal .quantity .input').val()
+    if (!($.isNumeric(quantity))) {
+        quantity = 1
+    }
+    quantity = Math.floor(quantity)
+
+    if (quantity < 1) {
+        quantity = 1
+    }
+
+    $('#buyAirplaneModal .quantity .input').val(quantity)
+    return quantity
+}
+
+function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHomeAirportId, multipleAble, buyAirplaneFunction) {
     var model = loadedModelsById[modelId]
     if (model.imageUrl) {
         var imageLocation = 'assets/images/airplanes/' + model.name.replace(/\s+/g, '-').toLowerCase() + '.png'
@@ -246,6 +277,22 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
 
 	$('#buyAirplaneModal .price').text("$" + commaSeparateNumber(price))
 	$('#buyAirplaneModal .condition').text(condition + "%")
+
+	if (multipleAble) {
+	    $('#buyAirplaneModal .quantity .input').val(1)
+	    $('#buyAirplaneModal .quantity .input').on('input', function(e){
+	        var quantity = validateAirplaneQuantity()
+            updateAirplaneTotalPrice(quantity * price)
+        });
+	    $('#buyAirplaneModal .quantity').show()
+
+	    updateAirplaneTotalPrice(1 * price)
+	    $('#buyAirplaneModal .totalPrice').show()
+	} else {
+	    $('#buyAirplaneModal .quantity').hide()
+	    $('#buyAirplaneModal .totalPrice').hide()
+	    enableButton($('#buyAirplaneModal .add'))
+	}
 
     var homeOptionsSelect = $("#buyAirplaneModal .homeOptions").empty()
     $.each(activeAirline.baseAirports, function(index, baseAirport) {
@@ -317,7 +364,7 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
                     selectedConfigurationId = $($("#buyAirplaneModal .configuration-options").children()[selectedIndex]).data("configurationId")
                 }
 
-                buyAirplaneFunction($("#buyAirplaneModal .homeOptions").find(":selected").val(), selectedConfigurationId)
+                buyAirplaneFunction($('#buyAirplaneModal .quantity .input').val(), $("#buyAirplaneModal .homeOptions").find(":selected").val(), selectedConfigurationId)
             })
             $('#buyAirplaneModal').fadeIn(200)
         },
@@ -329,10 +376,10 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
 }
 
 
-function buyAirplane(modelId, homeAirportId, configurationId, fromPlanLink) {
+function buyAirplane(modelId, quantity, homeAirportId, configurationId, fromPlanLink) {
 	fromPlanLink = fromPlanLink || false
 	var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/airplanes?modelId=" + modelId + "&quantity=1&airlineId=" + airlineId + "&homeAirportId=" + homeAirportId + "&configurationId=" + configurationId
+	var url = "airlines/" + airlineId + "/airplanes?modelId=" + modelId + "&quantity=" + quantity + "&airlineId=" + airlineId + "&homeAirportId=" + homeAirportId + "&configurationId=" + configurationId
 	$.ajax({
 		type: 'PUT',
 		data: JSON.stringify({}),
