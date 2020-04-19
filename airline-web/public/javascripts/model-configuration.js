@@ -115,35 +115,19 @@ function addAirplaneInventoryDivByConfiguration(configurationDiv, modelId) {
         loadAirplaneModelOwnerInfoByModelId(modelId) //refresh to get the utility rate
     }
 
-    $.each(info.assignedAirplanes, function( key, airplane ) {
+    var allAirplanes = $.merge($.merge($.merge([], info.assignedAirplanes), info.availableAirplanes), info.constructingAirplanes)
+    $.each(allAirplanes, function( key, airplane ) {
         if (airplane.configurationId == configurationId) {
             var airplaneId = airplane.id
             var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshConfigurationAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-            var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, true)
+            var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold)
             enableAirplaneIconDrag(airplaneIcon, airplaneId)
+            enableAirplaneIconDrop(airplaneIcon, airplaneId, "refreshConfigurationAfterAirplaneUpdate")
             li.append(airplaneIcon)
          }
     });
 
-    $.each(info.availableAirplanes, function( key, airplane ) {
-        if (airplane.configurationId == configurationId) {
-            var airplaneId = airplane.id
-            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshConfigurationAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-            var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, false)
-            enableAirplaneIconDrag(airplaneIcon, airplaneId)
-            li.append(airplaneIcon)
-        }
-    });
 
-    $.each(info.constructingAirplanes, function( key, airplane ) {
-        if (airplane.configurationId == configurationId) {
-            var airplaneId = airplane.id
-            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), refreshConfigurationAfterAirplaneUpdate)'></div>").appendTo(airplanesDiv)
-            var airplaneIcon = getAirplaneIcon(airplane, info.badConditionThreshold, false)
-            enableAirplaneIconDrag(airplaneIcon, airplaneId)
-            li.append(airplaneIcon)
-        }
-    });
     configurationDiv.append(airplanesDiv)
 }
 
