@@ -1141,6 +1141,7 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 		    $('#planLinkDetails .noAirplaneHelp').hide()
 		}
 		toggleUtilizationRate($('#planLinkAirplaneSelect'), $('#planLinkExtendedDetails .toggleUtilizationRateBox'))
+		toggleCondition($('#planLinkAirplaneSelect'), $('#planLinkExtendedDetails .toggleConditionBox'))
 
 
 		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))
