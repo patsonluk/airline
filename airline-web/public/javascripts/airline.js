@@ -1110,18 +1110,20 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 		
 		$('#planLinkAirplaneSelect').empty()
 		
-		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('airplane.condition', true))
-		thisModelPlanLinkInfo.airplanes = sortPreserveOrder(thisModelPlanLinkInfo.airplanes, 'frequency', false) //higher frequency first
-		
+//		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('airplane.condition', true))
+//		thisModelPlanLinkInfo.airplanes = sortPreserveOrder(thisModelPlanLinkInfo.airplanes, 'frequency', false) //higher frequency first
 		
 		$('#planLinkAirplaneSelect').data('badConditionThreshold', thisModelPlanLinkInfo.badConditionThreshold)
+
 		thisModelPlanLinkInfo.airplanes.sort(function(a, b) {
-		    var result = a.airplane.condition - b.airplane.condition //lowest condition ones first
-		    if (result == 0) {
-		        return b.airplane.frequency - a.airplane.frequency //highest frequency first
-		    } else {
-		        return result
+		    var result = b.frequency - a.frequency
+		    if (result != 0) {
+		        if (b.frequency == 0 || a.frequency == 0) { //if either one is not assigned to this route at all, then return result ie also higher precedence to compare if airplane is assigned
+		            return result
+		        }
 		    }
+
+		    return a.airplane.condition - b.airplane.condition //otherwise: both assigned or both not assigned, then return lowest condition ones first
 		})
 		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplaneEntry) {
 //			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
@@ -1306,7 +1308,7 @@ function removeAirplaneFromLink(airplaneId) {
       var airplane = $(airplaneIcon).data('airplane')
       if (airplane.id == airplaneId) {
         airplane.isAssigned = false
-        $(airplaneIcon).find('img').replaceWith(getAssignedAirplaneIcon(airplane))
+        $(airplaneIcon).find('img').replaceWith(getAssignedAirplaneImg(airplane))
       }
     })
 }
@@ -1367,6 +1369,11 @@ function getAssignedAirplaneIcon(airplane) {
 	return getAirplaneIcon(airplane, badConditionThreshold, airplane.isAssigned)
 }
 
+function getAssignedAirplaneImg(airplane) {
+	var badConditionThreshold = $('#planLinkAirplaneSelect').data('badConditionThreshold')
+	return getAirplaneIconImg(airplane, badConditionThreshold, airplane.isAssigned)
+}
+
 
 function toggleAssignedAirplane(iconSpan) {
 	var airplane = $(iconSpan).data('airplane')
@@ -1376,7 +1383,7 @@ function toggleAssignedAirplane(iconSpan) {
 	} else {
 		airplane.isAssigned = true
 	}
-	$(iconSpan).find('img').replaceWith(getAssignedAirplaneIcon(airplane))
+	$(iconSpan).find('img').replaceWith(getAssignedAirplaneImg(airplane))
 
 	if (airplane.isAssigned) { //add to the airplane frequency detail
         addAirplaneToLink(airplane, existingFrequency)

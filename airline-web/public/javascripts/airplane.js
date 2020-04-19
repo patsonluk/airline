@@ -799,14 +799,11 @@ function addAirplaneInventoryDivByBase(containerDiv, modelId, compareKey, compar
     containerDiv.append(airplanesDiv)
 }
 
-function getAirplaneIcon(airplane, badConditionThreshold) {
-    var condition = airplane.condition
-    var airplaneId = airplane.id
-    var div = $("<div style='position: relative;'></div>")
-    div.addClass("airplaneIcon")
+function getAirplaneIconImg(airplane, badConditionThreshold, isAssigned) {
     var img = $("<img>")
     var src
-    var isAssigned = airplane.availableFlightMinutes != airplane.maxFlightMinutes
+    var condition = airplane.condition
+
     if (!airplane.isReady) {
         if (isAssigned) {
             src = 'assets/images/icons/airplane-construct.png'
@@ -827,7 +824,23 @@ function getAirplaneIcon(airplane, badConditionThreshold) {
 		}
 	}
 	img.attr("src", src)
-    div.attr("title", "#"+ airplaneId + " condition: " + condition.toFixed(2) + "% util: " + utilization + "%")
+	return img
+}
+
+function getAirplaneIcon(airplane, badConditionThreshold, explicitIsAssigned) {
+    var condition = airplane.condition
+    var airplaneId = airplane.id
+    var div = $("<div style='position: relative;'></div>")
+    div.addClass("airplaneIcon")
+    var isAssigned
+    if (typeof explicitIsAssigned != 'undefined') {
+        isAssigned = explicitIsAssigned
+    } else {
+        isAssigned = airplane.availableFlightMinutes != airplane.maxFlightMinutes
+    }
+
+
+    var img = getAirplaneIconImg(airplane, badConditionThreshold, isAssigned)
     div.append(img)
 
     //utilization label
@@ -856,12 +869,11 @@ function getAirplaneIcon(airplane, badConditionThreshold) {
         color = "#8CB9D9"
     }
 
-    img.attr("src", src)
-    div.attr("title", "#"+ airplaneId + " condition: " + condition.toFixed(2) + "% util: " + utilization + "%")
-    div.append(img)
 
     var conditionDiv = $("<div class='condition' style='position: absolute; right: 0; top: 0; background-color: " + color + "; font-size: 8px; display: none;'></div>")
     conditionDiv.text(Math.floor(condition))
+
+    div.attr("title", "#"+ airplaneId + " condition: " + condition.toFixed(2) + "% util: " + utilization + "%")
     div.append(conditionDiv)
 
     return div;
