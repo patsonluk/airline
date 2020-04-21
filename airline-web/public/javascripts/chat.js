@@ -228,8 +228,10 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 		chat.amessages.push("[" + dateString + "] " + airlineName + ": " + r_msg.text);
 	}
     $scope.$digest();
-	
-	if (!$('#scroll_lockc').is(":checked")) {
+
+
+
+    if (!$('#scroll_lockc').is(":checked")) {
 		var scroller = document.getElementById("chatBox-1");
 		scroller.scrollTop = scroller.scrollHeight;
 		var scroller = document.getElementById("chatBox-2");
@@ -239,13 +241,36 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 		$('.notify-bubble').show(400);
 		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
 	}
-	emojify.run($('.chat-history.current')[0]);             // translate emoji to images
+
+
+    $('.chat-history').each (function(){
+        emojify.run($(this).find("li:last-child")[0]);   // translate emoji to images
+        if (r_msg.imagePermission) {
+            replaceImg($(this).find("li:last-child"))
+        }
+    })
+
+
+	//imageReplace.
 
     lastMessageId = r_msg.id
   };
 });
 
-
-
 emojify.setConfig({img_dir : 'assets/images/emoji'});
 
+var imgTag = "/img"
+function replaceImg(input) {
+    var tagStart = input.text().indexOf(imgTag);
+    if (tagStart >= 0) {
+        var prefix = input.text().substring(0, tagStart)
+        var src = input.text().substring(tagStart + imgTag.length).trim()
+        var img = $("<img>")
+        img.attr("src", src)
+        img.css("max-height", "80px")
+        img.css("max-width", "160px")
+        //img.attr("src", "assets/images/emoji/banana.png")
+        input.html(prefix)
+        input.append(img)
+    }
+}
