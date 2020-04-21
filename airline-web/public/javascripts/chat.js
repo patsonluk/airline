@@ -269,6 +269,16 @@ function replaceImg(input) {
         img.attr("src", src)
         img.css("max-height", "80px")
         img.css("max-width", "160px")
+        img.attr("title", "Click to hide/show")
+        img.click(function() {
+            if (img.data("src")) {
+                img.attr("src", img.data("src"))
+                img.removeData("src")
+            } else {
+                img.attr("src", "assets/images/icons/cross-grey.png")
+                img.data("src", src)
+            }
+        })
         //img.attr("src", "assets/images/emoji/banana.png")
         input.html(prefix)
         input.append(img)
