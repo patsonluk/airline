@@ -58,7 +58,7 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
   	// handles message writes to websocket
     case OutgoingMessage(id, timestamp, chatMessage, allianceRoomIdOption) => {
       if (allianceRoomIdOption.isEmpty || (allianceRoomIdOption == allianceId)) { 
-        var jsonMessage = Json.obj("timestamp" -> timestamp, "airlineName" -> chatMessage.airline.name, "level" -> chatMessage.user.level, "text" -> chatMessage.text, "id" -> id)
+        var jsonMessage = Json.obj("timestamp" -> timestamp, "airlineName" -> chatMessage.airline.name, "level" -> chatMessage.user.level, "text" -> chatMessage.text, "imagePermission" -> ImgCommand.hasPermission(chatMessage), "id" -> id)
         allianceRoomIdOption.foreach { allianceRoomId =>
           jsonMessage = jsonMessage + ("allianceRoomId" -> JsNumber(allianceRoomId))
         }
