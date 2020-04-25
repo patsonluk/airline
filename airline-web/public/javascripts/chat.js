@@ -230,19 +230,6 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
     $scope.$digest();
 
 
-
-    if (!$('#scroll_lockc').is(":checked")) {
-		var scroller = document.getElementById("chatBox-1");
-		scroller.scrollTop = scroller.scrollHeight;
-		var scroller = document.getElementById("chatBox-2");
-		scroller.scrollTop = scroller.scrollHeight;
-	}
-	if ($('.chat').is(':hidden')) {
-		$('.notify-bubble').show(400);
-		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
-	}
-
-
     var isMobileDeviceValue = isMobileDevice()
     $('.chat-history').each (function(){
         emojify.run($(this).find("li:last-child")[0]);   // translate emoji to images
@@ -251,8 +238,17 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
         }
     })
 
+    if (!$('#scroll_lockc').is(":checked")) {
+        $(".chat-history").each(function() {
+            $(this).animate({ scrollTop: $(this).prop("scrollHeight") }, 1000)
+            }
+        )
+	}
 
-	//imageReplace.
+	if ($('.chat').is(':hidden')) {
+		$('.notify-bubble').show(400);
+		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
+	}
 
     lastMessageId = r_msg.id
   };
