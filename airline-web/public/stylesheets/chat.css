@@ -76,7 +76,7 @@
 			display: inherit;
 		}
 
-#scroll_lock {
+.chatOption {
 	color: black;
 	display: none;
 	float: right;
