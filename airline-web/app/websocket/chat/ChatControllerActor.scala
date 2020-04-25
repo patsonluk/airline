@@ -162,7 +162,7 @@ object ImgCommand extends ChatCommand("img") {
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
   val ws = StandaloneAhcWSClient()
-  val MAX_MESSAGE_SIZE = 2 * 1024 * 1024 //2M
+  val MAX_MESSAGE_SIZE = 8 * 1024 * 1024 //8M
   val TIME_OUT = 5 //wait max 5 seconds
   implicit val executionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(1))
   override def execute(message: ChatMessage): ChatMessage = {

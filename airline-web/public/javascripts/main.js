@@ -56,7 +56,7 @@ $( document ).ready(function() {
 
 
 function mobileCheck() {
-	if (window.screen.availWidth < 1024) { //assume it's a less powerful device
+	if (isMobileDevice()) { //assume it's a less powerful device
 		refreshMobileLayout()
 
 		//turn off animation by default
@@ -64,6 +64,10 @@ function mobileCheck() {
 
 		//registerSwipe()
 	}
+}
+
+function isMobileDevice() {
+    return window.screen.availWidth < 1024
 }
 
 function refreshMobileLayout() {

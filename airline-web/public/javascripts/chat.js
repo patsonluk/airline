@@ -243,9 +243,10 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	}
 
 
+    var isMobileDeviceValue = isMobileDevice()
     $('.chat-history').each (function(){
         emojify.run($(this).find("li:last-child")[0]);   // translate emoji to images
-        if (r_msg.imagePermission) {
+        if (r_msg.imagePermission && !isMobileDeviceValue) {
             replaceImg($(this).find("li:last-child"))
         }
     })

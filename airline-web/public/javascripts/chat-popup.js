@@ -7,13 +7,13 @@ $('#live-chat header span i').on('click', function() {
 				$("#live-chat").css({"left":"10px", "width":"59px"});
 				//$("#live-chat h4").text("");
 				$("#live-chat h4").hide();
-				$("#scroll_lock").hide();
+				$(".chatOption").hide();
 			} else {
 				//Expanded
 				$("#live-chat").css({"left":"10px", "width":"500px", "max-width": "95%"});
 				//$("#live-chat h4").text("Game Chat");
 				$("#live-chat h4").show();
-				$("#scroll_lock").show();
+				$(".chatOption").show();
 				
 				$('.notify-bubble').hide();
 				$('.notify-bubble').text("0");
