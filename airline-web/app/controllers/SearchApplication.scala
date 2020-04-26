@@ -4,72 +4,91 @@ import com.patson.data.{ConsumptionHistorySource, CountrySource, CycleSource, Ev
 import javax.inject.Inject
 import play.api.libs.json._
 import play.api.mvc._
-
 import com.patson.model.Scheduling.TimeSlot
-import com.patson.model._
+import com.patson.model.{PassengerType, _}
 
 
 class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-  implicit object SearhResultWrites extends Writes[SearchResultRoute] {
-    def writes(result: SearchResultRoute): JsValue = {
-//      val currentCycle = CycleSource.loadCycle()
-//      val remainingDuration =
-//        if (currentCycle > olympics.startCycle + olympics.duration) {
-//          0
-//        } else {
-//          olympics.startCycle + olympics.duration - currentCycle
-//        }
-//
-//      val currentYear = olympics.currentYear(currentCycle)
-//      val status =
-//        if (remainingDuration > 0) {
-//          currentYear match {
-//            case 1 => "Voting for Host City"
-//            case 2 => "Host City Voted"
-//            case 3 => "Preparation for the Games"
-//            case 4 =>
-//              val weeksBeforeGames = Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION - olympics.currentWeek(currentCycle)
-//              if (weeksBeforeGames > 0) {
-//                s"$weeksBeforeGames week(s) before the Games"
-//              } else {
-//                "Olympic Games in Progress"
-//              }
-//            case _ => "Unknown"
-//          }
-//        } else {
-//          "Concluded"
-//        }
-//      val votingActive = remainingDuration > 0 && currentYear == 1
-//      var result = JsObject(List(
-//        "id" -> JsNumber(olympics.id),
-//        "startCycle" -> JsNumber(olympics.startCycle),
-//        "votingActive" -> JsBoolean(votingActive),
-//        "remainingDuration" -> JsNumber(remainingDuration),
-//        "status" -> JsString(status)))
-//
-//      Olympics.getSelectedAirport(olympics.id).foreach { airport =>
-//        result = result + ("hostCity" -> JsString(airport.city)) + ("hostCountryCode" -> JsString(airport.countryCode))
-//      }
-//
-//      if (remainingDuration > 0) {
-//        result = result + ("currentYear" -> JsNumber(currentYear))
-//      }
-//
-//      result
-      ???
+  implicit object SearhResultWrites extends Writes[(SimpleRoute, Int)] {
+    def writes(route: (SimpleRoute, Int)): JsValue = {
+      var result = Json.obj("passenger" -> route._2)
+      var routeJson = Json.arr()
+      route._1.links.foreach {
+        case(link, linkClass, inverted) => {
+          val (from, to) = if (!inverted) (link.from, link.to) else (link.to, link.from)
+          routeJson = routeJson.append(Json.obj(
+            "airlineName" -> link.airline.name,
+            "airlineId" -> link.airline.id,
+            "flightCode" -> (link.airline.getAirlineCode() + link.flightNumber),
+            "linkClass" -> linkClass.label,
+            "fromAirportId" -> from.id,
+            "fromAirportName" -> from.name,
+            "fromAirportIata" -> from.iata,
+            "fromAirportCity" -> from.city,
+            "fromAirportCountryCode" -> from.countryCode,
+            "toAirportId" -> to.id,
+            "toAirportName" -> to.name,
+            "toAirportIata" -> to.iata,
+            "toAirportCity" -> to.city,
+            "toAirportCountryCode" -> to.countryCode,
+            "price" -> link.price(linkClass)))
+        }
+      }
+      result = result + ("route" -> routeJson)
+      result
+    }
+  }
+
+  implicit object AirportSearchResultWrites extends Writes[AirportSearchResult] {
+    def writes(airportSearchResult : AirportSearchResult) : JsValue = {
+      Json.obj(
+        "airportId" -> airportSearchResult.getId,
+        "airportName" -> airportSearchResult.getName,
+        "airportIata" -> airportSearchResult.getIata,
+        "airportCity" -> airportSearchResult.getCity,
+        "countryCode" -> airportSearchResult.getCountryCode,
+        "score" -> airportSearchResult.getScore)
+
     }
   }
 
 
-  def search(fromAirportId : Int, toAirportId : Int) = Action {
-    ConsumptionHistorySource.loadConsumptionsByAirportPair(fromAirportId, toAirportId).toList.sortBy(_._2._2).map {
+  def searchRoute(fromAirportId : Int, toAirportId : Int) = Action {
+    val routes: List[(SimpleRoute, PassengerType.Value, Int)] = ConsumptionHistorySource.loadConsumptionsByAirportPair(fromAirportId, toAirportId).toList.sortBy(_._2._2).map {
       case ((route, (passengerType, passengerCount))) =>
-
-
+        (SimpleRoute(route.links.map(linkConsideration => (linkConsideration.link, linkConsideration.linkClass, linkConsideration.inverted))), passengerType, passengerCount)
     }
 
-    Ok(???)
+    val reverseRoutes : List[(SimpleRoute, PassengerType.Value, Int)] = ConsumptionHistorySource.loadConsumptionsByAirportPair(toAirportId, fromAirportId).toList.sortBy(_._2._2).map {
+      case ((route, (passengerType, passengerCount))) =>
+        (SimpleRoute(route.links.reverse.map(linkConsideration => (linkConsideration.link, linkConsideration.linkClass, !linkConsideration.inverted))), passengerType, passengerCount)
+    }
+
+//    println(s"from ${routes.length}")
+//    println(routes.groupBy(_._1).size)
+
+    val sortedRoutes: List[(SimpleRoute, Int)] = (routes ++ reverseRoutes).groupBy(_._1).view.mapValues( _.map(_._3).sum).toList.sortBy(_._2).reverse
+
+    sortedRoutes.foreach(println)
+    Ok(Json.toJson(sortedRoutes))
   }
+
+  import collection.JavaConverters._
+  def searchAirport(input : String) = Action {
+    if (input.length < 3) {
+      Ok(Json.obj("message" -> "Search with at least 3 characters"))
+    } else {
+      val result: List[AirportSearchResult] = SearchUtil.search(input).asScala.toList
+      if (result.isEmpty) {
+        Ok(Json.obj("message" -> "No match"))
+      } else {
+        Ok(Json.obj("airports" -> Json.toJson(result)))
+      }
+    }
+  }
+
+  case class SimpleRoute(links : List[(Link, LinkClass, Boolean)])
+
 
   def generateDepartureTime(link : Link, after : TimeSlot) : TimeSlot = {
     Scheduling.getLinkSchedule(link)

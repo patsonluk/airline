@@ -20,6 +20,12 @@ libraryDependencies ++= Seq(
   "com.sun.mail" % "javax.mail" % "1.6.2"
 )
 
+// https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-client
+libraryDependencies += "org.elasticsearch.client" % "elasticsearch-rest-high-level-client" % "7.6.2"
+
+
+
+
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 // Play provides two styles of routers, one expects its actions to be injected, the

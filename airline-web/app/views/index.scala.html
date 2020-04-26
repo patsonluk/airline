@@ -72,6 +72,7 @@
     <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/log.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/event.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/search.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
@@ -299,6 +300,7 @@
 				  <li class="button left-tab allianceCanvasTab" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
 				  <li class="button left-tab user-specific-tab logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
 				  <li class="button left-tab user-specific-tab eventCanvasTab" data-link="event" onclick="showEventCanvas();"><span>Event</span></li>
+				  <li class="button left-tab searchCanvasTab" data-link="search" onclick="showSearchCanvas();"><span>Search</span></li>
 				</ul>
 			</div>
 
@@ -2498,7 +2500,24 @@
 				</div>
 				<!-- end event canvas -->
 
+			  <div id="searchCanvas" style="height: 100%; display: none;">
+				  <div style="width : 90%" class="section">
+					  <div style="float: left; width : 300px">
+						  <div><input type="text" class="fromAirport" placeholder="From" onkeyup="airportSearchKeyPress(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))"></div>
+						  <div id="fromAirportResult"></div>
+					  </div>
+					  <div style="float: left; width : 300px">
+						  <div><input type="text" class="toAirport" placeholder="To" onkeyup="airportSearchKeyPress(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))"></div>
+						  <div id="toAirportResult"></div>
+					  </div>
+					  <div style="clear: both;"></div>
+
+					  <div class="button" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
+					  <div id="searchResult"></div>
+				  </div>
 				<div style="clear: both;"></div>
+			  </div>
+	  			<!-- end search canvas -->
 			</div>
   			<!-- main canvas end -->
 		</div> <!-- end container for main canvas and the landing blur -->

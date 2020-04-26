@@ -157,13 +157,11 @@ object ConsumptionHistorySource {
   def loadConsumptionsByAirportPair(fromAirportId : Int, toAirportId : Int) : Map[Route, (PassengerType.Value, Int)] = {
     val connection = Meta.getConnection()
     try {
-      val queryString = new StringBuilder("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " where (home_airport = ? AND destination_airport = ?) OR (home_airport = ? AND destination_airport = ?)")
+      val queryString = new StringBuilder("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " where (home_airport = ? AND destination_airport = ?)")
       val preparedStatement = connection.prepareStatement(queryString.toString())
 
       preparedStatement.setInt(1, fromAirportId)
       preparedStatement.setInt(2, toAirportId)
-      preparedStatement.setInt(3, toAirportId)
-      preparedStatement.setInt(4, fromAirportId)
 
       val resultSet = preparedStatement.executeQuery()
 
