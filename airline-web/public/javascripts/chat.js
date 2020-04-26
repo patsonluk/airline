@@ -240,7 +240,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 
     if (!$('#scroll_lockc').is(":checked")) {
         $(".chat-history").each(function() {
-            $(this).animate({ scrollTop: $(this).prop("scrollHeight") }, 1000)
+            $(this).scrollTop($(this).prop("scrollHeight"))
             }
         )
 	}
