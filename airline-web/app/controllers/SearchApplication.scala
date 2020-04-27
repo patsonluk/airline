@@ -180,14 +180,14 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 
     import LinkFeature._
     val airlineServiceQuality = link.airline.getCurrentServiceQuality
-    if (link.duration <= 60) { //very short flight
+    if (link.duration <= 120) { //very short flight
       if (link.rawQuality >= 80) {
         features += BEVERAGE_SERVICE
       }
       if (airlineServiceQuality >= 80) {
         features += POWER_OUTLET
       }
-    } else if (link.duration <= 120) {
+    } else if (link.duration <= 240) {
       if (link.rawQuality >= 60) {
         features += BEVERAGE_SERVICE
       }
