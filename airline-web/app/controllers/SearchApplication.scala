@@ -199,6 +199,10 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       features += PREMIUM_DRINK_SERVICE
     }
 
+    if (link.rawQuality == 100 && airlineServiceQuality >= 85) {
+      features += POSH
+    }
+
     if (airlineServiceQuality >= 50) {
       features += IFE
     }
@@ -215,7 +219,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 
   object LinkFeature extends Enumeration {
     type LinkFeature = Value
-    val WIFI, BEVERAGE_SERVICE, HOT_MEAL_SERVICE, PREMIUM_DRINK_SERVICE, IFE, POWER_OUTLET, GAME = Value
+    val WIFI, BEVERAGE_SERVICE, HOT_MEAL_SERVICE, PREMIUM_DRINK_SERVICE, IFE, POWER_OUTLET, GAME, POSH = Value
   }
 
   case class SearchResultRoute(linkDetails : List[LinkDetail], passengerCount: Int)

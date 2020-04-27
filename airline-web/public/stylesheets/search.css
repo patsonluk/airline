@@ -1,5 +1,9 @@
-.airportEntry.selected {
+.airportEntry.selected, .airportSearchResult .airportEntry:hover {
     background-color: #cbdff2;
+}
+
+.airportSearchResult .airportEntry:hover {
+    cursor: pointer;
 }
 
 #routeSearchResult .ticketTitle, #routeSearchResult .price, #routeSearchResult .summary {

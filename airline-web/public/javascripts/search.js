@@ -74,7 +74,7 @@ function searchFlight(fromAirportId, toAirportId) {
 
                         var linkDetailRightDiv = $("<div style='width: 50%;'></div>").appendTo(linkDetailDiv)
                         linkDetailRightDiv.append("<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportIata) + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>" + getAirportText(link.toAirportCity, link.toAirportIata) + "</div>")
-                        linkDetailRightDiv.append("<div>Aircraft : " + link.airplaneModelName + "</div>")
+                        linkDetailRightDiv.append("<div>Aircraft : " + (link.airplaneModelName ? link.airplaneModelName : "-") + "</div>")
 
 
                         linkDetailDiv.append("<div style='clear:both; '></div>")
@@ -137,6 +137,7 @@ var linkFeatureIconsLookup = {
     "PREMIUM_DRINK_SERVICE" : { "description" : "Premium drink services", "icon" : "assets/images/icons/glass.png"},
     "IFE" : { "description" : "In-flight entertainment", "icon" : "assets/images/icons/media-player-phone-horizontal.png"},
     "GAME" : { "description" : "Video game system", "icon" : "assets/images/icons/controller.png"},
+    "POSH" : { "description" : "Luxurious", "icon" : "assets/images/icons/diamond.png"},
     "POWER_OUTLET" : { "description" : "Power outlet", "icon" : "assets/images/icons/plug.png"}
 }
 
@@ -233,7 +234,8 @@ function airportSearchFocusOut(input, resultContainer) {
         input.val("")
     }
 
-    resultContainer.hide()
+    setTimeout(function() { resultContainer.hide() }, 100) //short delay here otherwise the div disappear below the click event is registered
+
 }
 
 function confirmAirportSelection(input, resultContainer) {
@@ -244,6 +246,16 @@ function confirmAirportSelection(input, resultContainer) {
     }
 
     resultContainer.hide()
+}
+
+function clickAirportSelection(airportSelectionDiv) {
+    airportSelectionDiv.siblings("div.selected").removeClass("selected")
+    airportSelectionDiv.addClass("selected")
+    $('#searchCanvas input.toAirport'), $('#toAirportResult')
+
+    var resultContainer = airportSelectionDiv.closest(".airportSearchResult")
+    var input = resultContainer.siblings(".airportSearchInput").find("input[type=text]")
+    confirmAirportSelection(input, resultContainer)
 }
 
 function changeAirportSelection(indexChange, resultContainer) {
@@ -290,7 +302,7 @@ function searchAirport(event, input, resultContainer) {
 	        if (searchResult.airports) {
                 $.each(searchResult.airports, function(index, entry) {
                     var airportText = highlightText(getAirportTextEntry(entry), phrase)
-                    var airportDiv = $("<div class='airportEntry'>" + airportText + "</div>")
+                    var airportDiv = $("<div class='airportEntry' onclick='clickAirportSelection($(this))'>" + airportText + "</div>")
                     airportDiv.data("airport", entry)
                     resultContainer.append(airportDiv)
                     if (index == 0) {
