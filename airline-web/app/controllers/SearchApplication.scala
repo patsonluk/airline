@@ -19,7 +19,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       var routeJson = Json.arr()
       var index = 0
       var previousArrivalMinutes = 0
-      val schedule : Map[Link, TimeSlot] = generateRouteSchedule(route._1.links.map(_._1))
+      val schedule : Map[Link, TimeSlot] = generateRouteSchedule(route._1.links.map(_._1)).toMap
       val detailedLinkCache : mutable.HashMap[Int, Option[Link]] = mutable.HashMap()
       route._1.links.foreach {
         case(link, linkClass, inverted) => {
@@ -129,23 +129,37 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 //    (((random.nextDouble() + 2) * 24 * 60) / frequency).toInt + 15 //some randomness
 //  }
 
-  def generateRouteSchedule(links : List[Link]) : Map[Link, TimeSlot] = {
-    var previousLinkArrivalTime : Option[TimeSlot] = None
-    links.map { link =>
-      val departureTime = generateDepartureTime(link, previousLinkArrivalTime.map(_.increment(30))) //at least 30 minutes after
-      previousLinkArrivalTime = Some(departureTime.increment(link.duration))
-      (link, departureTime)
-    }.toMap
+  def generateRouteSchedule(links : List[Link]) : List[(Link, TimeSlot)] = {
+    val scheduleOptions : ListBuffer[List[(Link, TimeSlot)]] = ListBuffer()
+    val random = new Random()
+    for (i <- 0 until 7) {
+      var previousLinkArrivalTime : TimeSlot = TimeSlot(i, random.nextInt(24), random.nextInt(60))
+      val scheduleOption = links.map { link =>
+        val departureTime = generateDepartureTime(link, previousLinkArrivalTime.increment(30)) //at least 30 minutes after
+        previousLinkArrivalTime = departureTime.increment(link.duration)
+        (link, departureTime)
+      }
+      scheduleOptions.append(scheduleOption)
+    }
+    val sortedScheduleOptions: mutable.Seq[List[(Link, TimeSlot)]] = scheduleOptions.sortBy {
+      case (scheduleOption) =>  {
+        var previousArrivalMinutes = 0
+        scheduleOption.foreach {
+          case (link, departureTimeSlot) => {
+            previousArrivalMinutes = adjustMinutes(departureTimeSlot.totalMinutes, previousArrivalMinutes) + link.duration
+          }
+        }
+        //previousArrivalMinutes should contain the minutes of arrival of last leg
+        val totalDuration = previousArrivalMinutes - scheduleOption(0)._2.totalMinutes
+        totalDuration
+      }
+    }
+    sortedScheduleOptions(0)//find the one with least total duration
   }
 
-  def generateDepartureTime(link : Link, afterOption : Option[TimeSlot]) : TimeSlot = {
-    val random = new Random(link.id)
+  def generateDepartureTime(link : Link, after : TimeSlot) : TimeSlot = {
     val availableSlots = Scheduling.getLinkSchedule(link).sortBy(_.totalMinutes)
-    afterOption match {
-      case Some(after) =>
-        availableSlots.find(_.compare(after) > 0).getOrElse(availableSlots(0)) //find the first slot that is right after the "after option"
-      case None => availableSlots(random.nextInt(availableSlots.length))
-    }
+    availableSlots.find(_.compare(after) > 0).getOrElse(availableSlots(0)) //find the first slot that is right after the "after option"
   }
 
   /**
@@ -167,27 +181,27 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     import LinkFeature._
     val airlineServiceQuality = link.airline.getCurrentServiceQuality
     if (link.duration <= 60) { //very short flight
-      if (link.rawQuality >= 60) {
+      if (link.rawQuality >= 80) {
         features += BEVERAGE_SERVICE
       }
       if (airlineServiceQuality >= 80) {
         features += POWER_OUTLET
       }
     } else if (link.duration <= 120) {
-      if (link.rawQuality >= 40) {
+      if (link.rawQuality >= 60) {
         features += BEVERAGE_SERVICE
       }
-      if (link.rawQuality >= 60) {
+      if (link.rawQuality >= 80) {
         features += HOT_MEAL_SERVICE
       }
       if (airlineServiceQuality >= 60) {
         features += POWER_OUTLET
       }
     } else {
-      if (link.rawQuality >= 20) {
+      if (link.rawQuality >= 40) {
         features += BEVERAGE_SERVICE
       }
-      if (link.rawQuality >= 40) {
+      if (link.rawQuality >= 60) {
         features += HOT_MEAL_SERVICE
       }
       if (airlineServiceQuality >= 60) {
