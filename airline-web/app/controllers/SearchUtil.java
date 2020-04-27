@@ -12,6 +12,7 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
@@ -22,9 +23,30 @@ import java.io.IOException;
 import java.util.*;
 
 public class SearchUtil {
+	static {
+		checkInit();
+	}
+
+	/**
+	 * Initialize the index if it's empty
+	 */
+	private static void checkInit() {
+		try (RestHighLevelClient client = getClient()) {
+			CountRequest countRequest = new CountRequest();
+			CountRequest query = countRequest.query(QueryBuilders.matchAllQuery());
+			if (client.count(query, RequestOptions.DEFAULT).getCount() == 0) {
+				System.out.println("No ES record found. Initializing!");
+				init();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("ES check finished");
+	}
+
 	public static void main(String[] args) throws IOException {
-//		init();
-		search("new");
+		init();
+//		search("new");
 	}
 
 
@@ -40,18 +62,22 @@ public class SearchUtil {
 			System.out.println("loaded " + airports.size() + " airports");
 
 			//RestHighLevelClient client = getClient();
-
+			int count = 0;
 			for (Airport airport : airports) {
 				Map<String, Object> jsonMap = new HashMap<>();
 				jsonMap.put("airportId", airport.id());
 				jsonMap.put("airportIata", airport.iata());
 				jsonMap.put("airportCity", airport.city());
+				jsonMap.put("airportPower", airport.power());
 				jsonMap.put("countryCode", airport.countryCode());
 				jsonMap.put("airportName", airport.name());
 				IndexRequest indexRequest = new IndexRequest("airports").source(jsonMap);
 				client.index(indexRequest, RequestOptions.DEFAULT);
 
-				System.out.println("indexed " + airport);
+				if ((++ count) % 100 == 0) {
+					System.out.println("indexed " + count + " airports");
+				}
+
 			}
 		}
 		System.out.println("ES DONE");
@@ -69,6 +95,7 @@ public class SearchUtil {
 			multiMatchQueryBuilder.field("airportIata",50);
 			multiMatchQueryBuilder.field("airportName",0);
 			multiMatchQueryBuilder.field("airportCity",10);
+			multiMatchQueryBuilder.defaultOperator(Operator.AND);
 //			multiMatchQueryBuilder.fuzziness(Fuzziness.TWO);
 //			multiMatchQueryBuilder.maxExpansions(100);
 //			multiMatchQueryBuilder.prefixLength(10);
@@ -76,7 +103,8 @@ public class SearchUtil {
 
 			multiMatchQueryBuilder.type(MultiMatchQueryBuilder.Type.BEST_FIELDS);
 			multiMatchQueryBuilder.boost(20);
-			searchSourceBuilder.query(multiMatchQueryBuilder);
+
+			searchSourceBuilder.query(multiMatchQueryBuilder).size(100);
 
 			searchRequest.source(searchSourceBuilder);
 			SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -84,9 +112,16 @@ public class SearchUtil {
 			List<AirportSearchResult> result = new ArrayList<>();
 			for (SearchHit hit : response.getHits()) {
 				Map<String, Object> values = hit.getSourceAsMap();
-				AirportSearchResult searchResult = new AirportSearchResult((int) values.get("airportId"), (String) values.get("airportIata"), (String) values.get("airportName"), (String) values.get("airportCity"), (String) values.get("countryCode"), hit.getScore());
+
+				Object powerObject = values.get("airportPower");
+				long power = powerObject instanceof Integer ? (long) ((Integer)powerObject) : (Long) powerObject;
+				AirportSearchResult searchResult = new AirportSearchResult((int) values.get("airportId"), (String) values.get("airportIata"), (String) values.get("airportName"), (String) values.get("airportCity"), (String) values.get("countryCode"), power, hit.getScore());
 				result.add(searchResult);
 			}
+
+			Collections.sort(result);
+			Collections.reverse(result);
+
 			System.out.println("done");
 			return result;
 		} catch (IOException e) {
@@ -106,17 +141,19 @@ public class SearchUtil {
 	}
 }
 
-class AirportSearchResult {
+class AirportSearchResult implements Comparable {
+	private final long power;
 	private int id;
 	private String iata, name, city, countryCode;
 	private double score;
 
-	public AirportSearchResult(int id, String iata, String name, String city, String countryCode, double score) {
+	public AirportSearchResult(int id, String iata, String name, String city, String countryCode, long power, double score) {
 		this.id = id;
 		this.iata = iata;
 		this.name = name;
 		this.city = city;
 		this.countryCode = countryCode;
+		this.power = power;
 		this.score = score;
 	}
 
@@ -142,6 +179,27 @@ class AirportSearchResult {
 
 	public double getScore() {
 		return score;
+	}
+
+	public long getPower() {
+		return power;
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		if (!(o instanceof AirportSearchResult)) {
+			throw new IllegalArgumentException(o + " is not a " + AirportSearchResult.class.getSimpleName());
+		}
+
+		AirportSearchResult that = (AirportSearchResult) o;
+
+		if (this.score != that.score) {
+			return this.score < that.score ? -1 : 1;
+		} else if (this.power != that.power){
+			return this.power < that.power ? -1 : 1;
+		} else {
+			return this.iata.compareTo(that.iata);
+		}
 	}
 }
 

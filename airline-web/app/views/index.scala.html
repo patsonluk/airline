@@ -20,11 +20,13 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
+      <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/search.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/about.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")">
+
 
 
     
@@ -2501,19 +2503,25 @@
 				<!-- end event canvas -->
 
 			  <div id="searchCanvas" style="height: 100%; display: none;">
-				  <div style="width : 90%" class="section">
-					  <div style="float: left; width : 300px">
-						  <div><input type="text" class="fromAirport" placeholder="From" onkeyup="airportSearchKeyPress(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))"></div>
-						  <div id="fromAirportResult"></div>
-					  </div>
-					  <div style="float: left; width : 300px">
-						  <div><input type="text" class="toAirport" placeholder="To" onkeyup="airportSearchKeyPress(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))"></div>
-						  <div id="toAirportResult"></div>
-					  </div>
-					  <div style="clear: both;"></div>
+				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section">
+					  <h2>Flight Search</h2>
+					  <div>
+						  <div style="padding: 10px;"> <!--from and to box-->
+							  <div style="float: left; width : 300px; position: relative;">
+								  <div><input type="text" tabindex="1" class="fromAirport" placeholder="From" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#fromAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))"></div>
+								  <div id="fromAirportResult" class="airportSearchResult"></div>
+							  </div>
+							  <div style="float: left; width : 300px; position: relative;">
+								  <div><input type="text" tabindex="2" class="toAirport" placeholder="To" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#toAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))"></div>
+								  <div id="toAirportResult" class="airportSearchResult"></div>
+							  </div>
+							  <div style="clear: both;"></div>
+						  </div>
 
-					  <div class="button" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
-					  <div id="searchResult"></div>
+						  <div class="button"  tabindex="3" style="width: 50px; text-alight: center;" onkeypress="airportSearchButtonKeyPress(event, $(this))" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
+				  	  </div>
+
+					  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1;"></div>
 				  </div>
 				<div style="clear: both;"></div>
 			  </div>

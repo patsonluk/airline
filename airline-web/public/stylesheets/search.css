@@ -1,0 +1,69 @@
+.airportEntry.selected {
+    background-color: #cbdff2;
+}
+
+#routeSearchResult .ticketTitle, #routeSearchResult .price, #routeSearchResult .summary {
+    color: #5f6368;
+    font: 400 18px/16px Roboto, HelveticaNeue, Arial, sans-serif;
+    letter-spacing: 0.3px;
+}
+
+#routeSearchResult .ticketTitle {
+    margin-bottom: 10px;
+}
+
+#routeSearchResult .bestSeller {
+    font-size : 8px;
+    background-color: darkgreen;
+    box-shadow:0 0 2px #ffffff inset;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    border-radius: 2px 2px 2px 2px;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+    padding: 4px;
+    margin-top: 5px;
+    color : white;
+}
+
+#searchCanvas input {
+    font-size: 20px;
+    background-color: #cbdff2;
+    border: 1px solid #BEBEBE;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    color: #5f6368;
+}
+
+
+
+#searchCanvas input::placeholder {
+	color: #A9A9A9;
+}
+
+#searchCanvas input[type=text]:focus {
+    background-color: #ffffff;
+    box-shadow:0 0 2px #666 inset;
+}
+
+.airportSearchResult {
+    float: left;
+    width: 300px;
+    position: absolute;
+    top: 30px;
+    background-color: #ffffff;
+    box-shadow:0 0 2px #666 inset;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.airportSearchResult div {
+    margin: 5px;
+}
+
+
+#routeSearchResult {
+    color: #5f6368;
+}
+
+#routeSearchResult div.itinerary:hover {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+

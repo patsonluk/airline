@@ -1,7 +1,7 @@
 package controllers
 
 import com.patson.data.{AirplaneSource, LinkSource}
-import com.patson.model.Link
+import com.patson.model.{Airline, Link}
 
 import scala.collection.mutable.ListBuffer
 
@@ -34,5 +34,9 @@ object LinkUtil {
     }
 
     LinkSource.updateLinks(affectedLinks.toList)
+  }
+
+  def getFlightCode(airline : Airline, flightNumber : Int) = {
+    airline.getAirlineCode + " " + (1000 + flightNumber).toString.substring(1, 4)
   }
 }
