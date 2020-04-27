@@ -581,7 +581,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                 }
                 val updateCount = AirplaneSource.saveAirplanes(airplanes.toList)
                 if (updateCount > 0) {
-                  val amount = -1 * airplane.model.price * updateCount
+                  val amount: Long = -1 * airplane.model.price.toLong * updateCount
                   AirlineSource.adjustAirlineBalance(airlineId, amount)
                   AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, amount))
 
