@@ -94,7 +94,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
         (SimpleRoute(route.links.reverse.map(linkConsideration => (linkConsideration.link, linkConsideration.linkClass, !linkConsideration.inverted))), passengerType, passengerCount)
     }
 
-//    println(s"from ${routes.length}")
+    println(s"Search route found ${routes.length} route(s)")
 //    println(routes.groupBy(_._1).size)
 
     val sortedRoutes: List[(SimpleRoute, Int)] = (routes ++ reverseRoutes).groupBy(_._1).view.mapValues( _.map(_._3).sum).toList.sortBy(_._1.totalPrice)

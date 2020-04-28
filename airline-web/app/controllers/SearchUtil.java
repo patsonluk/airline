@@ -122,7 +122,7 @@ public class SearchUtil {
 			Collections.sort(result);
 			Collections.reverse(result);
 
-			System.out.println("done");
+			//System.out.println("done");
 			return result;
 		} catch (IOException e) {
 			e.printStackTrace();
