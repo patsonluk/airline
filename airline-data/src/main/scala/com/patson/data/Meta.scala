@@ -613,6 +613,10 @@ object Meta {
     statement.execute()
     statement.close()
 
+    statement = connection.prepareStatement("CREATE INDEX " + PASSENGER_HISTORY_INDEX_3 + " ON " + PASSENGER_HISTORY_TABLE + "(home_airport, destination_airport)")
+    statement.execute()
+    statement.close()
+
     connection.close()
   }
 
