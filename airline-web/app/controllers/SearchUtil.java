@@ -54,9 +54,9 @@ public class SearchUtil {
 		try (RestHighLevelClient client = getClient()) {
 			CountRequest countRequest = new CountRequest();
 			CountRequest query = countRequest.query(QueryBuilders.matchAllQuery());
-			System.out.println(client.count(query, RequestOptions.DEFAULT).getCount());
-
-			client.indices().delete(new DeleteIndexRequest("airports"), RequestOptions.DEFAULT);
+			if (client.count(query, RequestOptions.DEFAULT).getCount() > 0) {
+				client.indices().delete(new DeleteIndexRequest("airports"), RequestOptions.DEFAULT);
+			}
 
 			List<Airport> airports = JavaConverters.asJava(AirportSource.loadAllAirports(false));
 			System.out.println("loaded " + airports.size() + " airports");
