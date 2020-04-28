@@ -2503,21 +2503,21 @@
 				</div>
 				<!-- end event canvas -->
 
-			  <div id="searchCanvas" style="height: 100%; display: none;">
-				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section">
-					  <h2>Flight Search</h2>
-					  <div>
-						  <div style="padding: 10px;"> <!--from and to box-->
-							  <div style="float: left; width : 300px; position: relative;">
+			  <div id="searchCanvas" style="height: 100%; display: flex; justify-content: center;">
+				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section mainSection">
+					  <h2>Flights</h2>
+                      <div style="margin-top: 10px">
+						  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
+							  <div style="float: left; width : 50%; position: relative;">
 								  <div class="airportSearchInput">
-									  <input type="text" tabindex="101" class="fromAirport" placeholder="From" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#fromAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))">
+									  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#fromAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))">
 									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 								  </div>
 								  <div id="fromAirportResult" class="airportSearchResult"></div>
 							  </div>
-							  <div style="float: left; width : 300px; position: relative;">
+							  <div style="float: left; width : 50%; position: relative;">
 								  <div class="airportSearchInput">
-									  <input type="text" tabindex="102" class="toAirport" placeholder="To" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#toAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))">
+									  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#toAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))">
 									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 								  </div>
 								  <div id="toAirportResult" class="airportSearchResult"></div>
@@ -2525,10 +2525,10 @@
 							  <div style="clear: both;"></div>
 						  </div>
 
-						  <div class="button"  tabindex="103" style="width: 50px; text-alight: center;" onkeypress="airportSearchButtonKeyPress(event, $(this))" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
+						  <div class="button" tabindex="103"  style="width: 200px; text-align: center; display: block; margin : 10px auto;" onkeypress="airportSearchButtonKeyPress(event, $(this))" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
 				  	  </div>
 
-					  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1;"></div>
+					  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px;"></div>
 				  </div>
 				<div style="clear: both;"></div>
 			  </div>
