@@ -282,19 +282,28 @@ function changeAirportSelection(indexChange, resultContainer) {
  //   resultContainer.data("selectedIndex", currentIndex)
 }
 
-function searchAirport(event, input, resultContainer) {
+var currentAirportSearchAjax
+
+function searchAirport(event, input, resultContainer, retry) {
     var phrase = input.val()
 	var url = "search-airport?input=" + phrase
+    if (currentAirportSearchAjax) {
+        currentAirportSearchAjax.abort()
+    }
 
-	$.ajax({
+	currentAirportSearchAjax = $.ajax({
 		type: 'GET',
 		url: url,
 	    contentType: 'application/json; charset=utf-8',
-	    async: false,
 	    dataType: 'json',
+	    beforeSend: function () {
+	        input.siblings(".spinner").show(0)
+	        searchingAirport = true
+	    },
 	    success: function(searchResult) {
-	        resultContainer.find("div.airportEntry, div.message").remove()
+	  //      input.prop('disabled', false);
 	        //resultContainer.removeData("selectedIndex")
+	        resultContainer.find("div.airportEntry, div.message").remove()
 	        if (searchResult.message) {
 	            resultContainer.append("<div class='message'>" + searchResult.message + "</div>")
 	        }
@@ -315,7 +324,12 @@ function searchAirport(event, input, resultContainer) {
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+        complete:function() {
+              //Hide the loader over here
+              input.siblings(".spinner").hide()
+              currentAirportSearchAjax = undefined
+        }
 	});
 }
 
