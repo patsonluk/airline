@@ -1,18 +1,14 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.patson.Util
 import com.patson.data._
 import com.patson.data.airplane._
-import com.patson.model._
+import com.patson.model.{AirlineCashFlow, AirlineIncome, Computation, _}
 import com.patson.model.airplane._
-import play.api.libs.json.{Format, JsArray, JsBoolean, JsNumber, JsObject, JsResult, JsString, JsSuccess, JsValue, Json, Reads, Writes}
-import com.patson.model.Computation
-import com.patson.Util
-import com.patson.model.AirlineIncome
-import com.patson.model.AirlineCashFlow
 import com.patson.model.event.EventReward
-import models.FacilityType
-import models.AirportFacility
 import com.patson.util.{AirlineCache, AirportCache, ChampionInfo}
+import models.{AirportFacility, FacilityType}
+import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
 
@@ -202,7 +198,7 @@ package object controllers {
       "toLatitude" -> JsNumber(link.to.latitude),
       "toLongitude" -> JsNumber(link.to.longitude),
       "flightType" -> JsString(link.flightType.toString()),
-      "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber))
+      "flightCode" -> JsString(LinkUtil.getFlightCode(link.airline, link.flightNumber))
       ))
 
       var airplanesJson = Json.arr()

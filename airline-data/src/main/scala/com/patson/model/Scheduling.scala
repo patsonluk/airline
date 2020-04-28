@@ -66,7 +66,7 @@ object Scheduling {
       }
     }
   }
-  case class TimeSlot(dayOfWeek : Int, hour : Int, minute : Int) {
+  case class TimeSlot(dayOfWeek : Int, hour : Int, minute : Int) extends Ordered[TimeSlot] {
       def increment(minute : Int, restriction : Option[TimeSlotRetriction]) : TimeSlot = {
         restriction match {
           case Some(restriction) => restriction.adjustTimeSlot(increment(minute))
@@ -92,6 +92,18 @@ object Scheduling {
          
          TimeSlot(dayOfWeek = newDayOfWeek, hour = newHour, minute = newMinute)
       }
+
+    override def compare(that: TimeSlot) : Int = {
+      if (this.dayOfWeek != that.dayOfWeek) {
+        this.dayOfWeek - that.dayOfWeek
+      } else {
+        if (this.hour != that.hour) {
+          this.hour - that.hour
+        } else {
+          this.minute - that.minute
+        }
+      }
+    }
       
       lazy val totalMinutes = dayOfWeek * MAX_HOUR * MAX_MINUTE + hour * MAX_MINUTE + minute 
   }

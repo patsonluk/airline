@@ -1,44 +1,19 @@
 package controllers
 
-import scala.math.BigDecimal.int2bigDecimal
-import com.patson.data.AirlineSource
-import com.patson.data.AirplaneSource
-import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane._
-import com.patson.model._
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsObject
-import play.api.libs.json.JsString
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
-import play.api.libs.json.Writes
+import com.patson.data.{AllianceSource, CycleSource, LinkSource}
+import com.patson.model.AllianceEvent._
+import com.patson.model.AllianceRole._
+import com.patson.model.AllianceStatus._
+import com.patson.model.{AllianceHistory, AllianceMember, _}
+import com.patson.util.{AirlineCache, AllianceRankingUtil, ChampionUtil}
+import controllers.AuthenticationObject.AuthenticatedAirline
+import javax.inject.Inject
+import play.api.data.Forms._
+import play.api.data._
+import play.api.libs.json._
 import play.api.mvc._
 
-import scala.collection.mutable.ListBuffer
-import com.patson.data.CycleSource
-import controllers.AuthenticationObject.AuthenticatedAirline
-import com.patson.data.CountrySource
-import com.patson.data.AirportSource
-import play.api.libs.json.Format
-import play.api.libs.json.JsResult
-import play.api.libs.json.JsSuccess
-import com.patson.data.BankSource
-import com.patson.model.Loan
-import play.api.data._
-import play.api.data.Forms._
-import play.api.data.format.Formats._
-import com.patson.data.AllianceSource
-import com.patson.model.AllianceMember
-import com.patson.model.AllianceRole._
-import com.patson.model.AllianceEvent._
-import com.patson.model.AllianceStatus._
-import com.patson.data.AllianceSource
-import com.patson.data.AllianceSource
-import com.patson.model.AllianceHistory
-import play.api.libs.json.JsBoolean
-import com.patson.data.LinkSource
-import com.patson.util.{AirlineCache, AllianceRankingUtil, ChampionUtil}
-import javax.inject.Inject
+import scala.math.BigDecimal.int2bigDecimal
 
 
 class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -216,7 +191,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         "toLatitude" -> JsNumber(link.to.latitude),
         "toLongitude" -> JsNumber(link.to.longitude),
         "flightType" -> JsString(link.flightType.toString()),
-        "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber))))
+        "flightCode" -> JsString(LinkUtil.getFlightCode(link.airline, link.flightNumber))))
         result = result.append(linkJson) 
       }
       result

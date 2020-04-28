@@ -622,7 +622,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
         val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
-        val flightCode = LinkApplication.getFlightCode(request.user, flightNumber)
+        val flightCode = LinkUtil.getFlightCode(request.user, flightNumber)
         val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
 
         var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
@@ -958,11 +958,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 }
 
 object LinkApplication {
-  def getFlightCode(airline : Airline, flightNumber : Int) = {
-    airline.getAirlineCode + " " + (1000 + flightNumber).toString.substring(1, 4)
-  }
-  
-  
+
   def getNextAvailableFlightNumber(airline : Airline) : Int = {
     val flightNumbers = LinkSource.loadFlightNumbers(airline.id)
     

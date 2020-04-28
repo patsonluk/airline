@@ -20,11 +20,13 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
+      <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/search.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/about.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")">
+
 
 
     
@@ -72,6 +74,7 @@
     <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/log.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/event.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/search.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
@@ -232,6 +235,7 @@
 				<div><a href="about" class="landing-link">&gt;&gt; Tell me more</a></div>
 				<div><a href="signup" class="landing-link">&gt;&gt; Sign me up</a></div>
 				<div><a href="#"  class="landing-link" onclick="closeAbout()">&gt;&gt; Check out the game world</a></div>
+				<div><a href="#"  class="landing-link" onclick="closeAbout(); showSearchCanvas();">&gt;&gt; Search for a Flight in-game</a></div>
 
 			</div>
 		</div>
@@ -299,6 +303,7 @@
 				  <li class="button left-tab allianceCanvasTab" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
 				  <li class="button left-tab user-specific-tab logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
 				  <li class="button left-tab user-specific-tab eventCanvasTab" data-link="event" onclick="showEventCanvas();"><span>Event</span></li>
+				  <li class="button left-tab searchCanvasTab" data-link="search" onclick="showSearchCanvas();"><span>Search</span></li>
 				</ul>
 			</div>
 
@@ -2498,7 +2503,36 @@
 				</div>
 				<!-- end event canvas -->
 
+			  <div id="searchCanvas" style="height: 100%; display: flex; justify-content: center;">
+				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section mainSection">
+					  <h2>Flights</h2>
+                      <div style="margin-top: 10px">
+						  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
+							  <div style="float: left; width : 50%; position: relative;">
+								  <div class="airportSearchInput">
+									  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#fromAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))">
+									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+								  </div>
+								  <div id="fromAirportResult" class="airportSearchResult"></div>
+							  </div>
+							  <div style="float: left; width : 50%; position: relative;">
+								  <div class="airportSearchInput">
+									  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#toAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))">
+									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+								  </div>
+								  <div id="toAirportResult" class="airportSearchResult"></div>
+							  </div>
+							  <div style="clear: both;"></div>
+						  </div>
+
+						  <div class="button" tabindex="103"  style="width: 200px; text-align: center; display: block; margin : 10px auto;" onkeypress="airportSearchButtonKeyPress(event, $(this))" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
+				  	  </div>
+
+					  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px;"></div>
+				  </div>
 				<div style="clear: both;"></div>
+			  </div>
+	  			<!-- end search canvas -->
 			</div>
   			<!-- main canvas end -->
 		</div> <!-- end container for main canvas and the landing blur -->

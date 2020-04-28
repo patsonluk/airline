@@ -1,33 +1,20 @@
 package controllers
 
-import play.api.mvc._
-import play.api.libs.json._
-import play.api.libs.json.Json
-import com.patson.model._
-import com.patson.data.{AirlineSource, AirportSource, CitySource, CycleSource, LinkSource, LinkStatisticsSource, LoungeHistorySource}
-import com.patson.model.Link
-import play.api.data.Form
-import play.api.data.Forms.mapping
-import play.api.data.Forms.number
-
-import scala.collection.mutable.LinkedHashMap
-import scala.collection.mutable.ListBuffer
-import com.patson.model.Scheduling.TimeSlot
-
-import scala.collection.mutable.Set
-import com.patson.model.Scheduling.TimeSlot
-import com.patson.model.Scheduling.TimeSlotStatus
-import com.patson.model.Scheduling.TimeSlot
-import com.patson.model.Scheduling.TimeSlotStatus
 import java.util.Random
 
-import com.patson.model.Scheduling.TimeSlot
-import com.patson.model.Scheduling.TimeSlotStatus
-import com.patson.util.{AirlineCache, AirportCache}
-import controllers.WeatherUtil.Coordinates
-import controllers.WeatherUtil.Weather
+import com.patson.data._
+import com.patson.model.Scheduling.{TimeSlot, TimeSlotStatus}
+import com.patson.model.{Link, _}
+import com.patson.util.AirportCache
 import controllers.AuthenticationObject.AuthenticatedAirline
+import controllers.WeatherUtil.{Coordinates, Weather}
 import javax.inject.Inject
+import play.api.data.Form
+import play.api.data.Forms.{mapping, number}
+import play.api.libs.json.{Json, _}
+import play.api.mvc._
+
+import scala.collection.mutable.{ListBuffer, Set}
 
 
 class Application @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -80,7 +67,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
       "timeSlotTime" -> JsString("%02d".format(timeSlotAssignment._1.hour) + ":" + "%02d".format(timeSlotAssignment._1.minute)),
       "airline" -> JsString(link.airline.name),
       "airlineId" -> JsNumber(link.airline.id),
-      "flightCode" -> JsString(LinkApplication.getFlightCode(link.airline, link.flightNumber)),
+      "flightCode" -> JsString(LinkUtil.getFlightCode(link.airline, link.flightNumber)),
       "destination" -> JsString(if (!link.to.city.isEmpty()) { link.to.city } else { link.to.name }),
       "statusCode" -> JsString(timeSlotAssignment._3.code),
       "statusText" -> JsString(timeSlotAssignment._3.text)
