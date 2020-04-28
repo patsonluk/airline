@@ -598,6 +598,7 @@ object Meta {
                                             "inverted INTEGER," +
                                             "home_country VARCHAR(2) NOT NULL DEFAULT ''," +
                                             "home_airport INT(11)," +
+                                            "destination_airport INT(11)," +
                                             "preference_type INT(11)" +
                                             ")")
 
