@@ -19,19 +19,7 @@ function searchFlight(fromAirportId, toAirportId) {
             dataType: 'json',
             success: function(searchResult) {
                 $("#routeSearchResult").empty()
-                var maxPassengerCount = 0
-                var maxPassengerCountIndex = -1
-    //	    	loadedOlympicsEvents = olympicsEvents
-    //	    	var selectedSortHeader = $('#olympicsTableSortHeader .table-header .cell.selected')
-    //	    	updateOlympicTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
-
-
                 $.each(searchResult, function(index, entry) {
-                    if (entry.passenger > maxPassengerCount) {
-                        maxPassengerCountIndex = index
-                        maxPassengerCount = entry.passenger
-                    }
-
                     var itineraryDiv = $("<div class='section itinerary clickable' onclick='toggleSearchLinkDetails($(this))'></div>")
                     var total = 0
 
@@ -75,6 +63,9 @@ function searchFlight(fromAirportId, toAirportId) {
                         var linkDetailRightDiv = $("<div style='width: 50%;'></div>").appendTo(linkDetailDiv)
                         linkDetailRightDiv.append("<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportIata) + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>" + getAirportText(link.toAirportCity, link.toAirportIata) + "</div>")
                         linkDetailRightDiv.append("<div>Aircraft : " + (link.airplaneModelName ? link.airplaneModelName : "-") + "</div>")
+                        if (link.operatorAirlineId) { //code share
+                            linkDetailRightDiv.append("<div>Operated by " + getAirlineLogoImg(link.operatorAirlineId) + link.operatorAirlineName + "</div>")
+                        }
 
 
                         linkDetailDiv.append("<div style='clear:both; '></div>")
@@ -98,6 +89,19 @@ function searchFlight(fromAirportId, toAirportId) {
                         stopDescription = (entry.route.length - 1) + " Stops"
                     }
                     var priceDiv = $("<div style='float: right; width: 15%;'><div class='price'>$ " + total + "</div></div>")
+                    var priceTextDiv = priceDiv.find('div.price')
+
+                    $.each(entry.remarks, function(index, remark) {
+                        if (remark == 'BEST_SELLER') {
+                            priceTextDiv.css("color", "darkgreen")
+                            priceTextDiv.after("<div style='display:inline-block;' class='remark'>BEST SELLER</div>")
+                        } else if (remark == 'BEST_DEAL') {
+                            priceTextDiv.css("color", "darkgreen")
+                            priceTextDiv.after("<div style='display:inline-block;' class='remark'>BEST DEAL</div>")
+                        }
+                    })
+
+
                     priceDiv.append($("<div style='margin-top: 5px;'>" + stopDescription + "</div>"))
 
 
@@ -106,11 +110,7 @@ function searchFlight(fromAirportId, toAirportId) {
                     $("#routeSearchResult").append(itineraryDiv)
                 })
 
-                if (searchResult.length > 3) {
-                    var bestSellerPriceValueDiv = $("#routeSearchResult div.itinerary:nth-child(" + (maxPassengerCountIndex + 1) + ")").find('div.price')
-                    bestSellerPriceValueDiv.css("color", "darkgreen")
-                    bestSellerPriceValueDiv.after("<div style='display:inline-block;' class='bestSeller'>BEST SELLER</div>")
-                }
+
 
                 if (searchResult.length == 0) {
                     $("#routeSearchResult").append("<div class='ticketTitle'>Sorry, no flights available.</div>")
