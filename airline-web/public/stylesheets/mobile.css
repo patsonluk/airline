@@ -71,7 +71,7 @@ and (max-device-width : 640px) {
         font-size: 2vw;
     }
 
-    #routeSearchResult .search .button {
+    #routeSearchResult .search.button {
         width: 60%;
     }
 
