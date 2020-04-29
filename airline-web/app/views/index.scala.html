@@ -16,7 +16,6 @@
     </style>
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
-    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/mobile.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
@@ -26,7 +25,7 @@
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")">
-
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/mobile.css")"> <!-- this has to be last so it overrides the CSS if mobile-->
 
 
     
@@ -2525,7 +2524,7 @@
 							  <div style="clear: both;"></div>
 						  </div>
 
-						  <div class="button" tabindex="103"  style="width: 200px; text-align: center; display: block; margin : 10px auto;" onkeypress="airportSearchButtonKeyPress(event, $(this))" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
+						  <div class="button search" tabindex="103"  style="width: 200px; text-align: center; display: block; margin : 10px auto;" onkeypress="airportSearchButtonKeyPress(event, $(this))" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
 				  	  </div>
 
 					  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px;"></div>

@@ -235,7 +235,7 @@ function airportSearchFocusOut(input, resultContainer) {
         input.val("")
     }
 
-    setTimeout(function() { resultContainer.hide() }, 100) //short delay here otherwise the div disappear below the click event is registered
+    resultContainer.hide()
 
 }
 
@@ -312,7 +312,7 @@ function searchAirport(event, input, resultContainer, retry) {
 	        if (searchResult.airports) {
                 $.each(searchResult.airports, function(index, entry) {
                     var airportText = highlightText(getAirportTextEntry(entry), phrase)
-                    var airportDiv = $("<div class='airportEntry' onclick='clickAirportSelection($(this))'>" + airportText + "</div>")
+                    var airportDiv = $("<div class='airportEntry' onmousedown='clickAirportSelection($(this))'>" + airportText + "</div>")
                     airportDiv.data("airport", entry)
                     resultContainer.append(airportDiv)
                     if (index == 0) {

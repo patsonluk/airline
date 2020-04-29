@@ -23,7 +23,7 @@ and (max-device-width : 640px) {
     }
 
     #tabGroup .tabs li {
-        padding: 10px 2px 10px 2px;
+        padding: 8px 2px 8px 2px;
     }
 
     #mainContainer {
@@ -65,5 +65,18 @@ and (max-device-width : 640px) {
     .extendedTopBarDetails {
         width: 100%;
         background-color: #FFF;
+    }
+
+    #routeSearchResult {
+        font-size: 2vw;
+    }
+
+    #routeSearchResult .search .button {
+        width: 60%;
+    }
+
+    #routeSearchResult .ticketTitle, #routeSearchResult .price, #routeSearchResult .summary {
+        font-size: 2.5vw;
+        line-height: 1;
     }
 }
