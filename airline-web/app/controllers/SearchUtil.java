@@ -21,6 +21,7 @@ import scala.collection.JavaConverters;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class SearchUtil {
 	static {
@@ -84,17 +85,22 @@ public class SearchUtil {
 
 	}
 
+	private static final Pattern letterSpaceOnlyPattern = Pattern.compile("^[ A-Za-z]+$");
+
 	public static List<AirportSearchResult> search(String input) {
-		//TODO sanitize input?
+		if (!letterSpaceOnlyPattern.matcher(input).matches()) {
+			return Collections.emptyList();
+		}
+
 		try (RestHighLevelClient client = getClient()) {
 			SearchRequest searchRequest = new SearchRequest("airports");
 			SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
 
 			QueryStringQueryBuilder multiMatchQueryBuilder = QueryBuilders.queryStringQuery(input + "*");
-			multiMatchQueryBuilder.field("airportIata",50);
-			multiMatchQueryBuilder.field("airportName",0);
-			multiMatchQueryBuilder.field("airportCity",10);
+			multiMatchQueryBuilder.field("airportIata",5);
+			multiMatchQueryBuilder.field("airportName",1);
+			multiMatchQueryBuilder.field("airportCity",2);
 			multiMatchQueryBuilder.defaultOperator(Operator.AND);
 //			multiMatchQueryBuilder.fuzziness(Fuzziness.TWO);
 //			multiMatchQueryBuilder.maxExpansions(100);
@@ -102,7 +108,7 @@ public class SearchUtil {
 //			multiMatchQueryBuilder.tieBreaker(20);
 
 			multiMatchQueryBuilder.type(MultiMatchQueryBuilder.Type.BEST_FIELDS);
-			multiMatchQueryBuilder.boost(20);
+
 
 			searchSourceBuilder.query(multiMatchQueryBuilder).size(100);
 
