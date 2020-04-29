@@ -127,12 +127,9 @@ object LinkSource {
             FlightType(resultSet.getInt("flight_type")),
             resultSet.getInt("flight_number"))
           link.id = resultSet.getInt("id")
-          
-          assignedAirplaneCache.get(link.id) match {
-            case Some(airplaneAssignments) =>
-              link.setAssignedAirplanes(airplaneAssignments)
-            case None =>
-              link.setAssignedAirplanes(Map.empty)
+
+          assignedAirplaneCache.get(link.id).foreach { airplaneAssignments =>
+            link.setAssignedAirplanes(airplaneAssignments)
           }
           
           links += link          
@@ -245,6 +242,12 @@ object LinkSource {
           val airplanesForThisLink = assignments.getOrElseUpdate(link, new HashMap[Airplane, LinkAssignment]);
           airplanesForThisLink.put(airplane, LinkAssignment(assignmentResultSet.getInt("frequency"), assignmentResultSet.getInt("flight_minutes")))
         };
+      }
+
+      linkIds.foreach { linkId => //fill the link id with no airplane assigned with empty map
+        if (!assignments.contains(linkId)) {
+          assignments.put(linkId, HashMap.empty)
+        }
       }
       
       assignmentResultSet.close()
