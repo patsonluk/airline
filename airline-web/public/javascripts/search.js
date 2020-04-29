@@ -4,6 +4,7 @@ var loadedAlerts = []
 
 function showSearchCanvas() {
 	setActiveDiv($("#searchCanvas"))
+	$("#searchCanvas").css("display", "flex")
 	highlightTab($('.searchCanvasTab'))
 	$("#routeSearchResult").empty()
 }
