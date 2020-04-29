@@ -100,6 +100,13 @@
 
 }
 
+#searchCanvas .button {
+    width: 200px;
+    text-align: center;
+    display: block;
+    margin : 10px auto;
+}
+
 #searchCanvas .button:hover {
 	background:linear-gradient(to bottom, #dfdfdf 5%, #ededed 100%);
 	background-color:#dfdfdf;

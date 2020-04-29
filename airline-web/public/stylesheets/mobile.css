@@ -71,8 +71,12 @@ and (max-device-width : 640px) {
         font-size: 2vw;
     }
 
-    #routeSearchResult .search.button {
+    #searchCanvas .search.button {
         width: 60%;
+    }
+
+    #searchCanvas h2 {
+        font-size: 8vw;
     }
 
     #routeSearchResult .ticketTitle, #routeSearchResult .price, #routeSearchResult .summary {
