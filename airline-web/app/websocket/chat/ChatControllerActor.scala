@@ -152,7 +152,7 @@ class ChatControllerActor extends Actor {
 abstract class ChatCommand(val command : String) {
   val commandToken = "/" + command
   def execute(message: ChatMessage) : ChatMessage
-  val isCommand = (message : ChatMessage) => message.text.contains(commandToken)
+  val isCommand = (message : ChatMessage) => message.text.startsWith(commandToken)
   val hasPermission : (ChatMessage => Boolean)
 
 }

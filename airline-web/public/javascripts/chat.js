@@ -222,10 +222,11 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 //	var userIcon = getUserLevelImg(userLevel)
 //	airlineSpan.append(userIcon)
 
+    var prefix = "[" + dateString + "] " + airlineName + ": "
 	if (!r_msg.allianceRoomId) {
-		chat.gmessages.push("[" + dateString + "] " + airlineName + ": " + r_msg.text);
+		chat.gmessages.push(prefix + r_msg.text);
 	} else {
-		chat.amessages.push("[" + dateString + "] " + airlineName + ": " + r_msg.text);
+		chat.amessages.push(prefix + r_msg.text);
 	}
     $scope.$digest();
 
@@ -234,13 +235,13 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
     $('.chat-history').each (function(){
         emojify.run($(this).find("li:last-child")[0]);   // translate emoji to images
         if (r_msg.imagePermission && !isMobileDeviceValue) {
-            replaceImg($(this).find("li:last-child"))
+            replaceImg($(this).find("li:last-child"), prefix)
         }
     })
 
     if (!$('#scroll_lockc').is(":checked")) {
         $(".chat-history").each(function() {
-            $(this).scrollTop($(this).prop("scrollHeight"))
+                $(this).scrollTop($(this).prop("scrollHeight"))
             }
         )
 	}
@@ -257,11 +258,11 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 emojify.setConfig({img_dir : 'assets/images/emoji'});
 
 var imgTag = "/img"
-function replaceImg(input) {
-    var tagStart = input.text().indexOf(imgTag);
-    if (tagStart >= 0) {
-        var prefix = input.text().substring(0, tagStart)
-        var src = input.text().substring(tagStart + imgTag.length).trim()
+function replaceImg(input, prefix) {
+    var text= input.text().trim().substring(prefix.length) //strip the airline name and date
+
+    if (text.startsWith(imgTag)) {
+        var src = text.substring(imgTag.length)
         var img = $("<img>")
         img.attr("src", src)
         img.css("max-height", "80px")
