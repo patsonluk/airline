@@ -128,8 +128,11 @@ object LinkSource {
             resultSet.getInt("flight_number"))
           link.id = resultSet.getInt("id")
           
-          assignedAirplaneCache.get(link.id).foreach { airplaneAssignments =>
-            link.setAssignedAirplanes(airplaneAssignments)
+          assignedAirplaneCache.get(link.id) match {
+            case Some(airplaneAssignments) =>
+              link.setAssignedAirplanes(airplaneAssignments)
+            case None =>
+              link.setAssignedAirplanes(Map.empty)
           }
           
           links += link          
