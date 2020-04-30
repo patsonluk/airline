@@ -61,11 +61,14 @@ object PassengerSimulation {
     //10 random
     //findRandomRoutes(airportGroups(0)(0), airportGroups(4)(0), links.toList, 10)
   }
-  
+
+  val MIN_ITERATION = 3
+  val MAX_ITERATION = 7
+  val CONSUMPTION_CYCLE_MAX = 10//try and rebuild routes 10 times
+
   def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : (Map[(PassengerGroup, Airport, Route), Int], Map[(PassengerGroup, Airport), Int]) = {
      val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
     val missedDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
-     val consumptionCycleMax = 10; //try and rebuild routes 10 times
      var consumptionCycleCount = 0;
      //start consumption cycles
      
@@ -94,7 +97,7 @@ object PassengerSimulation {
      println("After pruning : " + demandChunks.size);
 
 
-     while (consumptionCycleCount < consumptionCycleMax) {
+     while (consumptionCycleCount < CONSUMPTION_CYCLE_MAX) {
        println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
        println("links: " + links.size)
        
@@ -111,11 +114,14 @@ object PassengerSimulation {
        //remove exhausted links
        val availableLinks = links.filter { _.getTotalAvailableSeats > 0 }
        
-       println("Available links: " + availableLinks.length)
+
        
 //       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
 //       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
-       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
+       //val maxIteration = MIN_ITERATION + (MAX_ITERATION - MIN_ITERATION) * (consumptionCycleCount + 1) / CONSUMPTION_CYCLE_MAX
+       val maxIteration = Math.min(MIN_ITERATION + consumptionCycleCount, MAX_ITERATION)
+       println(s"Available links: ${availableLinks.length} max iteration: $maxIteration")
+       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, maxIteration)
        
        //start consuming routes
        println()
@@ -344,7 +350,7 @@ object PassengerSimulation {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Map[PassengerGroup, Map[Airport, Route]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness, maxIteration : Int = 4) : Map[PassengerGroup, Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
@@ -411,7 +417,7 @@ object PassengerSimulation {
         
         //then find the shortest route based on the cost
         
-        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
+        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, maxIteration)
         if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
           print(".")
           if (progressCount.incrementAndGet() % 10 == 0) {
