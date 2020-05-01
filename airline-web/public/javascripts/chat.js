@@ -239,12 +239,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
         }
     })
 
-    if (!$('#scroll_lockc').is(":checked")) {
-        $(".chat-history").each(function() {
-                $(this).scrollTop($(this).prop("scrollHeight"))
-            }
-        )
-	}
+    adjustScroll()
 
 	if ($('.chat').is(':hidden')) {
 		$('.notify-bubble').show(400);
@@ -256,6 +251,14 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 });
 
 emojify.setConfig({img_dir : 'assets/images/emoji'});
+
+function adjustScroll() {
+    if (!$('#scroll_lockc').is(":checked")) {
+        $(".chat-history").each(function() {
+            $(this).scrollTop($(this).prop("scrollHeight"))
+        })
+    }
+}
 
 var imgTag = "/img"
 function replaceImg(input, prefix) {
@@ -278,6 +281,9 @@ function replaceImg(input, prefix) {
             }
         })
         //img.attr("src", "assets/images/emoji/banana.png")
+        img.on('load', function() {
+            adjustScroll()
+            })
         input.html(prefix)
         input.append(img)
     }
