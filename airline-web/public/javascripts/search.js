@@ -216,6 +216,10 @@ function airportSearchKeyDown(event, input, resultContainer) {
     }
 }
 
+function airportSearchChange(input, resultContainer) {
+    searchAirport(event, input, resultContainer)
+    input.removeData("selectedAirportId")
+}
 
 function airportSearchKeyUp(event, input, resultContainer) {
     if (event.keyCode == 38) {
@@ -224,9 +228,6 @@ function airportSearchKeyUp(event, input, resultContainer) {
         changeAirportSelection(1, resultContainer)
     } else if (event.keyCode == 13) { //enter
         confirmAirportSelection(input, resultContainer)
-    } else {
-        searchAirport(event, input, resultContainer)
-        input.removeData("selectedAirportId")
     }
 }
 
