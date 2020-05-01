@@ -2509,14 +2509,14 @@
 						  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
 							  <div style="float: left; width : 50%; position: relative;">
 								  <div class="airportSearchInput">
-									  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#fromAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))">
+									  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" oninput="airportSearchChange($(this), $('#fromAirportResult'))" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#fromAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))">
 									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 								  </div>
 								  <div id="fromAirportResult" class="airportSearchResult"></div>
 							  </div>
 							  <div style="float: left; width : 50%; position: relative;">
 								  <div class="airportSearchInput">
-									  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#toAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))">
+									  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" oninput="airportSearchChange($(this), $('#toAirportResult'))" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#toAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))">
 									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 								  </div>
 								  <div id="toAirportResult" class="airportSearchResult"></div>
