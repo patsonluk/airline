@@ -476,16 +476,48 @@ function applyForAlliance() {
 function showAllianceMap() {
 	clearAllPaths()
 	deselectLink()
-	
+
+	var alliancePaths = []
+
 	$.ajax({
 		type: 'GET',
-		url: "alliances/" + selectedAlliance.id + "/links",
+		url: "alliances/" + selectedAlliance.id + "/details",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(links) {
-				$.each(links, function(index, link) {
-					drawAllianceLink(link)
+	    success: function(result) {
+				$.each(result.links, function(index, link) {
+					alliancePaths.push(drawAllianceLink(link))
 				})
+				var allianceBases = []
+				 $.each(result.members, function(index, airline) {
+                    $.merge(allianceBases, airline.bases)
+                })
+
+				var airportMarkers = updateAirportBaseMarkers(allianceBases, alliancePaths)
+				//now add extra listener for alliance airports
+				$.each(airportMarkers, function(key, marker) {
+                        marker.addListener('mouseover', function(event) {
+                            closeAlliancePopups()
+                            var baseInfo = marker.baseInfo
+                            $("#allianceBasePopup .city").html(getCountryFlagImg(baseInfo.countryCode) + "&nbsp;" + baseInfo.city)
+                            $("#allianceBasePopup .airportName").text(baseInfo.airportName)
+                            $("#allianceBasePopup .iata").html(baseInfo.airportCode)
+                            $("#allianceBasePopup .airlineName").html(getAirlineLogoImg(baseInfo.airlineId) + "&nbsp;" + baseInfo.airlineName)
+                            $("#allianceBasePopup .baseScale").html(baseInfo.scale)
+
+                            var infoWindow = new google.maps.InfoWindow({
+                                 content: $("#allianceBasePopup").html(),
+                                 maxWidth : 1200});
+                            //infoWindow.setPosition(event.latLng);
+                            infoWindow.open(map, marker);
+                            map.allianceBasePopup = infoWindow
+                        })
+                        marker.addListener('mouseout', function(event) {
+                            closeAlliancePopups()
+                        })
+                    })
+
+
 				showWorldMap();
 				window.setTimeout(addExitButton , 1000); //delay otherwise it doesn't push to center
 	    },
@@ -534,7 +566,8 @@ function drawAllianceLink(link) {
 		     strokeOpacity: strokeOpacity,
 		     strokeWeight: 2,
 		     path: [from, to],
-		     zIndex : 1100,
+		     zIndex : 90,
+		     link : link
 		});
 		
 	var fromAirport = getAirportText(link.fromAirportCity, link.fromAirportCode)
@@ -547,7 +580,7 @@ function drawAllianceLink(link) {
 	     strokeOpacity: 0.0001,
 	     strokeWeight: 25,
 	     path: [from, to],
-	     zIndex : 401,
+	     zIndex : 100,
 	     fromAirport : fromAirport,
 	     fromCountry : link.fromCountryCode, 
 	     toAirport : toAirport,
@@ -559,35 +592,60 @@ function drawAllianceLink(link) {
 	
 	linkPath.shadowPath = shadowPath
 	
-	var infowindow; 
-	shadowPath.addListener('mouseover', function(event) {
-		$("#allianceLinkPopupFrom").html(this.fromAirport + "&nbsp;" + getCountryFlagImg(this.fromCountry))
-		$("#allianceLinkPopupTo").html(this.toAirport + "&nbsp;" + getCountryFlagImg(this.toCountry))
-		$("#allianceLinkPopupCapacity").html(this.capacity)
-		$("#allianceLinkPopupAirline").html(getAirlineLogoImg(this.airlineId) + "&nbsp;" + this.airlineName)
 
-		
-		infowindow = new google.maps.InfoWindow({
-             content: $("#allianceLinkPopup").html(),
-             maxWidth : 600});
-		
-		infowindow.setPosition(event.latLng);
-		infowindow.open(map);
+	shadowPath.addListener('mouseover', function(event) {
+	    if (!map.allianceBasePopup) { //only do this if it is not hovered over base icon. This is a workaround as zIndex does not work - hovering over base icon triggers onmouseover event on the link below the icon
+            $("#allianceLinkPopupFrom").html(getCountryFlagImg(this.fromCountry) + "&nbsp;" + this.fromAirport)
+            $("#allianceLinkPopupTo").html(getCountryFlagImg(this.toCountry) + "&nbsp;" + this.toAirport)
+            $("#allianceLinkPopupCapacity").html(this.capacity)
+            $("#allianceLinkPopupAirline").html(getAirlineLogoImg(this.airlineId) + "&nbsp;" + this.airlineName)
+
+
+            var infowindow = new google.maps.InfoWindow({
+                 content: $("#allianceLinkPopup").html(),
+                 maxWidth : 1200});
+
+            infowindow.setPosition(event.latLng);
+            infowindow.open(map);
+            map.allianceLinkPopup = infowindow
+        }
 	})		
 	shadowPath.addListener('mouseout', function(event) {
-		infowindow.close()
+        closeAllianceLinkPopup()
 	})
 	
 	linkPath.setMap(map)
 	linkPath.shadowPath.setMap(map)
 	polylines.push(linkPath)
 	polylines.push(linkPath.shadowPath)
+
+    var resultPath = { path : linkPath, shadow : shadowPath } //kinda need this so it has consistent data structure as the normal flight paths
+    return resultPath
+}
+
+function closeAlliancePopups() {
+    if (map.allianceBasePopup) {
+        map.allianceBasePopup.close()
+        map.allianceBasePopup.setMap(null)
+        map.allianceBasePopup = undefined
+    }
+    closeAllianceLinkPopup()
+}
+
+function closeAllianceLinkPopup() {
+    if (map.allianceLinkPopup) {
+        map.allianceLinkPopup.close()
+        map.allianceLinkPopup.setMap(null)
+        map.allianceLinkPopup = undefined
+    }
 }
 
 
 function hideAllianceMap() {
 	clearAllPaths()
+	updateAirportMarkers(activeAirline)
 	updateLinksInfo() //redraw all flight paths
-		
+	closeAlliancePopups()
+
 	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
 }

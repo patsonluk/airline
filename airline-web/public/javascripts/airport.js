@@ -430,7 +430,8 @@ function addMarkers(airports) {
 //		  		airportAvailableSlots: airportInfo.availableSlots,
                 opacity: originalOpacity,
 		  		airport : airportInfo,
-		  		icon: icon
+		  		icon: icon,
+		  		originalIcon: icon, //so we can flip back and forth
 			  });
 		  
 		  var zIndex = airportInfo.size * 10 
@@ -730,54 +731,72 @@ function updateAirportSlots(airportId) {
 }
 
 
+function updateAirportBaseMarkers(newBaseAirports, relatedFlightPaths) {
+    //reset baseMarkers
+    $.each(baseMarkers, function(index, marker) {
+        marker.setIcon(marker.originalIcon)
+        marker.isBase = false
+        marker.setVisible(isShowMarker(marker, map.getZoom()))
+        marker.baseInfo = undefined
+        google.maps.event.clearListeners(marker, 'mouseover');
+        google.maps.event.clearListeners(marker, 'mouseout');
+
+    })
+    baseMarkers = []
+    var headquarterMarkerIcon = $("#map").data("headquarterMarker")
+    var baseMarkerIcon = $("#map").data("baseMarker")
+    $.each(newBaseAirports, function(key, baseAirport) {
+        var marker = markers[baseAirport.airportId]
+        if (baseAirport.headquarter) {
+            marker.setIcon(headquarterMarkerIcon)
+        } else {
+            marker.setIcon(baseMarkerIcon)
+        }
+        marker.setZIndex(999)
+        marker.isBase = true
+        marker.setVisible(true)
+        marker.baseInfo = baseAirport
+        var originalOpacity = marker.getOpacity()
+        marker.addListener('mouseover', function(event) {
+                    $.each(relatedFlightPaths, function(linkId, pathEntry) {
+                        var path = pathEntry.path
+                        var link = pathEntry.path.link
+                        if (!$(path).data("originalOpacity")) {
+                            $(path).data("originalOpacity", path.strokeOpacity)
+                        }
+                        if (link.fromAirportId != baseAirport.airportId || link.airlineId != baseAirport.airlineId) {
+                            path.setOptions({ strokeOpacity : 0.1 })
+                        } else {
+                            path.setOptions({ strokeOpacity : 0.8 })
+                        }
+                    })
+                })
+        marker.addListener('mouseout', function(event) {
+            $.each(relatedFlightPaths, function(linkId, pathEntry) {
+                var path = pathEntry.path
+                var originalOpacity = $(path).data("originalOpacity")
+                if (originalOpacity !== undefined) {
+                    path.setOptions({ strokeOpacity : originalOpacity })
+                }
+            })
+        })
+
+        baseMarkers.push(marker)
+    })
+
+    return baseMarkers
+}
+
 function updateAirportMarkers(airline) { //set different markers for head quarter and bases
 	if (!markers) { //markers not ready yet, wait
 		setTimeout(function() { updateAirportMarkers(airline) }, 100)
 	} else {
-		//reset baseMarkers
-		$.each(baseMarkers, function(index, marker) {
-			marker.setIcon(marker.originalIcon)
-		})
-		baseMarkers = []
-		var headquarterMarkerIcon = $("#map").data("headquarterMarker")
-		var baseMarkerIcon = $("#map").data("baseMarker")
-		$.each(airline.baseAirports, function(key, baseAirport) {
-			var marker = markers[baseAirport.airportId]
-			marker.originalIcon = marker.icon
-			if (baseAirport.headquarter) {
-				marker.setIcon(headquarterMarkerIcon) 
-			} else {
-				marker.setIcon(baseMarkerIcon)
-			}
-			marker.setZIndex(999)
-			marker.isBase = true
-			marker.setVisible(true)
-			var originalOpacity = marker.getOpacity()
-			marker.addListener('mouseover', function(event) {
-			            $.each(flightPaths, function(linkId, pathEntry) {
-			                var path = pathEntry.path
-			                var link = pathEntry.path.link
-                            if (link.fromAirportId != baseAirport.airportId) {
-                                if (!$(path).data("originalOpacity")) {
-                                    $(path).data("originalOpacity", path.strokeOpacity)
-                                }
-                                path.setOptions({ strokeOpacity : 0.1 })
-                            }
-			            })
-			       	})
-            marker.addListener('mouseout', function(event) {
-                $.each(flightPaths, function(linkId, pathEntry) {
-                    var path = pathEntry.path
-                    var originalOpacity = $(path).data("originalOpacity")
-                    if (originalOpacity !== undefined) {
-                        path.setOptions({ strokeOpacity : originalOpacity })
-                    }
-                })
-            })
-
-			baseMarkers.push(marker)			
-		})
-	}
+	    if (airline) {
+		    updateAirportBaseMarkers(airline.baseAirports, flightPaths)
+		} else {
+            updateAirportBaseMarkers([])
+		}
+    }
 }
 
 //airport links view

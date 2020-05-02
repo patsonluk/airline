@@ -198,16 +198,29 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       result
     }
   }
+
+  object AllianceAirlinesWrites extends Writes[List[Airline]] { //a bit more info -nothing confidential tho! since this is accessible to public
+    def writes(airlines: List[Airline]): JsValue =  {
+      var result = Json.arr()
+      airlines.foreach { airline =>
+        var airlineJson = Json.toJson(airline).asInstanceOf[JsObject]
+        //then add base info
+        airlineJson = airlineJson + ("bases", Json.toJson(airline.getBases()))
+        result = result.append(airlineJson)
+      }
+      result
+    }
+  }
   
-  def getAllianceLinks(allianceId : Int) = Action { request =>
+  def getAllAllianceDetails(allianceId : Int) = Action { request =>
     AllianceSource.loadAllianceById(allianceId, true) match {
       case None => NotFound("Alliance with " + allianceId + " is not found")
       case Some(alliance) => {
         val links = alliance.members.flatMap { allianceMember =>
           LinkSource.loadLinksByAirlineId(allianceMember.airline.id)
         }
-        
-        Ok(Json.toJson(links)(SimpleLinkWrites))
+
+        Ok(Json.obj("links" -> Json.toJson(links)(SimpleLinkWrites), "members" -> Json.toJson(alliance.members.map(_.airline))(AllianceAirlinesWrites)))
       }
     }
   }
