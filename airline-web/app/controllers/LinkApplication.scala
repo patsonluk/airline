@@ -316,7 +316,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
       val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
-      if (incomingLink.futureFrequency() > maxFrequencyAbsolute) {
+      if (frequencyChange > 0 && incomingLink.futureFrequency() > maxFrequencyAbsolute) { //only check absolute if there's a frequency change
         return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
       }
 
