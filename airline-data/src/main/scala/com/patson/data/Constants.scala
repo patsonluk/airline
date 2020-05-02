@@ -118,6 +118,12 @@ object Constants {
   
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"
+
+// DB Optimizations
+// Load from File instead of direct sql inserts (0 for direct, 1 for FILE LOAD)
+  val DB_FILE_LOAD = 1
+  val DB_FILE_LOCATION = "/tmp/airline_data.txt"
+
   val configFactory = ConfigFactory.load()
   val DB_HOST = if (configFactory.hasPath("mysqldb.host")) configFactory.getString("mysqldb.host") else "localhost:3306"
   println("!!!!!!!!!!!!!!!DB HOST IS " + DB_HOST)
