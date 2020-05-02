@@ -492,7 +492,13 @@ function showAllianceMap() {
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+	    beforeSend: function() {
+            $('body .loadingSpinner').show()
+        },
+        complete: function(){
+            $('body .loadingSpinner').hide()
+        }
 	});
 }
 
@@ -511,12 +517,21 @@ function drawAllianceLink(link) {
 	if (!strokeColor) {
 		strokeColor = "#DC83FC"
 	}
-		
+
+    var maxOpacity = 0.7
+    var minOpacity = 0.1
+    var standardCapacity = 10000
+    var strokeOpacity
+	if (link.capacity.total < standardCapacity) {
+        strokeOpacity = minOpacity + link.capacity.total / standardCapacity * (maxOpacity - minOpacity)
+    } else {
+        strokeOpacity = maxOpacity
+    }
 		
 	var linkPath = new google.maps.Polyline({
 			 geodesic: true,
 		     strokeColor: strokeColor,
-		     strokeOpacity: 0.6,
+		     strokeOpacity: strokeOpacity,
 		     strokeWeight: 2,
 		     path: [from, to],
 		     zIndex : 1100,
@@ -537,6 +552,7 @@ function drawAllianceLink(link) {
 	     fromCountry : link.fromCountryCode, 
 	     toAirport : toAirport,
 	     toCountry : link.toCountryCode,
+	     capacity : link.capacity.total,
 	     airlineName : link.airlineName,
 	     airlineId : link.airlineId
 	});
@@ -547,8 +563,9 @@ function drawAllianceLink(link) {
 	shadowPath.addListener('mouseover', function(event) {
 		$("#allianceLinkPopupFrom").html(this.fromAirport + "&nbsp;" + getCountryFlagImg(this.fromCountry))
 		$("#allianceLinkPopupTo").html(this.toAirport + "&nbsp;" + getCountryFlagImg(this.toCountry))
+		$("#allianceLinkPopupCapacity").html(this.capacity)
 		$("#allianceLinkPopupAirline").html(getAirlineLogoImg(this.airlineId) + "&nbsp;" + this.airlineName)
-		
+
 		
 		infowindow = new google.maps.InfoWindow({
              content: $("#allianceLinkPopup").html(),
