@@ -13,59 +13,6 @@ import scala.util.Random
 
 
 class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-  implicit object SearhResultWrites extends Writes[(SimpleRoute, Int)] {
-    def writes(route: (SimpleRoute, Int)): JsValue = {
-      var result = Json.obj("passenger" -> route._2)
-      var routeJson = Json.arr()
-      var index = 0
-      var previousArrivalMinutes = 0
-      val schedule : Map[Link, TimeSlot] = generateRouteSchedule(route._1.links.map(_._1)).toMap
-      val detailedLinkCache : mutable.HashMap[Int, Option[Link]] = mutable.HashMap()
-      route._1.links.foreach {
-        case(link, linkClass, inverted) => {
-          val (from, to) = if (!inverted) (link.from, link.to) else (link.to, link.from)
-          val departureMinutes = adjustMinutes(schedule(link).totalMinutes, previousArrivalMinutes)
-          val arrivalMinutes = departureMinutes + link.duration
-          var linkJson = Json.obj(
-            "airlineName" -> link.airline.name,
-            "airlineId" -> link.airline.id,
-            "flightCode" -> LinkUtil.getFlightCode(link.airline, link.flightNumber),
-            "linkClass" -> linkClass.label,
-            "fromAirportId" -> from.id,
-            "fromAirportName" -> from.name,
-            "fromAirportIata" -> from.iata,
-            "fromAirportCity" -> from.city,
-            "fromAirportCountryCode" -> from.countryCode,
-            "toAirportId" -> to.id,
-            "toAirportName" -> to.name,
-            "toAirportIata" -> to.iata,
-            "toAirportCity" -> to.city,
-            "duration" -> link.duration,
-            "toAirportCountryCode" -> to.countryCode,
-            "price" -> link.price(linkClass),
-            "departure" -> departureMinutes,
-            "arrival" -> arrivalMinutes
-           )
-
-          detailedLinkCache.getOrElseUpdate(link.id, LinkSource.loadLinkById(link.id)).foreach { detailedLink =>
-            linkJson = linkJson + ("computedQuality" -> JsNumber(detailedLink.computedQuality))
-            detailedLink.getAssignedModel().foreach { model =>
-              linkJson = linkJson + ("airplaneModelName" -> JsString(model.name))
-            }
-            linkJson = linkJson + ("features" -> Json.toJson(getLinkFeatures(detailedLink).map(_.toString)))
-          }
-
-          previousArrivalMinutes = arrivalMinutes
-
-          routeJson = routeJson.append(linkJson)
-          index += 1
-        }
-      }
-
-      result = result + ("route" -> routeJson) + ("passenger" -> JsNumber(route._2))
-      result
-    }
-  }
 
   implicit object AirportSearchResultWrites extends Writes[AirportSearchResult] {
     def writes(airportSearchResult : AirportSearchResult) : JsValue = {
@@ -147,7 +94,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
         var index = 0
         var previousArrivalMinutes = 0
         val schedule : Map[Link, TimeSlot] = generateRouteSchedule(route.links.map(_._1)).toMap
-        val startAirline = route.links(0)._1.airline
+        var principleAirline = route.links(0)._1.airline
         route.links.foreach {
           case(link, linkClass, inverted) => {
             val (from, to) = if (!inverted) (link.from, link.to) else (link.to, link.from)
@@ -158,10 +105,14 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
               if (index == 0) {
                 false
               } else {
-                link.airline != startAirline && airlineGroupLookup(startAirline).contains(link.airline)
+                link.airline != principleAirline && airlineGroupLookup(principleAirline).contains(link.airline)
               }
 
-            val airline = if (codeShareFlight) startAirline else link.airline
+            if (!codeShareFlight) {
+              principleAirline = link.airline
+            }
+
+            val airline = if (codeShareFlight) principleAirline else link.airline
             var linkJson = Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
