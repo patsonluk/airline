@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.{AllianceSource, CycleSource, LinkSource}
+import com.patson.data.{AirlineSource, AllianceSource, CycleSource, LinkSource}
 import com.patson.model.AllianceEvent._
 import com.patson.model.AllianceRole._
 import com.patson.model.AllianceStatus._
@@ -224,7 +224,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       }
     }
   }
-  
+
   def getAllianceChampions(allianceId : Int) = Action { request =>
     AllianceSource.loadAllianceById(allianceId, true) match {
       case None => NotFound("Alliance with " + allianceId + " is not found")

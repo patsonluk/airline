@@ -202,7 +202,7 @@ function updateLinksInfo() {
 	clearAllPaths()
 
 	if (activeAirline) {
-		var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
+		var url = "airlines/" + activeAirline.id + "/links-details"
 		
 		$.ajax({
 			type: 'GET',
@@ -226,7 +226,7 @@ function updateLinksInfo() {
 
 //refresh links without removal/addition
 function refreshLinks(forceRedraw) {
-	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
+	var url = "airlines/" + activeAirline.id + "/links-details"
 	
 	$.ajax({
 		type: 'GET',
@@ -1506,7 +1506,7 @@ function showLinksDetails() {
 }
 
 function loadLinksTable() {
-	var url = "airlines/" + activeAirline.id + "/links?getProfit=true"
+	var url = "airlines/" + activeAirline.id + "/links-details"
 	$.ajax({
 		type: 'GET',
 		url: url,
@@ -1926,6 +1926,44 @@ function updatePrefernceTypeComposition(countryComposition) {
 	$.each(countryComposition, function(key, entry) {
 		$('#linkCompositionModal .preferenceTypeTable').append("<div class='table-row data-row'><div style='display: table-cell; width: 70%;'>" + entry.title
 	 			   + "</div><div style='display: table-cell; width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+	});
+}
+
+
+function updateAirlineBaseList(airlineId, table) {
+	table.children('.table-row').remove()
+
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + airlineId + "/bases",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(bases) {
+	    	var hasHeadquarters = false
+	    	var hasBases = false
+	    	$(bases).each(function(index, base) {
+	    		var row = $("<div class='table-row'></div>")
+	    		hasBases = true
+	    		if (base.headquarter) {
+	    			row.append("<div class='cell'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>")
+	    			table.prepend(row)
+	    		} else {
+	    			row.append("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>")
+	    			table.append(row)
+	    		}
+	    	})
+	    	var emptyRow = $("<div class='table-row'></div>")
+			emptyRow.append("<div class='cell'>-</div>")
+
+			if (!hasBases) {
+    			table.append(emptyRow)
+    		}
+
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
 	});
 }
 

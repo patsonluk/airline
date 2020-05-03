@@ -186,6 +186,7 @@ package object controllers {
       "fromCountryCode" -> JsString(link.from.countryCode),
       "toCountryCode" -> JsString(link.to.countryCode),
       "airlineId" -> JsNumber(link.airline.id),
+      "airlineName" -> JsString(link.airline.name),
       "price" -> Json.toJson(link.price),
       "distance" -> JsNumber(link.distance),
       "capacity" -> Json.toJson(link.capacity),

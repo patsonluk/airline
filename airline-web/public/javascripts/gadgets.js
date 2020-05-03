@@ -367,8 +367,13 @@ function setActiveDiv(activeDiv, callback) {
 	var existingActiveDiv = activeDiv.siblings(":visible").filter(function (index) {
 		return $(this).css("clear") != "both"
 	})
+	if (!callback && activeDiv.data("initCallback")) {
+        callback = activeDiv.data("initCallback")
+        activeDiv.removeData("initCallback")
+	}
+
 	if (existingActiveDiv.length > 0){
-		existingActiveDiv.fadeOut(200, function() {
+	    existingActiveDiv.fadeOut(200, function() {
 		    activeDiv.fadeIn(200, callback)
         })
 	} else {
@@ -379,6 +384,7 @@ function setActiveDiv(activeDiv, callback) {
     	    activeDiv.fadeIn(200, callback);
 		}
 	}
+
 	
 	activeDiv.parent().show()
 	return true;

@@ -471,6 +471,19 @@ function showWorldMap() {
 	}
 }
 
+//switch to map view w/o considering leaving current tab
+function switchMap() {
+    var mapCanvas = $('#worldMapCanvas')
+    var existingActiveDiv = mapCanvas.siblings(":visible").filter(function (index) {
+		return $(this).css("clear") != "both"
+	})
+    if (existingActiveDiv.length > 0) {
+        existingActiveDiv.fadeOut(200, function() {
+            mapCanvas.fadeIn(200)
+        })
+    }
+}
+
 function showAnnoucement() {
 	// Get the modal
 	var modal = $('#annoucementModal')

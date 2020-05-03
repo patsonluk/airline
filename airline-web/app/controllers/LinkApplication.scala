@@ -433,33 +433,33 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     Ok(Json.toJson(links))
   }
   
-  def getLinks(airlineId : Int, getProfit : Boolean, toAirportId : Int) = Action {
-     
-    val links = 
+  def getLinks(airlineId : Int, toAirportId : Int) = Action {
+
+    val links =
       if (toAirportId == -1) {
         LinkSource.loadLinksByAirlineId(airlineId)
       } else {
         LinkSource.loadLinksByCriteria(List(("airline", airlineId), ("to_airport", toAirportId)))
       }
-    if (!getProfit) {
-      Ok(Json.toJson(links)).withHeaders(
-        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-      )
-    } else {
-      val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(immutable.Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
-        foldMap + (linkConsumptionDetails.link.id -> linkConsumptionDetails)
-      }
-      val lastUpdates : scala.collection.immutable.Map[Int, Calendar] = LinkSource.loadLinkLastUpdates(links.map(_.id))
+    Ok(Json.toJson(links)).withHeaders(
+      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+    )
+  }
 
-      val linksWithProfit: Seq[LinkExtendedInfo] = links.map { link =>
-        //(link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats))
-        LinkExtendedInfo(link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats), lastUpdates(link.id))
-      }
-      Ok(Json.toJson(linksWithProfit)).withHeaders(
-        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-      )
+  def getLinksDetails(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val links = LinkSource.loadLinksByAirlineId(airlineId)
+    val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(immutable.Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
+      foldMap + (linkConsumptionDetails.link.id -> linkConsumptionDetails)
     }
-     
+    val lastUpdates : scala.collection.immutable.Map[Int, Calendar] = LinkSource.loadLinkLastUpdates(links.map(_.id))
+
+    val linksWithProfit: Seq[LinkExtendedInfo] = links.map { link =>
+      //(link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats))
+      LinkExtendedInfo(link, consumptions.get(link.id).fold(0)(_.profit), consumptions.get(link.id).fold(0)(_.revenue), consumptions.get(link.id).fold(LinkClassValues.getInstance())(_.link.soldSeats), lastUpdates(link.id))
+    }
+    Ok(Json.toJson(linksWithProfit)).withHeaders(
+      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+    )
   }
 
   case class LinkExtendedInfo(link : Link, profit : Int, revenue : Int, soldSeats : LinkClassValues, lastUpdate : Calendar)

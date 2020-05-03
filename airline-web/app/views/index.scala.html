@@ -2159,6 +2159,8 @@
 									<div class="value alliance"></div>
 								</div>
 							</div>
+							<div class="button" onclick="showRivalMap()">Flight Map</div>
+
                             <div class="adminActions" style="display: none;">
                                 <h4>Admin Action</h4>
                                 <div>Username: <span class="username"></span></div>
@@ -2678,24 +2680,24 @@
 
 
     
-    <div style="display: none; width: 100%;" id="allianceLinkPopup">
+    <div style="display: none; width: 100%;" id="linkPopup">
     	<input type="hidden" id="airportLinkPopupId">
     	<div class="table" style="width: 100%">
    			<div class="table-row">
    				<div class="label"><h5>From :</h5></div>
-   				<div class="value" id="allianceLinkPopupFrom"></div>
+   				<div class="value" id="linkPopupFrom"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>To:</h5></div>
-   				<div class="value" id="allianceLinkPopupTo"></div>
+   				<div class="value" id="linkPopupTo"></div>
    			</div>
             <div class="table-row">
                 <div class="label"><h5>Capacity:</h5></div>
-                <div class="value" id="allianceLinkPopupCapacity"></div>
+                <div class="value" id="linkPopupCapacity"></div>
             </div>
    			<div class="table-row">
    				<div class="label"><h5>Airline:</h5></div>
-   				<div class="value" id="allianceLinkPopupAirline"></div>
+   				<div class="value" id="linkPopupAirline"></div>
    			</div>
 		</div>
     </div>
@@ -3423,6 +3425,38 @@
 					  <div class="cell" style="width: 30%" align="right">Missed Percentage</div>
 				  </div>
 			  </div>
+		  </div>
+	  </div>
+
+
+	  <div id="allianceMemberModal" class="modal">
+		  <div class="modal-content" style="width : 400px;">
+			  <span class="close" onclick="closeModal($('#allianceMemberModal'))">&times;</span>
+
+			  <div class="table" style="width: 100%;">
+				  <div class="table-row">
+					  <div class="label"><h5>Airline:</h5></div>
+					  <div class="value airlineName"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Status:</h5></div>
+					  <div class="value allianceMemberStatus"></div>
+				  </div>
+			  </div>
+			  <h4 style="margin-top: 10px;">Bases</h4>
+			  <div style="width: 100%;">
+				  <div class="table data baseList" style="width: 100%;">
+					  <div class="table-header">
+						  <div class="cell" style="width: 20%">Scale</div>
+						  <div class="cell" style="width: 80%">Airport</div>
+					  </div>
+				  </div>
+			  </div>
+
+
+
+			  <div class="button" onclick="closeModal($('#allianceMemberModal')); showRivalsCanvas($('#allianceMemberModal').data('airlineId'))">Details</div>
+			  <div class="button" onclick="closeModal($('#allianceMemberModal'))")>Cancel</div>
 		  </div>
 	  </div>
 
