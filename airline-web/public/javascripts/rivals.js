@@ -376,13 +376,19 @@ function showRivalMap() {
     	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
     	    }
     });
-    switchMap()
     window.setTimeout(function() {
-        if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
-            map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Rival Flight Map', 'hideRivalMap()', 'hideRivalMapButton')[0]);
+        if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() > 0) {
+            map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
         }
+        map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Rival Flight Map', 'hideRivalMap()', 'hideRivalMapButton')[0]);
     }, 1000); //delay otherwise it doesn't push to center
-
+    switchMap()
+    $("#worldMapCanvas").data("initCallback", function() { //if go back to world map, re-init the map
+    	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+    	clearAllPaths()
+        updateAirportMarkers(activeAirline)
+        updateLinksInfo() //redraw all flight paths
+    })
 }
 
 function hideRivalMap() {
@@ -390,8 +396,4 @@ function hideRivalMap() {
 	clearAllPaths()
 	updateAirportBaseMarkers([]) //revert base markers
 	setActiveDiv($("#rivalsCanvas"))
-	$("#worldMapCanvas").data("initCallback", function() { //if go back to world map, re-init the map
-        updateAirportMarkers(activeAirline)
-        updateLinksInfo() //redraw all flight paths
-	})
 }

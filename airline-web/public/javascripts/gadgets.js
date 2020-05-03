@@ -378,6 +378,9 @@ function setActiveDiv(activeDiv, callback) {
         })
 	} else {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
+		    if (callback) {
+		        callback()
+		    }
 			return false;
 		} else {
 			activeDiv.siblings().hide();
