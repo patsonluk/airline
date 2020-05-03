@@ -116,7 +116,8 @@ package object controllers {
     def writes(linkClassValues: LinkClassValues): JsValue = JsObject(List(
       "economy" -> JsNumber(linkClassValues(ECONOMY)),
       "business" -> JsNumber(linkClassValues(BUSINESS)),
-      "first" -> JsNumber(linkClassValues(FIRST))))
+      "first" -> JsNumber(linkClassValues(FIRST)),
+      "total" -> JsNumber(linkClassValues.total)))
   }
   object AirplaneAssignmentsRead extends Reads[Map[Airplane, Int]] {
     def reads(json : JsValue) : JsResult[Map[Airplane, Int]] = {
@@ -185,6 +186,7 @@ package object controllers {
       "fromCountryCode" -> JsString(link.from.countryCode),
       "toCountryCode" -> JsString(link.to.countryCode),
       "airlineId" -> JsNumber(link.airline.id),
+      "airlineName" -> JsString(link.airline.name),
       "price" -> Json.toJson(link.price),
       "distance" -> JsNumber(link.distance),
       "capacity" -> Json.toJson(link.capacity),
