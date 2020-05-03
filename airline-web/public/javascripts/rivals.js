@@ -148,6 +148,7 @@ function loadRivalDetails(row, airlineId) {
 	updateRivalBaseList(airlineId)
 
 	showAdminActions(loadedRivalsById[airlineId])
+	$('#rivalDetails').data("airlineId", airlineId)
 
 	$('#rivalDetails').fadeIn(200)
 }
@@ -157,11 +158,11 @@ function loadRivalLinks(airlineId) {
 	airlineLinksTable.children("div.table-row").remove()
 	
 	var getUrl = "airlines/" + airlineId + "/links"
-	loadedRivalLinks = []
+	loadedRivalLinks = undefined
 	$.ajax({
 		type: 'GET',
 		url: getUrl,
-	    contentType: 'application/json; charset=utf-8',
+		contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(links) {
 	    	loadedRivalLinks = links
@@ -303,46 +304,96 @@ function updateRivalCountriesAirlineTitles(airlineId) {
 }
 
 function updateRivalBaseList(airlineId) {
-	$('#rivalHeadquarters').children('.table-row').remove()
-	$('#rivalBases').children('.table-row').remove()
-	
+    updateAirlineBaseList(airlineId, $('#rivalBases'))
+}
+
+function showRivalMap() {
+    var airlineId = $('#rivalDetails').data("airlineId")
+	clearAllPaths()
+	deselectLink()
+
+	var paths = []
+
+    var getUrl = "airlines/" + airlineId + "/links"
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + airlineId + "/bases",
-	    contentType: 'application/json; charset=utf-8',
+		url: getUrl,
+		contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(bases) {
-	    	var hasHeadquarters = false
-	    	var hasBases = false
-	    	$(bases).each(function(index, base) {
-	    		var row = $("<div class='table-row'></div>")
-	    		hasBases = true
-	    		if (base.headquarter) {
-	    			row.append("<div class='cell'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>")
-	    			$('#rivalBases').prepend(row)
-	    		} else {
-	    			row.append("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>")
-	    			$('#rivalBases').append(row)
-	    		}
-	    		
-	    		
-	    	})
-	    	var emtpyRow = $("<div class='table-row'></div>")
-			emtpyRow.append("<div class='cell'>-</div>")
-			
-			if (!hasBases) {
-    			$('#rivalBases').append(emtpyRow)
-    		}
-	    	
+	    success: function(links) {
+	    	$.each(links, function(index, link) {
+                    var path = drawFlightPath(link, "#DC83FC")
+                    paths.push(path)
+                    //remove on click add on hover
+                    google.maps.event.clearInstanceListeners(path.shadow);
+                    var infoWindow
+                    path.shadow.addListener('mouseover', function(event) {
+                        var fromAirport = getAirportText(link.fromAirportCity, link.fromAirportCode)
+                    	var toAirport = getAirportText(link.toAirportCity, link.toAirportCode)
+                        $("#linkPopupFrom").html(getCountryFlagImg(link.fromCountryCode) + "&nbsp;" + fromAirport)
+                        $("#linkPopupTo").html(getCountryFlagImg(link.toCountryCode) + "&nbsp;" + toAirport)
+                        $("#linkPopupCapacity").html(link.capacity.total)
+                        $("#linkPopupAirline").html(getAirlineLogoImg(link.airlineId) + "&nbsp;" + link.airlineName)
+
+                        infoWindow = new google.maps.InfoWindow({
+                             content: $("#linkPopup").html(),
+                             maxWidth : 1200});
+
+                        infoWindow.setPosition(event.latLng);
+                        infoWindow.open(map);
+                    })
+                    path.shadow.addListener('mouseout', function(event) {
+                        infoWindow.close();
+                        infoWindow.setMap(null);
+                    })
+                })
+
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+	    beforeSend: function() {
+            $('body .loadingSpinner').show()
+        },
+        complete: function(){
+            $('body .loadingSpinner').hide()
+        }
 	});
-	
-	
 
-	
 
+
+    $.ajax({
+    		type: 'GET',
+    		url: "airlines/" + airlineId + "/bases",
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(bases) {
+    	    	updateAirportBaseMarkers(bases, paths)
+    	    },
+    	    error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    }
+    });
+    window.setTimeout(function() {
+        if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() > 0) {
+            map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+        }
+        map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Rival Flight Map', 'hideRivalMap()', 'hideRivalMapButton')[0]);
+    }, 1000); //delay otherwise it doesn't push to center
+    switchMap()
+    $("#worldMapCanvas").data("initCallback", function() { //if go back to world map, re-init the map
+    	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+    	clearAllPaths()
+        updateAirportMarkers(activeAirline)
+        updateLinksInfo() //redraw all flight paths
+    })
+}
+
+function hideRivalMap() {
+	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+	clearAllPaths()
+	updateAirportBaseMarkers([]) //revert base markers
+	setActiveDiv($("#rivalsCanvas"))
 }
