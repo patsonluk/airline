@@ -520,6 +520,14 @@ function showAllianceMap() {
 
 
 				switchMap();
+				$("#worldMapCanvas").data("initCallback", function() { //if go back to world map, re-init the map
+				        map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+				        clearAllPaths()
+                        updateAirportMarkers(activeAirline)
+                        updateLinksInfo() //redraw all flight paths
+                        closeAlliancePopups()
+                })
+
 				window.setTimeout(addExitButton , 1000); //delay otherwise it doesn't push to center
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -536,9 +544,10 @@ function showAllianceMap() {
 }
 
 function addExitButton() {
-	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
-		map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Alliance Flight Map', 'hideAllianceMap()', 'hideAllianceMapButton')[0]);
-	}
+    if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() > 0) {
+        map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+    }
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Alliance Flight Map', 'hideAllianceMap()', 'hideAllianceMapButton')[0]);
 }
 
 function drawAllianceLink(link) {
@@ -655,10 +664,6 @@ function hideAllianceMap() {
     map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
     clearAllPaths()
     updateAirportBaseMarkers([]) //revert base markers
-    $("#worldMapCanvas").data("initCallback", function() { //if go back to world map, re-init the map
-        updateAirportMarkers(activeAirline)
-        updateLinksInfo() //redraw all flight paths
-	})
-	closeAlliancePopups()
+    closeAlliancePopups()
     setActiveDiv($("#allianceCanvas"))
 }
