@@ -15,7 +15,7 @@ object ConsumptionHistorySource {
     
     connection.setAutoCommit(false)
     
-    connection.createStatement().executeUpdate("DELETE FROM " + PASSENGER_HISTORY_TABLE);
+    connection.createStatement().executeUpdate("TRUNCATE TABLE " + PASSENGER_HISTORY_TABLE);
     
     var routeId = 0
     val batchSize = 1000
