@@ -75,9 +75,13 @@ object LinkSimulation {
 
     
     //save all consumptions
+    val startTime = System.currentTimeMillis()
     println("Saving " + consumptionResult.size +  " consumptions")
     ConsumptionHistorySource.updateConsumptions(consumptionResult)
-    println("Saved all consumptions")
+    val endTime = System.currentTimeMillis()
+    println(s"Saved all consumptions. Took ${endTime - startTime} millisecs")
+
+
     //generate link history
 //    println("Generating link history")
 //    val linkHistory = generateLinkHistory(consumptionResult)
