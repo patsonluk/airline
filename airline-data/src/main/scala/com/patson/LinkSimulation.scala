@@ -75,9 +75,17 @@ object LinkSimulation {
 
     
     //save all consumptions
+    var start = System.currentTimeMillis()
     println("Saving " + consumptionResult.size +  " consumptions")
-    ConsumptionHistorySource.updateConsumptions(consumptionResult)
-    println("Saved all consumptions")
+    ConsumptionHistorySource.updateConsumptions(consumptionResult, false)
+    var end = System.currentTimeMillis()
+    println(s"Saved all consumptions used ${end - start} no file load")
+
+    start = System.currentTimeMillis()
+    ConsumptionHistorySource.updateConsumptions(consumptionResult, true)
+    end = System.currentTimeMillis()
+    println(s"Saved all consumptions used ${end - start} with file load")
+
     //generate link history
 //    println("Generating link history")
 //    val linkHistory = generateLinkHistory(consumptionResult)
@@ -105,7 +113,9 @@ object LinkSimulation {
     checkLoadFactor(links, cycle)
 
     LinkSource.deleteLinkConsumptionsByCycle(300)
+    println("Saving link consumptions")
     LinkSource.saveLinkConsumptions(linkConsumptionDetails.toList)
+    println("Finished saving link consumption")
     
     println("Calculating Lounge usage")
     //condense the lounge result

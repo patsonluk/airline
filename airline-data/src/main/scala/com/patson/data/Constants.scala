@@ -1,5 +1,7 @@
 package com.patson.data
 
+import java.nio.file.Paths
+
 import com.typesafe.config.ConfigFactory
 
 object Constants {
@@ -119,12 +121,14 @@ object Constants {
 //  val DATABASE_CONNECTION = "jdbc:sqlite:../airline-data/db/default.db"
 //  val DB_DRIVER = "org.sqlite.JDBC"
 
+  val configFactory = ConfigFactory.load()
 // DB Optimizations
 // Load from File instead of direct sql inserts (0 for direct, 1 for FILE LOAD)
-  val DB_FILE_LOAD = 1
-  val DB_FILE_LOCATION = "/tmp/airline_data.txt"
-
-  val configFactory = ConfigFactory.load()
+  val DB_FILE_LOCATION = if (configFactory.hasPath("mysqldb.useDataFile") && configFactory.getBoolean("mysqldb.useDataFile")) {
+    Some(Paths.get(System.getProperty("java.io.tmpdir"), "airline_data.txt"))
+  } else {
+    None
+  }
   val DB_HOST = if (configFactory.hasPath("mysqldb.host")) configFactory.getString("mysqldb.host") else "localhost:3306"
   println("!!!!!!!!!!!!!!!DB HOST IS " + DB_HOST)
   

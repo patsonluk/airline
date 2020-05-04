@@ -9,7 +9,7 @@ import java.util
 import java.io._
 
 object ConsumptionHistorySource {
-  val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
+  def updateConsumptions (consumptions : Map[(PassengerGroup, Airport, Route), Int], useFileLoad : Boolean = true) = {
     val connection = Meta.getConnection()
     val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE + "(passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?,?)")
     
@@ -20,56 +20,58 @@ object ConsumptionHistorySource {
     var routeId = 0
     val batchSize = 1000
     
-	if (DB_FILE_LOAD == 1) {
-		val bw = new BufferedWriter(new FileWriter(DB_FILE_LOCATION))
-		try {
-		  consumptions.foreach { 
-			case((passengerGroup, _, route), passengerCount) => {
-			  routeId += 1
-			  route.links.foreach { linkConsideration =>  
-				 bw.write("'" + passengerGroup.passengerType.id + "','" + passengerCount + "','" + routeId + "','" + linkConsideration.link.id + "','" +linkConsideration.linkClass.code + "','" + linkConsideration.inverted.compare(false) + "','" + passengerGroup.fromAirport.countryCode + "','" + passengerGroup.fromAirport.id + "','" + route.links.last.to.id + "','" + passengerGroup.preference.getPreferenceType.id + "'\n")
-			  }
-			}
-		  }
-		} finally {
-		  bw.close()
-		  connection.createStatement().executeUpdate("LOAD DATA LOCAL INFILE '" + DB_FILE_LOCATION +"' INTO TABLE passenger_history FIELDS TERMINATED BY ','  ENCLOSED BY '\\''   LINES TERMINATED BY '\\n' (passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type);")
-		  connection.commit()
-		  connection.close()
-		}
-	} else {
-		try {
-		  consumptions.foreach { 
-			case((passengerGroup, _, route), passengerCount) => {
-			  routeId += 1
-			  passengerHistoryStatement.setInt(1, passengerGroup.passengerType.id)
-			  passengerHistoryStatement.setInt(2, passengerCount)
-			  passengerHistoryStatement.setInt(3, routeId)
-			  passengerHistoryStatement.setString(7, passengerGroup.fromAirport.countryCode)
-			  passengerHistoryStatement.setInt(8, passengerGroup.fromAirport.id)
-			  passengerHistoryStatement.setInt(9, route.links.last.to.id)
-			  passengerHistoryStatement.setInt(10, passengerGroup.preference.getPreferenceType.id)
-			  route.links.foreach { linkConsideration =>  
-				passengerHistoryStatement.setInt(4, linkConsideration.link.id)
-				passengerHistoryStatement.setString(5, linkConsideration.linkClass.code)
-				passengerHistoryStatement.setBoolean(6, linkConsideration.inverted)
-				//passengerHistoryStatement.executeUpdate()
-				passengerHistoryStatement.addBatch()
-			  }
-			  if (routeId % batchSize == 0) {
-				passengerHistoryStatement.executeBatch()
-				//println("inserted " + routeId)
-			  }
-			}
-		  }
-		  passengerHistoryStatement.executeBatch()
-		  connection.commit()
-		} finally {
-		  passengerHistoryStatement.close()
-		  connection.close()
-		}
+    if (useFileLoad) {
+      val location = DB_FILE_LOCATION.get.toString.replace("\\", "/");
+      println(s"FILE LOAD! $location")
+      val bw = new BufferedWriter(new FileWriter(location))
+      try {
+        consumptions.foreach {
+        case((passengerGroup, _, route), passengerCount) => {
+          routeId += 1
+          route.links.foreach { linkConsideration =>
+           bw.write("'" + passengerGroup.passengerType.id + "','" + passengerCount + "','" + routeId + "','" + linkConsideration.link.id + "','" +linkConsideration.linkClass.code + "','" + linkConsideration.inverted.compare(false) + "','" + passengerGroup.fromAirport.countryCode + "','" + passengerGroup.fromAirport.id + "','" + route.links.last.to.id + "','" + passengerGroup.preference.getPreferenceType.id + "'\n")
+          }
+        }
+        }
+      } finally {
+        bw.close()
+        connection.createStatement().executeUpdate(s"LOAD DATA LOCAL INFILE '$location' INTO TABLE passenger_history FIELDS TERMINATED BY ','  ENCLOSED BY '\\''   LINES TERMINATED BY '\\n' (passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type);")
+        connection.commit()
+        connection.close()
+      }
+    } else {
+      try {
+        consumptions.foreach {
+          case((passengerGroup, _, route), passengerCount) => {
+              routeId += 1
+              passengerHistoryStatement.setInt(1, passengerGroup.passengerType.id)
+              passengerHistoryStatement.setInt(2, passengerCount)
+              passengerHistoryStatement.setInt(3, routeId)
+              passengerHistoryStatement.setString(7, passengerGroup.fromAirport.countryCode)
+              passengerHistoryStatement.setInt(8, passengerGroup.fromAirport.id)
+              passengerHistoryStatement.setInt(9, route.links.last.to.id)
+              passengerHistoryStatement.setInt(10, passengerGroup.preference.getPreferenceType.id)
+              route.links.foreach { linkConsideration =>
+              passengerHistoryStatement.setInt(4, linkConsideration.link.id)
+              passengerHistoryStatement.setString(5, linkConsideration.linkClass.code)
+              passengerHistoryStatement.setBoolean(6, linkConsideration.inverted)
+              //passengerHistoryStatement.executeUpdate()
+              passengerHistoryStatement.addBatch()
+              }
+              if (routeId % batchSize == 0) {
+              passengerHistoryStatement.executeBatch()
+              //println("inserted " + routeId)
+              }
+            }
+          }
+          passengerHistoryStatement.executeBatch()
+          connection.commit()
+      } finally {
+          passengerHistoryStatement.close()
+          connection.close()
+      }
 	  }
-    }
+  }
 	
 //  def loadAllConsumptions() : List[(PassengerType.Value, Int, Route)] = {
 //    val connection = Meta.getConnection()
