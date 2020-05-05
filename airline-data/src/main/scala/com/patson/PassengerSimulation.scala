@@ -115,7 +115,8 @@ object PassengerSimulation {
        
 //       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
 //       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
-       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
+       val iterationCount = if (consumptionCycleCount < 3) 4 else 6
+       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, iterationCount)
        
        //start consuming routes
        println()
@@ -344,11 +345,12 @@ object PassengerSimulation {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Map[PassengerGroup, Map[Airport, Route]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness, iterationCount : Int = 4) : Map[PassengerGroup, Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
     println("Total passenger groups : " + requiredRoutes.size)
+    println(s"Iteration count : $iterationCount")
     
     //val links = linksList.toArray
     
@@ -411,7 +413,7 @@ object PassengerSimulation {
         
         //then find the shortest route based on the cost
         
-        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
+        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, iterationCount)
         if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
           print(".")
           if (progressCount.incrementAndGet() % 10 == 0) {
