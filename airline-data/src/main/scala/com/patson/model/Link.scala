@@ -51,7 +51,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   def getAssignedModel() : Option[Model] = {
     assignedModel
   }
-  
+
+  import FlightType._
   /**
    * Find seats at or below the requestedLinkClass (can only downgrade 1 level)
    * 
@@ -66,16 +67,28 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       if (availableSeats(targetLinkClass) > 0) {
         return Some(targetLinkClass, availableSeats(targetLinkClass))
       } else  {
-        val lowerClass = LinkClass.fromLevel(targetLinkClass.level - 1)
-        if (availableSeats(lowerClass) > 0) {
-          return Some(lowerClass, availableSeats(lowerClass))
-        } 
+        if (targetLinkClass.level > 0) {
+          val classDiff = flightType match {
+            case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERCONTINENTAL | SHORT_HAUL_INTERNATIONAL => targetLinkClass.level //accept all classes
+            case _ => 1
+          }
+          val lowestAcceptableLevel = targetLinkClass.level - classDiff
+          var level = targetLinkClass.level - 1
+
+          while (level >= lowestAcceptableLevel) {
+            val lowerClass = LinkClass.fromLevel(level)
+            if (availableSeats(lowerClass) > 0) {
+              return Some(lowerClass, availableSeats(lowerClass))
+            }
+            level -= 1
+          }
+        }
       }
     }
-    
+
     return None
   }
-  
+
   def computedQuality : Int= {
     if (!hasComputedQuality) {
 
@@ -94,25 +107,25 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       computedQualityStore
     }
   }
-  
+
   def setQuality(quality : Int) = {
     computedQualityStore = quality
     hasComputedQuality = true
   }
-  
+
   def getTotalCapacity : Int = {
     capacity.total
   }
-  
+
   def getTotalAvailableSeats : Int = {
     availableSeats.total
   }
-  
+
   def getTotalSoldSeats : Int = {
-    soldSeats.total 
+    soldSeats.total
   }
-  
-  
+
+
   def addSoldSeats(soldSeats : LinkClassValues) = {
     this.soldSeats = this.soldSeats + soldSeats;
     this.availableSeats = this.availableSeats - soldSeats;
