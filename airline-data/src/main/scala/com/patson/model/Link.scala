@@ -77,8 +77,9 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 
           while (level >= lowestAcceptableLevel) {
             val lowerClass = LinkClass.fromLevel(level)
-            if (availableSeats(lowerClass) > 0) {
-              return Some(lowerClass, availableSeats(lowerClass))
+            val seatsAvailable = availableSeats(lowerClass)
+            if (seatsAvailable > 0) {
+              return Some(lowerClass, seatsAvailable)
             }
             level -= 1
           }
