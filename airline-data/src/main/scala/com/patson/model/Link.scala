@@ -67,9 +67,9 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
       if (availableSeats(targetLinkClass) > 0) {
         return Some(targetLinkClass, availableSeats(targetLinkClass))
       } else  {
-        if (targetLinkClass.level > 0) {
+        if (targetLinkClass.level > ECONOMY.level) {
           val classDiff = flightType match {
-            case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERCONTINENTAL | SHORT_HAUL_INTERNATIONAL => targetLinkClass.level //accept all classes
+            case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERCONTINENTAL | SHORT_HAUL_INTERNATIONAL => targetLinkClass.level - 1//accept all classes
             case _ => 1
           }
           val lowestAcceptableLevel = targetLinkClass.level - classDiff
