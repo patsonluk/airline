@@ -166,7 +166,8 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     
     var perceivedPrice = link.price(linkClass);
     if (linkClass.level != preferredLinkClass.level) {
-      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * 2.5).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
+      val classDiffMultiplier: Double = 1 + (preferredLinkClass.level - linkClass.level) * 0.7
+      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
     }
 
     val standardPrice = link.standardPrice(preferredLinkClass)
