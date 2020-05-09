@@ -1033,7 +1033,7 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
     			$("#airplaneDetailsDeliveryRow").show()
     		}
 	    	$("#airplaneDetailsSellValue").text("$" + commaSeparateNumber(airplane.sellValue))
-	    	var replaceCost = airplane.price - airplane.sellValue
+	    	var replaceCost = model.price - airplane.sellValue
             $("#airplaneDetailsReplaceCost").text("$" + commaSeparateNumber(replaceCost))
 	    	$("#airplaneDetailsLink").empty()
 	    	if (airplane.links.length > 0) {
