@@ -20,6 +20,7 @@
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
       <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/search.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/switch.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/about.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
@@ -476,7 +477,16 @@
 									</div>
 									<div id=linkCompetitionsPie align="center"></div>
 								</div>
-
+								<div style="width: 50%; float: left;">
+									<div class="switch" style="float: right;">
+										<input type="radio" class="switch-input" name="view" value="month" id="switchMonth" onchange="refreshLinkCharts()" checked>
+										<label for="switchMonth" class="switch-label switch-label-off">Month</label>
+										<input type="radio" class="switch-input" name="view" value="quarter" id="switchQuarter" onchange="refreshLinkCharts()">
+										<label for="switchQuarter" class="switch-label switch-label-on">Quarter</label>
+										<span class="switch-selection"></span>
+									</div>
+									<div style="clear: both;"></div>
+								</div>
 								<div id="linkProfitChart" style="width: 50%; float: left; height: 170px;"></div>
 								<div id="linkRidershipChart" style="width: 50%; float: left; height: 250px;"></div>
 								<div id="linkRevenueChart" style="width: 50%; float: left; height: 250px;"></div>

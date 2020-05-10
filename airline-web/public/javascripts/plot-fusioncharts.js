@@ -321,7 +321,17 @@ function plotAirportShares(airportShares, currentAirportId, container) {
 	})
 }
 
-function plotLinkProfit(linkConsumptions, container) {
+var monthlyWeeksPerMark = 4
+var quarterlyWeeksPerMark = 13
+var monthlyMaxMark = 6
+var quarterlyMaxMark = 8 //2 years
+var plotUnitEnum = {
+    MONTH : { value : 1,  maxWeek : monthlyMaxMark * monthlyWeeksPerMark, weeksPerMark : monthlyWeeksPerMark, maxMark : monthlyMaxMark},
+    QUARTER : { value : 2,  maxWeek : quarterlyMaxMark * quarterlyWeeksPerMark, weeksPerMark : quarterlyWeeksPerMark, maxMark : quarterlyMaxMark}
+}
+
+
+function plotLinkProfit(linkConsumptions, container, plotUnit) {
 	container.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
@@ -329,24 +339,44 @@ function plotLinkProfit(linkConsumptions, container) {
 	var data = []
 	var category = []
 	 
-	var profitByMonth = {}
-	var monthOrder = []
+	var profitByMark = {}
+	var markOrder = []
+
+	if (plotUnit === undefined) {
+        plotUnit = plotUnitEnum.MONTH
+    }
+
+    var maxMark = plotUnit.maxMark
+  	var xLabel
+  	var yLabel
+  	var weeksPerMark = plotUnit.weeksPerMark
+   	switch (plotUnit.value) {
+        case plotUnitEnum.MONTH.value:
+            xLabel = 'Month'
+            yLabel = 'Monthly Profit'
+            break;
+        case plotUnitEnum.QUARTER.value:
+            xLabel = 'Quarter'
+            yLabel = 'Quarterly Profit'
+            break;
+    }
+
 	$.each(linkConsumptions, function(index, linkConsumption) {
 		//group in months first
-		var month = Math.floor(linkConsumption.cycle / 4)
-		if (profitByMonth[month] === undefined) {
-			profitByMonth[month] = linkConsumption.profit
-			monthOrder.push(month)
+		var mark = Math.floor(linkConsumption.cycle / weeksPerMark)
+		if (profitByMark[mark] === undefined) {
+			profitByMark[mark] = linkConsumption.profit
+			markOrder.push(mark)
 		} else {
-			profitByMonth[month] += linkConsumption.profit
+			profitByMark[mark] += linkConsumption.profit
 		}
 	})
 	
-	var maxMonth = 6
-	monthOrder = monthOrder.slice(0, maxMonth)
-	$.each(monthOrder.reverse(), function(key, month) {
-		data.push({ value : profitByMonth[month] })
-		category.push({ label : month.toString() })
+
+	markOrder = markOrder.slice(0, maxMark)
+	$.each(markOrder.reverse(), function(key, mark) {
+		data.push({ value : profitByMark[mark] })
+		category.push({ label : mark.toString() })
 	})
 	
 	var chart = container.insertFusionCharts({
@@ -357,8 +387,8 @@ function plotLinkProfit(linkConsumptions, container) {
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": "Month",
-	    		"yAxisName": "Monthly Profit",
+	    		"xAxisname": xLabel,
+	    		"yAxisName": yLabel,
 	    		"numberPrefix": "$",
 	    		"useroundedges": "1",
 	    		"animation": "0",
@@ -375,7 +405,7 @@ function plotLinkProfit(linkConsumptions, container) {
 	})
 }
 
-function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer, priceContainer) {
+function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer, priceContainer, plotUnit) {
 	ridershipContainer.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
@@ -410,9 +440,24 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 
 		
 	var category = []
-	 
-	var maxWeek = 24
-	
+
+    if (plotUnit === undefined) {
+	    plotUnit = plotUnitEnum.MONTH
+	}
+
+	var maxWeek = plotUnit.maxWeek
+	var weeksPerMark = plotUnit.weeksPerMark
+	var xLabel
+	switch (plotUnit.value) {
+      case plotUnitEnum.MONTH.value:
+        xLabel = 'Month'
+        break;
+      case plotUnitEnum.QUARTER.value:
+        xLabel = 'Quarter'
+        break;
+    }
+
+
 	if (!jQuery.isEmptyObject(linkConsumptions)) {
 		linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
         var hasCapacity = {} //check if there's any capacity for this link class at all
@@ -451,9 +496,9 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 			    priceByClass.first.push({ value : linkConsumption.price.first })
 			}
 			
-			var month = Math.floor(linkConsumption.cycle / 4)
+			var mark = Math.floor(linkConsumption.cycle / weeksPerMark)
 			//var week = linkConsumption.cycle % 4 + 1
-			category.push({ label : month.toString()})
+			category.push({ label : mark.toString()})
 		})
 	}
 	
@@ -465,7 +510,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": "Month",
+	    		"xAxisname": xLabel,
 	    		"YAxisName": "Seats Consumption",
 	    		//"sYAxisName": "Load Factor %",
 	    		"sNumberSuffix" : "%",
@@ -483,7 +528,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
                 "showValues":"0",
                 "canvasPadding":"0",
                 "labelDisplay":"wrap",
-                "labelStep": "4"
+                "labelStep": weeksPerMark
 	    	},
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [
@@ -505,7 +550,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": "Month",
+	    		"xAxisname": xLabel,
 	    		"YAxisName": "Revenue",
 	    		//"sYAxisName": "Load Factor %",
 	    		"sYAxisMaxValue" : "100",
@@ -523,7 +568,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
                 "showValues":"0",
                 "canvasPadding":"0",
                 "labelDisplay":"wrap",
-	            "labelStep": "4"
+	            "labelStep": weeksPerMark
 	    	},
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [
@@ -542,7 +587,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": "Month",
+	    		"xAxisname": xLabel,
 	    		"YAxisName": "Ticket Price",
 	    		//"sYAxisName": "Load Factor %",
 	    		"numberPrefix": "$",
@@ -558,8 +603,9 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
                 "bgAlpha":"0",
                 "showValues":"0",
                 "canvasPadding":"0",
+                "formatNumberScale" : "0",
                 "labelDisplay":"wrap",
-	            "labelStep": "4"
+	            "labelStep": weeksPerMark
 	    	},
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [

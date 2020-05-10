@@ -670,10 +670,14 @@ function refreshLinkDetails(linkId) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+
+    var plotUnit = $("#linkDetails #switchMonth").is(':checked') ? plotUnitEnum.MONTH : plotUnitEnum.QUARTER
+	var cycleCount = plotUnit.maxWeek
+
 	//load history
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + airlineId + "/link-consumptions/" + linkId + "?cycleCount=30",
+		url: "airlines/" + airlineId + "/link-consumptions/" + linkId + "?cycleCount=" + cycleCount,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(linkConsumptions) {
@@ -737,8 +741,7 @@ function refreshLinkDetails(linkId) {
 		    	}
 		    	enableButton($("#linkDetails .button.viewLinkHistory"))
 	    	}
-	    	plotLinkProfit(linkConsumptions, $("#linkProfitChart"))
-	    	plotLinkConsumption(linkConsumptions, $("#linkRidershipChart"), $("#linkRevenueChart"), $("#linkPriceChart"))
+            plotLinkCharts(linkConsumptions, plotUnit)
 	    	$("#linkHistoryDetails").show()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -749,7 +752,30 @@ function refreshLinkDetails(linkId) {
 	setActiveDiv($("#linkDetails"))
 	hideActiveDiv($("#extendedPanel #airplaneModelDetails"))
 	$('#sidePanel').fadeIn(200);
-	
+}
+
+function plotLinkCharts(linkConsumptions, plotUnit) {
+    plotLinkProfit(linkConsumptions, $("#linkProfitChart"), plotUnit)
+	plotLinkConsumption(linkConsumptions, $("#linkRidershipChart"), $("#linkRevenueChart"), $("#linkPriceChart"), plotUnit)
+}
+
+function refreshLinkCharts() {
+    var plotUnit = $("#linkDetails #switchMonth").is(':checked') ? plotUnitEnum.MONTH : plotUnitEnum.QUARTER
+    var cycleCount = plotUnit.maxWeek
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/link-consumptions/" + $("#actionLinkId").val() + "?cycleCount=" + cycleCount,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(linkConsumptions) {
+	        plotLinkCharts(linkConsumptions, plotUnit)
+	    	$("#linkHistoryDetails").show()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function editLink(linkId) {
