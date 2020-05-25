@@ -11,11 +11,11 @@ import java.util
 object ConsumptionHistorySource {
   val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
     val connection = Meta.getConnection()
-    val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE + "(passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?,?)")
+    val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE_TEMP + " (passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?,?)")
     
     connection.setAutoCommit(false)
-    
-    connection.createStatement().executeUpdate("TRUNCATE TABLE " + PASSENGER_HISTORY_TABLE);
+    connection.createStatement().executeUpdate("DROP TABLE IF EXISTS " + PASSENGER_HISTORY_TABLE_TEMP);
+    connection.createStatement().executeUpdate("CREATE TABLE " + PASSENGER_HISTORY_TABLE_TEMP + " LIKE " + PASSENGER_HISTORY_TABLE);
     
     var routeId = 0
     val batchSize = 1000
@@ -45,9 +45,12 @@ object ConsumptionHistorySource {
         }
       }
       passengerHistoryStatement.executeBatch()
-      connection.commit()
+	  connection.createStatement().executeUpdate("DROP TABLE IF EXISTS " + PASSENGER_HISTORY_TABLE);
+	  connection.createStatement().executeUpdate("ALTER TABLE " + PASSENGER_HISTORY_TABLE_TEMP + " RENAME " + PASSENGER_HISTORY_TABLE);
+	  connection.commit()
     } finally {
       passengerHistoryStatement.close()
+	  
       connection.close()
     }
   }
