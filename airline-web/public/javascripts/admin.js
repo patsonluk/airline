@@ -1,4 +1,4 @@
-function adminAction(action, targetUserId) {
+function adminAction(action, targetUserId, callback) {
 	var url = "/admin-action/" + action + "/" + targetUserId
 	var selectedAirlineId =  $("#rivalDetails .adminActions").data("airlineId")
 
@@ -11,6 +11,9 @@ function adminAction(action, targetUserId) {
 	    dataType: 'json',
 	    success: function(result) {
             showRivalsCanvas(selectedAirlineId)
+            if (callback) {
+                callback()
+            }
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -22,6 +25,11 @@ function isAdmin() {
     return activeUser && activeUser.level >= 10
 }
 
+function isSuperAdmin() {
+    return activeUser && activeUser.level >= 20
+}
+
+
 function showAdminActions(airline) {
     $("#rivalDetails .adminActions").data("airlineId", airline.id)
     $("#rivalDetails .adminActions").data("userId", airline.userId)
@@ -29,10 +37,16 @@ function showAdminActions(airline) {
     $("#rivalDetails .adminActions .userId").text(airline.userId)
     $("#rivalDetails .adminActions .status").text(airline.userStatus)
 
+
     if (isAdmin()) {
         $("#rivalDetails .adminActions").show()
     } else {
         $("#rivalDetails .adminActions").hide()
+    }
+    if (isSuperAdmin()) {
+        $("#rivalDetails .superAdminActions").show()
+    } else {
+        $("#rivalDetails .superAdminActions").hide()
     }
 }
 
@@ -44,4 +58,7 @@ function unban() {
 }
 function banChat() {
     adminAction("ban-chat", $("#rivalDetails .adminActions").data("userId"))
+}
+function switchUser() {
+    adminAction("switch", $("#rivalDetails .adminActions").data("userId"), function() { loadUser(false)})
 }
