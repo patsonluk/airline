@@ -211,22 +211,22 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     
     val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
     models.map { model =>
-      (model, getRejection(model, countryRelations.getOrElse(model.countryCode, 0), ownedModels, airline))
+      (model, getRejection(model, 1, countryRelations.getOrElse(model.countryCode, 0), ownedModels, airline))
     }.toMap
     
   }
   
-  def getRejection(model: Model, airline : Airline) : Option[String] = {
+  def getRejection(model: Model, quantity : Int, airline : Airline) : Option[String] = {
     val countryRelation = airline.getCountryCode() match {
       case Some(homeCountry) => CountrySource.getCountryMutualRelationship(homeCountry, model.countryCode)
       case None => 0
     }
-    
+
     val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
-    getRejection(model, countryRelation, ownedModels, airline)
+    getRejection(model, quantity, countryRelation, ownedModels, airline)
   }
   
-  def getRejection(model: Model, countryRelationship : Int, ownedModels : Set[Model], airline : Airline) : Option[String]= {
+  def getRejection(model: Model, quantity : Int, countryRelationship : Int, ownedModels : Set[Model], airline : Airline) : Option[String]= {
     if (airline.getHeadQuarter().isEmpty) { //no HQ
       return Some("Must build HQs before purchasing any airplanes")
     }
@@ -241,8 +241,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       val familyToken = if (ownedModelFamilies.size <= 1) "family" else "families"
       return Some("Can only own up to " + airline.airlineGrade.getModelFamilyLimit + " different airplane " + familyToken + " at current airline grade")
     }
-    
-    if (model.price > airline.getBalance()) {
+
+    if (model.price * quantity > airline.getBalance()) {
       return Some("Not enough cash to purchase this airplane model")
     }
     
@@ -554,7 +554,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           case Some(homeBase) =>
             val airplane = Airplane(model, airline, constructedCycle = constructedCycle , purchasedCycle = constructedCycle, Airplane.MAX_CONDITION, depreciationRate = 0, value = originalModel.price, home = homeBase.airport)
 
-            val rejectionOption = getRejection(model, airline)
+            val rejectionOption = getRejection(model, quantity, airline)
             if (rejectionOption.isDefined) {
               BadRequest(rejectionOption.get)
             } else {
