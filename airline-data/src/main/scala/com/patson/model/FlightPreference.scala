@@ -14,6 +14,7 @@ abstract class FlightPreference {
   def preferredLinkClass : LinkClass
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean //whether this flight preference is applicable to this from/to airport
   def getPreferenceType : FlightPreferenceType.Value
+  val linkCountTolerance : Int
   
   def getQualityAdjustRatio(homeAirport : Airport, link : Link, linkClass : LinkClass) : Double = {
     val qualityExpectation = homeAirport.expectedQuality(link.flightType, linkClass)
@@ -111,6 +112,17 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
   override val connectionCostRatio = 0.5 //more okay with taking connection
   
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
+
+  override val linkCountTolerance =
+    if (preferredLinkClass.level >=  BUSINESS.level) {
+      3
+    } else {
+      if (priceSensitivity >= 1) {
+        5
+      } else {
+        4
+      }
+    }
 }
 
 case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass) extends FlightPreference {
@@ -144,6 +156,7 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
   
   override val connectionCostRatio = 2.0
+  override val linkCountTolerance: Int = 2
 }
 
 case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, loungeLevelRequired : Int, loyaltyRatio : Double, id : Int)  extends FlightPreference{
@@ -275,6 +288,13 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
       true
     }
   }
+
+  override val linkCountTolerance =
+    if (preferredLinkClass.level >=  BUSINESS.level) {
+      3
+    } else {
+      4
+    }
 }
 
 object AppealPreference {
