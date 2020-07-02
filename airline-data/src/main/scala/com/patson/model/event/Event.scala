@@ -190,12 +190,19 @@ case class OlympicsVoteLoyaltyReward() extends EventReward(EventType.OLYMPICS, R
 }
 
 case class OlympicsPassengerCashReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.CASH) {
-  val CASH_BONUS = 20000000 //20 millions
+  val MIN_CASH_REWARD = 20000000 //20 millions
+  val SCORE_MULTIPLIER = 500
+
+
+
   override def applyReward(event: Event, airline : Airline) = {
-    AirlineSource.adjustAirlineBalance(airline.id, CASH_BONUS)
+    val stats: Map[Int, BigDecimal] = EventSource.loadOlympicsAirlineStats (event.id, airline.id).toMap
+    val totalScore = stats.view.values.sum
+    val reward = Math.max((totalScore * 500).toLong, MIN_CASH_REWARD)
+    AirlineSource.adjustAirlineBalance(airline.id, reward)
   }
 
-  override val description: String = "$20,000,000 cash reward"
+  override val description: String = "$20,000,000 or $500 * score (whichever is higher) cash reward"
 }
 
 case class OlympicsPassengerLoyaltyReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.LOYALTY) {
