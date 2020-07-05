@@ -6,17 +6,23 @@ import com.patson.data._
 import com.patson.model._
 
 object UserSimulation {
-  val PURGE_USER_THRESHOLD = 180 //in days
+  val LARGE_AIRLINE_PURGE_USER_THRESHOLD = 180 //in days
+  val SMALL_AIRLINE_PURGE_USER_THRESHOLD = 30 //in days
 
 
   def simulate(cycle: Int) = {
-    val threshold = Calendar.getInstance()
-    threshold.add(Calendar.DAY_OF_YEAR, -1 * PURGE_USER_THRESHOLD)
-    println(s"starting resetting inactive user airlines - active before $threshold")
+    val strictThreshold = Calendar.getInstance()
+    strictThreshold.add(Calendar.DAY_OF_YEAR, -1 * SMALL_AIRLINE_PURGE_USER_THRESHOLD)
+
+    val generousThreshold = Calendar.getInstance()
+    generousThreshold.add(Calendar.DAY_OF_YEAR, -1 * LARGE_AIRLINE_PURGE_USER_THRESHOLD)
+
+    println(s"starting resetting strict threshold - active before $strictThreshold; and generous threshold - active before $generousThreshold")
+
 
     UserSource.loadUsersByCriteria(List.empty).foreach { user =>
-      if (user.status != UserStatus.INACTIVE && user.lastActiveTime.before(threshold)) {
-        println(s"Resetting user $user")
+      if (shouldResetPlayer(user, strictThreshold, generousThreshold)) {
+        println(s"Resetting user $user with airlines ${user.getAccessibleAirlines()}")
         user.getAccessibleAirlines.foreach { airline =>
           if (!airline.isGenerated) {
             val resetBalance = Computation.getResetAmount(airline.id).overall
@@ -31,6 +37,26 @@ object UserSimulation {
 
         UserSource.updateUser(user.copy(status = UserStatus.INACTIVE))
       }
+    }
+  }
+
+  def shouldResetPlayer(user : User, strictThreshold : Calendar, generousThreshold : Calendar): Boolean = {
+    if (user.status != UserStatus.INACTIVE) {
+      var hasLargeAirline = false
+      user.getAccessibleAirlines().foreach { airline =>
+        if (airline.airlineGrade.value >= airline.AirlineGrade.LESSER_INTERNATIONAL.value) {
+          hasLargeAirline = true
+        }
+      }
+      val threshold = if (hasLargeAirline || user.level > 0) generousThreshold else strictThreshold
+
+      if (user.lastActiveTime.before(threshold)) {
+        true
+      } else {
+        false
+      }
+    } else {
+      false
     }
   }
 }
