@@ -1,3 +1,5 @@
 To properly setup emails need to download the gmail credentials json and authorize the account locally first
 
 Then copy the credentials json and put it to `conf` folder with name `gmail-credentials.json` and copy the `tokens` to the app directory
+
+Some icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/). Licensed under a [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/)
