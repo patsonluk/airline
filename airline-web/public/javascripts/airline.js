@@ -857,9 +857,22 @@ function planLink(fromAirport, toAirport) {
 var planLinkInfo = null
 var planLinkInfoByModel = {}
 var spaceMultipliers = null
+var existingLink
 //var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
+    existingLink = linkInfo.existingLink
+    existingLink.assignedAirplanes.sort(function(a, b) {
+        var result = b.frequency - a.frequency
+        if (result != 0) {
+            if (b.frequency == 0 || a.frequency == 0) { //if either one is not assigned to this route at all, then return result ie also higher precedence to compare if airplane is assigned
+                return result
+            }
+        }
+
+        return a.airplane.condition - b.airplane.condition //otherwise: both assigned or both not assigned, then return lowest condition ones first
+    })
+
 	var availableFromSlot = linkInfo.maxFrequencyFromAirport
 	var availableToSlot = linkInfo.maxFrequencyToAirport
 	if (linkInfo.existingLink) {
@@ -1151,6 +1164,7 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 
 		    return a.airplane.condition - b.airplane.condition //otherwise: both assigned or both not assigned, then return lowest condition ones first
 		})
+
 		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplaneEntry) {
 //			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
 //			option.appendTo($("#planLinkAirplaneSelect"))
@@ -1339,13 +1353,14 @@ function removeAirplaneFromLink(airplaneId) {
     })
 }
 
-
-// Update total frequency and capacity
-function updateTotalValues() {
+function getPlanLinkCapacity() {
+    var currentFrequency = 0 //airplanes that are ready
     var currentCapacity = { "economy" : 0, "business" : 0, "first" : 0}
-    var futureFrequency = 0
+
+    var futureFrequency = 0 //airplanes that are ready + under construction
     var futureCapacity = { "economy" : 0, "business" : 0, "first" : 0}
     var hasUnderConstructionAirplanes = false
+
     $("#planLinkDetails .frequencyDetail .airplaneRow").each(function(index, airplaneRow) {
        frequency = parseInt($(airplaneRow).find(".frequency").val())
        configuration = $(airplaneRow).data("airplane").configuration
@@ -1356,6 +1371,7 @@ function updateTotalValues() {
        futureCapacity.first += configuration.first * frequency
 
        if ($(airplaneRow).data("airplane").isReady) {
+           currentFrequency += frequency
            currentCapacity.economy += configuration.economy * frequency
            currentCapacity.business += configuration.business * frequency
            currentCapacity.first += configuration.first * frequency
@@ -1363,10 +1379,26 @@ function updateTotalValues() {
             hasUnderConstructionAirplanes = true
        }
     })
+
+    if (hasUnderConstructionAirplanes) {
+        return { "current" : { "capacity" : currentCapacity, "frequency" : currentFrequency }, "future" : { "capacity" : futureCapacity, "frequency" : futureFrequency }}
+    } else {
+        return { "current" : { "capacity" : currentCapacity, "frequency" : currentFrequency }}
+    }
+}
+
+
+// Update total frequency and capacity
+function updateTotalValues() {
+    var planCapacity = getPlanLinkCapacity()
+    var currentCapacity = planCapacity.current.capacity
+    var futureFrequency = planCapacity.future ? planCapacity.future.frequency : planCapacity.current.frequency
+    var futureCapacity = planCapacity.future ? planCapacity.future.capacity : planCapacity.current.capacity
+
     $(".frequencyDetailTotal .total").text(futureFrequency)
 
     $('#planLinkCapacity').text(toLinkClassValueString(currentCapacity))
-    if (hasUnderConstructionAirplanes) {
+    if (planCapacity.future) {
         $("#planLinkDetails .future .capacity").text(toLinkClassValueString(futureCapacity))
         $("#planLinkDetails .future").show()
     } else {
@@ -2006,19 +2038,27 @@ function linkConfirmation() {
 		$('#linkConfirmationModal .modalHeader').text('Update Route')
 		$('#linkConfirmationModal div.existing.model').text(existingLink.modelName)
 		$('#linkConfirmationModal div.existing.duration').text(getDurationText(existingLink.duration))
-		refreshAssignedAirplanesBar($('#linkConfirmationModal div.existingLink .airplanes'), existingLink.airplaneComposition)
 
-		for (i = 0 ; i < existingLink.frequency ; i ++) {
+		refreshAssignedAirplanesBar($('#linkConfirmationModal div.existingLink .airplanes'), existingLink.assignedAirplanes)
+
+        var existingFrequency = existingLink.future ? existingLink.future.frequency : existingLink.current.frequency
+		for (i = 0 ; i < existingFrequency ; i ++) {
 			var image = $("<img>")
-			image.attr("src", $("#frequencyBar").data("fillIcon"))
+			image.attr("src", $(".frequencyBar").data("fillIcon"))
 			$('#linkConfirmationModal div.existing.frequency').append(image)
 			if ((i + 1) % 10 == 0) {
 				$('#linkConfirmationModal div.existing.frequency').append("<br/>")
 			}
 		}
-		$('#linkConfirmationModal div.existing.fullCapacity').text(toLinkClassValueString(existingLink.capacity))
+
+		var existingCapacity = $('<span>' + toLinkClassValueString(existingLink.capacity) + '</span>')
+		$("#linkConfirmationModal div.existing.capacity").append(existingCapacity)
+		if (existingLink.future) {
+		    var futureCapacity = $('<div class="future">(' + toLinkClassValueString(existingLink.future.capacity) + ')</div>')
+		    $("#linkConfirmationModal div.existing.capacity").append(futureCapacity)
+		}
+
 		$('#linkConfirmationModal div.existing.price').text(toLinkClassValueString(existingLink.price, '$'))
-		$('#linkConfirmationModal div.existing.configuration').text(toLinkClassValueString(existingLink.configuration))
 	} else {
 		$('#linkConfirmationModal div.existing').text('-')
 	}
@@ -2028,26 +2068,38 @@ function linkConfirmation() {
 	$('#linkConfirmationModal div.updating.model').text(updateLinkModel.modelName)
 	$('#linkConfirmationModal div.updating.duration').text(getDurationText(updateLinkModel.duration))
 
-	refreshAssignedAirplanesBar($('#linkConfirmationModal div.updating.airplanes'), $('#planLinkAirplanes').data('airplaneComposition'))
+	var assignedAirplaneFrequencies = [] //[(airplane, frequency)]
+    $('#planLinkDetails .frequencyDetail').find('.airplaneRow').each(function(index, airplaneRow) {
+        var airplane = $(airplaneRow).data("airplane")
+        var frequency = parseInt($(airplaneRow).find('.frequency').val())
+        assignedAirplaneFrequencies.push({"airplane" : airplane, "frequency" : frequency})
+    })
 
-	for (i = 0 ; i < $("#planLinkFrequency").val() ; i ++) {
+	refreshAssignedAirplanesBar($('#linkConfirmationModal div.updating.airplanes'), assignedAirplaneFrequencies)
+
+    var planInfo = getPlanLinkCapacity()
+    var planCapacity = planInfo.future ? planInfo.future.capacity : planInfo.current.capacity
+    var planFrequency = planInfo.future ? planInfo.future.frequency : planInfo.current.frequency
+
+	for (i = 0 ; i < planFrequency ; i ++) {
 		var image = $("<img>")
-		image.attr("src", $("#frequencyBar").data("fillIcon"))
+		image.attr("src", $(".frequencyBar").data("fillIcon"))
 		$('#linkConfirmationModal div.updating.frequency').append(image)
 		if ((i + 1) % 10 == 0) {
 			$('#linkConfirmationModal div.updating.frequency').append("<br/>")
 		}
 	}
 
-	var fullCapacity = {
-		"economy" : updateLinkModel.configuration.economy * $("#planLinkFrequency").val(),
-		"business" : updateLinkModel.configuration.business * $("#planLinkFrequency").val(),
-		"first" : updateLinkModel.configuration.first * $("#planLinkFrequency").val(),
-	}
-	//$('#linkConfirmationModal div.updating.currentCapacity').text(currentCapacity.economy + "/" + currentCapacity.business + "/" + currentCapacity.first)
-	$('#linkConfirmationModal div.updating.fullCapacity').text(toLinkClassValueString(fullCapacity))
+	var planCapacitySpan = $('<span>' + toLinkClassValueString(planCapacity) + '</span>')
+    $("#linkConfirmationModal div.updating.capacity").append(planCapacitySpan)
+    if (planInfo.future) {
+        var futureCapacitySpan = $('<div class="future">(' + toLinkClassValueString(planInfo.future.capacity) + ')</div>')
+        $("#linkConfirmationModal div.updating.capacity").append(futureCapacitySpan)
+    }
+
+
+
 	$('#linkConfirmationModal div.updating.price').text('$' + $('#planLinkEconomyPrice').val() + " / $" + $('#planLinkBusinessPrice').val() + " / $" + $('#planLinkFirstPrice').val())
-	$('#linkConfirmationModal div.updating.configuration').text(toLinkClassValueString(updateLinkModel.configuration))
 	$('#linkConfirmationModal div.controlButtons').show()
 
 	$('#linkConfirmationModal').fadeIn(200)
@@ -2105,5 +2157,21 @@ function previewLinkNegotiation() {
 	});
 }
 
+
+function refreshAssignedAirplanesBar(container, assignedAirplanes) {
+	$(container).empty()
+
+	$.each(assignedAirplanes, function(key, entry) {
+		var status
+		var airplane = entry.airplane
+		var frequency = entry.frequency
+
+		var icon = getAirplaneIcon(airplane)
+		icon.css("padding", 0)
+		icon.css("float", "left")
+
+		$(container).append(icon)
+	})
+}
 
 

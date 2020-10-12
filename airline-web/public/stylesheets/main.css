@@ -478,6 +478,10 @@ li.row, div.table-row {
 	font-weight: bold;
 }
 
+div.future {
+    color : #68A357;
+    display: inline-block;
+}
 
 
 .marquee span {
@@ -845,5 +849,4 @@ input:disabled {
     visibility: hidden;
     display: none;
 }
-
 

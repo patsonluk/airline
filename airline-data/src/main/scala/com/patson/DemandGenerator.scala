@@ -51,7 +51,7 @@ object DemandGenerator {
     
     val allDemands = new ArrayList[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
 	  
-	  val countryRelationships = CountrySource.getCountryMutualRelationShips()
+	  val countryRelationships = CountrySource.getCountryMutualRelationships()
 	  airports.foreach {  fromAirport =>
 	    val demandList = Collections.synchronizedList(new ArrayList[(Airport, (PassengerType.Value, LinkClassValues))]())
 	    airports.par.foreach { toAirport =>
@@ -270,7 +270,7 @@ object DemandGenerator {
   def generateOlympicsDemand(cycle: Int, demandMultiplier : Int, olympicsAirports : List[Airport], allAirports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]  = {
     val totalDemand = OLYMPICS_DEMAND_BASE * demandMultiplier
 
-    val countryRelationships = CountrySource.getCountryMutualRelationShips()
+    val countryRelationships = CountrySource.getCountryMutualRelationships()
     //use existing logic, just scale the total back to totalDemand at the end
     val unscaledDemands = ListBuffer[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
     val otherAirports = allAirports.filter(airport => !olympicsAirports.map(_.id).contains(airport.id))

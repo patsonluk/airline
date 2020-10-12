@@ -377,7 +377,7 @@
 											<div class="label"><h5>Capacity (Y/J/F):</h5></div>
 											<div class="value">
 												<span id="linkCurrentCapacity"></span>
-												<div class="future" style="color : #68A357; display:inline-block;">
+												<div class="future">
 													<div style="display:flex; align-items: center;">
 														&nbsp;(<img class="awaitingAirplanes" src='@routes.Assets.versioned("images/icons/information.png")' title="Capacity when all airplanes are delivered"><span class="capacity"></span>)
 													</div>
@@ -682,7 +682,7 @@
 										<div class="label"><h5>Capacity (Y/J/F):</h5></div>
 										<div class="value">
 											<span id="planLinkCapacity"></span>
-											<div class="future" style="color : #68A357; display:inline-block;">
+											<div class="future">
 												<div style="display:flex; align-items: center;">
 													&nbsp;(<img class="awaitingAirplanes" src='@routes.Assets.versioned("images/icons/information.png")' title="Capacity when all airplanes are delivered"><span class="capacity"></span>)
 												</div>
@@ -717,8 +717,8 @@
 								</div>
 								<div class="warningList">
 								</div>
-								<div class="button updateLinkButton" id="addLinkButton" onclick="createLink()">Create</div>
-								<div class="button updateLinkButton" id="updateLinkButton" onclick="createLink()">Update</div>
+								<div class="button" id="addLinkButton" onclick="linkConfirmation()">Create</div>
+								<div class="button" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
 								<div class="button" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</div>
 								<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 							</div>
@@ -3070,6 +3070,89 @@
             </div>
         </div>
     </div>
+
+  <!-- link confirmation modal -->
+  <div id="linkConfirmationModal" class="modal">
+	  <div class="modal-content" style="height: 700px; width : 600px">
+		  <span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
+		  <h3 style="margin-bottom: 10px;" class="modalHeader"></h3>
+		  <div style="width: 100%;" class="existingLink table data">
+			  <div class='table-header'>
+				  <div class="cell" style="width: 40%;"></div>
+				  <div class="cell" style="width: 30%;"><h5>Existing Settings</h5></div>
+				  <div class="cell" style="width: 30%;"><h5>New Settings</h5></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell"><h5>Airplane Model:</h5></div>
+				  <div class="cell existing model"></div>
+				  <div class="cell updating model"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell"><h5>Flight Duration:</h5></div>
+				  <div class="cell existing duration"></div>
+				  <div class="cell updating duration"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell"><h5>Assigned Airplanes:</h5></div>
+				  <div class="cell existing airplanes"></div>
+				  <div class="cell updating airplanes"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell"><h5>Flight Frequency:</h5></div>
+				  <div class="cell existing frequency"></div>
+				  <div class="cell updating frequency"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell"><h5>Capacity (Y/J/F):</h5></div>
+				  <div class="cell existing capacity"></div>
+				  <div class="cell updating capacity"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell"><h5>Price (Y/J/F):</h5></div>
+				  <div class="cell existing price"></div>
+				  <div class="cell updating price"></div>
+			  </div>
+		  </div>
+		  <div class="negotationInfo">
+			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation Required</h3>
+			  <div style="width: 100%;" class="table data">
+				  <div class="table-header">
+					  <div class="cell"></div>
+					  <div class="cell">Factor</div>
+					  <div class="cell">Value</div>
+				  </div>
+				  <div class="table-row">
+					  <div class="cell"><h5>Success Rate:</h5></div>
+					  <div class="cell"></div>
+					  <div class="cell successRate"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="cell"><h5>Negotiation Points:</h5></div>
+					  <div class="cell"></div>
+					  <div class="cell requiredPoints"></div>
+				  </div>
+			  </div>
+		  </div>
+		  <div class="negotiationAnimation" style="width: 100%; height: 300px;">
+			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation in progress...</h3>
+			  <div class="negotiationIcons" style="width: 50%; height: 50px; float:left;"></div>
+			  <h3>
+				  <div class="negotiationDescriptions" style="width: 40%; height: 50px; float:left;"></div>
+			  </h3>
+			  <div class="negotiationBar" style="width: 100%;"></div>
+			  <div class="negotiationResult" style="width: 100%">
+				  <div class="button result" onclick="closeModal($('#linkConfirmationModal'))"></div>
+			  </div>
+
+		  </div>
+
+		  <div class="controlButtons">
+			  <div class="button confirmButton" onclick="createLink()">Confirm</div>
+			  <div class="button negotiateButton" onclick="createLink()">Negotiate</div>
+			  <div class="button cancel" onclick="closeModal($('#linkConfirmationModal'))">Cancel</div>
+		  </div>
+	  </div>
+  </div>
 
     <!-- link rival awareness/loyalty modal -->
     <div id="linkRivalHistoryModal" class="modal">

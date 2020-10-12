@@ -59,6 +59,10 @@ object Computation {
   def calculateDistance(fromAirport : Airport, toAirport : Airport) : Int = {
     Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   }
+
+  def getFlightType(fromAirport : Airport, toAirport : Airport) : FlightType.Value = {
+    getFlightType(fromAirport, toAirport, calculateDistance(fromAirport, toAirport))
+  }
   
   def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int) = { 
 //    val distance = distanceOption.getOrElse(Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt)

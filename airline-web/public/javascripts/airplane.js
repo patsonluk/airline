@@ -839,6 +839,9 @@ function getAirplaneIcon(airplane, badConditionThreshold, explicitIsAssigned) {
         isAssigned = airplane.availableFlightMinutes != airplane.maxFlightMinutes
     }
 
+    if (typeof explicitIsAssigned == 'undefined') {
+        badConditionThreshold = airplane.badConditionThreshold
+    }
 
     var img = getAirplaneIconImg(airplane, badConditionThreshold, isAssigned)
     div.append(img)

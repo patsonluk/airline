@@ -203,8 +203,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   def getRejections(models : List[Model], airline : Airline) : Map[Model, Option[String]] = {
      
     val countryRelations : Map[String, Int] = airline.getCountryCode() match {
-      case Some(homeCountry) => CountrySource.getCountryMutualRelationShips(homeCountry).toList.map {
-        case ((_, otherCountry), relationship) => (otherCountry, relationship)
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationships(homeCountry).toList.map {
+        case (otherCountry, relationship) => (otherCountry, relationship)
       }.toMap
       case None => Map.empty
     }    

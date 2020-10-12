@@ -191,7 +191,7 @@ object CountrySource {
      }  
   }
   
-  def getCountryMutualRelationShips() : scala.collection.immutable.Map[(String, String), Int] = {
+  def getCountryMutualRelationships() : scala.collection.immutable.Map[(String, String), Int] = {
     val connection = Meta.getConnection()
     val statement = connection.prepareStatement("SELECT * FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE)
      try {
@@ -210,18 +210,18 @@ object CountrySource {
      }
   }
   
-  def getCountryMutualRelationShips(country : String) : scala.collection.immutable.Map[(String, String), Int] = {
+  def getCountryMutualRelationships(country : String) : scala.collection.immutable.Map[String, Int] = {
     val connection = Meta.getConnection()
     val statement = connection.prepareStatement("SELECT * FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + " WHERE country_1 = ?")
      try {
        
        statement.setString(1, country)
        val result = statement.executeQuery();
-       
-       
-       val relationships = Map[(String, String), Int]()
+
+
+       val relationships = Map[String, Int]()
        while (result.next()) {
-         relationships.put((result.getString("country_1"), result.getString("country_2")), result.getInt("relationship"))
+         relationships.put(result.getString("country_2"), result.getInt("relationship"))
        }
        
        relationships.toMap
@@ -439,6 +439,14 @@ object CountrySource {
       titles.toList
     } finally {
       connection.close()
+    }
+  }
+
+  def getCountryRelationshipsByAirline(airline : Airline) : scala.collection.immutable.Map[String, Int] = {
+    //for now only depends on the mother country code of the airline
+    airline.getCountryCode() match {
+      case Some(countryCode) => getCountryMutualRelationships(countryCode)
+      case None => scala.collection.immutable.Map.empty[String, Int]
     }
   }
 

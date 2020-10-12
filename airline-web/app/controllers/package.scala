@@ -111,8 +111,13 @@ package object controllers {
       Json.toJson(airplane)(SimpleAirplaneWrite).asInstanceOf[JsObject] + ("availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes))
     }
   }
-  
-  implicit object LinkClassValuesWrites extends Writes[LinkClassValues] {
+
+  implicit object LinkClassValuesFormat extends Format[LinkClassValues] {
+    def reads(json: JsValue): JsResult[LinkClassValues] = {
+      val value = LinkClassValues.getInstance((json \ "economy").as[Int], (json \ "business").as[Int], (json \ "first").as[Int])
+      JsSuccess(value)
+    }
+
     def writes(linkClassValues: LinkClassValues): JsValue = JsObject(List(
       "economy" -> JsNumber(linkClassValues(ECONOMY)),
       "business" -> JsNumber(linkClassValues(BUSINESS)),
@@ -212,6 +217,7 @@ package object controllers {
 
       link.getAssignedModel().foreach { model =>
         json = json + ("modelId" -> JsNumber(model.id))
+        json = json + ("modelName" -> JsString(model.name))
       }
 
       val constructingAirplanes = link.getAssignedAirplanes().filter(!_._1.isReady)
@@ -544,6 +550,41 @@ package object controllers {
       "categoryId" -> JsNumber(reward.rewardCategory.id)
     ))
   }
+
+  implicit object NegotiationOddsWrites extends Writes[NegotiationOdds] {
+    def writes(odds : NegotiationOdds): JsValue = {
+      var result = Json.arr()
+      odds.getFactors.foreach {
+        case (factor, value) =>
+          result = result.append(Json.obj("description" -> JsString(NegotationFactor.description(factor)),
+            "value"-> JsNumber(value)))
+      }
+      result
+    }
+  }
+
+  implicit object NegotiationInfoWrites extends Writes[NegotiationInfo] {
+    def writes(info : NegotiationInfo): JsValue = {
+      Json.obj(
+        "odds" -> JsNumber(info.odds.value),
+        "oddsComposition" -> Json.toJson(info.odds),
+        "requiredPoints" -> JsNumber(info.requiredPoints))
+    }
+  }
+
+
+
+  implicit object NegotiationResultWrites extends Writes[NegotiationResult] {
+    def writes(result : NegotiationResult): JsValue = {
+      val negotiationSessions = result.getNegotiationSessions()
+      Json.obj(
+        "passingScore" -> JsNumber(negotiationSessions.passingScore),
+        "sessions" -> Json.toJson(negotiationSessions.sessionScores),
+        "isSuccessful" -> JsBoolean(result.isSuccessful))
+    }
+  }
+
+
 
   val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)
 }
