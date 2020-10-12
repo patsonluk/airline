@@ -29,7 +29,7 @@ class ChatApplication @Inject()(cc: ControllerComponents)(implicit actorSystem: 
    def chatSocket = WebSocket.acceptOrResult[String, String] { request =>
     Future.successful(request.session.get("userId") match {
       case None =>
-        logger.info("Chatsocket rejected")
+        logger.debug("Chatsocket rejected")
         Left(Forbidden)
       case Some(userId) => 
         UserSource.loadUserById(userId.toInt) match {

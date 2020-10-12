@@ -9,10 +9,13 @@ var currentTime
 var currentCycle
 var airlineColors = {}
 var polylines = []
+var airports = undefined
 
 $( document ).ready(function() {
-	recordDimensions()
 	mobileCheck()
+	populateNavigation()
+    history.replaceState({"onclickFunction" : "showWorldMap()"}, null, "/") //set the initial state
+
 	window.addEventListener('orientationchange', refreshMobileLayout)
 	
 	if ($.cookie('sessionActive')) {
@@ -22,10 +25,12 @@ $( document ).ready(function() {
 		refreshLoginBar()
 		getAirports();
 		printConsole("Please log in")
+        showAbout();
 	}
 	
 	loadAllCountries()
 	updateAirlineColors()
+	populateTooltips()
 	
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())
@@ -36,57 +41,51 @@ $( document ).ready(function() {
 	});
 
 	$('#chattext').jemoji({
-        folder : 'assets/images/emoji/',
-        btn:    $('#emojiButton')
+        folder : 'assets/images/emoji/'
+        //btn:    $('#emojiButton') //button is buggy and hard to select (not categorized), lets not enable it now
     });
+
+    Splitting();
+    if (isIe()) {
+        //remove all laser elements, as IE cannot handle it
+        $(".laser").hide()
+    }
 
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
-function recordDimensions() {
-	$('.mainPanel').each(function(index, panel) {
-		$(panel).data("old-width", $(panel).css('width'))
-		$(panel).data("old-height", $(panel).css('height'))
-	})
-	
-	$('.sidePanel').each(function(index, panel) {
-		$(panel).data("old-width", $(panel).css('width'))
-	})
-	
-	//workaround, hardcode % for id sidePanel for now, for some unknown(?) reason, it returns 512px instead of 50%
-	$('#sidePanel').data("old-width", '50%')
-}
 
 function mobileCheck() {
-	if (window.screen.availWidth < 1024) { //assume it's a less powerful device
+	if (isMobileDevice()) { //assume it's a less powerful device
 		refreshMobileLayout()
-		$('.button, .button a').css('fontSize', 16)
-		$('input').css('fontSize', 16)
-		
+
 		//turn off animation by default
 		currentAnimationStatus = false
+
+		//registerSwipe()
 	}
+}
+
+function isMobileDevice() {
+    return window.screen.availWidth < 1024
 }
 
 function refreshMobileLayout() {
 	if (window.screen.availWidth < window.screen.availHeight) { //only toggle layout change if it's landscape
-		$('.mainPanel').css('width', '100%')
-		$('.mainPanel').css('max-width', '100%')
-		$('.mainPanel').css('height', '35%')
-		$('.sidePanel').css('width', '100%')
-		$('.sidePanel').css('max-width', '100%')
-	} else {
-		$('.mainPanel').each(function(index, panel) {
-			$(panel).css('width', $(panel).data("old-width"))
-			$(panel).css('max-width', $(panel).data("old-width"))
-			$(panel).css('height', $(panel).data("old-height"))
-		})
-		
-		$('.sidePanel').each(function(index, panel) {
-			$(panel).css('width', $(panel).data("old-width"))
-			$(panel).css('max-width', $(panel).data("old-width"))
-		})
+		$("#reputationLevel").hide()
+    } else {
+        $("#reputationLevel").show()
 	}
+	delete(map)
+	//yike, what if we miss something...the list below is kinda random
+	//initMap()
+	if (airports) {
+	    addMarkers(airports)
+    }
+	if (activeAirline) {
+	    updateLinksInfo()
+	    updateAirportMarkers(activeAirline)
+    }
 }
 
 function showFloatMessage(message, timeout) {
@@ -115,13 +114,16 @@ function showFloatMessage(message, timeout) {
 
 function refreshLoginBar() {
 	if (!activeUser) {
-		setActiveDiv($("#loginDiv"))
+		$("#loginDiv").show();
+		$("#logoutDiv").hide();
 	} else {
 		$("#currentUserName").empty()
 		$("#currentUserName").append(activeUser.userName + getUserLevelImg(activeUser.level))
-		setActiveDiv($("#logoutDiv"))
+		$("#logoutDiv").show();
+        $("#loginDiv").hide();
 	}
 }
+
 
 function loadUser(isLogin) {
 	var ajaxCall = {
@@ -130,11 +132,12 @@ function loadUser(isLogin) {
 	  async: false,
 	  success: function(user) {
 		  if (user) {
+		    closeAbout()
 			  activeUser = user
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
 			  $("#loginPassword").val("")
-			  
+
 			  if (isLogin) {
 				  showFloatMessage("Successfully logged in")
 				  showAnnoucement()
@@ -156,6 +159,7 @@ function loadUser(isLogin) {
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
 			  loadAllCountries() //load country again for relationship
+			  loadAllLogs()
 		  }
 		  
 	  },
@@ -226,12 +230,12 @@ function logout() {
 
 function showUserSpecificElements() {
 	$('.user-specific-tab').show()
-	$('#topBarDetails').show()
+	$('.topBarDetails').show()
 }
 
 function hideUserSpecificElements() {
 	$('.user-specific-tab').hide()
-	$('#topBarDetails').hide()
+	$('.topBarDetails').hide()
 }
 
 
@@ -242,7 +246,10 @@ function initMap() {
    	zoom : 2,
    	minZoom : 2,
    	gestureHandling: 'greedy',
-   	styles: getMapStyles() 
+   	styles: getMapStyles(),
+   	restriction: {
+                latLngBounds: { north: 85, south: -85, west: -180, east: 180 },
+              }
   });
 	
   google.maps.event.addListener(map, 'zoom_changed', function() {
@@ -251,33 +258,37 @@ function initMap() {
 	    $.each(markers, function( key, marker ) {
 	        marker.setVisible(isShowMarker(marker, zoom));
 	    })
-  });  
+  });
 
-  $("#toggleMapLightButton").index = 1
-  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapLightButton")[0]);
-  $("#toggleMapLightButton").show()
-  
-  $("#toggleMapAnimationButton").index = 2
-  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapAnimationButton")[0]);
-  $("#toggleMapAnimationButton").show()
-  
-  $("#toggleMapChristmasButton").index = 3
-  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#toggleMapChristmasButton")[0]);
-  $("#toggleMapChristmasButton").show()
-  
-//  $("#linkHistoryButton").index = 2
-//  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#linkHistoryButton")[0]);
-  
-//  map.controls[google.maps.ControlPosition.TOP_CENTER].push($("#hideLinkHistoryButton")[0]);
-//  var linkControlDiv = document.createElement('div');
-//  linkControlDiv.id = 'linkControlDiv';
-//  var linkControl = new LinkHistoryControl(linkControlDiv, map);
-//
-//  $(linkControlDiv).hide()
-//  
-//  linkControlDiv.index = 1;
-//  map.controls[google.maps.ControlPosition.TOP_CENTER].push(linkControlDiv);
-//  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(hideLinkHistoryButton);
+  addCustomMapControls(map)
+}
+
+function addCustomMapControls(map) {
+//			<div id="toggleMapChristmasButton" class="googleMapIcon" onclick="toggleChristmasMarker()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/bauble.png")' title='Merry Christmas!' style="vertical-align: middle;"/></div>-->
+//			<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' title='toggle flight marker animation' style="vertical-align: middle;"/></div>-->
+//			<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style="display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>-->
+   //var toggleMapChristmasButton = $('<div id="toggleMapChristmasButton" class="googleMapIcon" onclick="toggleChristmasMarker()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src=\'@routes.Assets.versioned("images/icons/bauble.png")\' title=\'Merry Christmas!\' style="vertical-align: middle;"/></div>')
+   var toggleMapAnimationButton = $('<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/icons/arrow-step-over.png" title=\'toggle flight marker animation\' style="vertical-align: middle;"/></div>')
+   var toggleMapLightButton = $('<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style=""><span class="alignHelper"></span><img src="assets/images/icons/switch.png" title=\'toggle dark/light themed map\' style="vertical-align: middle;"/></div>')
+
+
+  toggleMapLightButton.index = 1
+
+
+  toggleMapAnimationButton.index = 2
+
+
+  if ($("#map").height() > 400) {
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapLightButton[0]);
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapAnimationButton[0]);
+  } else {
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleMapLightButton[0]);
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleMapAnimationButton[0]);
+  }
+
+//  toggleMapChristmasButton.index = 3
+//  map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapChristmasButton[0]);
+
 }
 
 function LinkHistoryControl(controlDiv, map) {
@@ -387,16 +398,16 @@ function updateTime(cycle, fraction, cycleDurationEstimation) {
 			    durationTillNextTick -= refreshInterval
 			}
 			var date = new Date(currentTime)
-			$("#currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) +  " " + padBefore(date.getHours(), "0", 2) + ":00")
+			$(".currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) +  " " + padBefore(date.getHours(), "0", 2) + ":00")
 
 			if (hasTickEstimation) {
 			    var minutesLeft = Math.round(durationTillNextTick / 1000 / 60)
 			    if (minutesLeft <= 0) {
-			        $("#nextTickEstimation").text("Very soon")
+			        $(".nextTickEstimation").text("Very soon")
 			    } else if (minutesLeft == 1) {
-			        $("#nextTickEstimation").text("1 minute")
+			        $(".nextTickEstimation").text("1 minute")
 			    } else {
-			        $("#nextTickEstimation").text(minutesLeft + " minutes")
+			        $(".nextTickEstimation").text(minutesLeft + " minutes")
 			    }
             }
 		}, refreshInterval);
@@ -452,14 +463,25 @@ function toggleConsoleMessage() {
 
 function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
-	highlightTab($('#worldMapCanvasTab'))
+	highlightTab($('.worldMapCanvasTab'))
 	$('#sidePanel').appendTo($('#worldMapCanvas'))
-	if (activeAirportPopupInfoWindow) {
-		activeAirportPopupInfoWindow.close(map)
-	}
+	closeAirportInfoPopup()
 	if (selectedLink) {
 		selectLinkFromMap(selectedLink, true)
 	}
+}
+
+//switch to map view w/o considering leaving current tab
+function switchMap() {
+    var mapCanvas = $('#worldMapCanvas')
+    var existingActiveDiv = mapCanvas.siblings(":visible").filter(function (index) {
+		return $(this).css("clear") != "both"
+	})
+    if (existingActiveDiv.length > 0) {
+        existingActiveDiv.fadeOut(200, function() {
+            mapCanvas.fadeIn(200)
+        })
+    }
 }
 
 function showAnnoucement() {
@@ -470,6 +492,17 @@ function showAnnoucement() {
 	$('#annoucementContainer').load('assets/html/annoucement.html')
 
 	modal.fadeIn(1000)
+}
+
+function populateTooltips() {
+    //scan for all tooltips
+    $.each($(".tooltip"), function() {
+        var htmlSource = $(this).data("html")
+        if (htmlSource) { //then load the html, otherwise leave it alone (older tooltips)
+            $(this).empty()
+            $(this).load("assets/html/tooltip/" + htmlSource + ".html")
+        }
+    })
 }
 
 function showTutorial() {
@@ -484,7 +517,7 @@ function promptConfirm(prompt, targetFunction, param) {
 		$('#confirmationModal .confirmationButton').data('targetFunctionParam', param)
 	}
 	$('#confirmationPrompt').html(prompt)
-	$('#confirmationModal').fadeIn(1000)
+	$('#confirmationModal').fadeIn(200)
 }
 
 function executeConfirmationTarget() {
@@ -525,3 +558,30 @@ function assignAirlineColors(dataSet, colorProperty) {
 	})
 }
 
+function populateNavigation(parent) { //change all the tabs to do fake url
+    if (!parent) {
+        parent = $(":root")
+    }
+
+    parent.find('[data-link]').each(function() {
+        var onclickFunction = $(this).attr("onclick")
+        var path = $(this).data("link") != "/" ? ("nav-" + $(this).data("link")) : "/"
+        //console.log(path + " " + onclickFunction)
+
+        $(this).click(function() {
+            history.pushState({ "onclickFunction" : onclickFunction }, null, path);
+        })
+//
+//        if (onclickFunction) {
+//            eval(onclickFunction)
+//        }
+    })
+}
+
+
+
+window.addEventListener('popstate', function(e) {
+    if (e.state && e.state.onclickFunction) {
+        eval(e.state.onclickFunction)
+    }
+});

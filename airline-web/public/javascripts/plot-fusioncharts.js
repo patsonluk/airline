@@ -73,6 +73,80 @@ function plotMaintenanceLevelGauge(container, maintenanceLevelInput, onchangeFun
 	
 }
 
+//unmodifiable seat configuration bar
+function plotSeatConfigurationBar(container, configuration, maxSeats, spaceMultipliers, hideValues, height) {
+    container.children(':FusionCharts').each((function(i) {
+          $(this)[0].dispose();
+    }))
+    container.empty()
+
+    var dataSource = {
+        "chart": {
+            "theme": "fint",
+            "lowerLimit": "0",
+            "upperLimit": "100",
+            "showTickMarks": "0",
+            "showTickValues": "0",
+            "showborder": "0",
+            "chartBottomMargin": "0",
+            "bgAlpha":"0",
+            "valueFontSize": "11",
+            "valueFontBold": "0",
+            "animation": "0",
+            "editMode": "0",
+            "containerBackgroundOpacity" :'0',
+            "pointerBgAlpha":"0",
+            "pointerBorderAlpha":"0",
+            "chartLeftMargin": "0",
+            "chartTopMargin": "0",
+            "chartRightMargin": "0",
+            "chartBottomMargin": "0",
+            "baseFontColor": "#FFFFFF"
+        }
+    }
+
+
+    var businessPosition = configuration.economy / maxSeats * 100
+    var firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
+
+    var economyRange = {
+                         "minValue": "0",
+                         "maxValue": businessPosition,
+                         "code": "#6baa01"
+                       }
+    var businessRange = {
+                          "minValue": businessPosition,
+                          "maxValue": firstPosition,
+                          "code": "#0077CC"
+                         }
+    var firstRange = {
+                      "minValue": firstPosition,
+                      "maxValue": "100",
+                      "code": "#FFE62B"
+                      }
+    if (!hideValues) {
+        economyRange.label = "Y : " + configuration.economy
+        businessRange.label = "J : " + configuration.business
+        firstRange.label = "F : " + configuration.first
+    }
+
+    dataSource["colorRange"] = { "color": [economyRange, businessRange, firstRange] }
+
+    if (!height) {
+        height = "20px"
+    }
+
+    var chart = container.insertFusionCharts(
+    {
+        type: 'hlineargauge',
+        width: '100%',
+        height: height,
+        dataFormat: 'json',
+        dataSource: dataSource,
+    })
+
+}
+
 function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMultipliers, callback) {
 	container.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
@@ -93,43 +167,51 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	        "valueFontSize": "11",  
 	        "valueFontBold": "0",
 	        "animation": "0",
-	        "editMode": "1",
+	        "editMode": "0",
+	        "pointerBgAlpha":"0",
+            "pointerBorderAlpha":"0",
 	        containerBackgroundOpacity :'0',
 	        "baseFontColor": "#FFFFFF"
-	    },
-	    "pointers": {
-	        //Multiple pointers defined here
-	        "pointer": [
-	            {
-	                "bgColor": "#FFE62B",
-	                "bgAlpha": "50",
-	                "showValue": "0",
-	                //"sides" : "4",
-	                "borderColor": "#FFE62B",
-	                "borderAlpha": "20",
-	            },
-	            {
-	                "bgColor": "#0077CC",
-	                "bgAlpha": "50",
-	                "showValue": "0",
-	                //"sides" : "3",
-	                "borderColor": "#0077CC",
-	                "borderAlpha": "20",
-	            }
-	        ]
 	    }
+//	    ,
+//	    "pointers": {
+//	        //Multiple pointers defined here
+//	        "pointer": [
+//	            {
+//	                "bgColor": "#FFE62B",
+//	                "bgAlpha": "50",
+//	                "showValue": "0",
+//	                //"sides" : "4",
+//	                "borderColor": "#FFE62B",
+//	                "borderAlpha": "20",
+//	            },
+//	            {
+//	                "bgColor": "#0077CC",
+//	                "bgAlpha": "50",
+//	                "showValue": "0",
+//	                //"sides" : "3",
+//	                "borderColor": "#0077CC",
+//	                "borderAlpha": "20",
+//	            }
+//	        ]
+//	    }
 	}
 	
 	function updateDataSource(configuration) {
 		var businessPosition = configuration.economy / maxSeats * 100
-		var firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
+		var firstPosition
+		 if (configuration.business == 0) {
+		    firstPosition = businessPosition
+		 } else {
+		    firstPosition = (maxSeats - configuration.first * spaceMultipliers.first) / maxSeats * 100
+		 }
 		dataSource["colorRange"] = {
             "color": [
                       {
                           "minValue": "0",
                           "maxValue": businessPosition,
                           "label": "Y : " + configuration.economy,
-                          "tooltext": "Business Class",
+                          "tooltext": "Economy Class",
                           "code": "#6baa01"
                       },
                       {
@@ -143,13 +225,13 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
                           "minValue": firstPosition,
                           "maxValue": "100",
                           "label": "F : " + configuration.first,
-                          "tooltext": "Business Class",
+                          "tooltext": "First Class",
                           "code": "#FFE62B"
                       }
                   ]
               }
-	    dataSource["pointers"]["pointer"][0].value = firstPosition
-	    dataSource["pointers"]["pointer"][1].value = businessPosition
+//	    dataSource["pointers"]["pointer"][0].value = firstPosition
+//	    dataSource["pointers"]["pointer"][1].value = businessPosition
 	}
 	
 	updateDataSource(configuration)
@@ -160,38 +242,39 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
         width: '100%',
         height: '40px',
         dataFormat: 'json',
-	    dataSource: dataSource,
-        "events": {
-            "realTimeUpdateComplete" : function (evt, arg){
-                var firstPosition = evt.sender.getData(1)
-                var businessPosition = evt.sender.getData(2)
-                
-                var tinyAdjustment = 0.001 //the tiny adjustment is to avoid precision problem that causes floor to truncate number like 0.99999
-                configuration["first"] = Math.floor(tinyAdjustment + maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
-                
-                if (firstPosition < businessPosition) {  //dragging first past business to the left => eliminate all business
-                	configuration["business"] = 0
-                } else {
-                	configuration["business"] = Math.floor(tinyAdjustment + (maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
-                }
-                
-                if (businessPosition == 0) { //allow elimination of all economy seats
-                	configuration["economy"] = 0
-                } else {
-                	configuration["economy"] = Math.floor(tinyAdjustment + (maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
-                }
-                
-                
-                //console.log(configuration)
-                
-                updateDataSource(configuration)
-                callback(configuration)
-                
-                container.updateFusionCharts({
-                	"dataSource": dataSource
-                });
-            }
-        }
+	    dataSource: dataSource
+//	    ,
+//        "events": {
+//            "realTimeUpdateComplete" : function (evt, arg){
+//                var firstPosition = evt.sender.getData(1)
+//                var businessPosition = evt.sender.getData(2)
+//
+//                var tinyAdjustment = 0.001 //the tiny adjustment is to avoid precision problem that causes floor to truncate number like 0.99999
+//                configuration["first"] = Math.floor(tinyAdjustment + maxSeats * (100 - firstPosition) / 100 / spaceMultipliers.first)
+//
+//                if (firstPosition < businessPosition) {  //dragging first past business to the left => eliminate all business
+//                	configuration["business"] = 0
+//                } else {
+//                	configuration["business"] = Math.floor(tinyAdjustment + (maxSeats * (100 - businessPosition) / 100 - configuration["first"] * spaceMultipliers.first) / spaceMultipliers.business)
+//                }
+//
+//                if (businessPosition == 0) { //allow elimination of all economy seats
+//                	configuration["economy"] = 0
+//                } else {
+//                	configuration["economy"] = Math.floor(tinyAdjustment + (maxSeats - configuration["first"] * spaceMultipliers.first - configuration["business"] * spaceMultipliers.business) / spaceMultipliers.economy)
+//                }
+//
+//
+//                //console.log(configuration)
+//
+//                updateDataSource(configuration)
+//                callback(configuration)
+//
+//                container.updateFusionCharts({
+//                	"dataSource": dataSource
+//                });
+//            }
+//        }
 	})
 }
 
@@ -238,7 +321,17 @@ function plotAirportShares(airportShares, currentAirportId, container) {
 	})
 }
 
-function plotLinkProfit(linkConsumptions, container) {
+var monthlyWeeksPerMark = 4
+var quarterlyWeeksPerMark = 13
+var monthlyMaxMark = 6
+var quarterlyMaxMark = 8 //2 years
+var plotUnitEnum = {
+    MONTH : { value : 1,  maxWeek : monthlyMaxMark * monthlyWeeksPerMark, weeksPerMark : monthlyWeeksPerMark, maxMark : monthlyMaxMark},
+    QUARTER : { value : 2,  maxWeek : quarterlyMaxMark * quarterlyWeeksPerMark, weeksPerMark : quarterlyWeeksPerMark, maxMark : quarterlyMaxMark}
+}
+
+
+function plotLinkProfit(linkConsumptions, container, plotUnit) {
 	container.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
@@ -246,24 +339,44 @@ function plotLinkProfit(linkConsumptions, container) {
 	var data = []
 	var category = []
 	 
-	var profitByMonth = {}
-	var monthOrder = []
+	var profitByMark = {}
+	var markOrder = []
+
+	if (plotUnit === undefined) {
+        plotUnit = plotUnitEnum.MONTH
+    }
+
+    var maxMark = plotUnit.maxMark
+  	var xLabel
+  	var yLabel
+  	var weeksPerMark = plotUnit.weeksPerMark
+   	switch (plotUnit.value) {
+        case plotUnitEnum.MONTH.value:
+            xLabel = 'Month'
+            yLabel = 'Monthly Profit'
+            break;
+        case plotUnitEnum.QUARTER.value:
+            xLabel = 'Quarter'
+            yLabel = 'Quarterly Profit'
+            break;
+    }
+
 	$.each(linkConsumptions, function(index, linkConsumption) {
 		//group in months first
-		var month = Math.floor(linkConsumption.cycle / 4)
-		if (profitByMonth[month] === undefined) {
-			profitByMonth[month] = linkConsumption.profit
-			monthOrder.push(month)
+		var mark = Math.floor(linkConsumption.cycle / weeksPerMark)
+		if (profitByMark[mark] === undefined) {
+			profitByMark[mark] = linkConsumption.profit
+			markOrder.push(mark)
 		} else {
-			profitByMonth[month] += linkConsumption.profit
+			profitByMark[mark] += linkConsumption.profit
 		}
 	})
 	
-	var maxMonth = 6
-	monthOrder = monthOrder.slice(0, maxMonth)
-	$.each(monthOrder.reverse(), function(key, month) {
-		data.push({ value : profitByMonth[month] })
-		category.push({ label : month.toString() })
+
+	markOrder = markOrder.slice(0, maxMark)
+	$.each(markOrder.reverse(), function(key, mark) {
+		data.push({ value : profitByMark[mark] })
+		category.push({ label : mark.toString() })
 	})
 	
 	var chart = container.insertFusionCharts({
@@ -274,8 +387,8 @@ function plotLinkProfit(linkConsumptions, container) {
 	    dataFormat: 'json',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": "Month",
-	    		"yAxisName": "Monthly Profit",
+	    		"xAxisname": xLabel,
+	    		"yAxisName": yLabel,
 	    		"numberPrefix": "$",
 	    		"useroundedges": "1",
 	    		"animation": "0",
@@ -292,7 +405,7 @@ function plotLinkProfit(linkConsumptions, container) {
 	})
 }
 
-function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer, priceContainer) {
+function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContainer, priceContainer, plotUnit) {
 	ridershipContainer.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
@@ -327,9 +440,24 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 
 		
 	var category = []
-	 
-	var maxWeek = 24
-	
+
+    if (plotUnit === undefined) {
+	    plotUnit = plotUnitEnum.MONTH
+	}
+
+	var maxWeek = plotUnit.maxWeek
+	var weeksPerMark = plotUnit.weeksPerMark
+	var xLabel
+	switch (plotUnit.value) {
+      case plotUnitEnum.MONTH.value:
+        xLabel = 'Month'
+        break;
+      case plotUnitEnum.QUARTER.value:
+        xLabel = 'Quarter'
+        break;
+    }
+
+
 	if (!jQuery.isEmptyObject(linkConsumptions)) {
 		linkConsumptions = $(linkConsumptions).toArray().slice(0, maxWeek)
         var hasCapacity = {} //check if there's any capacity for this link class at all
@@ -368,9 +496,9 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 			    priceByClass.first.push({ value : linkConsumption.price.first })
 			}
 			
-			var month = Math.floor(linkConsumption.cycle / 4)
+			var mark = Math.floor(linkConsumption.cycle / weeksPerMark)
 			//var week = linkConsumption.cycle % 4 + 1
-			category.push({ label : month.toString()})
+			category.push({ label : mark.toString()})
 		})
 	}
 	
@@ -382,7 +510,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": "Month",
+	    		"xAxisname": xLabel,
 	    		"YAxisName": "Seats Consumption",
 	    		//"sYAxisName": "Load Factor %",
 	    		"sNumberSuffix" : "%",
@@ -400,7 +528,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
                 "showValues":"0",
                 "canvasPadding":"0",
                 "labelDisplay":"wrap",
-                "labelStep": "4"
+                "labelStep": weeksPerMark
 	    	},
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [
@@ -422,7 +550,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": "Month",
+	    		"xAxisname": xLabel,
 	    		"YAxisName": "Revenue",
 	    		//"sYAxisName": "Load Factor %",
 	    		"sYAxisMaxValue" : "100",
@@ -440,7 +568,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
                 "showValues":"0",
                 "canvasPadding":"0",
                 "labelDisplay":"wrap",
-	            "labelStep": "4"
+	            "labelStep": weeksPerMark
 	    	},
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [
@@ -459,7 +587,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    containerBackgroundOpacity :'0',
 		dataSource: {
 	    	"chart": {
-	    		"xAxisname": "Month",
+	    		"xAxisname": xLabel,
 	    		"YAxisName": "Ticket Price",
 	    		//"sYAxisName": "Load Factor %",
 	    		"numberPrefix": "$",
@@ -468,14 +596,16 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	    		"transposeAxis":"1",
 	    		"animation": "0",
 	    		"showBorder":"0",
+	    		"drawAnchors": "0",
                 "toolTipBorderRadius": "2",
                 "toolTipPadding": "5",
                 "paletteColors": "#007849,#0375b4,#ffce00",
                 "bgAlpha":"0",
                 "showValues":"0",
                 "canvasPadding":"0",
+                "formatNumberScale" : "0",
                 "labelDisplay":"wrap",
-	            "labelStep": "4"
+	            "labelStep": weeksPerMark
 	    	},
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [
@@ -685,6 +815,7 @@ function plotOilPriceChart(oilPrices, container) {
                 "toolTipBorderRadius": "2",
                 "toolTipPadding": "5",
                 "bgAlpha":"0",
+                "drawAnchors": "0",
                 "setAdaptiveYMin":"1",
                 "labelStep": "4"
 	    	},

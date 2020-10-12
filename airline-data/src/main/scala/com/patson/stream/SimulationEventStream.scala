@@ -4,7 +4,7 @@ import akka.actor._
 import com.patson.MainSimulation
 import com.typesafe.config.ConfigFactory
 
-import scala.collection.mutable.Set
+import scala.collection.mutable.{ListBuffer, Set}
 
 object SimulationEventStream{
   val config = ConfigFactory.load()
@@ -26,8 +26,10 @@ object SimulationEventStream{
   class BridgeActor extends Actor {
     var currentCycle : Int = 0
     var previousCycleStartTime : Long = 0
+    var cycleDurationHistory = ListBuffer[Long]()
     var cycleDurationAverage : Long = 0
     var cycleCount : Int = 0
+    val MAX_DURATION_SAMPLE = 10
 
     //keep stats of all the cycles so far
 
@@ -48,10 +50,14 @@ object SimulationEventStream{
           case CycleStart(cycle, newCycleStartTime) => //notified by the simulation process that a cycle has started
             currentCycle = cycle
             if (cycleCount > 0) { //with previous record, calculate the average then
-              val cycleWithDurationCount = cycleCount - 1 //as first cycle has no duration (nothing to compare to before first cycle)
               val durationSinceLastCycle = newCycleStartTime - previousCycleStartTime
 
-              cycleDurationAverage = (cycleDurationAverage * cycleWithDurationCount + durationSinceLastCycle) / (cycleWithDurationCount + 1)
+              cycleDurationHistory.append(durationSinceLastCycle)
+              if (cycleDurationHistory.length > MAX_DURATION_SAMPLE) { //drop the first record
+                cycleDurationHistory = cycleDurationHistory.drop(1)
+              }
+
+              cycleDurationAverage = cycleDurationHistory.sum / cycleDurationHistory.length
             }
             previousCycleStartTime = newCycleStartTime
             cycleCount += 1

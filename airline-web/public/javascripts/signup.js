@@ -18,9 +18,9 @@ $( document ).ready(function() {
 })
 
 function showProfile(profile) {
-	var html = '<div style="width: 400px; height: 300px; float:left;" class="section clickable" onclick="selectProfile(' + profile.id + ', this)"><h1>' + profile.title +'</h1><span class="label">' + profile.description + '</span><ul>'
+	var html = '<div style="float:left;" class="profile-section verticalGroup clickable" onclick="selectProfile(' + profile.id + ', this)"><h1>' + profile.title +'</h1><br/><span class="label">' + profile.description + '</span><br/><br/><ul>'
 	$.each(profile.outlines, function(index, outline) {
-		html += '<li style="padding: 10px">- ' + outline + '</li>'
+		html += '<li>' + outline + '</li>'
 	})
 	html += '</ul></div>'
 	
@@ -32,8 +32,8 @@ function showProfile(profile) {
 
 function selectProfile(profileId, profileDiv) {
 	$('#profileId').val(profileId)
-	$(profileDiv).siblings(".selectedSection").removeClass("selectedSection").addClass("section")
-	$(profileDiv).addClass("selectedSection").removeClass("section")
+	$(profileDiv).siblings("div").removeClass("selected")
+	$(profileDiv).addClass("selected")
 }
 
 

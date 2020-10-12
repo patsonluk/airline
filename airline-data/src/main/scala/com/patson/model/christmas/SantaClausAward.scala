@@ -2,6 +2,7 @@ package com.patson.model.christmas
 
 import com.patson.data.{AirlineSource, AirportSource, ChristmasSource}
 import com.patson.model.{Airline, AirlineAppeal, Airport}
+import com.patson.util.{AirlineCache, AirportCache}
 
 abstract class SantaClausAward(santaClausInfo: SantaClausInfo) {
   val getType : SantaClausAwardType.Value
@@ -29,9 +30,9 @@ class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.SERVICE_QUALITY
   val BONUS = 5
   override def applyAward(): Unit = {
-    val newQuality = Math.min(santaClausInfo.airline.getServiceQuality() + BONUS, Airline.MAX_SERVICE_QUALITY)
+    val newQuality = Math.min(santaClausInfo.airline.getCurrentServiceQuality() + BONUS, Airline.MAX_SERVICE_QUALITY)
 
-    santaClausInfo.airline.setServiceQuality(newQuality)
+    santaClausInfo.airline.setCurrentServiceQuality(newQuality)
     AirlineSource.saveAirlineInfo(santaClausInfo.airline, updateBalance = false)
   }
   override val description: String = "Santa Claus offers you his pro tips on making your flights magical! Overall Airline Service Quality bonus +" + BONUS + " !"
@@ -41,18 +42,18 @@ class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(san
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.HQ_LOYALTY
   val BONUS = 3
   override def applyAward(): Unit = {
-    AirlineSource.loadAirlineById(santaClausInfo.airline.id, fullLoad = true).foreach { airline =>
+    AirlineCache.getAirline(santaClausInfo.airline.id, fullLoad = true).foreach { airline =>
       airline.getHeadQuarter().foreach { hq =>
-        val airport = AirportSource.loadAirportById(hq.airport.id, fullLoad = true).get //need full load for appeal
-        val newLoyalty = Math.min(airport.getAirlineLoyalty(airline.id) + BONUS, AirlineAppeal.MAX_LOYALTY)
-        airport.setAirlineLoyalty(airline.id, newLoyalty)
-        AirportSource.updateAirlineAppeal(List(airport))
+        val airport = AirportCache.getAirport(hq.airport.id, fullLoad = true).get //need full load for appeal
+        val existingAppeal = airport.getAirlineBaseAppeal(airline.id)
+        val newLoyalty = Math.min(existingAppeal.loyalty + BONUS, AirlineAppeal.MAX_LOYALTY)
+        AirportSource.updateAirlineAppeal(airport.id, airline.id, AirlineAppeal(newLoyalty, existingAppeal.awareness))
       }
     }
   }
 
   override val description: String = {
-    val hq = AirlineSource.loadAirlineById(santaClausInfo.airline.id, fullLoad = true).get.getHeadQuarter().get.airport
+    val hq = AirlineCache.getAirline(santaClausInfo.airline.id, fullLoad = true).get.getHeadQuarter().get.airport
 
     "Santa Claus agrees to travel to your HQ and ho-ho-ho for a week in " + hq.name + "! Loyalty bonus +" + BONUS + " in your HQ airport!"
   }
@@ -63,10 +64,10 @@ class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
   val BONUS = 10
   override def applyAward(): Unit = {
     val airline = santaClausInfo.airline
-    val airport = AirportSource.loadAirportById(santaClausInfo.airport.id, fullLoad = true).get //need full load for appeal
-    val newLoyalty = Math.min(airport.getAirlineLoyalty(airline.id) + BONUS, AirlineAppeal.MAX_LOYALTY)
-    airport.setAirlineLoyalty(airline.id, newLoyalty)
-    AirportSource.updateAirlineAppeal(List(airport))
+    val airport = AirportCache.getAirport(santaClausInfo.airport.id, fullLoad = true).get //need full load for appeal
+    val existingAppeal = airport.getAirlineBaseAppeal(airline.id)
+    val newLoyalty = Math.min(existingAppeal.loyalty + BONUS, AirlineAppeal.MAX_LOYALTY)
+    AirportSource.updateAirlineAppeal(airport.id, airline.id, AirlineAppeal(newLoyalty, existingAppeal.awareness))
 
 
   }

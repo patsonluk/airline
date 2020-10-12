@@ -1,4 +1,14 @@
 var currentStyles
+var pathOpacityByStyle = {
+    "dark" : {
+        highlight : "0.8",
+        normal : "0.4"
+    },
+    "light" : {
+        highlight : "1.0",
+        normal  : "0.8"
+    }
+}
 
 function initStyles() {
 	console.log("onload cookie" + $.cookie('currentMapStyles'))
@@ -30,6 +40,7 @@ function toggleMapLight() {
 	console.log($.cookie('currentMapStyles'))
 	
 	map.setOptions({styles: getMapStyles()});
+	refreshLinks(false)
 }
 
 var darkStyles =  

@@ -5,7 +5,7 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Set
 import java.sql.DriverManager
 
-import com.patson.model.airplane.Airplane
+import com.patson.model.airplane.{Airplane, LinkAssignment}
 import java.sql.PreparedStatement
 
 import com.patson.model._
@@ -98,7 +98,7 @@ object LinkSource {
         case None => airlineIds.map(id => (id, Airline.fromId(id))).toMap 
       }
       
-      val assignedAirplaneCache : Map[Int, List[Airplane]] = loadDetails.get(DetailType.AIRPLANE) match {
+      val assignedAirplaneCache : Map[Int, Map[Airplane, LinkAssignment]] = loadDetails.get(DetailType.AIRPLANE) match {
         case Some(fullLoad) => loadAssignedAirplanesByLinks(connection, linkIds.toList)
         case None => Map.empty
       }
@@ -127,9 +127,9 @@ object LinkSource {
             FlightType(resultSet.getInt("flight_type")),
             resultSet.getInt("flight_number"))
           link.id = resultSet.getInt("id")
-          
-          assignedAirplaneCache.get(link.id).foreach {
-            link.setAssignedAirplanes(_)
+
+          assignedAirplaneCache.get(link.id).foreach { airplaneAssignments =>
+            link.setAssignedAirplanes(airplaneAssignments)
           }
           
           links += link          
@@ -210,11 +210,11 @@ object LinkSource {
     }
   }
   
-  def loadAssignedAirplanesByLinks(connection : Connection, linkIds : List[Int]) : Map[Int, List[Airplane]] = {
+  def loadAssignedAirplanesByLinks(connection : Connection, linkIds : List[Int]) : Map[Int, Map[Airplane, LinkAssignment]] = {
     if (linkIds.isEmpty) {
       Map.empty
     } else {
-      val queryString = new StringBuilder("SELECT link, airplane FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link IN (")
+      val queryString = new StringBuilder("SELECT link, airplane, frequency, flight_minutes FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link IN (")
       for (i <- 0 until linkIds.size - 1) {
             queryString.append("?,")
       }
@@ -235,19 +235,27 @@ object LinkSource {
       val airplaneCache = AirplaneSource.loadAirplanesByIds(airplaneIds.toList).map { airplane => (airplane.id, airplane) }.toMap
       assignmentResultSet.beforeFirst()
       
-      val assignments = new HashMap[Int, ListBuffer[Airplane]]()
+      val assignments = new HashMap[Int, HashMap[Airplane, LinkAssignment]]()
       while (assignmentResultSet.next()) {
         val link = assignmentResultSet.getInt("link")
         airplaneCache.get(assignmentResultSet.getInt("airplane")).foreach { airplane =>
-          val airplanesForThisLink = assignments.getOrElseUpdate(link, new ListBuffer[Airplane]);
-          airplanesForThisLink += airplane
+          val airplanesForThisLink = assignments.getOrElseUpdate(link, new HashMap[Airplane, LinkAssignment]);
+          airplanesForThisLink.put(airplane, LinkAssignment(assignmentResultSet.getInt("frequency"), assignmentResultSet.getInt("flight_minutes")))
         };
+      }
+
+      linkIds.foreach { linkId => //fill the link id with no airplane assigned with empty map
+        if (!assignments.contains(linkId)) {
+          assignments.put(linkId, HashMap.empty)
+        }
       }
       
       assignmentResultSet.close()
       linkAssignmentStatement.close()
       
-      val assignedPlanesByLinkId = assignments.mapValues{ _.toList }.toMap
+      val assignedPlanesByLinkId = assignments.toList.map {
+        case (linkId, mutableMap) => (linkId, mutableMap.toMap)
+      }.toMap
       
       assignedPlanesByLinkId
     }
@@ -299,7 +307,7 @@ object LinkSource {
      }
   }
   
-  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, flightNumber : Int, airplanes : List[Airplane] = List.empty) : Option[Int] = {
+  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, flightNumber : Int, assignedAirplanes : Map[Airplane, LinkAssignment] = Map.empty) : Option[Int] = {
      //open the hsqldb
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
@@ -330,7 +338,7 @@ object LinkSource {
           val generatedId = generatedKeys.getInt(1)
         //  println("Id is " + generatedId)
           //try to save assigned airplanes if any
-          updateAssignedPlanes(generatedId, airplanes)
+          updateAssignedPlanes(generatedId, assignedAirplanes)
           return Some(generatedId)
         }
       }
@@ -409,19 +417,14 @@ object LinkSource {
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
-      
-      if (updateCount > 0) {
-          //try to save assigned airplanes if any
-          updateAssignedPlanes(link.id, link.getAssignedAirplanes())
-      }
-      
+
       updateCount
     } finally {
       preparedStatement.close()
       connection.close()
     }
   }
-  
+
   def updateLinks(links : List[Link]) = {
     //open the hsqldb
     val connection = Meta.getConnection()
@@ -456,7 +459,7 @@ object LinkSource {
   }
   
   
-  def updateAssignedPlanes(linkId : Int, airplanes : List[Airplane]) = {
+  def updateAssignedPlanes(linkId : Int, assignedAirplanes : Map[Airplane, LinkAssignment]) = {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
@@ -466,14 +469,18 @@ object LinkSource {
       removeStatement.setInt(1, linkId)
       removeStatement.executeUpdate()
       removeStatement.close()
-      
-      
-      airplanes.foreach { airplane => 
-        val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane) VALUES(?,?)")
-        insertStatement.setInt(1, linkId)
-        insertStatement.setInt(2, airplane.id)
-        insertStatement.executeUpdate()
-        insertStatement.close
+
+
+      assignedAirplanes.foreach { case(airplane, assignment) =>
+        if (assignment.frequency > 0) {
+          val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane, frequency, flight_minutes) VALUES(?,?,?,?)")
+          insertStatement.setInt(1, linkId)
+          insertStatement.setInt(2, airplane.id)
+          insertStatement.setInt(3, assignment.frequency)
+          insertStatement.setInt(4, assignment.flightMinutes)
+          insertStatement.executeUpdate()
+          insertStatement.close
+        }
       }    
       
       connection.commit()
@@ -481,8 +488,44 @@ object LinkSource {
       connection.close()
     }
   }
-  
-  
+
+  def updateAssignedPlanes(assignedAirplanesByLinkId : Map[Int, Map[Airplane, LinkAssignment]]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val removeStatement = connection.prepareStatement("DELETE FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
+      val insertStatement = connection.prepareStatement("INSERT INTO " + LINK_ASSIGNMENT_TABLE + "(link, airplane, frequency, flight_minutes) VALUES(?,?,?,?)")
+      assignedAirplanesByLinkId.foreach  {
+        case (linkId, assignedAirplanes) =>
+          //remove all the existing ones assigned to this link
+          removeStatement.setInt(1, linkId)
+          removeStatement.addBatch()
+          assignedAirplanes.foreach { case(airplane, assignment) =>
+            if (assignment.frequency > 0) {
+
+              insertStatement.setInt(1, linkId)
+              insertStatement.setInt(2, airplane.id)
+              insertStatement.setInt(3, assignment.frequency)
+              insertStatement.setInt(4, assignment.flightMinutes)
+              insertStatement.addBatch()
+
+            }
+          }
+
+      }
+      removeStatement.executeBatch()
+      insertStatement.executeBatch()
+
+      removeStatement.close
+      insertStatement.close
+
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+
   def deleteLink(linkId : Int) = {
     deleteLinksByCriteria(List(("id", linkId)))
   }

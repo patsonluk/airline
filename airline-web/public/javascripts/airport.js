@@ -102,18 +102,24 @@ function updateAirportDetails(airport) {
 	    		
 	    		//update buttons and reject reasons
 	    		if (baseDetails.rejection) {
-	    			$('#baseRejectionReason').text(baseDetails.rejection)
-	    			$('#baseRejection').show()
 	    			$('#buildHeadquarterButton').hide()
 	    			$('#buildBaseButton').hide()
-	    			$('#upgradeBaseButton').hide()
-	    		} else{
-	    			$('#baseRejection').hide()
+                    $('#upgradeBaseButton').hide()
+	    			if (!airportBase) {
+	    			    disableButton($('#buildBaseButton'), baseDetails.rejection)
+	    			    $('#buildBaseButton').show()
+	    			} else {
+	    			    disableButton($('#upgradeBaseButton'), baseDetails.rejection)
+	    			    $('#upgradeBaseButton').show()
+	    			}
+	    		} else {
 	    			if (!airportBase) {
 	    				if (activeAirline.headquarterAirport) {
 		    				$('#buildHeadquarterButton').hide()
+		    				enableButton($('#buildBaseButton'))
 		    				$('#buildBaseButton').show()
 	    				} else {
+	    				    enableButton($('#buildHeadquarterButton'))
 	    					$('#buildHeadquarterButton').show()
 		    				$('#buildBaseButton').hide()
 	    				}
@@ -121,17 +127,17 @@ function updateAirportDetails(airport) {
 	    			} else {
 	    				$('#buildHeadquarterButton').hide()
 	    				$('#buildBaseButton').hide()
+	    				enableButton($('#upgradeBaseButton'))
 	    				$('#upgradeBaseButton').show()
 	    			}
 	    		}
 		    	
 		    	if (baseDetails.downgradeRejection) {
-		    		$('#downgradeRejectionReason').text(baseDetails.downgradeRejection)
-	    			$('#downgradeRejection').show()
-	    			$('#downgradeBaseButton').hide()
+                    disableButton($('#downgradeBaseButton'), baseDetails.downgradeRejection)
+	    			$('#downgradeBaseButton').show()
 		    	} else {
-		    		$('#downgradeRejection').hide()
 		    		if (airportBase) {
+                        enableButton($('#downgradeBaseButton'))
 		    			$('#downgradeBaseButton').show()
 		    		} else {
 		    			$('#downgradeBaseButton').hide()
@@ -372,20 +378,29 @@ function updateFacilityList(statistics) {
 
 
 function getAirports() {
-	$.getJSON( "airports?count=4000", function( data ) {
+    markers = undefined
+	$.getJSON( "airports", function( data ) {
+	      airports = data
 		  addMarkers(data)
 	});
 }
 
 function addMarkers(airports) {
-	var infoWindow = new google.maps.InfoWindow({
+    var infoWindow = new google.maps.InfoWindow({
 		maxWidth : 450
 	})
+	var originalOpacity = 0.7
 	currentZoom = map.getZoom()
 	var largeAirportMarkerIcon = $("#map").data("largeAirportMarker")
 	var mediumAirportMarkerIcon = $("#map").data("mediumAirportMarker")
 	var smallAirportMarkerIcon = $("#map").data("smallAirportMarker")
-	
+
+	google.maps.event.addListener(infoWindow, 'closeclick',function(){
+       if (infoWindow.marker) {
+        infoWindow.marker.setOpacity(originalOpacity)
+       }
+    });
+
 	var resultMarkers = {}
 	for (i = 0; i < airports.length; i++) {
 		  var airportInfo = airports[i]
@@ -413,8 +428,10 @@ function addMarkers(airports) {
 //		  		airportCountryCode: airportInfo.countryCode,
 //		  		airportZone : airportInfo.zone,
 //		  		airportAvailableSlots: airportInfo.availableSlots,
+                opacity: originalOpacity,
 		  		airport : airportInfo,
-		  		icon: icon
+		  		icon: icon,
+		  		originalIcon: icon, //so we can flip back and forth
 			  });
 		  
 		  var zIndex = airportInfo.size * 10 
@@ -425,9 +442,12 @@ function addMarkers(airports) {
 		  zIndex += sizeAdjust
 		  
 		  marker.setZIndex(zIndex); //major airport should have higher index
-		  
+
 		  marker.addListener('click', function() {
 			  infoWindow.close();
+			  if (infoWindow.marker && infoWindow.marker != this) {
+			    infoWindow.marker.setOpacity(originalOpacity)
+              }
 			  
 			  activeAirport = this.airport
 			  
@@ -448,8 +468,12 @@ function addMarkers(airports) {
 			  updateAirportSlots(this.airport.id)
 			  
 			  $("#airportPopupId").val(this.airport.id)
-			  infoWindow.setContent($("#airportPopup").html())
+			  var popup = $("#airportPopup").clone()
+			  populateNavigation(popup)
+			  popup.show()
+			  infoWindow.setContent(popup[0])
 			  infoWindow.open(map, this);
+			  infoWindow.marker = this
 			  
 			  activeAirportPopupInfoWindow = infoWindow
 			  
@@ -466,7 +490,20 @@ function addMarkers(airports) {
 			  }
 			  
 		  });
+
+		  marker.addListener('mouseover', function(event) {
+               this.setOpacity(0.9)
+            })
+            marker.addListener('mouseout', function(event) {
+                if (infoWindow.marker != this) {
+                    this.setOpacity(originalOpacity)
+                }
+            })
+
+
 		  marker.setVisible(isShowMarker(marker, currentZoom))
+
+
 		  resultMarkers[airportInfo.id] = marker
 	}
 	//now assign it to markers to indicate that it's ready
@@ -474,7 +511,7 @@ function addMarkers(airports) {
 }
 
 function planToAirportFromInfoWindow() {
-	activeAirportPopupInfoWindow.close();
+	closeAirportInfoPopup();
 	planToAirport($('#airportPopupId').val(), $('#airportPopupName').text())
 }
 
@@ -610,10 +647,21 @@ function updateAirportExtendedDetails(airportId) {
 		    		var hasMatch = false
 			    	$.each(airport.appealList, function( key, appeal ) {
 			    		if (appeal.airlineId == airlineId) {
-			    			$(".airportAwareness").text(appeal.awareness)
-			    			$(".airportLoyalty").text(appeal.loyalty)
+			    		    var awarenessText = appeal.awareness
+			    		    var loyaltyText = appeal.loyalty
+			    		    if (airport.bonusList[airlineId]) {
+                                if (airport.bonusList[airlineId].awareness > 0) {
+                                    awarenessText = awarenessText + " (with +" + airport.bonusList[airlineId].awareness + " bonus)"
+                                }
+                                if (airport.bonusList[airlineId].loyalty > 0) {
+                                    loyaltyText = loyaltyText + " (with +" + airport.bonusList[airlineId].loyalty + " bonus)"
+                                }
+                            }
+			    			$(".airportAwareness").text(awarenessText)
+			    			$(".airportLoyalty").text(loyaltyText)
 			    			hasMatch = true
 			    		}
+
 			  		});
 			    	if (!hasMatch) {
 			    		$(".airportAwareness").text("0")
@@ -683,31 +731,72 @@ function updateAirportSlots(airportId) {
 }
 
 
+function updateAirportBaseMarkers(newBaseAirports, relatedFlightPaths) {
+    //reset baseMarkers
+    $.each(baseMarkers, function(index, marker) {
+        marker.setIcon(marker.originalIcon)
+        marker.isBase = false
+        marker.setVisible(isShowMarker(marker, map.getZoom()))
+        marker.baseInfo = undefined
+        google.maps.event.clearListeners(marker, 'mouseover');
+        google.maps.event.clearListeners(marker, 'mouseout');
+
+    })
+    baseMarkers = []
+    var headquarterMarkerIcon = $("#map").data("headquarterMarker")
+    var baseMarkerIcon = $("#map").data("baseMarker")
+    $.each(newBaseAirports, function(key, baseAirport) {
+        var marker = markers[baseAirport.airportId]
+        if (baseAirport.headquarter) {
+            marker.setIcon(headquarterMarkerIcon)
+        } else {
+            marker.setIcon(baseMarkerIcon)
+        }
+        marker.setZIndex(999)
+        marker.isBase = true
+        marker.setVisible(true)
+        marker.baseInfo = baseAirport
+        var originalOpacity = marker.getOpacity()
+        marker.addListener('mouseover', function(event) {
+                    $.each(relatedFlightPaths, function(linkId, pathEntry) {
+                        var path = pathEntry.path
+                        var link = pathEntry.path.link
+                        if (!$(path).data("originalOpacity")) {
+                            $(path).data("originalOpacity", path.strokeOpacity)
+                        }
+                        if (link.fromAirportId != baseAirport.airportId || link.airlineId != baseAirport.airlineId) {
+                            path.setOptions({ strokeOpacity : 0.1 })
+                        } else {
+                            path.setOptions({ strokeOpacity : 0.8 })
+                        }
+                    })
+                })
+        marker.addListener('mouseout', function(event) {
+            $.each(relatedFlightPaths, function(linkId, pathEntry) {
+                var path = pathEntry.path
+                var originalOpacity = $(path).data("originalOpacity")
+                if (originalOpacity !== undefined) {
+                    path.setOptions({ strokeOpacity : originalOpacity })
+                }
+            })
+        })
+
+        baseMarkers.push(marker)
+    })
+
+    return baseMarkers
+}
+
 function updateAirportMarkers(airline) { //set different markers for head quarter and bases
 	if (!markers) { //markers not ready yet, wait
 		setTimeout(function() { updateAirportMarkers(airline) }, 100)
 	} else {
-		//reset baseMarkers
-		$.each(baseMarkers, function(index, marker) {
-			marker.setIcon(marker.originalIcon)
-		})
-		baseMarkers = []
-		var headquarterMarkerIcon = $("#map").data("headquarterMarker")
-		var baseMarkerIcon = $("#map").data("baseMarker")
-		$.each(airline.baseAirports, function(key, baseAirport) {
-			var marker = markers[baseAirport.airportId]
-			marker.originalIcon = marker.icon
-			if (baseAirport.headquarter) {
-				marker.setIcon(headquarterMarkerIcon) 
-			} else {
-				marker.setIcon(baseMarkerIcon)
-			}
-			marker.setZIndex(999)
-			marker.isBase = true
-			marker.setVisible(true)
-			baseMarkers.push(marker)			
-		})
-	}
+	    if (airline) {
+		    updateAirportBaseMarkers(airline.baseAirports, flightPaths)
+		} else {
+            updateAirportBaseMarkers([])
+		}
+    }
 }
 
 //airport links view
@@ -715,22 +804,25 @@ function updateAirportMarkers(airline) { //set different markers for head quarte
 function toggleAirportLinksView() {
 	clearAirportLinkPaths() //clear previous ones if exist
 	deselectLink()
-	
-	//push here otherwise it's not centered
-	if (map.controls[google.maps.ControlPosition.TOP_CENTER].getLength() == 0) {
-		map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Airport Flight Map', 'hideAirportLinksView()', 'hideAirportLinksButton')[0]);
-	}
-	
-	
-	
+
+	$("#hideAirportLinksButton").show();
+
 	toggleAirportLinks(activeAirport)
 }
 
+function closeAirportInfoPopup() {
+    if (activeAirportPopupInfoWindow) {
+        activeAirportPopupInfoWindow.close(map)
+        if (activeAirportPopupInfoWindow.marker) {
+            activeAirportPopupInfoWindow.marker.setOpacity(0.7)
+        }
+        activeAirportPopupInfoWindow = undefined
+    }
+}
 
 function toggleAirportLinks(airport) {
 	clearAllPaths()
-	activeAirportPopupInfoWindow.close(map)
-	activeAirportPopupInfoWindow = undefined
+	closeAirportInfoPopup()
 	$.ajax({
 		type: 'GET',
 		url: "airports/" + airport.id + "/link-consumptions",
@@ -775,8 +867,8 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 		     zIndex : 1100,
 		});
 		
-	var fromAirport = getAirportText(localAirport.city, localAirport.name)
-	var toAirport = getAirportText(remoteAirport.city, remoteAirport.name)
+	var fromAirport = getAirportText(localAirport.city, localAirport.iata)
+	var toAirport = getAirportText(remoteAirport.city, remoteAirport.iata)
 	
 	
 	shadowPath = new google.maps.Polyline({
@@ -795,14 +887,15 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 	
 	airportLinkPath.shadowPath = shadowPath
 	
-	var infowindow; 
+	var infowindow;
 	shadowPath.addListener('mouseover', function(event) {
-		$("#airportLinkPopupFrom").html(this.fromAirport + "&nbsp;" + getCountryFlagImg(this.fromCountry))
-		$("#airportLinkPopupTo").html(this.toAirport + "&nbsp;" + getCountryFlagImg(this.toCountry))
+		$("#airportLinkPopupFrom").html(getCountryFlagImg(this.fromCountry) + this.fromAirport)
+		$("#airportLinkPopupTo").html(getCountryFlagImg(this.toCountry) + this.toAirport)
 		$("#airportLinkPopupPassengers").text(this.passengers)
 		infowindow = new google.maps.InfoWindow({
              content: $("#airportLinkPopup").html(),
-             maxWidth : 600});
+             maxWidth : 400
+             });
 		
 		infowindow.setPosition(event.latLng);
 		infowindow.open(map);
@@ -817,12 +910,8 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 function showAirportLinkPaths() {
 	$.each(airportLinkPaths, function(key, airportLinkPath) {
 		var totalPassengers = airportLinkPath.shadowPath.passengers
-		if (totalPassengers > 5000) {
-			airportLinkPath.setOptions({strokeWeight : 3})
-		} else if (totalPassengers > 10000) {
-			airportLinkPath.setOptions({strokeWeight : 4})
-		} else if (totalPassengers < 1000) {
-			var newOpacity = 0.2 + totalPassengers / 1000 * (airportLinkPath.strokeOpacity - 0.2)
+		if (totalPassengers < 2000) {
+			var newOpacity = 0.2 + totalPassengers / 2000 * (airportLinkPath.strokeOpacity - 0.2)
 			airportLinkPath.setOptions({strokeOpacity : newOpacity})
 		}
 			
@@ -848,12 +937,21 @@ function hideAirportLinksView() {
 	clearAirportLinkPaths()
 	updateLinksInfo() //redraw all flight paths
 		
-//	$("#linkHistoryPanel").fadeOut(200);
-//	$("#hideAirportLinksButton").hide()
-	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
-	
-//	map.controls[google.maps.ControlPosition.TOP_CENTER].clear();
-//	map.controls[google.maps.ControlPosition.RIGHT_TOP].clear();
+    $("#hideAirportLinksButton").hide();
 	
 }
 
+function getAirportIcon(airportInfo) {
+    var largeAirportMarkerIcon = $("#map").data("largeAirportMarker")
+    var mediumAirportMarkerIcon = $("#map").data("mediumAirportMarker")
+    var smallAirportMarkerIcon = $("#map").data("smallAirportMarker")
+
+    if (airportInfo.size <= 3) {
+      icon = smallAirportMarkerIcon
+    } else if (airportInfo.size <= 6) {
+      icon = mediumAirportMarkerIcon
+    } else {
+      icon = largeAirportMarkerIcon
+    }
+    return icon
+}

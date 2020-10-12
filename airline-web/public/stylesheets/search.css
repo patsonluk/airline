@@ -1,0 +1,126 @@
+.airportEntry.selected, .airportSearchResult .airportEntry:hover {
+    background-color: #cbdff2;
+}
+
+.airportSearchResult .airportEntry:hover {
+    cursor: pointer;
+}
+
+#routeSearchResult .ticketTitle, #routeSearchResult .price, #routeSearchResult .summary {
+    color: #5f6368;
+    font: 400 18px/16px Roboto, HelveticaNeue, Arial, sans-serif;
+    letter-spacing: 0.3px;
+}
+
+#routeSearchResult .ticketTitle {
+    margin-bottom: 10px;
+}
+
+#routeSearchResult .remark {
+    font-size : 8px;
+    background-color: darkgreen;
+    box-shadow:0 0 2px #ffffff inset;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    border-radius: 2px 2px 2px 2px;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+    padding: 4px;
+    margin-top: 5px;
+    margin-right: 3px;
+    color : white;
+}
+
+#searchCanvas input {
+    font-size: 20px;
+    background-color: #cbdff2;
+    border: 1px solid #BEBEBE;
+    box-shadow: 0 0 2px inset rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+    color: #5f6368;
+}
+
+
+
+#searchCanvas input::placeholder {
+	color: #A9A9A9;
+}
+
+#searchCanvas input[type=text]:focus {
+    background-color: #ffffff;
+    box-shadow: 0 0 2px inset rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+}
+
+.airportSearchResult {
+    float: left;
+    width: 300px;
+    position: absolute;
+    top: 30px;
+    background-color: #ffffff;
+    box-shadow:0 0 2px #666 inset;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.airportSearchResult div {
+    margin: 5px;
+}
+
+
+#routeSearchResult {
+    color: #5f6368;
+}
+
+#routeSearchResult div.itinerary:hover {
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+
+#searchCanvas .mainSection {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.6) 30%, rgba(255, 255, 255, 0.8) 100%), url(../images/background/sky.jpg);
+    background-size: cover;
+}
+
+
+#searchCanvas .button {
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    background:linear-gradient(to bottom, #ededed 5%, #dfdfdf 100%);
+	background-color:#ededed;
+	border-radius:6px;
+	border:1px solid #dcdcdc;
+	display:inline-block;
+	cursor:pointer;
+	color:#777777;
+	padding:6px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #ffffff;
+
+	font: 400 18px/16px Roboto, HelveticaNeue, Arial, sans-serif;
+	/*font-family:Arial;
+	font-size:15px;
+	font-weight:bold;*/
+
+}
+
+#searchCanvas .button {
+    width: 200px;
+    text-align: center;
+    display: block;
+    margin : 10px auto;
+}
+
+#searchCanvas .button:hover {
+	background:linear-gradient(to bottom, #dfdfdf 5%, #ededed 100%);
+	background-color:#dfdfdf;
+}
+
+#searchCanvas .button:active {
+	position:relative;
+	top:1px;
+}
+
+#searchCanvas h2 { margin: 0.8em 0 0.5em 0;
+                   	color: #444;
+                   	font: 400 40px/12px Roboto, HelveticaNeue, Arial, sans-serif;
+                   	 text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+                   	 text-align: center;
+                   	 }
+

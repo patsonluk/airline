@@ -31,7 +31,7 @@ object IncomeSource {
     val incomePreparedStatement = connection.prepareStatement("REPLACE INTO " + INCOME_TABLE + "(airline, profit, revenue, expense, period, cycle) VALUES(?,?,?,?,?,?)")
     val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     val transactionsPreparedStatement = connection.prepareStatement("REPLACE INTO " + TRANSACTIONS_INCOME_TABLE + "(airline, profit, revenue, expense, capital_gain, create_link, period, cycle) VALUES(?,?,?,?,?,?,?,?)")
-    val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, maintenance_investment, advertisement, lounge_upkeep, lounge_cost, lounge_income, fuel_profit, depreciation,  period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, maintenance_investment, advertisement, lounge_upkeep, lounge_cost, lounge_income, fuel_profit, depreciation, overtime_compensation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     
     try {
       connection.setAutoCommit(false)
@@ -89,8 +89,9 @@ object IncomeSource {
           othersPreparedStatement.setLong(12, income.others.loungeIncome)
           othersPreparedStatement.setLong(13, income.others.fuelProfit)
           othersPreparedStatement.setLong(14, income.others.depreciation)
-          othersPreparedStatement.setInt(15, period.id)
-          othersPreparedStatement.setInt(16, income.cycle)
+          othersPreparedStatement.setLong(15, income.others.overtimeCompensation)
+          othersPreparedStatement.setInt(16, period.id)
+          othersPreparedStatement.setInt(17, income.cycle)
           othersPreparedStatement.addBatch()
           
           
@@ -233,7 +234,8 @@ object IncomeSource {
                          revenue = resultSet.getLong("o.revenue"), 
                          expense = resultSet.getLong("o.expense"), 
                          loanInterest = resultSet.getLong("o.loan_interest"), 
-                         baseUpkeep = resultSet.getLong("o.base_upkeep"), 
+                         baseUpkeep = resultSet.getLong("o.base_upkeep"),
+                         overtimeCompensation = resultSet.getLong("o.overtime_compensation"),
                          serviceInvestment = resultSet.getLong("o.service_investment"), 
                          maintenanceInvestment = resultSet.getLong("o.maintenance_investment"),
                          advertisement = resultSet.getLong("o.advertisement"), 

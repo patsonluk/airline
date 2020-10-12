@@ -81,6 +81,12 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     
     val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 2) / 3  //dampen the effect
     cost = (cost * qualityAdjustedRatio).toInt
+
+    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
+      cost = (cost * (1.1 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.1)).toInt
+    } else {
+      cost = (cost * (0.9 + 0.1 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
+    }
     
     val noise = 0.9 + getFlatTopBellRandom(0.2, 0.1)
     
@@ -117,13 +123,12 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
     cost = (cost * qualityAdjustedRatio).toInt
 
     //I NEED THE FLIGHT NOW! extra penalty up to 1.2 if frequency is min, boost if very frequent
-    var frequencyAdjustRatio: Double = 1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD / 5
-    if (frequencyAdjustRatio < 0.5) { //only reduce by 50% max
-      frequencyAdjustRatio = 0.5
+    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
+      cost = (cost * (1.2 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.2)).toInt
+    } else {
+      cost = (cost * (0.5 + 0.5 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
     }
-    cost = cost *  frequencyAdjustRatio
 
-    
     val noise = 0.8 + getFlatTopBellRandom(0.2, 0.1)
 
     //NOISE?
@@ -142,7 +147,7 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
 }
 
 case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, loungeLevelRequired : Int, loyaltyRatio : Double, id : Int)  extends FlightPreference{
-  val appealList : Map[Int, AirlineAppeal] = homeAirport.getAirlineAppeals
+  val appealList : Map[Int, AirlineAppeal] = homeAirport.getAirlineAdjustedAppeals
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   //val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
   //at max loyalty, passenger can perceive the ticket price down to actual price / maxReduceFactorAtMaxLoyalty.  
@@ -161,7 +166,8 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     
     var perceivedPrice = link.price(linkClass);
     if (linkClass.level != preferredLinkClass.level) {
-      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * 2.5).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
+      val classDiffMultiplier: Double = 1 + (preferredLinkClass.level - linkClass.level) * 0.7
+      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
     }
 
     val standardPrice = link.standardPrice(preferredLinkClass)
@@ -193,9 +199,13 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     
     perceivedPrice = (perceivedPrice * getQualityAdjustRatio(homeAirport, link, linkClass)).toInt
     
-    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {  
-      perceivedPrice = (perceivedPrice * (1 + (Link.HIGH_FREQUENCY_THRESHOLD - link.frequency).toDouble / Link.HIGH_FREQUENCY_THRESHOLD / 15)).toInt  
+
+    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
+      perceivedPrice = (perceivedPrice * (1.05 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.05)).toInt
+    } else {
+      perceivedPrice = (perceivedPrice * (0.95 + 0.05 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
     }
+
         
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     

@@ -4,7 +4,8 @@ import java.sql.{Statement, Types}
 
 import com.patson.data.Constants._
 import com.patson.model._
-import com.patson.model.christmas.{SantaClausAwardType, SantaClausInfo, SantaClausGuess}
+import com.patson.model.christmas.{SantaClausAwardType, SantaClausGuess, SantaClausInfo}
+import com.patson.util.{AirlineCache, AirportCache}
 
 import scala.collection.mutable.{ListBuffer, Map}
 
@@ -119,7 +120,7 @@ object ChristmasSource {
 
 
       while (resultSet.next()) {
-        val airport = AirportSource.loadAirportById(resultSet.getInt("airport")).getOrElse(Airport.fromId(0))
+        val airport = AirportCache.getAirport(resultSet.getInt("airport")).getOrElse(Airport.fromId(0))
         entries += SantaClausGuess(airport, airline)
       }
 
@@ -151,8 +152,8 @@ object ChristmasSource {
 
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
-          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId).getOrElse(Airline.fromId(airlineId)))
-          val airport = AirportSource.loadAirportById(resultSet.getInt("airport")).getOrElse(Airport.fromId(0))
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId)))
+          val airport = AirportCache.getAirport(resultSet.getInt("airport")).getOrElse(Airport.fromId(0))
           val found = resultSet.getBoolean("found")
           val attemptsLeft = resultSet.getInt("attempts_left")
           val pickedAwardValue = resultSet.getInt("picked_award")

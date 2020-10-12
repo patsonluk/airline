@@ -199,31 +199,92 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	var r_text = msg.data;
 	//console.log(r_text);
 	var r_msg = JSON.parse(r_text);
-	
+
+	var date = new Date(r_msg.timestamp)
+	var airlineName = r_msg.airlineName
+	var userLevel = r_msg.userLevels
+	var hourString = date.getHours()
+	var minuteString = date.getMinutes()
+	var secondString = date.getSeconds()
+
+	if (hourString < 10) {
+	    hourString = "0" + hourString
+    }
+    if (minuteString < 10) {
+        minuteString = "0" + minuteString
+    }
+    if (secondString < 10) {
+        secondString = "0" + secondString
+    }
+
+	var dateString = hourString + ":" + minuteString + ":" + secondString
+//	var airlineSpan = $("<span>" + airlineName + "</span>")
+//	var userIcon = getUserLevelImg(userLevel)
+//	airlineSpan.append(userIcon)
+
+    var prefix = "[" + dateString + "] " + airlineName + ": "
 	if (!r_msg.allianceRoomId) {
-		chat.gmessages.push(r_msg.text);
+		chat.gmessages.push(prefix + r_msg.text);
 	} else {
-		chat.amessages.push(r_msg.text);
+		chat.amessages.push(prefix + r_msg.text);
 	}
     $scope.$digest();
-	
-	if (!$('#scroll_lockc').is(":checked")) {
-		var scroller = document.getElementById("chatBox-1");
-		scroller.scrollTop = scroller.scrollHeight;
-		var scroller = document.getElementById("chatBox-2");
-		scroller.scrollTop = scroller.scrollHeight;
-	}
+
+
+    var isMobileDeviceValue = isMobileDevice()
+    $('.chat-history').each (function(){
+        emojify.run($(this).find("li:last-child")[0]);   // translate emoji to images
+        if (r_msg.imagePermission && !isMobileDeviceValue) {
+            replaceImg($(this).find("li:last-child"), prefix)
+        }
+    })
+
+    adjustScroll()
+
 	if ($('.chat').is(':hidden')) {
 		$('.notify-bubble').show(400);
 		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
 	}
-	emojify.run($('.chat-history.current')[0]);             // translate emoji to images
 
     lastMessageId = r_msg.id
   };
 });
 
-
-
 emojify.setConfig({img_dir : 'assets/images/emoji'});
 
+function adjustScroll() {
+    if (!$('#scroll_lockc').is(":checked")) {
+        $(".chat-history").each(function() {
+            $(this).scrollTop($(this).prop("scrollHeight"))
+        })
+    }
+}
+
+var imgTag = "/img"
+function replaceImg(input, prefix) {
+    var text= input.text().trim().substring(prefix.length) //strip the airline name and date
+
+    if (text.startsWith(imgTag)) {
+        var src = text.substring(imgTag.length)
+        var img = $("<img>")
+        img.attr("src", src)
+        img.css("max-height", "80px")
+        img.css("max-width", "160px")
+        img.attr("title", "Click to hide/show")
+        img.click(function() {
+            if (img.data("src")) {
+                img.attr("src", img.data("src"))
+                img.removeData("src")
+            } else {
+                img.attr("src", "assets/images/icons/cross-grey.png")
+                img.data("src", src)
+            }
+        })
+        //img.attr("src", "assets/images/emoji/banana.png")
+        img.on('load', function() {
+            adjustScroll()
+            })
+        input.html(prefix)
+        input.append(img)
+    }
+}

@@ -1,19 +1,8 @@
 package controllers
 
-import com.patson.data.CycleSource
-import com.patson.data.ConsumptionHistorySource
-import com.patson.model.PassengerType
-import com.patson.model.Route
-import com.patson.model.Link
-import com.patson.model.LinkHistory
-import com.patson.model.LinkConsideration
-import com.patson.model.RelatedLink
-import com.patson.model.Airport
-import com.patson.data.AirlineSource
-import java.io.ByteArrayOutputStream
-import java.io.File
 import java.nio.file.Path
 
+import com.patson.data.AirlineSource
 import javax.imageio.ImageIO
 
 object LogoUtil {

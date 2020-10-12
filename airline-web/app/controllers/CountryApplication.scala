@@ -14,9 +14,6 @@ import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
 
-import scala.collection.mutable.ListBuffer
-import com.patson.data.CycleSource
-import controllers.AuthenticationObject.AuthenticatedAirline
 import com.patson.data.CountrySource
 import com.patson.data.AirportSource
 import com.patson.util.ChampionUtil
@@ -76,6 +73,22 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   //        }
           
           jsonObject = jsonObject.asInstanceOf[JsObject] + ("champions" -> championsJson)
+
+          var nationalAirlinesJson = Json.arr()
+          var parternedAirlinesJson = Json.arr()
+          CountrySource.loadCountryAirlineTitlesByCountryCode(countryCode).foreach {
+            case countryAirlineTitle =>
+              val CountryAirlineTitle(country, airline, title) = countryAirlineTitle
+              val share : Long = marketShares.airlineShares.getOrElse(airline.id, 0L)
+              title match {
+                case Title.NATIONAL_AIRLINE =>
+                  nationalAirlinesJson = nationalAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> countryAirlineTitle.loyaltyBonus))
+                case Title.PARTNERED_AIRLINE =>
+                  parternedAirlinesJson = parternedAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> countryAirlineTitle.loyaltyBonus))
+              }
+          }
+
+          jsonObject = jsonObject + ("nationalAirlines" -> nationalAirlinesJson) + ("partneredAirlines" -> parternedAirlinesJson)
           
           jsonObject = jsonObject.asInstanceOf[JsObject] + ("marketShares" -> Json.toJson(marketShares.airlineShares.map { 
               case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
@@ -86,6 +99,7 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       case None => NotFound
     } 
   }
+
   
   object AirlineSharesWrites extends Writes[List[(Airline, Long)]] {
     def writes(shares: List[(Airline, Long)]): JsValue = {

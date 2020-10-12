@@ -76,7 +76,7 @@
 			display: inherit;
 		}
 
-#scroll_lock {
+.chatOption {
 	color: black;
 	display: none;
 	float: right;
@@ -147,6 +147,7 @@
 	padding: 8px 24px;
 	overflow-y: scroll;
 	line-height: 20px;
+	font-family: Tahoma, Geneva, sans-serif;
 }
 
 .chat-history li:nth-child(even) {background: #EEE}

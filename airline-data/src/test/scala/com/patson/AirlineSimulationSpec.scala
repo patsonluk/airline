@@ -4,13 +4,27 @@ import com.patson.model._
 import org.scalatest.{Matchers, WordSpecLike}
  
 class AirlineSimulationSpec extends WordSpecLike with Matchers {
-  "getTargetQuality".must {
-    "50x capacity to get 50 target quality, 200x capacity to get max 100 target quality".in {
-       assert(AirlineSimulation.getTargetQuality(0, 1000) == 0) //X0 capacity funding
-       assert(AirlineSimulation.getTargetQuality(5000, 1000) > 0) //X5 capacity funding
-       assert(AirlineSimulation.getTargetQuality(50000, 1000) == 100) 
-       assert(AirlineSimulation.getTargetQuality(200000, 1000) == 100) //X200 capacity funding
-       assert(AirlineSimulation.getTargetQuality(300000, 1000) == 100) //X300 hit max
+  "getServiceFunding".must {
+    "compute service funding that increase exponentially with quality target".in {
+//       assert(AirlineSimulation.getTargetQuality(0, 1000) == 0) //X0 capacity funding
+//       assert(AirlineSimulation.getTargetQuality(5000, 1000) > 0) //X5 capacity funding
+//       assert(AirlineSimulation.getTargetQuality(50000, 1000) == 100)
+//       assert(AirlineSimulation.getTargetQuality(200000, 1000) == 100) //X200 capacity funding
+//       assert(AirlineSimulation.getTargetQuality(300000, 1000) == 100) //X300 hit max
+
+      //assert that even with 0 capacity, service funding would still cost something
+      assert(AirlineSimulation.getServiceFunding(0, 0) == 0)
+      assert(AirlineSimulation.getServiceFunding(50, 0) == 13101)
+      assert(AirlineSimulation.getServiceFunding(100, 0) == 74115) //double quality should be power(2,2.5) of cost
+
+      assert(AirlineSimulation.getServiceFunding(0, 2000 * 2000) == 0)
+      assert(AirlineSimulation.getServiceFunding(50, 2000 * 2000) == 52407)
+      assert(AirlineSimulation.getServiceFunding(100, 2000 * 2000) == 296463) //double quality should be power(2,2.5) of cost
+
+      //AC size
+      assert(AirlineSimulation.getServiceFunding(0, 4000000000L) == 0)
+      assert(AirlineSimulation.getServiceFunding(50, 4000000000L) == 52407843L)
+      assert(AirlineSimulation.getServiceFunding(100, 4000000000L) == 296463530L) //double quality should be power(2,2.5) of cost
     }
   }
   "getNewQuality".must {

@@ -29,7 +29,7 @@ object PassengerSimulation {
     //println("Using " + airportData.size + " airport data");
     
     //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
-    val demand = DemandGenerator.computeDemand()
+    val demand = DemandGenerator.computeDemand(0)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
         holder + demandValue
@@ -62,8 +62,9 @@ object PassengerSimulation {
     //findRandomRoutes(airportGroups(0)(0), airportGroups(4)(0), links.toList, 10)
   }
   
-  def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : Map[(PassengerGroup, Airport, Route), Int] = {
+  def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : (Map[(PassengerGroup, Airport, Route), Int], Map[(PassengerGroup, Airport), Int]) = {
      val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
+    val missedDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
      val consumptionCycleMax = 10; //try and rebuild routes 10 times
      var consumptionCycleCount = 0;
      //start consumption cycles
@@ -77,14 +78,22 @@ object PassengerSimulation {
      println("Total active airports: " + activeAirportIds.size)
      
      println("Remove demand that is not covered by active airports, before " + demand.size);
-     
+
      //randomize the demand chunks so later on it's consumed in a random (relatively even) manner
-     var demandChunks = Random.shuffle(demand.filter {
-       case(passengerGroup, toAirport, _) => activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
-     })
+     var demandChunks = Random.shuffle(demand.filter { demandChunk =>
+       val (passengerGroup, toAirport, chunkSize) = demandChunk
+         val isConnected = activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
+         if (!isConnected) {
+           missedDemandChunks.append(demandChunk)
+         }
+         isConnected
+     }).sortWith((entry1, entry2) =>
+       if (entry1._1.passengerType == PassengerType.OLYMPICS && entry2._1.passengerType == PassengerType.OLYMPICS) false else entry1._1.passengerType == PassengerType.OLYMPICS
+     ) //olympics always come first
      
      println("After pruning : " + demandChunks.size);
-     
+
+
      while (consumptionCycleCount < consumptionCycleMax) {
        println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
        println("links: " + links.size)
@@ -106,7 +115,8 @@ object PassengerSimulation {
        
 //       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
 //       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
-       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
+       val iterationCount = if (consumptionCycleCount < 3) 4 else 6
+       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, iterationCount)
        
        //start consuming routes
        println()
@@ -114,6 +124,7 @@ object PassengerSimulation {
        
        //we want to randomize the order and go chunk by chunk as we want to evenly/randomly distribute seats to each PassengerGroup
        val remainingDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
+
        demandChunks.foreach {
          case (passengerGroup, toAirport, chunkSize) => 
            allRoutesMap.get(passengerGroup).foreach { toAirportRouteMap =>
@@ -160,12 +171,11 @@ object PassengerSimulation {
                      //put a updated demand chunk
                      remainingDemandChunks.append((passengerGroup, toAirport, chunkSize - consumptionSize));
                    }
-                 } else { //try next time!???
-                   //println("rejected! affordableCost: " + affordableCost + " cost: " + pickedRoute.cost + " pref: " + passengerGroup.preference);
-                   //remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
+                 } else {
+                   missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
                  }
                case None => //no route
-
+                 missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
              }
            }
         }
@@ -177,6 +187,7 @@ object PassengerSimulation {
      }
      
     println("Total chunks that consume something " + consumptionResult.size)
+    println("Total missed chunks " + missedDemandChunks.size)
     
     //collapse it now
     val collapsedMap = consumptionResult.groupBy { 
@@ -185,7 +196,11 @@ object PassengerSimulation {
     
     
     println("Collasped consumption map size: " + collapsedMap.size)
-        
+
+    val missedMap = missedDemandChunks.groupBy {
+      case(passengerGroup, toAirport, passengerCount) => (passengerGroup, toAirport)
+    }.view.mapValues( missedChunks => missedChunks.map(_._3).sum).toMap
+
 //    val soldLinks = links.filter{ link => link.availableSeats < link.capacity  }.map { link =>
 //      (link, link.capacity - link.availableSeats)
 //      }.sortBy {
@@ -199,7 +214,7 @@ object PassengerSimulation {
 //    
 //    LinkSource.saveLinkConsumptions(soldLinks)
     
-    collapsedMap.toMap
+    (collapsedMap.toMap, missedMap)
   }
   
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
@@ -330,11 +345,12 @@ object PassengerSimulation {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Map[PassengerGroup, Map[Airport, Route]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness, iterationCount : Int = 4) : Map[PassengerGroup, Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
     println("Total passenger groups : " + requiredRoutes.size)
+    println(s"Iteration count : $iterationCount")
     
     //val links = linksList.toArray
     
@@ -397,7 +413,7 @@ object PassengerSimulation {
         
         //then find the shortest route based on the cost
         
-        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, 4)
+        val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, iterationCount)
         if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
           print(".")
           if (progressCount.incrementAndGet() % 10 == 0) {
@@ -550,7 +566,7 @@ object PassengerSimulation {
               val previousLinkAirlineId = predecessorLink.airline.id
               val currentLinkAirlineId = linkConsideration.link.airline.id
               if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
-                connectionCost += 50
+                connectionCost += 75
               }
               
               connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too

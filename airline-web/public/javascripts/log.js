@@ -1,13 +1,10 @@
 var loadedLogs = []
 var loadedAlerts = []
 
-$( document ).ready(function() {
-	loadAllLogs()
-})
 
 function showLogCanvas() {
 	setActiveDiv($("#logCanvas"))
-	highlightTab($('#logCanvasTab'))
+	highlightTab($('.logCanvasTab'))
 	loadAllLogs()
 	loadAllAlerts()
 }

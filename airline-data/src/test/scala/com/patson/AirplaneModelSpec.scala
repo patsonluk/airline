@@ -6,8 +6,8 @@ import com.patson.model.airplane._
 import org.scalatest.{Matchers, WordSpecLike}
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.25, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.25, X_LARGE -> 0.2, JUMBO -> 0.15)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.20, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.55, REGIONAL -> 0.55, SMALL -> 0.45, MEDIUM -> 0.3, LARGE -> 0.25, X_LARGE -> 0.25, JUMBO -> 0.2)
   
   "all airplane models".must {
     "Generate good profit at MAX LF at suitable range".in {
@@ -46,13 +46,13 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
     toAirport.initAirlineBases(List())
     val price = Pricing.computeStandardPriceForAllClass(distance, flightType)
     val airline = Airline.fromId(1)
-    airline.setMaintainenceQuality(Airline.MAX_MAINTENANCE_QUALITY)
+    airline.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
     
     val link = Link(fromAirport, toAirport, airline, price = price, distance = distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(flightType, ECONOMY), duration, frequency, flightType)
-    val airplane = Airplane(airplaneModel, airline, constructedCycle = 0 , Airplane.MAX_CONDITION, depreciationRate = 0, value = airplaneModel.price)
-    
-    val updatedAirplane = AirplaneSimulation.decayAirplanesByAirline(List((airplane, Some(link))), airline)(0)
-    link.setAssignedAirplanes(List(updatedAirplane))
+    val airplane = Airplane(airplaneModel, airline, constructedCycle = 0 , purchasedCycle = 0, Airplane.MAX_CONDITION, depreciationRate = 0, value = airplaneModel.price, configuration  = AirplaneConfiguration.default(airline, airplaneModel))
+
+    val updatedAirplane = AirplaneSimulation.decayAirplanesByAirline(Map(airplane -> LinkAssignments(Map(link.id -> LinkAssignment(1, 1)))), airline)(0)
+    link.setTestingAssignedAirplanes(Map(updatedAirplane -> frequency))
     link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity * loadFactor).toInt)))
     
     LinkSimulation.computeLinkConsumptionDetail(link, 0)

@@ -23,4 +23,6 @@ object Country {
   val LOW_INCOME_THRESHOLD = 15000
   val HIGH_INCOME_THRESHOLD = 50000
   val DEFAULT_UNKNOWN_INCOME = 1000
+
+  def fromCode(countryCode : String) = Country(countryCode, countryCode, 0, 0, 0)
 }

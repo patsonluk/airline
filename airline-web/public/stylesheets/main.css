@@ -1,15 +1,95 @@
 body {
 	font-size: 13px;
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
-	
+	color: #454544;
+
 	background: #abbaab;  /* fallback for old browsers */
-	//background: -webkit-linear-gradient(to bottom, #ffffff, #b8d5b8);  /* Chrome 10-25, Safari 5.1-6 */
-	//background: linear-gradient(to bottom, #ffffff, #b8d5b8); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-	background: linear-gradient(to bottom, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(../images/background/city1.gif);
-	background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: cover;
 }
+
+a {
+    font-size: 13px;
+    color: #454544;
+}
+
+#map {
+    height: 100%;
+    width: 50%;
+    box-sizing: border-box;
+}
+
+#tabGroup {
+    width: 80px;
+    height: 100%;
+}
+
+.mainPanel {
+  width: 50%;
+  height: 100%;
+}
+
+.sidePanel {
+  width: 50%;
+}
+
+.airplaneCanvasLeftGroup {
+   width: 65%;
+   height: 90%
+}
+
+.bankCanvasLeftGroup, .oilCanvasLeftGroup {
+   width: 40%;
+}
+
+.bankCanvasRightGroup, .oilCanvasRightGroup {
+   width: 60%;
+}
+
+.airplaneCanvasRightGroup {
+   width: 35%;
+}
+
+.airportCanvasLeftGroup, .officeCanvasLeftGroup  {
+    width: 70%;
+}
+
+.airportCanvasLeftGroup {
+    padding: 0 10px 0 10px;
+    box-sizing: border-box;
+}
+
+.airportCanvasRightGroup, .officeCanvasRightGroup {
+    width: 30%;
+}
+
+#airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup {
+    width: 50%;
+}
+
+#loanInterestRateChart, #oilPriceChart {
+    width: 90%;
+    height: 300px;
+    margin: 0 auto;
+}
+
+#eventCanvas .firstColumn {
+    width: 30%;
+}
+
+#eventCanvas .secondColumn {
+    width: 70%;
+}
+
+.airportEntry.selected {
+    background-color: #cbdff2;
+}
+
+.ticketTitle {
+    color: #5f6368;
+    font: 400 18px/16px Roboto, HelveticaNeue, Arial, sans-serif;
+    letter-spacing: 0.3px;
+    margin-bottom: 10px;
+}
+
 
 .christmas {
 	background: linear-gradient(to bottom, rgba(117, 114, 113, 0.8) 10%, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(../images/background/snow.gif);
@@ -22,9 +102,18 @@ body {
     //background: url(../images/background/snow.gif);
 }
 
-//#main {
-//	margin-top: 50px;
-//}
+
+
+#mainContainer {
+    width: 100%;
+    height: -webkit-calc(100vh - 70px);
+    height: -moz-calc(100vh - 70px);
+    height: calc(100vh - 70px);
+}
+
+#main {
+	height: 100%;
+}
 
 #map {
 	background-color: #FFF;
@@ -33,11 +122,18 @@ body {
 .menubar {
 	//position: fixed;
 	top: 0px;
-	height: 40px;
+	min-height: 40px;
 	width: 100%;
 	z-index: 999;
 	background-color: #FFF;
-	/* 	margin-top: -80px; */
+	display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* 	margin-top: -80px; */
+}
+
+#patreonDiv {
+    margin: 5px;
 }
 
 .table {
@@ -57,6 +153,10 @@ body {
 
 .table .cell {
 	display: table-cell;
+}
+
+.table.frequencyDetail .cell, .table.frequencyDetailTotal .cell{
+   padding : 1px 2px 1px 2px;
 }
 
 .table .table-row {
@@ -83,7 +183,11 @@ body {
 	background-color: #A1D490;
 }
 
-.table.data div.table-row:nth-child(odd) {
+.table.colored div.table-row:nth-child(even){
+    background-color: #FFF;
+}
+
+.table.data div.table-row:nth-child(odd), .table.colored  div.table-row:nth-child(odd){
 	background: #DDD
 }
  
@@ -116,16 +220,20 @@ div.button, .ajax-file-upload {
 	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
 }
 
-div.button.glow, div.googleMapIcon.glow{
-    animation: glow 1s infinite alternate;
+div.button:hover {
+    color: #6093e7;
+}
+
+div.glow {
+    animation: glow 2s infinite alternate;
 }
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 10px -10px #eb8f34f;
+    box-shadow: 0 0 5px -5px #C0D4F8;
   }
   to {
-    box-shadow: 0 0 10px 10px #ff6c52;
+    box-shadow: 0 0 5px 5px #6495ED;
   }
 }
 
@@ -186,6 +294,25 @@ dd.error {
 	text-align: center;
 	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
+}
+
+#linkHistoryControlPanel {
+	position: absolute;
+	bottom: 100px;
+	left: 50%;
+	z-index: 1;
+	width: 500px;
+	margin-left: -250px;
+	background-image: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.8) 90%, rgba(232,232,216,0.8));
+}
+
+#hideAirportLinksButton {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    width: 150px;
+    margin-left: -75px;
+    z-index: 1;
 }
 
 #floatBackButton {
@@ -261,6 +388,7 @@ div.section, .modal-content {
 	height: 40px;
 	width: 40px;
 	margin-right: 10px;
+	margin-left: 10px;
 	font-size: 11px;
 }
 
@@ -290,7 +418,7 @@ div.divider {
 	margin-bottom: 5px;
 }
 
-a.selected, a:hover, span.selected, .clickable:hover, .clickable.selected {
+a.selected, :not(.button) > a:hover, span.selected, .clickable:hover, .clickable.selected {
 	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;
 }
@@ -389,14 +517,15 @@ div#canvas {
 	width: -webkit-calc(100% - 80px);
     width:    -moz-calc(100% - 80px);
     width:         calc(100% - 80px);
-    height: -webkit-calc(100vh - 70px); 
-    height: -moz-calc(100vh - 70px);
-    height: calc(100vh - 70px);
-//	background-image:url("../../assets/images/background/brushedsteel.jpg");
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(../images/background/city1.gif);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover !important;
 }
 
 #main-tabs {
-	height: calc(100vh - 70px);
+	height: 100%;
 	background: #023d5d;  /* fallback for old browsers */
 	background: -webkit-linear-gradient(to bottom, #ffffff, #023d5d);  /* Chrome 10-25, Safari 5.1-6 */
 	background: linear-gradient(to bottom, #ffffff, #023d5d); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
@@ -409,7 +538,7 @@ div#canvas {
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    z-index: 11; /* Sit on top */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
@@ -419,10 +548,22 @@ div#canvas {
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
+.modal#confirmationModal {
+    z-index: 12; /* Confirmation always sits on top, even about modal */
+}
+
 /* Modal Content/Box */
 .modal-content {
+    z-index: 11;
     margin: 15% auto; /* 15% from the top and centered */
     width: 50%; /* Could be more or less, depending on screen size */
+    max-width: 95%;
+}
+
+
+.blur {
+    filter: blur(9px);
+    /*transform: scale(1.1);*/
 }
 
 /* The Close Button */
@@ -489,8 +630,6 @@ img.flag {
   }
 }
 
-
-
 /* Loading spinner */
 .loadingSpinner {
     display:    none;
@@ -500,9 +639,9 @@ img.flag {
     left:       0;
     height:     100%;
     width:      100%;
-    background: rgba( 255, 255, 255, .8 ) 
-                url('http://i.stack.imgur.com/FhHRx.gif') 
-                50% 50% 
+    background: rgba( 255, 255, 255, .8 )
+                url('https://i.stack.imgur.com/FhHRx.gif')
+                50% 50%
                 no-repeat;
 }
 
@@ -582,7 +721,22 @@ img.flag {
     top:9px;
 }
 
-.tick:hover:after{
+#olympicsCityVoteTable span {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.number-button {
+    margin: 5px;
+}
+.number-button span {
+    position: absolute;
+    left: 13px;
+    top: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.tick:hover:after, .number-button span {
     color:#83d244;
     text-shadow:0px 0px 6px #83d244;
 }
@@ -602,3 +756,94 @@ img.flag {
 .confetti.blue {
   background-color: #5FC9F5;
 }
+
+/* for custom scrollbar for webkit browser*/
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+::-webkit-scrollbar-thumb {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+
+div {
+     scrollbar-width: thin;
+     scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
+}
+
+input:disabled {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+}
+
+.button.disabled {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+}
+
+.button.disabled:hover {
+  cursor: not-allowed
+}
+
+.touchTitle {
+    position: absolute;
+    top: 20px;
+    padding: 4px;
+    left: 0;
+    z-index: 1;
+    white-space: nowrap;
+    background: linear-gradient(#F0E069 0%, #FFF6B3 10%);
+    color : #454544;
+    border-radius: 3px 3px 3px 3px;
+    text-transform: none !important;
+}
+
+#moreTopBarTab {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: auto;
+    z-index: 11;
+    cursor: pointer;
+}
+
+.moreRow {
+  text-align: center;
+  list-style: none;
+  padding: 0;
+  overflow: hidden;
+  font-size: 12px;
+  position: relative;
+}
+
+.moreRow li {
+  border: 1px solid #AAA;
+  background: linear-gradient(#FFFFFF 70%, #E0E0E0 100%);
+  display: inline-block;
+  position:relative;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 #FFF;
+  padding: 0 30px;
+  color: #333;
+  border-top-color: #FFF;
+}
+
+.moreRow li span {
+    background: #cccccc;
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    margin-bottom: 3px;
+    transition: all 0.3s linear;
+}
+
+
+.mobileOnly {
+    visibility: hidden;
+    display: none;
+}
+
+

@@ -3,7 +3,7 @@ var loadedSuggestion
 
 function showOilCanvas() {
 	setActiveDiv($("#oilCanvas"))
-	highlightTab($('#oilCanvasTab'))
+	highlightTab($('.oilCanvasTab'))
 	loadOilPriceChart()
 	loadOilDetails() 
     loadExistingOilContracts()

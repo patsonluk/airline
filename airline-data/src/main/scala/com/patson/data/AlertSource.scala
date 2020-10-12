@@ -1,12 +1,18 @@
 package com.patson.data
 import com.patson.data.Constants._
+
 import scala.collection.mutable.ListBuffer
 import java.sql.DriverManager
+
 import com.patson.model.airplane.Airplane
 import java.sql.PreparedStatement
+
 import com.patson.model._
 import java.sql.Statement
 import java.sql.ResultSet
+
+import com.patson.util.AirlineCache
+
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Map
 
@@ -168,7 +174,7 @@ object AlertSource {
         
         while (resultSet.next()) {
           val airlineId = resultSet.getInt("airline")
-          val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, fullLoad).getOrElse(Airline.fromId(airlineId)))
+          val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, fullLoad).getOrElse(Airline.fromId(airlineId)))
           val message = resultSet.getString("message")
           val category = AlertCategory(resultSet.getInt("category"))
           val targetIdObject = resultSet.getObject("target_id")

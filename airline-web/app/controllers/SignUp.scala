@@ -56,8 +56,8 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
       "airlineName" -> text(minLength = 1, maxLength = 50).verifying(
         "Airline name can only contain space and characters",
         airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
-        "This airline name  is not available",  
-        airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase() }.contains(airlineName.toLowerCase())
+        "This airline name is not available",
+        airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase().replaceAll("\\s", "") }.contains(airlineName.replaceAll("\\s", "").toLowerCase())
       ),
       "profileId" -> number
     )
@@ -118,7 +118,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
           
           val newAirline = Airline(userInput.airlineName)
 //          newAirline.setBalance(50000000) //initial balance 50 million
-          newAirline.setMaintainenceQuality(100)
+          newAirline.setMaintenanceQuality(100)
           newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
           AirlineSource.saveAirlines(List(newAirline))
           UserSource.setUserAirline(user, newAirline)

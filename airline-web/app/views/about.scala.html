@@ -1,0 +1,124 @@
+@import helper._
+@import play.api.Play.current
+@import play.api.i18n.Messages.Implicits._
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Airline Club - about the game</title>
+    <style type="text/css">
+      html, body { height: 100%; margin: 0; padding: 0; }
+      #map { height: 100%; }
+    </style>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
+    
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/about.css")">
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/departure-board/departure-board.css")">
+
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
+    <script src="@routes.Assets.versioned("javascripts/departure-board/departure-board.js")"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+
+
+
+  <body>
+	<div id="about-canvas" class="frost-section">
+        <div class="display-area">
+          <div class="about-section">
+            <div class="about-title">Living world built by realistic data</div>
+            <div class="about-contents">
+              <p>Yet an evolving sandbox for experiments and adventures.</p>
+              <p>The world was created by real data - income level, country relationships, population etc. However,
+                airlines can influence this game world dynamically. Some rather low traffic airport in real life can be
+                turned into a major aviation hub!</p>
+              <img src='@routes.Assets.versioned("images/about/pax-map.gif")'>
+            </div>
+          </div>
+          <div class="about-section">
+            <div class="about-title">Connect the world! Sophisticated transit simulation</div>
+            <div class="about-contents">
+              <p>No longer will you see a straight number X demand from airport A to B. The demand and simulation model
+                is dynamic and realistic in this game.</p>
+              <p>The simulation takes into consideration of all possible routes for a virtual passenger that wants to
+                travel from Airport A to B.</p>
+              <img src='@routes.Assets.versioned("images/about/transit.png")'>
+              <img src='@routes.Assets.versioned("images/about/hnd-radius.png")'>
+            </div>
+          </div>
+          <div class="about-section">
+            <div class="about-title">Every virtual passenger is unique</div>
+            <div class="about-contents">
+              <p>Virtual passenger has different preferences on pricing, flight quality, brand loyalty, lounge etc.</p>
+              <p>Create a budget airline to attract thrifty passengers or create an elite airline for passengers that
+                are willing to pay a hefty price tag for premium services.</p>
+              <img src='@routes.Assets.versioned("images/about/pax-pie.png")'>
+              <img src='@routes.Assets.versioned("images/about/rival-details.png")'>
+            </div>
+          </div>
+          <div class="about-section">
+            <div class="about-title">Alliance and Flight code sharing</div>
+            <div class="about-contents">
+              <p>Work with your alliance airlines to create the ultimate airline network!</p>
+              <p>Top alliances are awarded with awesome bonus and bragging rights!</p>
+              <img src='@routes.Assets.versioned("images/about/alliance-map.png")'>
+              <img src='@routes.Assets.versioned("images/about/departures.gif")'>
+            </div>
+          </div>
+          <div class="about-section">
+            <div class="about-title">Engaging game-play that challenges your management skill</div>
+            <div class="about-contents">
+              <p>Try to expand your airline while keeping the profit margin! Watch out for competitions from your rivals!</p>
+              <img src='@routes.Assets.versioned("images/about/link-details.png")'>
+              <img src='@routes.Assets.versioned("images/about/interest-rate.png")'>
+            </div>
+          </div>
+          <div class="about-section">
+            <div class="about-title">Active and friendly game community</div>
+            <div class="about-contents">
+              <p>Hundreds of active players! Strategize with your fellow alliance members to dominate the aviation world
+                or go for a friendly chit-chat with other players in the in-game chat or forums!</p>
+              <img src='@routes.Assets.versioned("images/about/game-chat.png")'>
+              <img src='@routes.Assets.versioned("images/about/airline-list.png")'>
+            </div>
+          </div>
+          <div class="about-section">
+            <div class="about-title">Free and open source</div>
+            <div class="about-contents">
+              <p>100% free! No ads, no strings attached! This is my hobby, not-for-profit project.</p>
+              <p>The source code can be found in <a href="https://github.com/patsonluk/airline">github</a>. It is under very active development with new contents added frequently</p>
+              <p>Donations are welcome via <a href="https://www.patreon.com/user?u=13283790">Patreon</a> to help with keeping
+                the servers up and running. You can still enjoy all the features of the game without any donation!
+                Joining the airline-club family is the best support for all of us!</p>
+              <img src='@routes.Assets.versioned("images/about/santa-event.gif")'>
+            </div>
+          </div>
+          <div class="about-section" style="margin-bottom: 150px;">
+            <div class="about-title">Sign up and join us now</div>
+            <div class="about-contents">
+              <p>
+              Airline-club is a sophisticated strategy game, based in a perpetual sandbox world. A multitude of game styles and tactical options exist for potential airline CEOs to help build their airline and their alliance.
+              </p>
+              <p>
+              Find out if you have what it takes to make it to the top or carve out a corner of your own in the dynamically competitive world of airline-club.com
+              </p>
+            </div>
+            <div><a href="signup" class="landing-link">&gt;&gt; Sign me up</a></div>
+          </div>
+        </div>
+    </div>
+
+
+    <script>
+     $(".about-title").each(function (i, div) {
+        var titleText = $(div).text()
+        //remove original text
+        $(div).text("")
+        var board = new DepartureBoard (div, { rowCount: 1, letterCount: titleText.length });
+		board.setValue ([titleText]);
+     })
+
+		</script>
+</body>    
+</html>

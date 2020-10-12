@@ -8,6 +8,7 @@ import com.patson.data.AirplaneSource
 import com.patson.data.AirlineSource
 import com.patson.data.BankSource
 import com.patson.data.OilSource
+import com.patson.util.{AirlineCache, AllianceRankingUtil}
 
 object Computation {
   //distance vs max speed
@@ -31,28 +32,27 @@ object Computation {
     duration
   }
 
-  def calculateMaxFrequency(airplaneModel: Model, distance : Int, airplaneCount : Int = 1) : Int = {
-     (calculateMaxFrequencyDouble(airplaneModel, distance) * airplaneCount).toInt
+  def calculateFlightMinutesRequired(airplaneModel : Model, distance : Int) : Int = {
+    val duration = calculateDuration(airplaneModel, distance)
+    val roundTripTime = (duration + airplaneModel.turnaroundTime) * 2
+    roundTripTime
   }
-  
-  def calculateMaxFrequencyDouble(airplaneModel: Model, distance : Int) : Double = {
+
+  def calculateMaxFrequency(airplaneModel : Model, distance : Int) : Int = {
     if (airplaneModel.range < distance) {
       0
     } else {
-      val duration = calculateDuration(airplaneModel, distance)
-      val roundTripTime = (duration + airplaneModel.turnoverTime) * 2
-      val availableFlightTimePerWeek : Double = 3.5 * 24 * 60 //assume per week only 3 days are "flyable"
-      //println(airplaneModel + " distance " + distance + " freq: " + availableFlightTimePerWeek / roundTripTime + " times")
-      availableFlightTimePerWeek / roundTripTime
+      val roundTripTime = calculateFlightMinutesRequired(airplaneModel, distance)
+      (Airplane.MAX_FLIGHT_MINUTES / roundTripTime).toInt
     }
-    
   }
   
+
   val SELL_RATE = 0.8
   
   def calculateAirplaneSellValue(airplane : Airplane) : Int = {
-    //80% off
-    val value = airplane.value * SELL_RATE
+    val currentNewMarketPrice = airplane.model.applyDiscount(ModelDiscount.getDiscounts(airplane.model.id)).price
+    val value = currentNewMarketPrice * airplane.condition / Airplane.MAX_CONDITION * SELL_RATE
     if (value < 0) 0 else value.toInt
   }
   
@@ -188,9 +188,7 @@ object Computation {
      AllianceSource.loadAllianceMemberByAirline(airline) match {
        case Some(allianceMember) => {
          if (allianceMember.role != AllianceRole.APPLICANT) {
-           val alliances = AllianceSource.loadAllAlliances(false)
-           val alliance = alliances.find( allianceMember.allianceId == _.id).get
-           Alliance.getRankings(alliances).get(alliance) match {
+           AllianceRankingUtil.getRanking(allianceMember.allianceId) match {
              case Some((ranking, _)) => {
                val maxFrequencyBonus = Alliance.getMaxFrequencyBonus(ranking)
                MAX_FREQUENCY_ABSOLUTE_BASE + maxFrequencyBonus
@@ -210,7 +208,7 @@ object Computation {
     val amountFromBases = AirlineSource.loadAirlineBasesByAirline(airlineId).map(_.getValue * 0.2).sum.toLong //only get 20% back
     val amountFromLoans = BankSource.loadLoansByAirline(airlineId).map(_.earlyRepayment * -1).sum //repay all loans now
     val amountFromOilContracts = OilSource.loadOilContractsByAirline(airlineId).map(_.contractTerminationPenalty(CycleSource.loadCycle()) * -1).sum //termination penalty
-    val existingBalance = AirlineSource.loadAirlineById(airlineId).get.airlineInfo.balance
+    val existingBalance = AirlineCache.getAirline(airlineId).get.airlineInfo.balance
     
     ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromLoans, amountFromOilContracts, existingBalance)
   }

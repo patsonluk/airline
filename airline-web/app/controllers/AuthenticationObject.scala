@@ -3,18 +3,23 @@ package controllers
 import play.api.mvc.Security.AuthenticatedBuilder
 import play.api.mvc.Results._
 import play.api.mvc.RequestHeader
+
 import scala.util.Random
 import java.security.spec.KeySpec
+
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.SecretKeyFactory
 import java.util.Base64
+
 import com.patson.Authentication
 import com.patson.data.UserSource
 import com.patson.model._
 import play.api.mvc._
+
 import scala.concurrent.Future
 import play.api.mvc.Security.AuthenticatedRequest
 import com.patson.data.AirlineSource
+import com.patson.util.AirlineCache
 
 object AuthenticationObject {
 //  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), _ => 
@@ -58,7 +63,7 @@ object AuthenticationObject {
     getUserFromRequest(request) match {
       case Some(user) =>
         if (user.hasAccessToAirline(airlineId)) {
-          AirlineSource.loadAirlineById(airlineId, true)
+          AirlineCache.getAirline(airlineId, true)
         } else {
           println(user.userName + " trying to access airline " + airlineId + " which he does not have access to!")
           None

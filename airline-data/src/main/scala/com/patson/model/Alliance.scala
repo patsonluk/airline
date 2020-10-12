@@ -77,6 +77,11 @@ object Alliance {
     }
   }
 
+  /**
+    *
+    * @param alliances
+    * @return Map[Alliance, (ranking, champion points)] . Take note that ranking starts with 1 as the top alliance
+    */
   def getRankings(alliances: List[Alliance]): Map[Alliance, (Int, BigDecimal)] = {
     val countryChampions = ChampionUtil.getAllChampionInfo()
     val alliancesWithChampionPoints: List[(Alliance, BigDecimal)] = alliances.filter(_.status == AllianceStatus.ESTABLISHED).map {

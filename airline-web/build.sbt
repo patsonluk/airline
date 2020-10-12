@@ -11,8 +11,6 @@ libraryDependencies ++= Seq(
   ws,
   guice,
   specs2 % Test,
-//  "com.typesafe.akka" %% "akka-actor" % "2.5.26",
-//  "com.typesafe.akka"          %%  "akka-stream" % "2.5.26",
   "com.typesafe.akka" %% "akka-remote" % "2.5.26",
   "default" %% "airline-data" % "2.0",
   "com.google.api-client" % "google-api-client" % "1.30.4",
@@ -21,6 +19,12 @@ libraryDependencies ++= Seq(
   "javax.mail" % "javax.mail-api" % "1.6.2",
   "com.sun.mail" % "javax.mail" % "1.6.2"
 )
+
+// https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-client
+libraryDependencies += "org.elasticsearch.client" % "elasticsearch-rest-high-level-client" % "7.6.2"
+
+
+
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 

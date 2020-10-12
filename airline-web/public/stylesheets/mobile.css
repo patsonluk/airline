@@ -1,0 +1,86 @@
+/* mobile (portrait) ----------- */
+@media only screen
+and (max-device-width : 640px) {
+/*and (orientation : portrait or max-device-width : 1024px) {*/
+    .mainPanel, #map {
+        height: 50%;
+        width: 100%;
+    }
+    .mainPanel>div.section, .sidePanel>div.section, .bankCanvasRightGroup>div.section {
+        width: auto !important;
+    }
+
+    .verticalGroup, .sidePanel, #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, #eventCanvas .verticalGroup {
+        width: 100%
+    }
+
+    #tabGroup {
+        width: 50px;
+    }
+
+    div#canvas {
+        width: calc(100% - 50px);
+    }
+
+    #tabGroup .tabs li {
+        padding: 8px 2px 8px 2px;
+    }
+
+    #mainContainer {
+        height: calc(100vh - 60px);
+    }
+
+    #oilPriceChart, #loanInterestRateChart {
+        height: 30vh
+    }
+
+    .mobileOnly {
+        visibility: visible;
+        display: unset;
+    }
+
+    .desktopOnly, div.button.desktopOnly {
+        visibility: hidden;
+        display: none;
+    }
+
+
+    .menubar {
+        min-height: 30px;
+        overflow: hidden;
+        width: 100%;
+        z-index: 999;
+        background-color: #FFF;
+    }
+
+
+    #loginDiv input[type="text"], #loginDiv input[type="password"] {
+        width: 100px;
+    }
+
+    .topBarItem, #patreonDiv {
+        margin: 0px 4px;
+    }
+
+    .extendedTopBarDetails {
+        width: 100%;
+        background-color: #FFF;
+    }
+
+    #routeSearchResult {
+        font-size: 2vw;
+    }
+
+    #searchCanvas .search.button {
+        width: 60%;
+    }
+
+    #searchCanvas h2 {
+        font-size: 8vw;
+    }
+
+    #routeSearchResult .ticketTitle, #routeSearchResult .price, #routeSearchResult .summary {
+        font-size: 2.5vw;
+        line-height: 1;
+    }
+}

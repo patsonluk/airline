@@ -150,27 +150,34 @@ function showFacilityModal(currentFacility) {
 	    		} else {
 	    			$('#facilityModal .buildButton').hide()
 	    			$('#facilityModal .upgradeButton').show()
+	    			enableButton($('#facilityModal .upgradeButton'))
 	    		}
 	    		$('#facilityModal .upgradeRejectionDiv').hide()
 	    	} else {
 	    		$('#facilityModal .buildButton').hide()
-    			$('#facilityModal .upgradeButton').hide()
-    			$('#facilityModal .upgradeRejectionReason').text(facilityConsideration.upgrade.rejection)
-    			$('#facilityModal .upgradeRejectionDiv').show()
-    			
+    			disableButton($('#facilityModal .upgradeButton'), facilityConsideration.upgrade.rejection)
 	    	}
 	    	
 	    	if (!facilityConsideration.downgrade.rejection) {
+	    	    enableButton($('#facilityModal .downgradeButton'))
+                enableButton($('#facilityModal .removeButton'))
 	    		if (currentFacility.level >= 2) {
-	    			$('#facilityModal .downgradeButton').show()
+	    		    $('#facilityModal .downgradeButton').show()
 	    			$('#facilityModal .removeButton').show()
 	    		} else {
 	    			$('#facilityModal .downgradeButton').hide()
 	    			$('#facilityModal .removeButton').show()
 	    		}
 	    	} else {
-	    		$('#facilityModal .downgradeButton').hide()
-    			$('#facilityModal .removeButton').hide()
+	    	    if (currentFacility.level >= 2) {
+	    	        disableButton($('#facilityModal .downgradeButton'), facilityConsideration.downgrade.rejection)
+	    	        $('#facilityModal .downgradeButton').show()
+	    	        $('#facilityModal .removeButton').hide()
+	    		} else {
+	    		    disableButton($('#facilityModal .removeButton'), facilityConsideration.downgrade.rejection)
+	    		    $('#facilityModal .downgradeButton').hide()
+    			    $('#facilityModal .removeButton').show()
+                }
 	    	}
 	    	
 				    	

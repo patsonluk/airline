@@ -3,6 +3,7 @@ package com.patson
 import com.patson.model._
 import com.patson.data._
 import scala.collection.mutable._
+import scala.collection.immutable
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.patson.model.airplane.Airplane
@@ -16,6 +17,7 @@ import com.patson.util.ChampionUtil
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
+  val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUATION_DELTA = 0.5
   
   def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane]) = {
@@ -41,6 +43,7 @@ object AirlineSimulation {
      
     val currentCycle = MainSimulation.currentWeek
     val champions : scala.collection.immutable.Map[Airline, List[ChampionInfo]] = ChampionUtil.getAllChampionInfo().groupBy(_.airline)
+    val titlesByCountryCodeAndAirlineId : immutable.Map[(String, Int), List[CountryAirlineTitle]]= CountrySource.loadCountryAirlineTitlesByCriteria(List.empty).groupBy(entry => (entry.country.countryCode, entry.airline.id)) //key is (CountryCode, AirlineId)
     val cashFlows = Map[Airline, Long]() //cash flow for actual deduction
     
     val alliances = AllianceSource.loadAllAlliances()
@@ -101,7 +104,19 @@ object AirlineSimulation {
         
         
         val othersSummary = Map[OtherIncomeItemType.Value, Long]()
-        val serviceFunding = if (airline.getBalance() > 0) airline.getServiceFunding() else 0
+        //calculate service funding required
+        val linksOfThisAirline = allLinks.getOrElse(airline.id, List.empty)
+        var serviceFunding = getServiceFunding(airline.getTargetServiceQuality(), linksOfThisAirline)
+        val targetServiceQuality =
+          if (airline.getBalance() < 0) { //cease all funding, target will be 0
+            serviceFunding = 0
+            0
+          } else {
+            airline.getTargetServiceQuality()
+          }
+        val currentServiceQuality = airline.getCurrentServiceQuality()
+        airline.setCurrentServiceQuality(getNewQuality(currentServiceQuality, targetServiceQuality))
+
         othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, serviceFunding * -1)
         totalCashExpense += serviceFunding
         
@@ -111,6 +126,32 @@ object AirlineSimulation {
         
         othersSummary.put(OtherIncomeItemType.BASE_UPKEEP, -1 * baseUpkeep) //negative number
         totalCashExpense += baseUpkeep
+
+      //overtime compensation
+        val linksByFromAirportId = allLinks.get(airline.id).getOrElse(List.empty).groupBy(_.from.id)
+
+        var overtimeCompensation = 0
+        airline.bases.foreach { base =>
+          val linkCountOfThisBase = linksByFromAirportId.get(base.airport.id) match {
+            case Some(links) => links.length
+            case None => 0
+          }
+          val titleOption : Option[Title.Value] = titlesByCountryCodeAndAirlineId.get((base.airport.countryCode, airline.id)) match {
+            case Some(titles) =>
+              if (titles.length > 0) Some(titles(0).title) else None //now only 1 title per airline per country
+            case None => None
+          }
+          val linkLimitOfThisBase = base.getLinkLimit(titleOption)
+          val compensationOfThisBase = base.getOvertimeCompensation(linkLimitOfThisBase, linkCountOfThisBase)
+          if (compensationOfThisBase > 0) {
+            println(s"${airline.name} Overtime compensation $compensationOfThisBase : limit $linkLimitOfThisBase ; count $linkCountOfThisBase")
+          }
+          overtimeCompensation += compensationOfThisBase
+        }
+
+        othersSummary.put(OtherIncomeItemType.OVERTIME_COMPENSATION, -1 * overtimeCompensation) //negative number
+        totalCashExpense += overtimeCompensation
+
         
         val allAirplanesDepreciation = airplanesByAirline.getOrElse(airline.id, List.empty).foldLeft(0L) {
           case(depreciation, airplane) => (depreciation + airplane.depreciationRate)  
@@ -208,6 +249,7 @@ object AirlineSimulation {
         val othersIncome = OthersIncome(airline.id, othersRevenue - othersExpense, othersRevenue, othersExpense
             , loanInterest = othersSummary.getOrElse(OtherIncomeItemType.LOAN_INTEREST, 0)
             , baseUpkeep = othersSummary.getOrElse(OtherIncomeItemType.BASE_UPKEEP, 0)
+            , overtimeCompensation = othersSummary.getOrElse(OtherIncomeItemType.OVERTIME_COMPENSATION, 0)
             , serviceInvestment = othersSummary.getOrElse(OtherIncomeItemType.SERVICE_INVESTMENT, 0)
             , maintenanceInvestment = othersSummary.getOrElse(OtherIncomeItemType.MAINTENANCE_INVESTMENT, 0)
             , advertisement = othersSummary.getOrElse(OtherIncomeItemType.ADVERTISEMENT, 0)
@@ -300,15 +342,23 @@ object AirlineSimulation {
         }
         
         airline.setReputation(targetReputation)
-        
-        //calculate service quality
-        allLinks.get(airline.id).foreach {  links =>
-           val targetServiceQuality = getTargetQuality(serviceFunding, links) //50x to get 50 target quality, 200x to get max 100 target quality
-           val currentServiceQuality = airline.getServiceQuality()
-           airline.setServiceQuality(getNewQuality(currentServiceQuality, targetServiceQuality)) 
+
+        //check bankruptcy
+        if (airline.getBalance() < 0) {
+          val shouldReset = allLinks.get(airline.id) match {
+            case Some(links) =>
+              links.map(_.capacity.total).sum == 0
+            case None => true
+          }
+          if (shouldReset) {
+            var resetBalance = Computation.getResetAmount(airline.id).overall
+            if (resetBalance < 0) {
+              resetBalance = 0
+            }
+            Airline.resetAirline(airline.id, newBalance = resetBalance)
+          }
         }
-        
-        
+
         
         println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
     }
@@ -452,21 +502,34 @@ object AirlineSimulation {
     (totalPrincipalPayment + totalLoanInterest, totalLoanInterest)
   }
   
-  def getTargetQuality(serviceFunding : Int, links : List[Link]) : Double = {
-    var totalPassengerMileCapacity = links.map { link => link.frequency * link.getAssignedModel().fold(0L)(_.capacity.toLong) * link.distance }.sum
-    val MIN_PASSENGER_MILE_CAPACITY = 1000 * 1000
-    totalPassengerMileCapacity = Math.max(totalPassengerMileCapacity, MIN_PASSENGER_MILE_CAPACITY) 
-           
-    getTargetQuality(serviceFunding, totalPassengerMileCapacity) //50x to get 50 target quality, 200x to get max 100 target quality
+//  def getTargetQuality(serviceFunding : Int, links : List[Link]) : Double = {
+//    var totalPassengerMileCapacity = links.map { link => link.frequency * link.getAssignedModel().fold(0L)(_.capacity.toLong) * link.distance }.sum
+//    val MIN_PASSENGER_MILE_CAPACITY = 1000 * 1000
+//    totalPassengerMileCapacity = Math.max(totalPassengerMileCapacity, MIN_PASSENGER_MILE_CAPACITY)
+//
+//    getTargetQuality(serviceFunding, totalPassengerMileCapacity) //50x to get 50 target quality, 200x to get max 100 target quality
+//  }
+//
+//  val getTargetQuality : (Int, Long) => Double = (funding : Int, totalPassengerMileCapacity : Long) => {
+//    val computedQuality = Math.pow(funding.toDouble / (totalPassengerMileCapacity.toDouble / 4000) / 30, 1 / 2.5) * 40  //40x capacity (assume average 4k distance) to get 50 target quality, 200x capacity to get max 100 target quality
+//    if (computedQuality >= Airline.MAX_SERVICE_QUALITY) {
+//      Airline.MAX_MAINTENANCE_QUALITY
+//    } else {
+//      computedQuality
+//    }
+//  }
+
+  def getServiceFunding(targetQuality : Int, links : List[Link]) : Long = {
+    val totalPassengerMileCapacity = links.map { link => link.frequency * link.getAssignedModel().fold(0L)(_.capacity.toLong) * link.distance }.sum
+    getServiceFunding(targetQuality, totalPassengerMileCapacity)
   }
-  
-  val getTargetQuality : (Int, Long) => Double = (funding : Int, totalPassengerMileCapacity : Long) => {
-    val computedQuality = Math.pow(funding.toDouble / (totalPassengerMileCapacity.toDouble / 4000) / 30, 1 / 2.5) * 40  //40x capacity (assume average 4k distance) to get 50 target quality, 200x capacity to get max 100 target quality
-    if (computedQuality >= Airline.MAX_SERVICE_QUALITY) {
-      Airline.MAX_MAINTENANCE_QUALITY
-    } else {
-      computedQuality
-    }
+
+  val getServiceFunding : (Int, Long) => Long = (targetQuality : Int, totalPassengerMileCapacity : Long) => {
+    val MIN_PASSENGER_MILE_CAPACITY = 1000 * 1000
+    val passengerMileCapacity = Math.max(totalPassengerMileCapacity, MIN_PASSENGER_MILE_CAPACITY).toDouble
+
+    val funding = Math.pow(targetQuality.toDouble / 40, 2.5) * (passengerMileCapacity / 4000) * 30
+    funding.toLong
   }
   
   val getNewQuality : (Double, Double) => Double = (currentQuality, targetQuality) =>  {
@@ -475,7 +538,7 @@ object AirlineSimulation {
       if (delta >= 0) { //going up, slower when current quality is already high
         MAX_SERVICE_QUALITY_INCREMENT * (1 - (currentQuality / Airline.MAX_SERVICE_QUALITY * 0.9)) //at current quality 0, multiplier 1x; current quality 100, multiplier 0.1x
       } else { //going down, faster when current quality is already high
-        -1 * MAX_SERVICE_QUALITY_INCREMENT * (0.1 + (currentQuality / Airline.MAX_SERVICE_QUALITY * 0.9)) //at current quality 0, multiplier 0.1x; current quality 100, multiplier 1x
+        -1 * MAX_SERVICE_QUALITY_DECREMENT * (0.1 + (currentQuality / Airline.MAX_SERVICE_QUALITY * 0.9)) //at current quality 0, multiplier 0.1x; current quality 100, multiplier 1x
       }
     if (adjustment >= 0) {
       if (adjustment + currentQuality >= targetQuality) {

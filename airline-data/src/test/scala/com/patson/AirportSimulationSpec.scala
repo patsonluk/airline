@@ -65,8 +65,8 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
       val smallAirplaneModel = Model.modelByName("Bombardier CS100")
       val largeAirplaneModel = Model.modelByName("Boeing 747-400")
       
-      val smallAirplane = Airplane(smallAirplaneModel, Airline.fromId(1), 0, 100, AirplaneSimulation.computeDepreciationRate(smallAirplaneModel, Airplane.MAX_CONDITION.toDouble / smallAirplaneModel.lifespan), smallAirplaneModel.price)
-      val largeAirplane = Airplane(largeAirplaneModel, Airline.fromId(1), 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
+      val smallAirplane = Airplane(smallAirplaneModel, Airline.fromId(1), 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(smallAirplaneModel, Airplane.MAX_CONDITION.toDouble / smallAirplaneModel.lifespan), smallAirplaneModel.price)
+      val largeAirplane = Airplane(largeAirplaneModel, Airline.fromId(1), 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
       
       val consumptions = ListBuffer[LinkConsumptionDetails]()
       List(smallAirplane, largeAirplane).foreach { airplane =>
@@ -79,7 +79,7 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
         val fromAirport = Airport.fromId(1)
         val toAirport = Airport.fromId(2)
         val link = Link(fromAirport, toAirport, Airline.fromId(1), LinkClassValues.getInstanceByMap(Map(ECONOMY -> price)), distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, Computation.getFlightType(fromAirport, toAirport, distance))
-        link.setAssignedAirplanes(List(airplane))
+        link.setTestingAssignedAirplanes(Map(airplane -> frequency))
         consumptions.append(LinkConsumptionDetails(link = link, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, loungeCost = 0, depreciation = 0, revenue = 0, profit = 0,  cycle = 0))
       }
       

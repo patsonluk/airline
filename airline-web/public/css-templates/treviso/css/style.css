@@ -93,48 +93,48 @@ b {
 p {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #848484;
+	/*color: #848484;*/
 	font-size: 12px;
 }
 h1 {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	/*color: #454544;*/
 	text-decoration: none;
 	font-size: 30px;
 }
 h2 {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	/*color: #454544;*/
 	text-decoration: none;
 	font-size: 18px;
 }
 h3 {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	/*color: #454544;*/
 	text-decoration: none;
-	font-size: 15px;
+	font-size: 16px;
 }
 h4 {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	/*color: #454544;*/
 	text-decoration: none;
 	font-size: 15px;
 }
 h5 {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	/*color: #454544;*/
 	text-decoration: none;
 	font-size: 13px;
 }
 h6 {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	/*color: #454544;*/
 	text-decoration: none;
 	font-size: 12px;
 }

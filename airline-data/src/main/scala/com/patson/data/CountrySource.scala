@@ -3,9 +3,14 @@ package com.patson.data
 import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
 import com.patson.model._
+
 import scala.collection.mutable.Map
 import com.patson.model.AirlineAppeal
 import java.sql.Statement
+
+import com.patson.util.AirlineCache
+
+import scala.collection.mutable
 
 object CountrySource {
   def loadAllCountries() = {
@@ -256,7 +261,7 @@ object CountrySource {
         val countryCode = resultSet.getString("country")
         val country = countries.getOrElseUpdate(countryCode, loadCountryByCode(countryCode).get)
         val airlineId = resultSet.getInt("airline")
-        val airline = airlines.getOrElseUpdate(airlineId, AirlineSource.loadAirlineById(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+        val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
         
         relationShipData.getOrElseUpdate(country, Map()).put(airline, resultSet.getInt("relationship"))
       }    
@@ -365,50 +370,78 @@ object CountrySource {
       connection.close()
     }  
   }
-  
-//  def loadCountryChampionsByAirline(airlineId : Int) : scala.collection.immutable.Map[Country, (Airline, Long)] = {
-//    loadCountryChampions(List(("airline", airlineId)))
-//  }
-//  
-//  def loadCountryChampions(criteria : List[(String, Any)]) : scala.collection.immutable.Map[Country, (Airline, Long)]= {
-//    val connection = Meta.getConnection()
-//    try {  
-//      var queryString = "SELECT country_market_share.* FROM country_market_share JOIN (SELECT country, MAX(passenger_count) AS passenger_count FROM country_market_share GROUP BY country) max_passenger ON country_market_share.country = max_passenger.country  AND country_market_share.passenger_count = max_passenger.passenger_count"
-//  
-//      
-//      if (!criteria.isEmpty) {
-//        queryString += " WHERE "
-//        for (i <- 0 until criteria.size - 1) {
-//          queryString += criteria(i)._1 + " = ? AND "
-//        }
-//        queryString += criteria.last._1 + " = ?"
-//      }
-//      
-//      val preparedStatement = connection.prepareStatement(queryString)
-//      
-//      for (i <- 0 until criteria.size) {
-//        preparedStatement.setObject(i + 1, criteria(i)._2)
-//      }
-//      
-//      
-//      val resultSet = preparedStatement.executeQuery()
-//      
-//      val countryMarketShares = ListBuffer[CountryMarketShare]()
-//      
-//      val resultMap = Map[Country, (Airline, Long)]()
-//      while (resultSet.next()) {
-//        val country = loadCountryByCode(resultSet.getString("country")).get
-//        val airlineId = resultSet.getInt("airline")
-//        val passengerCount = resultSet.getLong("passenger_count")
-//        resultMap.put(country, (Airline.fromId(airlineId), passengerCount))
-//      }    
-//      resultSet.close()
-//      preparedStatement.close()
-//      resultMap.toMap
-//    } finally {
-//      connection.close()
-//    }
-//  }
+
+  def saveCountryAirlineTitles(countryAirlineTitles : List[CountryAirlineTitle]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      //purge existing ones
+      val truncateStatement = connection.prepareStatement("TRUNCATE TABLE "+ COUNTRY_AIRLINE_TITLE_TABLE);
+      truncateStatement.executeUpdate()
+
+      val replaceStatement = connection.prepareStatement("REPLACE INTO " + COUNTRY_AIRLINE_TITLE_TABLE + "(country, airline, title) VALUES (?,?,?)")
+      countryAirlineTitles.foreach { countryAirlineTitle =>
+        replaceStatement.setString(1, countryAirlineTitle.country.countryCode)
+        replaceStatement.setInt(2, countryAirlineTitle.airline.id)
+        replaceStatement.setInt(3, countryAirlineTitle.title.id)
+        replaceStatement.addBatch()
+      }
+
+      replaceStatement.executeBatch()
+      connection.commit()
+      truncateStatement.close()
+      replaceStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+  def loadCountryAirlineTitlesByCountryCode(country : String) : List[CountryAirlineTitle] = {
+    loadCountryAirlineTitlesByCriteria(List(("country", country)))
+  }
+
+  def loadCountryAirlineTitlesByCriteria(criteria : List[(String, Any)]) : List[CountryAirlineTitle] = {
+    val connection = Meta.getConnection()
+    try {
+      var queryString = "SELECT * FROM " + COUNTRY_AIRLINE_TITLE_TABLE
+
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val titles = ListBuffer[CountryAirlineTitle]()
+      val airlines = mutable.HashMap[Int, Airline]()
+      val countryCache =  mutable.HashMap[String, Country]()
+
+      while (resultSet.next()) {
+        val countryCode = resultSet.getString("country")
+        val airlineId = resultSet.getInt("airline")
+        val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId)))
+        val title = Title(resultSet.getInt("title"))
+        val country = countryCache.getOrElseUpdate(countryCode, loadCountryByCode(countryCode).getOrElse(Country.fromCode(countryCode)))
+        titles.append(CountryAirlineTitle(country, airline, title))
+      }
+      resultSet.close()
+      preparedStatement.close()
+
+      titles.toList
+    } finally {
+      connection.close()
+    }
+  }
+
     
 }
 

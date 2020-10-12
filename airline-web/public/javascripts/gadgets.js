@@ -1,6 +1,10 @@
 var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
 
 function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, callback) {
+    generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, 10, callback)
+}
+
+function generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, rowSize, callback) {
 	containerDiv.empty()
 	var images = []
 	
@@ -8,10 +12,10 @@ function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput
 		indexToValueFunction = function(index) { return index + 1 }
 		valueToIndexFunction = function(value) { return value - 1 }
 	}
-	
+
 	if (valueInput.val()) { //validate the input, set the value to boundaries allowed by this bar
-		if (valueToIndexFunction(valueInput.val()) < 0) {
-			valueInput.val(indexToValueFunction(0))
+		if (valueToIndexFunction(valueInput.val()) < 0) { //-1 is still valid, that means none selected
+			valueInput.val(indexToValueFunction(-1))
 		} else if (valueToIndexFunction(valueInput.val()) >= count) {
 			valueInput.val(indexToValueFunction(count - 1))
 		}
@@ -39,7 +43,7 @@ function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput
 		containerDiv.append(image)
 		images.push(image)
 		
-		if ((i + 1) % 10 == 0) {
+		if ((i + 1) % rowSize == 0) {
 			containerDiv.append("<br/>")
 		}
 	}
@@ -82,21 +86,21 @@ function shimmeringDiv(div) {
 	setTimeout(function() { shimmeringDiv(div) }, 5000)
 }
 
-function fadeOutMarker(marker) {
-	marker.opacities = [0.8, 0.6, 0.4, 0.2, 0]
-	fadeOutMarkerRecursive(marker)
-}
-function fadeOutMarkerRecursive(marker) {
-	if (marker.opacities.length > 0) {
-    	marker.setOpacity(marker.opacities[0])
-    	marker.opacities.shift()
-    	var icon = marker.getIcon()
-    	icon.anchor = new google.maps.Point(icon.anchor.x, icon.anchor.y + 2),
-    	setTimeout(function() { fadeOutMarkerRecursive(marker) }, 50)
-	} else {
-		marker.setMap(null)
-	}
-}
+//function fadeOutMarker(marker) {
+//	marker.opacities = [0.8, 0.6, 0.4, 0.2, 0]
+//	fadeOutMarkerRecursive(marker)
+//}
+//function fadeOutMarkerRecursive(marker) {
+//	if (marker.opacities.length > 0) {
+//    	marker.setOpacity(marker.opacities[0])
+//    	marker.opacities.shift()
+//    	var icon = marker.getIcon()
+//    	icon.anchor = new google.maps.Point(icon.anchor.x, icon.anchor.y + 2),
+//    	setTimeout(function() { fadeOutMarkerRecursive(marker) }, 50)
+//	} else {
+//		marker.setMap(null)
+//	}
+//}
 
 function fadeInMarker(marker) {
 	marker.opacities = [0.2, 0.4, 0.6, 0.8, 1.0]
@@ -207,6 +211,9 @@ function getUserLevelImg(level) {
 	} else if (level == 3) {
 		levelIcon = "assets/images/icons/medal-red-premium.png"
 		levelTitle = "Patreon : Gold"
+	} else if (level == 10 || 20) {
+		levelIcon = "assets/images/icons/star.png"
+        levelTitle = "Game Admin"
 	}
 	
 	if (levelIcon) {
@@ -348,28 +355,39 @@ function padBefore(str, padChar, max) {
 	return str.length < max ? padBefore(padChar + str, padChar, max) : str;
 }
 
-function getAirportText(city, airportName) {
+function getAirportText(city, airportCode) {
 	if (city) {
-		return city + "(" + airportName + ")"
+		return city + "(" + airportCode + ")"
 	} else {
-		return airportName
+		return airportCode
 	}
 }
 
-function setActiveDiv(activeDiv) {
+function setActiveDiv(activeDiv, callback) {
 	var existingActiveDiv = activeDiv.siblings(":visible").filter(function (index) {
 		return $(this).css("clear") != "both"
 	})
+	if (!callback && activeDiv.data("initCallback")) {
+        callback = activeDiv.data("initCallback")
+        activeDiv.removeData("initCallback")
+	}
+
 	if (existingActiveDiv.length > 0){
-		existingActiveDiv.fadeOut(200, function() { activeDiv.fadeIn(200) })
+	    existingActiveDiv.fadeOut(200, function() {
+		    activeDiv.fadeIn(200, callback)
+        })
 	} else {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
+		    if (callback) {
+		        callback()
+		    }
 			return false;
 		} else {
 			activeDiv.siblings().hide();
-			activeDiv.fadeIn(200)
+    	    activeDiv.fadeIn(200, callback);
 		}
 	}
+
 	
 	activeDiv.parent().show()
 	return true;
@@ -407,5 +425,100 @@ function highlightSwitch(selectedSwitch) {
 }
 
 function closeModal(modal) {
-	modal.fadeOut(200)
+    modal.fadeOut(200)
+    var callback = modal.data("closeCallback")
+    if (callback) {
+        callback()
+        modal.removeData("closeCallback")
+    }
+}
+
+function closeAllModals() {
+    $.each($(".modal"), function(index, modal) {
+        if ($(modal).is(":visible")) {
+            closeModal($(modal))
+        }
+    });
+}
+
+function disableButton(button, reason) {
+    $(button).addClass("disabled")
+    $(button).data("originalClickFunction", $(button).attr("onclick"))
+
+    if (!$(button).data("replacedTitle")) { //only store the title if it was NOT replaced (ie the original one)
+        $(button).data("originalTitle", $(button).attr("title"))
+    }
+
+    if (reason) {
+        $(button).attr("title", reason)
+        $(button).data("replacedTitle", true)
+    }
+    $(button).removeAttr("onclick") //remove on click function
+
+
+    if (isTouchDevice()) {
+        $(button).find(".touchTitle").remove()
+        if (reason) {
+            $(button).css({position: 'relative'});
+            var touchTitleSpan = $("<span style='display: none;' class='touchTitle'>" + reason + "</span>");
+            $(button).append(touchTitleSpan)
+            var addedClickFunction = function() {
+                 if (touchTitleSpan.is(":visible")) {
+                     touchTitleSpan.hide()
+                 } else {
+                     touchTitleSpan.show()
+                 }
+             }
+            $(button).click(addedClickFunction)
+            $(button).data("addedClickFunction", addedClickFunction)
+        }
+    }
+}
+
+function enableButton(button) {
+    $(button).removeClass("disabled")
+    var addedClickFunction = $(button).data("addedClickFunction")
+    if (addedClickFunction) {
+        $(button).unbind("click", addedClickFunction)
+    }
+    var originalClickFunction = $(button).data("originalClickFunction")
+    if (originalClickFunction) {
+        $(button).attr("onclick", originalClickFunction) //set it back
+    }
+    if ($(button).data("originalTitle")) {
+        $(button).attr("title",  $(button).data("originalTitle"))
+    } else {
+        $(button).removeAttr("title")
+    }
+
+    $(button).data("replacedTitle", false)
+
+    if (isTouchDevice()) {
+        $(button).find(".touchTitle").remove()
+    }
+
+}
+
+function isIe() {
+   if (/MSIE 10/i.test(navigator.userAgent)) {
+      // This is internet explorer 10
+      return true;
+   }
+
+   if (/MSIE 9/i.test(navigator.userAgent) || /rv:11.0/i.test(navigator.userAgent)) {
+      return true;
+   }
+
+   if (/Edge\/\d./i.test(navigator.userAgent)){
+      return true;
+   }
+}
+
+function isTouchDevice() {
+  try {
+    document.createEvent("TouchEvent");
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
