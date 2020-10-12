@@ -73,7 +73,48 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }))
   }
   
-
+  def getRejections(models : List[Model], airline : Airline) : Map[Model, Option[String]] = {
+     
+    val countryRelations : Map[String, Int] = airline.getCountryCode() match {
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationShips(homeCountry).toList.map {
+        case ((_, otherCountry), relationship) => (otherCountry, relationship)
+      }.toMap
+      case None => Map.empty
+    }    
+    
+    val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
+    models.map { model =>
+      (model, getRejection(model, countryRelations.getOrElse(model.countryCode, 0), ownedModels, airline))
+    }.toMap
+    
+  }
+  
+  def getRejection(model: Model, airline : Airline) : Option[String] = {
+    val countryRelation = airline.getCountryCode() match {
+      case Some(homeCountry) => CountrySource.getCountryMutualRelationship(homeCountry, model.countryCode)
+      case None => 0
+    }
+    
+    val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
+    getRejection(model, countryRelation, ownedModels, airline)
+  }
+  
+  def getRejection(model: Model, countryRelationship : Int, ownedModels : Set[Model], airline : Airline) : Option[String]= {
+    if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
+      return Some("The company refuses to sell " + model.name + " to your airline due to bad country relationship")
+    }
+    
+    if (!ownedModels.contains(model) && ownedModels.size >= airline.airlineGrade.getModelsLimit) {
+      return Some("Can only own up to " + airline.airlineGrade.getModelsLimit + " different airplane model(s) at current airline grade")
+    }
+    
+    if (model.price > airline.getBalance()) {
+      return Some("Not enough cash to purchase this airplane model")
+    }
+    
+    return None
+  }
+  
   def getUsedRejections(usedAirplanes : List[Airplane], model : Model, airline : Airline) : Map[Airplane, String] = {
     val countryRelationship = airline.getCountryCode() match {
       case Some(homeCountry) => CountrySource.getCountryMutualRelationship(homeCountry, model.countryCode)
@@ -117,6 +158,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         case (assignedAirplanes, freeAirplanes) =>
           (assignedAirplanes.map(_._1), freeAirplanes.map(_._1)) //get rid of the Option[Link] now as we have 2 lists already
       }.toMap
+      
+      val currentCycle = CycleSource.loadCycle()
       
       val airplanesByModelList = airplanesByModel.toList.map {
         case (model, (assignedAirplanes, freeAirplanes)) => AirplanesByModel(model, assignedAirplanes, idleAirplanes = freeAirplanes)
