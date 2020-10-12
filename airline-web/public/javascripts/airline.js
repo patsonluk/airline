@@ -1993,3 +1993,117 @@ function updateAirlineBaseList(airlineId, table) {
 	});
 }
 
+function linkConfirmation() {
+	$('#linkConfirmationModal div.existing').empty()
+	$('#linkConfirmationModal div.updating').empty()
+	$('#linkConfirmationModal div.controlButtons').hide()
+	$('#linkConfirmationModal .negotiationIcons').empty()
+	$('#linkConfirmationModal .negotiationBar').empty()
+
+
+	if (existingLink) {
+		//existing link section
+		$('#linkConfirmationModal .modalHeader').text('Update Route')
+		$('#linkConfirmationModal div.existing.model').text(existingLink.modelName)
+		$('#linkConfirmationModal div.existing.duration').text(getDurationText(existingLink.duration))
+		refreshAssignedAirplanesBar($('#linkConfirmationModal div.existingLink .airplanes'), existingLink.airplaneComposition)
+
+		for (i = 0 ; i < existingLink.frequency ; i ++) {
+			var image = $("<img>")
+			image.attr("src", $("#frequencyBar").data("fillIcon"))
+			$('#linkConfirmationModal div.existing.frequency').append(image)
+			if ((i + 1) % 10 == 0) {
+				$('#linkConfirmationModal div.existing.frequency').append("<br/>")
+			}
+		}
+		$('#linkConfirmationModal div.existing.fullCapacity').text(toLinkClassValueString(existingLink.capacity))
+		$('#linkConfirmationModal div.existing.price').text(toLinkClassValueString(existingLink.price, '$'))
+		$('#linkConfirmationModal div.existing.configuration').text(toLinkClassValueString(existingLink.configuration))
+	} else {
+		$('#linkConfirmationModal div.existing').text('-')
+	}
+
+	//update link section
+	var updateLinkModel = planLinkInfoByModel[$("#planLinkModelSelect").val()]
+	$('#linkConfirmationModal div.updating.model').text(updateLinkModel.modelName)
+	$('#linkConfirmationModal div.updating.duration').text(getDurationText(updateLinkModel.duration))
+
+	refreshAssignedAirplanesBar($('#linkConfirmationModal div.updating.airplanes'), $('#planLinkAirplanes').data('airplaneComposition'))
+
+	for (i = 0 ; i < $("#planLinkFrequency").val() ; i ++) {
+		var image = $("<img>")
+		image.attr("src", $("#frequencyBar").data("fillIcon"))
+		$('#linkConfirmationModal div.updating.frequency').append(image)
+		if ((i + 1) % 10 == 0) {
+			$('#linkConfirmationModal div.updating.frequency').append("<br/>")
+		}
+	}
+
+	var fullCapacity = {
+		"economy" : updateLinkModel.configuration.economy * $("#planLinkFrequency").val(),
+		"business" : updateLinkModel.configuration.business * $("#planLinkFrequency").val(),
+		"first" : updateLinkModel.configuration.first * $("#planLinkFrequency").val(),
+	}
+	//$('#linkConfirmationModal div.updating.currentCapacity').text(currentCapacity.economy + "/" + currentCapacity.business + "/" + currentCapacity.first)
+	$('#linkConfirmationModal div.updating.fullCapacity').text(toLinkClassValueString(fullCapacity))
+	$('#linkConfirmationModal div.updating.price').text('$' + $('#planLinkEconomyPrice').val() + " / $" + $('#planLinkBusinessPrice').val() + " / $" + $('#planLinkFirstPrice').val())
+	$('#linkConfirmationModal div.updating.configuration').text(toLinkClassValueString(updateLinkModel.configuration))
+	$('#linkConfirmationModal div.controlButtons').show()
+
+	$('#linkConfirmationModal').fadeIn(200)
+
+	previewLinkNegotiation()
+
+}
+
+function previewLinkNegotiation() {
+	var fromAirportId = $("#planLinkFromAirportId").val()
+	var toAirportId = $("#planLinkToAirportId").val()
+	var selectedModelId = $("#planLinkModelSelect").val()
+	var frequency = $("#planLinkFrequency").val()
+	var url = "airlines/" + activeAirline.id + "/preview-link-negotiation"
+	var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
+	$('#linkConfirmationModal div.negotiationAnimation').hide()
+	$.ajax({
+		type: 'POST',
+		url: url,
+		data: JSON.stringify(
+		{
+			'fromAirportId': parseInt(fromAirportId),
+			'toAirportId' : parseInt(toAirportId),
+			'airplaneModelId' : parseInt(selectedModelId),
+			'frequency' : parseInt(frequency),
+			'configuration' : configuration
+		}),
+		contentType: 'application/json; charset=utf-8',
+		dataType: 'json',
+	    success: function(negotiationPreview) {
+	    	$('#linkConfirmationModal div.negotationInfo .factor').empty()
+	    	if (negotiationPreview.requiredPoints) {
+	    		$('#linkConfirmationModal div.negotationInfo').show()
+	    		var currentRow = $('#linkConfirmationModal div.negotationInfo .table-header')
+	    		$.each(negotiationPreview.oddsComposition, function(index, composition) {
+	    			var sign = composition.value >= 0 ? '+' : ''
+	    			currentRow = $('<div class="table-row factor"><div class="cell"></div><div class="cell">' + composition.description + '</div><div class="cell">' + sign + Math.round(composition.value * 100) + '%</div></div>').insertAfter(currentRow)
+	    		})
+	    		$('#linkConfirmationModal div.negotationInfo .successRate').text(Math.round(negotiationPreview.odds * 100) + '%')
+	    		$('#linkConfirmationModal div.negotationInfo .requiredPoints').text(negotiationPreview.requiredPoints)
+	    		$('#linkConfirmationModal .negotiateButton').show()
+	    		$('#linkConfirmationModal .confirmButton').hide()
+	    	} else {
+	    		$('#linkConfirmationModal div.negotationInfo').hide()
+	    		$('#linkConfirmationModal .negotiateButton').hide()
+	    		$('#linkConfirmationModal .confirmButton').show()
+	    	}
+
+
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+
+
