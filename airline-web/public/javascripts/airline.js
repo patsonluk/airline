@@ -1484,26 +1484,18 @@ function createLink() {
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
 		    success: function(savedLink) {
-		    	if (savedLink.id) {
-		    		if (!flightPaths[savedLink.id]) { //new link
-		    			//remove temp path
-		    			removeTempPath()
-		    			//draw flight path
-		    			var newPath = drawFlightPath(savedLink)
-		    			selectLinkFromMap(savedLink.id, false)
-		    			refreshPanels(airlineId) //refresh panels would update link details
-		    		} else {
-		    			refreshLinkDetails(savedLink.id)
-		    		}
-		    		
-			    	
-		    		setActiveDiv($('#linkDetails'))
-		    		hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
-		    				    				    		
-		    		if ($('#linksCanvas').is(':visible')) { //reload the links table then
-		    			loadLinksTable()
-		    		}
-		    	}
+		    	var isSuccessful
+                if (savedLink.negotiationResult) {
+                    isSuccessful = savedLink.negotiationResult.isSuccessful
+                    if (isSuccessful) {
+                        negotiationAnimation(savedLink.negotiationResult, refreshSavedLink, savedLink)
+                    } else {
+                        negotiationAnimation(savedLink.negotiationResult)
+                    }
+                } else {
+                    closeModal($('#linkConfirmationModal'))
+                    refreshSavedLink(savedLink)
+                }
 		    },
 	        error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));
@@ -2104,29 +2096,30 @@ function linkConfirmation() {
 
 	$('#linkConfirmationModal').fadeIn(200)
 
-	previewLinkNegotiation()
+	getLinkNegotiation(updateLinkModel, planFrequency)
 
 }
 
-function previewLinkNegotiation() {
-	var fromAirportId = $("#planLinkFromAirportId").val()
-	var toAirportId = $("#planLinkToAirportId").val()
-	var selectedModelId = $("#planLinkModelSelect").val()
-	var frequency = $("#planLinkFrequency").val()
-	var url = "airlines/" + activeAirline.id + "/preview-link-negotiation"
-	var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
+function getLinkNegotiation(updateLinkModel, planFrequency) {
+    var airlineId = activeAirline.id
+    var url = "airlines/" + activeAirline.id + "/get-link-negotiation"
+	var linkData = {
+    			"fromAirportId" : parseInt($("#planLinkFromAirportId").val()),
+    			"toAirportId" : parseInt($("#planLinkToAirportId").val()),
+    			//"airplanes" : $("#planLinkAirplaneSelect").val().map(Number),
+    			airplanes : getAssignedAirplaneFrequencies(),
+    			"airlineId" : airlineId,
+    			//"configuration" : { "economy" : configuration.economy, "business" : configuration.business, "first" : configuration.first},
+    			"price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},
+    			//"frequency" : parseInt($("#planLinkFrequency").val()),
+    			"model" : parseInt($("#planLinkModelSelect").val()),
+    			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20}
+
 	$('#linkConfirmationModal div.negotiationAnimation').hide()
 	$.ajax({
 		type: 'POST',
 		url: url,
-		data: JSON.stringify(
-		{
-			'fromAirportId': parseInt(fromAirportId),
-			'toAirportId' : parseInt(toAirportId),
-			'airplaneModelId' : parseInt(selectedModelId),
-			'frequency' : parseInt(frequency),
-			'configuration' : configuration
-		}),
+		data: JSON.stringify(linkData),
 		contentType: 'application/json; charset=utf-8',
 		dataType: 'json',
 	    success: function(negotiationPreview) {
@@ -2174,4 +2167,81 @@ function refreshAssignedAirplanesBar(container, assignedAirplanes) {
 	})
 }
 
+function refreshSavedLink(savedLink) {
+	if (!flightPaths[savedLink.id]) { //new link
+		//remove temp path
+		removeTempPath()
+		//draw flight path
+		var newPath = drawFlightPath(savedLink)
+		selectLinkFromMap(savedLink.id, false)
+		refreshPanels(airlineId) //refresh panels would update link details
+	} else {
+		refreshLinkDetails(savedLink.id)
+	}
 
+
+	setActiveDiv($('#linkDetails'))
+	hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
+
+	if ($('#linksCanvas').is(':visible')) { //reload the links table then
+		loadLinksTable()
+	}
+}
+
+
+function negotiationAnimation(negotiationResult, callback, callbackParam) {
+	$('#linkConfirmationModal div.controlButtons').hide()
+	$('#linkConfirmationModal .negotiationResult').hide()
+	plotNegotiationGauge($('#linkConfirmationModal .negotiationBar'), negotiationResult.passingScore)
+	var gaugeValue = 0
+	$(negotiationResult.sessions).each( function(index, value) {
+		$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/balloon-ellipsis.png' style='padding : 5px;'>")
+		setTimeout(function(){
+			var icon
+			var description
+			if (value > 14) {
+				icon = "smiley-kiss.png"
+				description = "Awesome +" + Math.round(value)
+			} else if (value > 11) {
+				icon = "smiley-lol.png"
+				description = "Great +" + Math.round(value)
+			} else if (value > 8) {
+				icon = "smiley.png"
+				description = "Good +" + Math.round(value)
+			} else if (value > 5) {
+				icon = "smiley-neutral.png"
+				description = "Soso +" + Math.round(value)
+			} else if (value > 0) {
+				icon = "smiley-sad.png"
+				description = "Bad +" + Math.round(value)
+			} else {
+				icon = "smiley-cry.png"
+				description = "Terrible " + Math.round(value)
+			}
+			$('#linkConfirmationModal .negotiationIcons img:nth-child(' + (index + 1) + ')').attr("src", "assets/images/icons/" + icon)
+			$('#linkConfirmationModal .negotiationDescriptions').text(description)
+			$('#linkConfirmationModal .negotiationDescriptions').hide()
+			$('#linkConfirmationModal .negotiationDescriptions').fadeIn(200);
+
+			//$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/" + icon + "'>")
+			gaugeValue += value
+			updateNegotiationGauge($('#linkConfirmationModal .negotiationBar'), gaugeValue)
+	        //$('#paint').fadeIn(500);
+		//	console.log(value)
+	    }, 1000 * index);
+	})
+	setTimeout(function(){
+		var result = negotiationResult.isSuccessful ? "Successful" : "Failure"
+		$('#linkConfirmationModal .negotiationResult .result').text(result)
+		$('#linkConfirmationModal .negotiationResult').show()
+	}, 1000 * negotiationResult.sessions.length)
+
+	if (callback) {
+		$('#linkConfirmationModal .close, #linkConfirmationModal .result').click(function() {
+			callback(callbackParam)
+		})
+	}
+
+	$('#linkConfirmationModal div.negotiationAnimation').show()
+
+}

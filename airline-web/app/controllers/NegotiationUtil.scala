@@ -10,7 +10,7 @@ object NegotiationUtil {
 
   def negotiate(info : NegotiationInfo) = {
     val number = Math.random()
-    NegotiationResult(info.odds.value, number)
+    NegotiationResult(1 - info.odds.value, number)
   }
 
 
@@ -45,8 +45,8 @@ object NegotationFactor extends Enumeration {
     case COUNTRY_RELATIONSHIP => "Country Relationship"
     case EXISTING_LINKS => "Existing Routes by other Airlines"
     case INITIAL_LINKS => "Bonus for smaller Airlines"
-    case INCREASE_CAPACITY => "Decreae Capacity"
-    case DECREASE_CAPACITY => "Increase Capacity"
+    case INCREASE_CAPACITY => "Increase Capacity"
+    case DECREASE_CAPACITY => "Decrease Capacity"
     case OTHER => "Unknown"
   }
 }
