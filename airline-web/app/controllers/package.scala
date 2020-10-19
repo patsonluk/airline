@@ -551,24 +551,40 @@ package object controllers {
     ))
   }
 
-  implicit object NegotiationOddsWrites extends Writes[NegotiationOdds] {
-    def writes(odds : NegotiationOdds): JsValue = {
-      var result = Json.arr()
-      odds.getFactors.foreach {
-        case (factor, value) =>
-          result = result.append(Json.obj("description" -> JsString(NegotationFactor.description(factor)),
-            "value"-> JsNumber(value)))
+//  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
+//    def writes(requirement : NegotiationRequirement): JsValue = {
+//      var result = Json.arr()
+//      odds.getFactors.foreach {
+//        case (factor, value) =>
+//          result = result.append(Json.obj("description" -> JsString(NegotationFactor.description(factor)),
+//            "value"-> JsNumber(value)))
+//      }
+//      result
+//    }
+//  }
+
+  case class NegotiationInfoWrites(link : Link) extends Writes[NegotiationInfo] {
+    def writes(info : NegotiationInfo): JsValue = {
+      var requirementsJson = Json.arr()
+      val requirementWrites = NegotiationRequirementWrites(link)
+      info.requirements.foreach { requirement =>
+        requirementsJson = requirementsJson.append(Json.toJson(requirement)(requirementWrites))
       }
-      result
+
+      Json.obj(
+        "odds" -> JsNumber(info.odds),
+        "requirements" -> requirementsJson,
+        "availableDelegates" -> JsNumber(info.delegateStatus.available),
+        "unavailableDelegates" -> JsNumber(info.delegateStatus.unavailable),
+        "assignedDelegates" -> JsNumber(info.assignedDelegates))
     }
   }
 
-  implicit object NegotiationInfoWrites extends Writes[NegotiationInfo] {
-    def writes(info : NegotiationInfo): JsValue = {
+  case class NegotiationRequirementWrites(link : Link) extends Writes[NegotiationRequirement] {
+    def writes(requirement : NegotiationRequirement): JsValue = {
       Json.obj(
-        "odds" -> JsNumber(info.odds.value),
-        "oddsComposition" -> Json.toJson(info.odds),
-        "requiredPoints" -> JsNumber(info.requiredPoints))
+        "description" -> JsString(NegotiationRequirementType.description(requirement.requirementType, link)),
+        "value" -> JsNumber(requirement.value))
     }
   }
 

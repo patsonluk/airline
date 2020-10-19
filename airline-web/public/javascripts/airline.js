@@ -1476,7 +1476,8 @@ function createLink() {
 			"price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},
 			//"frequency" : parseInt($("#planLinkFrequency").val()),
 			"model" : parseInt($("#planLinkModelSelect").val()),
-			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20}
+			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20,
+			"assignedDelegates" : assignedDelegates }
 		$.ajax({
 			type: 'PUT',
 			url: url,
@@ -1485,6 +1486,7 @@ function createLink() {
 		    dataType: 'json',
 		    success: function(savedLink) {
 		    	var isSuccessful
+		    	closeModal($('#linkConfirmationModal'))
                 if (savedLink.negotiationResult) {
                     isSuccessful = savedLink.negotiationResult.isSuccessful
                     if (isSuccessful) {
@@ -1493,7 +1495,6 @@ function createLink() {
                         negotiationAnimation(savedLink.negotiationResult)
                     }
                 } else {
-                    closeModal($('#linkConfirmationModal'))
                     refreshSavedLink(savedLink)
                 }
 		    },
@@ -2017,13 +2018,17 @@ function updateAirlineBaseList(airlineId, table) {
 	});
 }
 
+var assignedDelegates = 0
+var availableDelegates = 0
+
 function linkConfirmation() {
 	$('#linkConfirmationModal div.existing').empty()
 	$('#linkConfirmationModal div.updating').empty()
 	$('#linkConfirmationModal div.controlButtons').hide()
 	$('#linkConfirmationModal .negotiationIcons').empty()
 	$('#linkConfirmationModal .negotiationBar').empty()
-
+	$('#linkConfirmationModal .modal-content').css("height", 400)
+	$('#linkConfirmationModal div.negotiationInfo').hide()
 
 	if (existingLink) {
 		//existing link section
@@ -2096,11 +2101,20 @@ function linkConfirmation() {
 
 	$('#linkConfirmationModal').fadeIn(200)
 
-	getLinkNegotiation(updateLinkModel, planFrequency)
-
+    assignedDelegates = 0
+    availableDelegates = 0
+    getLinkNegotiation()
 }
 
-function getLinkNegotiation(updateLinkModel, planFrequency) {
+function changeDelegate(delta) {
+    if (assignedDelegates + delta <= availableDelegates && assignedDelegates + delta >= 0) {
+        getLinkNegotiation(delta)
+    }
+}
+
+
+
+function getLinkNegotiation(delta = 0) {
     var airlineId = activeAirline.id
     var url = "airlines/" + activeAirline.id + "/get-link-negotiation"
 	var linkData = {
@@ -2113,35 +2127,65 @@ function getLinkNegotiation(updateLinkModel, planFrequency) {
     			"price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},
     			//"frequency" : parseInt($("#planLinkFrequency").val()),
     			"model" : parseInt($("#planLinkModelSelect").val()),
-    			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20}
+    			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20,
+    			"assignedDelegates" : assignedDelegates + delta }
 
-	$('#linkConfirmationModal div.negotiationAnimation').hide()
+
 	$.ajax({
 		type: 'POST',
 		url: url,
 		data: JSON.stringify(linkData),
 		contentType: 'application/json; charset=utf-8',
 		dataType: 'json',
-	    success: function(negotiationPreview) {
-	    	$('#linkConfirmationModal div.negotationInfo .factor').empty()
-	    	if (negotiationPreview.requiredPoints) {
-	    		$('#linkConfirmationModal div.negotationInfo').show()
-	    		var currentRow = $('#linkConfirmationModal div.negotationInfo .table-header')
-	    		$.each(negotiationPreview.oddsComposition, function(index, composition) {
-	    			var sign = composition.value >= 0 ? '+' : ''
-	    			currentRow = $('<div class="table-row factor"><div class="cell"></div><div class="cell">' + composition.description + '</div><div class="cell">' + sign + Math.round(composition.value * 100) + '%</div></div>').insertAfter(currentRow)
-	    		})
-	    		$('#linkConfirmationModal div.negotationInfo .successRate').text(Math.round(negotiationPreview.odds * 100) + '%')
-	    		$('#linkConfirmationModal div.negotationInfo .requiredPoints').text(negotiationPreview.requiredPoints)
-	    		$('#linkConfirmationModal .negotiateButton').show()
-	    		$('#linkConfirmationModal .confirmButton').hide()
-	    	} else {
-	    		$('#linkConfirmationModal div.negotationInfo').hide()
-	    		$('#linkConfirmationModal .negotiateButton').hide()
-	    		$('#linkConfirmationModal .confirmButton').show()
-	    	}
+	    success: function(negotiationInfo) {
+	        if (negotiationInfo.requirements.length > 0) {
+                $('#linkConfirmationModal div.negotiationInfo .requirement').empty()
+                $('#linkConfirmationModal div.assignedDelegatesIcons').empty()
+                $('#linkConfirmationModal div.delegateStatus').empty()
+
+                assignedDelegates = negotiationInfo.assignedDelegates
+                availableDelegates = negotiationInfo.availableDelegates
+                var currentRow = $('#linkConfirmationModal div.negotiationRequirements .table-header')
+                var requiredDelegates = 0
+                $.each(negotiationInfo.requirements, function(index, requirement) {
+                    var sign = requirement.value >= 0 ? '+' : '-'
+                    currentRow = $('<div class="table-row requirement"><div class="cell">' + requirement.description + '</div><div class="cell">' + sign + "&nbsp;" + requirement.value + '</div></div>').insertAfter(currentRow)
+                    requiredDelegates += requirement.value
+                })
+
+                $('.negotiationRequirementsTotal .total').text(requiredDelegates)
+
+                for (i = 0 ; i < negotiationInfo.availableDelegates; i ++) {
+                    var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/>')
+                    $('#linkConfirmationModal div.delegateStatus').append(delegateIcon)
+                }
+
+                for (i = 0 ; i < negotiationInfo.unavailableDelegates; i ++) {
+                    var delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="Unavailable Delegate"/>')
+                    $('#linkConfirmationModal div.delegateStatus').append(delegateIcon)
+                }
+
+                for (i = 0 ; i < negotiationInfo.assignedDelegates; i ++) {
+                    var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Assigned Delegate"/>')
+                    $('#linkConfirmationModal .assignedDelegatesIcons').append(delegateIcon)
+                }
 
 
+                $('#linkConfirmationModal .successRate').text(Math.round(negotiationInfo.odds * 100) + '%')
+                $('#linkConfirmationModal .confirmButton').hide()
+                if (negotiationInfo.odds <= 0) { //then need to add delegates
+                    $('#linkConfirmationModal .negotiateButton').show()
+                    disableButton($('#linkConfirmationModal .negotiateButton'))
+                } else {
+                    enableButton($('#linkConfirmationModal .negotiateButton'))
+                    $('#linkConfirmationModal .negotiateButton').show()
+                }
+                $('#linkConfirmationModal .modal-content').css("height", 700)
+                $('#linkConfirmationModal div.negotiationInfo').show()
+            } else { //then no need for negotiation
+                $('#linkConfirmationModal .negotiateButton').hide()
+                $('#linkConfirmationModal .confirmButton').show()
+            }
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -2149,6 +2193,8 @@ function getLinkNegotiation(updateLinkModel, planFrequency) {
 	    }
 	});
 }
+
+
 
 
 function refreshAssignedAirplanesBar(container, assignedAirplanes) {
@@ -2190,12 +2236,11 @@ function refreshSavedLink(savedLink) {
 
 
 function negotiationAnimation(negotiationResult, callback, callbackParam) {
-	$('#linkConfirmationModal div.controlButtons').hide()
-	$('#linkConfirmationModal .negotiationResult').hide()
-	plotNegotiationGauge($('#linkConfirmationModal .negotiationBar'), negotiationResult.passingScore)
+    $('#negotiationAnimation .negotiationIcons').empty()
+	plotNegotiationGauge($('#negotiationAnimation .negotiationBar'), negotiationResult.passingScore)
 	var gaugeValue = 0
 	$(negotiationResult.sessions).each( function(index, value) {
-		$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/balloon-ellipsis.png' style='padding : 5px;'>")
+		$('#negotiationAnimation .negotiationIcons').append("<img src='assets/images/icons/balloon-ellipsis.png' style='padding : 5px;'>")
 		setTimeout(function(){
 			var icon
 			var description
@@ -2218,30 +2263,38 @@ function negotiationAnimation(negotiationResult, callback, callbackParam) {
 				icon = "smiley-cry.png"
 				description = "Terrible " + Math.round(value)
 			}
-			$('#linkConfirmationModal .negotiationIcons img:nth-child(' + (index + 1) + ')').attr("src", "assets/images/icons/" + icon)
-			$('#linkConfirmationModal .negotiationDescriptions').text(description)
-			$('#linkConfirmationModal .negotiationDescriptions').hide()
-			$('#linkConfirmationModal .negotiationDescriptions').fadeIn(200);
+			$('#negotiationAnimation .negotiationIcons img:nth-child(' + (index + 1) + ')').attr("src", "assets/images/icons/" + icon)
+			$('#negotiationAnimation .negotiationDescriptions').text(description)
+			$('#negotiationAnimation .negotiationDescriptions').hide()
+			$('#negotiationAnimation .negotiationDescriptions').fadeIn(200);
 
 			//$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/" + icon + "'>")
 			gaugeValue += value
-			updateNegotiationGauge($('#linkConfirmationModal .negotiationBar'), gaugeValue)
+			updateNegotiationGauge($('#negotiationAnimation .negotiationBar'), gaugeValue)
 	        //$('#paint').fadeIn(500);
 		//	console.log(value)
 	    }, 1000 * index);
 	})
+	$('#negotiationAnimation .negotiationResult').hide()
 	setTimeout(function(){
 		var result = negotiationResult.isSuccessful ? "Successful" : "Failure"
-		$('#linkConfirmationModal .negotiationResult .result').text(result)
-		$('#linkConfirmationModal .negotiationResult').show()
+		$('#negotiationAnimation .negotiationResult .result').text(result)
+		$('#negotiationAnimation .negotiationResult').show()
+		if (negotiationResult.isSuccessful) {
+		    showConfetti($("#negotiationAnimation"))
+        }
 	}, 1000 * negotiationResult.sessions.length)
 
 	if (callback) {
-		$('#linkConfirmationModal .close, #linkConfirmationModal .result').click(function() {
+		$('#negotiationAnimation .close, #negotiationAnimation .result').on("click.custom", function() {
+		    if (negotiationResult.isSuccessful) {
+                removeConfetti($("#negotiationAnimation"))
+            }
 			callback(callbackParam)
 		})
-	}
+    } else {
+        $('#negotiationAnimation .close, #negotiationAnimation .result').off("click.custom")
+    }
 
-	$('#linkConfirmationModal div.negotiationAnimation').show()
-
+	$('#negotiationAnimation').show()
 }
