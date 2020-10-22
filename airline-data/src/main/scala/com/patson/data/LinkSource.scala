@@ -1,23 +1,14 @@
 package com.patson.data
-import com.patson.data.Constants._
-
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Set
-import java.sql.DriverManager
-
-import com.patson.model.airplane.{Airplane, LinkAssignment}
-import java.sql.PreparedStatement
-
-import com.patson.model._
-import java.sql.Statement
-
-import scala.collection.mutable.HashSet
-import java.sql.Connection
+import java.sql.{Connection, Statement}
 import java.util.{Calendar, Date}
 
+import com.patson.data.Constants._
 import com.patson.data.UserSource.dateFormat
+import com.patson.model._
+import com.patson.model.airplane._
+import com.patson.util.{AirlineCache, AirplaneModelCache, AirportCache}
 
-import scala.collection.mutable.HashMap
+import scala.collection.mutable.{HashMap, HashSet, ListBuffer, Set}
  
 
 
@@ -581,7 +572,7 @@ object LinkSource {
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("REPLACE INTO link_consumption(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, revenue, profit, minor_delay_count, major_delay_count, cancellation_count, from_airport, to_airport, airline, distance, frequency, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("REPLACE INTO " + LINK_CONSUMPTION_TABLE + "(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, revenue, profit, minor_delay_count, major_delay_count, cancellation_count, from_airport, to_airport, airline, distance, frequency, duration, flight_type, flight_number, airplane_model, raw_quality, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       connection.setAutoCommit(false)
@@ -615,7 +606,12 @@ object LinkSource {
           preparedStatement.setInt(27, linkConsumption.link.airline.id)
           preparedStatement.setInt(28, linkConsumption.link.distance)
           preparedStatement.setInt(29, linkConsumption.link.frequency)
-          preparedStatement.setInt(30, linkConsumption.cycle)
+          preparedStatement.setInt(30, linkConsumption.link.duration)
+          preparedStatement.setInt(31, linkConsumption.link.flightType.id)
+          preparedStatement.setInt(32, linkConsumption.link.flightNumber)
+          preparedStatement.setInt(33, linkConsumption.link.getAssignedModel().map(_.id).getOrElse(0))
+          preparedStatement.setInt(34, linkConsumption.link.rawQuality)
+          preparedStatement.setInt(35, linkConsumption.cycle)
           preparedStatement.executeUpdate()
         }
       preparedStatement.close()
@@ -707,53 +703,53 @@ object LinkSource {
       
       val linkConsumptions = new ListBuffer[LinkConsumptionDetails]()
       
-      val linkIds = ListBuffer[Int]()
-      while (resultSet.next()) {
-        linkIds.append(resultSet.getInt("link"));
-      }
-      
-      val linksById : Map[Int, Link] = LinkSource.loadLinksByIds(linkIds.toList).map(link => (link.id, link)).toMap 
-      
       resultSet.beforeFirst()
       while (resultSet.next()) {
         val linkId = resultSet.getInt("link")
-          linksById.get(linkId) match {
-          case Some(currentLink) =>
-            //need to update current link with history link data
-            val frequency = resultSet.getInt("frequency")
-            val price = LinkClassValues.getInstance(resultSet.getInt("price_economy"), resultSet.getInt("price_business"), resultSet.getInt("price_first"))
-            val quality = resultSet.getInt("quality")
-            val capacity =  LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"),resultSet.getInt("capacity_first"))
-            
-            val link = currentLink.copy(price = price, frequency = frequency, capacity = capacity)
-            link.setQuality(quality)
-            link.addSoldSeats(LinkClassValues.getInstance(resultSet.getInt("sold_seats_economy"), resultSet.getInt("sold_seats_business"), resultSet.getInt("sold_seats_first")))
-            link.minorDelayCount = resultSet.getInt("minor_delay_count")
-            link.majorDelayCount = resultSet.getInt("major_delay_count")
-            link.cancellationCount = resultSet.getInt("cancellation_count")
-            
-            if (link.cancellationCount > 0 && link.frequency > 0) {
-              link.addCancelledSeats(capacity * link.cancellationCount / frequency)
-            }
-            
-            linkConsumptions.append(LinkConsumptionDetails(
-              link = link,
-              fuelCost = resultSet.getInt("fuel_cost"),
-              crewCost = resultSet.getInt("crew_cost"),
-              airportFees = resultSet.getInt("airport_fees"),
-              inflightCost = resultSet.getInt("inflight_cost"),
-              delayCompensation = resultSet.getInt("delay_compensation"),
-              maintenanceCost = resultSet.getInt("maintenance_cost"),
-              loungeCost = resultSet.getInt("lounge_cost"),
-              depreciation = resultSet.getInt("depreciation"),
-              revenue = resultSet.getInt("revenue"),
-              profit = resultSet.getInt("profit"),
-              cycle = resultSet.getInt("cycle")))
-          case None =>
+        //need to update current link with history link data
+        val frequency = resultSet.getInt("frequency")
+        val price = LinkClassValues.getInstance(resultSet.getInt("price_economy"), resultSet.getInt("price_business"), resultSet.getInt("price_first"))
+        val quality = resultSet.getInt("quality")
+        val capacity =  LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"),resultSet.getInt("capacity_first"))
+
+        val fromAirport = AirportCache.getAirport(resultSet.getInt("from_airport")).getOrElse(Airport.fromId(resultSet.getInt("from_airport")))
+        val toAirport =  AirportCache.getAirport(resultSet.getInt("to_airport")).getOrElse(Airport.fromId(resultSet.getInt("to_airport")))
+        val airline = AirlineCache.getAirline(resultSet.getInt("airline")).getOrElse(Airline.fromId(resultSet.getInt("airline")))
+        val distance = resultSet.getInt("distance")
+        val duration = resultSet.getInt("duration")
+        val flightType = resultSet.getInt("flight_type")
+        val flightNumber = resultSet.getInt("flight_number")
+        val modelId = resultSet.getInt("airplane_model")
+        val rawQuality = resultSet.getInt("raw_quality")
+        val link = Link(fromAirport, toAirport, airline, price, distance, capacity, 0, duration, frequency, FlightType(flightType), flightNumber, linkId)
+
+        link.setQuality(quality)
+        link.addSoldSeats(LinkClassValues.getInstance(resultSet.getInt("sold_seats_economy"), resultSet.getInt("sold_seats_business"), resultSet.getInt("sold_seats_first")))
+        link.minorDelayCount = resultSet.getInt("minor_delay_count")
+        link.majorDelayCount = resultSet.getInt("major_delay_count")
+        link.cancellationCount = resultSet.getInt("cancellation_count")
+
+        if (link.cancellationCount > 0 && link.frequency > 0) {
+          link.addCancelledSeats(capacity * link.cancellationCount / frequency)
         }
-          
+
+        link.setAssignedModel(AirplaneModelCache.getModel(modelId).getOrElse(Model.fromId(modelId)))
+
+        linkConsumptions.append(LinkConsumptionDetails(
+          link = link,
+          fuelCost = resultSet.getInt("fuel_cost"),
+          crewCost = resultSet.getInt("crew_cost"),
+          airportFees = resultSet.getInt("airport_fees"),
+          inflightCost = resultSet.getInt("inflight_cost"),
+          delayCompensation = resultSet.getInt("delay_compensation"),
+          maintenanceCost = resultSet.getInt("maintenance_cost"),
+          loungeCost = resultSet.getInt("lounge_cost"),
+          depreciation = resultSet.getInt("depreciation"),
+          revenue = resultSet.getInt("revenue"),
+          profit = resultSet.getInt("profit"),
+          cycle = resultSet.getInt("cycle")))
       }
-      
+
       resultSet.close()
       preparedStatement.close()
       linkConsumptions.toList
