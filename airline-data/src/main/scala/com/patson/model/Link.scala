@@ -52,6 +52,10 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     assignedModel
   }
 
+  def setAssignedModel(model : Model) = {
+    this.assignedModel = Some(model)
+  }
+
   import FlightType._
   /**
    * Find seats at or below the requestedLinkClass (can only downgrade 1 level)
