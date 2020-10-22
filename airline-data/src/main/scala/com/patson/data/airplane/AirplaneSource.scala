@@ -61,7 +61,8 @@ object AirplaneSource {
       
       val currentCycle = CycleSource.loadCycle()
       while (resultSet.next()) {
-        val airline = Airline.fromId(resultSet.getInt("owner"))
+        val airlineId = resultSet.getInt("owner")
+        val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
         val model = allModels(resultSet.getInt("a.model"))
         val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), airline, model, resultSet.getBoolean("is_default"), id = resultSet.getInt("configuration"))
         val isSold = resultSet.getBoolean("is_sold")

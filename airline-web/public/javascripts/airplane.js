@@ -149,6 +149,9 @@ function updateUsedAirplaneTable(sortProperty, sortOrder) {
 		var row = $("<div class='table-row'></div>")
 		row.data("airplane", usedAirplane)
 		row.append("<div class='cell'>" + usedAirplane.id + "</div>")
+
+		row.append("<div class='cell'>" +  getAirlineLogoImg(usedAirplane.ownerId) + usedAirplane.ownerName + "</div>")
+
 		var priceColor
 		if (usedAirplane.dealerRatio >= 1.1) { //expensive
 		    priceColor = "#D46A6A"

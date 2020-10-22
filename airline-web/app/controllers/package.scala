@@ -79,6 +79,7 @@ package object controllers {
       JsObject(List(
         "id" -> JsNumber(airplane.id),
         "ownerId" -> JsNumber(airplane.owner.id),
+        "ownerName" -> JsString(airplane.owner.name),
         "name" -> JsString(airplane.model.name),
         "modelId" -> JsNumber(airplane.model.id),
         "capacity" -> JsNumber(airplane.model.capacity),
