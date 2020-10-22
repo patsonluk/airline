@@ -12,3 +12,9 @@ CHANGE COLUMN `minor_delay_count` `minor_delay_count` SMALLINT(4) NULL DEFAULT '
 CHANGE COLUMN `major_delay_count` `major_delay_count` SMALLINT(4) NULL DEFAULT '0' ,
 CHANGE COLUMN `cancellation_count` `cancellation_count` SMALLINT(4) NULL DEFAULT '0' ,
 CHANGE COLUMN `frequency` `frequency` SMALLINT(4) NULL DEFAULT NULL ;
+
+ALTER TABLE `airline`.`passenger_history`
+CHANGE COLUMN `passenger_type` `passenger_type` TINYINT NULL DEFAULT NULL ,
+CHANGE COLUMN `inverted` `inverted` TINYINT NULL DEFAULT NULL ,
+CHANGE COLUMN `preference_type` `preference_type` TINYINT NULL DEFAULT NULL ;
+
