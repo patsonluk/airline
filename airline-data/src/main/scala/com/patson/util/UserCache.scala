@@ -10,7 +10,7 @@ object UserCache {
 
   import com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
 
-  val simpleCache: LoadingCache[Int, Option[User]] = CacheBuilder.newBuilder.maximumSize(2000).expireAfterAccess(10, TimeUnit.MINUTES).build(new SimpleLoader())
+  val simpleCache: LoadingCache[Int, Option[User]] = CacheBuilder.newBuilder.maximumSize(10000).expireAfterAccess(10, TimeUnit.MINUTES).build(new SimpleLoader())
 
   def getUser(userId: Int): Option[User] = {
     simpleCache.get(userId)
