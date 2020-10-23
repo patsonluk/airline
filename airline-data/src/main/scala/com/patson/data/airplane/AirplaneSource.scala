@@ -1,17 +1,14 @@
 package com.patson.data
-import com.patson.data.Constants._
-
-import scala.collection.mutable.ListBuffer
-import java.sql.DriverManager
-
-import com.patson.model.{Airline, Airport, Link, LinkClassValues}
-import com.patson.model.airplane.{Airplane, AirplaneConfiguration, LinkAssignment, LinkAssignments, Model}
-import com.patson.data.airplane.ModelSource
 import java.sql.Statement
 
-import com.patson.data.AirplaneSource.DetailType
+import com.patson.data.Constants._
+import com.patson.data.airplane.ModelSource
+import com.patson.model.airplane._
+import com.patson.model.{Airline, Airport}
+import com.patson.util.AirlineCache
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 object AirplaneSource {
   val LINK_FULL_LOAD = Map(DetailType.LINK -> true)
@@ -61,7 +58,8 @@ object AirplaneSource {
       
       val currentCycle = CycleSource.loadCycle()
       while (resultSet.next()) {
-        val airline = Airline.fromId(resultSet.getInt("owner"))
+        val airlineId = resultSet.getInt("owner")
+        val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
         val model = allModels(resultSet.getInt("a.model"))
         val configuration = AirplaneConfiguration(resultSet.getInt("economy"), resultSet.getInt("business"), resultSet.getInt("first"), airline, model, resultSet.getBoolean("is_default"), id = resultSet.getInt("configuration"))
         val isSold = resultSet.getBoolean("is_sold")

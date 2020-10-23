@@ -128,14 +128,14 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
 sealed case class OlympicsPreparationsFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.OLYMPICS_PREPARATIONS
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
-    rawDemand
+    0
   }
 }
 
 sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.OLYMPICS_IN_PROGRESS
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
-    rawDemand
+    0
   }
 }
 

@@ -387,7 +387,7 @@ object Meta {
       "sold_seats_economy INTEGER, " +
       "sold_seats_business INTEGER, " +
       "sold_seats_first INTEGER, " +
-      "quality INTEGER, " +
+      "quality SMALLINT, " +
       "fuel_cost INTEGER, " +
       "crew_cost INTEGER, " +
       "airport_fees INTEGER, " +
@@ -398,14 +398,19 @@ object Meta {
       "depreciation INTEGER, " +
       "revenue INTEGER, " +
       "profit INTEGER, " +
-      "minor_delay_count INTEGER, " +
-      "major_delay_count INTEGER, " +
-      "cancellation_count INTEGER, " +
+      "minor_delay_count SMALLINT, " +
+      "major_delay_count SMALLINT, " +
+      "cancellation_count SMALLINT, " +
       "from_airport INTEGER, " +
       "to_airport INTEGER, " +
       "airline INTEGER, " +
       "distance INTEGER, " +
-      "frequency INTEGER, " +
+      "frequency SMALLINT, " +
+      "duration SMALLINT, " +
+      "flight_type TINYINT, " +
+      "flight_number SMALLINT, " +
+      "airplane_model SMALLINT, " +
+      "raw_quality SMALLINT, " +
       "cycle INTEGER, " +
       "PRIMARY KEY (cycle, link))")
 
