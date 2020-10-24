@@ -54,6 +54,9 @@
 	
 	<script type="text/javascript" src="@routes.Assets.versioned("tinycolorpicker/jquery.tinycolorpicker.js")" defer></script>
 	<link rel="stylesheet" href="@routes.Assets.versioned("tinycolorpicker/tinycolorpicker.css")" type="text/css" />
+
+	<script type="text/javascript" src="@routes.Assets.versioned("progress-bar/progress-bar.js")" defer></script>
+	  <link rel="stylesheet" href="@routes.Assets.versioned("progress-bar/progress-bar.css")" type="text/css" />
 	
 	<script type="text/javascript" src="@routes.Assets.versioned("jquery-upload-file/jquery.uploadfile.min.js")" defer></script>
 	<link rel="stylesheet" href="@routes.Assets.versioned("jquery-upload-file/uploadfile.css")" type="text/css" />
@@ -3164,14 +3167,17 @@
   </div>
 
   <div id="negotiationAnimation" class="modal">
-	  <div class="modal-content" style="height: 300px; width : 500px">
-		  <span class="close" onclick="closeModal($('#negotiationAnimation'))">&times;</span>
+	  <div class="modal-content" style="height: 200px; width : 550px">
+<!--		  <span class="close" onclick="closeModal($('#negotiationAnimation'))">&times;</span>-->
 		  <h3 style="margin-bottom: 10px;" class="modalHeader">Negotiation in progress...</h3>
-		  <div class="negotiationIcons" style="width: 80%; height: 50px; float:left;"></div>
+		  <div class="negotiationIcons" style="width: 70%; height: 50px; float:left;"></div>
 		  <h3>
-			  <div class="negotiationDescriptions" style="width: 20%; height: 50px; float:left;"></div>
+			  <div class="negotiationDescriptions" style="width: 30%; height: 50px; float:left;"></div>
 		  </h3>
-		  <div class="negotiationBar" style="width: 100%;"></div>
+		  <div class="negotiationBar progressbar">
+			  <div class="bar"><span></span></div>
+		  </div>
+
 		  <div class="negotiationResult" style="width: 100%">
 			  <div class="button result" onclick="closeModal($('#negotiationAnimation'));"></div>
 		  </div>

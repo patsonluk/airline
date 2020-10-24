@@ -2237,53 +2237,66 @@ function refreshSavedLink(savedLink) {
 
 function negotiationAnimation(negotiationResult, callback, callbackParam) {
     $('#negotiationAnimation .negotiationIcons').empty()
-	plotNegotiationGauge($('#negotiationAnimation .negotiationBar'), negotiationResult.passingScore)
-	var gaugeValue = 0
-	$(negotiationResult.sessions).each( function(index, value) {
-		$('#negotiationAnimation .negotiationIcons').append("<img src='assets/images/icons/balloon-ellipsis.png' style='padding : 5px;'>")
-		setTimeout(function(){
-			var icon
-			var description
-			if (value > 14) {
-				icon = "smiley-kiss.png"
-				description = "Awesome +" + Math.round(value)
-			} else if (value > 11) {
-				icon = "smiley-lol.png"
-				description = "Great +" + Math.round(value)
-			} else if (value > 8) {
-				icon = "smiley.png"
-				description = "Good +" + Math.round(value)
-			} else if (value > 5) {
-				icon = "smiley-neutral.png"
-				description = "Soso +" + Math.round(value)
-			} else if (value > 0) {
-				icon = "smiley-sad.png"
-				description = "Bad +" + Math.round(value)
-			} else {
-				icon = "smiley-cry.png"
-				description = "Terrible " + Math.round(value)
-			}
-			$('#negotiationAnimation .negotiationIcons img:nth-child(' + (index + 1) + ')').attr("src", "assets/images/icons/" + icon)
-			$('#negotiationAnimation .negotiationDescriptions').text(description)
-			$('#negotiationAnimation .negotiationDescriptions').hide()
-			$('#negotiationAnimation .negotiationDescriptions').fadeIn(200);
-
-			//$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/" + icon + "'>")
-			gaugeValue += value
-			updateNegotiationGauge($('#negotiationAnimation .negotiationBar'), gaugeValue)
-	        //$('#paint').fadeIn(500);
-		//	console.log(value)
-	    }, 1000 * index);
-	})
+	//plotNegotiationGauge($('#negotiationAnimation .negotiationBar'), negotiationResult.passingScore)
+	animateProgressBar($('#negotiationAnimation .negotiationBar'), 0, 0)
+	$('#negotiationAnimation .negotiationDescriptions').hide()
 	$('#negotiationAnimation .negotiationResult').hide()
-	setTimeout(function(){
-		var result = negotiationResult.isSuccessful ? "Successful" : "Failure"
-		$('#negotiationAnimation .negotiationResult .result').text(result)
-		$('#negotiationAnimation .negotiationResult').show()
-		if (negotiationResult.isSuccessful) {
-		    showConfetti($("#negotiationAnimation"))
+	var gaugeValue = 0
+
+	var index = 0
+
+	$(negotiationResult.sessions).each( function(index, value) {
+        $('#negotiationAnimation .negotiationIcons').append("<img src='assets/images/icons/balloon-ellipsis.png' style='padding : 5px;'>")
+    });
+	var animationInterval = setInterval(function() {
+        var value = $(negotiationResult.sessions)[index ++]
+        var icon
+ 		var description
+        if (value > 14) {
+            icon = "smiley-kiss.png"
+            description = "Awesome +" + Math.round(value)
+        } else if (value > 11) {
+            icon = "smiley-lol.png"
+            description = "Great +" + Math.round(value)
+        } else if (value > 8) {
+            icon = "smiley.png"
+            description = "Good +" + Math.round(value)
+        } else if (value > 5) {
+            icon = "smiley-neutral.png"
+            description = "Soso +" + Math.round(value)
+        } else if (value > 0) {
+            icon = "smiley-sad.png"
+            description = "Bad +" + Math.round(value)
+        } else {
+            icon = "smiley-cry.png"
+            description = "Terrible " + Math.round(value)
         }
-	}, 1000 * negotiationResult.sessions.length)
+        $('#negotiationAnimation .negotiationIcons img:nth-child(' + index + ')').attr("src", "assets/images/icons/" + icon)
+        $('#negotiationAnimation .negotiationDescriptions').text(description)
+        $('#negotiationAnimation .negotiationDescriptions').show()
+
+        //$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/" + icon + "'>")
+        gaugeValue += value
+        var percentage = gaugeValue / negotiationResult.passingScore * 100
+
+        var callback
+        if (index == negotiationResult.sessions.length) {
+            callback = function() {
+                           var result = negotiationResult.isSuccessful ? "Successful" : "Failure"
+                           $('#negotiationAnimation .negotiationResult .result').text(result)
+                           $('#negotiationAnimation .negotiationResult').show()
+                           if (negotiationResult.isSuccessful) {
+                               showConfetti($("#negotiationAnimation"))
+                           }
+                       };
+        }
+        animateProgressBar($('#negotiationAnimation .negotiationBar'), percentage, 1000, callback)
+
+        if (index == negotiationResult.sessions.length) {
+            clearInterval(animationInterval);
+        }
+	}, 1500)
+
 
 	if (callback) {
 		$('#negotiationAnimation .close, #negotiationAnimation .result').on("click.custom", function() {
