@@ -1,15 +1,21 @@
 package controllers
 
+import java.util
+import java.util.concurrent.TimeUnit
+
+import com.google.common.cache.{CacheBuilder, LoadingCache}
 import com.patson.data.{ConsumptionHistorySource, CycleSource}
 import com.patson.model._
+import com.patson.util.AirportCache.SimpleLoader
 import models.{LinkHistory, RelatedLink}
 
 import scala.collection.mutable.ListBuffer
 
 object HistoryUtil {
   var loadedCycle = 0
-  var consumptionCache : java.util.Map[Int, Map[Route, (PassengerType.Value, Int)]] = new java.util.concurrent.ConcurrentHashMap[Int, Map[Route, (PassengerType.Value, Int)]]() //key is Link
-
+  //val simpleCache: LoadingCache[Int, Option[Airport]] = CacheBuilder.newBuilder.maximumSize(2000).expireAfterAccess(10, TimeUnit.MINUTES).build(new SimpleLoader())
+  var consumptionCache : java.util.Map[Int, LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]]] = new java.util.HashMap[Int, LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]]]() //key is cycle
+  var MAX_CONSUMPTION_HISTORY_WEEK = 10
   /**
     * Group the related links base on traverse ordering
     *
@@ -148,13 +154,13 @@ object HistoryUtil {
       }
     }.toList
   }
-  
-  
-  private def loadRelatedRoutesFromCache(linkId : Int) : Map[Route, (PassengerType.Value, Int)] = {
+
+  private def loadRelatedRoutesFromCache(linkId : Int, cycleDelta : Int) : Map[Route, (PassengerType.Value, Int)] = {
     val currentCycle = CycleSource.loadCycle()
     synchronized {
       if (currentCycle != loadedCycle) {
-        consumptionCache.clear();
+        //consumptionCache.clear();
+        purgeExpiredCache(currentCycle - MAX_CONSUMPTION_HISTORY_WEEK)
       }
     }
 
@@ -166,5 +172,18 @@ object HistoryUtil {
       consumptionCache.put(linkId, result)
       result
     }
+  }
+
+  private[this] val purgeExpiredCache = (cutoff : Int) => {
+    val cycleIterator = consumptionCache.keySet().iterator()
+    val removingCycles = new util.HashSet[Int]()
+    while (cycleIterator.hasNext()) {
+      val cycle = cycleIterator.next()
+      if (cycle < cutoff) {
+        removingCycles.add(cycle)
+        consumptionCache.get(cycle).invalidateAll()
+      }
+    }
+    consumptionCache.keySet().removeAll(removingCycles)
   }
 }

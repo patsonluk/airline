@@ -209,12 +209,19 @@ object ConsumptionHistorySource {
     }
   }
 
-  def loadRelatedConsumptionByLinkId(linkId : Int) : Map[Route, (PassengerType.Value, Int)] = {
+  def loadRelatedConsumptionByLinkId(linkId : Int, cycleDelta : Int) : Map[Route, (PassengerType.Value, Int)] = {
+    val tableName =
+      if (cycleDelta >= 0) {
+        PASSENGER_HISTORY_TABLE
+      } else {
+        PASSENGER_HISTORY_TABLE + "_" + (cycleDelta * -1)
+      }
+
     LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
       case Some(link) =>
         val connection = Meta.getConnection()
         try {
-          val preparedStatement = connection.prepareStatement("SELECT route_id FROM " + PASSENGER_HISTORY_TABLE + " WHERE link = ? ")
+          val preparedStatement = connection.prepareStatement("SELECT route_id FROM " + tableName + " WHERE link = ? ")
 
           preparedStatement.setInt(1, linkId)
           val resultSet = preparedStatement.executeQuery()
