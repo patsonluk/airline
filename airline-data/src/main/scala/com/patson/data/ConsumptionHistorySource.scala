@@ -1,14 +1,13 @@
 package com.patson.data
 import com.patson.data.Constants._
+import com.patson.model._
 
 import scala.collection.mutable.ListBuffer
 
 
-import com.patson.model._
-import java.util
-
-
 object ConsumptionHistorySource {
+  var MAX_CONSUMPTION_HISTORY_WEEK = 10
+
   val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
     val connection = Meta.getConnection()
     val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE_TEMP + " (passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?,?)")
@@ -45,9 +44,28 @@ object ConsumptionHistorySource {
         }
       }
       passengerHistoryStatement.executeBatch()
-	  connection.createStatement().executeUpdate("DROP TABLE IF EXISTS " + PASSENGER_HISTORY_TABLE);
-	  connection.createStatement().executeUpdate("ALTER TABLE " + PASSENGER_HISTORY_TABLE_TEMP + " RENAME " + PASSENGER_HISTORY_TABLE);
-	  connection.commit()
+
+      //rotate the tables
+      println("Rotating tables")
+      for (i <- MAX_CONSUMPTION_HISTORY_WEEK to 1 by -1) {
+        val fromTableName =
+          if (i == 1) {
+            PASSENGER_HISTORY_TABLE
+          } else {
+            PASSENGER_HISTORY_TABLE + "_" + (i - 1)
+          }
+        val toTableName = PASSENGER_HISTORY_TABLE + "_" + i
+
+        if (Meta.isTableExist(connection, fromTableName)) {
+          connection.createStatement().executeUpdate(s"DROP TABLE IF EXISTS $toTableName")
+          connection.createStatement().executeUpdate(s"ALTER TABLE $fromTableName RENAME $toTableName")
+        }
+      }
+
+      connection.createStatement().executeUpdate("DROP TABLE IF EXISTS " + PASSENGER_HISTORY_TABLE);
+      connection.createStatement().executeUpdate("ALTER TABLE " + PASSENGER_HISTORY_TABLE_TEMP + " RENAME " + PASSENGER_HISTORY_TABLE)
+      connection.commit()
+      println("Finished rotating tables")
     } finally {
       passengerHistoryStatement.close()
 	  
@@ -209,69 +227,82 @@ object ConsumptionHistorySource {
     }
   }
 
-  def loadRelatedConsumptionByLinkId(linkId : Int) : Map[Route, (PassengerType.Value, Int)] = {
+  def loadRelatedConsumptionByLinkId(linkId : Int, cycle : Int) : Map[Route, (PassengerType.Value, Int)] = {
+    val cycleDelta = cycle - CycleSource.loadCycle()
+
+    val tableName =
+      if (cycleDelta >= 0) {
+        PASSENGER_HISTORY_TABLE
+      } else {
+        PASSENGER_HISTORY_TABLE + "_" + (cycleDelta * -1)
+      }
+
     LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
       case Some(link) =>
         val connection = Meta.getConnection()
         try {
-          val preparedStatement = connection.prepareStatement("SELECT route_id FROM " + PASSENGER_HISTORY_TABLE + " WHERE link = ? ")
+          if (Meta.isTableExist(connection, tableName)) {
+            val preparedStatement = connection.prepareStatement("SELECT route_id FROM " + tableName + " WHERE link = ? ")
 
-          preparedStatement.setInt(1, linkId)
-          val resultSet = preparedStatement.executeQuery()
+            preparedStatement.setInt(1, linkId)
+            val resultSet = preparedStatement.executeQuery()
 
-          val relatedRouteIds = new ListBuffer[Int]()
-          while (resultSet.next()) {
-            relatedRouteIds += resultSet.getInt("route_id")
-          }
+            val relatedRouteIds = new ListBuffer[Int]()
+            while (resultSet.next()) {
+              relatedRouteIds += resultSet.getInt("route_id")
+            }
 
-          if (relatedRouteIds.isEmpty) {
-            Map.empty
+            if (relatedRouteIds.isEmpty) {
+              Map.empty
+            } else {
+              val queryString = new StringBuilder("SELECT * FROM " + tableName + " where route_id IN (");
+              for (i <- 0 until relatedRouteIds.size - 1) {
+                queryString.append("?,")
+              }
+              queryString.append("?)")
+
+              val relatedRouteStatement = connection.prepareStatement(queryString.toString())
+
+              for (i <- 0 until relatedRouteIds.size) {
+                relatedRouteStatement.setInt(i + 1, relatedRouteIds(i))
+              }
+
+              val relatedRouteSet = relatedRouteStatement.executeQuery()
+
+              val linkConsiderationsByRouteId = scala.collection.mutable.Map[Int, ListBuffer[LinkConsideration]]()
+              val routeConsumptions = new scala.collection.mutable.HashMap[Int, (PassengerType.Value, Int)]()
+
+              val relatedLinkIds = scala.collection.mutable.HashSet[Int]()
+              while (relatedRouteSet.next()) {
+                relatedLinkIds += relatedRouteSet.getInt("link")
+              }
+              val linkMap = LinkSource.loadLinksByIds(relatedLinkIds.toList).map(link => (link.id, link)).toMap
+
+              relatedRouteSet.beforeFirst()
+              while (relatedRouteSet.next()) {
+                val routeId = relatedRouteSet.getInt("route_id")
+                val passengerType = PassengerType.apply(relatedRouteSet.getInt("passenger_type"))
+                val passengerCount = relatedRouteSet.getInt("passenger_count")
+                val relatedLinkId = relatedRouteSet.getInt("link")
+                val relatedLink = linkMap.getOrElse(relatedLinkId, Link.fromId(relatedLinkId))
+                val linkConsideration = new LinkConsideration(relatedLink, 0, LinkClass.fromCode(relatedRouteSet.getString("link_class")), relatedRouteSet.getBoolean("inverted"))
+
+                val existingConsiderationsForThisRoute = linkConsiderationsByRouteId.getOrElseUpdate(routeId, ListBuffer[LinkConsideration]())
+
+                existingConsiderationsForThisRoute += linkConsideration
+                routeConsumptions.put(routeId, (passengerType, passengerCount))
+              }
+
+              val result = linkConsiderationsByRouteId.map {
+                case (routeId: Int, considerations: ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0, routeId), routeConsumptions(routeId))
+              }.toMap
+
+              println("Loaded " + result.size + " routes related to link " + link)
+
+              result
+            }
           } else {
-            val queryString = new StringBuilder("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " where route_id IN (");
-            for (i <- 0 until relatedRouteIds.size - 1) {
-              queryString.append("?,")
-            }
-            queryString.append("?)")
-
-            val relatedRouteStatement = connection.prepareStatement(queryString.toString())
-
-            for (i <- 0 until relatedRouteIds.size) {
-              relatedRouteStatement.setInt(i + 1, relatedRouteIds(i))
-            }
-
-            val relatedRouteSet = relatedRouteStatement.executeQuery()
-
-            val linkConsiderationsByRouteId = scala.collection.mutable.Map[Int, ListBuffer[LinkConsideration]]()
-            val routeConsumptions = new scala.collection.mutable.HashMap[Int, (PassengerType.Value, Int)]()
-
-            val relatedLinkIds = scala.collection.mutable.HashSet[Int]()
-            while (relatedRouteSet.next()) {
-              relatedLinkIds += relatedRouteSet.getInt("link")
-            }
-            val linkMap = LinkSource.loadLinksByIds(relatedLinkIds.toList).map(link => (link.id, link)).toMap
-
-            relatedRouteSet.beforeFirst()
-            while (relatedRouteSet.next()) {
-              val routeId = relatedRouteSet.getInt("route_id")
-              val passengerType = PassengerType.apply(relatedRouteSet.getInt("passenger_type"))
-              val passengerCount = relatedRouteSet.getInt("passenger_count")
-              val relatedLinkId = relatedRouteSet.getInt("link")
-              val relatedLink = linkMap.getOrElse(relatedLinkId, Link.fromId(relatedLinkId))
-              val linkConsideration = new LinkConsideration(relatedLink, 0, LinkClass.fromCode(relatedRouteSet.getString("link_class")), relatedRouteSet.getBoolean("inverted"))
-
-              val existingConsiderationsForThisRoute = linkConsiderationsByRouteId.getOrElseUpdate(routeId, ListBuffer[LinkConsideration]())
-
-              existingConsiderationsForThisRoute += linkConsideration
-              routeConsumptions.put(routeId, (passengerType, passengerCount))
-            }
-
-            val result = linkConsiderationsByRouteId.map {
-              case (routeId: Int, considerations: ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0, routeId), routeConsumptions(routeId))
-            }.toMap
-
-            println("Loaded " + result.size + " routes related to link " + link);
-
-            result
+            Map.empty
           }
         } finally {
           connection.close()
