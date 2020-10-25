@@ -2,13 +2,15 @@ package com.patson.data
 import com.patson.data.Constants._
 
 import scala.collection.mutable.ListBuffer
-
-
 import com.patson.model._
 import java.util
 
+import com.mysql.jdbc.exceptions.MySQLDataException
+
 
 object ConsumptionHistorySource {
+  var MAX_CONSUMPTION_HISTORY_WEEK = 10
+
   val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
     val connection = Meta.getConnection()
     val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE_TEMP + " (passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?,?)")
@@ -45,9 +47,30 @@ object ConsumptionHistorySource {
         }
       }
       passengerHistoryStatement.executeBatch()
-	  connection.createStatement().executeUpdate("DROP TABLE IF EXISTS " + PASSENGER_HISTORY_TABLE);
-	  connection.createStatement().executeUpdate("ALTER TABLE " + PASSENGER_HISTORY_TABLE_TEMP + " RENAME " + PASSENGER_HISTORY_TABLE);
-	  connection.commit()
+
+      //rotate the tables
+      println("Rotating tables")
+      for (i <- MAX_CONSUMPTION_HISTORY_WEEK to 1 by -1) {
+        val fromTableName =
+          if (i == 1) {
+            PASSENGER_HISTORY_TABLE
+          } else {
+            PASSENGER_HISTORY_TABLE + "_" + (i - 1)
+          }
+        val toTableName = PASSENGER_HISTORY_TABLE + "_" + i
+
+        connection.createStatement().executeUpdate(s"DROP TABLE IF EXISTS $toTableName")
+        try {
+          connection.createStatement().executeUpdate(s"ALTER TABLE $fromTableName RENAME $toTableName")
+        } catch  {
+          case e : java.sql.SQLException => println(s"Skipping $fromTableName/$toTableName message: ${e.getMessage}")
+        }
+      }
+
+      connection.createStatement().executeUpdate("DROP TABLE IF EXISTS " + PASSENGER_HISTORY_TABLE);
+      connection.createStatement().executeUpdate("ALTER TABLE " + PASSENGER_HISTORY_TABLE_TEMP + " RENAME " + PASSENGER_HISTORY_TABLE)
+      connection.commit()
+      println("Finished rotating tables")
     } finally {
       passengerHistoryStatement.close()
 	  
@@ -209,7 +232,9 @@ object ConsumptionHistorySource {
     }
   }
 
-  def loadRelatedConsumptionByLinkId(linkId : Int, cycleDelta : Int) : Map[Route, (PassengerType.Value, Int)] = {
+  def loadRelatedConsumptionByLinkId(linkId : Int, cycle : Int) : Map[Route, (PassengerType.Value, Int)] = {
+    val cycleDelta = cycle - CycleSource.loadCycle()
+
     val tableName =
       if (cycleDelta >= 0) {
         PASSENGER_HISTORY_TABLE
