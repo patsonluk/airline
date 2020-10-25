@@ -33,7 +33,7 @@ import scala.util.Success
 import scala.util.Failure
 import com.patson.model.LinkConsumptionHistory
 import com.patson.model.FlightPreferenceType
-import com.patson.util.{AirlineCache, AirportCache}
+import com.patson.util.{AirlineCache, AirportCache, AllianceCache, CountryCache}
 import javax.inject.Inject
 
 class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -714,7 +714,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toCountryCode)
       if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
         return Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
-      } else if (toCountryCode != airlineCountryCode && CountrySource.loadCountryByCode(toCountryCode).get.openness + mutalRelationshipToAirlineCountry < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
+      } else if (toCountryCode != airlineCountryCode && CountryCache.getCountry(toCountryCode).get.openness + mutalRelationshipToAirlineCountry < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
         return Some("This country does not want to open their airports to your country") 
       }
       
@@ -906,7 +906,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       rivals.foreach { rival => //check alliance
         val networkAirlineIds : List[Int] =
           (AllianceSource.loadAllianceMemberByAirline(rival) match {
-            case Some(allianceMember) => AllianceSource.loadAllianceById(allianceMember.allianceId).get.members.map(_.airline)
+            case Some(allianceMember) => AllianceCache.getAlliance(allianceMember.allianceId).get.members.map(_.airline)
             case None => List(rival)
           }).map(_.id)
 

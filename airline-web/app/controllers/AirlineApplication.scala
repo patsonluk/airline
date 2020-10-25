@@ -8,7 +8,7 @@ import com.patson.AirlineSimulation
 import com.patson.data._
 import com.patson.model.Computation.ResetAmountInfo
 import com.patson.model.{Title, _}
-import com.patson.util.{AirportCache, ChampionUtil, LogoGenerator}
+import com.patson.util.{AirportCache, AllianceCache, ChampionUtil, CountryCache, LogoGenerator}
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
 import javax.inject.Inject
 import models.{AirportFacility, Consideration, EntrepreneurProfile, FacilityType}
@@ -223,7 +223,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (targetBase.scale == 1) { //building something new
       if (airline.getHeadQuarter().isDefined) { //building non-HQ
         AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
-          AllianceSource.loadAllianceById(allianceMember.allianceId, true).foreach { alliance =>
+          AllianceCache.getAlliance(allianceMember.allianceId, true).foreach { alliance =>
             val allAllianceBaseAirports : List[(Airport, Airline)] = alliance.members.flatMap { allianceMember =>
               allianceMember.airline.getBases().filter( !_.headquarter).map { base =>
                 (base.airport, allianceMember.airline)
@@ -242,7 +242,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         
         if (airport.countryCode != airline.getCountryCode().get) {
           val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airline.getCountryCode().get, airport.countryCode)
-          if (CountrySource.loadCountryByCode(airport.countryCode).get.openness + mutalRelationshipToAirlineCountry < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
+          if (CountryCache.getCountry(airport.countryCode).get.openness + mutalRelationshipToAirlineCountry < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
             return Some("This country does not allow airline base from your country")
           }
         }

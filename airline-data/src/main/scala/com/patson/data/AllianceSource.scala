@@ -1,14 +1,12 @@
 package com.patson.data
 
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Map
+import java.sql.Statement
+
 import com.patson.data.Constants._
 import com.patson.model._
-import com.patson.MainSimulation
-import java.sql.Statement
-import java.io.ByteArrayInputStream
-import java.sql.Blob
-import com.patson.model.AllianceEvent.AllianceEvent
+import com.patson.util.AllianceCache
+
+import scala.collection.mutable.ListBuffer
 
 
 object AllianceSource {
@@ -254,7 +252,7 @@ object AllianceSource {
       val generatedKeys = preparedStatement.getGeneratedKeys
       if (generatedKeys.next()) {
         val generatedId = generatedKeys.getInt(1)
-        println("Allaince Id is " + generatedId)
+        println("Alliance Id is " + generatedId)
         alliance.id = generatedId
       } 
       
@@ -288,26 +286,45 @@ object AllianceSource {
       //open the hsqldb
     val connection = Meta.getConnection()
     try {
-      var queryString = "DELETE FROM " + ALLIANCE_TABLE
-      
+
+      var criteriaString = ""
       if (!criteria.isEmpty) {
-        queryString += " WHERE "
+        criteriaString += " WHERE "
         for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
+          criteriaString += criteria(i)._1 + " = ? AND "
         }
-        queryString += criteria.last._1 + " = ?"
+        criteriaString += criteria.last._1 + " = ?"
       }
+
+      val queryString = "SELECT id FROM " + ALLIANCE_TABLE + criteriaString
+
+      val queryStatement = connection.prepareStatement(queryString)
+
+      for (i <- 0 until criteria.size) {
+        queryStatement.setObject(i + 1, criteria(i)._2)
+      }
+      val resultSet = queryStatement.executeQuery()
+
+      while (resultSet.next()) {
+        AllianceCache.invalidateAlliance(resultSet.getInt("id"))
+      }
+      resultSet.close()
+      queryStatement.close()
+
+
+      val deleteString = "DELETE FROM " + ALLIANCE_TABLE + criteriaString
       
-      val preparedStatement = connection.prepareStatement(queryString)
+      val deleteStatement = connection.prepareStatement(deleteString)
       
       for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
+        deleteStatement.setObject(i + 1, criteria(i)._2)
       }
       
-      val deletedCount = preparedStatement.executeUpdate()
+      val deletedCount = deleteStatement.executeUpdate()
       
-      preparedStatement.close()
+      deleteStatement.close()
       println("Deleted " + deletedCount + " airline alliance records")
+
       deletedCount
       
     } finally {
@@ -326,7 +343,8 @@ object AllianceSource {
       preparedStatement.setInt(4, allianceMember.joinedCycle)
       preparedStatement.executeUpdate()
       preparedStatement.close()
-      
+
+      AllianceCache.invalidateAlliance(allianceMember.allianceId)
     } finally {
       connection.close()
     }
@@ -342,25 +360,43 @@ object AllianceSource {
       //open the hsqldb
     val connection = Meta.getConnection()
     try {
-      var queryString = "DELETE FROM " + ALLIANCE_MEMBER_TABLE
+      var criteriaString = ""
       
       if (!criteria.isEmpty) {
-        queryString += " WHERE "
+        criteriaString += " WHERE "
         for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
+          criteriaString += criteria(i)._1 + " = ? AND "
         }
-        queryString += criteria.last._1 + " = ?"
+        criteriaString += criteria.last._1 + " = ?"
       }
+
+      val queryString = "SELECT alliance FROM " + ALLIANCE_MEMBER_TABLE + criteriaString
+
+      val queryStatement = connection.prepareStatement(queryString)
+
+      for (i <- 0 until criteria.size) {
+        queryStatement.setObject(i + 1, criteria(i)._2)
+      }
+
+      val resultSet = queryStatement.executeQuery()
+      while (resultSet.next()) {
+        AllianceCache.invalidateAlliance(resultSet.getInt("alliance"))
+      }
+      resultSet.close()
+      queryStatement.close()
+
+
+      val deleteString = "DELETE FROM " + ALLIANCE_MEMBER_TABLE + criteriaString
       
-      val preparedStatement = connection.prepareStatement(queryString)
+      val deleteStatement = connection.prepareStatement(deleteString)
       
       for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
+        deleteStatement.setObject(i + 1, criteria(i)._2)
       }
       
-      val deletedCount = preparedStatement.executeUpdate()
+      val deletedCount = deleteStatement.executeUpdate()
       
-      preparedStatement.close()
+      deleteStatement.close()
       println("Deleted " + deletedCount + " airline alliance member records")
       deletedCount
       
