@@ -3,10 +3,9 @@ package controllers
 import java.util
 import java.util.concurrent.TimeUnit
 
-import com.google.common.cache.{CacheBuilder, LoadingCache}
+import com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
 import com.patson.data.{ConsumptionHistorySource, CycleSource}
-import com.patson.model._
-import com.patson.util.AirportCache.SimpleLoader
+import com.patson.model.{PassengerType, _}
 import models.{LinkHistory, RelatedLink}
 
 import scala.collection.mutable.ListBuffer
@@ -15,7 +14,7 @@ object HistoryUtil {
   var loadedCycle = 0
   //val simpleCache: LoadingCache[Int, Option[Airport]] = CacheBuilder.newBuilder.maximumSize(2000).expireAfterAccess(10, TimeUnit.MINUTES).build(new SimpleLoader())
   var consumptionCache : java.util.Map[Int, LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]]] = new java.util.HashMap[Int, LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]]]() //key is cycle
-  var MAX_CONSUMPTION_HISTORY_WEEK = 10
+
   /**
     * Group the related links base on traverse ordering
     *
@@ -79,8 +78,8 @@ object HistoryUtil {
     groupedLinks.toList
   }
 
-  def loadConsumptionByLink(link : Link, selfOnly : Boolean = false) : LinkHistory = {
-    val relatedConsumptions = loadRelatedRoutesFromCache(link.id)
+  def loadConsumptionByLink(link : Link, cycleDelta : Int = 0, selfOnly : Boolean = false) : LinkHistory = {
+    val relatedConsumptions = loadRelatedRoutesFromCache(link.id, cycleDelta)
     val airlineId = link.airline.id
 
     println("Finished loading related consumption for " + link)
@@ -157,20 +156,30 @@ object HistoryUtil {
 
   private def loadRelatedRoutesFromCache(linkId : Int, cycleDelta : Int) : Map[Route, (PassengerType.Value, Int)] = {
     val currentCycle = CycleSource.loadCycle()
+    val targetCycle = currentCycle + cycleDelta
+    if (targetCycle > currentCycle || targetCycle < currentCycle - ConsumptionHistorySource.MAX_CONSUMPTION_HISTORY_WEEK) {
+      return Map.empty
+    }
     synchronized {
       if (currentCycle != loadedCycle) {
-        //consumptionCache.clear();
-        purgeExpiredCache(currentCycle - MAX_CONSUMPTION_HISTORY_WEEK)
+        purgeExpiredCache(currentCycle - ConsumptionHistorySource.MAX_CONSUMPTION_HISTORY_WEEK)
+        val cache: LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]] = CacheBuilder.newBuilder.maximumSize(500).expireAfterAccess(10, TimeUnit.MINUTES).build(new SimpleLoader(targetCycle))
+        consumptionCache.put(currentCycle, cache)
       }
     }
 
-    if (consumptionCache.containsKey(linkId)) {
-      consumptionCache.get(linkId)
+    val consumptionCacheOfCycle: LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]] = consumptionCache.get(targetCycle)
+    if (consumptionCacheOfCycle == null) {
+      Map.empty
     } else {
-      println("Updating link history cache on cycle " + currentCycle + " for link " + linkId )
-      val result = ConsumptionHistorySource.loadRelatedConsumptionByLinkId(linkId)
-      consumptionCache.put(linkId, result)
-      result
+      consumptionCacheOfCycle.get(linkId)
+    }
+  }
+
+  class SimpleLoader(cycle : Int) extends CacheLoader[Int, Map[Route, (PassengerType.Value, Int)]] {
+    override def load(linkId: Int) = {
+      println(s"Updating link history cache on cycle $cycle for link " + linkId )
+      ConsumptionHistorySource.loadRelatedConsumptionByLinkId(linkId, cycle)
     }
   }
 
