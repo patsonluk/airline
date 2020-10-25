@@ -36,7 +36,6 @@ function showLinkHistoryView() {
 
     $('#linkHistoryControlPanel').data('cycleDelta', 0)
 	loadLinkHistory(selectedLink)
-	showLinkHistory()
 }
 
 function loadLinkHistory(linkId) {
@@ -53,7 +52,6 @@ function loadLinkHistory(linkId) {
         url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?cycleDelta=" + cycleDelta,
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
-        async: false,
         success: function(linkHistory) {
             var forwardTransitPaxByAirlineId = {}
             var backwardTransitPaxByAirlineId = {}
@@ -121,6 +119,7 @@ function loadLinkHistory(linkId) {
                 })
 
             }
+            showLinkHistory()
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
@@ -357,7 +356,6 @@ function showLinkHistory() {
         $("#linkHistoryControlPanel img.prev").click(function() {
             $("#linkHistoryControlPanel").data('cycleDelta', $("#linkHistoryControlPanel").data('cycleDelta') - 1)
             loadLinkHistory(selectedLink)
-            showLinkHistory()
         })
     }
 
@@ -372,7 +370,6 @@ function showLinkHistory() {
         $("#linkHistoryControlPanel img.next").click(function() {
             $("#linkHistoryControlPanel").data('cycleDelta', $("#linkHistoryControlPanel").data('cycleDelta') + 1)
             loadLinkHistory(selectedLink)
-            showLinkHistory()
         })
     }
 

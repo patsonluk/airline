@@ -160,20 +160,23 @@ object HistoryUtil {
     if (targetCycle > currentCycle || targetCycle < currentCycle - ConsumptionHistorySource.MAX_CONSUMPTION_HISTORY_WEEK) {
       return Map.empty
     }
+    var consumptionCacheOfCycle: LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]] = null
+
     synchronized {
       if (currentCycle != loadedCycle) {
         purgeExpiredCache(currentCycle - ConsumptionHistorySource.MAX_CONSUMPTION_HISTORY_WEEK)
+        loadedCycle = currentCycle
+      }
+
+      consumptionCacheOfCycle = consumptionCache.get(targetCycle)
+      if (consumptionCacheOfCycle == null) {
         val cache: LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]] = CacheBuilder.newBuilder.maximumSize(500).expireAfterAccess(10, TimeUnit.MINUTES).build(new SimpleLoader(targetCycle))
-        consumptionCache.put(currentCycle, cache)
+        consumptionCache.put(targetCycle, cache)
+        consumptionCacheOfCycle = cache
       }
     }
 
-    val consumptionCacheOfCycle: LoadingCache[Int, Map[Route, (PassengerType.Value, Int)]] = consumptionCache.get(targetCycle)
-    if (consumptionCacheOfCycle == null) {
-      Map.empty
-    } else {
-      consumptionCacheOfCycle.get(linkId)
-    }
+    consumptionCacheOfCycle.get(linkId)
   }
 
   class SimpleLoader(cycle : Int) extends CacheLoader[Int, Map[Route, (PassengerType.Value, Int)]] {

@@ -1365,6 +1365,11 @@ object Meta {
     statement.close()
   }
 
+  def isTableExist(connection : Connection, tableName : String): Boolean = {
+    val tables = connection.getMetaData.getTables(null, null, tableName, null)
+    tables.next()
+  }
+
 }
 
 
