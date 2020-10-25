@@ -126,6 +126,11 @@
 			<input class="showAnimation" type="checkbox" checked="checked" onclick="showLinkHistory()">Animated
 			<div style="width : 100%" class="routeList">
 			</div>
+			<div style="display: flex; align-items: center;">
+				<img class="clickable prev" title="View passenger map of previous week" src='@routes.Assets.versioned("images/icons/arrow-180.png")'/>
+				<span style="width: 95px;"><span class="cycleDeltaText"></span>&nbsp;week(s) ago</span>
+				<img class="clickable next" title="View passenger map of next week" src='@routes.Assets.versioned("images/icons/arrow.png")'/>
+			</div>
 			<div class="button glow" onclick="hideLinkHistoryView()" style="margin-top : 10px">Exit Passenger Map</div>
 		</div>
 	</div>
@@ -3261,7 +3266,7 @@
 						<div class="table-header">
 							<div class="cell" style="width: 20%;  border-bottom: none"></div>
 							<div class="cell fromAirportText" style="width: 40%; border-bottom: none"></div>
-							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>
+							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>route
 						</div>
 					</div>
 					<div class="table data" id="networkCapacity" style="max-height: 100%; width: 100%">

@@ -34,8 +34,8 @@ function showLinkHistoryView() {
 
     $("#linkHistoryControlPanel").show()
 
+    $('#linkHistoryControlPanel').data('cycleDelta', 0)
 	loadLinkHistory(selectedLink)
-	showLinkHistory()
 }
 
 function loadLinkHistory(linkId) {
@@ -45,12 +45,13 @@ function loadLinkHistory(linkId) {
     historyPaths = {}
 	var linkInfo = loadedLinksById[linkId]
     var airlineNamesById = {}
+    var cycleDelta = $('#linkHistoryControlPanel').data('cycleDelta')
+    $("#linkHistoryControlPanel .transitAirlineList").empty()
     $.ajax({
         type: 'GET',
-        url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId,
+        url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?cycleDelta=" + cycleDelta,
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
-        async: false,
         success: function(linkHistory) {
             var forwardTransitPaxByAirlineId = {}
             var backwardTransitPaxByAirlineId = {}
@@ -118,6 +119,7 @@ function loadLinkHistory(linkId) {
                 })
 
             }
+            showLinkHistory()
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
@@ -333,6 +335,43 @@ function showLinkHistory() {
     var showOther = $("#linkHistoryControlPanel .showOther").is(":checked")
     var showForward = $("#linkHistoryControlPanel").data("showForward")
     var showAnimation = $("#linkHistoryControlPanel .showAnimation").is(":checked")
+
+    var cycleDelta = $("#linkHistoryControlPanel").data('cycleDelta')
+    $("#linkHistoryControlPanel .cycleDeltaText").text(cycleDelta * -1 + 1)
+    var disablePrev = false
+    var disableNext= false
+    if (cycleDelta <= -9) {
+        disablePrev = true
+    } else if (cycleDelta >= 0) {
+        disableNext = true
+    }
+
+    $("#linkHistoryControlPanel img.prev").prop("onclick", null).off("click");
+    if (disablePrev) {
+        $('#linkHistoryControlPanel img.prev').attr("src", "assets/images/icons/arrow-180-grey.png")
+        $('#linkHistoryControlPanel img.prev').removeClass('clickable')
+    } else {
+        $('#linkHistoryControlPanel img.prev').attr("src", "assets/images/icons/arrow-180.png")
+        $('#linkHistoryControlPanel img.prev').addClass('clickable')
+        $("#linkHistoryControlPanel img.prev").click(function() {
+            $("#linkHistoryControlPanel").data('cycleDelta', $("#linkHistoryControlPanel").data('cycleDelta') - 1)
+            loadLinkHistory(selectedLink)
+        })
+    }
+
+    $("#linkHistoryControlPanel img.next").prop("onclick", null).off("click");
+    if (disableNext) {
+        $('#linkHistoryControlPanel img.next').attr("src", "assets/images/icons/arrow-grey.png")
+        $('#linkHistoryControlPanel img.next').removeClass('clickable')
+        $("#linkHistoryControlPanel img.next").prop("onclick", null).off("click");
+    } else {
+        $('#linkHistoryControlPanel img.next').attr("src", "assets/images/icons/arrow.png")
+        $('#linkHistoryControlPanel img.next').addClass('clickable')
+        $("#linkHistoryControlPanel img.next").click(function() {
+            $("#linkHistoryControlPanel").data('cycleDelta', $("#linkHistoryControlPanel").data('cycleDelta') + 1)
+            loadLinkHistory(selectedLink)
+        })
+    }
 
     $("#linkHistoryControlPanel .transitAirlineList .table-row").hide()
     if (showForward) {
