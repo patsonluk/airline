@@ -416,7 +416,9 @@ object LinkSource {
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
 
-      ChangeHistorySource.saveLinkChange(buildChangeHistory(existingLink, Some(link)))
+      if (hasChange(existingLink.get, link)) {
+        ChangeHistorySource.saveLinkChange(buildChangeHistory(existingLink, Some(link)))
+      }
 
       updateCount
     } finally {
@@ -451,7 +453,9 @@ object LinkSource {
         preparedStatement.setInt(14, link.id)
         preparedStatement.addBatch()
 
-        changeEntries.append(buildChangeHistory(existingLinks.get(link.id), Some(link)))
+        if (hasChange(existingLinks.get(link.id).get, link)) {
+          changeEntries.append(buildChangeHistory(existingLinks.get(link.id), Some(link)))
+        }
       }
       
       preparedStatement.executeBatch()
@@ -463,6 +467,15 @@ object LinkSource {
       connection.close()
     }
     
+  }
+
+  def hasChange(existingLink : Link, newLink : Link) : Boolean = {
+    newLink.capacity.economyVal != existingLink.capacity.economyVal ||
+    newLink.capacity.businessVal != existingLink.capacity.businessVal ||
+    newLink.capacity.firstVal != existingLink.capacity.firstVal ||
+    newLink.price.economyVal != existingLink.price.economyVal ||
+    newLink.price.businessVal != existingLink.price.businessVal ||
+    newLink.price.firstVal != existingLink.price.firstVal
   }
   
   
