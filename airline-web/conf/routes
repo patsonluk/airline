@@ -128,6 +128,8 @@ GET      /santa-claus/pick-award/:airlineId/:optionId   controllers.ChristmasApp
 GET     /search-route/:fromAirportId/:toAirportId controllers.SearchApplication.searchRoute(fromAirportId : Int, toAirportId : Int)
 GET     /search-airport  controllers.SearchApplication.searchAirport(input: String ?= "")
 
+POST    /search-link-history    controllers.ChangeHistoryApplication.searchLinkHistory()
+
 #PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
 #GET		 /links							  controllers.LinkApplication.getAllLinks
 #GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes

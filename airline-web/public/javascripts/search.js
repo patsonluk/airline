@@ -210,37 +210,40 @@ function airportSearchButtonKeyPress(event, button) {
 }
 
 
-function airportSearchKeyDown(event, input, resultContainer) {
+function airportSearchKeyDown(event, input) {
     if (event.keyCode == 9) { //tab, has to do it here otherwise input field would lose focus
-        confirmAirportSelection(input, resultContainer)
+        confirmAirportSelection(input)
     }
 }
 
-function airportSearchChange(input, resultContainer) {
-    searchAirport(event, input, resultContainer)
+function airportSearchChange(input) {
+    searchAirport(event, input)
     input.removeData("selectedAirportId")
 }
 
-function airportSearchKeyUp(event, input, resultContainer) {
+function airportSearchKeyUp(event, input) {
+    var resultContainer = input.closest('div.airportSearchInput').siblings('div.airportSearchResult')
     if (event.keyCode == 38) {
         changeAirportSelection(-1, resultContainer)
     } else if (event.keyCode == 40) {
         changeAirportSelection(1, resultContainer)
     } else if (event.keyCode == 13) { //enter
-        confirmAirportSelection(input, resultContainer)
+        confirmAirportSelection(input)
     }
 }
 
-function airportSearchFocusOut(input, resultContainer) {
+function airportSearchFocusOut(input) {
     if (!input.data("selectedAirportId")) { //have not select anything, revert to empty
         input.val("")
     }
 
+    var resultContainer = input.closest('div.airportSearchInput').siblings('div.airportSearchResult')
     resultContainer.hide()
 
 }
 
-function confirmAirportSelection(input, resultContainer) {
+function confirmAirportSelection(input) {
+    var resultContainer = input.closest('div.airportSearchInput').siblings('div.airportSearchResult')
     var selectedAirport = resultContainer.find('div.selected').data("airport")
     if (selectedAirport) {
         input.val(getAirportShortText(selectedAirport))
@@ -255,9 +258,8 @@ function clickAirportSelection(airportSelectionDiv) {
     airportSelectionDiv.addClass("selected")
     $('#searchCanvas input.toAirport'), $('#toAirportResult')
 
-    var resultContainer = airportSelectionDiv.closest(".airportSearchResult")
     var input = resultContainer.siblings(".airportSearchInput").find("input[type=text]")
-    confirmAirportSelection(input, resultContainer)
+    confirmAirportSelection(input)
 }
 
 function changeAirportSelection(indexChange, resultContainer) {
@@ -286,7 +288,8 @@ function changeAirportSelection(indexChange, resultContainer) {
 
 var currentAirportSearchAjax
 
-function searchAirport(event, input, resultContainer, retry) {
+function searchAirport(event, input, retry) {
+    var resultContainer = input.closest('div.airportSearchInput').siblings('div.airportSearchResult')
     var phrase = input.val()
 	var url = "search-airport?input=" + phrase
     if (currentAirportSearchAjax) {
