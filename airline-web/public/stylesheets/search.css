@@ -1,8 +1,8 @@
-.airportEntry.selected, .airportSearchResult .airportEntry:hover {
+.searchResultEntry.selected, .searchResult .searchResultEntry:hover {
     background-color: #cbdff2;
 }
 
-.airportSearchResult .airportEntry:hover {
+.searchResult .searchResultEntry:hover {
     cursor: pointer;
 }
 
@@ -50,7 +50,7 @@
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
 }
 
-.airportSearchResult {
+.searchResult {
     float: left;
     width: 300px;
     position: absolute;
@@ -58,9 +58,10 @@
     background-color: #ffffff;
     box-shadow:0 0 2px #666 inset;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    z-index: 1;
 }
 
-.airportSearchResult div {
+.searchResult div {
     margin: 5px;
 }
 

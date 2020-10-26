@@ -27,6 +27,15 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     }
   }
 
+  implicit object CountrySearchResultWrites extends Writes[CountrySearchResult] {
+    def writes(countrySearchResult : CountrySearchResult) : JsValue = {
+      Json.obj(
+        "countryName" -> countrySearchResult.getName,
+        "countryCode" -> countrySearchResult.getCountryCode,
+        "score" -> countrySearchResult.getScore)
+    }
+  }
+
 
 
 
@@ -170,11 +179,24 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     if (input.length < 3) {
       Ok(Json.obj("message" -> "Search with at least 3 characters"))
     } else {
-      val result: List[AirportSearchResult] = SearchUtil.search(input).asScala.toList
+      val result: List[AirportSearchResult] = SearchUtil.searchAirport(input).asScala.toList
       if (result.isEmpty) {
         Ok(Json.obj("message" -> "No match"))
       } else {
-        Ok(Json.obj("airports" -> Json.toJson(result)))
+        Ok(Json.obj("entries" -> Json.toJson(result)))
+      }
+    }
+  }
+
+  def searchCountry(input : String) = Action {
+    if (input.length < 2) {
+      Ok(Json.obj("message" -> "Search with at least 2 characters"))
+    } else {
+      val result: List[CountrySearchResult] = SearchUtil.searchCountry(input).asScala.toList
+      if (result.isEmpty) {
+        Ok(Json.obj("message" -> "No match"))
+      } else {
+        Ok(Json.obj("entries" -> Json.toJson(result)))
       }
     }
   }

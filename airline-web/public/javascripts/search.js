@@ -203,141 +203,6 @@ function getAirlineTimeSlotText(minutes, startDay) {
     }
 }
 
-function airportSearchButtonKeyPress(event, button) {
-    if (event.keyCode == 13) { //enter
-        button.click()
-    }
-}
-
-
-function airportSearchKeyDown(event, input) {
-    if (event.keyCode == 9) { //tab, has to do it here otherwise input field would lose focus
-        confirmAirportSelection(input)
-    }
-}
-
-function airportSearchChange(input) {
-    searchAirport(event, input)
-    input.removeData("selectedAirportId")
-}
-
-function airportSearchKeyUp(event, input) {
-    var resultContainer = input.closest('div.airportSearchInput').siblings('div.airportSearchResult')
-    if (event.keyCode == 38) {
-        changeAirportSelection(-1, resultContainer)
-    } else if (event.keyCode == 40) {
-        changeAirportSelection(1, resultContainer)
-    } else if (event.keyCode == 13) { //enter
-        confirmAirportSelection(input)
-    }
-}
-
-function airportSearchFocusOut(input) {
-    if (!input.data("selectedAirportId")) { //have not select anything, revert to empty
-        input.val("")
-    }
-
-    var resultContainer = input.closest('div.airportSearchInput').siblings('div.airportSearchResult')
-    resultContainer.hide()
-
-}
-
-function confirmAirportSelection(input) {
-    var resultContainer = input.closest('div.airportSearchInput').siblings('div.airportSearchResult')
-    var selectedAirport = resultContainer.find('div.selected').data("airport")
-    if (selectedAirport) {
-        input.val(getAirportShortText(selectedAirport))
-        input.data("selectedAirportId", selectedAirport.airportId)
-    }
-
-    resultContainer.hide()
-}
-
-function clickAirportSelection(airportSelectionDiv) {
-    airportSelectionDiv.siblings("div.selected").removeClass("selected")
-    airportSelectionDiv.addClass("selected")
-    $('#searchCanvas input.toAirport'), $('#toAirportResult')
-
-    var input = resultContainer.siblings(".airportSearchInput").find("input[type=text]")
-    confirmAirportSelection(input)
-}
-
-function changeAirportSelection(indexChange, resultContainer) {
-    var currentIndex = resultContainer.find("div.airportEntry.selected").index()
-//    if (typeof resultContainer.data('selectedIndex') !== 'undefined') {
-//        currentIndex = resultContainer.data("selectedIndex")
-//    } else {
-//        currentIndex = 0
-//    }
-
-    currentIndex += indexChange
-    var currentEntries = resultContainer.find("div.airportEntry")
-    if (currentIndex < 0) {
-        currentIndex = 0
-    } else if (currentIndex >= currentEntries.length) {
-        currentIndex = currentEntries.length - 1
-    }
-
-    currentEntries.removeClass("selected")
-    if (currentEntries[currentIndex]) {
-        $(currentEntries[currentIndex]).addClass("selected")
-    }
-
- //   resultContainer.data("selectedIndex", currentIndex)
-}
-
-var currentAirportSearchAjax
-
-function searchAirport(event, input, retry) {
-    var resultContainer = input.closest('div.airportSearchInput').siblings('div.airportSearchResult')
-    var phrase = input.val()
-	var url = "search-airport?input=" + phrase
-    if (currentAirportSearchAjax) {
-        currentAirportSearchAjax.abort()
-    }
-
-	currentAirportSearchAjax = $.ajax({
-		type: 'GET',
-		url: url,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    beforeSend: function () {
-	        input.siblings(".spinner").show(0)
-	        searchingAirport = true
-	    },
-	    success: function(searchResult) {
-	  //      input.prop('disabled', false);
-	        //resultContainer.removeData("selectedIndex")
-	        resultContainer.find("div.airportEntry, div.message").remove()
-	        if (searchResult.message) {
-	            resultContainer.append("<div class='message'>" + searchResult.message + "</div>")
-	        }
-
-	        if (searchResult.airports) {
-                $.each(searchResult.airports, function(index, entry) {
-                    var airportText = highlightText(getAirportTextEntry(entry), phrase)
-                    var airportDiv = $("<div class='airportEntry' onmousedown='clickAirportSelection($(this))'>" + airportText + "</div>")
-                    airportDiv.data("airport", entry)
-                    resultContainer.append(airportDiv)
-                    if (index == 0) {
-                        airportDiv.addClass("selected")
-                    }
-                })
-            }
-            resultContainer.show()
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    },
-        complete:function() {
-              //Hide the loader over here
-              input.siblings(".spinner").hide()
-              currentAirportSearchAjax = undefined
-        }
-	});
-}
-
 
 function getAirportTextEntry(entry) {
     var text = "";
@@ -378,3 +243,174 @@ function highlightText(text, phrase) {
     }
     return text;
 }
+
+
+
+function searchButtonKeyPress(event, button) {
+    if (event.keyCode == 13) { //enter
+        button.click()
+    }
+}
+
+
+function searchKeyDown(event, input) {
+    if (event.keyCode == 9) { //tab, has to do it here otherwise input field would lose focus
+        confirmSelection(input)
+    }
+}
+
+function searchChange(input) {
+    search(event, input)
+    input.removeData("selectedId")
+}
+
+function searchKeyUp(event, input) {
+    var resultContainer = input.closest('div.searchInput').siblings('div.searchResult')
+    if (event.keyCode == 38) {
+        changeSelection(-1, resultContainer)
+    } else if (event.keyCode == 40) {
+        changeSelection(1, resultContainer)
+    } else if (event.keyCode == 13) { //enter
+        confirmSelection(input)
+    }
+}
+
+function searchFocusOut(input) {
+    if (!input.data("selectedId")) { //have not select anything, revert to empty
+        input.val("")
+    }
+
+    var resultContainer = input.closest('div.searchInput').siblings('div.searchResult')
+    resultContainer.hide()
+
+}
+
+function confirmSelection(input) {
+    var resultContainer = input.closest('div.searchInput').siblings('div.searchResult')
+    var searchType = input.closest('div.searchInput').data("searchType")
+    var selected = resultContainer.find('div.selected').data(searchType)
+    if (selected) {
+        var displayVal
+        var selectedId
+        if (searchType === "airport") {
+            displayVal = getAirportShortText(selected)
+            selectedId = selected.airportId
+        } else if (searchType === "country") {
+            displayVal = getCountryTextEntry(selected)
+            selectedId = selected.countryCode
+        } else if (searchType === "zone") {
+            displayVal = getZoneTextEntry(selected)
+            selectedId = selected.zone
+        }
+        input.val(displayVal)
+        input.data("selectedId", selectedId)
+    }
+
+    resultContainer.hide()
+}
+
+function clickSelection(selectionDiv) {
+    selectionDiv.siblings("div.selected").removeClass("selected")
+    selectionDiv.addClass("selected")
+    var resultContainer = selectionDiv.closest(".searchResult")
+
+    var input = resultContainer.siblings(".searchInput").find("input[type=text]")
+    confirmSelection(input)
+}
+
+function changeSelection(indexChange, resultContainer) {
+    var currentIndex = resultContainer.find("div.searchResultEntry.selected").index()
+//    if (typeof resultContainer.data('selectedIndex') !== 'undefined') {
+//        currentIndex = resultContainer.data("selectedIndex")
+//    } else {
+//        currentIndex = 0
+//    }
+
+    currentIndex += indexChange
+    var currentEntries = resultContainer.find("div.searchResultEntry")
+    if (currentIndex < 0) {
+        currentIndex = 0
+    } else if (currentIndex >= currentEntries.length) {
+        currentIndex = currentEntries.length - 1
+    }
+
+    currentEntries.removeClass("selected")
+    if (currentEntries[currentIndex]) {
+        $(currentEntries[currentIndex]).addClass("selected")
+    }
+
+ //   resultContainer.data("selectedIndex", currentIndex)
+}
+
+var currentSearchAjax
+
+function search(event, input, retry) {
+    var resultContainer = input.closest('div.searchInput').siblings('div.searchResult')
+    var searchType = input.closest('div.searchInput').data('searchType')
+    var phrase = input.val()
+	var url = "search-" + searchType + "?input=" + phrase
+    if (currentSearchAjax) {
+        currentSearchAjax.abort()
+    }
+
+	currentSearchAjax = $.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    beforeSend: function () {
+	        input.siblings(".spinner").show(0)
+	        searching = true
+	    },
+	    success: function(searchResult) {
+	  //      input.prop('disabled', false);
+	        //resultContainer.removeData("selectedIndex")
+	        resultContainer.find("div.searchResultEntry, div.message").remove()
+	        if (searchResult.message) {
+	            resultContainer.append("<div class='message'>" + searchResult.message + "</div>")
+	        }
+
+	        if (searchResult.entries) {
+                $.each(searchResult.entries, function(index, entry) {
+                    var textEntry
+                    if (searchType === "airport") {
+                        textEntry = getAirportTextEntry(entry)
+                    } else if (searchType === "country") {
+                        textEntry = getCountryTextEntry(entry)
+                    }  else if (searchType === "zone") {
+                        textEntry = getZoneTextEntry(entry)
+                    }
+                    var text = highlightText(textEntry, phrase)
+                    var searchResultDiv = $("<div class='searchResultEntry' onmousedown='clickSelection($(this))'>" + text + "</div>")
+                    searchResultDiv.data(searchType, entry)
+                    resultContainer.append(searchResultDiv)
+                    if (index == 0) {
+                        searchResultDiv.addClass("selected")
+                    }
+                })
+            }
+            resultContainer.show()
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    },
+        complete:function() {
+              //Hide the loader over here
+              input.siblings(".spinner").hide()
+              currentSearchAjax = undefined
+        }
+	});
+}
+
+function getCountryTextEntry(country) {
+   return country.countryName + "(" + country.countryCode + ")"
+}
+
+function getZoneTextEntry(zone) {
+    return zone.zoneName + "(" + zone.zone + ")"
+}
+
+
+
+
