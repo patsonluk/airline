@@ -57,6 +57,10 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
     val capacity = json.\("capacity").asOpt[Int]
     val fromAirportId = json.\("fromAirportId").asOpt[Int]
     val toAirportId = json.\("toAirportId").asOpt[Int]
+    val fromCountryCode = json.\("fromCountryCode").asOpt[String]
+    val toCountryCode = json.\("toCountryCode").asOpt[String]
+    val fromZone = json.\("fromZone").asOpt[String]
+    val toZone = json.\("toZone").asOpt[String]
     val airlineId = json.\("airlineId").asOpt[Int]
 
     val baseCriteria = ListBuffer[(String, String, Any)]()
@@ -64,6 +68,10 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
     capacity.map( value => baseCriteria.append(("capacity", ">=", value)))
     fromAirportId.map( value => baseCriteria.append(("from_airport", "=", value)))
     toAirportId.map( value => baseCriteria.append(("to_airport", "=", value)))
+    fromCountryCode.map( value => baseCriteria.append(("from_country", "=", value)))
+    toCountryCode.map( value => baseCriteria.append(("to_country", "=", value)))
+    fromZone.map( value => baseCriteria.append(("from_zone", "=", value)))
+    toZone.map( value => baseCriteria.append(("to_zone", "=", value)))
     airlineId.map( value => baseCriteria.append(("airline", "=", value)))
 
     //TODO destination swap

@@ -16,6 +16,14 @@
     margin-bottom: 10px;
 }
 
+.ticketTitle {
+    color: #5f6368;
+    font: 400 18px/16px Roboto, HelveticaNeue, Arial, sans-serif;
+    letter-spacing: 0.3px;
+    margin-bottom: 10px;
+}
+
+
 #routeSearchResult .remark {
     font-size : 8px;
     background-color: darkgreen;
@@ -36,6 +44,10 @@
     box-shadow: 0 0 2px inset rgba(255, 255, 255, 0.5);
     box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
     color: #5f6368;
+}
+
+#searchCanvas div.historySearch input {
+    font-size: 14px;
 }
 
 
@@ -118,10 +130,33 @@
 	top:1px;
 }
 
-#searchCanvas h2 { margin: 0.8em 0 0.5em 0;
-                   	color: #444;
-                   	font: 400 40px/12px Roboto, HelveticaNeue, Arial, sans-serif;
-                   	 text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
-                   	 text-align: center;
-                   	 }
+.titlesContainer {
+    position: relative;
+}
 
+.titlesContainer .titleSelection {
+    opacity : 0.5;
+    width: 100px;
+    transition: all 0.5s ease;
+}
+.titlesContainer .titleSelection.selected {
+   width: 200px;
+}
+
+.titlesContainer .titleSelection h2 {
+    margin: 0.8em 0 0.5em 0;
+    color: #444;
+    font: 400 30px/12px Roboto, HelveticaNeue, Arial, sans-serif;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+    text-align: center;
+}
+
+.titlesContainer .titleSelection.selected h2 {
+    font: 400 40px/12px Roboto, HelveticaNeue, Arial, sans-serif;
+}
+
+
+.titlesContainer .titleSelection.selected, .titlesContainer .titleSelection:hover{
+   background-color: transparent;
+   opacity : 1.0;
+}

@@ -3,11 +3,47 @@ var loadedAlerts = []
 
 
 function showSearchCanvas() {
-	setActiveDiv($("#searchCanvas"))
+    var titlesContainer = $("#searchCanvas div.titlesContainer")
+    positionTitles(titlesContainer)
+    setActiveDiv($("#searchCanvas"))
 	$("#searchCanvas").css("display", "flex")
 	highlightTab($('.searchCanvasTab'))
 	$("#routeSearchResult").empty()
+	$("#historySearchResult .table-row").empty()
+
+    refreshSearchDiv(titlesContainer.children('div.selected'))
+    var titleSelections =  titlesContainer.children('div.titleSelection')
+    titleSelections.off("click.refreshSearchDiv");
+    titleSelections.on("click.refreshSearchDiv", function(){
+      refreshSearchDiv($(this))
+    });
+
+    initializeHistorySearch()
 }
+
+function initializeHistorySearch() {
+    var locationSearchInput = $('#searchCanvas div.locationCriteria input')
+    locationSearchInput.on('confirmSelection', function(e) {
+        var disablingInputs = $(this).closest('div.locationCriterion').siblings('div.locationCriterion').find('input')
+        disablingInputs.val('')
+        disablingInputs.removeData("selectedId") //disable other inputs in div.locationCriterion
+        //alert('My Custom Event - Change Data Called! for ' + $(this).data("selectedId"));
+    })
+
+}
+
+function refreshSearchDiv(selectedDiv) {
+    var searchTitleType = selectedDiv.data('searchType')
+    if (searchTitleType === 'route') {
+        $('#searchCanvas div.routeSearch').show();
+        $('#searchCanvas div.routeSearch').siblings('.searchContainer').hide();
+    } else if (searchTitleType === 'history') {
+        $('#searchCanvas div.historySearch').show();
+        $('#searchCanvas div.historySearch').siblings('.searchContainer').hide();
+    }
+
+}
+
 
 function searchFlight(fromAirportId, toAirportId) {
     if (fromAirportId && toAirportId) {
@@ -130,6 +166,107 @@ function searchFlight(fromAirportId, toAirportId) {
         });
     }
 }
+
+
+function searchLinkHistory() {
+    var url = "search-link-history"
+
+    var fromAirportId = $('#searchCanvas div.historySearch input.fromAirport').data('selectedId')
+    var toAirportId = $('#searchCanvas div.historySearch input.toAirport').data('selectedId')
+    var fromCountryCode = $('#searchCanvas div.historySearch input.fromCountry').data('selectedId')
+    var toCountryCode = $('#searchCanvas div.historySearch input.toCountry').data('selectedId')
+    var fromZone = $('#searchCanvas div.historySearch input.fromZone').data('selectedId')
+    var toZone = $('#searchCanvas div.historySearch input.toZone').data('selectedId')
+
+    var searchData = {}
+
+    if (fromAirportId) {
+        searchData["fromAirportId"] = parseInt(fromAirportId)
+    }
+    if (toAirportId) {
+        searchData["toAirportId"] = parseInt(toAirportId)
+    }
+    if (fromCountryCode) {
+        searchData["fromCountryCode"] = fromCountryCode
+    }
+    if (toCountryCode) {
+        searchData["toCountryCode"] = toCountryCode
+    }
+    if (fromZone) {
+        searchData["fromZone"] = fromZone
+    }
+    if (toZone) {
+        searchData["toZone"] = toZone
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: url,
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify(searchData),
+        dataType: 'json',
+        success: function(searchResult) {
+            $("#linkHistorySearchResult").empty()
+            $("#searchCanvas .linkHistorySearchTable").data("entries", searchResult)
+//            $.each(searchResult, function(index, entry) {
+//
+//                linksTable.children("div.table-row").remove()
+//
+//                 $("#linkHistorySearchResult").append("<div>" +  entry.linkId + "&nbsp;"
+//                  + getCountryFlagImg(entry.fromCountryCode) + getAirportText(entry.fromAirportIata, entry.fromAirportCity) + "&nbsp;"
+//                  + getCountryFlagImg(entry.toCountryCode) + getAirportText(entry.toAirportIata, entry.toAirportCity) + "&nbsp;"
+//                  +  toLinkClassValueString(entry.capacity) + "&nbsp;+-" +  toLinkClassValueString(entry.capacityDelta) + "&nbsp;" + toLinkClassValueString(entry.price, '$') + "&nbsp;+-" +  toLinkClassValueString(entry.priceDelta, '$') + "</div>")
+//            })
+
+            updateLinkHistoryTable()
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        },
+        beforeSend: function() {
+            $('body .loadingSpinner').show()
+        },
+        complete: function(){
+            $('body .loadingSpinner').hide()
+        }
+    });
+}
+
+
+
+function updateLinkHistoryTable(sortProperty, sortOrder) {
+	var linkHistoryTable = $("#searchCanvas .linkHistorySearchTable")
+	linkHistoryTable.children("div.table-row").remove()
+
+    var loadedData = linkHistoryTable.data('entries')
+	//sort the list
+	//loadedLinks.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
+	loadedData = sortPreserveOrder(loadedData, sortProperty, sortOrder == "ascending")
+
+
+	$.each(loadedData, function(index, link) {
+		var row = $("<div class='table-row'></div>")
+
+		row.append("<div class='cell'>" + getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode) + "</div>")
+		row.append("<div class='cell'>" + getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+		row.append("<div class='cell'>" + link.model + "</div>")
+		row.append("<div class='cell' align='right'>" + link.distance + "km</div>")
+		row.append("<div class='cell' align='right'>" + link.totalCapacity + "(" + link.frequency + ")</div>")
+		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
+		row.append("<div class='cell' align='right'>" + link.totalLoadFactor + '%' + "</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.revenue) + "</div>")
+		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.profit) + "</div>")
+
+		linkHistoryTable.append(row)
+	});
+
+	if (loadedData.length == 0) {
+		var row = $("<div class='table-row'><div class='cell'>-</div></div>")
+		linkHistoryTable.append(row)
+	}
+}
+
 
 var linkFeatureIconsLookup = {
     "WIFI" : { "description" : "WIFI", "icon" : "assets/images/icons/wi-fi-zone.png"},
@@ -303,7 +440,7 @@ function confirmSelection(input) {
             selectedId = selected.zone
         }
         input.val(displayVal)
-        input.data("selectedId", selectedId)
+        input.data("selectedId", selectedId).trigger('confirmSelection')
     }
 
     resultContainer.hide()
