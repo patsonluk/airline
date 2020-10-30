@@ -371,7 +371,7 @@ object AllianceSource {
         criteriaString += criteria.last._1 + " = ?"
       }
 
-      val queryString = "SELECT alliance FROM " + ALLIANCE_MEMBER_TABLE + criteriaString
+      val queryString = "SELECT alliance, airline FROM " + ALLIANCE_MEMBER_TABLE + criteriaString
 
       val queryStatement = connection.prepareStatement(queryString)
 
