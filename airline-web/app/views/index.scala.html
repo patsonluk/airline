@@ -2528,7 +2528,7 @@
 			  <div id="searchCanvas" style="height: 100%; display: none; justify-content: center;">
 				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section mainSection">
 					  <div style="width: 100%; min-height: 80px;" class="titlesContainer">
-					  	<div class="titleSelection selected" data-search-type="route"><h2>Flights</h2></div>
+					  	<div class="titleSelection selected" data-search-type="route"><h2>Tickets</h2></div>
 					    <div class="titleSelection" data-search-type="history"><h2>History</h2></div>
 
 <!--						<div class="titleSelection"  style="position: absolute; left: 50%; transform: translate(-50%, 0%) translate(200px, 0px);"><h2>History</h2></div>-->
@@ -2558,54 +2558,54 @@
 
 						  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px;"></div>
 				  	  </div>
-					  <div class="historySearch searchContainer" style="overflow-y : auto; display: flex; flex-flow: column;">
-					  	<div style="margin-top: 10px">
+					  <div class="historySearch searchContainer" style="overflow-y : auto; flex-grow: 1; display: flex; flex-flow: column;">
+					  	 <div style="margin-top: 10px">
 							<div class="locationCriteria" style="float: left; width : 50%; position: relative; box-sizing: border-box;">
-							  <div class="locationCriterion"> <!-- Airport -->
+							  <div class="searchCriterion"> <!-- Airport -->
 								  <div style="float: left; width : 50%; position: relative;">
 									  <div class="searchInput" data-search-type="airport">
-										  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From Airport (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromAirport'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromAirport'))">
+										  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" data-search-group="fromDestination" placeholder="From Airport (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromAirport'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromAirport'))">
 										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 									  </div>
 									  <div class="searchResult"></div>
 								  </div>
 								  <div style="float: left; width : 50%; position: relative;">
 									  <div class="searchInput" data-search-type="airport">
-										  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To Airport (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toAirport'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toAirport'))">
+										  <input type="text" style="width: 80%" tabindex="102" class="toAirport" data-search-group="toDestination" placeholder="To Airport (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toAirport'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toAirport'))">
 										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 									  </div>
 									  <div class="searchResult"></div>
 								  </div>
 								  <div style="clear: both;"></div>
 							  </div>
-							  <div class="locationCriterion"> <!-- Country -->
+							  <div class="searchCriterion"> <!-- Country -->
 								  <div style="float: left; width : 50%; position: relative;">
 									  <div class="searchInput" data-search-type="country">
-										  <input type="text" style="width: 80%" tabindex="103" class="fromCountry" placeholder="From Country (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromCountry'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromCountry'))">
+										  <input type="text" style="width: 80%" tabindex="103" class="fromCountry" data-search-group="fromDestination" placeholder="From Country (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromCountry'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromCountry'))">
 										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 									  </div>
 									  <div class="searchResult"></div>
 								  </div>
 								  <div style="float: left; width : 50%; position: relative;">
 									  <div class="searchInput" data-search-type="country">
-										  <input type="text" style="width: 80%" tabindex="104" class="toCountry" placeholder="To Country (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toCountry'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toCountry'))">
+										  <input type="text" style="width: 80%" tabindex="104" class="toCountry" data-search-group="toDestination" placeholder="To Country (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toCountry'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toCountry'))">
 										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 									  </div>
 									  <div class="searchResult"></div>
 								  </div>
 								  <div style="clear: both;"></div>
 							  </div>
-							  <div class="locationCriterion"> <!-- Country -->
+							  <div class="searchCriterion"> <!-- Country -->
 								  <div style="float: left; width : 50%; position: relative;">
 									  <div class="searchInput" data-search-type="zone">
-										  <input type="text" style="width: 80%" tabindex="105" class="fromZone" placeholder="From Zone (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromZone'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromZone'))">
+										  <input type="text" style="width: 80%" tabindex="105" class="fromZone" data-search-group="fromDestination" placeholder="From Zone (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromZone'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromZone'))">
 										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 									  </div>
 									  <div class="searchResult"></div>
 								  </div>
 								  <div style="float: left; width : 50%; position: relative;">
 									  <div class="searchInput" data-search-type="zone">
-										  <input type="text" style="width: 80%" tabindex="106" class="toZone" placeholder="To Zone (Any)" autocomplete="no"  oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toZone'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toZone'))">
+										  <input type="text" style="width: 80%" tabindex="106" class="toZone" data-search-group="toDestination" placeholder="To Zone (Any)" autocomplete="no"  oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toZone'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toZone'))">
 										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
 									  </div>
 									  <div class="searchResult"></div>
@@ -2614,43 +2614,69 @@
 							  </div>
 							</div>
 							<div class="otherCriteria" style="float: right; width : 50%; position: relative; box-sizing: border-box;">
+								<div style="float: left; width : 50%; position: relative;">
+									<div class = "searchCriterion">
+										<div class="searchInput" data-search-type="airline">
+											<input type="text" style="width: 80%" tabindex="107" class="airline" data-search-group="entity" placeholder="Airline (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.airline'))" onkeydown="searchKeyDown(event, $('div.historySearch input.airline'))">
+											<span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+										</div>
+										<div class="searchResult"></div>
+									</div>
+									<div class = "searchCriterion">
+										<div class="searchInput" data-search-type="alliance">
+											<input type="text" style="width: 80%" tabindex="108" class="alliance" data-search-group="entity" placeholder="Alliance (Any)" autocomplete="no"  oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.alliance'))" onkeydown="searchKeyDown(event, $('div.historySearch input.alliance'))">
+											<span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+										</div>
+										<div class="searchResult"></div>
+									</div>
+								</div>
+								<div style="float: left; width : 50%; position: relative;">
+									<div class="table">
+										<div class="table-row searchCriterion">
+											<div class="label" style="width : 70%">Capacity >=</div>
+											<div class="data"><input type="text"  tabindex="109" class="capacity" size="6" placeholder="Any" onfocusout="numberInputFocusOut($(this))"></div>
+										</div>
+										<div class="table-row searchCriterion">
+											<div class="label" style="width : 70%">Capacity Change >=</div>
+											<div class="data"><input type="text"  tabindex="109" class="capacityDelta" size="6" placeholder="Any" onfocusout="numberInputFocusOut($(this))"></div>
+										</div>
+									</div>
+								</div>
+
 							</div>
 							<div style='clear: both;'></div>
 						  <div class="button search" tabindex="111"  onclick="searchLinkHistory()">Search</div>
-					    </div>
-						<div style="overflow-y: auto; flex-grow: 1; padding: 10px;">
+					     </div>
+						 <div id="historySearchResult" class="section" style="overflow-y: auto; flex-grow: 1;">
 							<div class="table data" style="height: 20px; width: 100%">
-								<div class="table-header" class="sortHeader">
-									<div class="cell clickable" style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></div> <!--hidden column for last update -->
-									<div class="cell clickable selected" style="width: 18%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
-									<div class="cell clickable" style="width: 18%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
-									<div class="cell clickable" style="width: 16%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
-									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
-									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity (Freq.)</div>
-									<div class="cell clickable" style="width: 7%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Passenger</div>
-									<div class="cell clickable" style="width: 3%" align="right" data-sort-property="totalLoadFactor" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Load Factor</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
+								<div class="table-header sortHeader">
+									<div class="cell clickable" style="width: 8%" data-sort-property="cycleDelta" data-sort-order="decending">Cycle</div>
+									<div class="cell clickable" style="width: 16%" data-sort-property="airlineName" data-sort-order="ascending">Airline</div>
+									<div class="cell clickable" style="width: 14%" data-sort-property="fromAirportIata" data-sort-order="descending">From Airport</div>
+									<div class="cell clickable" style="width: 14%" data-sort-property="toAirportIata" data-sort-order="descending">To Airport</div>
+<!--									<div class="cell clickable" style="width: 12%" data-sort-property="model" data-sort-order="ascending">Model</div>-->
+									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacityTotal" data-sort-order="ascending">Capacity (Freq.)</div>
+									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacityDeltaTotal" data-sort-order="descending">Cap Chg.</div>
+                                    <div class="cell" style="width: 18%">Price</div>
+									<div class="cell" style="width: 18%">Price Chg.</div>
 								</div>
 							</div>
 							<div style="height: calc(100% - 20px - 20px); width: 100%; overflow: auto;">
-								<div class="table data linkHistorySearchTable" style="max-height: 100%; width: 100%">
+								<div class="table data linkHistorySearchTable" style="width: 100%">
 									<div class="table-header">
-										<div class="cell" style="width: 18%; border-bottom: none;"></div>
-										<div class="cell" style="width: 18%; border-bottom: none;"></div>
+										<div class="cell" style="width: 8%; border-bottom: none;"></div>
 										<div class="cell" style="width: 16%; border-bottom: none;"></div>
+										<div class="cell" style="width: 14%; border-bottom: none;"></div>
+										<div class="cell" style="width: 14%; border-bottom: none;"></div>
+<!--										<div class="cell" style="width: 12%; border-bottom: none;"></div>-->
 										<div class="cell" style="width: 8%; border-bottom: none;"></div>
 										<div class="cell" style="width: 8%; border-bottom: none;"></div>
-										<div class="cell" style="width: 7%; border-bottom: none;"></div>
-										<div class="cell" style="width: 3%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
+                                        <div class="cell" style="width: 18%; border-bottom: none;"></div>
+										<div class="cell" style="width: 18%; border-bottom: none;"></div>
 									</div>
 								</div>
 							</div>
-
-
-						</div>
+                         </div>
 					  </div>
 
 

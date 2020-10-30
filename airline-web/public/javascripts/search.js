@@ -22,13 +22,26 @@ function showSearchCanvas() {
 }
 
 function initializeHistorySearch() {
-    var locationSearchInput = $('#searchCanvas div.locationCriteria input')
+    var locationSearchInput = $('#searchCanvas div.searchCriterion input')
     locationSearchInput.on('confirmSelection', function(e) {
-        var disablingInputs = $(this).closest('div.locationCriterion').siblings('div.locationCriterion').find('input')
+        var disablingInputs
+        if ($(this).data("searchGroup")) {
+            var searchGroup = $(this).data("searchGroup")
+            disablingInputs = $(this).closest('div.searchCriterion').siblings('div.searchCriterion').find('input[data-search-group="' + searchGroup + '"]') //disable other to-s
+        }
+
         disablingInputs.val('')
-        disablingInputs.removeData("selectedId") //disable other inputs in div.locationCriterion
+        disablingInputs.removeData("selectedId") //disable other inputs in div.searchCriterion
         //alert('My Custom Event - Change Data Called! for ' + $(this).data("selectedId"));
     })
+    //register sort function for result table
+     var sortHeaderCells = $('#searchCanvas div.historySearch div.sortHeader div.cell.clickable')
+     sortHeaderCells.on("click.toggleSort", function(){
+       toggleTableSortOrder($(this), function(sortProperty, sortOrder) {
+        updateLinkHistoryTable(sortProperty, sortOrder)
+       })
+     });
+
 
 }
 
@@ -177,6 +190,11 @@ function searchLinkHistory() {
     var toCountryCode = $('#searchCanvas div.historySearch input.toCountry').data('selectedId')
     var fromZone = $('#searchCanvas div.historySearch input.fromZone').data('selectedId')
     var toZone = $('#searchCanvas div.historySearch input.toZone').data('selectedId')
+    var airlineId = $('#searchCanvas div.historySearch input.airline').data('selectedId')
+    var allianceId = $('#searchCanvas div.historySearch input.alliance').data('selectedId')
+
+    var capacity = $('#searchCanvas input.capacity').val() ? parseInt($('#searchCanvas input.capacity').val()) : null
+    var capacityDelta = $('#searchCanvas input.capacityDelta').val() ? parseInt($('#searchCanvas input.capacityDelta').val()) : null
 
     var searchData = {}
 
@@ -198,6 +216,21 @@ function searchLinkHistory() {
     if (toZone) {
         searchData["toZone"] = toZone
     }
+    if (airlineId) {
+        searchData["airlineId"] = airlineId
+    }
+    if (allianceId) {
+        searchData["allianceId"] = allianceId
+    }
+
+    if ($('#searchCanvas input.capacity').val()) {
+        searchData["capacity"] = parseInt($('#searchCanvas input.capacity').val())
+    }
+
+    if ($('#searchCanvas input.capacityDelta').val()) {
+        searchData["capacityDelta"] = parseInt($('#searchCanvas input.capacityDelta').val())
+    }
+
 
     $.ajax({
         type: 'POST',
@@ -208,16 +241,6 @@ function searchLinkHistory() {
         success: function(searchResult) {
             $("#linkHistorySearchResult").empty()
             $("#searchCanvas .linkHistorySearchTable").data("entries", searchResult)
-//            $.each(searchResult, function(index, entry) {
-//
-//                linksTable.children("div.table-row").remove()
-//
-//                 $("#linkHistorySearchResult").append("<div>" +  entry.linkId + "&nbsp;"
-//                  + getCountryFlagImg(entry.fromCountryCode) + getAirportText(entry.fromAirportIata, entry.fromAirportCity) + "&nbsp;"
-//                  + getCountryFlagImg(entry.toCountryCode) + getAirportText(entry.toAirportIata, entry.toAirportCity) + "&nbsp;"
-//                  +  toLinkClassValueString(entry.capacity) + "&nbsp;+-" +  toLinkClassValueString(entry.capacityDelta) + "&nbsp;" + toLinkClassValueString(entry.price, '$') + "&nbsp;+-" +  toLinkClassValueString(entry.priceDelta, '$') + "</div>")
-//            })
-
             updateLinkHistoryTable()
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -247,16 +270,16 @@ function updateLinkHistoryTable(sortProperty, sortOrder) {
 
 	$.each(loadedData, function(index, link) {
 		var row = $("<div class='table-row'></div>")
+		row.append("<div class='cell'>" + getCycleDeltaText(link.cycleDelta) + "</div>")
+        row.append("<div class='cell'>" + getAirlineLogoImg(link.airlineId) + link.airlineName + "</div>")
+		row.append("<div class='cell'>" + getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportIata) + "</div>")
+		row.append("<div class='cell'>" + getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportIata) + "</div>")
+//		row.append("<div class='cell'>" + link.airplaneModelName + "</div>")
+		row.append("<div class='cell' align='right'>" + link.capacity.total + "(" + link.frequency + ")</div>")
+		$("<div class='cell' align='right'></div>").appendTo(row).append(getCapacityDeltaSpan(link.capacityDelta))
+		$("<div class='cell'></div>").appendTo(row).text(toLinkClassValueString(link.price, '$'))
+		$("<div class='cell'></div>").appendTo(row).append(getPriceDeltaSpan(link.priceDelta))
 
-		row.append("<div class='cell'>" + getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode) + "</div>")
-		row.append("<div class='cell'>" + getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
-		row.append("<div class='cell'>" + link.model + "</div>")
-		row.append("<div class='cell' align='right'>" + link.distance + "km</div>")
-		row.append("<div class='cell' align='right'>" + link.totalCapacity + "(" + link.frequency + ")</div>")
-		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
-		row.append("<div class='cell' align='right'>" + link.totalLoadFactor + '%' + "</div>")
-		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.revenue) + "</div>")
-		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.profit) + "</div>")
 
 		linkHistoryTable.append(row)
 	});
@@ -265,6 +288,84 @@ function updateLinkHistoryTable(sortProperty, sortOrder) {
 		var row = $("<div class='table-row'><div class='cell'>-</div></div>")
 		linkHistoryTable.append(row)
 	}
+}
+
+function getCycleDeltaText(cycleDelta) {
+    if (cycleDelta >= 0) {
+        return "This wk"
+    } else if (cycleDelta == 1) {
+        return "Last wk"
+    } else {
+        return (cycleDelta * -1) + " wk ago"
+    }
+}
+
+function getCapacityDeltaSpan(capacityDelta) {
+    var span = $("<span></span>")
+    if (!capacityDelta.economy && !capacityDelta.business && !capacityDelta.first) {
+        span.text('-')
+    } else {
+        span.append(getDeltaSpan(capacityDelta.total))
+        span.prop('title', toLinkClassValueString(capacityDelta))
+    }
+    return span
+}
+
+function getDeltaSpan(delta) {
+    var span = $('<span></span>')
+    var displayValue
+    if (delta < 0) {
+        span.append('<img src="assets/images/icons/12px/arrow-270.png">')
+        displayValue = delta * -1
+    } else {
+        span.append('<img src="assets/images/icons/12px/arrow-090.png">')
+        displayValue = delta
+    }
+    span.append('<span>' + displayValue + '</span>')
+    return span
+}
+
+function getPriceDeltaSpan(priceDelta) {
+    var span = $("<span></span>")
+    if (!priceDelta.economy && !priceDelta.business && !priceDelta.first) {
+        span.text("-")
+        return span
+    }
+
+    if (priceDelta.economy) {
+        span.append(getDeltaSpan(priceDelta.economy))
+    } else {
+        span.append('<span>-</span>')
+    }
+    span.append("/")
+
+    if (priceDelta.business) {
+        span.append(getDeltaSpan(priceDelta.business))
+    } else {
+        span.append('<span>-</span>')
+    }
+    span.append("/")
+
+    if (priceDelta.first) {
+        span.append(getDeltaSpan(priceDelta.first))
+    } else {
+        span.append('<span>-</span>')
+    }
+
+    return span
+}
+
+function toggleTableSortOrder(sortHeader, updateTableFunction) {
+	if (sortHeader.data("sort-order") == "ascending") {
+		sortHeader.data("sort-order", "descending")
+	} else {
+		sortHeader.data("sort-order", "ascending")
+	}
+
+	sortHeader.siblings().removeClass("selected")
+	sortHeader.addClass("selected")
+
+	updateTableFunction(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
 
@@ -438,7 +539,14 @@ function confirmSelection(input) {
         } else if (searchType === "zone") {
             displayVal = getZoneTextEntry(selected)
             selectedId = selected.zone
+        } else if (searchType === "airline") {
+            displayVal = getAirlineTextEntry(selected)
+            selectedId = selected.airlineId
+        } else if (searchType === "alliance") {
+            displayVal = getAllianceTextEntry(selected)
+            selectedId = selected.allianceId
         }
+
         input.val(displayVal)
         input.data("selectedId", selectedId).trigger('confirmSelection')
     }
@@ -479,6 +587,12 @@ function changeSelection(indexChange, resultContainer) {
  //   resultContainer.data("selectedIndex", currentIndex)
 }
 
+function numberInputFocusOut(input) {
+    if (!parseInt(input.val())) {
+        input.val('')
+    }
+}
+
 var currentSearchAjax
 
 function search(event, input, retry) {
@@ -514,9 +628,15 @@ function search(event, input, retry) {
                         textEntry = getAirportTextEntry(entry)
                     } else if (searchType === "country") {
                         textEntry = getCountryTextEntry(entry)
-                    }  else if (searchType === "zone") {
+                    } else if (searchType === "zone") {
                         textEntry = getZoneTextEntry(entry)
+                    } else if (searchType === "airline") {
+                        textEntry = getAirlineTextEntry(entry)
+                    } else if (searchType === "alliance") {
+                        textEntry = getAllianceTextEntry(entry)
                     }
+
+
                     var text = highlightText(textEntry, phrase)
                     var searchResultDiv = $("<div class='searchResultEntry' onmousedown='clickSelection($(this))'>" + text + "</div>")
                     searchResultDiv.data(searchType, entry)
@@ -546,6 +666,14 @@ function getCountryTextEntry(country) {
 
 function getZoneTextEntry(zone) {
     return zone.zoneName + "(" + zone.zone + ")"
+}
+
+function getAirlineTextEntry(airline) {
+    return airline.airlineName + "(" + airline.airlineCode + ")"
+}
+
+function getAllianceTextEntry(alliance) {
+    return alliance.allianceName
 }
 
 

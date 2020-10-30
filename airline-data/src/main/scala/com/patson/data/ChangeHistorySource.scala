@@ -22,7 +22,7 @@ object ChangeHistorySource {
     loadLinkChangeByCriteria(List(("alliance_name", "=", allianceName)))
   }
   
-  def loadLinkChangeByCriteria(criteria : List[(String, String, Any)], fullLoad : Boolean = false) = {
+  def loadLinkChangeByCriteria(criteria : List[(String, String, Any)]) = {
       var queryString = BASE_LINK_CHANGE_QUERY
       
       if (!criteria.isEmpty) {
@@ -32,10 +32,10 @@ object ChangeHistorySource {
         }
         queryString += criteria.last._1 + criteria.last._2 + " ?"
       }
-      loadLinkChangeByQueryString(queryString, criteria.map(_._3), fullLoad)
+      loadLinkChangeByQueryString(queryString, criteria.map(_._3))
   }
   
-  private def loadLinkChangeByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) : List[LinkChange]= {
+  def loadLinkChangeByQueryString(queryString : String, parameters : List[Any]) : List[LinkChange]= {
     val connection = Meta.getConnection()
     try {
         val preparedStatement = connection.prepareStatement(queryString)

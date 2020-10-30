@@ -643,7 +643,7 @@ object LinkSource {
       toZone = link.to.zone,
       airline = link.airline,
       alliance = link.airline.getAllianceId().map(Alliance.fromId(_)),
-      frequency = link.frequency,
+      frequency = newLinkOption.map(_.frequency).getOrElse(0),
       flightNumber = link.flightNumber,
       airplaneModel = link.getAssignedModel().getOrElse(Model.fromId(0)),
       rawQuality = link.rawQuality,

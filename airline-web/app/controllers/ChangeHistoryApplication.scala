@@ -1,6 +1,7 @@
 package controllers
 
-import com.patson.data.{ChangeHistorySource, CycleSource}
+import com.patson.data.{ChangeHistorySource, Constants, CycleSource}
+import com.patson.model.LinkClass
 import com.patson.model.history.LinkChange
 import javax.inject.Inject
 import play.api.libs.json._
@@ -26,7 +27,29 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
 
   implicit object LinkChangeWrites extends Writes[LinkChange] {
     def writes(linkChange : LinkChange) : JsValue = {
+      var priceJson = Json.obj()
+      var priceDeltaJson = Json.obj()
+      var capacityDeltaJson = Json.obj()
+
+      LinkClass.values.foreach { linkClass =>
+        if (linkChange.capacity(linkClass) > 0) { //do not report price for link class that has no capacity
+          priceJson = priceJson + (linkClass.label -> JsNumber(linkChange.price(linkClass)))
+          if (linkChange.priceDelta(linkClass) != 0) { //do not put delta if price has not been changed
+            priceDeltaJson = priceDeltaJson + (linkClass.label -> JsNumber(linkChange.priceDelta(linkClass)))
+          }
+        }
+        if (linkChange.capacityDelta(linkClass) != 0) {
+          capacityDeltaJson = capacityDeltaJson + (linkClass.label -> JsNumber(linkChange.capacityDelta(linkClass)))
+        }
+      }
+
+      capacityDeltaJson = capacityDeltaJson + ("total" -> JsNumber(linkChange.capacityDelta.total))
+
+
+
       Json.obj(
+        "airlineId" -> linkChange.airline.id,
+        "airlineName" -> linkChange.airline.name,
         "linkId" -> linkChange.linkId,
         "fromAirportName" -> linkChange.fromAirport.name,
         "fromAirportIata" -> linkChange.fromAirport.iata,
@@ -36,10 +59,12 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
         "toAirportCity" -> linkChange.toAirport.city,
         "fromCountryCode" -> linkChange.fromCountry.countryCode,
         "toCountryCode" -> linkChange.toCountry.countryCode,
-        "price" -> Json.toJson(linkChange.price),
-        "priceDelta" -> Json.toJson(linkChange.priceDelta),
+        "price" -> priceJson,
+        "priceDelta" -> priceDeltaJson,
         "capacity" -> Json.toJson(linkChange.capacity),
-        "capacityDelta" -> Json.toJson(linkChange.capacityDelta),
+        "capacityTotal" -> JsNumber(linkChange.capacity.total),
+        "capacityDelta" -> capacityDeltaJson,
+        "capacityDeltaTotal" -> JsNumber(linkChange.capacityDelta.total),
         "airplaneModelName" -> linkChange.airplaneModel.name,
         "frequency" -> linkChange.frequency,
         "rawQuality" -> linkChange.rawQuality,
@@ -62,21 +87,71 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
     val fromZone = json.\("fromZone").asOpt[String]
     val toZone = json.\("toZone").asOpt[String]
     val airlineId = json.\("airlineId").asOpt[Int]
+    val allianceId = json.\("allianceId").asOpt[Int]
 
-    val baseCriteria = ListBuffer[(String, String, Any)]()
-    capacityDelta.map( value => baseCriteria.append(("capacity_delta", ">=", value)))
-    capacity.map( value => baseCriteria.append(("capacity", ">=", value)))
-    fromAirportId.map( value => baseCriteria.append(("from_airport", "=", value)))
-    toAirportId.map( value => baseCriteria.append(("to_airport", "=", value)))
-    fromCountryCode.map( value => baseCriteria.append(("from_country", "=", value)))
-    toCountryCode.map( value => baseCriteria.append(("to_country", "=", value)))
-    fromZone.map( value => baseCriteria.append(("from_zone", "=", value)))
-    toZone.map( value => baseCriteria.append(("to_zone", "=", value)))
-    airlineId.map( value => baseCriteria.append(("airline", "=", value)))
 
-    //TODO destination swap
+    val criteria = ListBuffer[String]()
+    val parameters = ListBuffer[Any]()
 
-    val entries = ChangeHistorySource.loadLinkChangeByCriteria(baseCriteria.toList)
+    //val baseCriteria = ListBuffer[(String, String, Any)]()
+    capacityDelta.map( value => {
+      criteria += "capacity_delta >= ? OR capacity_delta <= ?"
+      parameters += value
+      parameters += (value * -1)
+    })
+    capacity.map( value => {
+      criteria += "capacity >= ? OR capacity <= ?"
+      parameters += value
+      parameters += (value * -1)
+    })
+    fromAirportId.map( value =>  {
+      criteria += "from_airport = ? OR to_airport = ?"
+      parameters += value
+      parameters += value
+    })
+    toAirportId.map( value =>  {
+      criteria += "from_airport = ? OR to_airport = ?"
+      parameters += value
+      parameters += value
+    })
+    fromCountryCode.map( value =>  {
+      criteria += "from_country = ? OR to_country = ?"
+      parameters += value
+      parameters += value
+    })
+    toCountryCode.map( value =>  {
+      criteria += "from_country = ? OR to_country = ?"
+      parameters += value
+      parameters += value
+    })
+    fromZone.map( value =>  {
+      criteria += "from_zone = ? OR to_zone = ?"
+      parameters += value
+      parameters += value
+    })
+    toZone.map( value =>  {
+      criteria += "from_zone = ? OR to_zone = ?"
+      parameters += value
+      parameters += value
+    })
+    airlineId.map( value =>  {
+      criteria += "airline = ?"
+      parameters += value
+    })
+    allianceId.map( value =>  {
+      criteria += "alliance = ?"
+      parameters += value
+    })
+
+    var query = "SELECT * FROM " + Constants.LINK_CHANGE_HISTORY_TABLE
+    if (!parameters.isEmpty) {
+      query += " WHERE "
+      criteria.foreach { criterion =>
+        query += "(" + criterion + ")"
+      }
+    }
+
+    val entries = ChangeHistorySource.loadLinkChangeByQueryString(query, parameters)
     Ok(Json.toJson(entries))
   }
 
