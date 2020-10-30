@@ -4,6 +4,7 @@ import java.sql.Types
 
 import com.patson.data.Constants._
 import com.patson.model._
+import com.patson.model.airplane.Model
 import com.patson.model.history.LinkChange
 import com.patson.util._
 
@@ -12,7 +13,7 @@ import scala.collection.mutable.ListBuffer
 
 object ChangeHistorySource {
   private[this] val BASE_LINK_CHANGE_QUERY = "SELECT * FROM " + LINK_CHANGE_HISTORY_TABLE
- 
+  val RESULT_SIZE = 500
   
   def loadLinkChangeByAirline(airlineId : Int) : List[LinkChange] = {
     loadLinkChangeByCriteria(List(("airline", "=", airlineId)))
@@ -38,12 +39,13 @@ object ChangeHistorySource {
   def loadLinkChangeByQueryString(queryString : String, parameters : List[Any]) : List[LinkChange]= {
     val connection = Meta.getConnection()
     try {
+      val finalQueryString = queryString + " ORDER BY id DESC LIMIT 0, " + RESULT_SIZE
         val preparedStatement = connection.prepareStatement(queryString)
         
         for (i <- 0 until parameters.size) {
           preparedStatement.setObject(i + 1, parameters(i))
         }
-        
+
         
         val resultSet = preparedStatement.executeQuery()
         
@@ -67,7 +69,7 @@ object ChangeHistorySource {
             } else {
               AllianceCache.getAlliance(resultSet.getInt("alliance"))
             }
-          val airplaneModel = AirplaneModelCache.getModel(resultSet.getInt("airplane_model")).get
+          val airplaneModel = AirplaneModelCache.getModel(resultSet.getInt("airplane_model")).getOrElse(Model.fromId(resultSet.getInt("airplane_model")))
 
 
           val entry = LinkChange(
