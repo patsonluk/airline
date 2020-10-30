@@ -10,6 +10,8 @@ function showSearchCanvas() {
 	highlightTab($('.searchCanvasTab'))
 	$("#routeSearchResult").empty()
 	$("#historySearchResult .table-row").empty()
+	$('#searchCanvas .searchContainer input').val('')
+	$('#searchCanvas .searchContainer input').removeData("selectedId")
 
     refreshSearchDiv(titlesContainer.children('div.selected'))
     var titleSelections =  titlesContainer.children('div.titleSelection')
@@ -285,7 +287,7 @@ function updateLinkHistoryTable(sortProperty, sortOrder) {
 	});
 
 	if (loadedData.length == 0) {
-		var row = $("<div class='table-row'><div class='cell'>-</div></div>")
+		var row = $("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
 		linkHistoryTable.append(row)
 	}
 }
@@ -482,7 +484,11 @@ function highlightText(text, phrase) {
     return text;
 }
 
-
+function resetSearchInput(button) {
+    var disablingInputs = button.closest('.searchContainer').find('input')
+    disablingInputs.val('')
+    disablingInputs.removeData("selectedId")
+}
 
 function searchButtonKeyPress(event, button) {
     if (event.keyCode == 13) { //enter

@@ -65,6 +65,10 @@ object MainSimulation extends App {
       //purge log
       println("Purging logs")
       LogSource.deleteLogsBeforeCycle(cycle - 100)
+
+      //purge history
+      println("Purging link history")
+      ChangeHistorySource.deleteLinkChangeByCriteria(List(("cycle", "<", cycle - 100)))
       
       //notify the websockets via EventStream
       println("Publish Cycle Complete message")

@@ -175,7 +175,7 @@ public class SearchUtil {
 		}
 	}
 
-	private static void addAirline(Airline airline) {
+	public static void addAirline(Airline airline) {
 		try (RestHighLevelClient client = getClient()) {
 			Map<String, Object> jsonMap = new HashMap<>();
 			jsonMap.put("airlineId", airline.id());
@@ -208,7 +208,7 @@ public class SearchUtil {
 		}
 	}
 
-	private static void addAlliance(Alliance alliance) {
+	public static void addAlliance(Alliance alliance) {
 		try (RestHighLevelClient client = getClient()) {
 			Map<String, Object> jsonMap = new HashMap<>();
 			jsonMap.put("allianceId", alliance.id());
@@ -223,7 +223,7 @@ public class SearchUtil {
 
 	}
 
-	private static void removeAlliance(int allianceId) {
+	public static void removeAlliance(int allianceId) {
 		try (RestHighLevelClient client = getClient()) {
 			DeleteByQueryRequest request =	new DeleteByQueryRequest("alliances");
 			request.setQuery(new TermQueryBuilder("allianceId", allianceId));

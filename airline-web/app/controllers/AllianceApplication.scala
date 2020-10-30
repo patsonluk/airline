@@ -113,12 +113,14 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
             val currentCycle = CycleSource.loadCycle()
             val newAlliance = Alliance(name = allianceName, creationCycle = currentCycle, members = List())
             AllianceSource.saveAlliance(newAlliance)
+            SearchUtil.addAlliance(newAlliance)
 
             val allianceMember = AllianceMember(allianceId = newAlliance.id, airline = request.user, role = LEADER, joinedCycle = currentCycle)
             AllianceSource.saveAllianceMember(allianceMember)
 
             val history = AllianceHistory(allianceName = newAlliance.name, airline = request.user, event = FOUND_ALLIANCE, cycle = currentCycle)
             AllianceSource.saveAllianceHistory(history)
+
 
             Ok(Json.toJson(newAlliance.copy(members = List(allianceMember))))
           case Some(currentAirlineAllianceMember) =>
@@ -288,6 +290,8 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
              AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = request.user, event = LEAVE_ALLIANCE, cycle = currentCycle))
              if (currentAirlineAllianceMember.role == LEADER) { //remove the alliance
                AllianceSource.deleteAlliance(currentAirlineAllianceMember.allianceId)
+
+               SearchUtil.removeAlliance(alliance.id)
              }
              
              Ok(Json.toJson(currentAirlineAllianceMember))

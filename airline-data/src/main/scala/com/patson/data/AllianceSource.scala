@@ -4,7 +4,7 @@ import java.sql.Statement
 
 import com.patson.data.Constants._
 import com.patson.model._
-import com.patson.util.AllianceCache
+import com.patson.util.{AirlineCache, AllianceCache}
 
 import scala.collection.mutable.ListBuffer
 
@@ -345,6 +345,7 @@ object AllianceSource {
       preparedStatement.close()
 
       AllianceCache.invalidateAlliance(allianceMember.allianceId)
+      AirlineCache.invalidateAirline(allianceMember.airline.id) //since airline has getAlliance method, not exactly the best design here...
     } finally {
       connection.close()
     }
@@ -381,6 +382,7 @@ object AllianceSource {
       val resultSet = queryStatement.executeQuery()
       while (resultSet.next()) {
         AllianceCache.invalidateAlliance(resultSet.getInt("alliance"))
+        AirlineCache.invalidateAirline(resultSet.getInt("airline")) //since airline has getAlliance method, not exactly the best design here...
       }
       resultSet.close()
       queryStatement.close()

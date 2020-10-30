@@ -163,7 +163,7 @@ object ChangeHistorySource {
 
   
   
-  def deleteLinkChangeByCriteria(criteria : List[(String, Any)]) = {
+  def deleteLinkChangeByCriteria(criteria : List[(String, String, Any)]) = {
       //open the hsqldb
     val connection = Meta.getConnection()
     try {
@@ -172,15 +172,15 @@ object ChangeHistorySource {
       if (!criteria.isEmpty) {
         queryString += " WHERE "
         for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
+          queryString += criteria(i)._1 + criteria(i)._2 + " ? AND "
         }
-        queryString += criteria.last._1 + " = ?"
+        queryString += criteria.last._1 + criteria.last._2 + " = ?"
       }
       
       val preparedStatement = connection.prepareStatement(queryString)
       
       for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
+        preparedStatement.setObject(i + 1, criteria(i)._3)
       }
       
       val deletedCount = preparedStatement.executeUpdate()

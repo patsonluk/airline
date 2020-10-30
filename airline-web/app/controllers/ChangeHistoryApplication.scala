@@ -104,34 +104,30 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
       parameters += value
       parameters += (value * -1)
     })
+
+    //no reverse search for now. it gets complicated when from and to are in the same value
     fromAirportId.map( value =>  {
-      criteria += "from_airport = ? OR to_airport = ?"
-      parameters += value
+      criteria += "from_airport = ?"
       parameters += value
     })
     toAirportId.map( value =>  {
-      criteria += "from_airport = ? OR to_airport = ?"
-      parameters += value
+      criteria += "to_airport = ?"
       parameters += value
     })
     fromCountryCode.map( value =>  {
-      criteria += "from_country = ? OR to_country = ?"
-      parameters += value
+      criteria += "from_country = ?"
       parameters += value
     })
     toCountryCode.map( value =>  {
-      criteria += "from_country = ? OR to_country = ?"
-      parameters += value
+      criteria += "to_country = ?"
       parameters += value
     })
     fromZone.map( value =>  {
-      criteria += "from_zone = ? OR to_zone = ?"
-      parameters += value
+      criteria += "from_zone = ?"
       parameters += value
     })
     toZone.map( value =>  {
-      criteria += "from_zone = ? OR to_zone = ?"
-      parameters += value
+      criteria += "to_zone = ?"
       parameters += value
     })
     airlineId.map( value =>  {
@@ -146,12 +142,10 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
     var query = "SELECT * FROM " + Constants.LINK_CHANGE_HISTORY_TABLE
     if (!parameters.isEmpty) {
       query += " WHERE "
-      criteria.foreach { criterion =>
-        query += "(" + criterion + ")"
-      }
+      query += criteria.map("(" + _ + ")").toArray.mkString(" AND ")
     }
 
-    val entries = ChangeHistorySource.loadLinkChangeByQueryString(query, parameters)
+    val entries = ChangeHistorySource.loadLinkChangeByQueryString(query, parameters.toList)
     Ok(Json.toJson(entries))
   }
 
