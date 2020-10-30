@@ -40,7 +40,7 @@ object ChangeHistorySource {
     val connection = Meta.getConnection()
     try {
       val finalQueryString = queryString + " ORDER BY id DESC LIMIT 0, " + RESULT_SIZE
-        val preparedStatement = connection.prepareStatement(queryString)
+        val preparedStatement = connection.prepareStatement(finalQueryString)
         
         for (i <- 0 until parameters.size) {
           preparedStatement.setObject(i + 1, parameters(i))
