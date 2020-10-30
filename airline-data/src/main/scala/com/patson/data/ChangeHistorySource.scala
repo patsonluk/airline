@@ -176,7 +176,7 @@ object ChangeHistorySource {
         for (i <- 0 until criteria.size - 1) {
           queryString += criteria(i)._1 + criteria(i)._2 + " ? AND "
         }
-        queryString += criteria.last._1 + criteria.last._2 + " = ?"
+        queryString += criteria.last._1 + criteria.last._2 + " ?"
       }
       
       val preparedStatement = connection.prepareStatement(queryString)
