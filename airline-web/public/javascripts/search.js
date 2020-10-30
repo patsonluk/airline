@@ -277,7 +277,7 @@ function updateLinkHistoryTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportIata) + "</div>")
 		row.append("<div class='cell'>" + getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportIata) + "</div>")
 //		row.append("<div class='cell'>" + link.airplaneModelName + "</div>")
-		row.append("<div class='cell' align='right'>" + link.capacity.total + "(" + link.frequency + ")</div>")
+		$("<div class='cell' align='right'></div>").appendTo(row).append(getCapacitySpan(link.capacity, link.frequency))
 		$("<div class='cell' align='right'></div>").appendTo(row).append(getCapacityDeltaSpan(link.capacityDelta))
 		$("<div class='cell'></div>").appendTo(row).text(toLinkClassValueString(link.price, '$'))
 		$("<div class='cell'></div>").appendTo(row).append(getPriceDeltaSpan(link.priceDelta))
@@ -300,6 +300,13 @@ function getCycleDeltaText(cycleDelta) {
     } else {
         return (cycleDelta * -1) + " wk ago"
     }
+}
+
+function getCapacitySpan(capacity, frequency) {
+    var span = $("<span></span>")
+    $('<span>' + capacity.total + '</span>').appendTo(span).prop('title', toLinkClassValueString(capacity))
+    span.append('<span>(' + frequency + ')</span>')
+    return span
 }
 
 function getCapacityDeltaSpan(capacityDelta) {
