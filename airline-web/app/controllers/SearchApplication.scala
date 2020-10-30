@@ -27,6 +27,43 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     }
   }
 
+  implicit object CountrySearchResultWrites extends Writes[CountrySearchResult] {
+    def writes(countrySearchResult : CountrySearchResult) : JsValue = {
+      Json.obj(
+        "countryName" -> countrySearchResult.getName,
+        "countryCode" -> countrySearchResult.getCountryCode,
+        "score" -> countrySearchResult.getScore)
+    }
+  }
+
+  implicit object ZoneSearchResultWrites extends Writes[ZoneSearchResult] {
+    def writes(result : ZoneSearchResult) : JsValue = {
+      Json.obj(
+        "zoneName" -> result.getName,
+        "zone" -> result.getZone,
+        "score" -> result.getScore)
+    }
+  }
+
+  implicit object AirlineSearchResultWrites extends Writes[AirlineSearchResult] {
+    def writes(result : AirlineSearchResult) : JsValue = {
+      Json.obj(
+        "airlineName" -> result.getAirline.name,
+        "airlineCode" -> result.getAirline.getAirlineCode(),
+        "airlineId" -> result.getAirline.id,
+        "score" -> result.getScore)
+    }
+  }
+
+  implicit object AllianceSearchResultWrites extends Writes[AllianceSearchResult] {
+    def writes(result : AllianceSearchResult) : JsValue = {
+      Json.obj(
+        "allianceName" -> result.getAllianceName,
+        "allianceId" -> result.getAllianceId,
+        "score" -> result.getScore)
+    }
+  }
+
 
 
 
@@ -170,11 +207,63 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     if (input.length < 3) {
       Ok(Json.obj("message" -> "Search with at least 3 characters"))
     } else {
-      val result: List[AirportSearchResult] = SearchUtil.search(input).asScala.toList
+      val result: List[AirportSearchResult] = SearchUtil.searchAirport(input).asScala.toList
       if (result.isEmpty) {
         Ok(Json.obj("message" -> "No match"))
       } else {
-        Ok(Json.obj("airports" -> Json.toJson(result)))
+        Ok(Json.obj("entries" -> Json.toJson(result)))
+      }
+    }
+  }
+
+  def searchCountry(input : String) = Action {
+    if (input.length < 2) {
+      Ok(Json.obj("message" -> "Search with at least 2 characters"))
+    } else {
+      val result: List[CountrySearchResult] = SearchUtil.searchCountry(input).asScala.toList
+      if (result.isEmpty) {
+        Ok(Json.obj("message" -> "No match"))
+      } else {
+        Ok(Json.obj("entries" -> Json.toJson(result)))
+      }
+    }
+  }
+
+  def searchZone(input : String) = Action {
+    if (input.length < 2) {
+      Ok(Json.obj("message" -> "Search with at least 2 characters"))
+    } else {
+      val result: List[ZoneSearchResult] = SearchUtil.searchZone(input).asScala.toList
+      if (result.isEmpty) {
+        Ok(Json.obj("message" -> "No match"))
+      } else {
+        Ok(Json.obj("entries" -> Json.toJson(result)))
+      }
+    }
+  }
+
+  def searchAirline(input : String) = Action {
+    if (input.length < 2) {
+      Ok(Json.obj("message" -> "Search with at least 3 characters"))
+    } else {
+      val result: List[AirlineSearchResult] = SearchUtil.searchAirline(input).asScala.toList
+      if (result.isEmpty) {
+        Ok(Json.obj("message" -> "No match"))
+      } else {
+        Ok(Json.obj("entries" -> Json.toJson(result)))
+      }
+    }
+  }
+
+  def searchAlliance(input : String) = Action {
+    if (input.length < 2) {
+      Ok(Json.obj("message" -> "Search with at least 3 characters"))
+    } else {
+      val result: List[AllianceSearchResult] = SearchUtil.searchAlliance(input).asScala.toList
+      if (result.isEmpty) {
+        Ok(Json.obj("message" -> "No match"))
+      } else {
+        Ok(Json.obj("entries" -> Json.toJson(result)))
       }
     }
   }

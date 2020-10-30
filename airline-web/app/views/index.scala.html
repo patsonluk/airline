@@ -75,7 +75,7 @@
 	<script src="@routes.Assets.versioned("javascripts/log.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/event.js")"></script>
 	<script src="@routes.Assets.versioned("javascripts/search.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
+	<script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
@@ -2527,30 +2527,160 @@
 
 			  <div id="searchCanvas" style="height: 100%; display: none; justify-content: center;">
 				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section mainSection">
-					  <h2>Flights</h2>
-                      <div style="margin-top: 10px">
-						  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
-							  <div style="float: left; width : 50%; position: relative;">
-								  <div class="airportSearchInput">
-									  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" oninput="airportSearchChange($(this), $('#fromAirportResult'))" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#fromAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.fromAirport'), $('#fromAirportResult'))">
-									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+					  <div style="width: 100%; min-height: 80px;" class="titlesContainer">
+					  	<div class="titleSelection selected" data-search-type="route"><h2>Tickets</h2></div>
+					    <div class="titleSelection" data-search-type="history"><h2>History</h2></div>
+
+<!--						<div class="titleSelection"  style="position: absolute; left: 50%; transform: translate(-50%, 0%) translate(200px, 0px);"><h2>History</h2></div>-->
+					  </div>
+					  <div class="routeSearch searchContainer" style="overflow-y : auto; display: flex; flex-flow: column;">
+						  <div style="margin-top: 10px">
+							  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="airport">
+										  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.routeSearch input.fromAirport'))" onkeydown="searchKeyDown(event, $('div.routeSearch input.fromAirport'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
 								  </div>
-								  <div id="fromAirportResult" class="airportSearchResult"></div>
-							  </div>
-							  <div style="float: left; width : 50%; position: relative;">
-								  <div class="airportSearchInput">
-									  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" oninput="airportSearchChange($(this), $('#toAirportResult'))" onfocus="$(this).select();" onfocusout="airportSearchFocusOut($(this), $('#toAirportResult'))" onkeyup="airportSearchKeyUp(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))" onkeydown="airportSearchKeyDown(event, $('#searchCanvas input.toAirport'), $('#toAirportResult'))">
-									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="airport">
+										  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.routeSearch input.toAirport'))" onkeydown="searchKeyDown(event, $('div.routeSearch input.toAirport'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
 								  </div>
-								  <div id="toAirportResult" class="airportSearchResult"></div>
+								  <div style="clear: both;"></div>
 							  </div>
-							  <div style="clear: both;"></div>
+
+							  <div class="button search" tabindex="103" onkeypress="searchButtonKeyPress(event, $(this))" onclick="searchFlight($('div.routeSearch input.fromAirport').data('selectedId'), $('div.routeSearch input.toAirport').data('selectedId'))">Search</div>
 						  </div>
 
-						  <div class="button search" tabindex="103" onkeypress="airportSearchButtonKeyPress(event, $(this))" onclick="searchFlight($('input.fromAirport').data('selectedAirportId'), $('input.toAirport').data('selectedAirportId'))">Search</div>
+						  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px;"></div>
 				  	  </div>
+					  <div class="historySearch searchContainer" style="overflow-y : auto; flex-grow: 1; display: flex; flex-flow: column;">
+					  	 <div style="margin-top: 10px">
+							<div class="locationCriteria" style="float: left; width : 50%; position: relative; box-sizing: border-box;">
+							  <div class="searchCriterion"> <!-- Airport -->
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="airport">
+										  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" data-search-group="fromDestination" placeholder="From Airport (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromAirport'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromAirport'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
+								  </div>
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="airport">
+										  <input type="text" style="width: 80%" tabindex="102" class="toAirport" data-search-group="toDestination" placeholder="To Airport (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toAirport'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toAirport'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
+								  </div>
+								  <div style="clear: both;"></div>
+							  </div>
+							  <div class="searchCriterion"> <!-- Country -->
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="country">
+										  <input type="text" style="width: 80%" tabindex="103" class="fromCountry" data-search-group="fromDestination" placeholder="From Country (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromCountry'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromCountry'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
+								  </div>
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="country">
+										  <input type="text" style="width: 80%" tabindex="104" class="toCountry" data-search-group="toDestination" placeholder="To Country (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toCountry'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toCountry'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
+								  </div>
+								  <div style="clear: both;"></div>
+							  </div>
+							  <div class="searchCriterion"> <!-- Country -->
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="zone">
+										  <input type="text" style="width: 80%" tabindex="105" class="fromZone" data-search-group="fromDestination" placeholder="From Zone (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.fromZone'))" onkeydown="searchKeyDown(event, $('div.historySearch input.fromZone'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
+								  </div>
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="zone">
+										  <input type="text" style="width: 80%" tabindex="106" class="toZone" data-search-group="toDestination" placeholder="To Zone (Any)" autocomplete="no"  oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.toZone'))" onkeydown="searchKeyDown(event, $('div.historySearch input.toZone'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
+								  </div>
+								  <div style="clear: both;"></div>
+							  </div>
+							</div>
+							<div class="otherCriteria" style="float: right; width : 50%; position: relative; box-sizing: border-box;">
+								<div style="float: left; width : 50%; position: relative;">
+									<div class = "searchCriterion">
+										<div class="searchInput" data-search-type="airline">
+											<input type="text" style="width: 80%" tabindex="107" class="airline" data-search-group="entity" placeholder="Airline (Any)" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.airline'))" onkeydown="searchKeyDown(event, $('div.historySearch input.airline'))">
+											<span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+										</div>
+										<div class="searchResult"></div>
+									</div>
+									<div class = "searchCriterion">
+										<div class="searchInput" data-search-type="alliance">
+											<input type="text" style="width: 80%" tabindex="108" class="alliance" data-search-group="entity" placeholder="Alliance (Any)" autocomplete="no"  oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.historySearch input.alliance'))" onkeydown="searchKeyDown(event, $('div.historySearch input.alliance'))">
+											<span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+										</div>
+										<div class="searchResult"></div>
+									</div>
+								</div>
+								<div style="float: left; width : 50%; position: relative;">
+									<div class="table">
+										<div class="table-row searchCriterion">
+											<div class="label" style="width : 70%">Capacity >=</div>
+											<div class="data"><input type="text"  tabindex="109" class="capacity" size="6" placeholder="Any" onfocusout="numberInputFocusOut($(this))"></div>
+										</div>
+										<div class="table-row searchCriterion">
+											<div class="label" style="width : 70%">Capacity Change >=</div>
+											<div class="data"><input type="text"  tabindex="109" class="capacityDelta" size="6" placeholder="Any" onfocusout="numberInputFocusOut($(this))"></div>
+										</div>
+									</div>
+									<img class="clickable" onclick="resetSearchInput($(this))" src='@routes.Assets.versioned("images/icons/24px/arrow-circle-135.png")' title="reset">
+								</div>
 
-					  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px;"></div>
+							</div>
+							<div style='clear: both;'></div>
+						  <div class="button search" tabindex="111" onkeypress="searchButtonKeyPress(event, $(this))" onclick="searchLinkHistory()">Search</div>
+					     </div>
+						 <div id="historySearchResult" class="section" style="overflow-y: auto; flex-grow: 1;">
+							<div class="table data" style="height: 20px; width: 100%">
+								<div class="table-header sortHeader">
+									<div class="cell clickable" style="width: 8%" data-sort-property="cycleDelta" data-sort-order="decending">Cycle</div>
+									<div class="cell clickable" style="width: 14%" data-sort-property="airlineName" data-sort-order="ascending">Airline</div>
+									<div class="cell clickable" style="width: 16%" data-sort-property="fromAirportIata" data-sort-order="descending">From Airport</div>
+									<div class="cell clickable" style="width: 16%" data-sort-property="toAirportIata" data-sort-order="descending">To Airport</div>
+<!--									<div class="cell clickable" style="width: 12%" data-sort-property="model" data-sort-order="ascending">Model</div>-->
+									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacityTotal" data-sort-order="ascending">Capacity (Freq.)</div>
+									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacityDeltaTotal" data-sort-order="descending">Cap Chg.</div>
+                                    <div class="cell" style="width: 15%">Price</div>
+									<div class="cell" style="width: 15%">Price Chg.</div>
+								</div>
+							</div>
+							<div style="height: calc(100% - 20px - 20px); width: 100%; overflow: auto;">
+								<div class="table data linkHistorySearchTable" style="width: 100%; table-layout: fixed;">
+									<div class="table-header">
+										<div class="cell" style="width: 8%; border-bottom: none;"></div>
+										<div class="cell" style="width: 14%; border-bottom: none;"></div>
+										<div class="cell" style="width: 16%; border-bottom: none;"></div>
+										<div class="cell" style="width: 16%; border-bottom: none;"></div>
+<!--										<div class="cell" style="width: 12%; border-bottom: none;"></div>-->
+										<div class="cell" style="width: 8%; border-bottom: none;"></div>
+										<div class="cell" style="width: 8%; border-bottom: none;"></div>
+                                        <div class="cell" style="width: 15%; border-bottom: none;"></div>
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
+									</div>
+								</div>
+							</div>
+                         </div>
+					  </div>
+
+
 				  </div>
 				<div style="clear: both;"></div>
 			  </div>

@@ -112,6 +112,8 @@ object Constants {
   val OLYMPIC_AIRLINE_STATS_TABLE = "olympics_airline_stats"
   val OLYMPIC_AIRLINE_GOAL_TABLE = "olympics_airline_goal"
   val EVENT_PICKED_REWARD_TABLE = "event_picked_reward"
+  val LINK_CHANGE_HISTORY_TABLE ="link_change_history"
+  val LINK_CHANGE_HISTORY_INDEX_PREFIX = "link_change_index_"
 
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"

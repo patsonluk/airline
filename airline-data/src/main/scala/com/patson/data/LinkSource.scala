@@ -6,6 +6,7 @@ import com.patson.data.Constants._
 import com.patson.data.UserSource.dateFormat
 import com.patson.model._
 import com.patson.model.airplane._
+import com.patson.model.history.LinkChange
 import com.patson.util.{AirlineCache, AirplaneModelCache, AirportCache}
 
 import scala.collection.mutable.{HashMap, HashSet, ListBuffer, Set}
@@ -61,37 +62,27 @@ object LinkSource {
       
       val links = new ListBuffer[Link]()
       
-      val airportIds : Set[Int] = new HashSet[Int]
-      val airlineIds : Set[Int] = new HashSet[Int]
       val linkIds : Set[Int] = new HashSet[Int]
+      val airportIds : Set[Int] = new HashSet[Int]
       
       while (resultSet.next()) {
         airportIds += resultSet.getInt("from_airport")
         airportIds += resultSet.getInt("to_airport")
-        airlineIds += resultSet.getInt("airline")
         linkIds += resultSet.getInt("id")
-      }
-      
-      val airportCache : Map[Int, Airport] = loadDetails.get(DetailType.AIRPORT) match {
-        case Some(fullLoad) => {
-          val airports = AirportSource.loadAirportsByIds(airportIds.toList, fullLoad)
-          airports.map( airport => (airport.id, airport)).toMap
-          
-        }
-        case None => airportIds.map(id => (id, Airport.fromId(id))).toMap 
-      }
-      
-      val airlineCache : Map[Int, Airline] = loadDetails.get(DetailType.AIRLINE) match {
-        case Some(fullLoad) => {
-          val airlines = AirlineSource.loadAirlinesByIds(airlineIds.toList, fullLoad)
-          airlines.map( airline => (airline.id, airline)).toMap
-        }
-        case None => airlineIds.map(id => (id, Airline.fromId(id))).toMap 
       }
       
       val assignedAirplaneCache : Map[Int, Map[Airplane, LinkAssignment]] = loadDetails.get(DetailType.AIRPLANE) match {
         case Some(fullLoad) => loadAssignedAirplanesByLinks(connection, linkIds.toList)
         case None => Map.empty
+      }
+
+      val airportCache : Map[Int, Airport] = loadDetails.get(DetailType.AIRPORT) match {
+        case Some(fullLoad) => {
+          val airports = AirportSource.loadAirportsByIds(airportIds.toList, fullLoad)
+          airports.map( airport => (airport.id, airport)).toMap
+
+        }
+        case None => airportIds.map(id => (id, Airport.fromId(id))).toMap
       }
       
       resultSet.beforeFirst()
@@ -100,9 +91,12 @@ object LinkSource {
         val toAirportId = resultSet.getInt("to_airport")
         val airlineId = resultSet.getInt("airline")
         
-        val fromAirport = airportCache.get(fromAirportId)
-        val toAirport = airportCache.get(toAirportId)
-        val airline = airlineCache.get(airlineId)
+        val fromAirport = airportCache.get(fromAirportId) //Do not use AirportCache as fullLoad will be slow
+        val toAirport = airportCache.get(toAirportId) //Do not use AirportCache as fullLoad will be slow
+        val airline = loadDetails.get(DetailType.AIRLINE) match {
+          case Some(fullLoad) => AirlineCache.getAirline(airlineId, fullLoad)
+          case None => Some(Airline.fromId(airlineId))
+        }
         
         if (fromAirport.isDefined && toAirport.isDefined && airline.isDefined) {
           val link = Link(
@@ -121,6 +115,11 @@ object LinkSource {
 
           assignedAirplaneCache.get(link.id).foreach { airplaneAssignments =>
             link.setAssignedAirplanes(airplaneAssignments)
+          }
+          if (assignedAirplaneCache.isEmpty) { //then try to load the assigned model by the record
+            AirplaneModelCache.getModel(resultSet.getInt("airplane_model")).foreach {
+              model => link.setAssignedModel(model)
+            }
           }
           
           links += link          
@@ -288,20 +287,20 @@ object LinkSource {
     loadLinksByCriteria(List(("to_airport", toAirportId)), loadDetails)
   }
   
-  def saveLink(link : Link) : Option[Link] = {
-     saveLink(link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.flightType, link.flightNumber, link.getAssignedAirplanes) match { 
-       case Some(generatedId) => 
-         link.id = generatedId
-         Some(link)
-       case None =>
-         None
-     }
-  }
+//  def saveLink2(link : Link) : Option[Link] = {
+//       case Some(generatedId) =>
+//         link.id = generatedId
+//         Some(link)
+//       case None =>
+//         None
+//     }
+//  }
   
-  def saveLink(fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Double, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, flightNumber : Int, assignedAirplanes : Map[Airplane, LinkAssignment] = Map.empty) : Option[Int] = {
+  def saveLink(link : Link) : Option[Link] = {
+    val (fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Int, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, flightNumber : Int, assignedAirplanes : Map[Airplane, LinkAssignment]) = (link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.flightType, link.flightNumber, link.getAssignedAirplanes)
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
     try {
       preparedStatement.setInt(1, fromAirportId)
@@ -319,6 +318,7 @@ object LinkSource {
       preparedStatement.setInt(13, frequency)
       preparedStatement.setInt(14, flightType.id)
       preparedStatement.setInt(15, flightNumber)
+      preparedStatement.setInt(16, link.getAssignedModel().map(_.id).getOrElse(0))
       
       val updateCount = preparedStatement.executeUpdate()
       //println("Saved " + updateCount + " link!")
@@ -330,7 +330,11 @@ object LinkSource {
         //  println("Id is " + generatedId)
           //try to save assigned airplanes if any
           updateAssignedPlanes(generatedId, assignedAirplanes)
-          return Some(generatedId)
+          link.id = generatedId
+
+          ChangeHistorySource.saveLinkChange(buildChangeHistory(None, Some(link)))
+
+          return Some(link)
         }
       }
       None
@@ -343,8 +347,9 @@ object LinkSource {
   def saveLinks(links : List[Link]) : Int = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     var updateCount = 0
+    val changeHistoryEntries = ListBuffer[LinkChange]()
     connection.setAutoCommit(false)
     try {
       links.foreach { link =>
@@ -363,6 +368,7 @@ object LinkSource {
         preparedStatement.setInt(13, link.frequency)
         preparedStatement.setInt(14, link.flightType.id)
         preparedStatement.setInt(15, link.flightNumber)
+        preparedStatement.setInt(16, link.getAssignedModel().map(_.id).getOrElse(0))
         
         updateCount += preparedStatement.executeUpdate()
         //println("Saved " + updateCount + " link!")
@@ -372,6 +378,8 @@ object LinkSource {
           if (generatedKeys.next()) {
             val generatedId = generatedKeys.getInt(1)
             link.id = generatedId
+
+            changeHistoryEntries.append(buildChangeHistory(None, Some(link)))
           }
         }
       }
@@ -380,16 +388,20 @@ object LinkSource {
       preparedStatement.close()
       connection.close()
     }
+
     links.foreach { link =>
       updateAssignedPlanes(link.id, link.getAssignedAirplanes())
     }
+
+    ChangeHistorySource.saveLinkChanges(changeHistoryEntries.toList)
     updateCount
   }
   
   def updateLink(link : Link) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, last_update = ? WHERE id = ?")
+    val existingLink = loadLinkById(link.id)
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, airplane_model = ?, last_update = ? WHERE id = ?")
 
     try {
       preparedStatement.setInt(1, link.price(ECONOMY))
@@ -403,11 +415,16 @@ object LinkSource {
       preparedStatement.setInt(9, link.frequency)
       preparedStatement.setInt(10, link.flightType.id)
       preparedStatement.setInt(11, link.flightNumber)
-      preparedStatement.setTimestamp(12, new java.sql.Timestamp(new Date().getTime()))
-      preparedStatement.setInt(13, link.id)
+      preparedStatement.setInt(12, link.getAssignedModel().map(_.id).getOrElse(0))
+      preparedStatement.setTimestamp(13, new java.sql.Timestamp(new Date().getTime()))
+      preparedStatement.setInt(14, link.id)
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
+
+      if (hasChange(existingLink.get, link)) {
+        ChangeHistorySource.saveLinkChange(buildChangeHistory(existingLink, Some(link)))
+      }
 
       updateCount
     } finally {
@@ -419,7 +436,9 @@ object LinkSource {
   def updateLinks(links : List[Link]) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, last_update = ? WHERE id = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, airplane_model = ?, last_update = ? WHERE id = ?")
+    val existingLinks = loadLinksByIds(links.map(_.id)).map(link => (link.id, link)).toMap
+    val changeEntries = ListBuffer[LinkChange]()
 
     connection.setAutoCommit(false)
     try {
@@ -435,18 +454,34 @@ object LinkSource {
         preparedStatement.setInt(9, link.frequency)
         preparedStatement.setInt(10, link.flightType.id)
         preparedStatement.setInt(11, link.flightNumber)
-        preparedStatement.setTimestamp(12, new java.sql.Timestamp(new Date().getTime()))
-        preparedStatement.setInt(13, link.id)
+        preparedStatement.setInt(12, link.getAssignedModel().map(_.id).getOrElse(0))
+        preparedStatement.setTimestamp(13, new java.sql.Timestamp(new Date().getTime()))
+        preparedStatement.setInt(14, link.id)
         preparedStatement.addBatch()
+
+        if (hasChange(existingLinks.get(link.id).get, link)) {
+          changeEntries.append(buildChangeHistory(existingLinks.get(link.id), Some(link)))
+        }
       }
       
       preparedStatement.executeBatch()
+
+      ChangeHistorySource.saveLinkChanges(changeEntries.toList)
       connection.commit()
     } finally {
       preparedStatement.close()
       connection.close()
     }
     
+  }
+
+  def hasChange(existingLink : Link, newLink : Link) : Boolean = {
+    newLink.capacity.economyVal != existingLink.capacity.economyVal ||
+    newLink.capacity.businessVal != existingLink.capacity.businessVal ||
+    newLink.capacity.firstVal != existingLink.capacity.firstVal ||
+    newLink.price.economyVal != existingLink.price.economyVal ||
+    newLink.price.businessVal != existingLink.price.businessVal ||
+    newLink.price.firstVal != existingLink.price.firstVal
   }
   
   
@@ -533,7 +568,7 @@ object LinkSource {
       //open the hsqldb
     val connection = Meta.getConnection()
     try {
-      val purgingLinkIds = loadLinksByCriteria(criteria, ID_LOAD).map(_.id)
+      val purgingLinks = loadLinksByCriteria(criteria, Map(DetailType.AIRLINE -> true, DetailType.AIRPORT -> false, DetailType.AIRPLANE -> false)).map(link => (link.id, link)).toMap
 
       var queryString = "DELETE FROM link "
       
@@ -557,16 +592,70 @@ object LinkSource {
 
       println("Deleted " + deletedCount + " link records")
       //purge alert records
-      val purgingAlerts = AlertSource.loadAlertsByCategoryAndTargetIds(AlertCategory.LINK_CANCELLATION, purgingLinkIds)
+      val purgingAlerts = AlertSource.loadAlertsByCategoryAndTargetIds(AlertCategory.LINK_CANCELLATION, purgingLinks.keys.toList)
       AlertSource.deleteAlerts(purgingAlerts)
 
       println("Purged " + purgingAlerts.size + " alert records")
+
+      //save changes
+      val changeEntries = ListBuffer[LinkChange]()
+      purgingLinks.foreach {
+        case (linkId, link) =>
+          changeEntries.append(buildChangeHistory(Some(link), None))
+      }
+
+      ChangeHistorySource.saveLinkChanges(changeEntries.toList)
 
       deletedCount
     } finally {
       connection.close()
     }
-      
+  }
+
+  def buildChangeHistory(existingLinkOption : Option[Link], newLinkOption : Option[Link]) : LinkChange = {
+    val existingPrice = existingLinkOption match { //for new link, the price is not consider as delta
+      case Some(existingLink) => existingLink.price
+      case None => newLinkOption.map(_.price).getOrElse(LinkClassValues.getInstance())
+    }
+    val existingCapacity = existingLinkOption match {
+      case Some(existingLink) => existingLink.capacity
+      case None => LinkClassValues.getInstance()
+    }
+
+    val newPrice = newLinkOption match { //for link removal, the price is not consider as delta
+      case Some(newLink) => newLink.price
+      case None => existingLinkOption.map(_.price).getOrElse(LinkClassValues.getInstance())
+    }
+
+    val newCapacity = newLinkOption match {
+      case Some(newLink) => newLink.capacity
+      case None => LinkClassValues.getInstance()
+    }
+
+
+    val link = existingLinkOption.getOrElse(newLinkOption.get)
+
+    val entry = LinkChange(
+      linkId = link.id,
+      price = newPrice,
+      priceDelta = newPrice - existingPrice,
+      capacity = newCapacity,
+      capacityDelta = newCapacity - existingCapacity,
+      fromAirport = link.from,
+      toAirport = link.to,
+      fromCountry = Country.fromCode(link.from.countryCode),
+      toCountry = Country.fromCode(link.to.countryCode),
+      fromZone = link.from.zone,
+      toZone = link.to.zone,
+      airline = link.airline,
+      alliance = link.airline.getAllianceId().map(Alliance.fromId(_)),
+      frequency = newLinkOption.map(_.frequency).getOrElse(0),
+      flightNumber = link.flightNumber,
+      airplaneModel = link.getAssignedModel().getOrElse(Model.fromId(0)),
+      rawQuality = link.rawQuality,
+      cycle =  CycleSource.loadCycle())
+
+    entry
   }
   
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
