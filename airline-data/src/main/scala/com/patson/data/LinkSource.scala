@@ -63,14 +63,26 @@ object LinkSource {
       val links = new ListBuffer[Link]()
       
       val linkIds : Set[Int] = new HashSet[Int]
+      val airportIds : Set[Int] = new HashSet[Int]
       
       while (resultSet.next()) {
+        airportIds += resultSet.getInt("from_airport")
+        airportIds += resultSet.getInt("to_airport")
         linkIds += resultSet.getInt("id")
       }
       
       val assignedAirplaneCache : Map[Int, Map[Airplane, LinkAssignment]] = loadDetails.get(DetailType.AIRPLANE) match {
         case Some(fullLoad) => loadAssignedAirplanesByLinks(connection, linkIds.toList)
         case None => Map.empty
+      }
+
+      val airportCache : Map[Int, Airport] = loadDetails.get(DetailType.AIRPORT) match {
+        case Some(fullLoad) => {
+          val airports = AirportSource.loadAirportsByIds(airportIds.toList, fullLoad)
+          airports.map( airport => (airport.id, airport)).toMap
+
+        }
+        case None => airportIds.map(id => (id, Airport.fromId(id))).toMap
       }
       
       resultSet.beforeFirst()
@@ -79,14 +91,8 @@ object LinkSource {
         val toAirportId = resultSet.getInt("to_airport")
         val airlineId = resultSet.getInt("airline")
         
-        val fromAirport = loadDetails.get(DetailType.AIRPORT) match {
-          case Some(fullLoad) => AirportCache.getAirport(fromAirportId, fullLoad)
-          case None => Some(Airport.fromId(fromAirportId))
-        }
-        val toAirport = loadDetails.get(DetailType.AIRPORT) match {
-          case Some(fullLoad) => AirportCache.getAirport(toAirportId, fullLoad)
-          case None => Some(Airport.fromId(toAirportId))
-        }
+        val fromAirport = airportCache.get(fromAirportId) //Do not use AirportCache as fullLoad will be slow
+        val toAirport = airportCache.get(toAirportId) //Do not use AirportCache as fullLoad will be slow
         val airline = loadDetails.get(DetailType.AIRLINE) match {
           case Some(fullLoad) => AirlineCache.getAirline(airlineId, fullLoad)
           case None => Some(Airline.fromId(airlineId))
