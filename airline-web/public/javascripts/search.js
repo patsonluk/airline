@@ -324,7 +324,7 @@ function getDeltaSpan(delta) {
     var span = $('<span></span>')
     var displayValue
     if (delta < 0) {
-        span.append('<img src="assets/images/icons/12px/arrow-270.png">')
+        span.append('<img src="assets/images/icons/12px/arrow-270-red.png">')
         displayValue = delta * -1
     } else {
         span.append('<img src="assets/images/icons/12px/arrow-090.png">')
@@ -689,6 +689,62 @@ function getAllianceTextEntry(alliance) {
     return alliance.allianceName
 }
 
+function positionTitles(titlesContainer) {
+    titlesContainer.show();
+    var titleSelections = titlesContainer.children('div.titleSelection')
+    titleSelections.addClass('clickable')
 
+    var selectedDiv = titlesContainer.children('div.titleSelection.selected')
+
+    var selectedIndex = titleSelections.index(selectedDiv)
+
+    var divWidths = []
+
+    $.each(titleSelections, function(index, titleSelection) {
+        divWidths[index] = $(titleSelection).width()
+    })
+
+    var margin = 20
+
+    $.each(titleSelections, function(index, titleSelection) {
+        var offset = 0
+        if (selectedIndex < index) { //shift right
+            offset = divWidths[selectedIndex] / 2 + margin
+
+            for (i = selectedIndex + 1; i < index ; i ++) {
+                offset += divWidths[i]
+                offset += margin
+            }
+
+            offset += divWidths[index] / 2
+
+        } else if (selectedIndex > index) { //shift left
+            offset -= divWidths[selectedIndex] / 2 + margin
+            for (i = selectedIndex -1; i > index ; i --) {
+                offset -= divWidths[i]
+                offset -= margin
+            }
+            offset -= divWidths[index] / 2
+        }
+
+        //$(titleSelection).css({ "position": "absolute", "left" : "50%", "transform" : "translate(-50%, 0%) translate(" + (index - selectedIndex) * 150 + "px, 0)" })
+        $(titleSelection).css({ "position": "absolute", "left" : "50%", "bottom": "0", "transform" : "translate(-50%, 0%) translate(" + offset + "px, 0)" })
+    })
+
+    titleSelections.off("click.select");
+    titleSelections.on("click.select", function(){
+      $(this).siblings().removeClass('selected')
+      $(this).addClass('selected')
+      positionTitles(titlesContainer)
+    });
+}
+
+function titleNavigate(arrow, indexChange) {
+    var titlesContainer = arrow.closest('.titlesContainer')
+    var selectedDiv = titlesContainer.find('.titleSelection.selected')
+    var selectedIndex = titlesContainer.find('.titleSelection').index(selectedDiv)
+    var newSelectedDiv = titlesContainer.find('.titleSelection')[selectedIndex + indexChange]
+    $(newSelectedDiv).trigger('click')
+}
 
 

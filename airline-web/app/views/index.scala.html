@@ -400,7 +400,7 @@
 									<div class="table" id="linkHistoryDetails" style="width: 100%">
 										<h4>
 											History
-											<img src='@routes.Assets.versioned("images/icons/chart-pie.png")' class="button" title="View Passenger Composition"onclick="showLinkComposition($('#actionLinkId').val())" style="vertical-align: text-bottom">
+											<img src='@routes.Assets.versioned("images/icons/chart-pie.png")' class="clickable" title="View Passenger Composition"onclick="showLinkComposition($('#actionLinkId').val())" style="vertical-align: text-bottom">
 										</h4>
 										<div class="table-row">
 											<div class="label"><h5>Price:</h5></div>
@@ -468,8 +468,8 @@
 									<div class="divider"></div>
 									<h4>
 										<span>Direct Competitions</span>
-										<img src='@routes.Assets.versioned("images/icons/chart-up.png")' class="button" title="View Rival History"onclick="showLinkRivalHistory($('#actionLinkId').val())" style="vertical-align: text-bottom">
-										<img src='@routes.Assets.versioned("images/icons/magnifier.png")' class="button" title="View Rival Details"onclick="showLinkRivalDetails($('#actionLinkId').val())" style="vertical-align: text-bottom">
+										<img src='@routes.Assets.versioned("images/icons/chart-up.png")' class="clickable" title="View Rival History"onclick="showLinkRivalHistory($('#actionLinkId').val())" style="vertical-align: text-bottom">
+										<img src='@routes.Assets.versioned("images/icons/magnifier.png")' class="clickable" title="View Rival Details"onclick="showLinkRivalDetails($('#actionLinkId').val())" style="vertical-align: text-bottom">
 									</h4>
 									<div class="table data" id="linkCompetitons" style="width: 100%">
 										<div class='table-header'>
@@ -506,8 +506,8 @@
 										<div class="label"><h5>From:</h5></div>
 										<div class="value">
 											<span id="planLinkFromAirportName" class="clickable"></span>
-											<img class="button" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
-											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/globe--pencil.png")' class='button' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
+											<img class="clickable" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
+											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/globe--pencil.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
 
 											<div class="value"><select id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 
@@ -517,7 +517,7 @@
 										<div class="label"><h5>To:</h5></div>
 										<div class="value">
 											<span id="planLinkToAirportName" class="clickable"></span>
-											<img class="button"  src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(false)">
+											<img class="clickable"  src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(false)">
 										</div>
 
 
@@ -2528,10 +2528,13 @@
 			  <div id="searchCanvas" style="height: 100%; display: none; justify-content: center;">
 				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section mainSection">
 					  <div style="width: 100%; min-height: 80px;" class="titlesContainer">
-					  	<div class="titleSelection selected" data-search-type="route"><h2>Tickets</h2></div>
-					    <div class="titleSelection" data-search-type="history"><h2>History</h2></div>
+						  <div class="titleNavigation">
+							  <div style="float:left;" class="left" onclick="titleNavigate($(this), -1)"><img class='button' src='@routes.Assets.versioned("images/icons/24px/arrow-180.png")' style="opacity: 0.8"></div>
 
-<!--						<div class="titleSelection"  style="position: absolute; left: 50%; transform: translate(-50%, 0%) translate(200px, 0px);"><h2>History</h2></div>-->
+							  <div style="float:right;" class="right" onclick="titleNavigate($(this), 1)"><img class='button' src='@routes.Assets.versioned("images/icons/24px/arrow.png")' style="opacity: 0.8"></div>
+						  </div>
+					    <div class="titleSelection selected" data-search-type="route">Tickets</div>
+					    <div class="titleSelection" data-search-type="history">History</div>
 					  </div>
 					  <div class="routeSearch searchContainer" style="overflow-y : auto; display: flex; flex-flow: column;">
 						  <div style="margin-top: 10px">
@@ -2649,7 +2652,7 @@
 						  <div class="button search" tabindex="111" onkeypress="searchButtonKeyPress(event, $(this))" onclick="searchLinkHistory()">Search</div>
 					     </div>
 						 <div id="historySearchResult" class="section" style="overflow-y: auto; flex-grow: 1;">
-							<div class="table data" style="height: 20px; width: 100%">
+							<div class="table data" style="height: 20px; width: 100%; min-width: 700px;">
 								<div class="table-header sortHeader">
 									<div class="cell clickable" style="width: 8%" data-sort-property="cycleDelta" data-sort-order="decending">Cycle</div>
 									<div class="cell clickable" style="width: 14%" data-sort-property="airlineName" data-sort-order="ascending">Airline</div>
@@ -2662,8 +2665,8 @@
 									<div class="cell" style="width: 15%">Price Chg.</div>
 								</div>
 							</div>
-							<div style="height: calc(100% - 20px - 20px); width: 100%; overflow: auto;">
-								<div class="table data linkHistorySearchTable" style="width: 100%; table-layout: fixed;">
+							<div style="height: calc(100% - 20px - 20px);  width: 100%; min-width: 700px; overflow-y: auto;">
+								<div class="table data linkHistorySearchTable" style="width: 100%; table-layout: fixed; min-width: 700px;">
 									<div class="table-header">
 										<div class="cell" style="width: 8%; border-bottom: none;"></div>
 										<div class="cell" style="width: 14%; border-bottom: none;"></div>
