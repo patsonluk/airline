@@ -19,6 +19,7 @@ function showSearchCanvas() {
     titleSelections.on("click.refreshSearchDiv", function(){
       refreshSearchDiv($(this))
     });
+    updateNavigationArrows(titlesContainer)
 
     initializeHistorySearch()
 }
@@ -596,7 +597,6 @@ function changeSelection(indexChange, resultContainer) {
     if (currentEntries[currentIndex]) {
         $(currentEntries[currentIndex]).addClass("selected")
     }
-
  //   resultContainer.data("selectedIndex", currentIndex)
 }
 
@@ -736,6 +736,7 @@ function positionTitles(titlesContainer) {
       $(this).siblings().removeClass('selected')
       $(this).addClass('selected')
       positionTitles(titlesContainer)
+      updateNavigationArrows(titlesContainer, true)
     });
 }
 
@@ -743,8 +744,36 @@ function titleNavigate(arrow, indexChange) {
     var titlesContainer = arrow.closest('.titlesContainer')
     var selectedDiv = titlesContainer.find('.titleSelection.selected')
     var selectedIndex = titlesContainer.find('.titleSelection').index(selectedDiv)
-    var newSelectedDiv = titlesContainer.find('.titleSelection')[selectedIndex + indexChange]
+    var newIndex = selectedIndex + indexChange
+
+    var newSelectedDiv = titlesContainer.find('.titleSelection')[newIndex]
     $(newSelectedDiv).trigger('click')
+}
+
+function updateNavigationArrows($titlesContainer, animated) {
+    var $selectedDiv = $titlesContainer.find('.titleSelection.selected')
+    var selectedIndex = $titlesContainer.find('.titleSelection').index($selectedDiv)
+    var selectionLength = $titlesContainer.find('.titleSelection').length
+
+
+    if (selectionLength <= 1) {
+        $titlesContainer.find('div.left').hide()
+        $titlesContainer.find('div.right').hide()
+    } else {
+        var duration = updateNavigationArrows ? 500 : 0
+
+        if (selectedIndex <= 0) {
+            $titlesContainer.find('div.left').fadeOut(duration)
+        } else {
+            $titlesContainer.find('div.left').fadeIn(duration)
+        }
+
+        if (selectedIndex >= selectionLength - 1) {
+            $titlesContainer.find('div.right').fadeOut(duration)
+        } else {
+            $titlesContainer.find('div.right').fadeIn(duration)
+        }
+    }
 }
 
 
