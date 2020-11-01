@@ -13,10 +13,9 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
 import play.api.mvc._
-
 import com.patson.data.CountrySource
 import com.patson.data.AirportSource
-import com.patson.util.ChampionUtil
+import com.patson.util.{ChampionUtil, CountryCache}
 import javax.inject.Inject
 
 
@@ -41,7 +40,7 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   
   
   def getCountry(countryCode : String) = Action {
-    CountrySource.loadCountryByCode(countryCode) match {
+    CountryCache.getCountry(countryCode) match {
       case Some(country) =>
         var jsonObject : JsObject = Json.toJson(country).asInstanceOf[JsObject]
         val airports = AirportSource.loadAirportsByCountry(countryCode)

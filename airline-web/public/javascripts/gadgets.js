@@ -522,3 +522,4 @@ function isTouchDevice() {
     return false;
   }
 }
+

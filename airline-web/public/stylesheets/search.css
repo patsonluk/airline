@@ -1,8 +1,8 @@
-.airportEntry.selected, .airportSearchResult .airportEntry:hover {
+.searchResultEntry.selected, .searchResult .searchResultEntry:hover {
     background-color: #cbdff2;
 }
 
-.airportSearchResult .airportEntry:hover {
+.searchResult .searchResultEntry:hover {
     cursor: pointer;
 }
 
@@ -15,6 +15,14 @@
 #routeSearchResult .ticketTitle {
     margin-bottom: 10px;
 }
+
+.ticketTitle {
+    color: #5f6368;
+    font: 400 18px/16px Roboto, HelveticaNeue, Arial, sans-serif;
+    letter-spacing: 0.3px;
+    margin-bottom: 10px;
+}
+
 
 #routeSearchResult .remark {
     font-size : 8px;
@@ -38,6 +46,10 @@
     color: #5f6368;
 }
 
+#searchCanvas div.historySearch input {
+    font-size: 14px;
+}
+
 
 
 #searchCanvas input::placeholder {
@@ -50,7 +62,7 @@
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
 }
 
-.airportSearchResult {
+.searchResult {
     float: left;
     width: 300px;
     position: absolute;
@@ -58,9 +70,10 @@
     background-color: #ffffff;
     box-shadow:0 0 2px #666 inset;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    z-index: 1;
 }
 
-.airportSearchResult div {
+.searchResult div {
     margin: 5px;
 }
 
@@ -80,7 +93,7 @@
 }
 
 
-#searchCanvas .button {
+#searchCanvas .search.button {
     box-shadow:inset 0px 1px 0px 0px #ffffff;
     background:linear-gradient(to bottom, #ededed 5%, #dfdfdf 100%);
 	background-color:#ededed;
@@ -97,30 +110,63 @@
 	/*font-family:Arial;
 	font-size:15px;
 	font-weight:bold;*/
-
-}
-
-#searchCanvas .button {
-    width: 200px;
+	width: 200px;
     text-align: center;
     display: block;
     margin : 10px auto;
+
 }
 
-#searchCanvas .button:hover {
+#searchCanvas .search.button:hover {
 	background:linear-gradient(to bottom, #dfdfdf 5%, #ededed 100%);
 	background-color:#dfdfdf;
 }
 
-#searchCanvas .button:active {
+#searchCanvas .search.button:active {
 	position:relative;
 	top:1px;
 }
 
-#searchCanvas h2 { margin: 0.8em 0 0.5em 0;
-                   	color: #444;
-                   	font: 400 40px/12px Roboto, HelveticaNeue, Arial, sans-serif;
-                   	 text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
-                   	 text-align: center;
-                   	 }
+.titlesContainer {
+    position: relative;
+}
 
+.titlesContainer .titleNavigation {
+    position: absolute;
+    left: 50%;
+    transform : translate(-50%, 0%);
+    width : 250px;
+    bottom: 10px;
+}
+
+.titlesContainer .titleSelection {
+    margin: 0.8em 0 0.5em 0;
+    color: #444;
+    font: 400 25px/12px Roboto, HelveticaNeue, Arial, sans-serif;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+    text-align: center;
+    opacity : 0.5;
+    width: 100px;
+    transition: all 0.5s ease;
+}
+
+
+.titlesContainer .titleSelection.selected {
+   width: 200px;
+   font: 400 40px/12px Roboto, HelveticaNeue, Arial, sans-serif;
+}
+
+.titlesContainer .titleSelection.clickable.selected:hover {
+    cursor: default;
+}
+
+
+.titlesContainer .titleSelection.selected, .titlesContainer .titleSelection:hover{
+   background-color: transparent;
+   opacity : 1.0;
+}
+
+#searchCanvas .searchCriterion div.label {
+    font: 400 12px Roboto, HelveticaNeue, Arial, sans-serif;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+}

@@ -122,6 +122,8 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
           newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
           AirlineSource.saveAirlines(List(newAirline))
           UserSource.setUserAirline(user, newAirline)
+
+          SearchUtil.addAirline(newAirline)
           
           val profile = StartupProfile.profilesById(userInput.profileId)
           profile.initializeAirline(newAirline)

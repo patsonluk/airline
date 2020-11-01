@@ -9,6 +9,7 @@ import com.patson.model.{Airline, User, UserStatus}
 import play.api.libs.json._
 import com.patson.data.UserSource
 import com.patson.data.AllianceSource
+import com.patson.util.AllianceCache
 import javax.inject.Inject
 
 class UserApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -27,7 +28,7 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       if (user.getAccessibleAirlines().isDefinedAt(0)) {
         AllianceSource.loadAllianceMemberByAirline(user.getAccessibleAirlines()(0)).foreach { allianceMember => //if this airline belongs to an alliance
           val allianceId = allianceMember.allianceId
-          AllianceSource.loadAllianceById(allianceId).foreach { alliance =>
+          AllianceCache.getAlliance(allianceId).foreach { alliance =>
             result = result + ("allianceId" -> JsNumber(allianceId)) + ("allianceName" -> JsString(alliance.name))  
           }
         }

@@ -105,4 +105,8 @@ object Alliance {
 
     alliancesWithRanking.toMap
   }
+
+  def fromId(id : Int) = {
+    Alliance("<unknown>", 0, List.empty, id)
+  }
 }

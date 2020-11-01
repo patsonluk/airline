@@ -44,6 +44,8 @@ object Meta {
     createSchema()
   }
 
+
+
   def createSchema() {
     val connection = getConnection(false)
     var statement: PreparedStatement = null
@@ -288,6 +290,7 @@ object Meta {
     createAirportAirlineBonus(connection)
     createAirplaneModelFavorite(connection)
     createAirplaneModelDiscount(connection)
+    createLinkChangeHistory(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1361,6 +1364,58 @@ object Meta {
       "cycle INTEGER," +
       "PRIMARY KEY (cycle)" +
       ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createLinkChangeHistory(connection: Connection) = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CHANGE_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + LINK_CHANGE_HISTORY_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "link INTEGER, " +
+      "price_economy INTEGER, " +
+      "price_business INTEGER, " +
+      "price_first INTEGER, " +
+      "price_economy_delta INTEGER, " +
+      "price_business_delta INTEGER, " +
+      "price_first_delta INTEGER, " +
+      "capacity_economy INTEGER, " +
+      "capacity_business INTEGER, " +
+      "capacity_first INTEGER, " +
+      "capacity INTEGER, " +
+      "capacity_economy_delta INTEGER, " +
+      "capacity_business_delta INTEGER, " +
+      "capacity_first_delta INTEGER, " +
+      "capacity_delta INTEGER, " +
+      "from_airport INTEGER, " +
+      "to_airport INTEGER, " +
+      "from_country CHAR(2), " +
+      "to_country CHAR(2), " +
+      "from_zone CHAR(2), " +
+      "to_zone CHAR(2), " +
+      "airline INTEGER, " +
+      "alliance INTEGER, " +
+      "frequency SMALLINT, " +
+      "flight_number SMALLINT, " +
+      "airplane_model SMALLINT, " +
+      "raw_quality SMALLINT, " +
+      "cycle INTEGER," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 1 + " (from_airport)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 2 + " (to_airport)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 3 + " (capacity_delta)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 4 + " (from_country)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 5 + " (to_country)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 6 + " (from_zone)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 7 + " (to_zone)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 8 + " (airline)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 9 + " (alliance)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 10 + " (capacity)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 11 + " (cycle)" +
+      ")")
+
     statement.execute()
     statement.close()
   }
