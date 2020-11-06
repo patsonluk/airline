@@ -242,7 +242,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       return Some("Can only own up to " + airline.airlineGrade.getModelFamilyLimit + " different airplane " + familyToken + " at current airline grade")
     }
 
-    if (model.price * quantity > airline.getBalance()) {
+    val cost: Long = model.price.toLong * quantity
+    if (cost > airline.getBalance()) {
       return Some("Not enough cash to purchase this airplane model")
     }
     
