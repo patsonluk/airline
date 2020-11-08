@@ -7,7 +7,7 @@ import scala.collection.mutable.Map
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.int2bigDecimal
 import com.patson.Util
-import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, ConsumptionHistorySource, CountrySource, CycleSource, LinkSource}
+import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, ConsumptionHistorySource, CountrySource, CycleSource, DelegateSource, LinkSource}
 import com.patson.model._
 import com.patson.model.airplane.{Airplane, LinkAssignments, Model}
 import models.{LinkHistory, RelatedLink}
@@ -355,15 +355,28 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       return BadRequest("Link is rejected: " + rejectionReason.get);
     }
 
+    if (delegatesCount > airline.getDelegates().filter(_.available).size) {
+      return BadRequest(s"Assigning $delegatesCount delegates but not enough available");
+    }
+
     if (existingLink.isEmpty) {
       incomingLink.flightNumber = LinkApplication.getNextAvailableFlightNumber(request.user)
     } else {
       incomingLink.flightNumber = existingLink.get.flightNumber
     }
 
-    val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(incomingLink, existingLink, delegatesCount)
+    val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(airline, incomingLink, existingLink, delegatesCount)
     val negotiationResultOption =
       if (negotiationInfo.assignedDelegates > 0) { //then negotiation is required
+        //update delegate status
+        val cycle = CycleSource.loadCycle()
+        val coolDown = cycle + Delegate.COOL_DOWN
+        val coolDowns = ListBuffer[Int]()
+        for (i <- 0 until delegatesCount) {
+          coolDowns += coolDown
+        }
+        DelegateSource.saveBusyDelegates(airlineId, coolDowns.toList)
+
         Some(NegotiationUtil.negotiate(negotiationInfo))
       } else {
         None
@@ -974,7 +987,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
     val delegatesCount = request.body.asInstanceOf[AnyContentAsJson].json.\("assignedDelegates").as[Int]
     val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
-    val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(incomingLink, existingLinkOption, delegatesCount)
+    val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(request.user, incomingLink, existingLinkOption, delegatesCount)
 
     Ok(Json.toJson(negotiationInfo)(NegotiationInfoWrites(incomingLink)))
   }

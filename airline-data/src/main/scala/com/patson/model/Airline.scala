@@ -1,6 +1,8 @@
 package com.patson.model
 
-import com.patson.data.{AirlineSource, AirplaneSource, AllianceSource, BankSource, LinkSource, OilSource}
+import com.patson.data.{AirlineSource, AirplaneSource, AllianceSource, BankSource, CycleSource, DelegateSource, LinkSource, OilSource}
+
+import scala.collection.mutable.ListBuffer
 
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
@@ -169,6 +171,31 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     }
     code
   }
+
+  def getDelegates() : List[Delegate] = {
+    val busyDelegates = DelegateSource.loadBusyDelegateByAirline(id)
+    val availableCount = delegateCount - busyDelegates.size
+
+    val cycle  = CycleSource.loadCycle()
+    val delegates = ListBuffer[Delegate]()
+    for (i <- 0 until availableCount) {
+      delegates += Delegate(true, None)
+    }
+    delegates.appendAll(busyDelegates.map(busyUntilCycle => Delegate(busyUntilCycle <= cycle, Some(busyUntilCycle - cycle))))
+
+    delegates.toList
+  }
+
+  val BASIC_DELEGATE = 2
+  lazy val delegateCount = BASIC_DELEGATE + getBases().map { base =>
+    1 + (base.scale - 1) / 4
+  }.sum
+}
+
+case class Delegate(available : Boolean, coolDownCycles : Option[Int])
+
+object Delegate {
+  val COOL_DOWN = 12 //12 weeks for cooldown
 }
 
 case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "")
@@ -332,6 +359,9 @@ object Airline {
         //unset service investment
         airline.setTargetServiceQuality(0)
         airline.setCurrentServiceQuality(0)
+
+        //reset all busy delegates
+        DelegateSource.deleteBusyDelegateByCriteria(List(("airline", "=", airlineId)))
 
         AirlineSource.saveAirlineInfo(airline)
         println(s"Reset airline - $airline")

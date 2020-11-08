@@ -2,8 +2,7 @@ package controllers
 
 import com.patson.data.{CountrySource, LinkSource}
 import com.patson.model.FlightType.{LONG_HAUL_DOMESTIC, LONG_HAUL_INTERCONTINENTAL, LONG_HAUL_INTERNATIONAL, SHORT_HAUL_DOMESTIC, SHORT_HAUL_INTERCONTINENTAL, SHORT_HAUL_INTERNATIONAL, ULTRA_LONG_HAUL_INTERCONTINENTAL}
-import com.patson.model.{Airline, Airport, BUSINESS, Computation, ECONOMY, FIRST, FlightType, Link, LinkClassValues}
-import controllers.NegotiationUtil.DelegateStatus
+import com.patson.model.{Airline, Airport, BUSINESS, Computation, Delegate, ECONOMY, FIRST, FlightType, Link, LinkClassValues}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -20,8 +19,8 @@ object NegotiationUtil {
 
 
 
-  val NO_NEGOTIATION_REQUIRED = (delegateStatus : DelegateStatus) => {
-    NegotiationInfo (List (), 1, delegateStatus, 0)
+  val NO_NEGOTIATION_REQUIRED = (delegates : List[Delegate]) => {
+    NegotiationInfo (List (), 1, delegates, 0)
   }
 
   val normalizedCapacity : LinkClassValues => Double = (capacity : LinkClassValues) => {
@@ -29,23 +28,16 @@ object NegotiationUtil {
   }
 
 
-  def getDelegateStatus(airline : Airline) = { //TODO
-    DelegateStatus(10, 2)
-  }
 
-  case class DelegateStatus(available : Int, unavailable : Int)
-
-
-  def getLinkNegotiationInfo(newLink : Link, existingLinkOption : Option[Link], assignedDelegates : Int) : NegotiationInfo = {
+  def getLinkNegotiationInfo(airline : Airline, newLink : Link, existingLinkOption : Option[Link], assignedDelegates : Int) : NegotiationInfo = {
     import FlightType._
     import NegotiationRequirementType._
 
-    val airline = newLink.airline
     val fromAirport : Airport = newLink.from
     val toAirport : Airport = newLink.to
     val newCapacity : LinkClassValues = newLink.futureCapacity()
     val newFrequency = newLink.futureFrequency()
-    val delegateStatus = getDelegateStatus(airline)
+    val delegates = airline.getDelegates()
 
     val existingCapacity = existingLinkOption.map(_.futureCapacity()).getOrElse(LinkClassValues.getInstance())
     val existingFrequency = existingLinkOption.map(_.futureFrequency()).getOrElse(0)
@@ -55,7 +47,7 @@ object NegotiationUtil {
 
     //reduction of service is always okay for now
     if (capacityDelta <= 0 && frequencyDelta <= 0) {
-      return NegotiationUtil.NO_NEGOTIATION_REQUIRED(delegateStatus)
+      return NegotiationUtil.NO_NEGOTIATION_REQUIRED(delegates)
     }
 
     //at this point negotiation is required
@@ -117,7 +109,7 @@ object NegotiationUtil {
         }
     }
 
-    val info = NegotiationInfo(requirements.toList, computeOdds(requirements.toList, assignedDelegates), delegateStatus, assignedDelegates)
+    val info = NegotiationInfo(requirements.toList, computeOdds(requirements.toList, assignedDelegates), delegates, assignedDelegates)
     return info
   }
 
@@ -164,7 +156,7 @@ object NegotiationUtil {
 //  }
 //}
 
-case class NegotiationInfo(requirements : List[NegotiationRequirement], odds : Double, delegateStatus: DelegateStatus, assignedDelegates : Int)
+case class NegotiationInfo(requirements : List[NegotiationRequirement], odds : Double, delegates: List[Delegate], assignedDelegates : Int)
 
 object NegotiationRequirementType extends Enumeration {
   type NegotiationRequirementType = Value

@@ -69,6 +69,9 @@ object MainSimulation extends App {
       //purge history
       println("Purging link history")
       ChangeHistorySource.deleteLinkChangeByCriteria(List(("cycle", "<", cycle - 100)))
+
+      //refresh delegates
+      DelegateSource.deleteBusyDelegateByCriteria(List(("availableCycle", "<=", cycle)))
       
       //notify the websockets via EventStream
       println("Publish Cycle Complete message")

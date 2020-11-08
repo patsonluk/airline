@@ -291,6 +291,7 @@ object Meta {
     createAirplaneModelFavorite(connection)
     createAirplaneModelDiscount(connection)
     createLinkChangeHistory(connection)
+    createDelegate(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1367,6 +1368,25 @@ object Meta {
     statement.execute()
     statement.close()
   }
+
+
+  def createDelegate(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + BUSY_DELEGATE_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + BUSY_DELEGATE_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airline INTEGER, " +
+      "busy_until_cycle INTEGER, " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+
 
   def createLinkChangeHistory(connection: Connection) = {
     var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CHANGE_HISTORY_TABLE)

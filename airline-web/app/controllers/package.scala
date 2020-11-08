@@ -575,11 +575,26 @@ package object controllers {
       Json.obj(
         "odds" -> JsNumber(info.odds),
         "requirements" -> requirementsJson,
-        "availableDelegates" -> JsNumber(info.delegateStatus.available),
-        "unavailableDelegates" -> JsNumber(info.delegateStatus.unavailable),
+        "allDelegates" -> Json.toJson(info.delegates),
         "assignedDelegates" -> JsNumber(info.assignedDelegates))
     }
   }
+
+  implicit object DelegateWrite extends Writes[Delegate] {
+    def writes(delegate : Delegate): JsValue = {
+      var result = JsObject(List(
+        "available" -> JsBoolean(delegate.available)
+      ))
+
+      delegate.coolDownCycles.foreach { coolDownCycles =>
+        result = result + ("coolDownCycles" -> JsNumber(coolDownCycles))
+      }
+
+      result
+    }
+  }
+
+
 
   case class NegotiationRequirementWrites(link : Link) extends Writes[NegotiationRequirement] {
     def writes(requirement : NegotiationRequirement): JsValue = {
