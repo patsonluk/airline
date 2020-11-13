@@ -14,17 +14,19 @@ function showAirportDetails(airportId) {
 	//deselectLink()
 	
 	activeAirportId = airportId
+	$('#airportDetailsAirportImage').empty()
+    $('#airportDetailsCityImage').empty()
 	
 	$.ajax({
 		type: 'GET',
-		url: "airports/" + airportId,
+		url: "airports/" + airportId + "?image=true",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airport) {
-    		populateAirportDetails(airport) //update left panel
+	        populateAirportDetails(airport) //update left panel
 //	    		$("#floatBackButton").show()
 //	    		shimmeringDiv($("#floatBackButton"))
-    		updateAirportDetails(airport) //update right panel
+    		updateAirportDetails(airport, airport.cityImageUrl, airport.airportImageUrl) //update right panel
     		activeAirport = airport
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -34,17 +36,14 @@ function showAirportDetails(airportId) {
 	});
 }
 
-function updateAirportDetails(airport) {
-	$('#airportDetailsAirportImage').empty()
-	$('#airportDetailsCityImage').empty()
-	if (airport.cityImageUrl) {
-		$('#airportDetailsCityImage').append('<img src="' + airport.cityImageUrl + '" style="width:100%;"/>')
+function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
+	if (cityImageUrl) {
+		$('#airportDetailsCityImage').append('<img src="' + cityImageUrl + '" style="width:100%;"/>')
 	}
-	if (airport.airportImageUrl && airport.airportImageUrl != airport.cityImageUrl) {
-		$('#airportDetailsAirportImage').append('<img src="' + airport.airportImageUrl + '" style="width:100%;"/>')
+	if (airportImageUrl) {
+		$('#airportDetailsAirportImage').append('<img src="' + airportImageUrl + '" style="width:100%;"/>')
 	}
 
-	
 	
 	$('#airportDetailsName').text(airport.name)
 	if (airport.iata) { 

@@ -466,7 +466,6 @@ package object controllers {
     }
 
     def writes(airport: Airport): JsValue = {
-      val averageIncome = if (airport.population > 0) { airport.power / airport.population } else 0
       val incomeLevel = Computation.getIncomeLevel(airport.income)
       //      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
       //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)
@@ -525,12 +524,12 @@ package object controllers {
         }
         ))
       }
-      if (airport.getAirportImageUrl.isDefined) {
-        airportObject = airportObject + ("airportImageUrl" -> JsString(airport.getAirportImageUrl.get))
-      }
-      if (airport.getCityImageUrl.isDefined) {
-        airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
-      }
+//      if (airport.getAirportImageUrl.isDefined) {
+//        airportObject = airportObject + ("airportImageUrl" -> JsString(airport.getAirportImageUrl.get))
+//      }
+//      if (airport.getCityImageUrl.isDefined) {
+//        airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
+//      }
 
       airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.map(_._1).toList))
 
