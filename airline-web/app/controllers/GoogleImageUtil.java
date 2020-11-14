@@ -10,17 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class GoogleImageUtil {
 	private static final String API_KEY = loadApiKey();
@@ -37,7 +37,7 @@ public class GoogleImageUtil {
 	private static LoadingCache<CityKey, Optional<URL>> cityCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<CityKey, Optional<URL>>() {
 		public Optional<URL> load(CityKey key) {
 			URL result = loadCityImageUrl(key.cityName, key.latitude, key.longitude);
-			System.out.println("loaded city image for  " + key + " " + result);
+			logger.info("loaded city image for  " + key + " " + result);
 			return result != null ? Optional.of(result) : Optional.empty();
 		}
 	});
@@ -45,7 +45,7 @@ public class GoogleImageUtil {
 	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<AirportKey, Optional<URL>>() {
 		public Optional<URL> load(AirportKey key) {
 			URL result = loadAirportImageUrl(key.airportName, key.latitude, key.longitude);
-			System.out.println("loaded airport image for  " + key + " " + result);
+			logger.info("loaded airport image for  " + key + " " + result);
 			return result != null ? Optional.of(result) : Optional.empty();
 		}
 	});
@@ -237,8 +237,8 @@ public class GoogleImageUtil {
 			//System.out.println("Result => " + result);
 
 
-			if (result.get("predictions") == null || result.get("predictions").size() == 0) {
-				logger.info("Failed to find image for " + phrases + " no candidates");
+			if (result == null || result.get("predictions") == null || result.get("predictions").size() == 0) {
+				logger.info("Failed to find image for " + phrases + " no candidates. Response: " + result);
 				return null;
 			}
 
@@ -302,7 +302,13 @@ public class GoogleImageUtil {
 			conn.connect();
 			String location = conn.getHeaderField( "Location" );
 
-			System.out.println("Final location " + location + " from " + imageUrl);
+			if (location == null) {
+				String result = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8)).lines()
+						.collect(Collectors.joining("\n"));
+				logger.warn("Failed to get location redirect from " + imageUrl + " response code " + conn.getResponseCode() + " text " + result + " trying later...");
+
+				throw new RedirectUnavailableException(imageUrl, conn.getResponseCode(), result);
+			}
 			return new URL(location);
 
 
@@ -344,4 +350,20 @@ public class GoogleImageUtil {
 	}
 
 
+	private static class RedirectUnavailableException extends RuntimeException {
+		private final URL imageUrl;
+		private final int responseCode;
+		private final String result;
+
+		public RedirectUnavailableException(URL imageUrl, int responseCode, String result) {
+			this.imageUrl = imageUrl;
+			this.responseCode = responseCode;
+			this.result = result;
+		}
+
+		@Override
+		public String getMessage() {
+			return "Redirect for " + imageUrl + " failed with response code " + responseCode + " result " + result;
+		}
+	}
 }
