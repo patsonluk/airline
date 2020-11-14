@@ -230,9 +230,11 @@ public class GoogleImageUtil {
 				return null;
 			}
 
-			//System.out.println(url);
+			System.out.println("URL => " + url);
 
 			JsonNode result = Json.parse(conn.getInputStream());
+
+			System.out.println("Result => " + result);
 
 
 			if (result.get("predictions") == null || result.get("predictions").size() == 0) {
