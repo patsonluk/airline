@@ -279,8 +279,8 @@ public class GoogleImageUtil {
 			//System.out.println(result);
 
 			JsonNode resultNode = result.get("result");
-			if (resultNode.get("photos") == null || resultNode.get("photos").size() == 0) {
-				logger.info("Failed to find image for " + phrases + " no photos");
+			if (resultNode == null || resultNode.get("photos") == null || resultNode.get("photos").size() == 0) {
+				logger.info("Failed to find image for " + phrases + " no photos response: " + result);
 				return null;
 			}
 
