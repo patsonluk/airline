@@ -19,6 +19,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class GoogleImageUtil {
@@ -33,19 +34,19 @@ public class GoogleImageUtil {
 	private final static int MAX_PHOTO_WIDTH = 1000;
 	private final static int SEARCH_RADIUS = 100000; //100km
 
-	private static LoadingCache<CityKey, URL> cityCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<CityKey, URL>() {
-				public URL load(CityKey key) {
-					URL result = loadCityImageUrl(key.cityName, key.latitude, key.longitude);
-					System.out.println("loaded city image for  " + key + " " + result);
-					return result;
-				}
-			});
+	private static LoadingCache<CityKey, Optional<URL>> cityCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<>() {
+		public Optional<URL> load(CityKey key) {
+			URL result = loadCityImageUrl(key.cityName, key.latitude, key.longitude);
+			System.out.println("loaded city image for  " + key + " " + result);
+			return result != null ? Optional.of(result) : Optional.empty();
+		}
+	});
 
-	private static LoadingCache<AirportKey, URL> airportCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<AirportKey, URL>() {
-		public URL load(AirportKey key) {
+	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<>() {
+		public Optional<URL> load(AirportKey key) {
 			URL result = loadAirportImageUrl(key.airportName, key.latitude, key.longitude);
 			System.out.println("loaded airport image for  " + key + " " + result);
-			return result;
+			return result != null ? Optional.of(result) : Optional.empty();
 		}
 	});
 
@@ -144,7 +145,8 @@ public class GoogleImageUtil {
 
 	public static URL getCityImageUrl(String cityName, Double latitude, Double longitude) {
 		try {
-			return cityCache.get(new CityKey(cityName, latitude, longitude));
+			Optional<URL> result = cityCache.get(new CityKey(cityName, latitude, longitude));
+			return result.orElse(null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 			return null;
@@ -153,7 +155,8 @@ public class GoogleImageUtil {
 
 	public static URL getAirportImageUrl(String airportName, Double latitude, Double longitude) {
 		try {
-			return airportCache.get(new AirportKey(airportName, latitude, longitude));
+			Optional<URL> result = airportCache.get(new AirportKey(airportName, latitude, longitude));
+			return result.orElse(null);
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 			return null;
@@ -232,7 +235,7 @@ public class GoogleImageUtil {
 			JsonNode result = Json.parse(conn.getInputStream());
 
 
-			if (result.get("predictions").size() == 0) {
+			if (result.get("predictions") == null || result.get("predictions").size() == 0) {
 				logger.info("Failed to find image for " + phrases + " no candidates");
 				return null;
 			}
@@ -274,7 +277,7 @@ public class GoogleImageUtil {
 			//System.out.println(result);
 
 			JsonNode resultNode = result.get("result");
-			if (resultNode.get("photos").size() == 0) {
+			if (resultNode.get("photos") == null || resultNode.get("photos").size() == 0) {
 				logger.info("Failed to find image for " + phrases + " no photos");
 				return null;
 			}
