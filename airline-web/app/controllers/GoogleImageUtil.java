@@ -34,7 +34,7 @@ public class GoogleImageUtil {
 	private final static int MAX_PHOTO_WIDTH = 1000;
 	private final static int SEARCH_RADIUS = 100000; //100km
 
-	private static LoadingCache<CityKey, Optional<URL>> cityCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<>() {
+	private static LoadingCache<CityKey, Optional<URL>> cityCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<CityKey, Optional<URL>>() {
 		public Optional<URL> load(CityKey key) {
 			URL result = loadCityImageUrl(key.cityName, key.latitude, key.longitude);
 			System.out.println("loaded city image for  " + key + " " + result);
@@ -42,7 +42,7 @@ public class GoogleImageUtil {
 		}
 	});
 
-	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<>() {
+	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<AirportKey, Optional<URL>>() {
 		public Optional<URL> load(AirportKey key) {
 			URL result = loadAirportImageUrl(key.airportName, key.latitude, key.longitude);
 			System.out.println("loaded airport image for  " + key + " " + result);
