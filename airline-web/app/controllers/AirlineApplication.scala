@@ -260,16 +260,16 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   
    def getLoungeConsideration(airline : Airline, inputFacility : AirportFacility) : Consideration[Lounge] = {
      val airport = inputFacility.airport
-     
-     var (cost, newLounge) : (Long, Lounge) = AirlineSource.loadLoungeByAirlineAndAirport(inputFacility.airline.id, inputFacility.airport.id) match {
+
+     var (cost, newLounge, levelChange) : (Long, Lounge, Int) = AirlineSource.loadLoungeByAirlineAndAirport(inputFacility.airline.id, inputFacility.airport.id) match {
       case Some(lounge) =>
         val newLounge = lounge.copy(level = inputFacility.level)
         val cost = newLounge.getValue - lounge.getValue
-        (cost, newLounge)
+        (cost, newLounge, inputFacility.level - lounge.level)
       case None =>
         val newLounge = Lounge(airline, airline.getAllianceId, airport, name = inputFacility.name, level = 1, LoungeStatus.ACTIVE, CycleSource.loadCycle())
         val cost = newLounge.getValue
-        (cost, newLounge)
+        (cost, newLounge, inputFacility.level)
      }
      
      if (newLounge.level < 0) {
@@ -309,20 +309,24 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                                       
     val sortedPassengersOnThisAirport : List[(Airline, Long)] = passengersOnThisAirport.toList.sortBy(_._2)
     val eligibleAirlines : List[(Airline, Long)] = sortedPassengersOnThisAirport.takeRight(newLounge.getActiveRankingThreshold)
-    
-    eligibleAirlines.find(_._1.id == airline.id) match { //ok
-      case Some((airline, passengers)) =>
-        return Consideration(cost, newLounge)
-      case None => //does not make the cut
-        var currentRank = 1
-        sortedPassengersOnThisAirport.reverse.foreach {
-          case(rankedAirline, passengers) => 
-            if (rankedAirline.id == airline.id) {
-              return Consideration(cost, newLounge, Some("Your passenger volume of " + passengers + " is ranked as number " + currentRank + ". Has to be top " + newLounge.getActiveRankingThreshold + " to build lounge in this airport"))
-            }
-            currentRank += 1
-        }
-        return Consideration(cost, newLounge, Some("Your have no passengers here. Has to be top " + newLounge.getActiveRankingThreshold + " to build lounge in this airport"))
+
+    if (levelChange > 0) { //upgrade - has to consider ranking
+      eligibleAirlines.find(_._1.id == airline.id) match {
+        case Some((airline, passengers)) => //ok
+          return Consideration(cost, newLounge)
+        case None => //does not make the cut
+          var currentRank = 1
+          sortedPassengersOnThisAirport.reverse.foreach {
+            case (rankedAirline, passengers) =>
+              if (rankedAirline.id == airline.id) {
+                return Consideration(cost, newLounge, Some("Your passenger volume of " + passengers + " is ranked as number " + currentRank + ". Has to be top " + newLounge.getActiveRankingThreshold + " to build lounge in this airport"))
+              }
+              currentRank += 1
+          }
+          return Consideration(cost, newLounge, Some("Your have no passengers here. Has to be top " + newLounge.getActiveRankingThreshold + " to build lounge in this airport"))
+      }
+    } else {
+      return Consideration(cost, newLounge)
     }
   }
   
