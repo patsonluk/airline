@@ -164,21 +164,21 @@ public class GoogleImageUtil {
 	}
 
 
-	public static URL loadCityImageUrl(String cityName, Double latitude, Double longitude) {
+	public static URL loadCityImageUrl(String cityName, Double latitude, Double longitude) throws OverLimitException {
 		if (cityName == null) {
 			return null;
 		}
 		return getImageUrl(Collections.singletonList(cityName), latitude, longitude, "(regions)");
 	}
 
-	public static URL loadAirportImageUrl(String airportName, Double latitude, Double longitude) {
+	public static URL loadAirportImageUrl(String airportName, Double latitude, Double longitude) throws OverLimitException {
 		if (airportName == null) {
 			return null;
 		}
 		return getImageUrl(Collections.singletonList(airportName), latitude, longitude, null);
 	}
 
-	public static URL getImageUrl(List<String> phrases, Double latitude, Double longitude, String types) {
+	public static URL getImageUrl(List<String> phrases, Double latitude, Double longitude, String types) throws OverLimitException {
 		if (phrases.isEmpty()) {
 			return null;
 		}
@@ -235,9 +235,11 @@ public class GoogleImageUtil {
 			JsonNode result = Json.parse(conn.getInputStream());
 
 			//System.out.println("Result => " + result);
+            if ("OVER_QUERY_LIMIT".equals(result.get("status").asText())) {
+                throw new OverLimitException();
+            }
 
-
-			if (result == null || result.get("predictions") == null || result.get("predictions").size() == 0) {
+			if (result.get("predictions") == null || result.get("predictions").size() == 0) {
 				logger.info("Failed to find image for " + phrases + " no candidates. Response: " + result);
 				return null;
 			}
@@ -245,7 +247,7 @@ public class GoogleImageUtil {
 			JsonNode predictionNode = result.get("predictions").get(0);
 			placeId = predictionNode.get("place_id").asText();
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.warn("Failed to use google place API : " + e.getMessage(), e);
 			return null;
 		} finally {
@@ -277,6 +279,9 @@ public class GoogleImageUtil {
 			JsonNode result = Json.parse(conn.getInputStream());
 
 			//System.out.println(result);
+            if ("OVER_QUERY_LIMIT".equals(result.get("status").asText())) {
+                throw new OverLimitException();
+            }
 
 			JsonNode resultNode = result.get("result");
 			if (resultNode == null || resultNode.get("photos") == null || resultNode.get("photos").size() == 0) {
@@ -286,7 +291,7 @@ public class GoogleImageUtil {
 
 			photoRef = resultNode.get("photos").get(0).get("photo_reference").asText();
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.warn("Failed to use google place API : " + e.getMessage(), e);
 			return null;
 		} finally {
@@ -366,4 +371,7 @@ public class GoogleImageUtil {
 			return "Redirect for " + imageUrl + " failed with response code " + responseCode + " result " + result;
 		}
 	}
+
+	private static class OverLimitException extends RuntimeException {
+    }
 }
