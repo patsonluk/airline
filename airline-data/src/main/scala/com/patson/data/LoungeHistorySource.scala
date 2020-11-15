@@ -12,6 +12,19 @@ import scala.collection.mutable.Map
 
 
 object LoungeHistorySource {
+  def deleteConsumptionsBeforeCycle(cycle: Int) = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("DELETE FROM " + LOUNGE_CONSUMPTION_TABLE + "WHERE cycle < ?")
+    statement.setInt(1, cycle)
+
+    try {
+      statement.executeUpdate()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
   val updateConsumptions = (consumptions : List[LoungeConsumptionDetails]) => {
     val connection = Meta.getConnection()
     val statement = connection.prepareStatement("REPLACE INTO " + LOUNGE_CONSUMPTION_TABLE + "(airport, airline, self_visitors, alliance_visitors, cycle) VALUES(?,?,?,?,?)")
