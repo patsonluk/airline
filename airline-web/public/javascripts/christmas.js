@@ -168,7 +168,7 @@ function toggleChristmasMarker() {
 		currentAnimationStatus = true
 		christmasMarker = true
 		document.getElementById('christmasMusic').play()
-		$("body").addClass('christmas')
+		$("#canvas").addClass('christmas')
 
         putSnowflakes($("#main"), snowflakeCount)
 	} else {
@@ -183,7 +183,7 @@ function toggleChristmasMarker() {
 			    };
 			})
 		})
-		$("body").removeClass('christmas')
+		$("#canvas").removeClass('christmas')
 		$("#main").children(".snowflake").remove()
 	}
 }
