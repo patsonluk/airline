@@ -179,9 +179,13 @@ function initAirportMap() { //only called once, see https://stackoverflow.com/qu
 	   	styles: getMapStyles()
 	});
 
-    $("#santaClausButton").index = 1
-    airportMap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($("#santaClausButton")[0]);
+    if (christmasFlag) {
+        //<div id="santaClausButton" class="googleMapIcon glow" onclick="showSantaClausAttemptStatus()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/markers/christmas/santa-hat.png")' title='Santa, where are you?' style="vertical-align: middle;"/></div>-->
+        var santaClausButton = $('<div id="santaClausButton" class="googleMapIcon glow" onclick="showSantaClausAttemptStatus()" align="center" style="margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/markers/christmas/santa-hat.png" title=\'Santa, where are you!\' style="vertical-align: middle;"/></div>')
 
+        santaClausButton.index = 1
+        airportMap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(santaClausButton[0]);
+    }
 }
 
 
