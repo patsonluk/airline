@@ -291,6 +291,7 @@ object Meta {
     createAirplaneModelFavorite(connection)
     createAirplaneModelDiscount(connection)
     createLinkChangeHistory(connection)
+    createGoogleResource(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1414,6 +1415,23 @@ object Meta {
       "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 9 + " (alliance)," +
       "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 10 + " (capacity)," +
       "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 11 + " (cycle)" +
+      ")")
+
+    statement.execute()
+    statement.close()
+  }
+
+  def createGoogleResource(connection: Connection) = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + GOOGLE_RESOURCE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + GOOGLE_RESOURCE_TABLE + "(" +
+      "resource_id INTEGER," +
+      "resource_type INTEGER, " +
+      "url VARCHAR(1024)," +
+      "max_age_deadline BIGINT(20)," +
+      "PRIMARY KEY (resource_id, resource_type)" +
       ")")
 
     statement.execute()

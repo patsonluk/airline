@@ -4,11 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.patson.data.GoogleResourceSource;
+import com.patson.model.Airport;
+import com.patson.model.google.GoogleResource;
+import com.patson.model.google.ResourceType;
+import com.patson.model.google.ResourceType$;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
+import scala.Enumeration;
+import scala.Option;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +26,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class GoogleImageUtil {
@@ -34,28 +42,141 @@ public class GoogleImageUtil {
 	private final static int MAX_PHOTO_WIDTH = 1000;
 	private final static int SEARCH_RADIUS = 100000; //100km
 
-	private static LoadingCache<CityKey, Optional<URL>> cityCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<CityKey, Optional<URL>>() {
-		public Optional<URL> load(CityKey key) {
-			URL result = loadCityImageUrl(key.cityName, key.latitude, key.longitude);
-			logger.info("loaded city image for  " + key + " " + result);
-			return result != null ? Optional.of(result) : Optional.empty();
-		}
-	});
+	private static LoadingCache<CityKey, Optional<URL>> cityCache = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(1, TimeUnit.DAYS).build(new ResourceCacheLoader<>(key -> loadCityImageUrl(key.cityName, key.latitude, key.longitude), ResourceType.CITY_IMAGE()));
+	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(1, TimeUnit.DAYS).build(new ResourceCacheLoader<>(key -> 	loadAirportImageUrl(key.airportName, key.latitude, key.longitude), ResourceType.AIRPORT_IMAGE()));
 
-	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).build(new CacheLoader<AirportKey, Optional<URL>>() {
-		public Optional<URL> load(AirportKey key) {
-			URL result = loadAirportImageUrl(key.airportName, key.latitude, key.longitude);
-			logger.info("loaded airport image for  " + key + " " + result);
-			return result != null ? Optional.of(result) : Optional.empty();
-		}
-	});
+	private interface LoadFunction<T, R> {
+		R apply(T t) throws OverLimitException;
+	}
 
-	private static class CityKey {
+	private static class ResourceCacheLoader<KeyType extends Key> extends CacheLoader<KeyType, Optional<URL>> {
+		private final LoadFunction<KeyType, UrlResult> loadFunction;
+		private final ResourceType$.Value resourceType;
+
+		private ResourceCacheLoader(LoadFunction<KeyType, UrlResult> loadFunction, ResourceType$.Value resourceType) {
+			this.loadFunction = loadFunction;
+			this.resourceType = resourceType;
+		}
+
+		public Optional<URL> load(KeyType key) {
+			//try from db first
+			Option<GoogleResource> googleResourceOption = GoogleResourceSource.loadResource(key.getId(), resourceType);
+
+			if (googleResourceOption.isDefined()) {
+				GoogleResource googleResource = googleResourceOption.get();
+				if (googleResource.url() == null) { //previous successful query returns no result, do not proceed
+					return Optional.empty();
+				}
+				if (googleResource.maxAgeDeadline().isEmpty() || System.currentTimeMillis() <= (Long) googleResource.maxAgeDeadline().get()) {
+					try {
+						return Optional.of(new URL(googleResource.url()));
+					} catch (MalformedURLException e) {
+						logger.warn("Stored URL is malformed: " + e.getMessage(), e);
+					}
+				} else { //max deadline expired, try and see if the url still works
+					Optional<Long> newDeadline = isUrlValid(googleResource.url());
+					if (newDeadline != null) {
+						GoogleResourceSource.insertResource().apply(GoogleResource.apply(googleResource.resourceId(), googleResource.resourceType(), googleResource.url(), newDeadline.isPresent() ? Option.apply(newDeadline.get()) : Option.empty()));
+						try {
+							return Optional.of(new URL(googleResource.url()));
+						} catch (MalformedURLException e) {
+							logger.warn("Stored URL is malformed: " + e.getMessage(), e);
+						}
+					}
+				}
+			}
+
+			//no previous successful query done, or the result is no longer valid
+			//UrlResult result = loadCityImageUrl(key.cityName, key.latitude, key.longitude);
+			try {
+				UrlResult result = loadFunction.apply(key);
+				logger.info("loaded " + resourceType + " image for  " + key + " " + result);
+				if (result != null) {
+					Long deadline = result.maxAge != null ? System.currentTimeMillis() + result.maxAge * 1000 : null;
+					GoogleResourceSource.insertResource().apply(GoogleResource.apply(key.getId(), resourceType, result.url.toString(), deadline != null ? Option.apply(deadline) : Option.empty()));
+
+					return Optional.of(result.url);
+				} else { //There is no result, save to DB, as we do not want to retry this at all
+					GoogleResourceSource.insertResource().apply(GoogleResource.apply(key.getId(), resourceType, null, Option.empty()));
+					return Optional.empty();
+				}
+			} catch (OverLimitException e) {
+				//result unknown since it was over the limit, try later
+				return Optional.empty();
+			}
+		}
+	}
+
+	/**
+	 *
+	 * @param urlString
+	 * @return	null if not valid, a new maxAge Option if valid
+	 */
+	private static Optional<Long> isUrlValid(String urlString) {
+		URL url;
+		try {
+			url = new URL(urlString);
+		} catch (MalformedURLException e) {
+			logger.warn("URL " + urlString + " is not valid : " + e.getMessage(), e);
+			return null;
+		}
+
+		HttpURLConnection conn = null;
+
+		try {
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			if (conn.getResponseCode() == 200) {
+				Long maxAge = getMaxAge(conn);
+				if (maxAge != null) {
+					long newDeadline = System.currentTimeMillis() + maxAge * 1000;
+					logger.info(urlString + " is still valid, new max age deadline: " + newDeadline) ;
+					return Optional.of(newDeadline);
+				} else {
+					logger.info(urlString + " is still valid, no max age deadline");
+					return Optional.empty();
+				}
+			} else {
+				logger.info(urlString + " is no longer valid " + conn.getResponseCode());
+				return null;
+			}
+		} catch (IOException e) {
+			logger.warn(urlString + " failed with valid check : " + e.getMessage());
+			return null;
+		} finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
+		}
+
+
+	}
+
+	private static Long getMaxAge(HttpURLConnection conn) {
+		String cacheControl = conn.getHeaderField("Cache-Control");
+		if (cacheControl != null) {
+			for (String entry : cacheControl.split(",")) {
+				entry = entry.toLowerCase().trim();
+				if (entry.startsWith("max-age=")) {
+					try {
+						return Long.valueOf(entry.substring("max-age=".length()).trim());
+					} catch (NumberFormatException e) {
+						logger.warn("Invalid max-age : " + entry);
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private static class CityKey extends Key {
+		private final int id;
 		private String cityName;
 		private double latitude;
 		private double longitude;
 
-		public CityKey(String cityName, double latitude, double longitude) {
+		public CityKey(int id, String cityName, double latitude, double longitude) {
+			this.id = id;
 			this.cityName = cityName;
 			this.latitude = latitude;
 			this.longitude = longitude;
@@ -68,9 +189,10 @@ public class GoogleImageUtil {
 
 			CityKey cityKey = (CityKey) o;
 
+			if (id != cityKey.id) return false;
 			if (Double.compare(cityKey.latitude, latitude) != 0) return false;
 			if (Double.compare(cityKey.longitude, longitude) != 0) return false;
-			return cityName.equals(cityKey.cityName);
+			return cityName != null ? cityName.equals(cityKey.cityName) : cityKey.cityName == null;
 
 		}
 
@@ -78,7 +200,8 @@ public class GoogleImageUtil {
 		public int hashCode() {
 			int result;
 			long temp;
-			result = cityName.hashCode();
+			result = id;
+			result = 31 * result + (cityName != null ? cityName.hashCode() : 0);
 			temp = Double.doubleToLongBits(latitude);
 			result = 31 * result + (int) (temp ^ (temp >>> 32));
 			temp = Double.doubleToLongBits(longitude);
@@ -89,19 +212,27 @@ public class GoogleImageUtil {
 		@Override
 		public String toString() {
 			return "CityKey{" +
-					"cityName='" + cityName + '\'' +
+					"id=" + id +
+					", cityName='" + cityName + '\'' +
 					", latitude=" + latitude +
 					", longitude=" + longitude +
 					'}';
 		}
+
+		@Override
+		public int getId() {
+			return id;
+		}
 	}
 
-	private static class AirportKey {
+	private static class AirportKey extends Key{
+		private final int id;
 		private String airportName;
 		private double latitude;
 		private double longitude;
 
-		public AirportKey(String airportName, double latitude, double longitude) {
+		public AirportKey(int id, String airportName, double latitude, double longitude) {
+			this.id = id;
 			this.airportName = airportName;
 			this.latitude = latitude;
 			this.longitude = longitude;
@@ -114,9 +245,10 @@ public class GoogleImageUtil {
 
 			AirportKey that = (AirportKey) o;
 
+			if (id != that.id) return false;
 			if (Double.compare(that.latitude, latitude) != 0) return false;
 			if (Double.compare(that.longitude, longitude) != 0) return false;
-			return airportName.equals(that.airportName);
+			return airportName != null ? airportName.equals(that.airportName) : that.airportName == null;
 
 		}
 
@@ -124,7 +256,8 @@ public class GoogleImageUtil {
 		public int hashCode() {
 			int result;
 			long temp;
-			result = airportName.hashCode();
+			result = id;
+			result = 31 * result + (airportName != null ? airportName.hashCode() : 0);
 			temp = Double.doubleToLongBits(latitude);
 			result = 31 * result + (int) (temp ^ (temp >>> 32));
 			temp = Double.doubleToLongBits(longitude);
@@ -135,17 +268,30 @@ public class GoogleImageUtil {
 		@Override
 		public String toString() {
 			return "AirportKey{" +
-					"airportName='" + airportName + '\'' +
+					"id=" + id +
+					", airportName='" + airportName + '\'' +
 					", latitude=" + latitude +
 					", longitude=" + longitude +
 					'}';
 		}
+
+		@Override
+		public int getId() {
+			return id;
+		}
 	}
 
+	private static abstract class Key {
+		abstract int getId();
+	}
 
-	public static URL getCityImageUrl(String cityName, Double latitude, Double longitude) {
+	public static URL getCityImageUrl(Airport airport) {
+		return getCityImageUrl(airport.id(), airport.city(), airport.latitude(), airport.longitude());
+	}
+
+	static URL getCityImageUrl(int airportId, String cityName, Double latitude, Double longitude) {
 		try {
-			Optional<URL> result = cityCache.get(new CityKey(cityName, latitude, longitude));
+			Optional<URL> result = cityCache.get(new CityKey(airportId, cityName, latitude, longitude));
 			return result.orElse(null);
 		} catch (Exception e) {
 			if (!(e.getCause() instanceof OverLimitException)) {
@@ -155,9 +301,12 @@ public class GoogleImageUtil {
 		}
 	}
 
-	public static URL getAirportImageUrl(String airportName, Double latitude, Double longitude) {
+	static URL getAirportImageUrl(Airport airport) {
+		return getAirportImageUrl(airport.id(), airport.name(), airport.latitude(), airport.longitude());
+	}
+	static URL getAirportImageUrl(int airportId, String airportName, Double latitude, Double longitude) {
 		try {
-			Optional<URL> result = airportCache.get(new AirportKey(airportName, latitude, longitude));
+			Optional<URL> result = airportCache.get(new AirportKey(airportId, airportName, latitude, longitude));
 			return result.orElse(null);
 		} catch (Exception e) {
 			if (!(e.getCause() instanceof OverLimitException)) {
@@ -168,21 +317,32 @@ public class GoogleImageUtil {
 	}
 
 
-	public static URL loadCityImageUrl(String cityName, Double latitude, Double longitude) throws OverLimitException {
+	public static UrlResult loadCityImageUrl(String cityName, Double latitude, Double longitude) throws OverLimitException {
 		if (cityName == null) {
 			return null;
 		}
-		return getImageUrl(Collections.singletonList(cityName), latitude, longitude, "(regions)");
+		return loadImageUrl(Collections.singletonList(cityName), latitude, longitude, "(regions)");
 	}
 
-	public static URL loadAirportImageUrl(String airportName, Double latitude, Double longitude) throws OverLimitException {
+	public static UrlResult loadAirportImageUrl(String airportName, Double latitude, Double longitude) throws OverLimitException {
 		if (airportName == null) {
 			return null;
 		}
-		return getImageUrl(Collections.singletonList(airportName), latitude, longitude, null);
+		return loadImageUrl(Collections.singletonList(airportName), latitude, longitude, null);
 	}
 
-	public static URL getImageUrl(List<String> phrases, Double latitude, Double longitude, String types) throws OverLimitException {
+
+
+	/**
+	 * Executes actual google query
+	 * @param phrases
+	 * @param latitude
+	 * @param longitude
+	 * @param types
+	 * @return
+	 * @throws OverLimitException
+	 */
+	public static UrlResult loadImageUrl(List<String> phrases, Double latitude, Double longitude, String types) throws OverLimitException {
 		if (phrases.isEmpty()) {
 			return null;
 		}
@@ -209,7 +369,6 @@ public class GoogleImageUtil {
 		if (types != null) {
 			autoCompleteQuery.append("&types=" + types);
 		}
-
 
 
 		//{"predictions":[{"description":"Norco Medical, Vancouver, Northeast Andresen Road, Vancouver, WA, USA","matched_substrings":[{"length":9,"offset":15}],"place_id":"ChIJ_UOGeICllVQR3yPG5fG5dl0","reference":"ChIJ_UOGeICllVQR3yPG5fG5dl0","structured_formatting":{"main_text":"Norco Medical, Vancouver","main_text_matched_substrings":[{"length":9,"offset":15}],"secondary_text":"Northeast Andresen Road, Vancouver, WA, USA"},"terms":[{"offset":0,"value":"Norco Medical, Vancouver"},{"offset":26,"value":"Northeast Andresen Road"},{"offset":51,"value":"Vancouver"},{"offset":62,"value":"WA"},{"offset":66,"value":"USA"}],"types":["health","point_of_interest","store","establishment"]}],"status":"OK"}
@@ -239,9 +398,9 @@ public class GoogleImageUtil {
 			JsonNode result = Json.parse(conn.getInputStream());
 
 			//System.out.println("Result => " + result);
-            if ("OVER_QUERY_LIMIT".equals(result.get("status").asText())) {
-                throw new OverLimitException();
-            }
+			if ("OVER_QUERY_LIMIT".equals(result.get("status").asText())) {
+				throw new OverLimitException();
+			}
 
 			if (result.get("predictions") == null || result.get("predictions").size() == 0) {
 				logger.info("Failed to find image for " + phrases + " no candidates. Response: " + result);
@@ -283,9 +442,9 @@ public class GoogleImageUtil {
 			JsonNode result = Json.parse(conn.getInputStream());
 
 			//System.out.println(result);
-            if ("OVER_QUERY_LIMIT".equals(result.get("status").asText())) {
-                throw new OverLimitException();
-            }
+			if ("OVER_QUERY_LIMIT".equals(result.get("status").asText())) {
+				throw new OverLimitException();
+			}
 
 			JsonNode resultNode = result.get("result");
 			if (resultNode == null || resultNode.get("photos") == null || resultNode.get("photos").size() == 0) {
@@ -307,9 +466,9 @@ public class GoogleImageUtil {
 		try {
 			URL imageUrl = new URL("https://maps.googleapis.com/maps/api/place/photo?maxwidth=" + MAX_PHOTO_WIDTH + "&key=" + API_KEY + "&photoreference=" + photoRef);
 			conn = (HttpURLConnection) imageUrl.openConnection();
-			conn.setInstanceFollowRedirects( false );
+			conn.setInstanceFollowRedirects(false);
 			conn.connect();
-			String location = conn.getHeaderField( "Location" );
+			String location = conn.getHeaderField("Location");
 
 			if (location == null) {
 				String result = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8)).lines()
@@ -318,7 +477,7 @@ public class GoogleImageUtil {
 
 				throw new RedirectUnavailableException(imageUrl, conn.getResponseCode(), result);
 			}
-			return new URL(location);
+			return new UrlResult(new URL(location), getMaxAge(conn));
 
 
 			//System.out.println("==>" + imageUrl);
@@ -327,6 +486,7 @@ public class GoogleImageUtil {
 			e.printStackTrace();
 			return null;
 		}
+	}
 
 //		try {
 //			url = new URL(photoQuery.toString());
@@ -345,17 +505,33 @@ public class GoogleImageUtil {
 //				conn.disconnect();
 //			}
 //		}
+	private static class UrlResult {
+		private URL url;
+		private Long maxAge;
+
+		private UrlResult(URL url, Long maxAge) {
+			this.url = url;
+			this.maxAge = maxAge;
+		}
+
+		@Override
+		public String toString() {
+			return "UrlResult{" +
+					"url=" + url +
+					", maxAge=" + maxAge +
+					'}';
+		}
 	}
 	
 	
 	public static void main(String[] args) {
-//		System.out.println(getImageUrl(List.of("Vancouver"), 45.633331, -122.599998));
-		//System.out.println(getImageUrl(List.of("Vancouver"), 49.193901062, -123.183998108));
-		//System.out.println(getImageUrl(List.of("Hong Kong"), 22.3089008331,  113.915000916));
-		System.out.println(getCityImageUrl("Los Angeles", null, null));
+//		System.out.println(loadImageUrl(List.of("Vancouver"), 45.633331, -122.599998));
+		//System.out.println(loadImageUrl(List.of("Vancouver"), 49.193901062, -123.183998108));
+		//System.out.println(loadImageUrl(List.of("Hong Kong"), 22.3089008331,  113.915000916));
+		System.out.println(getCityImageUrl(0, "Hong Kong", 22.3089008331,  113.915000916));
 
 		System.out.println("==============");
-		System.out.println(getAirportImageUrl("Los Angeles International Airport", null, null));
+		System.out.println(getAirportImageUrl(0, "Hong Kong International Airport", 22.3089008331,  113.915000916));
 	}
 
 
@@ -376,6 +552,6 @@ public class GoogleImageUtil {
 		}
 	}
 
-	private static class OverLimitException extends RuntimeException {
+	private static class OverLimitException extends Exception {
     }
 }
