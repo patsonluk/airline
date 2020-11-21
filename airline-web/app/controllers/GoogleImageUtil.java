@@ -147,8 +147,10 @@ public class GoogleImageUtil {
 		try {
 			Optional<URL> result = cityCache.get(new CityKey(cityName, latitude, longitude));
 			return result.orElse(null);
-		} catch (ExecutionException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			if (!(e.getCause() instanceof OverLimitException)) {
+				e.printStackTrace();
+			}
 			return null;
 		}
 	}
@@ -157,8 +159,10 @@ public class GoogleImageUtil {
 		try {
 			Optional<URL> result = airportCache.get(new AirportKey(airportName, latitude, longitude));
 			return result.orElse(null);
-		} catch (ExecutionException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			if (!(e.getCause() instanceof OverLimitException)) {
+				e.printStackTrace();
+			}
 			return null;
 		}
 	}
