@@ -18,7 +18,7 @@ abstract class SantaClausAward(santaClausInfo: SantaClausInfo) {
 
 class CashAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.CASH
-  val CASH_AMOUNT = 10000000 //rich santa claus wow, 10M!
+  val CASH_AMOUNT = 20000000 //rich santa claus wow, 20M!
   override def applyAward(): Unit = {
     AirlineSource.adjustAirlineBalance(santaClausInfo.airline.id, CASH_AMOUNT)
   }

@@ -27,8 +27,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
   //private[this] var loungesLoaded = false
 
-  private[this] var airportImageUrl : Option[String] = None
-  private[this] var cityImageUrl : Option[String] = None
+//  private[this] var airportImageUrl : Option[String] = None
+//  private[this] var cityImageUrl : Option[String] = None
 
   private[model] var country : Option[Country] = None
 
@@ -124,21 +124,21 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     }
   }
   
-  def getAirportImageUrl() : Option[String] = {
-    airportImageUrl
-  }
-  
-  def getCityImageUrl() : Option[String] = {
-    cityImageUrl
-  }
-  
-  def setAirportImageUrl(imageUrl : String) = {
-    airportImageUrl = Some(imageUrl)
-  }
-  
-  def setCityImageUrl(imageUrl : String) = {
-    cityImageUrl = Some(imageUrl)
-  }
+//  def getAirportImageUrl() : Option[String] = {
+//    airportImageUrl
+//  }
+//
+//  def getCityImageUrl() : Option[String] = {
+//    cityImageUrl
+//  }
+//
+//  def setAirportImageUrl(imageUrl : String) = {
+//    airportImageUrl = Some(imageUrl)
+//  }
+//
+//  def setCityImageUrl(imageUrl : String) = {
+//    cityImageUrl = Some(imageUrl)
+//  }
   
   
   def isAirlineAppealsInitialized = airlineAppealsLoaded

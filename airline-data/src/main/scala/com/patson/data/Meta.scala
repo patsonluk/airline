@@ -291,6 +291,7 @@ object Meta {
     createAirplaneModelFavorite(connection)
     createAirplaneModelDiscount(connection)
     createLinkChangeHistory(connection)
+    createGoogleResource(connection)
     createDelegate(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
@@ -1369,25 +1370,6 @@ object Meta {
     statement.close()
   }
 
-
-  def createDelegate(connection : Connection) {
-    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + BUSY_DELEGATE_TABLE)
-    statement.execute()
-    statement.close()
-
-
-    statement = connection.prepareStatement("CREATE TABLE " + BUSY_DELEGATE_TABLE + "(" +
-      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-      "airline INTEGER, " +
-      "busy_until_cycle INTEGER, " +
-      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
-      ")")
-    statement.execute()
-    statement.close()
-  }
-
-
-
   def createLinkChangeHistory(connection: Connection) = {
     var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_CHANGE_HISTORY_TABLE)
     statement.execute()
@@ -1439,6 +1421,44 @@ object Meta {
     statement.execute()
     statement.close()
   }
+
+  def createGoogleResource(connection: Connection) = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + GOOGLE_RESOURCE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + GOOGLE_RESOURCE_TABLE + "(" +
+      "resource_id INTEGER," +
+      "resource_type INTEGER, " +
+      "url VARCHAR(1024)," +
+      "max_age_deadline BIGINT(20)," +
+      "PRIMARY KEY (resource_id, resource_type)" +
+      ")")
+
+    statement.execute()
+    statement.close()
+  }
+
+
+  def createDelegate(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + BUSY_DELEGATE_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + BUSY_DELEGATE_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airline INTEGER, " +
+      "busy_until_cycle INTEGER, " +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+
+
+
 
   def isTableExist(connection : Connection, tableName : String): Boolean = {
     val tables = connection.getMetaData.getTables(null, null, tableName, null)

@@ -149,19 +149,38 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     Ok(Json.toJson(visibleAirports))
   }
   
-  def getAirport(airportId : Int) = Action {
+  def getAirport(airportId : Int, image : Boolean) = Action {
      AirportCache.getAirport(airportId, true) match {
        case Some(airport) =>
+         var result = Json.toJson(airport).asInstanceOf[JsObject]
          //find links going to this airport too, send simplified data
          val links = LinkSource.loadLinksByFromAirport(airportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByToAirport(airportId, LinkSource.ID_LOAD)
          val linkCountJson = links.groupBy { _.airline.id }.foldRight(Json.obj()) { 
            case((airlineId, links), foldJson) => foldJson + (airlineId.toString() -> JsNumber(links.length)) 
          }
-         
-         Ok(Json.toJson(airport).asInstanceOf[JsObject] + ("linkCounts" -> linkCountJson))
+         result = result + ("linkCounts" -> linkCountJson)
+
+         if (image) {
+           val cityImageUrl = GoogleImageUtil.getCityImageUrl(airport);
+           if (cityImageUrl != null) {
+             result = result + ("cityImageUrl" -> JsString(cityImageUrl.toString))
+           }
+           val airportImageUrl = GoogleImageUtil.getAirportImageUrl(airport);
+           if (airportImageUrl != null) {
+             result = result + ("airportImageUrl" -> JsString(airportImageUrl.toString))
+           }
+         }
+
+         Ok(result)
        case None => NotFound
      }
   }
+
+  def getImage(airport : Airport, phrases : List[String]) = {
+    airport.name
+  }
+
+
   def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
     AirportCache.getAirport(airportId, true) match {  
        case Some(airport) =>  

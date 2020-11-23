@@ -16,7 +16,7 @@ POST	 /logout						  controllers.UserApplication.logout
 #PUT		 /users							  controllers.UserApplication.putUser
 GET      /current-cycle                   controllers.Application.getCurrentCycle()
 GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
-GET		 /airports/:airportId 		  	  controllers.Application.getAirport(airportId : Int)
+GET		 /airports/:airportId 		  	  controllers.Application.getAirport(airportId : Int, image : Boolean ?= false)
 #GET		 /airports/:airportId/details  	  controllers.Application.getAirportDetails(airportId : Int)
 GET	 	 /airports/:airportId/slots	      controllers.Application.getAirportSlotsByAirline(airportId : Int, airlineId : Int)
 GET	 	 /airports/:airportId/link-statistics	        controllers.Application.getAirportLinkStatistics(airportId : Int)

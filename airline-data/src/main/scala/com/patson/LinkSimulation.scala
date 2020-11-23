@@ -126,6 +126,8 @@ object LinkSimulation {
     }.toMap
     
     LoungeHistorySource.updateConsumptions(loungeResult.map(_._2).toList)
+    //purge older result
+    LoungeHistorySource.deleteConsumptionsBeforeCycle(cycle)
     
     
     (linkConsumptionDetails.toList, loungeResult) 
