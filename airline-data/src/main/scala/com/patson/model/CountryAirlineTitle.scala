@@ -16,6 +16,12 @@ case class CountryAirlineTitle(country : Country, airline : Airline, title : Tit
       case Title.PARTNERED_AIRLINE => 3
     })).toInt
   }
+
+  lazy val description =
+    title match {
+      case Title.NATIONAL_AIRLINE => "National Airline"
+      case Title.PARTNERED_AIRLINE => "Partnered Airline"
+    }
 }
 
 object Title extends Enumeration {

@@ -395,6 +395,16 @@ object CountrySource {
       connection.close()
     }
   }
+
+  def loadCountryAirlineTitlesByAirlineAndCountry(airlineId : Int, country : String) : Option[CountryAirlineTitle] = {
+    val result = loadCountryAirlineTitlesByCriteria(List(("country", country), ("airline", airlineId)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+
   def loadCountryAirlineTitlesByCountryCode(country : String) : List[CountryAirlineTitle] = {
     loadCountryAirlineTitlesByCriteria(List(("country", country)))
   }
