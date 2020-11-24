@@ -117,8 +117,9 @@ PUT      /airlines/:airlineId/favorite-model/:modelId    controllers.AirplaneApp
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
 GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()
 
-GET		 /countries					  controllers.CountryApplication.getAllCountries(homeCountryCode: Option[String])
+GET		 /countries					  controllers.CountryApplication.getAllCountries(airlineId : Option[Int])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
+GET		 /countries/:countryCode/airline/:airlineId  		  controllers.CountryApplication.getCountryWithAirline(countryCode : String, airlineId: Int)
 
 GET		 /santa-claus/guess/:airportId/:airlineId   controllers.ChristmasApplication.makeGuess(airportId : Int, airlineId : Int)
 GET		 /santa-claus/attempt-status/:airportId/:airlineId  controllers.ChristmasApplication.getAttemptStatus(airportId : Int, airlineId : Int)

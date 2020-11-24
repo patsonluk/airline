@@ -615,6 +615,20 @@ package object controllers {
     }
   }
 
+  implicit object AirlineCountryRelationshipWrites extends Writes[AirlineCountryRelationship] {
+    def writes(relationship : AirlineCountryRelationship) : JsValue = {
+      val baseJson = Json.obj(
+        "total" -> relationship.relationship,
+      )
+      var factorsJson = Json.arr()
+      relationship.factors.foreach {
+        case (factor, value) =>
+          factorsJson = factorsJson.append(Json.obj("description" -> factor.getDescription, "value" -> value))
+      }
+      baseJson + ("factors", factorsJson)
+    }
+  }
+
 
 
   val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)

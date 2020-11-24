@@ -6,6 +6,7 @@ function showCountryView(selectedCountry) {
 	highlightTab($('.countryCanvasTab'))
 	
 	$("#countryList").empty()
+	loadAllCountries(true)
    	var selectedSortHeader = $('#countryTableHeader .table-header .cell.selected') 
     updateCountryTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'), selectedCountry)
 
@@ -20,10 +21,10 @@ function showCountryView(selectedCountry) {
 
 }
 
-function loadAllCountries() {
+function loadAllCountries(loadAirline) {
 	var getUrl = "countries"
-	if (activeAirline && activeAirline.headquarterAirport) {
-		getUrl += "?homeCountryCode=" + activeAirline.headquarterAirport.countryCode
+	if (loadAirline && activeAirline) {
+		getUrl += "?airlineId=" + activeAirline.id
 	}
 	
 	loadedCountries = []
@@ -36,6 +37,9 @@ function loadAllCountries() {
 	    async: false,
 	    success: function(countries) {
 	    	$.each(countries, function(index, country) {
+	    	    if (!country.baseCount) {
+	    	        country.baseCount = 0
+	    	    }
 	    		loadedCountriesByCode[country.countryCode] = country
 	    		loadedCountries.push(country)
 	    	});
@@ -71,11 +75,8 @@ function updateCountryTable(sortProperty, sortOrder, selectedCountry) {
 		row.append("<div class='cell' align='right'>" + country.airportPopulation + "</div>")
 		row.append("<div class='cell' align='right'>" + country.incomeLevel + "</div>")
 		row.append("<div class='cell' align='right'>" + country.openness + "</div>")
-		var mutualRelationship = 0
-		if (country.mutualRelationship) {
-			mutualRelationship = country.mutualRelationship 
-		}
-		row.append("<div class='cell' align='right'>" + getRelationshipDescription(mutualRelationship) + "</div>")
+		var baseCount = country.baseCount ? country.baseCount : "-"
+		row.append("<div class='cell' align='right'>" + baseCount + "</div>")
 		
 		if (selectedCountry == country.countryCode) {
 		    row.addClass("selected")
@@ -112,9 +113,13 @@ function selectCountry(countryCode) {
 
 function loadCountryDetails(countryCode) {
 	$("#countryDetailsSharesChart").hide()
+	var url = "countries/" + countryCode
+	if (activeAirline) {
+	    url += "/airline/" + activeAirline.id
+	}
 	$.ajax({
 		type: 'GET',
-		url: "countries/" + countryCode,
+		url: url,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(country) {
@@ -126,14 +131,17 @@ function loadCountryDetails(countryCode) {
 	    		  return obj.countryCode == countryCode;
 	    	})[0];
 
-	    	var mutualRelationship
-	    	if (typeof loadedCountry.mutualRelationship != 'undefined') {
-	    		mutualRelationship = getRelationshipDescription(loadedCountry.mutualRelationship)
-	    	} else {
-	    		mutualRelationship = '-'
-	    	}
+	    	var relationshipSpan = country.relationship ? getAirlineRelationshipDescriptionSpan(country.relationship.total) : $("<span>-</span>")
 
-	    	$("#countryDetailsMutualRelationship").text(mutualRelationship)
+	    	$("#countryDetails div.relationship span.total").empty()
+	    	$("#countryDetails div.relationship span.total").append(relationshipSpan)
+	    	var $relationshipDetailsIcon = $("#countryDetails div.relationship .detailsIcon")
+	    	if (country.relationship) {
+	    	    $relationshipDetailsIcon.data("relationship", country.relationship)
+	    	    $relationshipDetailsIcon.show()
+            } else {
+                $relationshipDetailsIcon.hide()
+            }
 	    	$("#countryDetailsLargeAirportCount").text(country.largeAirportCount)
 	    	$("#countryDetailsMediumAirportCount").text(country.mediumAirportCount)
 	    	$("#countryDetailsSmallAirportCount").text(country.smallAirportCount)
@@ -184,7 +192,7 @@ function loadCountryDetails(countryCode) {
 	});
 }
 
-function getRelationshipDescription(value) {
+function getCountryRelationshipDescription(value) {
 	var description;
 	if (value >= 5) {
 		description = "Home Country"
@@ -209,4 +217,54 @@ function getRelationshipDescription(value) {
 	}
 	
 	return description + ' (' + value + ')'
+}
+
+function getAirlineRelationshipDescriptionSpan(value) {
+    var color
+    if (value < 0) {
+        color = "#FF9973"
+    } else if (value < 10) {
+        color = "#FFC273"
+    } else if (value < 40) {
+        color = "#59C795"
+    } else {
+        color = "#8CB9D9"
+    }
+
+    return $('<span><span style="color: ' + color + '">' + getAirlineRelationshipDescription(value) + '</span>(' + value + ')</span>');
+}
+function getAirlineRelationshipDescription(value) {
+    var description;
+	if (value >= 80) {
+		description = "Trusted"
+    } else if (value >= 60) {
+		description = "Enthusiastic"
+	} else if (value >= 40) {
+		description = "Welcoming"
+	} else if (value >= 20) {
+		description = "Friendly"
+	} else if (value >= 10) {
+		description = "Warm"
+	} else if (value >= 0) {
+		description = "Cautious"
+	} else if (value >= -10) {
+		description = "Cold"
+	} else {
+		description = "Hostile"
+	}
+
+	return description
+}
+
+function showRelationshipDetailsModal(relationship) {
+    var $table = $('#airlineCountryRelationshipModal .factors')
+    $table.children("div.table-row").remove()
+
+    $.each(relationship.factors, function(index, factor) {
+        $table.append('<div class="table-row"><div class="cell">' + factor.description + '</div><div class="cell">' + factor.value + '</div></div>')
+    })
+
+    $table.append('<div class="table-row"><div class="cell">Total</div><div class="cell"><b>' + relationship.total + '</b></div></div>')
+
+    $('#airlineCountryRelationshipModal').fadeIn(500)
 }

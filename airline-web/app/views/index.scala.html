@@ -1126,7 +1126,7 @@
 									<div class="cell clickable selected" style="width: 20%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Population Coverage</div>
 									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="incomeLevel" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Income Level</div>
 									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
-									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="mutualRelationship" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Relationship</div>
+									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="baseCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Base Count</div>
 								</div>
 							</div>
 							<div style="height:  calc(100% - 20px); width: 100%; overflow: auto;">
@@ -1155,11 +1155,11 @@
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Market Openness:</h5></div>
-									<div class="value" id="countryDetailsOpenness"></div>
+									<div class="value" id="countryDetailsOpenness" style="display: flex; align-items: center;"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Relationship with your home country:</h5></div>
-									<div class="value" id="countryDetailsMutualRelationship"></div>
+									<div class="label"><h5>Relationship with your airline:</h5></div>
+									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/magnifier.png")' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'))"></div>
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Large Airports:</h5></div>
@@ -3716,6 +3716,20 @@
 
 			  <div class="button" onclick="closeModal($('#allianceMemberModal')); showRivalsCanvas($('#allianceMemberModal').data('airlineId'))">Details</div>
 			  <div class="button" onclick="closeModal($('#allianceMemberModal'))")>Cancel</div>
+		  </div>
+	  </div>
+
+	  <div id="airlineCountryRelationshipModal" class="modal">
+		  <div class="modal-content" style="width : 600px;">
+			  <span class="close" onclick="closeModal($('#airlineCountryRelationshipModal'))">&times;</span>
+			  <h3>Relationship Factors</h3>
+			  <div class="table data section factors" style="width: 95%">
+				  <div class="table-header">
+					  <div class="cell" style="width: 80%">Factor</div>
+					  <div class="cell" style="width: 20%">Value</div>
+				  </div>
+			  </div>
+
 		  </div>
 	  </div>
 

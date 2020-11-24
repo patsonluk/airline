@@ -671,7 +671,7 @@ function updateAirportExtendedDetails(airportId) {
 			    		$(".airportLoyalty").text("0")
 			    	}
 			    	
-			    	relationship = getRelationshipDescription(loadedCountriesByCode[airport.countryCode].mutualRelationship)
+			    	relationship = getCountryRelationshipDescription(loadedCountriesByCode[airport.countryCode].mutualRelationship)
 			    	
 			    	$(".airportRelationship").text(relationship)
 		    	}

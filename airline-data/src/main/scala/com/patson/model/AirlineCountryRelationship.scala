@@ -29,7 +29,11 @@ object AirlineCountryRelationship {
         case -3 => "In Conflict"
         case _ => "War"
       }
-      s"Relationship between your home country ${homeCountry.name} and ${targetCountry.name} : ${relationshipString}"
+      if (homeCountry.countryCode == targetCountry.countryCode) {
+        s"Your home country ${homeCountry.name}"
+      } else {
+        s"Relationship between your home country ${homeCountry.name} and ${targetCountry.name} : ${relationshipString}"
+      }
     }
   }
 
@@ -57,7 +61,7 @@ object AirlineCountryRelationship {
     val factors = mutable.HashMap[RelationshipFactor, Int]()
     val targetCountry = countryMap(countryCode)
     airline.getCountryCode() match {
-      case Some(homeCountryCode ) =>
+      case Some(homeCountryCode) =>
         val relationship = countryRelationships.getOrElse((homeCountryCode, countryCode), 0)
         factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * HOME_COUNTRY_RELATIONSHIP_MULTIPLIER)
       case None =>
@@ -77,17 +81,18 @@ object AirlineCountryRelationship {
       marketShares => {
         marketShares.airlineShares.get(airline.id).foreach {
           marketShareOfThisAirline => {
-            val percentage = BigDecimal(marketShareOfThisAirline.toDouble / marketShares.airlineShares.values.sum * 100)
-            percentage.setScale(2, BigDecimal.RoundingMode.HALF_UP)
+            var percentage = BigDecimal(marketShareOfThisAirline.toDouble / marketShares.airlineShares.values.sum * 100)
+            percentage = percentage.setScale(2, BigDecimal.RoundingMode.HALF_UP)
             val relationshipBonus : Int = percentage match {
-              case x if x >= 50 => 30
-              case x if x >= 25 => 25
-              case x if x >= 10 => 20
-              case x if x >= 5 => 15
-              case x if x >= 2 => 10
-              case x if x >= 1 => 8
-              case x if x >= 0.5 => 6
-              case x if x >= 0.1 => (x * 10).toInt
+              case x if x >= 50 => 40
+              case x if x >= 25 => 30
+              case x if x >= 10 => 25
+              case x if x >= 5 => 20
+              case x if x >= 2 => 15
+              case x if x >= 1 => 10
+              case x if x >= 0.5 => 8
+              case x if x >= 0.1 => 6
+              case x if x >= 0.02 => (x * 50).toInt
               case _ => 1
             }
             factors.put(MARKET_SHARE(percentage), relationshipBonus)
