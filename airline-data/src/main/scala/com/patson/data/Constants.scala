@@ -116,6 +116,8 @@ object Constants {
   val LINK_CHANGE_HISTORY_INDEX_PREFIX = "link_change_index_"
   val GOOGLE_RESOURCE_TABLE ="google_resource"
   val BUSY_DELEGATE_TABLE = "busy_delegate"
+  val COUNTRY_DELEGATE_TASK_TABLE = "country_delegate_task"
+  val LINK_NEGOTIATION_TASK_TABLE = "link_negotiation_delegate_task"
 
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"

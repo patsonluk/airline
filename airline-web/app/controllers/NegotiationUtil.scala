@@ -2,7 +2,7 @@ package controllers
 
 import com.patson.data.{CountrySource, LinkSource}
 import com.patson.model.FlightType.{LONG_HAUL_DOMESTIC, LONG_HAUL_INTERCONTINENTAL, LONG_HAUL_INTERNATIONAL, SHORT_HAUL_DOMESTIC, SHORT_HAUL_INTERCONTINENTAL, SHORT_HAUL_INTERNATIONAL, ULTRA_LONG_HAUL_INTERCONTINENTAL}
-import com.patson.model.{Airline, Airport, BUSINESS, Computation, Delegate, ECONOMY, FIRST, FlightType, Link, LinkClassValues}
+import com.patson.model.{Airline, Airport, BUSINESS, Computation, ECONOMY, FIRST, FlightType, Link, LinkClassValues}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -12,16 +12,19 @@ object NegotiationUtil {
   val NEW_LINK_BASE_COST = 100
 
 
-  def negotiate(info : NegotiationInfo) = {
+  def negotiate(info : NegotiationInfo, delegateCount : Int) = {
+    val odds = info.odds.get(delegateCount) match {
+      case Some(value) => value
+      case None => 0
+    }
     val number = Math.random()
-    NegotiationResult(1 - info.odds, number)
+    NegotiationResult(1 - odds, number)
   }
 
 
 
-  val NO_NEGOTIATION_REQUIRED = (delegates : List[Delegate]) => {
-    NegotiationInfo (List (), 1, delegates, 0)
-  }
+  val NO_NEGOTIATION_REQUIRED = NegotiationInfo(List (), Map(0 -> 1))
+
 
   val normalizedCapacity : LinkClassValues => Double = (capacity : LinkClassValues) => {
     capacity(ECONOMY) * ECONOMY.spaceMultiplier + capacity(BUSINESS) * BUSINESS.spaceMultiplier + capacity(FIRST) * FIRST.spaceMultiplier
@@ -29,7 +32,7 @@ object NegotiationUtil {
 
 
 
-  def getLinkNegotiationInfo(airline : Airline, newLink : Link, existingLinkOption : Option[Link], assignedDelegates : Int) : NegotiationInfo = {
+  def getLinkNegotiationInfo(airline : Airline, newLink : Link, existingLinkOption : Option[Link]) : NegotiationInfo = {
     import FlightType._
     import NegotiationRequirementType._
 
@@ -37,7 +40,6 @@ object NegotiationUtil {
     val toAirport : Airport = newLink.to
     val newCapacity : LinkClassValues = newLink.futureCapacity()
     val newFrequency = newLink.futureFrequency()
-    val delegates = airline.getDelegates()
 
     val existingCapacity = existingLinkOption.map(_.futureCapacity()).getOrElse(LinkClassValues.getInstance())
     val existingFrequency = existingLinkOption.map(_.futureFrequency()).getOrElse(0)
@@ -47,7 +49,7 @@ object NegotiationUtil {
 
     //reduction of service is always okay for now
     if (capacityDelta <= 0 && frequencyDelta <= 0) {
-      return NegotiationUtil.NO_NEGOTIATION_REQUIRED(delegates)
+      return NegotiationUtil.NO_NEGOTIATION_REQUIRED
     }
 
     //at this point negotiation is required
@@ -109,20 +111,25 @@ object NegotiationUtil {
         }
     }
 
-    val info = NegotiationInfo(requirements.toList, computeOdds(requirements.toList, assignedDelegates), delegates, assignedDelegates)
+    val info = NegotiationInfo(requirements.toList, computeOdds(requirements.toList, airline.getDelegateInfo.availableCount))
     return info
   }
 
-  def computeOdds(requirements : List[NegotiationRequirement], delegatesCount : Int) : Double = {
-    if (requirements.size == 0) {
-      1
-    } else {
-      if (delegatesCount == 0) {
-        0
-      } else {
-        delegatesCount.toDouble / requirements.map(_.value).sum
-      }
-    }
+  def computeOdds(requirements : List[NegotiationRequirement], maxDelegateCount : Int) : Map[Int, Double] = {
+    val totalRequirements = requirements.map(_.value).sum
+    (0 to maxDelegateCount).map { delegateCount =>
+      val oddsForThisDelegatecount =
+        if (requirements.size == 0) {
+          1
+        } else {
+          if (delegateCount == 0) {
+            0
+          } else {
+            Math.min(1, delegateCount.toDouble / totalRequirements)
+          }
+        }
+      (delegateCount, oddsForThisDelegatecount)
+    }.toMap
   }
 
 }
@@ -156,7 +163,12 @@ object NegotiationUtil {
 //  }
 //}
 
-case class NegotiationInfo(requirements : List[NegotiationRequirement], odds : Double, delegates: List[Delegate], assignedDelegates : Int)
+/**
+  *
+  * @param requirements
+  * @param odds map of key : assigned delegate count, value : odds for that count
+  */
+case class NegotiationInfo(requirements : List[NegotiationRequirement], odds : Map[Int, Double])
 
 object NegotiationRequirementType extends Enumeration {
   type NegotiationRequirementType = Value

@@ -2020,6 +2020,7 @@ function updateAirlineBaseList(airlineId, table) {
 
 var assignedDelegates = 0
 var availableDelegates = 0
+var negotiationOddsLookup
 
 function linkConfirmation() {
 	$('#linkConfirmationModal div.existing').empty()
@@ -2101,20 +2102,34 @@ function linkConfirmation() {
 
 	$('#linkConfirmationModal').fadeIn(200)
 
-    assignedDelegates = 0
-    availableDelegates = 0
     getLinkNegotiation()
 }
 
-function changeDelegate(delta) {
+function changeAssignedDelegateCount(delta) {
     if (assignedDelegates + delta <= availableDelegates && assignedDelegates + delta >= 0) {
-        getLinkNegotiation(delta)
+       updateAssignedDelegateCount(assignedDelegates + delta)
     }
+}
+
+function updateAssignedDelegateCount(delegateCount) {
+    assignedDelegates = delegateCount
+    $('#linkConfirmationModal div.assignedDelegatesIcons').empty()
+    for (i = 0 ; i < assignedDelegates; i ++) {
+        var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Assigned Delegate"/>')
+        $('#linkConfirmationModal .assignedDelegatesIcons').append(delegateIcon)
+    }
+    //look up the odds
+    var odds = negotiationOddsLookup[assignedDelegates]
+    $('#linkConfirmationModal .successRate').text(Math.round(odds * 100) + '%')
+
 }
 
 
 
-function getLinkNegotiation(delta = 0) {
+function getLinkNegotiation() {
+    assignedDelegates = 0
+    availableDelegates = 0
+    negotiationOddsLookup = {}
     var airlineId = activeAirline.id
     var url = "airlines/" + activeAirline.id + "/get-link-negotiation"
 	var linkData = {
@@ -2127,8 +2142,7 @@ function getLinkNegotiation(delta = 0) {
     			"price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},
     			//"frequency" : parseInt($("#planLinkFrequency").val()),
     			"model" : parseInt($("#planLinkModelSelect").val()),
-    			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20,
-    			"assignedDelegates" : assignedDelegates + delta }
+    			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20}
 
 
 	$.ajax({
@@ -2137,23 +2151,15 @@ function getLinkNegotiation(delta = 0) {
 		data: JSON.stringify(linkData),
 		contentType: 'application/json; charset=utf-8',
 		dataType: 'json',
-	    success: function(negotiationInfo) {
+	    success: function(result) {
+	        var negotiationInfo = result.negotiationInfo
+	        negotiationOddsLookup = negotiationInfo.odds
 	        if (negotiationInfo.requirements.length > 0) {
                 $('#linkConfirmationModal div.negotiationInfo .requirement').empty()
-                $('#linkConfirmationModal div.assignedDelegatesIcons').empty()
                 $('#linkConfirmationModal div.delegateStatus').empty()
 
-                assignedDelegates = negotiationInfo.assignedDelegates
-                availableDelegates = 0
-                var unavailableDelegateCoolDowns = []
+                //assignedDelegates = negotiationInfo.assignedDelegates
 
-                $.each(negotiationInfo.allDelegates, function(index, delegate) {
-                    if (delegate.available) {
-                        availableDelegates ++;
-                    } else {
-                        unavailableDelegateCoolDowns.push(delegate.coolDownCycles)
-                    }
-                })
 
                 var currentRow = $('#linkConfirmationModal div.negotiationRequirements .table-header')
                 var requiredDelegates = 0
@@ -2165,24 +2171,32 @@ function getLinkNegotiation(delta = 0) {
 
                 $('.negotiationRequirementsTotal .total').text(requiredDelegates)
 
+
+                var delegateInfo = result.delegateInfo
+                availableDelegates = delegateInfo.availableCount
+                //delegate info
                 for (i = 0 ; i < availableDelegates; i ++) {
                     var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/>')
                     $('#linkConfirmationModal div.delegateStatus').append(delegateIcon)
                 }
 
 
-                $.each(unavailableDelegateCoolDowns, function(index, coolDown) {
-                    var delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="Unavailable Delegate - ' + coolDown + 'week(s) cool down remaining"/>')
+                $.each(delegateInfo.busyDelegates, function(index, busyDelegate) {
+                    var delegateIcon
+                    if (busyDelegate.completed) {
+                        delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="' + busyDelegate.coolDown + 'week(s) cool down remaining. Previous task : ' + busyDelegate.taskDescription + '"/>')
+                    } else {
+                        delegateIcon = $('<img src="assets/images/icons/user-silhouette-busy.png" title="Busy with task - ' + busyDelegate.taskDescription + '"/>')
+                    }
                     $('#linkConfirmationModal div.delegateStatus').append(delegateIcon)
                 })
 
-                for (i = 0 ; i < negotiationInfo.assignedDelegates; i ++) {
-                    var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Assigned Delegate"/>')
-                    $('#linkConfirmationModal .assignedDelegatesIcons').append(delegateIcon)
+                if (availableDelegates > 0) {
+                    updateAssignedDelegateCount(1)
+                } else {
+                    updateAssignedDelegateCount(0)
                 }
 
-
-                $('#linkConfirmationModal .successRate').text(Math.round(negotiationInfo.odds * 100) + '%')
                 $('#linkConfirmationModal .confirmButton').hide()
                 if (negotiationInfo.odds <= 0) { //then need to add delegates
                     $('#linkConfirmationModal .negotiateButton').show()

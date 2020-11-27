@@ -71,7 +71,7 @@ object MainSimulation extends App {
       ChangeHistorySource.deleteLinkChangeByCriteria(List(("cycle", "<", cycle - 100)))
 
       //refresh delegates
-      DelegateSource.deleteBusyDelegateByCriteria(List(("availableCycle", "<=", cycle)))
+      DelegateSource.deleteBusyDelegateByCriteria(List(("available_cycle", "<=", cycle)))
       
       //notify the websockets via EventStream
       println("Publish Cycle Complete message")

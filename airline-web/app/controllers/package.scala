@@ -571,24 +571,34 @@ package object controllers {
         requirementsJson = requirementsJson.append(Json.toJson(requirement)(requirementWrites))
       }
 
+//      var oddsJson = Json.obj().asInstanceOf[JsObject]
+//      info.odds.foreach {
+//        case (delegateCount, odds) => oddsJson = oddsJson + (delegateCount -> JsNumber(odds))
+//      }
+
       Json.obj(
-        "odds" -> JsNumber(info.odds),
-        "requirements" -> requirementsJson,
-        "allDelegates" -> Json.toJson(info.delegates),
-        "assignedDelegates" -> JsNumber(info.assignedDelegates))
+        "odds" -> info.odds.map {
+          case (delegateCount : Int, odds : Double) => (delegateCount.toString(), odds)
+        },
+        "requirements" -> requirementsJson)
     }
   }
 
-  implicit object DelegateWrite extends Writes[Delegate] {
-    def writes(delegate : Delegate): JsValue = {
-      var result = JsObject(List(
-        "available" -> JsBoolean(delegate.available)
-      ))
+  implicit object DelegateInfoWrite extends Writes[DelegateInfo] {
+    def writes(delegateInfo : DelegateInfo): JsValue = {
+      var result = Json.obj("availableCount" -> delegateInfo.availableCount).asInstanceOf[JsObject]
+      val currentCycle = CycleSource.loadCycle()
+      var busyDelegatesJson = Json.arr()
+      delegateInfo.busyDelegates.foreach { busyDelegate =>
+        //result = result + ("coolDownCycles" -> JsNumber(coolDownCycles))
 
-      delegate.coolDownCycles.foreach { coolDownCycles =>
-        result = result + ("coolDownCycles" -> JsNumber(coolDownCycles))
+        var busyDelegateJson = Json.obj("id" -> busyDelegate.id, "taskDescription" -> busyDelegate.assignedTask.description, "completed" -> busyDelegate.taskCompleted).asInstanceOf[JsObject]
+        busyDelegate.availableCycle.map(_ - currentCycle).foreach {
+          coolDown : Int => busyDelegateJson = busyDelegateJson + ("coolDown" -> JsNumber(coolDown))
+        }
+        busyDelegatesJson = busyDelegatesJson.append(busyDelegateJson)
       }
-
+      result = result + ("busyDelegates", busyDelegatesJson)
       result
     }
   }

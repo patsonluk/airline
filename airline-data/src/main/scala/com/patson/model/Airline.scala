@@ -172,18 +172,11 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     code
   }
 
-  def getDelegates() : List[Delegate] = {
-    val busyDelegates = DelegateSource.loadBusyDelegateByAirline(id)
+  def getDelegateInfo() : DelegateInfo = {
+    val busyDelegates = DelegateSource.loadBusyDelegatesByAirline(id)
     val availableCount = delegateCount - busyDelegates.size
 
-    val cycle  = CycleSource.loadCycle()
-    val delegates = ListBuffer[Delegate]()
-    for (i <- 0 until availableCount) {
-      delegates += Delegate(true, None)
-    }
-    delegates.appendAll(busyDelegates.map(busyUntilCycle => Delegate(busyUntilCycle <= cycle, Some(busyUntilCycle - cycle))))
-
-    delegates.toList
+    DelegateInfo(availableCount, busyDelegates)
   }
 
   val BASIC_DELEGATE = 2
@@ -192,11 +185,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   }.sum
 }
 
-case class Delegate(available : Boolean, coolDownCycles : Option[Int])
-
-object Delegate {
-  val COOL_DOWN = 12 //12 weeks for cooldown
-}
+case class DelegateInfo(availableCount : Int, busyDelegates: List[BusyDelegate])
 
 case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "")
 

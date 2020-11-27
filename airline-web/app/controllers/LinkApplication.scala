@@ -232,7 +232,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
  
   def addLinkBlock(request : AuthenticatedRequest[AnyContent, Airline]) : Result = {
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
-    val delegatesCount = request.body.asInstanceOf[AnyContentAsJson].json.\("assignedDelegates").as[Int]
+    val delegateCount = request.body.asInstanceOf[AnyContentAsJson].json.\("assignedDelegates").as[Int]
 
     val airlineId = incomingLink.airline.id
 
@@ -355,8 +355,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       return BadRequest("Link is rejected: " + rejectionReason.get);
     }
 
-    if (delegatesCount > airline.getDelegates().filter(_.available).size) {
-      return BadRequest(s"Assigning $delegatesCount delegates but not enough available");
+    if (delegateCount > airline.getDelegateInfo().availableCount) {
+      return BadRequest(s"Assigning $delegateCount delegates but not enough available");
     }
 
     if (existingLink.isEmpty) {
@@ -365,19 +365,21 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       incomingLink.flightNumber = existingLink.get.flightNumber
     }
 
-    val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(airline, incomingLink, existingLink, delegatesCount)
+    val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(airline, incomingLink, existingLink)
     val negotiationResultOption =
-      if (negotiationInfo.assignedDelegates > 0) { //then negotiation is required
+      if (delegateCount > 0) { //then negotiation is required
         //update delegate status
         val cycle = CycleSource.loadCycle()
-        val coolDown = cycle + Delegate.COOL_DOWN
-        val coolDowns = ListBuffer[Int]()
-        for (i <- 0 until delegatesCount) {
-          coolDowns += coolDown
-        }
-        DelegateSource.saveBusyDelegates(airlineId, coolDowns.toList)
+        val task = DelegateTask.linkNegotiation(cycle, fromAirport, toAirport)
+        val availableCycle = cycle + task.coolDown
 
-        Some(NegotiationUtil.negotiate(negotiationInfo))
+        val busyDelegates = (0 until delegateCount).toList.map { _ =>
+          BusyDelegate(airline, task, Some(availableCycle))
+        }
+
+        DelegateSource.saveBusyDelegates(busyDelegates)
+
+        Some(NegotiationUtil.negotiate(negotiationInfo, delegateCount))
       } else {
         None
       }
@@ -985,11 +987,12 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   def getLinkNegotiation(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
-    val delegatesCount = request.body.asInstanceOf[AnyContentAsJson].json.\("assignedDelegates").as[Int]
+    //val delegatesCount = request.body.asInstanceOf[AnyContentAsJson].json.\("assignedDelegates").as[Int]
     val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
-    val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(request.user, incomingLink, existingLinkOption, delegatesCount)
+    val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(request.user, incomingLink, existingLinkOption)
 
-    Ok(Json.toJson(negotiationInfo)(NegotiationInfoWrites(incomingLink)))
+    Ok(Json.obj("negotiationInfo" -> Json.toJson(negotiationInfo)(NegotiationInfoWrites(incomingLink)),
+    "delegateInfo" -> Json.toJson(request.user.getDelegateInfo)))
   }
 
 
