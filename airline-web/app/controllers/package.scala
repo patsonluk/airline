@@ -584,22 +584,28 @@ package object controllers {
     }
   }
 
-  implicit object DelegateInfoWrite extends Writes[DelegateInfo] {
+  implicit object DelegateInfoWrites extends Writes[DelegateInfo] {
     def writes(delegateInfo : DelegateInfo): JsValue = {
       var result = Json.obj("availableCount" -> delegateInfo.availableCount).asInstanceOf[JsObject]
       val currentCycle = CycleSource.loadCycle()
       var busyDelegatesJson = Json.arr()
+      val delegateWrites = new BusyDelegateWrites(currentCycle)
       delegateInfo.busyDelegates.foreach { busyDelegate =>
-        //result = result + ("coolDownCycles" -> JsNumber(coolDownCycles))
-
-        var busyDelegateJson = Json.obj("id" -> busyDelegate.id, "taskDescription" -> busyDelegate.assignedTask.description, "completed" -> busyDelegate.taskCompleted).asInstanceOf[JsObject]
-        busyDelegate.availableCycle.map(_ - currentCycle).foreach {
-          coolDown : Int => busyDelegateJson = busyDelegateJson + ("coolDown" -> JsNumber(coolDown))
-        }
-        busyDelegatesJson = busyDelegatesJson.append(busyDelegateJson)
+        busyDelegatesJson = busyDelegatesJson.append(Json.toJson(busyDelegate)(delegateWrites))
       }
       result = result + ("busyDelegates", busyDelegatesJson)
       result
+    }
+  }
+
+  class BusyDelegateWrites(currentCycle : Int) extends Writes[BusyDelegate] {
+    override def writes(busyDelegate: BusyDelegate): JsValue = {
+      var busyDelegateJson = Json.obj("id" -> busyDelegate.id, "taskDescription" -> busyDelegate.assignedTask.description, "completed" -> busyDelegate.taskCompleted).asInstanceOf[JsObject]
+      busyDelegate.availableCycle.map(_ - currentCycle).foreach {
+        coolDown : Int => busyDelegateJson = busyDelegateJson + ("coolDown" -> JsNumber(coolDown))
+      }
+
+      busyDelegateJson
     }
   }
 

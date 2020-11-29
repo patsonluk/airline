@@ -1,6 +1,7 @@
 package com.patson.model
 
-import com.patson.data.CountrySource
+import com.patson.data.{CountrySource, CycleSource, DelegateSource}
+import com.patson.model.AirlineCountryRelationship.countryMap
 
 import scala.collection.mutable
 
@@ -50,15 +51,15 @@ object AirlineCountryRelationship {
     }
   }
 
-  val DELEGATE = (delegateCount : Int) => new RelationshipFactor {
+  val DELEGATE = (delegateLevel : Int) => new RelationshipFactor {
     override val getDescription: String = {
-      s"${delegateCount} assigned delegate(s)"
+      s"Total delegate level ${delegateLevel}"
     }
   }
 
   val HOME_COUNTRY_RELATIONSHIP_MULTIPLIER = 5
   def getAirlineCountryRelationship(countryCode : String, airline : Airline) : AirlineCountryRelationship = {
-    val factors = mutable.HashMap[RelationshipFactor, Int]()
+    val factors = mutable.LinkedHashMap[RelationshipFactor, Int]()
     val targetCountry = countryMap(countryCode)
     airline.getCountryCode() match {
       case Some(homeCountryCode) =>
@@ -100,10 +101,22 @@ object AirlineCountryRelationship {
         }
       }
     }
+    val currentCycle = CycleSource.loadCycle()
+    val totalLevel : Int = DelegateSource.loadCountryDelegateByAirlineAndCountry(airline.id, countryCode).map(_.assignedTask.asInstanceOf[CountryDelegateTask].level(currentCycle)).sum
 
-    //TODO delegates
 
+    val levelMultiplier = getDelegateBonusMultiplier(targetCountry)
+    factors.put(DELEGATE(totalLevel), Math.round(totalLevel * levelMultiplier).toInt)
     AirlineCountryRelationship(airline, targetCountry, factors.toMap)
+  }
+
+  val getDelegateBonusMultiplier = (country : Country) => {
+    //US: pop 97499995 income 54629
+    val modelPower = 97499995L * 54629L
+    val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
+    val logRatio = math.log10(ratioToModelPower * 100) / 2 //0.? to 1
+    var levelMultiplier = 1 / logRatio * 0.5 // >= 0.5, inverse of logRatio : lower multiplier for more powerful country
+    Math.min(2, BigDecimal(levelMultiplier).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble)
   }
 }
 

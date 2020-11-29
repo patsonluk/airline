@@ -1159,7 +1159,7 @@
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Relationship with your airline:</h5></div>
-									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/magnifier.png")' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'))"></div>
+									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('countryCode'))"></div>
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Large Airports:</h5></div>
@@ -3269,13 +3269,14 @@
 				</div>
 			</div>
 
-			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Delegates Assignment</h3>
-			  <div class="delegateStatus">
-
+			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h3>
+			  <div class="section">
+				  <h4>Pool</h4>
+				  <div class="delegateStatus"></div>
 			  </div>
 			  <div style="width: 100%;" class="delegatesAssignment table data">
 				  <div class="table-header">
-					  <div class="cell"style="width: 80%">Assigned Delegates</div>
+					  <div class="cell"style="width: 80%">Assigned Delegates for negotiation</div>
 					  <div class="cell" style="width: 20%">Success Rate</div>
 				  </div>
 				  <div class="table-row">
@@ -3728,6 +3729,34 @@
 					  <div class="cell" style="width: 80%">Factor</div>
 					  <div class="cell" style="width: 20%">Value</div>
 				  </div>
+			  </div>
+
+			  <div class="delegateSection">
+				  <h3 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h3>
+				  <div class="section">
+					  <h4>Pool</h4>
+					  <div class="delegateStatus">
+
+					  </div>
+				  </div>
+				  <div>Each delegate level provide&nbsp;<span class="delegateMultiplier"></span>&nbsp;relationship points</div>
+				  <div style="width: 100%;" class="delegatesAssignment table data">
+					  <div class="table-header">
+						  <div class="cell"style="width: 80%">Assigned Delegates to develop relationship</div>
+						  <div class="cell"></div>
+					  </div>
+					  <div class="table-row">
+						  <div class="cell">
+							  <div style="float: left" class="assignedDelegatesIcons"></div>
+						  </div>
+						  <div>
+							  <div style="float: right" class="clickable" onclick="changeCountryDelegateCount(-1)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Minus"/></div>
+							  <div style="float: right" class="clickable" onclick="changeCountryDelegateCount(1)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Add"/></div>
+						  </div>
+					  </div>
+				  </div>
+				  <div class="button" onclick="updateCountryDelegates()">Confirm</div>
+				  <div class="button" onclick="closeModal($('#airlineCountryRelationshipModal'))">Cancel</div>
 			  </div>
 
 		  </div>

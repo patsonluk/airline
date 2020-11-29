@@ -1,18 +1,14 @@
 package controllers
 
-import scala.math.BigDecimal.int2bigDecimal
-import com.patson.data.AirlineSource
-import com.patson.data.AirplaneSource
-import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane._
+import com.patson.data.{AirlineSource, AirportSource, CountrySource}
 import com.patson.model._
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, JsValue, Json, Writes}
-import play.api.mvc._
-import com.patson.data.CountrySource
-import com.patson.data.AirportSource
 import com.patson.util.{AirlineCache, ChampionUtil, CountryCache}
 import controllers.AuthenticationObject.AuthenticatedAirline
 import javax.inject.Inject
+import play.api.libs.json._
+import play.api.mvc._
+
+import scala.math.BigDecimal.int2bigDecimal
 
 
 class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -42,15 +38,9 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  def getCountryWithAirline(countryCode : String, airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    getCountryJson(countryCode) match {
-      case Some(jsonObject) =>
-        //append airline specific info
-        val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, request.user)
-        val result = jsonObject + ("relationship" -> Json.toJson(relationship))
-        Ok(result)
-      case None => NotFound
-    }
+  def getCountryAirlineRelationship(countryCode : String, airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+      val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, request.user)
+      Ok(Json.toJson(relationship))
   }
 
   def getCountry(countryCode : String) = Action {
@@ -121,7 +111,6 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
   }
 
-  
   object AirlineSharesWrites extends Writes[List[(Airline, Long)]] {
     def writes(shares: List[(Airline, Long)]): JsValue = {
       var jsonArray = Json.arr()

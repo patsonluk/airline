@@ -119,7 +119,11 @@ GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()
 
 GET		 /countries					  controllers.CountryApplication.getAllCountries(airlineId : Option[Int])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
-GET		 /countries/:countryCode/airline/:airlineId  		  controllers.CountryApplication.getCountryWithAirline(countryCode : String, airlineId: Int)
+GET		 /countries/:countryCode/airline/:airlineId  		  controllers.CountryApplication.getCountryAirlineRelationship(countryCode : String, airlineId: Int)
+
+GET      /delegates/airline/:airlineId      controllers.DelegateApplication.getDelegateInfo(airlineId: Int)
+GET      /delegates/airline/:airlineId/country/:countryCode      controllers.DelegateApplication.getCountryDelegates(countryCode : String, airlineId: Int)
+POST      /delegates/airline/:airlineId/country/:countryCode      controllers.DelegateApplication.updateCountryDelegates(countryCode : String, airlineId: Int)
 
 GET		 /santa-claus/guess/:airportId/:airlineId   controllers.ChristmasApplication.makeGuess(airportId : Int, airlineId : Int)
 GET		 /santa-claus/attempt-status/:airportId/:airlineId  controllers.ChristmasApplication.getAttemptStatus(airportId : Int, airlineId : Int)
