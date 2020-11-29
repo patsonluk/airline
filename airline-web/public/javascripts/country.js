@@ -329,7 +329,7 @@ function refreshAssignedDelegates() {
 
 
     $.each(originalDelegates.slice(0, assignedDelegateCount), function(index, assignedDelegate) {
-            var delegateIcon = $('<img src="assets/images/icons/delegate-level-' + assignedDelegate.level + '.png" title="' + assignedDelegate.levelDescription + (assignedDelegate.nextLevelCycleCount ? "(promotion in " + assignedDelegate.nextLevelCycleCount + " week(s))" : "") + '"/>')
+            var delegateIcon = $('<img src="assets/images/icons/delegate-level-' + assignedDelegate.level + '.png" title="' + assignedDelegate.levelDescription + "&nbsp;(level " + assignedDelegate.level + (assignedDelegate.nextLevelCycleCount ? " - promotion in " + assignedDelegate.nextLevelCycleCount + " week(s)" : "") + ')"/>')
             $('#airlineCountryRelationshipModal .assignedDelegatesIcons').append(delegateIcon)
     })
 

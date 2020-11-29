@@ -45,7 +45,7 @@ case class CountryDelegateTask(startCycle : Int, country: Country) extends Deleg
 
   val levelDescription = (currentCycle: Int) => {
     level(currentCycle) match {
-      case 0 => "Setting up"
+      case 0 => "Trainee"
       case 1 => "Novice"
       case 2 => "Established"
       case 3 => "Experienced"
