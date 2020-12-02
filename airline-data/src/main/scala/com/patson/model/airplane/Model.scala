@@ -3,7 +3,7 @@ package com.patson.model.airplane
 import com.patson.model.IdObject
 import com.patson.model.Airline
 
-case class Model(name : String, family : String = "", capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, lifespan : Int, constructionTime : Int, countryCode : String, imageUrl : String = "", var id : Int = 0) extends IdObject {
+case class Model(name : String, family : String = "", capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, lifespan : Int, constructionTime : Int, countryCode : String, runwayRequirement : Int, imageUrl : String = "", var id : Int = 0) extends IdObject {
   import Model.Type._
   val airplaneType : Type = {
     capacity match {
@@ -76,7 +76,7 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
 
 object Model {
   def fromId(id : Int) = {
-    val modelWithJustId = Model("Unknown", "Unknown", 0, 0, 0, 0, 0, 0, 0, countryCode = "")
+    val modelWithJustId = Model("Unknown", "Unknown", 0, 0, 0, 0, 0, 0, 0, countryCode = "", runwayRequirement = 0)
     modelWithJustId.id = id
     modelWithJustId
   }
@@ -85,7 +85,7 @@ object Model {
     val LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, X_LARGE, JUMBO = Value
   }
   //https://en.wikipedia.org/wiki/List_of_jet_airliners
-  val models = List(Model("Cessna 421", "Cessna", capacity = 7, fuelBurn = (7 * 1).toInt, speed = 300, range = 1555, price = 550000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US"),
+  val models = List(Model("Cessna 421", "Cessna", capacity = 7, fuelBurn = (7 * 1).toInt, speed = 300, range = 1555, price = 550000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US", runwayRequirement = 2323),
                     Model("Pilatus PC-12", "Pilatus", capacity = 9, fuelBurn = (9 * 1.2).toInt, speed = 528, range = 3417, price = 1800000, lifespan = 35 * 52, constructionTime = 0, countryCode = "CH"),
                     Model("Britten-Norman BN-2 Islander", "Britten-Norman", capacity = 9, fuelBurn = (9 * 1).toInt, speed = 273, range = 1400, price = 2000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "GB", imageUrl = ""),
                     Model("Cessna Caravan", "Cessna", capacity = 14, fuelBurn = (14 * 1).toInt, speed = 344, range = 2400, price = 2500000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US", imageUrl = "https://www.norebbo.com/2017/06/cessna-208-grand-caravan-blank-illustration-templates/"),
