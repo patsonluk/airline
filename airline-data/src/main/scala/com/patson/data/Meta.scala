@@ -170,7 +170,7 @@ object Meta {
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG)")
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG, runway_length SMALLINT)")
     statement.execute()
     statement.close()
     
@@ -293,6 +293,7 @@ object Meta {
     createLinkChangeHistory(connection)
     createGoogleResource(connection)
     createDelegate(connection)
+    createAirportRunway(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -538,7 +539,8 @@ object Meta {
       "lifespan INTEGER, " +
       "construction_time INTEGER, " +
       "country_code CHAR(2), " +
-      "image_url VARCHAR(256))")
+      "image_url VARCHAR(256)," +
+      "runway_requirement BIGINT)")
     statement.execute()
     statement.close()
 
@@ -1485,6 +1487,19 @@ object Meta {
     statement.execute()
     statement.close()
 
+  }
+
+  def createAirportRunway(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_RUNWAY_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airport INTEGER," +
+      "code VARCHAR(16)," +
+      "runway_type VARCHAR(256)," +
+      "length SMALLINT," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
   }
 
 

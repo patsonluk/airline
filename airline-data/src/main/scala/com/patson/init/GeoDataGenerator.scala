@@ -100,17 +100,24 @@ object GeoDataGenerator extends App {
         }
 
 
-        val lighted = info(6) == "1"
-        if (lighted) {
+        //val lighted = info(6) == "1"
+//        if (lighted) {
           try {
-            val length = info(3).toInt
+            var length = (info(3).toInt * 0.3048).toInt
+            if (length % 10 == 9) { //somehow the data is off my 1 meter
+              length += 1
+            }
             val icao = info(2)
+            var codeTokens = ListBuffer[String](info(8).trim, info(14).trim)
+            codeTokens = codeTokens.filterNot(token => "XX".equals(token) || "".equals(token))
+            val code = codeTokens.mkString("/")
+
             val runwayOption =
               info(5).toLowerCase() match {
                 case asphaltPattern(_) =>
-                  Some(Runway(length, RunwayType.Asphalt))
-                case concretePattern(_) => Some(Runway(length, RunwayType.Concrete))
-                case gravelPattern(_) => Some(Runway(length, RunwayType.Gravel))
+                  Some(Runway(length, code, RunwayType.Asphalt))
+                case concretePattern(_) => Some(Runway(length, code, RunwayType.Concrete))
+                case gravelPattern(_) => Some(Runway(length, code, RunwayType.Gravel))
                 case _ => None
               }
             runwayOption.foreach {
@@ -121,7 +128,7 @@ object GeoDataGenerator extends App {
           } catch {
             case _: NumberFormatException => None
           }
-        }
+//        }
         //
         //        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
         //          if (incomeInfo.get(infoArray(8)).isEmpty) {
@@ -205,8 +212,8 @@ object GeoDataGenerator extends App {
     println(rawAirportResult.size + " airports")
     println(runwayResult.size + " solid runways")
     println(citites.size + " cities")
-    
-    var airportResult = adjustAirportByRunway(rawAirportResult.filter { airport => 
+
+    var airportResult = adjustAirportByRunway(rawAirportResult.filter { airport =>
          airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
       }, runwayResult)
       
@@ -309,6 +316,8 @@ object GeoDataGenerator extends App {
     AirportSource.deleteAllAirports()
     AirportSource.saveAirports(airports)
 
+
+
     //patch features
     AirportFeaturePatcher.patchFeatures()
     IsolatedAirportPatcher.patchIsolatedAirports()
@@ -334,21 +343,37 @@ object GeoDataGenerator extends App {
 
   }
 
+  def setAirportRunwayDetails(airports: List[Airport], runwaysByIcao: Map[String, List[Runway]]): Unit = {
+    airports.foreach { airport =>
+      runwaysByIcao.get(airport.icao) match {
+        case Some(runways) =>
+          if (runways.length > 0) {
+            airport.setRunways(runways)
+            println(s"$airport has max runway ${airport.runwayLength}")
+          } else {
+            println(s"$airport has no runway")
+          }
+        case None =>
+          println(s"$airport has no runway")
+      }
+    }
+  }
+
   def adjustAirportByRunway(rawAirportResult: List[Airport], runwayResult: Map[String, List[Runway]]) : List[Airport]= {
     val MAX_AIRPORT_SIZE = 9
     rawAirportResult.map { rawAirport =>
-      if (rawAirport.size == 3) { //have to at least to be a big airport for adjustment 
+      if (rawAirport.size == 3) { //have to at least to be a big airport for adjustment
         runwayResult.get(rawAirport.icao) match {
           case Some(runways) =>
             var longRunway = 0 
             var veryLongRunway = 0
             var megaRunway = 0
             runways.foreach { runway =>
-               if (runway.length >= 10000) {
+               if (runway.length >= 10000 * 0.3048) { //old logic (for example 10000, was in feet) while runway.length is in meter now
                  megaRunway += 1
-               } else if (runway.length >= 9000) {
+               } else if (runway.length >= 9000 * 0.3048) {
                  veryLongRunway += 1
-               } else if (runway.length >= 7000) {
+               } else if (runway.length >= 7000 * 0.3048) {
                  longRunway += 1
                }
             }

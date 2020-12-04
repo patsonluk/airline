@@ -10,8 +10,7 @@ import com.patson.util.AirlineCache
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
-
-case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0) extends IdObject {
+case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
   val citiesServed = scala.collection.mutable.ListBuffer[(City, Double)]()
   private[this] val airlineBaseAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals
   private[this] val airlineAdjustedAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals + bonus
@@ -25,6 +24,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var featuresLoaded = false
   private[this] val loungesByAirline = scala.collection.mutable.Map[Int, Lounge]()
   private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
+  private[this] var runways = List.empty[Runway]
   //private[this] var loungesLoaded = false
 
 //  private[this] var airportImageUrl : Option[String] = None
@@ -71,6 +71,21 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     } else {
       AirlineAppeal(0, 0)
     }
+  }
+
+  def setRunways(runways : List[Runway]) = {
+    this.runways = runways
+    if (runways.length > 0) {
+      val maxRunwayLength = runways.sortBy(_.length).reverse.head.length
+      this.runwayLength = maxRunwayLength.toInt
+    }
+    if (this.runwayLength < Airport.MIN_RUNWAY_LENGTH) {
+      this.runwayLength = Airport.MIN_RUNWAY_LENGTH
+    }
+  }
+
+  def getRunways() = {
+    runways
   }
 
   def getAirlineBonuses(airlineId : Int) : List[AirlineBonus] = {
@@ -432,7 +447,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   
   def allowsModel(airplaneModel : Model) : Boolean = {
-    size >= airplaneModel.minAirportSize
+    runwayLength >= airplaneModel.runwayRequirement
   }
   
   val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
@@ -484,6 +499,7 @@ object Airport {
   val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
   val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
   val NON_BASE_MAX_SLOT = 70
+  val MIN_RUNWAY_LENGTH = 750
   
   import FlightType._
   val qualityExpectationFlightTypeAdjust = 
@@ -496,7 +512,7 @@ object Airport {
         ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20))
 }
 
-case class Runway(length : Int, runwayType : RunwayType.Value)
+case class Runway(length : Int, code : String, runwayType : RunwayType.Value)
 
 object RunwayType extends Enumeration {
     type RunwayType = Value

@@ -17,6 +17,8 @@ object Constants {
   val AIRPORT_IMAGE_TABLE = "airport_image"
   val AIRPORT_AIRLINE_APPEAL_BONUS_TABLE = "airport_airline_appeal_bonus"
   val AIRPORT_AIRLINE_APPEAL_BONUS_INDEX_1 =  "airport_airline_appeal_bonus_index_1"
+  val AIRPORT_RUNWAY_TABLE = "airport_runway"
+
   val COUNTRY_TABLE = "country"
   val COUNTRY_AIRLINE_RELATIONSHIP_TABLE = "country_airline_relationship"
   val COUNTRY_AIRLINE_RELATIONSHIP_INDEX_1 = "country_airline_relationship_index_1"

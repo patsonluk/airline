@@ -63,7 +63,7 @@ package object controllers {
       "price" -> JsNumber(airplaneModel.price),
       "lifespan" -> JsNumber(airplaneModel.lifespan),
       "airplaneType" -> JsString(airplaneModel.airplaneTypeLabel),
-      "minAirportSize" -> JsNumber(airplaneModel.minAirportSize),
+      "runwayRequirement" -> JsNumber(airplaneModel.runwayRequirement),
       "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION), //same for all models for now
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now
       "constructionTime" -> JsNumber(airplaneModel.constructionTime),
@@ -487,6 +487,7 @@ package object controllers {
         "icao" -> JsString(airport.icao),
         "city" -> JsString(airport.city),
         "size" -> JsNumber(airport.size),
+        "runwayLength" -> JsNumber(airport.runwayLength),
         "latitude" -> JsNumber(airport.latitude),
         "longitude" -> JsNumber(airport.longitude),
         "countryCode" -> JsString(airport.countryCode),
@@ -527,6 +528,13 @@ package object controllers {
       if (airport.isFeaturesLoaded) {
         airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().map { airportFeature =>
           Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> AirportFeatureType.getDescription(airportFeature.featureType))
+        }
+        ))
+      }
+
+      if (airport.getRunways().length > 0) {
+        airportObject = airportObject + ("runways" -> JsArray(airport.getRunways().sortBy(_.length).reverse.map { runway =>
+          Json.obj("type" -> runway.runwayType.toString(), "length" -> runway.length, "code" -> runway.code)
         }
         ))
       }

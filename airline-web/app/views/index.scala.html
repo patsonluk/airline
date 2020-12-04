@@ -755,8 +755,8 @@
 										<div class="value" id="airplaneType"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Req. Airport Scale:</h5></div>
-										<div class="value" id="minAirportSize"></div>
+										<div class="label"><h5>Runway requirement:</h5></div>
+										<div class="value"><span class="runwayRequirement"></span>&nbsp;m</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Speed:</h5></div>
@@ -1009,6 +1009,14 @@
 								<div class="table-row">
 									<div class="label"><h5>ICAO:</h5></div>
 									<div class="value" id="airportDetailsIcao"></div>
+								</div>
+
+								<div class="table-row">
+									<div class="label"><h5>Runways:</h5></div>
+									<div class="value">
+										<div class="runwayTable table data" style="width: 100%;">
+										</div>
+									</div>
 								</div>
 							</div>
 							<div id="airportStatistics" style="width: 100%; float: left;">
@@ -1269,8 +1277,8 @@
 										<div class="value" id="airplaneType"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Req. Airport Scale:</h5></div>
-										<div class="value" id="minAirportSize"></div>
+										<div class="label"><h5>Runway Requirement:</h5></div>
+										<div class="value"><span class="runwayRequirement"></span>&nbsp;m</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Max Flying Range:</h5></div>
@@ -2729,14 +2737,18 @@
    				<div class="label"><h5>Country market openness:</h5></div>
    				<div class="value" id="airportPopupOpenness"></div>
    			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Slots:</h5></div>
-   				<div class="value airportSlots" id="airportPopupSlots"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Slots for your airline (free / offered):</h5></div>
-   				<div class="value airportAssignedSlots" id="airportPopupAssignedSlots"></div>
-   			</div>
+			<div class="table-row">
+				<div class="label"><h5>Max runway length:</h5></div>
+				<div class="value" id="airportPopupMaxRunwayLength"></div>
+			</div>
+<!--   			<div class="table-row">-->
+<!--   				<div class="label"><h5>Slots:</h5></div>-->
+<!--   				<div class="value airportSlots" id="airportPopupSlots"></div>-->
+<!--   			</div>-->
+<!--   			<div class="table-row">-->
+<!--   				<div class="label"><h5>Slots for your airline (free / offered):</h5></div>-->
+<!--   				<div class="value airportAssignedSlots" id="airportPopupAssignedSlots"></div>-->
+<!--   			</div>-->
    			<div class="table-row">
    				<div class="label"><h5>Awareness of your airline:</h5></div>
    				<div class="value airportAwareness" id="airportPopupAwareness"></div>
