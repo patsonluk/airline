@@ -327,6 +327,9 @@ function refreshAssignedDelegates() {
     var originalDelegates = $delegateSection.data('originalDelegates')
     var assignedDelegateCount = $delegateSection.data('assignedDelegateCount')
 
+    if (assignedDelegateCount == 0) {
+        $('#airlineCountryRelationshipModal div.assignedDelegatesIcons').append("<span>None</span>")
+    }
 
     $.each(originalDelegates.slice(0, assignedDelegateCount), function(index, assignedDelegate) {
             var delegateIcon = $('<img src="assets/images/icons/delegate-level-' + assignedDelegate.level + '.png" title="' + assignedDelegate.levelDescription + "&nbsp;(level " + assignedDelegate.level + (assignedDelegate.nextLevelCycleCount ? " - promotion in " + assignedDelegate.nextLevelCycleCount + " week(s)" : "") + ')"/>')

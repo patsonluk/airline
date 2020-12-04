@@ -2114,6 +2114,9 @@ function changeAssignedDelegateCount(delta) {
 function updateAssignedDelegateCount(delegateCount) {
     assignedDelegates = delegateCount
     $('#linkConfirmationModal div.assignedDelegatesIcons').empty()
+    if (assignedDelegates == 0) {
+        $('#linkConfirmationModal div.assignedDelegatesIcons').append("<span>None</span>")
+    }
     for (i = 0 ; i < assignedDelegates; i ++) {
         var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Assigned Delegate"/>')
         $('#linkConfirmationModal .assignedDelegatesIcons').append(delegateIcon)
