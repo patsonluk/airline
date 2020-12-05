@@ -861,19 +861,7 @@ var existingLink
 //var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
-    existingLink = linkInfo.existingLink
-    existingLink.assignedAirplanes.sort(function(a, b) {
-        var result = b.frequency - a.frequency
-        if (result != 0) {
-            if (b.frequency == 0 || a.frequency == 0) { //if either one is not assigned to this route at all, then return result ie also higher precedence to compare if airplane is assigned
-                return result
-            }
-        }
-
-        return a.airplane.condition - b.airplane.condition //otherwise: both assigned or both not assigned, then return lowest condition ones first
-    })
-
-	var availableFromSlot = linkInfo.maxFrequencyFromAirport
+    var availableFromSlot = linkInfo.maxFrequencyFromAirport
 	var availableToSlot = linkInfo.maxFrequencyToAirport
 	if (linkInfo.existingLink) {
 	    if (linkInfo.existingLink.future) {
@@ -2106,7 +2094,7 @@ function linkConfirmation() {
 }
 
 function changeAssignedDelegateCount(delta) {
-    if (assignedDelegates + delta <= availableDelegates && assignedDelegates + delta >= 0) {
+    if (!isNan(negotiationOddsLookup[assignedDelegates + delta])) {
        updateAssignedDelegateCount(assignedDelegates + delta)
     }
 }
@@ -2159,21 +2147,42 @@ function getLinkNegotiation() {
 	        negotiationOddsLookup = negotiationInfo.odds
 	        if (negotiationInfo.requirements.length > 0) {
                 $('#linkConfirmationModal div.negotiationInfo .requirement').empty()
+                $('#linkConfirmationModal div.negotiationInfo .discount').empty()
                 $('#linkConfirmationModal div.delegateStatus').empty()
 
                 //assignedDelegates = negotiationInfo.assignedDelegates
-
-
                 var currentRow = $('#linkConfirmationModal div.negotiationRequirements .table-header')
                 var requiredDelegates = 0
                 $.each(negotiationInfo.requirements, function(index, requirement) {
-                    var sign = requirement.value >= 0 ? '+' : '-'
-                    currentRow = $('<div class="table-row requirement"><div class="cell">' + requirement.description + '</div><div class="cell">' + sign + "&nbsp;" + requirement.value + '</div></div>').insertAfter(currentRow)
+                    var sign = requirement.value >= 0 ? '+' : ''
+                    currentRow = $('<div class="table-row requirement"><div class="cell">' + requirement.description + '</div><div class="cell">' + sign + requirement.value + '</div></div>').insertAfter(currentRow)
                     requiredDelegates += requirement.value
                 })
 
                 $('.negotiationRequirementsTotal .total').text(requiredDelegates)
 
+                //from airport discounts
+                currentRow = $('#linkConfirmationModal div.negotiationFromDiscounts .table-header')
+                $.each(negotiationInfo.fromAirportDiscounts, function(index, discount) {
+                    var displayDiscountValue = Math.round(discount.value >= 0 ? discount.value * 100 : discount.value * -100)
+                    currentRow = $('<div class="table-row requirement"><div class="cell">' + discount.description + '</div><div class="cell discountValue">' + displayDiscountValue + '%</div></div>').insertAfter(currentRow)
+                    if (discount.value < 0) {
+                        currentRow.find('.discountValue').addClass('warning')
+                    }
+                })
+
+                //to airport discounts
+                currentRow = $('#linkConfirmationModal div.negotiationToDiscounts .table-header')
+                $.each(negotiationInfo.toAirportDiscounts, function(index, discount) {
+                    var displayDiscountValue = Math.round(discount.value >= 0 ? discount.value * 100 : discount.value * -100)
+                    currentRow = $('<div class="table-row requirement"><div class="cell">' + discount.description + '</div><div class="cell discountValue">' + displayDiscountValue + '%</div></div>').insertAfter(currentRow)
+                    if (discount.value < 0) {
+                        currentRow.find('.discountValue').addClass('warning')
+                    }
+                })
+
+                //total difficulty after discount
+                $('.negotiationInfo .negotiationDifficultyTotal').text(negotiationInfo.finalRequirementValue)
 
                 var delegateInfo = result.delegateInfo
                 availableDelegates = delegateInfo.availableCount

@@ -512,7 +512,7 @@ object Airport {
         ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20))
 }
 
-case class Runway(length : Int, code : String, runwayType : RunwayType.Value)
+case class Runway(length : Int, code : String, runwayType : RunwayType.Value, lighted : Boolean)
 
 object RunwayType extends Enumeration {
     type RunwayType = Value

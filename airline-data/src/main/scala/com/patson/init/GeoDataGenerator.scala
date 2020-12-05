@@ -100,35 +100,35 @@ object GeoDataGenerator extends App {
         }
 
 
-        //val lighted = info(6) == "1"
-//        if (lighted) {
-          try {
-            var length = (info(3).toInt * 0.3048).toInt
-            if (length % 10 == 9) { //somehow the data is off my 1 meter
-              length += 1
-            }
-            val icao = info(2)
-            var codeTokens = ListBuffer[String](info(8).trim, info(14).trim)
-            codeTokens = codeTokens.filterNot(token => "XX".equals(token) || "".equals(token))
-            val code = codeTokens.mkString("/")
+        val lighted = info(6) == "1"
 
-            val runwayOption =
-              info(5).toLowerCase() match {
-                case asphaltPattern(_) =>
-                  Some(Runway(length, code, RunwayType.Asphalt))
-                case concretePattern(_) => Some(Runway(length, code, RunwayType.Concrete))
-                case gravelPattern(_) => Some(Runway(length, code, RunwayType.Gravel))
-                case _ => None
-              }
-            runwayOption.foreach {
-              case (runway) =>
-                val list = result.getOrElseUpdate(icao, ListBuffer[Runway]())
-                list += runway
-            }
-          } catch {
-            case _: NumberFormatException => None
+        try {
+          var length = (info(3).toInt * 0.3048).toInt
+          if (length % 10 == 9) { //somehow the data is off my 1 meter
+            length += 1
           }
-//        }
+          val icao = info(2)
+          var codeTokens = ListBuffer[String](info(8).trim, info(14).trim)
+          codeTokens = codeTokens.filterNot(token => "XX".equals(token) || "".equals(token))
+          val code = codeTokens.mkString("/")
+
+          val runwayOption =
+            info(5).toLowerCase() match {
+              case asphaltPattern(_) =>
+                Some(Runway(length, code, RunwayType.Asphalt, lighted))
+              case concretePattern(_) => Some(Runway(length, code, RunwayType.Concrete, lighted))
+              case gravelPattern(_) => Some(Runway(length, code, RunwayType.Gravel, lighted))
+              case _ => None
+            }
+          runwayOption.foreach {
+            case (runway) =>
+              val list = result.getOrElseUpdate(icao, ListBuffer[Runway]())
+              list += runway
+          }
+        } catch {
+          case _: NumberFormatException => None
+        }
+
         //
         //        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
         //          if (incomeInfo.get(infoArray(8)).isEmpty) {
@@ -368,7 +368,7 @@ object GeoDataGenerator extends App {
             var longRunway = 0 
             var veryLongRunway = 0
             var megaRunway = 0
-            runways.foreach { runway =>
+            runways.filter(_.lighted).foreach { runway => //only count lighted runways
                if (runway.length >= 10000 * 0.3048) { //old logic (for example 10000, was in feet) while runway.length is in meter now
                  megaRunway += 1
                } else if (runway.length >= 9000 * 0.3048) {

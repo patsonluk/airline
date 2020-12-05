@@ -1490,12 +1490,17 @@ object Meta {
   }
 
   def createAirportRunway(connection : Connection): Unit = {
-    var statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_RUNWAY_TABLE + "(" +
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_RUNWAY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_RUNWAY_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "airport INTEGER," +
       "code VARCHAR(16)," +
       "runway_type VARCHAR(256)," +
       "length SMALLINT," +
+      "lighted TINYINT," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()

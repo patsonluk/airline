@@ -326,8 +326,8 @@ object AirportSource {
             val runwayType = RunwayType.withName(runwayResultSet.getString("runway_type"))
             val code = runwayResultSet.getString("code")
             val length = runwayResultSet.getInt("length")
-
-            runways += Runway(length, code, runwayType)
+            val lighted = runwayResultSet.getBoolean("lighted")
+            runways += Runway(length, code, runwayType, lighted)
           }
           runwayStatement.close()
           airport.setRunways(runways.toList)
@@ -509,11 +509,12 @@ object AirportSource {
             }
             //insert runway
             airport.getRunways().foreach { runway =>
-              val statement = connection.prepareStatement("INSERT INTO " + AIRPORT_RUNWAY_TABLE + "(airport, code, runway_type, length) VALUES(?,?,?,?)")
+              val statement = connection.prepareStatement("INSERT INTO " + AIRPORT_RUNWAY_TABLE + "(airport, code, runway_type, length, lighted) VALUES(?,?,?,?,?)")
               statement.setInt(1, airport.id)
               statement.setString(2, runway.code)
               statement.setString(3, runway.runwayType.toString)
               statement.setInt(4, runway.length)
+              statement.setBoolean(5, runway.lighted)
               statement.executeUpdate()
               statement.close()
             }
@@ -542,8 +543,9 @@ object AirportSource {
           preparedStatement.setLong(2, airport.power)
           preparedStatement.setLong(3, airport.population)
           preparedStatement.setInt(4, airport.slots)
-          preparedStatement.setInt(5, airport.id)
-          preparedStatement.setInt(6, airport.runwayLength)
+          preparedStatement.setInt(5, airport.runwayLength)
+          preparedStatement.setInt(6, airport.id)
+
           preparedStatement.addBatch()
           //preparedStatement.executeUpdate()
           
@@ -588,11 +590,12 @@ object AirportSource {
           //            "type SMALLINT," +
           //            "length SMALLINT," +
           airport.getRunways().foreach { runway =>
-            val statement = connection.prepareStatement("INSERT INTO " + AIRPORT_RUNWAY_TABLE + "(airport, code, runway_type, length) VALUES(?,?,?,?)")
+            val statement = connection.prepareStatement("INSERT INTO " + AIRPORT_RUNWAY_TABLE + "(airport, code, runway_type, length, lighted) VALUES(?,?,?,?,?)")
             statement.setInt(1, airport.id)
             statement.setString(2, runway.code)
             statement.setString(3, runway.runwayType.toString)
             statement.setInt(4, runway.length)
+            statement.setBoolean(5, runway.lighted)
             statement.executeUpdate()
             statement.close()
           }
@@ -625,8 +628,9 @@ object AirportSource {
           preparedStatement.setInt(4, airport.slots)
           preparedStatement.setString(5, airport.name)
           preparedStatement.setString(6, airport.city)
-          preparedStatement.setInt(7, airport.id)
-          preparedStatement.setInt(8, airport.runwayLength)
+          preparedStatement.setInt(7, airport.runwayLength)
+          preparedStatement.setInt(8, airport.id)
+
           preparedStatement.addBatch()
           //preparedStatement.executeUpdate()
           
@@ -671,11 +675,12 @@ object AirportSource {
 //            "type SMALLINT," +
 //            "length SMALLINT," +
           airport.getRunways().foreach { runway =>
-            val statement = connection.prepareStatement("INSERT INTO " + AIRPORT_RUNWAY_TABLE + "(airport, code, runway_type, length) VALUES(?,?,?,?)")
+            val statement = connection.prepareStatement("INSERT INTO " + AIRPORT_RUNWAY_TABLE + "(airport, code, runway_type, length, lighted) VALUES(?,?,?,?,?)")
             statement.setInt(1, airport.id)
             statement.setString(2, runway.code)
             statement.setString(3, runway.runwayType.toString)
             statement.setInt(4, runway.length)
+            statement.setBoolean(5, runway.lighted)
             statement.executeUpdate()
             statement.close()
           }
