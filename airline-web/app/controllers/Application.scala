@@ -176,6 +176,26 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
      }
   }
 
+  def getAirportImages(airportId : Int) = Action {
+    AirportCache.getAirport(airportId, false) match {
+      case Some(airport) =>
+        var result = Json.obj()
+        val cityImageUrl = GoogleImageUtil.getCityImageUrl(airport);
+        if (cityImageUrl != null) {
+          result = result + ("cityImageUrl" -> JsString(cityImageUrl.toString))
+        }
+        val airportImageUrl = GoogleImageUtil.getAirportImageUrl(airport);
+        if (airportImageUrl != null) {
+          result = result + ("airportImageUrl" -> JsString(airportImageUrl.toString))
+        }
+        result = result + ("displayText" -> JsString(airport.displayText))
+
+        Ok(result)
+      case None => NotFound
+    }
+  }
+
+
   def getImage(airport : Airport, phrases : List[String]) = {
     airport.name
   }

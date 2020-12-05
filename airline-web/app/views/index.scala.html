@@ -3224,6 +3224,15 @@
 	  <div class="modal-content" style="width : 600px">
 		  <span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
 		  <h3 style="margin-bottom: 10px;" class="modalHeader"></h3>
+		  <div style=" float: left; margin-left: 100px; width:150px">
+			  <img class="fromAirport roundImage" style="height: 150px; width:150px;">
+			  <div style="display:inline-block; margin-left: 50%; transform: translateX(-50%);" class="fromAirportText"></div>
+		  </div>
+		  <div style=" float: right; margin-right: 100px; width:150px">
+			  <img class="toAirport roundImage" style="height: 150px; width:150px;">
+			  <div style="display:inline-block; margin-left: 50%; transform: translateX(-50%);" class="toAirportText"></div>
+		  </div>
+		  <div style="clear:both; margin-bottom:10px;"></div>
 		  <div style="width: 100%;" class="existingLink table data">
 			  <div class='table-header'>
 				  <div class="cell" style="width: 40%;"></div>
@@ -3262,25 +3271,10 @@
 			  </div>
 		  </div>
 		  <div class="negotiationInfo">
-			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation Required</h3>
-			  <div style="width: 100%;" class="negotiationRequirements table data">
-				  <div class="table-header">
-					  <div class="cell" style="width: 60%">Factor</div>
-					  <div class="cell" style="width: 40%">Requirement</div>
-				  </div>
+			  <h3 style="margin-bottom: 10px; margin-top: 30px; display: flex;">Negotiation Difficulty :&nbsp;
+			  	<span class="negotiationDifficultyTotal"></span><img class="clickable" src='@routes.Assets.versioned("images/icons/information-24.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)">
 
-			  </div>
-			<div class="negotiationRequirementsTotal table" style="width: 100%">
-				<div class="table-header">
-					<div class="cell" style="width: 60%"></div>
-					<div class="cell" style="width: 40%"></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"></div>
-					<div class="cell">Total <span class="total"></span> delegate(s) required</div>
-				</div>
-			</div>
-
+			  </h3>
 			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h3>
 			  <div class="section">
 				  <h4>Pool</h4>
@@ -3308,6 +3302,58 @@
 			  <div class="button cancel" onclick="closeModal($('#linkConfirmationModal'))">Cancel</div>
 		  </div>
 	  </div>
+  </div>
+
+  <div id="negotiationDifficultyModal" class="modal">
+	  <div class="modal-content" style="width : 550px">
+		  <span class="close" onclick="closeModal($('#negotiationDifficultyModal'))">&times;</span>
+		  <h3 style="margin-bottom: 10px;" class="modalHeader">Negotiation Difficulty Details</h3>
+		  <div class="negotiationInfo">
+			  <div style="width: 100%;" class="negotiationRequirements table data">
+				  <div class="table-header">
+					  <div class="cell" style="width: 60%">Factor</div>
+					  <div class="cell" style="width: 40%">Difficulty</div>
+				  </div>
+
+			  </div>
+			  <div class="negotiationRequirementsTotal table" style="width: 100%">
+				  <div class="table-header">
+					  <div class="cell" style="width: 60%"></div>
+					  <div class="cell" style="width: 40%"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="cell"></div>
+					  <div class="cell">Negotiation difficulty per airport: <span class="total"></span></div>
+				  </div>
+			  </div>
+
+			  <!-- discounts-->
+			  <div style="width: 50%; float: left;">
+				  <h3 style="margin-bottom: 10px; margin-top: 30px;">Discounts (Departure Airport)</h3>
+				  <div style="width: 100%; float: left;" class="negotiationFromDiscounts table data">
+					  <div class="table-header">
+						  <div class="cell" style="width: 60%">Factor</div>
+						  <div class="cell" style="width: 40%">Discount/<span class="warning">Penalty</span></div>
+					  </div>
+				  </div>
+			  </div>
+
+
+			  <div style="width: 50%; float: left;">
+				  <h3 style="margin-bottom: 10px; margin-top: 30px;">Discounts (Destination Airport)</h3>
+				  <div style="width: 100%; float: left;" class="negotiationToDiscounts table data">
+					  <div class="table-header">
+						  <div class="cell" style="width: 60%">Factor</div>
+						  <div class="cell" style="width: 40%">Discount/<span class="warning">Penalty</span></div>
+					  </div>
+				  </div>
+			  </div>
+			  <div style="clear: both;"></div>
+
+			  <h5>Total difficulty: <span class="negotiationDifficultyTotal"></span></h5>
+		  </div>
+	  </div>
+
   </div>
 
   <div id="negotiationAnimation" class="modal">
