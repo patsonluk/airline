@@ -2016,7 +2016,7 @@ function linkConfirmation() {
 	$('#linkConfirmationModal div.controlButtons').hide()
 	$('#linkConfirmationModal .negotiationIcons').empty()
 	$('#linkConfirmationModal .negotiationBar').empty()
-	$('#linkConfirmationModal .modal-content').css("height", 600)
+	//$('#linkConfirmationModal .modal-content').css("height", 600)
 	$('#linkConfirmationModal div.negotiationInfo').hide()
 
 	var fromAirportId = parseInt($("#planLinkFromAirportId").val())
@@ -2099,11 +2099,11 @@ function linkConfirmation() {
 }
 
 function loadAirportImages(fromAirportId, toAirportId) {
-    loadAirportImage(fromAirportId, $('#linkConfirmationModal img.fromAirport'), $('#linkConfirmationModal .fromAirportText'))
-    loadAirportImage(toAirportId, $('#linkConfirmationModal img.toAirport'), $('#linkConfirmationModal .toAirportText'))
+    loadAirportImage(fromAirportId, $('#linkConfirmationModal img.fromAirport') )
+    loadAirportImage(toAirportId, $('#linkConfirmationModal img.toAirport'))
 }
 
-function loadAirportImage(airportId, $imgContainer, $nameContainer) {
+function loadAirportImage(airportId, $imgContainer) {
 	var url = "airports/" + airportId + "/images"
 
 	$.ajax({
@@ -2126,8 +2126,6 @@ function loadAirportImage(airportId, $imgContainer, $nameContainer) {
             } else {
                 $imgContainer.attr('src', '') //generic airport image?
             }
-
-            $nameContainer.text(result.displayText)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -2162,6 +2160,13 @@ function updateAssignedDelegateCount(delegateCount) {
     var odds = negotiationOddsLookup[assignedDelegates]
     $('#linkConfirmationModal .successRate').text(Math.round(odds * 100) + '%')
 
+    $('#linkConfirmationModal .negotiateButton').show()
+    if (odds <= 0) { //then need to add delegates
+        disableButton($('#linkConfirmationModal .negotiateButton'), "Odds at 0%. Assign more delegates")
+    } else {
+        enableButton($('#linkConfirmationModal .negotiateButton'))
+    }
+
 }
 
 
@@ -2172,6 +2177,7 @@ function getLinkNegotiation() {
     negotiationOddsLookup = {}
     var airlineId = activeAirline.id
     var url = "airlines/" + activeAirline.id + "/get-link-negotiation"
+
 	var linkData = {
     			"fromAirportId" : parseInt($("#planLinkFromAirportId").val()),
     			"toAirportId" : parseInt($("#planLinkToAirportId").val()),
@@ -2192,58 +2198,121 @@ function getLinkNegotiation() {
 		contentType: 'application/json; charset=utf-8',
 		dataType: 'json',
 	    success: function(result) {
+            var fromAirport = result.fromAirport
+            var toAirport = result.toAirport
+            $('#negotiationDifficultyModal span.fromAirport').html(getAirportSpan(fromAirport))
+            $('#negotiationDifficultyModal span.toAirport').html(getAirportSpan(toAirport))
+            $('#linkConfirmationModal .fromAirportText').html(getAirportSpan(fromAirport))
+            $('#linkConfirmationModal .toAirportText').html(getAirportSpan(toAirport))
+
 	        var negotiationInfo = result.negotiationInfo
 	        negotiationOddsLookup = negotiationInfo.odds
-	        if (negotiationInfo.requirements.length > 0) {
+
+	        if (negotiationInfo.fromAirportRequirements.length > 0 || negotiationInfo.toAirportRequirements.length > 0) {
                 $('#negotiationDifficultyModal div.negotiationInfo .requirement').empty()
                 $('#negotiationDifficultyModal div.negotiationInfo .discount').empty()
 
-                //assignedDelegates = negotiationInfo.assignedDelegates
-                var currentRow = $('#negotiationDifficultyModal div.negotiationRequirements .table-header')
-                var requiredDelegates = 0
-                $.each(negotiationInfo.requirements, function(index, requirement) {
+                var currentRow = $('#negotiationDifficultyModal div.negotiationRequirements.fromAirport .table-header')
+                var fromAirportRequirementValue = 0
+                $.each(negotiationInfo.fromAirportRequirements, function(index, requirement) {
                     var sign = requirement.value >= 0 ? '+' : ''
-                    currentRow = $('<div class="table-row requirement"><div class="cell">' + requirement.description + '</div><div class="cell">' + sign + requirement.value + '</div></div>').insertAfter(currentRow)
-                    requiredDelegates += requirement.value
+                    currentRow = $('<div class="table-row requirement"><div class="cell">' + requirement.description + '</div><div class="cell">' + sign + requirement.value.toFixed(2) + '</div></div>').insertAfter(currentRow)
+                    fromAirportRequirementValue += requirement.value
                 })
+                if (negotiationInfo.fromAirportRequirements.length == 0) {
+                    $('<div class="table-row requirement"><div class="cell">-</div><div class="cell">-</div></div>').insertAfter(currentRow)
+                }
 
-                $('#negotiationDifficultyModal .negotiationRequirementsTotal .total').text(requiredDelegates)
+                $('#negotiationDifficultyModal .negotiationRequirementsTotal.fromAirport .total').text(fromAirportRequirementValue.toFixed(2))
+
+                currentRow = $('#negotiationDifficultyModal div.negotiationRequirements.toAirport .table-header')
+                var toAirportRequirementValue = 0
+                $.each(negotiationInfo.toAirportRequirements, function(index, requirement) {
+                    var sign = requirement.value >= 0 ? '+' : ''
+                    currentRow = $('<div class="table-row requirement"><div class="cell">' + requirement.description + '</div><div class="cell">' + sign + requirement.value.toFixed(2) + '</div></div>').insertAfter(currentRow)
+                    toAirportRequirementValue += requirement.value
+                })
+                if (negotiationInfo.toAirportRequirements.length == 0) {
+                    $('<div class="table-row requirement"><div class="cell">-</div><div class="cell">-</div></div>').insertAfter(currentRow)
+                }
+
+
+                $('#negotiationDifficultyModal .negotiationRequirementsTotal.toAirport .total').text(toAirportRequirementValue.toFixed(2))
 
                 //from airport discounts
                 var fromDiscount = 0;
                 currentRow = $('#negotiationDifficultyModal div.negotiationFromDiscounts .table-header')
                 $.each(negotiationInfo.fromAirportDiscounts, function(index, discount) {
                     var displayDiscountValue = Math.round(discount.value >= 0 ? discount.value * 100 : discount.value * -100)
-                    currentRow = $('<div class="table-row requirement"><div class="cell">' + discount.description + '</div><div class="cell discountValue">' + displayDiscountValue + '%</div></div>').insertAfter(currentRow)
+                    currentRow = $('<div class="table-row discount"><div class="cell">' + discount.description + '</div><div class="cell discountValue">' + displayDiscountValue + '%</div></div>').insertAfter(currentRow)
                     if (discount.value < 0) {
                         currentRow.find('.discountValue').addClass('warning')
                     }
                     fromDiscount += discount.value
                 })
 
+                if (negotiationInfo.fromAirportDiscounts.length == 0) {
+                    $('<div class="table-row discount"><div class="cell">-</div><div class="cell">-</div></div>').insertAfter(currentRow)
+                }
+
                 //to airport discounts
                 toDiscount  = 0
                 currentRow = $('#negotiationDifficultyModal div.negotiationToDiscounts .table-header')
                 $.each(negotiationInfo.toAirportDiscounts, function(index, discount) {
                     var displayDiscountValue = Math.round(discount.value >= 0 ? discount.value * 100 : discount.value * -100)
-                    currentRow = $('<div class="table-row requirement"><div class="cell">' + discount.description + '</div><div class="cell discountValue">' + displayDiscountValue + '%</div></div>').insertAfter(currentRow)
+                    currentRow = $('<div class="table-row discount"><div class="cell">' + discount.description + '</div><div class="cell discountValue">' + displayDiscountValue + '%</div></div>').insertAfter(currentRow)
                     if (discount.value < 0) {
                         currentRow.find('.discountValue').addClass('warning')
                     }
                       toDiscount += discount.value
                 })
 
+                if (negotiationInfo.toAirportDiscounts.length == 0) {
+                    $('<div class="table-row discount"><div class="cell">-</div><div class="cell">-</div></div>').insertAfter(currentRow)
+                }
+
+                var displayDiscountValue = Math.round(fromDiscount >= 0 ? fromDiscount * 100 : fromDiscount * -100)
+                $('#negotiationDifficultyModal .negotiationDiscountTotal.fromAirport .total').text(displayDiscountValue + "%")
+                if (fromDiscount < 0) {
+                    $('#negotiationDifficultyModal .negotiationDiscountTotal.fromAirport .total').addClass('warning')
+                } else {
+                    $('#negotiationDifficultyModal .negotiationDiscountTotal.fromAirport .total').removeClass('warning')
+                }
+
+                displayDiscountValue = Math.round(toDiscount >= 0 ? toDiscount * 100 : toDiscount * -100)
+                $('#negotiationDifficultyModal .negotiationDiscountTotal.toAirport .total').text(displayDiscountValue + "%")
+                if (toDiscount < 0) {
+                    $('#negotiationDifficultyModal .negotiationDiscountTotal.toAirport .total').addClass('warning')
+                } else {
+                    $('#negotiationDifficultyModal .negotiationDiscountTotal.toAirport .total').removeClass('warning')
+                }
+
                 //total difficulty after discount
-                var difficultyTotalText = requiredDelegates + " * " + Math.round((1 - fromDiscount) * 100) + "% + " + requiredDelegates + " * " + Math.round((1 - toDiscount) * 100) + "% = " + negotiationInfo.finalRequirementValue
-                $('#linkConfirmationModal .negotiationInfo .negotiationDifficultyTotal').text(negotiationInfo.finalRequirementValue)
+                var difficultyTotalText = fromAirportRequirementValue.toFixed(2) + " * " + Math.round((1 - fromDiscount) * 100) + "% + " + toAirportRequirementValue.toFixed(2) + " * " + Math.round((1 - toDiscount) * 100) + "% = " + negotiationInfo.finalRequirementValue.toFixed(2)
+                $('#linkConfirmationModal .negotiationInfo .negotiationDifficultyTotal').text(negotiationInfo.finalRequirementValue.toFixed(2))
+
+                var delegateInfo = result.delegateInfo
+                availableDelegates = delegateInfo.availableCount
+                if (negotiationInfo.finalRequirementValue > availableDelegates) {
+                    $('#linkConfirmationModal .negotiationInfo img.info').hide();
+                    difficultyTotalText += ' (Not enough available delegates)'
+                    $('#linkConfirmationModal .negotiationInfo img.error').show();
+                } else if (negotiationInfo.finalRequirementValue > 10) {
+                    $('#linkConfirmationModal .negotiationInfo img.info').hide();
+                    difficultyTotalText += ' (Too difficult to negotiate)'
+                    $('#linkConfirmationModal .negotiationInfo img.error').show();
+                } else {
+                    $('#linkConfirmationModal .negotiationInfo img.info').show();
+                    $('#linkConfirmationModal .negotiationInfo img.error').hide();
+                }
+
                 $('#negotiationDifficultyModal .negotiationInfo .negotiationDifficultyTotal').text(difficultyTotalText)
 
                 //finish updating the negotiationDifficultyModal
 
                 $('#linkConfirmationModal div.delegateStatus').empty()
 
-                var delegateInfo = result.delegateInfo
-                availableDelegates = delegateInfo.availableCount
+
                 //delegate info
                 for (i = 0 ; i < availableDelegates; i ++) {
                     var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/>')
@@ -2268,14 +2337,8 @@ function getLinkNegotiation() {
                 }
 
                 $('#linkConfirmationModal .confirmButton').hide()
-                if (negotiationInfo.odds <= 0) { //then need to add delegates
-                    $('#linkConfirmationModal .negotiateButton').show()
-                    disableButton($('#linkConfirmationModal .negotiateButton'))
-                } else {
-                    enableButton($('#linkConfirmationModal .negotiateButton'))
-                    $('#linkConfirmationModal .negotiateButton').show()
-                }
-                $('#linkConfirmationModal .modal-content').css("height", 750)
+
+                //$('#linkConfirmationModal .modal-content').css("height", 750)
                 $('#linkConfirmationModal div.negotiationInfo').show()
             } else { //then no need for negotiation
                 $('#linkConfirmationModal .negotiateButton').hide()

@@ -188,7 +188,6 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
         if (airportImageUrl != null) {
           result = result + ("airportImageUrl" -> JsString(airportImageUrl.toString))
         }
-        result = result + ("displayText" -> JsString(airport.displayText))
 
         Ok(result)
       case None => NotFound

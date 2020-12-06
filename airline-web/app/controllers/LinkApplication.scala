@@ -992,7 +992,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(request.user, incomingLink, existingLinkOption)
 
     Ok(Json.obj("negotiationInfo" -> Json.toJson(negotiationInfo)(NegotiationInfoWrites(incomingLink)),
-    "delegateInfo" -> Json.toJson(request.user.getDelegateInfo)))
+    "delegateInfo" -> Json.toJson(request.user.getDelegateInfo),
+    "toAirport" -> Json.toJson(incomingLink.to),
+    "fromAirport" -> Json.toJson(incomingLink.from)))
   }
 
 

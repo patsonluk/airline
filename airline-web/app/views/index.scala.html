@@ -3224,13 +3224,13 @@
 	  <div class="modal-content" style="width : 600px">
 		  <span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
 		  <h3 style="margin-bottom: 10px;" class="modalHeader"></h3>
-		  <div style=" float: left; margin-left: 100px; width:150px">
+		  <div style=" float: left; margin-left: 100px; width:150px; display: flex; flex-direction: column;">
 			  <img class="fromAirport roundImage" style="height: 150px; width:150px;">
-			  <div style="display:inline-block; margin-left: 50%; transform: translateX(-50%);" class="fromAirportText"></div>
+			  <div style="display:inline-block; align-self: center; margin-top:5px;" class="fromAirportText"></div>
 		  </div>
-		  <div style=" float: right; margin-right: 100px; width:150px">
+		  <div style=" float: right; margin-right: 100px; width:150px; display: flex; flex-direction: column;">
 			  <img class="toAirport roundImage" style="height: 150px; width:150px;">
-			  <div style="display:inline-block; margin-left: 50%; transform: translateX(-50%);" class="toAirportText"></div>
+			  <div style="display:inline-block; align-self: center; margin-top:5px;" class="toAirportText"></div>
 		  </div>
 		  <div style="clear:both; margin-bottom:10px;"></div>
 		  <div style="width: 100%;" class="existingLink table data">
@@ -3272,7 +3272,9 @@
 		  </div>
 		  <div class="negotiationInfo">
 			  <h3 style="margin-bottom: 10px; margin-top: 30px; display: flex;">Negotiation Difficulty :&nbsp;
-			  	<span class="negotiationDifficultyTotal"></span><img class="clickable" src='@routes.Assets.versioned("images/icons/information-24.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)">
+			      <span class="negotiationDifficultyTotal"></span>
+             	  <img class="clickable info" src='@routes.Assets.versioned("images/icons/information-24.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)">
+				  <img class="clickable error" src='@routes.Assets.versioned("images/icons/24px/cross-circle.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)" style="display: hidden;">
 
 			  </h3>
 			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h3>
@@ -3305,52 +3307,106 @@
   </div>
 
   <div id="negotiationDifficultyModal" class="modal">
-	  <div class="modal-content" style="width : 550px">
+	  <div class="modal-content" style="width : 750px">
 		  <span class="close" onclick="closeModal($('#negotiationDifficultyModal'))">&times;</span>
 		  <h3 style="margin-bottom: 10px;" class="modalHeader">Negotiation Difficulty Details</h3>
 		  <div class="negotiationInfo">
-			  <div style="width: 100%;" class="negotiationRequirements table data">
-				  <div class="table-header">
-					  <div class="cell" style="width: 60%">Factor</div>
-					  <div class="cell" style="width: 40%">Difficulty</div>
+          <!-- requirements list-->
+              <div>
+                  <div style="width: 48%; float:left">
+					  <h4 style="margin-bottom: 10px; margin-top: 30px;"><span class="fromAirport"></span>&nbsp;-&nbsp;Factors</h4>
+					  <div style="width: 100%" class="negotiationRequirements table data fromAirport">
+						  <div class="table-header">
+							  <div class="cell" style="width: 80%">Factor</div>
+							  <div class="cell" style="width: 20%">Difficulty</div>
+						  </div>
+					  </div>
 				  </div>
-
-			  </div>
-			  <div class="negotiationRequirementsTotal table" style="width: 100%">
-				  <div class="table-header">
-					  <div class="cell" style="width: 60%"></div>
-					  <div class="cell" style="width: 40%"></div>
-				  </div>
-				  <div class="table-row">
-					  <div class="cell"></div>
-					  <div class="cell">Negotiation difficulty per airport: <span class="total"></span></div>
-				  </div>
-			  </div>
+                  <div style="width: 48%; float:right" class="negotiationRequirements table data toAirport">
+					  <h4 style="margin-bottom: 10px; margin-top: 30px;"><span class="toAirport"></span>&nbsp;-&nbsp;Factors</h4>
+					  <div style="width: 100%" class="negotiationRequirements table data toAirport">
+						  <div class="table-header">
+							  <div class="cell" style="width: 80%">Factor</div>
+							  <div class="cell" style="width: 20%">Difficulty</div>
+						  </div>
+					  </div>
+                  </div>
+                  <div style="clear: both;"></div>
+              </div>
+              <!-- requirements total-->
+              <div>
+                  <div style="width: 48%; float:left" class="negotiationRequirementsTotal table fromAirport">
+                      <div class="table-header">
+                          <div class="cell" style="width: 80%"></div>
+                          <div class="cell" style="width: 20%"></div>
+                      </div>
+                      <div class="table-row">
+                          <div class="cell"></div>
+                          <div class="cell"><span class="total"></span></div>
+                      </div>
+                  </div>
+                  <div style="width: 48%; float:right" class="negotiationRequirementsTotal table toAirport">
+                      <div class="table-header">
+                          <div class="cell" style="width: 80%"></div>
+                          <div class="cell" style="width: 20%"></div>
+                      </div>
+                      <div class="table-row">
+                          <div class="cell"></div>
+                          <div class="cell"><span class="total"></span></div>
+                      </div>
+                  </div>
+                  <div style="clear: both;"></div>
+              </div>
 
 			  <!-- discounts-->
-			  <div style="width: 50%; float: left;">
-				  <h3 style="margin-bottom: 10px; margin-top: 30px;">Discounts (Departure Airport)</h3>
-				  <div style="width: 100%; float: left;" class="negotiationFromDiscounts table data">
-					  <div class="table-header">
-						  <div class="cell" style="width: 60%">Factor</div>
-						  <div class="cell" style="width: 40%">Discount/<span class="warning">Penalty</span></div>
-					  </div>
-				  </div>
-			  </div>
+              <div>
+                  <div style="width: 48%; float: left;">
+                      <h4 style="margin-bottom: 10px; margin-top: 30px;"><span class="fromAirport"></span>&nbsp;-&nbsp;Adjustments</h4>
+                      <div style="width: 100%; float: left;" class="negotiationFromDiscounts table data">
+                          <div class="table-header">
+                              <div class="cell" style="width: 80%">Factor</div>
+                              <div class="cell" style="width: 20%; word-break: break-word;">Discount&nbsp;/&nbsp;<span class="warning">Penalty</span></div>
+                          </div>
+                      </div>
+                  </div>
+                  <div style="width: 48%; float: right;">
+                      <h4 style="margin-bottom: 10px; margin-top: 30px;"><span class="toAirport"></span>&nbsp;-&nbsp;Adjustments</h4>
+                      <div style="width: 100%; float: left;" class="negotiationToDiscounts table data">
+                          <div class="table-header">
+                              <div class="cell" style="width: 80%">Factor</div>
+                              <div class="cell" style="width: 20%; word-break: break-word;">Discount&nbsp;/&nbsp;<span class="warning">Penalty</span></div>
+                          </div>
+                      </div>
+                  </div>
+                  <div style="clear: both;"></div>
+              </div>
+              <!-- discounts total-->
+              <div>
+                  <div style="width: 48%; float:left" class="negotiationDiscountTotal table fromAirport">
+                      <div class="table-header">
+                          <div class="cell" style="width: 80%"></div>
+                          <div class="cell" style="width: 20%"></div>
+                      </div>
+                      <div class="table-row">
+                          <div class="cell"></div>
+                          <div class="cell"><span class="total"></span></div>
+                      </div>
+                  </div>
+                  <div style="width: 48%; float:right" class="negotiationDiscountTotal table toAirport">
+                      <div class="table-header">
+                          <div class="cell" style="width: 80%"></div>
+                          <div class="cell" style="width: 20%;"></div>
+                      </div>
+                      <div class="table-row">
+                          <div class="cell"></div>
+                          <div class="cell"><span class="total"></span></div>
+                      </div>
+                  </div>
+                  <div style="clear: both;"></div>
+              </div>
 
 
-			  <div style="width: 50%; float: left;">
-				  <h3 style="margin-bottom: 10px; margin-top: 30px;">Discounts (Destination Airport)</h3>
-				  <div style="width: 100%; float: left;" class="negotiationToDiscounts table data">
-					  <div class="table-header">
-						  <div class="cell" style="width: 60%">Factor</div>
-						  <div class="cell" style="width: 40%">Discount/<span class="warning">Penalty</span></div>
-					  </div>
-				  </div>
-			  </div>
-			  <div style="clear: both;"></div>
-
-			  <h5>Total difficulty: <span class="negotiationDifficultyTotal"></span></h5>
+			  <h4>Total difficulty: <span class="negotiationDifficultyTotal"></span></h4>
 		  </div>
 	  </div>
 

@@ -22,13 +22,20 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   }
 
   def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
-    val bonus = titleOption match {
+    val base = 5
+    val titleBonus = titleOption match {
       case Some(title) => CountryAirlineTitle.getLinkLimitBonus(title)
       case None => 0
     }
 
-    val baseLimit = 10 + 5 * scale
-    baseLimit + bonus
+    val scaleBonus =
+      if (headquarter) {
+        4 * scale
+      } else {
+        2 * scale
+      }
+
+    base + titleBonus + scaleBonus
   }
 
   def getOvertimeCompensation(linkLimit : Int, linkCount : Int) = {

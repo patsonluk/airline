@@ -573,10 +573,14 @@ package object controllers {
 
   case class NegotiationInfoWrites(link : Link) extends Writes[NegotiationInfo] {
     def writes(info : NegotiationInfo): JsValue = {
-      var requirementsJson = Json.arr()
-      val requirementWrites = NegotiationRequirementWrites(link)
-      info.requirements.foreach { requirement =>
-        requirementsJson = requirementsJson.append(Json.toJson(requirement)(requirementWrites))
+      var fromAirportRequirementsJson = Json.arr()
+      info.fromAirportRequirements.foreach { requirement =>
+        fromAirportRequirementsJson = fromAirportRequirementsJson.append(Json.toJson(requirement))
+      }
+
+      var toAirportRequirementsJson = Json.arr()
+      info.toAirportRequirements.foreach { requirement =>
+        toAirportRequirementsJson = toAirportRequirementsJson.append(Json.toJson(requirement))
       }
 
       var fromAirportDiscountsJson = Json.arr()
@@ -600,7 +604,8 @@ package object controllers {
         "odds" -> info.odds.map {
           case (delegateCount : Int, odds : Double) => (delegateCount.toString(), odds)
         },
-        "requirements" -> requirementsJson,
+        "toAirportRequirements" -> toAirportRequirementsJson,
+        "fromAirportRequirements" -> fromAirportRequirementsJson,
         "fromAirportDiscounts" -> fromAirportDiscountsJson,
         "toAirportDiscounts" -> toAirportDiscountsJson,
         "finalRequirementValue" -> info.finalRequirementValue)
@@ -634,10 +639,10 @@ package object controllers {
 
 
 
-  case class NegotiationRequirementWrites(link : Link) extends Writes[NegotiationRequirement] {
+  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
     def writes(requirement : NegotiationRequirement): JsValue = {
       Json.obj(
-        "description" -> JsString(NegotiationRequirementType.description(requirement.requirementType, link)),
+        "description" -> JsString(requirement.description),
         "value" -> JsNumber(requirement.value))
     }
   }
