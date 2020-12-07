@@ -409,9 +409,6 @@ function addMarkers(airports) {
 	})
 	var originalOpacity = 0.7
 	currentZoom = map.getZoom()
-	var largeAirportMarkerIcon = $("#map").data("largeAirportMarker")
-	var mediumAirportMarkerIcon = $("#map").data("mediumAirportMarker")
-	var smallAirportMarkerIcon = $("#map").data("smallAirportMarker")
 
 	google.maps.event.addListener(infoWindow, 'closeclick',function(){
        if (infoWindow.marker) {
@@ -423,14 +420,8 @@ function addMarkers(airports) {
 	for (i = 0; i < airports.length; i++) {
 		  var airportInfo = airports[i]
 		  var position = {lat: airportInfo.latitude, lng: airportInfo.longitude};
-		  var icon
-		  if (airportInfo.size <= 3) {
-			  icon = smallAirportMarkerIcon
-		  } else if (airportInfo.size <= 6) {
-			  icon = mediumAirportMarkerIcon
-		  } else {
-			  icon = largeAirportMarkerIcon
-		  }
+		  var icon = getAirportIcon(airportInfo)
+
 		  
 		  var marker = new google.maps.Marker({
 			    position: position,
@@ -685,7 +676,7 @@ function refreshAirportExtendedDetails(airport) {
     }
     $("#airportIcons .feature").empty()
     $.each(airport.features, function(index, feature) {
-        $("#airportIcons").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'><span class='label'>" +  feature.strength + "</span></div>")
+        $("#airportIcons").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'><span class='label'>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>")
     })
 }
 
@@ -964,8 +955,11 @@ function getAirportIcon(airportInfo) {
     var largeAirportMarkerIcon = $("#map").data("largeAirportMarker")
     var mediumAirportMarkerIcon = $("#map").data("mediumAirportMarker")
     var smallAirportMarkerIcon = $("#map").data("smallAirportMarker")
+    var gatewayAirportMarkerIcon = $("#map").data("gatewayAirportMarker")
 
-    if (airportInfo.size <= 3) {
+    if (airportInfo.isGateway) {
+      icon = gatewayAirportMarkerIcon
+    } else if (airportInfo.size <= 3) {
       icon = smallAirportMarkerIcon
     } else if (airportInfo.size <= 6) {
       icon = mediumAirportMarkerIcon

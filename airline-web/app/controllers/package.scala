@@ -526,11 +526,15 @@ package object controllers {
         airportObject = airportObject + ("bonusList" -> bonusJson)
       }
       if (airport.isFeaturesLoaded) {
-        airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().map { airportFeature =>
+        airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().sortBy(_.featureType.id).map { airportFeature =>
           Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> AirportFeatureType.getDescription(airportFeature.featureType))
         }
         ))
       }
+      if (airport.isGateway()) {
+        airportObject = airportObject + ("isGateway" -> JsBoolean(true))
+      }
+
 
       if (airport.getRunways().length > 0) {
         airportObject = airportObject + ("runways" -> JsArray(airport.getRunways().sortBy(_.length).reverse.map { runway =>
@@ -693,5 +697,5 @@ package object controllers {
 
 
 
-  val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)
+  val cachedAirportsByPower = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true).sortBy(_.power)
 }

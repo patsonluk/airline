@@ -932,6 +932,8 @@ function updatePlanLinkInfo(linkInfo) {
             imgSrc = 'assets/images/icons/star.png'
         } else if (title.title === "PARTNERED_AIRLINE") {
             imgSrc = 'assets/images/icons/hand-shake.png'
+        } else if (title.title === "PRIVILEGED_AIRLINE") {
+            imgSrc = 'assets/images/icons/medal-silver-premium.png'
         } else if (title.title === "ESTABLISHED_AIRLINE") {
             imgSrc = 'assets/images/icons/leaf-plant.png'
         } else if (title.title === "APPROVED_AIRLINE") {

@@ -343,6 +343,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   def getFeatures() : List[AirportFeature] = {
     features.toList
   }
+
+  def isGateway() = {
+    features.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
+  }
   
   def initAirlineAppeals(airlineBaseAppeals : Map[Int, AirlineAppeal], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty) = {
     this.airlineBaseAppeals.clear()
@@ -485,7 +489,7 @@ case class AirlineBonus(bonusType : BonusType.Value, bonus : AirlineAppeal, expi
 
 object BonusType extends Enumeration {
   type BonusType = Value
-  val NATIONAL_AIRLINE, PARTNERED_AIRLINE, ESTABLISHED_AIRLINE, APPROVED_AIRLINE, OLYMPICS_VOTE, OLYMPICS_PASSENGER = Value
+  val NATIONAL_AIRLINE, PARTNERED_AIRLINE, OLYMPICS_VOTE, OLYMPICS_PASSENGER, NO_BONUS = Value
 }
 
 object Airport {

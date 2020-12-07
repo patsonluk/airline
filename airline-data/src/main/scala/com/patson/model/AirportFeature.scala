@@ -6,11 +6,11 @@ import FlightType._
 
 
 abstract class AirportFeature {
-  val MAX_STREGTH = 100
+  val MAX_STRENGTH = 100
   def strength : Int
   //def airportId : Int
   def featureType : AirportFeatureType.Value
-  val strengthFactor : Double = strength.toDouble / MAX_STREGTH
+  val strengthFactor : Double = strength.toDouble / MAX_STRENGTH
   
   def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double
 }
@@ -23,6 +23,7 @@ object AirportFeature {
       case VACATION_HUB => VacationHubFeature(strength)
       case FINANCIAL_HUB => FinancialHubFeature(strength)
       case DOMESTIC_AIRPORT => DomesticAirportFeature(strength)
+      case GATEWAY_AIRPORT => GatewayAirportFeature()
       case ISOLATED_TOWN => IsolatedTownFeature(strength)
       case OLYMPICS_PREPARATIONS => OlympicsPreparationsFeature(strength)
       case OLYMPICS_IN_PROGRESS => OlympicsInProgressFeature(strength)
@@ -99,6 +100,14 @@ sealed case class DomesticAirportFeature(strength : Int) extends AirportFeature 
   }
 }
 
+sealed case class GatewayAirportFeature() extends AirportFeature {
+  val featureType = AirportFeatureType.GATEWAY_AIRPORT
+  def strength = 0
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+    0
+  }
+}
+
 sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.ISOLATED_TOWN
   val HUB_MIN_POPULATION = 100000 // 
@@ -142,7 +151,7 @@ sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeatu
 
 object AirportFeatureType extends Enumeration {
     type AirportFeatureType = Value
-    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, ISOLATED_TOWN, OLYMPICS_PREPARATIONS, OLYMPICS_IN_PROGRESS, UNKNOWN = Value
+    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, ISOLATED_TOWN, GATEWAY_AIRPORT, OLYMPICS_PREPARATIONS, OLYMPICS_IN_PROGRESS, UNKNOWN = Value
     def getDescription(featureType : AirportFeatureType) = {
       featureType match {
         case INTERNATIONAL_HUB => "International Hub - Attracts more international passengers especially business travelers"
@@ -150,6 +159,7 @@ object AirportFeatureType extends Enumeration {
         case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers"
         case DOMESTIC_AIRPORT => "Domestic Airport"
         case ISOLATED_TOWN => "Isolated Town - Increases demand flying to domestic airport with at least 100000 pop within 1000km"
+        case GATEWAY_AIRPORT => "Gateway Airport"
         case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games"
         case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games"
         case UNKNOWN => "Unknown"

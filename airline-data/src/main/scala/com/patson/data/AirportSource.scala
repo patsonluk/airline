@@ -14,8 +14,8 @@ import scala.collection.immutable
 
 object AirportSource {
   private[this] val BASE_QUERY = "SELECT * FROM airport"
-  def loadAllAirports(fullLoad : Boolean = false) = {
-      loadAirportsByCriteria(List.empty, fullLoad)
+  def loadAllAirports(fullLoad : Boolean = false, loadFeatures : Boolean = false) = {
+      loadAirportsByCriteria(List.empty, fullLoad, loadFeatures)
   }
   
   def loadAirportsByIds(ids : List[Int], fullLoad : Boolean = false) = {
@@ -32,7 +32,7 @@ object AirportSource {
     }
   }
   
-  def loadAirportsByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false) = {
+  def loadAirportsByCriteria(criteria : List[(String, Any)], fullLoad : Boolean = false, loadFeatures : Boolean = false) = {
       var queryString = BASE_QUERY
       
       if (!criteria.isEmpty) {
@@ -43,7 +43,7 @@ object AirportSource {
         queryString += criteria.last._1 + " = ?"
       }
       
-      loadAirportsByQueryString(queryString, criteria.map(_._2), fullLoad)
+      loadAirportsByQueryString(queryString, criteria.map(_._2), fullLoad, loadFeatures)
   }
 
   def getAirlineBonuses(airport : Airport, countryAirlineTitleCache : mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]): Map[Int, List[AirlineBonus]] = {
@@ -176,7 +176,7 @@ object AirportSource {
 
 
 
-  def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false) = {
+  def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false, loadFeatures : Boolean = false) = {
       //open the hsqldb
     val connection = Meta.getConnection()
     try {  
@@ -281,23 +281,6 @@ object AirportSource {
           val lounges = AirlineSource.loadLoungesByAirport(airport)
           airport.initLounges(lounges)
           
-          //load features
-          val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
-          featureStatement.setInt(1, airport.id)
-          
-          val featureResultSet = featureStatement.executeQuery()
-          val features = ListBuffer[AirportFeature]()
-          
-          import AirportFeatureType._
-          while (featureResultSet.next()) {
-             val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
-             val strength = featureResultSet.getInt("strength")
-             
-             features += AirportFeature(featureType, strength)
-          }
-          featureStatement.close()
-          airport.initFeatures(features.toList)
-          
           //load profile pics
            val imageStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_IMAGE_TABLE + " WHERE airport = ?")
           imageStatement.setInt(1, airport.id)
@@ -331,8 +314,25 @@ object AirportSource {
           }
           runwayStatement.close()
           airport.setRunways(runways.toList)
+        }
 
-          
+        if (fullLoad || loadFeatures) {
+          //load features
+          val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
+          featureStatement.setInt(1, airport.id)
+
+          val featureResultSet = featureStatement.executeQuery()
+          val features = ListBuffer[AirportFeature]()
+
+          import AirportFeatureType._
+          while (featureResultSet.next()) {
+            val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
+            val strength = featureResultSet.getInt("strength")
+
+            features += AirportFeature(featureType, strength)
+          }
+          featureStatement.close()
+          airport.initFeatures(features.toList)
         }
       }
       

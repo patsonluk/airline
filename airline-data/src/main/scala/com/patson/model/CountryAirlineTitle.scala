@@ -1,7 +1,6 @@
 package com.patson.model
 
 import com.patson.data.{CountrySource, LinkSource}
-import com.patson.model.AirlineCountryRelationship.TITLE
 import com.patson.util.CountryCache
 
 case class CountryAirlineTitle(country : Country, airline : Airline, title : Title.Value) {
@@ -22,19 +21,21 @@ case class CountryAirlineTitle(country : Country, airline : Airline, title : Tit
     })).toInt
   }
 
-  lazy val description =
-    title match {
-      case Title.NATIONAL_AIRLINE => "National Airline"
-      case Title.PARTNERED_AIRLINE => "Partnered Airline"
-      case Title.ESTABLISHED_AIRLINE => "Established Airline"
-      case Title.APPROVED_AIRLINE => "Approved Airline"
-    }
+  lazy val description = Title.description(title)
 }
 
 
 object Title extends Enumeration {
   type Title = Value
-  val NATIONAL_AIRLINE, PARTNERED_AIRLINE, ESTABLISHED_AIRLINE, APPROVED_AIRLINE = Value
+  val NATIONAL_AIRLINE, PARTNERED_AIRLINE, PRIVILEGED_AIRLINE, ESTABLISHED_AIRLINE, APPROVED_AIRLINE = Value
+  val description = (title : Title.Value) => title match {
+    case Title.NATIONAL_AIRLINE => "National Airline"
+    case Title.PARTNERED_AIRLINE => "Partnered Airline"
+    case Title.PRIVILEGED_AIRLINE => "Privileged Airline"
+    case Title.ESTABLISHED_AIRLINE => "Established Airline"
+    case Title.APPROVED_AIRLINE => "Approved Airline"
+  }
+
 }
 
 object CountryAirlineTitle {
@@ -44,8 +45,7 @@ object CountryAirlineTitle {
   val getBonusType : (Title.Value => BonusType.Value) = {
     case Title.NATIONAL_AIRLINE => BonusType.NATIONAL_AIRLINE
     case Title.PARTNERED_AIRLINE => BonusType.PARTNERED_AIRLINE
-    case Title.ESTABLISHED_AIRLINE => BonusType.ESTABLISHED_AIRLINE
-    case Title.APPROVED_AIRLINE => BonusType.APPROVED_AIRLINE
+    case _ => BonusType.NO_BONUS
 
   }
 
@@ -69,7 +69,11 @@ object CountryAirlineTitle {
           if (links.isEmpty) {
             Some(Title.APPROVED_AIRLINE)
           } else {
-            Some(Title.ESTABLISHED_AIRLINE)
+            if (relationship < 30) {
+              Some(Title.ESTABLISHED_AIRLINE)
+            } else {
+              Some(Title.PRIVILEGED_AIRLINE)
+            }
           }
         }
       }

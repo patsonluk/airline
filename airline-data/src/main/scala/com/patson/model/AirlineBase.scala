@@ -63,6 +63,28 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
       compensation
     }
   }
+
+  /**
+    * if not allowed, return LEFT[the title required]
+    */
+  val allowAirline : Airline => Either[Title.Value, Title.Value]= (airline : Airline) => {
+
+    val requiredTitle =
+      if (airport.isGateway()) {
+        Title.ESTABLISHED_AIRLINE
+      } else {
+        Title.PRIVILEGED_AIRLINE
+      }
+    CountryAirlineTitle.getTitle(airport.countryCode, airline) match {
+      case None => Left(requiredTitle)
+      case Some(title) =>
+        if (title.title.id <= Title.ESTABLISHED_AIRLINE.id) { //lower id means higher title
+          Right(requiredTitle)
+        } else {
+          Left(requiredTitle)
+        }
+    }
+  }
 }
 
 

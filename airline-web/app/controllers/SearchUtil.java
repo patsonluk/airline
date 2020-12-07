@@ -89,7 +89,7 @@ public class SearchUtil {
 			client.indices().delete(new DeleteIndexRequest("airports"), RequestOptions.DEFAULT);
 		}
 
-		List<Airport> airports = JavaConverters.asJava(AirportSource.loadAllAirports(false));
+		List<Airport> airports = JavaConverters.asJava(AirportSource.loadAllAirports(false, false));
 		System.out.println("loaded " + airports.size() + " airports");
 
 		//RestHighLevelClient client = getClient();
