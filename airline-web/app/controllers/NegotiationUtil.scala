@@ -34,12 +34,12 @@ object NegotiationUtil {
 
 
 
-  val getLinkLimit = (base : Option[AirlineBase]) => base match {
-    case Some(base) =>
-      val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", base.airline.id))).map(entry => (entry.country.countryCode, entry.title)).toMap
-      base.getLinkLimit(titlesByCountryCode.get(base.countryCode))
-    case None => 0 //should not happen
-  }
+//  val getLinkLimit = (base : Option[AirlineBase]) => base match {
+//    case Some(base) =>
+//      val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", base.airline.id))).map(entry => (entry.country.countryCode, entry.title)).toMap
+//      base.getLinkLimit(titlesByCountryCode.get(base.countryCode))
+//    case None => 0 //should not happen
+//  }
 
   def getFromAirportRequirements(airline : Airline, newLink : Link, existingLinkOption : Option[Link]) = {
     import NegotiationRequirementType._
@@ -47,12 +47,17 @@ object NegotiationUtil {
     val isNewLink = existingLinkOption.isEmpty
     val airport = newLink.from
     if (isNewLink) {
-      val linkLimit = getLinkLimit(airline.getBases().find(_.airport.id == airport.id))
-      val links = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_airport", airport.id)), LinkSource.ID_LOAD) ++ LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("to_airport", airport.id)), LinkSource.ID_LOAD)
-      if (links.length < linkLimit) {
-        requirements.append(NegotiationRequirement(LINK_CAP, 0, s"Operate ${links.length + 1} routes, within your base limit : ${linkLimit}"))
+      val officeStaffCount : Int = airline.getBases().find(_.airport.id == airport.id).map(_.getOfficeStaffCapacity).getOrElse(0)
+      val links = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_airport", airport.id)), LinkSource.SIMPLE_LOAD)
+      val currentOfficeStaffUsed = links.map(_.getOfficeStaffRequired).sum
+      val newOfficeStaffRequired = newLink.getOfficeStaffRequired
+      val newTotal = currentOfficeStaffUsed + newOfficeStaffRequired
+
+      if (newTotal < officeStaffCount) {
+        requirements.append(NegotiationRequirement(LINK_CAP, 0, s"Requires ${newOfficeStaffRequired} office staff, within your base capacity : ${newTotal} / ${officeStaffCount}"))
       } else {
-        requirements.append(NegotiationRequirement(LINK_CAP, (links.length - linkLimit + 1) * 0.5, s"Operate ${links.length + 1} routes, over your base limit : ${linkLimit}"))
+        val requirement = (newTotal - officeStaffCount).toDouble / 20
+        requirements.append(NegotiationRequirement(LINK_CAP, requirement, s"Requires ${newOfficeStaffRequired} office staff, over your base capacity : ${newTotal} / ${officeStaffCount}"))
       }
     }
     val newFrequency = newLink.futureFrequency()
@@ -96,7 +101,7 @@ object NegotiationUtil {
     }
 
     if (capacityDelta > 0) {
-      val capacityChangeCost = capacityDelta.toDouble / 1000
+      val capacityChangeCost = capacityDelta.toDouble / 2000
       requirements.append(NegotiationRequirement(INCREASE_CAPACITY, capacityChangeCost * flightTypeMultiplier, s"Capacity increment : $capacityDelta"))
     }
 
@@ -133,10 +138,23 @@ object NegotiationUtil {
     }
     requirements.toList
   }
+  val getStaffRequired = (link : Link) => {
+    Computation.getFlightType(link.from, link.to) match {
+      case SHORT_HAUL_DOMESTIC => 5
+      case LONG_HAUL_DOMESTIC => 8
+      case SHORT_HAUL_INTERNATIONAL => 10
+      case LONG_HAUL_INTERNATIONAL => 12
+      case SHORT_HAUL_INTERCONTINENTAL => 20
+      case LONG_HAUL_INTERCONTINENTAL => 30
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 30
+    }
+  }
+
+  val getBaseStaffCount = (base : AirlineBase) =>  {
+
+  }
 
   def getNegotiationRequirements(newLink : Link, existingLinkOption : Option[Link], airline : Airline) = {
-    val fromAirport = newLink.from
-    val isNewLink = existingLinkOption.isEmpty
     val fromAirportRequirements : List[NegotiationRequirement] = getFromAirportRequirements(airline, newLink, existingLinkOption)
     val toAirportRequirements : List[NegotiationRequirement] = getToAirportRequirements(airline, newLink, existingLinkOption)
 

@@ -911,7 +911,39 @@ function updatePlanLinkInfo(linkInfo) {
 	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportCode) + '&nbsp;' + availableToSlotText)
 	//$('#planLinkToAirportExpectedQuality').attr("onclick", "loadLinkExpectedQuality(" + linkInfo.fromAirportId + "," + linkInfo.toAirportId + "," + linkInfo.toAirportId + ")")
 	$('#planLinkFlightCode').text(linkInfo.flightCode)
-	$('#planLinkMutualRelationship').text(getCountryRelationshipDescription(linkInfo.mutualRelationship))
+	$('#planLinkMutualRelationship').html(getCountryFlagImg(linkInfo.fromCountryCode) + "&nbsp;vs&nbsp;" + getCountryFlagImg(linkInfo.toCountryCode) + getCountryRelationshipDescription(linkInfo.mutualRelationship))
+
+	var relationship = linkInfo.toCountryRelationship
+    var relationshipSpan = getAirlineRelationshipDescriptionSpan(relationship.total)
+    $("#planLinkToCountryRelationship .total").html(relationshipSpan)
+
+    var $relationshipDetailsIcon = $("#planLinkToCountryRelationship .detailsIcon")
+    $relationshipDetailsIcon.data("relationship", relationship)
+    $relationshipDetailsIcon.data("countryCode", linkInfo.toCountryCode)
+    $relationshipDetailsIcon.show()
+
+    var title = linkInfo.toCountryTitle
+    if (!title) {
+        $("#planLinkToCountryTitle .airlineTitle").text("-")
+        $("#planLinkToCountryTitle img.airlineTitleIcon").hide()
+    } else {
+        var imgSrc
+        if (title.title === "NATIONAL_AIRLINE") {
+            imgSrc = 'assets/images/icons/star.png'
+        } else if (title.title === "PARTNERED_AIRLINE") {
+            imgSrc = 'assets/images/icons/hand-shake.png'
+        } else if (title.title === "ESTABLISHED_AIRLINE") {
+            imgSrc = 'assets/images/icons/leaf-plant.png'
+        } else if (title.title === "APPROVED_AIRLINE") {
+            imgSrc = 'assets/images/icons/tick.png'
+        }
+        if (imgSrc) {
+            $("#planLinkToCountryTitle img.airlineTitleIcon").attr('src', imgSrc)
+            $("#planLinkToCountryTitle img.airlineTitleIcon").show()
+        }
+        $("#planLinkToCountryTitle span.airlineTitle").text(title.description)
+    }
+
 	
 	$('#planLinkDistance').text(linkInfo.distance + " km")
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand) + " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")

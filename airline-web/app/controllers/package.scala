@@ -681,6 +681,16 @@ package object controllers {
     }
   }
 
+  implicit object CountryAirlineTitleWrites extends Writes[CountryAirlineTitle] {
+    def writes(title : CountryAirlineTitle) : JsValue = {
+      Json.obj(
+        "title" -> title.title.toString,
+        "description" -> title.description
+
+      )
+    }
+  }
+
 
 
   val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)

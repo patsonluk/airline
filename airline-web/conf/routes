@@ -120,7 +120,7 @@ GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()
 
 GET		 /countries					  controllers.CountryApplication.getAllCountries(airlineId : Option[Int])
 GET		 /countries/:countryCode  		  controllers.CountryApplication.getCountry(countryCode : String)
-GET		 /countries/:countryCode/airline/:airlineId  		  controllers.CountryApplication.getCountryAirlineRelationship(countryCode : String, airlineId: Int)
+GET		 /countries/:countryCode/airline/:airlineId  		  controllers.CountryApplication.getCountryAirlineDetails(countryCode : String, airlineId: Int)
 
 GET      /delegates/airline/:airlineId      controllers.DelegateApplication.getDelegateInfo(airlineId: Int)
 GET      /delegates/airline/:airlineId/country/:countryCode      controllers.DelegateApplication.getCountryDelegates(countryCode : String, airlineId: Int)

@@ -515,8 +515,6 @@
 											<span id="planLinkToAirportName" class="clickable"></span>
 											<img class="clickable"  src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(false)">
 										</div>
-
-
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Flight Code:</h5></div>
@@ -525,6 +523,17 @@
 									<div class="table-row">
 										<div class="label"><h5>Mutual Relationship:</h5></div>
 										<div class="value" id="planLinkMutualRelationship"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Relationship with Destination Country:</h5></div>
+										<div class="value" id="planLinkToCountryRelationship">
+											<span class="total"></span>
+											<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('countryCode'))" style="vertical-align: middle;">
+										</div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Title with Destination Country:</h5></div>
+										<div class="value" id="planLinkToCountryTitle"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle"></span></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Distance:</h5></div>
@@ -1168,6 +1177,10 @@
 								<div class="table-row">
 									<div class="label"><h5>Relationship with your airline:</h5></div>
 									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('countryCode'))"></div>
+								</div>
+								<div class="table-row">
+									<div class="label"><h5>Your airline title with this country:</h5></div>
+									<div class="value"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle"></span></div>
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Large Airports:</h5></div>
@@ -3405,8 +3418,7 @@
                   <div style="clear: both;"></div>
               </div>
 
-
-			  <h4>Total difficulty: <span class="negotiationDifficultyTotal"></span></h4>
+			  <h4 style="margin-top: 10px">Total difficulty: <span class="negotiationDifficultyTotal"></span></h4>
 		  </div>
 	  </div>
 

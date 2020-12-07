@@ -588,13 +588,13 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
   def getLinkLimits(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline = request.user
-    val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId))).map(entry => (entry.country.countryCode, entry.title)).toMap
+    //val titlesByCountryCode: Map[String, Title.Value] = CountryAirlineTitle.getTopTitlesByAirline(airlineId).map(entry => (entry.country.countryCode, entry.title)).toMap
     var result = Json.obj()
     airline.getBases().foreach { base =>
-      val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.ID_LOAD).length
-      val linkLimit = base.getLinkLimit(titlesByCountryCode.get(base.countryCode))
-      val overtimeCompensation = base.getOvertimeCompensation(linkLimit, linkCount)
-      result = result + (base.airport.id.toString() -> Json.obj("linkLimit" -> linkLimit, "linkCount" -> linkCount, "overtimeCompensation" -> overtimeCompensation))
+      val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
+      val staffCapacity = base.getOfficeStaffCapacity
+      val overtimeCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired)
+      result = result + (base.airport.id.toString() -> Json.obj("linkLimit" -> staffCapacity, "linkCount" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
     }
     Ok(result)
   }
@@ -624,7 +624,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
 
   def getCountryAirlineTitles(airlineId : Int) = Authenticated { implicit request =>
-    val titles  = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId)))
+    val titles  = CountryAirlineTitle.getTopTitlesByAirline(airlineId)
     var nationalAirlinesJson = Json.arr()
     var partneredAirlinesJson = Json.arr()
     titles.foreach { title =>

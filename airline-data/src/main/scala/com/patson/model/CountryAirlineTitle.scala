@@ -1,5 +1,9 @@
 package com.patson.model
 
+import com.patson.data.{CountrySource, LinkSource}
+import com.patson.model.AirlineCountryRelationship.TITLE
+import com.patson.util.CountryCache
+
 case class CountryAirlineTitle(country : Country, airline : Airline, title : Title.Value) {
 
   lazy val loyaltyBonus : Int = {
@@ -14,6 +18,7 @@ case class CountryAirlineTitle(country : Country, airline : Airline, title : Tit
     Math.round(loyaltyBonus / (title match {
       case Title.NATIONAL_AIRLINE => 1
       case Title.PARTNERED_AIRLINE => 3
+      case _ => 0
     })).toInt
   }
 
@@ -21,12 +26,15 @@ case class CountryAirlineTitle(country : Country, airline : Airline, title : Tit
     title match {
       case Title.NATIONAL_AIRLINE => "National Airline"
       case Title.PARTNERED_AIRLINE => "Partnered Airline"
+      case Title.ESTABLISHED_AIRLINE => "Established Airline"
+      case Title.APPROVED_AIRLINE => "Approved Airline"
     }
 }
 
+
 object Title extends Enumeration {
   type Title = Value
-  val NATIONAL_AIRLINE, PARTNERED_AIRLINE = Value
+  val NATIONAL_AIRLINE, PARTNERED_AIRLINE, ESTABLISHED_AIRLINE, APPROVED_AIRLINE = Value
 }
 
 object CountryAirlineTitle {
@@ -36,10 +44,51 @@ object CountryAirlineTitle {
   val getBonusType : (Title.Value => BonusType.Value) = {
     case Title.NATIONAL_AIRLINE => BonusType.NATIONAL_AIRLINE
     case Title.PARTNERED_AIRLINE => BonusType.PARTNERED_AIRLINE
+    case Title.ESTABLISHED_AIRLINE => BonusType.ESTABLISHED_AIRLINE
+    case Title.APPROVED_AIRLINE => BonusType.APPROVED_AIRLINE
+
   }
 
-  val getLinkLimitBonus : (Title.Value => Int) = {
-    case Title.NATIONAL_AIRLINE => 10
-    case Title.PARTNERED_AIRLINE => 5
+//  val getLinkLimitBonus : (Title.Value => Int) = {
+//    case Title.NATIONAL_AIRLINE => 10
+//    case Title.PARTNERED_AIRLINE => 5
+//    case _ => 0
+//  }
+
+  val getTitle : (String, Airline) => Option[CountryAirlineTitle] = (countryCode : String, airline : Airline) => {
+    getTopTitle(countryCode, airline).orElse {
+      //no top country title, check lower ones
+      val title : Option[Title.Value] = {
+        val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, airline).relationship
+        if (relationship < 5) {
+          None
+        } else if (relationship < 10) {
+          Some(Title.APPROVED_AIRLINE)
+        } else {
+          val links = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_country", countryCode)))
+          if (links.isEmpty) {
+            Some(Title.APPROVED_AIRLINE)
+          } else {
+            Some(Title.ESTABLISHED_AIRLINE)
+          }
+        }
+      }
+      title.map(title => CountryAirlineTitle(CountryCache.getCountry(countryCode).get, airline, title))
+    }
+
+
+  }
+  /**
+    * Top titles are those that are driven my market share, cannot be computed right the way
+    */
+  val getTopTitle : (String, Airline) => Option[CountryAirlineTitle] = (countryCode : String, airline : Airline) => {
+    CountrySource.loadCountryAirlineTitlesByAirlineAndCountry(airline.id, countryCode)
+  }
+
+  val getTopTitlesByCountry : (String) => List[CountryAirlineTitle] = (countryCode : String) => {
+    CountrySource.loadCountryAirlineTitlesByCountryCode(countryCode)
+  }
+  val getTopTitlesByAirline : (Int) => List[CountryAirlineTitle] = (airlineId : Int) => {
+    CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId)))
   }
 }

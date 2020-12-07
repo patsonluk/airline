@@ -452,13 +452,13 @@ object CountrySource {
     }
   }
 
-  def getCountryRelationshipsByAirline(airline : Airline) : scala.collection.immutable.Map[String, Int] = {
-    //for now only depends on the mother country code of the airline
-    airline.getCountryCode() match {
-      case Some(countryCode) => getCountryMutualRelationships(countryCode)
-      case None => scala.collection.immutable.Map.empty[String, Int]
-    }
-  }
+//  def getCountryRelationshipsByAirline(airline : Airline) : scala.collection.immutable.Map[String, Int] = {
+//    //for now only depends on the mother country code of the airline
+//    airline.getCountryCode() match {
+//      case Some(countryCode) => getCountryMutualRelationships(countryCode)
+//      case None => scala.collection.immutable.Map.empty[String, Int]
+//    }
+//  }
 
     
 }

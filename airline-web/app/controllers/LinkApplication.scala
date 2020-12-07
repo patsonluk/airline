@@ -663,6 +663,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val flightCode = LinkUtil.getFlightCode(request.user, flightNumber)
         val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
 
+
         var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
           "fromAirportName" -> fromAirport.name,
           "fromAirportCode" -> fromAirport.iata,
@@ -713,6 +714,12 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         if (!warnings.isEmpty) {
           resultObject = resultObject + ("warnings", Json.toJson(warnings))
+        }
+
+        resultObject = resultObject + ("toCountryRelationship" -> Json.toJson(AirlineCountryRelationship.getAirlineCountryRelationship(toAirport.countryCode, airline)))
+
+        CountryAirlineTitle.getTitle(toAirport.countryCode, airline).foreach { title =>
+          resultObject = resultObject + ("toCountryTitle" -> Json.toJson(title))
         }
 
         Ok(resultObject)
@@ -788,11 +795,16 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (newLink) { //then check the hub capacity
       airline.getBases().find(_.airport.id == fromAirport.id) match {
           case Some(base) =>
-            val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.ID_LOAD).length
-            val airlineCountryTitleOfFromCountry = CountrySource.loadCountryAirlineTitlesByCountryCode(fromAirport.countryCode).find(_.airline.id == airline.id)
-            val linkLimit = base.getLinkLimit(airlineCountryTitleOfFromCountry.map(_.title))
-            if (linkCount >= linkLimit) { //then we should prompt warning of over limit
-              val extraCompensation = base.getOvertimeCompensation(linkLimit, linkCount + 1) - base.getOvertimeCompensation(linkLimit, linkCount)
+            //val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.ID_LOAD).length
+            //val airlineCountryTitleOfFromCountry = CountrySource.loadCountryAirlineTitlesByCountryCode(fromAirport.countryCode).find(_.airline.id == airline.id)
+            //val linkLimit = base.getLinkLimit(airlineCountryTitleOfFromCountry.map(_.title))
+            val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
+            val staffCapacity = base.getOfficeStaffCapacity
+            val newStaffRequired = staffRequired + Link.getOfficeStaffRequired(fromAirport, toAirport)
+
+            val extraCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired) - base.getOvertimeCompensation(staffCapacity, newStaffRequired)
+
+            if (extraCompensation > 0) { //then we should prompt warning of over limit
               warnings.append(s"Exceeding operation capacity of current base. Extra overtime compensation of $$$extraCompensation will be charged per week for this route.")
             }
           case None => //should not be none

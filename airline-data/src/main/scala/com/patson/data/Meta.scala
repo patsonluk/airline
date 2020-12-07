@@ -361,11 +361,14 @@ object Meta {
       "frequency INTEGER," +
       "flight_type INTEGER," +
       "flight_number INTEGER," +
+      "from_country CHAR(2)," +
+      "to_country CHAR(2)," +
       "last_update DATETIME DEFAULT CURRENT_TIMESTAMP," +
       "FOREIGN KEY(from_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(to_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
+
     statement.execute()
     statement.close()
 
@@ -379,6 +382,12 @@ object Meta {
     statement.execute()
     statement.close()
     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_4 + " ON " + LINK_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_5 + " ON " + LINK_TABLE + "(from_country)")
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_6 + " ON " + LINK_TABLE + "(to_country)")
     statement.execute()
     statement.close()
 

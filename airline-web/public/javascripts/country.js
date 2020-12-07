@@ -111,22 +111,49 @@ function selectCountry(countryCode) {
 	loadCountryDetails(countryCode)
 }
 
-function loadCountryAirlineRelationship(countryCode, callback) {
+function loadCountryAirlineDetails(countryCode, callback) {
     var url = "countries/" + countryCode + "/airline/" + activeAirline.id
+    $("#countryDetails div.relationship span.total").empty()
+    $("#countryDetails img.airlineTitleIcon").hide()
+    $("#countryDetails span.airlineTitle").empty()
 	$.ajax({
 		type: 'GET',
 		url: url,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(relationship) {
+	    success: function(result) {
+	        var relationship = result.relationship
             var relationshipSpan = getAirlineRelationshipDescriptionSpan(relationship.total)
 
-            $("#countryDetails div.relationship span.total").empty()
             $("#countryDetails div.relationship span.total").append(relationshipSpan)
             var $relationshipDetailsIcon = $("#countryDetails div.relationship .detailsIcon")
             $relationshipDetailsIcon.data("relationship", relationship)
             $relationshipDetailsIcon.data("countryCode", countryCode)
             $relationshipDetailsIcon.show()
+
+            var title = result.title
+            if (!title) {
+                $("#countryDetails span.airlineTitle").text("-")
+            } else {
+                var imgSrc
+                if (title.title === "NATIONAL_AIRLINE") {
+                    imgSrc = 'assets/images/icons/star.png'
+                } else if (title.title === "PARTNERED_AIRLINE") {
+                    imgSrc = 'assets/images/icons/hand-shake.png'
+                } else if (title.title === "ESTABLISHED_AIRLINE") {
+                    imgSrc = 'assets/images/icons/leaf-plant.png'
+                } else if (title.title === "APPROVED_AIRLINE") {
+                    imgSrc = 'assets/images/icons/tick.png'
+                }
+                if (imgSrc) {
+                    $("#countryDetails img.airlineTitleIcon").attr('src', imgSrc)
+                    $("#countryDetails img.airlineTitleIcon").show()
+                }
+
+                $("#countryDetails span.airlineTitle").text(title.description)
+            }
+
+
 
             if (callback) {
                 callback(relationship, countryCode)
@@ -159,7 +186,7 @@ function loadCountryDetails(countryCode) {
 	    	})[0];
 
             if (activeAirline) {
-	    	    loadCountryAirlineRelationship(countryCode)
+	    	    loadCountryAirlineDetails(countryCode)
             } else {
 	    	    $("#countryDetails div.relationship span.total").html("<span>-</span>")
 	    	    var $relationshipDetailsIcon = $("#countryDetails div.relationship .detailsIcon")
@@ -356,7 +383,7 @@ function updateCountryDelegates() {
         data:  JSON.stringify({ 'delegateCount' : assignedDelegateCount }) ,
         dataType: 'json',
         success: function(result) {
-            var relationship = loadCountryAirlineRelationship(countryCode, showRelationshipDetailsModal)
+            var relationship = loadCountryAirlineDetails(countryCode, showRelationshipDetailsModal)
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
