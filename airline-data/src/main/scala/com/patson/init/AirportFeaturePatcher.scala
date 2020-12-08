@@ -291,7 +291,9 @@ object AirportFeaturePatcher extends App {
       "FRA", //Germany
       "MUC",
       "SYD", //Australia
-      "MEL"))
+      "MEL",
+      "YVR", //Canada
+      "YYZ"))
     list.toList
   }
 }

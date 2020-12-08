@@ -528,12 +528,12 @@
 										<div class="label"><h5>Relationship with Destination Country:</h5></div>
 										<div class="value" id="planLinkToCountryRelationship">
 											<span class="total"></span>
-											<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('countryCode'))" style="vertical-align: middle;">
+											<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))" style="vertical-align: middle;">
 										</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Title with Destination Country:</h5></div>
-										<div class="value" id="planLinkToCountryTitle"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle"></span></div>
+										<div class="value" id="planLinkToCountryTitle"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle titleCue"></span></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Distance:</h5></div>
@@ -561,11 +561,6 @@
 										<div class="label"><h5>Setup Cost:</h5></div>
 										<div class="value" id="planLinkCost"></div>
 									</div>
-									<div class="table-row" id="linkRejectionRow">
-										<div class="label"></div>
-										<div class="value"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason" class="warning"></span></div>
-									</div>
-
 									<div class="table-row" id="planLinkModelRow">
 										<div class="label"><h5>Airplane Model (available):</h5></div>
 										<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
@@ -619,7 +614,7 @@
                                                 </div>
                                                 No airplane with this model based in this airport
                                             </div>
-                                            <div id="planLinkAirplaneSelect"></div>
+                                            <div id="planLinkAirplaneSelect" style="display : inline-block;"></div>
                                         </div>
                                     </div>
 									<div class="table-row">
@@ -658,33 +653,8 @@
                                                 <div class="table-row"/>
                                                     <div class="cell"></div>
                                                     <div class="cell"></div>
-                                                    <div class="cell">Total <span class="total"></span> flight(s) per week <span class="fatal" style="display : none;">(EXCEEDS LIMIT)</span></div>
+                                                    <div class="cell">Total <span class="total"></span> flight(s) per week</div>
                                                 </div>
-											</div>
-											<div class="planLinkLimitDiv" style="margin-top: 5px;">
-												<div class="tooltip">
-													<img src='@routes.Assets.versioned("images/icons/information.png")'>
-													<h6>
-													<span class="tooltiptext below" style="width: 450px;">
-																		Max Flight Freuency is determined by the lowest number below: <br/>
-																		<div style='display:table; width: 100%;'>
-																			<div style='display:table-row'>
-																				<div style='width: 60%; display: table-cell;'>General max frequency allowed per Route</div>
-																				<div class='maxFrequencyAbsolute' style='width: 40%; display: table-cell;'></div>
-																			</div>
-																			<div style='display:table-row'>
-																				<div style='width: 60%; display: table-cell;'>Current slots by Departing Airport</div>
-																				<div class='maxFrequencyFromAirport' style='width: 40%; display: table-cell;'></div>
-																			</div>
-																			<div style='display:table-row'>
-																				<div style='width: 60%; display: table-cell;'>Current slots by Destination Airport</div>
-																				<div class='maxFrequencyToAirport' style='width: 40%; display: table-cell;'></div>
-																			</div>
-																		</div>
-																	</span>
-													</h6>
-												</div>
-												<span class="limitingFactor"></span> - <span class="frequencyLimit"></span> flight(s) per week
 											</div>
 										</div>
 									</div>
@@ -725,10 +695,13 @@
 										<input type="hidden" id="planLinkServiceLevel" value="1"/></div>
 									</div>
 								</div>
+								<div class="linkRejection">
+									<div><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason" class="warning"></span></div>
+								</div>
 								<div class="warningList">
 								</div>
-								<div class="button" id="addLinkButton" onclick="linkConfirmation()">Create</div>
-								<div class="button" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
+								<div class="button modifyLink" id="addLinkButton" onclick="linkConfirmation()">Create</div>
+								<div class="button modifyLink" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
 								<div class="button" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</div>
 								<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 							</div>
@@ -901,32 +874,6 @@
 								<div class="table-row">
 									<div class="label"><h5>Average income level:</h5></div>
 									<div class="value" id="airportDetailsIncomeLevel"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Slots:</h5></div>
-									<div class="value airportSlots" id="airportDetailsSlots"></div>
-								</div>
-								<div class="table-row">
-									<div class="label">
-										<h5>
-											<span>Slots for your airline (free / offered):</span>
-											<div class="tooltip">
-												<img src='@routes.Assets.versioned("images/icons/information.png")'>
-												<span class="tooltiptext" style="width: 400px;">
-													Airport allocates time slots to your airline based on:<br/>
-													- Base size in this airport if present<br/>
-													- Loyalty to your airline<br/>
-													- Awareness of your airline<br/>
-													- Airline Reputation<br/>
-													- Relationship with your home country<br/>
-													- Country Openness<br/>
-													<br/>
-													A negative number in free slots means the airport will take back slots if freed from your assigned routes<br/>
-												</span>
-											</div>
-										</h5>
-									</div>
-									<div class="value airportAssignedSlots" id="airportDetailsAssignedSlots"></div>
 								</div>
 								<div class="table-row">
 									<div class="label">
@@ -1176,7 +1123,7 @@
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Relationship with your airline:</h5></div>
-									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('countryCode'))"></div>
+									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))"></div>
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Your airline title with this country:</h5></div>
@@ -2754,14 +2701,6 @@
 				<div class="label"><h5>Max runway length:</h5></div>
 				<div class="value" id="airportPopupMaxRunwayLength"></div>
 			</div>
-<!--   			<div class="table-row">-->
-<!--   				<div class="label"><h5>Slots:</h5></div>-->
-<!--   				<div class="value airportSlots" id="airportPopupSlots"></div>-->
-<!--   			</div>-->
-<!--   			<div class="table-row">-->
-<!--   				<div class="label"><h5>Slots for your airline (free / offered):</h5></div>-->
-<!--   				<div class="value airportAssignedSlots" id="airportPopupAssignedSlots"></div>-->
-<!--   			</div>-->
    			<div class="table-row">
    				<div class="label"><h5>Awareness of your airline:</h5></div>
    				<div class="value airportAwareness" id="airportPopupAwareness"></div>
@@ -3849,6 +3788,97 @@
 	  <div id="airlineCountryRelationshipModal" class="modal">
 		  <div class="modal-content" style="width : 600px;">
 			  <span class="close" onclick="closeModal($('#airlineCountryRelationshipModal'))">&times;</span>
+			  <h2 style="margin-bottom: 20px">Relationship Management with&nbsp;<span class="country"></span></h2>
+			  <h3>Airline Title</h3>
+			  <div class="section" style="width: 95%; display:flex; flex-direction:column; align-items:center;">
+				<div class="currentTitle" style="margin-bottom: 20px; display: flex;"><span>Current: </span><img class="titleIcon">&nbsp;<span class="titleDescription"></span></div>
+				<div style="display:flex; align-items:center" class="titleProgression">
+					<span class="title" data-title="NONE">None</span>
+					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
+					<span class="title" data-title="APPROVED_AIRLINE">Approved Airline</span>
+					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
+					<span class="title" data-title="ESTABLISHED_AIRLINE">Established Airline</span>
+					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
+					<span class="title" data-title="PRIVILEGED_AIRLINE selected">Privileged Airline</span>
+					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
+					<span class="title" data-title="PARTNERED_AIRLINE">Partnered Airline</span>
+					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
+					<span class="title" data-title="NATIONAL_AIRLINE">National Airline</span>
+				</div>
+				<div class="titleDescriptions">
+					<div class="titleDescription" data-title="NONE">
+						<h5>Conditions</h5>
+						<ul>
+							<li class="dot">Relationship below 5</li>
+						</ul>
+						<h5>Permissions</h5>
+						<ul>
+							<li class="dot">No flights allowed</li>
+						</ul>
+					</div>
+					<div class="titleDescription" data-title="APPROVED_AIRLINE">
+						<h5>Conditions</h5>
+						<ul>
+							<li class="dot">Relationship higher than 5</li>
+						</ul>
+						<h5>Permissions</h5>
+						<ul>
+							<li class="dot">Only flights to Gateway Airport allowed</li>
+						</ul>
+					</div>
+					<div class="titleDescription" data-title="ESTABLISHED_AIRLINE">
+						<h5>Conditions</h5>
+						<ul>
+							<li class="dot">Relationship higher than 10</li>
+							<li class="dot">Established flights to Airport</li>
+						</ul>
+						<h5>Permissions</h5>
+						<ul>
+							<li class="dot">Only flights to Gateway Airport allowed</li>
+							<li class="dot">Airport Base construction allowed</li>
+						</ul>
+					</div>
+
+					<div class="titleDescription" data-title="PRIVILEGED_AIRLINE">
+						<h5>Conditions</h5>
+						<ul>
+							<li class="dot">Relationship higher than 30</li>
+							<li class="dot">Established flights to Airport</li>
+						</ul>
+						<h5>Permissions</h5>
+						<ul>
+							<li class="dot">All flights allowed</li>
+							<li class="dot">Airport Base construction allowed</li>
+						</ul>
+					</div>
+					<div class="titleDescription" data-title="PARTNERED_AIRLINE">
+						<h5>Conditions</h5>
+						<ul>
+							<li class="dot">Top N market share airline</li>
+						</ul>
+						<h5>Permissions</h5>
+						<ul>
+							<li class="dot">All flights allowed</li>
+							<li class="dot">Airport Base construction allowed</li>
+							<li class="dot">Extra bonuses</li>
+						</ul>
+					</div>
+					<div class="titleDescription" data-title="NATIONAL_AIRLINE">
+						<h5>Conditions</h5>
+						<ul>
+							<li class="dot">Top N market share airline</li>
+							<li class="dot">Headquartered in this country</li>
+						</ul>
+						<h5>Permissions</h5>
+						<ul>
+							<li class="dot">All flights allowed</li>
+							<li class="dot">Airport Base construction allowed</li>
+							<li class="dot">Extra bonuses</li>
+						</ul>
+					</div>
+				</div>
+			  </div>
+
 			  <h3>Relationship Factors</h3>
 			  <div class="table data section factors" style="width: 95%">
 				  <div class="table-header">

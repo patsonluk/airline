@@ -200,16 +200,16 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   }
 
 
-  def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
-    AirportCache.getAirport(airportId, true) match {  
-       case Some(airport) =>  
-         val maxSlots = airport.getMaxSlotAssignment(airlineId)
-         val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
-         val preferredSlots = airport.getPreferredSlotAssignment(airlineId)
-         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots), "preferredSlots" -> JsNumber(preferredSlots)))
-       case None => NotFound
-     }
-  }
+//  def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
+//    AirportCache.getAirport(airportId, true) match {
+//       case Some(airport) =>
+//         val maxSlots = airport.getMaxSlotAssignment(airlineId)
+//         val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
+//         val preferredSlots = airport.getPreferredSlotAssignment(airlineId)
+//         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots), "preferredSlots" -> JsNumber(preferredSlots)))
+//       case None => NotFound
+//     }
+//  }
   
   def getAirportSharesOnCity(cityId : Int) = Action {
     Ok(Json.toJson(AirportSource.loadAirportSharesOnCity(cityId)))

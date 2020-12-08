@@ -216,9 +216,14 @@ div.button:hover {
     color: #6093e7;
 }
 
-div.glow {
+div.glow, span.glow, img.glow {
     animation: glow 2s infinite alternate;
 }
+
+span.glow, img.glow {
+    border-radius: 2px 2px 2px 2px;
+}
+
 
 @keyframes glow {
   from {
@@ -848,3 +853,12 @@ input:disabled {
     display: none;
 }
 
+
+li.dot {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+}
+li.dot:before {
+    content: url('/assets/images/markers/dot.png');
+}

@@ -63,7 +63,7 @@ object NegotiationUtil {
     val newFrequency = newLink.futureFrequency()
     val frequencyDelta = newFrequency - existingLinkOption.map(_.futureFrequency()).getOrElse(0)
     if (frequencyDelta > 0) {
-      val maxFrequency = Computation.getMaxFrequencyAbsolute(airline)
+      val maxFrequency = Computation.getMaxFrequencyThreshold(airline)
       if (newFrequency > maxFrequency) {
         requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - maxFrequency, s"Excessive frequency $newFrequency over allowed $maxFrequency"))
       }

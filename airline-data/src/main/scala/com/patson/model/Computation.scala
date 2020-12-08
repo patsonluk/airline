@@ -188,7 +188,7 @@ object Computation {
   }
   
   val MAX_FREQUENCY_ABSOLUTE_BASE = 30
-  def getMaxFrequencyAbsolute(airline : Airline) : Int = {
+  def getMaxFrequencyThreshold(airline : Airline) : Int = {
      AllianceSource.loadAllianceMemberByAirline(airline) match {
        case Some(allianceMember) => {
          if (allianceMember.role != AllianceRole.APPLICANT) {

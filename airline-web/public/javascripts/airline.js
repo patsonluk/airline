@@ -594,19 +594,9 @@ function refreshLinkDetails(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	var availableFromSlot = link.maxFrequencyFromAirport
-	    	var availableToSlot = link.maxFrequencyToAirport
-	    	if (link.future) {
-                availableFromSlot -= link.future.frequency
-                availableToSlot -= link.future.frequency
-	    	} else {
-                availableFromSlot -= link.frequency
-                availableToSlot -= link.frequency
-            }
-	    	
-	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode) + '&nbsp;' + availableFromSlot + " available slot(s)")
+	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode))
 	    	//$("#linkFromAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.fromAirportId + ")")
-	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode)+ '&nbsp;' + availableToSlot + " available slot(s)")
+	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode))
 	    	//$("#linkToAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.toAirportId + ")")
 	    	$("#linkFlightCode").text(link.flightCode)
 	    	if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
@@ -861,32 +851,7 @@ var existingLink
 //var existingLinkModelId = 0
 
 function updatePlanLinkInfo(linkInfo) {
-    var availableFromSlot = linkInfo.maxFrequencyFromAirport
-	var availableToSlot = linkInfo.maxFrequencyToAirport
-	if (linkInfo.existingLink) {
-	    if (linkInfo.existingLink.future) {
-	        availableFromSlot -= linkInfo.existingLink.future.frequency
-            availableToSlot -= linkInfo.existingLink.future.frequency
-	    } else {
-            availableFromSlot -= linkInfo.existingLink.frequency
-            availableToSlot -= linkInfo.existingLink.frequency
-        }
-	}
-	var availableFromSlotText
-	if (availableFromSlot == 0) {
-		availableFromSlotText = '<span class="warning">' + availableFromSlot + ' available slot(s)</span>'
-	} else {
-		availableFromSlotText = '<span>' + availableFromSlot + ' available slot(s)</span>'
-	}
-	
-	var availableToSlotText
-	if (availableToSlot == 0) {
-		availableToSlotText = '<span class="warning">' + availableToSlot + ' available slot(s)</span>'
-	} else {
-		availableToSlotText = '<span>' + availableToSlot + ' available slot(s)</span>'
-	}
-	
-	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportCode) + '&nbsp;' + availableFromSlotText)
+	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportCode))
 	if (activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
 		//fill the from list
@@ -908,7 +873,7 @@ function updatePlanLinkInfo(linkInfo) {
 	$("#planLinkFromAirportSelect").hide() //do not show the list yet
 	//$('#planLinkFromAirportExpectedQuality').attr("onclick", "loadLinkExpectedQuality(" + linkInfo.fromAirportId + "," + linkInfo.toAirportId + "," + linkInfo.fromAirportId + ")")
 	
-	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportCode) + '&nbsp;' + availableToSlotText)
+	$('#planLinkToAirportName').attr("onclick", "showAirportDetails(" + linkInfo.toAirportId + ")").html(getCountryFlagImg(linkInfo.toCountryCode) + getAirportText(linkInfo.toAirportCity, linkInfo.toAirportCode))
 	//$('#planLinkToAirportExpectedQuality').attr("onclick", "loadLinkExpectedQuality(" + linkInfo.fromAirportId + "," + linkInfo.toAirportId + "," + linkInfo.toAirportId + ")")
 	$('#planLinkFlightCode').text(linkInfo.flightCode)
 	$('#planLinkMutualRelationship').html(getCountryFlagImg(linkInfo.fromCountryCode) + "&nbsp;vs&nbsp;" + getCountryFlagImg(linkInfo.toCountryCode) + getCountryRelationshipDescription(linkInfo.mutualRelationship))
@@ -919,34 +884,13 @@ function updatePlanLinkInfo(linkInfo) {
 
     var $relationshipDetailsIcon = $("#planLinkToCountryRelationship .detailsIcon")
     $relationshipDetailsIcon.data("relationship", relationship)
+    $relationshipDetailsIcon.data("title", linkInfo.toCountryTitle)
     $relationshipDetailsIcon.data("countryCode", linkInfo.toCountryCode)
     $relationshipDetailsIcon.show()
 
     var title = linkInfo.toCountryTitle
-    if (!title) {
-        $("#planLinkToCountryTitle .airlineTitle").text("-")
-        $("#planLinkToCountryTitle img.airlineTitleIcon").hide()
-    } else {
-        var imgSrc
-        if (title.title === "NATIONAL_AIRLINE") {
-            imgSrc = 'assets/images/icons/star.png'
-        } else if (title.title === "PARTNERED_AIRLINE") {
-            imgSrc = 'assets/images/icons/hand-shake.png'
-        } else if (title.title === "PRIVILEGED_AIRLINE") {
-            imgSrc = 'assets/images/icons/medal-silver-premium.png'
-        } else if (title.title === "ESTABLISHED_AIRLINE") {
-            imgSrc = 'assets/images/icons/leaf-plant.png'
-        } else if (title.title === "APPROVED_AIRLINE") {
-            imgSrc = 'assets/images/icons/tick.png'
-        }
-        if (imgSrc) {
-            $("#planLinkToCountryTitle img.airlineTitleIcon").attr('src', imgSrc)
-            $("#planLinkToCountryTitle img.airlineTitleIcon").show()
-        }
-        $("#planLinkToCountryTitle span.airlineTitle").text(title.description)
-    }
+    updateAirlineTitle(title, $("#planLinkToCountryTitle img.airlineTitleIcon"), $("#planLinkToCountryTitle .airlineTitle"))
 
-	
 	$('#planLinkDistance').text(linkInfo.distance + " km")
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand) + " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
@@ -987,10 +931,14 @@ function updatePlanLinkInfo(linkInfo) {
 		//selectLinkFromMap(linkInfo.existingLink.id, true)
 		highlightLink(linkInfo.existingLink.id, false)
 	}
-	
+
+    $('#planLinkDetails .titleCue').removeClass('glow')
 	if (linkInfo.rejection) {
-		$('#linkRejectionRow #linkRejectionReason').text(linkInfo.rejection)
-		$('#linkRejectionRow').show()
+		$('.linkRejection #linkRejectionReason').text(linkInfo.rejection.description)
+		if (linkInfo.rejection.type === "TITLE_REQUIREMENT") {
+		    $('#planLinkDetails .titleCue').addClass('glow')
+		}
+		$('.linkRejection').show()
 		$('#addLinkButton').hide()
 		$('#updateLinkButton').hide()
 		$('#deleteLinkButton').hide()
@@ -999,7 +947,7 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#extendedPanel').hide()
 		return
 	} else {
-		$('#linkRejectionRow').hide()
+		$('.linkRejection').hide()
 		$('#planLinkModelRow').show()
 	}
 
@@ -1243,33 +1191,11 @@ function updateFrequencyDetail(info) {
         $("#planLinkDetails .frequencyDetail").append("<div class='table-row empty'><div class='cell'></div><div class='cell'>-</div><div class='cell'>-</div></div>")
     }
 
-    updateLimit()
+//    updateLimit()
     updateTotalValues()
 }
 
-function updateLimit() {
-	var maxFrequencyFromAirport = planLinkInfo.maxFrequencyFromAirport
-	var maxFrequencyToAirport = planLinkInfo.maxFrequencyToAirport
-	var maxFrequency = planLinkInfo.maxFrequencyAbsolute
-	$('#planLinkDetails .planLinkLimitDiv .maxFrequencyFromAirport').text(maxFrequencyFromAirport)
-	$('#planLinkDetails .planLinkLimitDiv .maxFrequencyToAirport').text(maxFrequencyToAirport)
-	$('#planLinkDetails .planLinkLimitDiv .maxFrequencyAbsolute').text(planLinkInfo.maxFrequencyAbsolute)
 
-	var limitingFactor = "Max frequency for route"
-	if (maxFrequencyFromAirport < maxFrequency) { //limited by from airport
-		maxFrequency = maxFrequencyFromAirport
-		limitingFactor = "Max slots offered by " + planLinkInfo.fromAirportName
-	}
-
-	if (maxFrequencyToAirport < maxFrequency) { //limited by to airport
-		maxFrequency = maxFrequencyToAirport
-		limitingFactor = "Max slots offered by " + planLinkInfo.toAirportName
-	}
-
-	$("#planLinkDetails .planLinkLimitDiv .limitingFactor").text(limitingFactor)
-	$("#planLinkDetails .frequencyLimit").text(maxFrequency)
-	$("#planLinkDetails").data('frequencyLimit', maxFrequency)
-}
 
 function addAirplaneRow(container, airplane, frequency) {
     var airplaneRow = $("<div class='table-row airplaneRow'></div>") //airplane bar contains - airplane icon, configuration, frequency
@@ -1427,19 +1353,13 @@ function updateTotalValues() {
         $("#planLinkDetails .future").hide()
     }
 
-    var frequencyLimit = $("#planLinkDetails").data("frequencyLimit")
-    if (frequencyLimit < futureFrequency) { //warning
-        $(".frequencyDetailTotal .fatal").show();
-        disableButton($("#planLinkDetails .updateLinkButton"), "Flight frequency exceeding limit")
-    } else {
-        $(".frequencyDetailTotal .fatal").hide();
-        enableButton($("#planLinkDetails .updateLinkButton"))
-    }
 
     if (futureFrequency == 0) {
-        disableButton($("#planLinkDetails .updateLinkButton"), "Must assign airplanes and frequency")
+        disableButton($("#planLinkDetails .modifyLink"), "Must assign airplanes and frequency")
+        $('#planLinkAirplaneSelect').addClass('glow')
     } else {
-        enableButton($("#planLinkDetails .updateLinkButton"))
+        enableButton($("#planLinkDetails .modifyLink"))
+        $('#planLinkAirplaneSelect').removeClass('glow')
     }
 }
 
