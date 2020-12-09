@@ -24,11 +24,23 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
             val baseCountByCountryCode = airline.getBases().groupBy(_.countryCode).view.mapValues(_.length)
             var result = Json.arr()
 
+            val mutualRelationships: Map[String, Int] =
+              airline.getCountryCode() match {
+                case Some(homeCountryCode) => CountrySource.getCountryMutualRelationships(homeCountryCode)
+                case None => Map.empty[String, Int]
+              }
+
             countries.foreach { country =>
               var countryJson : JsObject = Json.toJson(country).asInstanceOf[JsObject]
               baseCountByCountryCode.get(country.countryCode).foreach { baseCount =>
                 countryJson = countryJson + ("baseCount" -> JsNumber(baseCount))
               }
+
+              if (airline.getHeadQuarter().isDefined) {
+                val relationship : Int = mutualRelationships.get(country.countryCode).getOrElse(0)
+                countryJson = countryJson + ("mutualRelationship" -> JsNumber(relationship))
+              }
+
               result = result.append(countryJson)
             }
 
@@ -42,9 +54,8 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, request.user)
 
     var result = Json.obj("relationship" -> relationship)
-    CountryAirlineTitle.getTitle(countryCode, request.user).foreach { title =>
-       result = result + ("title" -> Json.toJson(title))
-    }
+    val title = CountryAirlineTitle.getTitle(countryCode, request.user)
+    result = result + ("title" -> Json.toJson(title))
 
     Ok(result)
   }
@@ -55,6 +66,26 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         Ok(jsonObject)
       case None => NotFound
     } 
+  }
+
+
+
+  def getCountryAirlineTitleProgression(countryCode : String) = Action {
+    var result = Json.arr()
+    CountryCache.getCountry(countryCode) match {
+      case Some(country) =>
+        Title.values.toList.sortBy(_.id).reverse.foreach { title =>
+          val titleJson = Json.obj("title" -> title.toString,
+            "description" -> Title.description(title),
+            "requirements" -> CountryAirlineTitle.getTitleRequirements(title, country),
+            "bonus" -> CountryAirlineTitle.getTitleBonus(title, country))
+          result = result.append(titleJson)
+        }
+
+        Ok(result)
+      case None => NotFound
+    }
+
   }
 
   def getCountryJson(countryCode : String) : Option[JsObject] = {

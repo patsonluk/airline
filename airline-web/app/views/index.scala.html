@@ -526,14 +526,14 @@
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Relationship with Destination Country:</h5></div>
-										<div class="value" id="planLinkToCountryRelationship">
+										<div class="value" id="planLinkToCountryRelationship" style="display: flex; align-items: center;">
 											<span class="total"></span>
 											<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))" style="vertical-align: middle;">
 										</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Title with Destination Country:</h5></div>
-										<div class="value" id="planLinkToCountryTitle"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle titleCue"></span></div>
+										<div class="value" id="planLinkToCountryTitle" style="display: flex; align-items: center;"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle titleCue"></span></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Distance:</h5></div>
@@ -2709,10 +2709,6 @@
    				<div class="label"><h5>Loyalty to your airline:</h5></div>
    				<div class="value airportLoyalty" id="airportPopupLoyalty"></div>
    			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Relationship with your country:</h5></div>
-   				<div class="value airportRelationship" id="airportPopupRelationship"></div>
-   			</div>
 		</div>
 		<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()" >Plan Flight</div>
 		<div class="button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
@@ -3791,91 +3787,9 @@
 			  <h2 style="margin-bottom: 20px">Relationship Management with&nbsp;<span class="country"></span></h2>
 			  <h3>Airline Title</h3>
 			  <div class="section" style="width: 95%; display:flex; flex-direction:column; align-items:center;">
-				<div class="currentTitle" style="margin-bottom: 20px; display: flex;"><span>Current: </span><img class="titleIcon">&nbsp;<span class="titleDescription"></span></div>
+				<div class="currentTitle" style="margin-bottom: 20px; display: flex;"><span>Current:&nbsp;</span><img class="titleIcon">&nbsp;<span class="titleDescription"></span></div>
 				<div style="display:flex; align-items:center" class="titleProgression">
-					<span class="title" data-title="NONE">None</span>
-					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
-					<span class="title" data-title="APPROVED_AIRLINE">Approved Airline</span>
-					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
-					<span class="title" data-title="ESTABLISHED_AIRLINE">Established Airline</span>
-					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
-					<span class="title" data-title="PRIVILEGED_AIRLINE selected">Privileged Airline</span>
-					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
-					<span class="title" data-title="PARTNERED_AIRLINE">Partnered Airline</span>
-					<img src='@routes.Assets.versioned("images/icons/arrow.png")'>
-					<span class="title" data-title="NATIONAL_AIRLINE">National Airline</span>
-				</div>
-				<div class="titleDescriptions">
-					<div class="titleDescription" data-title="NONE">
-						<h5>Conditions</h5>
-						<ul>
-							<li class="dot">Relationship below 5</li>
-						</ul>
-						<h5>Permissions</h5>
-						<ul>
-							<li class="dot">No flights allowed</li>
-						</ul>
-					</div>
-					<div class="titleDescription" data-title="APPROVED_AIRLINE">
-						<h5>Conditions</h5>
-						<ul>
-							<li class="dot">Relationship higher than 5</li>
-						</ul>
-						<h5>Permissions</h5>
-						<ul>
-							<li class="dot">Only flights to Gateway Airport allowed</li>
-						</ul>
-					</div>
-					<div class="titleDescription" data-title="ESTABLISHED_AIRLINE">
-						<h5>Conditions</h5>
-						<ul>
-							<li class="dot">Relationship higher than 10</li>
-							<li class="dot">Established flights to Airport</li>
-						</ul>
-						<h5>Permissions</h5>
-						<ul>
-							<li class="dot">Only flights to Gateway Airport allowed</li>
-							<li class="dot">Airport Base construction allowed</li>
-						</ul>
-					</div>
 
-					<div class="titleDescription" data-title="PRIVILEGED_AIRLINE">
-						<h5>Conditions</h5>
-						<ul>
-							<li class="dot">Relationship higher than 30</li>
-							<li class="dot">Established flights to Airport</li>
-						</ul>
-						<h5>Permissions</h5>
-						<ul>
-							<li class="dot">All flights allowed</li>
-							<li class="dot">Airport Base construction allowed</li>
-						</ul>
-					</div>
-					<div class="titleDescription" data-title="PARTNERED_AIRLINE">
-						<h5>Conditions</h5>
-						<ul>
-							<li class="dot">Top N market share airline</li>
-						</ul>
-						<h5>Permissions</h5>
-						<ul>
-							<li class="dot">All flights allowed</li>
-							<li class="dot">Airport Base construction allowed</li>
-							<li class="dot">Extra bonuses</li>
-						</ul>
-					</div>
-					<div class="titleDescription" data-title="NATIONAL_AIRLINE">
-						<h5>Conditions</h5>
-						<ul>
-							<li class="dot">Top N market share airline</li>
-							<li class="dot">Headquartered in this country</li>
-						</ul>
-						<h5>Permissions</h5>
-						<ul>
-							<li class="dot">All flights allowed</li>
-							<li class="dot">Airport Base construction allowed</li>
-							<li class="dot">Extra bonuses</li>
-						</ul>
-					</div>
 				</div>
 			  </div>
 
@@ -3911,7 +3825,7 @@
 						  </div>
 					  </div>
 				  </div>
-                  <h6 style="font-style: italic;">* Each delegate level provides&nbsp;<span class="delegateMultiplier"></span>&nbsp;relationship points</h6>
+                  <h6 style="font-style: italic;">* Each delegate level provides&nbsp;<span class="delegateMultiplier"></span>&nbsp;relationship points. Delegate starts at level 0 and progress over time.</h6>
 				  <div class="button" onclick="updateCountryDelegates()">Confirm</div>
 				  <div class="button" onclick="closeModal($('#airlineCountryRelationshipModal'))">Cancel</div>
 			  </div>

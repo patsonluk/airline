@@ -664,9 +664,12 @@ function refreshAirportExtendedDetails(airport) {
             $(".airportLoyalty").text("0")
         }
 
-        relationship = getCountryRelationshipDescription(loadedCountriesByCode[airport.countryCode].mutualRelationship)
-
-        $(".airportRelationship").text(relationship)
+        var relationshipValue = loadedCountriesByCode[airport.countryCode].mutualRelationship
+        if (typeof relationshipValue != 'undefined') {
+            $(".airportRelationship").text(getCountryRelationshipDescription(relationshipValue))
+        } else {
+            $(".airportRelationship").text('-')
+        }
     } else {
         $(".airportAwareness").text('-')
     	$(".airportLoyalty").text('-')

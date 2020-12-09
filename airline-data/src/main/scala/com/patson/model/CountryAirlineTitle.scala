@@ -1,5 +1,6 @@
 package com.patson.model
 
+import com.patson.CountrySimulation
 import com.patson.data.{CountrySource, LinkSource}
 import com.patson.util.CountryCache
 
@@ -27,13 +28,20 @@ case class CountryAirlineTitle(country : Country, airline : Airline, title : Tit
 
 object Title extends Enumeration {
   type Title = Value
-  val NATIONAL_AIRLINE, PARTNERED_AIRLINE, PRIVILEGED_AIRLINE, ESTABLISHED_AIRLINE, APPROVED_AIRLINE = Value
+  val NATIONAL_AIRLINE, PARTNERED_AIRLINE, PRIVILEGED_AIRLINE, ESTABLISHED_AIRLINE, APPROVED_AIRLINE, NONE = Value
   val description = (title : Title.Value) => title match {
     case Title.NATIONAL_AIRLINE => "National Airline"
     case Title.PARTNERED_AIRLINE => "Partnered Airline"
     case Title.PRIVILEGED_AIRLINE => "Privileged Airline"
     case Title.ESTABLISHED_AIRLINE => "Established Airline"
     case Title.APPROVED_AIRLINE => "Approved Airline"
+    case Title.NONE => "None"
+  }
+
+  val relationshipBonus = (title : Title.Value) => title match {
+    case Title.NATIONAL_AIRLINE => 50
+    case Title.PARTNERED_AIRLINE => 20
+    case _ => 0
   }
 
 }
@@ -55,29 +63,33 @@ object CountryAirlineTitle {
 //    case _ => 0
 //  }
 
-  val getTitle : (String, Airline) => Option[CountryAirlineTitle] = (countryCode : String, airline : Airline) => {
-    getTopTitle(countryCode, airline).orElse {
+  val PRIVILEGED_AIRLINE_RELATIONSHIP_THRESHOLD = 30
+  val ESTABLISHED_AIRLINE_RELATIONSHIP_THRESHOLD = 15
+  val APPROVED_AIRLINE_RELATIONSHIP_THRESHOLD = 5
+
+  val getTitle : (String, Airline) => CountryAirlineTitle = (countryCode : String, airline : Airline) => {
+    getTopTitle(countryCode, airline).getOrElse {
       //no top country title, check lower ones
-      val title : Option[Title.Value] = {
+      val title : Title.Value = {
         val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, airline).relationship
-        if (relationship < 5) {
-          None
-        } else if (relationship < 10) {
-          Some(Title.APPROVED_AIRLINE)
+        if (relationship < APPROVED_AIRLINE_RELATIONSHIP_THRESHOLD) {
+          Title.NONE
+        } else if (relationship < ESTABLISHED_AIRLINE_RELATIONSHIP_THRESHOLD) {
+          Title.APPROVED_AIRLINE
         } else {
           val links = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_country", countryCode)))
           if (links.isEmpty) {
-            Some(Title.APPROVED_AIRLINE)
+            Title.APPROVED_AIRLINE
           } else {
-            if (relationship < 30) {
-              Some(Title.ESTABLISHED_AIRLINE)
+            if (relationship < PRIVILEGED_AIRLINE_RELATIONSHIP_THRESHOLD) {
+              Title.ESTABLISHED_AIRLINE
             } else {
-              Some(Title.PRIVILEGED_AIRLINE)
+              Title.PRIVILEGED_AIRLINE
             }
           }
         }
       }
-      title.map(title => CountryAirlineTitle(CountryCache.getCountry(countryCode).get, airline, title))
+      CountryAirlineTitle(CountryCache.getCountry(countryCode).get, airline, title)
     }
 
 
@@ -94,5 +106,49 @@ object CountryAirlineTitle {
   }
   val getTopTitlesByAirline : (Int) => List[CountryAirlineTitle] = (airlineId : Int) => {
     CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId)))
+
+  }
+
+  import Title._
+  val getTitleRequirements = (title : Title.Value, country : Country) => title match  {
+    case NATIONAL_AIRLINE =>
+      List(s"Airline market share reach top ${CountrySimulation.computeNationalAirlineCount(country)} of all airlines HQ in ${country.name}")
+    case PARTNERED_AIRLINE =>
+      List(s"Airline market share reach top ${CountrySimulation.computePartneredAirlineCount(country)} of all airlines in ${country.name} excluding the national airline")
+    case PRIVILEGED_AIRLINE =>
+      List(s"Airline reaches relationship $PRIVILEGED_AIRLINE_RELATIONSHIP_THRESHOLD with ${country.name}", s"Flight route established with ${country.name}")
+    case ESTABLISHED_AIRLINE =>
+      List(s"Airline reaches relationship $ESTABLISHED_AIRLINE_RELATIONSHIP_THRESHOLD with ${country.name}", s"Flight route established with ${country.name}")
+    case APPROVED_AIRLINE =>
+      List(s"Airline reaches relationship $APPROVED_AIRLINE_RELATIONSHIP_THRESHOLD with ${country.name}")
+    case NONE =>
+      List(s"Airline relationship with ${country.name} below $APPROVED_AIRLINE_RELATIONSHIP_THRESHOLD")
+  }
+
+  val getTitleBonus = (title : Title.Value, country : Country) => title match {
+    case NATIONAL_AIRLINE =>
+      List(s"Allow flights to any airport in ${country.name}",
+        s"Loyalty +${CountryAirlineTitle(country, Airline.fromId(0), NATIONAL_AIRLINE).loyaltyBonus} on all airports in ${country.name}",
+        s"Relationship +${Title.relationshipBonus(NATIONAL_AIRLINE)} with ${country.name}",
+        s"Allow building airport bases in ${country.name}"
+      )
+    case PARTNERED_AIRLINE =>
+      List(s"Allow flights to any airport in ${country.name}",
+        s"Loyalty +${CountryAirlineTitle(country, Airline.fromId(0), PARTNERED_AIRLINE).loyaltyBonus} on all airports in ${country.name}",
+        s"Relationship +${Title.relationshipBonus(PARTNERED_AIRLINE)} with ${country.name}",
+        s"Allow building airport bases in ${country.name}"
+      )
+    case PRIVILEGED_AIRLINE =>
+      List(s"Allow flights to any airport in ${country.name}",
+        s"Allow building airport bases in ${country.name}"
+      )
+    case ESTABLISHED_AIRLINE =>
+      List(s"Allow flights to only Gateway airport in ${country.name}",
+        s"Allow building airport bases in ${country.name}"
+      )
+    case APPROVED_AIRLINE =>
+      List(s"Allow flights to only Gateway airport in ${country.name}")
+    case NONE =>
+      List(s"No flights allowed in ${country.name}")
   }
 }

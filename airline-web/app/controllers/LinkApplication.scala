@@ -685,10 +685,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         }
 
         resultObject = resultObject + ("toCountryRelationship" -> Json.toJson(AirlineCountryRelationship.getAirlineCountryRelationship(toAirport.countryCode, airline)))
-
-        CountryAirlineTitle.getTitle(toAirport.countryCode, airline).foreach { title =>
-          resultObject = resultObject + ("toCountryTitle" -> Json.toJson(title))
-        }
+        resultObject = resultObject + ("toCountryTitle" -> Json.toJson(CountryAirlineTitle.getTitle(toAirport.countryCode, airline)))
 
         Ok(resultObject)
       }
@@ -742,11 +739,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       //check title status
       if (flightCategory == FlightCategory.INTERCONTINENTAL) {
         val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE
-        val ok = CountryAirlineTitle.getTitle(toCountryCode, airline) match {
-          case None => false
-          case Some(title) => title.title.id <= requiredTitle.id //smaller value means higher title
+        val currentTitle = CountryAirlineTitle.getTitle(toCountryCode, airline)
+        val ok =  currentTitle.title.id <= requiredTitle.id //smaller value means higher title
 
-        }
         if (!ok) {
           return Some((s"Cannot fly Intercontinental to this ${if (toAirport.isGateway()) "Gateway" else "Non-gateway"} airport until your airline attain title ${Title.description(requiredTitle)} with ${CountryCache.getCountry(toCountryCode).get.name}", TITLE_REQUIREMENT))
         }

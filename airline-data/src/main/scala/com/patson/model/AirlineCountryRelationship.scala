@@ -70,10 +70,7 @@ object AirlineCountryRelationship {
 
     CountrySource.loadCountryAirlineTitlesByAirlineAndCountry(airline.id, countryCode).foreach {
       title => {
-        val relationshipBonus = title.title match {
-          case Title.NATIONAL_AIRLINE => 50
-          case Title.PARTNERED_AIRLINE => 20
-        }
+        val relationshipBonus = Title.relationshipBonus(title.title)
         factors.put(TITLE(title), relationshipBonus)
       }
     }
