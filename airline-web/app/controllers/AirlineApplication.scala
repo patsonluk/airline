@@ -601,15 +601,16 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  def getLinkLimits(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def getOfficeCapacity(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline = request.user
     //val titlesByCountryCode: Map[String, Title.Value] = CountryAirlineTitle.getTopTitlesByAirline(airlineId).map(entry => (entry.country.countryCode, entry.title)).toMap
     var result = Json.obj()
     airline.getBases().foreach { base =>
+      val delegateCapacity = base.delegateCapacity
       val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
       val staffCapacity = base.getOfficeStaffCapacity
       val overtimeCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired)
-      result = result + (base.airport.id.toString() -> Json.obj("staffCapacity" -> staffCapacity, "staffRequired" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
+      result = result + (base.airport.id.toString() -> Json.obj("delegateCapacity" -> delegateCapacity, "staffCapacity" -> staffCapacity, "staffRequired" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
     }
     Ok(result)
   }

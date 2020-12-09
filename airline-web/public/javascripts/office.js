@@ -60,13 +60,13 @@ function updateAirlineBases() {
     $('#officeCanvas .bases').children('.table-row').remove()
 
     var airlineId = activeAirline.id
-    	var url = "airlines/" + airlineId + "/link-limits"
+    	var url = "airlines/" + airlineId + "/office-capacity"
         $.ajax({
     		type: 'GET',
     		url: url,
     	    contentType: 'application/json; charset=utf-8',
     	    dataType: 'json',
-    	    success: function(linkLimits) {
+    	    success: function(officeCapacity) {
     	    	 $(activeAirline.baseAirports).each(function(index, base) {
                     var row = $("<div class='table-row'></div>")
                     if (base.headquarter) {
@@ -75,18 +75,19 @@ function updateAirlineBases() {
                     } else {
                         row.append($("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
                     }
-                    var limitInfo = linkLimits[base.airportId]
-                    row.append($("<div class='cell'>" + limitInfo.staffCapacity + "</div>"))
-                    if (limitInfo.staffCapacity < limitInfo.staffRequired) {
-                        row.append($("<div class='cell fatal'>" + limitInfo.staffRequired + "</div>"))
+                    var capacityInfo = officeCapacity[base.airportId]
+                    row.append($("<div class='cell'>" + capacityInfo.delegateCapacity + "</div>"))
+                    row.append($("<div class='cell'>" + capacityInfo.staffCapacity + "</div>"))
+                    if (capacityInfo.staffCapacity < capacityInfo.staffRequired) {
+                        row.append($("<div class='cell fatal'>" + capacityInfo.staffRequired + "</div>"))
                     } else {
-                        row.append($("<div class='cell'>" + limitInfo.staffRequired + "</div>"))
+                        row.append($("<div class='cell'>" + capacityInfo.staffRequired + "</div>"))
                     }
 
-                    if (limitInfo.overtimeCompensation == 0) {
+                    if (capacityInfo.overtimeCompensation == 0) {
                         row.append($("<div class='cell'>-</div>"))
                      } else {
-                        row.append($("<div class='cell'>$" + commaSeparateNumber(limitInfo.overtimeCompensation) + "</div>"))
+                        row.append($("<div class='cell'>$" + commaSeparateNumber(capacityInfo.overtimeCompensation) + "</div>"))
                      }
                     if (base.headquarter) {
                         $('#officeCanvas .bases .table-header').after(row)
