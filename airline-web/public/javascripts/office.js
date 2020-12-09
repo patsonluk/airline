@@ -76,11 +76,11 @@ function updateAirlineBases() {
                         row.append($("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
                     }
                     var limitInfo = linkLimits[base.airportId]
-                    row.append($("<div class='cell'>" + limitInfo.linkLimit + "</div>"))
-                    if (limitInfo.linkLimit < limitInfo.linkCount) {
-                        row.append($("<div class='cell fatal'>" + limitInfo.linkCount + "</div>"))
+                    row.append($("<div class='cell'>" + limitInfo.staffCapacity + "</div>"))
+                    if (limitInfo.staffCapacity < limitInfo.staffRequired) {
+                        row.append($("<div class='cell fatal'>" + limitInfo.staffRequired + "</div>"))
                     } else {
-                        row.append($("<div class='cell'>" + limitInfo.linkCount + "</div>"))
+                        row.append($("<div class='cell'>" + limitInfo.staffRequired + "</div>"))
                     }
 
                     if (limitInfo.overtimeCompensation == 0) {

@@ -609,7 +609,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
       val staffCapacity = base.getOfficeStaffCapacity
       val overtimeCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired)
-      result = result + (base.airport.id.toString() -> Json.obj("linkLimit" -> staffCapacity, "linkCount" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
+      result = result + (base.airport.id.toString() -> Json.obj("staffCapacity" -> staffCapacity, "staffRequired" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
     }
     Ok(result)
   }
