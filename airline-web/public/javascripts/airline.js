@@ -1354,12 +1354,19 @@ function updateTotalValues() {
     }
 
 
+    $('#planLinkAirplaneSelect').removeClass('glow')
+    $('.noAirplaneHelp').removeClass('glow')
     if (futureFrequency == 0) {
         disableButton($("#planLinkDetails .modifyLink"), "Must assign airplanes and frequency")
-        $('#planLinkAirplaneSelect').addClass('glow')
+
+        var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
+        if (thisModelPlanLinkInfo.airplanes.length == 0) {
+            $('.noAirplaneHelp').addClass('glow')
+        } else {
+            $('#planLinkAirplaneSelect').addClass('glow')
+        }
     } else {
         enableButton($("#planLinkDetails .modifyLink"))
-        $('#planLinkAirplaneSelect').removeClass('glow')
     }
 }
 

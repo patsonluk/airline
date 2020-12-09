@@ -2,7 +2,7 @@ package controllers
 
 import com.patson.data.{CountrySource, LinkSource}
 import com.patson.model.FlightType._
-import com.patson.model.{Airline, AirlineBase, AirlineCountryRelationship, Airport, BUSINESS, Computation, ECONOMY, FIRST, FlightType, Link, LinkClassValues, Title}
+import com.patson.model.{Airline, AirlineBase, AirlineCountryRelationship, Airport, BUSINESS, Computation, ECONOMY, FIRST, FlightCategory, FlightType, Link, LinkClassValues, Title}
 import com.patson.util.CountryCache
 
 import scala.collection.mutable.ListBuffer
@@ -12,6 +12,7 @@ import scala.util.Random
 object NegotiationUtil {
   val NEW_LINK_BASE_COST = 100
   val MAX_ASSIGNED_DELEGATE = 10
+  val FREE_LINK_THRESHOLD = 5 //for newbie
 
 
   def negotiate(info : NegotiationInfo, delegateCount : Int) = {
@@ -41,15 +42,15 @@ object NegotiationUtil {
 //    case None => 0 //should not happen
 //  }
 
-  def getFromAirportRequirements(airline : Airline, newLink : Link, existingLinkOption : Option[Link]) = {
+  def getFromAirportRequirements(airline : Airline, newLink : Link, existingLinkOption : Option[Link], airlineLinks : List[Link]) = {
     import NegotiationRequirementType._
     val requirements = ListBuffer[NegotiationRequirement]()
     val isNewLink = existingLinkOption.isEmpty
     val airport = newLink.from
     if (isNewLink) {
       val officeStaffCount : Int = airline.getBases().find(_.airport.id == airport.id).map(_.getOfficeStaffCapacity).getOrElse(0)
-      val links = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_airport", airport.id)), LinkSource.SIMPLE_LOAD)
-      val currentOfficeStaffUsed = links.map(_.getOfficeStaffRequired).sum
+      val airlineLinksFromThisAirport = airlineLinks.filter(_.from.id == airport.id)
+      val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getOfficeStaffRequired).sum
       val newOfficeStaffRequired = newLink.getOfficeStaffRequired
       val newTotal = currentOfficeStaffUsed + newOfficeStaffRequired
 
@@ -72,7 +73,7 @@ object NegotiationUtil {
     requirements.toList
   }
 
-  def getToAirportRequirements(airline : Airline, newLink : Link, existingLinkOption : Option[Link]) = {
+  def getToAirportRequirements(airline : Airline, newLink : Link, existingLinkOption : Option[Link], airlineLinks : List[Link]) = {
     val newCapacity : LinkClassValues = newLink.futureCapacity()
     val newFrequency = newLink.futureFrequency()
 
@@ -154,9 +155,9 @@ object NegotiationUtil {
 
   }
 
-  def getNegotiationRequirements(newLink : Link, existingLinkOption : Option[Link], airline : Airline) = {
-    val fromAirportRequirements : List[NegotiationRequirement] = getFromAirportRequirements(airline, newLink, existingLinkOption)
-    val toAirportRequirements : List[NegotiationRequirement] = getToAirportRequirements(airline, newLink, existingLinkOption)
+  def getNegotiationRequirements(newLink : Link, existingLinkOption : Option[Link], airline : Airline, airlineLinks : List[Link]) = {
+    val fromAirportRequirements : List[NegotiationRequirement] = getFromAirportRequirements(airline, newLink, existingLinkOption, airlineLinks)
+    val toAirportRequirements : List[NegotiationRequirement] = getToAirportRequirements(airline, newLink, existingLinkOption, airlineLinks)
 
     (fromAirportRequirements, toAirportRequirements)
   }
@@ -198,13 +199,19 @@ object NegotiationUtil {
     val capacityDelta = normalizedCapacity(newCapacity - existingCapacity)
     val frequencyDelta = newFrequency - existingFrequency
 
+    val airlineLinks = LinkSource.loadLinksByAirlineId(airline.id)
+
     //reduction of service is always okay for now
     if (capacityDelta <= 0 && frequencyDelta <= 0) {
       return NegotiationUtil.NO_NEGOTIATION_REQUIRED
     }
 
+    if (airlineLinks.length < FREE_LINK_THRESHOLD && Computation.getFlightCategory(fromAirport, toAirport) != FlightCategory.INTERCONTINENTAL) {
+      return NegotiationUtil.NO_NEGOTIATION_REQUIRED
+    }
+
     //at this point negotiation is required
-    val (fromAirportRequirements, toAirportRequirements) = getNegotiationRequirements(newLink, existingLinkOption, airline)
+    val (fromAirportRequirements, toAirportRequirements) = getNegotiationRequirements(newLink, existingLinkOption, airline, airlineLinks)
     val fromAirportDiscounts = getNegotiationDiscounts(fromAirport, airline)
     val toAirportDiscounts = getNegotiationDiscounts(toAirport, airline)
 
