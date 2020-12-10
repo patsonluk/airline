@@ -8,13 +8,11 @@ import com.patson.data.GoogleResourceSource;
 import com.patson.model.Airport;
 import com.patson.model.google.GoogleResource;
 import com.patson.model.google.ResourceType;
-import com.patson.model.google.ResourceType$;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
-import scala.Enumeration;
 import scala.Option;
 
 import java.io.BufferedReader;
@@ -27,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class GoogleImageUtil {
@@ -42,8 +39,8 @@ public class GoogleImageUtil {
 	private final static int MAX_PHOTO_WIDTH = 1000;
 	private final static int SEARCH_RADIUS = 100000; //100km
 
-	private static LoadingCache<CityKey, Optional<URL>> cityCache = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(1, TimeUnit.DAYS).build(new ResourceCacheLoader<>(key -> loadCityImageUrl(key.cityName, key.latitude, key.longitude), ResourceType.CITY_IMAGE()));
-	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(1, TimeUnit.DAYS).build(new ResourceCacheLoader<>(key -> 	loadAirportImageUrl(key.airportName, key.latitude, key.longitude), ResourceType.AIRPORT_IMAGE()));
+	private static LoadingCache<CityKey, Optional<URL>> cityCache = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(1, TimeUnit.DAYS).build(new ResourceCacheLoader<>(key -> loadCityImageUrl(key.cityName, key.latitude, key.longitude), ResourceType.CITY_IMAGE().id()));
+	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(1, TimeUnit.DAYS).build(new ResourceCacheLoader<>(key -> 	loadAirportImageUrl(key.airportName, key.latitude, key.longitude), ResourceType.AIRPORT_IMAGE().id()));
 
 	private interface LoadFunction<T, R> {
 		R apply(T t) throws OverLimitException;
@@ -51,16 +48,16 @@ public class GoogleImageUtil {
 
 	private static class ResourceCacheLoader<KeyType extends Key> extends CacheLoader<KeyType, Optional<URL>> {
 		private final LoadFunction<KeyType, UrlResult> loadFunction;
-		private final ResourceType$.Value resourceType;
+		private final int resourceTypeValue;
 
-		private ResourceCacheLoader(LoadFunction<KeyType, UrlResult> loadFunction, ResourceType$.Value resourceType) {
+		private ResourceCacheLoader(LoadFunction<KeyType, UrlResult> loadFunction, int resourceTypeValue) {
 			this.loadFunction = loadFunction;
-			this.resourceType = resourceType;
+			this.resourceTypeValue = resourceTypeValue;
 		}
 
 		public Optional<URL> load(KeyType key) {
 			//try from db first
-			Option<GoogleResource> googleResourceOption = GoogleResourceSource.loadResource(key.getId(), resourceType);
+			Option<GoogleResource> googleResourceOption = GoogleResourceSource.loadResource(key.getId(), ResourceType.apply(resourceTypeValue));
 
 			if (googleResourceOption.isDefined()) {
 				GoogleResource googleResource = googleResourceOption.get();
@@ -90,14 +87,14 @@ public class GoogleImageUtil {
 			//UrlResult result = loadCityImageUrl(key.cityName, key.latitude, key.longitude);
 			try {
 				UrlResult result = loadFunction.apply(key);
-				logger.info("loaded " + resourceType + " image for  " + key + " " + result);
+				logger.info("loaded " + ResourceType.apply(resourceTypeValue) + " image for  " + key + " " + result);
 				if (result != null) {
 					Long deadline = result.maxAge != null ? System.currentTimeMillis() + result.maxAge * 1000 : null;
-					GoogleResourceSource.insertResource().apply(GoogleResource.apply(key.getId(), resourceType, result.url.toString(), deadline != null ? Option.apply(deadline) : Option.empty()));
+					GoogleResourceSource.insertResource().apply(GoogleResource.apply(key.getId(), ResourceType.apply(resourceTypeValue), result.url.toString(), deadline != null ? Option.apply(deadline) : Option.empty()));
 
 					return Optional.of(result.url);
 				} else { //There is no result, save to DB, as we do not want to retry this at all
-					GoogleResourceSource.insertResource().apply(GoogleResource.apply(key.getId(), resourceType, null, Option.empty()));
+					GoogleResourceSource.insertResource().apply(GoogleResource.apply(key.getId(), ResourceType.apply(resourceTypeValue), null, Option.empty()));
 					return Optional.empty();
 				}
 			} catch (OverLimitException e) {
