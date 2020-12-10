@@ -343,7 +343,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(airline, incomingLink, existingLink)
     val negotiationResultOption =
-      if (delegateCount > 0) { //then negotiation is required
+      if (negotiationInfo.finalRequirementValue > 0) { //then negotiation is required
         //update delegate status
         val cycle = CycleSource.loadCycle()
         val task = DelegateTask.linkNegotiation(cycle, fromAirport, toAirport)
