@@ -257,17 +257,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       incomingLink.id = existingLink.get.id
     }
 
-
-    //validate frequency per airplane by duration
-//      incomingLink.getAssignedAirplanes().foreach {
-//        case (airplane, frequency) =>
-//          val maxFrequency = Computation.calculateMaxFrequency(airplane.model, incomingLink.distance)
-//          if (frequency > maxFrequency) {
-//            println("max frequency exceeded, max " + maxFrequency +  " found " +  incomingLink.frequency + " airline " + request.user)
-//            return BadRequest("Cannot insert link - frequency exceeded limit")
-//          }
-//      }
-
     //validate slots
     val airplanesForThisLink = incomingLink.getAssignedAirplanes
     //validate all airplanes are same model
@@ -313,19 +302,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     //validate the frequency change is valid
     val existingFrequency = existingLink.fold(0)(_.futureFrequency())
     val frequencyChange = incomingLink.futureFrequency() - existingFrequency //use future frequency here
-    if ((incomingLink.from.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.from.getMaxSlotAssignment(airlineId)) {
-      println("max slot exceeded, tried to add " + frequencyChange + " but from airport slot at " + incomingLink.from.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.from.getMaxSlotAssignment(airlineId))
-      return BadRequest("Cannot insert link - frequency exceeded limit - from airport does not have enough slots")
-    }
-    if ((incomingLink.to.getAirlineSlotAssignment(airlineId) + frequencyChange) > incomingLink.to.getMaxSlotAssignment(airlineId)) {
-      println("max slot exceeded, tried to add " + frequencyChange + " but to airport slot at " + incomingLink.to.getAirlineSlotAssignment(airlineId) + "/" + incomingLink.to.getMaxSlotAssignment(airlineId))
-      return BadRequest("Cannot insert link - frequency exceeded limit - to airport does not have enough slots")
-    }
-
-    val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
-    if (frequencyChange > 0 && incomingLink.futureFrequency() > maxFrequencyAbsolute) { //only check absolute if there's a frequency change
-      return BadRequest("Cannot insert link - frequency exceeded absolute limit - " + maxFrequencyAbsolute)
-    }
 
     if (incomingLink.futureFrequency() == 0) {
       return BadRequest("Cannot insert link - future frequency is 0")
@@ -434,10 +410,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     LinkSource.loadLinkById(linkId, LinkSource.FULL_LOAD) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
-          val (maxFrequencyFromAirport, maxFrequencyToAirport) = getMaxFrequencyByAirports(link.from, link.to, link.airline, Some(link))
-          Ok(Json.toJson(link).asInstanceOf[JsObject] +
-             ("maxFrequencyFromAirport" -> JsNumber(maxFrequencyFromAirport)) +
-             ("maxFrequencyToAirport" -> JsNumber(maxFrequencyToAirport)))
+          Ok(Json.toJson(link))
         } else {
           Forbidden
         }
@@ -580,7 +553,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         var existingLink: Option[Link] = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
 
         val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
-        val (maxFrequencyFromAirport, maxFrequencyToAirport) = getMaxFrequencyByAirports(fromAirport, toAirport, Airline.fromId(airlineId), existingLink)
 
         val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink.isEmpty)
 
@@ -661,7 +633,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
         val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
         val flightCode = LinkUtil.getFlightCode(request.user, flightNumber)
-        val maxFrequencyAbsolute = Computation.getMaxFrequencyAbsolute(request.user)
 
         var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
           "fromAirportName" -> fromAirport.name,
@@ -684,9 +655,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "economySpaceMultiplier" -> ECONOMY.spaceMultiplier,
           "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
           "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
-          "maxFrequencyFromAirport" -> maxFrequencyFromAirport,
-          "maxFrequencyToAirport" -> maxFrequencyToAirport,
-          "maxFrequencyAbsolute" -> maxFrequencyAbsolute,
           "directDemand" -> directDemand,
           "businessPassengers" -> directBusinessDemand.total,
           "touristPassengers" -> directTouristDemand.total,
@@ -707,13 +675,17 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           }
         }
 
-        if (rejectionReason.isDefined) {
-          resultObject = resultObject + ("rejection", Json.toJson(rejectionReason.get))
+        rejectionReason.foreach { reason =>
+          val (description, rejectionType) = reason
+          resultObject = resultObject + ("rejection", Json.obj("description" -> description, "type" -> rejectionType.toString))
         }
 
         if (!warnings.isEmpty) {
           resultObject = resultObject + ("warnings", Json.toJson(warnings))
         }
+
+        resultObject = resultObject + ("toCountryRelationship" -> Json.toJson(AirlineCountryRelationship.getAirlineCountryRelationship(toAirport.countryCode, airline)))
+        resultObject = resultObject + ("toCountryTitle" -> Json.toJson(CountryAirlineTitle.getTitle(toAirport.countryCode, airline)))
 
         Ok(resultObject)
       }
@@ -734,35 +706,45 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
   }
 
-  def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, newLink : Boolean) : Option[String]= {
+
+  object RejectionType extends Enumeration {
+    type RejectionType = Value
+    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH = Value
+  }
+
+  def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, newLink : Boolean) : Option[(String, RejectionType.Value)]= {
+    import RejectionType._
     val airlineCountryCode = airline.getCountryCode match {
       case Some(countryCode) => countryCode
-      case None => return Some("Airline has no HQ!")
+      case None => return Some(("Airline has no HQ!", NO_BASE))
     }
     val toCountryCode = toAirport.countryCode
 
     if (newLink) { //only check new links for now
       //validate from airport is a base
       val base = fromAirport.getAirlineBase(airline.id) match {
-        case None => return Some("Cannot fly from this airport, this is not a base!")
+        case None => return Some(("Cannot fly from this airport, this is not a base!", NO_BASE))
         case Some(base) => base
       }
 
-      //check mutualRelationship
-      val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airlineCountryCode, toCountryCode)
-      if (mutalRelationshipToAirlineCountry <= Country.HOSTILE_RELATIONSHIP_THRESHOLD) {
-        return Some("This country has bad relationship with your home country and banned your airline from operating to any of their airports")
-      } else if (toCountryCode != airlineCountryCode && CountryCache.getCountry(toCountryCode).get.openness + mutalRelationshipToAirlineCountry < Country.INTERNATIONAL_INBOUND_MIN_OPENNESS) {
-        return Some("This country does not want to open their airports to your country")
-      }
-
-
+      val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
       //check airline grade limit
       val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).view.mapValues(_.size).toMap
-      val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
       airline.getLinkLimit(flightCategory).foreach { limit => //if there's limit
-        if (limit <= existingFlightCategoryCounts.getOrElse(flightCategory, 0)) {
-          return Some("Cannot create more route of category " + flightCategory + " until your airline reaches next grade")
+        val existingCount = existingFlightCategoryCounts.getOrElse(flightCategory, 0)
+        if (limit <= existingCount) {
+          return Some((s"Cannot create more route of category $flightCategory until your airline reaches higher grade. Your current grade is ${airline.airlineGrade.description} only allows ${limit} while you have ${existingCount} ", AIRLINE_GRADE))
+        }
+      }
+
+      //check title status
+      if (flightCategory == FlightCategory.INTERCONTINENTAL) {
+        val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE
+        val currentTitle = CountryAirlineTitle.getTitle(toCountryCode, airline)
+        val ok =  currentTitle.title.id <= requiredTitle.id //smaller value means higher title
+
+        if (!ok) {
+          return Some((s"Cannot fly Intercontinental to this ${if (toAirport.isGateway()) "Gateway" else "Non-gateway"} airport until your airline attain title ${Title.description(requiredTitle)} with ${CountryCache.getCountry(toCountryCode).get.name}", TITLE_REQUIREMENT))
         }
       }
 
@@ -770,13 +752,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       //check distance
       val distance = Computation.calculateDistance(fromAirport, toAirport)
       if (distance <= DemandGenerator.MIN_DISTANCE) {
-        return Some("Route must be longer than " + DemandGenerator.MIN_DISTANCE + " km")
+        return Some("Route must be longer than " + DemandGenerator.MIN_DISTANCE + " km", DISTANCE)
       }
 
       //check balance
       val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
       if (airline.getBalance() < cost) {
-        return Some("Not enough cash to establish this route")
+        return Some("Not enough cash to establish this route", NO_CASH)
       }
     }
 
@@ -788,11 +770,16 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (newLink) { //then check the hub capacity
       airline.getBases().find(_.airport.id == fromAirport.id) match {
           case Some(base) =>
-            val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.ID_LOAD).length
-            val airlineCountryTitleOfFromCountry = CountrySource.loadCountryAirlineTitlesByCountryCode(fromAirport.countryCode).find(_.airline.id == airline.id)
-            val linkLimit = base.getLinkLimit(airlineCountryTitleOfFromCountry.map(_.title))
-            if (linkCount >= linkLimit) { //then we should prompt warning of over limit
-              val extraCompensation = base.getOvertimeCompensation(linkLimit, linkCount + 1) - base.getOvertimeCompensation(linkLimit, linkCount)
+            //val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.ID_LOAD).length
+            //val airlineCountryTitleOfFromCountry = CountrySource.loadCountryAirlineTitlesByCountryCode(fromAirport.countryCode).find(_.airline.id == airline.id)
+            //val linkLimit = base.getLinkLimit(airlineCountryTitleOfFromCountry.map(_.title))
+            val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
+            val staffCapacity = base.getOfficeStaffCapacity
+            val newStaffRequired = staffRequired + Link.getOfficeStaffRequired(fromAirport, toAirport)
+
+            val extraCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired) - base.getOvertimeCompensation(staffCapacity, newStaffRequired)
+
+            if (extraCompensation > 0) { //then we should prompt warning of over limit
               warnings.append(s"Exceeding operation capacity of current base. Extra overtime compensation of $$$extraCompensation will be charged per week for this route.")
             }
           case None => //should not be none
@@ -992,7 +979,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(request.user, incomingLink, existingLinkOption)
 
     Ok(Json.obj("negotiationInfo" -> Json.toJson(negotiationInfo)(NegotiationInfoWrites(incomingLink)),
-    "delegateInfo" -> Json.toJson(request.user.getDelegateInfo)))
+    "delegateInfo" -> Json.toJson(request.user.getDelegateInfo),
+    "toAirport" -> Json.toJson(incomingLink.to),
+    "fromAirport" -> Json.toJson(incomingLink.from)))
   }
 
 
@@ -1007,18 +996,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   class PlanLinkResult(distance : Double, availableAirplanes : List[Airplane])
   //case class AirplaneWithPlanRouteInfo(airplane : Airplane, duration : Int, maxFrequency : Int, limitingFactor : String, isAssigned : Boolean)
   case class ModelPlanLinkInfo(model: Model, duration : Int, flightMinutesRequired : Int, isAssigned : Boolean, airplanes : List[(Airplane, Int)])
-
-  private def getMaxFrequencyByAirports(fromAirport : Airport, toAirport : Airport, airline : Airline, existingLink : Option[Link]) : (Int, Int) =  {
-    val airlineId = airline.id
-
-    val existingSlotsByThisLink = existingLink.fold(0)(_.futureFrequency())
-    val maxFrequencyFromAirport : Int = fromAirport.getMaxSlotAssignment(airlineId) - fromAirport.getAirlineSlotAssignment(airlineId) + existingSlotsByThisLink
-    val maxFrequencyToAirport : Int = toAirport.getMaxSlotAssignment(airlineId) - toAirport.getAirlineSlotAssignment(airlineId) + existingSlotsByThisLink
-
-    (maxFrequencyFromAirport, maxFrequencyToAirport)
-  }
-
-
 }
 
 object LinkApplication {

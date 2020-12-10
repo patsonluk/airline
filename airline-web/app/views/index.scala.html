@@ -318,7 +318,7 @@
 		<!-- main canvas start -->
 			<div id="canvas" style="float: left; overflow-x: auto; overflow-y: scroll;" >
 				<div id="worldMapCanvas" style="height: 100%;">
-					<div id="map" class="mainPanel" style="float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'></div>
+					<div id="map" class="mainPanel" style="float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")' data-gateway-airport-marker='@routes.Assets.versioned("images/markers/airport-gateway.png")'></div>
 					<div id="sidePanel" class="sidePanel" style="float: left; display:none;" >
 						<div id="detailsPanel" class="section" style="width: 95% ; float: left;">
 							<div id="linkDetails" style="width: 100%;;">
@@ -503,7 +503,7 @@
 										<div class="value">
 											<span id="planLinkFromAirportName" class="clickable"></span>
 											<img class="clickable" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
-											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/globe--pencil.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
+											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
 
 											<div class="value"><select id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 
@@ -515,8 +515,6 @@
 											<span id="planLinkToAirportName" class="clickable"></span>
 											<img class="clickable"  src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(false)">
 										</div>
-
-
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Flight Code:</h5></div>
@@ -525,6 +523,17 @@
 									<div class="table-row">
 										<div class="label"><h5>Mutual Relationship:</h5></div>
 										<div class="value" id="planLinkMutualRelationship"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Relationship with Destination Country:</h5></div>
+										<div class="value" id="planLinkToCountryRelationship" style="display: flex; align-items: center;">
+											<span class="total"></span>
+											<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))" style="vertical-align: middle;">
+										</div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Title with Destination Country:</h5></div>
+										<div class="value" id="planLinkToCountryTitle" style="display: flex; align-items: center;"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle titleCue"></span></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Distance:</h5></div>
@@ -552,11 +561,6 @@
 										<div class="label"><h5>Setup Cost:</h5></div>
 										<div class="value" id="planLinkCost"></div>
 									</div>
-									<div class="table-row" id="linkRejectionRow">
-										<div class="label"></div>
-										<div class="value"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason" class="warning"></span></div>
-									</div>
-
 									<div class="table-row" id="planLinkModelRow">
 										<div class="label"><h5>Airplane Model (available):</h5></div>
 										<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
@@ -610,7 +614,7 @@
                                                 </div>
                                                 No airplane with this model based in this airport
                                             </div>
-                                            <div id="planLinkAirplaneSelect"></div>
+                                            <div id="planLinkAirplaneSelect" style="display : inline-block;"></div>
                                         </div>
                                     </div>
 									<div class="table-row">
@@ -649,33 +653,8 @@
                                                 <div class="table-row"/>
                                                     <div class="cell"></div>
                                                     <div class="cell"></div>
-                                                    <div class="cell">Total <span class="total"></span> flight(s) per week <span class="fatal" style="display : none;">(EXCEEDS LIMIT)</span></div>
+                                                    <div class="cell">Total <span class="total"></span> flight(s) per week</div>
                                                 </div>
-											</div>
-											<div class="planLinkLimitDiv" style="margin-top: 5px;">
-												<div class="tooltip">
-													<img src='@routes.Assets.versioned("images/icons/information.png")'>
-													<h6>
-													<span class="tooltiptext below" style="width: 450px;">
-																		Max Flight Freuency is determined by the lowest number below: <br/>
-																		<div style='display:table; width: 100%;'>
-																			<div style='display:table-row'>
-																				<div style='width: 60%; display: table-cell;'>General max frequency allowed per Route</div>
-																				<div class='maxFrequencyAbsolute' style='width: 40%; display: table-cell;'></div>
-																			</div>
-																			<div style='display:table-row'>
-																				<div style='width: 60%; display: table-cell;'>Current slots by Departing Airport</div>
-																				<div class='maxFrequencyFromAirport' style='width: 40%; display: table-cell;'></div>
-																			</div>
-																			<div style='display:table-row'>
-																				<div style='width: 60%; display: table-cell;'>Current slots by Destination Airport</div>
-																				<div class='maxFrequencyToAirport' style='width: 40%; display: table-cell;'></div>
-																			</div>
-																		</div>
-																	</span>
-													</h6>
-												</div>
-												<span class="limitingFactor"></span> - <span class="frequencyLimit"></span> flight(s) per week
 											</div>
 										</div>
 									</div>
@@ -716,10 +695,13 @@
 										<input type="hidden" id="planLinkServiceLevel" value="1"/></div>
 									</div>
 								</div>
+								<div class="linkRejection">
+									<div><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason" class="warning"></span></div>
+								</div>
 								<div class="warningList">
 								</div>
-								<div class="button" id="addLinkButton" onclick="linkConfirmation()">Create</div>
-								<div class="button" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
+								<div class="button modifyLink" id="addLinkButton" onclick="linkConfirmation()">Create</div>
+								<div class="button modifyLink" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
 								<div class="button" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</div>
 								<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 							</div>
@@ -755,8 +737,8 @@
 										<div class="value" id="airplaneType"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Req. Airport Scale:</h5></div>
-										<div class="value" id="minAirportSize"></div>
+										<div class="label"><h5>Runway requirement:</h5></div>
+										<div class="value"><span class="runwayRequirement"></span>&nbsp;m</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Speed:</h5></div>
@@ -894,32 +876,6 @@
 									<div class="value" id="airportDetailsIncomeLevel"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Slots:</h5></div>
-									<div class="value airportSlots" id="airportDetailsSlots"></div>
-								</div>
-								<div class="table-row">
-									<div class="label">
-										<h5>
-											<span>Slots for your airline (free / offered):</span>
-											<div class="tooltip">
-												<img src='@routes.Assets.versioned("images/icons/information.png")'>
-												<span class="tooltiptext" style="width: 400px;">
-													Airport allocates time slots to your airline based on:<br/>
-													- Base size in this airport if present<br/>
-													- Loyalty to your airline<br/>
-													- Awareness of your airline<br/>
-													- Airline Reputation<br/>
-													- Relationship with your home country<br/>
-													- Country Openness<br/>
-													<br/>
-													A negative number in free slots means the airport will take back slots if freed from your assigned routes<br/>
-												</span>
-											</div>
-										</h5>
-									</div>
-									<div class="value airportAssignedSlots" id="airportDetailsAssignedSlots"></div>
-								</div>
-								<div class="table-row">
 									<div class="label">
 										<h5>
 											<span>Awareness of your airline:</span>
@@ -1009,6 +965,14 @@
 								<div class="table-row">
 									<div class="label"><h5>ICAO:</h5></div>
 									<div class="value" id="airportDetailsIcao"></div>
+								</div>
+
+								<div class="table-row">
+									<div class="label"><h5>Runways:</h5></div>
+									<div class="value">
+										<div class="runwayTable table data" style="width: 100%;">
+										</div>
+									</div>
 								</div>
 							</div>
 							<div id="airportStatistics" style="width: 100%; float: left;">
@@ -1159,7 +1123,11 @@
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Relationship with your airline:</h5></div>
-									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('countryCode'))"></div>
+									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))"></div>
+								</div>
+								<div class="table-row">
+									<div class="label"><h5>Your airline title with this country:</h5></div>
+									<div class="value"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle"></span></div>
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Large Airports:</h5></div>
@@ -1269,8 +1237,8 @@
 										<div class="value" id="airplaneType"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Req. Airport Scale:</h5></div>
-										<div class="value" id="minAirportSize"></div>
+										<div class="label"><h5>Runway Requirement:</h5></div>
+										<div class="value"><span class="runwayRequirement"></span>&nbsp;m</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Max Flying Range:</h5></div>
@@ -1467,11 +1435,12 @@
                                 <div style="width: 100%; height: 150px; overflow-y:auto;">
                                     <div style="width: 100%;" class="table data bases">
                                         <div class="table-header">
-                                            <div class="cell">Scale</div>
-                                            <div class="cell">Airport</div>
-                                            <div class="cell">Route Capacity</div>
-                                            <div class="cell">Route Count</div>
-                                            <div class="cell">Overtime Comp.</div>
+                                            <div class="cell" style="width: 15%">Scale</div>
+                                            <div class="cell" style="width: 25%">Airport</div>
+                                            <div class="cell" style="width: 15%">Delegates Capacity</div>
+                                            <div class="cell" style="width: 15%">Office Staff Capacity</div>
+                                            <div class="cell" style="width: 15%">Office Staff Required</div>
+                                            <div class="cell" style="width: 15%">Overtime Comp.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2729,14 +2698,10 @@
    				<div class="label"><h5>Country market openness:</h5></div>
    				<div class="value" id="airportPopupOpenness"></div>
    			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Slots:</h5></div>
-   				<div class="value airportSlots" id="airportPopupSlots"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Slots for your airline (free / offered):</h5></div>
-   				<div class="value airportAssignedSlots" id="airportPopupAssignedSlots"></div>
-   			</div>
+			<div class="table-row">
+				<div class="label"><h5>Max runway length:</h5></div>
+				<div class="value" id="airportPopupMaxRunwayLength"></div>
+			</div>
    			<div class="table-row">
    				<div class="label"><h5>Awareness of your airline:</h5></div>
    				<div class="value airportAwareness" id="airportPopupAwareness"></div>
@@ -2744,10 +2709,6 @@
    			<div class="table-row">
    				<div class="label"><h5>Loyalty to your airline:</h5></div>
    				<div class="value airportLoyalty" id="airportPopupLoyalty"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Relationship with your country:</h5></div>
-   				<div class="value airportRelationship" id="airportPopupRelationship"></div>
    			</div>
 		</div>
 		<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()" >Plan Flight</div>
@@ -3212,6 +3173,15 @@
 	  <div class="modal-content" style="width : 600px">
 		  <span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
 		  <h3 style="margin-bottom: 10px;" class="modalHeader"></h3>
+		  <div style=" float: left; margin-left: 100px; width:150px; display: flex; flex-direction: column;">
+			  <img class="fromAirport roundImage" style="height: 150px; width:150px;">
+			  <div style="display:inline-block; align-self: center; margin-top:5px;" class="fromAirportText"></div>
+		  </div>
+		  <div style=" float: right; margin-right: 100px; width:150px; display: flex; flex-direction: column;">
+			  <img class="toAirport roundImage" style="height: 150px; width:150px;">
+			  <div style="display:inline-block; align-self: center; margin-top:5px;" class="toAirportText"></div>
+		  </div>
+		  <div style="clear:both; margin-bottom:10px;"></div>
 		  <div style="width: 100%;" class="existingLink table data">
 			  <div class='table-header'>
 				  <div class="cell" style="width: 40%;"></div>
@@ -3250,25 +3220,12 @@
 			  </div>
 		  </div>
 		  <div class="negotiationInfo">
-			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Negotiation Required</h3>
-			  <div style="width: 100%;" class="negotiationRequirements table data">
-				  <div class="table-header">
-					  <div class="cell" style="width: 60%">Factor</div>
-					  <div class="cell" style="width: 40%">Requirement</div>
-				  </div>
+			  <h3 style="margin-bottom: 10px; margin-top: 30px; display: flex;">Negotiation Difficulty :&nbsp;
+			      <span class="negotiationDifficultyTotal"></span>
+             	  <img class="clickable info" src='@routes.Assets.versioned("images/icons/information-24.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)">
+				  <img class="clickable error" src='@routes.Assets.versioned("images/icons/24px/cross-circle.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)" style="display: hidden;">
 
-			  </div>
-			<div class="negotiationRequirementsTotal table" style="width: 100%">
-				<div class="table-header">
-					<div class="cell" style="width: 60%"></div>
-					<div class="cell" style="width: 40%"></div>
-				</div>
-				<div class="table-row">
-					<div class="cell"></div>
-					<div class="cell">Total <span class="total"></span> delegate(s) required</div>
-				</div>
-			</div>
-
+			  </h3>
 			  <h3 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h3>
 			  <div class="section">
 				  <h4>Pool</h4>
@@ -3296,6 +3253,111 @@
 			  <div class="button cancel" onclick="closeModal($('#linkConfirmationModal'))">Cancel</div>
 		  </div>
 	  </div>
+  </div>
+
+  <div id="negotiationDifficultyModal" class="modal">
+	  <div class="modal-content" style="width : 750px">
+		  <span class="close" onclick="closeModal($('#negotiationDifficultyModal'))">&times;</span>
+		  <h3 style="margin-bottom: 10px;" class="modalHeader">Negotiation Difficulty Details</h3>
+		  <div class="negotiationInfo">
+          <!-- requirements list-->
+              <div>
+                  <div style="width: 48%; float:left">
+					  <h4 style="margin-bottom: 10px; margin-top: 30px;"><span class="fromAirport"></span>&nbsp;-&nbsp;Factors</h4>
+					  <div style="width: 100%" class="negotiationRequirements table data fromAirport">
+						  <div class="table-header">
+							  <div class="cell" style="width: 80%">Factor</div>
+							  <div class="cell" style="width: 20%">Difficulty</div>
+						  </div>
+					  </div>
+				  </div>
+                  <div style="width: 48%; float:right" class="negotiationRequirements table data toAirport">
+					  <h4 style="margin-bottom: 10px; margin-top: 30px;"><span class="toAirport"></span>&nbsp;-&nbsp;Factors</h4>
+					  <div style="width: 100%" class="negotiationRequirements table data toAirport">
+						  <div class="table-header">
+							  <div class="cell" style="width: 80%">Factor</div>
+							  <div class="cell" style="width: 20%">Difficulty</div>
+						  </div>
+					  </div>
+                  </div>
+                  <div style="clear: both;"></div>
+              </div>
+              <!-- requirements total-->
+              <div>
+                  <div style="width: 48%; float:left" class="negotiationRequirementsTotal table fromAirport">
+                      <div class="table-header">
+                          <div class="cell" style="width: 80%"></div>
+                          <div class="cell" style="width: 20%"></div>
+                      </div>
+                      <div class="table-row">
+                          <div class="cell"></div>
+                          <div class="cell"><span class="total"></span></div>
+                      </div>
+                  </div>
+                  <div style="width: 48%; float:right" class="negotiationRequirementsTotal table toAirport">
+                      <div class="table-header">
+                          <div class="cell" style="width: 80%"></div>
+                          <div class="cell" style="width: 20%"></div>
+                      </div>
+                      <div class="table-row">
+                          <div class="cell"></div>
+                          <div class="cell"><span class="total"></span></div>
+                      </div>
+                  </div>
+                  <div style="clear: both;"></div>
+              </div>
+
+			  <!-- discounts-->
+              <div>
+                  <div style="width: 48%; float: left;">
+                      <h4 style="margin-bottom: 10px; margin-top: 30px;"><span class="fromAirport"></span>&nbsp;-&nbsp;Adjustments</h4>
+                      <div style="width: 100%; float: left;" class="negotiationFromDiscounts table data">
+                          <div class="table-header">
+                              <div class="cell" style="width: 80%">Factor</div>
+                              <div class="cell" style="width: 20%; word-break: break-word;">Discount&nbsp;/&nbsp;<span class="warning">Penalty</span></div>
+                          </div>
+                      </div>
+                  </div>
+                  <div style="width: 48%; float: right;">
+                      <h4 style="margin-bottom: 10px; margin-top: 30px;"><span class="toAirport"></span>&nbsp;-&nbsp;Adjustments</h4>
+                      <div style="width: 100%; float: left;" class="negotiationToDiscounts table data">
+                          <div class="table-header">
+                              <div class="cell" style="width: 80%">Factor</div>
+                              <div class="cell" style="width: 20%; word-break: break-word;">Discount&nbsp;/&nbsp;<span class="warning">Penalty</span></div>
+                          </div>
+                      </div>
+                  </div>
+                  <div style="clear: both;"></div>
+              </div>
+              <!-- discounts total-->
+              <div>
+                  <div style="width: 48%; float:left" class="negotiationDiscountTotal table fromAirport">
+                      <div class="table-header">
+                          <div class="cell" style="width: 80%"></div>
+                          <div class="cell" style="width: 20%"></div>
+                      </div>
+                      <div class="table-row">
+                          <div class="cell"></div>
+                          <div class="cell"><span class="total"></span></div>
+                      </div>
+                  </div>
+                  <div style="width: 48%; float:right" class="negotiationDiscountTotal table toAirport">
+                      <div class="table-header">
+                          <div class="cell" style="width: 80%"></div>
+                          <div class="cell" style="width: 20%;"></div>
+                      </div>
+                      <div class="table-row">
+                          <div class="cell"></div>
+                          <div class="cell"><span class="total"></span></div>
+                      </div>
+                  </div>
+                  <div style="clear: both;"></div>
+              </div>
+
+			  <h4 style="margin-top: 10px">Total difficulty: <span class="negotiationDifficultyTotal"></span></h4>
+		  </div>
+	  </div>
+
   </div>
 
   <div id="negotiationAnimation" class="modal">
@@ -3723,6 +3785,15 @@
 	  <div id="airlineCountryRelationshipModal" class="modal">
 		  <div class="modal-content" style="width : 600px;">
 			  <span class="close" onclick="closeModal($('#airlineCountryRelationshipModal'))">&times;</span>
+			  <h2 style="margin-bottom: 20px">Relationship Management with&nbsp;<span class="country"></span></h2>
+			  <h3>Airline Title</h3>
+			  <div class="section" style="width: 95%; display:flex; flex-direction:column; align-items:center;">
+				<div class="currentTitle" style="margin-bottom: 20px; display: flex;"><span>Current:&nbsp;</span><img class="titleIcon">&nbsp;<span class="titleDescription"></span></div>
+				<div style="display:flex; align-items:center" class="titleProgression">
+
+				</div>
+			  </div>
+
 			  <h3>Relationship Factors</h3>
 			  <div class="table data section factors" style="width: 95%">
 				  <div class="table-header">
@@ -3755,7 +3826,7 @@
 						  </div>
 					  </div>
 				  </div>
-                  <h6 style="font-style: italic;">* Each delegate level provides&nbsp;<span class="delegateMultiplier"></span>&nbsp;relationship points</h6>
+                  <h6 style="font-style: italic;">* Each delegate level provides&nbsp;<span class="delegateMultiplier"></span>&nbsp;relationship points. Delegate starts at level 0 and progress over time. Hover over each delegate above to see details</h6>
 				  <div class="button" onclick="updateCountryDelegates()">Confirm</div>
 				  <div class="button" onclick="closeModal($('#airlineCountryRelationshipModal'))">Cancel</div>
 			  </div>

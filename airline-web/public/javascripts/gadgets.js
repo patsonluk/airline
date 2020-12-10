@@ -363,6 +363,10 @@ function getAirportText(city, airportCode) {
 	}
 }
 
+function getAirportSpan(airport) {
+    return "<span style='display:inline-flex; align-items: center;'>" + getCountryFlagImg(airport.countryCode) + getAirportText(airport.city, airport.iata) + "</span>"
+}
+
 function setActiveDiv(activeDiv, callback) {
 	var existingActiveDiv = activeDiv.siblings(":visible").filter(function (index) {
 		return $(this).css("clear") != "both"

@@ -70,10 +70,7 @@ object AirlineCountryRelationship {
 
     CountrySource.loadCountryAirlineTitlesByAirlineAndCountry(airline.id, countryCode).foreach {
       title => {
-        val relationshipBonus = title.title match {
-          case Title.NATIONAL_AIRLINE => 50
-          case Title.PARTNERED_AIRLINE => 20
-        }
+        val relationshipBonus = Title.relationshipBonus(title.title)
         factors.put(TITLE(title), relationshipBonus)
       }
     }
@@ -112,10 +109,10 @@ object AirlineCountryRelationship {
 
   val getDelegateBonusMultiplier = (country : Country) => {
     //US: pop 97499995 income 54629
-    val modelPower = 97499995L * 54629L
-    val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
-    val logRatio = math.log10(ratioToModelPower * 100) / 2 //0.? to 1
-    var levelMultiplier = 1 / logRatio * 0.5 // >= 0.5, inverse of logRatio : lower multiplier for more powerful country
+    val modelPower : Long = 97499995L * 54629L
+    val ratioToModelPower = (country.airportPopulation * country.income.toDouble).toLong / modelPower
+    val logRatio = Math.min(0.1, Math.log10(ratioToModelPower * 100) / 2) //0.1 to 1
+    val levelMultiplier = 1 / logRatio * 0.5 // >= 0.5, inverse of logRatio : lower multiplier for more powerful country
     Math.min(2, BigDecimal(levelMultiplier).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble)
   }
 }

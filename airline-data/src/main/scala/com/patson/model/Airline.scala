@@ -179,10 +179,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     DelegateInfo(availableCount, busyDelegates)
   }
 
-  val BASIC_DELEGATE = 2
-  lazy val delegateCount = BASIC_DELEGATE + getBases().map { base =>
-    1 + (base.scale - 1) / 4
-  }.sum
+  lazy val delegateCount = getBases().map(_.delegateCapacity).sum
 }
 
 case class DelegateInfo(availableCount : Int, busyDelegates: List[BusyDelegate])

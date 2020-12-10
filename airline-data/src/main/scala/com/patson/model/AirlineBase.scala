@@ -21,28 +21,71 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     (10000 + airport.income) / 10 * airport.size * (Math.pow(2, adjustedScale - 1)).toInt  / (if (headquarter) 1 else 2)
   }
 
-  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
-    val bonus = titleOption match {
-      case Some(title) => CountryAirlineTitle.getLinkLimitBonus(title)
-      case None => 0
-    }
+//  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
+//    val base = 5
+//    val titleBonus = titleOption match {
+//      case Some(title) => CountryAirlineTitle.getLinkLimitBonus(title)
+//      case None => 0
+//    }
+//
+//    val scaleBonus =
+//      if (headquarter) {
+//        4 * scale
+//      } else {
+//        2 * scale
+//      }
+//
+//    base + titleBonus + scaleBonus
+//  }
 
-    val baseLimit = 10 + 5 * scale
-    baseLimit + bonus
+
+  val getOfficeStaffCapacity = {
+    val base = 30
+    val scaleBonus =
+      if (headquarter) {
+        40 * scale
+      } else {
+        20 * scale
+      }
+
+    base + scaleBonus
   }
 
-  def getOvertimeCompensation(linkLimit : Int, linkCount : Int) = {
-    if (linkLimit >= linkCount) {
+  val HQ_BASIC_DELEGATE = 7
+  val NON_HQ_BASIC_DELEGATE = 3
+  val delegateCapacity : Int =
+    (if (headquarter) HQ_BASIC_DELEGATE else NON_HQ_BASIC_DELEGATE) + scale / (if (headquarter) 1 else 2)
+
+
+  def getOvertimeCompensation(staffCapacity : Int, staffRequired : Int) = {
+    if (staffCapacity >= staffRequired) {
       0
     } else {
-      val delta = linkCount - linkLimit
+      val delta = staffCapacity - staffRequired
       var compensation = 0
       val income = CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0)
-      for (i <- 1 to delta) {
-        val multiplier = if (i < 10) i else 10 //first 10 increasingly more expensive, then max out at 10
-        compensation += multiplier * (20000 + income)
-      }
+      compensation += delta * (50000 + income) / 52 * 10 //weekly compensation, *10, as otherwise it's too low
+
       compensation
+    }
+  }
+
+  /**
+    * if not allowed, return LEFT[the title required]
+    */
+  val allowAirline : Airline => Either[Title.Value, Title.Value]= (airline : Airline) => {
+
+    val requiredTitle =
+      if (airport.isGateway()) {
+        Title.ESTABLISHED_AIRLINE
+      } else {
+        Title.PRIVILEGED_AIRLINE
+      }
+    val title = CountryAirlineTitle.getTitle(airport.countryCode, airline)
+    if (title.title.id <= Title.ESTABLISHED_AIRLINE.id) { //lower id means higher title
+      Right(requiredTitle)
+    } else {
+      Left(requiredTitle)
     }
   }
 }

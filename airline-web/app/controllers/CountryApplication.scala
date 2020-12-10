@@ -24,11 +24,23 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
             val baseCountByCountryCode = airline.getBases().groupBy(_.countryCode).view.mapValues(_.length)
             var result = Json.arr()
 
+            val mutualRelationships: Map[String, Int] =
+              airline.getCountryCode() match {
+                case Some(homeCountryCode) => CountrySource.getCountryMutualRelationships(homeCountryCode)
+                case None => Map.empty[String, Int]
+              }
+
             countries.foreach { country =>
               var countryJson : JsObject = Json.toJson(country).asInstanceOf[JsObject]
               baseCountByCountryCode.get(country.countryCode).foreach { baseCount =>
                 countryJson = countryJson + ("baseCount" -> JsNumber(baseCount))
               }
+
+              if (airline.getHeadQuarter().isDefined) {
+                val relationship : Int = mutualRelationships.get(country.countryCode).getOrElse(0)
+                countryJson = countryJson + ("mutualRelationship" -> JsNumber(relationship))
+              }
+
               result = result.append(countryJson)
             }
 
@@ -38,9 +50,14 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  def getCountryAirlineRelationship(countryCode : String, airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-      val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, request.user)
-      Ok(Json.toJson(relationship))
+  def getCountryAirlineDetails(countryCode : String, airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, request.user)
+
+    var result = Json.obj("relationship" -> relationship)
+    val title = CountryAirlineTitle.getTitle(countryCode, request.user)
+    result = result + ("title" -> Json.toJson(title))
+
+    Ok(result)
   }
 
   def getCountry(countryCode : String) = Action {
@@ -49,6 +66,26 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         Ok(jsonObject)
       case None => NotFound
     } 
+  }
+
+
+
+  def getCountryAirlineTitleProgression(countryCode : String) = Action {
+    var result = Json.arr()
+    CountryCache.getCountry(countryCode) match {
+      case Some(country) =>
+        Title.values.toList.sortBy(_.id).reverse.foreach { title =>
+          val titleJson = Json.obj("title" -> title.toString,
+            "description" -> Title.description(title),
+            "requirements" -> CountryAirlineTitle.getTitleRequirements(title, country),
+            "bonus" -> CountryAirlineTitle.getTitleBonus(title, country))
+          result = result.append(titleJson)
+        }
+
+        Ok(result)
+      case None => NotFound
+    }
+
   }
 
   def getCountryJson(countryCode : String) : Option[JsObject] = {
@@ -71,7 +108,7 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           "largeAirportCount" -> largeAirportCount,
           "headquarters" -> Json.toJson(headquarters),
           "bases" -> Json.toJson(bases))
-      val allAirlines = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
+      //val allAirlines = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
       CountrySource.loadMarketSharesByCountryCode(countryCode).foreach { marketShares => //if it has market share data
         val champions = ChampionUtil.getChampionInfoByCountryCode(countryCode).sortBy(_.ranking)
         var championsJson = Json.toJson(champions)
@@ -87,8 +124,8 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         jsonObject = jsonObject.asInstanceOf[JsObject] + ("champions" -> championsJson)
 
         var nationalAirlinesJson = Json.arr()
-        var parternedAirlinesJson = Json.arr()
-        CountrySource.loadCountryAirlineTitlesByCountryCode(countryCode).foreach {
+        var partneredAirlinesJson = Json.arr()
+        CountryAirlineTitle.getTopTitlesByCountry(countryCode).foreach {
           case countryAirlineTitle =>
             val CountryAirlineTitle(country, airline, title) = countryAirlineTitle
             val share: Long = marketShares.airlineShares.getOrElse(airline.id, 0L)
@@ -96,14 +133,14 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
               case Title.NATIONAL_AIRLINE =>
                 nationalAirlinesJson = nationalAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> countryAirlineTitle.loyaltyBonus))
               case Title.PARTNERED_AIRLINE =>
-                parternedAirlinesJson = parternedAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> countryAirlineTitle.loyaltyBonus))
+                partneredAirlinesJson = partneredAirlinesJson.append(Json.obj("airlineId" -> airline.id, "airlineName" -> airline.name, "passengerCount" -> share, "loyaltyBonus" -> countryAirlineTitle.loyaltyBonus))
             }
         }
 
-        jsonObject = jsonObject + ("nationalAirlines" -> nationalAirlinesJson) + ("partneredAirlines" -> parternedAirlinesJson)
+        jsonObject = jsonObject + ("nationalAirlines" -> nationalAirlinesJson) + ("partneredAirlines" -> partneredAirlinesJson)
 
         jsonObject = jsonObject.asInstanceOf[JsObject] + ("marketShares" -> Json.toJson(marketShares.airlineShares.map {
-          case ((airlineId, passengerCount)) => (allAirlines(airlineId), passengerCount)
+          case ((airlineId, passengerCount)) => (AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId)), passengerCount)
         }.toList)(AirlineSharesWrites))
       }
       jsonObject

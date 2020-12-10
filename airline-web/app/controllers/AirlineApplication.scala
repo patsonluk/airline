@@ -182,9 +182,10 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
   def getBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     var result = Json.obj().asInstanceOf[JsObject]
-    AirportCache.getAirport(airportId) match {
+    AirportCache.getAirport(airportId, true) match {
       case Some(airport) => {
-        val existingBase = AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId)
+        val existingBase = airport.getAirlineBase(airlineId)
+
         if (existingBase.isDefined) {
           result = result + ("base" -> Json.toJson(existingBase)) 
         }
@@ -239,19 +240,33 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
           return Some("No active flight route operated by your airline flying to this city yet")
         }
-        
-        if (airport.countryCode != airline.getCountryCode().get) {
-          val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airline.getCountryCode().get, airport.countryCode)
-          if (CountryCache.getCountry(airport.countryCode).get.openness + mutalRelationshipToAirlineCountry < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
-            return Some("This country does not allow airline base from your country")
-          }
-        }
+
+//
+//        if (airport.countryCode != airline.getCountryCode().get) {
+//          val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airline.getCountryCode().get, airport.countryCode)
+//          if (CountryCache.getCountry(airport.countryCode).get.openness + mutalRelationshipToAirlineCountry < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
+//            return Some("This country does not allow airline base from your country")
+//          }
+//        }
         
         val existingBaseCount = airline.getBases().length
         val allowedBaseCount = airline.airlineGrade.getBaseLimit
         if (existingBaseCount >= allowedBaseCount) {
           return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
-        } 
+        }
+
+        //check title
+        targetBase.allowAirline(airline) match {
+          case Left(requiredTitle) =>
+            if (airport.isGateway()) {
+              return Some(s"Can only build hub in this gateway airport when your airline attain ${Title.description(requiredTitle)} with this country")
+            } else {
+              return Some(s"Can only build hub in this non-gateway airport when your airline attain ${Title.description(requiredTitle)} with this country")
+            }
+          case Right(_) => //ok
+        }
+
+
       }
     }
         
@@ -335,13 +350,13 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        return Some("Cannot downgrade this base any further")
      }
      val airport = AirportCache.getAirport(base.airport.id, true).get
-     val assignedSlots = airport.getAirlineSlotAssignment(base.airline.id)
-     val preferredSlots = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = 0)
-     val preferredSlotsAfterDowngrade = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = -1)
-     if (assignedSlots > preferredSlotsAfterDowngrade) {
-       return Some("This base can only be downgraded if there are " + (preferredSlots - preferredSlotsAfterDowngrade)  + " free slots")
-     } 
-     
+//     val assignedSlots = airport.getAirlineSlotAssignment(base.airline.id)
+//     val preferredSlots = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = 0)
+//     val preferredSlotsAfterDowngrade = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = -1)
+//     if (assignedSlots > preferredSlotsAfterDowngrade) {
+//       return Some("This base can only be downgraded if there are " + (preferredSlots - preferredSlotsAfterDowngrade)  + " free slots")
+//     }
+//
      AirlineSource.loadLoungeByAirlineAndAirport(base.airline.id, base.airport.id).foreach { lounge =>
        if (Lounge.getBaseScaleRequirement(lounge.level) >= base.scale) { //cannot downgrade further unless Lounge is downgraded first
          return Some("This base can only be downgraded if lounge is first downgraded")
@@ -586,15 +601,16 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  def getLinkLimits(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def getOfficeCapacity(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline = request.user
-    val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId))).map(entry => (entry.country.countryCode, entry.title)).toMap
+    //val titlesByCountryCode: Map[String, Title.Value] = CountryAirlineTitle.getTopTitlesByAirline(airlineId).map(entry => (entry.country.countryCode, entry.title)).toMap
     var result = Json.obj()
     airline.getBases().foreach { base =>
-      val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.ID_LOAD).length
-      val linkLimit = base.getLinkLimit(titlesByCountryCode.get(base.countryCode))
-      val overtimeCompensation = base.getOvertimeCompensation(linkLimit, linkCount)
-      result = result + (base.airport.id.toString() -> Json.obj("linkLimit" -> linkLimit, "linkCount" -> linkCount, "overtimeCompensation" -> overtimeCompensation))
+      val delegateCapacity = base.delegateCapacity
+      val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
+      val staffCapacity = base.getOfficeStaffCapacity
+      val overtimeCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired)
+      result = result + (base.airport.id.toString() -> Json.obj("delegateCapacity" -> delegateCapacity, "staffCapacity" -> staffCapacity, "staffRequired" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
     }
     Ok(result)
   }
@@ -624,7 +640,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
 
   def getCountryAirlineTitles(airlineId : Int) = Authenticated { implicit request =>
-    val titles  = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", airlineId)))
+    val titles  = CountryAirlineTitle.getTopTitlesByAirline(airlineId)
     var nationalAirlinesJson = Json.arr()
     var partneredAirlinesJson = Json.arr()
     titles.foreach { title =>

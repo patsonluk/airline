@@ -4,7 +4,6 @@ import com.patson.model.IdObject
 import com.patson.model.Airline
 
 case class Model(name : String, family : String = "", capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, lifespan : Int, constructionTime : Int, countryCode : String, runwayRequirement : Int, imageUrl : String = "", var id : Int = 0) extends IdObject {
-
   import Model.Type._
 
   val airplaneType : Type = {
@@ -27,18 +26,6 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
       case LARGE => 180
       case X_LARGE => 200
       case JUMBO => 220
-    }
-  }
-
-  val minAirportSize : Int = {
-    airplaneType match {
-      case LIGHT => 1
-      case REGIONAL => 1
-      case SMALL => 2
-      case MEDIUM => 3
-      case LARGE => 4
-      case X_LARGE => 5
-      case JUMBO => 5
     }
   }
 
@@ -218,7 +205,6 @@ object Model {
     Model("Boeing 747-400", "Boeing 747", capacity = 660, fuelBurn = (660 * 6.1).toInt, speed = 945, range = 13446, price = 350000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US", runwayRequirement = 2955, imageUrl = "https://www.norebbo.com/2013/09/boeing-747-400-blank-illustration-templates/"),
     Model("Boeing 747-400ER", "Boeing 747", capacity = 660, fuelBurn = (660 * 6.2).toInt, speed = 913, range = 14200, price = 355000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US", runwayRequirement = 3260, imageUrl = "https://www.norebbo.com/2013/09/boeing-747-400-blank-illustration-templates/"),
     Model("Airbus A380-800", "Airbus A380", capacity = 853, fuelBurn = (853 * 6).toInt, speed = 945, range = 15700, price = 450000000, lifespan = 35 * 52, constructionTime = 54, countryCode = "NL", runwayRequirement = 3000, imageUrl = "https://www.norebbo.com/2013/06/airbus-a380-800-blank-illustration-templates/"))
-
   val modelByName = models.map { model => (model.name, model) }.toMap
 }
 

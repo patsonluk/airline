@@ -176,21 +176,40 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
      }
   }
 
+  def getAirportImages(airportId : Int) = Action {
+    AirportCache.getAirport(airportId, false) match {
+      case Some(airport) =>
+        var result = Json.obj()
+        val cityImageUrl = GoogleImageUtil.getCityImageUrl(airport);
+        if (cityImageUrl != null) {
+          result = result + ("cityImageUrl" -> JsString(cityImageUrl.toString))
+        }
+        val airportImageUrl = GoogleImageUtil.getAirportImageUrl(airport);
+        if (airportImageUrl != null) {
+          result = result + ("airportImageUrl" -> JsString(airportImageUrl.toString))
+        }
+
+        Ok(result)
+      case None => NotFound
+    }
+  }
+
+
   def getImage(airport : Airport, phrases : List[String]) = {
     airport.name
   }
 
 
-  def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
-    AirportCache.getAirport(airportId, true) match {  
-       case Some(airport) =>  
-         val maxSlots = airport.getMaxSlotAssignment(airlineId)
-         val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
-         val preferredSlots = airport.getPreferredSlotAssignment(airlineId)
-         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots), "preferredSlots" -> JsNumber(preferredSlots)))
-       case None => NotFound
-     }
-  }
+//  def getAirportSlotsByAirline(airportId : Int, airlineId : Int) = Action {
+//    AirportCache.getAirport(airportId, true) match {
+//       case Some(airport) =>
+//         val maxSlots = airport.getMaxSlotAssignment(airlineId)
+//         val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
+//         val preferredSlots = airport.getPreferredSlotAssignment(airlineId)
+//         Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots), "preferredSlots" -> JsNumber(preferredSlots)))
+//       case None => NotFound
+//     }
+//  }
   
   def getAirportSharesOnCity(cityId : Int) = Action {
     Ok(Json.toJson(AirportSource.loadAirportSharesOnCity(cityId)))

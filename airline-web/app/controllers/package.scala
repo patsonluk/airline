@@ -63,7 +63,7 @@ package object controllers {
       "price" -> JsNumber(airplaneModel.price),
       "lifespan" -> JsNumber(airplaneModel.lifespan),
       "airplaneType" -> JsString(airplaneModel.airplaneTypeLabel),
-      "minAirportSize" -> JsNumber(airplaneModel.minAirportSize),
+      "runwayRequirement" -> JsNumber(airplaneModel.runwayRequirement),
       "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION), //same for all models for now
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now
       "constructionTime" -> JsNumber(airplaneModel.constructionTime),
@@ -487,6 +487,7 @@ package object controllers {
         "icao" -> JsString(airport.icao),
         "city" -> JsString(airport.city),
         "size" -> JsNumber(airport.size),
+        "runwayLength" -> JsNumber(airport.runwayLength),
         "latitude" -> JsNumber(airport.latitude),
         "longitude" -> JsNumber(airport.longitude),
         "countryCode" -> JsString(airport.countryCode),
@@ -497,13 +498,6 @@ package object controllers {
         "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
 
 
-      if (airport.isSlotAssignmentsInitialized) {
-        airportObject = airportObject + ("availableSlots" -> JsNumber(airport.availableSlots))
-        airportObject = airportObject + ("slotAssignmentList" -> JsArray(airport.getAirlineSlotAssignments().toList.map {
-          case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
-        }
-        ))
-      }
       if (airport.isAirlineAppealsInitialized) {
         airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAdjustedAppeals().toList.map {
           case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
@@ -525,8 +519,19 @@ package object controllers {
         airportObject = airportObject + ("bonusList" -> bonusJson)
       }
       if (airport.isFeaturesLoaded) {
-        airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().map { airportFeature =>
+        airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().sortBy(_.featureType.id).map { airportFeature =>
           Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> AirportFeatureType.getDescription(airportFeature.featureType))
+        }
+        ))
+      }
+      if (airport.isGateway()) {
+        airportObject = airportObject + ("isGateway" -> JsBoolean(true))
+      }
+
+
+      if (airport.getRunways().length > 0) {
+        airportObject = airportObject + ("runways" -> JsArray(airport.getRunways().sortBy(_.length).reverse.map { runway =>
+          Json.obj("type" -> runway.runwayType.toString(), "length" -> runway.length, "code" -> runway.code)
         }
         ))
       }
@@ -565,10 +570,25 @@ package object controllers {
 
   case class NegotiationInfoWrites(link : Link) extends Writes[NegotiationInfo] {
     def writes(info : NegotiationInfo): JsValue = {
-      var requirementsJson = Json.arr()
-      val requirementWrites = NegotiationRequirementWrites(link)
-      info.requirements.foreach { requirement =>
-        requirementsJson = requirementsJson.append(Json.toJson(requirement)(requirementWrites))
+      var fromAirportRequirementsJson = Json.arr()
+      info.fromAirportRequirements.foreach { requirement =>
+        fromAirportRequirementsJson = fromAirportRequirementsJson.append(Json.toJson(requirement))
+      }
+
+      var toAirportRequirementsJson = Json.arr()
+      info.toAirportRequirements.foreach { requirement =>
+        toAirportRequirementsJson = toAirportRequirementsJson.append(Json.toJson(requirement))
+      }
+
+      var fromAirportDiscountsJson = Json.arr()
+      //val requirementWrites = NegotiationRequirementWrites(link)
+      info.fromAirportDiscounts.foreach { discount =>
+        fromAirportDiscountsJson = fromAirportDiscountsJson.append(Json.toJson(discount)(NegotiationDiscountWrites(link.from)))
+      }
+      var toAirportDiscountsJson = Json.arr()
+      //val requirementWrites = NegotiationRequirementWrites(link)
+      info.toAirportDiscounts.foreach { discount =>
+        toAirportDiscountsJson = toAirportDiscountsJson.append(Json.toJson(discount)(NegotiationDiscountWrites(link.to)))
       }
 
 //      var oddsJson = Json.obj().asInstanceOf[JsObject]
@@ -576,11 +596,16 @@ package object controllers {
 //        case (delegateCount, odds) => oddsJson = oddsJson + (delegateCount -> JsNumber(odds))
 //      }
 
+
       Json.obj(
         "odds" -> info.odds.map {
           case (delegateCount : Int, odds : Double) => (delegateCount.toString(), odds)
         },
-        "requirements" -> requirementsJson)
+        "toAirportRequirements" -> toAirportRequirementsJson,
+        "fromAirportRequirements" -> fromAirportRequirementsJson,
+        "fromAirportDiscounts" -> fromAirportDiscountsJson,
+        "toAirportDiscounts" -> toAirportDiscountsJson,
+        "finalRequirementValue" -> info.finalRequirementValue)
     }
   }
 
@@ -611,11 +636,19 @@ package object controllers {
 
 
 
-  case class NegotiationRequirementWrites(link : Link) extends Writes[NegotiationRequirement] {
+  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
     def writes(requirement : NegotiationRequirement): JsValue = {
       Json.obj(
-        "description" -> JsString(NegotiationRequirementType.description(requirement.requirementType, link)),
+        "description" -> JsString(requirement.description),
         "value" -> JsNumber(requirement.value))
+    }
+  }
+
+  case class NegotiationDiscountWrites(airport : Airport) extends Writes[NegotiationDiscount] {
+    def writes(discount : NegotiationDiscount): JsValue = {
+      Json.obj(
+        "description" -> JsString(NegotiationDiscountType.description(discount.adjustmentType, airport)),
+        "value" -> JsNumber(discount.value))
     }
   }
 
@@ -645,7 +678,17 @@ package object controllers {
     }
   }
 
+  implicit object CountryAirlineTitleWrites extends Writes[CountryAirlineTitle] {
+    def writes(title : CountryAirlineTitle) : JsValue = {
+      Json.obj(
+        "title" -> title.title.toString,
+        "description" -> title.description
+
+      )
+    }
+  }
 
 
-  val cachedAirportsByPower = AirportSource.loadAllAirports().sortBy(_.power)
+
+  val cachedAirportsByPower = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true).sortBy(_.power)
 }

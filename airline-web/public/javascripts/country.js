@@ -111,25 +111,53 @@ function selectCountry(countryCode) {
 	loadCountryDetails(countryCode)
 }
 
-function loadCountryAirlineRelationship(countryCode, callback) {
+function updateAirlineTitle(title, $icon, $description) {
+    var imgSrc
+    if (title.title === "NATIONAL_AIRLINE") {
+        imgSrc = 'assets/images/icons/star.png'
+    } else if (title.title === "PARTNERED_AIRLINE") {
+        imgSrc = 'assets/images/icons/hand-shake.png'
+    } else if (title.title === "PRIVILEGED_AIRLINE") {
+        imgSrc = 'assets/images/icons/medal-silver-premium.png'
+    } else if (title.title === "ESTABLISHED_AIRLINE") {
+        imgSrc = 'assets/images/icons/leaf-plant.png'
+    } else if (title.title === "APPROVED_AIRLINE") {
+        imgSrc = 'assets/images/icons/tick.png'
+    }
+    if (imgSrc) {
+        $icon.attr('src', imgSrc)
+        $icon.show()
+    } else {
+        $icon.hide()
+    }
+    $description.text(title.description)
+}
+
+function loadCountryAirlineDetails(countryCode, callback) {
     var url = "countries/" + countryCode + "/airline/" + activeAirline.id
+    $("#countryDetails div.relationship span.total").empty()
+    $("#countryDetails img.airlineTitleIcon").hide()
+    $("#countryDetails span.airlineTitle").empty()
 	$.ajax({
 		type: 'GET',
 		url: url,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(relationship) {
+	    success: function(result) {
+	        var relationship = result.relationship
             var relationshipSpan = getAirlineRelationshipDescriptionSpan(relationship.total)
 
-            $("#countryDetails div.relationship span.total").empty()
             $("#countryDetails div.relationship span.total").append(relationshipSpan)
             var $relationshipDetailsIcon = $("#countryDetails div.relationship .detailsIcon")
             $relationshipDetailsIcon.data("relationship", relationship)
+            $relationshipDetailsIcon.data("title", result.title)
             $relationshipDetailsIcon.data("countryCode", countryCode)
             $relationshipDetailsIcon.show()
 
+            updateAirlineTitle(result.title, $("#countryDetails img.airlineTitleIcon"), $("#countryDetails span.airlineTitle"))
+
             if (callback) {
-                callback(relationship, countryCode)
+                callback(relationship, result.title, countryCode)
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -159,7 +187,7 @@ function loadCountryDetails(countryCode) {
 	    	})[0];
 
             if (activeAirline) {
-	    	    loadCountryAirlineRelationship(countryCode)
+	    	    loadCountryAirlineDetails(countryCode)
             } else {
 	    	    $("#countryDetails div.relationship span.total").html("<span>-</span>")
 	    	    var $relationshipDetailsIcon = $("#countryDetails div.relationship .detailsIcon")
@@ -281,7 +309,64 @@ function getAirlineRelationshipDescription(value) {
 	return description
 }
 
-function showRelationshipDetailsModal(relationship, countryCode) {
+function refreshTitleDescription() {
+    var selectedTitle = $('#airlineCountryRelationshipModal .titleProgression .title.selected').data('title')
+    $("#airlineCountryRelationshipModal .titleDescriptions .titleDescription").hide()
+    $("#airlineCountryRelationshipModal .titleDescriptions .titleDescription[data-title='" + selectedTitle + "']").show()
+
+}
+
+function updateTitleProgressionInfo(currentAirlineTitle, countryCode) {
+    var $progression = $("#airlineCountryRelationshipModal .titleProgression")
+    $progression.empty()
+    var url = "countries/" + countryCode + "/title-progression"
+    	$.ajax({
+    		type: 'GET',
+    		url: url,
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(result) {
+    	        $.each(result, function(index, titleInfo) {
+                    if (index > 0) {
+                        $progression.append('<img src="assets/images/icons/arrow.png">')
+                    }
+                    var $titleSpan = $('<span class="title tooltip">')
+                    $titleSpan.text(titleInfo.description)
+                    $titleSpan.data(titleInfo.title)
+                    if (titleInfo.title == currentAirlineTitle.title) {
+                      $titleSpan.addClass("selected")
+                    }
+                    var $descriptionSpan = $('<span class="tooltiptext below" style="width: 400px;">')
+                    var $requirementsDiv = $('<div><h3>Requirements</h3></div>').appendTo($descriptionSpan)
+                    var $requirementsList = $('<ul></ul>').appendTo($requirementsDiv)
+                    $.each(titleInfo.requirements, function(index, requirement){
+                        $requirementsList.append('<li style="text-align: left;">' + requirement +' </li>')
+                    })
+
+                    var $benefitsDiv = $('<div style="margin-top: 10px;"><h3>Benefits</h3></div>').appendTo($descriptionSpan)
+                    var $benefitsList = $('<ul></ul>').appendTo($benefitsDiv)
+                    $.each(titleInfo.bonus, function(index, entry){
+                        $benefitsList.append('<li style="text-align: left;">' + entry +' </li>')
+                    })
+
+                    $titleSpan.append($descriptionSpan)
+                    $progression.append($titleSpan)
+    	        })
+    	    },
+    	    error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    }
+    });
+}
+
+function showRelationshipDetailsModal(relationship, title, countryCode) {
+    $('#airlineCountryRelationshipModal .country').empty()
+    $('#airlineCountryRelationshipModal .country').append(getCountryFlagImg(countryCode) + loadedCountriesByCode[countryCode].name)
+
+    updateAirlineTitle(title, $('#airlineCountryRelationshipModal .currentTitle .titleIcon'), $('#airlineCountryRelationshipModal .currentTitle .titleDescription'))
+    updateTitleProgressionInfo(title, countryCode)
+
     var $table = $('#airlineCountryRelationshipModal .factors')
     $table.children("div.table-row").remove()
 
@@ -327,6 +412,9 @@ function refreshAssignedDelegates() {
     var originalDelegates = $delegateSection.data('originalDelegates')
     var assignedDelegateCount = $delegateSection.data('assignedDelegateCount')
 
+    if (assignedDelegateCount == 0) {
+        $('#airlineCountryRelationshipModal div.assignedDelegatesIcons').append("<span>None</span>")
+    }
 
     $.each(originalDelegates.slice(0, assignedDelegateCount), function(index, assignedDelegate) {
             var delegateIcon = $('<img src="assets/images/icons/delegate-level-' + assignedDelegate.level + '.png" title="' + assignedDelegate.levelDescription + "&nbsp;(level " + assignedDelegate.level + (assignedDelegate.nextLevelCycleCount ? " - promotion in " + assignedDelegate.nextLevelCycleCount + " week(s)" : "") + ')"/>')
@@ -353,7 +441,7 @@ function updateCountryDelegates() {
         data:  JSON.stringify({ 'delegateCount' : assignedDelegateCount }) ,
         dataType: 'json',
         success: function(result) {
-            var relationship = loadCountryAirlineRelationship(countryCode, showRelationshipDetailsModal)
+            var relationship = loadCountryAirlineDetails(countryCode, showRelationshipDetailsModal)
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
