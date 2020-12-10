@@ -213,7 +213,7 @@ object AirportFeaturePatcher extends App {
       "NGO" -> 18,
       "MAN" -> 18,
       "HAM" -> 18,
-      "TXL" -> 16,
+      "BER" -> 16,
       "BOG" -> 15, //Bogota alpha-
       "YUL" -> 18, //Montreal
       "RUH" -> 15,
