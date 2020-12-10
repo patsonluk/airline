@@ -1,5 +1,2 @@
 # in format of iata, icao, name, latitude, longitude, countryCode, city, zone, size
-REU,LERS,Reus Airport,41.1475,1.167222,ES,Reus,EU,4
-SDF,KSDF,Louisville International Airport,38.174167,-85.736389,US,Louisville,NA,5
-OMA,KOMA,Eppley Airfield,41.3012,-95.8954,US,Omaha,NA,5
-BOI,KBOI,Boise Air Terminal Gowen field,43.56439972,-116.2229996,US,Boise City,NA,3
+#REU,LERS,Reus Airport,41.1475,1.167222,ES,Reus,EU,4
