@@ -346,7 +346,7 @@ function updateTitleProgressionInfo(currentAirlineTitle, countryCode) {
                     var $benefitsDiv = $('<div style="margin-top: 10px;"><h3>Benefits</h3></div>').appendTo($descriptionSpan)
                     var $benefitsList = $('<ul></ul>').appendTo($benefitsDiv)
                     $.each(titleInfo.bonus, function(index, entry){
-                        $benefitsList.append('<li>' + entry +' </li>')
+                        $benefitsList.append('<li style="text-align: left;">' + entry +' </li>')
                     })
 
                     $titleSpan.append($descriptionSpan)
