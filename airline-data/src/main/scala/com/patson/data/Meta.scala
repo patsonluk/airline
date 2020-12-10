@@ -361,6 +361,7 @@ object Meta {
       "frequency INTEGER," +
       "flight_type INTEGER," +
       "flight_number INTEGER," +
+      "airplane_model SMALLINT," +
       "from_country CHAR(2)," +
       "to_country CHAR(2)," +
       "last_update DATETIME DEFAULT CURRENT_TIMESTAMP," +
