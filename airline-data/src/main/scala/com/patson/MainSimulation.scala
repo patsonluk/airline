@@ -43,10 +43,6 @@ object MainSimulation extends App {
       invalidateCaches()
 
       UserSimulation.simulate(cycle)
-      println("Oil simulation")
-      OilSimulation.simulate(cycle)
-      println("Loan simulation")
-      LoanInterestRateSimulation.simulate(cycle)
       println("Event simulation")
       EventSimulation.simulate(cycle)
 
@@ -81,9 +77,14 @@ object MainSimulation extends App {
       println("cycle " + cycle + " spent " + (cycleEnd - cycleStartTime) / 1000 + " secs")
   }
 
-  def postCycle() = {
+  def postCycle(simulatedCycle : Int) = {
     //now update the link capacity if necessary
     LinkSimulation.refreshLinksPostCycle()
+    println("Oil simulation")
+    OilSimulation.simulate(simulatedCycle + 1) //simulate it for +1 as if the simulation is fast, it will sit at a new week until next start cycle
+    println("Loan simulation")
+    LoanInterestRateSimulation.simulate(simulatedCycle + 1) //simulate it for +1 as if the simulation is fast, it will sit at a new week until next start cycle
+
   }
   
   
@@ -94,10 +95,11 @@ object MainSimulation extends App {
     currentWeek = CycleSource.loadCycle()
     def receive = {
       case Start =>
-        startCycle(currentWeek)
+        val simulationCycle = currentWeek
+        startCycle(simulationCycle)
         currentWeek += 1
         CycleSource.setCycle(currentWeek)
-        postCycle()
+        postCycle(simulationCycle)
     }
   }
    
