@@ -107,11 +107,11 @@ function buildBase(isHeadquarter, scale) {
 	    data: JSON.stringify(baseData),
 	    dataType: 'json',
 	    success: function() {
+            updateAllPanels(activeAirline.id)
             if (scale == 1 && isHeadquarter) {
                 $('#planLinkFromAirportId').val(activeAirline.headquarterAirport.airportId)
                 loadAllCountries() //has a home country now, reload country info
             }
-	    	updateAllPanels(activeAirline.id)
 	    	showWorldMap()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
