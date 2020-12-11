@@ -6,6 +6,15 @@ import com.patson.Util
 import com.patson.util.{AirlineCache, AllianceRankingUtil}
 
 object Computation {
+  val MODEL_COUNTRY_CODE = "US"
+  val MODEL_COUNTRY_POWER : Double = CountrySource.loadCountryByCode(MODEL_COUNTRY_CODE) match {
+    case Some(country) =>
+      country.airportPopulation.toDouble * country.income
+    case None =>
+      println(s"Cannot find $MODEL_COUNTRY_CODE to compute model power")
+      1
+  }
+
   //distance vs max speed
   val speedLimits = List((300, 350), (400, 500), (400, 700))  
   def calculateDuration(airplaneModel: Model, distance : Int) = {
@@ -214,15 +223,6 @@ object Computation {
     val overall = airplanes + bases + loans + oilContracts + existingBalance
   }
 
-  val MODEL_COUNTRY_CODE = "US"
-  val MODEL_COUNTRY_POWER : Double = CountrySource.loadCountryByCode(MODEL_COUNTRY_CODE) match {
-    case Some(country) =>
-      country.airportPopulation.toDouble * country.income
-    case None =>
-      println(s"Cannot find $MODEL_COUNTRY_CODE to compute model power")
-      1
-  }
-  
 //  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
 //    model.constructionTime + (existingConstruction / 5) * model.constructionTime / 4 
 //  }
