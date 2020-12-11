@@ -76,7 +76,7 @@ object CountryAirlineTitle {
         } else if (relationship < ESTABLISHED_AIRLINE_RELATIONSHIP_THRESHOLD) {
           Title.APPROVED_AIRLINE
         } else {
-          val links = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_country", countryCode)))
+          val links = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("to_country", countryCode)))
           if (links.isEmpty) {
             Title.APPROVED_AIRLINE
           } else {
