@@ -259,7 +259,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
     val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(model.countryCode, airline)
     if (model.purchasableWithRelationship(relationship.relationship)) {
-      val rejection = s"Cannot buy used airplane of " + model.name + s" until your relationship with ${CountryCache.getCountry(model.countryCode).get.name} is improved to at least ${Model.BUY_RELATIONSHIP_THRESHOLD}")
+      val rejection = s"Cannot buy used airplane of " + model.name + s" until your relationship with ${CountryCache.getCountry(model.countryCode).get.name} is improved to at least ${Model.BUY_RELATIONSHIP_THRESHOLD}"
       return usedAirplanes.map((_, rejection)).toMap
     }
     
