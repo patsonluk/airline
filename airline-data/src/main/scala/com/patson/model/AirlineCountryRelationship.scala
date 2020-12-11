@@ -108,9 +108,7 @@ object AirlineCountryRelationship {
   }
 
   val getDelegateBonusMultiplier = (country : Country) => {
-    //US: pop 97499995 income 54629
-    val modelPower : Long = 97499995L * 54629L
-    val ratioToModelPower = (country.airportPopulation * country.income.toDouble).toLong / modelPower
+    val ratioToModelPower = (country.airportPopulation * country.income.toDouble).toLong / Computation.MODEL_COUNTRY_POWER
     val logRatio = Math.min(0.1, Math.log10(ratioToModelPower * 100) / 2) //0.1 to 1
     val levelMultiplier = 1 / logRatio * 0.5 // >= 0.5, inverse of logRatio : lower multiplier for more powerful country
     Math.min(2, BigDecimal(levelMultiplier).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble)

@@ -1,13 +1,8 @@
 package com.patson.model
 
 import com.patson.model.airplane._
-import com.patson.data.CycleSource
+import com.patson.data.{AirlineSource, AirplaneSource, AllianceSource, BankSource, CountrySource, CycleSource, OilSource}
 import com.patson.Util
-import com.patson.data.AllianceSource
-import com.patson.data.AirplaneSource
-import com.patson.data.AirlineSource
-import com.patson.data.BankSource
-import com.patson.data.OilSource
 import com.patson.util.{AirlineCache, AllianceRankingUtil}
 
 object Computation {
@@ -155,9 +150,7 @@ object Computation {
     // 9th : 4
     // 10th : 2
     
-    //pop 97499995 income 54629
-    val modelPower = 97499995L * 54629L
-    val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
+    val ratioToModelPower = country.airportPopulation * country.income.toDouble / MODEL_COUNTRY_POWER
     
     val boost = math.log10(ratioToModelPower * 100) / 2 * reputationBoostTop10(ranking)
     
@@ -219,6 +212,15 @@ object Computation {
   
   case class ResetAmountInfo(airplanes : Long, bases : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
     val overall = airplanes + bases + loans + oilContracts + existingBalance
+  }
+
+  val MODEL_COUNTRY_CODE = "US"
+  val MODEL_COUNTRY_POWER : Double = CountrySource.loadCountryByCode(MODEL_COUNTRY_CODE) match {
+    case Some(country) =>
+      country.airportPopulation.toDouble * country.income
+    case None =>
+      println(s"Cannot find $MODEL_COUNTRY_CODE to compute model power")
+      1
   }
   
 //  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {

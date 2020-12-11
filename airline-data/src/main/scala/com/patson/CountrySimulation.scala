@@ -13,8 +13,7 @@ object CountrySimulation {
   val MAX_PARTNERED_AIRLINE_COUNT = 4 //What US will have
 
   def computeNationalAirlineCount(country: Country) : Int = {
-    val modelPower = 97499995L * 54629L
-    val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
+    val ratioToModelPower = country.airportPopulation * country.income.toDouble / Computation.MODEL_COUNTRY_POWER
 
     val ratio: Double = math.log10(ratioToModelPower * 100) / 2
 
@@ -23,8 +22,7 @@ object CountrySimulation {
   }
 
   def computePartneredAirlineCount(country: Country) : Int = {
-    val modelPower = 97499995L * 54629L
-    val ratioToModelPower = country.airportPopulation * country.income.toDouble / modelPower
+    val ratioToModelPower = country.airportPopulation * country.income.toDouble / Computation.MODEL_COUNTRY_POWER
 
     val ratio: Double = math.log10(ratioToModelPower * 100) / 2
 
