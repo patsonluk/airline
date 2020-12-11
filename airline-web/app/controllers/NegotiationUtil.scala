@@ -13,6 +13,7 @@ object NegotiationUtil {
   val NEW_LINK_BASE_COST = 100
   val MAX_ASSIGNED_DELEGATE = 10
   val FREE_LINK_THRESHOLD = 5 //for newbie
+  val FREE_LINK_FREQUENCY_THRESHOLD = 5
 
 
   def negotiate(info : NegotiationInfo, delegateCount : Int) = {
@@ -206,7 +207,7 @@ object NegotiationUtil {
       return NegotiationUtil.NO_NEGOTIATION_REQUIRED
     }
 
-    if (airlineLinks.length < FREE_LINK_THRESHOLD && Computation.getFlightCategory(fromAirport, toAirport) != FlightCategory.INTERCONTINENTAL) {
+    if (airlineLinks.length < FREE_LINK_THRESHOLD && newFrequency <= FREE_LINK_FREQUENCY_THRESHOLD && Computation.getFlightCategory(fromAirport, toAirport) != FlightCategory.INTERCONTINENTAL) {
       return NegotiationUtil.NO_NEGOTIATION_REQUIRED
     }
 
