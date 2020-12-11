@@ -61,6 +61,8 @@ function registerEscape() {
             var $topModal = $(".modal:visible").last()
             if ($topModal.length > 0) {
                 closeModal($topModal)
+            } else {
+                closeAirportInfoPopup()
             }
         }
     });
