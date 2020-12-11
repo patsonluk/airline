@@ -389,8 +389,16 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId).foreach { lounge =>
           AirlineSource.deleteLounge(lounge)
         }
-        
+
         AirlineSource.deleteAirlineBase(base)
+
+        //update/refresh delegates
+        val delegateInfo = request.user.getDelegateInfo()
+        if (delegateInfo.availableCount < 0) {
+          val removingDelegates = delegateInfo.busyDelegates.sortBy(_.id).takeRight(delegateInfo.availableCount * -1) //take the newest ones away
+          DelegateSource.deleteBusyDelegates(removingDelegates)
+        }
+
         Ok(Json.toJson(base))
       case None => //
         NotFound 

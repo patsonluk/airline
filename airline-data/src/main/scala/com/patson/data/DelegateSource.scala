@@ -212,6 +212,12 @@ object DelegateSource {
     }
   }
 
+  def deleteBusyDelegates(delegates : List[BusyDelegate]) : Unit = {
+    delegates.foreach { delegate =>
+      deleteBusyDelegateByCriteria(List(("id", "=", delegate.id)))
+    }
+  }
+
   def saveDelegateTasks(delegates : List[BusyDelegate]) = {
     delegates.groupBy(_.assignedTask.getTaskType).foreach {
       case (taskType, delegatesOfThisTaskType) => {

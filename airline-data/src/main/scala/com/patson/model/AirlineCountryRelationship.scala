@@ -1,7 +1,6 @@
 package com.patson.model
 
 import com.patson.data.{CountrySource, CycleSource, DelegateSource}
-import com.patson.model.AirlineCountryRelationship.countryMap
 
 import scala.collection.mutable
 
