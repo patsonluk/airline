@@ -510,6 +510,7 @@ object Airport {
   Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
         SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
         SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 5, 15),
+        MEDIUM_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(0, 5, 15),
         LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 5, 15),
         LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 10, 20),
         LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20),

@@ -176,9 +176,7 @@ function updateAirlineDetails() {
 	    	$('#fleetSize').text(airline.fleetSize)
 	    	$('#fleetAge').text(getYearMonthText(airline.fleetAge))
 	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
-	    	$('#domesticLinkCount').text(airline.domesticLinkCount)
-	    	$('#regionalLinkCount').text(airline.regionalLinkCount)
-	    	$('#intercontinentalLinkCount').text(airline.intercontinentalLinkCount + "/" + airline.intercontinentalLinkMax)
+	    	$('#officeCanvas .linkCount').text(airline.linkCount)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

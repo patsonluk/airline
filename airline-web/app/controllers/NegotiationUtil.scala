@@ -1,8 +1,8 @@
 package controllers
 
-import com.patson.data.{CountrySource, LinkSource}
+import com.patson.data.LinkSource
 import com.patson.model.FlightType._
-import com.patson.model.{Airline, AirlineBase, AirlineCountryRelationship, Airport, BUSINESS, Computation, ECONOMY, FIRST, FlightCategory, FlightType, Link, LinkClassValues, Title}
+import com.patson.model._
 import com.patson.util.CountryCache
 
 import scala.collection.mutable.ListBuffer
@@ -91,6 +91,7 @@ object NegotiationUtil {
       case SHORT_HAUL_INTERNATIONAL => 2
       case LONG_HAUL_INTERNATIONAL => 2.5
       case SHORT_HAUL_INTERCONTINENTAL => 2.5
+      case MEDIUM_HAUL_INTERCONTINENTAL => 3
       case LONG_HAUL_INTERCONTINENTAL => 3.5
       case ULTRA_LONG_HAUL_INTERCONTINENTAL => 3.5
     }
@@ -146,7 +147,8 @@ object NegotiationUtil {
       case LONG_HAUL_DOMESTIC => 8
       case SHORT_HAUL_INTERNATIONAL => 10
       case LONG_HAUL_INTERNATIONAL => 12
-      case SHORT_HAUL_INTERCONTINENTAL => 20
+      case SHORT_HAUL_INTERCONTINENTAL => 12
+      case MEDIUM_HAUL_INTERCONTINENTAL => 20
       case LONG_HAUL_INTERCONTINENTAL => 30
       case ULTRA_LONG_HAUL_INTERCONTINENTAL => 30
     }
@@ -319,7 +321,7 @@ object NegotiationDiscountType extends Enumeration {
   def description(adjustmentType : NegotiationDiscountType.Value, airport : Airport) =  adjustmentType match {
     case COUNTRY_RELATIONSHIP => s"Country Relationship with ${airport.countryCode}"
     case BELOW_CAPACITY => s"${airport.displayText} is under capacity"
-    case OVER_CAPACITY => s"${airport.displayText} is overcapacity capacity"
+    case OVER_CAPACITY => s"${airport.displayText} is over capacity"
     case NEW_AIRLINE => s"New airline bonus"
   }
 }

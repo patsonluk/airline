@@ -733,16 +733,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         case Some(base) => base
       }
 
-      val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
-      //check airline grade limit - removed for now
-//      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).view.mapValues(_.size).toMap
-//      airline.getLinkLimit(flightCategory).foreach { limit => //if there's limit
-//        val existingCount = existingFlightCategoryCounts.getOrElse(flightCategory, 0)
-//        if (limit <= existingCount) {
-//          return Some((s"Cannot create more route of category $flightCategory until your airline reaches higher grade. Your current grade is ${airline.airlineGrade.description} only allows ${limit} while you have ${existingCount} ", AIRLINE_GRADE))
-//        }
-//      }
 
+      val flightCategory = FlightType.getCategory(Computation.getFlightType(fromAirport, toAirport))
       //check title status
       if (flightCategory == FlightCategory.INTERCONTINENTAL) {
         val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE

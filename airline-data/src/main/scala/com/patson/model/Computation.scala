@@ -85,8 +85,10 @@ object Computation {
         LONG_HAUL_INTERNATIONAL
       }
     } else {
-      if (distance <= 4000) {
+      if (distance <= 2000) {
         SHORT_HAUL_INTERCONTINENTAL
+      } else if (distance <= 5000) {
+        MEDIUM_HAUL_INTERCONTINENTAL
       } else if (distance <= 12000) {
         LONG_HAUL_INTERCONTINENTAL
       } else {
@@ -95,17 +97,6 @@ object Computation {
     }
   }
   
-  import FlightCategory._
-  def getFlightCategory(fromAirport : Airport, toAirport : Airport) : FlightCategory.Value = {
-    val distance = calculateDistance(fromAirport, toAirport)
-    if (fromAirport.countryCode == toAirport.countryCode) {
-      DOMESTIC
-    } else if (fromAirport.zone == toAirport.zone || distance <= 1000) {
-      REGIONAL
-    } else {
-      INTERCONTINENTAL
-    }
-  }
 
   /**
    * Returns a normalized income level, should be greater than 0

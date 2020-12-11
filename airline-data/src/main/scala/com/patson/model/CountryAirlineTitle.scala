@@ -148,6 +148,6 @@ object CountryAirlineTitle {
     case APPROVED_AIRLINE =>
       List(s"Allow Intercontinental flights to only Gateway airport in ${country.name}")
     case NONE =>
-      List(s"No flights allowed in ${country.name}")
+      List(s"No Intercontinental flights to any airports in ${country.name}")
   }
 }

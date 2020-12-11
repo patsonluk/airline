@@ -57,17 +57,17 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     this.bases = bases
   }
 
-  import FlightCategory._
-  val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
-      case DOMESTIC => None
-      case REGIONAL => None
-      case INTERCONTINENTAL =>
-        if (airlineGrade.value <= 4) {
-         Some(0)
-        } else {
-          Some((airlineGrade.value - 4) * 3)
-        }
-  }
+//  import FlightCategory._
+//  val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
+//      case DOMESTIC => None
+//      case REGIONAL => None
+//      case INTERCONTINENTAL =>
+//        if (airlineGrade.value <= 4) {
+//         Some(0)
+//        } else {
+//          Some((airlineGrade.value - 4) * 3)
+//        }
+//  }
 
 
   def airlineGrade : AirlineGrade = {

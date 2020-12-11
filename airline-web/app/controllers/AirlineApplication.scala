@@ -150,19 +150,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
          link => List(link.from, link.to)
        }.toSet.size
        
-       val linkFlightCategories = links.map {
-         link => Computation.getFlightCategory(link.from, link.to)
-       }
-       
-       val airlineGrade = airline.airlineGrade
-       airlineJson = airlineJson + 
-       ("domesticLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.DOMESTIC))) +
-       ("regionalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.REGIONAL))) +
-       ("intercontinentalLinkCount" -> JsNumber(linkFlightCategories.count( _ == FlightCategory.INTERCONTINENTAL))) +
-       ("intercontinentalLinkMax" -> JsNumber(airline.getLinkLimit(FlightCategory.INTERCONTINENTAL).get))  
-              
-       
-       
        val destinations = if (airportsServed > 0) airportsServed - 1 else 0 //minus home base
        
        val currentCycle = CycleSource.loadCycle()
@@ -172,7 +159,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
        val assets = Bank.getAssets(airlineId)
        
-       airlineJson = airlineJson + ("destinations"-> JsNumber(destinations)) + ("fleetSize"-> JsNumber(fleetSize)) + ("fleetAge"-> JsNumber(fleetAge)) + ("assets"-> JsNumber(assets))
+       airlineJson = airlineJson + ("linkCount" -> JsNumber(links.length)) + ("destinations"-> JsNumber(destinations)) + ("fleetSize"-> JsNumber(fleetSize)) + ("fleetAge"-> JsNumber(fleetAge)) + ("assets"-> JsNumber(assets))
      }
      
      Ok(airlineJson)
