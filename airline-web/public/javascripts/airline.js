@@ -2396,12 +2396,12 @@ function negotiationAnimation(negotiationResult, callback, callbackParam) {
                            }
                        };
         }
-        animateProgressBar($('#negotiationAnimation .negotiationBar'), percentage, 1000, callback)
+        animateProgressBar($('#negotiationAnimation .negotiationBar'), percentage, 500, callback)
 
         if (index == negotiationResult.sessions.length) {
             clearInterval(animationInterval);
         }
-	}, 1500)
+	}, 750)
 
 
 	if (callback) {
