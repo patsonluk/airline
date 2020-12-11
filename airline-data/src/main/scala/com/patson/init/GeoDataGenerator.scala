@@ -156,8 +156,8 @@ object GeoDataGenerator extends App {
         val airportSize =
           info(2) match {
             case "small_airport" => 1
-            case "medium_airport" => 2
-            case "large_airport" => 3
+            case "medium_airport" => 3
+            case "large_airport" => 5
             case _ => 0
           }
         result += new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), zone = info(7), airportSize, 0, 0, 0) //2 - size, 3 - name, 4 - lat, 5 - long, 7 - zone, 8 - country, 10 - city, 12 - code1, 13- code2
@@ -201,32 +201,44 @@ object GeoDataGenerator extends App {
       
       collection.immutable.HashMap() ++ incomeMap
   }
-  
+
   def buildAirportData(airportFuture : Future[List[Airport]], runwayFuture : Future[Map[String, List[Runway]]], citites: List[City]) : List[Airport] = {
     val combinedFuture = Future.sequence(Seq(airportFuture, runwayFuture))
-    val results = Await.result(combinedFuture, Duration.Inf) 
-      
+    val results = Await.result(combinedFuture, Duration.Inf)
+
     val rawAirportResult : List[Airport] = results(0).asInstanceOf[List[Airport]]
     val runwayResult : Map[String, List[Runway]] = results(1).asInstanceOf[Map[String, List[Runway]]]
-    
+
     println(rawAirportResult.size + " airports")
     println(runwayResult.size + " solid runways")
     println(citites.size + " cities")
+    val airports = generateAirportData(rawAirportResult, runwayResult, citites)
 
+    //Meta.resetDatabase
+
+    AirportSource.deleteAllAirports()
+    AirportSource.saveAirports(airports)
+
+    //patch features
+    AirportFeaturePatcher.patchFeatures()
+    IsolatedAirportPatcher.patchIsolatedAirports()
+
+    airports
+  }
+
+  def generateAirportData(rawAirportResult : List[Airport], runwayResult : Map[String, List[Runway]], cities: List[City]) : List[Airport] = {
     var airportResult = adjustAirportByRunway(rawAirportResult.filter { airport =>
          airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
       }, runwayResult)
-      
+
     airportResult = adjustAirportSize(airportResult)
-    
+
     val additionalAirports : List[Airport] = AdditionalLoader.loadAdditionalAirports()
-    
+
     airportResult = airportResult ++ additionalAirports
-    
+
     val airportsSortedByLongitude = airportResult.sortBy(_.longitude)
-    val citiesSortedByLongitude = citites.sortBy(_.longitude)
-    
-    
+    val citiesSortedByLongitude = cities.sortBy(_.longitude)
     
     var counter = 0;
     var progressCount = 0;
@@ -311,17 +323,6 @@ object GeoDataGenerator extends App {
       airport
     }.sortBy { _.power }
     
-    //Meta.resetDatabase
-    
-    AirportSource.deleteAllAirports()
-    AirportSource.saveAirports(airports)
-
-
-
-    //patch features
-    AirportFeaturePatcher.patchFeatures()
-    IsolatedAirportPatcher.patchIsolatedAirports()
-    
     airports
   }
   
@@ -362,7 +363,7 @@ object GeoDataGenerator extends App {
   def adjustAirportByRunway(rawAirportResult: List[Airport], runwayResult: Map[String, List[Runway]]) : List[Airport]= {
     val MAX_AIRPORT_SIZE = 9
     rawAirportResult.map { rawAirport =>
-      if (rawAirport.size == 3) { //have to at least to be a big airport for adjustment
+      if (rawAirport.size == 3) { //have to at least to be a medium airport for adjustment
         runwayResult.get(rawAirport.icao) match {
           case Some(runways) =>
             var longRunway = 0 
