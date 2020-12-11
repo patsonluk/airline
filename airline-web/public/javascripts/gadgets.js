@@ -449,22 +449,14 @@ function disableButton(button, reason) {
     $(button).addClass("disabled")
     $(button).data("originalClickFunction", $(button).attr("onclick"))
 
-    if (!$(button).data("replacedTitle")) { //only store the title if it was NOT replaced (ie the original one)
-        $(button).data("originalTitle", $(button).attr("title"))
-    }
-
-    if (reason) {
-        $(button).attr("title", reason)
-        $(button).data("replacedTitle", true)
-    }
-    $(button).removeAttr("onclick") //remove on click function
-
-
+//    if (!$(button).data("replacedTitle")) { //only store the title if it was NOT replaced (ie the original one)
+//        $(button).data("originalTitle", $(button).attr("title"))
+//    }
     if (isTouchDevice()) {
         $(button).find(".touchTitle").remove()
         if (reason) {
             $(button).css({position: 'relative'});
-            var touchTitleSpan = $("<span style='display: none;' class='touchTitle'>" + reason + "</span>");
+            var touchTitleSpan = $("<span style='display: none; text-transform: none;' class='touchTitle'>" + reason + "</span>");
             $(button).append(touchTitleSpan)
             var addedClickFunction = function() {
                  if (touchTitleSpan.is(":visible")) {
@@ -476,6 +468,18 @@ function disableButton(button, reason) {
             $(button).click(addedClickFunction)
             $(button).data("addedClickFunction", addedClickFunction)
         }
+    } else {
+        if (reason) {
+    //        $(button).attr("title", reason)
+    //        $(button).data("replacedTitle", true)
+
+            //add tooltip
+            $(button).addClass("tooltip")
+            var $descriptionSpan = $('<span class="tooltiptext below" style="width: 400px;  text-transform: none;">')
+            $descriptionSpan.text(reason)
+            $(button).append($descriptionSpan)
+        }
+        $(button).removeAttr("onclick") //remove on click function
     }
 }
 
@@ -489,18 +493,23 @@ function enableButton(button) {
     if (originalClickFunction) {
         $(button).attr("onclick", originalClickFunction) //set it back
     }
-    if ($(button).data("originalTitle")) {
-        $(button).attr("title",  $(button).data("originalTitle"))
-    } else {
-        $(button).removeAttr("title")
-    }
+//    if ($(button).data("originalTitle")) {
+//        $(button).attr("title",  $(button).data("originalTitle"))
+//    } else {
+//        $(button).removeAttr("title")
+//    }
+//
+//    $(button).data("replacedTitle", false)
 
-    $(button).data("replacedTitle", false)
+    //remove tooltip
+
 
     if (isTouchDevice()) {
         $(button).find(".touchTitle").remove()
+    } else {
+        $(button).removeClass("tooltip")
+        $(button).find('span.tooltiptext').remove()
     }
-
 }
 
 function isIe() {
