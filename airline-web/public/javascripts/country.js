@@ -460,37 +460,9 @@ function getCountryDelegatesSummary(countryCode) {
     $delegateSection.removeData('originalDelegates')
     $delegateSection.data("countryCode", countryCode)
 
-	$.ajax({
-		type: 'GET',
-		url: "delegates/airline/" + activeAirline.id,
-		contentType: 'application/json; charset=utf-8',
-		dataType: 'json',
-	    success: function(delegateInfo) {
-            var availableDelegates = delegateInfo.availableCount
-            $delegateSection.data("availableDelegates", availableDelegates)
-
-            //delegate info
-            for (i = 0 ; i < availableDelegates; i ++) {
-                var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/>')
-                $('#airlineCountryRelationshipModal div.delegateStatus').append(delegateIcon)
-            }
-
-
-            $.each(delegateInfo.busyDelegates, function(index, busyDelegate) {
-                var delegateIcon
-                if (busyDelegate.completed) {
-                    delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="' + busyDelegate.coolDown + 'week(s) cool down remaining. Previous task : ' + busyDelegate.taskDescription + '"/>')
-                } else {
-                    delegateIcon = $('<img src="assets/images/icons/user-silhouette-busy.png" title="Busy with task - ' + busyDelegate.taskDescription + '"/>')
-                }
-                $('#airlineCountryRelationshipModal div.delegateStatus').append(delegateIcon)
-            })
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+    updateAirlineDelegateStatus($('#airlineCountryRelationshipModal div.delegateStatus'), function(delegateInfo) {
+        $delegateSection.data("availableDelegates", delegateInfo.availableCount)
+    })
 
 	$.ajax({
         type: 'GET',

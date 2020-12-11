@@ -47,6 +47,7 @@ function showOfficeCanvas() {
 	
 	updateAirlineDetails()
 	loadSheets();
+	updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
 	updateChampionedCountriesDetails()
 	updateServiceFundingDetails()
 	updateAirplaneRenewalDetails()
@@ -54,6 +55,50 @@ function showOfficeCanvas() {
 	updateMaintenanceLevelDetails()
 	updateAirlineColorPicker()
 	updateResetAirlineInfo()
+}
+function refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo) {
+    $delegateStatusDiv.empty()
+    var availableDelegates = delegateInfo.availableCount
+
+    //delegate info
+    for (i = 0 ; i < availableDelegates; i ++) {
+        var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/>')
+        $delegateStatusDiv.append(delegateIcon)
+    }
+
+    $.each(delegateInfo.busyDelegates, function(index, busyDelegate) {
+        var delegateIcon
+        if (busyDelegate.completed) {
+            delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="' + busyDelegate.coolDown + ' week(s) cool down remaining. Previous task : ' + busyDelegate.taskDescription + '"/>')
+        } else {
+            delegateIcon = $('<img src="assets/images/icons/user-silhouette-busy.png" title="Busy with task - ' + busyDelegate.taskDescription + '"/>')
+        }
+        $delegateStatusDiv.append(delegateIcon)
+    })
+}
+
+
+function updateAirlineDelegateStatus($delegateStatusDiv, successFunction) {
+    $delegateStatusDiv.empty()
+    var airlineId = activeAirline.id
+
+	$.ajax({
+		type: 'GET',
+		url: "delegates/airline/" + activeAirline.id,
+		contentType: 'application/json; charset=utf-8',
+		dataType: 'json',
+	    success: function(delegateInfo) {
+	        refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo)
+
+            if (successFunction) {
+                successFunction(delegateInfo)
+            }
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function updateAirlineBases() {

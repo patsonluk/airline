@@ -2271,25 +2271,7 @@ function getLinkNegotiation() {
 
                 //finish updating the negotiationDifficultyModal
 
-                $('#linkConfirmationModal div.delegateStatus').empty()
-
-
-                //delegate info
-                for (i = 0 ; i < availableDelegates; i ++) {
-                    var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/>')
-                    $('#linkConfirmationModal div.delegateStatus').append(delegateIcon)
-                }
-
-
-                $.each(delegateInfo.busyDelegates, function(index, busyDelegate) {
-                    var delegateIcon
-                    if (busyDelegate.completed) {
-                        delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="' + busyDelegate.coolDown + 'week(s) cool down remaining. Previous task : ' + busyDelegate.taskDescription + '"/>')
-                    } else {
-                        delegateIcon = $('<img src="assets/images/icons/user-silhouette-busy.png" title="Busy with task - ' + busyDelegate.taskDescription + '"/>')
-                    }
-                    $('#linkConfirmationModal div.delegateStatus').append(delegateIcon)
-                })
+                refreshAirlineDelegateStatus($('#linkConfirmationModal div.delegateStatus'), delegateInfo)
 
                 if (availableDelegates > 0) {
                     updateAssignedDelegateCount(1)
