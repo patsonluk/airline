@@ -207,9 +207,7 @@ object NegotiationUtil {
       return NegotiationUtil.NO_NEGOTIATION_REQUIRED
     }
 
-    if (airlineLinks.length < FREE_LINK_THRESHOLD && newFrequency <= FREE_LINK_FREQUENCY_THRESHOLD && Computation.getFlightCategory(fromAirport, toAirport) != FlightCategory.INTERCONTINENTAL) {
-      return NegotiationUtil.NO_NEGOTIATION_REQUIRED
-    }
+
 
     //at this point negotiation is required
     val (fromAirportRequirements, toAirportRequirements) = getNegotiationRequirements(newLink, existingLinkOption, airline, airlineLinks)
@@ -223,6 +221,14 @@ object NegotiationUtil {
     val fromAirportRequirementValue = fromRequirementBase * (1 - totalFromDiscount)
     val toAirportRequirementValue = toRequirementBase * (1 - totalToDiscount)
     val finalRequirementValue = fromAirportRequirementValue + toAirportRequirementValue
+
+    //check for freebie bonus
+    if (airlineLinks.length < FREE_LINK_THRESHOLD &&
+      newFrequency < FREE_LINK_FREQUENCY_THRESHOLD &&  //to prevent many small increase
+      finalRequirementValue < 4
+    ) {
+      return NegotiationUtil.NO_NEGOTIATION_REQUIRED
+    }
 
     val info = NegotiationInfo(fromAirportRequirements, toAirportRequirements, fromAirportDiscounts, toAirportDiscounts, finalRequirementValue, computeOdds(finalRequirementValue, Math.min(MAX_ASSIGNED_DELEGATE, airline.getDelegateInfo.availableCount)))
     return info
