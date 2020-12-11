@@ -714,9 +714,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, newLink : Boolean) : Option[(String, RejectionType.Value)]= {
     import RejectionType._
-    val airlineCountryCode = airline.getCountryCode match {
-      case Some(countryCode) => countryCode
-      case None => return Some(("Airline has no HQ!", NO_BASE))
+    if (airline.getCountryCode.isEmpty) {
+      return Some(("Airline has no HQ!", NO_BASE))
     }
     val toCountryCode = toAirport.countryCode
 
@@ -728,14 +727,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
       val flightCategory = Computation.getFlightCategory(fromAirport, toAirport)
-      //check airline grade limit
-      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).view.mapValues(_.size).toMap
-      airline.getLinkLimit(flightCategory).foreach { limit => //if there's limit
-        val existingCount = existingFlightCategoryCounts.getOrElse(flightCategory, 0)
-        if (limit <= existingCount) {
-          return Some((s"Cannot create more route of category $flightCategory until your airline reaches higher grade. Your current grade is ${airline.airlineGrade.description} only allows ${limit} while you have ${existingCount} ", AIRLINE_GRADE))
-        }
-      }
+      //check airline grade limit - removed for now
+//      val existingFlightCategoryCounts : scala.collection.immutable.Map[FlightCategory.Value, Int] = LinkSource.loadLinksByAirlineId(airline.id).map(link => Computation.getFlightCategory(link.from, link.to)).groupBy(category => category).view.mapValues(_.size).toMap
+//      airline.getLinkLimit(flightCategory).foreach { limit => //if there's limit
+//        val existingCount = existingFlightCategoryCounts.getOrElse(flightCategory, 0)
+//        if (limit <= existingCount) {
+//          return Some((s"Cannot create more route of category $flightCategory until your airline reaches higher grade. Your current grade is ${airline.airlineGrade.description} only allows ${limit} while you have ${existingCount} ", AIRLINE_GRADE))
+//        }
+//      }
 
       //check title status
       if (flightCategory == FlightCategory.INTERCONTINENTAL) {
