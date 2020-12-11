@@ -560,6 +560,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         val modelsWithinRange: List[Model] = ModelSource.loadModelsWithinRange(distance)
 
+        val allManufacturingCountries = modelsWithinRange.map(_.countryCode).toSet
+
+        val countryRelations : immutable.Map[String, AirlineCountryRelationship] = allManufacturingCountries.map { countryCode =>
+          (countryCode, AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, airline))
+        }.toMap
+
+        val modelsWithinRangeAndRelationship = modelsWithinRange.filter(model => model.purchasableWithRelationship(countryRelations(model.countryCode).relationship))
 
         val airplanesAssignedToThisLink = new mutable.HashMap[Int, Int]()
 
@@ -576,7 +583,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         //available airplanes are either the ones that are already assigned to this link or have available flight minutes that is >= required minutes
         //group airplanes by model, also add Int to indicated how many frequency is this airplane currently assigned to this link
-        val availableAirplanesByModel : immutable.Map[Model, List[(Airplane, Int)]] = modelsWithinRange.map { model =>
+        val availableAirplanesByModel : immutable.Map[Model, List[(Airplane, Int)]] = modelsWithinRangeAndRelationship.map { model =>
           val ownedAirplanesOfThisModel = ownedAirplanesByModel.getOrElse(model, List.empty)
           val flightMinutesRequired = Computation.calculateFlightMinutesRequired(model, distance)
           val availableAirplanesOfThisModel = ownedAirplanesOfThisModel.filter(airplane => (airplane.home.id == fromAirportId && airplane.availableFlightMinutes >= flightMinutesRequired) || airplanesAssignedToThisLink.isDefinedAt(airplane.id))

@@ -833,7 +833,13 @@ function planLink(fromAirport, toAirport) {
 		        error: function(jqXHR, textStatus, errorThrown) {
 			            console.log(JSON.stringify(jqXHR));
 			            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-			    }
+			    },
+			    beforeSend: function() {
+                    $('body .loadingSpinner').show()
+                },
+                complete: function(){
+                    $('body .loadingSpinner').hide()
+                }
 			});
 		//hide existing info
 		//$("#planLinkDetails div.value").hide()
