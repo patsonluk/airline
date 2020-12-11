@@ -8,7 +8,7 @@ import com.patson.AirlineSimulation
 import com.patson.data._
 import com.patson.model.Computation.ResetAmountInfo
 import com.patson.model.{Title, _}
-import com.patson.util.{AirportCache, AllianceCache, ChampionUtil, CountryCache, LogoGenerator}
+import com.patson.util.{AirlineCache, AirportCache, AllianceCache, ChampionUtil, CountryCache, LogoGenerator}
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
 import javax.inject.Inject
 import models.{AirportFacility, Consideration, EntrepreneurProfile, FacilityType}
@@ -393,7 +393,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         AirlineSource.deleteAirlineBase(base)
 
         //update/refresh delegates
-        val delegateInfo = request.user.getDelegateInfo()
+        val airline = AirlineCache.getAirline(airlineId, true).get
+        val delegateInfo = airline.getDelegateInfo()
         if (delegateInfo.availableCount < 0) {
           val removingDelegates = delegateInfo.busyDelegates.sortBy(_.id).takeRight(delegateInfo.availableCount * -1) //take the newest ones away
           DelegateSource.deleteBusyDelegates(removingDelegates)
