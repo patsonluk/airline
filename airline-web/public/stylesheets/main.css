@@ -198,18 +198,20 @@ div.header, span.header {
 div.button, .ajax-file-upload {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	/*color: #454544;*/
+    color: rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px rgba(255, 255, 255, 0.25);
 	background-color: #ebebeb;
 	text-decoration: none;
 	font-size: 12px;
 	display: inline-block;
-	font-weight: 300;
+	font-weight: bold;
 	text-transform: uppercase;
 	cursor: pointer;
 	padding: 5px 15px;
-	border-radius: 10px;
+	border-radius: 7px;
 	margin: 5px 5px;
-	box-shadow: inset 0 0 2px white, 0 0 5px rgba(0, 0, 0, 0.5);
+	box-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
 div.button:hover {
@@ -350,20 +352,19 @@ dd.error {
 
 div.section, div.selectedSection, .modal-content {
 	border-radius: 5px 5px 5px 5px;
-	//background: linear-gradient(#FFFFFF 90%, #EEEEEE 100%);
 	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
     border-radius: 0.5em 0.5em 0.5em 0.5em;
     margin: 10px;
     padding: 10px 10px 20px 10px;
     box-sizing:border-box;
-    //display: block;
-    //position: relative;
 }
 
 div.section, .modal-content {
-	background-image: -webkit-gradient(linear, 0% 100%, 0% 90%, from(#e8e8d8), to(#FFFFFF));
+	/*background-image: -webkit-gradient(linear, 0% 100%, 0% 90%, from(#e8e8d8), to(#FFFFFF));
     background-image: -moz-linear-gradient(90deg, #e8e8d8 0%, #FFFFFF 10%);
-    background-image: linear-gradient(to bottom, #FFFFFF, #FFFFFF 90%, #e8e8d8);
+    background-image: linear-gradient(to bottom, #FFFFFF, #FFFFFF 90%, #e8e8d8); */
+    background-color: rgba(255, 255, 255, .75);
+    backdrop-filter: blur(5px);
 }
 	
 	

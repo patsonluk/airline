@@ -279,9 +279,9 @@ function getAirlineRelationshipDescriptionSpan(value) {
     } else if (value < 10) {
         color = "#FFC273"
     } else if (value < 40) {
-        color = "#59C795"
+        color = "#41A14D"
     } else {
-        color = "#8CB9D9"
+        color = "#646cdc"
     }
 
     return $('<span><span style="color: ' + color + '">' + getAirlineRelationshipDescription(value) + '</span>(' + value + ')</span>');
