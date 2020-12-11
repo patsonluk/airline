@@ -39,6 +39,11 @@ object MainSimulation extends App {
   def startCycle(cycle : Int) = {
       val cycleStartTime = System.currentTimeMillis()
       println("cycle " + cycle + " starting!")
+      if (cycle == 0) { //initialize it
+        OilSimulation.simulate(0)
+        LoanInterestRateSimulation.simulate(0)
+      }
+
       SimulationEventStream.publish(CycleStart(cycle, cycleStartTime), None)
       invalidateCaches()
 
