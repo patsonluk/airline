@@ -56,7 +56,9 @@ object AirlineCountryRelationship {
     }
   }
 
-  val HOME_COUNTRY_RELATIONSHIP_MULTIPLIER = 5
+  val HOME_COUNTRY_POSITIVE_RELATIONSHIP_MULTIPLIER = 5
+  val HOME_COUNTRY_NEGATIVE_RELATIONSHIP_MULTIPLIER = 15
+
   def getAirlineCountryRelationship(countryCode : String, airline : Airline) : AirlineCountryRelationship = {
     val factors = mutable.LinkedHashMap[RelationshipFactor, Int]()
     val targetCountry = countryMap(countryCode)
@@ -64,7 +66,8 @@ object AirlineCountryRelationship {
     airline.getCountryCode() match {
       case Some(homeCountryCode) =>
         val relationship = countryRelationships.getOrElse((homeCountryCode, countryCode), 0)
-        factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * HOME_COUNTRY_RELATIONSHIP_MULTIPLIER)
+        val multiplier = if (relationship >= 0) HOME_COUNTRY_POSITIVE_RELATIONSHIP_MULTIPLIER else HOME_COUNTRY_NEGATIVE_RELATIONSHIP_MULTIPLIER
+        factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * multiplier)
 
         CountrySource.loadCountryAirlineTitlesByAirlineAndCountry(airline.id, countryCode).foreach {
           title => {

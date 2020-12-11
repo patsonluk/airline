@@ -179,9 +179,12 @@ object NegotiationUtil {
 
     //if 100 relationship, give 50% discount (0.5)
     val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(airport.countryCode, airline).relationship
-    if (relationship != 0) {
+    if (relationship >= 0) {
       var discount = relationship * 0.005
-      discount = Math.max(Math.min(discount, 0.5), -0.5)
+      discount = Math.min(discount, 0.5)
+      discounts.append(NegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
+    } else if (relationship < 0) { //very penalizing
+      val discount = relationship * 0.1
       discounts.append(NegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     }
 
