@@ -1,9 +1,10 @@
 package com.patson.init
 
-import com.patson.data.{AirportSource, CitySource}
+import com.patson.data.{AirportSource, CitySource, CountrySource}
 import com.patson.init.GeoDataGenerator.{getCity, getIncomeInfo}
 import com.patson.model._
 
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
@@ -38,7 +39,35 @@ object AirportGeoPatcher extends App {
 
     println(s"Updating ${adjustedAirports.filter(_.id != 0).length} Airports")
 
+    AirportRunwayPatcher.setRunways(adjustedAirports)
+
     AirportSource.updateAirports(adjustedAirports)
+
+    AirportFeaturePatcher.patchFeatures()
+
+
+    val updatingCountries = ListBuffer[Country]()
+    adjustedAirports.groupBy(_.countryCode).foreach {
+      case (countryCode, airports) =>
+        val totalAirportPopulation : Long = airports.map {
+          _.population
+        }.sum
+        val averageIncome = if (totalAirportPopulation == 0) {
+          0
+        } else {
+          airports.map {
+            _.power
+          }.sum / totalAirportPopulation
+       }
+
+        CountrySource.loadCountryByCode(countryCode) match {
+          case Some(country) => updatingCountries.append(country.copy(airportPopulation = totalAirportPopulation.toInt))
+          case None => println(s"Country $countryCode not found!")
+        }
+
+    }
+    CountrySource.updateCountries(updatingCountries.toList)
+
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }

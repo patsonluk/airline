@@ -1,7 +1,7 @@
 package com.patson.init
 
 import com.patson.data.AirportSource
-import com.patson.model.Runway
+import com.patson.model._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -13,13 +13,16 @@ object AirportRunwayPatcher extends App {
   mainFlow
   
   def mainFlow() {
-    val runways: Map[String, List[Runway]] = Await.result(GeoDataGenerator.getRunway(), Duration.Inf)
     val airports = AirportSource.loadAllAirports(true)
-
-    GeoDataGenerator.setAirportRunwayDetails(airports, runways)
-
+    setRunways(airports)
     AirportSource.updateAirports(airports)
 
     Await.result(actorSystem.terminate(), Duration.Inf)
+
+  }
+
+  def setRunways(airports : List[Airport]) = {
+    val runways: Map[String, List[Runway]] = Await.result(GeoDataGenerator.getRunway(), Duration.Inf)
+    GeoDataGenerator.setAirportRunwayDetails(airports, runways)
   }
 }
