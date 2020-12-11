@@ -27,7 +27,8 @@ $( document ).ready(function() {
 		printConsole("Please log in")
         showAbout();
 	}
-	
+
+    registerEscape()
 	loadAllCountries()
 	updateAirlineColors()
 	populateTooltips()
@@ -53,6 +54,17 @@ $( document ).ready(function() {
 
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
+
+function registerEscape() {
+    $(document).keyup(function(e) {
+         if (e.key === "Escape") { // escape key maps to keycode `27`
+            var $topModal = $(".modal:visible").last()
+            if ($topModal.length > 0) {
+                closeModal($topModal)
+            }
+        }
+    });
+}
 
 
 function mobileCheck() {
