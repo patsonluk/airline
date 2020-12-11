@@ -207,9 +207,6 @@ object NegotiationUtil {
       return NegotiationUtil.NO_NEGOTIATION_REQUIRED
     }
 
-
-
-    //at this point negotiation is required
     val (fromAirportRequirements, toAirportRequirements) = getNegotiationRequirements(newLink, existingLinkOption, airline, airlineLinks)
     val fromAirportDiscounts = getNegotiationDiscounts(fromAirport, airline)
     val toAirportDiscounts = getNegotiationDiscounts(toAirport, airline)
