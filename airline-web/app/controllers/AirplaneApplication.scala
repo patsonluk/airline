@@ -227,7 +227,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     if (airline.getHeadQuarter().isEmpty) { //no HQ
       return Some("Must build HQs before purchasing any airplanes")
     }
-    if (model.purchasableWithRelationship(relationship.relationship)) {
+    if (!model.purchasableWithRelationship(relationship.relationship)) {
       return Some(s"The manufacturer refuses to sell " + model.name + s" to your airline until your relationship with ${CountryCache.getCountry(model.countryCode).get.name} is improved to at least ${Model.BUY_RELATIONSHIP_THRESHOLD}")
     }
 
@@ -258,7 +258,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
 
     val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(model.countryCode, airline)
-    if (model.purchasableWithRelationship(relationship.relationship)) {
+    if (!model.purchasableWithRelationship(relationship.relationship)) {
       val rejection = s"Cannot buy used airplane of " + model.name + s" until your relationship with ${CountryCache.getCountry(model.countryCode).get.name} is improved to at least ${Model.BUY_RELATIONSHIP_THRESHOLD}"
       return usedAirplanes.map((_, rejection)).toMap
     }
