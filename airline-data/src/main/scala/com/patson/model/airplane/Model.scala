@@ -61,9 +61,15 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
     }
     discountedModel
   }
+
+  val purchasableWithRelationship = (relationship : Int) => {
+    relationship >= Model.BUY_RELATIONSHIP_THRESHOLD
+  }
 }
 
 object Model {
+  val BUY_RELATIONSHIP_THRESHOLD = 0
+
   def fromId(id : Int) = {
     val modelWithJustId = Model("Unknown", "Unknown", 0, 0, 0, 0, 0, 0, 0, countryCode = "", runwayRequirement = 0)
     modelWithJustId.id = id

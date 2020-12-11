@@ -15,11 +15,11 @@ import com.patson.model.AirlineCashFlow
 import com.patson.model.CashFlowType
 import com.patson.model.CashFlowType
 import com.patson.model.AirlineCashFlowItem
+import com.patson.util.CountryCache
 import javax.inject.Inject
 
 
 class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-  val BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD = 0
   implicit object LinkAssignmentWrites extends Writes[LinkAssignments] {
     def writes(linkAssignments: LinkAssignments) : JsValue = {
       var result = Json.arr()
@@ -201,37 +201,34 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
   
   def getRejections(models : List[Model], airline : Airline) : Map[Model, Option[String]] = {
-     
-    val countryRelations : Map[String, Int] = airline.getCountryCode() match {
-      case Some(homeCountry) => CountrySource.getCountryMutualRelationships(homeCountry).toList.map {
-        case (otherCountry, relationship) => (otherCountry, relationship)
-      }.toMap
-      case None => Map.empty
-    }    
-    
+    val allManufacturingCountries = models.map(_.countryCode).toSet
+
+    val countryRelations : Map[String, AirlineCountryRelationship] = allManufacturingCountries.map { countryCode =>
+      (countryCode, AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, airline))
+    }.toMap
+
     val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
+
+
     models.map { model =>
-      (model, getRejection(model, 1, countryRelations.getOrElse(model.countryCode, 0), ownedModels, airline))
+      (model, getRejection(model, 1, countryRelations(model.countryCode), ownedModels, airline))
     }.toMap
     
   }
   
   def getRejection(model: Model, quantity : Int, airline : Airline) : Option[String] = {
-    val countryRelation = airline.getCountryCode() match {
-      case Some(homeCountry) => CountrySource.getCountryMutualRelationship(homeCountry, model.countryCode)
-      case None => 0
-    }
+    val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(model.countryCode, airline)
 
     val ownedModels = AirplaneSource.loadAirplanesByOwner(airline.id).map(_.model).toSet
-    getRejection(model, quantity, countryRelation, ownedModels, airline)
+    getRejection(model, quantity, relationship, ownedModels, airline)
   }
   
-  def getRejection(model: Model, quantity : Int, countryRelationship : Int, ownedModels : Set[Model], airline : Airline) : Option[String]= {
+  def getRejection(model: Model, quantity : Int, relationship : AirlineCountryRelationship, ownedModels : Set[Model], airline : Airline) : Option[String]= {
     if (airline.getHeadQuarter().isEmpty) { //no HQ
       return Some("Must build HQs before purchasing any airplanes")
     }
-    if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
-      return Some("The company refuses to sell " + model.name + " to your airline due to bad country relationship")
+    if (model.purchasableWithRelationship(relationship.relationship)) {
+      return Some(s"The manufacturer refuses to sell " + model.name + s" to your airline until your relationship with ${CountryCache.getCountry(model.countryCode).get.name} is improved to at least ${Model.BUY_RELATIONSHIP_THRESHOLD}")
     }
 
 
@@ -259,9 +256,10 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       case Some(homeCountry) => CountrySource.getCountryMutualRelationship(homeCountry, model.countryCode)
       case None => 0
     }
-    
-    if (countryRelationship < BUY_AIRPLANCE_RELATIONSHIP_THRESHOLD) {
-      val rejection = "Cannot buy used airplane of " + model.name + " as your home country has bad relationship with manufacturer's country"
+
+    val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(model.countryCode, airline)
+    if (model.purchasableWithRelationship(relationship.relationship)) {
+      val rejection = s"Cannot buy used airplane of " + model.name + s" until your relationship with ${CountryCache.getCountry(model.countryCode).get.name} is improved to at least ${Model.BUY_RELATIONSHIP_THRESHOLD}")
       return usedAirplanes.map((_, rejection)).toMap
     }
     

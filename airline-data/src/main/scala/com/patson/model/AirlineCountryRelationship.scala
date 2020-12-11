@@ -60,49 +60,52 @@ object AirlineCountryRelationship {
   def getAirlineCountryRelationship(countryCode : String, airline : Airline) : AirlineCountryRelationship = {
     val factors = mutable.LinkedHashMap[RelationshipFactor, Int]()
     val targetCountry = countryMap(countryCode)
+
     airline.getCountryCode() match {
       case Some(homeCountryCode) =>
         val relationship = countryRelationships.getOrElse((homeCountryCode, countryCode), 0)
         factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * HOME_COUNTRY_RELATIONSHIP_MULTIPLIER)
+
+        CountrySource.loadCountryAirlineTitlesByAirlineAndCountry(airline.id, countryCode).foreach {
+          title => {
+            val relationshipBonus = Title.relationshipBonus(title.title)
+            factors.put(TITLE(title), relationshipBonus)
+          }
+        }
+
+        CountrySource.loadMarketSharesByCountryCode(countryCode).foreach {
+          marketShares => {
+            marketShares.airlineShares.get(airline.id).foreach {
+              marketShareOfThisAirline => {
+                var percentage = BigDecimal(marketShareOfThisAirline.toDouble / marketShares.airlineShares.values.sum * 100)
+                percentage = percentage.setScale(2, BigDecimal.RoundingMode.HALF_UP)
+                val relationshipBonus : Int = percentage match {
+                  case x if x >= 50 => 40
+                  case x if x >= 25 => 30
+                  case x if x >= 10 => 25
+                  case x if x >= 5 => 20
+                  case x if x >= 2 => 15
+                  case x if x >= 1 => 10
+                  case x if x >= 0.5 => 8
+                  case x if x >= 0.1 => 6
+                  case x if x >= 0.02 => (x * 50).toInt
+                  case _ => 1
+                }
+                factors.put(MARKET_SHARE(percentage), relationshipBonus)
+              }
+            }
+          }
+        }
+        val currentCycle = CycleSource.loadCycle()
+        val totalLevel : Int = DelegateSource.loadCountryDelegateByAirlineAndCountry(airline.id, countryCode).map(_.assignedTask.asInstanceOf[CountryDelegateTask].level(currentCycle)).sum
+
+
+        val levelMultiplier = getDelegateBonusMultiplier(targetCountry)
+        factors.put(DELEGATE(totalLevel), Math.round(totalLevel * levelMultiplier).toInt)
+
       case None =>
     }
 
-    CountrySource.loadCountryAirlineTitlesByAirlineAndCountry(airline.id, countryCode).foreach {
-      title => {
-        val relationshipBonus = Title.relationshipBonus(title.title)
-        factors.put(TITLE(title), relationshipBonus)
-      }
-    }
-
-    CountrySource.loadMarketSharesByCountryCode(countryCode).foreach {
-      marketShares => {
-        marketShares.airlineShares.get(airline.id).foreach {
-          marketShareOfThisAirline => {
-            var percentage = BigDecimal(marketShareOfThisAirline.toDouble / marketShares.airlineShares.values.sum * 100)
-            percentage = percentage.setScale(2, BigDecimal.RoundingMode.HALF_UP)
-            val relationshipBonus : Int = percentage match {
-              case x if x >= 50 => 40
-              case x if x >= 25 => 30
-              case x if x >= 10 => 25
-              case x if x >= 5 => 20
-              case x if x >= 2 => 15
-              case x if x >= 1 => 10
-              case x if x >= 0.5 => 8
-              case x if x >= 0.1 => 6
-              case x if x >= 0.02 => (x * 50).toInt
-              case _ => 1
-            }
-            factors.put(MARKET_SHARE(percentage), relationshipBonus)
-          }
-        }
-      }
-    }
-    val currentCycle = CycleSource.loadCycle()
-    val totalLevel : Int = DelegateSource.loadCountryDelegateByAirlineAndCountry(airline.id, countryCode).map(_.assignedTask.asInstanceOf[CountryDelegateTask].level(currentCycle)).sum
-
-
-    val levelMultiplier = getDelegateBonusMultiplier(targetCountry)
-    factors.put(DELEGATE(totalLevel), Math.round(totalLevel * levelMultiplier).toInt)
     AirlineCountryRelationship(airline, targetCountry, factors.toMap)
   }
 
