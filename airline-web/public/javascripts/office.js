@@ -115,7 +115,7 @@ function updateAirlineBases() {
     	    	 $(activeAirline.baseAirports).each(function(index, base) {
                     var row = $("<div class='table-row'></div>")
                     if (base.headquarter) {
-                        row.append($("<div class='cell'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
+                        row.append($("<div class='cell'><img src='assets/images/icons/Ring-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
 
                     } else {
                         row.append($("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
@@ -815,6 +815,7 @@ function resetAirline(keepAssets) {
 	    dataType: 'json',
 	    success: function() {
 	    	updateAllPanels(activeAirline.id)
+	    	selectedLink = undefined
 	    	showWorldMap()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
