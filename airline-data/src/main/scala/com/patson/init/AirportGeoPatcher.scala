@@ -35,7 +35,6 @@ object AirportGeoPatcher extends App {
       }
     }
 
-
     val incomeInfo = getIncomeInfo()
     val getCityFuture = getCity(incomeInfo)
 

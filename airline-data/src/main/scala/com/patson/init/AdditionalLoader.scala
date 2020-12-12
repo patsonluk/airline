@@ -38,7 +38,7 @@ object AdditionalLoader {
       if (!line.startsWith("#")) {
         val airportName = line.trim()
         if (airportName.length > 0) {
-          specialAirportNames += airportName
+          specialAirportNames += airportName.toLowerCase
         }
       }
     }
