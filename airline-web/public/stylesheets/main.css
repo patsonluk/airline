@@ -360,14 +360,9 @@ div.section, div.selectedSection, .modal-content {
 }
 
 div.section, .modal-content {
-/*
 	background-image: -webkit-gradient(linear, 0% 100%, 0% 90%, from(#e8e8d8), to(#FFFFFF));
     background-image: -moz-linear-gradient(90deg, #e8e8d8 0%, #FFFFFF 10%);
     background-image: linear-gradient(to bottom, #FFFFFF, #FFFFFF 90%, #e8e8d8);
-    */
-
-    background-color: rgba(255, 255, 255, .8);
-    backdrop-filter: blur(5px);
 }
 	
 	
