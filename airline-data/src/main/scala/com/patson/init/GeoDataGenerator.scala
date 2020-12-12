@@ -400,7 +400,7 @@ object GeoDataGenerator extends App {
               } else {
                 1
               }
-            } else if (longRunway > 1) {
+            } else if (longRunway >= 1) {
               1
             } else {
               0
