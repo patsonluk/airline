@@ -199,12 +199,10 @@ div.button, .ajax-file-upload {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #454544;*/
-    color: rgba(0, 0, 0, 0.5);
     background-color: #ebebeb;
 	text-decoration: none;
 	font-size: 12px;
 	display: inline-block;
-	text-transform: uppercase;
 	cursor: pointer;
 	padding: 5px 15px;
 	border-radius: 7px;
