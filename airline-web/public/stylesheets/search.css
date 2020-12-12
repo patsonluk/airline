@@ -63,7 +63,7 @@
 }
 
 .searchResult {
-    float: left;
+    /*float: left;*/
     width: 300px;
     position: absolute;
     top: 30px;

@@ -2500,7 +2500,7 @@
 					    <div class="titleSelection selected" data-search-type="route">Tickets</div>
 					    <div class="titleSelection" data-search-type="history">History</div>
 					  </div>
-					  <div class="routeSearch searchContainer" style="overflow-y : auto; display: flex; flex-flow: column;">
+					  <div class="routeSearch searchContainer" style="display: flex; flex-flow: column; flex-grow : 1;">
 						  <div style="margin-top: 10px">
 							  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
 								  <div style="float: left; width : 50%; position: relative;">
@@ -2523,9 +2523,9 @@
 							  <div class="button search" tabindex="103" onkeypress="searchButtonKeyPress(event, $(this))" onclick="searchFlight($('div.routeSearch input.fromAirport').data('selectedId'), $('div.routeSearch input.toAirport').data('selectedId'))">Search</div>
 						  </div>
 
-						  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px;"></div>
+						  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px; height: 0px;"></div> <!-- need height otherwise the scroll would not work -->
 				  	  </div>
-					  <div class="historySearch searchContainer" style="overflow-y : auto; flex-grow: 1; display: flex; flex-flow: column;">
+					  <div class="historySearch searchContainer" style="flex-grow: 1; display: flex; flex-flow: column; ">
 					  	 <div style="margin-top: 10px">
 							<div class="locationCriteria" style="float: left; width : 50%; position: relative; box-sizing: border-box;">
 							  <div class="searchCriterion"> <!-- Airport -->
@@ -3219,7 +3219,7 @@
 			  </div>
 		  </div>
 		  <div class="negotiationInfo">
-			  <h4 style="margin-bottom: 10px; margin-top: 30px; display: flex;">Negotiation Difficulty :&nbsp;
+			  <h4 style="margin-bottom: 10px; margin-top: 30px; display: flex; align-items: center;">Negotiation Difficulty :&nbsp;
 			      <span class="negotiationDifficultyTotal"></span>
              	  <img class="clickable info" src='@routes.Assets.versioned("images/icons/information-24.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)">
 				  <img class="clickable error" src='@routes.Assets.versioned("images/icons/24px/cross-circle.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)" style="display: hidden;">
