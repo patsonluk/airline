@@ -21,6 +21,7 @@
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
       <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/search.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/switch.css")">
+	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/select.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/about.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
 	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
@@ -505,7 +506,7 @@
 											<img class="clickable" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
 											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
 
-											<div class="value"><select id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
+											<div class="value"><select class="select-css" id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 
 										</div>
 									</div>
@@ -563,7 +564,7 @@
 									</div>
 									<div class="table-row" id="planLinkModelRow">
 										<div class="label"><h5>Airplane Model (available):</h5></div>
-										<div class="value"><select id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
+										<div class="value"><select class="select-css" id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
 									</div>
 								</div>
 								<div class="table" style="width: 100%" id="planLinkExtendedDetails">
@@ -1454,14 +1455,14 @@
 									<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"/>
 								</div>
 								<div>
-									<select id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
+									<select class="select-css" id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
 										<option value="WEEKLY" selected="selected">Week</option>
 										<option value="MONTHLY">Month</option>
 										<option value="YEARLY">Year</option>
 									</select>
 								</div>
 
-								<div id="totalProfitChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
+								<div id="totalProfitChart" style="width: 95%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
 								<div style="height: 100%; float: left;" class="verticalGroup">
 									<div class="table section" style="width: 90%;">
@@ -1642,7 +1643,7 @@
 									<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="cashFlowHistoryStep(1)"/>
 								</div>
 								<div>
-									<select id="cashFlowPeriodSelect" onchange="changeCashFlowPeriod($(this).val())">
+									<select class="select-css" id="cashFlowPeriodSelect" onchange="changeCashFlowPeriod($(this).val())">
 										<option value="WEEKLY" selected="selected">Week</option>
 										<option value="MONTHLY">Month</option>
 										<option value="YEARLY">Year</option>
@@ -3551,7 +3552,7 @@
 				<div class="table-row">
 					<div class="cell"><h5>Home airport:</h5></div>
 					<div class="cell">
-						<select class="homeOptions"></select>
+						<select class="homeOptions select-css"></select>
 					</div>
 				</div>
 				<div class="table-row seatConfiguration">
@@ -3624,7 +3625,7 @@
 								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;" title="Cannot change home airport with active route(s)"/></div>
 							</div>
 							<div class="homeEdit"; style="display:none">
-								<select class="homeOptions"></select>
+								<select class="homeOptions select-css"></select>
 								<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="confirmAirplaneHome()"/>
 								<img src='@routes.Assets.versioned("images/icons/cross.png")' class='button' style="vertical-align: middle;" onclick="cancelAirplaneHome()"/>
 							</div>
