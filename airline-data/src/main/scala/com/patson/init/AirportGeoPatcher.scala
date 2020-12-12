@@ -1,25 +1,40 @@
 package com.patson.init
 
 import com.patson.data.{AirportSource, CitySource, CountrySource}
-import com.patson.init.GeoDataGenerator.{getCity, getIncomeInfo}
+import com.patson.init.GeoDataGenerator.{CsvAirport, getCity, getIncomeInfo}
 import com.patson.model._
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
+/**
+  * Regenerate ALL airport data (pops, runway, power etc) without wiping the existing airport DB
+  *
+  * It will attempt to update the airport if it's already existed and insert airport otherwise
+  *
+  * it will NOT purge airports that no longer in the CSV file tho
+  *
+  */
 object AirportGeoPatcher extends App {
   //implicit val materializer = FlowMaterializer()
 
   mainFlow
 
   def mainFlow() {
-    val runways : Map[String, List[Runway]] = Await.result(GeoDataGenerator.getRunway(), Duration.Inf)
-    val iataToId : Map[String, Int] = AirportSource.loadAllAirports(false).map(airport => (airport.iata, airport.id)).toMap //just load to get IATA to ID
-    val rawAirports = Await.result(GeoDataGenerator.getAirport(), Duration.Inf).map(rawAirport => iataToId.get(rawAirport.iata) match {
-      case Some(savedId) => rawAirport.copy(id = savedId)
-      case None => rawAirport
-    })
+    val runways : Map[Int, List[Runway]] = Await.result(GeoDataGenerator.getRunway(), Duration.Inf)
+    val iataToGeneratedId : Map[String, Int] = AirportSource.loadAllAirports(false).map(airport => (airport.iata, airport.id)).toMap //just load to get IATA to our generated ID
+
+    val csvAirports : List[CsvAirport] = Await.result(GeoDataGenerator.getAirport(), Duration.Inf).map { csvAirport =>
+      val rawAirport = csvAirport.airport
+      val csvAirportId = csvAirport.csvAirportId
+
+      iataToGeneratedId.get(rawAirport.iata) match {
+        case Some(savedId) => CsvAirport(rawAirport.copy(id = savedId), csvAirportId)
+        case None => csvAirport
+      }
+    }
+
 
     val incomeInfo = getIncomeInfo()
     val getCityFuture = getCity(incomeInfo)
@@ -35,19 +50,24 @@ object AirportGeoPatcher extends App {
       case e : Throwable => e.printStackTrace()
     }
 
-    val adjustedAirports = GeoDataGenerator.generateAirportData(rawAirports, runways, cities)
+    val computedAirports = GeoDataGenerator.generateAirportData(csvAirports, runways, cities)
 
-    println(s"Updating ${adjustedAirports.filter(_.id != 0).length} Airports")
+    val newAirports = computedAirports.filter(_.id == 0)
+    val updatingAirports = computedAirports.filter(_.id > 0)
 
-    AirportRunwayPatcher.setRunways(adjustedAirports)
+    GeoDataGenerator.setAirportRunwayDetails(csvAirports, runways)
+    println(s"Creating ${newAirports.length} Airports")
+    AirportSource.saveAirports(newAirports)
 
-    AirportSource.updateAirports(adjustedAirports)
+    println(s"Updating ${updatingAirports.length} Airports")
+    AirportSource.updateAirports(updatingAirports)
+
 
     AirportFeaturePatcher.patchFeatures()
 
 
     val updatingCountries = ListBuffer[Country]()
-    adjustedAirports.groupBy(_.countryCode).foreach {
+    computedAirports.groupBy(_.countryCode).foreach {
       case (countryCode, airports) =>
         val totalAirportPopulation : Long = airports.map {
           _.population
@@ -71,5 +91,7 @@ object AirportGeoPatcher extends App {
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }
+
+
 
 }

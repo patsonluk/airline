@@ -84,9 +84,9 @@ object GeoDataGenerator extends App {
     placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || placeCode == "PPLA3" || (placeCode == "PPL" && (countryCode == "AU" /*|| countryCode == "CA"*/))
   }
 
-  def getRunway() : Future[Map[String, List[Runway]]] = {
+  def getRunway() : Future[Map[Int, List[Runway]]] = {
     Future {
-      val result = scala.collection.mutable.HashMap[String, collection.mutable.ListBuffer[Runway]]()
+      val result = scala.collection.mutable.HashMap[Int, collection.mutable.ListBuffer[Runway]]()
       val asphaltPattern = "(asp.*)".r
       val concretePattern = "(con.*|pem.*)".r
       val gravelPattern = "(gvl.*|.*gravel.*)".r
@@ -107,7 +107,7 @@ object GeoDataGenerator extends App {
           if (length % 10 == 9) { //somehow the data is off my 1 meter
             length += 1
           }
-          val icao = info(2)
+          val csvAirportId = info(1).toInt
           var codeTokens = ListBuffer[String](info(8).trim, info(14).trim)
           codeTokens = codeTokens.filterNot(token => "XX".equals(token) || "".equals(token))
           val code = codeTokens.mkString("/")
@@ -122,7 +122,7 @@ object GeoDataGenerator extends App {
             }
           runwayOption.foreach {
             case (runway) =>
-              val list = result.getOrElseUpdate(icao, ListBuffer[Runway]())
+              val list = result.getOrElseUpdate(csvAirportId, ListBuffer[Runway]())
               list += runway
           }
         } catch {
@@ -141,9 +141,9 @@ object GeoDataGenerator extends App {
     }
   }
 
-  def getAirport() : Future[List[Airport]] = {
+  def getAirport() : Future[List[CsvAirport]] = {
     Future {
-      val result = ListBuffer[Airport]()
+      val result = ListBuffer[CsvAirport]()
       for (line : String <- Source.fromFile("airports.csv").getLines) {
         val info = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map { token =>
           if (token.startsWith("\"") && token.endsWith("\"")) {
@@ -160,7 +160,9 @@ object GeoDataGenerator extends App {
             case "large_airport" => 3
             case _ => 0
           }
-        result += new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), zone = info(7), airportSize, 0, 0, 0) //2 - size, 3 - name, 4 - lat, 5 - long, 7 - zone, 8 - country, 10 - city, 12 - code1, 13- code2
+        //0 - csvId, 2 - size, 3 - name, 4 - lat, 5 - long, 7 - zone, 8 - country, 10 - city, 12 - code1, 13- code2
+        result += CsvAirport(airport = new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), zone = info(7), airportSize, 0, 0, 0),
+          csvAirportId = info(0).toInt)
 
       }
       result.toList
@@ -202,12 +204,12 @@ object GeoDataGenerator extends App {
     collection.immutable.HashMap() ++ incomeMap
   }
 
-  def buildAirportData(airportFuture : Future[List[Airport]], runwayFuture : Future[Map[String, List[Runway]]], citites : List[City]) : List[Airport] = {
+  def buildAirportData(airportFuture : Future[List[CsvAirport]], runwayFuture : Future[Map[Int, List[Runway]]], citites : List[City]) : List[Airport] = {
     val combinedFuture = Future.sequence(Seq(airportFuture, runwayFuture))
     val results = Await.result(combinedFuture, Duration.Inf)
 
-    val rawAirportResult : List[Airport] = results(0).asInstanceOf[List[Airport]]
-    val runwayResult : Map[String, List[Runway]] = results(1).asInstanceOf[Map[String, List[Runway]]]
+    val rawAirportResult : List[CsvAirport] = results(0).asInstanceOf[List[CsvAirport]]
+    val runwayResult : Map[Int, List[Runway]] = results(1).asInstanceOf[Map[Int, List[Runway]]]
 
     println(rawAirportResult.size + " airports")
     println(runwayResult.size + " solid runways")
@@ -226,10 +228,13 @@ object GeoDataGenerator extends App {
     airports
   }
 
-  def generateAirportData(rawAirportResult : List[Airport], runwayResult : Map[String, List[Runway]], cities : List[City]) : List[Airport] = {
-    var airportResult = adjustAirportByRunway(rawAirportResult.filter { airport =>
-      airport.iata != "" && airport.name.toLowerCase().contains(" airport") && airport.size > 0
-    }, runwayResult)
+
+
+  def generateAirportData(rawAirportResult : List[CsvAirport], runwayResult : Map[Int, List[Runway]], cities : List[City]) : List[Airport] = {
+    val specialAirportNames = AdditionalLoader.loadSpecialAirportNames()
+    var airportResult = adjustAirportByRunway(rawAirportResult.filter { case(CsvAirport(airport, _)) =>
+      airport.iata != "" && (airport.name.toLowerCase().contains(" airport") || specialAirportNames.contains(airport.name.toLowerCase())) && airport.size > 0
+    }, runwayResult) //
 
     airportResult = adjustAirportSize(airportResult)
 
@@ -346,9 +351,12 @@ object GeoDataGenerator extends App {
 
   }
 
-  def setAirportRunwayDetails(airports : List[Airport], runwaysByIcao : Map[String, List[Runway]]) : Unit = {
-    airports.foreach { airport =>
-      runwaysByIcao.get(airport.icao) match {
+  case class CsvAirport(airport : Airport, csvAirportId : Int)
+
+  def setAirportRunwayDetails(csvAirports : List[CsvAirport], runwaysByCsvId : Map[Int, List[Runway]]) : Unit = {
+    csvAirports.foreach {
+      case (CsvAirport(airport, csvId)) =>
+        runwaysByCsvId.get(csvId) match {
         case Some(runways) =>
           if (runways.length > 0) {
             airport.setRunways(runways)
@@ -362,44 +370,45 @@ object GeoDataGenerator extends App {
     }
   }
 
-  def adjustAirportByRunway(rawAirportResult : List[Airport], runwayResult : Map[String, List[Runway]]) : List[Airport] = {
-    rawAirportResult.map { rawAirport =>
-      val increment : Int = runwayResult.get(rawAirport.icao) match {
-        case Some(runways) =>
-          var longRunway = 0
-          var veryLongRunway = 0
-          var megaRunway = 0
-          runways.filter(_.lighted).foreach { runway => //only count lighted runways
-            if (runway.length >= 10000 * 0.3048) { //old logic (for example 10000, was in feet) while runway.length is in meter now
-              megaRunway += 1
-            } else if (runway.length >= 9000 * 0.3048) {
-              veryLongRunway += 1
-            } else if (runway.length >= 7000 * 0.3048) {
-              longRunway += 1
+  def adjustAirportByRunway(rawAirportResult : List[CsvAirport], runwayResult : Map[Int, List[Runway]]) : List[Airport] = {
+    rawAirportResult.map {
+      case (CsvAirport(rawAirport, csvAirportId)) =>
+        val increment : Int = runwayResult.get(csvAirportId) match {
+          case Some(runways) =>
+            var longRunway = 0
+            var veryLongRunway = 0
+            var megaRunway = 0
+            runways.filter(_.lighted).foreach { runway => //only count lighted runways
+              if (runway.length >= 10000 * 0.3048) { //old logic (for example 10000, was in feet) while runway.length is in meter now
+                megaRunway += 1
+              } else if (runway.length >= 9000 * 0.3048) {
+                veryLongRunway += 1
+              } else if (runway.length >= 7000 * 0.3048) {
+                longRunway += 1
+              }
             }
-          }
 
-          if (megaRunway > 0) {
-            println(rawAirport.name)
-            3
-          } else if (veryLongRunway > 0) {
-            if (veryLongRunway > 1) { //2 very long runway
-              2
-            } else if (longRunway > 0) { //1 very long 1+ long
-              2
-            } else {
+            if (megaRunway > 0) {
+              println(rawAirport.name)
+              3
+            } else if (veryLongRunway > 0) {
+              if (veryLongRunway > 1) { //2 very long runway
+                2
+              } else if (longRunway > 0) { //1 very long 1+ long
+                2
+              } else {
+                1
+              }
+            } else if (longRunway > 1) {
               1
+            } else {
+              0
             }
-          } else if (longRunway > 1) {
-            1
-          } else {
-            0
-          }
-        case None => 0 //no change
-      }
-      rawAirport.size = rawAirport.size + increment
+          case None => 0 //no change
+        }
+        rawAirport.size = rawAirport.size + increment
 
-      rawAirport
+        rawAirport
     }
   }
 
