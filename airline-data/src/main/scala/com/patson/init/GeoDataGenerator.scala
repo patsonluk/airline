@@ -232,7 +232,7 @@ object GeoDataGenerator extends App {
 
   def generateAirportData(rawAirportResult : List[CsvAirport], runwayResult : Map[Int, List[Runway]], cities : List[City]) : List[Airport] = {
     val specialAirportNames = AdditionalLoader.loadSpecialAirportNames()
-    specialAirportNames.foreach(println)
+
     var airportResult = adjustAirportByRunway(rawAirportResult.filter { case(CsvAirport(airport, _)) =>
       airport.iata != "" && (airport.name.toLowerCase().contains(" airport") || specialAirportNames.contains(airport.name.toLowerCase())) && airport.size > 0
     }, runwayResult) //
