@@ -418,9 +418,11 @@ function toggleOnOff(element) {
  * @returns
  */
 function highlightTab(tab) {
-	tab.siblings().children("span").removeClass("selected")
-	//highlight the selected model
-	tab.children("span").addClass("selected")
+//	tab.siblings().children("span").removeClass("selected")
+//	//highlight the selected model
+//	tab.children("span").addClass("selected")
+    tab.siblings().removeClass('highlighted')
+    tab.addClass('highlighted')
 }
 
 function highlightSwitch(selectedSwitch) {

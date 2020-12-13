@@ -162,7 +162,7 @@ div#canvas.christmas {
 	width: 100%;
 }
 
-.table .table-header .cell:not(:empty){R
+.table .table-header .cell:not(:empty){
     background: #7fb8ff;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#7fb8ff, #a2cfff);  /* Chrome 10-25, Safari 5.1-6 */
     background: linear-gradient(#7fb8ff, #a2cfff); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
@@ -175,7 +175,11 @@ div#canvas.christmas {
     color : rgb(0, 0, 0, 0.5);
 }
 
-.table .table-header .cell.selected {
+.tabs li.highlighted {
+    font-weight: bold;
+}
+
+.table .table-header .cell.selected, .tabs li.highlighted {
     background: #90be81;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#90be81, #a1d490);  /* Chrome 10-25, Safari 5.1-6 */
     background: linear-gradient(#90be81, #a1d490); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
