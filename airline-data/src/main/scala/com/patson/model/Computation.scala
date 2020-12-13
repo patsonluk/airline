@@ -179,26 +179,30 @@ object Computation {
       0
     }
   }
-  
+
   val MAX_FREQUENCY_ABSOLUTE_BASE = 30
   def getMaxFrequencyThreshold(airline : Airline) : Int = {
-     AllianceSource.loadAllianceMemberByAirline(airline) match {
-       case Some(allianceMember) => {
-         if (allianceMember.role != AllianceRole.APPLICANT) {
-           AllianceRankingUtil.getRanking(allianceMember.allianceId) match {
-             case Some((ranking, _)) => {
-               val maxFrequencyBonus = Alliance.getMaxFrequencyBonus(ranking)
-               MAX_FREQUENCY_ABSOLUTE_BASE + maxFrequencyBonus
-             }
-             case None => MAX_FREQUENCY_ABSOLUTE_BASE
-           }
-         } else {
-           MAX_FREQUENCY_ABSOLUTE_BASE
-         }
-       }
-       case None => MAX_FREQUENCY_ABSOLUTE_BASE
-     }
+    MAX_FREQUENCY_ABSOLUTE_BASE
   }
+
+//  def getMaxFrequencyThreshold(airline : Airline) : Int = {
+//     AllianceSource.loadAllianceMemberByAirline(airline) match {
+//       case Some(allianceMember) => {
+//         if (allianceMember.role != AllianceRole.APPLICANT) {
+//           AllianceRankingUtil.getRanking(allianceMember.allianceId) match {
+//             case Some((ranking, _)) => {
+//               val maxFrequencyBonus = Alliance.getMaxFrequencyBonus(ranking)
+//               MAX_FREQUENCY_ABSOLUTE_BASE + maxFrequencyBonus
+//             }
+//             case None => MAX_FREQUENCY_ABSOLUTE_BASE
+//           }
+//         } else {
+//           MAX_FREQUENCY_ABSOLUTE_BASE
+//         }
+//       }
+//       case None => MAX_FREQUENCY_ABSOLUTE_BASE
+//     }
+//  }
   
   def getResetAmount(airlineId : Int) : ResetAmountInfo = {
     val amountFromAirplanes = AirplaneSource.loadAirplanesByOwner(airlineId, false).map(Computation.calculateAirplaneSellValue(_).toLong).sum

@@ -301,12 +301,7 @@ function updateAllianceBonus(allianceId) {
 	} else {
 		$('#allianceCodeShareBonus').show();
 		$('#allianceNoneBonus').hide();
-		if (alliance.maxFrequencyBonus) {
-			$('#allianceMaxFrequencyBonusValue').text(alliance.maxFrequencyBonus)
-			$('#allianceMaxFrequencyBonus').show();
-		} else {
-			$('#allianceMaxFrequencyBonus').hide();
-		}
+
 		
 		if (alliance.reputationBonus) {
 			$('#allianceReputationBonusValue').text(alliance.reputationBonus)

@@ -63,19 +63,19 @@ object Alliance {
     }
   }
 
-  val getMaxFrequencyBonus: (Int => Int) = { (ranking: Int) =>
-    if (ranking == 1) {
-      15
-    } else if (ranking == 2) {
-      10
-    } else if (ranking == 3) {
-      5
-    } else if (ranking <= 10) {
-      2
-    } else {
-      0
-    }
-  }
+//  val getMaxFrequencyBonus: (Int => Int) = { (ranking: Int) =>
+//    if (ranking == 1) {
+//      15
+//    } else if (ranking == 2) {
+//      10
+//    } else if (ranking == 3) {
+//      5
+//    } else if (ranking <= 10) {
+//      2
+//    } else {
+//      0
+//    }
+//  }
 
   /**
     *
