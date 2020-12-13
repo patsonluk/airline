@@ -41,6 +41,7 @@ function showLinkHistoryView() {
 function loadLinkHistory(linkId) {
     $.each(historyPaths, function(index, path) { //clear all history path
         path.setMap(null)
+        path.shadowPath.setMap(null)
     })
     historyPaths = {}
 	var linkInfo = loadedLinksById[linkId]
