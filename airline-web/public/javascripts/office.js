@@ -1,10 +1,7 @@
 var loadedIncomes = {}
-var incomePage = 0;
-var incomePeriod;
-
 var loadedCashFlows = {}
-var cashFlowPage = 0;
-var cashFlowPeriod;
+var officeSheetPage = 0;
+var officePeriod;
 
 var fileuploaderObj;
 var airlineColorPicker;
@@ -192,15 +189,15 @@ function loadSheets() {
 	loadedIncomes['WEEKLY'] = []
 	loadedIncomes['MONTHLY'] = []
 	loadedIncomes['YEARLY'] = []
-	incomePage = 0 
-	incomePeriod = 'WEEKLY'
-		
+
 	loadedCashFlows = {}
-	loadedCashFlows['WEEKLY'] = []
-	loadedCashFlows['MONTHLY'] = []
-	loadedCashFlows['YEARLY'] = []
-	cashFlowPage = 0 
-	cashFlowPeriod = 'WEEKLY'
+    loadedCashFlows['WEEKLY'] = []
+    loadedCashFlows['MONTHLY'] = []
+    loadedCashFlows['YEARLY'] = []
+
+	officeSheetPage = 0
+	officePeriod = 'WEEKLY'
+
 		
 	$.ajax({
 		type: 'GET',
@@ -214,10 +211,10 @@ function loadSheets() {
 	    		loadedIncomes[airlineIncome.period].push(airlineIncome)
 	    	})
 	    	
-	    	var totalPages = loadedIncomes[incomePeriod].length
+	    	var totalPages = loadedIncomes[officePeriod].length
 	    	if (totalPages > 0) {
-	    		incomePage = totalPages - 1
-	    		updateIncomeSheet(loadedIncomes[incomePeriod][incomePage])
+	    		officeSheetPage = totalPages - 1
+	    		updateIncomeSheet(loadedIncomes[officePeriod][officeSheetPage])
 	    	}
 	    	
 	    	updateIncomeChart()
@@ -228,10 +225,10 @@ function loadSheets() {
 	    		loadedCashFlows[airlineCashFlow.period].push(airlineCashFlow)
 	    	})
 	    	
-	    	totalPages = loadedCashFlows[cashFlowPeriod].length
+	    	totalPages = loadedCashFlows[officePeriod].length
 	    	if (totalPages > 0) {
-	    		cashFlowPage = totalPages - 1
-	    		updateCashFlowSheet(loadedCashFlows[cashFlowPeriod][cashFlowPage])
+	    		officeSheetPage = totalPages - 1
+	    		updateCashFlowSheet(loadedCashFlows[officePeriod][officeSheetPage])
 	    	}
 	    	
 	    	updateCashFlowChart()
@@ -244,58 +241,66 @@ function loadSheets() {
 }
 
 function updateIncomeChart() {
-	plotIncomeChart(loadedIncomes[incomePeriod], incomePeriod, $("#officeCanvas #totalProfitChart"))
+	plotIncomeChart(loadedIncomes[officePeriod], officePeriod, $("#officeCanvas #totalProfitChart"))
 }
 
 function updateCashFlowChart() {
-	plotCashFlowChart(loadedCashFlows[cashFlowPeriod], cashFlowPeriod, $("#officeCanvas #totalCashFlowChart"))
+	plotCashFlowChart(loadedCashFlows[officePeriod], officePeriod, $("#officeCanvas #totalCashFlowChart"))
 }
 
 
 
-function incomeHistoryStep(step) {
-	var totalPages = loadedIncomes[incomePeriod].length
-	
-	if (incomePage + step < 0) {
-		incomePage = 0
-	} else if (incomePage + step >= totalPages) {
-		incomePage = totalPages - 1
-	} else {
-		incomePage = incomePage + step
-	}
-	
-	updateIncomeSheet(loadedIncomes[incomePeriod][incomePage])
+function officeHistoryStep(step) {
+    var type = $('#officeCanvas .sheetOptions').find('.cell.selected').data('type')
+    var totalPages = loadedIncomes[officePeriod].length //income and cash flow should have same # of pages - just pick income arbitrarily
+    if (officeSheetPage + step < 0) {
+        officeSheetPage = 0
+    } else if (officeSheetPage + step >= totalPages) {
+        officeSheetPage = totalPages - 1
+    } else {
+        officeSheetPage = officeSheetPage + step
+    }
+
+    if (type === 'income') {
+        updateIncomeSheet(loadedIncomes[officePeriod][officeSheetPage])
+    } else if (type === 'cashFlow') {
+    	updateCashFlowSheet(loadedCashFlows[officePeriod][officeSheetPage])
+    }
 }
 
-function changeIncomePeriod(period) {
-	incomePeriod = period
-	var totalPages = loadedIncomes[incomePeriod].length
-	incomePage = totalPages - 1
-	updateIncomeSheet(loadedIncomes[incomePeriod][incomePage])
-	updateIncomeChart()
+function changeOfficePeriod(period, type) {
+    var type = $('#officeCanvas .sheetOptions').find('.cell.selected').data('type')
+    officePeriod = period
+    if (type === 'income') {
+        var totalPages = loadedIncomes[officePeriod].length
+        officeSheetPage = totalPages - 1
+        updateIncomeSheet(loadedIncomes[officePeriod][officeSheetPage])
+        updateIncomeChart()
+    } else if (type === 'cashFlow') {
+        var totalPages = loadedCashFlows[officePeriod].length
+    	officeSheetPage = totalPages - 1
+    	updateCashFlowSheet(loadedCashFlows[officePeriod][officeSheetPage])
+    	updateCashFlowChart()
+    }
 }
 
 function updateIncomeSheet(airlineIncome) {
 	if (airlineIncome) {
-		var periodText
 		var periodCount
 		var inProgress
 		if (airlineIncome.period == "WEEKLY") {
-			periodText = "Week"
 			periodCount= airlineIncome.cycle
 		} else if (airlineIncome.period == "MONTHLY") {
-			periodText = "Month"
 			periodCount = Math.ceil(airlineIncome.cycle / 4)
 			inProgress = (airlineIncome.cycle + 1) % 4
 		} else if (airlineIncome.period == "YEARLY") {
-			periodText = "Year"
 			periodCount = Math.ceil(airlineIncome.cycle / 52)
 			inProgress = (airlineIncome.cycle + 1) % 52
 		}
 		
-		var cycleText = periodText + " " + periodCount + (inProgress ? " (In Progress)" : "")
+		var cycleText = periodCount + (inProgress ? " (In Progress)" : "")
 		
-		$("#incomeCycleText").text(cycleText)
+		$("#officeCycleText").text(cycleText)
 		$("#totalProfit").text('$' + commaSeparateNumber(airlineIncome.totalProfit))
         $("#totalRevenue").text('$' + commaSeparateNumber(airlineIncome.totalRevenue))
         $("#totalExpense").text('$' + commaSeparateNumber(airlineIncome.totalExpense))
@@ -333,50 +338,33 @@ function updateIncomeSheet(airlineIncome) {
 	}
 }
 
-function cashFlowHistoryStep(step) {
-	var totalPages = loadedCashFlows[cashFlowPeriod].length
-	
-	if (cashFlowPage + step < 0) {
-		cashFlowPage = 0
-	} else if (cashFlowPage + step >= totalPages) {
-		cashFlowPage = totalPages - 1
-	} else {
-		cashFlowPage = cashFlowPage + step
-	}
-	
-	updateCashFlowSheet(loadedCashFlows[cashFlowPeriod][cashFlowPage])
-}
 
 function changeCashFlowPeriod(period) {
-	cashFlowPeriod = period
-	var totalPages = loadedCashFlows[cashFlowPeriod].length
-	cashFlowPage = totalPages - 1
-	updateCashFlowSheet(loadedCashFlows[cashFlowPeriod][cashFlowPage])
+	officePeriod = period
+	var totalPages = loadedCashFlows[officePeriod].length
+	officeSheetPage = totalPages - 1
+	updateCashFlowSheet(loadedCashFlows[officePeriod][officeSheetPage])
 	updateCashFlowChart()
 }
 
 
 function updateCashFlowSheet(airlineCashFlow) {
 	if (airlineCashFlow) {
-		var periodText
 		var periodCount
 		var inProgress
 		if (airlineCashFlow.period == "WEEKLY") {
-			periodText = "Week"
 			periodCount= airlineCashFlow.cycle
 		} else if (airlineCashFlow.period == "MONTHLY") {
-			periodText = "Month"
 			periodCount = Math.ceil(airlineCashFlow.cycle / 4)
 			inProgress = (airlineCashFlow.cycle + 1) % 4
 		} else if (airlineCashFlow.period == "YEARLY") {
-			periodText = "Year"
 			periodCount = Math.ceil(airlineCashFlow.cycle / 52)
 			inProgress = (airlineCashFlow.cycle + 1) % 52
 		}
 		
-		var cycleText = periodText + " " + periodCount + (inProgress ? " (In Progress)" : "")
+		var cycleText = periodCount + (inProgress ? " (In Progress)" : "")
 		
-		$("#cashFlowCycleText").text(cycleText)
+		$("#officeCycleText").text(cycleText)
 		$("#cashFlowSheet .totalCashFlow").text('$' + commaSeparateNumber(airlineCashFlow.totalCashFlow))
         $("#cashFlowSheet .operation").text('$' + commaSeparateNumber(airlineCashFlow.operation))
         $("#cashFlowSheet .loanInterest").text('$' + commaSeparateNumber(airlineCashFlow.loanInterest))
@@ -720,8 +708,17 @@ function updateChampionedCountriesDetails() {
 
 
 function selectSheet(tab, sheet) {
-	tab.siblings(".selection").removeClass("selected")
+    tab.siblings().removeClass("selected")
 	tab.addClass("selected")
+    var type = tab.data('type')
+    if (type === 'income') {
+        updateIncomeSheet(loadedIncomes[officePeriod][officeSheetPage])
+        updateIncomeChart()
+    } else if (type === 'cashFlow') {
+        updateCashFlowSheet(loadedCashFlows[officePeriod][officeSheetPage])
+    	updateCashFlowChart()
+    }
+
 	sheet.siblings(".sheet").hide()
 	sheet.show()
 }

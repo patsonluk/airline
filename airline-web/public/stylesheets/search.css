@@ -164,6 +164,8 @@
 .titlesContainer .titleSelection.selected, .titlesContainer .titleSelection:hover{
    background-color: transparent;
    opacity : 1.0;
+   background: none;
+   box-shadow: none;
 }
 
 #searchCanvas .searchCriterion div.label {

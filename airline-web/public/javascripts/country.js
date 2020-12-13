@@ -330,7 +330,7 @@ function updateTitleProgressionInfo(currentAirlineTitle, countryCode) {
                     if (index > 0) {
                         $progression.append('<img src="assets/images/icons/arrow.png">')
                     }
-                    var $titleSpan = $('<span class="title tooltip">')
+                    var $titleSpan = $('<span class="title tooltip progressionItem">')
                     $titleSpan.text(titleInfo.description)
                     $titleSpan.data(titleInfo.title)
                     if (titleInfo.title == currentAirlineTitle.title) {

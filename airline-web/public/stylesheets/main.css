@@ -202,7 +202,9 @@ div#canvas.christmas {
 }
 
 .table.data div.table-row.selected:nth-child(even), .table.data div.table-row.selected:nth-child(odd), .table.data div.table-row.clickable:hover:nth-child(even), .table.data div.table-row.clickable:hover:nth-child(odd) {
-	background-color: #A1D490;
+    background: #72ad5f;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(#72ad5f, #90be81);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(#72ad5f, #90be81); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
 .table.colored div.table-row:nth-child(even){
@@ -264,7 +266,9 @@ span.glow, img.glow {
 
 
 div.button.selected, div.selectedSection {
-	background-color: #A1D490;
+  background: #72ad5f;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(#72ad5f, #90be81);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(#72ad5f, #90be81); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
 div.selectedSection {
@@ -439,22 +443,32 @@ div.divider {
 	margin-bottom: 5px;
 	border: 0;
 	height: 1px;
-    background-image: linear-gradient(to right, rgba(69, 69, 68, 0), rgba(69, 69, 68, 0.75), rgba(69, 69, 68, 0));
+    background-image: linear-gradient(to right, rgba(69, 69, 68, 0), rgba(69, 69, 68, 0.75), rgba(69, 69, 68, 0.75), rgba(69, 69, 68, 0.75), rgba(69, 69, 68, 0));
 }
 
 div.divider.cell {
     border-top: 1px solid #6093e7;
     height: 0px;
+    background-image: none;
+    padding: 0;
 }
 
 
 a.selected, :not(.button) > a:hover, span.selected, .clickable:hover:not(.cell), .clickable.selected:not(.cell) {
 	border-radius: 3px 3px 3px 3px;
-	background-color: #A1D490;
+	background: #72ad5f;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(#72ad5f, #90be81);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(#72ad5f, #90be81); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 
 a:hover, .clickable:hover, .clickable-no-highlight:hover {
 	cursor: pointer;
+}
+
+.table .table-header .cell.clickable:hover {
+    color: rgba(240,240,240,0.9);
+    text-shadow: 0px 0px 5px rgba(255,255,255,0.5);
 }
 
 

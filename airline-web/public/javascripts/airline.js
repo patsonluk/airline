@@ -1901,8 +1901,8 @@ function updateTopCountryComposition(countryComposition) {
 	var index = 0;
 	$('#linkCompositionModal .topCountryTable .table-row').remove()
 	$.each(countryComposition, function(key, entry) {
-		$('#linkCompositionModal .topCountryTable').append("<div class='table-row data-row'><div style='display: table-cell; width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.countryName
-	 			   + "</div><div style='display: table-cell; width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+		$('#linkCompositionModal .topCountryTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.countryName
+	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 		index ++;
 		if (index >= max) {
 			return false;
@@ -1917,8 +1917,8 @@ function updatePassengerTypeComposition(countryComposition) {
 	
 	$('#linkCompositionModal .passengerTypeTable .table-row').remove()
 	$.each(countryComposition, function(key, entry) {
-		$('#linkCompositionModal .passengerTypeTable').append("<div class='table-row data-row'><div style='display: table-cell; width: 70%;'>" + entry.title
-	 			   + "</div><div style='display: table-cell; width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+		$('#linkCompositionModal .passengerTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
+	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 
@@ -1929,8 +1929,8 @@ function updatePrefernceTypeComposition(countryComposition) {
 	
 	$('#linkCompositionModal .preferenceTypeTable .table-row').remove()
 	$.each(countryComposition, function(key, entry) {
-		$('#linkCompositionModal .preferenceTypeTable').append("<div class='table-row data-row'><div style='display: table-cell; width: 70%;'>" + entry.title
-	 			   + "</div><div style='display: table-cell; width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+		$('#linkCompositionModal .preferenceTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
+	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 

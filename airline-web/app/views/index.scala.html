@@ -14,20 +14,21 @@
 	  <style type="text/css">
       html, body { height: 100%; margin: 0; padding: 0; }
     </style>
-    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
-    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
-    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/departures.css")">
-    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/tooltip.css")">
-	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/chat.css")">
-      <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/search.css")">
-	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/switch.css")">
-	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/select.css")">
-	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/about.css")">
-	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/jemoji/jemoji.css")">
-	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/emojify/emojify.min.css")">
-	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting.css")">
-	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")">
-	  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/mobile.css")"> <!-- this has to be last so it overrides the CSS if mobile-->
+    <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("css-templates/treviso/css/style.css")'>
+    <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/main.css")'>
+    <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/departures.css")'>
+    <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/tooltip.css")'>
+      <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/country.css")'>
+	<link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/chat.css")'>
+      <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/search.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/switch.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/select.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/about.css")'>
+	<link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/jemoji/jemoji.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/emojify/emojify.min.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/mobile.css")'> <!-- this has to be last so it overrides the CSS if mobile-->
 
 
     
@@ -40,57 +41,57 @@
 			  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
 			  crossorigin="anonymous"></script>
 			  
-    <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
+    <script src='@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")'></script>
 
-    <script src="@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")"></script>	
-	<script src="@routes.Assets.versioned("javascripts/jemoji/jemoji.js")" defer></script>
-	<script src="@routes.Assets.versioned("javascripts/emojify/emojify.js")" defer></script>
-    <script src="@routes.Assets.versioned("javascripts/splitting/splitting.min.js")"></script>
+    <script src='@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/jemoji/jemoji.js")' defer></script>
+	<script src='@routes.Assets.versioned("javascripts/emojify/emojify.js")' defer></script>
+    <script src='@routes.Assets.versioned("javascripts/splitting/splitting.min.js")'></script>
 
-    <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.js")" defer></script>
-    <script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")" defer></script>
-	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")" defer></script>
-	<script type="text/javascript" src="@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")" defer></script>
-	<script src="@routes.Assets.versioned("javascripts/plot-fusioncharts.js")" defer></script>
+    <script type="text/javascript" src='@routes.Assets.versioned("fusioncharts/fusioncharts.js")' defer></script>
+    <script type="text/javascript" src='@routes.Assets.versioned("fusioncharts/fusioncharts.widgets.js")' defer></script>
+	<script type="text/javascript" src='@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")' defer></script>
+	<script type="text/javascript" src='@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")' defer></script>
+	<script src='@routes.Assets.versioned("javascripts/plot-fusioncharts.js")' defer></script>
 	
-	<script type="text/javascript" src="@routes.Assets.versioned("tinycolorpicker/jquery.tinycolorpicker.js")" defer></script>
-	<link rel="stylesheet" href="@routes.Assets.versioned("tinycolorpicker/tinycolorpicker.css")" type="text/css" />
+	<script type="text/javascript" src='@routes.Assets.versioned("tinycolorpicker/jquery.tinycolorpicker.js")' defer></script>
+	<link rel="stylesheet" href='@routes.Assets.versioned("tinycolorpicker/tinycolorpicker.css")' type="text/css" />
 
-	<script type="text/javascript" src="@routes.Assets.versioned("progress-bar/progress-bar.js")" defer></script>
-	  <link rel="stylesheet" href="@routes.Assets.versioned("progress-bar/progress-bar.css")" type="text/css" />
+	<script type="text/javascript" src='@routes.Assets.versioned("progress-bar/progress-bar.js")' defer></script>
+	  <link rel="stylesheet" href='@routes.Assets.versioned("progress-bar/progress-bar.css")' type="text/css" />
 	
-	<script type="text/javascript" src="@routes.Assets.versioned("jquery-upload-file/jquery.uploadfile.min.js")" defer></script>
-	<link rel="stylesheet" href="@routes.Assets.versioned("jquery-upload-file/uploadfile.css")" type="text/css" />
-	<script src="@routes.Assets.versioned("javascripts/lazysizes/lazysizes.min.js")" async></script>
+	<script type="text/javascript" src='@routes.Assets.versioned("jquery-upload-file/jquery.uploadfile.min.js")' defer></script>
+	<link rel="stylesheet" href='@routes.Assets.versioned("jquery-upload-file/uploadfile.css")' type="text/css" />
+	<script src='@routes.Assets.versioned("javascripts/lazysizes/lazysizes.min.js")' async></script>
 
-	<script src="@routes.Assets.versioned("javascripts/main.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/airport.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/airplane.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/model-configuration.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/airline.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/link-history.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/country.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/office.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/ranking.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/bank.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/oil.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/rivals.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/alliance.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/log.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/event.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/search.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/facility.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/departures.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/websocket.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/map-button.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/gadgets.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/chat.js")" defer></script>
-	<script src="@routes.Assets.versioned("javascripts/christmas.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/confetti.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/admin.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/about.js")"></script>
-    <script src="@routes.Assets.versioned("javascripts/map-style.js")"></script>
-	<script src="@routes.Assets.versioned("javascripts/mobile.js")" defer></script>
+	<script src='@routes.Assets.versioned("javascripts/main.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/airport.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/airplane.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/model-configuration.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/airline.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/link-history.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/country.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/office.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/ranking.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/bank.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/oil.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/rivals.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/alliance.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/log.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/event.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/search.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/facility.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/departures.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/websocket.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/map-button.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/gadgets.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/chat.js")' defer></script>
+	<script src='@routes.Assets.versioned("javascripts/christmas.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/confetti.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/admin.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/about.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/map-style.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/mobile.js")' defer></script>
     <script>
     	if (window.location.hostname != 'localhost') {
 			window['_fs_debug'] = false;
@@ -1443,28 +1444,37 @@
 						</div>
 
 						<div style="width : 95%; float: left;" class="section">
-							<div style="float: left;" class="clickable selected selection" onclick="selectSheet($(this), $('#incomeSheet'))"><h4>Income Sheet</h4></div>
-							<div style="float: left;"><h4>&nbsp;|&nbsp;</h4></div>
-							<div style="float: left;" class="clickable selection" onclick="selectSheet($(this), $('#cashFlowSheet'))"><h4>Cash Flow Sheet</h4></div>
-							<div style="clear: both;"></div>
-							<div style="width : 100%;" id="incomeSheet" class="sheet">
-								<div>
-									<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="incomeHistoryStep(-1)"/>
-									<span id="incomeCycleText"></span>
-									<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="incomeHistoryStep(1)"/>
-								</div>
-								<div>
-									<select class="select-css" id="incomePeriodSelect" onchange="changeIncomePeriod($(this).val())">
-										<option value="WEEKLY" selected="selected">Week</option>
-										<option value="MONTHLY">Month</option>
-										<option value="YEARLY">Year</option>
-									</select>
-								</div>
+<!--							<div style="float: left;" class="clickable selected selection" onclick="selectSheet($(this), $('#incomeSheet'))"><h4>Income Sheet</h4></div>-->
+<!--							<div style="float: left;"><h4>&nbsp;|&nbsp;</h4></div>-->
+<!--							<div style="float: left;" class="clickable selection" onclick="selectSheet($(this), $('#cashFlowSheet'))"><h4>Cash Flow Sheet</h4></div>-->
+<!--							<div style="clear: both;"></div>-->
+                            <div class="controllers" style="width: 95%; margin-bottom: 5px;">
+                                <div class="table" style="width: 30%; float: left;">
+                                    <div class="table-header sheetOptions">
+                                        <div class="cell clickable selected" data-type="income" onclick="selectSheet($(this), $('#incomeSheet'))">Income Sheet</div>
+                                        <div class="cell clickable" data-type="cashFlow" onclick="selectSheet($(this), $('#cashFlowSheet'))">Cash Flow Sheet</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; float: right;">
+                                    <img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="officeHistoryStep(-1)"/>
+                                    &nbsp;
+                                    <select class="select-css period" onchange="changeOfficePeriod($(this).val())">
+                                        <option value="WEEKLY" selected="selected">Week</option>
+                                        <option value="MONTHLY">Month</option>
+                                        <option value="YEARLY">Year</option>
+                                    </select>
+                                    &nbsp;<span id="officeCycleText"></span>
+                                    &nbsp;
+                                    <img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="officeHistoryStep(1)"/>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
 
+							<div style="width : 100%;" id="incomeSheet" class="sheet">
 								<div id="totalProfitChart" style="width: 95%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
 								<div style="height: 100%; float: left;" class="verticalGroup">
-									<div class="table section" style="width: 90%;">
+									<div class="table data section" style="width: 90%;">
 										<h4>Total Income</h4>
 										<div class="table-row">
 											<div class="cell">Total Revenue:</div>
@@ -1479,7 +1489,7 @@
 											<div id="totalProfit" class="cell" style="text-align: right;"></div>
 										</div>
 									</div>
-									<div class="table section" style="width: 90%;">
+									<div class="table data section" style="width: 90%;">
 										<h4>Flights Income</h4>
 										<div class="table-row">
 											<div class="cell">Ticket Revenue:</div>
@@ -1537,7 +1547,7 @@
 								</div>
 			<!-- 					right column -->
 								<div style="height: 100%; float: right;" class="verticalGroup">
-									<div class="table section" style="width: 90%;">
+									<div class="table data section" style="width: 90%;">
 										<h4>Transactions</h4>
 										<div class="table-row">
 											<div class="cell">
@@ -1568,7 +1578,7 @@
 										</div>
 									</div>
 
-									<div class="table section" style="width: 90%;">
+									<div class="table data section" style="width: 90%;">
 										<h4>Other Income</h4>
 										<div class="table-row">
 											<div class="cell">Loan Interest:</div>
@@ -1636,25 +1646,12 @@
 							</div>
 			<!--          		end income statement -->
 							<div style="width : 100%; display: none;" id="cashFlowSheet" class="sheet">
-								<div>
-									<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="cashFlowHistoryStep(-1)"/>
-									<span id="cashFlowCycleText"></span>
-									<img src='@routes.Assets.versioned("images/icons/arrow.png")' class="button" onclick="cashFlowHistoryStep(1)"/>
-								</div>
-								<div>
-									<select class="select-css" id="cashFlowPeriodSelect" onchange="changeCashFlowPeriod($(this).val())">
-										<option value="WEEKLY" selected="selected">Week</option>
-										<option value="MONTHLY">Month</option>
-										<option value="YEARLY">Year</option>
-									</select>
-								</div>
-
 								<div id="totalCashFlowChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
 								<div style="height: 100%; width: 100%; float: left;">
 									<div style="float: left;" class="verticalGroup">
 										<h4>Total Cash Flow</h4>
-										<div class="table section" style="width: 90%;">
+										<div class="table data section" style="width: 90%;">
 											<div class="table-row">
 												<div class="cell">Total Cash Flow:</div>
 												<div class="totalCashFlow cell" style="text-align: right;"></div>
@@ -1663,7 +1660,7 @@
 									</div>
 									<div style="float: left;" class="verticalGroup">
 										<h4>Cash Flow Details</h4>
-										<div class="table section" style="width: 90%;">
+										<div class="table data section" style="width: 90%;">
 											<div class="table-row">
 												<div class="cell">Operation Cash Flow:</div>
 												<div class="operation cell" style="text-align: right;"></div>
@@ -3076,19 +3073,20 @@
         <div class="modal-content"  style="width : 800px; height: 350px;">
             <span class="close" onclick="closeModal($('#linkCompositionModal'))">&times;</span>
             <h4 style="margin-bottom: 10px;">Passenger Composition</h4>
-            <div style="width: 100%; float: left;">
-                <div style="float: left;">
+            <div style="width: 100%; display: flex;">
+                <div style="flex-grow: 1; flex-basis: 0px;"> <!-- somehow it needs flex-basis here otherwise, the table with fixed-layout will take a super big number-->
                     <h5 align="center">Country</h5>
                     <div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
                     <div class="table data topCountryTable" style="width: 95%;">
                     </div>
                 </div>
-                <div style="float: left;">
+                <div style="flex-grow: 1;">
                     <h5 align="center">Passenger Type</h5>
                     <div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
-                    <div class="table data passengerTypeTable" style="width: 95%;"></div>
+                    <div class="table data passengerTypeTable" style="width: 95%;">
+                    </div>
                 </div>
-                <div style="float: left;">
+                <div style="flex-grow: 1">
                     <h5 align="center">
                         Travel Preference
                         <div class="tooltip">
@@ -3159,7 +3157,8 @@
                         </div>
                     </h5>
                     <div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
-                    <div class="table data preferenceTypeTable" style="width: 95%;"></div>
+                    <div class="table data preferenceTypeTable" style="width: 95%;">
+                    </div>
                 </div>
             </div>
         </div>
@@ -3429,18 +3428,18 @@
 				<div style="height: 100%; width: 100%; overflow: auto; float: left;">
 					<div class="table data"style="width: 100%">
 						<div class="table-header">
-							<div class="cell" style="width: 20%;  border-bottom: none"></div>
+							<div class="cell" style="width: 20%;  border-bottom: none">&nbsp;</div>
 							<div class="cell fromAirportText" style="width: 40%; border-bottom: none"></div>
 							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>
 						</div>
 					</div>
 					<div class="table data" id="rivalLoyaltyAwarenessTable" style="max-height: 100%; width: 100%">
 						<div class="table-header">
-							<div class="cell" style="width: 20%"></div>
+							<div class="cell" style="width: 20%;  border-radius: 0;">&nbsp;</div>
 							<div class="cell" style="width: 20%" align="right">Loyalty</div>
 							<div class="cell" style="width: 20%" align="right">Awareness</div>
 							<div class="cell" style="width: 20%" align="right">Loyalty</div>
-							<div class="cell" style="width: 20%" align="right">Awareness</div>
+							<div class="cell" style="width: 20%;  border-radius: 0;" align="right">Awareness</div>
 						</div>
 					</div>
 				</div>
@@ -3451,20 +3450,20 @@
 				<div style="height: 100%; width: 100%; overflow: auto; float: left;">
 					<div class="table data"style="width: 100%">
 						<div class="table-header">
-							<div class="cell" style="width: 20%;  border-bottom: none"></div>
-							<div class="cell fromAirportText" style="width: 40%; border-bottom: none"></div>
-							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>route
+							<div class="cell" style="width: 16%;  border-bottom: none">&nbsp;</div>
+							<div class="cell fromAirportText" style="width: 42%; border-bottom: none"></div>
+							<div class="cell toAirportText" style="width: 42%;  border-bottom: none"></div>route
 						</div>
 					</div>
 					<div class="table data" id="networkCapacity" style="max-height: 100%; width: 100%">
 						<div class="table-header">
-							<div class="cell" style="width: 16%"></div>
+							<div class="cell" style="width: 16%; border-radius: 0;">&nbsp;</div>
 							<div class="cell" style="width: 14%" align="right">Economy</div>
 							<div class="cell" style="width: 14%" align="right">Business</div>
 							<div class="cell" style="width: 14%" align="right">First</div>
 							<div class="cell" style="width: 14%" align="right">Economy</div>
 							<div class="cell" style="width: 14%" align="right">Business</div>
-							<div class="cell" style="width: 14%" align="right">First</div>
+							<div class="cell" style="width: 14%; border-radius: 0;" align="right">First</div>
 						</div>
 					</div>
 				</div>

@@ -1,0 +1,51 @@
+#departuresCanvas .section {
+	background: #111;
+	color: #aaa;
+	
+	background: linear-gradient(to bottom, rgba(18, 16, 16, 0.8) 30%, rgba(15, 14, 14, .8) 100%), url(../images/background/airport-reflection.png);
+	background-repeat: no-repeat;
+    background-size:contain;
+}
+
+#departuresCanvas .title {
+	font-size: 20px;
+	font-weight: bolder;
+	color: #dd8;
+	height: 25px;
+}
+
+.departures div.table-header {
+	font-weight: bolder;
+	height: 25px;
+}
+
+.departures div.table-row {
+	color: #ddd;
+	opacity: 0.8;
+	text-shadow: 0px 0px 5px rgba(30,30,255,1.0);
+	height: 18px;
+}
+
+.departures div.table-row:nth-child(even) {
+	background: #111
+}
+
+.departures div.table-row:nth-child(odd) {
+	background: #333
+}
+
+.blink {
+  animation: blink-animation 2s steps(5, start) infinite;
+  -webkit-animation: blink-animation 2s steps(5, start) infinite;
+}
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+@-webkit-keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+
