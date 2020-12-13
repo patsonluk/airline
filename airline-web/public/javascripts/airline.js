@@ -640,7 +640,7 @@ function refreshLinkDetails(linkId) {
 
 	    	    	})
 	    	    	if ($("#linkCompetitons .data-row").length == 0) {
-	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
+	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
 	    	    	}
 	    	    	$("#linkCompetitons").show()
 	    	    	
@@ -912,7 +912,7 @@ function updatePlanLinkInfo(linkInfo) {
 		}			
 	})
 	if ($("#planLinkCompetitons .data-row").length == 0) {
-		$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
+		$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
 	}
 	
 	if (tempPath) { //remove previous plan link if it exists
