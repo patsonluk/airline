@@ -89,7 +89,7 @@ object MainSimulation extends App {
     //refresh delegates
     println("Delegate simulation")
     DelegateSimulation.simulate(currentCycle)
-
+    println(s"Post cycle done $currentCycle")
   }
 
 
