@@ -1348,11 +1348,13 @@
                                         </div>
                                     </div>
                                     <div class="table-row">
-                                        <div class="cell label">Airline Logo:</div>
+										<div class="cell label">Airline Logo:</div>
                                         <div class="cell value">
-                                            <img class="airlineLogo" src='#'>
-                                            <img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineLogo()"/>
-                                            <img src='@routes.Assets.versioned("images/icons/picture--plus.png")' class='button' style="vertical-align: middle;" onclick="showUploadLogo()"/>
+											<span style="display: flex; align-items: center">
+												<img class="airlineLogo" src='#'>
+												<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineLogo()"/>
+												<img src='@routes.Assets.versioned("images/icons/picture--plus.png")' class='button' style="vertical-align: middle;" onclick="showUploadLogo()"/>
+											</span>
                                         </div>
                                     </div>
                                     <div class="table-row">
@@ -3226,19 +3228,20 @@
 			  <div class="section">
 				  <h4>Pool</h4>
 				  <div class="delegateStatus"></div>
-			  </div>
-			  <div style="width: 100%;" class="delegatesAssignment table data">
-				  <div class="table-header">
-					  <div class="cell"style="width: 80%">Assigned Delegates for negotiation</div>
-					  <div class="cell" style="width: 20%">Success Rate</div>
-				  </div>
-				  <div class="table-row">
-					  <div class="cell">
-						  <div style="float: left" class="assignedDelegatesIcons"></div>
-						  <div style="float: right" class="clickable" onclick="changeAssignedDelegateCount(-1)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Minus"/></div>
-						  <div style="float: right" class="clickable" onclick="changeAssignedDelegateCount(1)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Add"/></div>
+
+				  <div style="width: 100%; margin-top: 10px;" class="delegatesAssignment table data">
+					  <div class="table-header">
+						  <div class="cell"style="width: 80%">Assigned Delegates for negotiation</div>
+						  <div class="cell" style="width: 20%">Success Rate</div>
 					  </div>
-					  <div class="cell successRate"></div>
+					  <div class="table-row">
+						  <div class="cell">
+							  <div style="float: left" class="assignedDelegatesIcons"></div>
+							  <div style="float: right" class="clickable" onclick="changeAssignedDelegateCount(-1)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Minus"/></div>
+							  <div style="float: right" class="clickable" onclick="changeAssignedDelegateCount(1)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Add"/></div>
+						  </div>
+						  <div class="cell successRate"></div>
+					  </div>
 				  </div>
 			  </div>
 		  </div>
@@ -3783,7 +3786,7 @@
 		  <div class="modal-content" style="width : 700px;">
 			  <span class="close" onclick="closeModal($('#airlineCountryRelationshipModal'))">&times;</span>
 			  <h2 style="margin-bottom: 20px">Relationship Management with&nbsp;<span class="country"></span></h2>
-			  <h4>Airline Title</h4>
+			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Airline Title</h4>
 			  <div class="section" style="width: 95%; display:flex; flex-direction:column; align-items:center;">
 				<div class="currentTitle" style="margin-bottom: 20px; display: flex;"><span>Current:&nbsp;</span><img class="titleIcon">&nbsp;<span class="titleDescription"></span></div>
 				<div style="display:flex; align-items:center" class="titleProgression">
@@ -3791,7 +3794,7 @@
 				</div>
 			  </div>
 
-			  <h4>Relationship Factors</h4>
+			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Relationship Factors</h4>
 			  <div class="table data section factors" style="width: 95%">
 				  <div class="table-header">
 					  <div class="cell" style="width: 80%">Factor</div>
@@ -3799,16 +3802,14 @@
 				  </div>
 			  </div>
 
-			  <div class="delegateSection">
-				  <h4 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h4>
-				  <div class="section">
-					  <h4>Pool</h4>
-					  <div class="delegateStatus">
+			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h4>
+			  <div class="delegateSection section" style="width: 95%">
+				  <h4>Pool</h4>
+				  <div class="delegateStatus">
 
-					  </div>
 				  </div>
 
-				  <div style="width: 100%;" class="delegatesAssignment table data">
+				  <div style="width: 100%; margin-top: 10px;" class="delegatesAssignment table data">
 					  <div class="table-header">
 						  <div class="cell"style="width: 80%">Assigned Delegates to develop relationship</div>
 						  <div class="cell">&nbsp;</div>
