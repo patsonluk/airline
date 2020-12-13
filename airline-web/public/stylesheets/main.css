@@ -173,6 +173,7 @@ div#canvas.christmas {
     font-size: 1.1em;
     font-weight: bold;
     color : rgb(0, 0, 0, 0.5);
+    overflow: hidden;
 }
 
 .tabs li.highlighted {
