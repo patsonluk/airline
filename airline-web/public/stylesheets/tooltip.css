@@ -30,6 +30,12 @@
     transition: opacity 0.3s;
 }
 
+.tooltip .tooltiptext.alignLeft {
+    left: 0%;
+    transform:none;
+}
+
+
 .tooltip .tooltiptext:not(.below) {
 	bottom: 125%;	
 }
@@ -49,6 +55,10 @@
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
+}
+
+.tooltip .tooltiptext.alignLeft::after {
+    left: 5%;
 }
 
 .tooltip .tooltiptext:not(.below)::after {
