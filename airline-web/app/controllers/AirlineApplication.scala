@@ -379,14 +379,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
         AirlineSource.deleteAirlineBase(base)
 
-        //update/refresh delegates
-        val airline = AirlineCache.getAirline(airlineId, true).get
-        val delegateInfo = airline.getDelegateInfo()
-        if (delegateInfo.availableCount < 0) {
-          val removingDelegates = delegateInfo.busyDelegates.sortBy(_.id).takeRight(delegateInfo.availableCount * -1) //take the newest ones away
-          DelegateSource.deleteBusyDelegates(removingDelegates)
-        }
-
         Ok(Json.toJson(base))
       case None => //
         NotFound 
@@ -602,11 +594,10 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     //val titlesByCountryCode: Map[String, Title.Value] = CountryAirlineTitle.getTopTitlesByAirline(airlineId).map(entry => (entry.country.countryCode, entry.title)).toMap
     var result = Json.obj()
     airline.getBases().foreach { base =>
-      val delegateCapacity = base.delegateCapacity
       val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
       val staffCapacity = base.getOfficeStaffCapacity
       val overtimeCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired)
-      result = result + (base.airport.id.toString() -> Json.obj("delegateCapacity" -> delegateCapacity, "staffCapacity" -> staffCapacity, "staffRequired" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
+      result = result + (base.airport.id.toString() -> Json.obj("staffCapacity" -> staffCapacity, "staffRequired" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
     }
     Ok(result)
   }

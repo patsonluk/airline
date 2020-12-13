@@ -53,8 +53,8 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
 
   val HQ_BASIC_DELEGATE = 7
   val NON_HQ_BASIC_DELEGATE = 3
-  val delegateCapacity : Int =
-    (if (headquarter) HQ_BASIC_DELEGATE else NON_HQ_BASIC_DELEGATE) + scale / (if (headquarter) 1 else 2)
+//  val delegateCapacity : Int =
+//    (if (headquarter) HQ_BASIC_DELEGATE else NON_HQ_BASIC_DELEGATE) + scale / (if (headquarter) 1 else 2)
 
 
   def getOvertimeCompensation(staffCapacity : Int, staffRequired : Int) = {

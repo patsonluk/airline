@@ -121,7 +121,6 @@ function updateAirlineBases() {
                         row.append($("<div class='cell'><img src='assets/images/icons/building-low.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
                     }
                     var capacityInfo = officeCapacity[base.airportId]
-                    row.append($("<div class='cell'>" + capacityInfo.delegateCapacity + "</div>"))
                     row.append($("<div class='cell'>" + capacityInfo.staffCapacity + "</div>"))
                     if (capacityInfo.staffCapacity < capacityInfo.staffRequired) {
                         row.append($("<div class='cell fatal'>" + capacityInfo.staffRequired + "</div>"))

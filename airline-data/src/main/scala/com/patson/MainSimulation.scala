@@ -87,8 +87,9 @@ object MainSimulation extends App {
     println("Loan simulation")
     LoanInterestRateSimulation.simulate(currentCycle) //simulate at the beginning of a new cycle
     //refresh delegates
-    println("Refresh delegates")
-    DelegateSource.deleteBusyDelegateByCriteria(List(("available_cycle", "<=", currentCycle)))
+    println("Delegate simulation")
+    DelegateSimulation.simulate(currentCycle)
+
   }
 
 
