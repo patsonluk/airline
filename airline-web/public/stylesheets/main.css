@@ -162,8 +162,34 @@ div#canvas.christmas {
 	width: 100%;
 }
 
-.table .table-header .cell{
-	border-bottom: 1px solid #6093e7;	
+.table .table-header .cell:not(:empty){R
+    background: #7fb8ff;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(#7fb8ff, #a2cfff);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(#7fb8ff, #a2cfff); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    padding: 5px;
+    box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.3), 0 0 4px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    text-shadow: 0px 0px 3px rgba(255,255,255,0.6);
+    font-size: 1.1em;
+    font-weight: bold;
+    color : rgb(0, 0, 0, 0.5);
+}
+
+.table .table-header .cell.selected {
+    background: #90be81;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(#90be81, #a1d490);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(#90be81, #a1d490); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.6), 0 0 4px rgba(0, 0, 0, 0.4);
+    color: rgba(240,240,240,0.9);
+    text-shadow: 0px 0px 5px rgba(255,255,255,0.7);
+}
+
+.table .table-header .cell:first-child{
+  border-radius:5px 0 0 0;
+}
+
+.table .table-header .cell:last-child{
+  border-radius:0 5px 0 0;
 }
 
 .table.data div.table-row:nth-child(even) {
@@ -171,7 +197,6 @@ div#canvas.christmas {
 }
 
 .table.data div.table-row.selected:nth-child(even), .table.data div.table-row.selected:nth-child(odd), .table.data div.table-row.clickable:hover:nth-child(even), .table.data div.table-row.clickable:hover:nth-child(odd) {
-	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;
 }
 
@@ -418,7 +443,7 @@ div.divider.cell {
 }
 
 
-a.selected, :not(.button) > a:hover, span.selected, .clickable:hover, .clickable.selected {
+a.selected, :not(.button) > a:hover, span.selected, .clickable:hover:not(.cell), .clickable.selected:not(.cell) {
 	border-radius: 3px 3px 3px 3px;
 	background-color: #A1D490;
 }
@@ -465,6 +490,10 @@ li.row, div.table-row {
 	padding: 3px;
 	font-size: 11px;
 	color: #616161;
+}
+
+.table.data {
+    table-layout:fixed;
 }
 
 .table.data .table-row div {
