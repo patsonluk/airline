@@ -62,8 +62,8 @@ object CountryAirlineTitle {
 //    case _ => 0
 //  }
 
-  val PRIVILEGED_AIRLINE_RELATIONSHIP_THRESHOLD = 30
-  val ESTABLISHED_AIRLINE_RELATIONSHIP_THRESHOLD = 15
+  val PRIVILEGED_AIRLINE_RELATIONSHIP_THRESHOLD = 40
+  val ESTABLISHED_AIRLINE_RELATIONSHIP_THRESHOLD = 20
   val APPROVED_AIRLINE_RELATIONSHIP_THRESHOLD = 5
 
   val getTitle : (String, Airline) => CountryAirlineTitle = (countryCode : String, airline : Airline) => {
