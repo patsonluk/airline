@@ -521,7 +521,7 @@ case class Runway(length : Int, code : String, runwayType : RunwayType.Value, li
 
 object RunwayType extends Enumeration {
     type RunwayType = Value
-    val Asphalt, Concrete, Gravel = Value
+    val Asphalt, Concrete, Gravel, Unknown = Value
 }
 
 

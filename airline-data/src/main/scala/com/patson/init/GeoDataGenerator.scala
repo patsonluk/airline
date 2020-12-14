@@ -118,7 +118,7 @@ object GeoDataGenerator extends App {
                 Some(Runway(length, code, RunwayType.Asphalt, lighted))
               case concretePattern(_) => Some(Runway(length, code, RunwayType.Concrete, lighted))
               case gravelPattern(_) => Some(Runway(length, code, RunwayType.Gravel, lighted))
-              case _ => None
+              case _ => Some(Runway(length, code, RunwayType.Unknown, lighted))
             }
           runwayOption.foreach {
             case (runway) =>
