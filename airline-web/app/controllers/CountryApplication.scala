@@ -30,10 +30,16 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                 case None => Map.empty[String, Int]
               }
 
+            val delegatesByCountryCode = airline.getDelegateInfo().busyDelegates.filter(_.assignedTask.getTaskType == DelegateTaskType.COUNTRY).map(_.assignedTask.asInstanceOf[CountryDelegateTask]).groupBy(_.country.countryCode)
+
             countries.foreach { country =>
               var countryJson : JsObject = Json.toJson(country).asInstanceOf[JsObject]
               baseCountByCountryCode.get(country.countryCode).foreach { baseCount =>
                 countryJson = countryJson + ("baseCount" -> JsNumber(baseCount))
+              }
+              delegatesByCountryCode.get(country.countryCode).foreach { delegatesAssignedToThisCountry =>
+                countryJson = countryJson + ("delegatesCount" -> JsNumber(delegatesAssignedToThisCountry.length))
+
               }
 
               if (airline.getHeadQuarter().isDefined) {

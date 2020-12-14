@@ -1,6 +1,6 @@
 package com.patson.model
 
-import com.patson.data.{CountrySource, CycleSource, DelegateSource}
+import com.patson.data.{AllianceSource, CountrySource, CycleSource, DelegateSource}
 
 import scala.collection.mutable
 
@@ -50,6 +50,12 @@ object AirlineCountryRelationship {
     }
   }
 
+  val ALLIANCE_MEMBER_TITLE = (title : CountryAirlineTitle) => new RelationshipFactor {
+    override val getDescription: String = {
+      s"Alliance member ${title.airline.name} is ${title.description}"
+    }
+  }
+
   val DELEGATE = (delegateLevel : Int) => new RelationshipFactor {
     override val getDescription: String = {
       s"Total delegate level ${delegateLevel}"
@@ -65,17 +71,35 @@ object AirlineCountryRelationship {
 
     airline.getCountryCode() match {
       case Some(homeCountryCode) =>
+        //home country vs target country
         val relationship = countryRelationships.getOrElse((homeCountryCode, countryCode), 0)
         val multiplier = if (relationship >= 0) HOME_COUNTRY_POSITIVE_RELATIONSHIP_MULTIPLIER else HOME_COUNTRY_NEGATIVE_RELATIONSHIP_MULTIPLIER
         factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * multiplier)
 
-        CountrySource.loadCountryAirlineTitlesByAirlineAndCountry(airline.id, countryCode).foreach {
+
+        val allTitles = CountryAirlineTitle.getTopTitlesByCountry(countryCode)
+        //country airline title by this airline
+        allTitles.find(_.airline.id == airline.id).foreach {
           title => {
             val relationshipBonus = Title.relationshipBonus(title.title)
             factors.put(TITLE(title), relationshipBonus)
           }
         }
 
+        //country airline title on alliance member
+        airline.getAllianceId().foreach { allianceId =>
+          val allNationAirlinesOfThisCountry = allTitles.filter(_.title == Title.NATIONAL_AIRLINE)
+          AllianceSource.loadAllianceById(allianceId).get.members.foreach { allianceMember =>
+            if (allianceMember.airline.id != airline.id) { //make sure it's not the current airline
+              allNationAirlinesOfThisCountry.find(_.airline.id == allianceMember.airline.id).foreach { nationalAirline =>
+                val relationshipBonus = Title.relationshipBonus(nationalAirline.title) / 5
+                factors.put(ALLIANCE_MEMBER_TITLE(nationalAirline), relationshipBonus)
+              }
+            }
+          }
+        }
+
+        //market share
         CountrySource.loadMarketSharesByCountryCode(countryCode).foreach {
           marketShares => {
             marketShares.airlineShares.get(airline.id).foreach {

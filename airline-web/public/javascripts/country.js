@@ -75,8 +75,10 @@ function updateCountryTable(sortProperty, sortOrder, selectedCountry) {
 		row.append("<div class='cell' align='right'>" + country.airportPopulation + "</div>")
 		row.append("<div class='cell' align='right'>" + country.incomeLevel + "</div>")
 		row.append("<div class='cell' align='right'>" + country.openness + "</div>")
-		var baseCount = country.baseCount ? country.baseCount : "-"
-		row.append("<div class='cell' align='right'>" + baseCount + "</div>")
+//		var baseCount = country.baseCount ? country.baseCount : "-"
+//		row.append("<div class='cell' align='right'>" + baseCount + "</div>")
+        var delegatesCount = country.delegatesCount ? country.delegatesCount : "-"
+        row.append("<div class='cell' align='right'>" + delegatesCount + "</div>")
 		
 		if (selectedCountry == country.countryCode) {
 		    row.addClass("selected")
