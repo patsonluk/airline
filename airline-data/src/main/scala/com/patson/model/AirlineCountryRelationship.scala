@@ -89,13 +89,12 @@ object AirlineCountryRelationship {
         //country airline title on alliance member
         airline.getAllianceId().foreach { allianceId =>
           val allNationAirlinesOfThisCountry = allTitles.filter(_.title == Title.NATIONAL_AIRLINE)
-          AllianceSource.loadAllianceById(allianceId).get.members.foreach { allianceMember =>
-            if (allianceMember.airline.id != airline.id) { //make sure it's not the current airline
-              allNationAirlinesOfThisCountry.find(_.airline.id == allianceMember.airline.id).foreach { nationalAirline =>
-                val relationshipBonus = Title.relationshipBonus(nationalAirline.title) / 5
-                factors.put(ALLIANCE_MEMBER_TITLE(nationalAirline), relationshipBonus)
-              }
-            }
+          val allianceMemberAirlineIds : List[Int] = AllianceSource.loadAllianceById(allianceId).get.members.filter(_.airline.id != airline.id).map(_.airline.id) //make sure it's not the current airline
+
+          //use find, so it only returns the first match - no double bonus if 2 airlines are national
+          allNationAirlinesOfThisCountry.find(nationalAirline => allianceMemberAirlineIds.contains(nationalAirline.airline.id)).foreach { allianceMemberNationalAirline =>
+            val relationshipBonus = Title.relationshipBonus(allianceMemberNationalAirline.title) / 5
+            factors.put(ALLIANCE_MEMBER_TITLE(allianceMemberNationalAirline), relationshipBonus)
           }
         }
 
