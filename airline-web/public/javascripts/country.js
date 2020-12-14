@@ -387,6 +387,7 @@ function changeCountryDelegateCount(delta) {
     var assignedDelegateCount = $delegateSection.data('assignedDelegateCount')
     var availableDelegates = $delegateSection.data('availableDelegates')
     var originalDelegates = $delegateSection.data('originalDelegates')
+    var delegatesRequired = $delegateSection.data('delegatesRequired')
 
     var newLength = -1
     if (delta > 0) {
@@ -394,7 +395,7 @@ function changeCountryDelegateCount(delta) {
             newLength = assignedDelegateCount + delta
         }
     } else if (delta < 0) {
-        if (assignedDelegateCount + delta >= 0) {
+        if (assignedDelegateCount + delta >= delegatesRequired) {
             newLength = assignedDelegateCount + delta
         }
     }
@@ -471,12 +472,16 @@ function getCountryDelegatesSummary(countryCode) {
         dataType: 'json',
         success: function(result) {
             $('#airlineCountryRelationshipModal span.delegateMultiplier').text(result.multiplier)
+            $('#airlineCountryRelationshipModal span.delegatesRequired').text(result.delegatesRequired)
+
             var countryDelegates = result.delegates
             countryDelegates.sort(function(a, b) { //sort, the most senior comes first
                 return a.startCycle - b.startCycle
             })
             $delegateSection.data('originalDelegates', countryDelegates) //create a clone
             $delegateSection.data('assignedDelegateCount', countryDelegates.length)
+            $delegateSection.data('delegatesRequired', result.delegatesRequired)
+
             refreshAssignedDelegates()
         },
         error: function(jqXHR, textStatus, errorThrown) {

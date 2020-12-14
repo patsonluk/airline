@@ -227,7 +227,11 @@ div#canvas.christmas {
     font-weight: bold;
     color : rgb(0, 0, 0, 0.5);
     border-radius: 3px;
+    width: 100px;
+    margin: 0.2em 0.2em;
 }
+
+
  
 .label, div.header, span.header {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
@@ -924,6 +928,6 @@ li.dot {
     align-items: center;
     margin: 4px 0;
 }
-li.dot:before {
+li.dot:before, span.dot:before {
     content: url('/assets/images/markers/dot.png');
 }

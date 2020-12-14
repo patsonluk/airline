@@ -13,12 +13,14 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     
     val baseCost = (200000 + airport.income * 30) * airport.size //for a airport size 7, income 50k city, it will be 12 million base
       
-    return baseCost * Math.pow(2, (scale - 1)).toLong //to upgrade to scale 3, it would be 12 * 4 =  48 million, to upgrade to scale 9,it would be 12 * 256 = 3072 million 
+    return baseCost * Math.pow(COST_EXPONENTIAL_BASE, (scale - 1)).toLong
   }
+
+  val COST_EXPONENTIAL_BASE = 1.8
   
   val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
-    (10000 + airport.income) / 10 * airport.size * (Math.pow(2, adjustedScale - 1)).toInt  / (if (headquarter) 1 else 2)
+    (10000 + airport.income) / 10 * airport.size * (Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt  / (if (headquarter) 1 else 2)
   }
 
 //  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
@@ -51,10 +53,18 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     base + scaleBonus
   }
 
-  val HQ_BASIC_DELEGATE = 7
-  val NON_HQ_BASIC_DELEGATE = 3
+//  val HQ_BASIC_DELEGATE = 7
+//  val NON_HQ_BASIC_DELEGATE = 3
 //  val delegateCapacity : Int =
 //    (if (headquarter) HQ_BASIC_DELEGATE else NON_HQ_BASIC_DELEGATE) + scale / (if (headquarter) 1 else 2)
+
+  val delegatesRequired : Int = {
+    if (headquarter) {
+      scale / 2
+    } else {
+      1 + scale / 2
+    }
+  }
 
 
   def getOvertimeCompensation(staffCapacity : Int, staffRequired : Int) = {

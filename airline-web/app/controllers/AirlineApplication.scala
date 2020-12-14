@@ -213,33 +213,19 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
           AllianceCache.getAlliance(allianceMember.allianceId, true).foreach { alliance =>
             val allAllianceBaseAirports : List[(Airport, Airline)] = alliance.members.flatMap { allianceMember =>
-              allianceMember.airline.getBases().filter( !_.headquarter).map { base =>
+              allianceMember.airline.getBases().filter(!_.headquarter).map { base =>
                 (base.airport, allianceMember.airline)
               }
             }
-            
-            allAllianceBaseAirports.find(_._1.id == targetBase.airport.id).foreach { 
+
+            allAllianceBaseAirports.find(_._1.id == targetBase.airport.id).foreach {
               case (overlappingAirport, allianceAirline) => return Some("Alliance member " + allianceAirline.name + " already has a base in this airport")
             }
           }
         }
         //it should first has link to it
-        if (LinkSource.loadLinksByAirlineId(airline.id).find( link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
+        if (LinkSource.loadLinksByAirlineId(airline.id).find(link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
           return Some("No active flight route operated by your airline flying to this city yet")
-        }
-
-//
-//        if (airport.countryCode != airline.getCountryCode().get) {
-//          val mutalRelationshipToAirlineCountry = CountrySource.getCountryMutualRelationship(airline.getCountryCode().get, airport.countryCode)
-//          if (CountryCache.getCountry(airport.countryCode).get.openness + mutalRelationshipToAirlineCountry < Country.OPEN_DOMESTIC_MARKET_MIN_OPENNESS) {
-//            return Some("This country does not allow airline base from your country")
-//          }
-//        }
-        
-        val existingBaseCount = airline.getBases().length
-        val allowedBaseCount = airline.airlineGrade.getBaseLimit
-        if (existingBaseCount >= allowedBaseCount) {
-          return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
         }
 
         //check title
@@ -252,11 +238,29 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
             }
           case Right(_) => //ok
         }
-
-
       }
     }
-        
+
+//
+//        val existingBaseCount = airline.getBases().length
+//        val allowedBaseCount = airline.airlineGrade.getBaseLimit
+//        if (existingBaseCount >= allowedBaseCount) {
+//          return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
+//        }
+    //check delegates requirement
+    val delegatesAssignedToThisCountry = airline.getDelegateInfo().busyDelegates.filter { delegate =>
+      val targetCountryCode = targetBase.countryCode
+      delegate.assignedTask.getTaskType == DelegateTaskType.COUNTRY && delegate.assignedTask.asInstanceOf[CountryDelegateTask].country.countryCode == targetCountryCode
+    }
+
+    val upgradeDelegatesRequired = if (targetBase.scale == 1) targetBase.delegatesRequired else targetBase.delegatesRequired - targetBase.copy(scale = targetBase.scale - 1).delegatesRequired
+
+    val requiredDelegates = airline.getBases().filter(_.countryCode == targetBase.countryCode).map(_.delegatesRequired).sum + upgradeDelegatesRequired
+    if (delegatesAssignedToThisCountry.length < requiredDelegates) {
+      return Some(s"Cannot build/upgrade this base. Require $requiredDelegates delegate(s) assigned to ${CountryCache.getCountry(targetBase.countryCode).get.name} but only ${delegatesAssignedToThisCountry.length} assigned")
+    }
+
+
     return None
   }
   

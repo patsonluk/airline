@@ -279,10 +279,10 @@ package object controllers {
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {
       val airport = AirportCache.getAirport((json \ "airportId").as[Int]).get
-      val airline = Airline.fromId((json \ "airlineId").as[Int])
+      val airline = AirlineCache.getAirline((json \ "airlineId").as[Int]).get
       val scale = (json \ "scale").as[Int]
       val headquarter = (json \ "headquarter").as[Boolean]
-      JsSuccess(AirlineBase(airline, airport, "", scale, 0, headquarter))
+      JsSuccess(AirlineBase(airline, airport, airport.countryCode, scale, 0, headquarter))
     }
     
     def writes(base: AirlineBase): JsValue = {
@@ -298,6 +298,7 @@ package object controllers {
       "scale" -> JsNumber(base.scale),
       "upkeep" -> JsNumber(base.getUpkeep),
       "value" -> JsNumber(base.getValue),
+        "delegatesRequired" -> JsNumber(base.delegatesRequired),
       "headquarter" -> JsBoolean(base.headquarter),
       "foundedCycle" -> JsNumber(base.foundedCycle)))
       

@@ -101,10 +101,22 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    			$('#airportDetailsBaseType').text('-')
 	    			$('#airportDetailsBaseScale').text('-')
 	    			$('#airportDetailsBaseUpkeep').text('-')
+	    			$('#airportDetailsBaseDelegatesRequired').text('-')
 	    			$('#airportDetailsFacilities').empty()
 	    		} else {
 	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
 	    			$('#airportDetailsBaseScale').text(airportBase.scale)
+	    			if (airportBase.delegatesRequired == 0) {
+	    			    $('#airportDetailsBaseDelegatesRequired').text('None')
+                    } else {
+                        $('#airportDetailsBaseDelegatesRequired').empty()
+                        var $delegatesSpan = $('<span style="display: flex;"></span>')
+                        for (i = 0 ; i < airportBase.delegatesRequired; i ++) {
+                            var $delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png"/>')
+                            $delegatesSpan.append($delegateIcon)
+                        }
+                        $('#airportDetailsBaseDelegatesRequired').append($delegatesSpan)
+                    }
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
 	    			updateFacilityIcons(airport)
 	    		}
