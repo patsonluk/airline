@@ -340,7 +340,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      if (base.scale == 1) { //cannot downgrade any further
        return Some("Cannot downgrade this base any further")
      }
-     val airport = AirportCache.getAirport(base.airport.id, true).get
+//     val airport = AirportCache.getAirport(base.airport.id, true).get
 //     val assignedSlots = airport.getAirlineSlotAssignment(base.airline.id)
 //     val preferredSlots = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = 0)
 //     val preferredSlotsAfterDowngrade = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = -1)
@@ -348,6 +348,12 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 //       return Some("This base can only be downgraded if there are " + (preferredSlots - preferredSlotsAfterDowngrade)  + " free slots")
 //     }
 //
+     val totalOfficeStaffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", base.airline.id))).map(_.getOfficeStaffRequired).sum
+     val capacityAfterDowngrade = base.copy(scale = base.scale - 1).getOfficeStaffCapacity
+     if (capacityAfterDowngrade < totalOfficeStaffRequired) {
+       return Some(s"Cannot downgrade this base, as the office staff capacity will become $capacityAfterDowngrade which is lower than the required $totalOfficeStaffRequired to maintain current flights from this base")
+     }
+
      AirlineSource.loadLoungeByAirlineAndAirport(base.airline.id, base.airport.id).foreach { lounge =>
        if (Lounge.getBaseScaleRequirement(lounge.level) >= base.scale) { //cannot downgrade further unless Lounge is downgraded first
          return Some("This base can only be downgraded if lounge is first downgraded")

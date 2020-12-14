@@ -40,6 +40,9 @@ function loadAllCountries(loadAirline) {
 	    	    if (!country.baseCount) {
 	    	        country.baseCount = 0
 	    	    }
+	    	    if (!country.delegatesCount) { //for sorting
+	    	        country.delegatesCount = 0
+	    	    }
 	    		loadedCountriesByCode[country.countryCode] = country
 	    		loadedCountries.push(country)
 	    	});

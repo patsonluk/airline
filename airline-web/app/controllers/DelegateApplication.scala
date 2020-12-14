@@ -24,7 +24,7 @@ class DelegateApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   def updateCountryDelegates(countryCode : String, airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline = request.user
     val delegateCount = request.body.asInstanceOf[AnyContentAsJson].json.\("delegateCount").as[Int]
-    val delegatesRequired = request.user.getBases().map(_.delegatesRequired).sum
+    val delegatesRequired = request.user.getBases().filter(_.countryCode == countryCode).map(_.delegatesRequired).sum
     val existingDelegates = DelegateSource.loadCountryDelegateByAirlineAndCountry(airlineId, countryCode).sortBy(_.assignedTask.getStartCycle)
     if (delegateCount < delegatesRequired) {
       BadRequest(s"Require $delegatesRequired but trying to set to $delegateCount")
