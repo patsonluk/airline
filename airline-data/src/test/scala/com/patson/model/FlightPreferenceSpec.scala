@@ -803,8 +803,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
 
       val ratio = airline1Picked.toDouble / airline2Picked
-      assert(ratio > 1.2)
-      assert(ratio < 2)
+      assert(ratio > 5)
+      assert(ratio < 10)
     }
 
     "generate preference that compute to some overlapping but differentiating cost if frequency/loyalty has huge difference but make up in ticket price)".in {
@@ -825,8 +825,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
 
       val ratio = airline1Picked.toDouble / airline2Picked
-      assert(ratio > 5)
-      assert(ratio < 20)
+      assert(ratio > 10)
+      assert(ratio < 25)
     }
   }
 }

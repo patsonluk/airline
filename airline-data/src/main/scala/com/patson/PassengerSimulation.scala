@@ -232,10 +232,10 @@ object PassengerSimulation {
     
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
     
-      val LINK_COST_TOLERANCE_FACTOR = 1.3;
+      val LINK_COST_TOLERANCE_FACTOR = 1;
       val incomeAdjustedFactor : Double = 
         if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
-          1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.4 //can reduce down to 0.6 
+          1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
         } else {
           1
         }

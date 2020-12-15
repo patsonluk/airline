@@ -39,9 +39,14 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     * @param assignedAirplanes
     */
   def setTestingAssignedAirplanes(assignedAirplanes : Map[Airplane, Int]) = {
-    setAssignedAirplanes(assignedAirplanes.toList.map {
+    this.assignedAirplanes = assignedAirplanes.toList.map {
       case (airplane, frequency) => (airplane, LinkAssignment(frequency, Computation.calculateFlightMinutesRequired(airplane.model, distance)))
-    }.toMap)
+    }.toMap
+
+    if (!assignedAirplanes.isEmpty) {
+      assignedModel = Some(assignedAirplanes.toList(0)._1.model)
+    }
+    inServiceAirplanes = this.assignedAirplanes.filter(_._1.isReady)
   }
   
   def getAssignedAirplanes() = {
@@ -58,7 +63,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 
   import FlightType._
   /**
-   * Find seats at or below the requestedLinkClass (can only downgrade 1 level)
+   * Find seats at or below the requestedLinkClass
    * 
    * Returns the tuple of the matching class and seats available for that class
    */
