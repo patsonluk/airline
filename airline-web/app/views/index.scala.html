@@ -774,38 +774,40 @@
 	<!-- 	    	   end bottom panel -->
 				</div>
 	<!--   			end world map canvas -->
-				<div id="linksCanvas" style="display: none; height: 100%; min-width: 600px;">
+				<div id="linksCanvas" style="display: none; height: 100%; min-width: 800px;">
 					<div style="float: left;" class="mainPanel">
-						<div class="section" style="height: 95% ; width : 95%; float: left;">
+						<div class="section" style="height: 95% ; width : 98%; float: left;">
 							<div style="height: 20px">
 								<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
 								<span style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></span> <!--hidden column for last update -->
 							</div>
-							<div class="table data" style="height: 20px; width: 100%">
-								<div class="table-header" id="linksTableSortHeader">
-									<div class="cell clickable selected" style="width: 18%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
-									<div class="cell clickable" style="width: 18%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
-									<div class="cell clickable" style="width: 16%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
-									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
-									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity (Freq.)</div>
-									<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Pax</div>
-									<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalLoadFactor" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">LF</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
-									<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
+							<div style="width: 100%; height: 100%; overflow:auto;">
+								<div class="table data" style="height: 20px; width: 100%; min-width: 800px;">
+									<div class="table-header" id="linksTableSortHeader">
+										<div class="cell clickable selected" style="width: 18%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
+										<div class="cell clickable" style="width: 18%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
+										<div class="cell clickable" style="width: 16%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
+										<div class="cell clickable" style="width: 8%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
+										<div class="cell clickable" style="width: 8%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity (Freq.)</div>
+										<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Pax</div>
+										<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalLoadFactor" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">LF</div>
+										<div class="cell clickable" style="width: 11%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
+										<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
+									</div>
 								</div>
-							</div>
-							<div style="height: calc(100% - 20px - 20px); width: 100%; overflow: auto;">
-								<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
-									<div class="table-header">
-										<div class="cell" style="width: 18%; border-bottom: none;"></div>
-										<div class="cell" style="width: 18%; border-bottom: none;"></div>
-										<div class="cell" style="width: 16%; border-bottom: none;"></div>
-										<div class="cell" style="width: 8%; border-bottom: none;"></div>
-										<div class="cell" style="width: 8%; border-bottom: none;"></div>
-										<div class="cell" style="width: 5%; border-bottom: none;"></div>
-										<div class="cell" style="width: 5%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
-										<div class="cell" style="width: 11%; border-bottom: none;"></div>
+								<div style="height: calc(100% - 40px); width: 100%; overflow-y:auto; min-width: 800px;">
+									<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
+										<div class="table-header">
+											<div class="cell" style="width: 18%; border-bottom: none;"></div>
+											<div class="cell" style="width: 18%; border-bottom: none;"></div>
+											<div class="cell" style="width: 16%; border-bottom: none;"></div>
+											<div class="cell" style="width: 8%; border-bottom: none;"></div>
+											<div class="cell" style="width: 8%; border-bottom: none;"></div>
+											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+											<div class="cell" style="width: 11%; border-bottom: none;"></div>
+											<div class="cell" style="width: 11%; border-bottom: none;"></div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -1090,24 +1092,26 @@
 				<div id="countryCanvas" style="height: 100%; display: none;">
 					<div class="mainPanel" style="float: left;">
 						<div style="height: 95% ; width : 95%; float: left;" class="section">
-							<div id="countryTableHeader" class="table data" style="width: 100%; height: 20px;">
-								<div class="table-header">
-									<div class="cell clickable" style="width: 20%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
-									<div class="cell clickable selected" style="width: 20%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Population Coverage</div>
-									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="incomeLevel" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Income Level</div>
-									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
-<!--									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="baseCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Base Count</div>-->
-   									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="delegatesCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Country Delegates</div>
-								</div>
-							</div>
-							<div style="height:  calc(100% - 20px); width: 100%; overflow: auto;">
-								<div id="countryTable" class="table data" style="height: 100%; width: 100%;">
+							<div style="width: 100%; height: 100%; overflow: auto;">
+								<div id="countryTableHeader" class="table data" style="width: 100%; height: 20px; min-width: 400px;">
 									<div class="table-header">
-										<div class="cell" style="width: 20%; border-bottom: none;"></div>
-										<div class="cell" style="width: 20%; border-bottom: none;"></div>
-										<div class="cell" style="width: 20%; border-bottom: none;"></div>
-										<div class="cell" style="width: 20%; border-bottom: none;"></div>
-										<div class="cell" style="width: 20%; border-bottom: none;"></div>
+										<div class="cell clickable" style="width: 25%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
+										<div class="cell clickable selected" style="width: 30%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Pop Coverage</div>
+										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="incomeLevel" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Income Level</div>
+										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
+	<!--									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="baseCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Base Count</div>-->
+										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="delegatesCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Country Delegates</div>
+									</div>
+								</div>
+								<div style="height:  calc(100% - 40px); width: 100%; overflow-y: auto; min-width: 400px;">
+									<div id="countryTable" class="table data" style="height: 100%; width: 100%;">
+										<div class="table-header">
+											<div class="cell" style="width: 25%; border-bottom: none;"></div>
+											<div class="cell" style="width: 30%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -1186,33 +1190,35 @@
 				<div id="airplaneCanvas" style="height: 100%; display: none; min-width: 600px;">
 					<div style="float: left;" class="mainPanel airplaneCanvasLeftGroup">
 						<div style="height: 95% ; width : 95%; float: left;"  class="section">
-							<div class="table data" style="height: 20px; width: 100%">
-								<div class="table-header" id="airplaneModelSortHeader">
-									<div class="cell clickable" style="width: 20%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
-									<div class="cell clickable" style="width: 15%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
-									<div class="cell clickable selected" style="width: 10%" align="right" data-sort-property="price" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Price</div>
-									<div class="cell clickable" style="width: 7%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
-									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Max Range</div>
-									<div class="cell clickable" style="width: 7%" align="right" data-sort-property="fuelBurn" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Fuel Burn</div>
-									<div class="cell clickable" style="width: 7%" align="right" data-sort-property="lifespan" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Lifespan</div>
-									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="speed" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Speed</div>
-									<div class="cell clickable" style="width: 7%" align="right" data-sort-property="runwayRequirement" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Runway Req.</div>
-									<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>
+							<div style="width: 100%; height: 100%; overflow:auto;">
+								<div class="table data" style="height: 20px; width: 100%; min-width: 500px">
+									<div class="table-header" id="airplaneModelSortHeader">
+										<div class="cell clickable" style="width: 20%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
+										<div class="cell clickable" style="width: 15%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
+										<div class="cell clickable selected" style="width: 10%" align="right" data-sort-property="price" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Price</div>
+										<div class="cell clickable" style="width: 7%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
+										<div class="cell clickable" style="width: 9%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Max Range</div>
+										<div class="cell clickable" style="width: 7%" align="right" data-sort-property="fuelBurn" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Fuel Burn</div>
+										<div class="cell clickable" style="width: 7%" align="right" data-sort-property="lifespan" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Lifespan</div>
+										<div class="cell clickable" style="width: 9%" align="right" data-sort-property="speed" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Speed</div>
+										<div class="cell clickable" style="width: 7%" align="right" data-sort-property="runwayRequirement" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Runway Req.</div>
+										<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>
+									</div>
 								</div>
-							</div>
-							<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
-								<div class="table data" id="airplaneModelTable" style="max-height: 100%; width: 100%">
-									<div class="table-header">
-										<div class="cell" style="width: 20%; border-bottom: none;"></div>
-										<div class="cell" style="width: 15%; border-bottom: none;"></div>
-										<div class="cell" style="width: 10%; border-bottom: none;"></div>
-										<div class="cell" style="width: 7%; border-bottom: none;"></div>
-										<div class="cell" style="width: 9%; border-bottom: none;"></div>
-										<div class="cell" style="width: 7%; border-bottom: none;"></div>
-										<div class="cell" style="width: 7%; border-bottom: none;"></div>
-										<div class="cell" style="width: 9%; border-bottom: none;"></div>
-										<div class="cell" style="width: 7%; border-bottom: none;"></div>
-										<div class="cell" style="width: 9%; border-bottom: none;"></div>
+								<div style="height: calc(100% - 40px); width: 100%; overflow-y: auto; min-width: 500px">
+									<div class="table data" id="airplaneModelTable" style="max-height: 100%; width: 100%; ">
+										<div class="table-header">
+											<div class="cell" style="width: 20%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+											<div class="cell" style="width: 10%; border-bottom: none;"></div>
+											<div class="cell" style="width: 7%; border-bottom: none;"></div>
+											<div class="cell" style="width: 9%; border-bottom: none;"></div>
+											<div class="cell" style="width: 7%; border-bottom: none;"></div>
+											<div class="cell" style="width: 7%; border-bottom: none;"></div>
+											<div class="cell" style="width: 9%; border-bottom: none;"></div>
+											<div class="cell" style="width: 7%; border-bottom: none;"></div>
+											<div class="cell" style="width: 9%; border-bottom: none;"></div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -2098,23 +2104,25 @@
 					<div style="float: left;" class="mainPanel">
 						<div style="width : 95%; height: 95%; float: left;" class="section">
 							<div style="height: 20px;"><input type="checkbox" id="hideInactive" onchange="toggleHideInactive(this.checked)" checked/><span class="label">Hide Inactive Airlines</span></div>
-							<div id = "rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
-								<div class="table-header">
-									<div class="cell clickable" style="width: 5%" data-sort-property="loginStatus" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Status</div>
-									<div class="cell clickable" style="width: 30%" data-sort-property="name" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Name</div>
-									<div class="cell clickable" style="width: 45%" data-sort-property="headquartersCity" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Headquarters</div>
-									<div class="cell clickable selected" style="width: 10%" align="right" data-sort-property="reputation" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Reputation</div>
-									<div class="cell clickable" style="width: 10%" align="right" data-sort-property="baseCount" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Number of bases</div>
-								</div>
-							</div>
-							<div style="height: calc(100% - 40px); width: 100%; overflow: auto;">
-								<div id="rivalsTable" class="table data" style="height: 100%; width: 100%;">
+							<div style="width: 100%; height: 100%; overflow: auto;">
+								<div id = "rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px; min-width: 400px;">
 									<div class="table-header">
-										<div class="cell" style="width: 5%; border-bottom: none;"></div>
-										<div class="cell" style="width: 30%; border-bottom: none;"></div>
-										<div class="cell" style="width: 45%; border-bottom: none;"></div>
-										<div class="cell" style="width: 10%; border-bottom: none;"></div>
-										<div class="cell" style="width: 10%; border-bottom: none;"></div>
+										<div class="cell clickable" style="width: 5%" data-sort-property="loginStatus" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">&nbsp;</div>
+										<div class="cell clickable" style="width: 35%" data-sort-property="name" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Name</div>
+										<div class="cell clickable" style="width: 30%" data-sort-property="headquartersCity" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Headquarters</div>
+										<div class="cell clickable selected" style="width: 15%" align="right" data-sort-property="reputation" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Reputation</div>
+										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="baseCount" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Bases</div>
+									</div>
+								</div>
+								<div style="height: calc(100% - 40px); width: 100%; overflow-y: auto; min-width: 400px;">
+									<div id="rivalsTable" class="table data" style="height: 100%; width: 100%;">
+										<div class="table-header">
+											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+											<div class="cell" style="width: 35%; border-bottom: none;"></div>
+											<div class="cell" style="width: 30%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+										</div>
 									</div>
 								</div>
 							</div>
