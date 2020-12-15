@@ -160,9 +160,9 @@ object GeoDataGenerator extends App {
             case "large_airport" => 3
             case _ => 0
           }
-        //0 - csvId, 2 - size, 3 - name, 4 - lat, 5 - long, 7 - zone, 8 - country, 10 - city, 12 - code1, 13- code2
+        //0 - csvId, 2 - size, 3 - name, 4 - lat, 5 - long, 7 - zone, 8 - country, 10 - city, 11 - scheduled service, 12 - code1, 13- code2
         result += CsvAirport(airport = new Airport(info(13), info(12), info(3), info(4).toDouble, info(5).toDouble, info(8), info(10), zone = info(7), airportSize, 0, 0, 0),
-          csvAirportId = info(0).toInt)
+          csvAirportId = info(0).toInt, scheduledService = "yes".equals(info(11)))
 
       }
       result.toList
@@ -233,8 +233,8 @@ object GeoDataGenerator extends App {
   def generateAirportData(rawAirportResult : List[CsvAirport], runwayResult : Map[Int, List[Runway]], cities : List[City]) : List[Airport] = {
     val specialAirportNames = AdditionalLoader.loadSpecialAirportNames()
 
-    var airportResult = adjustAirportByRunway(rawAirportResult.filter { case(CsvAirport(airport, _)) =>
-      airport.iata != "" && (airport.name.toLowerCase().contains(" airport") || specialAirportNames.contains(airport.name.toLowerCase())) && airport.size > 0
+    var airportResult = adjustAirportByRunway(rawAirportResult.filter { case(CsvAirport(airport, _, scheduledService)) =>
+      airport.iata != "" && scheduledService && airport.size > 0
     }, runwayResult) //
 
     airportResult = adjustAirportSize(airportResult)
@@ -352,11 +352,11 @@ object GeoDataGenerator extends App {
 
   }
 
-  case class CsvAirport(airport : Airport, csvAirportId : Int)
+  case class CsvAirport(airport : Airport, csvAirportId : Int, scheduledService : Boolean)
 
   def setAirportRunwayDetails(csvAirports : List[CsvAirport], runwaysByCsvId : Map[Int, List[Runway]]) : Unit = {
     csvAirports.foreach {
-      case (CsvAirport(airport, csvId)) =>
+      case (CsvAirport(airport, csvId, _)) =>
         runwaysByCsvId.get(csvId) match {
         case Some(runways) =>
           if (runways.length > 0) {
@@ -373,7 +373,7 @@ object GeoDataGenerator extends App {
 
   def adjustAirportByRunway(rawAirportResult : List[CsvAirport], runwayResult : Map[Int, List[Runway]]) : List[Airport] = {
     rawAirportResult.map {
-      case (CsvAirport(rawAirport, csvAirportId)) =>
+      case (CsvAirport(rawAirport, csvAirportId, _)) =>
         val increment : Int = runwayResult.get(csvAirportId) match {
           case Some(runways) =>
             var longRunway = 0

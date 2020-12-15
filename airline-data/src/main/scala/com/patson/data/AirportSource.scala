@@ -788,7 +788,29 @@ object AirportSource {
 //      connection.close()
 //    }
 //  }
-  
+
+
+  def deleteAirports(airportIds : List[Int]) = {
+    //open the hsqldb
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_TABLE + " WHERE id = ?")
+      connection.setAutoCommit(false)
+      airportIds.foreach { airportId =>
+          preparedStatement.setInt(1, airportId)
+
+          preparedStatement.executeUpdate()
+          AirportCache.invalidateAirport(airportId)
+      }
+
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
   
   def deleteAllAirports() = {
     //open the hsqldb
