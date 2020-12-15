@@ -1800,7 +1800,7 @@
 					<!--  new loan -->
 						<div style="width : 95%; float: left;" class="section">
 							<h4>New Loan</h4>
-							<div class="table" style="width: 100%; margin-bottom: 15px">
+							<div class="table" style="width: 100%; margin-bottom: 15px; min-width: 400px;">
 								<div class="table-row">
 									<div class="label"><h5>Available Loan:</h5></div>
 									<div class="value">
@@ -1818,7 +1818,7 @@
 							</div>
 							<div id="newLoanOptions">
 								<h4>Loan Options</h4>
-								<div class="table data" id="newLoanOptionsTable" style="height: 100%; width: 100%">
+								<div class="table data" id="newLoanOptionsTable" style="height: 100%; width: 100%;">
 									<div class="table-header">
 										<div class="cell" style="width: 20%" align="right">Principal Amount</div>
 										<div class="cell" style="width: 10%" align="right">Interest Rate</div>
@@ -1832,7 +1832,7 @@
 						</div>
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Outstanding Loans</h4>
-							<div class="table data" id="outstandingLoansTable" style="height: 100%; width: 100%">
+							<div class="table data" id="outstandingLoansTable" style="height: 100%; width: 100%; min-width: 400px;">
 								<div class="table-header">
 									<div class="cell" style="width: 15%" align="right">Principal Amount</div>
 									<div class="cell" style="width: 10%" align="right">Interest</div>
@@ -2625,7 +2625,7 @@
 							<div style='clear: both;'></div>
 						  <div class="button search" tabindex="111" onkeypress="searchButtonKeyPress(event, $(this))" onclick="searchLinkHistory()">Search</div>
 					     </div>
-						 <div id="historySearchResult" class="section" style="overflow-y: auto; flex-grow: 1;">
+						 <div id="historySearchResult" class="section" style="height: 100px; overflow-y: auto; flex-grow: 1;">
 							<div class="table data" style="height: 20px; width: 100%; min-width: 700px;">
 								<div class="table-header sortHeader">
 									<div class="cell clickable" style="width: 8%" data-sort-property="cycleDelta" data-sort-order="decending">Cycle</div>
