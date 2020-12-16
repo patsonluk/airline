@@ -69,7 +69,7 @@ object GeoDataGenerator extends App {
       val result = ListBuffer[City]()
       for (line : String <- Source.fromFile("cities500.txt").getLines) {
         val infoArray = line.split("\\t")
-        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
+        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8), infoArray(14).toInt) && infoArray(14).toInt > 0) { //then a valid target
           if (incomeInfo.get(infoArray(8)).isEmpty) {
             println(infoArray(8) + " has no income info")
           }
@@ -80,8 +80,8 @@ object GeoDataGenerator extends App {
     }
   }
 
-  def isCity(placeCode : String, countryCode : String) : Boolean = {
-    placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || placeCode == "PPLA3" || (placeCode == "PPL" && (countryCode == "AU" /*|| countryCode == "CA"*/))
+  def isCity(placeCode : String, countryCode : String, population : Int) : Boolean = {
+    placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || placeCode == "PPLA3" || (placeCode == "PPL" && (population >= 100000 || !countryCode.equals("US")))
   }
 
   def getRunway() : Future[Map[Int, List[Runway]]] = {
