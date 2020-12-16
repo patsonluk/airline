@@ -41,7 +41,7 @@ object AirportGeoPatcher extends App {
     val getCityFuture = getCity(incomeInfo)
 
     var cities = Await.result(getCityFuture, Duration.Inf)
-    cities = cities ++ AdditionalLoader.loadAdditionalCities(incomeInfo)
+    //cities = cities ++ AdditionalLoader.loadAdditionalCities(incomeInfo) //do not load additional cities with the new data source
     //make sure cities are saved first as we need the id for airport info
     try {
       //      AirportSource.deleteAllAirports()
