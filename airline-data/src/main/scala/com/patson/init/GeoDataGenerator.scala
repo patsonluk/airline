@@ -63,17 +63,41 @@ object GeoDataGenerator extends App {
   }
 
 
+//  def getCity(incomeInfo : Map[String, Int]) : Future[List[City]] = {
+//    //val citySource : Source[String, NotUsed] = Source(scala.io.Source.fromFile("cities1000.txt").getLines())
+//    Future {
+//      val result = ListBuffer[City]()
+//      for (line : String <- Source.fromFile("cities1000.txt").getLines) {
+//        val infoArray = line.split("\\t")
+//        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
+//          if (incomeInfo.get(infoArray(8)).isEmpty) {
+//            println(infoArray(8) + " has no income info")
+//          }
+//          result += new City(infoArray(1), infoArray(4).toDouble, infoArray(5).toDouble, infoArray(8), infoArray(14).toInt, incomeInfo.get(infoArray(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
+//        }
+//      }
+//      result.toList
+//    }
+//  }
   def getCity(incomeInfo : Map[String, Int]) : Future[List[City]] = {
     //val citySource : Source[String, NotUsed] = Source(scala.io.Source.fromFile("cities1000.txt").getLines())
     Future {
       val result = ListBuffer[City]()
-      for (line : String <- Source.fromFile("cities1000.txt").getLines) {
-        val infoArray = line.split("\\t")
-        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
-          if (incomeInfo.get(infoArray(8)).isEmpty) {
-            println(infoArray(8) + " has no income info")
+      //0"city", 1"city_ascii",2"lat", 3"lng", 4"country", 5"iso2", 6"iso3", 7"admin_name", 8"capital", 9"population", 10"id"
+      for (line : String <- Source.fromFile("worldcities.csv").getLines) {
+        val infoArray = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map { token =>
+          if (token.startsWith("\"") && token.endsWith("\"")) {
+            token.substring(1, token.length() - 1)
+          } else {
+            token
           }
-          result += new City(infoArray(1), infoArray(4).toDouble, infoArray(5).toDouble, infoArray(8), infoArray(14).toInt, incomeInfo.get(infoArray(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
+        }
+        val countryCode = infoArray(5)
+        if (incomeInfo.get(countryCode).isEmpty) {
+          println(s"i$countryCode has no income info")
+        }
+        if (!infoArray(9).isEmpty) { //some pop is empty
+          result += new City(infoArray(0), infoArray(2).toDouble, infoArray(3).toDouble, countryCode, infoArray(9).toDouble.toInt, incomeInfo.get(countryCode).getOrElse(Country.DEFAULT_UNKNOWN_INCOME))
         }
       }
       result.toList
