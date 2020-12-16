@@ -691,5 +691,5 @@ package object controllers {
 
 
 
-  val cachedAirportsByPower = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true).sortBy(_.power)
+  val cachedAirportsByPower = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true).filter(_.population > 0).sortBy(_.power)
 }

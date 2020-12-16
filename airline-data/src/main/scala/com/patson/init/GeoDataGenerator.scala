@@ -67,7 +67,7 @@ object GeoDataGenerator extends App {
     //val citySource : Source[String, NotUsed] = Source(scala.io.Source.fromFile("cities1000.txt").getLines())
     Future {
       val result = ListBuffer[City]()
-      for (line : String <- Source.fromFile("cities1000.txt").getLines) {
+      for (line : String <- Source.fromFile("cities500.txt").getLines) {
         val infoArray = line.split("\\t")
         if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
           if (incomeInfo.get(infoArray(8)).isEmpty) {
