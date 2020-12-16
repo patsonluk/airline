@@ -132,7 +132,7 @@ object DemandGenerator {
         
       val fromAirportAdjustedPower = fromAirportAdjustedIncome * fromAirport.population
       
-      var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 100000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
+      var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 100000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 20) * (passengerType match {
         case PassengerType.BUSINESS => 6
         case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
       })
