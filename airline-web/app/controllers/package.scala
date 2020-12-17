@@ -659,6 +659,7 @@ package object controllers {
     def writes(result : NegotiationResult): JsValue = {
       val negotiationSessions = result.getNegotiationSessions()
       Json.obj(
+        "odds" -> JsNumber(1 - result.threshold),
         "passingScore" -> JsNumber(negotiationSessions.passingScore),
         "sessions" -> Json.toJson(negotiationSessions.sessionScores),
         "isSuccessful" -> JsBoolean(result.isSuccessful))

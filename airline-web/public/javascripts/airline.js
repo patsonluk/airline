@@ -2350,6 +2350,7 @@ function negotiationAnimation(negotiationResult, callback, callbackParam) {
 	var gaugeValue = 0
 
 	var index = 0
+	$('#negotiationAnimation .successRate').text(Math.round(negotiationResult.odds * 100))
 
 	$(negotiationResult.sessions).each( function(index, value) {
         $('#negotiationAnimation .negotiationIcons').append("<img src='assets/images/icons/balloon-ellipsis.png' style='padding : 5px;'>")

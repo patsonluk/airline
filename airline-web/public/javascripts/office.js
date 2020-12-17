@@ -64,13 +64,22 @@ function refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo) {
     }
 
     $.each(delegateInfo.busyDelegates, function(index, busyDelegate) {
-        var delegateIcon
+        var $delegateIconDiv = $('<div style="position: relative; display: inline-block;"></div>')
+        var $delegateIcon
         if (busyDelegate.completed) {
-            delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="' + busyDelegate.coolDown + ' week(s) cool down remaining. Previous task : ' + busyDelegate.taskDescription + '"/>')
+            $delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="' + busyDelegate.coolDown + ' week(s) cool down remaining. Previous task : ' + busyDelegate.taskDescription + '"/>')
         } else {
-            delegateIcon = $('<img src="assets/images/icons/user-silhouette-busy.png" title="Busy with task - ' + busyDelegate.taskDescription + '"/>')
+            $delegateIcon = $('<img src="assets/images/icons/user-silhouette-busy.png" title="Busy with task - ' + busyDelegate.taskDescription + '"/>')
         }
-        $delegateStatusDiv.append(delegateIcon)
+
+        $delegateIconDiv.append($delegateIcon)
+
+        if (busyDelegate.coolDown) {
+            var $utilizationDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #8CB9D9; font-size: 8px;'></div>")
+            $utilizationDiv.text(busyDelegate.coolDown)
+            $delegateIconDiv.append($utilizationDiv)
+        }
+        $delegateStatusDiv.append($delegateIconDiv)
     })
 }
 
