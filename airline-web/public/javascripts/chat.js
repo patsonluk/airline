@@ -1,4 +1,4 @@
-var lastMessageId = 0
+var lastMessageId = -1
 
 function updateChatTabs() {
 	if (activeUser.allianceName) {
@@ -105,6 +105,7 @@ RateLimit.prototype = {
 };
 
 var isFromEmoji = false; //yike ugly!
+var ws
 
 angular.module("ChatApp", []).controller("ChatController", function($scope, $timeout){
    // var ws = new WebSocket("ws://localhost:9000/chat");
@@ -127,7 +128,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	}
 
 	var wsUri = wsProtocol + "//" +  window.location.hostname + ":" + port + "/chat";
-    var ws = new ReconnectingWebSocket(function() {
+    ws = new ReconnectingWebSocket(function() {
         return wsUri + "?last-message-id=" + lastMessageId
     });
 
@@ -247,8 +248,24 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	}
 
     lastMessageId = r_msg.id
+
+    //ACK if chat is active
+    if ($("#live-chat h4").is(":visible") && r_msg.latest) {
+        ackChatId()
+    }
+
   };
 });
+
+function ackChatId() {
+      if (activeAirline && lastMessageId > -1) {
+          var text = { airlineId: activeAirline.id, ackId : lastMessageId };
+          // send it to the server through websockets
+          ws.send(JSON.stringify(text));
+      }
+  }
+
+
 
 emojify.setConfig({img_dir : 'assets/images/emoji'});
 

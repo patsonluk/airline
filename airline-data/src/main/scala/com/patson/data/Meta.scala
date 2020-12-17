@@ -294,6 +294,7 @@ object Meta {
     createGoogleResource(connection)
     createDelegate(connection)
     createAirportRunway(connection)
+    createChatMessage(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1515,6 +1516,35 @@ object Meta {
       ")")
     statement.execute()
     statement.close()
+  }
+
+  def createChatMessage(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + CHAT_MESSAGE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + CHAT_MESSAGE_TABLE + "(" +
+      "id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
+      "airline INTEGER, " +
+      "user INTEGER, " +
+      "room_id INTEGER, " +
+      "text VARCHAR(512) CHARACTER SET 'utf8'," +
+      "time VARCHAR(128)" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LAST_CHAT_ID_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + LAST_CHAT_ID_TABLE + "(" +
+      "user INTEGER, " +
+      "last_chat_id BIGINT," +
+      "PRIMARY KEY (user, last_chat_id))")
+    statement.execute()
+    statement.close()
+
   }
 
 

@@ -9,7 +9,8 @@ import akka.stream.ActorMaterializer
 
 import scala.collection.mutable.{ListBuffer, Map, Queue}
 import com.patson.model.User
-import com.patson.data.AllianceSource
+import com.patson.data.{AllianceSource, ChatSource}
+import com.patson.model.chat.ChatMessage
 import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.ws.WSClient
@@ -19,14 +20,14 @@ import scala.collection.mutable
 import scala.concurrent.{Await, ExecutionContext}
 
 // our domain message protocol
-case class Join(user : User, lastMessageId : Option[Long])
+case class Join(user : User, lastMessageId : Long)
 case class Leave(user : User)
 case class TriggerPing()
 class Message
 final case class ClientSentMessage(text: String)
 
-final case class IncomingMessage(message : ChatMessage, allianceId : Option[Int])
-final case class OutgoingMessage(id: Long, timestamp : Long, message : ChatMessage, allianceId : Option[Int])
+final case class IncomingMessage(message : ChatMessage)
+final case class OutgoingMessage(message : ChatMessage, var latest : Boolean)
 
 
 
@@ -42,9 +43,9 @@ class ChatControllerActor extends Actor {
   val maxMessagePerRoom = 100
   val ec: ExecutionContext = ExecutionContext.global
 
-  val generalMessageHistory = Queue[OutgoingMessage]()
-  val penaltyBoxMessageHistory = Queue[OutgoingMessage]()
-  val allianceMessageHistory = Map[Int, Queue[OutgoingMessage]]()
+  val generalMessageHistory = Queue[ChatMessage]()
+  val penaltyBoxMessageHistory = Queue[ChatMessage]()
+  val allianceMessageHistory = Map[Int, Queue[ChatMessage]]()
   val clientActors = mutable.LinkedHashSet[ActorRef]()
 
   def receive = process(Set.empty)
@@ -53,10 +54,24 @@ class ChatControllerActor extends Actor {
 
   context.system.scheduler.schedule(Duration.ZERO, Duration.ofSeconds(10), self, TriggerPing, ec, self)
 
+  val MESSAGE_BATCH_COUNT = 20
+
+  def getMessageBatch(queue : Queue[ChatMessage], lastMessageIdOption : Option[Long], fullReload : Boolean) : mutable.Queue[OutgoingMessage] =  {
+    val messages = lastMessageIdOption match {
+        //TODO fullLoad...what to do?
+      case Some(lastMessageId) => queue.filter(_.id > lastMessageId)
+      case None => queue.takeRight(MESSAGE_BATCH_COUNT)
+    }
+    messages.map(message => OutgoingMessage(message, message == messages.last))
+  }
+
   def process(subscribers: Set[ActorRef]): Receive = {
-    case Join(user, lastMessageId) => {
+    case Join(user, lastMessageIdParam) => {
       // replaces message-handling behavior by the new one
       //context become process(subscribers + sender)
+
+      val fullReload = lastMessageIdParam == -1
+      val lastMessageIdOption = if (!fullReload) Some(lastMessageIdParam) else ChatSource.getLastChatId(user.id)
 
       clientActors += sender
       context.watch(sender)
@@ -66,16 +81,19 @@ class ChatControllerActor extends Actor {
 
 
       // resend the Archived Message
+      val messageBatch =
       if (!user.isChatBanned) {
-        generalMessageHistory.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
+        getMessageBatch(generalMessageHistory, lastMessageIdOption, fullReload)
       } else {
-        penaltyBoxMessageHistory.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
+        getMessageBatch(penaltyBoxMessageHistory, lastMessageIdOption, fullReload)
       }
+
+      messageBatch.foreach(sender ! _)
 
       user.getAccessibleAirlines().foreach { airline =>
         AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
           allianceMessageHistory.get(allianceMember.allianceId).foreach { archivedMessages =>
-            archivedMessages.filter(message => lastMessageId.isEmpty || message.id > lastMessageId.get).foreach(sender ! _)
+            getMessageBatch(archivedMessages, lastMessageIdOption).foreach(sender ! _)
           }
         }
       }
@@ -92,19 +110,19 @@ class ChatControllerActor extends Actor {
       ChatControllerActor.removeActiveUser(chatClientActor)
     }
 
-    case IncomingMessage(chatMessage, allianceRoomIdOption) => {
+    case IncomingMessage(chatMessage) => {
       val processedMessage = processMessage(chatMessage)
-      val outMessage = OutgoingMessage(messageIdCounter.incrementAndGet(), System.currentTimeMillis(), processedMessage, allianceRoomIdOption)
+      val outMessage = OutgoingMessage(processedMessage, true)
 
       //put message into history and send to subscribers
-      allianceRoomIdOption match {
-        case None => {
+      chatMessage.roomId match {
+        case x if x == 0 => {
           if (!chatMessage.user.isChatBanned) { //only put in main chat room if user is not banned for chats
-            generalMessageHistory.enqueue(outMessage)
+            generalMessageHistory.enqueue(processedMessage)
           } else {
             println(s"sending message ${chatMessage.text} from ${chatMessage.airline.name} user ${chatMessage.user.userName} to penalty box only")
           }
-          penaltyBoxMessageHistory.enqueue(outMessage) //always put it in penalty box - penalty box can see the outside worlds
+          penaltyBoxMessageHistory.enqueue(processedMessage) //always put it in penalty box - penalty box can see the outside worlds
 
           while (generalMessageHistory.size > maxMessagePerRoom) {
             generalMessageHistory.dequeue()
@@ -117,9 +135,9 @@ class ChatControllerActor extends Actor {
             _ ! outMessage
           }
         }
-        case Some(allianceRoomId) =>
-          val messageQueue = allianceMessageHistory.getOrElseUpdate(allianceRoomId, Queue[OutgoingMessage]())
-          messageQueue.enqueue(outMessage)
+        case allianceRoomId =>
+          val messageQueue = allianceMessageHistory.getOrElseUpdate(allianceRoomId, Queue[ChatMessage]())
+          messageQueue.enqueue(chatMessage)
           while (messageQueue.size > maxMessagePerRoom) {
             messageQueue.dequeue()
           }
@@ -138,12 +156,14 @@ class ChatControllerActor extends Actor {
 
   def processMessage(message: ChatMessage): ChatMessage = {
     //check commands
-    ChatControllerActor.commands.foreach { command =>
-      if (command.hasPermission(message) && command.isCommand(message)) {
-        return command.execute(message) //only match first command
-      }
+    val processedMessage = ChatControllerActor.commands.find( command => command.hasPermission(message) && command.isCommand(message)) match {
+      case Some(command) => command.execute(message) //only match first command
+      case None => message
     }
-    message
+
+    ChatSource.insertChatMessage(processedMessage)
+
+    processedMessage
   }
 }
 

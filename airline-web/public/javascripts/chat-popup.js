@@ -21,6 +21,8 @@ $('#live-chat header span i').on('click', function() {
 				scroller.scrollTop = scroller.scrollHeight;
 				var scroller = document.getElementById("chatBox-2");
 				scroller.scrollTop = scroller.scrollHeight;
+
+                ackChatId();
 			}
         });
 });

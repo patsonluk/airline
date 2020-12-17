@@ -104,6 +104,8 @@ object Constants {
   val OIL_INVENTORY_POLICY_TABLE = "oil_inventory_policy"
   val LOAN_INTEREST_RATE_TABLE = "loan_interest_rate"
   val LOG_TABLE = "log"
+  val LAST_CHAT_ID_TABLE = "last_chat_id"
+  val CHAT_MESSAGE_TABLE = "chat_message"
   val LOG_INDEX_1 = "log_index_1"
   val ALERT_TABLE = "alert"
   val ALERT_INDEX_1 = "alert_index_1"
