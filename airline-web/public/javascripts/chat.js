@@ -1,9 +1,11 @@
 var lastMessageId = -1
-var firstMessageId = -1
+var firstAllianceMessageId = -1
+var firstGeneralMessageId = -1
 
 function updateChatTabs() {
 	if (activeUser.allianceName) {
 		$("#allianceChatTab").text(activeUser.allianceName)
+		$("#allianceChatTab").data('roomId', activeUser.allianceId)
 	} else {
 		$("#allianceChatTab").hide()
 	}
@@ -135,8 +137,6 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 
   // binding model for the UI
   var chat = this;
-  chat.gmessages = []; // Global
-  chat.amessages = []; // Alliance
   chat.username = "";
 
   // what happens when user enters message
@@ -158,7 +158,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 
       } else {
           $timeout(function(){
-            $scope.chat.gmessages.push("Message Not Sent : Rate Filter or Invalid Message");
+            $('#chat-box li.tab-link.current ul').append('<li class="message">Message Not Sent : Rate Filter or Invalid Message</li>')
           });
 
           $timeout(function(){
@@ -172,8 +172,8 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 
    ws.onopen = function () {
 	    $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat.png\")"});
-		$timeout(function(){ 
-			chat.gmessages.push("Chat Connected");
+		$timeout(function(){
+            $('#chat-box #chatBox-1 ul').append('<li class="status">Chat Connected</li>')
 		});
 	    $timeout(function(){ 
 			var scroller = document.getElementById("chatBox-1");
@@ -184,7 +184,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
    ws.onclose = function () {
 	   $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat-red.png\")"});
 	   $timeout(function(){ 
-			chat.gmessages.push("Chat Disconnected");
+			            $('#chat-box #chatBox-1 ul').append('<li class="status">Chat Disconnected</li>')
 	   });
 	   $timeout(function(){ 
 			var scroller = document.getElementById("chatBox-1");
@@ -204,17 +204,15 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	var r_msg = JSON.parse(r_text);
 
     $('#chat-box .chat-history.tab-content div.loading').remove()
+    var $activeHistory = $("#chat-box .chat-history.current")
 
 	if (r_msg.type === 'newSession') { //session join message
-	    clearMessages(chat, $scope)
+	    $('#chat-box .chat-history.tab-content ul li.message').remove()
         for (i = 0; i < r_msg.messages.length ; i ++) {
-            pushMessage(r_msg.messages[i], chat, $scope)
+            pushMessage(r_msg.messages[i])
         }
 
-        lastMessageId = r_msg.lastMessageId
-        if (r_msg.messages.length > 0) {
-            firstMessageId = r_msg.messages[0].id
-        }
+
         if ($('.chat').is(':hidden')) {
             if (r_msg.unreadMessageCount > 0) {
                 $('.notify-bubble').show(400);
@@ -225,17 +223,18 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
     } else if (r_msg.type === 'previous') { //scroll up
         for (i = r_msg.messages.length - 1; i >= 0 ; i --) { //prepend from latest to oldest
             var message = r_msg.messages[i]
-            if (message.id < firstMessageId) { //prevent duplicate calls
-                prependMessage(message, chat, $scope)
-                firstMessageId = message.id
-            }
+
+            prependMessage(message)
         }
+        if (r_msg.messages.length == 0) {
+            $activeHistory.find('ul').prepend('<li class="message"><b>No more previous messages</b></li>')
+            $activeHistory.data("historyExhausted", true)
+        }
+
     } else { //incoming message from broadcast
-        var $activeHistory = $("#chat-box .chat-history.current")
         var atScrollBottom = ($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop === $activeHistory[0].clientHeight)
 
-        pushMessage(r_msg, chat, $scope)
-        lastMessageId = r_msg.id
+        pushMessage(r_msg)
         if ($('.chat').is(':hidden')) {
             $('.notify-bubble').show(400);
             $('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
@@ -255,17 +254,33 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
   };
 
 
+
+
   $(".chat-history").each(function() {
-      $(this).scroll(function() {
-        if ($(this).scrollTop()  <= 0 ){
-           var $loadingDiv = $("<div class='loading'><img src='https://i.stack.imgur.com/FhHRx.gif'></div>")
-           $('#chat-box .chat-history.tab-content').prepend($loadingDiv)
-           //scrolled to top
-           var text = { airlineId: activeAirline.id, firstMessageId : firstMessageId, type: "previous" };
-                     // send it to the server through websockets
-           ws.send(JSON.stringify(text));
-        }
-      })
+      $(this).bind('wheel', function(event) {
+          var $activeHistory = $("#chat-box .chat-history.current")
+          if ($activeHistory.data('historyExhausted') == true) { //exhausted all previous messages
+            return;
+          }
+
+          if (event.originalEvent.deltaY < 0) { //scroll up
+              $chatTab = $('#chat-box .chat-history.tab-content')
+              if ($(this).scrollTop()  <= 0 && !$chatTab.find('.loading').length){ //scrolled to top and not already loading
+                 var $loadingDiv = $("<div class='loading'><img src='https://i.stack.imgur.com/FhHRx.gif'></div>")
+                 $chatTab.prepend($loadingDiv)
+                 //scrolled to top
+                 var activeRoomId = parseInt($('#live-chat .tab-link.current').data('roomId'))
+                 var firstMessageId = (activeRoomId == 0) ? firstGeneralMessageId : firstAllianceMessageId
+
+                 var text = { airlineId: activeAirline.id, firstMessageId : firstMessageId, type: "previous", roomId : activeRoomId};
+                           // send it to the server through websockets
+                 ws.send(JSON.stringify(text));
+              }
+          }
+          else {
+              //console.log('Scroll down');
+          }
+      });
   })
 });
 
@@ -299,49 +314,68 @@ function buildPrefix(r_msg) {
     return prefix
 }
 
-function prependMessage(r_msg, chat, $scope) {
+function prependMessage(r_msg) {
     var prefix = buildPrefix(r_msg)
     if (!r_msg.allianceRoomId) {
-        chat.gmessages.unshift(prefix + r_msg.text);
+        if (r_msg.id < firstGeneralMessageId) { //prevent duplicate calls
+            $('#chat-box #chatBox-1 ul').prepend('<li class="message">' + prefix + r_msg.text + '</li>')
+
+            if (firstGeneralMessageId == -1 || r_msg.id < firstGeneralMessageId) {
+                firstGeneralMessageId = r_msg.id
+            }
+        }
     } else {
-        chat.amessages.unshift(prefix + r_msg.text);
+        if (r_msg.id < firstAllianceMessageId) { //prevent duplicate calls
+            $('#chat-box #chatBox-2 ul').prepend('<li class="message">' + prefix + r_msg.text + '</li>')
+            if (firstAllianceMessageId == -1 || r_msg.id < firstAllianceMessageId) {
+                firstAllianceMessageId = r_msg.id
+            }
+        }
     }
 
-    $scope.$digest();
+
 
     var isMobileDeviceValue = isMobileDevice()
     $('.chat-history').each (function(){
         emojify.run($(this).find("li:first-child")[0]);   // translate emoji to images
         if (r_msg.imagePermission && !isMobileDeviceValue) {
-            replaceImg($(this).find("li:first-child"), prefix)
+            replaceImg($(this).find("li:first-child"), prefix, false)
         }
     })
+
+
 }
 
-function clearMessages(chat, $scope) {
-    chat.gmessages.length = 0
-    chat.amessages.length = 0
-    $scope.$digest();
-}
 
-function pushMessage(r_msg, chat, $scope) {
+function pushMessage(r_msg) {
+    var $activeHistory = $("#chat-box .chat-history.current")
+    var atScrollBottom = ($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop === $activeHistory[0].clientHeight)
     var prefix = buildPrefix(r_msg)
     if (!r_msg.allianceRoomId) {
-        chat.gmessages.push(prefix + r_msg.text);
+        $('#chat-box #chatBox-1 ul').append('<li class="message">' + prefix + r_msg.text + '</li>')
+        if (firstGeneralMessageId == -1 || r_msg.id < firstGeneralMessageId) {
+            firstGeneralMessageId = r_msg.id
+        }
     } else {
-        chat.amessages.push(prefix + r_msg.text);
+        $('#chat-box #chatBox-2 ul').append('<li class="message">' + prefix + r_msg.text + '</li>')
+        if (firstAllianceMessageId == -1 || r_msg.id < firstAllianceMessageId) {
+            firstAllianceMessageId = r_msg.id
+        }
     }
 
-    $scope.$digest();
 
 
     var isMobileDeviceValue = isMobileDevice()
     $('.chat-history').each (function(){
         emojify.run($(this).find("li:last-child")[0]);   // translate emoji to images
         if (r_msg.imagePermission && !isMobileDeviceValue) {
-            replaceImg($(this).find("li:last-child"), prefix)
+            replaceImg($(this).find("li:last-child"), prefix, atScrollBottom)
         }
     })
+
+    if (r_msg.id > lastMessageId) {
+        lastMessageId = r_msg.id
+    }
 }
 
 function ackChatId() {
@@ -366,9 +400,8 @@ function adjustScroll() {
 }
 
 var imgTag = "/img"
-function replaceImg(input, prefix) {
+function replaceImg(input, prefix, scrollToBottom) {
     var text= input.text().trim().substring(prefix.length) //strip the airline name and date
-
     if (text.startsWith(imgTag)) {
         var src = text.substring(imgTag.length)
         var img = $("<img>")
@@ -386,9 +419,12 @@ function replaceImg(input, prefix) {
             }
         })
         //img.attr("src", "assets/images/emoji/banana.png")
-        img.on('load', function() {
-            adjustScroll()
-            })
+
+        if (scrollToBottom) {
+            img.on('load', function() {
+                adjustScroll()
+                })
+        }
         input.html(prefix)
         input.append(img)
     }

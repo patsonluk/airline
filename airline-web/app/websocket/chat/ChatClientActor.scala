@@ -60,7 +60,7 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
               if (callType == "ack") {
                 ChatSource.updateLastChatId(user.id, json_text.\("ackId").as[Long])
               } else if (callType == "previous") {
-                chatControllerActor ! PreviousMessagesRequest(airline, json_text.\("firstMessageId").as[Long])
+                chatControllerActor ! PreviousMessagesRequest(airline, json_text.\("firstMessageId").as[Long], json_text.\("roomId").as[Int])
               }
 
             case None =>  //normal message

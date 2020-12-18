@@ -259,7 +259,7 @@
 							 <i></i>
 							<h4>
 								<ul class="ctabs">
-									<li class="tab-link current" data-tab="chatBox-1">General</li>
+									<li class="tab-link current" data-tab="chatBox-1" data-room-id="0">General</li>
 									<li class="tab-link" data-tab="chatBox-2" id="allianceChatTab"></li>
 								</ul>
 							</h4>
@@ -270,16 +270,16 @@
 						<div class="chat" id="chat-box" style="display: none;">
 							<div class="chat-history tab-content current" id="chatBox-1">
 								<ul>
-									<li ng-repeat="msg in chat.gmessages track by $index">
-										{{msg}}
-									</li>
+<!--									<li ng-repeat="msg in chat.gmessages track by $index">-->
+<!--										{{msg}}-->
+<!--									</li>-->
 								</ul>
 							</div> <!-- end chat-history -->
 							<div class="chat-history tab-content" id="chatBox-2">
 								<ul>
-									<li ng-repeat="msg in chat.amessages track by $index">
-										{{msg}}
-									</li>
+<!--									<li ng-repeat="msg in chat.amessages track by $index">-->
+<!--										{{msg}}-->
+<!--									</li>-->
 								</ul>
 							</div> <!-- end chat-history -->
 						   <form autocomplete="off">

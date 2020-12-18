@@ -26,7 +26,7 @@ final case class ClientSentMessage(text: String)
 final case class IncomingMessage(message : ChatMessage)
 final case class OutgoingMessage(message : ChatMessage, var latest : Boolean)
 final case class SessionStart(lastMessageId : Long, unreadMessageCount: Int, messages : List[ChatMessage])
-final case class PreviousMessagesRequest(airline : Airline, previousFirstMessageId : Long)
+final case class PreviousMessagesRequest(airline : Airline, previousFirstMessageId : Long, roomId : Int)
 final case class PreviousMessagesResponse(previousMessages : List[ChatMessage])
 
 
@@ -93,29 +93,27 @@ class ChatControllerActor extends Actor {
     SessionStart(lastMessageIdOption.getOrElse(if (generalMessages.isEmpty) 0 else generalMessages(0).id), unreadGeneralMessageCount + unreadAllianceMessageCount, messages)
   }
 
-  def buildPreviousMessagesResponse(airline : Airline, previousFirstMessageId : Long) : PreviousMessagesResponse = {
-     val generalMessageMarker = generalMessageHistory.lastIndexWhere(_.id < previousFirstMessageId)
-    val previousGeneralMessages =
-      if (generalMessageMarker != -1) {
-        generalMessageHistory.splitAt(generalMessageMarker + 1)._1.takeRight(MESSAGE_BATCH_COUNT)
+  def buildPreviousMessagesResponse(airline : Airline, previousFirstMessageId : Long, roomId : Int) : PreviousMessagesResponse = {
+    val messageSource : List[ChatMessage] =
+      if (roomId == GENERAL_ROOM_ID) {
+        generalMessageHistory.toList
+      } else {
+        AllianceSource.loadAllianceMemberByAirline(airline) match {
+          case Some(allianceMember) => allianceMessageHistory.get(allianceMember.allianceId) match {
+            case Some(allianceMessageHistory) => allianceMessageHistory.toList
+            case None => List.empty[ChatMessage]
+          }
+        }
+      }
+
+    val messageMarker = messageSource.lastIndexWhere(_.id < previousFirstMessageId)
+    val previousMessages =
+      if (messageMarker != -1) {
+        messageSource.splitAt(messageMarker + 1)._1.takeRight(MESSAGE_BATCH_COUNT)
       } else {
         List.empty[ChatMessage]
       }
-
-    val previousAllianceMessages = AllianceSource.loadAllianceMemberByAirline(airline) match {
-      case Some(allianceMember) => allianceMessageHistory.get(allianceMember.allianceId) match {
-        case Some(allianceMessageHistory) =>
-          val allianceMessageMarker = allianceMessageHistory.lastIndexWhere(_.id < previousFirstMessageId)
-          if (allianceMessageMarker != -1) {
-            allianceMessageHistory.splitAt(allianceMessageMarker + 1)._1.takeRight(MESSAGE_BATCH_COUNT)
-          } else {
-            List.empty[ChatMessage]
-          }
-        case None => List.empty[ChatMessage]
-      }
-      case None => List.empty[ChatMessage]
-    }
-    PreviousMessagesResponse((previousGeneralMessages.toList ++ previousAllianceMessages.toList).sortBy(_.id))
+    PreviousMessagesResponse(previousMessages.sortBy(_.id))
   }
 
   def process(subscribers: Set[ActorRef]): Receive = {
@@ -146,8 +144,8 @@ class ChatControllerActor extends Actor {
 
 
 
-    case PreviousMessagesRequest(airline, previousFirstMessageId) =>
-      sender ! buildPreviousMessagesResponse(airline, previousFirstMessageId)
+    case PreviousMessagesRequest(airline, previousFirstMessageId, roomId) =>
+      sender ! buildPreviousMessagesResponse(airline, previousFirstMessageId, roomId)
 
     //    case Leave => {
     //      context become process(subscribers - sender)
