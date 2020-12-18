@@ -55,6 +55,12 @@ $( document ).ready(function() {
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 
+$(window).on('focus', function() {
+    if (selectedAirlineId) {
+        refreshPanels(selectedAirlineId)
+    }
+})
+
 function registerEscape() {
     $(document).keyup(function(e) {
          if (e.key === "Escape") { // escape key maps to keycode `27`
