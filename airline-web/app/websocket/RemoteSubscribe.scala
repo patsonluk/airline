@@ -21,6 +21,7 @@ sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
 
 sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
   var disconnected = false
+
   override def preStart = {
     super.preStart()
     context.system.eventStream.subscribe(self, classOf[RemotingLifecycleEvent])
@@ -29,7 +30,7 @@ sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
   override def receive = {
     case lifeCycleEvent : DisassociatedEvent => {
       if (!disconnected) {
-        println("Disassociated. Start pinging the remote actor!")
+        println(s"Disassociated. Start pinging the remote actor! from reconnect actor $this")
         disconnected = true
         startPing(remoteActor)
       }
@@ -42,15 +43,17 @@ sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
         disconnected = false
       }
     }
-
-
   }
   def startPing(remoteActor : ActorSelection) = {
     new Thread() {
       override def run() = {
+        var sleepTime = 5000
+        val MAX_SLEEP_TIME = 10 * 60 * 1000 //10 mins
         while (disconnected) {
           remoteActor ! "ping"
-          Thread.sleep(5000)
+          sleepTime *= 2
+          sleepTime = Math.min(MAX_SLEEP_TIME, sleepTime)
+          Thread.sleep(sleepTime)
         }
         println("Reconnected! stop pinging")
       }

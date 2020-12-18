@@ -103,6 +103,7 @@ class ChatControllerActor extends Actor {
             case Some(allianceMessageHistory) => allianceMessageHistory.toList
             case None => List.empty[ChatMessage]
           }
+          case None => List.empty[ChatMessage]
         }
       }
 
