@@ -102,6 +102,11 @@ object ChatSource {
     loadChatMessagesByQueryString(queryString, criteria.map(_._3))
   }
 
+  def loadLatestChatMessagesWithLimit(countLimit : Int) = {
+    val queryString = s"SELECT * FROM $CHAT_MESSAGE_TABLE ORDER BY id DESC LIMIT $countLimit"
+    loadChatMessagesByQueryString(queryString, List.empty).reverse
+  }
+
   private def loadChatMessagesByQueryString(queryString : String, parameters : List[Any]) : List[ChatMessage] = {
     val connection = Meta.getConnection()
     try {
@@ -122,8 +127,8 @@ object ChatSource {
           val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
           val userId = resultSet.getInt("user")
           val user = UserCache.getUser(userId).getOrElse(User.fromId(userId))
-          val text = resultSet.getString("message")
-          val roomId = resultSet.getInt("roomId")
+          val text = resultSet.getString("text")
+          val roomId = resultSet.getInt("room_id")
           val time = Calendar.getInstance()
           time.setTime(dateFormat.get().parse(resultSet.getString("time")))
           val id = resultSet.getInt("id")

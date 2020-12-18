@@ -18,9 +18,9 @@ import scala.math.BigDecimal.int2bigDecimal
 /**
  * Actor that receives message from websocket and send message out
  */
-class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : User, lastMessageId : Long) extends Actor {
+class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : User) extends Actor {
   val logger = Logger(this.getClass)
-  chatControllerActor ! Join(user, lastMessageId)
+  chatControllerActor ! Join(user)
 
   override def postStop() = {
     logger.info("Stopping chat client on user " + user.userName + " id " + user.id)
@@ -29,7 +29,17 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
   val allianceIdOption = getAllianceId(user)
   
   val sdf = new SimpleDateFormat("HH:mm:ss")
-  val GENERAL_ROOM_ID = 0
+
+
+  implicit object ChatMessageWrites extends Writes[ChatMessage] {
+    override def writes(chatMessage : ChatMessage) : JsValue = {
+      var result = Json.obj("timestamp" -> chatMessage.time.getTimeInMillis, "airlineName" -> chatMessage.airline.name, "level" -> chatMessage.user.level, "text" -> chatMessage.text, "imagePermission" -> ImgCommand.hasPermission(chatMessage), "id" -> chatMessage.id)
+      if (chatMessage.roomId != GENERAL_ROOM_ID) {
+        result = result + ("allianceRoomId" -> JsNumber(chatMessage.roomId))
+      }
+      result
+    }
+  }
 
   def receive = {
     // this handles incoming messages from the websocket
@@ -45,9 +55,14 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
 	      case Some(airline) =>
 	        //val otext =  airline.name + ": " + json_text.\("text").as[String]
 
-          json_text.\("ackId").asOpt[Long] match {
-            case Some(ackId) =>
-              ChatSource.updateLastChatId(user.id, ackId)
+          json_text.\("type").asOpt[String] match {
+            case Some(callType) =>
+              if (callType == "ack") {
+                ChatSource.updateLastChatId(user.id, json_text.\("ackId").as[Long])
+              } else if (callType == "previous") {
+                chatControllerActor ! PreviousMessagesRequest(airline, json_text.\("firstMessageId").as[Long])
+              }
+
             case None =>  //normal message
               val room = json_text.\("room").as[String]
 
@@ -69,12 +84,8 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
   	// handles message writes to websocket
     case OutgoingMessage(chatMessage, latest) => {
       if (chatMessage.roomId == GENERAL_ROOM_ID || (Some(chatMessage.roomId) == allianceIdOption)) {
-        var jsonMessage = Json.obj("timestamp" -> chatMessage.time.getTimeInMillis, "airlineName" -> chatMessage.airline.name, "level" -> chatMessage.user.level, "text" -> chatMessage.text, "imagePermission" -> ImgCommand.hasPermission(chatMessage), "id" -> chatMessage.id)
-        if (chatMessage.roomId != GENERAL_ROOM_ID) {
-          jsonMessage = jsonMessage + ("allianceRoomId" -> JsNumber(chatMessage.roomId))
-        }
 
-        jsonMessage = jsonMessage + ("latest", JsBoolean(latest))
+        val jsonMessage = Json.toJson(chatMessage).asInstanceOf[JsObject] + ("latest" -> JsBoolean(latest))
 
         if (!chatMessage.user.isChatBanned) { //send to everyone
           out ! jsonMessage.toString
@@ -90,6 +101,16 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
           }
         }
       }
+    }
+
+      //only send back to the user that joined the session
+    case SessionStart(lastMessageId : Long, unreadMessageCount: Int, messages : List[ChatMessage]) => {
+      val jsonMessage = Json.obj("type" -> "newSession", "lastMessageId" -> lastMessageId, "unreadMessageCount" -> unreadMessageCount, "messages" -> Json.toJson(messages))
+      out ! jsonMessage.toString
+    }
+
+    case PreviousMessagesResponse(previousMessages) => {
+      out ! Json.obj("type" -> "previous", "messages" -> previousMessages).toString()
     }
 
     case TriggerPing => {

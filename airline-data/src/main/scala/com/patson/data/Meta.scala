@@ -1539,9 +1539,9 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + LAST_CHAT_ID_TABLE + "(" +
-      "user INTEGER, " +
-      "last_chat_id BIGINT," +
-      "PRIMARY KEY (user, last_chat_id))")
+      "user INTEGER PRIMARY KEY, " +
+      "last_chat_id BIGINT" +
+    ")")
     statement.execute()
     statement.close()
 
