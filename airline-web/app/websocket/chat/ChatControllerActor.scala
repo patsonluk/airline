@@ -81,12 +81,12 @@ class ChatControllerActor extends Actor {
     val generalMessages = generalQueue.takeRight(MESSAGE_BATCH_COUNT).toList
     val unreadGeneralMessageCount = lastMessageIdOption match {
       case Some(lastMessageId) => generalQueue.count(_.id > lastMessageId)
-      case None => MESSAGE_BATCH_COUNT
+      case None => Math.min(generalQueue.length, MESSAGE_BATCH_COUNT)
     }
     val allianceMessages = allianceQueue.takeRight(MESSAGE_BATCH_COUNT)
     val unreadAllianceMessageCount = lastMessageIdOption match {
       case Some(lastMessageId) => allianceQueue.count(_.id > lastMessageId)
-      case None => MESSAGE_BATCH_COUNT
+      case None => Math.min(allianceQueue.length, MESSAGE_BATCH_COUNT)
     }
 
     val messages = (generalMessages ++ allianceMessages).sortBy(_.id)
