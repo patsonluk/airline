@@ -146,7 +146,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
         return;
       }
       limit.tick('myevent_id');
-      adjustScroll(true)
+      adjustScroll()
       var currentMessage = $('#chattext').val()
       if (activeAirline && (currentMessage !== "") && (limit.count('myevent_id') <= 20)) {
         var active_tab = $("li.tab-link.current").attr('data-tab');
@@ -257,32 +257,53 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 
 
   $(".chat-history").each(function() {
+    $(this).on('touchstart', function(e) {
+        var swipe = e.originalEvent.touches,
+        start = swipe[0].pageY;
+        $(this).on('touchmove', function(e) {
+            var contact = e.originalEvent.touches,
+            end = contact[0].pageY,
+            distance = end-start;
+            if (distance > 30  && $(this).scrollTop()  <= 0) {
+                handleScrollChatTop()
+            }
+        })
+        .one('touchend', function() {
+            $(this).off('touchmove touchend');
+        });
+    });
+
       $(this).bind('wheel', function(event) {
-          var $activeHistory = $("#chat-box .chat-history.current")
-          if ($activeHistory.data('historyExhausted') == true) { //exhausted all previous messages
-            return;
-          }
-
-          if (event.originalEvent.deltaY < 0) { //scroll up
-              $chatTab = $('#chat-box .chat-history.tab-content')
-              if ($(this).scrollTop()  <= 0 && !$chatTab.find('.loading').length){ //scrolled to top and not already loading
-                 var $loadingDiv = $("<div class='loading'><img src='https://i.stack.imgur.com/FhHRx.gif'></div>")
-                 $chatTab.prepend($loadingDiv)
-                 //scrolled to top
-                 var activeRoomId = parseInt($('#live-chat .tab-link.current').data('roomId'))
-                 var firstMessageId = (activeRoomId == 0) ? firstGeneralMessageId : firstAllianceMessageId
-
-                 var text = { airlineId: activeAirline.id, firstMessageId : firstMessageId, type: "previous", roomId : activeRoomId};
-                           // send it to the server through websockets
-                 ws.send(JSON.stringify(text));
-              }
-          }
-          else {
-              //console.log('Scroll down');
-          }
+        if (event.originalEvent.deltaY < 0 && $(this).scrollTop()  <= 0) { //scroll up and at the top
+            handleScrollChatTop()
+        }
       });
   })
 });
+
+function handleScrollChatTop() {
+  var $activeHistory = $("#chat-box .chat-history.current")
+  if ($activeHistory.data('historyExhausted') == true) { //exhausted all previous messages
+    return;
+  }
+
+
+  $chatTab = $('#chat-box .chat-history.tab-content')
+  //$(this).css('overflow', 'hidden')
+
+  if (!$chatTab.find('.loading').length){ //scrolled to top and not already loading
+     var $loadingDiv = $("<div class='loading'><img src='https://i.stack.imgur.com/FhHRx.gif'></div>")
+     $chatTab.prepend($loadingDiv)
+     //scrolled to top
+     var activeRoomId = parseInt($('#live-chat .tab-link.current').data('roomId'))
+     var firstMessageId = (activeRoomId == 0) ? firstGeneralMessageId : firstAllianceMessageId
+
+     var text = { airlineId: activeAirline.id, firstMessageId : firstMessageId, type: "previous", roomId : activeRoomId};
+               // send it to the server through websockets
+     ws.send(JSON.stringify(text));
+  }
+
+}
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -394,7 +415,7 @@ function adjustScroll() {
     //if (!$('#scroll_lockc').is(":checked")) {
 
     $(".chat-history").each(function() {
-        $(this).scrollTop($(this).prop("scrollHeight"))
+        setTimeout(100, $(this).scrollTop($(this).prop("scrollHeight")))
     })
 
 }
