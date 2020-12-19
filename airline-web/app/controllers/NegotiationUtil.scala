@@ -90,10 +90,10 @@ object NegotiationUtil {
       case LONG_HAUL_DOMESTIC => 1.5
       case SHORT_HAUL_INTERNATIONAL => 2
       case LONG_HAUL_INTERNATIONAL => 2.5
-      case SHORT_HAUL_INTERCONTINENTAL => 2.5
-      case MEDIUM_HAUL_INTERCONTINENTAL => 3
-      case LONG_HAUL_INTERCONTINENTAL => 3.5
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 3.5
+      case SHORT_HAUL_INTERCONTINENTAL => 4
+      case MEDIUM_HAUL_INTERCONTINENTAL => 5
+      case LONG_HAUL_INTERCONTINENTAL => 5
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 5
     }
     val NEW_LINK_BASE_REQUIREMENT = 1
 
@@ -134,7 +134,7 @@ object NegotiationUtil {
         CountryCache.getCountry(airport.countryCode).foreach { country =>
           airline.getCountryCode().foreach { homeCountryCode =>
             if (homeCountryCode != airport.countryCode) { //closed country are anti foreign airlines
-              requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, (12 - country.openness) * 0.5, "Foreign Airline"))
+              requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, (14 - country.openness) * 0.5, "Foreign Airline"))
             }
           }
         }
@@ -172,17 +172,27 @@ object NegotiationUtil {
     val totalFrequency = airportLinks.map(_.frequency).sum
     import NegotiationDiscountType._
     if (totalFrequency <= 50 * airport.size) { //under serve
-      discounts.append(NegotiationDiscount(BELOW_CAPACITY, 0.3)) //30%
+      discounts.append(NegotiationDiscount(BELOW_CAPACITY, 0.2)) //20%
     } else if (totalFrequency >= 300 * airport.size) {
       //penalty multiplier start from 1 up to 10
       val multiplier = Math.min(10, 1 + (totalFrequency - 300 * airport.size).toDouble / (100 * airport.size))
       discounts.append(NegotiationDiscount(OVER_CAPACITY, -0.2 * multiplier)) //crowded, start from 20% to up to 200% penalty
     }
 
-    //if 100 relationship, give 50% discount (0.5)
+    // 20 -> 0.2
+    // 50 -> 0.2 + 0.15
+    // 100 -> 0.35 + 0.15
     val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(airport.countryCode, airline).relationship
     if (relationship >= 0) {
-      var discount = relationship * 0.005
+      var discount =
+        if (relationship <= 20) {
+          relationship * 0.01
+        } else if (relationship <= 50) {
+          0.2 + (relationship - 20) * 0.005
+        } else {
+          0.35 + (relationship - 50) * 0.003
+        }
+
       discount = Math.min(discount, 0.5)
       discounts.append(NegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     } else if (relationship < 0) { //very penalizing
