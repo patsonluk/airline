@@ -1,13 +1,9 @@
 package com.patson.model
 
+import com.patson.data.CountrySource
 import com.patson.model.airplane.Model
 
 import scala.collection.mutable.ListBuffer
-import com.patson.data.AirlineSource
-import com.patson.data.CountrySource
-import com.patson.util.AirlineCache
-
-import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
@@ -347,6 +343,30 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   def isGateway() = {
     features.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
   }
+
+  def initAirlineAppealsComputeLoyalty(airlineBaseAwareness : Map[Int, Double], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty) = {
+    val airlineBaseLoyalty = computeLoyaltyByLoyalist
+
+    val preFlattenAppealsByAirlineId : Map[Int, List[(Int, AirlineAppeal)]] = (airlineBaseLoyalty.view.mapValues(loyalty => AirlineAppeal(loyalty = loyalty, awareness = 0)).toList ++
+    airlineBaseAwareness.view.mapValues(awareness => AirlineAppeal(loyalty = 0, awareness = awareness)).toList).groupBy(_._1)
+    //now flatten it if both awareness and loyalty entry is present
+    val appealsByAirlineId = preFlattenAppealsByAirlineId.view.mapValues { entries =>
+      AirlineAppeal(loyalty = entries.map(_._2.loyalty).sum, awareness = entries.map(_._2.awareness).sum)
+    }.toMap
+    initAirlineAppeals(appealsByAirlineId, airlineBonuses)
+  }
+
+  private[model] lazy val computeLoyaltyByLoyalist : Map[Int, Double] = loyalistEntries.map {
+    case Loyalist(_, airline, amount) => {
+      if (population == 0) { //should not happen, but just to be safe
+        (airline.id, 0.0)
+      } else {
+        val loyalistRatio = amount.toDouble / population //to attain 100, it requires full conversion
+        val baseLoyalty = Math.log10(1 + loyalistRatio * 9) * 100 // 0 -> 0, 1 -> 100
+        (airline.id, baseLoyalty)
+      }
+    }
+  }.toMap
   
   def initAirlineAppeals(airlineBaseAppeals : Map[Int, AirlineAppeal], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty) = {
     this.airlineBaseAppeals.clear()
@@ -475,6 +495,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   
   val displayText = city + "(" + iata + ")"
+
+  var loyalistEntries : List[Loyalist] = List.empty
+  def initLoyalistEntries(entries : List[Loyalist]) = { loyalistEntries = entries }
+
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)

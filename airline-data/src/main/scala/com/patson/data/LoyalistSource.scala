@@ -10,7 +10,7 @@ import scala.collection.mutable.{ListBuffer, Map}
 object LoyalistSource {
   val updateLoyalists = (loyalistEntries : List[Loyalist]) => {
     val connection = Meta.getConnection()
-    val statement = connection.prepareStatement("INSERT INTO " + LOYALIST_TABLE + "(airport, airline, amount) VALUES(?,?,?)")
+    val statement = connection.prepareStatement("REPLACE INTO " + LOYALIST_TABLE + "(airport, airline, amount) VALUES(?,?,?)")
 
     connection.setAutoCommit(false)
 
