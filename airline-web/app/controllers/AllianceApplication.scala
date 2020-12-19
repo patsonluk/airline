@@ -40,7 +40,8 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         case MEMBER => "Member"
         case APPLICANT => "Applicant"
       }),
-      "allianceId" -> JsNumber(allianceMember.allianceId)))
+      "allianceId" -> JsNumber(allianceMember.allianceId),
+      "allianceName" -> JsString(AllianceCache.getAlliance(allianceMember.allianceId).get.name)))
   }
   
   

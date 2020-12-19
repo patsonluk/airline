@@ -112,10 +112,10 @@ function getRankingRow(ranking) {
 
 function getDividerRow() {
 	var row = $("<div class='table-row'></div>")
-	row.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-	row.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-	row.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-	row.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
 	
 	return row
 }

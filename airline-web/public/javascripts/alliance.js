@@ -391,6 +391,9 @@ function formAlliance(allianceName) {
 	    	} else {
 	    		$('#formAllianceWarning').text(newAlliance.rejection)
 	    		$('#formAllianceWarning').show()
+	    		activeUser.allianceId = newAlliance.id
+	    		activeUser.allianceName = newAlliance.name
+	    		updateChatTabs()
 	    	}
 	    	
 	    },
@@ -410,6 +413,11 @@ function removeAllianceMember(removeAirlineId) {
 	    dataType: 'json',
 	    success: function(result) {
 	    	showAllianceCanvas()
+	    	if (activeAirline.id == removeAirlineId) { //leaving alliance
+	    	    activeUser.allianceId = undefined
+	    	    activeUser.allianceName = undefined
+	    	    updateChatTabs()
+	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
@@ -460,6 +468,9 @@ function applyForAlliance() {
 	    dataType: 'json',
 	    success: function(result) {
 	    	showAllianceCanvas()
+	    	activeUser.allianceId = result.allianceId
+	    	activeUser.allianceName = result.allianceName
+	    	updateChatTabs()
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

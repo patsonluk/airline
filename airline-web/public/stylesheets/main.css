@@ -464,7 +464,7 @@ div.divider {
     background-image: linear-gradient(to right, rgba(69, 69, 68, 0), rgba(69, 69, 68, 0.75), rgba(69, 69, 68, 0.75), rgba(69, 69, 68, 0.75), rgba(69, 69, 68, 0));
 }
 
-div.divider.cell {
+.table.data .table-row div.divider.cell {
     border-top: 1px solid #6093e7;
     height: 0px;
     background-image: none;

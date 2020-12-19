@@ -595,9 +595,9 @@ function showOlympicsRankingModal() {
                 })
                 if (result.currentAirline) {
                     var dividerRow = $("<div class='table-row'></div>")
-                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
+                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
 
                     rankingTable.append(dividerRow)
                     rankingTable.append(getOlympicsAirlineRankingRow(result.currentAirline.rank, result.currentAirline)) //lastly append a row of current airline

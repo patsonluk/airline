@@ -6,6 +6,7 @@ function updateChatTabs() {
 	if (activeUser.allianceName) {
 		$("#allianceChatTab").text(activeUser.allianceName)
 		$("#allianceChatTab").data('roomId', activeUser.allianceId)
+		$("#allianceChatTab").show()
 	} else {
 		$("#allianceChatTab").hide()
 	}
