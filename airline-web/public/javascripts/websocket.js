@@ -20,6 +20,12 @@ var selectedAirlineId
 
 $( document ).ready(function() {})
 
+function checkWebSocket(selectedAirlineId) {
+    if (websocket.readyState === WebSocket.CLOSED) {
+        connectWebSocket(selectedAirlineId)
+    }
+}
+
 function connectWebSocket(airlineId) {
 	websocket = new WebSocket(wsUri); 
 	websocket.onopen = function(evt) {

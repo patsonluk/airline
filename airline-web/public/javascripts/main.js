@@ -57,7 +57,7 @@ $( document ).ready(function() {
 
 $(window).on('focus', function() {
     if (selectedAirlineId) {
-        refreshPanels(selectedAirlineId)
+        checkWebSocket(selectedAirlineId)
     }
 })
 
