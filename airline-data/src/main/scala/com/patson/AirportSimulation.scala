@@ -45,7 +45,7 @@ object AirportSimulation {
 
     //update the loyalist on airports based on link consumption
     println("Adjust loyalist by link consumptions")
-    simulateLoyalists(allAirports, consumptionResult)
+    simulateLoyalists(allAirports, consumptionResult, cycle)
 
 
     println("Finished simulation of loyalty by link consumption")
@@ -109,8 +109,10 @@ object AirportSimulation {
 
 
   val random = new Random()
+  val LOYALIST_HISTORY_SAVE_INTERVAL = 10 //every 10 cycles
+  val LOYALIST_HISTORY_ENTRY_MAX = 50
 
-  def simulateLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
+  def simulateLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) = {
     val existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]] = LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport.id)
     val (updatingLoyalists, deletingLoyalists) = computeLoyalists(allAirports, consumptionResult, existingLoyalistByAirportId)
     println(s"Updating ${updatingLoyalists.length} loyalists entries")
@@ -118,6 +120,20 @@ object AirportSimulation {
 
     println(s"Deleting ${deletingLoyalists.length} loyalists entries")
     LoyalistSource.deleteLoyalists(deletingLoyalists)
+
+    if (cycle % LOYALIST_HISTORY_SAVE_INTERVAL == 0) {
+      val cutoff = cycle - LOYALIST_HISTORY_ENTRY_MAX * LOYALIST_HISTORY_SAVE_INTERVAL
+      println(s"Purging loyalist history before cycle $cutoff")
+      LoyalistSource.deleteLoyalistHistoryBeforeCycle(cutoff)
+
+      val historyEntries = LoyalistSource.loadLoyalistsByCriteria(List.empty).map(LoyalistHistory(_, cycle))
+      println(s"Saving ${historyEntries.length} loyalist history entries")
+      LoyalistSource.updateLoyalistHistory(historyEntries)
+    }
+
+
+
+
   }
 
   val MAX_LOYALIST_FLIP_RATIO = 0.5

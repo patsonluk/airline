@@ -4,7 +4,7 @@ import com.patson.data.Constants._
 import com.patson.model._
 import com.patson.util.{AirlineCache, AirportCache}
 
-import scala.collection.mutable.{ListBuffer, Map}
+import scala.collection.mutable.{ListBuffer}
 
 
 object LoyalistSource {
@@ -115,6 +115,80 @@ object LoyalistSource {
 
       preparedStatement.setInt(1, airportId)
       preparedStatement.setInt(1, airlineId)
+      val deletedCount = preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+      deletedCount
+    } finally {
+      connection.close()
+    }
+  }
+
+  val updateLoyalistHistory = (entries : List[LoyalistHistory]) => {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("REPLACE INTO " + LOYALIST_HISTORY_TABLE + "(airport, airline, amount, cycle) VALUES(?,?,?,?)")
+
+    connection.setAutoCommit(false)
+
+    try {
+      entries.foreach {
+        case LoyalistHistory(Loyalist(airport : Airport, airline : Airline, amount : Int), cycle) => {
+          statement.setInt(1, airport.id)
+          statement.setInt(2, airline.id)
+          statement.setInt(3, amount)
+          statement.setInt(4, cycle)
+          statement.addBatch()
+        }
+      }
+      statement.executeBatch()
+
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
+  def loadLoyalistsHistoryByAirportId(airportId : Int) : Map[Int, List[LoyalistHistory]] = { //returns key cycle
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + LOYALIST_HISTORY_TABLE + " WHERE airport = ?")
+
+      preparedStatement.setInt(1, airportId)
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val entries = ListBuffer[LoyalistHistory]()
+
+      while (resultSet.next()) {
+        val airportId = resultSet.getInt("airport")
+        val airlineId = resultSet.getInt("airline")
+        val airport = AirportCache.getAirport(airportId).get
+        val airline = AirlineCache.getAirline(airlineId).get
+        val amount = resultSet.getInt("amount")
+        val cycle =  resultSet.getInt("cycle")
+        entries += LoyalistHistory(Loyalist(airport, airline, amount), cycle)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      entries.toList.groupBy(_.cycle)
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def deleteLoyalistHistoryBeforeCycle(cutoff : Int) = {
+    //open the hsqldb
+    val connection = Meta.getConnection()
+    try {
+      var queryString = "DELETE FROM " + LOYALIST_HISTORY_TABLE + " WHERE cycle < ?"
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      preparedStatement.setInt(1, cutoff)
       val deletedCount = preparedStatement.executeUpdate()
 
       preparedStatement.close()

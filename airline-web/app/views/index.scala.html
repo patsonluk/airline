@@ -820,45 +820,59 @@
 				<div id="airportCanvas" style="display: none;">
 					<!-- left panel -->
 					<div style="float:left" class="verticalGroup airportCanvasLeftGroup">
-						<div id="airportBaseDetails" class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
-							<h4>Your Airline Headquarter/Base</h4>
-							<div class="table" style="width: 50%">
-								<div class="table-row">
-									<div class="label" style="width: 50%"><h5>Base Type:</h5></div>
-									<div class="value" id="airportDetailsBaseType" style="width: 50%"></div>
+						<div style="box-sizing:border-box; width: 100%; display: flex;">
+							<div id="airportBaseDetails" class="section" style="box-sizing:border-box; width: 35%; float:left; margin:10px 10px 10px 0;">
+								<h4>Your Airline Headquarter/Base</h4>
+								<div class="table" style="width: 100%">
+									<div class="table-row">
+										<div class="label" style="width: 60%"><h5>Base Type:</h5></div>
+										<div class="value" id="airportDetailsBaseType" style="width: 40%"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Base Scale:</h5></div>
+										<div class="value" id="airportDetailsBaseScale"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Base Upkeep:</h5></div>
+										<div class="value" id="airportDetailsBaseUpkeep"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Country Delegates Required:</h5></div>
+										<div class="value" id="airportDetailsBaseDelegatesRequired"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Build/Upgrade Cost:</h5></div>
+										<div class="value" id="airportDetailsBaseUpgradeCost"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Base Upkeep after upgrade:</h5></div>
+										<div class="value" id="airportDetailsBaseUpgradeUpkeep"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Facilities:</h5></div>
+										<div class="value" id="airportDetailsFacilities"></div>
+									</div>
 								</div>
-								<div class="table-row">
-									<div class="label"><h5>Base Scale:</h5></div>
-									<div class="value" id="airportDetailsBaseScale"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Base Upkeep:</h5></div>
-									<div class="value" id="airportDetailsBaseUpkeep"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Country Delegates Required:</h5></div>
-									<div class="value" id="airportDetailsBaseDelegatesRequired"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Build/Upgrade Cost:</h5></div>
-									<div class="value" id="airportDetailsBaseUpgradeCost"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Base Upkeep after upgrade:</h5></div>
-									<div class="value" id="airportDetailsBaseUpgradeUpkeep"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Facilities:</h5></div>
-									<div class="value" id="airportDetailsFacilities"></div>
+								<div class="button" id="buildHeadquarterButton" style="display: none;" onclick='promptConfirm("Build your headquarters at this airport?", data => buildBase(true))'>Build Headquarter</div>
+								<div class="button" id="buildBaseButton" style="display: none;" onclick='promptConfirm("Build a base at this airport?", data => buildBase(false))'>Build Base</div>
+								<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade Base</div>
+								<div class="button" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade Base</div>
+								<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs.", deleteBase)'>Remove Base</div>
+
+		<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
+							</div>
+							<div class="section loyalistDetails" style="flex-grow: 1; margin:10px 0 10px 0;">
+								<h4>Loyalist Statistics</h4>
+								<div style="display: flex;">
+									<div>
+<!--										<h5 align="center">Loyalist Share</h5>-->
+										<div class="loyalistPie" style="height: 160px; width: 250px; padding: 10px 0 0 0;" align="center"></div>
+									</div>
+									<div>
+										<div class="loyalistHistoryChart" style="height: 200px; width: 600px"></div>
+									</div>
 								</div>
 							</div>
-							<div class="button" id="buildHeadquarterButton" style="display: none;" onclick='promptConfirm("Build your headquarters at this airport?", data => buildBase(true))'>Build Headquarter</div>
-							<div class="button" id="buildBaseButton" style="display: none;" onclick='promptConfirm("Build a base at this airport?", data => buildBase(false))'>Build Base</div>
-							<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade Base</div>
-							<div class="button" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade Base</div>
-							<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs.", deleteBase)'>Remove Base</div>
-
-	<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
 						</div>
 						<div id="airportDetails" class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
 							<h4>Airport Details</h4>
@@ -882,6 +896,14 @@
 								<div class="table-row">
 									<div class="label"><h5>Average income level:</h5></div>
 									<div class="value" id="airportDetailsIncomeLevel"></div>
+								</div>
+								<div class="table-row">
+									<div class="label"><h5>IATA:</h5></div>
+									<div class="value" id="airportDetailsIata"></div>
+								</div>
+								<div class="table-row">
+									<div class="label"><h5>ICAO:</h5></div>
+									<div class="value" id="airportDetailsIcao"></div>
 								</div>
 								<div class="table-row">
 									<div class="label">
@@ -966,15 +988,6 @@
 									<div class="label"><h5>Served By Airlines:</h5></div>
 									<div class="value" id="airportDetailsAirlineCount"></div>
 								</div>
-								<div class="table-row">
-									<div class="label"><h5>IATA:</h5></div>
-									<div class="value" id="airportDetailsIata"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>ICAO:</h5></div>
-									<div class="value" id="airportDetailsIcao"></div>
-								</div>
-
 								<div class="table-row">
 									<div class="label"><h5>Runways:</h5></div>
 									<div class="value">
