@@ -82,6 +82,29 @@ object LoyalistSource {
     }
   }
 
+  val deleteLoyalists = (loyalistEntries : List[Loyalist]) => {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("DELETE FROM " + LOYALIST_TABLE + " WHERE airport = ? AND airline = ?")
+
+    connection.setAutoCommit(false)
+
+    try {
+      loyalistEntries.foreach {
+        case Loyalist(airport : Airport, airline : Airline, amount : Int) => {
+          statement.setInt(1, airport.id)
+          statement.setInt(2, airline.id)
+          statement.addBatch()
+        }
+      }
+      statement.executeBatch()
+
+      connection.commit()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
   def deleteLoyalist(airportId : Int, airlineId : Int) = {
     //open the hsqldb
     val connection = Meta.getConnection()

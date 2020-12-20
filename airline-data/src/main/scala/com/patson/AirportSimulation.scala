@@ -1,10 +1,13 @@
 package com.patson
 
+import java.util.Random
+
 import com.patson.data._
 import com.patson.model._
+import com.patson.util.{AirlineCache, AirportCache}
 
-import scala.collection.mutable
-import scala.collection.mutable.{Map, Set}
+import scala.collection.{immutable, mutable}
+import scala.collection.mutable.{ListBuffer, Map, Set}
 
 object AirportSimulation {
   val AWARENESS_DECAY = 0.1
@@ -23,133 +26,172 @@ object AirportSimulation {
   
   private[patson] val LOYALTY_INCREMENT_BY_FLIGHTS = 1.0
   private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 1.0
-  
-  
-  
-  
-  def airportSimulation(cycle: Int, linkConsumptions : List[LinkConsumptionDetails]) = {
+
+
+
+  def airportSimulation(cycle: Int, linkConsumptions : List[LinkConsumptionDetails], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("starting airport simulation")
     println("loading all airports")
     //do decay
-    var allAirports = AirportSource.loadAllAirports(true)
+    val allAirports = AirportSource.loadAllAirports(true)
     println("finished loading all airports")
-    
-    println("Decay awareness")
-    //decay awareness
+
+    val links = LinkSource.loadAllLinks(LinkSource.ID_LOAD)
+    val linksByFromAirportId = links.groupBy(_.from.id)
+    val linksByToAirportId = links.groupBy(_.to.id)
+
+    println("Compute awareness")
+    simulateAwareness(allAirports, linksByFromAirportId, linksByToAirportId)
+
+    //update the loyalist on airports based on link consumption
+    println("Adjust loyalist by link consumptions")
+    simulateLoyalists(allAirports, consumptionResult)
+
+
+    println("Finished simulation of loyalty by link consumption")
+
+
+    println("Finished loyalist and awareness simulation")
+    airportProjectSimulation(allAirports)
+
+    AirportSource.purgeAirlineAppealBonus(cycle)
+  }
+
+  def simulateAwareness(allAirports : List[Airport], linksByFromAirportId : immutable.Map[Int, List[Link]], linksByToAirportId : immutable.Map[Int, List[Link]]) = {
     allAirports.foreach { airport =>
-      val updatingAppeals = mutable.HashMap[Int, AirlineAppeal]()
+      val updatingAwareness = mutable.HashMap[Int, Double]()
       airport.getAirlineBaseAppeals().foreach {
         case(airlineId, AirlineAppeal(loyalty, awareness)) =>
-          //decay    
+          //decay
           val newAwareness = if (awareness - AWARENESS_DECAY <= 0) 0 else awareness - AWARENESS_DECAY
-          updatingAppeals.put(airlineId, AirlineAppeal(loyalty, newAwareness))
+          updatingAwareness.put(airlineId, newAwareness)
       }
-       //add base on bases
+      //add base on bases
       airport.getAirlineBases().values.foreach { base =>
         val airline = base.airline
-        val appeal = updatingAppeals.getOrElse(airline.id, AirlineAppeal(0, 0))
-        var awareness = appeal.awareness
-        var loyalty = appeal.loyalty
+        var awareness : Double = updatingAwareness.getOrElse(airline.id, 0)
+
         if (base.headquarter) {
           if (awareness < AWARENESS_INCREMENT_MAX_WITH_HQ) {
             awareness += AWARENESS_INCREMENT_WITH_HQ
-          }
-          if (loyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ) {
-            loyalty += LOYALTY_AUTO_INCREMENT_WITH_HQ
           }
         } else {
           if (awareness < AWARENESS_INCREMENT_MAX_WITH_BASE) {
             awareness += AWARENESS_INCREMENT_WITH_BASE
           }
-          if (loyalty < LOYALTY_AUTO_INCREMENT_MAX_WITH_BASE) {
-            loyalty += LOYALTY_AUTO_INCREMENT_WITH_BASE
-          }
         }
         if (awareness > AirlineAppeal.MAX_AWARENESS) {
           awareness = AirlineAppeal.MAX_AWARENESS
         }
-        if (loyalty > AirlineAppeal.MAX_LOYALTY) {
-          loyalty = AirlineAppeal.MAX_LOYALTY
-        }
-        updatingAppeals.put(airline.id, AirlineAppeal(loyalty, awareness))
+        updatingAwareness.put(airline.id, awareness)
+      }
+      //adjust awareness by links
+      val linksOfThisAirport : List[Link] = linksByFromAirportId.get(airport.id).getOrElse(List.empty[Link]) ++ linksByToAirportId.get(airport.id).getOrElse(List.empty[Link])
+      linksOfThisAirport.map(_.airline.id).toSet.foreach { airlineIdConnectedToThisAirport : Int =>
+        val existingAwareness : Double = updatingAwareness.getOrElse(airlineIdConnectedToThisAirport, 0)
+        val newAwareness =
+          if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
+            AirlineAppeal.MAX_AWARENESS
+          } else {
+            existingAwareness + AWARENESS_INCREMENT_WITH_LINKS
+          }
+        //airport.setAirlineAwareness(airlineId, newAwareness)
+        updatingAwareness.put(airlineIdConnectedToThisAirport, newAwareness)
       }
 
-      if (!updatingAppeals.isEmpty || !airport.getAirlineBaseAppeals().isEmpty) { //2nd or is for removal of existing appeals
-        AirportSource.replaceAirlineAppeals(airport.id, updatingAppeals.toMap)
+
+      if (!updatingAwareness.isEmpty || !airport.getAirlineBaseAppeals().isEmpty) { //2nd or is for removal of existing appeals
+        AirportSource.replaceAirlineAppeals(airport.id, updatingAwareness.toMap)
       }
+
     }
+  }
 
-    println("Adjust awareness by links")
-    //reload the airports after update
-    allAirports = AirportSource.loadAllAirports(true)
-    val allAirportsMap = allAirports.map( airport => airport.id -> airport).toMap
 
-    //increment of awareness by links
-    val links = LinkSource.loadAllLinks(LinkSource.ID_LOAD)
-    
-    val airportWithLinks = mutable.HashMap[Int, mutable.Set[Int]]() //(airportId, Set[airlineId])
-    links.foreach { link =>
-      val airlinesFliesFromThisAirport = airportWithLinks.getOrElseUpdate(link.from.id, mutable.HashSet[Int]())
-      airlinesFliesFromThisAirport.add(link.airline.id)
-      
-      val airlinesFliesToThisAirport = airportWithLinks.getOrElseUpdate(link.to.id, mutable.HashSet[Int]())
-      airlinesFliesToThisAirport.add(link.airline.id)
-    }
-    
-    //add awareness based on airline with some links to/from an airport
-    airportWithLinks.foreach {
-      case(airportId, airlineIds) =>
-        val updatingAppeals = mutable.HashMap[Int, AirlineAppeal]()
-        airlineIds.foreach { airlineId =>
-          val airport = allAirportsMap(airportId)
-          val appeal = airport.getAirlineBaseAppeal(airlineId)
-          val existingAwareness = appeal.awareness
-          val newAwareness =
-            if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
-              AirlineAppeal.MAX_AWARENESS
-            } else {
-              existingAwareness + AWARENESS_INCREMENT_WITH_LINKS
-            }
-          //airport.setAirlineAwareness(airlineId, newAwareness)
-          updatingAppeals.put(airlineId, AirlineAppeal(appeal.loyalty, newAwareness))
-        }
-        AirportSource.updateAirlineAppeals(airportId, updatingAppeals.toMap)
-    }
+  val random = new Random()
 
-    println("Adjust loyalty by link consumptions")
-    //reload the airports after update
-    allAirports = AirportSource.loadAllAirports(true)
-    
-    //update the loyalty on airports based on link consumption
-    val toAirportSoldLinks = linkConsumptions.groupBy { _.link.to.id } //Map[(airportId, airlineId), links] //cannot use Airport instance directly as they are not the same instance
-    val fromAirportSoldLinks = linkConsumptions.groupBy { _.link.from.id }
-    val airportSoldLinks: scala.collection.immutable.Map[Int, Seq[LinkConsumptionDetails]] = 
-      (toAirportSoldLinks.toSeq ++ fromAirportSoldLinks.toSeq).groupBy(_._1).mapValues { linkConsumptions =>
-        linkConsumptions.map { 
-          case (_, linkConsumptionsByDirection) => linkConsumptionsByDirection
-        }.flatten
-    }.toMap
+  def simulateLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
+    val existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]] = LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport.id)
+    val (updatingLoyalists, deletingLoyalists) = computeLoyalists(allAirports, consumptionResult, existingLoyalistByAirportId)
+    println(s"Updating ${updatingLoyalists.length} loyalists entries")
+    LoyalistSource.updateLoyalists(updatingLoyalists)
 
-    allAirports.foreach { airport =>
-      val soldLinksOfThisAirport = airportSoldLinks.get(airport.id).getOrElse(Seq.empty[LinkConsumptionDetails])
-      val soldLinksByAirline = scala.collection.mutable.Map(soldLinksOfThisAirport.groupBy { _.link.airline.id }.toSeq: _*)
-      airport.getAirlineBaseAppeals().foreach {
-        case(airlineId, _) =>  { //for all airlines that have record with this airport
-          if (!soldLinksByAirline.contains(airlineId)) { //put an empty list, so it gets updated
-            soldLinksByAirline.put(airlineId, Seq.empty[LinkConsumptionDetails])
+    println(s"Deleting ${deletingLoyalists.length} loyalists entries")
+    LoyalistSource.deleteLoyalists(deletingLoyalists)
+  }
+
+  val MAX_LOYALIST_FLIP_RATIO = 0.5
+  private[patson] def computeLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int],  existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) = {
+    val updatingLoyalists = ListBuffer[Loyalist]()
+    val deletingLoyalists = ListBuffer[Loyalist]()
+
+    consumptionResult.groupBy(_._1._1.fromAirport).foreach {
+      case ((fromAirport, passengersFromThisAirport)) =>
+        val loyalistDeltaOfAirlines = Map[Int, Int]() //airlineId, delta
+        passengersFromThisAirport.toList.foreach {
+          case ((passengerGroup, toAirport, route), paxCount) => route.links.foreach { linkConsideration =>
+            val link = linkConsideration.link
+            val preferredLinkClass = passengerGroup.preference.preferredLinkClass
+            val standardPrice = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass)
+
+            val costRatio = Math.min(1 + MAX_LOYALIST_FLIP_RATIO, (Math.max(1 - MAX_LOYALIST_FLIP_RATIO, linkConsideration.cost / standardPrice)))
+            //if cost is 0.5 max convert : 50% of pax will become loyalist, 1.5 min convert : losing 50% of pax
+            val conversionRatio = (1 - costRatio)
+            val loyalistDelta = (paxCount * conversionRatio).toInt
+            val existingDelta = loyalistDeltaOfAirlines.getOrElse(link.airline.id, 0)
+            loyalistDeltaOfAirlines.put(link.airline.id, existingDelta + loyalistDelta)
           }
         }
-      }
-      //now the soldLinksByAirline should contain all the sold flights of this airport grouped by airline, if the airline no longer offer flights, it will be empty
-      updateAirlineAppealsBySoldLinks(airport, soldLinksByAirline)
+
+        //put a map of current royalist status to draw which loyalist to flip
+        val loyalistDistribution = mutable.Map[Int, Int]() //airlineId, threshold
+        var walker = 0
+        val existingLoyalistOfThisAirport = existingLoyalistByAirportId.get(fromAirport.id).getOrElse(List.empty)
+        existingLoyalistOfThisAirport.foreach { loyalist =>
+          walker = walker + loyalist.amount
+          loyalistDistribution.put(loyalist.airline.id, walker)
+        }
+        val flippedLoyalists = mutable.Map[Int, Int]() //airlineId, flipped amount
+
+        val CHUNK_SIZE = 5
+        //now with delta, see what the flips are
+        loyalistDeltaOfAirlines.foreach {
+          case (gainAirlineId, delta) => //split into chunks for better randomness
+            if (delta > 0) {
+              var remainingDelta = delta
+              while (remainingDelta > 0) {
+                val chunk = if (remainingDelta <= CHUNK_SIZE) remainingDelta else CHUNK_SIZE
+                val flipTrigger = random.nextInt(fromAirport.population.toInt)
+                val flippedAirlineIdOption = loyalistDistribution.find {
+                  case (airlineId : Int, threshold : Int) => flipTrigger < threshold
+                }.map(_._1)
+                flippedAirlineIdOption.foreach { flippedAirlineId =>
+                  flippedLoyalists.put(flippedAirlineId, flippedLoyalists.getOrElse(flippedAirlineId, 0) - chunk)
+                }
+
+                remainingDelta = remainingDelta - chunk
+              }
+            }
+        }
+        // now merge it with the original delta map
+        val existingLoyalistOfThisAirportByAirlineId = existingLoyalistOfThisAirport.map(loyalist => (loyalist.airline.id, loyalist)).toMap
+        val finalLoyalistDeltaForThisAirport : immutable.Map[Int, Int] = (loyalistDeltaOfAirlines.toList ++ flippedLoyalists.toList).groupBy(_._1).view.mapValues(_.map(_._2).sum).toMap
+        finalLoyalistDeltaForThisAirport.foreach {
+          case((airlineId, delta)) => existingLoyalistOfThisAirportByAirlineId.get(airlineId) match {
+            case Some(existingLoyalist) =>
+              if (existingLoyalist.amount + delta <= 0) { //opps no more loyalist left :(
+                deletingLoyalists.append(existingLoyalist)
+              } else {
+                updatingLoyalists.append(existingLoyalist.copy(amount = existingLoyalist.amount + delta))
+              }
+            case None =>
+              if (delta > 0) {
+                updatingLoyalists.append(Loyalist(fromAirport, AirlineCache.getAirline(airlineId).get, delta))
+              }
+          }
+        }
     }
-    println("Finished simulation of loyalty by link consumption")
-
-
-    println("Finished loyalty and awareness simulation")
-    airportProjectSimulation(allAirports)
-
-    AirportSource.purgeAirlineAppealBonus(cycle)
+    (updatingLoyalists.toList, deletingLoyalists.toList)
   }
 
   def airportProjectSimulation(allAirports : List[Airport]) = {
@@ -159,7 +201,7 @@ object AirportSimulation {
     val inProgressProjects = AirportSource.loadAllAirportProjects().filter { _.status != COMPLETED }
   }
   
-  private def updateAirlineAppealsBySoldLinks(airport : Airport, soldLinksByAirline : Map[Int, Seq[LinkConsumptionDetails]]) = {
+  private def simulateAirlineAppeals(airport : Airport, soldLinksByAirline : Map[Int, Seq[LinkConsumptionDetails]]) = {
     val newAppeals = mutable.HashMap[Int, AirlineAppeal]()
     soldLinksByAirline.foreach {
       case(airlineId, soldLinksByAirline) => {

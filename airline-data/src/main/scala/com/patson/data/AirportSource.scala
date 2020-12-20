@@ -366,7 +366,7 @@ object AirportSource {
     loadAirportsByCriteria(List(("country_code", countryCode)))
   }
 
-  def replaceAirlineAppeals(airportId : Int, airlineAppeals : Map[Int, AirlineAppeal]) = {
+  def replaceAirlineAppeals(airportId : Int, airlineAppeals : Map[Int, Double]) = {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
@@ -378,13 +378,14 @@ object AirportSource {
 
       val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
       airlineAppeals.foreach {
-        case(airlineId, airlineAppeal) =>
-          if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
+        case(airlineId, airlineAwareness) =>
+          //if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
+          if (airlineAwareness > 0) {
 
             insertStatement.setInt(1, airportId)
             insertStatement.setInt(2, airlineId)
-            insertStatement.setDouble(3, airlineAppeal.loyalty)
-            insertStatement.setDouble(4, airlineAppeal.awareness)
+            insertStatement.setDouble(3, 0) //no longer using this
+            insertStatement.setDouble(4, airlineAwareness)
             insertStatement.addBatch()
           }
       }

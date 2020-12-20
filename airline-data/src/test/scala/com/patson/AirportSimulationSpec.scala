@@ -318,6 +318,107 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        assert(AirportSimulation.getNewLoyalty(AirlineAppeal.MAX_LOYALTY, 0) == AirlineAppeal.MAX_LOYALTY - AirportSimulation.LOYALTY_DECREMENT_BY_FLIGHTS)
     }
   }
+
+  "computeLoyalists".must {
+    val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, power = 1000 * 10L, population = 1000L, 0, 0, id = 1)
+    val airport2 = Airport("", "", "Test Airport 2", 0, 0 , "", "", "", size = 1, power = 10000 * 10L, population = 10000L, 0, 0, id = 2)
+    val airport3 = Airport("", "", "Test Airport 3", 0, 0 , "", "", "", size = 1, power = 100000 * 10L, population = 100000L, 0, 0, id = 3)
+    val airline1 = Airline.fromId(1)
+    val airline2 = Airline.fromId(2)
+    val airline3 = Airline.fromId(3)
+    val airline4 = Airline.fromId(4)
+    val airline1Link1 = Link(airport1, airport2, airline1, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1)
+    val badAirline1Link1 = LinkConsideration(airline1Link1, 100000, ECONOMY, false, 0)
+    val goodAirline1Link1 = LinkConsideration(airline1Link1, 0, ECONOMY, false, 0)
+    val airline2Link2 = Link(airport2, airport3, airline2, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 2)
+    val badAirline2Link2 = LinkConsideration(airline2Link2, 100000, ECONOMY, false, 0)
+    val goodAirline2Link2 = LinkConsideration(airline2Link2, 0, ECONOMY, false, 0)
+    val badRoute = Route(List(badAirline1Link1, badAirline2Link2), 0)
+    val goodRoute = Route(List(goodAirline1Link1, goodAirline2Link2), 0)
+    val passengerGroup = PassengerGroup(airport1, SimplePreference(airport1, 1, ECONOMY), PassengerType.TOURIST)
+    val allAirports = List(airport1, airport2, airport3)
+    "Do nothing if there's no consumption".in {
+      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(allAirports, Map.empty, Map(1 -> List(Loyalist(airport1, airline1, 5)), 2 -> List(Loyalist(airport1, airline2, 50))))
+      assert(updatingLoyalists.isEmpty)
+      assert(deletingLoyalist.isEmpty)
+    }
+
+    "Do nothing if there's bad links but no existing loyalists".in {
+      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(allAirports, Map((passengerGroup, airport3, badRoute) -> 100), Map.empty)
+      assert(updatingLoyalists.isEmpty)
+      assert(deletingLoyalist.isEmpty)
+    }
+
+    "Delete all loyalists if there's bad links but a few remaining loyalists".in {
+      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
+        allAirports,
+        Map((passengerGroup, airport3, badRoute) -> 100),
+        Map(1 -> List(Loyalist(airport1, airline1, 1), Loyalist(airport1, airline2, 2))))
+      assert(updatingLoyalists.isEmpty)
+      assert(deletingLoyalist.length == 2)
+      assert(deletingLoyalist.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).isDefined)
+      assert(deletingLoyalist.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).isDefined)
+    }
+
+    "Delete some loyalists if there's bad links but have remaining loyalists".in {
+      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
+        allAirports,
+        Map((passengerGroup, airport3, badRoute) -> 100),
+        Map(1 -> List(Loyalist(airport1, airline1, 100), Loyalist(airport1, airline2, 1000))))
+      assert(updatingLoyalists.length == 2)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == 100 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == 1000 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+
+      assert(deletingLoyalist.isEmpty)
+    }
+
+    "Gain loyalists if there's good links but a no existing loyalists".in {
+      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
+        allAirports,
+        Map((passengerGroup, airport3, goodRoute) -> 100),
+        Map.empty)
+      assert(updatingLoyalists.length == 2)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+
+      assert(deletingLoyalist.isEmpty)
+    }
+
+    "Gain loyalists if there's good links but are existing loyalists, flip loyalists from other airlines".in {
+      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
+        allAirports,
+        Map((passengerGroup, airport3, goodRoute) -> 100),
+        Map(1 -> List(Loyalist(airport1, airline3, 1000))))
+      assert(updatingLoyalists.length == 3)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      //this does not make too much sense cause essentially it's the same pax, but for sim purpose this is okay. Otherwise we would need decimal points
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline3.id).get.amount == 1000 - 2 * ((100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt))
+
+      assert(deletingLoyalist.isEmpty)
+    }
+
+    "Gain loyalists if there's good links but are existing loyalists, flip loyalists from other airlines - the one with MORE loyalists get bigger loss".in {
+      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
+        allAirports,
+        Map((passengerGroup, airport3, goodRoute) -> 100),
+        Map(1 -> List(Loyalist(airport1, airline3, 300), Loyalist(airport1, airline4, 700))))
+      assert(updatingLoyalists.length == 4)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+
+      val airline3Delta = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline3.id).get.amount - 300
+      val airline4Delta = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline4.id).get.amount - 700
+      assert(airline3Delta < 0)
+      assert(airline4Delta < 0)
+      assert(airline3Delta > airline4Delta) //airline 4 should lose more
+
+      assert(deletingLoyalist.isEmpty)
+    }
+
+
+
+  }
   
  
 }
