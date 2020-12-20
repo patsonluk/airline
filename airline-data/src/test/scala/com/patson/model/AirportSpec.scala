@@ -49,30 +49,25 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
   "computeLoyaltyByLoyalist".must {
     "give no loyalty if loyalist is empty".in {
       val airport = this.airport.copy()
-      airport.initLoyalistEntries(List.empty)
-      assert(airport.computeLoyaltyByLoyalist.isEmpty)
+      assert(airport.computeLoyaltyByLoyalist(List.empty).isEmpty)
     }
     "give 0 loyalty if loyalist is 0".in {
       val airport = this.airport.copy()
-      airport.initLoyalistEntries(List(Loyalist(airport, Airline.fromId(1), 0)))
-      assert(airport.computeLoyaltyByLoyalist(1) == 0.0)
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), 0)))(1) == 0.0)
     }
     "give 100 loyalty if loyalist is same as pop".in {
       val airport = this.airport.copy()
-      airport.initLoyalistEntries(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt)))
-      assert(airport.computeLoyaltyByLoyalist(1) == 100.0)
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt)))(1) == 100.0)
     }
     "give x loyalty if loyalist is 0.5 * pop, which 70 < x < 80".in {
       val airport = this.airport.copy()
-      airport.initLoyalistEntries(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 2)))
-      assert(airport.computeLoyaltyByLoyalist(1) > 70.0)
-      assert(airport.computeLoyaltyByLoyalist(1) < 80.0)
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 2)))(1) > 70.0)
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 2)))(1) < 80.0)
     }
     "give x loyalty if loyalist is 0.2 * pop, which 40 < x < 50".in {
       val airport = this.airport.copy()
-      airport.initLoyalistEntries(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 5)))
-      assert(airport.computeLoyaltyByLoyalist(1) > 40.0)
-      assert(airport.computeLoyaltyByLoyalist(1) < 50.0)
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 5)))(1) > 40.0)
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 5)))(1) < 50.0)
     }
 
   }

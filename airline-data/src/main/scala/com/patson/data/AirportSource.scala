@@ -211,18 +211,20 @@ object AirportSource {
         airport.id = resultSet.getInt("id")
         airportData += airport
         if (fullLoad) {
-          val airlineAppeals = mutable.Map[Int, AirlineAppeal]()
+          val airlineAwareness = mutable.Map[Int, Double]()
           val loyaltyStatement = connection.prepareStatement("SELECT airline, loyalty, awareness FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
           loyaltyStatement.setInt(1, airport.id)
           val loyaltyResultSet = loyaltyStatement.executeQuery()
           while (loyaltyResultSet.next()) {
             val airlineId = loyaltyResultSet.getInt("airline")
-            airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
+            //airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
+            airlineAwareness.put(airlineId, loyaltyResultSet.getDouble("awareness"))
           }
 
           val airlineBonuses = getAirlineBonuses(airport, countryAirlineTitleCache)
 
-          airport.initAirlineAppeals(airlineAppeals.toMap,airlineBonuses)
+          //airport.initAirlineAppeals(airlineAppeals.toMap,airlineBonuses)
+          airport.initAirlineAppealsComputeLoyalty(airlineAwareness.toMap, airlineBonuses, LoyalistSource.loadLoyalistsByAirportId(airport.id))
           loyaltyStatement.close()
           
           val slotAssignments = mutable.Map[Int, Int]()

@@ -344,8 +344,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     features.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
   }
 
-  def initAirlineAppealsComputeLoyalty(airlineBaseAwareness : Map[Int, Double], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty) = {
-    val airlineBaseLoyalty = computeLoyaltyByLoyalist
+  def initAirlineAppealsComputeLoyalty(airlineBaseAwareness : Map[Int, Double], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty, loyalistEntries : List[Loyalist]) = {
+    this.loyalistEntries = loyalistEntries
+    val airlineBaseLoyalty = computeLoyaltyByLoyalist(loyalistEntries)
 
     val preFlattenAppealsByAirlineId : Map[Int, List[(Int, AirlineAppeal)]] = (airlineBaseLoyalty.view.mapValues(loyalty => AirlineAppeal(loyalty = loyalty, awareness = 0)).toList ++
     airlineBaseAwareness.view.mapValues(awareness => AirlineAppeal(loyalty = 0, awareness = awareness)).toList).groupBy(_._1)
@@ -356,7 +357,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     initAirlineAppeals(appealsByAirlineId, airlineBonuses)
   }
 
-  private[model] lazy val computeLoyaltyByLoyalist : Map[Int, Double] = loyalistEntries.map {
+  private[model] lazy val computeLoyaltyByLoyalist = (loyalistEntries : List[Loyalist]) => loyalistEntries.map {
     case Loyalist(_, airline, amount) => {
       if (population == 0) { //should not happen, but just to be safe
         (airline.id, 0.0)
@@ -367,6 +368,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       }
     }
   }.toMap
+
   
   def initAirlineAppeals(airlineBaseAppeals : Map[Int, AirlineAppeal], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty) = {
     this.airlineBaseAppeals.clear()
@@ -497,8 +499,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   val displayText = city + "(" + iata + ")"
 
   var loyalistEntries : List[Loyalist] = List.empty
-  def initLoyalistEntries(entries : List[Loyalist]) = { loyalistEntries = entries }
-
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)
