@@ -449,6 +449,10 @@ function closeAllModals() {
 
 function disableButton(button, reason) {
     $(button).addClass("disabled")
+    if ($(button).is(':input')) { //then have to manually add overlay
+       $(button).after('<div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 50, 50, 0.2)"></div>')
+    }
+
     $(button).data("originalClickFunction", $(button).attr("onclick"))
 
 //    if (!$(button).data("replacedTitle")) { //only store the title if it was NOT replaced (ie the original one)
@@ -495,6 +499,10 @@ function enableButton(button) {
     if (originalClickFunction) {
         $(button).attr("onclick", originalClickFunction) //set it back
     }
+    if ($(button).is(':input')) { //then have to manually remove overlay
+         $(button).next('div.overlay').remove()
+    }
+
 //    if ($(button).data("originalTitle")) {
 //        $(button).attr("title",  $(button).data("originalTitle"))
 //    } else {

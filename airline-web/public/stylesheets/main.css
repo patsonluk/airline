@@ -867,7 +867,7 @@ input:disabled:hover, .button.disabled:hover {
 }
 
 
-input:disabled:after, .button.disabled:after {
+.button.disabled:after {
   content: '';
   position: absolute;
   top: 0;
@@ -875,7 +875,6 @@ input:disabled:after, .button.disabled:after {
   width: 100%;
   height: 100%;
   background: rgba(255, 50, 50, 0.2);
-  filter: blur(2px);
 }
 
 .touchTitle {
