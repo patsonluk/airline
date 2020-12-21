@@ -245,7 +245,11 @@ div.header, span.header {
 	font-size: 18px;
 }
 
-div.button, .ajax-file-upload {
+div.button, .ajax-file-upload, .button.disabled:after {
+   	border-radius: 7px;
+}
+
+div.button, .ajax-file-upload, div.button:disabled:after {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #454544;*/
@@ -255,7 +259,6 @@ div.button, .ajax-file-upload {
 	display: inline-block;
 	cursor: pointer;
 	padding: 5px 15px;
-	border-radius: 7px;
 	margin: 5px 5px;
 	box-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.6);
 }
@@ -854,16 +857,25 @@ div {
      scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
 }
 
-input:disabled {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+input:disabled, .button.disabled {
+  color: #ffcccc;
 }
 
-.button.disabled {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==) repeat;
+input:disabled:hover, .button.disabled:hover {
+  cursor: not-allowed;
+  color: #ff4d4d;
 }
 
-.button.disabled:hover {
-  cursor: not-allowed
+
+input:disabled:after, .button.disabled:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 50, 50, 0.2);
+  filter: blur(2px);
 }
 
 .touchTitle {
