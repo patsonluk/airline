@@ -859,6 +859,7 @@ div {
 
 input:disabled, .button.disabled {
   color: #ffcccc;
+  position: relative;
 }
 
 input:disabled:hover, .button.disabled:hover {
