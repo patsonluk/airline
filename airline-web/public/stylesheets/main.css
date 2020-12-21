@@ -864,7 +864,7 @@ input:disabled, .button.disabled {
 
 input:disabled:hover, .button.disabled:hover {
   cursor: not-allowed;
-  color: #ffa0a0;
+  color: #ff4040;
 }
 
 
