@@ -1005,7 +1005,9 @@ function plotLoyalistHistoryChart(loyalistHistory, container) {
 		  $(this)[0].dispose();
 	}))
 
-
+    if (jQuery.isEmptyObject(loyalistHistory)) {
+        return
+    }
 
 	var category = []
 
