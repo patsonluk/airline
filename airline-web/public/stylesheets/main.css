@@ -858,13 +858,13 @@ div {
 }
 
 input:disabled, .button.disabled {
-  color: #ffcccc;
+  color: #a0a0a0;
   position: relative;
 }
 
 input:disabled:hover, .button.disabled:hover {
   cursor: not-allowed;
-  color: #ff4d4d;
+  color: #ffa0a0;
 }
 
 
