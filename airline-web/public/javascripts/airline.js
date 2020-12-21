@@ -2057,7 +2057,6 @@ function linkConfirmation() {
 
 
 	$('#linkConfirmationModal div.updating.price').text('$' + $('#planLinkEconomyPrice').val() + " / $" + $('#planLinkBusinessPrice').val() + " / $" + $('#planLinkFirstPrice').val())
-	$('#linkConfirmationModal div.controlButtons').show()
 
 	$('#linkConfirmationModal').fadeIn(200)
 
@@ -2292,6 +2291,7 @@ function getLinkNegotiation() {
                 $('#linkConfirmationModal .negotiateButton').hide()
                 $('#linkConfirmationModal .confirmButton').show()
             }
+            $('#linkConfirmationModal div.controlButtons').show()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
