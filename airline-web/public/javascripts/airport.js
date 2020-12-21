@@ -418,7 +418,7 @@ function getAirports() {
 
 function addMarkers(airports) {
     var infoWindow = new google.maps.InfoWindow({
-		maxWidth : 450
+		maxWidth : 470
 	})
 	var originalOpacity = 0.7
 	currentZoom = map.getZoom()

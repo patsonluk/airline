@@ -2699,7 +2699,7 @@
     <div style="display: none; width: 100%;" id="airportPopup">
     	<input type="hidden" id="airportPopupId">
     	<div>
-    		<span id="airportPopupName" class="header"></span>
+    		<h4 id="airportPopupName"></h4>
     	</div>
     	<div id="airportIcons">
     		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon" style="display: none">
@@ -2707,8 +2707,8 @@
     	</div>
     	<div class="table" style="width: 100%">
    			<div class="table-row">
-   				<div class="label"><h5>IATA code:</h5></div>
-   				<div class="value" id="airportPopupIata"></div>
+   				<div class="label" style="width: 60%"><h5>IATA code:</h5></div>
+   				<div class="value" id="airportPopupIata" style="width: 40%"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>City:</h5></div>
@@ -2723,28 +2723,23 @@
    				<div class="value" id="airportPopupSize"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Population coverage:</h5></div>
-   				<div class="value" id="airportPopupPopulation"></div>
+   				<div class="label"><h5>Population coverage (Income Level):</h5></div>
+   				<div class="value"><span id="airportPopupPopulation"></span>(<span id="airportPopupIncomeLevel"></span>)</div>
    			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Average income level:</h5></div>
-   				<div class="value" id="airportPopupIncomeLevel"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Country market openness:</h5></div>
-   				<div class="value" id="airportPopupOpenness"></div>
-   			</div>
+<!--   			<div class="table-row">-->
+<!--   				<div class="label"><h5>Country market openness:</h5></div>-->
+<!--   				<div class="value" id="airportPopupOpenness"></div>-->
+<!--   			</div>-->
 			<div class="table-row">
 				<div class="label"><h5>Max runway length:</h5></div>
 				<div class="value" id="airportPopupMaxRunwayLength"></div>
 			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Awareness of your airline:</h5></div>
-   				<div class="value airportAwareness" id="airportPopupAwareness"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Loyalty to your airline:</h5></div>
-   				<div class="value airportLoyalty" id="airportPopupLoyalty"></div>
+   				<div class="label"><h5>Awareness/Loyalty:</h5></div>
+   				<div class="value">
+					<span class="airportAwareness" id="airportPopupAwareness"></span>/
+					<span class="airportLoyalty" id="airportPopupLoyalty"</span>
+				</div>
    			</div>
 		</div>
 		<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()" >Plan Flight</div>
