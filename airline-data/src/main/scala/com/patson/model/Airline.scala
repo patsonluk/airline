@@ -1,6 +1,6 @@
 package com.patson.model
 
-import com.patson.data.{AirlineSource, AirplaneSource, AllianceSource, BankSource, CycleSource, DelegateSource, LinkSource, OilSource}
+import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, BankSource, CycleSource, DelegateSource, LinkSource, LoyalistSource, OilSource}
 
 import scala.collection.mutable.ListBuffer
 
@@ -314,7 +314,7 @@ object Airline {
   val MAX_REPUTATION : Double = 100
 
 
-  def resetAirline(airlineId : Int, newBalance : Long) : Option[Airline] = {
+  def resetAirline(airlineId : Int, newBalance : Long, resetExtendedInfo : Boolean = false) : Option[Airline] = {
     AirlineSource.loadAirlineById(airlineId, true) match {
       case Some(airline) =>
         LinkSource.deleteLinksByAirlineId(airlineId)//remove all links
@@ -347,6 +347,12 @@ object Airline {
         //unset service investment
         airline.setTargetServiceQuality(0)
         airline.setCurrentServiceQuality(0)
+
+        if (resetExtendedInfo) {
+          airline.setReputation(0)
+          AirportSource.deleteAirlineAppealsFromAllAirports(airlineId)
+          LoyalistSource.deleteLoyalistsByAirline(airlineId)
+        }
 
         //reset all busy delegates
         DelegateSource.deleteBusyDelegateByCriteria(List(("airline", "=", airlineId)))

@@ -81,6 +81,18 @@ object LoyalistSource {
       connection.close()
     }
   }
+  def deleteLoyalistsByAirline(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement("DELETE FROM " + LOYALIST_TABLE + " WHERE airline = ?")
+
+    try {
+      statement.setInt(1, airlineId)
+      statement.executeUpdate()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
 
   val deleteLoyalists = (loyalistEntries : List[Loyalist]) => {
     val connection = Meta.getConnection()

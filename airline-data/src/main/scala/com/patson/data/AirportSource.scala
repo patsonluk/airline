@@ -427,6 +427,16 @@ object AirportSource {
    }
   }
 
+  def deleteAirlineAppealsFromAllAirports(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_APPEAL_TABLE + " WHERE airline = ?")
+      purgeStatement.setInt(1, airlineId)
+      purgeStatement.executeUpdate()
+    } finally {
+      connection.close()
+    }
+  }
 
   def updateAirlineAppeals(airportId : Int, airlineAppeals : Map[Int, AirlineAppeal]) = {
     val connection = Meta.getConnection()
