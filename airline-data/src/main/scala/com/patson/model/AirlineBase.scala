@@ -42,12 +42,12 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
 
 
   val getOfficeStaffCapacity = {
-    val base = 30
+    val base = 60
     val scaleBonus =
       if (headquarter) {
-        40 * scale
+        80 * scale
       } else {
-        20 * scale
+        40 * scale
       }
 
     base + scaleBonus
@@ -67,11 +67,11 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   }
 
 
-  def getOvertimeCompensation(staffCapacity : Int, staffRequired : Int) = {
-    if (staffCapacity >= staffRequired) {
+  def getOvertimeCompensation(staffRequired : Int) = {
+    if (getOfficeStaffCapacity >= staffRequired) {
       0
     } else {
-      val delta = staffCapacity - staffRequired
+      val delta = getOfficeStaffCapacity - staffRequired
       var compensation = 0
       val income = CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0)
       compensation += delta * (50000 + income) / 52 * 10 //weekly compensation, *10, as otherwise it's too low

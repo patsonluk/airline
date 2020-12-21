@@ -1,8 +1,9 @@
 package com.patson.model
 
-import com.patson.model.airplane.{Airplane, LinkAssignment, Model}
-import com.patson.model.Scheduling.TimeSlot
 import java.util.concurrent.ConcurrentHashMap
+
+import com.patson.model.Scheduling.TimeSlot
+import com.patson.model.airplane.{Airplane, LinkAssignment, Model}
 
 /**
  * 
@@ -168,9 +169,15 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     price
   }
 
-  lazy val getOfficeStaffRequired = {
-    Link.getOfficeStaffRequired(from, to)
+  lazy val getFutureOfficeStaffRequired = {
+    Link.getOfficeStaffRequired(from, to, futureFrequency(), futureCapacity())
   }
+
+  lazy val getCurrentOfficeStaffRequired = {
+    Link.getOfficeStaffRequired(from, to, frequency, capacity)
+  }
+
+
 
   /**
     * Recomputes capacity base on assigned airplanes
@@ -227,20 +234,24 @@ object Link {
 //      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 60 + linkClassMultiplier * 15
 //    }
 //  }
-  val getOfficeStaffRequired = (from : Airport, to : Airport) => {
+  val getOfficeStaffRequired = (from : Airport, to : Airport, frequency : Int, capacity : LinkClassValues) => {
     import FlightType._
-    Computation.getFlightType(from, to) match {
+    val base = Computation.getFlightType(from, to) match {
       case SHORT_HAUL_DOMESTIC => 5
       case LONG_HAUL_DOMESTIC => 8
       case SHORT_HAUL_INTERNATIONAL => 10
       case LONG_HAUL_INTERNATIONAL => 12
       case SHORT_HAUL_INTERCONTINENTAL => 12
       case MEDIUM_HAUL_INTERCONTINENTAL => 20
-      case LONG_HAUL_INTERCONTINENTAL => 30
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 30
+      case LONG_HAUL_INTERCONTINENTAL => 40
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 40
+    }
+    val frequencyStaff = frequency / 5
+    val capacityStaff = capacity.total / 1000
+    base + frequencyStaff + capacityStaff
   }
 }
-}
+
 
 
 

@@ -133,7 +133,7 @@ object AirlineSimulation {
         var overtimeCompensation = 0
         airline.bases.foreach { base =>
           val staffRequired = linksByFromAirportId.get(base.airport.id) match {
-            case Some(links) => links.map(_.getOfficeStaffRequired).sum
+            case Some(links) => links.map(_.getCurrentOfficeStaffRequired).sum
             case None => 0
           }
           val titleOption : Option[Title.Value] = titlesByCountryCodeAndAirlineId.get((base.airport.countryCode, airline.id)) match {
@@ -142,7 +142,7 @@ object AirlineSimulation {
             case None => None
           }
           val staffCapacity = base.getOfficeStaffCapacity
-          val compensationOfThisBase = base.getOvertimeCompensation(staffCapacity, staffRequired)
+          val compensationOfThisBase = base.getOvertimeCompensation(staffRequired)
           if (compensationOfThisBase > 0) {
             println(s"${airline.name} Overtime compensation $compensationOfThisBase : capacity $staffCapacity ; required $staffRequired")
           }

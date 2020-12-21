@@ -51,8 +51,8 @@ object NegotiationUtil {
     if (isNewLink) {
       val officeStaffCount : Int = airline.getBases().find(_.airport.id == airport.id).map(_.getOfficeStaffCapacity).getOrElse(0)
       val airlineLinksFromThisAirport = airlineLinks.filter(_.from.id == airport.id)
-      val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getOfficeStaffRequired).sum
-      val newOfficeStaffRequired = newLink.getOfficeStaffRequired
+      val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getFutureOfficeStaffRequired).sum
+      val newOfficeStaffRequired = newLink.getFutureOfficeStaffRequired
       val newTotal = currentOfficeStaffUsed + newOfficeStaffRequired
 
       if (newTotal < officeStaffCount) {

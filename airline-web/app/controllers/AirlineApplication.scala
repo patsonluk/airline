@@ -348,7 +348,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 //       return Some("This base can only be downgraded if there are " + (preferredSlots - preferredSlotsAfterDowngrade)  + " free slots")
 //     }
 //
-     val totalOfficeStaffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", base.airline.id))).map(_.getOfficeStaffRequired).sum
+     val totalOfficeStaffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", base.airline.id))).map(_.getFutureOfficeStaffRequired).sum
      val capacityAfterDowngrade = base.copy(scale = base.scale - 1).getOfficeStaffCapacity
      if (capacityAfterDowngrade < totalOfficeStaffRequired) {
        return Some(s"Cannot downgrade this base, as the office staff capacity will become $capacityAfterDowngrade which is lower than the required $totalOfficeStaffRequired to maintain current flights from this base")
@@ -604,9 +604,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     //val titlesByCountryCode: Map[String, Title.Value] = CountryAirlineTitle.getTopTitlesByAirline(airlineId).map(entry => (entry.country.countryCode, entry.title)).toMap
     var result = Json.obj()
     airline.getBases().foreach { base =>
-      val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
+      val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD).map(_.getCurrentOfficeStaffRequired).sum
       val staffCapacity = base.getOfficeStaffCapacity
-      val overtimeCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired)
+      val overtimeCompensation = base.getOvertimeCompensation(staffRequired)
       result = result + (base.airport.id.toString() -> Json.obj("staffCapacity" -> staffCapacity, "staffRequired" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
     }
     Ok(result)

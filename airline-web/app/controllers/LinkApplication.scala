@@ -419,6 +419,25 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
   }
 
+  def getOvertimeCompensation(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
+    val officeStaffRequired = incomingLink.getFutureOfficeStaffRequired
+    val airline = request.user
+    val extraOvertimeCompensation = airline.getBases().find(_.airport.id == incomingLink.from.id) match {
+      case Some(base) =>
+      val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD).filter(_.id != incomingLink.id).map(_.getFutureOfficeStaffRequired).sum
+      val newStaffRequired = staffRequired + incomingLink.getFutureOfficeStaffRequired
+      val extraCompensation = base.getOvertimeCompensation(staffRequired) - base.getOvertimeCompensation(newStaffRequired)
+      if (extraCompensation > 0) { //then we should prompt warning of over limit
+        extraCompensation
+      } else {
+        0
+      }
+      case None => 0
+    }
+    Ok(Json.obj("extraOvertimeCompensation" -> extraOvertimeCompensation))
+  }
+
   def getExpectedQuality(airlineId : Int, fromAirportId : Int, toAirportId : Int, queryAirportId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirportCache.getAirport(fromAirportId) match {
       case Some(fromAirport) =>
@@ -771,15 +790,15 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             //val linkCount = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.ID_LOAD).length
             //val airlineCountryTitleOfFromCountry = CountrySource.loadCountryAirlineTitlesByCountryCode(fromAirport.countryCode).find(_.airline.id == airline.id)
             //val linkLimit = base.getLinkLimit(airlineCountryTitleOfFromCountry.map(_.title))
-            val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
-            val staffCapacity = base.getOfficeStaffCapacity
-            val newStaffRequired = staffRequired + Link.getOfficeStaffRequired(fromAirport, toAirport)
-
-            val extraCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired) - base.getOvertimeCompensation(staffCapacity, newStaffRequired)
-
-            if (extraCompensation > 0) { //then we should prompt warning of over limit
-              warnings.append(s"Exceeding operation capacity of current base. Extra overtime compensation of $$$extraCompensation will be charged per week for this route.")
-            }
+//            val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD).map(_.getOfficeStaffRequired).sum
+//            val staffCapacity = base.getOfficeStaffCapacity
+//            val newStaffRequired = staffRequired + Link.getOfficeStaffRequired(fromAirport, toAirport)
+//
+//            val extraCompensation = base.getOvertimeCompensation(staffCapacity, staffRequired) - base.getOvertimeCompensation(staffCapacity, newStaffRequired)
+//
+//            if (extraCompensation > 0) { //then we should prompt warning of over limit
+//              warnings.append(s"Exceeding operation capacity of current base. Extra overtime compensation of $$$extraCompensation will be charged per week for this route.")
+//            }
           case None => //should not be none
       }
     }
