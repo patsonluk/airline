@@ -211,18 +211,20 @@ object AirportSource {
         airport.id = resultSet.getInt("id")
         airportData += airport
         if (fullLoad) {
-          val airlineAppeals = mutable.Map[Int, AirlineAppeal]()
+          val airlineAwareness = mutable.Map[Int, Double]()
           val loyaltyStatement = connection.prepareStatement("SELECT airline, loyalty, awareness FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
           loyaltyStatement.setInt(1, airport.id)
           val loyaltyResultSet = loyaltyStatement.executeQuery()
           while (loyaltyResultSet.next()) {
             val airlineId = loyaltyResultSet.getInt("airline")
-            airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
+            //airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
+            airlineAwareness.put(airlineId, loyaltyResultSet.getDouble("awareness"))
           }
 
           val airlineBonuses = getAirlineBonuses(airport, countryAirlineTitleCache)
 
-          airport.initAirlineAppeals(airlineAppeals.toMap,airlineBonuses)
+          //airport.initAirlineAppeals(airlineAppeals.toMap,airlineBonuses)
+          airport.initAirlineAppealsComputeLoyalty(airlineAwareness.toMap, airlineBonuses, LoyalistSource.loadLoyalistsByAirportId(airport.id))
           loyaltyStatement.close()
           
           val slotAssignments = mutable.Map[Int, Int]()
@@ -366,7 +368,7 @@ object AirportSource {
     loadAirportsByCriteria(List(("country_code", countryCode)))
   }
 
-  def replaceAirlineAppeals(airportId : Int, airlineAppeals : Map[Int, AirlineAppeal]) = {
+  def replaceAirlineAppeals(airportId : Int, airlineAppeals : Map[Int, Double]) = {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
@@ -378,13 +380,14 @@ object AirportSource {
 
       val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
       airlineAppeals.foreach {
-        case(airlineId, airlineAppeal) =>
-          if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
+        case(airlineId, airlineAwareness) =>
+          //if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
+          if (airlineAwareness > 0) {
 
             insertStatement.setInt(1, airportId)
             insertStatement.setInt(2, airlineId)
-            insertStatement.setDouble(3, airlineAppeal.loyalty)
-            insertStatement.setDouble(4, airlineAppeal.awareness)
+            insertStatement.setDouble(3, 0) //no longer using this
+            insertStatement.setDouble(4, airlineAwareness)
             insertStatement.addBatch()
           }
       }

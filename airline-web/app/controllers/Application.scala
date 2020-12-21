@@ -5,7 +5,7 @@ import java.util.Random
 import com.patson.data._
 import com.patson.model.Scheduling.{TimeSlot, TimeSlotStatus}
 import com.patson.model.{Link, _}
-import com.patson.util.AirportCache
+import com.patson.util.{AirlineCache, AirportCache}
 import controllers.AuthenticationObject.AuthenticatedAirline
 import controllers.WeatherUtil.{Coordinates, Weather}
 import javax.inject.Inject
@@ -14,6 +14,7 @@ import play.api.data.Forms.{mapping, number}
 import play.api.libs.json.{Json, _}
 import play.api.mvc._
 
+import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Set}
 
 
@@ -89,6 +90,23 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
       val airport = Airport.fromId((json \ "id").as[Int])
       val projectType = ProjectType.withName((json \ "projectType").as[String])
       JsSuccess(AirportProject(airport, projectType, ProjectStatus.INITIATED, progress = 0, duration = 0, level = 0)) //TODO not implemented
+    }
+  }
+
+  implicit object LoyalistWrites extends Writes[Loyalist] {
+    def writes(loyalist: Loyalist): JsValue = {
+      Json.obj(
+        "airportId" -> loyalist.airport.id,
+        "airlineId" -> loyalist.airline.id,
+        "airlineName" -> loyalist.airline.name,
+        "amount" -> loyalist.amount
+      )
+    }
+  }
+
+  implicit object LoyalistHistoryWrites extends Writes[LoyalistHistory] {
+    def writes(entry: LoyalistHistory): JsValue = {
+      Json.toJson(entry.entry).asInstanceOf[JsObject] + ("cycle" -> JsNumber(entry.cycle))
     }
   }
 
@@ -468,6 +486,34 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     Ok(Json.toJson(passengersByRemoteAirport.toList.map {
       case (remoteAirport, passengers) => Json.obj("remoteAirport" -> Json.toJson(remoteAirport)(AirportSimpleWrites), ("passengers" -> JsNumber(passengers)))
     }))
+  }
+
+  val MAX_LOYALIST_HISTORY_AIRLINE = 5
+  def getAirportLoyalistData(airportId : Int, airlineIdOption : Option[Int]) = Action {
+    val currentLoyalistEntries = LoyalistSource.loadLoyalistsByAirportId(airportId)
+    val historyEntries = LoyalistSource.loadLoyalistsHistoryByAirportId(airportId)
+    val airport = AirportCache.getAirport(airportId).get
+    historyEntries.lastOption match {
+      case Some((lastCycle, lastEntry)) =>
+        val topAirlineIds = lastEntry.sortBy(_.entry.amount).takeRight(MAX_LOYALIST_HISTORY_AIRLINE).map(_.entry.airline.id).toSet
+        val reportingAirlineIds : List[Int] = airlineIdOption match {
+          case Some(airlineId) => (topAirlineIds + airlineId).toList
+          case None => topAirlineIds.toList
+        }
+
+        val processedEntries : List[(Int, List[LoyalistHistory])] = historyEntries.toList.sortBy(_._1).map {
+          case((cycle, entries)) =>
+          val entriesByAirlineId = entries.map(entry => (entry.entry.airline.id, entry)).toMap
+          val paddedEntries = reportingAirlineIds.map {  reportingAirlineId =>
+            entriesByAirlineId.getOrElse(reportingAirlineId, LoyalistHistory(Loyalist(airport, AirlineCache.getAirline(reportingAirlineId).get, 0), cycle)) //pad with zero entries
+          }
+            (cycle, paddedEntries)
+        }
+
+        Ok(Json.obj("current" -> currentLoyalistEntries, "history" ->   processedEntries))
+      case None =>
+        Ok(Json.obj("current" -> currentLoyalistEntries))
+    }
   }
   
   def getAirportProjects(airportId : Int) = Action {

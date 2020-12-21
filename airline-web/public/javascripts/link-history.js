@@ -104,8 +104,8 @@ function loadLinkHistory(linkId) {
                     var tableRow = $("<div class='table-row' style='display: none;'></div>")
                     tableRow.addClass("forward")
                     var airlineId = entry[0]
-                    tableRow.append("<div class='cell'>" + getAirlineLogoImg(airlineId) + airlineNamesById[airlineId] + "</div>")
-                    tableRow.append("<div class='cell'>" + entry[1] + "</div>")
+                    tableRow.append("<div class='cell' style='width: 70%'>" + getAirlineLogoImg(airlineId) + airlineNamesById[airlineId] + "</div>")
+                    tableRow.append("<div class='cell' style='width: 30%'>" + entry[1] + "</div>")
 
                     $("#linkHistoryControlPanel .transitAirlineList").append(tableRow)
                 })
@@ -113,8 +113,8 @@ function loadLinkHistory(linkId) {
                     var tableRow = $("<div class='table-row' style='display: none;'></div>")
                     tableRow.addClass("backward")
                     var airlineId = entry[0]
-                    tableRow.append("<div class='cell'>" + getAirlineLogoImg(airlineId) + airlineNamesById[airlineId] + "</div>")
-                    tableRow.append("<div class='cell'>" + entry[1] + "</div>")
+                    tableRow.append("<div class='cell' style='width: 70%'>" + getAirlineLogoImg(airlineId) + airlineNamesById[airlineId] + "</div>")
+                    tableRow.append("<div class='cell' style='width: 30%'>" + entry[1] + "</div>")
 
                     $("#linkHistoryControlPanel .transitAirlineList").append(tableRow)
                 })

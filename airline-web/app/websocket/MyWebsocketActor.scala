@@ -3,7 +3,7 @@ package websocket
 import java.util.concurrent.TimeUnit
 
 import akka.actor._
-import com.patson.data.UserSource
+import com.patson.data.{CycleSource, UserSource}
 import com.patson.stream._
 import java.util.concurrent.atomic.AtomicLong
 
@@ -32,7 +32,10 @@ object MyWebSocketActor {
       }
     })
   }
+
+  var lastSimulatedCycle = CycleSource.loadCycle()
 }
+
 
 
 class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
@@ -48,6 +51,7 @@ class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
             val subscriberId = MyWebSocketActor.nextSubscriberId(userId)
             RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
               case CycleCompleted(cycle) =>
+                MyWebSocketActor.lastSimulatedCycle = cycle
                 //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
                 AirlineCache.invalidateAll()
                 AirportCache.invalidateAll()

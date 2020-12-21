@@ -307,11 +307,13 @@ function updateRivalBaseList(airlineId) {
     updateAirlineBaseList(airlineId, $('#rivalBases'))
 }
 
+var rivalMapAirlineId
+
 function showRivalMap() {
     var airlineId = $('#rivalDetails').data("airlineId")
 	clearAllPaths()
 	deselectLink()
-
+    rivalMapAirlineId = airlineId
 	var paths = []
 
     var getUrl = "airlines/" + airlineId + "/links"
@@ -395,5 +397,6 @@ function hideRivalMap() {
 	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
 	clearAllPaths()
 	updateAirportBaseMarkers([]) //revert base markers
+	rivalMapAirlineId = undefined
 	setActiveDiv($("#rivalsCanvas"))
 }

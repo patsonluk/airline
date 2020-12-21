@@ -23,7 +23,7 @@ object LinkSimulation {
 
 
 
-  def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails]) = {
+  def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("Loading all links")
     val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
     println("Finished loading all links")
@@ -128,9 +128,9 @@ object LinkSimulation {
     LoungeHistorySource.updateConsumptions(loungeResult.map(_._2).toList)
     //purge older result
     LoungeHistorySource.deleteConsumptionsBeforeCycle(cycle)
-    
-    
-    (linkConsumptionDetails.toList, loungeResult) 
+
+
+    (linkConsumptionDetails.toList, loungeResult, consumptionResult)
   }
   
   val minorDelayNormalThreshold = 0.4  // so it's around 24% at 40% condition (multiplier at 0.6) to run into minor delay OR worse

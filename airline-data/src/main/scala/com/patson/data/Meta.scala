@@ -295,6 +295,7 @@ object Meta {
     createDelegate(connection)
     createAirportRunway(connection)
     createChatMessage(connection)
+    createLoyalist(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1545,6 +1546,39 @@ object Meta {
     statement.execute()
     statement.close()
 
+  }
+
+  def createLoyalist(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOYALIST_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + LOYALIST_TABLE + "(" +
+                                             "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                                             "amount INTEGER," +
+                                             "PRIMARY KEY (airport, airline)" +
+                                             ")")
+
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOYALIST_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + LOYALIST_HISTORY_TABLE + "(" +
+      "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "amount INTEGER," +
+      "cycle INTEGER, " +
+      "PRIMARY KEY (airport, airline, cycle)" +
+      ")")
+
+    statement.execute()
+    statement.close()
   }
 
 

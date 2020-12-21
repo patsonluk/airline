@@ -51,9 +51,9 @@ object MainSimulation extends App {
       println("Event simulation")
       EventSimulation.simulate(cycle)
 
-      val (linkResult, loungeResult) = LinkSimulation.linkSimulation(cycle)
+      val (linkResult, loungeResult, consumptionResult) = LinkSimulation.linkSimulation(cycle)
       println("Airport simulation")
-      AirportSimulation.airportSimulation(cycle, linkResult)
+      AirportSimulation.airportSimulation(cycle, linkResult, consumptionResult)
       println("Airplane simulation")
       val airplanes = AirplaneSimulation.airplaneSimulation(cycle)
       println("Airline simulation")

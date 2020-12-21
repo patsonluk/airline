@@ -1000,3 +1000,80 @@ function plotRivalHistoryChart(allRivalLinkConsumptions, priceContainer, linkCla
 	})
 }
 
+function plotLoyalistHistoryChart(loyalistHistory, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+
+
+
+	var category = []
+
+	var dataSet = []
+//    var maxValue = -1
+//    var minValue = 99999
+    var dataByAirlineId = {}
+    var airlineNameByAirlineId = {}
+    if (!jQuery.isEmptyObject(loyalistHistory)) { //link consumptions is array (by each rival link) of array (by cycle),
+
+	    $.each(loyalistHistory, function(index, keyValue) {
+            var cycle = keyValue[0]
+            var cycleEntries = keyValue[1]
+            category.push({ label : cycle.toString()})
+            $.each(cycleEntries, function(index, entry) {
+                var airlineId = entry.airlineId
+                if (!dataByAirlineId[airlineId]) {
+                    dataByAirlineId[airlineId] = []
+                }
+//                var lineColor = "#f6bf1b"
+//                if (activeAirline && activeAirline.id == airlineId) {
+//                    lineColor = "#d84f4f"
+//                }
+//                dataByAirlineId[airlineId].push({"value": entry.amount, "color": lineColor})
+                dataByAirlineId[airlineId].push({"value": entry.amount})
+                airlineNameByAirlineId[airlineId] = entry.airlineName
+            })
+        })
+
+        $.each(airlineNameByAirlineId, function(airlineId, airlineName) {
+            dataSet.push({ "seriesName": airlineName, "data" : dataByAirlineId[airlineId]})
+        })
+    }
+
+//     var yAxisMax = Math.round(maxValue * 1.1)
+//     var yAxisMin = Math.round(minValue * 0.8)
+
+	var loyalistHistoryChart = container.insertFusionCharts( {
+    	type: 'logmsline',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+	    containerBackgroundOpacity :'0',
+		dataSource: {
+	    	"chart": {
+	    		"xAxisname": "Week",
+	    		"yAxisName": "Loyalist Amount",
+	    		"useroundedges": "1",
+	    		"transposeAxis":"1",
+	    		"animation": "0",
+	    		"showBorder":"0",
+	    		"drawAnchors": "0",
+                "toolTipBorderRadius": "2",
+                "toolTipPadding": "5",
+                "bgAlpha":"0",
+//                "showLegend": "0",
+                "showValues":"0",
+                "canvasPadding":"0",
+                "labelDisplay":"wrap",
+	            "labelStep": "4",
+	            "formatNumber" : "0",
+	            "formatNumberScale" : "0"
+//	            "yAxisMaxValue": yAxisMax,
+//                "yAxisMinValue": yAxisMin
+	    	},
+	    	"categories" : [{ "category" : category}],
+			"dataset" : dataSet
+	   }
+	})
+}
+

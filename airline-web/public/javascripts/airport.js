@@ -23,10 +23,10 @@ function showAirportDetails(airportId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airport) {
-	        populateAirportDetails(airport) //update left panel
+	        populateAirportDetails(airport)
 //	    		$("#floatBackButton").show()
 //	    		shimmeringDiv($("#floatBackButton"))
-    		updateAirportDetails(airport, airport.cityImageUrl, airport.airportImageUrl) //update right panel
+            updateAirportDetails(airport, airport.cityImageUrl, airport.airportImageUrl)
     		activeAirport = airport
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -87,7 +87,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	
 	refreshAirportExtendedDetails(airport)
 	//updateAirportSlots(airport.id)
-	
+
 	if (activeAirline) {
 		$('#airportBaseDetails').show()
 		$.ajax({
@@ -261,6 +261,7 @@ function populateAirportDetails(airport) {
 		        map: airportMap
 		    });
 		loadAirportStatistics(airport)
+		updateAirportLoyalistDetails(airport)
 
 		google.maps.event.addListenerOnce(airportMap, 'idle', function() {
            setTimeout(function() { //set a timeout here, otherwise it might not render part of the map...
@@ -647,6 +648,28 @@ function updateBaseInfo(airportId) {
 		  }
 		}
 	}
+}
+
+function updateAirportLoyalistDetails(airport) {
+    $.ajax({
+		type: 'GET',
+		url: "airports/" + airport.id + "/loyalist-data",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	        var currentData = result.current
+
+	    	assignAirlineColors(currentData, "airlineId")
+
+	    	plotPie(currentData, activeAirline ? activeAirline.name : null , $("#airportCanvas .loyalistPie"), "airlineName", "amount")
+	    	plotLoyalistHistoryChart(result.history, $("#airportCanvas .loyalistHistoryChart"))
+
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function refreshAirportExtendedDetails(airport) {
