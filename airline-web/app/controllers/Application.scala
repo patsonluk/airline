@@ -510,9 +510,9 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
             (cycle, paddedEntries)
         }
 
-        Ok(Json.obj("current" -> currentLoyalistEntries, "history" ->   processedEntries))
+        Ok(Json.obj("current" -> currentLoyalistEntries, "history" -> processedEntries))
       case None =>
-        Ok(Json.obj("current" -> currentLoyalistEntries))
+        Ok(Json.obj("current" -> currentLoyalistEntries, "history" -> List.empty))
     }
   }
   
