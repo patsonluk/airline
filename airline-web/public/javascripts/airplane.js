@@ -228,7 +228,7 @@ function promptBuyNewAirplane(modelId, fromPlanLink, explicitHomeAirportId) {
 function updateAirplaneTotalPrice(totalPrice) {
     $('#buyAirplaneModal .totalPrice .value').text("$" + commaSeparateNumber(totalPrice))
     if (totalPrice == 0) {
-        disableButton($('#buyAirplaneModal .add'))
+        disableButton($('#buyAirplaneModal .add'), "Amount should not be 0")
     } else if (totalPrice > activeAirline.balance) {
         $('#buyAirplaneModal .add')
         disableButton($('#buyAirplaneModal .add'), "Not enough cash")
