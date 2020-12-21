@@ -604,10 +604,19 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     //val titlesByCountryCode: Map[String, Title.Value] = CountryAirlineTitle.getTopTitlesByAirline(airlineId).map(entry => (entry.country.countryCode, entry.title)).toMap
     var result = Json.obj()
     airline.getBases().foreach { base =>
-      val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD).map(_.getCurrentOfficeStaffRequired).sum
+      val linksFromThisBase = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD)
+      val currentStaffRequired = linksFromThisBase.map(_.getCurrentOfficeStaffRequired).sum
+      val futureStaffRequired =  linksFromThisBase.map(_.getFutureOfficeStaffRequired).sum
       val staffCapacity = base.getOfficeStaffCapacity
-      val overtimeCompensation = base.getOvertimeCompensation(staffRequired)
-      result = result + (base.airport.id.toString() -> Json.obj("staffCapacity" -> staffCapacity, "staffRequired" -> staffRequired, "overtimeCompensation" -> overtimeCompensation))
+      val currentOvertimeCompensation = base.getOvertimeCompensation(currentStaffRequired)
+      val futureOvertimeCompensation = base.getOvertimeCompensation(futureStaffRequired)
+      result = result + (base.airport.id.toString() -> Json.obj(
+        "staffCapacity" -> staffCapacity,
+        "currentStaffRequired" -> currentStaffRequired,
+        "futureStaffRequired" -> futureStaffRequired,
+        "currentOvertimeCompensation" -> currentOvertimeCompensation,
+        "futureOvertimeCompensation" -> futureOvertimeCompensation
+      ))
     }
     Ok(result)
   }

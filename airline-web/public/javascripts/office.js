@@ -128,17 +128,27 @@ function updateAirlineBases() {
                     }
                     var capacityInfo = officeCapacity[base.airportId]
                     row.append($("<div class='cell'>" + capacityInfo.staffCapacity + "</div>"))
-                    if (capacityInfo.staffCapacity < capacityInfo.staffRequired) {
-                        row.append($("<div class='cell fatal'>" + capacityInfo.staffRequired + "</div>"))
+                    var $capacityDiv
+                    if (capacityInfo.staffCapacity < capacityInfo.currentStaffRequired) {
+                        $capacityDiv = $("<div class='cell fatal'>" + capacityInfo.currentStaffRequired + "</div>").appendTo(row)
                     } else {
-                        row.append($("<div class='cell'>" + capacityInfo.staffRequired + "</div>"))
+                        $capacityDiv = $("<div class='cell'>" + capacityInfo.currentStaffRequired + "</div>").appendTo(row)
+                    }
+                    if (capacityInfo.currentStaffRequired != capacityInfo.futureStaffRequired) {
+                        $capacityDiv.append("<span>(future : " + capacityInfo.futureStaffRequired + ")</span>")
                     }
 
-                    if (capacityInfo.overtimeCompensation == 0) {
-                        row.append($("<div class='cell'>-</div>"))
+                    var $overtimeCompensationDiv
+                    if (capacityInfo.currentOvertimeCompensation == 0) {
+                        $overtimeCompensationDiv = $("<div class='cell'>-</div>").appendTo(row)
                      } else {
-                        row.append($("<div class='cell'>$" + commaSeparateNumber(capacityInfo.overtimeCompensation) + "</div>"))
+                        $overtimeCompensationDiv = $("<div class='cell'>$" + commaSeparateNumber(capacityInfo.currentOvertimeCompensation) + "</div>").appendTo(row)
                      }
+
+                     if (capacityInfo.currentOvertimeCompensation != capacityInfo.futureOvertimeCompensation) {
+                        $overtimeCompensationDiv.append("<span>(future : $" + capacityInfo.futureOvertimeCompensation + ")</span>")
+                     }
+
                     if (base.headquarter) {
                         $('#officeCanvas .bases .table-header').after(row)
                     } else {

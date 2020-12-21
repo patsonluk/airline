@@ -235,20 +235,36 @@ object Link {
 //    }
 //  }
   val getOfficeStaffRequired = (from : Airport, to : Airport, frequency : Int, capacity : LinkClassValues) => {
-    import FlightType._
-    val base = Computation.getFlightType(from, to) match {
-      case SHORT_HAUL_DOMESTIC => 5
-      case LONG_HAUL_DOMESTIC => 8
-      case SHORT_HAUL_INTERNATIONAL => 10
-      case LONG_HAUL_INTERNATIONAL => 12
-      case SHORT_HAUL_INTERCONTINENTAL => 12
-      case MEDIUM_HAUL_INTERCONTINENTAL => 20
-      case LONG_HAUL_INTERCONTINENTAL => 40
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 40
+  import FlightType._
+  val base =
+    if (frequency == 0) { //future flights
+      0
+    } else {
+      Computation.getFlightType(from, to) match {
+        case SHORT_HAUL_DOMESTIC => 5
+        case LONG_HAUL_DOMESTIC => 8
+        case SHORT_HAUL_INTERNATIONAL => 10
+        case LONG_HAUL_INTERNATIONAL => 12
+        case SHORT_HAUL_INTERCONTINENTAL => 12
+        case MEDIUM_HAUL_INTERCONTINENTAL => 20
+        case LONG_HAUL_INTERCONTINENTAL => 40
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL => 40
+      }
+    }
+
+    val multiplyFactor = Computation.getFlightType(from, to) match {
+      case SHORT_HAUL_DOMESTIC => 1
+      case LONG_HAUL_DOMESTIC => 1
+      case SHORT_HAUL_INTERNATIONAL => 2
+      case LONG_HAUL_INTERNATIONAL => 2
+      case SHORT_HAUL_INTERCONTINENTAL => 3
+      case MEDIUM_HAUL_INTERCONTINENTAL => 3
+      case LONG_HAUL_INTERCONTINENTAL => 4
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 4
     }
     val frequencyStaff = frequency / 5
     val capacityStaff = capacity.total / 1000
-    base + frequencyStaff + capacityStaff
+    base + frequencyStaff * multiplyFactor + capacityStaff * multiplyFactor
   }
 }
 

@@ -818,6 +818,7 @@ function planLink(fromAirport, toAirport) {
 	
 	if (fromAirport && toAirport) {
 		setActiveDiv($('#planLinkDetails'))
+		$('#planLinkDetails .warning').hide()
 		$('#sidePanel').fadeOut(200, function() {
 		var url = "airlines/" + airlineId + "/plan-link"
 			$.ajax({
@@ -1373,6 +1374,7 @@ function updateTotalValues() {
     } else {
         enableButton($("#planLinkDetails .modifyLink"))
     }
+    getLinkOvertimeCompensation()
 }
 
 
@@ -1479,6 +1481,44 @@ function deleteLink() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function getLinkOvertimeCompensation() {
+    var airlineId = activeAirline.id
+    var url = "airlines/" + airlineId + "/link-overtime-compensation"
+    //console.log("selected " + $("#planLinkAirplaneSelect").val())
+    var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
+    var linkData = {
+        "fromAirportId" : parseInt($("#planLinkFromAirportId").val()),
+        "toAirportId" : parseInt($("#planLinkToAirportId").val()),
+        //"airplanes" : $("#planLinkAirplaneSelect").val().map(Number),
+        airplanes : getAssignedAirplaneFrequencies(),
+        "airlineId" : airlineId,
+        //"configuration" : { "economy" : configuration.economy, "business" : configuration.business, "first" : configuration.first},
+        "price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},
+        //"frequency" : parseInt($("#planLinkFrequency").val()),
+        "model" : parseInt($("#planLinkModelSelect").val()),
+        "rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20,
+        "assignedDelegates" : assignedDelegates }
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: JSON.stringify(linkData),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            if (result.extraOvertimeCompensation > 0) {
+                $('#planLinkDetails .overtimeCompensation .amount').text(result.extraOvertimeCompensation)
+                $('#planLinkDetails .overtimeCompensation').show()
+            } else {
+                $('#planLinkDetails .overtimeCompensation').hide()
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
 }
 
 function cancelPlanLink() {

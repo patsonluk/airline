@@ -716,6 +716,13 @@
 								</div>
 								<div class="warningList">
 								</div>
+
+								<div class="overtimeCompensation warning" style="display: flex; align-items: center;">
+									<img src='@routes.Assets.versioned("images/icons/exclamation-red-frame.png")'>&nbsp;
+									Exceeding operation capacity of current base. Extra overtime compensation of&nbsp;
+									$<span class="amount"></span>&nbsp;
+									will be charged per week for this change.
+								</div>
 								<div class="button modifyLink" id="addLinkButton" onclick="linkConfirmation()">Create</div>
 								<div class="button modifyLink" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
 								<div class="button" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</div>

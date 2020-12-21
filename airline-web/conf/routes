@@ -42,7 +42,7 @@ GET	     /airlines/:airlineId/swap-airplanes/:fromAirplaneId/:toAirplaneId	  con
 GET		 /airlines/:airlineId/links  	  controllers.LinkApplication.getLinks(airlineId : Int, toAirportId : Int = -1)
 GET		 /airlines/:airlineId/links-details  	  controllers.LinkApplication.getLinksDetails(airlineId : Int)
 PUT 	 /airlines/:airlineId/links 	  controllers.LinkApplication.addLink(airlineId : Int)
-PUT 	 /airlines/:airlineId/link-overtime-compensation 	  controllers.LinkApplication.getOvertimeCompensation(airlineId : Int)
+POST 	 /airlines/:airlineId/link-overtime-compensation 	  controllers.LinkApplication.getOvertimeCompensation(airlineId : Int)
 DELETE   /airlines/:airlineId/links/:linkId 		 	controllers.LinkApplication.deleteLink(airlineId : Int, linkId : Int)
 GET		 /airlines/:airlineId/links/:linkId 			controllers.LinkApplication.getLink(airlineId : Int, linkId : Int)
 GET		 /airlines/:airlineId/expectedQuality/:fromAirportId/:toAirportId/:queryAirportId	controllers.LinkApplication.getExpectedQuality(airlineId : Int, fromAirportId : Int, toAirportId : Int, queryAirportId : Int)

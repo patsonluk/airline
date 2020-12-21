@@ -421,18 +421,20 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   def getOvertimeCompensation(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
-    val officeStaffRequired = incomingLink.getFutureOfficeStaffRequired
+    val existingListOption = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
+
     val airline = request.user
     val extraOvertimeCompensation = airline.getBases().find(_.airport.id == incomingLink.from.id) match {
       case Some(base) =>
-      val staffRequired = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD).filter(_.id != incomingLink.id).map(_.getFutureOfficeStaffRequired).sum
-      val newStaffRequired = staffRequired + incomingLink.getFutureOfficeStaffRequired
-      val extraCompensation = base.getOvertimeCompensation(staffRequired) - base.getOvertimeCompensation(newStaffRequired)
-      if (extraCompensation > 0) { //then we should prompt warning of over limit
-        extraCompensation
-      } else {
-        0
-      }
+        val existingLinks = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD)
+        val existingStaffRequired = existingLinks.map(_.getFutureOfficeStaffRequired).sum
+        val newStaffRequired = existingStaffRequired - existingListOption.map(_.getFutureOfficeStaffRequired).getOrElse(0) + incomingLink.getFutureOfficeStaffRequired
+        val extraCompensation = base.getOvertimeCompensation(existingStaffRequired) - base.getOvertimeCompensation(newStaffRequired)
+        if (extraCompensation > 0) { //then we should prompt warning of over limit
+          extraCompensation
+        } else {
+          0
+        }
       case None => 0
     }
     Ok(Json.obj("extraOvertimeCompensation" -> extraOvertimeCompensation))
