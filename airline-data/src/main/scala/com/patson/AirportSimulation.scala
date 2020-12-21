@@ -112,6 +112,11 @@ object AirportSimulation {
   val LOYALIST_HISTORY_SAVE_INTERVAL = 10 //every 10 cycles
   val LOYALIST_HISTORY_ENTRY_MAX = 50
 
+  def getHistoryCycle(lastCompletedCycle : Int, delta : Int): Int = {
+    val baseCycle = lastCompletedCycle - lastCompletedCycle % LOYALIST_HISTORY_SAVE_INTERVAL
+    baseCycle + delta * LOYALIST_HISTORY_SAVE_INTERVAL
+  }
+
   def simulateLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) = {
     val existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]] = LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport.id)
     val (updatingLoyalists, deletingLoyalists) = computeLoyalists(allAirports, consumptionResult, existingLoyalistByAirportId)

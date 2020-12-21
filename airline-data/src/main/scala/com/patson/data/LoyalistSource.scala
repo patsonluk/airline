@@ -179,6 +179,37 @@ object LoyalistSource {
     }
   }
 
+  def loadLoyalistHistoryByCycleAndAirline(cycle : Int, airlineId : Int) : List[LoyalistHistory] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + LOYALIST_HISTORY_TABLE + " WHERE cycle = ? AND airline = ?")
+
+      preparedStatement.setInt(1, cycle)
+      preparedStatement.setInt(2, airlineId)
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val entries = ListBuffer[LoyalistHistory]()
+
+      while (resultSet.next()) {
+        val airportId = resultSet.getInt("airport")
+        val airlineId = resultSet.getInt("airline")
+        val airport = AirportCache.getAirport(airportId).get
+        val airline = AirlineCache.getAirline(airlineId).get
+        val amount = resultSet.getInt("amount")
+        val cycle =  resultSet.getInt("cycle")
+        entries += LoyalistHistory(Loyalist(airport, airline, amount), cycle)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      entries.toList
+    } finally {
+      connection.close()
+    }
+  }
+
 
   def deleteLoyalistHistoryBeforeCycle(cutoff : Int) = {
     //open the hsqldb

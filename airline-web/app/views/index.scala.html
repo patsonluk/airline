@@ -90,6 +90,7 @@
 	<script src='@routes.Assets.versioned("javascripts/confetti.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/admin.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/about.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/heatmap.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/map-style.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/mobile.js")' defer></script>
     <script>
@@ -116,7 +117,7 @@
   <div>
   	<input type="hidden" id="floatMessage" value="@message"/>
   	<div id="floatMessageBox" style="height: 30px; width: 300px; display: none;"></div>
-	<div id="linkHistoryControlPanel" class="section" style="display: none;">
+	<div id="linkHistoryControlPanel" class="section mapControlPanel" style="display: none; width: 500px;">
 		<div style="float: left; width : 50%">
 			<h4>Top Transit PAX</h4>
 			<div style="width : 90%" class="transitAirlineList table data">
@@ -136,6 +137,19 @@
 			<div class="button glow" onclick="hideLinkHistoryView()" style="margin-top : 10px">Exit Passenger Map</div>
 		</div>
 	</div>
+	  <div id="heatmapControlPanel" class="section mapControlPanel" style="display: none; width: 250px; flex-direction: column; align-items:center">
+		  <h4>Influence Heatmap</h4>
+		  <div style="display: flex; align-items: center;">
+			  <img class="clickable prevPrev" title="100 weeks backward" src='@routes.Assets.versioned("images/icons/control-double-180.png")'/>
+			  <img class="clickable prev" title="10 weeks backward" src='@routes.Assets.versioned("images/icons/control-180.png")'/>
+			  <span style="width: 95px; margin: 0 15px 0 15px;"><span class="cycleDeltaText"></span>&nbsp;weeks ago</span>
+			  <img class="clickable next" title="10 weeks forward" src='@routes.Assets.versioned("images/icons/control.png")'/>
+			  <img class="clickable nextNext" title="100 weeks forward" src='@routes.Assets.versioned("images/icons/control-double.png")'/>
+		  </div>
+		  <div class="button glow" onclick="closeHeatmap()" style="margin-top : 10px; width: 140px;">Hide Heatmap Overlay</div>
+
+	  </div>
+
 	<div id="hideAirportLinksButton" class="button glow" style="display: none;" onclick="hideAirportLinksView()">
 		Exit Airport Flight Map
 	</div>
@@ -3868,7 +3882,7 @@
 	</audio>
 	
     <script src="@routes.Assets.versioned("javascripts/chat-popup.js")"></script>	
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry,drawing&callback=initMap">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry,drawing,visualization&callback=initMap">
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->
 	 
