@@ -9,8 +9,7 @@ import java.sql.Statement
 import com.patson.model.event.EventReward
 import com.patson.util.{AirlineCache, AirportCache}
 
-import scala.collection.mutable
-import scala.collection.immutable
+import scala.collection.{MapView, immutable, mutable}
 
 object AirportSource {
   private[this] val BASE_QUERY = "SELECT * FROM airport"
@@ -46,7 +45,7 @@ object AirportSource {
       loadAirportsByQueryString(queryString, criteria.map(_._2), fullLoad, loadFeatures)
   }
 
-  def getAirlineBonuses(airport : Airport, countryAirlineTitleCache : mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]): Map[Int, List[AirlineBonus]] = {
+  def getAirlineTitleBonuses(airport : Airport, countryAirlineTitleCache : mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]): Map[Int, List[AirlineBonus]] = {
     //get airport bonus //for now no db
     val airlineTitles: Map[Int, CountryAirlineTitle] = countryAirlineTitleCache.getOrElseUpdate(airport.countryCode, CountrySource.loadCountryAirlineTitlesByCountryCode(airport.countryCode).map(entry => (entry.airline.id, entry)).toMap)
 
@@ -63,6 +62,21 @@ object AirportSource {
       case (airline, bonusList) =>
         val list = bonusByAirlineId.getOrElseUpdate(airline.id, ListBuffer())
         list.appendAll(bonusList)
+    }
+
+    bonusByAirlineId.view.mapValues(_.toList).toMap
+  }
+
+  def getCampaignBonuses(airport : Airport, currentCycle : Int): Map[Int, List[AirlineBonus]] = {
+    val campaigns = CampaignSource.loadCampaignsByAreaAirport(airport.id)
+
+
+    val bonusByAirlineId = mutable.Map[Int, ListBuffer[AirlineBonus]]()
+
+    DelegateSource.loadCampaignTasksByCampaigns(campaigns).foreach {
+      case(campaign, delegateTasks) =>
+        val bonus = campaign.getAirlineBonus(airport, delegateTasks, currentCycle)
+        bonusByAirlineId.getOrElseUpdate(campaign.airline.id, ListBuffer[AirlineBonus]()).append(bonus)
     }
 
     bonusByAirlineId.view.mapValues(_.toList).toMap
@@ -179,22 +193,22 @@ object AirportSource {
   def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false, loadFeatures : Boolean = false) = {
       //open the hsqldb
     val connection = Meta.getConnection()
-    try {  
+    try {
       val preparedStatement = connection.prepareStatement(queryString)
-      
+
       for (i <- 0 until parameters.size) {
         preparedStatement.setObject(i + 1, parameters(i))
       }
-      
-      
+
+
       val resultSet = preparedStatement.executeQuery()
-      
+
       val airportData = new ListBuffer[Airport]()
       //val airlineMap : Map[Int, Airline] = AirlineSource.loadAllAirlines().foldLeft(Map[Int, Airline]())( (container, airline) => container + Tuple2(airline.id, airline))
       val countryAirlineTitleCache = mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]()
-
+      val currentCycle = CycleSource.loadCycle()
       while (resultSet.next()) {
-        val airport = Airport( 
+        val airport = Airport(
           resultSet.getString("iata"),
           resultSet.getString("icao"),
           resultSet.getString("name"),
@@ -221,9 +235,25 @@ object AirportSource {
             airlineAwareness.put(airlineId, loyaltyResultSet.getDouble("awareness"))
           }
 
-          val airlineBonuses = getAirlineBonuses(airport, countryAirlineTitleCache)
 
-          //airport.initAirlineAppeals(airlineAppeals.toMap,airlineBonuses)
+//          val airlineBonusesByAirlineIdBeforeFlatten : Map[Int, Seq[(Int, List[AirlineBonus])]] = (getAirlineTitleBonuses(airport, countryAirlineTitleCache).toSeq ++ getCampaignBonuses(airport, currentCycle).toSeq).groupBy(_._1)
+//
+//          val airlineBonuses : Map[Int, List[AirlineBonus]] = airlineBonusesByAirlineIdBeforeFlatten.view.mapValues { entry =>
+//            entry.map {
+//              case ((airlineId, bonusList)) => bonusList
+//            }.flatten.toList
+//          }.toMap
+          //^^shorter but very unreadable...let's try something like below
+          val titleBonuses = getAirlineTitleBonuses(airport, countryAirlineTitleCache)
+          val campaignBonuses = getCampaignBonuses(airport, currentCycle)
+          val airlineBonusesMutable = mutable.Map[Int, ListBuffer[AirlineBonus]]()
+          (titleBonuses.toList ++ campaignBonuses.toList).foreach {
+            case((airlineId, bonuses)) =>
+              val existingBonusesOfThisAirline = airlineBonusesMutable.getOrElseUpdate(airlineId, ListBuffer[AirlineBonus]())
+              existingBonusesOfThisAirline.appendAll(bonuses)
+          }
+          val airlineBonuses = airlineBonusesMutable.view.mapValues(_.toList).toMap
+
           airport.initAirlineAppealsComputeLoyalty(airlineAwareness.toMap, airlineBonuses, LoyalistSource.loadLoyalistsByAirportId(airport.id))
           loyaltyStatement.close()
           

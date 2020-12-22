@@ -4,6 +4,7 @@ import java.sql.{Statement, Types}
 
 import com.patson.data.Constants._
 import com.patson.model._
+import com.patson.model.campaign.Campaign
 import com.patson.util.{AirlineCache, AirportCache, CountryCache}
 
 import scala.collection.mutable
@@ -107,6 +108,8 @@ object DelegateSource {
             result.addAll(loadLinkNegotiationTasks(delegateIdsOfThisTaskType))
           case DelegateTaskType.COUNTRY =>
             result.addAll(loadCountryTasks(delegateIdsOfThisTaskType))
+          case DelegateTaskType.CAMPAIGN =>
+            result.addAll(loadCampaignTasks(delegateIdsOfThisTaskType))
         }
       }
     }
@@ -144,6 +147,70 @@ object DelegateSource {
       connection.close()
     }
 
+  }
+
+  def loadCampaignTasks(delegateIds : List[Int]) = {
+    val connection = Meta.getConnection()
+    try {
+      val delegateIdPhrase = delegateIds.mkString(",")
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $CAMPAIGN_DELEGATE_TASK_TABLE WHERE delegate IN ($delegateIdPhrase)")
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = mutable.Map[Int, DelegateTask]() //key delegateId
+
+      val campaignCache = mutable.Map[Int, Campaign]()
+
+      while (resultSet.next()) {
+        val delegateId = resultSet.getInt("delegate")
+        val campaignId = resultSet.getInt("campaign")
+        val campaign = campaignCache.getOrElseUpdate(campaignId, CampaignSource.loadCampaignById(campaignId).get)
+        val startCycle = resultSet.getInt("start_cycle")
+
+        result.put(delegateId, DelegateTask.campaign(startCycle, campaign))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toMap
+    } finally {
+      connection.close()
+    }
+
+  }
+
+
+  /**
+    *
+    * @param campaigns
+    * @return key - delegateId
+    */
+  def loadCampaignTasksByCampaigns(campaigns : List[Campaign]) = {
+    val connection = Meta.getConnection()
+    try {
+      val campaignsById = campaigns.map(entry => (entry.id, entry)).toMap
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $CAMPAIGN_DELEGATE_TASK_TABLE WHERE campaign IN (${campaignsById.keys.mkString(",")})")
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = mutable.Map[Campaign, ListBuffer[CampaignDelegateTask]]() //key delegateId
+
+
+      while (resultSet.next()) {
+        //val delegateId = resultSet.getInt("delegate")
+        val campaignId = resultSet.getInt("campaign")
+        val campaign = campaignsById(campaignId)
+        val startCycle = resultSet.getInt("start_cycle")
+
+        result.getOrElseUpdate(campaign, ListBuffer[CampaignDelegateTask]()).append(DelegateTask.campaign(startCycle, campaign))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.view.mapValues(_.toList).toMap
+    } finally {
+      connection.close()
+    }
   }
 
   /**
@@ -226,6 +293,8 @@ object DelegateSource {
             saveCountryTasks(delegatesOfThisTaskType)
           case DelegateTaskType.LINK_NEGOTIATION =>
             saveLinkNegotiationTasks(delegatesOfThisTaskType)
+          case DelegateTaskType.CAMPAIGN =>
+            saveCampaignTasks(delegatesOfThisTaskType)
         }
       }
     }
@@ -238,6 +307,23 @@ object DelegateSource {
       delegates.foreach { delegate =>
         preparedStatement.setInt(1, delegate.id)
         preparedStatement.setString(2, delegate.assignedTask.asInstanceOf[CountryDelegateTask].country.countryCode)
+        preparedStatement.setInt(3, delegate.assignedTask.getStartCycle)
+
+        preparedStatement.executeUpdate()
+      }
+    } finally {
+      preparedStatement.close()
+      connection.close()
+    }
+  }
+
+  def saveCampaignTasks(delegates : List[BusyDelegate]) = {
+    val connection = Meta.getConnection()
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + CAMPAIGN_DELEGATE_TASK_TABLE + "(delegate, campaign, start_cycle) VALUES(?,?,?)")
+    try {
+      delegates.foreach { delegate =>
+        preparedStatement.setInt(1, delegate.id)
+        preparedStatement.setInt(2, delegate.assignedTask.asInstanceOf[CampaignDelegateTask].campaign.id)
         preparedStatement.setInt(3, delegate.assignedTask.getStartCycle)
 
         preparedStatement.executeUpdate()
