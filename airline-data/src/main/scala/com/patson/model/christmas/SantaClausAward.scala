@@ -1,8 +1,8 @@
 package com.patson.model.christmas
 
-import com.patson.data.{AirlineSource, AirportSource, ChristmasSource}
-import com.patson.model.{Airline, AirlineAppeal, Airport}
-import com.patson.util.{AirlineCache, AirportCache}
+import com.patson.data.{AirlineSource, AirportSource, ChristmasSource, CycleSource}
+import com.patson.model.{Airline, AirlineAppeal, AirlineBonus, BonusType}
+import com.patson.util.AirlineCache
 
 abstract class SantaClausAward(santaClausInfo: SantaClausInfo) {
   val getType : SantaClausAwardType.Value
@@ -29,6 +29,7 @@ class CashAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaCla
 class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.SERVICE_QUALITY
   val BONUS = 5
+  val DURATION = 8
   override def applyAward(): Unit = {
     val newQuality = Math.min(santaClausInfo.airline.getCurrentServiceQuality() + BONUS, Airline.MAX_SERVICE_QUALITY)
 
@@ -41,13 +42,13 @@ class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
 class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.HQ_LOYALTY
   val BONUS = 3
+  val DURATION = 8
   override def applyAward(): Unit = {
     AirlineCache.getAirline(santaClausInfo.airline.id, fullLoad = true).foreach { airline =>
       airline.getHeadQuarter().foreach { hq =>
-        val airport = AirportCache.getAirport(hq.airport.id, fullLoad = true).get //need full load for appeal
-        val existingAppeal = airport.getAirlineBaseAppeal(airline.id)
-        val newLoyalty = Math.min(existingAppeal.loyalty + BONUS, AirlineAppeal.MAX_LOYALTY)
-        AirportSource.updateAirlineAppeal(airport.id, airline.id, AirlineAppeal(newLoyalty, existingAppeal.awareness))
+
+        val bonus = AirlineBonus(BonusType.SANTA_CLAUS, AirlineAppeal(loyalty = BONUS, awareness = 0), Some(CycleSource.loadCycle() + DURATION))
+        AirportSource.saveAirlineAppealBonus(hq.airport.id, airline.id, bonus)
       }
     }
   }
@@ -55,23 +56,21 @@ class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(san
   override val description: String = {
     val hq = AirlineCache.getAirline(santaClausInfo.airline.id, fullLoad = true).get.getHeadQuarter().get.airport
 
-    "Santa Claus agrees to travel to your HQ and ho-ho-ho for a week in " + hq.name + "! Loyalty bonus +" + BONUS + " in your HQ airport!"
+    s"Santa Claus agrees to travel to your HQ and ho-ho-ho for $DURATION weeks in ${hq.displayText} Loyalty bonus $BONUS in your HQ airport!"
   }
 }
 
 class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.AIRPORT_LOYALTY
   val BONUS = 10
+  val DURATION = 8
   override def applyAward(): Unit = {
     val airline = santaClausInfo.airline
-    val airport = AirportCache.getAirport(santaClausInfo.airport.id, fullLoad = true).get //need full load for appeal
-    val existingAppeal = airport.getAirlineBaseAppeal(airline.id)
-    val newLoyalty = Math.min(existingAppeal.loyalty + BONUS, AirlineAppeal.MAX_LOYALTY)
-    AirportSource.updateAirlineAppeal(airport.id, airline.id, AirlineAppeal(newLoyalty, existingAppeal.awareness))
+    val bonus = AirlineBonus(BonusType.SANTA_CLAUS, AirlineAppeal(loyalty = BONUS, awareness = 0), Some(CycleSource.loadCycle() + DURATION))
 
-
+    AirportSource.saveAirlineAppealBonus(santaClausInfo.airport.id, airline.id, bonus)
   }
-  override val description: String = "Santa Claus is going to print your airline logo on all the gifts shipping for " + santaClausInfo.airport.name + "! Loyalty bonus +" + BONUS + " in " + santaClausInfo.airport.name + "!"
+  override val description: String = s"Santa Claus is going to print your airline logo on all the gifts shipping for ${santaClausInfo.airport.displayText}! Loyalty bonus $BONUS in ${santaClausInfo.airport.displayText} for $DURATION weeks!"
 }
 
 class ReputationAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
