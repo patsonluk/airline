@@ -152,7 +152,7 @@ object CampaignSource {
 
       while (resultSet.next()) {
         val airportId = resultSet.getInt("airport")
-        entries += AirportCache.getAirport(airportId).get
+        entries += AirportCache.getAirport(airportId).get //do NOT use full load here otherwise we running into infinite loop: airport.init bonus -> load campaign -> load area airport -> (if full load) airport.init bonus again
       }
 
       resultSet.close()

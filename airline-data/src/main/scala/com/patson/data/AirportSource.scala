@@ -101,6 +101,8 @@ object AirportSource {
       preparedStatement.executeUpdate()
       preparedStatement.close()
 
+      AirportCache.invalidateAirport(airportId)
+
     } finally {
       connection.close()
     }

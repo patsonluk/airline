@@ -9,7 +9,7 @@ import com.patson.model._
 object AirportCache {
   import com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
 
-  //val detailedCache: LoadingCache[Int, Option[Airport]] = CacheBuilder.newBuilder.maximumSize(2000).expireAfterAccess(10, TimeUnit.MINUTES).build(new DetailedLoader())
+  val detailedCache: LoadingCache[Int, Option[Airport]] = CacheBuilder.newBuilder.maximumSize(2000).expireAfterAccess(10, TimeUnit.MINUTES).build(new DetailedLoader())
   val simpleCache: LoadingCache[Int, Option[Airport]] = CacheBuilder.newBuilder.maximumSize(10000).expireAfterAccess(10, TimeUnit.MINUTES).build(new SimpleLoader())
 
   def getAirport(airportId : Int, fullLoad : Boolean = false) : Option[Airport] = {
@@ -22,12 +22,12 @@ object AirportCache {
   }
 
   def invalidateAirport(airportId : Int) = {
-//    detailedCache.invalidate(airportId)
+    detailedCache.invalidate(airportId)
     simpleCache.invalidate(airportId)
   }
 
   def invalidateAll() = {
-//    detailedCache.invalidateAll()
+    detailedCache.invalidateAll()
     simpleCache.invalidateAll()
   }
 
