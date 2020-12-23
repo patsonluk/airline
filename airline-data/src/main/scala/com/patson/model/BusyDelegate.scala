@@ -1,5 +1,7 @@
 package com.patson.model
 
+import com.patson.model.campaign.Campaign
+
 case class BusyDelegate(airline : Airline, assignedTask : DelegateTask, availableCycle : Option[Int], var id : Int = 0) extends IdObject {
   val taskCompleted = availableCycle.isDefined
 }
@@ -13,12 +15,20 @@ abstract class DelegateTask(startCycle : Int, taskType : DelegateTaskType.Value)
 
 object DelegateTask {
   val country = (startCycle : Int, country : Country) => CountryDelegateTask(startCycle, country)
-
+  val campaign = (startCycle : Int, campaign : Campaign) => CampaignDelegateTask(startCycle, campaign)
   val linkNegotiation = (startCycle : Int, fromAirport : Airport, toAirport : Airport) => LinkNegotiationDelegateTask(startCycle, fromAirport, toAirport)
+
 }
 
-case class CountryDelegateTask(startCycle : Int, country: Country) extends DelegateTask(startCycle, DelegateTaskType.COUNTRY) {
+case class CountryDelegateTask(startCycle : Int, country: Country) extends LevelingDelegateTask(startCycle, DelegateTaskType.COUNTRY) {
   override val description: String = s"Develop relationship with ${country.name}"
+}
+
+case class CampaignDelegateTask(startCycle : Int, campaign : Campaign) extends LevelingDelegateTask(startCycle, DelegateTaskType.CAMPAIGN) {
+  override val description: String = s"Campaign in the area around ${campaign.principalAirport.displayText}"
+}
+
+abstract class LevelingDelegateTask(startCycle : Int, delegateTaskType: DelegateTaskType.Value) extends DelegateTask(startCycle, delegateTaskType) {
   override val coolDown: Int = 0
 
   val LEVEL_CYCLE_THRESHOLDS = List(4, 1 * 52, 3 * 52, 10 * 52)
@@ -62,5 +72,5 @@ case class LinkNegotiationDelegateTask(startCycle : Int, fromAirport : Airport, 
 
 object DelegateTaskType extends Enumeration {
   type DelegateTaskType = Value
-  val COUNTRY, LINK_NEGOTIATION = Value
+  val COUNTRY, LINK_NEGOTIATION, CAMPAIGN = Value
 }

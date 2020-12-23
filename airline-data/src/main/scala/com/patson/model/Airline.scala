@@ -1,8 +1,6 @@
 package com.patson.model
 
-import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, BankSource, CycleSource, DelegateSource, LinkSource, LoyalistSource, OilSource}
-
-import scala.collection.mutable.ListBuffer
+import com.patson.data._
 
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
@@ -356,6 +354,9 @@ object Airline {
 
         //reset all busy delegates
         DelegateSource.deleteBusyDelegateByCriteria(List(("airline", "=", airlineId)))
+
+        //reset all campaigns, has to be after delegate
+        CampaignSource.deleteCampaignsByAirline(airline.id)
 
         AirlineSource.saveAirlineInfo(airline)
         println(s"Reset airline - $airline")

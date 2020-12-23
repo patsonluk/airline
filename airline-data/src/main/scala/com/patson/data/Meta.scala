@@ -296,6 +296,7 @@ object Meta {
     createAirportRunway(connection)
     createChatMessage(connection)
     createLoyalist(connection)
+    createCampaign(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1582,7 +1583,49 @@ object Meta {
   }
 
 
+  def createCampaign(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + CAMPAIGN_TABLE)
+    statement.execute()
+    statement.close()
 
+
+    statement = connection.prepareStatement("CREATE TABLE " + CAMPAIGN_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "principal_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "population_coverage BIGINT, " +
+      "radius INTEGER" +
+      ")")
+
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + CAMPAIGN_AREA_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + CAMPAIGN_AREA_TABLE + "(" +
+      "campaign INTEGER REFERENCES " + CAMPAIGN_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "airport INTEGER REFERENCES " + CAMPAIGN_AREA_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "PRIMARY KEY (campaign, airport)" +
+      ")")
+
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + CAMPAIGN_DELEGATE_TASK_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + CAMPAIGN_DELEGATE_TASK_TABLE + "(" +
+      "delegate INTEGER PRIMARY KEY, " +
+      "campaign INTEGER REFERENCES " + CAMPAIGN_TABLE + "(id) ON DELETE RESTRICT ON UPDATE CASCADE, " +
+      "start_cycle INTEGER, " +
+      "FOREIGN KEY(delegate) REFERENCES " + BUSY_DELEGATE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
 
 
   def isTableExist(connection : Connection, tableName : String): Boolean = {

@@ -116,6 +116,10 @@ DELETE	 /airlines/:airlineId/configurations/:configurationId  controllers.Airpla
 GET      /airlines/:airlineId/favorite-model/:modelId    controllers.AirplaneApplication.getFavoriteModelDetails(airlineId : Int, modelId : Int)
 PUT      /airlines/:airlineId/favorite-model/:modelId    controllers.AirplaneApplication.setFavoriteModel(airlineId : Int, modelId : Int)
 GET		 /airlines/:airlineId/heatmap-data 				controllers.HeatmapApplication.getHeatmapData(airlineId: Int, heatmapType : String, cycleDelta : Int)
+GET 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.getCampaigns(airlineId: Int, fullLoad : Boolean ?= false)
+POST 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.saveCampaign(airlineId: Int)
+DELETE 	 /airlines/:airlineId/campaigns/:campaignId         controllers.CampaignApplication.deleteCampaign(airlineId: Int, campaignId : Int)
+GET 	 /airlines/:airlineId/campaign-airports/:airportId         controllers.CampaignApplication.getCampaignAirports(airlineId: Int, airportId: Int, radius : Int)
 
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
 GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()

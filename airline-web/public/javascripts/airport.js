@@ -683,10 +683,10 @@ function refreshAirportExtendedDetails(airport) {
                 var loyaltyText = appeal.loyalty
                 if (airport.bonusList[airlineId]) {
                     if (airport.bonusList[airlineId].awareness > 0) {
-                        awarenessText = awarenessText + " (with +" + airport.bonusList[airlineId].awareness + " bonus)"
+                        awarenessText = awarenessText + " (+" + airport.bonusList[airlineId].awareness + ")"
                     }
                     if (airport.bonusList[airlineId].loyalty > 0) {
-                        loyaltyText = loyaltyText + " (with +" + airport.bonusList[airlineId].loyalty + " bonus)"
+                        loyaltyText = loyaltyText + " (+" + airport.bonusList[airlineId].loyalty + ")"
                     }
                 }
                 $(".airportAwareness").text(awarenessText)

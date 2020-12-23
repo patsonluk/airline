@@ -387,53 +387,29 @@ function showRelationshipDetailsModal(relationship, title, countryCode) {
 }
 
 
-function changeCountryDelegateCount(delta) {
-    var $delegateSection = $('#airlineCountryRelationshipModal .delegateSection')
-    var assignedDelegateCount = $delegateSection.data('assignedDelegateCount')
-    var availableDelegates = $delegateSection.data('availableDelegates')
-    var originalDelegates = $delegateSection.data('originalDelegates')
-    var delegatesRequired = $delegateSection.data('delegatesRequired')
 
-    var newLength = -1
-    if (delta > 0) {
-        if (availableDelegates >= delta) {
-            newLength = assignedDelegateCount + delta
-        }
-    } else if (delta < 0) {
-        if (assignedDelegateCount + delta >= delegatesRequired) {
-            newLength = assignedDelegateCount + delta
-        }
-    }
-
-    if (newLength != -1) {
-        $delegateSection.data('availableDelegates', availableDelegates - delta)
-        $delegateSection.data('assignedDelegateCount', newLength)
-        refreshAssignedDelegates()
-    }
-}
-
-function refreshAssignedDelegates() {
-    $('#airlineCountryRelationshipModal div.assignedDelegatesIcons').empty()
-    var $delegateSection = $('#airlineCountryRelationshipModal .delegateSection')
-    var originalDelegates = $delegateSection.data('originalDelegates')
-    var assignedDelegateCount = $delegateSection.data('assignedDelegateCount')
-
-    if (assignedDelegateCount == 0) {
-        $('#airlineCountryRelationshipModal div.assignedDelegatesIcons').append("<span>None</span>")
-    }
-
-    $.each(originalDelegates.slice(0, assignedDelegateCount), function(index, assignedDelegate) {
-            var delegateIcon = $('<img src="assets/images/icons/delegate-level-' + assignedDelegate.level + '.png" title="' + assignedDelegate.levelDescription + "&nbsp;(level " + assignedDelegate.level + (assignedDelegate.nextLevelCycleCount ? " - promotion in " + assignedDelegate.nextLevelCycleCount + " week(s)" : "") + ')"/>')
-            $('#airlineCountryRelationshipModal .assignedDelegatesIcons').append(delegateIcon)
-    })
-
-    if (assignedDelegateCount > originalDelegates.length) {
-        for (i = 0; i < assignedDelegateCount - originalDelegates.length; i ++) {
-            var delegateIcon = $('<img src="assets/images/icons/delegate-level-0.png" title="New"/>')
-            $('#airlineCountryRelationshipModal .assignedDelegatesIcons').append(delegateIcon)
-        }
-    }
-}
+//function refreshAssignedDelegates() {
+//    $('#airlineCountryRelationshipModal div.assignedDelegatesIcons').empty()
+//    var $delegateSection = $('#airlineCountryRelationshipModal .delegateSection')
+//    var originalDelegates = $delegateSection.data('originalDelegates')
+//    var assignedDelegateCount = $delegateSection.data('assignedDelegateCount')
+//
+//    if (assignedDelegateCount == 0) {
+//        $('#airlineCountryRelationshipModal div.assignedDelegatesIcons').append("<span>None</span>")
+//    }
+//
+//    $.each(originalDelegates.slice(0, assignedDelegateCount), function(index, assignedDelegate) {
+//            var delegateIcon = $('<img src="assets/images/icons/delegate-level-' + assignedDelegate.level + '.png" title="' + assignedDelegate.levelDescription + "&nbsp;(level " + assignedDelegate.level + (assignedDelegate.nextLevelCycleCount ? " - promotion in " + assignedDelegate.nextLevelCycleCount + " week(s)" : "") + ')"/>')
+//            $('#airlineCountryRelationshipModal .assignedDelegatesIcons').append(delegateIcon)
+//    })
+//
+//    if (assignedDelegateCount > originalDelegates.length) {
+//        for (i = 0; i < assignedDelegateCount - originalDelegates.length; i ++) {
+//            var delegateIcon = $('<img src="assets/images/icons/delegate-level-0.png" title="New"/>')
+//            $('#airlineCountryRelationshipModal .assignedDelegatesIcons').append(delegateIcon)
+//        }
+//    }
+//}
 
 function updateCountryDelegates() {
     var $delegateSection = $('#airlineCountryRelationshipModal .delegateSection')
@@ -462,7 +438,6 @@ function getCountryDelegatesSummary(countryCode) {
     var $delegateSection = $('#airlineCountryRelationshipModal .delegateSection')
     var airlineId = activeAirline.id
     $delegateSection.removeData('assignedDelegateCount')
-    $delegateSection.removeData('availableDelegates')
     $delegateSection.removeData('originalDelegates')
     $delegateSection.data("countryCode", countryCode)
 
@@ -487,7 +462,7 @@ function getCountryDelegatesSummary(countryCode) {
             $delegateSection.data('assignedDelegateCount', countryDelegates.length)
             $delegateSection.data('delegatesRequired', result.delegatesRequired)
 
-            refreshAssignedDelegates()
+            refreshAssignedDelegates($('#airlineCountryRelationshipModal .delegateSection'))
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
