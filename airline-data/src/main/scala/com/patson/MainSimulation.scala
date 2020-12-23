@@ -80,8 +80,6 @@ object MainSimulation extends App {
   }
 
   def postCycle(currentCycle : Int) = {
-    //now update the link capacity if necessary
-    LinkSimulation.refreshLinksPostCycle()
     println("Oil simulation")
     OilSimulation.simulate(currentCycle) //simulate at the beginning of a new cycle
     println("Loan simulation")
@@ -89,6 +87,10 @@ object MainSimulation extends App {
     //refresh delegates
     println("Delegate simulation")
     DelegateSimulation.simulate(currentCycle)
+
+    println("Post cycle link simulation")
+    LinkSimulation.simulatePostCycle(currentCycle)
+
     println(s"Post cycle done $currentCycle")
   }
 
@@ -104,15 +106,24 @@ object MainSimulation extends App {
     currentWeek = CycleSource.loadCycle()
     def receive = {
       case Start =>
+        status = SimulationStatus.IN_PROGRESS
         startCycle(currentWeek)
         currentWeek += 1
         CycleSource.setCycle(currentWeek)
+        status = SimulationStatus.WAITING_CYCLE_START
         postCycle(currentWeek) //post cycle do some quick updates, no long simulation
+
     }
   }
    
   
   case class Start()
+
+  var status : SimulationStatus.Value = SimulationStatus.WAITING_CYCLE_START
+  object SimulationStatus extends Enumeration {
+    type DelegateTaskType = Value
+    val IN_PROGRESS, WAITING_CYCLE_START = Value
+  }
 
   
 }

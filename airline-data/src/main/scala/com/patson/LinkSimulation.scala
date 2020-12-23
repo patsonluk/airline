@@ -106,7 +106,6 @@ object LinkSimulation {
     }
 
     purgeAlerts()
-    purgeNegotiationCoolDowns(cycle)
     checkLoadFactor(links, cycle)
 
     LinkSource.deleteLinkConsumptionsByCycle(300)
@@ -347,10 +346,6 @@ object LinkSimulation {
     println("Purged alerts with no corresponding links... " + deadAlerts.size)
   }
 
-  def purgeNegotiationCoolDowns(cycle: Int): Unit = {
-    LinkSource.purgeNegotiationCoolDowns(cycle)
-  }
-
   def checkLoadFactor(links : List[Link], cycle : Int) = {
     val existingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION)
 
@@ -552,5 +547,15 @@ object LinkSimulation {
         }
       }
     }
+  }
+
+  def simulatePostCycle(cycle : Int) = {
+    //now update the link capacity if necessary
+    LinkSimulation.refreshLinksPostCycle()
+    purgeNegotiationCoolDowns(cycle)
+  }
+
+  def purgeNegotiationCoolDowns(cycle: Int): Unit = {
+    LinkSource.purgeNegotiationCoolDowns(cycle)
   }
 }
