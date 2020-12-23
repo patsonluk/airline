@@ -68,7 +68,7 @@ object AirportSource {
   }
 
   def getCampaignBonuses(airport : Airport, currentCycle : Int): Map[Int, List[AirlineBonus]] = {
-    val campaigns = CampaignSource.loadCampaignsByAreaAirport(airport.id)
+    val campaigns = CampaignSource.loadCampaignsByAreaAirport(airport.id, true)
 
 
     val bonusByAirlineId = mutable.Map[Int, ListBuffer[AirlineBonus]]()

@@ -342,15 +342,15 @@ function refreshCampaign() {
 }
 
 function updateCampaignDetails(campaign) {
+    var $delegateSection = $('#campaignModal div.delegateSection')
     $('#campaignModal .campaignDetails .principalAirport').text(getAirportText(campaign.principalAirport.city, campaign.principalAirport.iata))
     $('#campaignModal .campaignDetails .population').text(commaSeparateNumber(campaign.population))
     $('#campaignModal .campaignDetails .airports').text(campaign.area.length)
     var delegateLevel = 0
-    if (campaign.delegates) {
-        $.each(campaign, function(index, delegate) {
-            delegateLevel += delegate.level
-        })
-    }
+    $.each($delegateSection.data('originalDelegates'), function(index, delegate) {
+        delegateLevel += delegate.level
+    })
+
     $('#campaignModal .campaignDetails .delegateLevel').text(delegateLevel)
     $('#campaignModal .campaignDetails .awarenessBonus').text(campaign.bonus.awareness)
     $('#campaignModal .campaignDetails .loyaltyBonus').text(campaign.bonus.loyalty)
