@@ -179,37 +179,56 @@ object DelegateSource {
 
   }
 
-
   /**
     *
     * @param campaigns
     * @return key - delegateId
     */
-  def loadCampaignTasksByCampaigns(campaigns : List[Campaign]) = {
-    val connection = Meta.getConnection()
-    try {
-      val campaignsById = campaigns.map(entry => (entry.id, entry)).toMap
-      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $CAMPAIGN_DELEGATE_TASK_TABLE WHERE campaign IN (${campaignsById.keys.mkString(",")})")
-      val resultSet = preparedStatement.executeQuery()
+  def loadBusyDelegatesByCampaigns(campaigns : List[Campaign]) : Map[Campaign, List[BusyDelegate]] = {
+    if (campaigns.isEmpty) {
+      Map.empty
+    } else {
+      val connection = Meta.getConnection()
+      try {
+        val campaignsById = campaigns.map(entry => (entry.id, entry)).toMap
+        val campaignIdPhrase = campaignsById.keys.mkString(",")
+        val taskPreparedStatement = connection.prepareStatement(s"SELECT * FROM $CAMPAIGN_DELEGATE_TASK_TABLE WHERE campaign IN ($campaignIdPhrase)")
+        val taskResultSet = taskPreparedStatement.executeQuery()
 
-      val result = mutable.Map[Campaign, ListBuffer[CampaignDelegateTask]]() //key delegateId
+        val taskByDelegateId = mutable.Map[Int, CampaignDelegateTask]()
+        while (taskResultSet.next()) {
+          //val delegateId = resultSet.getInt("delegate")
+          val campaignId = taskResultSet.getInt("campaign")
+          val campaign = campaignsById(campaignId)
+          val startCycle = taskResultSet.getInt("start_cycle")
+          taskByDelegateId.put(taskResultSet.getInt("delegate"), DelegateTask.campaign(startCycle, campaign))
+        }
+        taskResultSet.close()
+        taskPreparedStatement.close()
 
+        if (taskByDelegateId.isEmpty) {
+          Map.empty
+        } else {
+          val delegatePreparedStatement = connection.prepareStatement(s"SELECT * FROM $BUSY_DELEGATE_TABLE WHERE id IN (${taskByDelegateId.keys.mkString(",")})")
+          val delegateResultSet = delegatePreparedStatement.executeQuery()
+          val result = mutable.Map[Campaign, ListBuffer[BusyDelegate]]()
+          while (delegateResultSet.next()) {
+            //val delegateId = resultSet.getInt("delegate")
+            val airlineId = delegateResultSet.getInt("airline")
+            val delegateId = delegateResultSet.getInt("id")
+            val availableCycleObject = delegateResultSet.getObject("available_cycle")
+            val availableCycle = if (availableCycleObject == null) None else Some(availableCycleObject.asInstanceOf[Int])
 
-      while (resultSet.next()) {
-        //val delegateId = resultSet.getInt("delegate")
-        val campaignId = resultSet.getInt("campaign")
-        val campaign = campaignsById(campaignId)
-        val startCycle = resultSet.getInt("start_cycle")
+            val task = taskByDelegateId(delegateId)
+            val delegate = BusyDelegate(AirlineCache.getAirline(airlineId).get, task, availableCycle, delegateId)
 
-        result.getOrElseUpdate(campaign, ListBuffer[CampaignDelegateTask]()).append(DelegateTask.campaign(startCycle, campaign))
+            result.getOrElseUpdate(task.campaign, ListBuffer[BusyDelegate]()).append(delegate)
+          }
+          result.view.mapValues(_.toList).toMap
+        }
+      } finally {
+        connection.close()
       }
-
-      resultSet.close()
-      preparedStatement.close()
-
-      result.view.mapValues(_.toList).toMap
-    } finally {
-      connection.close()
     }
   }
 
@@ -285,7 +304,7 @@ object DelegateSource {
     }
   }
 
-  def saveDelegateTasks(delegates : List[BusyDelegate]) = {
+  private[this] def saveDelegateTasks(delegates : List[BusyDelegate]) = {
     delegates.groupBy(_.assignedTask.getTaskType).foreach {
       case (taskType, delegatesOfThisTaskType) => {
         taskType match {
@@ -300,7 +319,7 @@ object DelegateSource {
     }
   }
 
-  def saveCountryTasks(delegates : List[BusyDelegate]) = {
+  private[this] def saveCountryTasks(delegates : List[BusyDelegate]) = {
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("INSERT INTO " + COUNTRY_DELEGATE_TASK_TABLE + "(delegate, country_code, start_cycle) VALUES(?,?,?)")
     try {
@@ -317,7 +336,7 @@ object DelegateSource {
     }
   }
 
-  def saveCampaignTasks(delegates : List[BusyDelegate]) = {
+  private[this] def saveCampaignTasks(delegates : List[BusyDelegate]) = {
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("INSERT INTO " + CAMPAIGN_DELEGATE_TASK_TABLE + "(delegate, campaign, start_cycle) VALUES(?,?,?)")
     try {
@@ -334,7 +353,7 @@ object DelegateSource {
     }
   }
 
-  def saveLinkNegotiationTasks(delegates : List[BusyDelegate]) = {
+  private[this] def saveLinkNegotiationTasks(delegates : List[BusyDelegate]) = {
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_NEGOTIATION_TASK_TABLE + "(delegate, from_airport, to_airport, start_cycle) VALUES(?,?,?,?)")
     try {

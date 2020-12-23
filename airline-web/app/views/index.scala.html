@@ -21,6 +21,7 @@
       <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/country.css")'>
 	<link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/chat.css")'>
       <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/search.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/campaign.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/switch.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/select.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/about.css")'>
@@ -70,6 +71,7 @@
 	<script src='@routes.Assets.versioned("javascripts/model-configuration.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/airline.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/link-history.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/delegate.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/country.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/office.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/ranking.js")'></script>
@@ -91,6 +93,7 @@
     <script src='@routes.Assets.versioned("javascripts/admin.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/about.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/heatmap.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/campaign.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/map-style.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/mobile.js")' defer></script>
     <script>
@@ -334,7 +337,14 @@
 		<!-- main canvas start -->
 			<div id="canvas" style="float: left; overflow-x: auto; overflow-y: scroll;" >
 				<div id="worldMapCanvas" style="height: 100%;">
-					<div id="map" class="mainPanel" style="float:left" data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")' data-base-marker='@routes.Assets.versioned("images/markers/base.png")' data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")' data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'  data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")' data-gateway-airport-marker='@routes.Assets.versioned("images/markers/airport-gateway.png")'></div>
+					<div id="map" class="mainPanel" style="float:left"
+						 data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")'
+						 data-base-marker='@routes.Assets.versioned("images/markers/base.png")'
+						 data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")'
+						 data-medium-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'
+						 data-small-airport-marker='@routes.Assets.versioned("images/markers/airport-lighter.png")'
+						 data-gateway-airport-marker='@routes.Assets.versioned("images/markers/airport-gateway.png")'
+						 data-disabled-airport-marker='@routes.Assets.versioned("images/markers/airport-transparent.png")'></div>
 					<div id="sidePanel" class="sidePanel" style="float: left; display:none;" >
 						<div id="detailsPanel" class="section" style="width: 95% ; float: left;">
 							<div id="linkDetails" style="width: 100%;;">
@@ -1754,11 +1764,23 @@
 					</div>
 	<!-- 				end left section  -->
 					<div style="float: left;" class="verticalGroup officeCanvasRightGroup">
-                        <div class="section" style="width: 90%;">
+                        <div class="section" style="width: 95%;">
                             <h4>Delegates Pool</h4>
                             <div class="delegateStatus"></div>
                         </div>
-						<div class="section" style="width: 90%;">
+                        <div class="section" style="width: 95%;">
+							<div style="display: flex; align-items: base-line;">
+								<span><h4>Campaigns</h4></span>
+								<span><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' onclick="showCampaignModal()" title="View/Edit Campaigns"/></span>
+							</div>
+							<div class="campaignSummary table data" style="width: 100%; height: 20px;">
+								<div class="table-header">
+									<div class="cell" style="width: 60%">Area</div>
+									<div class="cell" style="width: 40%">Coverage Pop.</div>
+								</div>
+							</div>
+						</div>
+						<div class="section" style="width: 95%;">
 							<h4>Championed Countries</h4>
 							<div id="championedCountriesList" class="table data" style="width: 100%; height: 20px;">
 								<div class="table-header">
@@ -1769,7 +1791,7 @@
 							</div>
 						</div>
 
-						<div class="section" style="width: 90%;">
+						<div class="section" style="width: 95%;">
 							<h4>Rebuild Airline<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
 								<ul>
 									<li class="label" style="padding: 5px">- All of the airplanes will be removed</li>
@@ -2745,7 +2767,7 @@
    				<div class="label"><h5>Awareness/Loyalty:</h5></div>
    				<div class="value">
 					<span class="airportAwareness" id="airportPopupAwareness"></span>/
-					<span class="airportLoyalty" id="airportPopupLoyalty"</span>
+					<span class="airportLoyalty" id="airportPopupLoyalty"></span>
 				</div>
    			</div>
 		</div>
@@ -2825,6 +2847,10 @@
 
 	  <div style="display: none; width: 100%;" id="olympicAirportPopup">
 		  <h5 class="airportName"></h5>
+	  </div>
+	  <div style="display: none; width: 100%;" id="campaignAirportPopup">
+		  <h4><div class="airportName"></div></h4>
+		  <div>pop:&nbsp;<span class="airportPopulation"></span></div>
 	  </div>
 
 
@@ -3861,8 +3887,8 @@
 							  <div style="float: left" class="assignedDelegatesIcons"></div>
 						  </div>
 						  <div>
-							  <div style="float: right" class="clickable" onclick="changeCountryDelegateCount(-1)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Minus"/></div>
-							  <div style="float: right" class="clickable" onclick="changeCountryDelegateCount(1)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Add"/></div>
+							  <div style="float: right" class="clickable" onclick="changeTaskDelegateCount($('#airlineCountryRelationshipModal .delegateSection'), -1)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Minus"/></div>
+							  <div style="float: right" class="clickable" onclick="changeTaskDelegateCount($('#airlineCountryRelationshipModal .delegateSection'), 1)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Add"/></div>
 						  </div>
 					  </div>
 				  </div>
@@ -3874,6 +3900,129 @@
 
 		  </div>
 	  </div>
+
+
+      <div id="campaignModal" class="modal">
+	    <div class="modal-content" style="width : 800px;">
+		  <span class="close" onclick="closeModal($('#campaignModal'))">&times;</span>
+		  <h2 style="margin-bottom: 20px">Campaign Management</h2>
+			<div style="display:flex; align-items: flex-end; margin-bottom: 10px;">
+				<h4 >Active Campaigns</h4>
+				<img class="clickable addCampaign" title="Draft New Campaign" src='@routes.Assets.versioned("images/icons/24px/plus-circle.png")' onclick="toggleDraftCampaign()" style="margin-left: 5px;">
+			</div>
+
+			<div style="width: 100%; max-height: 180px; overflow:auto; margin-bottom: 20px;">
+				<div class="table data" style="height: 20px; width: 100%;">
+					<div class="table-header campaignTableHeader">
+						<div class="cell clickable" style="width: 40%" data-sort-property="baseAirport" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Area</div>
+						<div class="cell clickable" style="width: 10%" data-sort-property="radius" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">Radius</div>
+						<div class="cell clickable selected" style="width: 10%" data-sort-property="level" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">Level</div>
+						<div class="cell clickable" style="width: 30%"  data-sort-property="population" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">Coverage Pop.</div>
+						<div class="cell clickable" style="width: 10%" data-sort-property="airportCount" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Airports</div>
+					</div>
+				</div>
+				<div style="height: calc(100% - 40px); width: 100%; overflow-y:auto;">
+					<div class="table data campaignTable" style="max-height: 100%; width: 100%">
+						<div class="table-header">
+							<div class="cell" style="width: 40%; border-bottom: none;"></div>
+							<div class="cell" style="width: 10%; border-bottom: none;"></div>
+							<div class="cell" style="width: 10%; border-bottom: none;"></div>
+							<div class="cell" style="width: 30%; border-bottom: none;"></div>
+							<div class="cell" style="width: 10%; border-bottom: none;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="draftCampaign" style="display:none; text-align: center;">
+				<div style="position: relative; display: inline-block;">
+					<div class="searchInput" data-search-type="airport">
+						<input type="text" tabindex="101" class="airport" placeholder="Airport/City Area" autocomplete="no" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $(this))" onkeydown="searchKeyDown(event, $(this))">
+						<div style="width: 20px; display: inline-block" ><span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span></div>
+					</div>
+					<div class="searchResult"></div>
+				</div>
+			</div>
+
+			<div style="width: 100%; height: 500px;"> <!-- empty to take up the height otherwise popup would not scale properly -->
+				<div class="campaignDetails section" style="height: 100%; display: none;">
+					<div style="float: left; width: 50%;">
+						<div class="campaignMap" style="width: 90%; height: 300px;">
+
+
+						</div>
+					</div>
+
+					<div style="float: right; width: 50%">
+						<div style="width: 100%; height: 100%">
+							<div class="section">
+								<h4>Delegates Pool</h4>
+								<div class="delegateStatus"></div>
+							</div>
+
+							<div class="section campaignDetails">
+								<h4>Campaign Details</h4>
+								<div class="table" style="width: 100%;">
+									<div class="table-row">
+										<div class="label"><h5>Radius:</h5></div>
+										<div class="value">
+											<div class="radiusControl" style="display: flex; align-items: center;">
+												<span style="width: 70%"><span class="radius"></span>km</span>
+												<div style="padding: 3px;" class="clickable increase" onclick="changeCampaignRadius(100)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Increase"/></div>
+												<div style="padding: 3px;" class="clickable decrease" onclick="changeCampaignRadius(-100)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Decrease"/></div>
+											</div>
+										</div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Principal Airport:</h5></div>
+										<div class="value principalAirport"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Population:</h5></div>
+										<div class="value population"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Airport Coverage:</h5></div>
+										<div class="value airports"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Delegate Level:</h5></div>
+										<div class="value delegateLevel"></div>
+									</div>
+								</div>
+								<div style="width: 100%; margin-top: 10px;" class="delegateSection delegatesAssignment table data">
+									<div class="table-header">
+										<div class="cell"style="width: 80%">Assigned Delegates for Campaign</div>
+										<div class="cell"style="width: 20%">&nbsp;</div>
+									</div>
+									<div class="table-row">
+										<div class="cell">
+											<div style="float: left" class="assignedDelegatesIcons"></div>
+										</div>
+										<div class="cell">
+											<div style="float: right" class="clickable" onclick="changeCampaignDelegateCount(-1)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Minus"/></div>
+											<div style="float: right" class="clickable" onclick="changeCampaignDelegateCount(1)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Add"/></div>
+										</div>
+									</div>
+								</div>
+								<h5><span class="dot"/>Each delegate level provides&nbsp;<span class="awarenessBonus"></span>&nbsp;awareness and <span class="loyaltyBonus"></span>&nbsp;loyalty. Delegate starts at level 0 and progress over time. Hover over each delegate above to see details</h5>
+							</div>
+						</div>
+					</div>
+					<div style="clear: both;"></div>
+					<div style="display: flex; align-items: center;">
+						<div class="button create save" onclick="createCampaign()">Create</div>
+						<div class="button update save" onclick="updateCampaign()">Update</div>
+						<div class="button delete" onclick="deleteCampaign()">Delete</div>
+						<div class="button cancel" onclick="closeCampaignDetails()">Cancel</div>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+      </div>
+<!--  end campaign model-->
 
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>

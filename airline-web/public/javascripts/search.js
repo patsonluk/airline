@@ -623,7 +623,7 @@ function search(event, input, retry) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    beforeSend: function () {
-	        input.siblings(".spinner").show(0)
+	        input.parent().find(".spinner").show(0)
 	        searching = true
 	    },
 	    success: function(searchResult) {
@@ -667,7 +667,7 @@ function search(event, input, retry) {
 	    },
         complete:function() {
               //Hide the loader over here
-              input.siblings(".spinner").hide()
+              input.parent().find(".spinner").hide()
               currentSearchAjax = undefined
         }
 	});

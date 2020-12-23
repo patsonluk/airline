@@ -13,11 +13,12 @@ import scala.collection.mutable.ListBuffer
 object CampaignSource {
   val saveCampaign = (campaign : Campaign) => {
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + CAMPAIGN_TABLE + "(airline, base_airport, radius) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + CAMPAIGN_TABLE + "(airline, principal_airport, population_coverage, radius) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     try {
       preparedStatement.setInt(1, campaign.airline.id)
-      preparedStatement.setInt(2, campaign.baseAirport.id)
-      preparedStatement.setInt(3, campaign.radius)
+      preparedStatement.setInt(2, campaign.principalAirport.id)
+      preparedStatement.setLong(3, campaign.populationCoverage)
+      preparedStatement.setInt(4, campaign.radius)
 
       val updateCount = preparedStatement.executeUpdate()
       if (updateCount > 0) {
@@ -28,6 +29,23 @@ object CampaignSource {
           updateCampaignArea(campaign.id, campaign.area)
         }
       }
+    } finally {
+      preparedStatement.close()
+      connection.close()
+    }
+  }
+
+  val updateCampaign = (campaign : Campaign) => {
+    val connection = Meta.getConnection()
+    val preparedStatement = connection.prepareStatement("UPDATE " + CAMPAIGN_TABLE + " SET population_coverage = ?, radius = ? WHERE id = ?")
+    try {
+      preparedStatement.setLong(1, campaign.populationCoverage)
+      preparedStatement.setInt(2, campaign.radius)
+      preparedStatement.setInt(3, campaign.id)
+
+      preparedStatement.executeUpdate()
+
+      updateCampaignArea(campaign.id, campaign.area)
     } finally {
       preparedStatement.close()
       connection.close()
@@ -98,11 +116,11 @@ object CampaignSource {
 
       while (resultSet.next()) {
         val campaignId = resultSet.getInt("id")
-        val baseAirportId = resultSet.getInt("base_airport")
+        val principalAirportId = resultSet.getInt("principal_airport")
         val airlineId = resultSet.getInt("airline")
         val radius = resultSet.getInt("radius")
         val populationCoverage = resultSet.getLong("population_coverage")
-        val baseAirport = AirportCache.getAirport(baseAirportId).get
+        val principalAirport = AirportCache.getAirport(principalAirportId).get
         val airline = AirlineCache.getAirline(airlineId).get
         val area =
           if (loadArea) {
@@ -110,7 +128,7 @@ object CampaignSource {
           } else {
             List.empty
           }
-        entries += Campaign(airline, baseAirport, radius, populationCoverage, area, campaignId)
+        entries += Campaign(airline, principalAirport, radius, populationCoverage, area, campaignId)
       }
 
       resultSet.close()
@@ -181,15 +199,8 @@ object CampaignSource {
 
 
   def deleteCampaignsByAirline(airlineId : Int) = {
-    val connection = Meta.getConnection()
-    val statement = connection.prepareStatement("DELETE FROM " + CAMPAIGN_TABLE + " WHERE airline = ?")
-
-    try {
-      statement.setInt(1, airlineId)
-      statement.executeUpdate()
-    } finally {
-      statement.close()
-      connection.close()
+    loadCampaignsByCriteria(List(("airline", airlineId))).foreach { campaign =>
+      deleteCampaign(campaign.id)
     }
   }
 
@@ -200,6 +211,9 @@ object CampaignSource {
     try {
       statement.setInt(1, campaignId)
       statement.executeUpdate()
+
+
+      DelegateSource.deleteBusyDelegates(DelegateSource.loadBusyDelegatesByCampaigns(List(Campaign.fromId(campaignId))).toList(0)._2)
     } finally {
       statement.close()
       connection.close()

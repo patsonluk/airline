@@ -24,8 +24,8 @@ case class CountryDelegateTask(startCycle : Int, country: Country) extends Level
   override val description: String = s"Develop relationship with ${country.name}"
 }
 
-case class CampaignDelegateTask(startCycle : Int, campaign : Campaign) extends LevelingDelegateTask(startCycle, DelegateTaskType.COUNTRY) {
-  override val description: String = s"Campaign in the area around ${campaign.baseAirport.displayText}"
+case class CampaignDelegateTask(startCycle : Int, campaign : Campaign) extends LevelingDelegateTask(startCycle, DelegateTaskType.CAMPAIGN) {
+  override val description: String = s"Campaign in the area around ${campaign.principalAirport.displayText}"
 }
 
 abstract class LevelingDelegateTask(startCycle : Int, delegateTaskType: DelegateTaskType.Value) extends DelegateTask(startCycle, delegateTaskType) {

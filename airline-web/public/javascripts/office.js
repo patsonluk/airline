@@ -45,6 +45,7 @@ function showOfficeCanvas() {
 	updateAirlineDetails()
 	loadSheets();
 	updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
+	updateCampaignSummary()
 	updateChampionedCountriesDetails()
 	updateServiceFundingDetails()
 	updateAirplaneRenewalDetails()
@@ -53,59 +54,36 @@ function showOfficeCanvas() {
 	updateAirlineColorPicker()
 	updateResetAirlineInfo()
 }
-function refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo) {
-    $delegateStatusDiv.empty()
-    var availableDelegates = delegateInfo.availableCount
 
-    //delegate info
-    for (i = 0 ; i < availableDelegates; i ++) {
-        var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/>')
-        $delegateStatusDiv.append(delegateIcon)
-    }
+function updateCampaignSummary() {
+    $.ajax({
+        type: 'GET',
+        url: "airlines/" + activeAirline.id + "/campaigns?fullLoad=false",
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            var $campaignSummary = $("#officeCanvas .campaignSummary")
+            $campaignSummary.children("div.table-row").remove()
 
-    $.each(delegateInfo.busyDelegates, function(index, busyDelegate) {
-        var $delegateIconDiv = $('<div style="position: relative; display: inline-block;"></div>')
-        var $delegateIcon
-        if (busyDelegate.completed) {
-            $delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="' + busyDelegate.coolDown + ' week(s) cool down remaining. Previous task : ' + busyDelegate.taskDescription + '"/>')
-        } else {
-            $delegateIcon = $('<img src="assets/images/icons/user-silhouette-busy.png" title="Busy with task - ' + busyDelegate.taskDescription + '"/>')
-        }
+            $.each(result, function(index, campaign) {
+                var row = $("<div class='table-row'></div>")
+                row.append("<div class='cell'>" + getCountryFlagImg(campaign.principalAirport.countryCode) + getAirportText(campaign.principalAirport.city, campaign.principalAirport.iata) + "</div>")
+                row.append("<div class='cell'>" + campaign.population + "</div>")
 
-        $delegateIconDiv.append($delegateIcon)
-
-        if (busyDelegate.coolDown) {
-            var $coolDownDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #a4f5b0; font-size: 8px; font-weight: bold;'></div>")
-            $coolDownDiv.text(busyDelegate.coolDown)
-            $delegateIconDiv.append($coolDownDiv)
-        }
-        $delegateStatusDiv.append($delegateIconDiv)
-    })
-}
-
-
-function updateAirlineDelegateStatus($delegateStatusDiv, successFunction) {
-    $delegateStatusDiv.empty()
-    var airlineId = activeAirline.id
-
-	$.ajax({
-		type: 'GET',
-		url: "delegates/airline/" + activeAirline.id,
-		contentType: 'application/json; charset=utf-8',
-		dataType: 'json',
-	    success: function(delegateInfo) {
-	        refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo)
-
-            if (successFunction) {
-                successFunction(delegateInfo)
+                $campaignSummary.append(row)
+            });
+            if (result.length == 0) {
+                $campaignSummary.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div></div>")
             }
-	    },
+        },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
-	});
+    });
 }
+
+
 
 function updateAirlineBases() {
     $('#officeCanvas .bases').children('.table-row').remove()

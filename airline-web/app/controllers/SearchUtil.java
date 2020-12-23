@@ -66,7 +66,7 @@ public class SearchUtil {
 	}
 
 	public static void main(String[] args) throws IOException {
-
+		init();
 //		search("new");
 	}
 

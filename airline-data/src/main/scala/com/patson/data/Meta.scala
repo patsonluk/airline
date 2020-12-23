@@ -1592,7 +1592,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + CAMPAIGN_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-      "base_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "principal_airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "population_coverage BIGINT, " +
       "radius INTEGER" +
       ")")

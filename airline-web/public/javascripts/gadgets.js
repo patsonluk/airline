@@ -489,6 +489,48 @@ function disableButton(button, reason) {
     }
 }
 
+var googleZoomRatio = [
+    { 20 : 1128.497220 },
+    { 19 : 2256.994440 },
+    { 18 : 4513.988880 },
+    { 17 : 9027.977761 },
+    { 16 : 18055.955520 },
+    { 15 : 36111.911040 },
+    { 14 : 72223.822090 },
+    { 13 : 144447.644200 },
+    { 12 : 288895.288400 },
+    { 11 : 577790.576700 },
+    { 10 : 1155581.153000 },
+    { 9  : 2311162.307000 },
+    { 8  : 4622324.614000 },
+    { 7  : 9244649.227000 },
+    { 6  : 18489298.450000 },
+    { 5  : 36978596.910000 },
+    { 4  : 73957193.820000 },
+    { 3  : 147914387.600000 },
+    { 2  : 295828775.300000 },
+    { 1  : 591657550.500000 }
+]
+
+function getGoogleZoomLevel(distanceMeterAsMaxDimension, $container, latitude) {
+  var dimension = Math.min($container.width(), $container.height())
+  var result = 1
+  var adjustmentRatio = 5000 //just a relative number
+  $.each(googleZoomRatio, function(index, entry) {
+     var zoom = Object.keys(entry)[0];
+     var ratio = entry[zoom]
+     if (ratio * dimension > distanceMeterAsMaxDimension * adjustmentRatio) {
+        result = parseInt(zoom)
+        return false;
+     }
+  })
+  if (result <= 8 && result > 1 && (latitude > 45 || latitude < -45)) {
+    result -= 1
+  }
+  return result
+}
+
+
 function enableButton(button) {
     $(button).removeClass("disabled")
     var addedClickFunction = $(button).data("addedClickFunction")
