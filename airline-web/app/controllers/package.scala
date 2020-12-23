@@ -64,6 +64,7 @@ package object controllers {
       "price" -> JsNumber(airplaneModel.price),
       "lifespan" -> JsNumber(airplaneModel.lifespan),
       "airplaneType" -> JsString(airplaneModel.airplaneTypeLabel),
+      "turnaroundTime" -> JsNumber(airplaneModel.turnaroundTime),
       "runwayRequirement" -> JsNumber(airplaneModel.runwayRequirement),
       "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION), //same for all models for now
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now

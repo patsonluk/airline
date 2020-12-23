@@ -264,7 +264,7 @@ object LinkSimulation {
       val capacity = link.capacity(linkClass)
       val soldSeats = link.soldSeats(linkClass)
       
-      inflightCost += (linkClass.resourceMultiplier * (20 + link.rawQuality * link.duration / 60 / 10) * soldSeats * 2).toInt //10 hours, on top quality flight, cost is 100 per passenger + $30 basic cost . Roundtrip X 2
+      inflightCost += computeInflightCost(linkClass, link, soldSeats)
       crewCost += (linkClass.resourceMultiplier * capacity * link.duration / 60 * CREW_UNIT_COST).toInt 
       revenue += soldSeats * link.price(linkClass)
     }
@@ -306,6 +306,27 @@ object LinkSimulation {
     val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, loungeCost = loungeCost, revenue, profit, cycle)
     //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     (result, loungeConsumptionDetails.toList)
+  }
+
+  val BASE_INFLIGHT_COST = 20
+
+  val computeInflightCost = (linkClass : LinkClass, link : Link, soldSeats : Int) => {
+    val star = link.rawQuality / 20
+    val durationCostPerHour =
+      if (star <= 1) {
+        1
+      } else if (star == 2) {
+        4
+      } else if (star == 3) {
+        10
+      } else if (star == 4) {
+        17
+      } else {
+        25
+      }
+
+    val costPerPassenger = BASE_INFLIGHT_COST + durationCostPerHour * link.duration.toDouble / 60
+    (costPerPassenger * soldSeats * 2).toInt //Roundtrip X 2
   }
   
   val LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD = 3 //how many airlines before load factor is checked

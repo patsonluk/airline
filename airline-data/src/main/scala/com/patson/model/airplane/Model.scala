@@ -17,16 +17,19 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
       case _ => JUMBO
     }
   }
+
+  private[this]val BASE_TURNAROUND_TIME = 40
   val turnaroundTime : Int = {
-    airplaneType match {
-      case LIGHT => 45
-      case REGIONAL => 70
-      case SMALL => 100
-      case MEDIUM => 140
-      case LARGE => 180
-      case X_LARGE => 200
-      case JUMBO => 220
-    }
+    BASE_TURNAROUND_TIME +
+      (airplaneType match {
+        case LIGHT => capacity / 3 //45 - old value
+        case REGIONAL =>  capacity / 3 //70
+        case SMALL => capacity / 3 //100
+        case MEDIUM =>  capacity / 2.5 //140
+        case LARGE => capacity / 2.5 //180
+        case X_LARGE => capacity / 2.5 //200
+        case JUMBO => capacity / 2.5 //220
+      }).toInt
   }
 
   val airplaneTypeLabel : String = {
