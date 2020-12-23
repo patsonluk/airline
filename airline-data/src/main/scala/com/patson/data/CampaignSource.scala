@@ -183,7 +183,7 @@ object CampaignSource {
           List.empty
         } else {
           val queryString = s"SELECT * FROM $CAMPAIGN_TABLE WHERE id IN (${campaignIds.mkString(",")})";
-          loadCampaignsByQueryString(queryString, campaignIds.toList, fullLoad)
+          loadCampaignsByQueryString(queryString, List.empty, fullLoad)
         }
 
       resultSet.close()
