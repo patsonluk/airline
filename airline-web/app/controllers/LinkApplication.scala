@@ -807,6 +807,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         LinkSource.loadNegotiationCoolDownExpirationCycle(existingLink.id).foreach { expirationCycle =>
           return Some(s"Can only re-negotiate in ${expirationCycle - CycleSource.loadCycle()} week(s)", RejectionType.NEGOTIATION_COOL_DOWN)
         }
+      case None =>
     }
     return None
   }
