@@ -229,7 +229,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       BadRequest("Cannot insert link")
     }
   }
- 
+
   def addLinkBlock(request : AuthenticatedRequest[AnyContent, Airline]) : Result = {
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
     val delegateCount = request.body.asInstanceOf[AnyContentAsJson].json.\("assignedDelegates").as[Int]
@@ -333,6 +333,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     if (delegateCount > airline.getDelegateInfo().availableCount) {
       return BadRequest(s"Assigning $delegateCount delegates but not enough available");
+    }
+
+    if (delegateCount > NegotiationUtil.MAX_ASSIGNED_DELEGATE) {
+      return BadRequest(s"Assigning $delegateCount delegates > ${NegotiationUtil.MAX_ASSIGNED_DELEGATE}");
     }
 
     if (existingLink.isEmpty) {
