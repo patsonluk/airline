@@ -651,9 +651,14 @@ function updateBaseInfo(airportId) {
 }
 
 function updateAirportLoyalistDetails(airport) {
+    var url = "airports/" + airport.id + "/loyalist-data"
+
+    if (activeAirline) {
+        url += "?airlineId=" + activeAirline.id
+    }
     $.ajax({
 		type: 'GET',
-		url: "airports/" + airport.id + "/loyalist-data",
+		url: url,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
