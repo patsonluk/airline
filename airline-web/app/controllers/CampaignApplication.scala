@@ -67,7 +67,7 @@ class CampaignApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   val MAX_CAMPAIGN_RADIUS = 1000
   val MIN_CAMPAIGN_RADIUS = 100
   def getCampaignAirports(airlineId : Int, airportId : Int, radius : Int) = AuthenticatedAirline(airlineId) { request =>
-    AirportSource.loadAirportById(airportId) match {
+    AirportCache.getAirport(airportId) match {
       case Some(principalAirport) =>
         val areaAirports = ListBuffer[Airport]()
         val candidateAirports = ListBuffer[Airport]()

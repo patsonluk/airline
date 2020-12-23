@@ -247,8 +247,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       return BadRequest("Cannot insert link - no airplane assigned")
     }
 
-    val fromAirport = AirportSource.loadAirportById(incomingLink.from.id, true).getOrElse(return BadRequest("From airport not found"))
-    val toAirport = AirportSource.loadAirportById(incomingLink.to.id, true).getOrElse(return BadRequest("To airport not found"))
+    val fromAirport = AirportCache.getAirport(incomingLink.from.id, true).getOrElse(return BadRequest("From airport not found"))
+    val toAirport = AirportCache.getAirport(incomingLink.to.id, true).getOrElse(return BadRequest("To airport not found"))
 
 
     val existingLink : Option[Link] = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
@@ -980,9 +980,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     * Loads a pair of aiports, only return Some(fromAirport, toAirport) if BOTH airports are found
     */
   def loadAirports(fromAirportId : Int, toAirportId : Int, fullLoad : Boolean = false) : Option[(Airport, Airport)] = {
-    AirportSource.loadAirportById(fromAirportId, fullLoad) match {
+    AirportCache.getAirport(fromAirportId, fullLoad) match {
       case Some(fromAirport) =>
-        AirportSource.loadAirportById(toAirportId, fullLoad) match {
+        AirportCache.getAirport(toAirportId, fullLoad) match {
           case Some(toAirport) =>
             Some(fromAirport, toAirport)
           case None => None
