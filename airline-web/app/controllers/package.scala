@@ -11,6 +11,7 @@ import models.{AirportFacility, FacilityType}
 import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
+import scala.math.BigDecimal.RoundingMode
 
 
 
@@ -501,7 +502,7 @@ package object controllers {
 
       if (airport.isAirlineAppealsInitialized) {
         airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAdjustedAppeals().toList.map {
-          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
+          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  RoundingMode.HALF_EVEN))
         }
         ))
 
@@ -514,7 +515,7 @@ package object controllers {
               totalLoyaltyBonus += entry.bonus.loyalty
               totalAwarenessBonus += entry.bonus.awareness
             }
-            bonusJson = bonusJson + (airlineId.toString -> Json.obj("loyalty" -> totalLoyaltyBonus, "awareness" -> totalAwarenessBonus))
+            bonusJson = bonusJson + (airlineId.toString -> Json.obj("loyalty" -> BigDecimal(totalLoyaltyBonus).setScale(2, RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(totalAwarenessBonus).setScale(2, RoundingMode.HALF_EVEN)))
           }
         }
         airportObject = airportObject + ("bonusList" -> bonusJson)
