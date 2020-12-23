@@ -944,6 +944,14 @@ li.dot {
     align-items: center;
     margin: 4px 0;
 }
-li.dot:before, span.dot:before {
+li.dot:before, span.dot:before, div.remarks:before {
     content: url('/assets/images/markers/dot.png');
+}
+
+div.remarks {
+    font-style : italic;
+    font-size : 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
 }

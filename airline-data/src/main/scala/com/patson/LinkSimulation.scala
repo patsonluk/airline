@@ -106,6 +106,7 @@ object LinkSimulation {
     }
 
     purgeAlerts()
+    purgeNegotiationCoolDowns(cycle)
     checkLoadFactor(links, cycle)
 
     LinkSource.deleteLinkConsumptionsByCycle(300)
@@ -309,7 +310,7 @@ object LinkSimulation {
   
   val LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD = 3 //how many airlines before load factor is checked
   val LOAD_FACTOR_ALERT_THRESHOLD = 0.5 //LF threshold
-  val LOAD_FACTOR_ALERT_DURAION = 52
+  val LOAD_FACTOR_ALERT_DURATION = 52
 
   /**
     * Purge alerts that are no longer valid
@@ -325,6 +326,10 @@ object LinkSimulation {
     println("Purged alerts with no corresponding links... " + deadAlerts.size)
   }
 
+  def purgeNegotiationCoolDowns(cycle: Int): Unit = {
+    LinkSource.purgeNegotiationCoolDowns(cycle)
+  }
+
   def checkLoadFactor(links : List[Link], cycle : Int) = {
     val existingAlerts = AlertSource.loadAlertsByCategory(AlertCategory.LINK_CANCELLATION)
 
@@ -334,13 +339,13 @@ object LinkSimulation {
     )
 
     val existingAlertsByLinkId : scala.collection.immutable.Map[Int, Alert] = existingAlerts.map(alert => (alert.targetId.get, alert)).toMap
-    
+
     val updatingAlerts = ListBuffer[Alert]()
     val newAlerts = ListBuffer[Alert]()
     val deletingAlerts = ListBuffer[Alert]()
     val deletingLinks = ListBuffer[Link]()
     val newLogs = ListBuffer[Log]()
-    
+
     linksByAirportIds.foreach {
       case((airportId1, airportId2), links) =>
         if (links.size >= LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD) {
@@ -363,7 +368,7 @@ object LinkSimulation {
                   }
                 case None => //new warning
                   val message = "Airport authorities have issued warning to " + link.airline.name + " on low load factor of route between " +  link.from.displayText + " and " + link.to.displayText + ". If the load factor remains lower than " + LOAD_FACTOR_ALERT_THRESHOLD * 100 + "% for the remaining duration, the license to operate this route will be revoked!"
-                  val alert = Alert(airline = link.airline, message = message, category = AlertCategory.LINK_CANCELLATION, targetId = Some(link.id), cycle = cycle, duration = LOAD_FACTOR_ALERT_DURAION)
+                  val alert = Alert(airline = link.airline, message = message, category = AlertCategory.LINK_CANCELLATION, targetId = Some(link.id), cycle = cycle, duration = LOAD_FACTOR_ALERT_DURATION)
                   newAlerts.append(alert)
               }
             } else { //LF good, delete existing alert if any

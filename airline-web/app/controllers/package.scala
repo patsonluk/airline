@@ -607,6 +607,8 @@ package object controllers {
         "fromAirportRequirements" -> fromAirportRequirementsJson,
         "fromAirportDiscounts" -> fromAirportDiscountsJson,
         "toAirportDiscounts" -> toAirportDiscountsJson,
+        "finalFromDiscountValue" -> info.finalFromDiscountValue,
+        "finalToDiscountValue" -> info.finalToDiscountValue,
         "finalRequirementValue" -> info.finalRequirementValue)
     }
   }

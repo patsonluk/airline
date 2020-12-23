@@ -2165,7 +2165,6 @@ function updateAssignedDelegateCount(delegateCount) {
     var odds = negotiationOddsLookup[assignedDelegates]
     $('#linkConfirmationModal .successRate').text(Math.round(odds * 100) + '%')
 
-    $('#linkConfirmationModal .negotiateButton').show()
     if (odds <= 0) { //then need to add delegates
         disableButton($('#linkConfirmationModal .negotiateButton'), "Odds at 0%. Assign more delegates")
     } else {
@@ -2195,8 +2194,7 @@ function getLinkNegotiation() {
     			"model" : parseInt($("#planLinkModelSelect").val()),
     			"rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20}
 
-
-	$.ajax({
+    $.ajax({
 		type: 'POST',
 		url: url,
 		data: JSON.stringify(linkData),
@@ -2245,7 +2243,7 @@ function getLinkNegotiation() {
                 $('#negotiationDifficultyModal .negotiationRequirementsTotal.toAirport .total').text(toAirportRequirementValue.toFixed(2))
 
                 //from airport discounts
-                var fromDiscount = 0;
+
                 currentRow = $('#negotiationDifficultyModal div.negotiationFromDiscounts .table-header')
                 $.each(negotiationInfo.fromAirportDiscounts, function(index, discount) {
                     var displayDiscountValue = Math.round(discount.value >= 0 ? discount.value * 100 : discount.value * -100)
@@ -2253,7 +2251,6 @@ function getLinkNegotiation() {
                     if (discount.value < 0) {
                         currentRow.find('.discountValue').addClass('warning')
                     }
-                    fromDiscount += discount.value
                 })
 
                 if (negotiationInfo.fromAirportDiscounts.length == 0) {
@@ -2261,7 +2258,6 @@ function getLinkNegotiation() {
                 }
 
                 //to airport discounts
-                toDiscount  = 0
                 currentRow = $('#negotiationDifficultyModal div.negotiationToDiscounts .table-header')
                 $.each(negotiationInfo.toAirportDiscounts, function(index, discount) {
                     var displayDiscountValue = Math.round(discount.value >= 0 ? discount.value * 100 : discount.value * -100)
@@ -2269,13 +2265,13 @@ function getLinkNegotiation() {
                     if (discount.value < 0) {
                         currentRow.find('.discountValue').addClass('warning')
                     }
-                      toDiscount += discount.value
                 })
 
                 if (negotiationInfo.toAirportDiscounts.length == 0) {
                     $('<div class="table-row discount"><div class="cell">-</div><div class="cell">-</div></div>').insertAfter(currentRow)
                 }
 
+                var fromDiscount = negotiationInfo.finalFromDiscountValue
                 var displayDiscountValue = Math.round(fromDiscount >= 0 ? fromDiscount * 100 : fromDiscount * -100)
                 $('#negotiationDifficultyModal .negotiationDiscountTotal.fromAirport .total').text(displayDiscountValue + "%")
                 if (fromDiscount < 0) {
@@ -2283,7 +2279,7 @@ function getLinkNegotiation() {
                 } else {
                     $('#negotiationDifficultyModal .negotiationDiscountTotal.fromAirport .total').removeClass('warning')
                 }
-
+                var toDiscount = negotiationInfo.finalToDiscountValue
                 displayDiscountValue = Math.round(toDiscount >= 0 ? toDiscount * 100 : toDiscount * -100)
                 $('#negotiationDifficultyModal .negotiationDiscountTotal.toAirport .total').text(displayDiscountValue + "%")
                 if (toDiscount < 0) {
@@ -2321,6 +2317,15 @@ function getLinkNegotiation() {
                     updateAssignedDelegateCount(1)
                 } else {
                     updateAssignedDelegateCount(0)
+                }
+
+                if (result.rejection) {
+                    $('#linkConfirmationModal div.negotiationInfo .rejection .reason').text(result.rejection)
+                    $('#linkConfirmationModal div.negotiationInfo .rejection').css('display', 'flex')
+                    $('#linkConfirmationModal .negotiateButton').hide()
+                } else {
+                    $('#linkConfirmationModal div.negotiationInfo .rejection').hide()
+                    $('#linkConfirmationModal .negotiateButton').show()
                 }
 
                 $('#linkConfirmationModal .confirmButton').hide()

@@ -9,6 +9,7 @@ import com.patson.model.airplane._
 import com.patson.model.history.LinkChange
 import com.patson.util.{AirlineCache, AirplaneModelCache, AirportCache}
 
+import scala.collection.mutable
 import scala.collection.mutable.{HashMap, HashSet, ListBuffer, Set}
  
 
@@ -848,7 +849,58 @@ object LinkSource {
       connection.close()
     }
   }
-  
+
+  def saveNegotiationCoolDown(linkId : Int, expirationCycle : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $LINK_NEGOTIATION_COOL_DOWN_TABLE (link, expiration_cycle) VALUES(?,?)")
+      preparedStatement.setInt(1, linkId)
+      preparedStatement.setInt(2, expirationCycle)
+
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadNegotiationCoolDownExpirationCycle(linkId : Int): Option[Int] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM  $LINK_NEGOTIATION_COOL_DOWN_TABLE WHERE link = ?")
+      preparedStatement.setInt(1, linkId)
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = if (resultSet.next()) {
+        Some(resultSet.getInt("expiration_cycle"))
+      } else {
+        None
+      }
+      resultSet.close()
+      preparedStatement.close()
+
+      result
+    } finally {
+      connection.close()
+    }
+  }
+
+  def purgeNegotiationCoolDowns(atOrBeforeCycle : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("DELETE FROM " + LINK_NEGOTIATION_COOL_DOWN_TABLE + " where expiration_cycle <= ?")
+
+      preparedStatement.setInt(1, atOrBeforeCycle)
+
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+    }
+  }
+
   object DetailType extends Enumeration {
     type Type = Value
     val AIRPORT, AIRLINE, AIRPLANE = Value

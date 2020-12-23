@@ -124,6 +124,7 @@ object Constants {
   val BUSY_DELEGATE_TABLE = "busy_delegate"
   val COUNTRY_DELEGATE_TASK_TABLE = "country_delegate_task"
   val LINK_NEGOTIATION_TASK_TABLE = "link_negotiation_delegate_task"
+  val LINK_NEGOTIATION_COOL_DOWN_TABLE = "link_negotiation_cool_down"
   val LOYALIST_TABLE = "loyalist"
   val LOYALIST_HISTORY_TABLE = "loyalist_history"
 

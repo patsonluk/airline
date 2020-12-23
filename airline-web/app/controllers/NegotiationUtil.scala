@@ -3,7 +3,7 @@ package controllers
 import com.patson.data.LinkSource
 import com.patson.model.FlightType._
 import com.patson.model._
-import com.patson.util.CountryCache
+import com.patson.util.{AirportCache, CountryCache}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -27,7 +27,7 @@ object NegotiationUtil {
 
 
 
-  val NO_NEGOTIATION_REQUIRED = NegotiationInfo(List (), List (), List (), List (), 0, Map(0 -> 1))
+  val NO_NEGOTIATION_REQUIRED = NegotiationInfo(List (), List (), List (), List (), 0, 0, 0, Map(0 -> 1))
 
 
   val normalizedCapacity : LinkClassValues => Double = (capacity : LinkClassValues) => {
@@ -48,20 +48,20 @@ object NegotiationUtil {
     val requirements = ListBuffer[NegotiationRequirement]()
     val isNewLink = existingLinkOption.isEmpty
     val airport = newLink.from
-    if (isNewLink) {
-      val officeStaffCount : Int = airline.getBases().find(_.airport.id == airport.id).map(_.getOfficeStaffCapacity).getOrElse(0)
-      val airlineLinksFromThisAirport = airlineLinks.filter(_.from.id == airport.id)
-      val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getFutureOfficeStaffRequired).sum
-      val newOfficeStaffRequired = newLink.getFutureOfficeStaffRequired
-      val newTotal = currentOfficeStaffUsed + newOfficeStaffRequired
 
-      if (newTotal < officeStaffCount) {
-        requirements.append(NegotiationRequirement(LINK_CAP, 0, s"Requires ${newOfficeStaffRequired} office staff, within your base capacity : ${newTotal} / ${officeStaffCount}"))
-      } else {
-        val requirement = (newTotal - officeStaffCount).toDouble / 20
-        requirements.append(NegotiationRequirement(LINK_CAP, requirement, s"Requires ${newOfficeStaffRequired} office staff, over your base capacity : ${newTotal} / ${officeStaffCount}"))
-      }
+    val officeStaffCount : Int = airline.getBases().find(_.airport.id == airport.id).map(_.getOfficeStaffCapacity).getOrElse(0)
+    val airlineLinksFromThisAirport = airlineLinks.filter(link => link.from.id == airport.id && (isNewLink || link.id != existingLinkOption.get.id))
+    val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getFutureOfficeStaffRequired).sum
+    val newOfficeStaffRequired = newLink.getFutureOfficeStaffRequired
+    val newTotal = currentOfficeStaffUsed + newOfficeStaffRequired
+
+    if (newTotal < officeStaffCount) {
+      requirements.append(NegotiationRequirement(LINK_CAP, 0, s"Requires ${newOfficeStaffRequired} office staff, within your base capacity : ${newTotal} / ${officeStaffCount}"))
+    } else {
+      val requirement = (newTotal - officeStaffCount).toDouble / 20
+      requirements.append(NegotiationRequirement(LINK_CAP, requirement, s"Requires ${newOfficeStaffRequired} office staff, over your base capacity : ${newTotal} / ${officeStaffCount}"))
     }
+
     val newFrequency = newLink.futureFrequency()
     val frequencyDelta = newFrequency - existingLinkOption.map(_.futureFrequency()).getOrElse(0)
     if (frequencyDelta > 0) {
@@ -96,11 +96,14 @@ object NegotiationUtil {
       case ULTRA_LONG_HAUL_INTERCONTINENTAL => 5
     }
     val NEW_LINK_BASE_REQUIREMENT = 1
+    val UPDATE_BASE_REQUIREMENT = 0.3
 
     import NegotiationRequirementType._
 
     if (existingLinkOption.isEmpty) {
       requirements.append(NegotiationRequirement(NEW_LINK, NEW_LINK_BASE_REQUIREMENT * flightTypeMultiplier, "New Flights"))
+    } else {
+      requirements.append(NegotiationRequirement(UPDATE_LINK, UPDATE_BASE_REQUIREMENT * flightTypeMultiplier, "Update Flights"))
     }
 
     if (capacityDelta > 0) {
@@ -200,8 +203,17 @@ object NegotiationUtil {
       discounts.append(NegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     }
 
+    val loyalty = airport.getAirlineLoyalty(airline.id)
+    val MAX_LOYALTY_DISCOUNT = 0.5
+    if (loyalty > 0) {
+      val discount = Math.min(MAX_LOYALTY_DISCOUNT, MAX_LOYALTY_DISCOUNT * loyalty / AirlineAppeal.MAX_LOYALTY)
+      discounts.append(NegotiationDiscount(LOYALTY, discount))
+    }
+
     discounts.toList
   }
+
+  val MAX_TOTAL_DISCOUNT = 0.8 //at most 80% off
 
   def getLinkNegotiationInfo(airline : Airline, newLink : Link, existingLinkOption : Option[Link]) : NegotiationInfo = {
     val fromAirport : Airport = newLink.from
@@ -228,8 +240,8 @@ object NegotiationUtil {
 
     val fromRequirementBase = fromAirportRequirements.map(_.value).sum
     val toRequirementBase = toAirportRequirements.map(_.value).sum
-    val totalFromDiscount = Math.min(1, fromAirportDiscounts.map(_.value).sum)
-    val totalToDiscount = Math.min(1, toAirportDiscounts.map(_.value).sum)
+    val totalFromDiscount = Math.min(MAX_TOTAL_DISCOUNT, fromAirportDiscounts.map(_.value).sum)
+    val totalToDiscount = Math.min(MAX_TOTAL_DISCOUNT, toAirportDiscounts.map(_.value).sum)
     val fromAirportRequirementValue = fromRequirementBase * (1 - totalFromDiscount)
     val toAirportRequirementValue = toRequirementBase * (1 - totalToDiscount)
     val finalRequirementValue = fromAirportRequirementValue + toAirportRequirementValue
@@ -242,7 +254,7 @@ object NegotiationUtil {
       return NegotiationUtil.NO_NEGOTIATION_REQUIRED
     }
 
-    val info = NegotiationInfo(fromAirportRequirements, toAirportRequirements, fromAirportDiscounts, toAirportDiscounts, finalRequirementValue, computeOdds(finalRequirementValue, Math.min(MAX_ASSIGNED_DELEGATE, airline.getDelegateInfo.availableCount)))
+    val info = NegotiationInfo(fromAirportRequirements, toAirportRequirements, fromAirportDiscounts, toAirportDiscounts, totalFromDiscount, totalToDiscount, finalRequirementValue, computeOdds(finalRequirementValue, Math.min(MAX_ASSIGNED_DELEGATE, airline.getDelegateInfo.availableCount)))
     return info
   }
 
@@ -307,11 +319,11 @@ object NegotiationUtil {
 //  }
 //}
 
-case class NegotiationInfo(fromAirportRequirements : List[NegotiationRequirement], toAirportRequirements : List[NegotiationRequirement], fromAirportDiscounts : List[NegotiationDiscount], toAirportDiscounts : List[NegotiationDiscount], finalRequirementValue : Double, odds : Map[Int, Double])
+case class NegotiationInfo(fromAirportRequirements : List[NegotiationRequirement], toAirportRequirements : List[NegotiationRequirement], fromAirportDiscounts : List[NegotiationDiscount], toAirportDiscounts : List[NegotiationDiscount], finalFromDiscountValue : Double, finalToDiscountValue : Double, finalRequirementValue : Double, odds : Map[Int, Double])
 
 object NegotiationRequirementType extends Enumeration {
   type NegotiationRequirementType = Value
-  val FROM_COUNTRY_RELATIONSHIP, TO_COUNTRY_RELATIONSHIP, EXISTING_COMPETITION, NEW_LINK, INCREASE_CAPACITY, INCREASE_FREQUENCY, EXCESSIVE_FREQUENCY, LOW_LOAD_FACTOR, FOREIGN_AIRLINE, LINK_CAP, OTHER = Value
+  val FROM_COUNTRY_RELATIONSHIP, TO_COUNTRY_RELATIONSHIP, EXISTING_COMPETITION, NEW_LINK, UPDATE_LINK, INCREASE_CAPACITY, INCREASE_FREQUENCY, EXCESSIVE_FREQUENCY, LOW_LOAD_FACTOR, FOREIGN_AIRLINE, LINK_CAP, OTHER = Value
 
 //  def description(requirementType : NegotiationRequirementType.Value, link : Link) =  requirementType match {
 //    case EXISTING_COMPETITION => "Existing Routes by other Airlines"
@@ -326,12 +338,13 @@ object NegotiationRequirementType extends Enumeration {
 
 object NegotiationDiscountType extends Enumeration {
   type NegotiationDiscountType = Value
-  val COUNTRY_RELATIONSHIP, BELOW_CAPACITY, OVER_CAPACITY, NEW_AIRLINE = Value
+  val COUNTRY_RELATIONSHIP, BELOW_CAPACITY, OVER_CAPACITY, LOYALTY, NEW_AIRLINE = Value
 
   def description(adjustmentType : NegotiationDiscountType.Value, airport : Airport) =  adjustmentType match {
     case COUNTRY_RELATIONSHIP => s"Country Relationship with ${airport.countryCode}"
     case BELOW_CAPACITY => s"${airport.displayText} is under capacity"
     case OVER_CAPACITY => s"${airport.displayText} is over capacity"
+    case LOYALTY => s"Loyalty of ${airport.displayText}"
     case NEW_AIRLINE => s"New airline bonus"
   }
 }

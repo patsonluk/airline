@@ -326,7 +326,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
     //validate based on existing user parameters
-    val rejectionReason = getRejectionReason(request.user, fromAirport = incomingLink.from, toAirport = incomingLink.to, existingLink.isEmpty)
+    val rejectionReason = getRejectionReason(request.user, fromAirport = incomingLink.from, toAirport = incomingLink.to, existingLink)
     if (rejectionReason.isDefined) {
       return BadRequest("Link is rejected: " + rejectionReason.get);
     }
@@ -344,16 +344,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(airline, incomingLink, existingLink)
     val negotiationResultOption =
       if (negotiationInfo.finalRequirementValue > 0) { //then negotiation is required
-        //update delegate status
-        val cycle = CycleSource.loadCycle()
-        val task = DelegateTask.linkNegotiation(cycle, fromAirport, toAirport)
-        val availableCycle = cycle + task.coolDown
-
-        val busyDelegates = (0 until delegateCount).toList.map { _ =>
-          BusyDelegate(airline, task, Some(availableCycle))
+        getNegotiationRejectionReason(airline, incomingLink.from, incomingLink.to, existingLink) foreach {
+          case (reason, rejectionType) =>
+            return BadRequest(s"No negotiation : $reason")
         }
-
-        DelegateSource.saveBusyDelegates(busyDelegates)
 
         Some(NegotiationUtil.negotiate(negotiationInfo, delegateCount))
       } else {
@@ -396,6 +390,25 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       } else { //negotiation failed
         incomingLink
       }
+
+    negotiationResultOption.foreach { result =>
+      //update delegate status
+      val cycle = CycleSource.loadCycle()
+      val task = DelegateTask.linkNegotiation(cycle, fromAirport, toAirport)
+      val coolDown = if (result.isSuccessful) task.coolDown else task.coolDown / 2 //half cooldown if it was unsuccessful
+      val availableCycle = cycle + coolDown
+
+      val busyDelegates = (0 until delegateCount).toList.map { _ =>
+        BusyDelegate(airline, task, Some(availableCycle))
+      }
+
+      DelegateSource.saveBusyDelegates(busyDelegates)
+
+      if (result.isSuccessful) { //if negotiation was successful, add a link negotiation cooldown as well
+        LinkSource.saveNegotiationCoolDown(resultLink.id, cycle + Link.LINK_NEGOTIATION_COOL_DOWN)
+      }
+    }
+
 
     var result : JsObject = Json.toJson(resultLink).asInstanceOf[JsObject]
     if (negotiationResultOption.isDefined) {
@@ -575,7 +588,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
 
-        val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink.isEmpty)
+        val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink)
 
         val warnings = getWarnings(request.user, fromAirport, toAirport, existingLink.isEmpty)
 
@@ -737,50 +750,64 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   object RejectionType extends Enumeration {
     type RejectionType = Value
-    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH = Value
+    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH, NEGOTIATION_COOL_DOWN = Value
   }
 
-  def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, newLink : Boolean) : Option[(String, RejectionType.Value)]= {
+  def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, existingLink : Option[Link]) : Option[(String, RejectionType.Value)]= {
     import RejectionType._
     if (airline.getCountryCode.isEmpty) {
       return Some(("Airline has no HQ!", NO_BASE))
     }
     val toCountryCode = toAirport.countryCode
 
-    if (newLink) { //only check new links for now
-      //validate from airport is a base
-      val base = fromAirport.getAirlineBase(airline.id) match {
-        case None => return Some(("Cannot fly from this airport, this is not a base!", NO_BASE))
-        case Some(base) => base
-      }
-
-
-      val flightCategory = FlightType.getCategory(Computation.getFlightType(fromAirport, toAirport))
-      //check title status
-      if (flightCategory == FlightCategory.INTERCONTINENTAL) {
-        val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE
-        val currentTitle = CountryAirlineTitle.getTitle(toCountryCode, airline)
-        val ok =  currentTitle.title.id <= requiredTitle.id //smaller value means higher title
-
-        if (!ok) {
-          return Some((s"Cannot fly Intercontinental to this ${if (toAirport.isGateway()) "Gateway" else "Non-gateway"} airport until your airline attain title ${Title.description(requiredTitle)} with ${CountryCache.getCountry(toCountryCode).get.name}", TITLE_REQUIREMENT))
+    existingLink match {
+      case None => //new link
+        //validate from airport is a base
+        val base = fromAirport.getAirlineBase(airline.id) match {
+          case None => return Some(("Cannot fly from this airport, this is not a base!", NO_BASE))
+          case Some(base) => base
         }
-      }
 
 
-      //check distance
-      val distance = Computation.calculateDistance(fromAirport, toAirport)
-      if (distance <= DemandGenerator.MIN_DISTANCE) {
-        return Some("Route must be longer than " + DemandGenerator.MIN_DISTANCE + " km", DISTANCE)
-      }
+        val flightCategory = FlightType.getCategory(Computation.getFlightType(fromAirport, toAirport))
+        //check title status
+        if (flightCategory == FlightCategory.INTERCONTINENTAL) {
+          val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE
+          val currentTitle = CountryAirlineTitle.getTitle(toCountryCode, airline)
+          val ok = currentTitle.title.id <= requiredTitle.id //smaller value means higher title
 
-      //check balance
-      val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
-      if (airline.getBalance() < cost) {
-        return Some("Not enough cash to establish this route", NO_CASH)
-      }
+          if (!ok) {
+            return Some((s"Cannot fly Intercontinental to this ${if (toAirport.isGateway()) "Gateway" else "Non-gateway"} airport until your airline attain title ${Title.description(requiredTitle)} with ${CountryCache.getCountry(toCountryCode).get.name}", TITLE_REQUIREMENT))
+          }
+        }
+
+
+        //check distance
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
+        if (distance <= DemandGenerator.MIN_DISTANCE) {
+          return Some("Route must be longer than " + DemandGenerator.MIN_DISTANCE + " km", DISTANCE)
+        }
+
+        //check balance
+        val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
+        if (airline.getBalance() < cost) {
+          return Some("Not enough cash to establish this route", NO_CASH)
+        }
+      case Some(existingLink) => //nothing
+
     }
 
+
+    return None
+  }
+
+  def getNegotiationRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, existingLink : Option[Link]) : Option[(String, RejectionType.Value)]= {
+    existingLink match {
+      case Some(existingLink) =>
+        LinkSource.loadNegotiationCoolDownExpirationCycle(existingLink.id).foreach { expirationCycle =>
+          return Some(s"Can only re-negotiate in ${expirationCycle - CycleSource.loadCycle()} week(s)", RejectionType.NEGOTIATION_COOL_DOWN)
+        }
+    }
     return None
   }
 
@@ -997,10 +1024,18 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
     val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(request.user, incomingLink, existingLinkOption)
 
-    Ok(Json.obj("negotiationInfo" -> Json.toJson(negotiationInfo)(NegotiationInfoWrites(incomingLink)),
+
+    var result = Json.obj("negotiationInfo" -> Json.toJson(negotiationInfo)(NegotiationInfoWrites(incomingLink)),
     "delegateInfo" -> Json.toJson(request.user.getDelegateInfo),
     "toAirport" -> Json.toJson(incomingLink.to),
-    "fromAirport" -> Json.toJson(incomingLink.from)))
+    "fromAirport" -> Json.toJson(incomingLink.from))
+
+    getNegotiationRejectionReason(request.user, incomingLink.from, incomingLink.to, existingLinkOption).foreach {
+      case (reason, rejectionType) => result = result + ("rejection" -> JsString(reason))
+    }
+
+    Ok(result)
+
   }
 
 

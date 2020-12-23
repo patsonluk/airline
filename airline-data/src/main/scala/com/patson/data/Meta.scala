@@ -297,6 +297,7 @@ object Meta {
     createChatMessage(connection)
     createLoyalist(connection)
     createCampaign(connection)
+    createLinkNegotiationCoolDown(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1626,6 +1627,23 @@ object Meta {
     statement.execute()
     statement.close()
   }
+
+  def createLinkNegotiationCoolDown(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_NEGOTIATION_COOL_DOWN_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement(s"CREATE TABLE $LINK_NEGOTIATION_COOL_DOWN_TABLE (" +
+      s"link INTEGER PRIMARY KEY REFERENCES $LINK_TABLE(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "expiration_cycle INTEGER" +
+      ")")
+
+    statement.execute()
+    statement.close()
+
+  }
+
 
 
   def isTableExist(connection : Connection, tableName : String): Boolean = {
