@@ -118,7 +118,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     }
 
     val getModelFamilyLimit =  {
-      if (value >= 10) 10 else value
+      Math.max(2, Math.min(10, value))
     }
   }
 
