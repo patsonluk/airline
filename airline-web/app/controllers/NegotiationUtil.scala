@@ -267,6 +267,7 @@ object NegotiationUtil {
   def computeOdds(finalRequirementValue : Double, maxDelegateCount : Int) : Map[Int, Double] = {
     val requiredDelegates = finalRequirementValue
     var accumulativeOdds = 0.0
+    var foundMax = false
     (0 to maxDelegateCount).map { delegateCount =>
       val oddsForThisDelegateCount : Double =
         if (finalRequirementValue == 0) {
@@ -285,6 +286,14 @@ object NegotiationUtil {
           }
         }
       (delegateCount, oddsForThisDelegateCount)
+    }.filter { //keep only the first count that reaches 1
+      case (delegateCount, oddsForThisDelegateCount) =>
+        if (foundMax) {
+          false
+        } else {
+          foundMax = (oddsForThisDelegateCount == 1)
+          true
+        }
     }.toMap
   }
 
