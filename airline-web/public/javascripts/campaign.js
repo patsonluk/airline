@@ -44,6 +44,7 @@ function changeCampaignDelegateCount(delta) {
         } else {
             enableButton($('#campaignModal .campaignDetails .save'))
         }
+        $('#campaignModal .campaignDetails .cost').text('$' + commaSeparateNumber(delegateCount * $('#campaignModal .campaignDetails').data('costPerDelegate')))
     })
 }
 
@@ -352,12 +353,16 @@ function updateCampaignDetails(campaign) {
     })
 
     $('#campaignModal .campaignDetails .delegateLevel').text(delegateLevel)
+    $('#campaignModal .campaignDetails').data('costPerDelegate', campaign.costPerDelegate)
     $('#campaignModal .campaignDetails .awarenessBonus').text(campaign.bonus.awareness)
     $('#campaignModal .campaignDetails .loyaltyBonus').text(campaign.bonus.loyalty)
 
     //update delegate section
     var $delegateSection = $('#campaignModal div.delegateSection')
+    $('#campaignModal .campaignDetails .cost').text('$' + commaSeparateNumber($delegateSection.data('assignedDelegateCount') * campaign.costPerDelegate))
     refreshAssignedDelegates($delegateSection)
+
+
 }
 
 function closeCampaignDetails() {

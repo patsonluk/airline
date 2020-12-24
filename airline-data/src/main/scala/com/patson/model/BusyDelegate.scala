@@ -28,6 +28,15 @@ case class CampaignDelegateTask(startCycle : Int, campaign : Campaign) extends L
   override val description: String = s"Campaign in the area around ${campaign.principalAirport.displayText}"
 
   override val LEVEL_CYCLE_THRESHOLDS = List(1, 4, 12, 52)
+
+
+
+  val cost = CampaignDelegateTask.cost(campaign.principalAirport.income)
+}
+
+object CampaignDelegateTask {
+  private[this] val BASE_COST = 10000
+  def cost = (principalAirportIncome : Int) => BASE_COST + principalAirportIncome
 }
 
 abstract class LevelingDelegateTask(startCycle : Int, delegateTaskType: DelegateTaskType.Value) extends DelegateTask(startCycle, delegateTaskType) {

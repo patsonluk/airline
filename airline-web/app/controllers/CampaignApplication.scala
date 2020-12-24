@@ -90,7 +90,8 @@ class CampaignApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           "area" -> areaAirports.toList,
           "population" ->  population,
           "candidateArea" -> candidateAirports.toList,
-          "bonus" -> Json.obj("awareness" -> awarenessBonus, "loyalty" -> loyaltyBonus)))
+          "bonus" -> Json.obj("awareness" -> awarenessBonus, "loyalty" -> loyaltyBonus),
+          "costPerDelegate" -> CampaignDelegateTask.cost(principalAirport.income)))
       case None => NotFound(s"airport with id $airportId not found")
     }
   }

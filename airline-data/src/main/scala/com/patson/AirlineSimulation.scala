@@ -232,6 +232,10 @@ object AirlineSimulation {
 //        println("barrels used: " + barrelsUsed + " acc. fuel cost " + accountingFuelCost + " actual fuel cost " + actualFuelCost.toLong + " profit " + fuelProfit)
         
         othersSummary.put(OtherIncomeItemType.FUEL_PROFIT, fuelProfit)
+
+      //campaign/ads
+        val advertisementCost = DelegateSource.loadCampaignTasksByAirlineId(airline.id).map(_.cost).sum
+        othersSummary.put(OtherIncomeItemType.ADVERTISEMENT, advertisementCost * -1)
         
         
         var othersRevenue = 0L

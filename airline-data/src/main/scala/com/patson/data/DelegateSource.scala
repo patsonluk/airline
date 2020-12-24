@@ -149,32 +149,41 @@ object DelegateSource {
 
   }
 
+  def loadCampaignTasksByAirlineId(airlineId : Int) : List[CampaignDelegateTask] = {
+    val campaignDelegateIds = loadBusyDelegatesByAirline(airlineId).filter(_.assignedTask.getTaskType == DelegateTaskType.CAMPAIGN).map(_.id)
+    loadCampaignTasks(campaignDelegateIds).values.map(_.asInstanceOf[CampaignDelegateTask]).toList
+  }
+
   def loadCampaignTasks(delegateIds : List[Int]) = {
-    val connection = Meta.getConnection()
-    try {
-      val delegateIdPhrase = delegateIds.mkString(",")
-      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $CAMPAIGN_DELEGATE_TASK_TABLE WHERE delegate IN ($delegateIdPhrase)")
-      val resultSet = preparedStatement.executeQuery()
+    if (delegateIds.isEmpty) {
+      Map.empty[Int, DelegateTask]
+    } else {
+      val connection = Meta.getConnection()
+      try {
+        val delegateIdPhrase = delegateIds.mkString(",")
+        val preparedStatement = connection.prepareStatement(s"SELECT * FROM $CAMPAIGN_DELEGATE_TASK_TABLE WHERE delegate IN ($delegateIdPhrase)")
+        val resultSet = preparedStatement.executeQuery()
 
-      val result = mutable.Map[Int, DelegateTask]() //key delegateId
+        val result = mutable.Map[Int, DelegateTask]() //key delegateId
 
-      val campaignCache = mutable.Map[Int, Campaign]()
+        val campaignCache = mutable.Map[Int, Campaign]()
 
-      while (resultSet.next()) {
-        val delegateId = resultSet.getInt("delegate")
-        val campaignId = resultSet.getInt("campaign")
-        val campaign = campaignCache.getOrElseUpdate(campaignId, CampaignSource.loadCampaignById(campaignId).get)
-        val startCycle = resultSet.getInt("start_cycle")
+        while (resultSet.next()) {
+          val delegateId = resultSet.getInt("delegate")
+          val campaignId = resultSet.getInt("campaign")
+          val campaign = campaignCache.getOrElseUpdate(campaignId, CampaignSource.loadCampaignById(campaignId).get)
+          val startCycle = resultSet.getInt("start_cycle")
 
-        result.put(delegateId, DelegateTask.campaign(startCycle, campaign))
+          result.put(delegateId, DelegateTask.campaign(startCycle, campaign))
+        }
+
+        resultSet.close()
+        preparedStatement.close()
+
+        result.toMap
+      } finally {
+        connection.close()
       }
-
-      resultSet.close()
-      preparedStatement.close()
-
-      result.toMap
-    } finally {
-      connection.close()
     }
 
   }
