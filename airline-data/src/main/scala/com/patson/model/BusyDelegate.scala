@@ -26,6 +26,8 @@ case class CountryDelegateTask(startCycle : Int, country: Country) extends Level
 
 case class CampaignDelegateTask(startCycle : Int, campaign : Campaign) extends LevelingDelegateTask(startCycle, DelegateTaskType.CAMPAIGN) {
   override val description: String = s"Campaign in the area around ${campaign.principalAirport.displayText}"
+
+  override val LEVEL_CYCLE_THRESHOLDS = List(1, 4, 12, 52)
 }
 
 abstract class LevelingDelegateTask(startCycle : Int, delegateTaskType: DelegateTaskType.Value) extends DelegateTask(startCycle, delegateTaskType) {
