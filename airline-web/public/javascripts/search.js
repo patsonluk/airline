@@ -73,7 +73,7 @@ function searchFlight(fromAirportId, toAirportId) {
             success: function(searchResult) {
                 $("#routeSearchResult").empty()
                 $.each(searchResult, function(index, entry) {
-                    var itineraryDiv = $("<div class='section itinerary clickable' onclick='toggleSearchLinkDetails($(this))'></div>")
+                    var itineraryDiv = $("<div class='section itinerary' onclick='toggleSearchLinkDetails($(this))'></div>")
                     var total = 0
 
                     var routeDiv = $("<div style='float:left; width : 85%'></div>")
