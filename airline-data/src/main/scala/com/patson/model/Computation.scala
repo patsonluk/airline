@@ -237,7 +237,7 @@ object Computation {
   val computePassengerSatisfaction = (cost: Double, standardPrice : Int) => {
     val ratio = cost / standardPrice
     var satisfaction = (MIN_SATISFACTION_PRICE_RATIO_THRESHOLD - ratio) / (MIN_SATISFACTION_PRICE_RATIO_THRESHOLD - MAX_SATISFACTION_PRICE_RATIO_THRESHOLD)
-    satisfaction = Math.min(1, Math.max(0, satisfaction)).toFloat
+    satisfaction = Math.min(1, Math.max(0, satisfaction))
     println(s"${cost} vs standard price $standardPrice. satisfaction : ${satisfaction}")
     satisfaction
   }
