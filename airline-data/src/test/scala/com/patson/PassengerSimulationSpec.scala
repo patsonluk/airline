@@ -555,10 +555,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
+      val duration = Computation.computeStandardFlightDuration(distance)
       val price = suggestedPrice * 0.6
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, FIRST)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = 14, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration = duration, frequency = 14, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -589,10 +590,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 0.6
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration = duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           
       var totalRoutes = 0
       var totalAcceptedRoutes = 0;
@@ -623,11 +625,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, FIRST)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -659,11 +662,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, ECONOMY)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -694,11 +698,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, ECONOMY)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -731,11 +736,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, ECONOMY)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -768,10 +774,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 1.5
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
       var totalRoutes = 0
@@ -803,11 +810,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 2.5
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, ECONOMY)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -840,11 +848,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 3
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = 100
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -877,11 +886,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 3
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = 100
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -914,10 +924,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 2
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -950,11 +961,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice * 4
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = 100
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -987,11 +999,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, ECONOMY)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 0, 0), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 0, 0), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -1025,10 +1038,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       var airportWalker = clonedFromAirport
       val links = toAirportsList.map { toAirport =>
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
+          val duration = Computation.computeStandardFlightDuration(distance)
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
           val quality = fromAirport.expectedQuality(linkType, FIRST)
-          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * 1.5, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * 1.5, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           newLink.setQuality(quality)
           airportWalker = toAirport
           newLink }
@@ -1075,10 +1089,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       var airportWalker = clonedFromAirport
       val links = toAirports.map { toAirport =>
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
+          val duration = Computation.computeStandardFlightDuration(distance)
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
           //make last link really expensive
-          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * (if (toAirport == toAirports.last) 4 else 1), distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * (if (toAirport == toAirports.last) 4 else 1), distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           airportWalker = toAirport
           newLink }
       
@@ -1116,10 +1131,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       var airportWalker = clonedFromAirport
       val links = toAirports.map { toAirport =>
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
+          val duration = Computation.computeStandardFlightDuration(distance)
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
           val quality = fromAirport.expectedQuality(linkType, FIRST)
-          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           newLink.setQuality(quality)
           airportWalker = toAirport
           newLink }
@@ -1159,9 +1175,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       var airportWalker = clonedFromAirport
       val links = toAirportsList.map { toAirport =>
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
+          val duration = Computation.computeStandardFlightDuration(distance)
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
-          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * 2, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * 2, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           airportWalker = toAirport
           newLink }
       
@@ -1196,9 +1213,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       var airportWalker = clonedFromAirport
       val links = toAirports.map { toAirport =>
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
+          val duration = Computation.computeStandardFlightDuration(distance)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport) * 0.6
-          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 50, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 50, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           newLink.setQuality(50)
           airportWalker = toAirport
           newLink }
@@ -1240,9 +1258,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       var airportWalker = clonedFromAirport
       val links = toAirports.map { toAirport =>
           val distance = Util.calculateDistance(airportWalker.latitude, airportWalker.longitude, toAirport.latitude, toAirport.longitude).intValue()
+          val duration = Computation.computeStandardFlightDuration(distance)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
-          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           airportWalker = toAirport
           newLink }
       
@@ -1270,11 +1289,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) //no lounge on the other side... so it's a no
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, FIRST)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -1305,11 +1325,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
       val toAirport = toAirportsList(0).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, FIRST)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -1342,11 +1363,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val toAirport = toAirportsList(0).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
       toAirport.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = toAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, FIRST)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)    
       
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
@@ -1379,11 +1401,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val toAirport = toAirportsList(0).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
       toAirport.initLounges(List(Lounge(airline = testAirline1, allianceId  = None, airport = toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, FIRST)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)
           
       
@@ -1416,11 +1439,12 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val toAirport = toAirportsList(0).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
       toAirport.initLounges(List(Lounge(airline = testAirline2, allianceId = Some(1), airport = toAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) 
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
       val price = suggestedPrice
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, FIRST)
-      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, 600, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
       newLink.setQuality(quality)
           
       

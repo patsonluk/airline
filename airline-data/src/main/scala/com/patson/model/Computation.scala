@@ -1,5 +1,6 @@
 package com.patson.model
 
+import com.patson.PassengerSimulation.{LINK_COST_TOLERANCE_FACTOR}
 import com.patson.model.airplane._
 import com.patson.data.{AirlineSource, AirplaneSource, AllianceSource, BankSource, CountrySource, CycleSource, OilSource}
 import com.patson.Util
@@ -17,11 +18,14 @@ object Computation {
 
   //distance vs max speed
   val speedLimits = List((300, 350), (400, 500), (400, 700))  
-  def calculateDuration(airplaneModel: Model, distance : Int) = {
+  def calculateDuration(airplaneModel: Model, distance : Int) : Int = {
+    calculateDuration(airplaneModel.speed, distance)
+  }
+  def calculateDuration(airplaneSpeed : Int, distance : Int) = {
     var remainDistance = distance
     var duration = 0;
     for ((distanceBucket, maxSpeed) <- speedLimits if(remainDistance > 0)) {
-      val speed = Math.min(maxSpeed, airplaneModel.speed)
+      val speed = Math.min(maxSpeed, airplaneSpeed)
       if (distanceBucket >= remainDistance) {
         duration += remainDistance * 60 / speed
       } else {
@@ -29,12 +33,13 @@ object Computation {
       }
       remainDistance -= distanceBucket
     }
-    
+
     if (remainDistance > 0) {
-      duration += remainDistance * 60 / airplaneModel.speed
+      duration += remainDistance * 60 / airplaneSpeed
     }
     duration
   }
+
 
   def calculateFlightMinutesRequired(airplaneModel : Model, distance : Int) : Int = {
     val duration = calculateDuration(airplaneModel, distance)
@@ -221,4 +226,30 @@ object Computation {
 //  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
 //    model.constructionTime + (existingConstruction / 5) * model.constructionTime / 4 
 //  }
+
+  val MAX_SATISFACTION_PRICE_RATIO_THRESHOLD = 0.5 //at 100% satisfaction is <= this threshold
+  val MIN_SATISFACTION_PRICE_RATIO_THRESHOLD = LINK_COST_TOLERANCE_FACTOR + 0.1 //0% satisfaction >= this threshold ... +0.1 so, there will be at least some satisfaction even at the LINK_COST_TOLERANCE_FACTOR
+  /**
+    * From 0 (not satisfied at all) to 1 (fully satisfied)
+    *
+    *
+    */
+  val computePassengerSatisfaction = (cost: Double, standardPrice : Int) => {
+    val ratio = cost / standardPrice
+    val satisfaction = (MIN_SATISFACTION_PRICE_RATIO_THRESHOLD - ratio) / (MIN_SATISFACTION_PRICE_RATIO_THRESHOLD - MAX_SATISFACTION_PRICE_RATIO_THRESHOLD)
+    println(s"${cost} vs standard price $standardPrice. satisfaction : ${satisfaction}")
+    Math.min(1, Math.max(0, satisfaction)).toFloat
+  }
+
+  def computeStandardFlightDuration(distance : Int) = {
+    val standardSpeed =
+      if (distance <= 1000) {
+        400
+      } else if (distance <= 2000) {
+        600
+      } else {
+        800
+      }
+    Computation.calculateDuration(standardSpeed, distance)
+  }
 }

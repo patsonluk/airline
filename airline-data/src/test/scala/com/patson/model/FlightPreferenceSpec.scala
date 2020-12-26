@@ -528,7 +528,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       assert(appealRatio > 1)
       assert(appealRatio < 3)
       assert(loyaltyRatio > 2)
-      assert(loyaltyRatio < 4)
+      assert(loyaltyRatio < 5)
       assert(loyaltyRatio / appealRatio > 1.5) 
     }
     
@@ -656,8 +656,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 10)
-      assert(ratio <  50)
+      assert(ratio > 50)
      }
      
       "some overlap if frequency diff is small". in {

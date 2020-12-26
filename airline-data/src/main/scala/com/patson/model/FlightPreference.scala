@@ -41,8 +41,37 @@ abstract class FlightPreference {
   def getFlatTopBellRandom(topWidth : Double, bellExtenstion : Double) = {
     topWidth / 2 - Math.random * topWidth + Util.getBellRandom(0) * bellExtenstion
   }
+
+  val priceAdjustedByLinkDiff = (link : Link, linkClass : LinkClass) => {
+    val price = link.price(linkClass);
+    if (linkClass.level != preferredLinkClass.level) {
+      val classDiffMultiplier: Double = 1 + (preferredLinkClass.level - linkClass.level) * 0.7
+      (price / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
+    } else {
+      price
+    }
+  }
   
   val connectionCostRatio = 1.0
+
+  //waitThreshold => if lower than threshold, adjust cost down (< 1); otherwise adjust up
+  //waitMultiplier, flightDurationMultiplier => how does wait time and speed affect ratio, 0 = no effect, 0.1 = 10%
+  val tripDurationAdjustedRatio = (link : Link, waitThreshold : Int, waitMultiplier : Double, flightDurationMultiplier : Double) => {
+    val interval = (60 * 24 * 7 / link.frequency)
+    val waitDuration = interval / 2
+    //by default waitThreshold extra minute increases ratio by 0.1 (max). and no wait (infinity frequency) decreases ratio by 0.1 (min)
+    val waitRatioDelta = Math.min(waitMultiplier, (waitDuration - waitThreshold).toFloat / waitDuration * waitMultiplier)
+
+    val flightDurationRatioDelta =
+      if (flightDurationMultiplier == 0) {
+        0
+      } else {
+        val flightDurationThreshold = Computation.computeStandardFlightDuration(link.distance)
+        Math.min(flightDurationMultiplier, (link.duration - flightDurationThreshold).toFloat / flightDurationThreshold * flightDurationMultiplier)
+      }
+
+    1 + waitRatioDelta + flightDurationRatioDelta
+  }
 }
 
 object FlightPreferenceType extends Enumeration {
@@ -75,18 +104,13 @@ import FlightPreferenceType._
 case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, preferredLinkClass: LinkClass) extends FlightPreference {
   def computeCost(link : Link, linkClass : LinkClass) = {
     val standardPrice = link.standardPrice(linkClass)
-    val deltaFromStandardPrice = link.price(linkClass) - standardPrice 
+    val deltaFromStandardPrice = priceAdjustedByLinkDiff(link, linkClass) - standardPrice
     
     var cost = standardPrice + deltaFromStandardPrice * priceSensitivity
     
     val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 2) / 3  //dampen the effect
     cost = (cost * qualityAdjustedRatio).toInt
-
-    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
-      cost = (cost * (1.1 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.1)).toInt
-    } else {
-      cost = (cost * (0.9 + 0.1 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
-    }
+    cost = (cost * tripDurationAdjustedRatio(link, 24 * 60, 0.02, 0)).toInt
     
     val noise = 0.9 + getFlatTopBellRandom(0.2, 0.1)
     
@@ -116,18 +140,14 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
 case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass) extends FlightPreference {
   def computeCost(link : Link, linkClass : LinkClass) = {
     val standardPrice = link.standardPrice(linkClass)
-    val deltaFromStandardPrice = link.price(linkClass) - standardPrice
+    val deltaFromStandardPrice = priceAdjustedByLinkDiff(link, linkClass) - standardPrice
 
     var cost = standardPrice + deltaFromStandardPrice * 0.5 //care much less about price
     val qualityAdjustedRatio = (getQualityAdjustRatio(homeAirport, link, linkClass) + 1) / 2 //dampen the effect
     cost = (cost * qualityAdjustedRatio).toInt
 
-    //I NEED THE FLIGHT NOW! extra penalty up to 1.2 if frequency is min, boost if very frequent
-    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
-      cost = (cost * (1.2 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.2)).toInt
-    } else {
-      cost = (cost * (0.5 + 0.5 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
-    }
+    //I NEED THE FLIGHT NOW! extra penalty up to 1.3 if frequency is min, boost if very frequent
+    cost = (cost * tripDurationAdjustedRatio(link, 6 * 60, 0.2, 0.5)).toInt
 
     val noise = 0.8 + getFlatTopBellRandom(0.2, 0.1)
 
@@ -164,11 +184,7 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   def computeCost(link : Link, linkClass : LinkClass) : Double = {
     val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
     
-    var perceivedPrice = link.price(linkClass);
-    if (linkClass.level != preferredLinkClass.level) {
-      val classDiffMultiplier: Double = 1 + (preferredLinkClass.level - linkClass.level) * 0.7
-      perceivedPrice = (perceivedPrice / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
-    }
+    var perceivedPrice = priceAdjustedByLinkDiff(link, linkClass)
 
     val standardPrice = link.standardPrice(preferredLinkClass)
     val deltaFromStandardPrice = perceivedPrice - standardPrice
@@ -198,13 +214,9 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   
     
     perceivedPrice = (perceivedPrice * getQualityAdjustRatio(homeAirport, link, linkClass)).toInt
-    
 
-    if (link.frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
-      perceivedPrice = (perceivedPrice * (1.05 - (link.frequency.toDouble / Link.HIGH_FREQUENCY_THRESHOLD) * 0.05)).toInt
-    } else {
-      perceivedPrice = (perceivedPrice * (0.95 + 0.05 * Link.HIGH_FREQUENCY_THRESHOLD.toDouble / link.frequency)).toInt
-    }
+
+    perceivedPrice = (perceivedPrice * tripDurationAdjustedRatio(link, 6 * 60, 0.05, 0.1)).toInt
 
         
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
@@ -329,6 +341,6 @@ class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]
   }
 }
 
- 
+
 
 
