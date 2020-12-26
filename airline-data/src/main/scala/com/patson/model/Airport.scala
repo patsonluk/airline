@@ -448,6 +448,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case LARGE => 12
       case X_LARGE => 15
       case JUMBO => 18
+      case SUPERSONIC => 12
     }
     
     //apply discount if it's a base

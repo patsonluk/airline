@@ -6,15 +6,20 @@ import com.patson.model.Airline
 case class Model(name : String, family : String = "", capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, lifespan : Int, constructionTime : Int, countryCode : String, runwayRequirement : Int, imageUrl : String = "", var id : Int = 0) extends IdObject {
   import Model.Type._
 
+  val SUPERSONIC_SPEED_THRESHOLD = 1236
   val airplaneType : Type = {
-    capacity match {
-      case x if (x <= 15) => LIGHT
-      case x if (x <= 60) => REGIONAL
-      case x if (x <= 150) => SMALL
-      case x if (x <= 250) => MEDIUM
-      case x if (x <= 350) => LARGE
-      case x if (x <= 500) => X_LARGE
-      case _ => JUMBO
+    if (speed > SUPERSONIC_SPEED_THRESHOLD) {
+      SUPERSONIC
+    } else {
+      capacity match {
+        case x if (x <= 15) => LIGHT
+        case x if (x <= 60) => REGIONAL
+        case x if (x <= 150) => SMALL
+        case x if (x <= 250) => MEDIUM
+        case x if (x <= 350) => LARGE
+        case x if (x <= 500) => X_LARGE
+        case _ => JUMBO
+      }
     }
   }
 
@@ -29,6 +34,7 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
         case LARGE => capacity / 2.5 //180
         case X_LARGE => capacity / 2.5 //200
         case JUMBO => capacity / 2.5 //220
+        case SUPERSONIC => capacity / 2.5
       }).toInt
   }
 
@@ -41,6 +47,7 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
       case LARGE => "Large"
       case X_LARGE => "Extra large"
       case JUMBO => "Jumbo"
+      case SUPERSONIC => "Supersonic"
     }
   }
 
@@ -81,13 +88,14 @@ object Model {
 
   object Type extends Enumeration {
     type Type = Value
-    val LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, X_LARGE, JUMBO = Value
+    val LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, X_LARGE, JUMBO, SUPERSONIC = Value
   }
 
   //https://en.wikipedia.org/wiki/List_of_jet_airliners
   val models = List(Model("Cessna 421", "Cessna", capacity = 7, fuelBurn = (7 * 1).toInt, speed = 300, range = 1555, price = 550000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US", runwayRequirement = 708),
     Model("Pilatus PC-12", "Pilatus", capacity = 9, fuelBurn = (9 * 1.2).toInt, speed = 528, range = 3417, price = 1800000, lifespan = 35 * 52, constructionTime = 0, countryCode = "CH", runwayRequirement = 758),
     Model("Britten-Norman BN-2 Islander", "Britten-Norman", capacity = 9, fuelBurn = (9 * 1).toInt, speed = 273, range = 1400, price = 2000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "GB", runwayRequirement = 370, imageUrl = ""),
+    Model("Beechcraft Super King Air 200", "Beechcraft King Air", capacity = 10, fuelBurn = (10 * 1.4).toInt, speed = 573, range = 3185, price = 1900000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US", runwayRequirement = 643, imageUrl = "https://www.norebbo.com/beechcraft-b200-king-air-side-view/"),
     Model("Cessna Caravan", "Cessna", capacity = 14, fuelBurn = (14 * 1).toInt, speed = 344, range = 2400, price = 2500000, lifespan = 35 * 52, constructionTime = 0, countryCode = "US", runwayRequirement = 762, imageUrl = "https://www.norebbo.com/2017/06/cessna-208-grand-caravan-blank-illustration-templates/"),
     Model("Britten-Norman MKIII Trislander", "Britten-Norman", capacity = 17, fuelBurn = (17 * 1.3).toInt, speed = 350, range = 1600, price = 4000000, lifespan = 35 * 52, constructionTime = 0, countryCode = "GB", runwayRequirement = 590, imageUrl = ""),
     Model("Bombardier DHC-6-400", "Bombardier DHC-8", capacity = 19, fuelBurn = (19 * 1.2).toInt, speed = 337, range = 1480, price = 5200000, lifespan = 35 * 52, constructionTime = 0, countryCode = "CA", runwayRequirement = 366, imageUrl = ""),
@@ -134,7 +142,8 @@ object Model {
     Model("Sukhoi Superjet 100", "Sukhoi Superjet", capacity = 108, fuelBurn = (108 * 4.1).toInt, speed = 828, range = 4578, price = 38000000, lifespan = 30 * 52, constructionTime = 8, countryCode = "RU", runwayRequirement = 1731, imageUrl = "https://www.norebbo.com/2016/02/sukhoi-ssj-100-blank-illustration-templates/"),
     Model("Fokker 100", "Fokker", capacity = 109, fuelBurn = (109 * 3.9).toInt, speed = 845, range = 3170, price = 39000000, lifespan = 30 * 52, constructionTime = 8, countryCode = "NL", runwayRequirement = 1621, imageUrl = "https://www.norebbo.com/2018/07/fokker-100-f-28-0100-blank-illustration-templates/"),
     Model("Boeing 737-100", "Boeing 737 Classic", capacity = 124, fuelBurn = (124 * 4).toInt, speed = 780, range = 3440, price = 40000000, lifespan = 35 * 52, constructionTime = 8, countryCode = "US", runwayRequirement = 1800, imageUrl = "https://www.norebbo.com/2018/10/boeing-737-100-blank-illustration-templates/"),
-    Model("Airbus A318", "Airbus A320", capacity = 132, fuelBurn = (132 * 3.3).toInt, speed = 829, range = 7800, price = 90000000, lifespan = 35 * 52, constructionTime = 8, countryCode = "NL", runwayRequirement = 1780, imageUrl = "https://www.norebbo.com/2018/01/airbus-a318-blank-illustration-templates-with-pratt-whitney-and-cfm56-engines/"),
+    Model("Concorde", "Concorde", capacity = 128, fuelBurn = (128 * 14).toInt, speed = 2158, range = 7223, price = 140000000, lifespan = 30 * 52, constructionTime = 8, countryCode = "UK", runwayRequirement = 3600, imageUrl = "https://www.norebbo.com/2018/10/boeing-737-100-blank-illustration-templates/"),
+    Model("Airbus A318", "Airbus A320", capacity = 132, fuelBurn = (132 * 3.3).toInt, speed = 829, range = 7800, price = 90000000, lifespan = 35 * 52, constructionTime = 8, countryCode = "NL", runwayRequirement = 1780),
     Model("Bombardier CS100", "Bombardier CS", capacity = 133, fuelBurn = (133 * 3.2).toInt, speed = 828, range = 5741, price = 80000000, lifespan = 35 * 52, constructionTime = 8, countryCode = "CA", runwayRequirement = 1463, imageUrl = "https://www.norebbo.com/2016/02/bombardier-cs100-blank-illustration-templates/"),
     Model("Boeing 717-200", "Boeing 717", capacity = 134, fuelBurn = (134 * 4.3).toInt, speed = 811, range = 2645, price = 52500000, lifespan = 35 * 52, constructionTime = 12, countryCode = "US", runwayRequirement = 2100, imageUrl = "https://www.norebbo.com/2017/06/boeing-717-200-blank-illustration-templates/"),
     Model("Boeing 737-200", "Boeing 737 Classic", capacity = 136, fuelBurn = (136 * 4.3).toInt, speed = 780, range = 4200, price = 59000000, lifespan = 35 * 52, constructionTime = 12, countryCode = "US", runwayRequirement = 1859, imageUrl = "https://www.norebbo.com/2018/09/boeing-737-200-blank-illustration-templates/"),
@@ -150,6 +159,7 @@ object Model {
     Model("McDonnel Douglas MD-90", "McDonnel Douglas MD", capacity = 160, fuelBurn = (160 * 3.55).toInt, speed = 811, range = 3787, price = 80000000, lifespan = 30 * 52, constructionTime = 20, countryCode = "US", runwayRequirement = 2134, imageUrl = "https://www.norebbo.com/2018/02/mcdonnell-douglas-md-90-blank-illustration-templates/"),
     Model("Airbus A319neo", "Airbus A320", capacity = 160, fuelBurn = (160 * 3.5).toInt, speed = 828, range = 6850, price = 100000000, lifespan = 35 * 52, constructionTime = 20, countryCode = "NL", runwayRequirement = 2164, imageUrl = "https://www.norebbo.com/2017/09/airbus-a319-neo-blank-illustration-templates/"),
     Model("Bombardier CS300", "Bombardier CS", capacity = 160, fuelBurn = (160 * 3.4).toInt, speed = 828, range = 6112, price = 98000000, lifespan = 35 * 52, constructionTime = 20, countryCode = "CA", runwayRequirement = 1890, imageUrl = "https://www.norebbo.com/2016/02/bombardier-cs300-blank-illustration-templates/"),
+    Model("Tupolev Tu-144D", "Tupolev Tu", capacity = 170, fuelBurn = (180 * 17).toInt, speed = 2120, range = 6200, price = 150000000, lifespan = 25 * 52, constructionTime = 24, countryCode = "RU", runwayRequirement = 2930),
     Model("Boeing 737 MAX 7", "Boeing 737 MAX", capacity = 172, fuelBurn = (172 * 3.6).toInt, speed = 830, range = 6500, price = 105000000, lifespan = 35 * 52, constructionTime = 20, countryCode = "US", runwayRequirement = 2100, imageUrl = "https://www.norebbo.com/2016/07/boeing-737-max-7-blank-illustration-templates/"),
     Model("Tupolev Tu-154", "Tupolev Tu", capacity = 180, fuelBurn = (180 * 4.8).toInt, speed = 913, range = 5280, price = 45000000, lifespan = 25 * 52, constructionTime = 24, countryCode = "RU", runwayRequirement = 2100, imageUrl = "https://www.norebbo.com/2019/05/tupolev-tu-154-side-view/"),
     Model("Airbus A320", "Airbus A320", capacity = 180, fuelBurn = (180 * 3.8).toInt, speed = 828, range = 6150, price = 100000000, lifespan = 35 * 52, constructionTime = 24, countryCode = "NL", runwayRequirement = 2100, imageUrl = "https://www.norebbo.com/2013/08/airbus-a320-blank-illustration-templates/"),

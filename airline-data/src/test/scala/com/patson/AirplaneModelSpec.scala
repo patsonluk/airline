@@ -6,8 +6,8 @@ import com.patson.model.airplane._
 import org.scalatest.{Matchers, WordSpecLike}
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.20, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.55, SMALL -> 0.50, MEDIUM -> 0.35, LARGE -> 0.3, X_LARGE -> 0.3, JUMBO -> 0.25)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.20, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1, SUPERSONIC -> 0.0)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.55, SMALL -> 0.50, MEDIUM -> 0.35, LARGE -> 0.3, X_LARGE -> 0.3, JUMBO -> 0.25, SUPERSONIC -> 0.3)
   
   "all airplane models".must {
     "Generate good profit at MAX LF at suitable range".in {
@@ -36,6 +36,7 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
       case LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
       case X_LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
       case JUMBO => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
+      case SUPERSONIC => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
     }
     val duration = Computation.calculateDuration(airplaneModel, distance)
     val frequency = Computation.calculateMaxFrequency(airplaneModel, distance)
@@ -44,7 +45,10 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
     fromAirport.initAirlineBases(List())
     val toAirport = Airport.fromId(2).copy(size = airportSize)
     toAirport.initAirlineBases(List())
-    val price = Pricing.computeStandardPriceForAllClass(distance, flightType)
+    var price = Pricing.computeStandardPriceForAllClass(distance, flightType)
+    if (airplaneModel.airplaneType == SUPERSONIC) {
+      price *= 1.5
+    }
     val airline = Airline.fromId(1)
     airline.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
     
