@@ -689,6 +689,7 @@ function refreshLinkDetails(linkId) {
 		    	$("#linkCancellations").text("-")
 
 		    	disableButton($("#linkDetails .button.viewLinkHistory"), "Passenger Map is not yet available for this route - please wait for the simulation (time estimation on top left of the screen).")
+		    	disableButton($("#linkDetails .button.viewLinkComposition"), "Passenger Survey is not yet available for this route - please wait for the simulation (time estimation on top left of the screen).")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
 	    		$("#linkHistoryPrice").text(toLinkClassValueString(linkConsumption.price, "$"))
@@ -729,6 +730,7 @@ function refreshLinkDetails(linkId) {
 		    		$("#linkCancellations").text(linkConsumption.cancellationCount)
 		    	}
 		    	enableButton($("#linkDetails .button.viewLinkHistory"))
+		    	enableButton($("#linkDetails .button.viewLinkComposition"))
 	    	}
             plotLinkCharts(linkConsumptions, plotUnit)
 	    	$("#linkHistoryDetails").show()
@@ -1939,7 +1941,7 @@ function updateSatisfaction(linkClassSatisfaction, preferenceSatisfaction) {
     $('#linkCompositionModal .preferenceSatisfaction .table-row').remove()
 
     $.each(linkClassSatisfaction, function(index, entry) {
-        $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title + "</div></div>")
+        $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%; vertical-align: middle;'>" + entry.title + "</div></div>")
         $iconCell = $("<div class='cell' style='width: 30%;'>").append(getSatisfactionIcon(entry.satisfaction))
         $row.append($iconCell)
 
@@ -1978,7 +1980,7 @@ function getSatisfactionIcon(satisfaction) {
     }
     source = 'assets/images/smiley/' + source + '.png'
     $icon.attr('src', source)
-    $icon.attr('title', satisfaction * 100 + "%")
+    $icon.attr('title', Math.round(satisfaction * 100) + "%")
     $icon.width('22px')
     $icon.css({ display: "block", margin: "auto"})
     return $icon
