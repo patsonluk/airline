@@ -493,7 +493,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     val currentLoyalistEntries = LoyalistSource.loadLoyalistsByAirportId(airportId)
     val historyEntries = LoyalistSource.loadLoyalistsHistoryByAirportId(airportId)
     val airport = AirportCache.getAirport(airportId).get
-    historyEntries.lastOption match {
+    historyEntries.toList.sortBy(_._1).lastOption match {
       case Some((lastCycle, lastEntry)) =>
         val topAirlineIds = lastEntry.sortBy(_.entry.amount).takeRight(MAX_LOYALIST_HISTORY_AIRLINE).map(_.entry.airline.id).toSet
         val reportingAirlineIds : List[Int] = airlineIdOption match {
