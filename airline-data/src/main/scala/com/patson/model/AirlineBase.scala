@@ -71,7 +71,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     if (getOfficeStaffCapacity >= staffRequired) {
       0
     } else {
-      val delta = getOfficeStaffCapacity - staffRequired
+      val delta = staffRequired - getOfficeStaffCapacity
       var compensation = 0
       val income = CountrySource.loadCountryByCode(countryCode).map(_.income).getOrElse(0)
       compensation += delta * (50000 + income) / 52 * 10 //weekly compensation, *10, as otherwise it's too low
