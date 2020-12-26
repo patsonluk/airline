@@ -168,7 +168,7 @@ object AirportSimulation {
             } else {
               (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * MAX_LOYALIST_FLIP_RATIO
             }
-            println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
+            //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
 
             val loyalistDelta = (paxCount * conversionRatio).toInt
             val existingDelta = loyalistDeltaOfAirlines.getOrElse(link.airline.id, 0)
