@@ -1,7 +1,7 @@
 package com.patson.model.airplane
 
 import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane.Model.Type.{JUMBO, LARGE, LIGHT, MEDIUM, REGIONAL, SMALL, X_LARGE}
+import com.patson.model.airplane.Model.Type.{JUMBO, LARGE, LIGHT, MEDIUM, REGIONAL, SMALL, X_LARGE, SUPERSONIC}
 
 import scala.collection.mutable.ListBuffer
 
@@ -26,6 +26,7 @@ object ModelDiscount {
       case LARGE => 0.04
       case X_LARGE => 0.03
       case JUMBO => 0.02
+      case SUPERSONIC => 0.05
     }
     List(ModelDiscount(model.id, priceDiscount, DiscountType.PRICE, DiscountReason.FAVORITE, None), constructionTimeDiscount)
   }
