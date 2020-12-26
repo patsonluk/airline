@@ -616,16 +616,18 @@ object Meta {
 
     statement = connection.prepareStatement("CREATE TABLE " + PASSENGER_HISTORY_TABLE + "(" +
                                             "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
-                                            "passenger_type INTEGER," +
+                                            "passenger_type TINYINT," +
                                             "passenger_count INTEGER," +
                                             "route_id INTEGER," +
                                             "link INTEGER," +
-                                            "link_class VARCHAR(2)," +
-                                            "inverted INTEGER," +
-                                            "home_country VARCHAR(2) NOT NULL DEFAULT ''," +
+                                            "link_class CHAR(1)," +
+                                            "inverted TINYINT," +
+                                            "home_country CHAR(2) NOT NULL DEFAULT ''," +
                                             "home_airport INT(11)," +
                                             "destination_airport INT(11)," +
-                                            "preference_type INT(11)" +
+                                            "preference_type TINYINT," +
+                                            "preferred_link_class CHAR(1)," +
+                                            "cost INT" +
                                             ")")
 
     statement.execute()

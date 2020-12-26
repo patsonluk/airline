@@ -1724,6 +1724,8 @@ function showLinkComposition(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
+	        updateSatisfaction(result.linkClassSatisfaction, result.preferenceSatisfaction)
+
 	    	updateTopCountryComposition(result.country)
 	    	updatePassengerTypeComposition(result.passengerType)
 	    	updatePrefernceTypeComposition(result.preferenceType)
@@ -1931,6 +1933,57 @@ function getCapacityImageBar(imageSrc, value, linkClass) {
 
     return containerDiv
 }
+
+function updateSatisfaction(linkClassSatisfaction, preferenceSatisfaction) {
+    $('#linkCompositionModal .linkClassSatisfaction .table-row').remove()
+    $('#linkCompositionModal .preferenceSatisfaction .table-row').remove()
+
+    $.each(linkClassSatisfaction, function(index, entry) {
+        $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title + "</div></div>")
+        $iconCell = $("<div class='cell' style='width: 30%;'>").append(getSatisfactionIcon(entry.satisfaction))
+        $row.append($iconCell)
+
+        $('#linkCompositionModal .linkClassSatisfaction').append($row)
+    })
+    $.each(preferenceSatisfaction, function(index, entry) {
+        $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%; vertical-align: middle;'>" + entry.title + "</div></div>")
+        $iconCell = $("<div class='cell' style='width: 30%;'>").append(getSatisfactionIcon(entry.satisfaction))
+        $row.append($iconCell)
+
+        $('#linkCompositionModal .preferenceSatisfaction').append($row)
+    })
+}
+
+function getSatisfactionIcon(satisfaction) {
+    $icon = $('<img>')
+    var source
+    if (satisfaction < 0.25) {
+        source = "symbols-on-mouth"
+    } else if (satisfaction < 0.3) {
+        source = "steam"
+    } else if (satisfaction < 0.4) {
+        source = "confused"
+    } else if (satisfaction < 0.5) {
+        source = "expressionless"
+    } else if (satisfaction < 0.6) {
+        source = "slightly-smiling"
+    } else if (satisfaction < 0.7) {
+        source = "grinning"
+    } else if (satisfaction < 0.8) {
+        source = "smiling"
+    } else if (satisfaction < 0.9) {
+        source = "blowing-a-kiss"
+    } else {
+        source = "heart-eyes"
+    }
+    source = 'assets/images/smiley/' + source + '.png'
+    $icon.attr('src', source)
+    $icon.attr('title', satisfaction * 100 + "%")
+    $icon.width('22px')
+    $icon.css({ display: "block", margin: "auto"})
+    return $icon
+}
+
 
 function updateTopCountryComposition(countryComposition) {
 	countryComposition = countryComposition.sort(function (a, b) {

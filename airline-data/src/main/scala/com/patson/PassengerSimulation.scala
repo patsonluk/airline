@@ -216,7 +216,8 @@ object PassengerSimulation {
     
     (collapsedMap.toMap, missedMap)
   }
-  
+
+  val LINK_COST_TOLERANCE_FACTOR = 1
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
     val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
@@ -232,7 +233,7 @@ object PassengerSimulation {
     
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
     
-      val LINK_COST_TOLERANCE_FACTOR = 1;
+
       val incomeAdjustedFactor : Double = 
         if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
           1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
@@ -385,7 +386,7 @@ object PassengerSimulation {
         val linkConsiderations = new ArrayList[LinkConsideration]()
 
         linksList.foreach { link =>
-          
+
           //see if there are any seats for that class (or lower) left
           link.availableSeatsAtOrBelowClass(preferredLinkClass).foreach { 
             case(matchingLinkClass, seatsLeft) =>
@@ -652,4 +653,6 @@ object PassengerSimulation {
 //      println
 //    }
 //  }
+
+
 }

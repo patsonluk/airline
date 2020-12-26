@@ -10,7 +10,7 @@ object ConsumptionHistorySource {
 
   val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
     val connection = Meta.getConnection()
-    val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE_TEMP + " (passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type) VALUES(?,?,?,?,?,?,?,?,?,?)")
+    val passengerHistoryStatement = connection.prepareStatement("INSERT INTO " + PASSENGER_HISTORY_TABLE_TEMP + " (passenger_type, passenger_count, route_id, link, link_class, inverted, home_country, home_airport, destination_airport, preference_type, preferred_link_class, cost) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
     
     connection.setAutoCommit(false)
     connection.createStatement().executeUpdate("DROP TABLE IF EXISTS " + PASSENGER_HISTORY_TABLE_TEMP);
@@ -34,6 +34,8 @@ object ConsumptionHistorySource {
             passengerHistoryStatement.setInt(4, linkConsideration.link.id)
             passengerHistoryStatement.setString(5, linkConsideration.linkClass.code)
             passengerHistoryStatement.setBoolean(6, linkConsideration.inverted)
+            passengerHistoryStatement.setString(11, passengerGroup.preference.preferredLinkClass.code)
+            passengerHistoryStatement.setInt(12, linkConsideration.cost.toInt)
             //passengerHistoryStatement.executeUpdate()
             passengerHistoryStatement.addBatch()
           }
@@ -206,8 +208,9 @@ object ConsumptionHistorySource {
         val routeId = resultSet.getInt("route_id")
         val passengerType = PassengerType.apply(resultSet.getInt("passenger_type"))
         val passengerCount = resultSet.getInt("passenger_count")
+        val cost = resultSet.getInt("cost")
         linkConsumptionById.get(linkId).foreach { linkConsumption =>
-          val linkConsideration = new LinkConsideration(linkConsumption.link, 0, LinkClass.fromCode(resultSet.getString("link_class")), resultSet.getBoolean("inverted"))
+          val linkConsideration = new LinkConsideration(linkConsumption.link, cost = cost, LinkClass.fromCode(resultSet.getString("link_class")), resultSet.getBoolean("inverted"))
           val existingConsiderationsForThisRoute = linkConsiderationsByRouteId.getOrElseUpdate(routeId, ListBuffer[LinkConsideration]())
 
           existingConsiderationsForThisRoute += linkConsideration
@@ -285,7 +288,8 @@ object ConsumptionHistorySource {
                 val passengerCount = relatedRouteSet.getInt("passenger_count")
                 val relatedLinkId = relatedRouteSet.getInt("link")
                 val relatedLink = linkMap.getOrElse(relatedLinkId, Link.fromId(relatedLinkId))
-                val linkConsideration = new LinkConsideration(relatedLink, 0, LinkClass.fromCode(relatedRouteSet.getString("link_class")), relatedRouteSet.getBoolean("inverted"))
+                val cost = relatedRouteSet.getInt("cost")
+                val linkConsideration = new LinkConsideration(relatedLink, cost = cost, LinkClass.fromCode(relatedRouteSet.getString("link_class")), relatedRouteSet.getBoolean("inverted"))
 
                 val existingConsiderationsForThisRoute = linkConsiderationsByRouteId.getOrElseUpdate(routeId, ListBuffer[LinkConsideration]())
 
@@ -315,7 +319,8 @@ object ConsumptionHistorySource {
     LinkSource.loadLinkById(linkId) match {
       case Some(link) => 
         val connection = Meta.getConnection()
-        try {  
+        val standardPrice = Pricing.computeStandardPriceForAllClass(link.distance, link.flightType)
+        try {
           val preparedStatement = connection.prepareStatement("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " WHERE link = ? ")
     
           preparedStatement.setInt(1, linkId)
@@ -323,11 +328,17 @@ object ConsumptionHistorySource {
           
           val result = new ListBuffer[LinkConsumptionHistory]()
           while (resultSet.next()) {
+
+            val preferredLinkClass = LinkClass.fromCode(resultSet.getString("preferred_link_class"))
             result += LinkConsumptionHistory(link = link, 
                 passengerCount = resultSet.getInt("passenger_count"), 
                 homeCountryCode = resultSet.getString("home_country"), 
-                passengerType = PassengerType(resultSet.getInt("passenger_type")), 
-                preferenceType = FlightPreferenceType(resultSet.getInt("preference_type")))
+                passengerType = PassengerType(resultSet.getInt("passenger_type")),
+                preferredLinkClass = preferredLinkClass,
+                preferenceType = FlightPreferenceType(resultSet.getInt("preference_type")),
+                linkClass = LinkClass.fromCode(resultSet.getString("link_class")),
+                satisfaction = Computation.computePassengerSatisfaction(resultSet.getInt("cost"), standardPrice(preferredLinkClass))
+            )
           }
         
           
