@@ -1726,7 +1726,7 @@ function showLinkComposition(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
-	        updateSatisfaction(result.linkClassSatisfaction, result.preferenceSatisfaction)
+	        updateSatisfaction(result)
 
 	    	updateTopCountryComposition(result.country)
 	    	updatePassengerTypeComposition(result.passengerType)
@@ -1936,15 +1936,23 @@ function getCapacityImageBar(imageSrc, value, linkClass) {
     return containerDiv
 }
 
-function updateSatisfaction(linkClassSatisfaction, preferenceSatisfaction) {
+function updateSatisfaction(result) {
+    var linkClassSatisfaction = result.linkClassSatisfaction
+    var preferenceSatisfaction = result.preferenceSatisfaction
     $('#linkCompositionModal .linkClassSatisfaction .table-row').remove()
     $('#linkCompositionModal .preferenceSatisfaction .table-row').remove()
+    $('#linkCompositionModal .positiveComments .table-row').remove()
+    $('#linkCompositionModal .negativeComments .table-row').remove()
+    var topPositiveCommentsByClass = result.topPositiveCommentsByClass
+    var topNegativeCommentsByClass = result.topNegativeCommentsByClass
+    var topPositiveCommentsByPreference = result.topPositiveCommentsByPreference
+    var topNegativeCommentsByPreference = result.topNegativeCommentsByPreference
 
     $.each(linkClassSatisfaction, function(index, entry) {
         $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%; vertical-align: middle;'>" + entry.title + "</div></div>")
         var $icon = getSatisfactionIcon(entry.satisfaction)
         $icon.on('mouseover.breakdown', function() {
-            showSatisfactionBreakdown($(this), entry.breakdown)
+            showSatisfactionBreakdown($(this), topPositiveCommentsByClass[entry.level], topNegativeCommentsByClass[entry.level], entry.satisfaction)
         })
 
         $icon.on('mouseout.breakdown', function() {
@@ -1959,7 +1967,7 @@ function updateSatisfaction(linkClassSatisfaction, preferenceSatisfaction) {
         $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%; vertical-align: middle;'>" + entry.title + "</div></div>")
         var $icon = getSatisfactionIcon(entry.satisfaction)
         $icon.on('mouseover.breakdown', function() {
-            showSatisfactionBreakdown($(this), entry.breakdown)
+            showSatisfactionBreakdown($(this), topPositiveCommentsByPreference[entry.id], topNegativeCommentsByPreference[entry.id], entry.satisfaction)
         })
 
         $icon.on('mouseout.breakdown', function() {
@@ -1971,6 +1979,17 @@ function updateSatisfaction(linkClassSatisfaction, preferenceSatisfaction) {
 
         $('#linkCompositionModal .preferenceSatisfaction').append($row)
     })
+
+    var topPositiveComments = result.topPositiveComments
+    var topNegativeComments = result.topNegativeComments
+    $.each(topPositiveComments, function(index, entry) {
+            $row = $("<div class='table-row data-row'><div class='cell'>" + entry[0].comment + "</div><div class='cell'>" + Math.round(entry[1] * 100) + "%</div></div>")
+            $('#linkCompositionModal .positiveComments').append($row)
+        })
+    $.each(topNegativeComments, function(index, entry) {
+            $row = $("<div class='table-row data-row'><div class='cell'>" + entry[0].comment + "</div><div class='cell'>" + Math.round(entry[1] * 100) + "%</div></div>")
+            $('#linkCompositionModal .negativeComments').append($row)
+        })
 }
 
 function getSatisfactionIcon(satisfaction) {
@@ -1997,31 +2016,32 @@ function getSatisfactionIcon(satisfaction) {
     }
     source = 'assets/images/smiley/' + source + '.png'
     $icon.attr('src', source)
-    $icon.attr('title', Math.round(satisfaction * 100) + "%")
+    //$icon.attr('title', Math.round(satisfaction * 100) + "%")
     $icon.width('22px')
     $icon.css({ display: "block", margin: "auto"})
     return $icon
 }
 
-function showSatisfactionBreakdown($icon, satisfactionBreakdown) {
+function showSatisfactionBreakdown($icon, positiveComments, negativeComments, satisfactionValue) {
     var yPos = $icon.offset().top - $(window).scrollTop() + $icon.height() + 5
     var xPos = $icon.offset().left - $(window).scrollLeft() + $icon.width() - $('#appealBonusDetailsTooltip').width() / 2
-
+    $('#satisfactionDetailsTooltip .satisfactionValue').text(Math.round(satisfactionValue * 100) + '%')
     $('#satisfactionDetailsTooltip').css('top', yPos + 'px')
     $('#satisfactionDetailsTooltip').css('left', xPos + 'px')
-    $('#satisfactionDetailsTooltip').show()
 
-    $('#satisfactionDetailsTooltip .table .table-row').empty()
-    $.each(satisfactionBreakdown, function(index, entry) {
-        var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 70%;">' + entry.percentage + '%</div></div>')
-        if (entry.positive) {
-            $row.css('color', 'green')
-        } else {
-            $row.css('color', 'red')
-        }
+    $('#satisfactionDetailsTooltip .table .table-row').remove()
+    $.each(positiveComments, function(index, entry) {
+        var $row = $('<div class="table-row" style="font-size: 15px; text-shadow: 0px 0px 3px rgba(0,0,0,0.5);"><div class="cell">' + entry[0].comment + '</div><div class="cell">' + Math.round(entry[1] * 100) + '%</div></div>')
+        $row.css('color', '#9ACD32')
         $('#satisfactionDetailsTooltip .table').append($row)
     })
+    $.each(negativeComments, function(index, entry) {
+            var $row = $('<div class="table-row"  style="font-size: 15px; text-shadow: 0px 0px 3px rgba(0,0,0,0.5);"><div class="cell">' + entry[0].comment + '</div><div class="cell">' + Math.round(entry[1] * 100) + '%</div></div>')
+            $row.css('color', '#F08080')
+            $('#satisfactionDetailsTooltip .table').append($row)
+        })
 
+    $('#satisfactionDetailsTooltip').show()
 }
 
 

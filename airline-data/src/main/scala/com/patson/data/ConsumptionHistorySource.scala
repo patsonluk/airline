@@ -1,6 +1,7 @@
 package com.patson.data
 import com.patson.data.Constants._
 import com.patson.model._
+import com.patson.util.AirportCache
 
 import scala.collection.mutable.ListBuffer
 
@@ -332,7 +333,7 @@ object ConsumptionHistorySource {
             val preferredLinkClass = LinkClass.fromCode(resultSet.getString("preferred_link_class"))
             result += LinkConsumptionHistory(link = link, 
                 passengerCount = resultSet.getInt("passenger_count"), 
-                homeCountryCode = resultSet.getString("home_country"), 
+                homeAirport = AirportCache.getAirport(resultSet.getInt("home_airport")).get,
                 passengerType = PassengerType(resultSet.getInt("passenger_type")),
                 preferredLinkClass = preferredLinkClass,
                 preferenceType = FlightPreferenceType(resultSet.getInt("preference_type")),

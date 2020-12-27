@@ -2,35 +2,28 @@ package controllers
 
 import java.util.Calendar
 
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Map
-import scala.math.BigDecimal.{RoundingMode, double2bigDecimal, int2bigDecimal}
-import com.patson.{DemandGenerator, PassengerSimulation, Util}
-import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, ConsumptionHistorySource, CountrySource, CycleSource, DelegateSource, LinkSource}
-import com.patson.model.{FlightPreferenceType, LinkConsumptionHistory, _}
+import com.patson.data._
+import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.{Airplane, LinkAssignments, Model}
+import com.patson.model.{FlightPreferenceType, _}
+import com.patson.util.{AirlineCache, AirportCache, AllianceCache, CountryCache}
+import com.patson.{DemandGenerator, Util}
+import controllers.AuthenticationObject.AuthenticatedAirline
+import javax.inject.Inject
 import models.{LinkHistory, RelatedLink}
 import play.api.data.Form
-import play.api.data.Forms.mapping
-import play.api.data.Forms.number
-import play.api.libs.json._
-import play.api.libs.json.JsBoolean
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsObject
-import play.api.libs.json.Json
+import play.api.data.Forms.{mapping, number}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
-import play.api.mvc._
-import com.patson.data.airplane.ModelSource
+import play.api.libs.json.{JsBoolean, JsNumber, JsObject, Json, _}
 import play.api.mvc.Security.AuthenticatedRequest
-import controllers.AuthenticationObject.AuthenticatedAirline
+import play.api.mvc._
 
-import scala.collection.{MapView, SortedMap, immutable, mutable}
 import scala.collection.immutable.ListMap
-import scala.util.Try
-import scala.util.Success
-import scala.util.Failure
-import com.patson.util.{AirlineCache, AirportCache, AllianceCache, CountryCache}
-import javax.inject.Inject
+import scala.collection.mutable.ListBuffer
+import scala.collection.{MapView, immutable, mutable}
+import scala.math.BigDecimal.{RoundingMode, int2bigDecimal}
+import scala.util.{Failure, Success, Try}
+
 
 class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   object TestLinkReads extends Reads[Link] {
@@ -197,6 +190,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   implicit object RouteWrites extends Writes[Route] {
     def writes(route : Route): JsValue = { 
       Json.toJson(route.links)
+    }
+  }
+
+  implicit object LinkCommentWrites extends Writes[LinkComment] {
+    def writes(entry: LinkComment): JsValue = {
+      Json.obj("comment" -> entry.description,
+        "category" -> entry.category.toString
+      )
     }
   }
 
@@ -906,10 +907,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
   }
 
-
-  def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) {
+  val TOP_COMMENT_COUNT = 5
+  def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) { request =>
     val consumptionEntries : List[LinkConsumptionHistory] = ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
-    val consumptionByCountry = consumptionEntries.groupBy(_.homeCountryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByCountry = consumptionEntries.groupBy(_.homeAirport.countryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).view.mapValues(entries => entries.map(_.passengerCount).sum)
 
@@ -933,12 +934,20 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     var satisfactionByClassJson = Json.arr()
     var satisfactionByPreferenceJson = Json.arr()
+    var topPositiveCommentsJson = Json.arr()
+    var topNegativeCommentsJson = Json.arr()
+    var topPositiveCommentsByClassJson = Json.obj()
+    var topNegativeCommentsByClassJson = Json.obj()
+    var topPositiveCommentsByPreferenceJson = Json.obj()
+    var topNegativeCommentsByPreferenceJson = Json.obj()
+
+
     LinkSource.loadLinkById(linkId).foreach { link =>
       val consumptionByLinkClass = consumptionEntries.groupBy(_.linkClass)
       val satisfactionByLinkClass = consumptionByLinkClass.view.mapValues(entries => (entries.map( entry => entry.satisfaction * entry.passengerCount)).sum / entries.map(_.passengerCount).sum)
 
       satisfactionByLinkClass.foreach {
-        case (linkClass, satisfaction) => satisfactionByClassJson = satisfactionByClassJson.append(Json.obj("title" -> linkClass.label, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP)))
+        case (linkClass, satisfaction) => satisfactionByClassJson = satisfactionByClassJson.append(Json.obj("title" -> linkClass.label, "level" -> linkClass.level, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP)))
       }
 
       //value is List[(PassengerCount, Satisfaction)], group by actual link class taken, but computation satisfaction based on the preferred link class
@@ -953,13 +962,77 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
       averageSatisfactionByPreference.foreach {
-        case (preferenceType, satisfaction) => satisfactionByPreferenceJson = satisfactionByPreferenceJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP)))
+        case (preferenceType, satisfaction) => satisfactionByPreferenceJson = satisfactionByPreferenceJson.append(Json.obj("title" -> preferenceType.title, "id" -> preferenceType.id, "description" -> preferenceType.description, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP)))
       }
+
+
+      val comments : Predef.Map[(LinkClass, FlightPreferenceType.Value), LinkCommentSummary] = LinkCommentUtil.simulateComments(consumptionEntries, request.user, link)
+      val sampleSizeByClass : MapView[LinkClass, Int] = comments.toList.groupBy(_._1._1).view.mapValues(_.map { _._2.sampleSize }.sum)
+      val sampleSizeByPreference : MapView[FlightPreferenceType.Value, Int] = comments.toList.groupBy(_._1._2).view.mapValues(_.map { _._2.sampleSize }.sum)
+      val sampleSize = comments.values.map(_.sampleSize).sum
+
+      val overallCommentStats : MapView[LinkComment, Double] = comments.values.flatMap(_.comments).groupBy(x => x).view.mapValues(comments => comments.size.toDouble / sampleSize)
+      val topPositiveStats = overallCommentStats.toList.filter(_._1.positive).sortBy(_._2).reverse.take(TOP_COMMENT_COUNT)
+      val topNegativeStats = overallCommentStats.toList.filter(!_._1.positive).sortBy(_._2).reverse.take(TOP_COMMENT_COUNT)
+      topPositiveCommentsJson = Json.toJson(topPositiveStats).asInstanceOf[JsArray]
+      topNegativeCommentsJson = Json.toJson(topNegativeStats).asInstanceOf[JsArray]
+
+      val commentByClass : MapView[LinkClass, List[LinkComment]] = comments.toList.groupBy(_._1._1).view.mapValues(_.map { _._2.comments }.flatten)
+      val commentStatsByClass : immutable.Map[LinkClass, MapView[LinkComment, Double]] = commentByClass.map {
+        case((linkClass, comments)) =>
+          val ratio = comments.groupBy(x => x).view.mapValues(_.length.toDouble / sampleSizeByClass(linkClass))
+          (linkClass, ratio)
+      }.toMap
+      val topPositiveStatsByClass = commentStatsByClass.view.mapValues(stats => stats.toList.filter(_._1.positive).sortBy(_._2).reverse.take(TOP_COMMENT_COUNT))
+      val topNegativeStatsByClass = commentStatsByClass.view.mapValues( stats => stats.toList.filter(!_._1.positive).sortBy(_._2).reverse.take(TOP_COMMENT_COUNT))
+      topPositiveStatsByClass.foreach {
+        case (linkClass, stats) =>  topPositiveCommentsByClassJson = topPositiveCommentsByClassJson + (linkClass.level.toString -> Json.toJson(stats))
+      }
+      topNegativeStatsByClass.foreach {
+        case (linkClass, stats) =>  topNegativeCommentsByClassJson = topNegativeCommentsByClassJson + (linkClass.level.toString -> Json.toJson(stats))
+      }
+
+
+      val commentByPreference : MapView[FlightPreferenceType.Value, List[LinkComment]] = comments.toList.groupBy(_._1._2).view.mapValues(_.map { _._2.comments }.flatten)
+      val commentStatsByPreference : immutable.Map[FlightPreferenceType.Value, MapView[LinkComment, Double]] = commentByPreference.map {
+        case((preference, comments)) =>
+          val ratio = comments.groupBy(x => x).view.mapValues(_.length.toDouble / sampleSizeByPreference(preference))
+          (preference, ratio)
+      }.toMap
+      val topPositiveStatsByPreference = commentStatsByPreference.view.mapValues( stats => stats.toList.filter(_._1.positive).sortBy(_._2).reverse.take(TOP_COMMENT_COUNT))
+      val topNegativeStatsByPreference = commentStatsByPreference.view.mapValues( stats => stats.toList.filter(!_._1.positive).sortBy(_._2).reverse.take(TOP_COMMENT_COUNT))
+      topPositiveStatsByPreference.foreach {
+        case (preference, stats) =>  topPositiveCommentsByPreferenceJson = topPositiveCommentsByPreferenceJson + (preference.id.toString -> Json.toJson(stats))
+      }
+      topNegativeStatsByPreference.foreach {
+        case (preference, stats) =>  topNegativeCommentsByPreferenceJson = topNegativeCommentsByPreferenceJson + (preference.id.toString -> Json.toJson(stats))
+      }
+
+//      println(topPositiveStatsByClass.toMap)
+//      println(topNegativeStatsByClass.toMap)
+//      println(topPositiveStatsByPreference.toMap)
+//      println(topNegativeStatsByPreference.toMap)
     }
 
 
-    Ok(Json.obj("country" -> countryJson, "passengerType" -> passengerTypeJson, "preferenceType" -> preferenceTypeJson, "linkClassSatisfaction" -> satisfactionByClassJson, "preferenceSatisfaction" -> satisfactionByPreferenceJson))
+
+    Ok(Json.obj("country" -> countryJson,
+      "passengerType" -> passengerTypeJson,
+      "preferenceType" -> preferenceTypeJson,
+      "linkClassSatisfaction" -> satisfactionByClassJson,
+      "preferenceSatisfaction" -> satisfactionByPreferenceJson,
+      "topPositiveComments" -> topPositiveCommentsJson,
+      "topPositiveCommentsByClass" -> topPositiveCommentsByClassJson,
+      "topPositiveCommentsByPreference" -> topPositiveCommentsByPreferenceJson,
+      "topNegativeComments" -> topNegativeCommentsJson,
+      "topNegativeCommentsByClass" -> topNegativeCommentsByClassJson,
+      "topNegativeCommentsByPreference" -> topNegativeCommentsByPreferenceJson
+    ))
   }
+
+
+
+
 
   def getLinkRivalHistory(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
     var result = Json.obj()

@@ -46,6 +46,9 @@
     font-weight: normal;
 
 }
+.tooltiptext h4 {
+    color: #fff;
+}
 
 .tooltip .tooltiptext.alignLeft {
     left: 0%;
