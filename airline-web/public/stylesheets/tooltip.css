@@ -33,6 +33,20 @@
     font-weight: normal;
 }
 
+.customTooltip .tooltiptext {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    border-radius: 6px;
+    padding: 10px 10px;
+    z-index: 1;
+    /*opacity: 0;*/
+    transition: opacity 0.3s;
+    text-shadow: none;
+    font-weight: normal;
+
+}
+
 .tooltip .tooltiptext.alignLeft {
     left: 0%;
     transform:none;

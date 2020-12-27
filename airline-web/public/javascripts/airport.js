@@ -684,18 +684,28 @@ function refreshAirportExtendedDetails(airport) {
         var hasMatch = false
         $.each(airport.appealList, function( key, appeal ) {
             if (appeal.airlineId == airlineId) {
-                var awarenessText = appeal.awareness
-                var loyaltyText = appeal.loyalty
                 if (airport.bonusList[airlineId]) {
                     if (airport.bonusList[airlineId].awareness > 0) {
-                        awarenessText = awarenessText + " (+" + airport.bonusList[airlineId].awareness + ")"
+                        $(".awarenessBonus").text("(+" + airport.bonusList[airlineId].awareness + ")")
+                        $(".awarenessBonus").show()
+                        $('#appealBonusDetailsTooltip').data('awarenessBreakdown', airport.bonusList[airlineId].awarenessBreakdown)
+                        $('.awarenessBonusTrigger').show()
+                    } else {
+                        $(".awarenessBonus").hide()
+                        $('.awarenessBonusTrigger').hide()
                     }
                     if (airport.bonusList[airlineId].loyalty > 0) {
-                        loyaltyText = loyaltyText + " (+" + airport.bonusList[airlineId].loyalty + ")"
+                        $(".loyaltyBonus").text("(+" + airport.bonusList[airlineId].loyalty + ")")
+                        $(".loyaltyBonus").show()
+                        $('#appealBonusDetailsTooltip').data('loyaltyBreakdown', airport.bonusList[airlineId].loyaltyBreakdown)
+                        $('.loyaltyBonusTrigger').show()
+                    } else {
+                        $(".loyaltyBonus").hide()
+                        $('.loyaltyBonusTrigger').hide()
                     }
                 }
-                $(".airportAwareness").text(awarenessText)
-                $(".airportLoyalty").text(loyaltyText)
+                $(".airportAwareness").text(appeal.awareness)
+                $(".airportLoyalty").text(appeal.loyalty)
                 hasMatch = true
             }
         });
@@ -980,4 +990,24 @@ function getAirportIcon(airportInfo) {
       icon = largeAirportMarkerIcon
     }
     return icon
+}
+function hideAppealBreakdown() {
+    $('#appealBonusDetailsTooltip').hide()
+}
+
+function showAppealBreakdown($icon, bonusDetails) {
+    var yPos = $icon.offset().top - $(window).scrollTop() + $icon.height()
+    var xPos = $icon.offset().left - $(window).scrollLeft() + $icon.width() - $('#appealBonusDetailsTooltip').width() / 2
+
+    $('#appealBonusDetailsTooltip').css('top', yPos + 'px')
+    $('#appealBonusDetailsTooltip').css('left', xPos + 'px')
+    $('#appealBonusDetailsTooltip').show()
+
+
+    $('#appealBonusDetailsTooltip .table .table-row').empty()
+    $.each(bonusDetails, function(index, entry) {
+        var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 70%;">+' + entry.value + '</div></div>')
+        $row.css('color', 'white')
+        $('#appealBonusDetailsTooltip .table').append($row)
+    })
 }

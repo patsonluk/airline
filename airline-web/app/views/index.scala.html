@@ -959,7 +959,11 @@
 											</div>
 										</h5>
 									</div>
-									<div class="value airportAwareness" id="airportDetailsAwareness"></div>
+									<div class="value">
+										<span class="airportAwareness" id="airportDetailsAwareness"></span>
+										<span class="awarenessBonus"></span>
+										<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable awarenessBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
+									</div>
 								</div>
 								<div class="table-row">
 									<div class="label">
@@ -980,7 +984,11 @@
 											</div>
 										</h5>
 									</div>
-									<div class="value airportLoyalty" id="airportDetailsLoyalty"></div>
+									<div class="value">
+										<span class="airportLoyalty" id="airportDetailsLoyalty"></span>
+										<span class="loyaltyBonus"></span>
+										<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable loyaltyBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
+									</div>
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Relationship with your country:</h5></div>
@@ -2745,8 +2753,8 @@
     	</div>
     	<div class="table" style="width: 100%">
    			<div class="table-row">
-   				<div class="label" style="width: 60%"><h5>IATA code:</h5></div>
-   				<div class="value" id="airportPopupIata" style="width: 40%"></div>
+   				<div class="label" style="width: 55%"><h5>IATA code:</h5></div>
+   				<div class="value" id="airportPopupIata" style="width: 45%"></div>
    			</div>
    			<div class="table-row">
    				<div class="label"><h5>City:</h5></div>
@@ -2775,8 +2783,13 @@
    			<div class="table-row">
    				<div class="label"><h5>Awareness/Loyalty:</h5></div>
    				<div class="value">
-					<span class="airportAwareness" id="airportPopupAwareness"></span>/
-					<span class="airportLoyalty" id="airportPopupLoyalty"></span>
+                    <span class="airportAwareness" id="airportPopupAwareness"></span>
+					<span class="awarenessBonus"></span>
+					</span><img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable awarenessBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
+					/
+                    <span class="airportLoyalty" id="airportPopupLoyalty"></span>
+                    <span class="loyaltyBonus">
+                    </span><img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable loyaltyBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
 				</div>
    			</div>
 		</div>
@@ -2785,7 +2798,23 @@
 		<div class="button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
 		<div class="button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
     </div>
-    
+    <div id="appealBonusDetailsTooltip" class="customTooltip" style="display: none; position: fixed;">
+        <div class="tooltiptext below">
+            <div class="table" style="min-width: 150px;">
+
+            </div>
+        </div>
+    </div>
+
+  <div id="satisfactionDetailsTooltip" class="customTooltip" style="display: none; position: fixed; z-index: 100;">
+	  <div class="tooltiptext below">
+		  <h4>Overall Satisfaction :&nbsp;<span class="satisfactionValue"></span></h4>
+		  <div class="table" style="min-width: 350px;">
+
+		  </div>
+	  </div>
+  </div>
+
      <div style="display: none; width: 100%;" id="cityPopup">
     	<input type="hidden" id="cityPopupId">
     	<div id="cityPopupName" class="header"></div>

@@ -512,11 +512,25 @@ package object controllers {
           case (airlineId, bonuses) => {
             var totalLoyaltyBonus = 0.0
             var totalAwarenessBonus = 0.0
+            var loyaltyBreakdownJson = Json.arr()
+            var awarenessBreakdownJson = Json.arr()
             bonuses.foreach { entry =>
-              totalLoyaltyBonus += entry.bonus.loyalty
-              totalAwarenessBonus += entry.bonus.awareness
+              val loyaltyBonus = entry.bonus.loyalty
+              if (loyaltyBonus != 0) {
+                totalLoyaltyBonus += loyaltyBonus
+                loyaltyBreakdownJson = loyaltyBreakdownJson.append(Json.obj("description" -> BonusType.description(entry.bonusType), "value" -> BigDecimal(loyaltyBonus).setScale(2, RoundingMode.HALF_EVEN)))
+              }
+              val awarenessBonus = entry.bonus.awareness
+              if (awarenessBonus != 0) {
+                totalAwarenessBonus += awarenessBonus
+                awarenessBreakdownJson = awarenessBreakdownJson.append(Json.obj("description" -> BonusType.description(entry.bonusType), "value" -> BigDecimal(awarenessBonus).setScale(2, RoundingMode.HALF_EVEN)))
+              }
             }
-            bonusJson = bonusJson + (airlineId.toString -> Json.obj("loyalty" -> BigDecimal(totalLoyaltyBonus).setScale(2, RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(totalAwarenessBonus).setScale(2, RoundingMode.HALF_EVEN)))
+            bonusJson = bonusJson + (airlineId.toString ->
+              Json.obj("loyalty" -> BigDecimal(totalLoyaltyBonus).setScale(2, RoundingMode.HALF_EVEN),
+                "awareness" -> BigDecimal(totalAwarenessBonus).setScale(2, RoundingMode.HALF_EVEN),
+                "loyaltyBreakdown" -> loyaltyBreakdownJson,
+              "awarenessBreakdown" -> awarenessBreakdownJson))
           }
         }
         airportObject = airportObject + ("bonusList" -> bonusJson)

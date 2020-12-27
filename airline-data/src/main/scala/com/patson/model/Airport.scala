@@ -515,6 +515,16 @@ case class AirlineBonus(bonusType : BonusType.Value, bonus : AirlineAppeal, expi
 object BonusType extends Enumeration {
   type BonusType = Value
   val NATIONAL_AIRLINE, PARTNERED_AIRLINE, OLYMPICS_VOTE, OLYMPICS_PASSENGER, SANTA_CLAUS, CAMPAIGN, NO_BONUS = Value
+  val description : BonusType.Value => String = {
+    case NATIONAL_AIRLINE => "National Airline"
+    case PARTNERED_AIRLINE => "Partnered Airline"
+    case OLYMPICS_VOTE => "Olympics Vote Reward"
+    case OLYMPICS_PASSENGER => "Olympics Goal Reward"
+    case SANTA_CLAUS => "Santa Claus Reward"
+    case CAMPAIGN => "Campaign"
+    case NO_BONUS => "N/A"
+
+  }
 }
 
 object Airport {

@@ -1942,14 +1942,31 @@ function updateSatisfaction(linkClassSatisfaction, preferenceSatisfaction) {
 
     $.each(linkClassSatisfaction, function(index, entry) {
         $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%; vertical-align: middle;'>" + entry.title + "</div></div>")
-        $iconCell = $("<div class='cell' style='width: 30%;'>").append(getSatisfactionIcon(entry.satisfaction))
+        var $icon = getSatisfactionIcon(entry.satisfaction)
+        $icon.on('mouseover.breakdown', function() {
+            showSatisfactionBreakdown($(this), entry.breakdown)
+        })
+
+        $icon.on('mouseout.breakdown', function() {
+            $('#satisfactionDetailsTooltip').hide()
+        })
+        $iconCell = $("<div class='cell' style='width: 30%;'>").append($icon)
         $row.append($iconCell)
 
         $('#linkCompositionModal .linkClassSatisfaction').append($row)
     })
     $.each(preferenceSatisfaction, function(index, entry) {
         $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%; vertical-align: middle;'>" + entry.title + "</div></div>")
-        $iconCell = $("<div class='cell' style='width: 30%;'>").append(getSatisfactionIcon(entry.satisfaction))
+        var $icon = getSatisfactionIcon(entry.satisfaction)
+        $icon.on('mouseover.breakdown', function() {
+            showSatisfactionBreakdown($(this), entry.breakdown)
+        })
+
+        $icon.on('mouseout.breakdown', function() {
+            $('#satisfactionDetailsTooltip').hide()
+        })
+
+        $iconCell = $("<div class='cell' style='width: 30%;'>").append($icon)
         $row.append($iconCell)
 
         $('#linkCompositionModal .preferenceSatisfaction').append($row)
@@ -1984,6 +2001,27 @@ function getSatisfactionIcon(satisfaction) {
     $icon.width('22px')
     $icon.css({ display: "block", margin: "auto"})
     return $icon
+}
+
+function showSatisfactionBreakdown($icon, satisfactionBreakdown) {
+    var yPos = $icon.offset().top - $(window).scrollTop() + $icon.height() + 5
+    var xPos = $icon.offset().left - $(window).scrollLeft() + $icon.width() - $('#appealBonusDetailsTooltip').width() / 2
+
+    $('#satisfactionDetailsTooltip').css('top', yPos + 'px')
+    $('#satisfactionDetailsTooltip').css('left', xPos + 'px')
+    $('#satisfactionDetailsTooltip').show()
+
+    $('#satisfactionDetailsTooltip .table .table-row').empty()
+    $.each(satisfactionBreakdown, function(index, entry) {
+        var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 70%;">' + entry.percentage + '%</div></div>')
+        if (entry.positive) {
+            $row.css('color', 'green')
+        } else {
+            $row.css('color', 'red')
+        }
+        $('#satisfactionDetailsTooltip .table').append($row)
+    })
+
 }
 
 
