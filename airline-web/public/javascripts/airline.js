@@ -2276,7 +2276,7 @@ function updateAssignedDelegateCount(delegateCount) {
     }
     //look up the odds
     var odds = negotiationOddsLookup[assignedDelegates]
-    $('#linkConfirmationModal .successRate').text(Math.round(odds * 100) + '%')
+    $('#linkConfirmationModal .successRate').text(Math.floor(odds * 100) + '%')
 
     if (odds <= 0) { //then need to add delegates
         disableButton($('#linkConfirmationModal .negotiateButton'), "Odds at 0%. Assign more delegates")
