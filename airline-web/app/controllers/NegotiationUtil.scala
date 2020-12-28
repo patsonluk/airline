@@ -280,7 +280,7 @@ object NegotiationUtil {
             if (delegateCount < requiredDelegates + 1) {
               accumulativeOdds = base
             } else {
-              accumulativeOdds = Math.min(1, accumulativeOdds + 0.3 * Math.pow(0.7, delegateCount - requiredDelegates))
+              accumulativeOdds = Math.min(1, accumulativeOdds + 0.3 * Math.pow(0.7, delegateCount - requiredDelegates.toInt))
             }
             accumulativeOdds
           }
