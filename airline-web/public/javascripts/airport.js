@@ -736,6 +736,10 @@ function updateAirportExtendedDetails(airportId) {
 	$(".airportAwareness").text('-')
 	$(".airportLoyalty").text('-')
 	$(".airportRelationship").text('-')
+	$(".awarenessBonus").hide()
+    $('.awarenessBonusTrigger').hide()
+    $(".loyaltyBonus").hide()
+    $('.loyaltyBonusTrigger').hide()
 	$("#airportIcons .feature").hide()
 
     $.ajax({
