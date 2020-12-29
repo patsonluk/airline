@@ -32,6 +32,46 @@ abstract class FlightPreference(homeAirport : Airport) {
     computeCost(cost, link, linkClass)
   }
 
+  /**
+    * For testing and debug purpose only
+    * @param link
+    * @param linkClass
+    * @return
+    */
+  def computeCostBreakdown(link : Link, linkClass : LinkClass) : CostBreakdown = {
+    val standardPrice = link.standardPrice(preferredLinkClass)
+    val priceAdjust = priceAdjustRatio(link, linkClass)
+    var cost = standardPrice * priceAdjust
+
+    val qualityAdjust = qualityAdjustRatio(homeAirport, link, linkClass)
+    cost = (cost * qualityAdjust).toInt
+
+    val tripDurationAdjust = tripDurationAdjustRatio(link)
+    cost = (cost * tripDurationAdjust).toInt
+
+    var loyaltyAdjust = 1.0
+    if (loyaltySensitivity > 0) {
+      loyaltyAdjust = loyaltyAdjustRatio(link)
+      cost = (cost * loyaltyAdjust).toInt
+    }
+
+    val loungeAdjust = loungeAdjustRatio(link, preferredLinkClass, loungeLevelRequired)
+    cost = cost * loungeAdjust
+
+    CostBreakdown(computeCost(cost, link, linkClass), priceAdjust, qualityAdjust, tripDurationAdjust, loyaltyAdjust, loungeAdjust)
+  }
+
+  /**
+    * For debug and testing propose only
+    * @param cost
+    * @param priceAdjust
+    * @param qualityAdjust
+    * @param tripDurationAdjust
+    * @param loyaltyAdjust
+    * @param loungeAdjust
+    */
+  case class CostBreakdown(cost : Double, priceAdjust : Double, qualityAdjust : Double, tripDurationAdjust : Double, loyaltyAdjust : Double, loungeAdjust : Double)
+
   val priceSensitivity : Double
   val qualitySensitivity : Double
   val loyaltySensitivity : Double
@@ -73,7 +113,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     //
     //    //the actualReduceFactor is random number (linear distribution) from minReduceFactorForThisAirline up to the maxReduceFactorForThisAirline.
     //    val actualReduceFactor = (minReduceFactorForThisAirline + maxReduceFactorForThisAirline) / 2 + (maxReduceFactorForThisAirline - minReduceFactorForThisAirline) * Math.random() / 2 * loyaltyRatio
-    val base =  1 + (-0.15 + loyalty.toDouble / maxLoyalty / 2)  * loyaltySensitivity
+    val base =  1 + (-0.2 + loyalty.toDouble / maxLoyalty / 2.5)  * loyaltySensitivity
 
     //println("factor " + loyaltyRatio + " at loyalty " + loyalty + " : " + adjustment)
     1 / base
@@ -111,7 +151,7 @@ abstract class FlightPreference(homeAirport : Airport) {
   val priceAdjustedByLinkDiff = (link : Link, linkClass : LinkClass) => {
     val price = link.price(linkClass);
     if (linkClass.level != preferredLinkClass.level) {
-      val classDiffMultiplier: Double = 1 + (preferredLinkClass.level - linkClass.level) * 0.7
+      val classDiffMultiplier: Double = 1 + (preferredLinkClass.level - linkClass.level) * 0.4
       (price / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * 2.5 for unwillingness to downgrade
     } else {
       price
@@ -219,7 +259,7 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     }
   }
 
-  override val qualitySensitivity = 1.0 / 3
+  override val qualitySensitivity = 1.0 / 2
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 3
   override val frequencySensitivity = 0.02
@@ -241,7 +281,7 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
 }
 
 case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass) extends FlightPreference(homeAirport = homeAirport) {
-  override val priceSensitivity = 0.5
+  override val priceSensitivity = 0.7
   override val qualitySensitivity = 0.5
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 14
