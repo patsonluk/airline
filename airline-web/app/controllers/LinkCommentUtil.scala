@@ -216,9 +216,9 @@ object LinkComment {
       } else if (ratioDelta < -0.2) {
         Some("I am a fan of your airline!")
       } else if (ratioDelta < 0) {
-        Some("Your airline has pretty good reputation.")
+        Some("I have heard some nice things about your airline.")
       } else if (ratioDelta < 0.2) {
-        Some("I am not a fan of your airline.")
+        Some("I am not really a fan of your airline.")
       } else  {
         Some("I would rather travel with other airlines!")
       }
