@@ -208,15 +208,15 @@ object LinkSimulation {
   def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int, allAirplaneAssignments : immutable.Map[Int, LinkAssignments]) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
     
     val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
-    
+
     //val totalFuelBurn = link //fuel burn actually similar to crew cost
     val fuelCost = link.getAssignedModel() match {
       case Some(model) =>
         (if (link.duration <= 90) {
           val ascendTime, descendTime = (link.duration / 2)
-          (model.fuelBurn * 10 * ascendTime + model.fuelBurn * descendTime) * FUEL_UNIT_COST * link.frequency 
+          (model.fuelBurn * 10 * ascendTime + model.fuelBurn * descendTime) * FUEL_UNIT_COST * (link.frequency - link.cancellationCount)
         } else {
-          (model.fuelBurn * 10 * 45 + model.fuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * link.frequency //first 60 minutes huge burn, then cruising at 1/4 the cost
+          (model.fuelBurn * 10 * 45 + model.fuelBurn * (link.duration - 30)) * FUEL_UNIT_COST * (link.frequency - link.cancellationCount) //first 60 minutes huge burn, then cruising at 1/4 the cost
         } * (0.7 + 0.3 * loadFactor)).toInt //at 0 LF, 70% fuel cost
       case None => 0
     }
