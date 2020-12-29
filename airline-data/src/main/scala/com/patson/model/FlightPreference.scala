@@ -192,7 +192,7 @@ object FlightPreferenceType extends Enumeration {
   val SIMPLE  = Val("Carefree", "")
   val SPEED = Val("Swift", "")
   val APPEAL   = Val("Comprehensive", "") 
-  val LOYAL   = Val("Loyalist", "")
+  val LOYAL   = Val("Brand Conscious", "")
   val ELITE    = Val("Elite", "") 
 }
 
