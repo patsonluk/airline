@@ -26,6 +26,9 @@ abstract class FlightPreference(homeAirport : Airport) {
     if (loyaltySensitivity > 0) {
       cost = (cost * loyaltyAdjustRatio(link)).toInt
     }
+
+    cost = cost * loungeAdjustRatio(link, preferredLinkClass, loungeLevelRequired)
+
     computeCost(cost, link, linkClass)
   }
 
@@ -35,6 +38,9 @@ abstract class FlightPreference(homeAirport : Airport) {
   val frequencyThreshold : Int
   val frequencySensitivity : Double
   val flightDurationSensitivity : Double
+  val loungeSensitivity : Double = 0
+  val loungeLevelRequired : Int = 0
+
   lazy val appealList : Map[Int, AirlineAppeal] = homeAirport.getAirlineAdjustedAppeals
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
   //val fixedCostRatio = 0.5 //the composition of constant cost, if at 0, all cost is based on loyalty, at 1, loyalty has no effect at all
@@ -131,6 +137,46 @@ abstract class FlightPreference(homeAirport : Airport) {
 
     1 + frequencyRatioDelta + flightDurationRatioDelta
   }
+
+  def loungeAdjustRatio(link : Link, preferredLinkClass : LinkClass, loungeLevelRequired : Int) = {
+    if (loungeSensitivity == 0 || loungeLevelRequired == 0) {
+      1.0
+    } else {
+      val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
+      val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
+
+      val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
+      val toLoungeLevel = toLounge.map(_.level).getOrElse(0)
+
+
+      val fromLoungeRatioDelta : Double =
+        if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
+          if (link.distance <= 2000) { //shorter flight has less impact
+            0.05 + (loungeLevelRequired - fromLoungeLevel) * 0.1
+          } else if (link.distance <= 5000) {
+            0.1 + (loungeLevelRequired - fromLoungeLevel) * 0.15
+          } else {
+            0.2 + (loungeLevelRequired - fromLoungeLevel) * 0.2
+          }
+        } else {
+          fromLounge.map(_.getPriceReduceFactor(link.distance)).getOrElse(0)
+        }
+
+      val toLoungeRatioDelta : Double =
+        if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
+          if (link.distance <= 2000) { //shorter flight has less impact
+            0.05 + (loungeLevelRequired - toLoungeLevel) * 0.1
+          } else if (link.distance <= 5000) {
+            0.1 + (loungeLevelRequired - toLoungeLevel) * 0.15
+          } else {
+            0.2 + (loungeLevelRequired - toLoungeLevel) * 0.2
+          }
+        } else {
+          toLounge.map(_.getPriceReduceFactor(link.distance)).getOrElse(0)
+        }
+      1 + fromLoungeRatioDelta + toLoungeRatioDelta
+    }
+  }
 }
 
 object FlightPreferenceType extends Enumeration {
@@ -221,46 +267,20 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
 
 }
 
-case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, loungeLevelRequired : Int, loyaltyRatio : Double, id : Int)  extends FlightPreference(homeAirport) {
+case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, override val loungeLevelRequired : Int, loyaltyRatio : Double, id : Int)  extends FlightPreference(homeAirport) {
   override val priceSensitivity = preferredLinkClass.priceSensitivity
   override val qualitySensitivity = 1
   override val loyaltySensitivity = loyaltyRatio
   override val frequencyThreshold = 14
   override val frequencySensitivity = 0.05
   override val flightDurationSensitivity = 0.1
+  override val loungeSensitivity : Double = 1
 
   def computeCost(baseCost: Double, link : Link, linkClass : LinkClass) : Double = {
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     var perceivedPrice = baseCost
-    //adjust by lounge
-    if (preferredLinkClass.level >= BUSINESS.level) {
-      val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
-      val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
-        
-      val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
-      val toLoungeLevel = toLounge.map(_.level).getOrElse(0)
-      
-       
-      if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
-        perceivedPrice = perceivedPrice + 500 * ((loungeLevelRequired - fromLoungeLevel) * linkClass.priceMultiplier).toInt
-      } else {
-        if (fromLounge.isDefined) {
-          perceivedPrice = (perceivedPrice * fromLounge.get.getPriceReduceFactor(link.distance)).toInt
-        }
-      }
-      
-      if (toLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
-        perceivedPrice = perceivedPrice + 500 * ((loungeLevelRequired - toLoungeLevel) * linkClass.priceMultiplier).toInt
-      } else {
-        if (toLounge.isDefined) {
-          perceivedPrice = (perceivedPrice * toLounge.get.getPriceReduceFactor(link.distance)).toInt
-        }
-      }
-    }
 
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
-    
- 
     val noise = 0.7 + getFlatTopBellRandom(0.3, 0.25)
 
     //NOISE?
