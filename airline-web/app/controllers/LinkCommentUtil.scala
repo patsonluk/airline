@@ -94,6 +94,7 @@ object LinkCommentUtil {
           case LOYALTY => generateCommentsForLoyalty(weight.adjustRatio)
           case QUALITY => generateCommentsForQuality(link.rawQuality, airline.getCurrentServiceQuality(), link.getAssignedAirplanes().keys.toList, homeAirport.expectedQuality(flightType, linkClass), flightType)
           case DURATION => generateCommentsForFlightDuration(link.frequency, preference.frequencyThreshold, link.duration, standardDuration)
+          case LOUNGE => generateCommentsForLounge(preference.loungeLevelRequired, link.from, link.to, airline.id)
           case _ => List.empty
         }
 
@@ -176,6 +177,12 @@ object LinkCommentUtil {
       LinkComment.frequencyComment(frequency, adjustedExceptedFrequency),
       LinkComment.flightDurationComment(flightDuration, adjustedExpectedDuration)).flatten
    }
+
+  def generateCommentsForLounge(loungeRequirement: Int, fromAirport : Airport, toAirport : Airport, airlineId : Int)(implicit random : Random) = {
+    List(
+      LinkComment.loungeComment(loungeRequirement, fromAirport, airlineId),
+      LinkComment.loungeComment(loungeRequirement, toAirport, airlineId)).flatten
+  }
 }
 
 case class LinkCommentSummary(comments : List[LinkComment], sampleSize : Int)
@@ -410,15 +417,32 @@ object LinkComment {
       LinkComment(comment, LinkCommentType.FLIGHT_DURATION, deltaRatio < 0)
     }
   }
+
+  def loungeComment(loungeRequirement: Int, airport : Airport, airlineId : Int)(implicit random : Random) = {
+    val loungeLevel = airport.getLoungeByAirline(airlineId).map(_.level).getOrElse(0)
+    val adjustedLoungeRequirement = Math.max(Lounge.MAX_LEVEL, (loungeRequirement + com.patson.Util.getBellRandom(0, Lounge.MAX_LEVEL, Some(random.nextInt()))).toInt)
+    val delta = loungeLevel - adjustedLoungeRequirement
+    val comment =
+      if (delta < 0) { //does not fulfill the req
+        if (loungeLevel == 0) {
+          s"I am disappointed with the lack of lounge at ${airport.displayText}"
+        } else {
+          s"The lounge at ${airport.displayText} does not meet my expectation"
+        }
+      } else {
+        s"I am satisfied with the lounge service at ${airport.displayText}"
+      }
+    List(LinkComment(comment, LinkCommentType.LOUNGE, delta >= 0))
+  }
 }
 
 object LinkCommentGroup extends Enumeration {
   type LinkCommentGroup = Value
-  val PRICE, LOYALTY, QUALITY, DURATION, OTHER = Value
+  val PRICE, LOYALTY, QUALITY, DURATION, LOUNGE, OTHER = Value
 }
 
 object LinkCommentType extends Enumeration {
   type LinkCommentType = Value
-  val PRICE, LOYALTY, RAW_QUALITY, SERVICE_QUALITY, AIRPLANE_CONDITION, FREQUENCY, FLIGHT_DURATION = Value
+  val PRICE, LOYALTY, RAW_QUALITY, SERVICE_QUALITY, AIRPLANE_CONDITION, FREQUENCY, FLIGHT_DURATION, LOUNGE = Value
 }
 
