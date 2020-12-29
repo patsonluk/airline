@@ -655,15 +655,15 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         //adjust suggestedPrice with Lounge
         toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
           suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY),
-            (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor(distance)).toInt,
-            (suggestedPrice(FIRST) / lounge.getPriceReduceFactor(distance)).toInt)
+            (suggestedPrice(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
+            (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
 
         }
 
         fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
           suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY),
-            (suggestedPrice(BUSINESS) / lounge.getPriceReduceFactor(distance)).toInt,
-            (suggestedPrice(FIRST) / lounge.getPriceReduceFactor(distance)).toInt)
+            (suggestedPrice(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
+            (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
         }
         val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
         val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
