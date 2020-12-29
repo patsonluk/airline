@@ -2239,6 +2239,10 @@ function loadAirportImages(fromAirportId, toAirportId) {
 
 function loadAirportImage(airportId, $imgContainer) {
 	var url = "airports/" + airportId + "/images"
+	var genericImageUrl = "assets/images/background/town.png"
+	$imgContainer.attr('src', genericImageUrl)
+	$imgContainer.addClass('blur')
+
 
 	$.ajax({
 		type: 'GET',
@@ -2257,9 +2261,8 @@ function loadAirportImage(airportId, $imgContainer) {
 
 	        if (imageUrl) {
 	            $imgContainer.attr('src', imageUrl)
-            } else {
-                $imgContainer.attr('src', '') //generic airport image?
             }
+            $imgContainer.removeClass('blur')
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

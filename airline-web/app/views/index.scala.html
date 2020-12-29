@@ -810,7 +810,7 @@
 	<!-- 	    	   end bottom panel -->
 				</div>
 	<!--   			end world map canvas -->
-				<div id="linksCanvas" style="display: none; height: 100%; min-width: 800px;">
+				<div id="linksCanvas" style="display: none; height: 100%; min-width: 400px;">
 					<div style="float: left;" class="mainPanel">
 						<div class="section" style="height: 95% ; width : 98%; float: left;">
 							<div style="height: 20px">
@@ -818,7 +818,7 @@
 								<span style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></span> <!--hidden column for last update -->
 							</div>
 							<div style="width: 100%; height: 100%; overflow:auto;">
-								<div class="table data" style="height: 20px; width: 100%; min-width: 800px;">
+								<div class="table data" style="height: 20px; width: 100%; min-width: 600px;">
 									<div class="table-header" id="linksTableSortHeader">
 										<div class="cell clickable selected" style="width: 18%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
 										<div class="cell clickable" style="width: 18%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
@@ -831,7 +831,7 @@
 										<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 									</div>
 								</div>
-								<div style="height: calc(100% - 40px); width: 100%; overflow-y:auto; min-width: 800px;">
+								<div style="height: calc(100% - 40px); width: 100%; overflow-y:auto; min-width: 600px;">
 									<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
 										<div class="table-header">
 											<div class="cell" style="width: 18%; border-bottom: none;"></div>
@@ -3308,14 +3308,15 @@
 	  <div class="modal-content" style="width : 600px">
 		  <span class="close" onclick="closeModal($('#linkConfirmationModal'))">&times;</span>
 		  <h4 style="margin-bottom: 10px;" class="modalHeader"></h4>
-		  <div style=" float: left; margin-left: 100px; width:150px; display: flex; flex-direction: column;">
-			  <img class="fromAirport roundImage" style="height: 150px; width:150px;">
+		  <div style=" float: left; width:50%; padding-left: 10%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; ">
+			  <img class="fromAirport roundImage" style="height: 150px; width:150px; max-height: 30vw; max-width: 30vw;">
 			  <div style="display:inline-block; align-self: center; margin-top:5px; font-weight: bold;" class="fromAirportText"></div>
 		  </div>
-		  <div style=" float: right; margin-right: 100px; width:150px; display: flex; flex-direction: column;">
-			  <img class="toAirport roundImage" style="height: 150px; width:150px;">
+  		  <div style=" float: right; width:50%; padding-right: 10%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center;">
+			  <img class="toAirport roundImage" style="height: 150px; width:150px; max-height: 30vw; max-width: 30vw;">
 			  <div style="display:inline-block; align-self: center; margin-top:5px; font-weight: bold;" class="toAirportText"></div>
 		  </div>
+
 		  <div style="clear:both; margin-bottom:10px;"></div>
 		  <div style="width: 100%;" class="existingLink table data">
 			  <div class='table-header'>
@@ -3500,7 +3501,7 @@
   </div>
 
   <div id="negotiationAnimation" class="modal">
-	  <div class="modal-content" style="height: 200px; width : 550px">
+	  <div class="modal-content" style="height: 200px; width : 550px; max-width : 95vw;">
 <!--		  <span class="close" onclick="closeModal($('#negotiationAnimation'))">&times;</span>-->
 		  <h4 style="margin-bottom: 10px;" class="modalHeader">Negotiation in progress... Success Rate:&nbsp;<span class="successRate"></span>%</h4>
 		  <div class="negotiationIcons" style="width: 70%; height: 50px; float:left;"></div>
