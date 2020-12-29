@@ -32,8 +32,8 @@ abstract class FlightPreference(homeAirport : Airport) {
   val priceSensitivity : Double
   val qualitySensitivity : Double
   val loyaltySensitivity : Double
-  val waitDurationThreshold : Int
-  val waitDurationSensitivity : Double
+  val frequencyThreshold : Int
+  val frequencySensitivity : Double
   val flightDurationSensitivity : Double
   lazy val appealList : Map[Int, AirlineAppeal] = homeAirport.getAirlineAdjustedAppeals
   val maxLoyalty = AirlineAppeal.MAX_LOYALTY
@@ -117,10 +117,9 @@ abstract class FlightPreference(homeAirport : Airport) {
   //waitThreshold => if lower than threshold, adjust cost down (< 1); otherwise adjust up
   //waitMultiplier, flightDurationMultiplier => how does wait time and speed affect ratio, 0 = no effect, 0.1 = 10%
   val tripDurationAdjustRatio = (link : Link) => {
-    val interval = (60 * 24 * 7 / link.frequency)
-    val waitDuration = interval / 2
     //by default waitThreshold extra minute increases ratio by 0.1 (max). and no wait (infinity frequency) decreases ratio by 0.1 (min)
-    val waitRatioDelta = Math.min(waitDurationSensitivity, (waitDuration - waitDurationThreshold).toFloat / waitDuration * waitDurationSensitivity)
+    //full penalty on 0 freq, full bonus if 2 * theshold. at threshold it's neutral
+    val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequency).toDouble / frequencyThreshold * frequencySensitivity)
 
     val flightDurationRatioDelta =
       if (flightDurationSensitivity == 0) {
@@ -130,7 +129,7 @@ abstract class FlightPreference(homeAirport : Airport) {
         Math.min(flightDurationSensitivity, (link.duration - flightDurationThreshold).toFloat / flightDurationThreshold * flightDurationSensitivity)
       }
 
-    1 + waitRatioDelta + flightDurationRatioDelta
+    1 + frequencyRatioDelta + flightDurationRatioDelta
   }
 }
 
@@ -176,8 +175,8 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
 
   override val qualitySensitivity = 1.0 / 3
   override val loyaltySensitivity = 0
-  override val waitDurationThreshold = 24 * 60
-  override val waitDurationSensitivity = 0.02
+  override val frequencyThreshold = 3
+  override val frequencySensitivity = 0.02
   override val flightDurationSensitivity = 0
 
 
@@ -199,8 +198,8 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
   override val priceSensitivity = 0.5
   override val qualitySensitivity = 0.5
   override val loyaltySensitivity = 0
-  override val waitDurationThreshold = 6 * 60
-  override val waitDurationSensitivity = 0.2
+  override val frequencyThreshold = 14
+  override val frequencySensitivity = 0.2
   override val flightDurationSensitivity = 0.5
 
   def computeCost(baseCost : Double, link : Link, linkClass : LinkClass) = {
@@ -226,8 +225,8 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   override val priceSensitivity = preferredLinkClass.priceSensitivity
   override val qualitySensitivity = 1
   override val loyaltySensitivity = loyaltyRatio
-  override val waitDurationThreshold = 6 * 60
-  override val waitDurationSensitivity = 0.05
+  override val frequencyThreshold = 14
+  override val frequencySensitivity = 0.05
   override val flightDurationSensitivity = 0.1
 
   def computeCost(baseCost: Double, link : Link, linkClass : LinkClass) : Double = {

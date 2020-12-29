@@ -1983,11 +1983,19 @@ function updateSatisfaction(result) {
     var topPositiveComments = result.topPositiveComments
     var topNegativeComments = result.topNegativeComments
     $.each(topPositiveComments, function(index, entry) {
-            $row = $("<div class='table-row data-row'><div class='cell'>" + entry[0].comment + "</div><div class='cell'>" + Math.round(entry[1] * 100) + "%</div></div>")
+            var percentage = Math.round(entry[1] * 100)
+            if (percentage == 0) {
+                percentage = "< 1"
+            }
+            $row = $("<div class='table-row data-row'><div class='cell'>" + entry[0].comment + "</div><div class='cell'>" + percentage + "%</div></div>")
             $('#linkCompositionModal .positiveComments').append($row)
         })
     $.each(topNegativeComments, function(index, entry) {
-            $row = $("<div class='table-row data-row'><div class='cell'>" + entry[0].comment + "</div><div class='cell'>" + Math.round(entry[1] * 100) + "%</div></div>")
+            var percentage = Math.round(entry[1] * 100)
+            if (percentage == 0) {
+                percentage = "< 1"
+            }
+            $row = $("<div class='table-row data-row'><div class='cell'>" + entry[0].comment + "</div><div class='cell'>" + percentage + "%</div></div>")
             $('#linkCompositionModal .negativeComments').append($row)
         })
 }
@@ -2031,15 +2039,23 @@ function showSatisfactionBreakdown($icon, positiveComments, negativeComments, sa
 
     $('#satisfactionDetailsTooltip .table .table-row').remove()
     $.each(positiveComments, function(index, entry) {
-        var $row = $('<div class="table-row" style="font-size: 15px; text-shadow: 0px 0px 3px rgba(0,0,0,0.5);"><div class="cell">' + entry[0].comment + '</div><div class="cell">' + Math.round(entry[1] * 100) + '%</div></div>')
+        var percentage = Math.round(entry[1] * 100)
+        if (percentage == 0) {
+            percentage = "< 1"
+        }
+        var $row = $('<div class="table-row" style="font-size: 15px; text-shadow: 0px 0px 3px rgba(0,0,0,0.5);"><div class="cell">' + entry[0].comment + '</div><div class="cell">' + percentage + '%</div></div>')
         $row.css('color', '#9ACD32')
         $('#satisfactionDetailsTooltip .table').append($row)
     })
     $.each(negativeComments, function(index, entry) {
-            var $row = $('<div class="table-row"  style="font-size: 15px; text-shadow: 0px 0px 3px rgba(0,0,0,0.5);"><div class="cell">' + entry[0].comment + '</div><div class="cell">' + Math.round(entry[1] * 100) + '%</div></div>')
-            $row.css('color', '#F08080')
-            $('#satisfactionDetailsTooltip .table').append($row)
-        })
+        var percentage = Math.round(entry[1] * 100)
+        if (percentage == 0) {
+            percentage = "< 1"
+        }
+        var $row = $('<div class="table-row"  style="font-size: 15px; text-shadow: 0px 0px 3px rgba(0,0,0,0.5);"><div class="cell">' + entry[0].comment + '</div><div class="cell">' + percentage + '%</div></div>')
+        $row.css('color', '#F08080')
+        $('#satisfactionDetailsTooltip .table').append($row)
+    })
 
     $('#satisfactionDetailsTooltip').show()
 }
