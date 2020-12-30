@@ -227,8 +227,8 @@ object Computation {
 //    model.constructionTime + (existingConstruction / 5) * model.constructionTime / 4 
 //  }
 
-  val MAX_SATISFACTION_PRICE_RATIO_THRESHOLD = 0.5 //at 100% satisfaction is <= this threshold
-  val MIN_SATISFACTION_PRICE_RATIO_THRESHOLD = LINK_COST_TOLERANCE_FACTOR + 0.1 //0% satisfaction >= this threshold ... +0.1 so, there will be at least some satisfaction even at the LINK_COST_TOLERANCE_FACTOR
+  val MAX_SATISFACTION_PRICE_RATIO_THRESHOLD = 0.7 //at 100% satisfaction is <= this threshold
+  val MIN_SATISFACTION_PRICE_RATIO_THRESHOLD = LINK_COST_TOLERANCE_FACTOR + 0.05 //0% satisfaction >= this threshold ... +0.05 so, there will be at least some satisfaction even at the LINK_COST_TOLERANCE_FACTOR
   /**
     * From 0 (not satisfied at all) to 1 (fully satisfied)
     *
