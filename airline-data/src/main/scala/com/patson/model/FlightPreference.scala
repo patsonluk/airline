@@ -165,7 +165,7 @@ abstract class FlightPreference(homeAirport : Airport) {
   val tripDurationAdjustRatio = (link : Link) => {
     //by default waitThreshold extra minute increases ratio by 0.1 (max). and no wait (infinity frequency) decreases ratio by 0.1 (min)
     //full penalty on 0 freq, full bonus if 2 * theshold. at threshold it's neutral
-    val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequency).toDouble / frequencyThreshold * frequencySensitivity)
+    val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequency).toDouble / frequencyThreshold) * frequencySensitivity
 
     val flightDurationRatioDelta =
       if (flightDurationSensitivity == 0) {
