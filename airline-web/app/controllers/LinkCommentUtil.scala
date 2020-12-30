@@ -418,19 +418,19 @@ object LinkComment {
     }
   }
 
-  def loungeComment(loungeRequirement: Int, airport : Airport, airlineId : Int)(implicit random : Random) = {
-    val loungeLevel = airport.getLoungeByAirline(airlineId).map(_.level).getOrElse(0)
+  def loungeComment(loungeRequirement: Int, airport : Airport, airlineId : Int, allianceIdOption : Option[Int])(implicit random : Random) = {
+    val loungeOption = airport.getLounge(airlineId, allianceIdOption)
+    val loungeLevel = loungeOption.map(_.level).getOrElse(0)
     val adjustedLoungeRequirement = Math.max(Lounge.MAX_LEVEL, (loungeRequirement + com.patson.Util.getBellRandom(0, Lounge.MAX_LEVEL, Some(random.nextInt()))).toInt)
     val delta = loungeLevel - adjustedLoungeRequirement
     val comment =
       if (delta < 0) { //does not fulfill the req
-        if (loungeLevel == 0) {
-          s"I am disappointed with the lack of lounge at ${airport.displayText}"
-        } else {
-          s"The lounge at ${airport.displayText} does not meet my expectation"
+        loungeOption match {
+          case None => s"I am disappointed with the lack of lounge at ${airport.displayText}"
+          case Some(lounge) => s"The lounge at ${airport.displayText} from ${lounge.airline.name} does not meet my expectation"
         }
       } else {
-        s"I am satisfied with the lounge service at ${airport.displayText}"
+        s"I am satisfied with the lounge service at ${airport.displayText} from ${loungeOption.get.airline.name}"
       }
     List(LinkComment(comment, LinkCommentType.LOUNGE, delta >= 0))
   }
