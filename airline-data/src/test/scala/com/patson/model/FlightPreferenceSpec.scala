@@ -655,7 +655,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 50)
+      assert(ratio > 10)
      }
      
       "some overlap if frequency diff is small". in {
@@ -735,7 +735,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       clonedFromAirport.initAirlineAppeals(scala.collection.immutable.Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0),
                                                testAirline2.id -> AirlineAppeal(loyalty = 0, 0)))
       
-      val link1 = airline1Link.copy(price = defaultPrice * 1.45, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val link1 = airline1Link.copy(price = defaultPrice * 1.4, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
       val link2 = airline2Link.copy(price = defaultPrice, frequency = 1)
       link1.setQuality(70)
       link2.setQuality(40)
@@ -763,7 +763,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
                                                testAirline2.id -> AirlineAppeal(loyalty = 0, 0)))
       
       val link1 = airline1Link.copy(price = defaultPrice * 1.15, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
-      val link2 = airline2Link.copy(price = defaultPrice, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val link2 = airline2Link.copy(price = defaultPrice, frequency = 1)
       link1.setQuality(80)    
       link2.setQuality(40)
       val pool = DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport)
@@ -823,8 +823,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
 
       val ratio = airline1Picked.toDouble / airline2Picked
-      assert(ratio > 2)
-      assert(ratio < 5)
+      assert(ratio > 1)
+      assert(ratio < 2)
     }
   }
 }

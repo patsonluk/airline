@@ -281,7 +281,7 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
 }
 
 case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass) extends FlightPreference(homeAirport = homeAirport) {
-  override val priceSensitivity = 0.7
+  override val priceSensitivity = 0.9
   override val qualitySensitivity = 0.5
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 14
