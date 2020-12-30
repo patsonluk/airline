@@ -313,7 +313,7 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   override val loyaltySensitivity = loyaltyRatio
   override val frequencyThreshold = 14
   override val frequencySensitivity = 0.05
-  override val flightDurationSensitivity = 0.1
+  override val flightDurationSensitivity = 0.15
   override val loungeSensitivity : Double = 1
 
   def computeCost(baseCost: Double, link : Link, linkClass : LinkClass) : Double = {
