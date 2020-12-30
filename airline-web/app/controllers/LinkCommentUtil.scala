@@ -94,7 +94,7 @@ object LinkCommentUtil {
           case LOYALTY => generateCommentsForLoyalty(weight.adjustRatio)
           case QUALITY => generateCommentsForQuality(link.rawQuality, airline.getCurrentServiceQuality(), link.getAssignedAirplanes().keys.toList, homeAirport.expectedQuality(flightType, linkClass), flightType)
           case DURATION => generateCommentsForFlightDuration(link.frequency, preference.frequencyThreshold, link.duration, standardDuration)
-          case LOUNGE => generateCommentsForLounge(preference.loungeLevelRequired, link.from, link.to, airline.id)
+          case LOUNGE => generateCommentsForLounge(preference.loungeLevelRequired, link.from, link.to, airline.id, airline.getAllianceId())
           case _ => List.empty
         }
 
@@ -178,10 +178,10 @@ object LinkCommentUtil {
       LinkComment.flightDurationComment(flightDuration, adjustedExpectedDuration)).flatten
    }
 
-  def generateCommentsForLounge(loungeRequirement: Int, fromAirport : Airport, toAirport : Airport, airlineId : Int)(implicit random : Random) = {
+  def generateCommentsForLounge(loungeRequirement: Int, fromAirport : Airport, toAirport : Airport, airlineId : Int, allianceIdOption : Option[Int])(implicit random : Random) = {
     List(
-      LinkComment.loungeComment(loungeRequirement, fromAirport, airlineId),
-      LinkComment.loungeComment(loungeRequirement, toAirport, airlineId)).flatten
+      LinkComment.loungeComment(loungeRequirement, fromAirport, airlineId, allianceIdOption),
+      LinkComment.loungeComment(loungeRequirement, toAirport, airlineId, allianceIdOption)).flatten
   }
 }
 
