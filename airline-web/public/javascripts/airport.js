@@ -652,6 +652,8 @@ function updateBaseInfo(airportId) {
 
 function updateAirportLoyalistDetails(airport) {
     var url = "airports/" + airport.id + "/loyalist-data"
+    var $table = $('#airportCanvas .loyalistDelta')
+    $table.find('.table-row').remove()
 
     if (activeAirline) {
         url += "?airlineId=" + activeAirline.id
@@ -663,6 +665,14 @@ function updateAirportLoyalistDetails(airport) {
 	    dataType: 'json',
 	    success: function(result) {
 	        var currentData = result.current
+
+            $.each(result.airlineDeltas, function(index, deltaEntry) {
+                var airlineName = deltaEntry.airlineName
+                var airlineId = deltaEntry.airlineId
+                var deltaText = (deltaEntry.passengers >= 0) ? ("+" + deltaEntry.passengers) : deltaEntry.passengers
+
+                $table.append('<div class="table-row"><div class="cell">' + getAirlineLogoImg(airlineId) + airlineName + '</div><div class="cell" style="text-align:right">' + deltaText + '</div></div>')
+            })
 
 	    	assignAirlineColors(currentData, "airlineId")
 

@@ -2,6 +2,7 @@ package controllers
 
 import java.util.Random
 
+import com.patson.AirportSimulation
 import com.patson.data._
 import com.patson.model.Scheduling.{TimeSlot, TimeSlotStatus}
 import com.patson.model.{Link, _}
@@ -109,6 +110,8 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
       Json.toJson(entry.entry).asInstanceOf[JsObject] + ("cycle" -> JsNumber(entry.cycle))
     }
   }
+
+
 
    
 //  object SimpleLinkWrites extends Writes[Link] {
@@ -489,10 +492,14 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   }
 
   val MAX_LOYALIST_HISTORY_AIRLINE = 5
+
   def getAirportLoyalistData(airportId : Int, airlineIdOption : Option[Int]) = Action {
     val currentLoyalistEntries = LoyalistSource.loadLoyalistsByAirportId(airportId)
+    val currentLoyalistByAirlineId = currentLoyalistEntries.map(entry => (entry.airline.id,  entry)).toMap
     val historyEntries = LoyalistSource.loadLoyalistsHistoryByAirportId(airportId)
+    val airlineDeltas = ListBuffer[(Airline, Int)]()
     val airport = AirportCache.getAirport(airportId).get
+    val currentCycle = CycleSource.loadCycle()
     historyEntries.toList.sortBy(_._1).lastOption match {
       case Some((lastCycle, lastEntry)) =>
         val topAirlineIds = lastEntry.sortBy(_.entry.amount).takeRight(MAX_LOYALIST_HISTORY_AIRLINE).map(_.entry.airline.id).toSet
@@ -503,14 +510,22 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
 
         val processedEntries : List[(Int, List[LoyalistHistory])] = historyEntries.toList.sortBy(_._1).map {
           case((cycle, entries)) =>
-          val entriesByAirlineId = entries.map(entry => (entry.entry.airline.id, entry)).toMap
-          val paddedEntries = reportingAirlineIds.map {  reportingAirlineId =>
-            entriesByAirlineId.getOrElse(reportingAirlineId, LoyalistHistory(Loyalist(airport, AirlineCache.getAirline(reportingAirlineId).get, 0), cycle)) //pad with zero entries
-          }
+            val entriesByAirlineId = entries.map(entry => (entry.entry.airline.id, entry)).toMap
+            val paddedEntries = reportingAirlineIds.map {  reportingAirlineId =>
+              entriesByAirlineId.getOrElse(reportingAirlineId, LoyalistHistory(Loyalist(airport, AirlineCache.getAirline(reportingAirlineId).get, 0), cycle)) //pad with zero entries
+            }
+            val cycleDelta = currentCycle - cycle
+            if (currentCycle != 0 &&  cycleDelta <= AirportSimulation.LOYALIST_HISTORY_SAVE_INTERVAL) { //then it is the closest historical entry from current turn
+              reportingAirlineIds.foreach { reportingAirlineId =>
+                val previousLoyalistCount = entriesByAirlineId.get(reportingAirlineId).map(_.entry.amount).getOrElse(0)
+                airlineDeltas.append((AirlineCache.getAirline(reportingAirlineId).get, (currentLoyalistByAirlineId.get(reportingAirlineId).map(_.amount).getOrElse(0) - previousLoyalistCount) / cycleDelta))
+              }
+            }
+
             (cycle, paddedEntries)
         }
 
-        Ok(Json.obj("current" -> currentLoyalistEntries, "history" -> processedEntries))
+        Ok(Json.obj("current" -> currentLoyalistEntries, "history" -> processedEntries, "airlineDeltas" -> airlineDeltas.toList.sortBy(_._2)(Ordering[Int].reverse)))
       case None =>
         Ok(Json.obj("current" -> currentLoyalistEntries))
     }
