@@ -3,6 +3,7 @@
     display: inline-block;
     vertical-align: middle;
     /*font-size: 14px;*/
+    max-width: 95vw;
 }
 
 

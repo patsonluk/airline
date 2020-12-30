@@ -2034,8 +2034,6 @@ function showSatisfactionBreakdown($icon, positiveComments, negativeComments, sa
     var yPos = $icon.offset().top - $(window).scrollTop() + $icon.height() + 5
     var xPos = $icon.offset().left - $(window).scrollLeft() + $icon.width() - $('#appealBonusDetailsTooltip').width() / 2
     $('#satisfactionDetailsTooltip .satisfactionValue').text(Math.round(satisfactionValue * 100) + '%')
-    $('#satisfactionDetailsTooltip').css('top', yPos + 'px')
-    $('#satisfactionDetailsTooltip').css('left', xPos + 'px')
 
     $('#satisfactionDetailsTooltip .table .table-row').remove()
     $.each(positiveComments, function(index, entry) {
@@ -2056,6 +2054,16 @@ function showSatisfactionBreakdown($icon, positiveComments, negativeComments, sa
         $row.css('color', '#F08080')
         $('#satisfactionDetailsTooltip .table').append($row)
     })
+
+     //adjust xPos if it's outside of the screen
+    var windowWidth = $(window).width()
+    var tooltipWidth = $('#satisfactionDetailsTooltip').width()
+    if (xPos + tooltipWidth > windowWidth) {
+        xPos = windowWidth - tooltipWidth
+    }
+
+    $('#satisfactionDetailsTooltip').css('top', yPos + 'px')
+    $('#satisfactionDetailsTooltip').css('left', xPos + 'px')
 
     $('#satisfactionDetailsTooltip').show()
 }
