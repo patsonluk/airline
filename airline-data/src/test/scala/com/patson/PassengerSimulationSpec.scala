@@ -764,8 +764,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.5)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.7)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.6)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.8)
     }
     
     "accept almost no link at 1.2 suggested price with 0 quality and no loyalty".in {
@@ -804,7 +804,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       
     }
     
-    "accept few link at 1.5 x suggested price with neutral quality and decent loyalty".in {
+    "accept few link at 1.4 x suggested price with neutral quality and decent loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
       
@@ -812,7 +812,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
       val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
-      val price = suggestedPrice * 1.5
+      val price = suggestedPrice * 1.4
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, ECONOMY)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
@@ -842,7 +842,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.1)
     }
     
-    "accept very very few at 3 x suggested price with max quality and max loyalty".in {
+    "accept no link at 3 x suggested price with max quality and max loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100, 0)))
       
@@ -878,7 +878,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.01)
+      assert(totalAcceptedRoutes == 0)
     }
 
     "accept few at 2 x suggested price with max quality and max loyalty".in {
@@ -953,8 +953,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.2)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.05)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.05)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0)
     }
     
     "accept no link at 2 x suggested price with no quality and no loyalty".in { 

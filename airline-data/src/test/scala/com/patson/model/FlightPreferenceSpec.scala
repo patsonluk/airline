@@ -173,7 +173,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     "generate differentiating but overlapping cost if everything is the same, but price at some difference".in {
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal](testAirline1.id -> AirlineAppeal(50, 0), testAirline2.id -> AirlineAppeal(50, 0)))
       val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1, flightType)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1150), 10000, defaultCapacity, 0, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1100), 10000, defaultCapacity, 0, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -190,7 +190,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     "generate differentiating but overlapping cost if everything is the same, but price at big difference".in {
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal](testAirline1.id -> AirlineAppeal(50, 0), testAirline2.id -> AirlineAppeal(50, 0)))
       val airline1Link = Link(fromAirport, toAirport, testAirline1, LinkClassValues.getInstance(1000), 10000, defaultCapacity, 0, 600, 1, flightType)
-      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1300), 10000, defaultCapacity, 0, 600, 1, flightType)
+      val airline2Link = Link(fromAirport, toAirport, testAirline2, LinkClassValues.getInstance(1200), 10000, defaultCapacity, 0, 600, 1, flightType)
       var airline1Picked = 0
       var airline2Picked = 0
       for (i <- 0 until 100000) {
@@ -617,10 +617,9 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       println(ratios)
       assert(ratios(ECONOMY) > ratios(BUSINESS))
       assert(ratios(BUSINESS) > ratios(FIRST))
-      assert(ratios(FIRST) > 2.5)
-      assert(ratios(FIRST) < 3.5)
+      assert(ratios(FIRST) < 5)
       assert(ratios(ECONOMY) > 3)
-      assert(ratios(ECONOMY) < 4)
+
 
     }
   }
@@ -736,7 +735,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       clonedFromAirport.initAirlineAppeals(scala.collection.immutable.Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0),
                                                testAirline2.id -> AirlineAppeal(loyalty = 0, 0)))
       
-      val link1 = airline1Link.copy(price = defaultPrice * 1.5, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val link1 = airline1Link.copy(price = defaultPrice * 1.35, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
       val link2 = airline2Link.copy(price = defaultPrice, frequency = 1)
       link1.setQuality(60)
       link2.setQuality(40)
@@ -806,9 +805,9 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       assert(ratio < 10)
     }
 
-    "generate preference that compute to some overlapping but differentiating cost if frequency/loyalty has huge difference but make up in ticket price)".in {
+    "generate preference that compute to some overlapping but differentiating cost if frequency/quality has huge difference but make up in ticket price)".in {
       val link1 = airline1Link.copy(price = defaultPrice, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
-      val link2 = airline2Link.copy(price = defaultPrice * 0.85, frequency = 1)
+      val link2 = airline2Link.copy(price = defaultPrice * 0.7, frequency = 1)
       link1.setQuality(70)
       link2.setQuality(20)
       val pool = DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport)
@@ -824,8 +823,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
 
       val ratio = airline1Picked.toDouble / airline2Picked
-      assert(ratio > 10)
-      assert(ratio < 25)
+      assert(ratio > 2)
+      assert(ratio < 5)
     }
   }
 }

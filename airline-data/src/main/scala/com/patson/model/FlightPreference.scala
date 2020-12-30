@@ -27,7 +27,7 @@ abstract class FlightPreference(homeAirport : Airport) {
       cost = (cost * loyaltyAdjustRatio(link)).toInt
     }
 
-    cost = cost * loungeAdjustRatio(link, preferredLinkClass, loungeLevelRequired)
+    cost = cost * loungeAdjustRatio(link, preferredLinkClass, loungeLevelRequired, linkClass)
 
     computeCost(cost, link, linkClass)
   }
@@ -55,7 +55,7 @@ abstract class FlightPreference(homeAirport : Airport) {
       cost = (cost * loyaltyAdjust).toInt
     }
 
-    val loungeAdjust = loungeAdjustRatio(link, preferredLinkClass, loungeLevelRequired)
+    val loungeAdjust = loungeAdjustRatio(link, preferredLinkClass, loungeLevelRequired, linkClass)
     cost = cost * loungeAdjust
 
     CostBreakdown(computeCost(cost, link, linkClass), priceAdjust, qualityAdjust, tripDurationAdjust, loyaltyAdjust, loungeAdjust)
@@ -178,8 +178,8 @@ abstract class FlightPreference(homeAirport : Airport) {
     1 + frequencyRatioDelta + flightDurationRatioDelta
   }
 
-  def loungeAdjustRatio(link : Link, preferredLinkClass : LinkClass, loungeLevelRequired : Int) = {
-    if (loungeSensitivity == 0 || loungeLevelRequired == 0) {
+  def loungeAdjustRatio(link : Link, preferredLinkClass : LinkClass, loungeLevelRequired : Int, linkClass: LinkClass) = {
+    if (loungeSensitivity == 0 || linkClass.level < BUSINESS.level) {
       1.0
     } else {
       val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
