@@ -235,8 +235,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
-      ratio.shouldBe( >= (1.2)) //more people should pick airline 1
-      ratio.shouldBe( < (1.4)) //yet some will still pick airline 2
+      assert(ratio > 1) //more people should pick airline 1
+      assert(ratio < 2) //yet some will still pick airline 2
     }
     "generate almost same cost if everything is the same, but quality at small difference and both very high".in {
       val adjustedAirline1 = testAirline1.copy()
@@ -258,9 +258,9 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       println("EQ " + fromAirport.expectedQuality(flightType, ECONOMY))
       val ratio = airline1Picked.toDouble / airline2Picked 
       ratio.shouldBe( >= (1.0)) //more people should pick airline 1
-      ratio.shouldBe( < (1.3)) //yet some will still pick airline 2
+      ratio.shouldBe( < (1.5)) //yet some will still pick airline 2
     }
-    "generate differentiating but overlapping cost if everything is the same, but quality at big difference".in {
+    "generate differentiating but little overlapping cost if everything is the same, but quality at big difference".in {
       val adjustedAirline1 = testAirline1.copy()
       val adjustedAirline2 = testAirline2.copy()
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal](adjustedAirline1.id -> AirlineAppeal(50, 0), adjustedAirline2.id -> AirlineAppeal(50, 0)))
@@ -278,8 +278,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
-      ratio.shouldBe( >= (8.0)) //significantly more people should pick airline 1
-      ratio.shouldBe( < (20.0)) //yet some will still pick airline 2
+      ratio.shouldBe( >= (10.0)) //significantly more people should pick airline 1
+      ratio.shouldBe( < (50.0)) //yet a few will still pick airline 2
     }
     "generate almost no overlapping cost if everything is the same, but quality at huge difference (0 vs 100)".in {
       val adjustedAirline1 = testAirline1.copy()
@@ -737,7 +737,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       
       val link1 = airline1Link.copy(price = defaultPrice * 1.5, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
       val link2 = airline2Link.copy(price = defaultPrice, frequency = 1)
-      link1.setQuality(60)
+      link1.setQuality(70)
       link2.setQuality(40)
       val pool = DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport)
       
@@ -752,7 +752,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
       
       val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 0.9)
+      assert(ratio > 0.8)
       assert(ratio < 1.2)
     }
     
@@ -762,7 +762,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       clonedFromAirport.initAirlineAppeals(scala.collection.immutable.Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0),
                                                testAirline2.id -> AirlineAppeal(loyalty = 0, 0)))
       
-      val link1 = airline1Link.copy(price = defaultPrice * 1.1, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val link1 = airline1Link.copy(price = defaultPrice * 1.15, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
       val link2 = airline2Link.copy(price = defaultPrice, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
       link1.setQuality(80)    
       link2.setQuality(40)
@@ -779,7 +779,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
       
       val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 0.9)
+      assert(ratio > 0.8)
       assert(ratio < 1.2)
     }
 

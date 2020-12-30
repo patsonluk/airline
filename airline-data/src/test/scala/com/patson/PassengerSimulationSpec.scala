@@ -584,7 +584,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       }
       assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.99)
     }
-    "accept a few route (single link) at 70% of suggested price with 0 quality/loyalty".in {
+    "accept some route (single link) at 70% of suggested price with 0 quality/loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
       
@@ -616,8 +616,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.2)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.4)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.4)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
     }
     "accept most route (single link) at suggested price with neutral quality and decent loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
@@ -765,8 +765,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.4)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.5)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.7)
     }
     
     "accept almost no link at 1.2 suggested price with 0 quality and no loyalty".in {
@@ -882,7 +882,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       assert(totalAcceptedRoutes == 0)
     }
 
-    "accept almost no link at 2 x suggested price with max quality and max loyalty".in {
+    "accept very few link at 2 x suggested price with max quality and max loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100, 0)))
 
@@ -898,7 +898,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
       //hmm kinda mix in flight preference here...might not be a good thing... loop 10000 times so result is more consistent
       var totalRoutes = 0
-      var totalAcceptedRoutes = 0;
+      var totalAcceptedRoutes = 0
       for (i <- 0 until LOOP_COUNT) {
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(preferredLinkClass, flightPreference) => {
@@ -917,8 +917,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.1)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.3)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.1)
     }
     
     "accept very few link at 2 x suggested price with max quality and max loyalty but very low income country".in {
@@ -955,7 +955,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.05)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.1)
       assert(totalAcceptedRoutes / totalRoutes.toDouble > 0)
     }
     
@@ -1390,8 +1390,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.1)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.3)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.2)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.4)
     }
     
     "accept some links at standard price if it fulfill some lounge requirement (long flight level 1 at both airports)".in {
