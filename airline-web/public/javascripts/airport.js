@@ -686,22 +686,22 @@ function refreshAirportExtendedDetails(airport) {
             if (appeal.airlineId == airlineId) {
                 if (airport.bonusList[airlineId]) {
                     if (airport.bonusList[airlineId].awareness > 0) {
-                        $(".awarenessBonus").text("(+" + airport.bonusList[airlineId].awareness + ")")
-                        $(".awarenessBonus").show()
+                        $(".airportAwarenessBonus").text("(+" + airport.bonusList[airlineId].awareness + ")")
+                        $(".airportAwarenessBonus").show()
                         $('#appealBonusDetailsTooltip').data('awarenessBreakdown', airport.bonusList[airlineId].awarenessBreakdown)
-                        $('.awarenessBonusTrigger').show()
+                        $('.airportAwarenessBonusTrigger').show()
                     } else {
-                        $(".awarenessBonus").hide()
-                        $('.awarenessBonusTrigger').hide()
+                        $(".airportAwarenessBonus").hide()
+                        $('.airportAwarenessBonusTrigger').hide()
                     }
                     if (airport.bonusList[airlineId].loyalty > 0) {
-                        $(".loyaltyBonus").text("(+" + airport.bonusList[airlineId].loyalty + ")")
-                        $(".loyaltyBonus").show()
+                        $(".airportLoyaltyBonus").text("(+" + airport.bonusList[airlineId].loyalty + ")")
+                        $(".airportLoyaltyBonus").show()
                         $('#appealBonusDetailsTooltip').data('loyaltyBreakdown', airport.bonusList[airlineId].loyaltyBreakdown)
-                        $('.loyaltyBonusTrigger').show()
+                        $('.airportLoyaltyBonusTrigger').show()
                     } else {
-                        $(".loyaltyBonus").hide()
-                        $('.loyaltyBonusTrigger').hide()
+                        $(".airportLoyaltyBonus").hide()
+                        $('.airportLoyaltyBonusTrigger').hide()
                     }
                 }
                 $(".airportAwareness").text(appeal.awareness)
@@ -736,10 +736,10 @@ function updateAirportExtendedDetails(airportId) {
 	$(".airportAwareness").text('-')
 	$(".airportLoyalty").text('-')
 	$(".airportRelationship").text('-')
-	$(".awarenessBonus").hide()
-    $('.awarenessBonusTrigger').hide()
-    $(".loyaltyBonus").hide()
-    $('.loyaltyBonusTrigger').hide()
+	$(".airportAwarenessBonus").hide()
+    $('.airportAwarenessBonusTrigger').hide()
+    $(".airportLoyaltyBonus").hide()
+    $('.airportLoyaltyBonusTrigger').hide()
 	$("#airportIcons .feature").hide()
 
     $.ajax({
