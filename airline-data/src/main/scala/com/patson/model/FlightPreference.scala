@@ -129,10 +129,10 @@ abstract class FlightPreference(homeAirport : Airport) {
       if (qualityDelta < 0) {
         1 - qualityDelta.toDouble / Link.MAX_QUALITY * 1
       } else if (qualityDelta < GOOD_QUALITY_DELTA) {
-        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 0.75
+        1 - qualityDelta.toDouble / Link.MAX_QUALITY * 0.5
       } else { //reduced benefit on extremely high quality
         val extraDelta = qualityDelta - GOOD_QUALITY_DELTA
-        1 - GOOD_QUALITY_DELTA.toDouble / Link.MAX_QUALITY * 0.75 - extraDelta.toDouble / Link.MAX_QUALITY * 0.25
+        1 - GOOD_QUALITY_DELTA.toDouble / Link.MAX_QUALITY * 0.5 - extraDelta.toDouble / Link.MAX_QUALITY * 0.3
       }
 
     //TODO this makes higher income country

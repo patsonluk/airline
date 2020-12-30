@@ -278,8 +278,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
         if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
       }
       val ratio = airline1Picked.toDouble / airline2Picked 
-      ratio.shouldBe( >= (10.0)) //significantly more people should pick airline 1
-      ratio.shouldBe( < (50.0)) //yet a few will still pick airline 2
+      ratio.shouldBe( >= (5.0)) //significantly more people should pick airline 1
+      ratio.shouldBe( < (20.0)) //yet a few will still pick airline 2
     }
     "generate almost no overlapping cost if everything is the same, but quality at huge difference (0 vs 100)".in {
       val adjustedAirline1 = testAirline1.copy()

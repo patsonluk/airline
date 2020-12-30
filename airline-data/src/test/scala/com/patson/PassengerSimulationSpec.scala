@@ -765,8 +765,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.5)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.7)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.4)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
     }
     
     "accept almost no link at 1.2 suggested price with 0 quality and no loyalty".in {
@@ -917,8 +917,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.3)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.1)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.2)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0)
     }
     
     "accept very few link at 2 x suggested price with max quality and max loyalty but very low income country".in {
