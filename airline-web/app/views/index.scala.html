@@ -3212,20 +3212,20 @@
 
 
             <h4 style="margin-top: 10px; margin-bottom: 10px;">Passenger Composition</h4>
-            <div style="width: 100%; display: flex;">
-                <div style="flex-grow: 1; flex-basis: 0px;"> <!-- somehow it needs flex-basis here otherwise, the table with fixed-layout will take a super big number-->
+            <div style="width: 100%; display: flex; flex-wrap: wrap">
+                <div style="flex-grow: 1; display:flex; flex-direction: column; align-items: center;">
                     <h5 align="center">Country</h5>
-                    <div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px;" align="center"></div>
-                    <div class="table data topCountryTable" style="width: 95%;">
+                    <div id="passengerCompositionByCountryPie" style="height: 160px; width: 250px" align="center"></div>
+                    <div class="table data topCountryTable" style="width: 250px;">
                     </div>
                 </div>
-                <div style="flex-grow: 1;">
+                <div style="flex-grow: 1; display:flex; flex-direction: column; align-items: center;">
                     <h5 align="center">Passenger Type</h5>
-                    <div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px;" align="center"></div>
-                    <div class="table data passengerTypeTable" style="width: 95%;">
+                    <div id="passengerCompositionByPassengerTypePie" style="height: 160px; width: 250px" align="center"></div>
+                    <div class="table data passengerTypeTable" style="width: 250px;">
                     </div>
                 </div>
-                <div style="flex-grow: 1">
+                <div style="flex-grow: 1; display:flex; flex-direction: column; align-items: center;">
                     <h5 align="center">
                         Travel Preference
                         <div class="tooltip">
@@ -3295,8 +3295,8 @@
 			        		</span>
                         </div>
                     </h5>
-                    <div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px;" align="center"></div>
-                    <div class="table data preferenceTypeTable" style="width: 95%;">
+                    <div id="passengerCompositionByPreferenceTypePie" style="height: 160px; width: 250px" align="center"></div>
+                    <div class="table data preferenceTypeTable" style="width: 250px;">
                     </div>
                 </div>
             </div>

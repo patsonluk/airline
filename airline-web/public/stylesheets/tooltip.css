@@ -3,7 +3,6 @@
     display: inline-block;
     vertical-align: middle;
     /*font-size: 14px;*/
-    max-width: 95vw;
 }
 
 
@@ -32,6 +31,7 @@
     transition: opacity 0.3s;
     text-shadow: none;
     font-weight: normal;
+    max-width: 95vw;
 }
 
 .customTooltip .tooltiptext {
