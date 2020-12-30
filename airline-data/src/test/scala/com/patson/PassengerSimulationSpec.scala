@@ -616,8 +616,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.4)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.5)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.7)
     }
     "accept most route (single link) at suggested price with neutral quality and decent loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
@@ -690,8 +690,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-     assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.4)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
+     assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.6)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.8)
     }
     "accept some (single link) at suggested price with neutral quality and no loyalty for low income country".in {
       val clonedFromAirport  = fromAirport.copy(power = Country.LOW_INCOME_THRESHOLD / 2)
@@ -1031,7 +1031,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.1)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.15)
     }
     
     "accept very few route with links are at 1.3 price with neutral quality and 0 loyalty".in { //will be less than single link cause each run fitler out some
@@ -1353,8 +1353,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.3)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.1)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.5)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.2)
     }
   
     "accept few links at standard price if it fulfill some lounge requirement (long flight level 1 at departing airport only)".in {
@@ -1505,8 +1505,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.5)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.7)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.6)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.8)
     }
     
     "accept most at standard price if it fulfill all lounge requirements (level 3 at both airports from alliance)".in {

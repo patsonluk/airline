@@ -113,7 +113,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     //
     //    //the actualReduceFactor is random number (linear distribution) from minReduceFactorForThisAirline up to the maxReduceFactorForThisAirline.
     //    val actualReduceFactor = (minReduceFactorForThisAirline + maxReduceFactorForThisAirline) / 2 + (maxReduceFactorForThisAirline - minReduceFactorForThisAirline) * Math.random() / 2 * loyaltyRatio
-    val base =  1 + (-0.2 + loyalty.toDouble / maxLoyalty / 2)  * loyaltySensitivity
+    val base =  1 + (-0.1 + loyalty.toDouble / maxLoyalty / 2.25)  * loyaltySensitivity
 
     //println("factor " + loyaltyRatio + " at loyalty " + loyalty + " : " + adjustment)
     1 / base
