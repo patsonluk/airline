@@ -422,7 +422,7 @@ object LinkComment {
   def loungeComment(loungeRequirement: Int, airport : Airport, airlineId : Int, allianceIdOption : Option[Int])(implicit random : Random) = {
     val loungeOption = airport.getLounge(airlineId, allianceIdOption)
     val loungeLevel = loungeOption.map(_.level).getOrElse(0)
-    val adjustedLoungeRequirement = Math.max(Lounge.MAX_LEVEL, (loungeRequirement + com.patson.Util.getBellRandom(0, Lounge.MAX_LEVEL, Some(random.nextInt()))).toInt)
+    val adjustedLoungeRequirement = Math.min(Lounge.MAX_LEVEL, (loungeRequirement + com.patson.Util.getBellRandom(0, Lounge.MAX_LEVEL, Some(random.nextInt()))).toInt)
     val delta = loungeLevel - adjustedLoungeRequirement
     val comment =
       if (delta < 0) { //does not fulfill the req
