@@ -12,7 +12,9 @@ import com.patson.LinkSimulation
 import scala.collection.mutable.ListBuffer
 import com.patson.util.LogoGenerator
 
-object Patchers {
+object Patchers extends App {
+  main()
+
   def patchHomeCountry() {
     AirlineSource.loadAllAirlines(true).foreach { airline =>
       airline.bases.find(_.headquarter).foreach { headquarter =>
@@ -145,7 +147,25 @@ object Patchers {
       }
     }
   }
-  //
+
+  def patchLoyalist(): Unit = {
+    //it might have overflow, adjust proportionally
+    LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport).foreach {
+      case((airport, loyalistsOfThisAirport)) =>
+        val total = loyalistsOfThisAirport.map(_.amount).sum
+        if (total > airport.population) {
+          val ratio = airport.population / total.toDouble
+          println(s"Going to adjust loyalist for ${airport.displayText} as total pop is ${airport.population} but has $total loyalist. Going to patch with ratio $ratio")
+          val adjustedEntries = loyalistsOfThisAirport.map(entry => entry.copy(amount = (entry.amount * ratio).toInt))
+          LoyalistSource.updateLoyalists(adjustedEntries)
+        }
+    }
+  }
+
+
+  def main(): Unit = {
+    patchLoyalist()
+  }
 }
 
  

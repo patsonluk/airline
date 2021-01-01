@@ -177,12 +177,12 @@ object AirportSimulation {
         }
 
         //put a map of current royalist status to draw which loyalist to flip
-        val loyalistDistribution = mutable.Map[Int, Int]() //airlineId, threshold
+        val loyalistDistribution = ListBuffer[(Int, Int)]() //airlineId, threshold
         var walker = 0
         val existingLoyalistOfThisAirport = existingLoyalistByAirportId.get(fromAirport.id).getOrElse(List.empty)
         existingLoyalistOfThisAirport.foreach { loyalist =>
           walker = walker + loyalist.amount
-          loyalistDistribution.put(loyalist.airline.id, walker)
+          loyalistDistribution.append((loyalist.airline.id, walker))
         }
         val flippedLoyalists = mutable.Map[Int, Int]() //airlineId, flipped amount
 
