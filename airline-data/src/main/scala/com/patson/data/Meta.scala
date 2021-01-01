@@ -431,6 +431,7 @@ object Meta {
       "flight_number SMALLINT, " +
       "airplane_model SMALLINT, " +
       "raw_quality SMALLINT, " +
+      "satisfaction DECIMAL(5,4), " +
       "cycle INTEGER, " +
       "PRIMARY KEY (cycle, link))")
 

@@ -8,7 +8,7 @@ import scala.collection.mutable.ListBuffer
  
 class AirportSimulationSpec extends WordSpecLike with Matchers {
   val sampleLink = Link.fromId(1)
-  val sampleConsumption = LinkConsumptionDetails(link = sampleLink, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, loungeCost = 0, depreciation = 0, revenue = 0, profit = 0,  cycle = 0)
+  val sampleConsumption = LinkConsumptionDetails(link = sampleLink, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, loungeCost = 0, depreciation = 0, revenue = 0, profit = 0, satisfaction = 0, cycle = 0)
   
 //  "getTargetLoyalty".must {
 //    "get target loyalty based on average quality link consumption if volume is huge".in {
@@ -81,7 +81,7 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
         val toAirport = Airport.fromId(2)
         val link = Link(fromAirport, toAirport, Airline.fromId(1), LinkClassValues.getInstanceByMap(Map(ECONOMY -> price)), distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = 0, duration, frequency, Computation.getFlightType(fromAirport, toAirport, distance))
         link.setTestingAssignedAirplanes(Map(airplane -> frequency))
-        consumptions.append(LinkConsumptionDetails(link = link, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, loungeCost = 0, depreciation = 0, revenue = 0, profit = 0,  cycle = 0))
+        consumptions.append(LinkConsumptionDetails(link = link, fuelCost = 0, crewCost = 0, airportFees = 0, inflightCost = 0, delayCompensation = 0, maintenanceCost = 0, loungeCost = 0, depreciation = 0, revenue = 0, profit = 0, satisfaction = 0, cycle = 0))
       }
       
       val consumption = 

@@ -664,7 +664,7 @@ object LinkSource {
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("REPLACE INTO " + LINK_CONSUMPTION_TABLE + "(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, revenue, profit, minor_delay_count, major_delay_count, cancellation_count, from_airport, to_airport, airline, distance, frequency, duration, flight_type, flight_number, airplane_model, raw_quality, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("REPLACE INTO " + LINK_CONSUMPTION_TABLE + "(link, price_economy, price_business, price_first, capacity_economy, capacity_business, capacity_first, sold_seats_economy, sold_seats_business, sold_seats_first, quality, fuel_cost, crew_cost, airport_fees, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, revenue, profit, minor_delay_count, major_delay_count, cancellation_count, from_airport, to_airport, airline, distance, frequency, duration, flight_type, flight_number, airplane_model, raw_quality, satisfaction, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
     try {
       connection.setAutoCommit(false)
@@ -703,7 +703,8 @@ object LinkSource {
           preparedStatement.setInt(32, linkConsumption.link.flightNumber)
           preparedStatement.setInt(33, linkConsumption.link.getAssignedModel().map(_.id).getOrElse(0))
           preparedStatement.setInt(34, linkConsumption.link.rawQuality)
-          preparedStatement.setInt(35, linkConsumption.cycle)
+          preparedStatement.setDouble(35, linkConsumption.satisfaction)
+          preparedStatement.setInt(36, linkConsumption.cycle)
           preparedStatement.executeUpdate()
         }
       preparedStatement.close()
@@ -839,6 +840,7 @@ object LinkSource {
           depreciation = resultSet.getInt("depreciation"),
           revenue = resultSet.getInt("revenue"),
           profit = resultSet.getInt("profit"),
+          satisfaction = resultSet.getDouble("satisfaction"),
           cycle = resultSet.getInt("cycle")))
       }
 

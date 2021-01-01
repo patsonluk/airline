@@ -820,13 +820,14 @@
 							<div style="width: 100%; height: 100%; overflow:auto;">
 								<div class="table data" style="height: 20px; width: 100%; min-width: 600px;">
 									<div class="table-header" id="linksTableSortHeader">
-										<div class="cell clickable selected" style="width: 18%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
-										<div class="cell clickable" style="width: 18%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
-										<div class="cell clickable" style="width: 16%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
+										<div class="cell clickable selected" style="width: 16%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
+										<div class="cell clickable" style="width: 16%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
+										<div class="cell clickable" style="width: 15%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
 										<div class="cell clickable" style="width: 8%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
 										<div class="cell clickable" style="width: 8%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity (Freq.)</div>
 										<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Pax</div>
-										<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalLoadFactor" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">LF</div>
+										<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalLoadFactor" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))" title="Load Factor">LF</div>
+                                        <div class="cell clickable" style="width: 5%" align="right" data-sort-property="satisfaction" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))" title="Satisfaction Factor">SF</div>
 										<div class="cell clickable" style="width: 11%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
 										<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 									</div>
@@ -834,13 +835,14 @@
 								<div style="height: calc(100% - 40px); width: 100%; overflow-y:auto; min-width: 600px;">
 									<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
 										<div class="table-header">
-											<div class="cell" style="width: 18%; border-bottom: none;"></div>
-											<div class="cell" style="width: 18%; border-bottom: none;"></div>
 											<div class="cell" style="width: 16%; border-bottom: none;"></div>
+											<div class="cell" style="width: 16%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
 											<div class="cell" style="width: 8%; border-bottom: none;"></div>
 											<div class="cell" style="width: 8%; border-bottom: none;"></div>
 											<div class="cell" style="width: 5%; border-bottom: none;"></div>
 											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+                                            <div class="cell" style="width: 5%; border-bottom: none;"></div>
 											<div class="cell" style="width: 11%; border-bottom: none;"></div>
 											<div class="cell" style="width: 11%; border-bottom: none;"></div>
 										</div>

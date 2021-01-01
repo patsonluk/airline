@@ -97,9 +97,17 @@ object LinkSimulation {
     val linkConsumptionDetails = ListBuffer[LinkConsumptionDetails]()
     val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
     val allAirplaneAssignments: immutable.Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
+    //cost by link
+    val costByLink = mutable.HashMap[Link, ListBuffer[PassengerCost]]()
+    consumptionResult.foreach {
+      case((passengerGroup, airport, route), passengerCount) => route.links.foreach { linkConsideration =>
+        costByLink.getOrElseUpdate(linkConsideration.link, ListBuffer[PassengerCost]()).append(PassengerCost(passengerGroup, passengerCount, linkConsideration.cost))
+      }
+    }
+
     links.foreach { link =>
       if (link.capacity.total > 0) {
-        val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle, allAirplaneAssignments)
+        val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle, allAirplaneAssignments, costByLink.toMap.getOrElse(link, List.empty).toList)
         linkConsumptionDetails += linkResult
         loungeConsumptionDetails ++= loungeResult
       }
@@ -132,6 +140,8 @@ object LinkSimulation {
 
     (linkConsumptionDetails.toList, loungeResult, consumptionResult)
   }
+
+  case class PassengerCost(group : PassengerGroup, passengerCount : Int, cost : Double)
   
   val minorDelayNormalThreshold = 0.4  // so it's around 24% at 40% condition (multiplier at 0.6) to run into minor delay OR worse
   val majorDelayNormalThreshold = 0.1 // so it's around 6% at 40% condition (multiplier at 0.6) to run into major delay OR worse    
@@ -202,10 +212,10 @@ object LinkSimulation {
     val assignmentsToThis = link.getAssignedAirplanes().filter(_._1.isReady).toList.map {
       case(airplane, assignment) => (airplane.id, LinkAssignments(immutable.Map(link.id -> assignment)))
     }.toMap
-    computeLinkAndLoungeConsumptionDetail(link, cycle, assignmentsToThis)._1
+    computeLinkAndLoungeConsumptionDetail(link, cycle, assignmentsToThis, List.empty)._1
   }
   
-  def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int, allAirplaneAssignments : immutable.Map[Int, LinkAssignments]) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
+  def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int, allAirplaneAssignments : immutable.Map[Int, LinkAssignments], passengerCostEntries : List[PassengerCost]) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
     
     val loadFactor = link.getTotalSoldSeats.toDouble / link.getTotalCapacity
 
@@ -301,8 +311,21 @@ object LinkSimulation {
       
     val profit = revenue - fuelCost - maintenanceCost - crewCost - airportFees - inflightCost - delayCompensation - depreciation - loungeCost
 
+    //calculation overall satisifaction
+    var satisfactionTotalValue : Double = 0
+    var totalPassengerCount = 0
+    passengerCostEntries.foreach {
+      case PassengerCost(passengerGroup, passengerCount, cost) =>
+        val preferredLinkClass = passengerGroup.preference.preferredLinkClass
+        val standardPrice = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass)
+        val satisfaction = Computation.computePassengerSatisfaction(cost, standardPrice)
+        satisfactionTotalValue += satisfaction * passengerCount
+        totalPassengerCount += passengerCount
+    }
+    val overallSatisfaction = if (totalPassengerCount == 0) 0 else satisfactionTotalValue / totalPassengerCount
+
     //val result = LinkConsumptionDetails(link.id, link.price, link.capacity, link.soldSeats, link.computedQuality, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, revenue, profit, link.cancellationCount, linklink.from.id, link.to.id, link.airline.id, link.distance, cycle)
-    val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, loungeCost = loungeCost, revenue, profit, cycle)
+    val result = LinkConsumptionDetails(link, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, loungeCost = loungeCost, revenue, profit, overallSatisfaction, cycle)
     //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
     (result, loungeConsumptionDetails.toList)
   }
