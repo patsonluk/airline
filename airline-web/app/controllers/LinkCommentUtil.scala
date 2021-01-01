@@ -36,7 +36,9 @@ object LinkCommentUtil {
 
     val sampleSizeGrouping : MapView[(LinkClass, FlightPreferenceType.Value), Int] = topConsumptionEntriesByHomeAirport.flatMap(_._2).groupBy(entry => (entry.linkClass, entry.preferenceType)).view.mapValues(_.map(_.passengerCount).sum)
     result.map {
-      case(key, comments) => (key, LinkCommentSummary(comments.toList, sampleSizeGrouping(key)))
+      case(key, comments) =>
+        val sampleSize = sampleSizeGrouping(key)
+        (key, LinkCommentSummary(comments.toList, sampleSize))
     }.toMap
 
   }
@@ -85,23 +87,32 @@ object LinkCommentUtil {
       (preference, pool)
     }.toMap
 
+    val satisfactionDeviation = Math.abs(consumption.satisfaction - 0.5)
+    val commentGenerationCount = if (satisfactionDeviation < 0.2) 1 else if (satisfactionDeviation < 0.3) 2 else 3
     for (i <- 0 until sampleSize) {
       val preference = preferences(random.nextInt(preferences.length))
-      val commentWeight = poolByPreference(preference).drawCommentWeight(random)
-      //println(s"${consumption.preferenceType} : $commentWeight")
-      commentWeight.foreach { weight =>
-        val comments = weight.commentGroup match {
-          case PRICE => generateCommentsForPrice(weight.adjustRatio)
-          case LOYALTY => generateCommentsForLoyalty(weight.adjustRatio)
-          case QUALITY => generateCommentsForQuality(link.rawQuality, airline.getCurrentServiceQuality(), link.getAssignedAirplanes().keys.toList, homeAirport.expectedQuality(flightType, linkClass), flightType)
-          case DURATION => generateCommentsForFlightDuration(link.frequency, preference.frequencyThreshold, link.duration, standardDuration)
-          case LOUNGE => generateCommentsForLounge(preference.loungeLevelRequired, link.from, link.to, airline.id, airline.getAllianceId())
-          case _ => List.empty
+      val commentsOfThisSample = ListBuffer[LinkComment]()
+      for (j <- 0 until commentGenerationCount) {
+        val commentWeight = poolByPreference(preference).drawCommentWeight(random)
+        //println(s"${consumption.preferenceType} : $commentWeight")
+        commentWeight.foreach { weight =>
+          val comments = weight.commentGroup match {
+            case PRICE => generateCommentsForPrice(weight.adjustRatio)
+            case LOYALTY => generateCommentsForLoyalty(weight.adjustRatio)
+            case QUALITY => generateCommentsForQuality(link.rawQuality, airline.getCurrentServiceQuality(), link.getAssignedAirplanes().keys.toList, homeAirport.expectedQuality(flightType, linkClass), flightType)
+            case DURATION => generateCommentsForFlightDuration(link.frequency, preference.frequencyThreshold, link.duration, standardDuration)
+            case LOUNGE => generateCommentsForLounge(preference.loungeLevelRequired, link.from, link.to, airline.id, airline.getAllianceId())
+            case _ => List.empty
+
+          }
+          comments.foreach { comment =>
+            if (!commentsOfThisSample.map(_.category).contains(comment.category)) { //do not add the same category twice
+              commentsOfThisSample.append(comment)
+            }
+          }
         }
-
-        allComments.appendAll(comments)
       }
-
+      allComments.appendAll(commentsOfThisSample)
 
     }
     allComments
