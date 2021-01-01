@@ -1615,7 +1615,7 @@ function updateLinksTable(sortProperty, sortOrder) {
 		row.append("<div class='cell' align='right'>" + link.totalCapacity + "(" + link.frequency + ")</div>")
 		row.append("<div class='cell' align='right'>" + link.totalPassengers + "</div>")
 		row.append("<div class='cell' align='right'>" + link.totalLoadFactor + '%' + "</div>")
-		row.append("<div class='cell' align='right'>" + (link.satisfaction * 100).toFixed(0) + '%' + "</div>")
+		row.append("<div class='cell' align='right'>" + Math.round(link.satisfaction * 100) + '%' + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.revenue) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(link.profit) + "</div>")
 		
