@@ -515,7 +515,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
               entriesByAirlineId.getOrElse(reportingAirlineId, LoyalistHistory(Loyalist(airport, AirlineCache.getAirline(reportingAirlineId).get, 0), cycle)) //pad with zero entries
             }
             val cycleDelta = currentCycle - cycle
-            if (cycleDelta != 0 &&  cycleDelta <= AirportSimulation.LOYALIST_HISTORY_SAVE_INTERVAL) { //then it is the closest historical entry from current turn
+            if (cycleDelta > 1 &&  cycleDelta <= (AirportSimulation.LOYALIST_HISTORY_SAVE_INTERVAL + 1) { //then it is the closest historical entry from current turn
               reportingAirlineIds.foreach { reportingAirlineId =>
                 val previousLoyalistCount = entriesByAirlineId.get(reportingAirlineId).map(_.entry.amount).getOrElse(0)
                 airlineDeltas.append((AirlineCache.getAirline(reportingAirlineId).get, (currentLoyalistByAirlineId.get(reportingAirlineId).map(_.amount).getOrElse(0) - previousLoyalistCount) / cycleDelta))
