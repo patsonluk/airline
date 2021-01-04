@@ -35,9 +35,7 @@ package object controllers {
       "gradeValue" -> JsNumber(airline.airlineGrade.value),
       "airlineCode" -> JsString(airline.getAirlineCode()),
       "baseCount" -> JsNumber(airline.getBases().size),
-      "isGenerated" -> JsBoolean(airline.isGenerated),
-      "skipTutorial" -> JsBoolean(airline.isSkipTutorial),
-      "initialized" -> JsBoolean(airline.isInitialized)
+      "isGenerated" -> JsBoolean(airline.isGenerated)
       ))
       
       if (airline.getCountryCode.isDefined) {

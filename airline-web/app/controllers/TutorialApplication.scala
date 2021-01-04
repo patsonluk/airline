@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.TutorialSource
+import com.patson.data.{AirlineSource, TutorialSource}
 import com.patson.model.tutorial.Tutorial
 import controllers.AuthenticationObject.AuthenticatedAirline
 import javax.inject.Inject
@@ -15,5 +15,16 @@ class TutorialApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
   def getCompletedTutorials(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     Ok(Json.toJson(TutorialSource.loadCompletedTutorialsByAirline(airlineId).map(_.id)))
+  }
+
+  def setSkipTutorial(airlineId: Int, skipTutorial: Boolean)= AuthenticatedAirline(airlineId) { request =>
+    val airline = request.user
+    airline.setSkipTutorial(skipTutorial)
+    AirlineSource.saveAirlineInfo(airline, false)
+    if (!skipTutorial) { //resetting
+      TutorialSource.deleteTutorialsByAirline(airlineId)
+    }
+
+    Ok(Json.toJson(airline))
   }
 }

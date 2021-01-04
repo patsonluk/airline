@@ -117,7 +117,7 @@ function queueTutorial(tutorial) {
 }
 
 function checkTutorial(pageId) {
-    if (activeUser && !activeUser.skipTutorials) {
+    if (activeUser && !activeAirline.skipTutorial) {
         if (pageId === "worldMap" || pageId === "/") {
             if (!activeAirline.headquarterAirport) {
                 queueTutorial("tutorialWelcome")
@@ -157,11 +157,38 @@ function closeTutorial($tutorialModal) {
     });
 }
 
-function skipTutorials() {
-    tutorialQueue = []
-    activeUser.skipTutorials = true
-    activeTutorial = undefined
-    //TODO send to backend to disable in DB
+function promptSkipTutorial(event) {
+    event.stopPropagation()
+    promptConfirm("Disable all tutorials?", setSkipTutorial, true)
+}
 
+
+function setSkipTutorial(skipTutorial) {
+
+    if (!skipTutorial) {
+        tutorialsCompleted = new Set()
+    } else {
+        if (activeTutorial) {
+            closeModal($('#' + activeTutorial))
+        }
+    }
+    activeAirline.skipTutorial = skipTutorial
+    activeTutorial = undefined
+    tutorialQueue = []
+
+    $.ajax({
+        type: 'POST',
+        url: "airlines/" + activeAirline.id + "/tutorial?skipTutorial=" + skipTutorial,
+        data: { } ,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
 }
 

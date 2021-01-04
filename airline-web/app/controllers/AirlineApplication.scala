@@ -32,7 +32,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
       "gradeValue" -> JsNumber(airline.airlineGrade.value),
-      "airlineCode" -> JsString(airline.getAirlineCode()))
+      "airlineCode" -> JsString(airline.getAirlineCode()),
+      "skipTutorial" -> JsBoolean(airline.isSkipTutorial),
+      "initialized" -> JsBoolean(airline.isInitialized))
       
       airline.getCountryCode.foreach { countryCode =>
         values = values :+ ("countryCode" -> JsString(countryCode))

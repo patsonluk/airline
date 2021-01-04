@@ -1,7 +1,10 @@
 <div class="tutorial modal" data-category="welcome" id="tutorialWelcome">
 	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
 	WELCOME!! Press Escape or Tap on this dialog to proceed
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
+
+
 </div>
 
 <div class="tutorial modal" data-category="welcome" id="tutorialViewAirport">
@@ -16,8 +19,7 @@
 			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport.png" style="vertical-align:middle">Medium Airport</li>
 			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport-lighter.png" style="vertical-align:middle">Small Airport</li>
 		</ul>
-		<!--	    <img src='@routes.Assets.versioned("images/clips/tutorial.gif")' loading="lazy">-->
-<!--		<img data-src='assets/images/clips/tutorial.gif' class="lazyload" alt="">-->
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 </div>
 
@@ -27,6 +29,7 @@
 		<ul>
 			<li class="label" style="padding: 5px;">WIP</li>
 		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 </div>
 
@@ -39,6 +42,7 @@
 			<li class="label" style="padding: 5px;">All your initial flights will depart from the HQ airport.</li>
 			<li class="label" style="padding: 5px;">The country houses your HQ will also become your company's home country, which determines your initial relationship with airplane manufacturers and other countries.</li>
 		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 </div>
 
@@ -50,6 +54,7 @@
 			<li class="label" style="font-weight: bolder;">You do NOT need to buy any oil contract to have your airplanes fueled.</li>
 			<li class="label">Oil will be auto purchased by the inventory price if there's no active contract or the contracts do not cover all the consumption</li>
 		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 </div>
 <div class="tutorial modal" data-category="oil" id="tutorialOilIntro2">
@@ -61,6 +66,7 @@
 			<li class="label">For example, if the current oil market price is $80 which is $10 above the neutral price, you will only need to pay $71 which is 90% off the price delta ($10).</li>
 			<li class="label">Though conservative policy protects you from price fluctuation, it also means that you will reap less benefit when the oil price is low.</li>
 		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 </div>
 <div class="tutorial modal" data-category="oil" id="tutorialOilIntro3">
@@ -73,6 +79,7 @@
 			<li class="label">Please be reminded that excessive oil from the contract will be sold back to the market at half the market price.</li>
 			<li class="label">The default contract volume is the barrels required to fulfill your need based on the oil consumption from previous week.</li>
 		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 </div>
 
