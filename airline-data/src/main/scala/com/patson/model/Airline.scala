@@ -364,6 +364,7 @@ object Airline {
 
         if (resetExtendedInfo) {
           airline.setReputation(0)
+          airline.setInitialized(false)
           AirportSource.deleteAirlineAppealsFromAllAirports(airlineId)
           LoyalistSource.deleteLoyalistsByAirline(airlineId)
         }
