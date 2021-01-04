@@ -215,6 +215,8 @@ object Meta {
       "country_code CHAR(2)," +
       "airline_code CHAR(2)," +
       "color CHAR(7)," +
+      "skip_tutorial TINYINT," +
+      "initialized TINYINT," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
 
@@ -298,6 +300,7 @@ object Meta {
     createLoyalist(connection)
     createCampaign(connection)
     createLinkNegotiationCoolDown(connection)
+    createTutorial(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1646,6 +1649,26 @@ object Meta {
     statement.close()
 
   }
+
+  def createTutorial(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + COMPLETED_TUTORIAL_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + COMPLETED_TUTORIAL_TABLE + "(" +
+      "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "category VARCHAR(256)," +
+      "id VARCHAR(256), " +
+      "PRIMARY KEY (airline, id)" +
+      ")")
+
+    statement.execute()
+    statement.close()
+
+  }
+
+
 
 
 

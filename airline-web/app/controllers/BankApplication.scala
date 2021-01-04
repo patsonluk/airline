@@ -15,21 +15,6 @@ import scala.math.BigDecimal.int2bigDecimal
 
 
 class BankApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-  implicit object LoanWrites extends Writes[Loan] {
-    //case class Loan(airlineId : Int, borrowedAmount : Long, interest : Long, var remainingAmount : Long, creationCycle : Int, loanTerm : Int, var id : Int = 0) extends IdObject
-    def writes(loan: Loan): JsValue = JsObject(List(
-      "airlineId" -> JsNumber(loan.airlineId),
-      "borrowedAmount" -> JsNumber(loan.borrowedAmount),
-      "interest" -> JsNumber(loan.interest),
-      "remainingAmount" -> JsNumber(loan.remainingAmount),
-      "earlyRepaymentFee" -> JsNumber(loan.earlyRepaymentFee),
-      "earlyRepayment" -> JsNumber(loan.earlyRepayment),
-      "remainingTerm" -> JsNumber(loan.remainingTerm),
-      "weeklyPayment" -> JsNumber(loan.weeklyPayment),
-      "creationCycle" -> JsNumber(loan.creationCycle),
-      "loanTerm" ->  JsNumber(loan.loanTerm),
-      "id" -> JsNumber(loan.id)))
-  }
   implicit object LoanInterestRateWrites extends Writes[LoanInterestRate] {
     def writes(rate: LoanInterestRate): JsValue = {
 

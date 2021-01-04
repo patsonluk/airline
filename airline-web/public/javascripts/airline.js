@@ -92,6 +92,24 @@ function selectAirline(airlineId) {
 	updateAllPanels(airlineId)
 }
 
+function selectHeadquarters(airportId) {
+    if (!activeAirline.headquarterAirport) {
+        $.ajax({
+        		type: 'GET',
+        		url: "airlines/" + activeAirline.id + "/profiles?airportId=" + airportId ,
+        	    contentType: 'application/json; charset=utf-8',
+        	    dataType: 'json',
+        	    success: function(profiles) {
+                    updateProfiles(profiles)
+        	    },
+                error: function(jqXHR, textStatus, errorThrown) {
+        	            console.log(JSON.stringify(jqXHR));
+        	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        	    }
+        	});
+    }
+}
+
 function buildBase(isHeadquarter, scale) {
 	scale = scale || 1
 	var url = "airlines/" + activeAirline.id + "/bases/" + activeAirportId 
@@ -108,10 +126,6 @@ function buildBase(isHeadquarter, scale) {
 	    dataType: 'json',
 	    success: function() {
             updateAllPanels(activeAirline.id)
-            if (scale == 1 && isHeadquarter) {
-                $('#planLinkFromAirportId').val(activeAirline.headquarterAirport.airportId)
-                loadAllCountries() //has a home country now, reload country info
-            }
 	    	showWorldMap()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

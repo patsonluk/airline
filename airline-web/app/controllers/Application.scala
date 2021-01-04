@@ -15,7 +15,6 @@ import play.api.data.Forms.{mapping, number}
 import play.api.libs.json.{Json, _}
 import play.api.mvc._
 
-import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Set}
 
 
@@ -110,6 +109,22 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
       Json.toJson(entry.entry).asInstanceOf[JsObject] + ("cycle" -> JsNumber(entry.cycle))
     }
   }
+
+  implicit object AirportGradeInfoWrites extends Writes[AirportRating] {
+    def writes(entry: AirportRating): JsValue = {
+      Json.obj(
+        "economicRating" -> entry.economicPowerRating,
+        "competitionRating" -> entry.competitionRating,
+        "countryRating" -> entry.countryPowerRating,
+        "difficulty" -> entry.overallDifficulty,
+        "features" -> JsArray(entry.features.sortBy(_.featureType.id).map { airportFeature =>
+          Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> AirportFeatureType.getDescription(airportFeature.featureType))
+        })
+      )
+    }
+  }
+
+
 
 
 
@@ -308,7 +323,8 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
                     "departureOrArrivalPassengers" -> departureOrArrivalPassengers, 
                     "transitPassengers" -> transitPassengers,
                     "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),
-                    "airlineArrival" -> Json.toJson(statisticsArrivalByAirline)))
+                    "airlineArrival" -> Json.toJson(statisticsArrivalByAirline),
+                    "rating" -> Json.toJson(AirportUtil.rateAirport(airport))))
       }
       case None => NotFound
     }

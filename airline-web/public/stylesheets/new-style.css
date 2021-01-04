@@ -30,6 +30,10 @@ body {
   padding: .8em .8em;
 }
 
+.frost-section div.button {
+    color: #454544;
+}
+
 
 .frost-section:before {
   width: calc(100% + 50px);

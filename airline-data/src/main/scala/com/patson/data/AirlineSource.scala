@@ -72,6 +72,8 @@ object AirlineSource {
           if (countryCode != null) {
             airline.setCountryCode(countryCode)
           }
+          airline.setSkipTutorial(resultSet.getBoolean("skip_tutorial"))
+          airline.setInitialized(resultSet.getBoolean("initialized"))
           
           airlines += airline
         }
@@ -191,7 +193,7 @@ object AirlineSource {
       if (updateBalance) {
         query += "balance = ?, "
       }
-      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ?, skip_tutorial = ?, initialized = ?  WHERE airline = ?"
       
       try {
         val updateStatement = connection.prepareStatement(query)
@@ -214,6 +216,11 @@ object AirlineSource {
         index += 1
         updateStatement.setString(index, airline.getAirlineCode())
         index += 1
+        updateStatement.setBoolean(index, airline.isSkipTutorial)
+        index += 1
+        updateStatement.setBoolean(index, airline.isInitialized)
+        index += 1
+
         updateStatement.setInt(index, airline.id)
         updateStatement.executeUpdate()
         updateStatement.close()
@@ -249,7 +256,7 @@ object AirlineSource {
       if (updateBalance) {
         query += "balance = ?, "
       }
-      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ?, skip_tutorial = ?, initialized= ? WHERE airline = ?"
       
       
       try {
@@ -275,6 +282,11 @@ object AirlineSource {
           updateStatement.setString(index, airline.getCountryCode().getOrElse(null))
           index += 1
           updateStatement.setString(index, airline.getAirlineCode())
+          index += 1
+          updateStatement.setBoolean(index, airline.isSkipTutorial)
+          index += 1
+          updateStatement.setBoolean(index, airline.isInitialized)
+
           index += 1
           updateStatement.setInt(index, airline.id)
           

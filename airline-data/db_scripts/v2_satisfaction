@@ -1,2 +1,0 @@
-ALTER TABLE `airline_v2`.`link_consumption`
-ADD COLUMN `satisfaction` DECIMAL(5,4) NULL AFTER `raw_quality`;

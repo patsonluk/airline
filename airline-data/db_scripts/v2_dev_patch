@@ -1,0 +1,8 @@
+ALTER TABLE `airline_v2`.`link_consumption`
+ADD COLUMN `satisfaction` DECIMAL(5,4) NULL AFTER `raw_quality`;
+
+ALTER TABLE `airline_v2`.`airline_info`
+ADD COLUMN `skip_tutorial` TINYINT NULL AFTER `color`;
+
+ALTER TABLE `airline_v2`.`airline_info`
+ADD COLUMN `initialized` TINYINT NULL AFTER `skip_tutorial`;
