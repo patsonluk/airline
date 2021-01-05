@@ -185,10 +185,10 @@ object Computation {
     }
   }
 
-  val MAX_FREQUENCY_ABSOLUTE_BASE = 30
-  def getMaxFrequencyThreshold(airline : Airline) : Int = {
-    MAX_FREQUENCY_ABSOLUTE_BASE
-  }
+//  val MAX_FREQUENCY_ABSOLUTE_BASE = 30
+//  def getMaxFrequencyThreshold(airline : Airline) : Int = {
+//    MAX_FREQUENCY_ABSOLUTE_BASE
+//  }
 
 //  def getMaxFrequencyThreshold(airline : Airline) : Int = {
 //     AllianceSource.loadAllianceMemberByAirline(airline) match {

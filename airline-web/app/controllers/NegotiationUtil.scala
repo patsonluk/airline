@@ -66,7 +66,11 @@ object NegotiationUtil {
     val newFrequency = newLink.futureFrequency()
     val frequencyDelta = newFrequency - existingLinkOption.map(_.futureFrequency()).getOrElse(0)
     if (frequencyDelta > 0) {
-      val maxFrequency = Computation.getMaxFrequencyThreshold(airline)
+      val maxFrequency = FlightType.getCategory(newLink.flightType) match {
+        case FlightCategory.DOMESTIC => 45
+        case FlightCategory.INTERNATIONAL => 40
+        case FlightCategory.INTERCONTINENTAL => 30
+      }
       if (newFrequency > maxFrequency) {
         requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - maxFrequency, s"Excessive frequency $newFrequency over allowed $maxFrequency"))
       }
@@ -187,7 +191,7 @@ object NegotiationUtil {
     val discounts = ListBuffer[NegotiationDiscount]()
     //how busy is this airport
     val airportLinks =  LinkSource.loadLinksByFromAirport(airport.id) ++ LinkSource.loadLinksByToAirport(airport.id)
-    val totalFrequency = airportLinks.map(_.frequency).sum
+    //val totalFrequency = airportLinks.map(_.frequency).sum
     import NegotiationDiscountType._
     /*
     if (totalFrequency <= 50 * airport.size) { //under serve
