@@ -1,9 +1,9 @@
 package controllers
 
 import com.patson.data.{AirportSource, CountrySource, LinkStatisticsSource}
-import com.patson.model.Computation.reputationBoostTop10
 import com.patson.model._
-import com.patson.util.CountryCache
+import com.patson.util.{AirportChampionInfo, ChampionUtil, CountryCache}
+import models.AirportWithChampion
 
 object AirportUtil {
   val modelAirportPower : Long = AirportSource.loadAllAirports().map(_.power).sorted.last
@@ -26,6 +26,44 @@ object AirportUtil {
 
 
     AirportRating(economicPowerRating, competitionRating, countryPowerRating, airport.getFeatures(), overallDifficulty)
+  }
+
+  var cachedAirportChampions : List[AirportWithChampion] = getAirportChampions()
+
+  def getAirportChampions() : List[AirportWithChampion] = {
+    val loyalistByAirportId : Map[Int, List[AirportChampionInfo]] = ChampionUtil.loadAirportChampionInfo().groupBy(_.loyalist.airport.id)
+    cachedAirportsByPower.map { airport =>
+      val championAirline : Option[Airline] = loyalistByAirportId.get(airport.id).map { loyalists =>
+        loyalists.sortBy(_.ranking).map(_.loyalist.airline).head
+      }
+      AirportWithChampion(airport, championAirline)
+    }
+  }
+
+  def refreshAirports() = {
+    cachedAirportChampions = getAirportChampions()
+    visibleAirports = getVisibleAirports(airportByPowerCount)
+  }
+
+  private val airportByPowerCount = 4000
+  var visibleAirports = getVisibleAirports(airportByPowerCount)
+
+  private[this] def getVisibleAirports(airportByPowerCount : Int) : List[AirportWithChampion] = {
+    val cachedAirportChampions = AirportUtil.cachedAirportChampions
+    val powerfulAirports : Map[Int, AirportWithChampion] = cachedAirportChampions.takeRight(airportByPowerCount).map(entry => (entry.airport.id, entry)).toMap
+    val mostPowerfulAirportsPerCountry : List[AirportWithChampion] = cachedAirportChampions.groupBy(_.airport.countryCode).values.flatMap { airportsOfACountry =>
+      if (airportsOfACountry.length > 0) {
+        List(airportsOfACountry.reverse.apply(0))
+      } else {
+        List()
+      }
+    }.toList
+    val result = (powerfulAirports.values ++ mostPowerfulAirportsPerCountry.filter { mostPowerfulAirportOfACountry =>
+      val alreadyInList = powerfulAirports.contains(mostPowerfulAirportOfACountry.airport.id)
+      //println(s"$alreadyInList ? $mostPowerfulAirportOfACountry")
+      !alreadyInList
+    }).toList
+    result
   }
 }
 

@@ -129,44 +129,31 @@ object Computation {
     (baseCost * airportSizeMultiplier * distanceMultiplier * internationalMultiplier).toInt 
   }
   
-  val reputationBoostTop10 = Map(
-      1 -> 30,
-      2 -> 24,
-      3 -> 19,
-      4 -> 16,
-      5 -> 13,
-      6 -> 10,
-      7 -> 8,
-      8 -> 6,
-      9 -> 4,
-      10 -> 2
-      )
-    
-  def computeReputationBoost(country : Country, ranking : Int) : Double = {
-    //US gives boost of (rank : boost)  
-    // 1st : 30
-    // 2nd : 24 
-    // 3rd : 19
-    // 4th : 16
-    // 5th : 13
-    // 6th : 10
-    // 7th : 8
-    // 8th : 6
-    // 9th : 4
-    // 10th : 2
-    
-    val ratioToModelPower = country.airportPopulation * country.income.toDouble / MODEL_COUNTRY_POWER
-    
-    val boost = math.log10(ratioToModelPower * 100) / 2 * reputationBoostTop10(ranking)
-    
-    if (boost < 1 && ranking <= 3) {
-      1
-    } else if (boost < 0.5) {
-      0.5
-    } else {
-      BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
-    }
-  }
+//  def computeReputationBoost(country : Country, ranking : Int) : Double = {
+//    //US gives boost of (rank : boost)
+//    // 1st : 30
+//    // 2nd : 24
+//    // 3rd : 19
+//    // 4th : 16
+//    // 5th : 13
+//    // 6th : 10
+//    // 7th : 8
+//    // 8th : 6
+//    // 9th : 4
+//    // 10th : 2
+//
+//    val ratioToModelPower = country.airportPopulation * country.income.toDouble / MODEL_COUNTRY_POWER
+//
+//    val boost = math.log10(ratioToModelPower * 100) / 2 * reputationBoostTop10(ranking)
+//
+//    if (boost < 1 && ranking <= 3) {
+//      1
+//    } else if (boost < 0.5) {
+//      0.5
+//    } else {
+//      BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+//    }
+//  }
   
   
   def computeCompensation(link : Link) : Int = {

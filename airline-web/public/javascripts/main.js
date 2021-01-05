@@ -298,7 +298,7 @@ function addCustomMapControls(map) {
 
   toggleMapLightButton.index = 1
   toggleMapAnimationButton.index = 2
-  toggleMapChristmasButton.index = 4
+  toggleMapChristmasButton.index = 5
 
 
   if ($("#map").height() > 500) {
@@ -324,11 +324,15 @@ function addCustomMapControls(map) {
 
 function addAirlineSpecificMapControls(map) {
     var toggleHeatmapButton = $('<div id="toggleMapHeatmapButton" class="googleMapIcon" onclick="toggleHeatmap()" align="center"  style="margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/icons/table-heatmap.png" title=\'toggle heatmap\' style="vertical-align: middle;"/></div>')
+    var toggleChampionButton = $('<div id="toggleChampionButton" class="googleMapIcon" onclick="toggleChampionMap()" align="center"  style="margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/icons/crown.png" title=\'toggle champion\' style="vertical-align: middle;"/></div>')
     toggleHeatmapButton.index = 3
+    toggleChampionButton.index = 4
     if ($("#map").height() > 500) {
         map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].insertAt(2, toggleHeatmapButton[0])
+        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].insertAt(3, toggleChampionButton[0])
      } else {
         map.controls[google.maps.ControlPosition.LEFT_BOTTOM].insertAt(2, toggleHeatmapButton[0])
+        map.controls[google.maps.ControlPosition.LEFT_BOTTOM].insertAt(3, toggleChampionButton[0])
     }
 }
 

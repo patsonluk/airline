@@ -200,7 +200,7 @@ function selectAlliance(row, allianceId) {
 function loadAllianceDetails(allianceId) {
 	updateAllianceBasicsDetails(allianceId)
 	updateAllianceBonus(allianceId)
-	updateAllianceChampionContries(allianceId)
+	updateAllianceChampions(allianceId)
 	updateAllianceHistory(allianceId)
 	$('#allianceDetails').fadeIn(200)
 }
@@ -311,7 +311,7 @@ function updateAllianceBonus(allianceId) {
 		}
 	}
 }
-function updateAllianceChampionContries(allianceId) {
+function updateAllianceChampions(allianceId) {
 	$('#allianceChampionList').children('div.table-row').remove()
 	
 	$.ajax({
@@ -319,28 +319,27 @@ function updateAllianceChampionContries(allianceId) {
 		url: "alliances/" + allianceId + "/championed-countries",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(championedCountries) {
-	    	var approvedMembersChampions = championedCountries.members
-	    	var applicantChampions = championedCountries.applicants
+	    success: function(result) {
+	    	var approvedMembersChampions = result.members
+	    	var applicantChampions = result.applicants
 	    	$(approvedMembersChampions).each(function(index, championDetails) {
-	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
+
+	    		var row = $("<div class='table-row clickable' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
-	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
+	    		row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
 	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
-	    		row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.passengerCount) + "</div>")
+	    		row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
 	    		row.append("<div class='cell' align='right'>" + championDetails.reputationBoost + "</div>") 
 	    		$('#allianceChampionList').append(row)
 	    	})
 	    	
 	    	$(applicantChampions).each(function(index, championDetails) {
-	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
+	    		var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + championDetails.airportId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
-	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
-	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
-	    		row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.passengerCount) + "</div>")
-	    		row.append("<div class='cell warning' align='right'><img src='assets/images/icons/information.png' title='Points not counted as this airline is not an approved member yet'>" + championDetails.reputationBoost + "</div>") 
+                row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
+                row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
+                row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
+                row.append("<div class='cell warning' align='right'><img src='assets/images/icons/information.png' title='Points not counted as this airline is not an approved member yet'>" + championDetails.reputationBoost + "</div>")
 	    		$('#allianceChampionList').append(row)
 	    	})
 	    	
@@ -353,6 +352,8 @@ function updateAllianceChampionContries(allianceId) {
 	    		row.append("<div class='cell' align='right'>-</div>")
 	    		$('#allianceChampionList').append(row)
 	    	}
+	    	$('#allianceCanvas .totalReputation').text(result.totalReputation)
+	    	$('#allianceCanvas .reputationTruncatedEntries').text(result.truncatedEntries)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

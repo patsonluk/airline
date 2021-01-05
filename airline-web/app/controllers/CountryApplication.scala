@@ -116,7 +116,7 @@ class CountryApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           "bases" -> Json.toJson(bases))
       //val allAirlines = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
       CountrySource.loadMarketSharesByCountryCode(countryCode).foreach { marketShares => //if it has market share data
-        val champions = ChampionUtil.getChampionInfoByCountryCode(countryCode).sortBy(_.ranking)
+        val champions = ChampionUtil.getCountryChampionInfoByCountryCode(countryCode).sortBy(_.ranking)
         var championsJson = Json.toJson(champions)
         //        var x = 0
         //        for (x <- 0 until champions.size) {

@@ -473,6 +473,9 @@ function addMarkers(airports) {
 		  var airportInfo = airports[i]
 		  var position = {lat: airportInfo.latitude, lng: airportInfo.longitude};
 		  var icon = getAirportIcon(airportInfo)
+//          if (airportInfo.championAirlineName) {
+//            console.log(airportInfo.name + "-> " + airportInfo.championAirlineName)
+//          }
 
 		  
 		  var marker = new google.maps.Marker({
@@ -494,6 +497,11 @@ function addMarkers(airports) {
 		  		icon: icon,
 		  		originalIcon: icon, //so we can flip back and forth
 			  });
+		  if (airportInfo.championAirlineId) {
+            marker.championIcon = '/airlines/' + airportInfo.championAirlineId + '/logo'
+            marker.championAirlineName = airportInfo.championAirlineName
+          }
+
 		  
 		  var zIndex = airportInfo.size * 10 
 		  var sizeAdjust = Math.floor(airportInfo.population / 1000000) //add something extra due to pop
@@ -661,7 +669,10 @@ function addCityMarkers(airportMap, airport) {
 
 
 function isShowMarker(marker, zoom) {
-	return (marker.isBase) || ((zoom >= 4) && (zoom + marker.airport.size / 2 >= 7.5)) //start showing size >= 7 at zoom 4 
+	if (championMapMode && !marker.championIcon) {
+	    return false
+    }
+    return (marker.isBase) || ((zoom >= 4) && (zoom + marker.airport.size / 2 >= 7.5)) //start showing size >= 7 at zoom 4
 }
 
 function updateBaseInfo(airportId) {
@@ -815,6 +826,34 @@ function updateAirportExtendedDetails(airportId) {
 //	
 //	//$("#buildBaseButton").show()
 //}
+
+var championMapMode = false
+function toggleChampionMap() {
+   var zoom = map.getZoom();
+    $.each(markers, function(index, marker) {
+        if (!championMapMode) {
+            if (marker.championIcon) {
+                marker.previousIcon = marker.icon
+                marker.previousTitle = marker.title
+                //marker.setIcon(marker.championIcon)
+                marker.setIcon(marker.championIcon)
+                marker.setTitle(marker.title + " - " + marker.championAirlineName)
+        //        google.maps.event.clearListeners(marker, 'mouseover');
+        //        google.maps.event.clearListeners(marker, 'mouseout');
+            } else {
+                marker.setVisible(false)
+            }
+        } else {
+            if (marker.championIcon) {
+                marker.setTitle(marker.previousTitle)
+                marker.setIcon(marker.previousIcon)
+            }
+            marker.setVisible(isShowMarker(marker, zoom));
+            updateAirportMarkers(activeAirline)
+        }
+    })
+    championMapMode = !championMapMode
+}
 
 
 function updateAirportBaseMarkers(newBaseAirports, relatedFlightPaths) {

@@ -2,6 +2,7 @@ package com.patson
 
 import com.patson.model._
 import com.patson.data._
+
 import scala.collection.mutable._
 import scala.collection.immutable
 import scala.concurrent.Await
@@ -11,8 +12,7 @@ import com.patson.model.oil.OilPrice
 import com.patson.model.oil.OilInventoryPolicy
 import com.patson.model.oil.OilConsumptionHistory
 import com.patson.model.oil.OilConsumptionType
-import com.patson.util.ChampionInfo
-import com.patson.util.ChampionUtil
+import com.patson.util.{AirportChampionInfo, ChampionUtil, CountryChampionInfo}
 
 object AirlineSimulation {
   private val AIRLINE_FIXED_COST = 0 //for now...
@@ -42,7 +42,8 @@ object AirlineSimulation {
     val allCashFlows = ListBuffer[AirlineCashFlow]() //cash flow for accounting purpose
      
     val currentCycle = MainSimulation.currentWeek
-    val champions : scala.collection.immutable.Map[Airline, List[ChampionInfo]] = ChampionUtil.getAllChampionInfo().groupBy(_.airline)
+    //val champions : scala.collection.immutable.Map[Airline, List[ChampionInfo]] = ChampionUtil.getAllCountryChampionInfo().groupBy(_.airline)
+    val airportChampionsByAirlineId : immutable.Map[Int, List[AirportChampionInfo]] = ChampionUtil.loadAirportChampionInfo().groupBy(_.loyalist.airline.id)
     val titlesByCountryCodeAndAirlineId : immutable.Map[(String, Int), List[CountryAirlineTitle]]= CountrySource.loadCountryAirlineTitlesByCriteria(List.empty).groupBy(entry => (entry.country.countryCode, entry.airline.id)) //key is (CountryCode, AirlineId)
     val cashFlows = Map[Airline, Long]() //cash flow for actual deduction
     
@@ -321,11 +322,15 @@ object AirlineSimulation {
             targetReputation = 0
         }
         
-        champions.get(airline).foreach { //if this airline championed anything
-          _.foreach { championInfo =>
-              targetReputation = targetReputation + championInfo.reputationBoost
-          }
-        }
+//        champions.get(airline).foreach { //if this airline championed anything
+//          _.foreach { championInfo =>
+//              targetReputation = targetReputation + championInfo.reputationBoost
+//          }
+//        }
+
+      airportChampionsByAirlineId.get(airline.id).foreach { airportChampions =>
+        targetReputation += airportChampions.map(_.reputationBoost).sum
+      }
         
         val reputationBonusFromAlliance : Double = allianceByAirlineId.get(airline.id) match {
           case Some(alliance) => allianceRankings.get(alliance) match {

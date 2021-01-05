@@ -301,6 +301,7 @@ object Meta {
     createCampaign(connection)
     createLinkNegotiationCoolDown(connection)
     createTutorial(connection)
+    createAirportChampion(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1634,7 +1635,7 @@ object Meta {
     statement.close()
   }
 
-  def createLinkNegotiationCoolDown(connection : Connection) {
+  def createLinkNegotiationCoolDown(connection : Connection) = {
     var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_NEGOTIATION_COOL_DOWN_TABLE)
     statement.execute()
     statement.close()
@@ -1650,7 +1651,7 @@ object Meta {
 
   }
 
-  def createTutorial(connection : Connection) {
+  def createTutorial(connection : Connection) = {
     var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + COMPLETED_TUTORIAL_TABLE)
     statement.execute()
     statement.close()
@@ -1667,6 +1668,26 @@ object Meta {
     statement.close()
 
   }
+
+  def createAirportChampion(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_CHAMPION_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CHAMPION_TABLE + "(" +
+      "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "loyalist INTEGER," +
+      "ranking INTEGER," +
+      "reputation_boost DECIMAL(5,2)," +
+      "PRIMARY KEY (airport, airline)" +
+      ")")
+
+    statement.execute()
+    statement.close()
+  }
+
 
 
 
