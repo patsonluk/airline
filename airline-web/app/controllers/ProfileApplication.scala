@@ -127,6 +127,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     airline.setBalance(profile.cash)
     AirportSource.updateAirlineAppeal(airportId, airlineId, AirlineAppeal(loyalty = 0, awareness = profile.awareness))
 
+    profile.airplanes.foreach(_.assignDefaultConfiguration())
     AirplaneSource.saveAirplanes(profile.airplanes)
 
     profile.loan.foreach { loan =>
