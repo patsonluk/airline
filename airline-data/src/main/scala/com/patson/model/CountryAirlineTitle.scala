@@ -38,8 +38,8 @@ object Title extends Enumeration {
   }
 
   val relationshipBonus = (title : Title.Value) => title match {
-    case Title.NATIONAL_AIRLINE => 50
-    case Title.PARTNERED_AIRLINE => 20
+    case Title.NATIONAL_AIRLINE => 30
+    case Title.PARTNERED_AIRLINE => 15
     case _ => 0
   }
 
@@ -126,28 +126,24 @@ object CountryAirlineTitle {
 
   val getTitleBonus = (title : Title.Value, country : Country) => title match {
     case NATIONAL_AIRLINE =>
-      List(s"Allow flights to any airport in ${country.name}",
-        s"Loyalty +${CountryAirlineTitle(country, Airline.fromId(0), NATIONAL_AIRLINE).loyaltyBonus} on all airports in ${country.name}",
+      List(s"Loyalty +${CountryAirlineTitle(country, Airline.fromId(0), NATIONAL_AIRLINE).loyaltyBonus} on all airports in ${country.name}",
         s"Relationship +${Title.relationshipBonus(NATIONAL_AIRLINE)} with ${country.name}",
-        s"Allow building airport bases in ${country.name}"
+        s"Allow building airport bases in any airports in ${country.name}"
       )
     case PARTNERED_AIRLINE =>
-      List(s"Allow flights to any airport in ${country.name}",
-        s"Loyalty +${CountryAirlineTitle(country, Airline.fromId(0), PARTNERED_AIRLINE).loyaltyBonus} on all airports in ${country.name}",
+      List(s"Loyalty +${CountryAirlineTitle(country, Airline.fromId(0), PARTNERED_AIRLINE).loyaltyBonus} on all airports in ${country.name}",
         s"Relationship +${Title.relationshipBonus(PARTNERED_AIRLINE)} with ${country.name}",
-        s"Allow building airport bases in ${country.name}"
+        s"Allow building airport bases in any airports in ${country.name}"
       )
     case PRIVILEGED_AIRLINE =>
-      List(s"Allow flights to any airport in ${country.name}",
-        s"Allow building airport bases in ${country.name}"
+      List(s"Allow building airport bases in any airports in ${country.name}"
       )
     case ESTABLISHED_AIRLINE =>
-      List(s"Allow Intercontinental flights to only Gateway airport in ${country.name}",
-        s"Allow building airport bases in ${country.name}"
+      List(s"Allow building airport bases in only Gateway airports in ${country.name}"
       )
     case APPROVED_AIRLINE =>
-      List(s"Allow Intercontinental flights to only Gateway airport in ${country.name}")
+      List()
     case NONE =>
-      List(s"No Intercontinental flights to any airports in ${country.name}")
+      List()
   }
 }

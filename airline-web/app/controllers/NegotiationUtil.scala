@@ -14,6 +14,7 @@ object NegotiationUtil {
   val MAX_ASSIGNED_DELEGATE = 10
   val FREE_LINK_THRESHOLD = 5 //for newbie
   val FREE_LINK_FREQUENCY_THRESHOLD = 5
+  val FREE_LINK_DIFFICULTY_THRESHOLD = 10
 
 
   def negotiate(info : NegotiationInfo, delegateCount : Int) = {
@@ -137,10 +138,24 @@ object NegotiationUtil {
         CountryCache.getCountry(airport.countryCode).foreach { country =>
           airline.getCountryCode().foreach { homeCountryCode =>
             if (homeCountryCode != airport.countryCode) { //closed country are anti foreign airlines
-              requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, (14 - country.openness) * 0.5, "Foreign Airline"))
+              val baseForeignAirline = (14 - country.openness) * 0.5
+              requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, baseForeignAirline, "Foreign Airline"))
+            }
+          }
+
+          val flightCategory = FlightType.getCategory(newLink.flightType)
+          if (flightCategory != FlightCategory.DOMESTIC) {
+            airport.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
+              case Some(_) => //OK
+              case None =>
+                val nonGatewayCost = (14 - country.openness) * 0.15 * flightTypeMultiplier
+                requirements.append(NegotiationRequirement(NON_GATEWAY, nonGatewayCost, "International flight to non-gateway"))
             }
           }
         }
+
+
+
     }
     requirements.toList
   }
@@ -174,6 +189,7 @@ object NegotiationUtil {
     val airportLinks =  LinkSource.loadLinksByFromAirport(airport.id) ++ LinkSource.loadLinksByToAirport(airport.id)
     val totalFrequency = airportLinks.map(_.frequency).sum
     import NegotiationDiscountType._
+    /*
     if (totalFrequency <= 50 * airport.size) { //under serve
       discounts.append(NegotiationDiscount(BELOW_CAPACITY, 0.2)) //20%
     } else if (totalFrequency >= 300 * airport.size) {
@@ -181,22 +197,24 @@ object NegotiationUtil {
       val multiplier = Math.min(10, 1 + (totalFrequency - 300 * airport.size).toDouble / (100 * airport.size))
       discounts.append(NegotiationDiscount(OVER_CAPACITY, -0.2 * multiplier)) //crowded, start from 20% to up to 200% penalty
     }
+    */
+
 
     // 20 -> 0.2
     // 50 -> 0.2 + 0.15
     // 100 -> 0.35 + 0.15
     val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(airport.countryCode, airline).relationship
     if (relationship >= 0) {
-      var discount =
-        if (relationship <= 20) {
-          relationship * 0.01
-        } else if (relationship <= 50) {
-          0.2 + (relationship - 20) * 0.005
-        } else {
-          0.35 + (relationship - 50) * 0.003
-        }
+      var discount = relationship * 0.01
+//        if (relationship <= 20) {
+//          relationship * 0.01
+//        } else if (relationship <= 50) {
+//          0.2 + (relationship - 20) * 0.005
+//        } else {
+//          0.35 + (relationship - 50) * 0.003
+//        }
 
-      discount = Math.min(discount, 0.5)
+      discount = Math.min(discount, 0.7)
       discounts.append(NegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     } else if (relationship < 0) { //very penalizing
       val discount = relationship * 0.1
@@ -249,7 +267,8 @@ object NegotiationUtil {
     //check for freebie bonus
     if (airlineLinks.length < FREE_LINK_THRESHOLD &&
       newFrequency < FREE_LINK_FREQUENCY_THRESHOLD &&  //to prevent many small increase
-      finalRequirementValue < 4
+      finalRequirementValue < FREE_LINK_DIFFICULTY_THRESHOLD &&
+      FlightType.getCategory(newLink.flightType) != FlightCategory.INTERCONTINENTAL
     ) {
       return NegotiationUtil.NO_NEGOTIATION_REQUIRED
     }
@@ -332,7 +351,7 @@ case class NegotiationInfo(fromAirportRequirements : List[NegotiationRequirement
 
 object NegotiationRequirementType extends Enumeration {
   type NegotiationRequirementType = Value
-  val FROM_COUNTRY_RELATIONSHIP, TO_COUNTRY_RELATIONSHIP, EXISTING_COMPETITION, NEW_LINK, UPDATE_LINK, INCREASE_CAPACITY, INCREASE_FREQUENCY, EXCESSIVE_FREQUENCY, LOW_LOAD_FACTOR, FOREIGN_AIRLINE, LINK_CAP, OTHER = Value
+  val FROM_COUNTRY_RELATIONSHIP, TO_COUNTRY_RELATIONSHIP, EXISTING_COMPETITION, NEW_LINK, UPDATE_LINK, INCREASE_CAPACITY, INCREASE_FREQUENCY, EXCESSIVE_FREQUENCY, LOW_LOAD_FACTOR, FOREIGN_AIRLINE, NON_GATEWAY, LINK_CAP, OTHER = Value
 
 //  def description(requirementType : NegotiationRequirementType.Value, link : Link) =  requirementType match {
 //    case EXISTING_COMPETITION => "Existing Routes by other Airlines"

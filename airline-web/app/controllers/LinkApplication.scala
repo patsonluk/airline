@@ -773,15 +773,15 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         val flightCategory = FlightType.getCategory(Computation.getFlightType(fromAirport, toAirport))
         //check title status
-        if (flightCategory == FlightCategory.INTERCONTINENTAL) {
-          val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE
-          val currentTitle = CountryAirlineTitle.getTitle(toCountryCode, airline)
-          val ok = currentTitle.title.id <= requiredTitle.id //smaller value means higher title
-
-          if (!ok) {
-            return Some((s"Cannot fly Intercontinental to this ${if (toAirport.isGateway()) "Gateway" else "Non-gateway"} airport until your airline attain title ${Title.description(requiredTitle)} with ${CountryCache.getCountry(toCountryCode).get.name}", TITLE_REQUIREMENT))
-          }
-        }
+//        if (flightCategory == FlightCategory.INTERCONTINENTAL) {
+//          val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE
+//          val currentTitle = CountryAirlineTitle.getTitle(toCountryCode, airline)
+//          val ok = currentTitle.title.id <= requiredTitle.id //smaller value means higher title
+//
+//          if (!ok) {
+//            return Some((s"Cannot fly Intercontinental to this ${if (toAirport.isGateway()) "Gateway" else "Non-gateway"} airport until your airline attain title ${Title.description(requiredTitle)} with ${CountryCache.getCountry(toCountryCode).get.name}", TITLE_REQUIREMENT))
+//          }
+//        }
 
 
         //check distance
