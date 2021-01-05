@@ -58,18 +58,17 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
         airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
         "This airline name is not available",
         airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase().replaceAll("\\s", "") }.contains(airlineName.replaceAll("\\s", "").toLowerCase())
-      ),
-      "profileId" -> number
+      )
     )
     // The mapping signature doesn't match the User case class signature,
     // so we have to define custom binding/unbinding functions
     {
       // Binding: Create a User from the mapping result (ignore the second password and the accept field)
-      (username, email, passwords, recaptureToken, airlineName, profileId) => NewUser(username.trim, passwords._1, email.trim, recaptureToken, airlineName.trim, profileId) 
+      (username, email, passwords, recaptureToken, airlineName) => NewUser(username.trim, passwords._1, email.trim, recaptureToken, airlineName.trim)
     } 
     {
       // Unbinding: Create the mapping values from an existing User value
-      user => Some(user.username, user.email, (user.password, ""), "", user.airlineName, 1)
+      user => Some(user.username, user.email, (user.password, ""), "", user.airlineName)
     }
   )
   
@@ -125,10 +124,9 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
 
           SearchUtil.addAirline(newAirline)
           
-          val profile = StartupProfile.profilesById(userInput.profileId)
-          profile.initializeAirline(newAirline)
-          
-          Redirect("/")
+//          val profile = StartupProfile.profilesById(userInput.profileId)
+//          profile.initializeAirline(newAirline)
+          Redirect("/").withCookies(Cookie("sessionActive", "true", httpOnly = false)).withSession("userId" -> String.valueOf(user.id))
         } else {
           BadRequest("Recaptcha check failed!")
         }

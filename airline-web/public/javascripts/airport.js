@@ -8,14 +8,17 @@ var airportMapCircle
 
 function showAirportDetails(airportId) {
 	setActiveDiv($("#airportCanvas"))
+
 	//highlightTab($('#airportCanvasTab'))
 	
 	$('#main-tabs').children('.left-tab').children('span').removeClass('selected')
 	//deselectLink()
-	
+	checkTutorial('airport')
+
 	activeAirportId = airportId
 	$('#airportDetailsAirportImage').empty()
     $('#airportDetailsCityImage').empty()
+    $("#airportCanvas .rating").empty()
 	
 	$.ajax({
 		type: 'GET',
@@ -305,7 +308,7 @@ function loadAirportStatistics(airport) {
 	    	$('#airportDetailsAirlineCount').text(airportStatistics.airlineCount)
 	    	$('#airportDetailsLinkCount').text(airportStatistics.linkCount)
 	    	$('#airportDetailsFlightFrequency').text(airportStatistics.flightFrequency)
-	    	
+	    	updateAirportRating(airportStatistics.rating)
 	    	updateFacilityList(airportStatistics)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -313,6 +316,42 @@ function loadAirportStatistics(airport) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function updateAirportRating(rating) {
+    var fullStarSource = "assets/images/icons/star.png"
+    var halfStarSource = "assets/images/icons/star-half.png"
+    var fullFireSource = "assets/images/icons/fire.png"
+    var halfFireSource = "assets/images/icons/fire-small.png"
+    $("#airportCanvas .economicRating").append(getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, rating.economicRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
+    $("#airportCanvas .economicRating").append(getRatingSpan(rating.economicRating, true))
+    $("#airportCanvas .countryRating").append(getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, rating.countryRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
+    $("#airportCanvas .countryRating").append(getRatingSpan(rating.countryRating, true))
+    $("#airportCanvas .competitionRating").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.competitionRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
+    $("#airportCanvas .competitionRating").append(getRatingSpan(rating.competitionRating, false))
+    $("#airportCanvas .difficulty").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.difficulty).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
+    $("#airportCanvas .difficulty").append(getRatingSpan(rating.difficulty, false))
+}
+
+//if inverse is true then higher the rating, easier it is
+function getRatingSpan(rating, inverse) {
+    var $span = $('<span></span')
+    var value = inverse ? 100 - rating : rating
+    var description
+    if (value <= 30) {
+        description = "very easy"
+    } else if (value <= 50) {
+        description = "easy"
+    } else if (value <= 70) {
+        description = "quite challenging"
+    } else if (value <= 90) {
+        description = "challenging"
+    } else {
+        description = "very challenging"
+    }
+    $span.text(rating + " (" + description + ")")
+
+    return $span
 }
 
 function updateFacilityList(statistics) {
@@ -735,9 +774,9 @@ function refreshAirportExtendedDetails(airport) {
     	$(".airportLoyalty").text('-')
     	$(".airportRelationship").text('-')
     }
-    $("#airportIcons .feature").empty()
+    $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {
-        $("#airportIcons").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'><span class='label'>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>")
+        $(".airportFeatures").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'><span>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>")
     })
 }
 

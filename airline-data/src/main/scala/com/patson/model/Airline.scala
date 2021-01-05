@@ -41,6 +41,22 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     airlineInfo.airlineCode
   }
 
+  def setSkipTutorial(value : Boolean) = {
+    airlineInfo.skipTutorial = value
+  }
+  def isSkipTutorial = {
+    airlineInfo.skipTutorial
+  }
+
+  def setInitialized(value : Boolean) = {
+    airlineInfo.initialized = value
+  }
+  def isInitialized = {
+    airlineInfo.initialized
+  }
+
+
+
   def setAllianceId(allianceId : Int) = {
     this.allianceId = Some(allianceId)
   }
@@ -184,7 +200,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
 
 case class DelegateInfo(availableCount : Int, busyDelegates: List[BusyDelegate])
 
-case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "")
+case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "", var skipTutorial : Boolean = false, var initialized : Boolean = false)
 
 object TransactionType extends Enumeration {
   type TransactionType = Value
@@ -348,6 +364,7 @@ object Airline {
 
         if (resetExtendedInfo) {
           airline.setReputation(0)
+          airline.setInitialized(false)
           AirportSource.deleteAirlineAppealsFromAllAirports(airlineId)
           LoyalistSource.deleteLoyalistsByAirline(airlineId)
         }

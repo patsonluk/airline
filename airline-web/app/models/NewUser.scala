@@ -5,7 +5,6 @@ case class NewUser(
   password: String,
   email: String,
   recaptchaToken: String,
-  airlineName : String,
-  profileId: Int
+  airlineName : String
 )
 

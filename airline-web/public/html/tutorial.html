@@ -1,0 +1,85 @@
+<div class="tutorial modal" data-category="welcome" id="tutorialWelcome">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+	WELCOME!! Press Escape or Tap on this dialog to proceed
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+
+
+</div>
+
+<div class="tutorial modal" data-category="welcome" id="tutorialViewAirport">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Tutorial</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">You must first select an airport to build your Headquarters!</li>
+			<li class="label" style="padding: 5px;">Zoom in and click on the airport icon, then click "View Airport" to see the details of that airport</li>
+			<li class="label" style="padding: 5px;">Smaller airports might require further zoom in before they become visible on the map</li>
+			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport-gateway.png" style="vertical-align:middle">Country Gateway Airport</li>
+			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport-darker.png" style="vertical-align:middle">Large Airport</li>
+			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport.png" style="vertical-align:middle">Medium Airport</li>
+			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport-lighter.png" style="vertical-align:middle">Small Airport</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="airport" id="tutorialAirportDetails">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Airport Details</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">WIP</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="airport" id="tutorialBuildHq">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Airport Details</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Click the Build Headquarters icon if you decide to start your HQ here.</li>
+			<li class="label" style="padding: 5px;">Take note that once HQ is built, you can no longer move it unless you rebuild your airlines.</li>
+			<li class="label" style="padding: 5px;">All your initial flights will depart from the HQ airport.</li>
+			<li class="label" style="padding: 5px;">The country houses your HQ will also become your company's home country, which determines your initial relationship with airplane manufacturers and other countries.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="oil" id="tutorialOilIntro1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Introduction</h4>
+		<ul>
+			<li class="label">Watch the Oil market price and manage your oil contract here.</li>
+			<li class="label" style="font-weight: bolder;">You do NOT need to buy any oil contract to have your airplanes fueled.</li>
+			<li class="label">Oil will be auto purchased by the inventory price if there's no active contract or the contracts do not cover all the consumption</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="oil" id="tutorialOilIntro2">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Inventory Price and Policy</h4>
+		<ul>
+			<li class="label" style="font-weight: bolder;">$70 is considered the "neutral" oil price. Price above is considered over-priced and below is under-priced.</li>
+			<li class="label">By default, your airline will be assigned the "conservative" inventory policy which shields your airline from 90% of price fluctuation.</li>
+			<li class="label">For example, if the current oil market price is $80 which is $10 above the neutral price, you will only need to pay $71 which is 90% off the price delta ($10).</li>
+			<li class="label">Though conservative policy protects you from price fluctuation, it also means that you will reap less benefit when the oil price is low.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="oil" id="tutorialOilIntro3">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Oil Contract</h4>
+		<ul>
+			<li class="label">You can also sign an oil contract with a specified duration to lock the price you pay.</li>
+			<li class="label">The contract price is based on current oil price and the duration of the contract.</li>
+			<li class="label">You might terminate the contract early by paying termination fee.</li>
+			<li class="label">Please be reminded that excessive oil from the contract will be sold back to the market at half the market price.</li>
+			<li class="label">The default contract volume is the barrels required to fulfill your need based on the oil consumption from previous week.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+

@@ -115,9 +115,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
 
   def getAirplaneModels() = Action {
-    val models = ModelSource.loadAllModels()
-    
-    Ok(Json.toJson(models))
+    Ok(Json.toJson(allAirplaneModels))
   }
 
   val MODEL_TOP_N = 10

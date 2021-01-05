@@ -1,0 +1,13 @@
+.tutorial li.label {
+    padding: 10px 5px;
+}
+.tutorial .modal-content {
+    position: relative;
+}
+.tutorial .modal-content .footer {
+    margin-top: 20px;
+    bottom : 5px;
+    right : 10px;
+    position: absolute;
+}
+

@@ -32,6 +32,7 @@ $( document ).ready(function() {
 	loadAllCountries()
 	updateAirlineColors()
 	populateTooltips()
+	$('#tutorialHtml').load('assets/html/tutorial.html')
 	
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())
@@ -164,7 +165,7 @@ function loadUser(isLogin) {
 			  }
     		  refreshLoginBar()
 			  printConsole('') //clear console
-			  getAirports();
+			  getAirports()
 			  showUserSpecificElements();
 			  updateChatTabs()
 			  
@@ -181,6 +182,7 @@ function loadUser(isLogin) {
 			  loadAllCountries() //load country again for relationship
 			  loadAllLogs()
 			  addAirlineSpecificMapControls(map)
+              initPrompts()
 		  }
 
 		  
@@ -365,17 +367,10 @@ function updateAllPanels(airlineId) {
 	updateAirlineInfo(airlineId)
 	
 	if (activeAirline) {
-		if (!activeAirline.headquarterAirport) {
-			showTutorial()
-			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough", 1, true, true)
-		} else if ($.isEmptyObject(flightPaths)) {
-			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
-//		} else {
-//			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
-		} else if (christmasFlag) {
+		if (christmasFlag) {
 		    printConsole("Breaking news - Santa went missing!!! Whoever finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
 		}
-		
+
 	}
 	
 }
@@ -508,6 +503,7 @@ function showWorldMap() {
 	if (selectedLink) {
 		selectLinkFromMap(selectedLink, true)
 	}
+	checkTutorial('worldMap')
 }
 
 //switch to map view w/o considering leaving current tab

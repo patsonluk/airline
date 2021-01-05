@@ -32,7 +32,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
       "gradeValue" -> JsNumber(airline.airlineGrade.value),
-      "airlineCode" -> JsString(airline.getAirlineCode()))
+      "airlineCode" -> JsString(airline.getAirlineCode()),
+      "skipTutorial" -> JsBoolean(airline.isSkipTutorial),
+      "initialized" -> JsBoolean(airline.isInitialized))
       
       airline.getCountryCode.foreach { countryCode =>
         values = values :+ ("countryCode" -> JsString(countryCode))
@@ -660,15 +662,15 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     Ok(Json.obj("nationalAirlines" -> nationalAirlinesJson, "partneredAirlines" -> partneredAirlinesJson))
   }
 
-  def resetAirline(airlineId : Int, keepAssets : Boolean) = AuthenticatedAirline(airlineId) { request =>
+  def resetAirline(airlineId : Int, rebuild : Boolean) = AuthenticatedAirline(airlineId) { request =>
     if (airlineId != request.user.id) {
       Forbidden
     } else {
       getResetRejection(request.user) match {
         case Some(rejection) => Ok(Json.obj("rejection" -> rejection))
         case None =>
-          val resetBalance = if (keepAssets) Computation.getResetAmount(airlineId).overall else EntrepreneurProfile.INITIAL_BALANCE //do it here before deleting everything
-          Airline.resetAirline(airlineId, newBalance = resetBalance) match {
+          val resetBalance = if (rebuild) Computation.getResetAmount(airlineId).overall else 0 //do it here before deleting everything
+          Airline.resetAirline(airlineId, newBalance = resetBalance, !rebuild) match {
             case Some(airline) =>
               Ok(Json.toJson(airline))
             case None => NotFound

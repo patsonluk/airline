@@ -127,6 +127,7 @@ object Constants {
   val LINK_NEGOTIATION_COOL_DOWN_TABLE = "link_negotiation_cool_down"
   val LOYALIST_TABLE = "loyalist"
   val LOYALIST_HISTORY_TABLE = "loyalist_history"
+  val COMPLETED_TUTORIAL_TABLE = "completed_tutorial"
 
   val CAMPAIGN_TABLE = "campaign"
   val CAMPAIGN_AREA_TABLE = "campaign_area"

@@ -22,9 +22,11 @@
 	<link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/chat.css")'>
       <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/search.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/campaign.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/profile.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/switch.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/select.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/about.css")'>
+	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/prompt.css")'>
 	<link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/jemoji/jemoji.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/emojify/emojify.min.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting.css")'>
@@ -94,6 +96,8 @@
 	<script src='@routes.Assets.versioned("javascripts/about.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/heatmap.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/campaign.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/profile.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/prompt.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/map-style.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/mobile.js")' defer></script>
     <script>
@@ -859,60 +863,87 @@
 					<!-- left panel -->
 					<div style="float:left" class="verticalGroup airportCanvasLeftGroup">
 						<div style="box-sizing:border-box; width: 100%; display: flex;">
-							<div id="airportBaseDetails" class="section" style="box-sizing:border-box; width: 35%; float:left; margin:10px 10px 10px 0;">
-								<h4>Your Airline Headquarter/Base</h4>
-								<div class="table" style="width: 100%">
-									<div class="table-row">
-										<div class="label" style="width: 60%"><h5>Base Type:</h5></div>
-										<div class="value" id="airportDetailsBaseType" style="width: 40%"></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Base Scale:</h5></div>
-										<div class="value" id="airportDetailsBaseScale"></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Base Upkeep:</h5></div>
-										<div class="value" id="airportDetailsBaseUpkeep"></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Country Delegates Required:</h5></div>
-										<div class="value" id="airportDetailsBaseDelegatesRequired"></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Build/Upgrade Cost:</h5></div>
-										<div class="value" id="airportDetailsBaseUpgradeCost"></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Base Upkeep after upgrade:</h5></div>
-										<div class="value" id="airportDetailsBaseUpgradeUpkeep"></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Facilities:</h5></div>
-										<div class="value" id="airportDetailsFacilities"></div>
+							<div style="box-sizing:border-box; width: 35%; float:left;">
+								<div class="section" style="box-sizing:border-box; size: 100%; margin-left: 0;">
+									<h4>Airport Rating</h4>
+									<div class="table" style="width: 100%">
+										<div class="table-row">
+											<div class="label" style="width: 25%"><h5>Airport:</h5></div>
+											<div class="value economicRating rating" style="width: 75%"></div>
+										</div>
+										<div class="table-row">
+											<div class="label" style="width: 25%"><h5>Country:</h5></div>
+											<div class="value countryRating rating" style="width: 75%"></div>
+										</div>
+										<div class="table-row">
+											<div class="label" style="width: 25%"><h5>Competition:</h5></div>
+											<div class="value competitionRating rating" style="width: 75%"></div>
+										</div>
+										<div class="table-row">
+											<div class="label" style="width: 25%"><h5>Charms:</h5></div>
+											<div class="value airportFeatures" style="width: 75%"></div>
+										</div>
+										<div class="table-row">
+											<div class="label" style="width: 25%"><h5>Difficulty:</h5></div>
+											<div class="value difficulty rating" style="width: 75%"></div>
+										</div>
 									</div>
 								</div>
-								<div class="button" id="buildHeadquarterButton" style="display: none;" onclick='promptConfirm("Build your headquarters at this airport?", data => buildBase(true))'>Build Headquarter</div>
-								<div class="button" id="buildBaseButton" style="display: none;" onclick='promptConfirm("Build a base at this airport?", data => buildBase(false))'>Build Base</div>
-								<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade Base</div>
-								<div class="button" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade Base</div>
-								<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs.", deleteBase)'>Remove Base</div>
+								<div id="airportBaseDetails" class="section" style="box-sizing:border-box; size: 100%; margin-left: 0;">
+									<h4>Your Airline Headquarters/Base</h4>
+									<div class="table" style="width: 100%">
+										<div class="table-row">
+											<div class="label" style="width: 60%"><h5>Base Type:</h5></div>
+											<div class="value" id="airportDetailsBaseType" style="width: 40%"></div>
+										</div>
+										<div class="table-row">
+											<div class="label"><h5>Base Scale:</h5></div>
+											<div class="value" id="airportDetailsBaseScale"></div>
+										</div>
+										<div class="table-row">
+											<div class="label"><h5>Base Upkeep:</h5></div>
+											<div class="value" id="airportDetailsBaseUpkeep"></div>
+										</div>
+										<div class="table-row">
+											<div class="label"><h5>Country Delegates Required:</h5></div>
+											<div class="value" id="airportDetailsBaseDelegatesRequired"></div>
+										</div>
+										<div class="table-row">
+											<div class="label"><h5>Build/Upgrade Cost:</h5></div>
+											<div class="value" id="airportDetailsBaseUpgradeCost"></div>
+										</div>
+										<div class="table-row">
+											<div class="label"><h5>Base Upkeep after upgrade:</h5></div>
+											<div class="value" id="airportDetailsBaseUpgradeUpkeep"></div>
+										</div>
+										<div class="table-row">
+											<div class="label"><h5>Facilities:</h5></div>
+											<div class="value" id="airportDetailsFacilities"></div>
+										</div>
+									</div>
+									<div class="button" id="buildHeadquarterButton" style="display: none;" onclick='selectHeadquarters(activeAirportId)'>Build Headquarters</div>
+									<div class="button" id="buildBaseButton" style="display: none;" onclick='promptConfirm("Build a base at this airport?", data => buildBase(false))'>Build Base</div>
+									<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade Base</div>
+									<div class="button" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade Base</div>
+									<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs.", deleteBase)'>Remove Base</div>
 
-		<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
+			<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
+								</div>
 							</div>
-							<div class="section loyalistDetails" style="flex-grow: 1; margin:10px 0 10px 0;">
+							<div class="section loyalistDetails" style="width: 65%; margin:10px 0 10px 0;">
 								<h4>Loyalist Statistics</h4>
-								<div style="display: flex; flex-wrap: wrap;">
-									<div style="flex-grow: 1">
+								<div>
+									<div style="width: 35%; display: inline-block;">
 										<div class="loyalistPie" style="height: 160px; padding: 10px 0 0 0; margin: auto" align="center"></div>
-                                        <div class="table data loyalistDelta">
+                                        <div class="table data loyalistDelta" style="width: 100%">
                                             <div class="table-header">
                                                 <div class="cell" style="width: 70%">Airline</div>
                                                 <div class="cell" style="width: 30%; text-align: right;">Trend</div>
                                             </div>
                                         </div>
 									</div>
-									<div style="flex-grow: 2">
-										<div class="loyalistHistoryChart" style="height: 250px; width: 500px"></div>
+									<div style="width: 60%; display: inline-block">
+										<div class="loyalistHistoryChart" style="height: 250px; width: 100%"></div>
 									</div>
 								</div>
 							</div>
@@ -1505,6 +1536,8 @@
                                             </span>
                                         </div>
                                     </div>
+                                    <div class="button" onclick="setSkipTutorial(false)">Reset Tutorials</div>
+
                                 </div>
                             </div>
                             <div class="table verticalGroup" style="float: left;">
@@ -1816,53 +1849,56 @@
 						</div>
 
 						<div class="section" style="width: 95%;">
-							<h4>Rebuild Airline<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
-								<ul>
-									<li class="label" style="padding: 5px">- All of the airplanes will be removed</li>
-									<li class="label" style="padding: 5px">- Headquarters, bases and facilities will be removed</li>
-									<li class="label" style="padding: 5px">- All routes will be cancelled</li>
-									<li class="label" style="padding: 5px">- All loans and oil contracts cancelled<li>
-									<li class="label" style="padding: 5px">- Dropped from current Alliance<li>
-									<li class="label" style="padding: 5px">- Service Quality will be reset<li>
-									<li class="label" style="padding: 5px">- Reputation, Awareness and Loyalty will be kept</li>
-									<li class="label" style="padding: 5px">- If declare bankruptcy, Balance reset to 50,000,000</li>
-									<li class="label" style="padding: 5px">- If rebuild airline, Balance reset to <span id="resetBalance"></span>
-									<div class="tooltip resetTooltip">
-										<img src='@routes.Assets.versioned("images/icons/information.png")'>
-										<span class="tooltiptext" style="width: 600px;">
-											<div class="table data" style="width: 100%;">
-												<div class="table-row">
-													<div class="label">Sold Airplanes</div>
-													<div class="value airplanes"></div>
-												</div>
-												<div class="table-row">
-													<div class="label">Sold Bases</div>
-													<div class="value bases"></div>
-												</div>
-												<div class="table-row">
-													<div class="label">Loans Repayment</div>
-													<div class="value loans"></div>
-												</div>
-												<div class="table-row">
-													<div class="label">Oil Contracts Termination</div>
-													<div class="value oilContracts"></div>
-												</div>
-												<div class="table-row">
-													<div class="label">Cash</div>
-													<div class="value cash"></div>
-												</div>
-												<div class="table-row">
-													<div class="label">New Balance after reset</div>
-													<div class="value overall"></div>
-												</div>
-											</div>
-										</span>
-									</div>
-									</li>
-								</ul>
-								<div class='button resetAirline' onclick='promptConfirm("Declare bankruptcy?", resetAirline, false)'>Declare Bankruptcy</div>
-								<div class='button resetAirline' onclick='promptConfirm("Rebuild Airline?", resetAirline, true)'>Rebuild Airline</div>
-								<div class="resetAirlineRejectionDiv" style="display:none;"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning resetAirlineRejection"></span></div>
+                            <h4>Rebuild airline<img src='@routes.Assets.versioned("images/icons/construction.png")'/></h4>
+                            <ul>
+                                <li class="label dot">	Balance reset to&nbsp;$<span id="resetBalance"></span>
+                                    <div class="tooltip resetTooltip">
+                                        <img src='@routes.Assets.versioned("images/icons/information.png")'>
+                                        <span class="tooltiptext" style="width: 600px;">
+                                        <div class="table data" style="width: 100%;">
+                                            <div class="table-row">
+                                                <div class="label">Sold Airplanes</div>
+                                                <div class="value airplanes"></div>
+                                            </div>
+                                            <div class="table-row">
+                                                <div class="label">Sold Bases</div>
+                                                <div class="value bases"></div>
+                                            </div>
+                                            <div class="table-row">
+                                                <div class="label">Loans Repayment</div>
+                                                <div class="value loans"></div>
+                                            </div>
+                                            <div class="table-row">
+                                                <div class="label">Oil Contracts Termination</div>
+                                                <div class="value oilContracts"></div>
+                                            </div>
+                                            <div class="table-row">
+                                                <div class="label">Cash</div>
+                                                <div class="value cash"></div>
+                                            </div>
+                                            <div class="table-row">
+                                                <div class="label">New Balance after reset</div>
+                                                <div class="value overall"></div>
+                                            </div>
+                                        </div>
+                                    </span>
+                                    </div>
+                                </li>
+                                <li class="label dot">All of the airplanes will be removed</li>
+                                <li class="label dot">Headquarters, bases and facilities will be removed</li>
+                                <li class="label dot">All routes will be cancelled</li>
+                                <li class="label dot">All loans and oil contracts cancelled<li>
+                                <li class="label dot">Dropped from current Alliance<li>
+                                <li class="label dot">Service Quality will be reset<li>
+                                <li class="label dot">Reputation, Awareness and Loyalty will be kept</li>
+                            </ul>
+                            <div class='button resetAirline' onclick='promptConfirm("Rebuild Airline?", resetAirline, true)'>Rebuild Airline</div>
+                            <h4>Declare bankruptcy<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
+                            <ul>
+                                <li class="label dot">Reset to initial game start</li>
+                            </ul>
+                            <div class='button resetAirline' onclick='promptConfirm("Declare bankruptcy?", resetAirline, false)'>Declare Bankruptcy</div>
+							<div class="resetAirlineRejectionDiv" style="display:none;"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning resetAirlineRejection"></span></div>
 						</div>
 					</div>
 	<!-- 		    	end right section -->
@@ -2754,7 +2790,7 @@
     	<div>
     		<h4 id="airportPopupName"></h4>
     	</div>
-    	<div id="airportIcons">
+    	<div id="airportIcons" class="airportFeatures">
     		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon" style="display: none">
     		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon" style="display:none">
     	</div>
@@ -2813,6 +2849,35 @@
         </div>
     </div>
 
+  <div id="airplaneSummaryTooltip" class="customTooltip" style="display: none; position: fixed; z-index: 12;">
+	  <div class="tooltiptext below">
+		  <div class="table" style="min-width: 150px;">
+			  <div class="table">
+				  <div class="table-row">
+					  <div class="cell"><h5>Capacity:</h5></div>
+					  <div class="cell capacity"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="cell"><h5>Range:</h5></div>
+					  <div class="cell"><span class="range"></span>&nbsp;km</div>
+				  </div>
+				  <div class="table-row">
+					  <div class="cell"><h5>Lifespan:</h5></div>
+					  <div class="cell"><span class="lifespan"></span>&nbsp;years</div>
+				  </div>
+				  <div class="table-row">
+					  <div class="cell"><h5>Condition:</h5></div>
+					  <div class="cell"><span class="condition"></span>%</div>
+				  </div>
+				  <div class="table-row">
+					  <div class="cell"><h5>Value:</h5></div>
+					  <div class="cell">$<span class="airplaneValue"></span></div>
+				  </div>
+			  </div>
+		  </div>
+	  </div>
+  </div>
+
   <div id="satisfactionDetailsTooltip" class="customTooltip" style="display: none; position: fixed; z-index: 100;">
 	  <div class="tooltiptext below">
 		  <h4>Overall Satisfaction :&nbsp;<span class="satisfactionValue"></span></h4>
@@ -2842,7 +2907,7 @@
    				<div class="value" id="cityPopupIncomeLevel"></div>
    			</div>
 		</div>
-		
+
 		<div id="cityPie" style="height: 200px; width: 350px;"></div>
     </div>
     
@@ -2959,21 +3024,7 @@
 	  </div>
 	</div>
 	<!-- The Annoucement Modal -->
-	<div id="tutorialModal" class="modal">
-	  <div class="modal-content" style="width: 540px;">
-	    <span class="close" onclick="closeModal($('#tutorialModal'))">&times;</span>
-	    <div style="margin-bottom: 10px;">
-	    	<img src='@routes.Assets.versioned("images/icons/32px/balloon.png")'><span style="font-size: 20px;">Tutorial</span>
-	    </div>
-	    <ul>
-			<li class="label" style="padding: 5px;">1. Build your headquarters in an airport</li>
-			<li class="label" style="padding: 5px;">2. Select another airport to fly to</li>
-			<li class="label" style="padding: 5px;">3. Establish the route</li>
-		</ul>
-<!--	    <img src='@routes.Assets.versioned("images/clips/tutorial.gif")' loading="lazy">-->
-          <img data-src='@routes.Assets.versioned("images/clips/tutorial.gif")' class="lazyload" alt="">
-	  </div>
-	</div>
+
 	<!-- Confirmation Modal -->
 	<div id="confirmationModal" class="modal">
 	  <div class="modal-content"  style="width : 400px;">
@@ -4106,6 +4157,22 @@
 		</div>
       </div>
 <!--  end campaign model-->
+	  <div id="profilesModal" class="modal">
+		<input type="hidden" id="profileId" name="profileId" value="0"/>
+		  <div class="modal-content transparent-modal" style="max-width : 90vw; width: 1300px;">
+			  <h2 style="margin-bottom: 20px">Please select your profile</h2>
+			  <div id ="profiles" style="padding: 10px;">
+
+			  </div>
+			  <div style="text-align: center">
+				  <div class="button" onclick="buildHqWithProfile()">Confirm</div>
+				  <div class="button" onclick="closeModal($('#profilesModal'))">Cancel</div>
+			  </div>
+		  </div>
+	  </div>
+<!--  end profiles-->
+
+    <div id="tutorialHtml"></div>
 
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>

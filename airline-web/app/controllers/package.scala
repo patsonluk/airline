@@ -35,7 +35,8 @@ package object controllers {
       "gradeValue" -> JsNumber(airline.airlineGrade.value),
       "airlineCode" -> JsString(airline.getAirlineCode()),
       "baseCount" -> JsNumber(airline.getBases().size),
-      "isGenerated" -> JsBoolean(airline.isGenerated)))
+      "isGenerated" -> JsBoolean(airline.isGenerated)
+      ))
       
       if (airline.getCountryCode.isDefined) {
         result = result.asInstanceOf[JsObject] + ("countryCode" -> JsString(airline.getCountryCode.get))
@@ -89,6 +90,7 @@ package object controllers {
         "speed" -> JsNumber(airplane.model.speed),
         "range" -> JsNumber(airplane.model.range),
         "price" -> JsNumber(airplane.model.price),
+        "lifespan" -> JsNumber(airplane.model.lifespan),
         "condition" -> JsNumber(airplane.condition),
         "constructedCycle" -> JsNumber(airplane.constructedCycle),
         "purchasedCycle" ->  JsNumber(airplane.purchasedCycle),
@@ -708,7 +710,25 @@ package object controllers {
     }
   }
 
+  implicit object LoanWrites extends Writes[Loan] {
+    //case class Loan(airlineId : Int, borrowedAmount : Long, interest : Long, var remainingAmount : Long, creationCycle : Int, loanTerm : Int, var id : Int = 0) extends IdObject
+    def writes(loan: Loan): JsValue = JsObject(List(
+      "airlineId" -> JsNumber(loan.airlineId),
+      "borrowedAmount" -> JsNumber(loan.borrowedAmount),
+      "interest" -> JsNumber(loan.interest),
+      "remainingAmount" -> JsNumber(loan.remainingAmount),
+      "earlyRepaymentFee" -> JsNumber(loan.earlyRepaymentFee),
+      "earlyRepayment" -> JsNumber(loan.earlyRepayment),
+      "remainingTerm" -> JsNumber(loan.remainingTerm),
+      "weeklyPayment" -> JsNumber(loan.weeklyPayment),
+      "creationCycle" -> JsNumber(loan.creationCycle),
+      "loanTerm" ->  JsNumber(loan.loanTerm),
+      "id" -> JsNumber(loan.id)))
+  }
+
 
 
   val cachedAirportsByPower = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true).filter(_.population > 0).sortBy(_.power)
+  val allAirplaneModels = ModelSource.loadAllModels()
+  val allCountryRelationships = CountrySource.getCountryMutualRelationships()
 }
