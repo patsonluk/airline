@@ -6,7 +6,7 @@ import com.patson.AirportSimulation
 import com.patson.data._
 import com.patson.model.Scheduling.{TimeSlot, TimeSlotStatus}
 import com.patson.model.{Link, _}
-import com.patson.util.{AirlineCache, AirportCache}
+import com.patson.util.{AirlineCache, AirportCache, ChampionUtil}
 import controllers.AuthenticationObject.AuthenticatedAirline
 import controllers.WeatherUtil.{Coordinates, Weather}
 import javax.inject.Inject
@@ -528,6 +528,10 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
       case None =>
         Ok(Json.obj("current" -> currentLoyalistEntries))
     }
+  }
+
+  def getAirportChampions(airportId : Int) = Action {
+    Ok(Json.toJson(ChampionUtil.loadAirportChampionInfoByAirport(airportId).sortBy(_.ranking)))
   }
   
   def getAirportProjects(airportId : Int) = Action {

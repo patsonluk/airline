@@ -458,6 +458,7 @@ package object controllers {
 
   implicit object AirportChampionInfoWrites extends Writes[AirportChampionInfo] {
     def writes(info : AirportChampionInfo): JsValue = {
+      var result =
       Json.obj(
         "airportId" -> Json.toJson(info.loyalist.airport.id),
         "airportText" -> Json.toJson(info.loyalist.airport.displayText),
@@ -468,6 +469,11 @@ package object controllers {
         "loyalistCount" -> JsNumber(info.loyalist.amount),
         "reputationBoost" -> JsNumber(info.reputationBoost)
       )
+
+      info.loyalist.airline.getCountryCode().foreach { countryCode =>
+        result = result + ("airlineCountryCode" -> JsString(countryCode))
+      }
+      result
     }
   }
 

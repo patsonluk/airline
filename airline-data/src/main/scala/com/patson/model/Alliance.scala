@@ -97,8 +97,10 @@ object Alliance {
             } else {
               BigDecimal(airportChampionsByAirlineId.get(allianceMember.airline.id).map(_.map(_.reputationBoost).sum).getOrElse(0.0))
             }
+          //println(s"${allianceMember.airline.name} => " + memberChampionPoints)
           allianceChampionPoints = allianceChampionPoints + memberChampionPoints
         }
+
         (alliance, allianceChampionPoints.setScale(2, RoundingMode.HALF_UP))
     }
 

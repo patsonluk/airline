@@ -311,12 +311,17 @@ function updateAllianceBonus(allianceId) {
 		}
 	}
 }
+
 function updateAllianceChampions(allianceId) {
-	$('#allianceChampionList').children('div.table-row').remove()
+    updateAllianceAirportChampions(allianceId)
+    updateAllianceCountryChampions(allianceId)
+}
+function updateAllianceAirportChampions(allianceId) {
+	$('#allianceChampionAirportList').children('div.table-row').remove()
 	
 	$.ajax({
 		type: 'GET',
-		url: "alliances/" + allianceId + "/championed-countries",
+		url: "alliances/" + allianceId + "/championed-airports",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
@@ -324,24 +329,26 @@ function updateAllianceChampions(allianceId) {
 	    	var applicantChampions = result.applicants
 	    	$(approvedMembersChampions).each(function(index, championDetails) {
 
-	    		var row = $("<div class='table-row clickable' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
+	    		var row = $("<div class='table-row clickable' data-link='airport' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
 	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
 	    		row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
 	    		row.append("<div class='cell' align='right'>" + championDetails.reputationBoost + "</div>") 
-	    		$('#allianceChampionList').append(row)
+	    		$('#allianceChampionAirportList').append(row)
 	    	})
 	    	
 	    	$(applicantChampions).each(function(index, championDetails) {
-	    		var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + championDetails.airportId + "');\"></div>")
+	    		var row = $("<div class='table-row clickable' data-link='airport' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
                 row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
                 row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
                 row.append("<div class='cell' align='right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
                 row.append("<div class='cell warning' align='right'><img src='assets/images/icons/information.png' title='Points not counted as this airline is not an approved member yet'>" + championDetails.reputationBoost + "</div>")
-	    		$('#allianceChampionList').append(row)
+	    		$('#allianceChampionAirportList').append(row)
 	    	})
+
+	    	populateNavigation($('#allianceChampionAirportList'))
 	    	
 	    	if ($(approvedMembersChampions).length == 0 && $(applicantChampions).length == 0) {
 	    		var row = $("<div class='table-row'></div>")
@@ -350,10 +357,45 @@ function updateAllianceChampions(allianceId) {
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell' align='right'>-</div>")
 	    		row.append("<div class='cell' align='right'>-</div>")
-	    		$('#allianceChampionList').append(row)
+	    		$('#allianceChampionAirportList').append(row)
 	    	}
 	    	$('#allianceCanvas .totalReputation').text(result.totalReputation)
 	    	$('#allianceCanvas .reputationTruncatedEntries').text(result.truncatedEntries)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function updateAllianceCountryChampions(allianceId) {
+	$('#allianceChampionCountryList').children('div.table-row').remove()
+
+	$.ajax({
+		type: 'GET',
+		url: "alliances/" + allianceId + "/championed-countries",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(championedCountries) {
+	    	$(championedCountries).each(function(index, championDetails) {
+                var country = championDetails.country
+                var row = $("<div class='table-row clickable' data-link='country' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
+                row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+                row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
+                row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
+                $('#allianceChampionCountryList').append(row)
+            })
+
+            populateNavigation($('#allianceChampionCountryList'))
+
+            if ($(championedCountries).length == 0) {
+	    		var row = $("<div class='table-row'></div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		$('#allianceChampionCountryList').append(row)
+	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

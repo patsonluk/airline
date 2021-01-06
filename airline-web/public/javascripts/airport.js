@@ -7,7 +7,7 @@ var airportMapCircle
 
 
 function showAirportDetails(airportId) {
-	setActiveDiv($("#airportCanvas"))
+    setActiveDiv($("#airportCanvas"))
 
 	//highlightTab($('#airportCanvasTab'))
 	
@@ -90,6 +90,8 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	
 	refreshAirportExtendedDetails(airport)
 	//updateAirportSlots(airport.id)
+
+	updateAirportChampionDetails(airport)
 
 	if (activeAirline) {
 		$('#airportBaseDetails').show()
@@ -189,6 +191,44 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	} else {
 		$('#airportBaseDetails').hide()
 	}
+}
+
+
+function updateAirportChampionDetails(airport) {
+	$('#airportDetailsChampionList').children('div.table-row').remove()
+
+	$.ajax({
+		type: 'GET',
+		url: "airports/" + airport.id + "/champions",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(champions) {
+	    	$(champions).each(function(index, championDetails) {
+	    		var row = $("<div class='table-row clickable' data-link='rival' onclick=\"showRivalsCanvas('" + championDetails.airlineId + "');\"></div>")
+	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+	    		row.append("<div class='cell'>" + (championDetails.airlineCountryCode ? getCountryFlagImg(championDetails.airlineCountryCode) : "") + championDetails.airlineName + "</div>")
+	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.loyalistCount + "</div>")
+	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
+	    		$('#airportDetailsChampionList').append(row)
+	    	})
+
+	    	populateNavigation($('#airportDetailsChampionList'))
+
+	    	if ($(championedCountries).length == 0) {
+	    		var row = $("<div class='table-row'></div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell' style='text-align: right'>-</div>")
+	    		row.append("<div class='cell' style='text-align: right'>-</div>")
+	    		$('#airportDetailsChampionList').append(row)
+	    	}
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+
 }
 
 function initAirportMap() { //only called once, see https://stackoverflow.com/questions/10485582/what-is-the-proper-way-to-destroy-a-map-instance

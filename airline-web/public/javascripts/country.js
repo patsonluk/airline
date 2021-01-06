@@ -230,7 +230,7 @@ function loadCountryDetails(countryCode) {
             $("#countryCanvas .countryDetailsChampion").empty()
 	    	if (country.champions) {
 	    		$.each(country.champions, function(index, champion) {
-	    		    var championRow = $("<div class='table-row'><div class='cell'>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airlineId) + "<span style='font-weight: bold;'>" + champion.airlineName + "</span> (" + champion.passengerCount + " passengers, " + champion.reputationBoost + " reputation bonus)</div></div>")
+	    		    var championRow = $("<div class='table-row'><div class='cell'>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airlineId) + "<span style='font-weight: bold;'>" + champion.airlineName + "</span> (" + champion.passengerCount + " passengers)</div></div>")
     				$("#countryCanvas .countryDetailsChampion").append(championRow)
     			})
 	    	} else {

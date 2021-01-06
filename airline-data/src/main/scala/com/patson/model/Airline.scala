@@ -86,37 +86,37 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
 
   def airlineGrade : AirlineGrade = {
     val reputation = airlineInfo.reputation
-    if (reputation < 10) {
+    if (reputation < 20) {
   		AirlineGrade.NEW
-  	} else if (reputation < 20) {
-  	  AirlineGrade.LOCAL
-  	} else if (reputation < 30) {
-  		AirlineGrade.MUNICIPAL
   	} else if (reputation < 40) {
-  		AirlineGrade.REGIONAL
-  	} else if (reputation < 50) {
-  		AirlineGrade.CONTINENTAL
+  	  AirlineGrade.LOCAL
   	} else if (reputation < 60) {
-  		AirlineGrade.LESSER_INTERNATIONAL
-  	} else if (reputation < 70) {
-  		AirlineGrade.THIRD_INTERNATIONAL
+  		AirlineGrade.MUNICIPAL
   	} else if (reputation < 80) {
-  		AirlineGrade.SECOND_INTERNATIONAL
-  	} else if (reputation < 90) {
-  		AirlineGrade.MAJOR_INTERNATIONAL
+  		AirlineGrade.REGIONAL
   	} else if (reputation < 100) {
-  		AirlineGrade.TOP_INTERNATIONAL
+  		AirlineGrade.CONTINENTAL
   	} else if (reputation < 125) {
-  	  AirlineGrade.TOP_INTERNATIONAL_2
+  		AirlineGrade.LESSER_INTERNATIONAL
   	} else if (reputation < 150) {
-  	  AirlineGrade.TOP_INTERNATIONAL_3
+  		AirlineGrade.THIRD_INTERNATIONAL
   	} else if (reputation < 175) {
-  	  AirlineGrade.TOP_INTERNATIONAL_4
+  		AirlineGrade.SECOND_INTERNATIONAL
   	} else if (reputation < 200) {
-  	  AirlineGrade.TOP_INTERNATIONAL_5
-  	} else if (reputation < 225) {
-  	  AirlineGrade.LEGENDARY
+  		AirlineGrade.MAJOR_INTERNATIONAL
   	} else if (reputation < 250) {
+  		AirlineGrade.TOP_INTERNATIONAL
+  	} else if (reputation < 300) {
+  	  AirlineGrade.TOP_INTERNATIONAL_2
+  	} else if (reputation < 350) {
+  	  AirlineGrade.TOP_INTERNATIONAL_3
+  	} else if (reputation < 400) {
+  	  AirlineGrade.TOP_INTERNATIONAL_4
+  	} else if (reputation < 500) {
+  	  AirlineGrade.TOP_INTERNATIONAL_5
+  	} else if (reputation < 700) {
+  	  AirlineGrade.LEGENDARY
+  	} else if (reputation < 900) {
       AirlineGrade.ULTIMATE
     } else {
       AirlineGrade.CELESTIAL
@@ -324,7 +324,7 @@ object Airline {
   }
   val MAX_SERVICE_QUALITY : Double = 100
   val MAX_MAINTENANCE_QUALITY : Double = 100
-  val MAX_REPUTATION_BY_PASSENGERS : Double = 50
+  val MAX_REPUTATION_BY_PASSENGERS : Double = 100
   val MAX_REPUTATION : Double = 100
 
 

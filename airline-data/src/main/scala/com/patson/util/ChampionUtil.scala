@@ -55,15 +55,14 @@ object ChampionUtil {
   lazy val modelAirportPower : Long = AirportSource.loadAllAirports().map(_.power).sorted.last
   val BASE_BOOST = 0.5
   val MAX_ECONOMIC_BOOST = 10.0
-  val GATEWAY_AIRPORT_BOOST = 1
   val reputationBoostTop10 : Map[Int, Double] = Map(
     1 -> 1,
-    2 -> 0.8,
-    3 -> 0.5,
-    4 -> 0.3,
-    5 -> 0.2,
-    6 -> 0.1,
-    7 -> 0.05,
+    2 -> 0.5,
+    3 -> 0.3,
+    4 -> 0.2,
+    5 -> 0.1,
+    6 -> 0.08,
+    7 -> 0.06,
     8 -> 0.04,
     9 -> 0.03,
     10 -> 0.02
@@ -75,9 +74,18 @@ object ChampionUtil {
     val economicPowerRating = Math.max(0, math.log10(ratioToModelAirportPower * 100) / 2) //0 to 1
     boost += MAX_ECONOMIC_BOOST * economicPowerRating
 
-    airport.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).foreach { _ =>
-      boost += GATEWAY_AIRPORT_BOOST
+    import AirportFeatureType._
+    airport.getFeatures().foreach { feature =>
+      val featureBoost = feature.featureType match {
+        case GATEWAY_AIRPORT => 1
+        case INTERNATIONAL_HUB => feature.strengthFactor * 10
+        case FINANCIAL_HUB => feature.strengthFactor * 5
+        case _ => 0
+      }
+
+      boost += featureBoost
     }
+
     boost * reputationBoostTop10(ranking)
   }
 
