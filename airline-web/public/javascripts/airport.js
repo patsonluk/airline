@@ -214,7 +214,7 @@ function updateAirportChampionDetails(airport) {
 
 	    	populateNavigation($('#airportDetailsChampionList'))
 
-	    	if ($(championDetails).length == 0) {
+	    	if ($(champions).length == 0) {
 	    		var row = $("<div class='table-row'></div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
