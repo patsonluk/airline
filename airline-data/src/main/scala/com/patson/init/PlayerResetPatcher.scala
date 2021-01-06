@@ -21,12 +21,11 @@ object PlayerResetPatcher extends App {
 
   mainFlow
 
-  val NEW_BALANCE = 500000000
 
   def mainFlow() {
     val airlines = AirlineSource.loadAllAirlines()
     airlines.foreach { airline =>
-      Airline.resetAirline(airline.id, 500000000, true)
+      Airline.resetAirline(airline.id, 0, true)
     }
 
     Await.result(actorSystem.terminate(), Duration.Inf)

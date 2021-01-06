@@ -3,15 +3,15 @@ package com.patson.model
 import com.patson.data.AirportSource
 
 case class Country(countryCode : String, name : String, airportPopulation : Int, income : Int, openness : Int) {
-  lazy val championBonusRankingCount = { //this one HAS to be lazy, otherwise it runs into a loop -> Computation.computeReputationBoost will try to get the model power which will loop back to here
-    val firstBonus = Computation.computeReputationBoost(this, 1)
-    
-    if (firstBonus > 10) {
-      10
-    } else {
-      5
-    }
-  }
+//  lazy val championBonusRankingCount = { //this one HAS to be lazy, otherwise it runs into a loop -> Computation.computeReputationBoost will try to get the model power which will loop back to here
+//    val firstBonus = Computation.computeReputationBoost(this, 1)
+//
+//    if (firstBonus > 10) {
+//      10
+//    } else {
+//      5
+//    }
+//  }
 }
 
 object Country {

@@ -1,9 +1,7 @@
 package com.patson
 
 import com.patson.data._
-import com.patson.model.Computation.reputationBoostTop10
 import com.patson.model._
-import com.patson.util.ChampionInfo
 
 import scala.collection.mutable.ListBuffer
 

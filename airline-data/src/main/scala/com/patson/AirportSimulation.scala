@@ -4,7 +4,7 @@ import java.util.Random
 
 import com.patson.data._
 import com.patson.model._
-import com.patson.util.{AirlineCache, AirportCache}
+import com.patson.util.{AirlineCache, AirportCache, ChampionUtil}
 
 import scala.collection.{immutable, mutable}
 import scala.collection.mutable.{ListBuffer, Map, Set}
@@ -126,12 +126,19 @@ object AirportSimulation {
     println(s"Deleting ${deletingLoyalists.length} loyalists entries")
     LoyalistSource.deleteLoyalists(deletingLoyalists)
 
+    val allLoyalists = LoyalistSource.loadLoyalistsByCriteria(List.empty)
+    println(s"Computing loyalist info with ${allLoyalists.length} entries")
+
+    //compute champion info
+    ChampionUtil.updateAirportChampionInfo(allLoyalists)
+    println("Done computing champions")
+
     if (cycle % LOYALIST_HISTORY_SAVE_INTERVAL == 0) {
       val cutoff = cycle - LOYALIST_HISTORY_ENTRY_MAX * LOYALIST_HISTORY_SAVE_INTERVAL
       println(s"Purging loyalist history before cycle $cutoff")
       LoyalistSource.deleteLoyalistHistoryBeforeCycle(cutoff)
 
-      val historyEntries = LoyalistSource.loadLoyalistsByCriteria(List.empty).map(LoyalistHistory(_, cycle))
+      val historyEntries = allLoyalists.map(LoyalistHistory(_, cycle))
       println(s"Saving ${historyEntries.length} loyalist history entries")
       LoyalistSource.updateLoyalistHistory(historyEntries)
     }

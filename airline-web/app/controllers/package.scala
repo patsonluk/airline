@@ -6,10 +6,11 @@ import com.patson.data.airplane._
 import com.patson.model.{AirlineCashFlow, AirlineIncome, Computation, _}
 import com.patson.model.airplane._
 import com.patson.model.event.EventReward
-import com.patson.util.{AirlineCache, AirportCache, ChampionInfo}
-import models.{AirportFacility, FacilityType}
+import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo, ChampionUtil, CountryChampionInfo}
+import models.{AirportFacility, AirportWithChampion, FacilityType}
 import play.api.libs.json._
 
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 import scala.math.BigDecimal.RoundingMode
 
@@ -443,15 +444,36 @@ package object controllers {
     }
   }
   
-  implicit object ChampionedCountriesWrites extends Writes[ChampionInfo] {
-    def writes(info : ChampionInfo): JsValue = {
+  implicit object ChampionedCountriesWrites extends Writes[CountryChampionInfo] {
+    def writes(info : CountryChampionInfo): JsValue = {
       Json.obj(
               "country" -> Json.toJson(info.country),
               "airlineId" -> JsNumber(info.airline.id),
               "airlineName" -> JsString(info.airline.name),
               "ranking" -> JsNumber(info.ranking),
-              "passengerCount" -> JsNumber(info.passengerCount),
-              "reputationBoost" -> JsNumber(info.reputationBoost))
+              "passengerCount" -> JsNumber(info.passengerCount)
+              )
+    }
+  }
+
+  implicit object AirportChampionInfoWrites extends Writes[AirportChampionInfo] {
+    def writes(info : AirportChampionInfo): JsValue = {
+      var result =
+      Json.obj(
+        "airportId" -> Json.toJson(info.loyalist.airport.id),
+        "airportText" -> Json.toJson(info.loyalist.airport.displayText),
+        "countryCode" -> JsString(info.loyalist.airport.countryCode),
+        "airlineId" -> JsNumber(info.loyalist.airline.id),
+        "airlineName" -> JsString(info.loyalist.airline.name),
+        "ranking" -> JsNumber(info.ranking),
+        "loyalistCount" -> JsNumber(info.loyalist.amount),
+        "reputationBoost" -> JsNumber(info.reputationBoost)
+      )
+
+      info.loyalist.airline.getCountryCode().foreach { countryCode =>
+        result = result + ("airlineCountryCode" -> JsString(countryCode))
+      }
+      result
     }
   }
 
@@ -564,6 +586,16 @@ package object controllers {
       airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.map(_._1).toList))
 
       airportObject
+    }
+  }
+
+  implicit object AirportWithChampionWrites extends Writes[AirportWithChampion] {
+    override def writes(o : AirportWithChampion) : JsValue = {
+      var result = Json.toJson(o.airport).asInstanceOf[JsObject]
+      o.champion.foreach { champion =>
+        result = result + ("championAirlineId" -> JsNumber(champion.id)) + ("championAirlineName" -> JsString(champion.name))
+      }
+      result
     }
   }
 
@@ -726,9 +758,9 @@ package object controllers {
       "id" -> JsNumber(loan.id)))
   }
 
-
-
   val cachedAirportsByPower = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true).filter(_.population > 0).sortBy(_.power)
+
+
   val allAirplaneModels = ModelSource.loadAllModels()
   val allCountryRelationships = CountrySource.getCountryMutualRelationships()
 }

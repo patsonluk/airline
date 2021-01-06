@@ -47,6 +47,7 @@ function showOfficeCanvas() {
 	updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
 	updateCampaignSummary()
 	updateChampionedCountriesDetails()
+	updateChampionedAirportsDetails()
 	updateServiceFundingDetails()
 	updateAirplaneRenewalDetails()
 	updateAirlineBases()
@@ -671,28 +672,63 @@ function updateAirplaneRenewalDetails() {
 
 function updateChampionedCountriesDetails() {
 	$('#championedCountriesList').children('div.table-row').remove()
+
+    	$.ajax({
+    		type: 'GET',
+    		url: "airlines/" + activeAirline.id + "/championed-countries",
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(championedCountries) {
+    	    	$(championedCountries).each(function(index, championDetails) {
+    	    		var country = championDetails.country
+    	    		var row = $("<div class='table-row clickable' data-link='country' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
+    	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+    	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
+    	    		$('#championedCountriesList').append(row)
+    	    	})
+
+    	    	populateNavigation($('#championedCountriesList'))
+
+    	    	if ($(championedCountries).length == 0) {
+    	    		var row = $("<div class='table-row'></div>")
+    	    		row.append("<div class='cell'>-</div>")
+    	    		row.append("<div class='cell'>-</div>")
+    	    		$('#championedCountriesList').append(row)
+    	    	}
+    	    },
+            error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    }
+    	});
+
+}
+
+function updateChampionedAirportsDetails() {
+	$('#championedAirportsList').children('div.table-row').remove()
 	
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + activeAirline.id + "/championed-countries",
+		url: "airlines/" + activeAirline.id + "/championed-airports",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(championedCountries) {
-	    	$(championedCountries).each(function(index, championDetails) {
-	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\"showCountryView('" + country.countryCode + "');\"></div>")
+	    success: function(championedAirports) {
+	    	$(championedAirports).each(function(index, championDetails) {
+	    		var row = $("<div class='table-row clickable' data-link='airport' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
-	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
+	    		row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
 	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
-	    		$('#championedCountriesList').append(row)
+	    		$('#championedAirportsList').append(row)
 	    	})
+
+	    	populateNavigation($('#championedAirportsList'))
 	    	
-	    	if ($(championedCountries).length == 0) {
+	    	if ($(championedAirports).length == 0) {
 	    		var row = $("<div class='table-row'></div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
-	    		$('#championedCountriesList').append(row)
+	    		$('#championedAirportsList').append(row)
 	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

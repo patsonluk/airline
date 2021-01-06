@@ -5,7 +5,7 @@ import com.patson.model.AllianceEvent._
 import com.patson.model.AllianceRole._
 import com.patson.model.AllianceStatus._
 import com.patson.model.{AllianceHistory, AllianceMember, _}
-import com.patson.util.{AirlineCache, AllianceCache, AllianceRankingUtil, ChampionUtil}
+import com.patson.util.{AirlineCache, AirportChampionInfo, AllianceCache, AllianceRankingUtil, ChampionUtil, CountryChampionInfo}
 import controllers.AuthenticationObject.AuthenticatedAirline
 import javax.inject.Inject
 import play.api.data.Forms._
@@ -13,7 +13,7 @@ import play.api.data._
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.math.BigDecimal.int2bigDecimal
+import scala.math.BigDecimal.{RoundingMode, int2bigDecimal}
 
 
 class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -228,18 +228,33 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
 
-  def getAllianceChampions(allianceId : Int) = Action { request =>
+  val MAX_CHAMPION_ENTRIES = 100
+  def getAllianceAirportChampions(allianceId : Int) = Action { request =>
     AllianceCache.getAlliance(allianceId, true) match {
       case None => NotFound("Alliance with " + allianceId + " is not found")
       case Some(alliance) => {
-        val approvedMembersChampions = alliance.members.filter(_.role != AllianceRole.APPLICANT).flatMap { allianceMember =>
-          ChampionUtil.getChampionInfoByAirlineId(allianceMember.airline.id)
-        }
-        val applicantChampions = alliance.members.filter(_.role == AllianceRole.APPLICANT).flatMap { allianceMember =>
-          ChampionUtil.getChampionInfoByAirlineId(allianceMember.airline.id)
-        }
-        
-        Ok(Json.obj("members" -> Json.toJson(approvedMembersChampions.sortBy(_.reputationBoost).reverse), "applicants" -> Json.toJson(applicantChampions.sortBy(_.reputationBoost).reverse)))
+        val allianceChampions : List[AirportChampionInfo] = alliance.members.map { allianceMember =>
+          ChampionUtil.loadAirportChampionInfoByAirline(allianceMember.airline.id)
+        }.flatten
+
+        val approvedMemberAirlineIds = alliance.members.filter(_.role != APPLICANT).map(_.airline.id)
+        val topEntries = allianceChampions.sortBy(_.reputationBoost).reverse.take(MAX_CHAMPION_ENTRIES)
+        val (topMemberChampions, topApplicantChampions) = topEntries.partition(entry => approvedMemberAirlineIds.contains(entry.loyalist.airline.id))
+
+        val totalReputation = allianceChampions.filter(entry => approvedMemberAirlineIds.contains(entry.loyalist.airline.id)).map(_.reputationBoost).sum
+        Ok(Json.obj("members" -> Json.toJson(topMemberChampions), "applicants" -> Json.toJson(topApplicantChampions), "totalReputation" -> BigDecimal(totalReputation).setScale(2, RoundingMode.HALF_UP), "truncatedEntries" -> Math.max(0, allianceChampions.length - MAX_CHAMPION_ENTRIES)))
+      }
+    }
+  }
+
+  def getAllianceCountryChampions(allianceId : Int) = Action { request =>
+    AllianceCache.getAlliance(allianceId, true) match {
+      case None => NotFound("Alliance with " + allianceId + " is not found")
+      case Some(alliance) => {
+        val allianceChampions : List[CountryChampionInfo] = alliance.members.map { allianceMember =>
+          ChampionUtil.getCountryChampionInfoByAirlineId(allianceMember.airline.id)
+        }.flatten.sortBy(_.ranking).sortBy(entry => entry.country.airportPopulation.toLong * entry.country.income)(Ordering[Long].reverse)
+        Ok(Json.toJson(allianceChampions))
       }
     }
   }

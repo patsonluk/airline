@@ -7,7 +7,7 @@ var airportMapCircle
 
 
 function showAirportDetails(airportId) {
-	setActiveDiv($("#airportCanvas"))
+    setActiveDiv($("#airportCanvas"))
 
 	//highlightTab($('#airportCanvasTab'))
 	
@@ -90,6 +90,8 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	
 	refreshAirportExtendedDetails(airport)
 	//updateAirportSlots(airport.id)
+
+	updateAirportChampionDetails(airport)
 
 	if (activeAirline) {
 		$('#airportBaseDetails').show()
@@ -189,6 +191,44 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	} else {
 		$('#airportBaseDetails').hide()
 	}
+}
+
+
+function updateAirportChampionDetails(airport) {
+	$('#airportDetailsChampionList').children('div.table-row').remove()
+
+	$.ajax({
+		type: 'GET',
+		url: "airports/" + airport.id + "/champions",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(champions) {
+	    	$(champions).each(function(index, championDetails) {
+	    		var row = $("<div class='table-row clickable' data-link='rival' onclick=\"showRivalsCanvas('" + championDetails.airlineId + "');\"></div>")
+	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+	    		row.append("<div class='cell'>" + (championDetails.airlineCountryCode ? getCountryFlagImg(championDetails.airlineCountryCode) : "") + championDetails.airlineName + "</div>")
+	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.loyalistCount + "</div>")
+	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
+	    		$('#airportDetailsChampionList').append(row)
+	    	})
+
+	    	populateNavigation($('#airportDetailsChampionList'))
+
+	    	if ($(championedCountries).length == 0) {
+	    		var row = $("<div class='table-row'></div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell'>-</div>")
+	    		row.append("<div class='cell' style='text-align: right'>-</div>")
+	    		row.append("<div class='cell' style='text-align: right'>-</div>")
+	    		$('#airportDetailsChampionList').append(row)
+	    	}
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+
 }
 
 function initAirportMap() { //only called once, see https://stackoverflow.com/questions/10485582/what-is-the-proper-way-to-destroy-a-map-instance
@@ -473,6 +513,9 @@ function addMarkers(airports) {
 		  var airportInfo = airports[i]
 		  var position = {lat: airportInfo.latitude, lng: airportInfo.longitude};
 		  var icon = getAirportIcon(airportInfo)
+//          if (airportInfo.championAirlineName) {
+//            console.log(airportInfo.name + "-> " + airportInfo.championAirlineName)
+//          }
 
 		  
 		  var marker = new google.maps.Marker({
@@ -494,6 +537,11 @@ function addMarkers(airports) {
 		  		icon: icon,
 		  		originalIcon: icon, //so we can flip back and forth
 			  });
+		  if (airportInfo.championAirlineId) {
+            marker.championIcon = '/airlines/' + airportInfo.championAirlineId + '/logo'
+            marker.championAirlineName = airportInfo.championAirlineName
+          }
+
 		  
 		  var zIndex = airportInfo.size * 10 
 		  var sizeAdjust = Math.floor(airportInfo.population / 1000000) //add something extra due to pop
@@ -661,7 +709,10 @@ function addCityMarkers(airportMap, airport) {
 
 
 function isShowMarker(marker, zoom) {
-	return (marker.isBase) || ((zoom >= 4) && (zoom + marker.airport.size / 2 >= 7.5)) //start showing size >= 7 at zoom 4 
+	if (championMapMode && !marker.championIcon) {
+	    return false
+    }
+    return (marker.isBase) || ((zoom >= 4) && (zoom + marker.airport.size / 2 >= 7.5)) //start showing size >= 7 at zoom 4
 }
 
 function updateBaseInfo(airportId) {
@@ -815,6 +866,34 @@ function updateAirportExtendedDetails(airportId) {
 //	
 //	//$("#buildBaseButton").show()
 //}
+
+var championMapMode = false
+function toggleChampionMap() {
+   var zoom = map.getZoom();
+    $.each(markers, function(index, marker) {
+        if (!championMapMode) {
+            if (marker.championIcon) {
+                marker.previousIcon = marker.icon
+                marker.previousTitle = marker.title
+                //marker.setIcon(marker.championIcon)
+                marker.setIcon(marker.championIcon)
+                marker.setTitle(marker.title + " - " + marker.championAirlineName)
+        //        google.maps.event.clearListeners(marker, 'mouseover');
+        //        google.maps.event.clearListeners(marker, 'mouseout');
+            } else {
+                marker.setVisible(false)
+            }
+        } else {
+            if (marker.championIcon) {
+                marker.setTitle(marker.previousTitle)
+                marker.setIcon(marker.previousIcon)
+            }
+            marker.setVisible(isShowMarker(marker, zoom));
+            updateAirportMarkers(activeAirline)
+        }
+    })
+    championMapMode = !championMapMode
+}
 
 
 function updateAirportBaseMarkers(newBaseAirports, relatedFlightPaths) {

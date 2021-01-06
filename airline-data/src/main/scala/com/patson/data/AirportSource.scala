@@ -7,7 +7,7 @@ import com.patson.model.AirlineAppeal
 import java.sql.Statement
 
 import com.patson.model.event.EventReward
-import com.patson.util.{AirlineCache, AirportCache}
+import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo}
 
 import scala.collection.{MapView, immutable, mutable}
 
@@ -873,7 +873,8 @@ object AirportSource {
       connection.close()
     }
   }
-  
+
+
   def loadAirportSharesOnCity(cityId : Int) : List[(Airport, Double)] = {
     CitySource.loadCityById(cityId) match {
       case Some(city) =>
@@ -906,6 +907,77 @@ object AirportSource {
       case None => List.empty 
     }
   }
+
+  def updateChampionInfo(info : List[AirportChampionInfo]) = {
+
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      val purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRPORT_CHAMPION_TABLE")
+      purgeStatement.executeUpdate()
+      purgeStatement.close()
+
+      val preparedStatement = connection.prepareStatement(s"INSERT INTO $AIRPORT_CHAMPION_TABLE(airport, airline, loyalist, ranking, reputation_boost) VALUES(?,?,?,?,?)")
+
+      info.foreach {
+        entry =>
+          preparedStatement.setInt(1, entry.loyalist.airport.id)
+          preparedStatement.setInt(2, entry.loyalist.airline.id)
+          preparedStatement.setInt(3, entry.loyalist.amount)
+          preparedStatement.setInt(4, entry.ranking)
+          preparedStatement.setDouble(5, entry.reputationBoost)
+
+          preparedStatement.executeUpdate()
+      }
+
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadChampionInfoByCriteria(criteria : List[(String, Any)]) = {
+    val connection = Meta.getConnection()
+    try {
+      var queryString = "SELECT * FROM " + AIRPORT_CHAMPION_TABLE
+
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = ListBuffer[AirportChampionInfo]()
+
+
+      while (resultSet.next()) {
+        val airportId = resultSet.getInt("airport")
+        val airlineId = resultSet.getInt("airline")
+        val loyalist = Loyalist(AirportCache.getAirport(airportId).get, AirlineCache.getAirline(airlineId).get, resultSet.getInt("loyalist"))
+        result += AirportChampionInfo(loyalist, ranking = resultSet.getInt("ranking"), reputationBoost = resultSet.getDouble("reputation_boost"))
+      }
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+
   
   def loadAirportProjectsByCriteria(criteria : List[(String, Any)]) = {
     val connection = Meta.getConnection()

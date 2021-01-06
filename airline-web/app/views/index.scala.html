@@ -1094,7 +1094,18 @@
 							</div>
 						</div>
 	<!-- 		    		end main details -->
-						<div class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
+						<div class="section" style="box-sizing:border-box; width: 45%; min-width: 500px; float:left; margin:10px 0 10px 0;">
+							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/crown.png")'></div><div style="float: left;"><h4>Rankings</h4></div>
+							<div id="airportDetailsChampionList" style="width: 100%; margin-bottom: 15px;" class="table data">
+								<div class="table-header">
+									<div class="cell" style="width: 5%">&nbsp;</div>
+									<div class="cell" style="width: 50%">Airline</div>
+									<div class="cell" style="width: 20%; text-align: right;">Loyalist</div>
+									<div class="cell" style="width: 20%; text-align: right;">Reputation Boost</div>
+								</div>
+							</div>
+						</div>
+						<div class="section" style="box-sizing:border-box; width: 50%; min-width: 500px; float:right; margin:10px 0 10px 0;">
 							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
 							<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table data">
 								<div class="table-header">
@@ -1127,6 +1138,7 @@
 								</div>
 							</div>
 						</div>
+						<div style="clear: both;"></div>
 					</div>
 					<!-- airport map, pictures -->
 					<div style="float: left;" class="verticalGroup airportCanvasRightGroup">
@@ -1270,7 +1282,7 @@
 									</div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Champion Airline:</h5></div>
+									<div class="label"><h5>Top Airline:</h5></div>
 									<div class="value" style="padding-bottom : 10px;">
 										<div class="table data countryDetailsChampion" style="width : 100%">
 										</div>
@@ -1839,11 +1851,38 @@
 						</div>
 						<div class="section" style="width: 95%;">
 							<h4>Championed Countries</h4>
-							<div id="championedCountriesList" class="table data" style="width: 100%; height: 20px;">
+							<div class="table data" style="width: 100%;">
 								<div class="table-header">
 									<div class="cell" style="width: 5%">&nbsp;</div>
-									<div class="cell" style="width: 70%">Name</div>
-									<div class="cell" style="width: 25%">Reputation Bonus</div>
+									<div class="cell" style="width: 95%">Country</div>
+								</div>
+							</div>
+							<div style="max-height: 500px; overflow: auto;">
+								<div class="table data" id="championedCountriesList" style="width: 100%;">
+									<div class="table-header">
+										<div class="cell" style="width: 5%; border-bottom: none;"></div>
+										<div class="cell" style="width: 95%; border-bottom: none;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="section" style="width: 95%;">
+							<h4>Championed Airports</h4>
+							<div class="table data" style="width: 100%;">
+								<div class="table-header">
+									<div class="cell" style="width: 5%">&nbsp;</div>
+									<div class="cell" style="width: 70%">Airport</div>
+									<div class="cell" style="width: 25% align='right'">Reputation Bonus</div>
+								</div>
+							</div>
+							<div style="max-height: 500px; overflow: auto;">
+								<div class="table data" id="championedAirportsList" style="width: 100%;">
+									<div class="table-header">
+										<div class="cell" style="width: 5%; border-bottom: none;"></div>
+										<div class="cell" style="width: 70%; border-bottom: none;"></div>
+										<div class="cell" style="width: 25%; border-bottom: none;"></div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -2446,17 +2485,50 @@
 								</div>
 							</div>
 						</div>
-						<div class="section" style="width: 95%;  height : 30%; overflow: auto;">
+						<div class="section" style="width: 95%;">
+							<h4>Alliance Championed Airports</h4>
+							<div style="width: 100%;">
+								<div class="table data" style="width: 100%;">
+									<div class="table-header">
+										<div class="cell" style="width: 10%">Ranking</div>
+										<div class="cell" style="width: 30%">Airport</div>
+										<div class="cell" style="width: 30%">Airline</div>
+										<div class="cell" style="width: 20% align='right'">Loyalist</div>
+										<div class="cell" style="width: 10% align='right'">Reputation Bonus</div>
+									</div>
+								</div>
+								<div style="max-height: 200px; overflow: auto;">
+									<div class="table data" id="allianceChampionAirportList" style="width: 100%;">
+									  <div class="table-header">
+										<div class="cell" style="width: 10%; border-bottom: none;"></div>
+										<div class="cell" style="width: 30%; border-bottom: none;"></div>
+										<div class="cell" style="width: 30%; border-bottom: none;"></div>
+										<div class="cell" style="width: 20% align='right'; border-bottom: none;"></div>
+										<div class="cell" style="width: 10% align='right'; border-bottom: none;"></div>
+									  </div>
+									</div>
+								</div>
+								<h5 style="float: right;"><div>Total&nbsp;<span class="totalReputation"></span>&nbsp;reputation points (<span class="reputationTruncatedEntries"></span> entries truncated)</div></h5>
+							</div>
+						</div>
+						<div class="section" style="width: 95%;">
 							<h4>Alliance Championed Countries</h4>
 							<div style="width: 100%;">
-								<div class="table data" id="allianceChampionList" style="width: 100%;">
-								  <div class="table-header">
-									<div class="cell" style="width: 10%">Ranking</div>
-									<div class="cell" style="width: 30%">Country</div>
-									<div class="cell" style="width: 30%">Airline</div>
-									<div class="cell" style="width: 20% align='right'">Weekly Passengers</div>
-									<div class="cell" style="width: 10% align='right'">Reputation Bonus</div>
-								  </div>
+								<div class="table data" style="width: 100%;">
+									<div class="table-header">
+										<div class="cell" style="width: 10%">Ranking</div>
+										<div class="cell" style="width: 40%">Country</div>
+										<div class="cell" style="width: 50%">Airline</div>
+									</div>
+								</div>
+								<div style="max-height: 200px; overflow: auto;">
+									<div class="table data" id="allianceChampionCountryList" style="width: 100%;">
+										<div class="table-header">
+											<div class="cell" style="width: 10%; border-bottom: none;"></div>
+											<div class="cell" style="width: 40%; border-bottom: none;"></div>
+											<div class="cell" style="width: 50%; border-bottom: none;"></div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>

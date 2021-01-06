@@ -32,11 +32,6 @@ object LoyalistSource {
     }
   }
 
-  def loadLoyalistsByAirportId(airportId : Int) = {
-    loadLoyalistsByCriteria(List(("airport", airportId)))
-  }
-
-
   def loadLoyalistsByCriteria(criteria : List[(String, Any)]) = {
     var queryString = "SELECT * FROM " + LOYALIST_TABLE
 
@@ -48,6 +43,11 @@ object LoyalistSource {
       queryString += criteria.last._1 + " = ?"
     }
     loadLoyalistsByQueryString(queryString, criteria.map(_._2))
+  }
+
+
+  def loadLoyalistsByAirportId(airportId : Int) = {
+    loadLoyalistsByCriteria(List(("airport", airportId)))
   }
 
   private def loadLoyalistsByQueryString(queryString : String, parameters : List[Any]) : List[Loyalist] = {
