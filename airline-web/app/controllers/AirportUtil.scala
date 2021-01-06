@@ -20,9 +20,18 @@ object AirportUtil {
     val ratioToModelAirportPower = airport.power.toDouble / modelAirportPower
     val economicPowerRating = Math.max(0, (math.log10(ratioToModelAirportPower * 100) / 2 * 100).toInt)
     val ratioToModelCountryPower = country.airportPopulation * country.income.toDouble / modelCountryPower
-    val countryPowerRating = (math.log10(ratioToModelCountryPower * 100) / 2 * 100).toInt
+    val countryPowerRating = Math.max(0,(math.log10(ratioToModelCountryPower * 100) / 2 * 100).toInt)
     val competitionRating = (Math.min(MAX_COMPETITION_RATIO, departurePassenger.toDouble / airport.power) / MAX_COMPETITION_RATIO * 10000).toInt
-    val overallDifficulty = Math.min(100, (100 - economicPowerRating) * ECONOMIC_POWER_WEIGHT + (100 - countryPowerRating) * COUNTRY_POWER_WEIGHT + competitionRating * COMPETITION_WEIGHT).toInt
+    import AirportFeatureType._
+    val featureAdjustment = airport.getFeatures().map { feature =>
+      feature.featureType match {
+        case INTERNATIONAL_HUB => feature.strength / -5
+        case FINANCIAL_HUB => feature.strength / -10
+        case VACATION_HUB => feature.strength / -10
+        case _ => 0
+      }
+    }.sum
+    val overallDifficulty = Math.max(0, Math.min(100, (100 - economicPowerRating) * ECONOMIC_POWER_WEIGHT + (100 - countryPowerRating) * COUNTRY_POWER_WEIGHT + competitionRating * COMPETITION_WEIGHT + featureAdjustment).toInt)
 
 
     AirportRating(economicPowerRating, competitionRating, countryPowerRating, airport.getFeatures(), overallDifficulty)
