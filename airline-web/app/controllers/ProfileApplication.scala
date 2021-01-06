@@ -116,7 +116,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
 
   def buildHqWithProfile(airlineId : Int, airportId : Int, profileId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val airport = AirportCache.getAirport(airportId).get
+    val airport = AirportCache.getAirport(airportId, true).get
     val airline = request.user
     val profile = generateProfiles(airline, airport)(profileId)
 
