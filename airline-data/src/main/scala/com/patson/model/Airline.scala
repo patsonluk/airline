@@ -2,6 +2,8 @@ package com.patson.model
 
 import com.patson.data._
 
+import scala.collection.mutable.ListBuffer
+
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
   var allianceId : Option[Int] = None
@@ -86,77 +88,10 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
 
   def airlineGrade : AirlineGrade = {
     val reputation = airlineInfo.reputation
-    if (reputation < 20) {
-  		AirlineGrade.NEW
-  	} else if (reputation < 40) {
-  	  AirlineGrade.LOCAL
-  	} else if (reputation < 60) {
-  		AirlineGrade.MUNICIPAL
-  	} else if (reputation < 80) {
-  		AirlineGrade.REGIONAL
-  	} else if (reputation < 100) {
-  		AirlineGrade.CONTINENTAL
-  	} else if (reputation < 125) {
-  		AirlineGrade.LESSER_INTERNATIONAL
-  	} else if (reputation < 150) {
-  		AirlineGrade.THIRD_INTERNATIONAL
-  	} else if (reputation < 175) {
-  		AirlineGrade.SECOND_INTERNATIONAL
-  	} else if (reputation < 200) {
-  		AirlineGrade.MAJOR_INTERNATIONAL
-  	} else if (reputation < 250) {
-  		AirlineGrade.TOP_INTERNATIONAL
-  	} else if (reputation < 300) {
-  	  AirlineGrade.TOP_INTERNATIONAL_2
-  	} else if (reputation < 350) {
-  	  AirlineGrade.TOP_INTERNATIONAL_3
-  	} else if (reputation < 400) {
-  	  AirlineGrade.TOP_INTERNATIONAL_4
-  	} else if (reputation < 500) {
-  	  AirlineGrade.TOP_INTERNATIONAL_5
-  	} else if (reputation < 700) {
-  	  AirlineGrade.LEGENDARY
-  	} else if (reputation < 900) {
-      AirlineGrade.ULTIMATE
-    } else {
-      AirlineGrade.CELESTIAL
-    }
+    AirlineGrade.findGrade(reputation)
   }
 
-  case class AirlineGrade(value : Int, description: String) {
-    val getBaseLimit = {
-      if (value <= 2) {
-        1
-      } else {
-        value - 1
-      }
 
-    }
-
-    val getModelFamilyLimit =  {
-      Math.max(2, Math.min(10, value))
-    }
-  }
-
-  object AirlineGrade {
-    val NEW = AirlineGrade(1, "New Airline")
-    val LOCAL = AirlineGrade(2, "Local Airline")
-    val MUNICIPAL = AirlineGrade(3, "Municipal Airline")
-    val REGIONAL = AirlineGrade(4, "Regional Airline")
-    val CONTINENTAL = AirlineGrade(5, "Continental Airline")
-    val LESSER_INTERNATIONAL = AirlineGrade(6, "Lesser International Airline")
-    val THIRD_INTERNATIONAL = AirlineGrade(7, "Third-class International Airline")
-    val SECOND_INTERNATIONAL = AirlineGrade(8, "Second-class International Airline")
-    val MAJOR_INTERNATIONAL = AirlineGrade(9, "Major International Airline")
-    val TOP_INTERNATIONAL = AirlineGrade(10, "Top International Airline")
-    val TOP_INTERNATIONAL_2 = AirlineGrade(11, "Top International Airline II")
-    val TOP_INTERNATIONAL_3 = AirlineGrade(12, "Top International Airline III")
-    val TOP_INTERNATIONAL_4 = AirlineGrade(13, "Top International Airline IV")
-    val TOP_INTERNATIONAL_5 = AirlineGrade(14, "Top International Airline V")
-    val LEGENDARY = AirlineGrade(15, "Legendary Airline")
-    val ULTIMATE = AirlineGrade(16, "Ultimate Airline")
-    val CELESTIAL = AirlineGrade(17, "Celestial Spaceline")
-  }
 
   def getBases() = bases
   def getHeadQuarter() = bases.find( _.headquarter )
@@ -381,5 +316,50 @@ object Airline {
       case None =>
         None
     }
+  }
+}
+
+case class AirlineGrade(value : Int, reputationCeiling : Int, description: String) {
+  AirlineGrade.addGrade(this)
+  val getBaseLimit = {
+    if (value <= 2) {
+      1
+    } else {
+      value - 1
+    }
+
+  }
+
+  val getModelFamilyLimit =  {
+    Math.max(2, Math.min(10, value))
+  }
+}
+
+object AirlineGrade {
+  val allGrades = ListBuffer[AirlineGrade]()
+  val NEW = AirlineGrade(1, 20, "New Airline")
+  val LOCAL = AirlineGrade(2, 40, "Local Airline")
+  val MUNICIPAL = AirlineGrade(3, 60, "Municipal Airline")
+  val REGIONAL = AirlineGrade(4, 80, "Regional Airline")
+  val CONTINENTAL = AirlineGrade(5, 100, "Continental Airline")
+  val LESSER_INTERNATIONAL = AirlineGrade(6, 125, "Lesser International Airline")
+  val THIRD_INTERNATIONAL = AirlineGrade(7, 150, "Third-class International Airline")
+  val SECOND_INTERNATIONAL = AirlineGrade(8, 175, "Second-class International Airline")
+  val MAJOR_INTERNATIONAL = AirlineGrade(9, 200, "Major International Airline")
+  val TOP_INTERNATIONAL = AirlineGrade(10, 250, "Top International Airline")
+  val TOP_INTERNATIONAL_2 = AirlineGrade(11, 300, "Top International Airline II")
+  val TOP_INTERNATIONAL_3 = AirlineGrade(12, 350, "Top International Airline III")
+  val TOP_INTERNATIONAL_4 = AirlineGrade(13, 400, "Top International Airline IV")
+  val TOP_INTERNATIONAL_5 = AirlineGrade(14, 500, "Top International Airline V")
+  val LEGENDARY = AirlineGrade(15, 600, "Legendary Airline")
+  val ULTIMATE = AirlineGrade(16, 700, "Ultimate Airline")
+  val CELESTIAL = AirlineGrade(17, 800, "Celestial Spaceline")
+
+  def addGrade(grade : AirlineGrade) = {
+    allGrades.append(grade)
+  }
+
+  def findGrade(reputation : Double) = {
+    allGrades.find(_.reputationCeiling > reputation).getOrElse(allGrades.last)
   }
 }

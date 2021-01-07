@@ -1931,13 +1931,12 @@
                                 <li class="label dot">Service Quality will be reset<li>
                                 <li class="label dot">Reputation, Awareness and Loyalty will be kept</li>
                             </ul>
-                            <div class='button resetAirline' onclick='promptConfirm("Rebuild Airline?", resetAirline, true)'>Rebuild Airline</div>
+                            <div class='button resetAirline rebuild' onclick='promptConfirm("Rebuild Airline?", resetAirline, true)'>Rebuild Airline</div>
                             <h4>Declare bankruptcy<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
                             <ul>
                                 <li class="label dot">Reset to initial game start</li>
                             </ul>
-                            <div class='button resetAirline' onclick='promptConfirm("Declare bankruptcy?", resetAirline, false)'>Declare Bankruptcy</div>
-							<div class="resetAirlineRejectionDiv" style="display:none;"><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span class="warning resetAirlineRejection"></span></div>
+                            <div class='button resetAirline bankrupt' onclick='promptConfirm("Declare bankruptcy?", resetAirline, false)'>Declare Bankruptcy</div>
 						</div>
 					</div>
 	<!-- 		    	end right section -->

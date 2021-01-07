@@ -805,14 +805,19 @@ function updateResetAirlineInfo() {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
-	    	if (result.rejection) {
-	    		$("#officeCanvas .button.resetAirline").hide()
-	    		$("#officeCanvas .resetAirlineRejection").text(result.rejection)
-	    		$("#officeCanvas .resetAirlineRejectionDiv").show()
+	    	if (result.rebuildRejection) {
+	    		disableButton($("#officeCanvas .button.resetAirline.rebuild"), result.rebuildRejection)
 	    	} else {
-	    		$("#officeCanvas .button.resetAirline").show()
-	    		$("#officeCanvas .resetAirlineRejectionDiv").hide()
-	    	} 
+	    	    enableButton($("#officeCanvas .button.resetAirline.rebuild"))
+	    	}
+
+            if (result.bankruptRejection) {
+                disableButton($("#officeCanvas .button.resetAirline.bankrupt"), result.bankruptRejection)
+            } else {
+                enableButton($("#officeCanvas .button.resetAirline.bankrupt"))
+            }
+
+
 	    	if (result.overall >= 0) {
 	    		$("#officeCanvas #resetBalance").text(commaSeparateNumber(result.overall))
 	    	} else {

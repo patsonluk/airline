@@ -675,7 +675,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (airlineId != request.user.id) {
       Forbidden
     } else {
-      getResetRejection(request.user) match {
+      getResetRejection(request.user, rebuild) match {
         case Some(rejection) => Ok(Json.obj("rejection" -> rejection))
         case None =>
           val resetBalance = if (rebuild) Computation.getResetAmount(airlineId).overall else 0 //do it here before deleting everything
@@ -689,17 +689,23 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
   
   def resetAirlineConsideration(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    var result = Json.toJson(Computation.getResetAmount(airlineId))(ResetAmountInfoWrites)
-    getResetRejection(request.user).foreach { rejection => 
-      result = result.asInstanceOf[JsObject] + ("rejection" -> JsString(rejection))   
-    } 
+    var result = Json.toJson(Computation.getResetAmount(airlineId))(ResetAmountInfoWrites).asInstanceOf[JsObject]
+    getResetRejection(request.user, false).foreach { rejection =>
+      result = result + ("bankruptrejection" -> JsString(rejection))
+    }
+    getResetRejection(request.user, true).foreach { rejection =>
+      result = result + ("rebuildRejection" -> JsString(rejection))
+    }
     Ok(result)
   }
   
-  def getResetRejection(airline : Airline) : Option[String] = {
+  def getResetRejection(airline : Airline, rebuild: Boolean) : Option[String] = {
     val allianceMemberOption = AllianceSource.loadAllianceMemberByAirline(airline)
     if (allianceMemberOption.isDefined && allianceMemberOption.get.role == AllianceRole.LEADER) {
         return Some("Cannot reset airline as your airline is the leader of an alliance. Either promote another member as leader or disband the alliance before proceeding")
+    }
+    if (rebuild && airline.getReputation() < AirlineGrade.CONTINENTAL.reputationCeiling) {
+        return Some(s"Cannot rebuild airline when reputation is lower than ${AirlineGrade.CONTINENTAL.reputationCeiling}")
     }
     return None
   }
