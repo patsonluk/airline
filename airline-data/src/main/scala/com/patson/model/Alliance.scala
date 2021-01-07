@@ -41,27 +41,27 @@ object Alliance {
 
   val getReputationBonus: (Int => Double) = { (ranking: Int) =>
     if (ranking == 1) {
-      20
+      50
     } else if (ranking == 2) {
-      15
+      40
     } else if (ranking == 3) {
-      12
+      30
     } else if (ranking == 4) {
-      10
+      25
     } else if (ranking == 5) {
-      8
+      20
     } else if (ranking == 6) {
-      7
+      15
     } else if (ranking == 7) {
-      6
+      12
     } else if (ranking == 8) {
-      5
+      10
     } else if (ranking == 9) {
-      4
+      9
     } else if (ranking == 10) {
-      3      
+      8
     } else {
-      2
+      5
     }
   }
 
