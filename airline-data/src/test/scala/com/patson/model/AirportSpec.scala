@@ -78,10 +78,10 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
   
   override def beforeEach {
     airport.initAirlineBases(List(base1, base2))
-    airport.initSlotAssignments(Map())
+    //airport.initSlotAssignments(Map())
     airport.initAirlineAppeals(Map())
     otherAirport.initAirlineBases(List(base3, base4))
-    otherAirport.initSlotAssignments(Map())
+    //otherAirport.initSlotAssignments(Map())
     otherAirport.initAirlineAppeals(Map())
   }
 }

@@ -259,21 +259,21 @@ object AirportSource {
           airport.initAirlineAppealsComputeLoyalty(airlineAwareness.toMap, airlineBonuses, LoyalistSource.loadLoyalistsByAirportId(airport.id))
           loyaltyStatement.close()
           
-          val slotAssignments = mutable.Map[Int, Int]()
-
-          //val slotStatement = connection.prepareStatement("SELECT airline, SUM(frequency) as total_frequency FROM " + LINK_TABLE + " WHERE (from_airport = ? OR to_airport = ?) GROUP BY airline")
-          val slotStatement = connection.prepareStatement("SELECT airline, sum(a.frequency) as total_frequency FROM " + LINK_TABLE + " l INNER JOIN " + LINK_ASSIGNMENT_TABLE +  " a ON l.id = a.link AND (l.from_airport = ? OR l.to_airport = ?) GROUP BY airline")
-
-          slotStatement.setInt(1, airport.id)
-          slotStatement.setInt(2, airport.id)
-          
-          val slotResultSet = slotStatement.executeQuery()
-          while (slotResultSet.next()) {
-            val airlineId = slotResultSet.getInt("airline")
-            slotAssignments.put(airlineId, slotResultSet.getInt("total_frequency"))
-          }
-          airport.initSlotAssignments(slotAssignments.toMap)
-          slotStatement.close()
+//          val slotAssignments = mutable.Map[Int, Int]()
+//
+//          //val slotStatement = connection.prepareStatement("SELECT airline, SUM(frequency) as total_frequency FROM " + LINK_TABLE + " WHERE (from_airport = ? OR to_airport = ?) GROUP BY airline")
+//          val slotStatement = connection.prepareStatement("SELECT airline, sum(a.frequency) as total_frequency FROM " + LINK_TABLE + " l INNER JOIN " + LINK_ASSIGNMENT_TABLE +  " a ON l.id = a.link AND (l.from_airport = ? OR l.to_airport = ?) GROUP BY airline")
+//
+//          slotStatement.setInt(1, airport.id)
+//          slotStatement.setInt(2, airport.id)
+//
+//          val slotResultSet = slotStatement.executeQuery()
+//          while (slotResultSet.next()) {
+//            val airlineId = slotResultSet.getInt("airline")
+//            slotAssignments.put(airlineId, slotResultSet.getInt("total_frequency"))
+//          }
+//          airport.initSlotAssignments(slotAssignments.toMap)
+//          slotStatement.close()
           
           
           val cityStatement = connection.prepareStatement("SELECT a.*, c.* FROM " + AIRPORT_CITY_SHARE_TABLE + " a LEFT JOIN " + CITY_TABLE + " c ON a.city = c.id WHERE airport = ?")

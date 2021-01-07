@@ -12,8 +12,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] val airlineAdjustedAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals + bonus
   private[this] val allAirlineBonuses = new java.util.HashMap[Int, List[AirlineBonus]]() //bonus appeals
   private[this] var airlineAppealsLoaded = false
-  private[this] val slotAssignments = scala.collection.mutable.Map[Int, Int]()
-  private[this] var slotAssignmentsLoaded = false
+//  private[this] val slotAssignments = scala.collection.mutable.Map[Int, Int]()
+//  private[this] var slotAssignmentsLoaded = false
   private[this] val airlineBases = scala.collection.mutable.Map[Int, AirlineBase]()
   private[this] var airlineBasesLoaded = false
   private[this] val features = ListBuffer[AirportFeature]()
@@ -396,11 +396,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
     airlineAppealsLoaded = true
   }
-  def initSlotAssignments(slotAssignments : Map[Int, Int]) = {
-    this.slotAssignments.clear()
-    this.slotAssignments ++= slotAssignments
-    slotAssignmentsLoaded = true
-  }
+//  def initSlotAssignments(slotAssignments : Map[Int, Int]) = {
+//    this.slotAssignments.clear()
+//    this.slotAssignments ++= slotAssignments
+//    slotAssignmentsLoaded = true
+//  }
   def initAirlineBases(airlineBases : List[AirlineBase]) = {
     this.airlineBases.clear()
     airlineBases.foreach { airlineBase =>

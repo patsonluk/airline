@@ -141,8 +141,8 @@ function loadRivalDetails(row, airlineId) {
 	
 	
 	updateRivalBasicsDetails(airlineId)
-	updateRivalChampionedCountriesDetails(airlineId)
 	updateRivalCountriesAirlineTitles(airlineId)
+	updateRivalChampionedAirportsDetails(airlineId)
 	loadRivalLinks(airlineId)
 	
 	updateRivalBaseList(airlineId)
@@ -229,30 +229,32 @@ function updateRivalBasicsDetails(airlineId) {
 	}
 }
 
-function updateRivalChampionedCountriesDetails(airlineId) {
-	$('#rivalChampionedCountriesList').children('div.table-row').remove()
-	
+
+function updateRivalChampionedAirportsDetails(airlineId) {
+	$('#rivalChampionedAirportsList').children('div.table-row').remove()
+
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + airlineId + "/championed-countries",
+		url: "airlines/" + airlineId + "/championed-airports",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(championedCountries) {
-	    	$(championedCountries).each(function(index, championDetails) {
-	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\" showCountryView('" + country.countryCode + "');\"></div>")
-	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
-	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
-	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
-	    		$('#rivalChampionedCountriesList').append(row)
-	    	})
-	    	
+	    success: function(championedAirports) {
+	    	$(championedAirports).each(function(index, championDetails) {
+                var row = $("<div class='table-row clickable' data-link='airport' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
+                row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+                row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
+                row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>")
+                $('#rivalChampionedAirportsList').append(row)
+            })
+
+            populateNavigation($('#rivalChampionedAirportsList'))
+
 	    	if ($(championedCountries).length == 0) {
 	    		var row = $("<div class='table-row'></div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
-	    		$('#rivalChampionedCountriesList').append(row)
+	    		$('#rivalChampionedAirportsList').append(row)
 	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

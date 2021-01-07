@@ -54,7 +54,7 @@ object ChampionUtil {
 
   lazy val modelAirportPower : Long = AirportSource.loadAllAirports().map(_.power).sorted.last
   val BASE_BOOST = 0.5
-  val MAX_ECONOMIC_BOOST = 10.0
+  val MAX_ECONOMIC_BOOST = 20.0
   val reputationBoostTop10 : Map[Int, Double] = Map(
     1 -> 1,
     2 -> 0.5,
@@ -71,15 +71,17 @@ object ChampionUtil {
   def computeReputationBoost(airport : Airport, ranking : Int) : Double = {
     val ratioToModelAirportPower = airport.power.toDouble / modelAirportPower
     var boost = BASE_BOOST
-    val economicPowerRating = Math.max(0, math.log10(ratioToModelAirportPower * 100) / 2) //0 to 1
+    //val economicPowerRating = Math.max(0, math.log10(ratioToModelAirportPower * 100) / 2) //0 to 1
+    val economicPowerRating = Math.max(0, math.log(ratioToModelAirportPower * 16) / math.log(2) / 4) //0 to 1
     boost += MAX_ECONOMIC_BOOST * economicPowerRating
 
     import AirportFeatureType._
     airport.getFeatures().foreach { feature =>
       val featureBoost = feature.featureType match {
-        case GATEWAY_AIRPORT => 1
-        case INTERNATIONAL_HUB => feature.strengthFactor * 10
-        case FINANCIAL_HUB => feature.strengthFactor * 5
+        case GATEWAY_AIRPORT => 3
+        case INTERNATIONAL_HUB => feature.strengthFactor * 25
+        case FINANCIAL_HUB => feature.strengthFactor * 15
+        case VACATION_HUB => feature.strengthFactor * 10
         case _ => 0
       }
 
@@ -104,8 +106,9 @@ object ChampionUtil {
 //      case None => LoyalistSource.loadLoyalistsByCriteria(List.empty)
 //    }
 
-    loyalists.groupBy(_.airport).foreach {
-      case (airport, loyalists) =>
+    loyalists.groupBy(_.airport.id).foreach {
+      case (airportId, loyalists) =>
+        val airport = AirportCache.getAirport(airportId, true).get //need to load detailed airport here to get features
         val championCount = getAirportChampionCount(airport)
         val topAirlineWithSortedIndex : List[(Loyalist, Int)] = loyalists.sortBy(_.amount)(Ordering.Int.reverse).take(championCount).zipWithIndex
 
