@@ -27,7 +27,7 @@ class HeatmapApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
 
   val MAX_INTENSITY_LOYALIST = 1000000
-  val MAX_INTENSITY_TREND = 200
+  val MAX_INTENSITY_TREND = 100
   val INTENSITY_SQRT_BASE = 1.0 / 2
 
 
