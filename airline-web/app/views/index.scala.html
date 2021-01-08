@@ -859,7 +859,7 @@
 				</div>
 	<!--  end links canvas -->
 
-				<div id="airportCanvas" style="display: none;">
+				<div id="airportCanvas" style="display: none; min-width: 500px;">
 					<!-- left panel -->
 					<div style="float:left" class="verticalGroup airportCanvasLeftGroup">
 						<div style="box-sizing:border-box; width: 100%; display: flex;">
@@ -1093,52 +1093,55 @@
 								</div>
 							</div>
 						</div>
-	<!-- 		    		end main details -->
-						<div class="section" style="box-sizing:border-box; width: 45%; min-width: 500px; float:left; margin:10px 0 10px 0;">
-							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/crown.png")'></div><div style="float: left;"><h4>Rankings</h4></div>
-							<div id="airportDetailsChampionList" style="width: 100%; margin-bottom: 15px;" class="table data">
-								<div class="table-header">
-									<div class="cell" style="width: 5%">&nbsp;</div>
-									<div class="cell" style="width: 50%">Airline</div>
-									<div class="cell" style="width: 20%; text-align: right;">Loyalist</div>
-									<div class="cell" style="width: 20%; text-align: right;">Reputation Boost</div>
-								</div>
-							</div>
-						</div>
-						<div class="section" style="box-sizing:border-box; width: 50%; min-width: 500px; float:right; margin:10px 0 10px 0;">
-							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
-							<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table data">
-								<div class="table-header">
-									<div class="cell" style="width: 30%">Airline</div>
-									<div class="cell" style="width: 10%; text-align: right;">Home Country</div>
-									<div class="cell" style="width: 10%; text-align: right;">Office Scale</div>
-									<div class="cell" style="width: 25%; text-align: right;">Flight Routes</div>
-									<div class="cell" style="width: 25%; text-align: right;">Weekly Passengers</div>
-								</div>
-							</div>
-							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-low.png")'></div><div style="float: left;"><h4>Airline Bases</h4></div>
-							<div id="airportDetailsBaseList" style="width: 100%; margin-bottom: 15px;" class="table data">
-								<div class="table-header">
-									<div class="cell" style="width: 30%">Airline</div>
-									<div class="cell" style="width: 10%; text-align: right;">Home Country</div>
-									<div class="cell" style="width: 10%; text-align: right;">Office Scale</div>
-									<div class="cell" style="width: 25%; text-align: right;">Flight Routes</div>
-									<div class="cell" style="width: 25%; text-align: right;">Weekly Passengers</div>
-								</div>
-							</div>
-							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/sofa.png")'></div><div style="float: left;"><h4>Airline Lounges</h4></div>
-							<div id="airportDetailsLoungeList" style="width: 100%;" class="table data">
-								<div class="table-header">
-									<div class="cell" style="width: 20%">Airline</div>
-									<div class="cell" style="width: 20%">Lounge Name</div>
-									<div class="cell" style="width: 10%; text-align: right;">Lounge Level</div>
-									<div class="cell" style="width: 10%; text-align: right;">Status</div>
-									<div class="cell" style="width: 20%; text-align: right;">Weekly Passengers (self)</div>
-									<div class="cell" style="width: 20%; text-align: right;">Weekly Passengers (alliance members)</div>
-								</div>
-							</div>
-						</div>
 						<div style="clear: both;"></div>
+	<!-- 		    		end main details -->
+						<div style="display: flex;">
+							<div class="section" style="box-sizing:border-box; width: 30%; min-width: 300px; margin-left: 0;">
+								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/crown.png")'></div><div style="float: left;"><h4>Rankings</h4></div>
+								<div id="airportDetailsChampionList" style="width: 100%; margin-bottom: 15px;" class="table data">
+									<div class="table-header">
+										<div class="cell" style="width: 5%">&nbsp;</div>
+										<div class="cell" style="width: 50%">Airline</div>
+										<div class="cell" style="width: 20%; text-align: right;">Loyalist</div>
+										<div class="cell" style="width: 20%; text-align: right;">Reputation Boost</div>
+									</div>
+								</div>
+							</div>
+							<div class="section" style="box-sizing:border-box; width: 70%; min-width: 400px; margin:10px 0 10px 0;">
+								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
+								<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table data">
+									<div class="table-header">
+										<div class="cell" style="width: 30%">Airline</div>
+										<div class="cell" style="width: 10%; text-align: right;">Home Country</div>
+										<div class="cell" style="width: 10%; text-align: right;">Office Scale</div>
+										<div class="cell" style="width: 25%; text-align: right;">Flight Routes</div>
+										<div class="cell" style="width: 25%; text-align: right;">Weekly Passengers</div>
+									</div>
+								</div>
+								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-low.png")'></div><div style="float: left;"><h4>Airline Bases</h4></div>
+								<div id="airportDetailsBaseList" style="width: 100%; margin-bottom: 15px;" class="table data">
+									<div class="table-header">
+										<div class="cell" style="width: 30%">Airline</div>
+										<div class="cell" style="width: 10%; text-align: right;">Home Country</div>
+										<div class="cell" style="width: 10%; text-align: right;">Office Scale</div>
+										<div class="cell" style="width: 25%; text-align: right;">Flight Routes</div>
+										<div class="cell" style="width: 25%; text-align: right;">Weekly Passengers</div>
+									</div>
+								</div>
+								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/sofa.png")'></div><div style="float: left;"><h4>Airline Lounges</h4></div>
+								<div id="airportDetailsLoungeList" style="width: 100%;" class="table data">
+									<div class="table-header">
+										<div class="cell" style="width: 20%">Airline</div>
+										<div class="cell" style="width: 20%">Lounge Name</div>
+										<div class="cell" style="width: 10%; text-align: right;">Lounge Level</div>
+										<div class="cell" style="width: 10%; text-align: right;">Status</div>
+										<div class="cell" style="width: 20%; text-align: right;">Weekly Passengers (self)</div>
+										<div class="cell" style="width: 20%; text-align: right;">Weekly Passengers (alliance members)</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
 					</div>
 					<!-- airport map, pictures -->
 					<div style="float: left;" class="verticalGroup airportCanvasRightGroup">
