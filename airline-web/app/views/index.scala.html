@@ -153,6 +153,11 @@
 			  <img class="clickable next" title="10 weeks forward" src='@routes.Assets.versioned("images/icons/control.png")'/>
 			  <img class="clickable nextNext" title="100 weeks forward" src='@routes.Assets.versioned("images/icons/control-double.png")'/>
 		  </div>
+		  <form>
+		  <input type="radio" name="heatmapType" value="loyalistImpact" checked/>Impact
+		  <input type="radio" name="heatmapType" value="loyalistTrend"/>Trend
+		  </form>
+
 		  <div class="button glow" onclick="closeHeatmap()" style="margin-top : 10px; width: 140px;">Hide Heatmap Overlay</div>
 
 	  </div>

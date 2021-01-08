@@ -1,3 +1,17 @@
+$(document).ready(function() {
+    $('#heatmapControlPanel input[name=heatmapType]').change(function() {
+        if (rivalMapAirlineId) {
+          airlineId = rivalMapAirlineId
+        } else {
+          airlineId = activeAirline.id
+        }
+
+        if (airlineId) {
+            updateHeatmap(airlineId)
+        }
+    })
+})
+
 function toggleHeatmap() {
     if ($("#heatmapControlPanel").is(":visible")) {
         closeHeatmap()
@@ -24,14 +38,18 @@ function showHeatmap() {
 }
 
 function closeHeatmap() {
-    if (heatmap) {
-        heatmap.setMap(null)
+    if (heatmapPositive) {
+        heatmapPositive.setMap(null)
+    }
+    if (heatmapNegative) {
+        heatmapNegative.setMap(null)
     }
      $("#heatmapControlPanel").hide()
 }
 
-var heatmap
-const heatmapGradient = [
+var heatmapPositive
+var heatmapNegative
+const loyalistStatusHeatmapGradient = [
     "rgba(128, 133, 242, 0)",
     "rgba(141, 145, 243, 0.7)",
     "rgba(154, 157, 244, 0.7)",
@@ -55,37 +73,83 @@ const heatmapGradient = [
     "rgba(255, 237, 52, 1)"
   ];
 
+const loyalistTrendHeatmapPositiveGradient = [
+  "rgba(0, 128, 0, 0)",
+  "rgba(0, 200, 0, 0.6)",//
+  "rgba(0, 255, 0, 0.8)",//
+  "rgba(80, 255, 150, 1)"
+];
+
+const loyalistTrendHeatmapNegativeGradient = [
+  "rgba(128, 0, 0, 0)",
+  "rgba(200, 0, 0, 0.6)",//
+  "rgba(255, 0, 0, 0.8)",//
+  "rgba(255, 150, 80, 1)"
+];
+
 function updateHeatmap(airlineId) {
 //    $.each(historyPaths, function(index, path) { //clear all history path
 //        path.setMap(null)
 //        path.shadowPath.setMap(null)
 //    })
 
-    if (heatmap) {
-        heatmap.setMap(null) //clear previous one
+    if (heatmapPositive) {
+        heatmapPositive.setMap(null) //clear previous one
     }
+    if (heatmapNegative) {
+        heatmapNegative.setMap(null) //clear previous one
+    }
+
     var cycleDelta = $('#heatmapControlPanel').data('cycleDelta')
-    var heatmapType = "loyalist"
+    var heatmapType = $('input[name=heatmapType]:checked', '#heatmapControlPanel').val()
     $.ajax({
         type: 'GET',
         url: "airlines/" + airlineId + "/heatmap-data?heatmapType=" + heatmapType + "&cycleDelta=" + cycleDelta,
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(result) {
-            var heatmapData = []
+            var heatmapPositiveData = []
+            var heatmapNegativeData = []
             $.each(result.points, function(index, entry) {
-              heatmapData.push({location: new google.maps.LatLng(entry.lat, entry.lng), weight: entry.weight})
+              if (entry.weight >= 0) {
+                heatmapPositiveData.push({location: new google.maps.LatLng(entry.lat, entry.lng), weight: entry.weight})
+              } else {
+                heatmapNegativeData.push({location: new google.maps.LatLng(entry.lat, entry.lng), weight: entry.weight * -1})
+              }
             })
 
-            heatmap = new google.maps.visualization.HeatmapLayer({
-              data: heatmapData,
-              dissipating: false,
-              gradient: heatmapGradient,
-              maxIntensity: result.maxIntensity,
-              radius: 3
-            });
+            var heatmapPositiveGradient
+            var heatmapNegativeGradient
+            if (heatmapType === "loyalistImpact") {
+                heatmapPositiveGradient =loyalistStatusHeatmapGradient
+            } else if (heatmapType === "loyalistTrend") {
+                heatmapPositiveGradient = loyalistTrendHeatmapPositiveGradient
+                heatmapNegativeGradient = loyalistTrendHeatmapNegativeGradient
+            }
 
-            heatmap.setMap(map);
+            if (heatmapPositiveData.length > 0) {
+                heatmapPositive = new google.maps.visualization.HeatmapLayer({
+                  data: heatmapPositiveData,
+                  dissipating: false,
+                  gradient: heatmapPositiveGradient,
+                  maxIntensity: result.maxIntensity,
+                  radius: 3
+                });
+
+                heatmapPositive.setMap(map);
+            }
+
+            if (heatmapNegativeData.length > 0) {
+                heatmapNegative = new google.maps.visualization.HeatmapLayer({
+                  data: heatmapNegativeData,
+                  dissipating: false,
+                  gradient: heatmapNegativeGradient,
+                  maxIntensity: result.maxIntensity,
+                  radius: 3
+                });
+
+                heatmapNegative.setMap(map);
+            }
 
             updateHeatmapArrows(result.minDeltaCount, airlineId)
         },
