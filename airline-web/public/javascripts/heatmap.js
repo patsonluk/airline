@@ -74,10 +74,10 @@ const loyalistStatusHeatmapGradient = [
   ];
 
 const loyalistTrendHeatmapPositiveGradient = [
-  "rgba(0, 128, 0, 0)",
-  "rgba(0, 200, 0, 0.6)",//
-  "rgba(0, 255, 0, 0.8)",//
-  "rgba(80, 255, 150, 1)"
+  "rgba(0, 0, 128, 0)",
+  "rgba(0, 0, 200, 0.6)",//
+  "rgba(0, 0, 255, 0.8)",//
+  "rgba(80, 150, 255, 1)"
 ];
 
 const loyalistTrendHeatmapNegativeGradient = [
