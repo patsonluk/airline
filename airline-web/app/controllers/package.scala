@@ -714,7 +714,8 @@ package object controllers {
         "odds" -> JsNumber(1 - result.threshold),
         "passingScore" -> JsNumber(negotiationSessions.passingScore),
         "sessions" -> Json.toJson(negotiationSessions.sessionScores),
-        "isSuccessful" -> JsBoolean(result.isSuccessful))
+        "isSuccessful" -> JsBoolean(result.isSuccessful),
+        "isGreatSuccess" -> JsBoolean(result.isGreatSuccess))
     }
   }
 

@@ -1467,9 +1467,9 @@ function createLink() {
                 if (savedLink.negotiationResult) {
                     isSuccessful = savedLink.negotiationResult.isSuccessful
                     if (isSuccessful) {
-                        negotiationAnimation(savedLink.negotiationResult, refreshSavedLink, savedLink)
+                        negotiationAnimation(savedLink, refreshSavedLink, savedLink)
                     } else {
-                        negotiationAnimation(savedLink.negotiationResult)
+                        negotiationAnimation(savedLink)
                     }
                 } else {
                     refreshSavedLink(savedLink)
@@ -2531,10 +2531,8 @@ function refreshSavedLink(savedLink) {
 		//draw flight path
 		var newPath = drawFlightPath(savedLink)
 		selectLinkFromMap(savedLink.id, false)
-		refreshPanels(activeAirline.id) //refresh panels would update link details
-	} else {
-		refreshLinkDetails(savedLink.id)
 	}
+	refreshPanels(activeAirline.id) //refresh panels would update link details
 
 
 	setActiveDiv($('#linkDetails'))
@@ -2546,11 +2544,13 @@ function refreshSavedLink(savedLink) {
 }
 
 
-function negotiationAnimation(negotiationResult, callback, callbackParam) {
+function negotiationAnimation(savedLink, callback, callbackParam) {
+    var negotiationResult = savedLink.negotiationResult
     $('#negotiationAnimation .negotiationIcons').empty()
 	//plotNegotiationGauge($('#negotiationAnimation .negotiationBar'), negotiationResult.passingScore)
 	animateProgressBar($('#negotiationAnimation .negotiationBar'), 0, 0)
-	$('#negotiationAnimation .negotiationDescriptions').hide()
+	$('#negotiationAnimation .negotiationDescriptions').text('')
+	$('#negotiationAnimation .negotiationBonus').text('')
 	$('#negotiationAnimation .negotiationResult').hide()
 	var gaugeValue = 0
 
@@ -2585,7 +2585,7 @@ function negotiationAnimation(negotiationResult, callback, callbackParam) {
         }
         $('#negotiationAnimation .negotiationIcons img:nth-child(' + index + ')').attr("src", "assets/images/icons/" + icon)
         $('#negotiationAnimation .negotiationDescriptions').text(description)
-        $('#negotiationAnimation .negotiationDescriptions').show()
+
 
         //$('#linkConfirmationModal .negotiationIcons').append("<img src='assets/images/icons/" + icon + "'>")
         gaugeValue += value
@@ -2594,9 +2594,18 @@ function negotiationAnimation(negotiationResult, callback, callbackParam) {
         var callback
         if (index == negotiationResult.sessions.length) {
             callback = function() {
-                           var result = negotiationResult.isSuccessful ? "Successful" : "Failure"
+                           var result
+                           if (negotiationResult.isGreatSuccess && savedLink.negotiationBonus) {
+                            $('#negotiationAnimation .negotiationBonus').text(savedLink.negotiationBonus)
+                            result = "Great Success"
+                           } else if (negotiationResult.isSuccessful) {
+                            result = "Success"
+                           } else {
+                            result = "Failure"
+                           }
                            $('#negotiationAnimation .negotiationResult .result').text(result)
                            $('#negotiationAnimation .negotiationResult').show()
+
                            if (negotiationResult.isSuccessful) {
                                showConfetti($("#negotiationAnimation"))
                            }

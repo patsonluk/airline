@@ -6,3 +6,7 @@ ADD COLUMN `skip_tutorial` TINYINT NULL AFTER `color`;
 
 ALTER TABLE `airline_v2`.`airline_info`
 ADD COLUMN `initialized` TINYINT NULL AFTER `skip_tutorial`;
+
+ALTER TABLE `airline_v2`.`airport_airline_appeal_bonus`
+CHANGE COLUMN `loyalty_bonus` `loyalty_bonus` DECIMAL(5,2) NULL DEFAULT NULL ,
+CHANGE COLUMN `awareness_bonus` `awareness_bonus` DECIMAL(5,2) NULL DEFAULT NULL ;

@@ -393,11 +393,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         incomingLink
       }
 
-    negotiationResultOption.foreach { result =>
+    var result : JsObject = Json.toJson(resultLink).asInstanceOf[JsObject]
+
+    negotiationResultOption.foreach { negotiationResult =>
       //update delegate status
       val cycle = CycleSource.loadCycle()
       val task = DelegateTask.linkNegotiation(cycle, fromAirport, toAirport)
-      val coolDown = if (result.isSuccessful) task.coolDown else task.coolDown / 2 //half cooldown if it was unsuccessful
+      val coolDown = if (negotiationResult.isSuccessful) task.coolDown else task.coolDown / 2 //half cooldown if it was unsuccessful
       val availableCycle = cycle + coolDown
 
       val busyDelegates = (0 until delegateCount).toList.map { _ =>
@@ -406,16 +408,23 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
       DelegateSource.saveBusyDelegates(busyDelegates)
 
-      if (result.isSuccessful) { //if negotiation was successful, add a link negotiation cooldown as well
+      if (negotiationResult.isSuccessful) { //if negotiation was successful, add a link negotiation cooldown as well
         LinkSource.saveNegotiationCoolDown(resultLink.id, cycle + Link.LINK_NEGOTIATION_COOL_DOWN)
       }
+
+      if (negotiationResult.isGreatSuccess) {
+        val existingCapacity = existingLink.fold(LinkClassValues.getInstance())(_.futureCapacity())
+        val capacityChange = incomingLink.futureCapacity() - existingCapacity //use future capacity here
+        val normalizedCapacityChange = capacityChange(ECONOMY) * ECONOMY.spaceMultiplier + capacityChange(BUSINESS) * BUSINESS.spaceMultiplier + capacityChange(FIRST) * FIRST.spaceMultiplier
+        val bonus = NegotiationUtil.getLinkBonus(resultLink, normalizedCapacityChange.toInt, busyDelegates)
+        bonus.apply(airline)
+        result = result + ("negotiationBonus" -> JsString(bonus.description))
+      }
+
+      result = result + ("negotiationResult" -> Json.toJson(negotiationResult))
     }
 
 
-    var result : JsObject = Json.toJson(resultLink).asInstanceOf[JsObject]
-    if (negotiationResultOption.isDefined) {
-      result = result + ("negotiationResult" -> Json.toJson(negotiationResultOption.get))
-    }
     return Ok(result)
   }
 

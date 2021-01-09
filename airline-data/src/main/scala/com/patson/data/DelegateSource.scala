@@ -276,6 +276,24 @@ object DelegateSource {
   }
 
 
+  def updateBusyDelegateAvailableCycle(delegates : List[BusyDelegate]) : Unit = {
+    val connection = Meta.getConnection()
+    val preparedStatement = connection.prepareStatement(s"UPDATE $BUSY_DELEGATE_TABLE SET available_cycle = ? WHERE id = ?")
+    try {
+      delegates.foreach { delegate =>
+        delegate.availableCycle match {
+          case Some(availableCycle) => preparedStatement.setInt(1, availableCycle)
+          case None => preparedStatement.setNull(1, Types.INTEGER)
+        }
+        preparedStatement.setInt(2, delegate.id)
+        preparedStatement.executeUpdate()
+      }
+    } finally {
+      preparedStatement.close()
+      connection.close()
+    }
+  }
+
   def saveBusyDelegates(delegates : List[BusyDelegate]) : Unit = {
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("INSERT INTO " + BUSY_DELEGATE_TABLE + "(airline, task_type, available_cycle) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS)
@@ -306,6 +324,7 @@ object DelegateSource {
       connection.close()
     }
   }
+
 
   def deleteBusyDelegates(delegates : List[BusyDelegate]) : Unit = {
     delegates.foreach { delegate =>

@@ -1205,8 +1205,8 @@ object Meta {
       "airline INTEGER," +
       "airport INTEGER," +
       "bonus_type INTEGER," +
-      "loyalty_bonus INTEGER, " +
-      "awareness_bonus  INTEGER," +
+      "loyalty_bonus DECIMAL(5,2), " +
+      "awareness_bonus DECIMAL(5,2)," +
       "expiration_cycle INTEGER," +
       "INDEX " + AIRPORT_AIRLINE_APPEAL_BONUS_INDEX_1 + " (airline,airport,bonus_type)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +

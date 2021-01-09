@@ -89,8 +89,8 @@ object AirportSource {
       preparedStatement.setInt(1, airportId)
       preparedStatement.setInt(2, airlineId)
       preparedStatement.setInt(3, bonus.bonusType.id)
-      preparedStatement.setInt(4, bonus.bonus.loyalty.toInt)
-      preparedStatement.setInt(5, bonus.bonus.awareness.toInt)
+      preparedStatement.setDouble(4, bonus.bonus.loyalty)
+      preparedStatement.setDouble(5, bonus.bonus.awareness)
       bonus.expirationCycle match {
         case Some(cycle) =>
           preparedStatement.setInt(6, cycle)
@@ -161,7 +161,7 @@ object AirportSource {
         val expirationCycle = resultSet.getObject("expiration_cycle")
         bonusList.append(AirlineBonus(
           bonusType = BonusType(resultSet.getInt("bonus_type")),
-          bonus = AirlineAppeal(loyalty = resultSet.getInt("loyalty_bonus"), awareness = resultSet.getInt("awareness_bonus")),
+          bonus = AirlineAppeal(loyalty = resultSet.getDouble("loyalty_bonus"), awareness = resultSet.getDouble("awareness_bonus")),
           expirationCycle = if (expirationCycle == null) None else Some(expirationCycle.asInstanceOf[Int])))
       }
       resultSet.close()

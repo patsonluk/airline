@@ -1841,6 +1841,17 @@
 					</div>
 	<!-- 				end left section  -->
 					<div style="float: left;" class="verticalGroup officeCanvasRightGroup">
+<!--                        <div class="section" style="width: 95%;">-->
+<!--                            <h4>Headquarters</h4>-->
+<!--							<div style="position: relative; height: 200px;">-->
+<!--							<img src='@routes.Assets.versioned("images/buildings/office-3.png")' style="position: absolute; bottom: 30px; left: 26px;  z-index: 1;  height: 60px;"/>-->
+<!--                            <img src='@routes.Assets.versioned("images/buildings/office-1.png")' style="position: absolute; bottom: 15px; left: 0px; z-index: 2; height: 60px"/>-->
+<!--                            <img src='@routes.Assets.versioned("images/buildings/office-2.png")' style="position: absolute; bottom: 15px; left: 52px;  z-index: 2; height: 60px;"/>-->
+<!--                            <img src='@routes.Assets.versioned("images/buildings/office-1.png")' style="position: absolute; bottom: 0px; left: 26px; z-index: 3; height: 60px"/>-->
+<!--							<img src='@routes.Assets.versioned("images/buildings/road-1.png")' style="position: absolute; bottom: 0px; left: 78px; z-index: 3; width: 60px"/>-->
+<!--							</div>-->
+<!--                        </div>-->
+
                         <div class="section" style="width: 95%;">
                             <h4>Delegates Pool</h4>
                             <div class="delegateStatus"></div>
@@ -3647,18 +3658,20 @@
   </div>
 
   <div id="negotiationAnimation" class="modal">
-	  <div class="modal-content" style="height: 200px; width : 550px; max-width : 95vw;">
+	  <div class="modal-content" style="height: 200px; width : 520px; max-width : 95vw;">
 <!--		  <span class="close" onclick="closeModal($('#negotiationAnimation'))">&times;</span>-->
-		  <h4 style="margin-bottom: 10px;" class="modalHeader">Negotiation in progress... Success Rate:&nbsp;<span class="successRate"></span>%</h4>
-		  <div class="negotiationIcons" style="width: 70%; height: 50px; float:left;"></div>
-		  <h4>
-			  <div class="negotiationDescriptions" style="width: 30%; height: 50px; float:left;"></div>
-		  </h4>
-		  <div class="negotiationBar progressbar">
+		  <h4 class="modalHeader" style="margin-bottom: 10px; text-align: center;">Negotiation in progress... Success Rate:&nbsp;<span class="successRate"></span>%</h4>
+		  <div class="negotiationIcons" style="width: 260px; height: 35px; margin: auto;"></div>
+		  <div class="negotiationDescriptions" style="height: 15px; text-align: center;"></div>
+		  <div class="negotiationBar progressbar" style="margin: auto;">
 			  <div class="bar"><span></span></div>
 		  </div>
 
-		  <div class="negotiationResult" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+		  <div class="negotiationBonus" style="text-align:center; height: 15px;">
+
+		  </div>
+
+		  <div class="negotiationResult" style="text-align:center;">
 			  <div class="button result" onclick="closeModal($('#negotiationAnimation'));"></div>
 		  </div>
 	  </div>
