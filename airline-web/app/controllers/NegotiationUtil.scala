@@ -440,7 +440,7 @@ object NegotiationBonus {
 
 abstract class NegotiationBonus {
   def description : String
-  def apply(airline : Airline)
+  def apply(airline : Airline) : Unit
 }
 
 case class NegotiationCashBonus(cash : Long, description : String) extends NegotiationBonus {
