@@ -626,6 +626,10 @@ div#canvas {
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
+.modal.transparentBackground {
+    background-color: transparent;
+}
+
 .modal#confirmationModal {
     z-index: 12; /* Confirmation always sits on top, even about modal */
 }

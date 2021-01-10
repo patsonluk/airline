@@ -2606,7 +2606,10 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
                            $('#negotiationAnimation .negotiationResult .result').text(result)
                            $('#negotiationAnimation .negotiationResult').show()
 
-                           if (negotiationResult.isSuccessful) {
+                            if (negotiationResult.isGreatSuccess) {
+                                $('#negotiationAnimation').addClass('transparentBackground')
+                                startFirework(20000)
+                            } else if (negotiationResult.isSuccessful) {
                                showConfetti($("#negotiationAnimation"))
                            }
                        };
@@ -2621,7 +2624,10 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
 
 	if (callback) {
 		$('#negotiationAnimation .close, #negotiationAnimation .result').on("click.custom", function() {
-		    if (negotiationResult.isSuccessful) {
+		    if (negotiationResult.isGreatSuccess) {
+                $('#negotiationAnimation').removeClass('transparentBackground')
+                stopFirework()
+		    } else if (negotiationResult.isSuccessful) {
                 removeConfetti($("#negotiationAnimation"))
             }
 			callback(callbackParam)
