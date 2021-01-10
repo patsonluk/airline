@@ -2627,7 +2627,7 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
 		    if (negotiationResult.isGreatSuccess) {
                 $('#negotiationAnimation').removeClass('transparentBackground')
                 stopFirework()
-		    } if (negotiationResult.isSuccessful) {
+		    } else if (negotiationResult.isSuccessful) {
                 removeConfetti($("#negotiationAnimation"))
             }
 			callback(callbackParam)
