@@ -16,7 +16,7 @@ object NegotiationUtil {
   val FREE_LINK_THRESHOLD = 5 //for newbie
   val FREE_LINK_FREQUENCY_THRESHOLD = 5
   val FREE_LINK_DIFFICULTY_THRESHOLD = 10
-  val GREAT_SUCCESS_THRESHOLD = 0.05 /*0.95*/ // 5%
+  val GREAT_SUCCESS_THRESHOLD = 0.95 // 5%
 
 
   def negotiate(info : NegotiationInfo, delegateCount : Int) = {
