@@ -53,6 +53,8 @@ $( document ).ready(function() {
         $(".laser").hide()
     }
 
+//    startFirework(10000)
+
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
 

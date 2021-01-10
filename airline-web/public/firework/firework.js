@@ -406,39 +406,39 @@ if (!fullscreenEnabled()) {
 }
 
 // First render is called in init()
-function renderApp(state) {
-	const pauseBtnIcon = `#icon-${state.paused ? 'play' : 'pause'}`;
-	const soundBtnIcon = `#icon-sound-${soundEnabledSelector() ? 'on' : 'off'}`;
-	appNodes.pauseBtnSVG.setAttribute('href', pauseBtnIcon);
-	appNodes.pauseBtnSVG.setAttribute('xlink:href', pauseBtnIcon);
-	appNodes.soundBtnSVG.setAttribute('href', soundBtnIcon);
-	appNodes.soundBtnSVG.setAttribute('xlink:href', soundBtnIcon);
-	appNodes.controls.classList.toggle('hide', state.menuOpen || state.config.hideControls);
-	appNodes.canvasContainer.classList.toggle('blur', state.menuOpen);
-	appNodes.menu.classList.toggle('hide', !state.menuOpen);
-	appNodes.finaleModeFormOption.style.opacity = state.config.autoLaunch ? 1 : 0.32;
-
-	appNodes.quality.value = state.config.quality;
-	appNodes.shellType.value = state.config.shell;
-	appNodes.shellSize.value = state.config.size;
-	appNodes.autoLaunch.checked = state.config.autoLaunch;
-	appNodes.finaleMode.checked = state.config.finale;
-	appNodes.skyLighting.value = state.config.skyLighting;
-	appNodes.hideControls.checked = state.config.hideControls;
-	appNodes.fullscreen.checked = state.fullscreen;
-	appNodes.longExposure.checked = state.config.longExposure;
-	appNodes.scaleFactor.value = state.config.scaleFactor.toFixed(2);
-
-	appNodes.menuInnerWrap.style.opacity = state.openHelpTopic ? 0.12 : 1;
+//function renderApp(state) {
+//	const pauseBtnIcon = `#icon-${state.paused ? 'play' : 'pause'}`;
+//	const soundBtnIcon = `#icon-sound-${soundEnabledSelector() ? 'on' : 'off'}`;
+//	appNodes.pauseBtnSVG.setAttribute('href', pauseBtnIcon);
+//	appNodes.pauseBtnSVG.setAttribute('xlink:href', pauseBtnIcon);
+//	appNodes.soundBtnSVG.setAttribute('href', soundBtnIcon);
+//	appNodes.soundBtnSVG.setAttribute('xlink:href', soundBtnIcon);
+//	appNodes.controls.classList.toggle('hide', state.menuOpen || state.config.hideControls);
+//	appNodes.canvasContainer.classList.toggle('blur', state.menuOpen);
+//	appNodes.menu.classList.toggle('hide', !state.menuOpen);
+//	appNodes.finaleModeFormOption.style.opacity = state.config.autoLaunch ? 1 : 0.32;
+//
+//	appNodes.quality.value = state.config.quality;
+//	appNodes.shellType.value = state.config.shell;
+//	appNodes.shellSize.value = state.config.size;
+//	appNodes.autoLaunch.checked = state.config.autoLaunch;
+//	appNodes.finaleMode.checked = state.config.finale;
+//	appNodes.skyLighting.value = state.config.skyLighting;
+//	appNodes.hideControls.checked = state.config.hideControls;
+//	appNodes.fullscreen.checked = state.fullscreen;
+//	appNodes.longExposure.checked = state.config.longExposure;
+//	appNodes.scaleFactor.value = state.config.scaleFactor.toFixed(2);
+//
+//	appNodes.menuInnerWrap.style.opacity = state.openHelpTopic ? 0.12 : 1;
 //	appNodes.helpModal.classList.toggle('active', !!state.openHelpTopic);
 //	if (state.openHelpTopic) {
 //		const { header, body } = helpContent[state.openHelpTopic];
 //		appNodes.helpModalHeader.textContent = header;
 //		appNodes.helpModalBody.textContent = body;
 //	}
-}
+//}
 
-store.subscribe(renderApp);
+//store.subscribe(renderApp);
 
 // Perform side effects on state changes
 function handleStateChange(state, prevState) {
@@ -802,43 +802,43 @@ function init() {
 	appNodes.stageContainer.classList.remove('remove');
 
 	// Populate dropdowns
-	function setOptionsForSelect(node, options) {
-		node.innerHTML = options.reduce((acc, opt) => acc += `<option value="${opt.value}">${opt.label}</option>`, '');
-	}
+//	function setOptionsForSelect(node, options) {
+//		node.innerHTML = options.reduce((acc, opt) => acc += `<option value="${opt.value}">${opt.label}</option>`, '');
+//	}
 
 	// shell type
-	let options = '';
-	shellNames.forEach(opt => options += `<option value="${opt}">${opt}</option>`);
-	appNodes.shellType.innerHTML = options;
-	// shell size
-	options = '';
-	['3"', '4"', '6"', '8"', '12"', '16"'].forEach((opt, i) => options += `<option value="${i}">${opt}</option>`);
-	appNodes.shellSize.innerHTML = options;
-
-	setOptionsForSelect(appNodes.quality, [
-		{ label: 'Low', value: QUALITY_LOW },
-		{ label: 'Normal', value: QUALITY_NORMAL },
-		{ label: 'High', value: QUALITY_HIGH }
-	]);
-
-	setOptionsForSelect(appNodes.skyLighting, [
-		{ label: 'None', value: SKY_LIGHT_NONE },
-		{ label: 'Dim', value: SKY_LIGHT_DIM },
-		{ label: 'Normal', value: SKY_LIGHT_NORMAL }
-	]);
-
-	// 0.9 is mobile default
-	setOptionsForSelect(
-		appNodes.scaleFactor,
-		[0.5, 0.62, 0.75, 0.9, 1.0, 1.5, 2.0]
-		.map(value => ({ value: value.toFixed(2), label: `${value*100}%` }))
-	);
+//	let options = '';
+//	shellNames.forEach(opt => options += `<option value="${opt}">${opt}</option>`);
+//	appNodes.shellType.innerHTML = options;
+//	// shell size
+//	options = '';
+//	['3"', '4"', '6"', '8"', '12"', '16"'].forEach((opt, i) => options += `<option value="${i}">${opt}</option>`);
+//	appNodes.shellSize.innerHTML = options;
+//
+//	setOptionsForSelect(appNodes.quality, [
+//		{ label: 'Low', value: QUALITY_LOW },
+//		{ label: 'Normal', value: QUALITY_NORMAL },
+//		{ label: 'High', value: QUALITY_HIGH }
+//	]);
+//
+//	setOptionsForSelect(appNodes.skyLighting, [
+//		{ label: 'None', value: SKY_LIGHT_NONE },
+//		{ label: 'Dim', value: SKY_LIGHT_DIM },
+//		{ label: 'Normal', value: SKY_LIGHT_NORMAL }
+//	]);
+//
+//	// 0.9 is mobile default
+//	setOptionsForSelect(
+//		appNodes.scaleFactor,
+//		[0.5, 0.62, 0.75, 0.9, 1.0, 1.5, 2.0]
+//		.map(value => ({ value: value.toFixed(2), label: `${value*100}%` }))
+//	);
 
 	// Begin simulation
 	togglePause(false);
 
 	// initial render
-	renderApp(store.state);
+	//renderApp(store.state);
 
 	// Apply initial config
 	configDidUpdate();
@@ -1207,20 +1207,20 @@ let currentFrame = 0;
 let speedBarOpacity = 0;
 let autoLaunchTime = 0;
 
-function updateSpeedFromEvent(event) {
-	if (isUpdatingSpeed || event.y >= mainStage.height - 44) {
-		// On phones it's hard to hit the edge pixels in order to set speed at 0 or 1, so some padding is provided to make that easier.
-		const edge = 16;
-		const newSpeed = (event.x - edge) / (mainStage.width - edge * 2);
-		simSpeed = Math.min(Math.max(newSpeed, 0), 1);
-		// show speed bar after an update
-		speedBarOpacity = 1;
-		// If we updated the speed, return true
-		return true;
-	}
-	// Return false if the speed wasn't updated
-	return false;
-}
+//function updateSpeedFromEvent(event) {
+//	if (isUpdatingSpeed || event.y >= mainStage.height - 44) {
+//		// On phones it's hard to hit the edge pixels in order to set speed at 0 or 1, so some padding is provided to make that easier.
+//		const edge = 16;
+//		const newSpeed = (event.x - edge) / (mainStage.width - edge * 2);
+//		simSpeed = Math.min(Math.max(newSpeed, 0), 1);
+//		// show speed bar after an update
+//		speedBarOpacity = 1;
+//		// If we updated the speed, return true
+//		return true;
+//	}
+//	// Return false if the speed wasn't updated
+//	return false;
+//}
 
 
 // Extracted function to keep `update()` optimized
