@@ -396,6 +396,7 @@ case class NegotiationDiscount(adjustmentType : NegotiationDiscountType.Value, v
 case class NegotiationResult(threshold : Double, result : Double) {
   val isSuccessful = result >= threshold
   val isGreatSuccess = isSuccessful && result >= NegotiationUtil.GREAT_SUCCESS_THRESHOLD
+  println(s"negotiation result: threshold $threshold vs result $result. Great success ? $isGreatSuccess")
 
   val SESSION_COUNT = 10
   def getNegotiationSessions() : NegotiationSession = {
