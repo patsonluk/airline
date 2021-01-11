@@ -263,7 +263,7 @@ object Link {
       case LONG_HAUL_INTERCONTINENTAL => 4
       case ULTRA_LONG_HAUL_INTERCONTINENTAL => 4
     }
-    val frequencyStaff = frequency / 3
+    val frequencyStaff = frequency / 5
     val capacityStaff = capacity.total / 1000
     base + frequencyStaff * multiplyFactor + capacityStaff * multiplyFactor
   }
