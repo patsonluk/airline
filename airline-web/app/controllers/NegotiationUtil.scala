@@ -1,9 +1,9 @@
 package controllers
 
-import com.patson.data.{AirlineSource, AirportSource, CycleSource, DelegateSource, LinkSource}
+import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CycleSource, DelegateSource, LinkSource}
 import com.patson.model.FlightType._
 import com.patson.model._
-import com.patson.util.{AirportCache, CountryCache}
+import com.patson.util.{AirportCache, ChampionUtil, CountryCache}
 
 import scala.collection.mutable.ListBuffer
 import scala.math.BigDecimal.RoundingMode
@@ -189,10 +189,10 @@ object NegotiationUtil {
     (fromAirportRequirements, toAirportRequirements)
   }
 
-  def getNegotiationDiscounts(airport : Airport, airline : Airline) = {
+  def getNegotiationDiscounts(airport : Airport, airline : Airline, allianceMembers : List[AllianceMember]) = {
     val discounts = ListBuffer[NegotiationDiscount]()
     //how busy is this airport
-    val airportLinks =  LinkSource.loadLinksByFromAirport(airport.id) ++ LinkSource.loadLinksByToAirport(airport.id)
+    //val airportLinks =  LinkSource.loadLinksByFromAirport(airport.id) ++ LinkSource.loadLinksByToAirport(airport.id)
     //val totalFrequency = airportLinks.map(_.frequency).sum
     import NegotiationDiscountType._
     /*
@@ -234,6 +234,18 @@ object NegotiationUtil {
       discounts.append(NegotiationDiscount(LOYALTY, discount))
     }
 
+    val airportChampionAirlineIds = ChampionUtil.loadAirportChampionInfoByAirport(airport.id).map(_.loyalist.airline.id)
+    allianceMembers.foreach { allianceMember =>
+      if (allianceMember.airline.getBases().map(_.airport.id).contains(airport.id)) {
+        if (allianceMember.airline.id == airline.id) { //self, always get discount
+          discounts.append(NegotiationDiscount(BASE, 0.2))
+        } else if (airportChampionAirlineIds.contains(allianceMember.airline.id)) {
+          discounts.append(NegotiationDiscount(ALLIANCE_BASE, 0.2))
+        }
+      }
+    }
+
+
     discounts.toList
   }
 
@@ -259,8 +271,13 @@ object NegotiationUtil {
     }
 
     val (fromAirportRequirements, toAirportRequirements) = getNegotiationRequirements(newLink, existingLinkOption, airline, airlineLinks)
-    val fromAirportDiscounts = getNegotiationDiscounts(fromAirport, airline)
-    val toAirportDiscounts = getNegotiationDiscounts(toAirport, airline)
+
+    val allianceMembers = airline.getAllianceId() match {
+      case Some(allianceId) => AllianceSource.loadAllianceById(allianceId, true).get.members
+      case None => List.empty
+    }
+    val fromAirportDiscounts = getNegotiationDiscounts(fromAirport, airline, allianceMembers)
+    val toAirportDiscounts = getNegotiationDiscounts(toAirport, airline, allianceMembers)
 
     val fromRequirementBase = fromAirportRequirements.map(_.value).sum
     val toRequirementBase = toAirportRequirements.map(_.value).sum
@@ -302,10 +319,12 @@ object NegotiationUtil {
             0
           } else {
             val base = (15 - requiredDelegates) * 0.04
+            val oddsPerBaseDelegate = base / (Math.max(1, requiredDelegates))
             if (delegateCount < requiredDelegates + 1) {
               accumulativeOdds = base
             } else {
-              accumulativeOdds = Math.min(1, accumulativeOdds + 0.3 * Math.pow(0.8, delegateCount - requiredDelegates.toInt))
+
+              accumulativeOdds = Math.min(1, accumulativeOdds +  oddsPerBaseDelegate * Math.pow(0.95, delegateCount - requiredDelegates.toInt))
             }
             accumulativeOdds
           }
@@ -377,13 +396,15 @@ object NegotiationRequirementType extends Enumeration {
 
 object NegotiationDiscountType extends Enumeration {
   type NegotiationDiscountType = Value
-  val COUNTRY_RELATIONSHIP, BELOW_CAPACITY, OVER_CAPACITY, LOYALTY, NEW_AIRLINE = Value
+  val COUNTRY_RELATIONSHIP, BELOW_CAPACITY, OVER_CAPACITY, LOYALTY, BASE, ALLIANCE_BASE, NEW_AIRLINE = Value
 
   def description(adjustmentType : NegotiationDiscountType.Value, airport : Airport) =  adjustmentType match {
     case COUNTRY_RELATIONSHIP => s"Country Relationship with ${airport.countryCode}"
     case BELOW_CAPACITY => s"${airport.displayText} is under capacity"
     case OVER_CAPACITY => s"${airport.displayText} is over capacity"
     case LOYALTY => s"Loyalty of ${airport.displayText}"
+    case BASE => s"Airline base"
+    case ALLIANCE_BASE => s"Alliance member base as ranked champion "
     case NEW_AIRLINE => s"New airline bonus"
   }
 }
@@ -472,7 +493,6 @@ case class NegotiationLoyaltyBonus(airport : Airport, loyaltyBonus: Double, dura
     AirportSource.saveAirlineAppealBonus(airport.id, airline.id, AirlineBonus(BonusType.NEGOTIATION_BONUS, AirlineAppeal(loyalty = loyaltyBonus, awareness = 0), Some(cycle + duration)))
   }
 }
-
 
 abstract class NegotiationBonusTemplate {
   def computeBonus(monetaryBaseValue : Long, delegates : List[BusyDelegate], airport : Airport) : NegotiationBonus //monetaryBaseValue : for example for link, it would be standardPrice * capacityChange => 1 week of revenue
