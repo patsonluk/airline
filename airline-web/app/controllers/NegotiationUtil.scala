@@ -302,10 +302,12 @@ object NegotiationUtil {
             0
           } else {
             val base = (15 - requiredDelegates) * 0.04
+            val oddsPerBaseDelegate = base / (Math.max(1, requiredDelegates))
             if (delegateCount < requiredDelegates + 1) {
               accumulativeOdds = base
             } else {
-              accumulativeOdds = Math.min(1, accumulativeOdds + 0.3 * Math.pow(0.8, delegateCount - requiredDelegates.toInt))
+
+              accumulativeOdds = Math.min(1, accumulativeOdds +  oddsPerBaseDelegate * Math.pow(0.95, delegateCount - requiredDelegates.toInt))
             }
             accumulativeOdds
           }
