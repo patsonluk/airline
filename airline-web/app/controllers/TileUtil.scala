@@ -48,16 +48,13 @@ object TileUtil {
   }
 
 
-
   def generateHeadquartersTiles(airline : Airline) : TileLayout = {
-    val random = new Random(airline.id) //a stable seed
-
     val buildingLevel = Math.min(6, airline.airlineGrade.value / 3 + 1)
 
-    val mainBuildingSource = buildingSourceByLevel(buildingLevel)(random.nextInt(buildingSourceByLevel(buildingLevel).length))
-    val backRowSource = tileSourceByY(1)(random.nextInt(tileSourceByY(1).length))
-    val midRowSource =  tileSourceByY(2)(random.nextInt(tileSourceByY(2).length))
-    val frontRowSource =  tileSourceByY(3)(random.nextInt(tileSourceByY(3).length))
+    val mainBuildingSource = buildingSourceByLevel(buildingLevel)(buildingSourceByLevel(buildingLevel).length % airline.id)
+    val backRowSource = tileSourceByY(1)(tileSourceByY(1).length  % airline.id)
+    val midRowSource =  tileSourceByY(2)(tileSourceByY(2).length  % airline.id)
+    val frontRowSource =  tileSourceByY(3)(tileSourceByY(3).length  % airline.id)
     val (mainBuildingXSize, mainBuildingYSize) = mainBuildingDimensionByLevel(buildingLevel)
     val (mapXSize, mapYSize) = (mainBuildingXSize + 2, mainBuildingYSize + 2)
 
