@@ -131,6 +131,8 @@ POST      /airlines/:airlineId/tutorial               controllers.TutorialApplic
 GET     /airlines/:airlineId/profiles   controllers.ProfileApplication.getProfiles(airlineId : Int, airportId : Int)
 PUT     /airlines/:airlineId/profiles/:profileId     controllers.ProfileApplication.buildHqWithProfile(airlineId : Int, airportId : Int, profileId : Int)
 
+GET     /airlines/:airlineId/headquarters-map       controllers.TileApplication.getHeadquartersTiles(airlineId : Int)
+
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
 GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()
 
