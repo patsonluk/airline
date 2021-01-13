@@ -1,63 +1,63 @@
 package controllers
 
 import com.patson.model.{Airline, AirlineGrade}
-import java.io.File
-
-import play.api.Play
 
 import scala.collection.mutable
-import scala.io.Source
 import scala.util.Random
 
 object TileUtil {
 
   val webAssetBuildingBase = "/assets/images/buildings/"
-  val buildingAssetBase = "/public/images/buildings/"
+
   val mainBuildingFolderBase = "level-"
-  val tileAssetFolder = "tile-1"
+  val tileAssetFolder = "tile-"
   val buildingSourceByLevel = new mutable.HashMap[Int, List[String]]()
+  val tileSourceByY =  new mutable.HashMap[Int, List[String]]()
   val mainBuildingDimensionByLevel =  new mutable.HashMap[Int, (Int, Int)]()
 
-  for (i <- 1 to 6) {
-    val folder = play.Environment.simple().getFile(buildingAssetBase + mainBuildingFolderBase + i)
 
+  val buildingCountPerLevel : Map[Int, Int] = Map(
+    1 -> 3,
+    2 -> 9,
+    3 -> 7,
+    4 -> 4,
+    5 -> 8,
+    6 -> 7
+  )
+
+  val tileCountPerY : Map[Int, Int] = Map(
+    1 -> 2,
+    2 -> 1,
+    3 -> 2
+  )
+
+
+
+
+  for (i <- 1 to 6) {
     val files =
-      if (folder.exists && folder.isDirectory) {
-        folder.listFiles.filter(_.isFile).map(file => webAssetBuildingBase + mainBuildingFolderBase + i + "/" + file.getName).toList
-      } else {
-        List[String]()
-      }
+      (1 to buildingCountPerLevel(i)).map( x => s"$webAssetBuildingBase$mainBuildingFolderBase$i/$x.png").toList
     buildingSourceByLevel.put(i, files)
     mainBuildingDimensionByLevel.put(i,  if (i <= 3) (1, 1) else (2, 2))
   }
 
-  val tileSources = {
-    val folder = play.Environment.simple().getFile(buildingAssetBase + tileAssetFolder)
-
-    if (folder.exists && folder.isDirectory) {
-      folder.listFiles.filter(_.isFile).map(file => {
-        println(s"building assets: ${file.getAbsolutePath}")
-        webAssetBuildingBase + tileAssetFolder + "/" + file.getName
-      }).toList
-    } else {
-      List[String]()
-    }
+  for (i <- 1 to 3) {
+    val files =
+      (1 to tileCountPerY(i)).map( x => s"$webAssetBuildingBase$tileAssetFolder$i/$x.png").toList
+    tileSourceByY.put(i, files)
   }
+
 
 
   def generateHeadquartersTiles(airline : Airline) : TileLayout = {
     val random = new Random(airline.id) //a stable seed
-    val buildingLevel = airline.airlineGrade match {
-      case grade if grade.value <= AirlineGrade.CONTINENTAL.value =>
-        1
-      case _ =>
-        6
-    }
+
+    val buildingLevel = Math.min(6, airline.airlineGrade.value / 3 + 1)
 
     val mainBuildingSource = buildingSourceByLevel(buildingLevel)(random.nextInt(buildingSourceByLevel(buildingLevel).length))
-    val backRowSource = tileSources(random.nextInt(tileSources.length))
-    val midRowSource =  tileSources(random.nextInt(tileSources.length))
-    val frontRowSource =  tileSources(random.nextInt(tileSources.length))
+    val backRowSource = tileSourceByY(1)(random.nextInt(tileSourceByY(1).length))
+    val midRowSource =  tileSourceByY(2)(random.nextInt(tileSourceByY(2).length))
+    val frontRowSource =  tileSourceByY(3)(random.nextInt(tileSourceByY(3).length))
     val (mainBuildingXSize, mainBuildingYSize) = mainBuildingDimensionByLevel(buildingLevel)
     val (mapXSize, mapYSize) = (mainBuildingXSize + 2, mainBuildingYSize + 2)
 
