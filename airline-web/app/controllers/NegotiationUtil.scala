@@ -311,6 +311,8 @@ object NegotiationUtil {
     var accumulativeOdds = 0.0
     var foundMax = false
     (0 to maxDelegateCount).map { delegateCount =>
+      val base = Math.min(1, (15 - requiredDelegates) * 0.04 / (requiredDelegates / Math.ceil(requiredDelegates)))
+      val oddsPerBaseDelegate = base / (Math.max(1, requiredDelegates))
       val oddsForThisDelegateCount : Double =
         if (finalRequirementValue == 0) {
           1
@@ -318,8 +320,7 @@ object NegotiationUtil {
           if (delegateCount < requiredDelegates) {
             0
           } else {
-            val base = (15 - requiredDelegates) * 0.04
-            val oddsPerBaseDelegate = base / (Math.max(1, requiredDelegates))
+
             if (delegateCount < requiredDelegates + 1) {
               accumulativeOdds = base
             } else {
