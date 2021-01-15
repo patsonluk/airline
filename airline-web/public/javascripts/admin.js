@@ -67,7 +67,7 @@ function promptAirlineMessage() {
     var selectedAirlineId =  $("#rivalDetails .adminActions").data("airlineId")
     var airline = loadedRivalsById[selectedAirlineId]
     $('#sendAirlineMessageModal .airlineName').text(airline.name)
-    $('#sendAirlineMessageModal .message').val('')
+    $('#sendAirlineMessageModal .sendMessage').val('')
     $('#sendAirlineMessageModal').fadeIn(500)
 }
 
@@ -75,7 +75,7 @@ function sendAirlineMessage() {
     var selectedAirlineId = $("#rivalDetails .adminActions").data("airlineId")
     var url = "/admin/send-airline-message/" + selectedAirlineId
 
-    var data = { "message" : $('#sendAirlineMessageModal .message').val() }
+    var data = { "message" : $('#sendAirlineMessageModal .sendMessage').val() }
     $.ajax({
         type: 'PUT',
         url: url,
@@ -93,13 +93,13 @@ function sendAirlineMessage() {
 }
 
 function promptBroadcastMessage() {
-    $('#sendBroadcastMessageModal .message').val('')
+    $('#sendBroadcastMessageModal .sendMessage').val('')
     $('#sendBroadcastMessageModal').fadeIn(500)
 }
 
 function sendBroadcastMessage() {
     var url = "/admin/send-broadcast-message"
-    var data = { "message" : $('#sendBroadcastMessageModal .message').val() }
+    var data = { "message" : $('#sendBroadcastMessageModal .sendMessage').val() }
     	$.ajax({
     		type: 'PUT',
     		url: url,
