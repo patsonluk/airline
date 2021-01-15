@@ -2343,10 +2343,12 @@
                                 <div class="clickable" onclick="banChat()">Ban Chat</div>
                                 <div class="clickable" onclick="ban()">Ban</div>
                                 <div class="clickable" onclick="unban()">Un-Ban</div>
+								<div class="clickable" onclick="promptAirlineMessage()">Send Direct Message</div>
                             </div>
 							<div class="superAdminActions" style="display: none;">
 								<h4>Super Admin Action</h4>
 								<div class="clickable" onclick="switchUser()">Switch to this user</div>
+								<div class="clickable" onclick="promptBroadcastMessage()">Send Broadcast Message</div>
 							</div>
 						</div>
 
@@ -4267,6 +4269,55 @@
 		</div>
       </div>
 <!--  end campaign model-->
+	  <div id="sendAirlineMessageModal" class="modal">
+		  <div class="modal-content"  style="width : 500px; height: 400px;">
+			  <span class="close" onclick="closeModal($('#sendAirlineMessageModal'))">&times;</span>
+			  <h4 style="margin-bottom: 10px;">Send private message (popup) <span class="airlineName"></span></h4>
+			  <div class="section">
+				  <input type="textarea" rows="4" cols="50" class="message">
+				  <div>
+					  <div class="button" onclick="sendAirlineMessage()">Send</div>
+					  <div class="button" onclick="closeModal($('#sendAirlineMessageModal'))">Cancel</div>
+				  </div>
+			  </div>
+		  </div>
+	  </div>
+	  <div id="sendBroadcastMessageModal" class="modal">
+		  <div class="modal-content"  style="width : 500px; height: 400px;">
+			  <span class="close" onclick="closeModal($('#sendBroadcastMessageModal'))">&times;</span>
+			  <h4 style="margin-bottom: 10px;">Broadcast message to all online airlines</h4>
+			  <div class="section">
+				  <input type="textarea" rows="4" cols="50"  class="message">
+				  <div>
+					  <div class="button" onclick="sendBroadcastMessage()">Send</div>
+					  <div class="button" onclick="closeModal($('#sendBroadcastMessageModal'))">Cancel</div>
+				  </div>
+			  </div>
+		  </div>
+	  </div>
+
+	  <div id="broadcastMessagePopup" class="modal">
+		  <div class="modal-content"  style="width : 500px; height: 200px;">
+			  <span class="close" onclick="closeModal($('#broadcastMessagePopup'))">&times;</span>
+			  <h4 style="margin-bottom: 10px;">Broadcast message from Admin</h4>
+			  <div style="width: 95%; text-align: center;">
+				  <div class="message" style="width: 100%; height: 100px;"></div>
+				  <div class="button" onclick="closeModal($('#broadcastMessagePopup'))">Ok</div>
+			  </div>
+		  </div>
+	  </div>
+
+	  <div id="airlineMessagePopup" class="modal">
+		  <div class="modal-content"  style="width : 500px; height: 200px;">
+			  <span class="close" onclick="closeModal($('#airlineMessagePopup'))">&times;</span>
+			  <h4 style="margin-bottom: 10px;">Private message from Admin</h4>
+			  <div style="width: 95%; text-align: center;">
+				  <div class="message" style="width: 100%; height: 100px;"></div>
+				  <div class="button" onclick="closeModal($('#airlineMessagePopup'))">Ok</div>
+			  </div>
+		  </div>
+	  </div>
+
 	  <div id="profilesModal" class="modal">
 		<input type="hidden" id="profileId" name="profileId" value="0"/>
 		  <div class="modal-content transparent-modal" style="max-width : 90vw; width: 1300px;">

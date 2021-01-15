@@ -58,7 +58,11 @@ function onMessage(evt) { //right now the message is just the cycle #, so refres
 		if (selectedAirlineId) {
 			refreshPanels(selectedAirlineId)
 		}
-	} else {
+	} else if (json.messageType == "broadcastMessage") {
+        queuePrompt("broadcastMessagePopup", json.message)
+    } else if (json.messageType == "airlineMessage") {
+        queuePrompt("airlineMessagePopup", json.message)
+    } else {
 		console.warn("unknown message type " + evt.data)
 	}
 }  

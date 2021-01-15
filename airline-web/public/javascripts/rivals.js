@@ -248,14 +248,6 @@ function updateRivalChampionedAirportsDetails(airlineId) {
             })
 
             populateNavigation($('#rivalChampionedAirportsList'))
-
-	    	if ($(championedCountries).length == 0) {
-	    		var row = $("<div class='table-row'></div>")
-	    		row.append("<div class='cell'>-</div>")
-	    		row.append("<div class='cell'>-</div>")
-	    		row.append("<div class='cell'>-</div>")
-	    		$('#rivalChampionedAirportsList').append(row)
-	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

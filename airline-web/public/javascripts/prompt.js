@@ -57,12 +57,19 @@ function initPrompts() {
             }
         });
 
+    $('#broadcastMessagePopup').data('function', function(message) {
+        $('#broadcastMessagePopup .message').text(message)
+        $('#broadcastMessagePopup').fadeIn(500)
+    })
+
+    $('#airlineMessagePopup').data('function', function(message) {
+        $('#airlineMessagePopup .message').text(message)
+        $('#airlineMessagePopup').fadeIn(500)
+    })
 }
 
-function queuePrompt(prompt) {
-    if (!promptsCompleted.has(prompt) && !promptQueue.includes(prompt)) {
-        promptQueue.push(prompt)
-    }
+function queuePrompt(promptId, args) {
+    promptQueue.push({ id : promptId, args : args })
     if (!promptInterval) {
         promptInterval = setInterval('showPrompt()', 100)
     }
@@ -73,8 +80,12 @@ function showPrompt() {
         if (!activePrompt) {
             if (promptQueue.length > 0) {
                 activePrompt = promptQueue.shift()
-                var promptId = '#' + activePrompt
-                $(promptId).fadeIn(500)
+                var promptId = '#' + activePrompt.id
+                if ($(promptId).data("function")) {
+                    $(promptId).data("function")(activePrompt.args)
+                } else {
+                    $(promptId).fadeIn(500)
+                }
                 $(promptId).data('closeCallback', function() {
                     closePrompt($(promptId))
                 })

@@ -18,10 +18,10 @@ import scala.concurrent.duration.Duration
 object MyWebSocketActor {
   val counter = new AtomicLong()
 
-  def props(out: ActorRef, userId: Int) = Props(new MyWebSocketActor(out, userId))
+  def props(out: ActorRef, airlineId: Int) = Props(new MyWebSocketActor(out, airlineId))
 
-  def nextSubscriberId(userId: Int) = {
-    userId.toString + "-" + counter.getAndIncrement
+  def nextSubscriberId(airlineId: Int) = {
+    airlineId.toString + "-" + counter.getAndIncrement
   }
 
   startBackgroundPingTrigger()
@@ -39,46 +39,49 @@ object MyWebSocketActor {
 
 
 
-class MyWebSocketActor(out: ActorRef, userId : Int) extends Actor {
+class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
   var subscriberId : Option[String] = None
+  override def preStart = {
+    BroadcastActor.subscribe(self, AirlineCache.getAirline(airlineId).get)
+  }
+
   def receive = {
     case Notification(message) =>
 //      println("going to send " + message + " back to the websocket")
       out ! message
-    case JsNumber(airlineId) => //directly recieve message from the websocket (the only message the websocket client send down now is the airline id
+    case JsNumber(_) => //directly recieve message from the websocket (the only message the websocket client send down now is the airline id
       try {
-        UserSource.loadUserById(userId).foreach { user => 
-          if (user.hasAccessToAirline(airlineId.toInt)) {
-            val subscriberId = MyWebSocketActor.nextSubscriberId(userId)
-            RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
-              case CycleCompleted(cycle) =>
-                MyWebSocketActor.lastSimulatedCycle = cycle
-                //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
-                AirlineCache.invalidateAll()
-                AirportCache.invalidateAll()
-                AirportUtil.refreshAirports()
+          val subscriberId = MyWebSocketActor.nextSubscriberId(airlineId)
+          RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
+            case CycleCompleted(cycle) =>
+              MyWebSocketActor.lastSimulatedCycle = cycle
+              //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
+              AirlineCache.invalidateAll()
+              AirportCache.invalidateAll()
+              AirportUtil.refreshAirports()
 
-                //println("Received cycle completed: " + cycle)
-                out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
-              case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
-                //println("Received cycle info on cycle: " + cycle)
-                out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
-            }, subscriberId)
+              //println("Received cycle completed: " + cycle)
+              out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
+            case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
+              //println("Received cycle info on cycle: " + cycle)
+              out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
+          }, subscriberId)
 
-            actorSystem.eventStream.subscribe(self, classOf[TriggerPing])
-            
-            this.subscriberId = Some(subscriberId)
+          actorSystem.eventStream.subscribe(self, classOf[TriggerPing])
 
-            //MyWebSocketActor.backgroundActor ! RegisterToBackground(airlineId.toInt)      
-          } else {
-            println("user " + userId + " has no access to airline " + airlineId)
-          }
-        }
+          this.subscriberId = Some(subscriberId)
+
+          //MyWebSocketActor.backgroundActor ! RegisterToBackground(airlineId.toInt)
+
       } catch {
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
     case TriggerPing() =>
       out ! Json.obj("ping" -> true)
+    case BroadcastMessage(text) =>
+      out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)
+    case AirlineMessage(airline, text) =>
+      out ! Json.obj("messageType" -> "airlineMessage", "message" -> text)
     case any =>
       println("received " + any + " not handled")  
   }

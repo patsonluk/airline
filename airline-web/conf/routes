@@ -185,6 +185,8 @@ GET     /event/:eventId/airline/:airlineId/reward/olympics-passenger  controller
 
 # Admin
 PUT		 /admin-action/:action/:targetUserId		controllers.AdminApplication.adminAction(action : String, targetUserId : Int)
+PUT		 /admin/send-airline-message/:targetAirlineId		controllers.AdminApplication.sendAirlineMessage(targetAirlineId : Int)
+PUT		 /admin/send-broadcast-message		            controllers.AdminApplication.sendBroadcastMessage()
 
 
 # Signup

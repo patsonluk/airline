@@ -62,3 +62,56 @@ function banChat() {
 function switchUser() {
     adminAction("switch", $("#rivalDetails .adminActions").data("userId"), function() { loadUser(false)})
 }
+
+function promptAirlineMessage() {
+    var selectedAirlineId =  $("#rivalDetails .adminActions").data("airlineId")
+    var airline = loadedRivalsById[selectedAirlineId]
+    $('#sendAirlineMessageModal .airlineName').text(airline.name)
+    $('#sendAirlineMessageModal .message').val('')
+    $('#sendAirlineMessageModal').fadeIn(500)
+}
+
+function sendAirlineMessage() {
+    var selectedAirlineId = $("#rivalDetails .adminActions").data("airlineId")
+    var url = "/admin/send-airline-message/" + selectedAirlineId
+
+    var data = { "message" : $('#sendAirlineMessageModal .message').val() }
+    $.ajax({
+        type: 'PUT',
+        url: url,
+        data: JSON.stringify(data),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            closeModal($('#sendAirlineMessageModal'))
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+}
+
+function promptBroadcastMessage() {
+    $('#sendBroadcastMessageModal .message').val('')
+    $('#sendBroadcastMessageModal').fadeIn(500)
+}
+
+function sendBroadcastMessage() {
+    var url = "/admin/send-broadcast-message"
+    var data = { "message" : $('#sendBroadcastMessageModal .message').val() }
+    	$.ajax({
+    		type: 'PUT',
+    		url: url,
+    	    data: JSON.stringify(data),
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(result) {
+                closeModal($('#sendBroadcastMessageModal'))
+    	    },
+            error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    }
+    	});
+}
