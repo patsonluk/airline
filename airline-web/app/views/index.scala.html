@@ -43,7 +43,8 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
 			  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
 			  crossorigin="anonymous"></script>
-			  
+
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
     <script src='@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")'></script>
 
     <script src='@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")'></script>
@@ -330,25 +331,119 @@
 				</div>
 			</div>
 			<!-- end live-chat -->
+            <div style="position: absolute; width: 15px; height: 100%; z-index: 2; background-color: transparent;" id="tabGroupCue">
+            </div>
 
-			<div style="float: left;" id="tabGroup">
+			<div style="position: absolute; z-index: 1; display: none;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
 				<ul class="tabs" id="main-tabs">
 
-				  <li class="button left-tab worldMapCanvasTab highlighted" data-link="/" onclick="showWorldMap();"><span>World</span></li>
-				  <li class="button left-tab user-specific-tab linksCanvasTab" data-link="link" onclick="showLinksDetails();"><span>Routes</span></li>
-	<!-- 			  <li class="button left-tab" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li> -->
-				  <li class="button left-tab user-specific-tab countryCanvasTab" data-link="country" onclick="showCountryView();"><span>Country</span></li>
-				  <li class="button left-tab user-specific-tab airplaneCanvasTab" data-link="airplane" onclick="showAirplaneCanvas();"><span>Airplane</span></li>
-				  <li class="button left-tab user-specific-tab officeCanvasTab" data-link="office" onclick="showOfficeCanvas();"><span>Office</span></li>
-				  <li class="button left-tab user-specific-tab bankCanvasTab" data-link="bank" onclick="showBankCanvas();"><span>Bank</span></li>
-				  <li class="button left-tab user-specific-tab oilCanvasTab" data-link="oil" onclick="showOilCanvas();"><span>Oil</span></li>
-				  <li class="button left-tab user-specific-tab rivalsCanvasTab" data-link="rival" onclick="showRivalsCanvas();"><span>Rivals</span></li>
-				  <li class="button left-tab rankingCanvasTab" data-link="ranking" onclick="showRankingCanvas();"><span>Ranking</span></li>
-				  <li class="button left-tab allianceCanvasTab" data-link="alliance" onclick="showAllianceCanvas();"><span>Alliance</span></li>
-				  <li class="button left-tab user-specific-tab logCanvasTab" data-link="log" onclick="showLogCanvas();"><span>Log</span></li>
-				  <li class="button left-tab user-specific-tab eventCanvasTab" data-link="event" onclick="showEventCanvas();"><span>Event</span></li>
-				  <li class="button left-tab searchCanvasTab" data-link="search" onclick="showSearchCanvas();"><span>Search</span></li>
+				  <li class="left-tab worldMapCanvasTab">
+                      <div style="display:flex; align-items: center;">
+                          <div class="tab-icon" data-link="/" onclick="showWorldMap();">
+                            <img src='@routes.Assets.versioned("images/icons/globe-green.png")' style="margin: auto;">
+                          </div>
+                          <span class="label">World Map</span>
+                      </div>
+                  </li>
+				  <li class="button left-tab user-specific-tab linksCanvasTab">
+                      <div style="display:flex; align-items: center;">
+                          <div class="tab-icon" data-link="link" onclick="showLinksDetails();">
+                              <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                          </div>
+                          <span class="label">Flights</span>
+                      </div>
+                  </li>
+<!--	&lt;!&ndash; 			  <li class="button left-tab" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li> &ndash;&gt;-->
+
+                    <li class="button left-tab user-specific-tab countryCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="country" onclick="showCountryView();">
+                                <img src='@routes.Assets.versioned("images/icons/locale.png")'>
+                            </div>
+                            <span class="label">Country</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab user-specific-tab airplaneCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="airplane" onclick="showAirplaneCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/airplane-gear.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Airplane</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab user-specific-tab officeCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="office" onclick="showOfficeCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/building-hedge.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Office</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab user-specific-tab bankCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="bank" onclick="showBankCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/bank.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Bank</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab user-specific-tab oilCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="oil" onclick="showOilCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/oil-barrel.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Oil</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab user-specific-tab rivalsCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="rival" onclick="showRivalsCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/user-silhouette-question.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Rivals</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab rankingCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="ranking" onclick="showRankingCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/trophy.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Ranking</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab allianceCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="alliance" onclick="showAllianceCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Alliance</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab user-specific-tab logCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="log" onclick="showLogCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Log</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab user-specific-tab eventCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="event" onclick="showEventCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Event</span>
+                        </div>
+                    </li>
+                    <li class="button left-tab searchCanvasTab">
+                        <div style="display:flex; align-items: center;">
+                            <div class="tab-icon" data-link="search" onclick="showSearchCanvas();">
+                                <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                            </div>
+                            <span class="label">Search</span>
+                        </div>
+                    </li>
 				</ul>
 			</div>
 

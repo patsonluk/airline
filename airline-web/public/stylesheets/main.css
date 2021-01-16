@@ -18,9 +18,56 @@ a {
 }
 
 #tabGroup {
-    width: 80px;
+    /*width: 80px;*/
     height: 100%;
 }
+
+#tabGroup img {
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 18px;
+}
+#main-tabs .left-tab .label {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: rgba(240,240,240,0.9);
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 5px;
+    border-radius: 3px;
+    display: none;
+    backdrop-filter: blur(2px);
+}
+
+
+#main-tabs .left-tab div.tab-icon {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    margin: 5px;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6), 0 0 4px rgba(0, 0, 0, 1);
+}
+
+#main-tabs .left-tab div.tab-icon:hover, #main-tabs .left-tab div.tab-icon.selected {
+    cursor: pointer;
+    box-shadow: inset 0 0 10px rgba(220, 220, 255, 0.8), 0 0 3px rgba(255, 255, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+    background-color: rgba(255, 255, 255, 0.5);
+}
+#main-tabs .left-tab div.tab-icon img{
+
+
+}
+
 
 .mainPanel {
   width: 50%;
@@ -176,11 +223,9 @@ div#canvas.christmas {
     overflow: hidden;
 }
 
-.tabs li.highlighted {
-    font-weight: bold;
-}
 
-.table .table-header .cell.selected, .tabs li.highlighted, .progressionItem.selected {
+
+.table .table-header .cell.selected, .progressionItem.selected {
     background: #72ad5f;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#72ad5f, #90be81);  /* Chrome 10-25, Safari 5.1-6 */
     background: linear-gradient(#72ad5f, #90be81); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
@@ -300,14 +345,6 @@ div.selectedSection {
 	cursor: pointer
 }
 
-.left-tab {
-	border-radius: 10px 0px 0px 10px;
-	background-color: #ebebeb;
-	width: 100%;
-	box-shadow: inset 0 0 2px white, -2px 0 3px rgba(0, 0, 0, 0.3);
-	box-sizing: border-box;
-}
-}
 
 
 .gm-style-iw {
@@ -503,19 +540,6 @@ a:hover, .clickable:hover, .clickable-no-highlight:hover {
 	position: relative;
 } 
 
-.tabs li { 
-	float : left;
-	display: block;
-	padding: 10px 10px;
-	cursor: pointer;
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
-	line-height: 1.6em;
-	color: #454544;
-	text-decoration: none;
-	font-size: 12px;
-}
-
-
 .tabs li:hover {
 	color: #6093e7;
 }
@@ -602,15 +626,6 @@ div#canvas {
     background-size: cover !important;
 }
 
-#main-tabs {
-	height: 100%;
-	background: #023d5d;  /* fallback for old browsers */
-	background: -webkit-linear-gradient(to bottom, #ffffff, #023d5d);  /* Chrome 10-25, Safari 5.1-6 */
-	background: linear-gradient(to bottom, #ffffff, #023d5d); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-	background-repeat: no-repeat;
-    background-attachment: fixed;
-    box-shadow: inset -2px 0 3px rgba(0, 0, 0, 0.2);
-}
 
 /* The Modal (background) */
 .modal {

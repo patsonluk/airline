@@ -31,6 +31,7 @@ $( document ).ready(function() {
     registerEscape()
 	loadAllCountries()
 	updateAirlineColors()
+	initTabGroup()
 	populateTooltips()
 	$('#tutorialHtml').load('assets/html/tutorial.html')
 	
@@ -621,7 +622,69 @@ function populateNavigation(parent) { //change all the tabs to do fake url
     })
 }
 
+let tabGroupState = {}
 
+function showTabGroup() {
+    if (tabGroupState.hideTimeout) {
+        clearTimeout(tabGroupState.hideTimeout)
+        tabGroupState.hideTimeout = undefined
+    }
+    $('#tabGroup').fadeIn(200)
+}
+
+function hideTabGroup(waitDuration) {
+    if (tabGroupState.hideTimeout) {
+        clearTimeout(tabGroupState.hideTimeout)
+    }
+    var timeout = setTimeout(() => $('#tabGroup').fadeOut(500), waitDuration ? waitDuration : 2000)
+    tabGroupState.hideTimeout = timeout
+}
+
+function initTabGroup() {
+    //$('#tabGroup .left-tab').bind('mouseout', () => { console.log('out'); hideTabGroup })
+    //$("#tabGroup").mouseenter(() => showTabGroup()).mouseleave(() => { console.log('out'); hideTabGroup() })
+
+
+    $("#tabGroup .tab-icon").on('mouseenter touchstart',
+        function() {
+            $(this).closest('.left-tab').find('.label').fadeIn(200)
+        }
+    )
+    $("#tabGroup .tab-icon").on('mouseleave touchend',
+        function() {
+            $(this).closest('.left-tab').find('.label').hide()
+        }
+    )
+
+    $("#canvas").on( "swiperight", function( e ) {
+        if ($('#canvas')[0].scrollLeft == 0) {
+            showTabGroup()
+            hideTabGroup(5000)
+        }
+    });
+
+    $("#tabGroupCue").on('mouseenter touchstart',
+        function() {
+            showTabGroup()
+        }
+    )
+    $("#tabGroupCue").on('mouseleave touchend',
+        function() {
+             hideTabGroup(5000)
+        }
+    )
+
+    $("#tabGroup").on('mouseenter touchstart',
+        function() {
+            showTabGroup()
+        }
+    )
+    $("#tabGroup").on('mouseleave touchend',
+        function() {
+             hideTabGroup()
+        }
+    )
+}
 
 window.addEventListener('popstate', function(e) {
     if (e.state && e.state.onclickFunction) {
