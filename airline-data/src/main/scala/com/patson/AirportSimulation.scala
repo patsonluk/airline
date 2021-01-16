@@ -157,7 +157,7 @@ object AirportSimulation {
     consumptionResult.groupBy(_._1._1.fromAirport).foreach {
       case ((fromAirport, passengersFromThisAirport)) =>
         val loyalistDeltaOfAirlines = Map[Int, Int]() //airlineId, delta
-        passengersFromThisAirport.toList.foreach {
+        passengersFromThisAirport.filter(_._1._1.preference.loyaltySensitivity > 0).toList.foreach { //only count pax that actually cares about loyalty now
           case ((passengerGroup, toAirport, route), paxCount) => route.links.foreach { linkConsideration =>
             val link = linkConsideration.link
             val preferredLinkClass = passengerGroup.preference.preferredLinkClass
