@@ -421,8 +421,8 @@ function highlightTab(tab) {
 //	tab.siblings().children("span").removeClass("selected")
 //	//highlight the selected model
 //	tab.children("span").addClass("selected")
-    tab.siblings().removeClass('highlighted')
-    tab.addClass('highlighted')
+    tab.siblings().find('.tab-icon').removeClass('selected')
+    tab.find('.tab-icon').addClass('selected')
 }
 
 function highlightSwitch(selectedSwitch) {

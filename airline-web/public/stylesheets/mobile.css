@@ -14,18 +14,6 @@ and (max-device-width : 640px) {
         width: 100%
     }
 
-    #tabGroup {
-        width: 50px;
-    }
-
-    div#canvas {
-        width: calc(100% - 50px);
-    }
-
-    #tabGroup .tabs li {
-        padding: 8px 2px 8px 2px;
-    }
-
     #mainContainer {
         height: calc(100vh - 60px);
     }
