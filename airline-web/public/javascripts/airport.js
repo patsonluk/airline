@@ -206,8 +206,8 @@ function updateAirportChampionDetails(airport) {
 	    	$(champions).each(function(index, championDetails) {
 	    		var row = $("<div class='table-row clickable' data-link='rival' onclick=\"showRivalsCanvas('" + championDetails.airlineId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
-	    		row.append("<div class='cell'>" + (championDetails.airlineCountryCode ? getCountryFlagImg(championDetails.airlineCountryCode) : "") + championDetails.airlineName + "</div>")
-	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.loyalistCount + "</div>")
+	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
+	    		row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
 	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
 	    		$('#airportDetailsChampionList').append(row)
 	    	})

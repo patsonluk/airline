@@ -718,7 +718,8 @@ function updateChampionedAirportsDetails() {
 	    		var row = $("<div class='table-row clickable' data-link='airport' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
-	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
+	    		row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
+	    		row.append("<div class='cell' style='text-align: right;'>" + championDetails.reputationBoost + "</div>")
 	    		$('#championedAirportsList').append(row)
 	    	})
 
@@ -726,6 +727,7 @@ function updateChampionedAirportsDetails() {
 	    	
 	    	if ($(championedAirports).length == 0) {
 	    		var row = $("<div class='table-row'></div>")
+	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
 	    		row.append("<div class='cell'>-</div>")
