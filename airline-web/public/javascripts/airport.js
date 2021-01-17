@@ -999,9 +999,9 @@ function toggleAirportLinks(airport) {
 	    			drawAirportLinkPath(airport, remoteAirportPassengers.remoteAirport, remoteAirportPassengers.passengers)
 	    		})
 	    		showAirportLinkPaths()
-	    		printConsole('Showing all routes with passenger volume flying from or to this airport')
+	    		//printConsole('Showing all routes with passenger volume flying from or to this airport')
 	    	} else {
-	    		printConsole('No routes with passenges yet flying from or to this airport')
+	    		//printConsole('No routes with passenges yet flying from or to this airport')
 	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -1098,7 +1098,7 @@ function clearAirportLinkPaths() {
 
 
 function hideAirportLinksView() {
-	printConsole('')
+	//printConsole('')
 	clearAirportLinkPaths()
 	updateLinksInfo() //redraw all flight paths
 		
