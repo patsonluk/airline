@@ -44,7 +44,7 @@
 			  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
 			  crossorigin="anonymous"></script>
 
-    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<!--    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>-->
     <script src='@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")'></script>
 
     <script src='@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")'></script>
@@ -253,10 +253,10 @@
 
 
 
-	<div id="console" class="marquee" style="width: 100%; position: relative;" align="center">
-		<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>
-		<span id="consoleMessage"></span>
-	</div>
+<!--	<div id="console" class="marquee" style="width: 100%; position: relative;" align="center">-->
+<!--		<div class="div-overlay" onclick="toggleConsoleMessage()" title="Click to toggle message"></div>-->
+<!--		<span id="consoleMessage"></span>-->
+<!--	</div>-->
 
 
 	<div style="position: relative;" id="mainContainer" > <!-- Main container for the contents + the landing masks-->
@@ -285,7 +285,7 @@
 
 			</div>
 		</div>
-		<div id="main" style="width: 100%;" >
+		<div id="main" style="width: 100%; position: relative;  overflow-x: auto; overflow-y: scroll;" >
 			<!-- Chat Window -->
 			<div id="live-chat" class="user-specific-tab">
 				<div ng-app="ChatApp">
@@ -334,7 +334,7 @@
             <div style="position: absolute; width: 15px; height: 100%; z-index: 2; background-color: transparent;" id="tabGroupCue">
             </div>
 
-			<div style="position: absolute; z-index: 1; display: none;" id="tabGroup">
+			<div style="position: absolute; z-index: 1; display: none; padding-bottom: 100px;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
 				<ul class="tabs" id="main-tabs">
 
@@ -415,7 +415,7 @@
                     <li class="button left-tab allianceCanvasTab">
                         <div style="display:flex; align-items: center;">
                             <div class="tab-icon" data-link="alliance" onclick="showAllianceCanvas();">
-                                <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                                <img src='@routes.Assets.versioned("images/icons/puzzle.png")' style="margin: auto;">
                             </div>
                             <span class="label">Alliance</span>
                         </div>
@@ -423,7 +423,7 @@
                     <li class="button left-tab user-specific-tab logCanvasTab">
                         <div style="display:flex; align-items: center;">
                             <div class="tab-icon" data-link="log" onclick="showLogCanvas();">
-                                <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                                <img src='@routes.Assets.versioned("images/icons/book-open-text.png")' style="margin: auto;">
                             </div>
                             <span class="label">Log</span>
                         </div>
@@ -431,7 +431,7 @@
                     <li class="button left-tab user-specific-tab eventCanvasTab">
                         <div style="display:flex; align-items: center;">
                             <div class="tab-icon" data-link="event" onclick="showEventCanvas();">
-                                <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                                <img src='@routes.Assets.versioned("images/icons/olympics-medal.png")' style="margin: auto;">
                             </div>
                             <span class="label">Event</span>
                         </div>
@@ -439,7 +439,7 @@
                     <li class="button left-tab searchCanvasTab">
                         <div style="display:flex; align-items: center;">
                             <div class="tab-icon" data-link="search" onclick="showSearchCanvas();">
-                                <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
+                                <img src='@routes.Assets.versioned("images/icons/magnifier.png")' style="margin: auto;">
                             </div>
                             <span class="label">Search</span>
                         </div>
@@ -448,7 +448,7 @@
 			</div>
 
 		<!-- main canvas start -->
-			<div id="canvas" style="float: left; overflow-x: auto; overflow-y: scroll;" >
+			<div id="canvas" style="float: left;" >
 				<div id="worldMapCanvas" style="height: 100%;">
 					<div id="map" class="mainPanel" style="float:left"
 						 data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")'

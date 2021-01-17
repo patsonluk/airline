@@ -24,7 +24,7 @@ $( document ).ready(function() {
 		hideUserSpecificElements()
 		refreshLoginBar()
 		getAirports();
-		printConsole("Please log in")
+//		printConsole("Please log in")
         showAbout();
 	}
 
@@ -167,7 +167,7 @@ function loadUser(isLogin) {
 				  showAnnoucement()
 			  }
     		  refreshLoginBar()
-			  printConsole('') //clear console
+//			  printConsole('') //clear console
 			  getAirports()
 			  showUserSpecificElements();
 			  updateChatTabs()
@@ -375,12 +375,12 @@ function LinkHistoryControl(controlDiv, map) {
 function updateAllPanels(airlineId) {
 	updateAirlineInfo(airlineId)
 	
-	if (activeAirline) {
-		if (christmasFlag) {
-		    printConsole("Breaking news - Santa went missing!!! Whoever finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
-		}
-
-	}
+//	if (activeAirline) {
+//		if (christmasFlag) {
+//		    printConsole("Breaking news - Santa went missing!!! Whoever finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
+//		}
+//
+//	}
 	
 }
 
@@ -458,51 +458,51 @@ function updateTime(cycle, fraction, cycleDurationEstimation) {
 }
 
 
-function printConsole(message, messageLevel, activateConsole, persistMessage) {
-	messageLevel = messageLevel || 1
-	activateConsole = activateConsole || false
-	persistMessage = persistMessage || false
-	var messageClass
-	if (messageLevel == 1) {
-		messageClass = 'actionMessage'
-	} else {
-		messageClass = 'errorMessage'
-	}
-
-	if (message == '') { //try to clear message, check if there was a persistent message
-		var previousMessage = $('#console #consoleMessage').data('persistentMessage')
-		if (previousMessage) {
-			message = previousMessage
-		}
-	}
-	
-	if (persistMessage) {
-		$('#console #consoleMessage').data('persistentMessage', message)
-	}
-	var consoleVisible = $('#console #consoleMessage').is(':visible')
-	
-	if (consoleVisible) {
-		$('#console #consoleMessage').fadeOut('slow', function() { //fade out and reset positions
-			$('#console #consoleMessage').text(message)
-			$('#console #consoleMessage').removeClass().addClass(messageClass)
-			$('#console #consoleMessage').fadeIn('slow')
-		}) 
-	} else {
-		$('#console #consoleMessage').text(message)
-		$('#console #consoleMessage').removeClass().addClass(messageClass)
-		if (activateConsole) {
-			$('#console #consoleMessage').fadeIn('slow')
-		}
-	}
-}
-
-function toggleConsoleMessage() {
-	if ($('#console #consoleMessage').is(':visible')) {
-		$('#console #consoleMessage').fadeOut('slow')
-	} else {
-		$('#console #consoleMessage').fadeIn('slow')
-	}
-}
+//function printConsole(message, messageLevel, activateConsole, persistMessage) {
+//	messageLevel = messageLevel || 1
+//	activateConsole = activateConsole || false
+//	persistMessage = persistMessage || false
+//	var messageClass
+//	if (messageLevel == 1) {
+//		messageClass = 'actionMessage'
+//	} else {
+//		messageClass = 'errorMessage'
+//	}
+//
+//	if (message == '') { //try to clear message, check if there was a persistent message
+//		var previousMessage = $('#console #consoleMessage').data('persistentMessage')
+//		if (previousMessage) {
+//			message = previousMessage
+//		}
+//	}
+//
+//	if (persistMessage) {
+//		$('#console #consoleMessage').data('persistentMessage', message)
+//	}
+//	var consoleVisible = $('#console #consoleMessage').is(':visible')
+//
+//	if (consoleVisible) {
+//		$('#console #consoleMessage').fadeOut('slow', function() { //fade out and reset positions
+//			$('#console #consoleMessage').text(message)
+//			$('#console #consoleMessage').removeClass().addClass(messageClass)
+//			$('#console #consoleMessage').fadeIn('slow')
+//		})
+//	} else {
+//		$('#console #consoleMessage').text(message)
+//		$('#console #consoleMessage').removeClass().addClass(messageClass)
+//		if (activateConsole) {
+//			$('#console #consoleMessage').fadeIn('slow')
+//		}
+//	}
+//}
+//
+//function toggleConsoleMessage() {
+//	if ($('#console #consoleMessage').is(':visible')) {
+//		$('#console #consoleMessage').fadeOut('slow')
+//	} else {
+//		$('#console #consoleMessage').fadeIn('slow')
+//	}
+//}
 
 function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
@@ -656,11 +656,30 @@ function initTabGroup() {
         }
     )
 
-    $("#canvas").on( "swiperight", function( e ) {
-        if ($('#canvas')[0].scrollLeft == 0) {
-            showTabGroup()
-            hideTabGroup(5000)
-        }
+//    $("#canvas").on( "swiperight", function( e ) {
+//        if ($('#canvas')[0].scrollLeft == 0) {
+//            showTabGroup()
+//            hideTabGroup(5000)
+//        }
+//    });
+    $("#canvas").on('touchstart', function(e) {
+        var swipe = e.originalEvent.touches,
+        startX = swipe[0].pageX;
+        startY = swipe[0].pageY;
+        $(this).on('touchmove', function(e) {
+            var contact = e.originalEvent.touches,
+            endX = contact[0].pageX,
+            endY = contact[0].pageY,
+            distanceX = endX - startX;
+            distanceY = endY - startY
+            if (Math.abs(distanceX) > Math.abs(distanceY) && distanceX > 30 && $('#main')[0].scrollLeft == 0) {
+                showTabGroup()
+                hideTabGroup(5000)
+            }
+        })
+        .one('touchend', function() {
+            $(this).off('touchmove touchend');
+        });
     });
 
     $("#tabGroupCue").on('mouseenter touchstart',

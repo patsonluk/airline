@@ -15,7 +15,7 @@ and (max-device-width : 640px) {
     }
 
     #mainContainer {
-        height: calc(100vh - 60px);
+        height: calc(100vh - 40px);
     }
 
     #oilPriceChart, #loanInterestRateChart {
