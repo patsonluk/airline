@@ -503,7 +503,7 @@ a:hover, .clickable:hover, .clickable-no-highlight:hover {
 	position: relative;
 } 
 
-.tabs li { 
+.tabs li {
 	float : left;
 	display: block;
 	padding: 10px 10px;
@@ -611,6 +611,11 @@ div#canvas {
     background-attachment: fixed;
     box-shadow: inset -2px 0 3px rgba(0, 0, 0, 0.2);
 }
+
+.canvas {
+    padding-left: 20px;
+}
+
 
 /* The Modal (background) */
 .modal {

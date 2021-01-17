@@ -44,6 +44,9 @@ and (max-device-width : 640px) {
         display: none;
     }
 
+    .canvas {
+        padding-left: 5px;
+    }
 
     .menubar {
         min-height: 30px;

@@ -43,7 +43,7 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
 			  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
 			  crossorigin="anonymous"></script>
-			  
+
     <script src='@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")'></script>
 
     <script src='@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")'></script>
@@ -354,7 +354,7 @@
 
 		<!-- main canvas start -->
 			<div id="canvas" style="float: left; overflow-x: auto; overflow-y: scroll;" >
-				<div id="worldMapCanvas" style="height: 100%;">
+				<div id="worldMapCanvas" class="canvas" style="height: 100%; padding-left: 0px">
 					<div id="map" class="mainPanel" style="float:left"
 						 data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")'
 						 data-base-marker='@routes.Assets.versioned("images/markers/base.png")'
@@ -828,7 +828,7 @@
 	<!-- 	    	   end bottom panel -->
 				</div>
 	<!--   			end world map canvas -->
-				<div id="linksCanvas" style="display: none; height: 100%; min-width: 400px;">
+				<div id="linksCanvas"  class="canvas" style="display: none; height: 100%; min-width: 400px;">
 					<div style="float: left;" class="mainPanel">
 						<div class="section" style="height: 95% ; width : 98%; float: left;">
 							<div style="height: 20px">
@@ -873,7 +873,7 @@
 				</div>
 	<!--  end links canvas -->
 
-				<div id="airportCanvas" style="display: none; min-width: 500px;">
+				<div id="airportCanvas" class="canvas" style="display: none; min-width: 500px;">
 					<!-- left panel -->
 					<div style="float:left" class="verticalGroup airportCanvasLeftGroup">
 						<div style="box-sizing:border-box; width: 100%; display: flex;">
@@ -1168,7 +1168,7 @@
 					<div style="clear: both;"></div>
 				</div>
 	<!--   			end airport canvas -->
-				<div id="departuresCanvas" style="display: none; height: 100%">
+				<div id="departuresCanvas" class="canvas" style="display: none; height: 100%">
 					<div style="height: 610px ; width : 1200px; float: left;" class="section">
 						<div class="title" style="float: left;">Departures</div>
 						<div id="weather" style="float: right;">
@@ -1213,7 +1213,7 @@
 					</div>
 				</div>
 				<!--  end departures canvas -->
-				<div id="countryCanvas" style="height: 100%; display: none;">
+				<div id="countryCanvas" class="canvas" style="height: 100%; display: none;">
 					<div class="mainPanel" style="float: left;">
 						<div style="height: 95% ; width : 95%; float: left;" class="section">
 							<div style="width: 100%; height: 100%; overflow: auto;">
@@ -1311,7 +1311,7 @@
 					</div>
 				</div>
 	<!--   			end country canvas -->
-				<div id="airplaneCanvas" style="height: 100%; display: none; min-width: 600px;">
+				<div id="airplaneCanvas"  class="canvas" style="height: 100%; display: none; min-width: 600px;">
 					<div style="float: left;" class="mainPanel airplaneCanvasLeftGroup">
 						<div style="height: 95% ; width : 95%; float: left;"  class="section">
 							<div style="width: 100%; height: 100%; overflow:auto;">
@@ -1466,7 +1466,7 @@
 	<!-- 			    end right panel -->
 				</div>
 	<!--   			end airplane canvas -->
-				<div id="officeCanvas" style="height: 100%; display: none; min-width: 400px;">
+				<div id="officeCanvas" class="canvas" style="height: 100%; display: none; min-width: 400px;">
 					<div style="float: left;" class="verticalGroup officeCanvasLeftGroup">
 						<div class="section" style="width: 95%; float: left;">
                             <div style="float: left;" class="verticalGroup">
@@ -1973,7 +1973,7 @@
 				</div>
 	<!--   			end office canvas -->
 
-				<div id="bankCanvas" style="height: 100%; display: none;">
+				<div id="bankCanvas" class="canvas" style="height: 100%; display: none;">
 					<div style="float: left;" class="verticalGroup bankCanvasLeftGroup">
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Interest Rate History</h4>
@@ -2034,7 +2034,7 @@
 				</div>
 	<!--   			end bank canvas -->
 
-				<div id="oilCanvas" style="height: 100%; display: none;">
+				<div id="oilCanvas" class="canvas" style="height: 100%; display: none;">
 					<div style="float: left;" class="verticalGroup oilCanvasLeftGroup">
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Oil Price History</h4>
@@ -2165,7 +2165,7 @@
 	<!--   			end oil canvas -->
 
 
-				<div id="rankingCanvas" style="height: 100%; display: none;">
+				<div id="rankingCanvas" class="canvas" style="height: 100%; display: none;">
 					<div style="float: left;" class="verticalGroup">
 						<div class="table data section" id="passengerRank" style="width: 95%">
 							<div class="table-header">
@@ -2284,7 +2284,7 @@
 					</div>
 				</div>
 	<!--   			end ranking canvas -->
-				<div id="rivalsCanvas" style="height: 100%; display: none;">
+				<div id="rivalsCanvas" class="canvas" style="height: 100%; display: none;">
 					<div style="float: left;" class="mainPanel">
 						<div style="width : 95%; height: 95%; float: left;" class="section">
 							<div style="height: 20px;"><input type="checkbox" id="hideInactive" onchange="toggleHideInactive(this.checked)" checked/><span class="label">Hide Inactive Airlines</span></div>
@@ -2420,7 +2420,7 @@
 					<div style="clear: both;"></div>
 				</div>
 	<!--   			end rival canvas -->
-				<div id="allianceCanvas" style="height: 100%; display: none;">
+				<div id="allianceCanvas" class="canvas" style="height: 100%; display: none;">
 					<div style="float: left;" class="mainPanel">
 						<div id="currentAirlineMemberDetails" style="width : 95%;" class="section">
 							<div style="width: 50%; margin-bottom: 15px; float: left;">
@@ -2585,7 +2585,7 @@
 					<div style="clear: both;"></div>
 				</div>
 		<!-- end alliance canvas -->
-				<div id="logCanvas" style="height: 100%; display: none;">
+				<div id="logCanvas" class="canvas" style="height: 100%; display: none;">
 					<div style="width : 95%; height: 200px" class="section">
 						<h4>Alerts</h4>
 						<div id = "alertTableSortHeader" class="table data" style="width: 100%; height: 20px;">
@@ -2638,7 +2638,7 @@
 				<!-- end log canvas -->
 
 
-				<div id="eventCanvas" style="height: 100%; display: none;">
+				<div id="eventCanvas" class="canvas" style="height: 100%; display: none;">
 					<div class="verticalGroup firstColumn" style="min-height: 200px; float:left;">
 						<div style="width : 90%" class="section">
 							<h4>Olympics</h4>
@@ -2727,7 +2727,7 @@
 				</div>
 				<!-- end event canvas -->
 
-			  <div id="searchCanvas" style="height: 100%; display: none; justify-content: center;">
+			  <div id="searchCanvas" class="canvas" style="height: 100%; display: none; justify-content: center;">
 				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section mainSection">
 					  <div style="width: 100%; min-height: 80px;" class="titlesContainer">
 						  <div class="titleNavigation">
