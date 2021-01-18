@@ -37,6 +37,7 @@ html {
   --input-color: #606060;
   --input-background-color: #aaaaaa;
   --placeholder-color: #909090;
+  --control-panel-background-image: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.8) 90%, rgba(232,232,216,0.8));
 }
 
 html[data-theme='dark'] {
@@ -77,6 +78,7 @@ html[data-theme='dark'] {
   --input-color: rgba(255, 255, 255, 0.8);
   --input-background-color: #555555;
   --placeholder-color: rgba(255, 255, 255, 0.4);
+  --control-panel-background-image: none;
 }
 
 
@@ -480,7 +482,7 @@ dd.error {
 	left: 50% !important;
 	z-index: 1 !important;
 	transform:translateX(-50%); !important;
-	background-image: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.8) 90%, rgba(232,232,216,0.8)) !important;
+	background-image: var(--control-panel-background-image) !important;
 }
 
 #hideAirportLinksButton {
