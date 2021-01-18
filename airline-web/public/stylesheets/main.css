@@ -66,9 +66,9 @@ html[data-theme='dark'] {
   --scrollbar-color: hsl(0, 50%, 90%) hsl(0, 50%, 100%);
 
   --tooltip-background-color: rgba(0, 0, 0, 0.5);
-  --modal-background-color: rgba(255,255,255,0.3);
+  --modal-background-color: rgba(255,255,255,0.2);
   --chat-background: rgba(0, 0, 0, 0.4);
-  --chat-current-background: rgba(0, 0, 0, 0.4);
+  --chat-current-background: rgba(255, 255, 255, 0.1);
 
   --select-background-color: #555555;
   --select-linear-gradient: linear-gradient(to bottom, #333333 0%,#555555 100%);

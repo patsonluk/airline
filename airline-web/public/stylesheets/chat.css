@@ -53,17 +53,17 @@
 			display: inline-block;
 			padding: 12px 15px 13px 15px;
 			cursor: pointer;
-			border-left: DimGray solid 1px;
-			border-right: DimGray solid 1px;
-			border-top: DimGray solid 1px;
+			border-left: var(--input-border-color) solid 1px;
+			border-right: var(--input-border-color) solid 1px;
+			border-top: var(--input-border-color) solid 1px;
 			border-radius: 3px 3px 0px 0px;
 		}
 
 #live-chat h4 ul.ctabs li.current{
 			background: var(--chat-current-background);
-			border-left: black solid 1px;
-			border-right: black solid 1px;
-			border-top: black solid 1px;
+			border-left: var(--input-border-color) solid 1px;
+			border-right: var(--input-border-color) solid 1px;
+			border-top: var(--input-border-color) solid 1px;
 			border-radius: 3px 3px 0px 0px;
 			
 			color: var(--text-color);
@@ -140,7 +140,7 @@
 }
 
 .chat {
-	background: var(--chat-background);
+	background: var(--chat-current-background);
 	backdrop-filter: var(--backdrop-filter);
 }
 
