@@ -78,7 +78,7 @@ html[data-theme='dark'] {
   --input-color: rgba(255, 255, 255, 0.8);
   --input-background-color: #555555;
   --placeholder-color: rgba(255, 255, 255, 0.4);
-  --control-panel-background-image: none;
+  --control-panel-background-image: var(--background-gradient-image);
 }
 
 
@@ -481,7 +481,7 @@ dd.error {
 	bottom: 100px !important;
 	left: 50% !important;
 	z-index: 1 !important;
-	transform:translateX(-50%); !important;
+	transform:translateX(-50%) !important;
 	background-image: var(--control-panel-background-image) !important;
 }
 
