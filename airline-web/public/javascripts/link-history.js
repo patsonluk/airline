@@ -416,8 +416,11 @@ function showLinkHistory() {
                  }
 
                 infowindow = new google.maps.InfoWindow({
-                     content: $("#linkHistoryPopup").html(),
                      maxWidth : 400});
+
+                var popup = $("#linkHistoryPopup").clone()
+    			popup.show()
+                infowindow.setContent(popup[0])
 
                 infowindow.setPosition(event.latLng);
                 infowindow.open(map);

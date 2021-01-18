@@ -1057,10 +1057,13 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 		$("#airportLinkPopupFrom").html(getCountryFlagImg(this.fromCountry) + this.fromAirport)
 		$("#airportLinkPopupTo").html(getCountryFlagImg(this.toCountry) + this.toAirport)
 		$("#airportLinkPopupPassengers").text(this.passengers)
+
 		infowindow = new google.maps.InfoWindow({
-             content: $("#airportLinkPopup").html(),
              maxWidth : 400
              });
+        var popup = $("#airportLinkPopup").clone()
+        popup.show()
+        infowindow.setContent(popup[0])
 		
 		infowindow.setPosition(event.latLng);
 		infowindow.open(map);
