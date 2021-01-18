@@ -1133,6 +1133,11 @@ function checkDarkTheme(chartConfig, keepPallette) {
             chartConfig.usePlotGradientColor = "0"
             chartConfig.legendBgColor = "#DDDDDD"
             chartConfig.legendBgAlpha = "10"
+            chartConfig.toolTipBgColor = "#444444"
+            chartConfig.toolTipColor = "#DDDDDD"
+            chartConfig.valueFontColor = "#DDDDDD"
+
+
     //                "legendIconAlpha": "50",
     //                "legendIconBgAlpha": "30",
     //                "legendIconBorderColor": "#123456",

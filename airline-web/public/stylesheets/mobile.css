@@ -1,6 +1,10 @@
 /* mobile (portrait) ----------- */
 @media only screen
 and (max-device-width : 640px) {
+    html[data-theme='dark'] {
+        --backdrop-filter: none;
+        --text-color: #DDDDDD;
+    }
 /*and (orientation : portrait or max-device-width : 1024px) {*/
     .mainPanel, #map {
         height: 50%;
@@ -41,7 +45,7 @@ and (max-device-width : 640px) {
         overflow: hidden;
         width: 100%;
         z-index: 999;
-        background-color: #FFF;
+        background-image: var(--background-gradient-image);
     }
 
 
@@ -55,7 +59,7 @@ and (max-device-width : 640px) {
 
     .extendedTopBarDetails {
         width: 100%;
-        background-color: #FFF;
+        background-color: var(--background-gradient-image);
     }
 
     #routeSearchResult {

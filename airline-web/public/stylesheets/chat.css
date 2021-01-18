@@ -146,12 +146,15 @@
 
 .chat-history {
 	height: 252px;
-	padding: 8px 24px;
+	padding: 8px 8px;
 	overflow-y: scroll;
 	line-height: 20px;
 	font-family: Tahoma, Geneva, sans-serif;
 }
 
+.chat-history li {
+    padding: 0 5px;
+}
 .chat-history li:nth-child(even) {background: var(--table-even-row-background-color)}
 .chat-history li:nth-child(odd) {background: var(--table-odd-row-background-color)}
 

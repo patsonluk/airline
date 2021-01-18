@@ -30,10 +30,17 @@ html {
   --modal-background-color: rgba(0,0,0,0.4);
   --chat-background: #ebebeb;
   --chat-current-background: #ffffff;
+  --select-background-color: #aaaaaa;
+  --select-linear-gradient: linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+
+  --input-border-color: #6093e7;
+  --input-color: #606060;
+  --input-background-color: #aaaaaa;
+  --placeholder-color: #909090;
 }
 
 html[data-theme='dark'] {
-  --text-color: rgba(255, 255, 255, 0.7);
+  --text-color: rgba(255, 255, 255, 0.8);
   /*--background-gradient-color: background-color: rgba(0, 0, 0, 0.4);*/
   --background-gradient-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
   --button-shadow: inset 0 0 4px rgba(255, 255, 255, 0.4), 0 0 4px rgba(255, 255, 255, 0.2);
@@ -62,6 +69,14 @@ html[data-theme='dark'] {
   --modal-background-color: rgba(255,255,255,0.3);
   --chat-background: rgba(0, 0, 0, 0.4);
   --chat-current-background: rgba(0, 0, 0, 0.4);
+
+  --select-background-color: #555555;
+  --select-linear-gradient: linear-gradient(to bottom, #333333 0%,#555555 100%);
+
+  --input-border-color: #aaa;
+  --input-color: rgba(255, 255, 255, 0.8);
+  --input-background-color: #555555;
+  --placeholder-color: rgba(255, 255, 255, 0.4);
 }
 
 
@@ -77,6 +92,10 @@ body {
 a {
     font-size: 13px;
     color: var(--text-color);
+}
+
+::placeholder {
+    color: var(--placeholder-color);
 }
 
 #map {
@@ -1048,7 +1067,7 @@ div.remarks {
 }
 
 /* keep style for airportPopup */
-#airportPopup, #airportPopup div.table-row, #airportPopup .label, #airportPopup h4 {
+#airportPopup, #airportPopup div.table-row, #airportPopup .label, #airportPopup h4, #floatMessageBox {
     color: rgba(0, 0, 0, 0.5);
 }
 #airportPopup div.button {
