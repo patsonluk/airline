@@ -28,6 +28,8 @@ html {
 
   --tooltip-background-color: rgba(0, 0, 0, 0.75);
   --modal-background-color: rgba(0,0,0,0.4);
+  --chat-background: #ebebeb;
+  --chat-current-background: #ffffff;
 }
 
 html[data-theme='dark'] {
@@ -58,6 +60,8 @@ html[data-theme='dark'] {
 
   --tooltip-background-color: rgba(0, 0, 0, 0.5);
   --modal-background-color: rgba(255,255,255,0.3);
+  --chat-background: rgba(0, 0, 0, 0.4);
+  --chat-current-background: rgba(0, 0, 0, 0.4);
 }
 
 
