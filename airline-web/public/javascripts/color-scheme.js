@@ -9,8 +9,8 @@ function detectColorScheme(){
         //matchMedia method not supported
         return false;
     } else {
-        //OS theme setting detected as dark
-        theme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        //CONVINCE USER DARK IS BETTER!
+        //theme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
     }
 
     document.documentElement.setAttribute("data-theme", theme);
