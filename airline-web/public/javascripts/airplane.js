@@ -865,7 +865,7 @@ function getAirplaneIcon(airplane, badConditionThreshold, explicitIsAssigned) {
         color = "#8CB9D9"
     }
 
-	var utilizationDiv = $("<div class='utilization' style='position: absolute; right: 0; bottom: 0; background-color: " + color + "; font-size: 8px; font-weight: bold; display: none;'></div>")
+	var utilizationDiv = $("<div class='utilization' style='position: absolute; right: 0; bottom: 0; color: #454544; background-color: " + color + "; font-size: 8px; font-weight: bold; display: none;'></div>")
 	utilizationDiv.text(utilization)
 	div.append(utilizationDiv)
 
@@ -879,7 +879,7 @@ function getAirplaneIcon(airplane, badConditionThreshold, explicitIsAssigned) {
     }
 
 
-    var conditionDiv = $("<div class='condition' style='position: absolute; right: 0; top: 0; background-color: " + color + "; font-size: 8px; display: none;'></div>")
+    var conditionDiv = $("<div class='condition' style='position: absolute; right: 0; top: 0; color:#454544; background-color: " + color + "; font-size: 8px; display: none;'></div>")
     conditionDiv.text(Math.floor(condition))
 
     div.attr("title", "#"+ airplaneId + " condition: " + condition.toFixed(2) + "% util: " + utilization + "%")

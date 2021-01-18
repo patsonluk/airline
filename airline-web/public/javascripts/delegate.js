@@ -72,7 +72,7 @@ function refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo) {
         $delegateIconDiv.append($delegateIcon)
 
         if (busyDelegate.coolDown) {
-            var $coolDownDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #a4f5b0; font-size: 8px; font-weight: bold;'></div>")
+            var $coolDownDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #a4f5b0; color: #454544; font-size: 8px; font-weight: bold;'></div>")
             $coolDownDiv.text(busyDelegate.coolDown)
             $delegateIconDiv.append($coolDownDiv)
         }

@@ -1,14 +1,78 @@
+html {
+  /*--text-color: rgba(0, 0, 0, 0.7);*/
+  --text-color: #606060;
+  --text-shadow: 0px 0px 1px rgba(0,0,0,0.2);
+  --background-gradient-image: linear-gradient(to bottom, #FFFFFF, #FFFFFF 90%, #e8e8d8);
+  --button-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.6);
+  --button-background: #ebebeb;
+  --button-backdrop-filter: none;
+  --button-hover-color: #6093e7;
+  --table-header-background: linear-gradient(#7fb8ff, #a2cfff);
+  --table-header-shadow: inset 0 0 2px rgba(255, 255, 255, 0.3), 0 0 4px rgba(0, 0, 0, 0.4);
+  --table-header-text-shadow: 0px 0px 3px rgba(255,255,255,0.6);
+  --table-header-color: rgb(0, 0, 0, 0.5);
+  --table-header-selected-background: linear-gradient(#72ad5f, #90be81); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  --table-header-selected-shadow: inset 0 0 5px rgba(255, 255, 255, 0.6), 0 0 4px rgba(0, 0, 0, 0.4);
+  --table-header-selected-color: rgba(240,240,240,0.9);
+  --table-header-selected-text-shadow: 0px 0px 5px rgba(255,255,255,0.5);
+
+  --table-even-row-background-color: #FFF;
+  --table-odd-row-background-color: #DDD;
+  --table-selected-row-background: linear-gradient(#72ad5f, #90be81); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  --table-selected-row-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+
+  --backdrop-filter: none;
+  --menubar-background-image: linear-gradient(rgba(255,255,255,1), rgba(220,220,220,1));
+  --menubar-shadow: inset 0 0 5px rgba(255, 255, 255, 0.7);
+  --scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
+
+  --tooltip-background-color: rgba(0, 0, 0, 0.75);
+  --modal-background-color: rgba(0,0,0,0.4);
+}
+
+html[data-theme='dark'] {
+  --text-color: rgba(255, 255, 255, 0.7);
+  /*--background-gradient-color: background-color: rgba(0, 0, 0, 0.4);*/
+  --background-gradient-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
+  --button-shadow: inset 0 0 4px rgba(255, 255, 255, 0.4), 0 0 4px rgba(255, 255, 255, 0.2);
+  --button-background: rgba(255, 255, 255, 0.2);
+  --button-backdrop-filter: blur(2px);
+  --table-header-background: linear-gradient(#222222, #333333);
+  --table-header-shadow: inset 0 0 2px rgba(255, 255, 255, 0.3);
+  --table-header-text-shadow: 0px 0px 3px rgba(255,255,255,0.2);
+  --table-header-color: rgba(255, 255, 255, 0.7);
+  --table-header-selected-background: linear-gradient(#555555, #666666);
+  --table-header-selected-shadow: inset 0 0 5px rgba(255, 255, 255, 0.8), 0 0 4px rgba(255, 255, 255, 0.6);
+  --table-header-selected-color: rgba(255, 255, 255, 0.9);
+  --table-header-selected-text-shadow: 0px 0px 5px rgba(255,255,255,0.8);
+
+  --table-even-row-background-color: rgba(50, 50, 50, 1);
+  --table-odd-row-background-color: rgba(80, 80, 80, 1);
+  --table-selected-row-background: linear-gradient(#888888, #999999);
+  --table-selected-row-shadow: inset 0 0 5px rgba(255, 255, 255, 0.8), 0 0 4px rgba(255, 255, 255, 0.6);
+
+  --button-hover-color: #6093e7;
+  --backdrop-filter: blur(2px);
+  --menubar-background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
+  --scrollbar-color: hsl(0, 50%, 90%) hsl(0, 50%, 100%);
+
+  --tooltip-background-color: rgba(0, 0, 0, 0.5);
+  --modal-background-color: rgba(255,255,255,0.3);
+}
+
+
+
 body {
 	font-size: 13px;
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
-	color: #454544;
+	color: var(--text-color);
 
 	background: #abbaab;  /* fallback for old browsers */
 }
 
 a {
     font-size: 13px;
-    color: #454544;
+    color: var(--text-color);
 }
 
 #map {
@@ -163,11 +227,12 @@ div#canvas.christmas {
 	min-height: 40px;
 	width: 100%;
 	z-index: 999;
-	background-image: linear-gradient(rgba(255,255,255,1), rgba(220,220,220,1));
+	background-image: var(--menubar-background-image);
 	display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.7);
+    box-shadow: var(--menubar-shadow);
+    backdrop-filter: var(--backdrop-filter);
     /* 	margin-top: -80px; */
 }
 
@@ -212,14 +277,14 @@ div#canvas.christmas {
 .table .table-header .cell:not(:empty) {
     background: #7fb8ff;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#7fb8ff, #a2cfff);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(#7fb8ff, #a2cfff); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--table-header-background);
     padding: 5px;
-    box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.3), 0 0 4px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--table-header-shadow);
     box-sizing: border-box;
-    text-shadow: 0px 0px 3px rgba(255,255,255,0.6);
+    text-shadow: var(--table-header-text-shadow);
     font-size: 1.1em;
     font-weight: bold;
-    color : rgb(0, 0, 0, 0.5);
+    color : var(--table-header-color);
     overflow: hidden;
 }
 
@@ -228,10 +293,10 @@ div#canvas.christmas {
 .table .table-header .cell.selected, .progressionItem.selected {
     background: #72ad5f;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#72ad5f, #90be81);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(#72ad5f, #90be81); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.6), 0 0 4px rgba(0, 0, 0, 0.4);
-    color: rgba(240,240,240,0.9);
-    text-shadow: 0px 0px 5px rgba(255,255,255,0.5);
+    background: var(--table-header-selected-background);
+    box-shadow: var(--table-header-selected-shadow);
+    color: var(--table-header-selected-color);
+    text-shadow: var(--table-header-selected-text-shadow);
 }
 
 .table .table-header .cell:first-child{
@@ -243,21 +308,22 @@ div#canvas.christmas {
 }
 
 .table.data div.table-row:nth-child(even) {
-	background: #FFF
+	background-color: var(--table-even-row-background-color);
 }
 
 .table.data div.table-row.selected:nth-child(even), .table.data div.table-row.selected:nth-child(odd), .table.data div.table-row.clickable:hover:nth-child(even), .table.data div.table-row.clickable:hover:nth-child(odd) {
     background: #72ad5f;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#72ad5f, #90be81);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(#72ad5f, #90be81); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: var(--table-selected-row-background);
+    box-shadow: var(--table-selected-row-shadow);
 }
 
 .table.colored div.table-row:nth-child(even){
-    background-color: #FFF;
+    background-color: var(--table-even-row-background-color);
 }
 
 .table.data div.table-row:nth-child(odd), .table.colored  div.table-row:nth-child(odd){
-	background: #DDD
+	background: var(--table-odd-row-background-color);
 }
 
 .progressionItem {
@@ -281,7 +347,7 @@ div#canvas.christmas {
 .label, div.header, span.header {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	color: var(--text-color);
 	text-decoration: none;
 	font-size: 12px;
 }
@@ -298,18 +364,19 @@ div.button, .ajax-file-upload {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #454544;*/
-    background-color: #ebebeb;
+    background-color: var(--button-background);
 	text-decoration: none;
 	font-size: 12px;
 	display: inline-block;
 	cursor: pointer;
 	padding: 5px 15px;
 	margin: 5px 5px;
-	box-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.6);
+	box-shadow: var(--button-shadow);
+	backdrop-filter: var(--button-backdrop-filter);
 }
 
 div.button:hover {
-    color: #6093e7;
+    color: var(--button-hover-color);
 }
 
 div.glow, span.glow, img.glow {
@@ -356,7 +423,7 @@ div.selectedSection {
 dd.info {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	color: #454544;
+	color: var(--text-color);
 	text-decoration: none;
 	font-size: 10px;
 }
@@ -447,9 +514,9 @@ div.section, div.selectedSection, .modal-content {
 }
 
 div.section, .modal-content {
-	background-image: -webkit-gradient(linear, 0% 100%, 0% 90%, from(#e8e8d8), to(#FFFFFF));
-    background-image: -moz-linear-gradient(90deg, #e8e8d8 0%, #FFFFFF 10%);
-    background-image: linear-gradient(to bottom, #FFFFFF, #FFFFFF 90%, #e8e8d8);
+	/*background-image: linear-gradient(to bottom, #FFFFFF, #FFFFFF 90%, #e8e8d8);*/
+	background-image: var(--background-gradient-image);
+	backdrop-filter: var(--backdrop-filter);
 }
 	
 	
@@ -552,7 +619,7 @@ a:hover, .clickable:hover, .clickable-no-highlight:hover {
 li.row, div.table-row {
 	padding: 3px;
 	font-size: 11px;
-	color: #616161;
+	color: var(--text-color);
 }
 
 .table.data {
@@ -637,7 +704,8 @@ div#canvas {
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    background-color: var(--modal-background-color); /* Black w/ opacity */
+    backdrop-filter: blur(2px);
 }
 
 .modal.transparentBackground {
@@ -872,7 +940,7 @@ img.flag {
 
 div {
      scrollbar-width: thin;
-     scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
+     scrollbar-color: var(--scrollbar-color);
 }
 
 input:disabled, .button.disabled, .clickable.disabled {
@@ -904,7 +972,7 @@ input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover {
     z-index: 1;
     white-space: nowrap;
     background: linear-gradient(#F0E069 0%, #FFF6B3 10%);
-    color : #454544;
+    color : var(--text-color);
     border-radius: 3px 3px 3px 3px;
     text-transform: none !important;
 }
@@ -974,3 +1042,11 @@ div.remarks {
     align-items: center;
 }
 
+/* keep style for airportPopup */
+#airportPopup, #airportPopup div.table-row, #airportPopup .label, #airportPopup h4 {
+    color: rgba(0, 0, 0, 0.5);
+}
+#airportPopup div.button {
+    background-color: #ebebeb;
+    box-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.6);
+}

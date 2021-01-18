@@ -18,7 +18,7 @@
 
 .tooltip .tooltiptext {
     visibility: hidden;
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: var(--tooltip-background-color);
     backdrop-filter: blur(6px);
     color: #fff;
     border-radius: 6px;
