@@ -110,6 +110,14 @@ a {
     height: 100%;
 }
 
+#tabGroup {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+}
+#tabGroup::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+}
+
 #tabGroup img {
     max-height: 100%;
     max-width: 100%;

@@ -340,19 +340,19 @@
 				</div>
 			</div>
 			<!-- end live-chat -->
-            <div style="position: absolute; width: 15px; height: 100%; z-index: 2; background-color: transparent;" id="tabGroupCue">
+            <div style="position: fixed; top: 0px; width: 15px; height: 100%; z-index: 2; background-color: transparent;" id="tabGroupCue">
             </div>
 
-			<div style="position: absolute; z-index: 1; display: none; padding-top: 10px; padding-bottom: 100px;" id="tabGroup">
+			<div style="position: fixed; z-index: 1; top: 40px; display: none; height: calc(100% - 40px); overflow-y: scroll;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
-				<ul class="tabs" id="main-tabs">
+				<ul class="tabs" id="main-tabs" style="padding: 10px 0 60px 0;">
 
 				  <li class="left-tab worldMapCanvasTab">
                       <div style="display:flex; align-items: center;">
                           <div class="tab-icon" data-link="/" onclick="showWorldMap();">
                             <img src='@routes.Assets.versioned("images/icons/globe-green.png")' style="margin: auto;">
                           </div>
-                          <span class="label">World Map</span>
+                          <span class="label floatLabel">World Map</span>
                       </div>
                   </li>
 				  <li class="button left-tab user-specific-tab linksCanvasTab">
@@ -360,7 +360,7 @@
                           <div class="tab-icon" data-link="link" onclick="showLinksDetails();">
                               <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
                           </div>
-                          <span class="label">Flights</span>
+                          <span class="label floatLabel">Flights</span>
                       </div>
                   </li>
 <!--	&lt;!&ndash; 			  <li class="button left-tab" id="airportCanvasTab" onclick="showAirportDetails();"><span>Airport</span></li> &ndash;&gt;-->
@@ -370,7 +370,7 @@
                             <div class="tab-icon" data-link="country" onclick="showCountryView();">
                                 <img src='@routes.Assets.versioned("images/icons/locale.png")'>
                             </div>
-                            <span class="label">Country</span>
+                            <span class="label floatLabel">Country</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab airplaneCanvasTab">
@@ -378,7 +378,7 @@
                             <div class="tab-icon" data-link="airplane" onclick="showAirplaneCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/airplane-gear.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Airplane</span>
+                            <span class="label floatLabel">Airplane</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab officeCanvasTab">
@@ -386,7 +386,7 @@
                             <div class="tab-icon" data-link="office" onclick="showOfficeCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/building-hedge.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Office</span>
+                            <span class="label floatLabel">Office</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab bankCanvasTab">
@@ -394,7 +394,7 @@
                             <div class="tab-icon" data-link="bank" onclick="showBankCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/bank.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Bank</span>
+                            <span class="label floatLabel">Bank</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab oilCanvasTab">
@@ -402,7 +402,7 @@
                             <div class="tab-icon" data-link="oil" onclick="showOilCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/oil-barrel.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Oil</span>
+                            <span class="label floatLabel">Oil</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab rivalsCanvasTab">
@@ -410,7 +410,7 @@
                             <div class="tab-icon" data-link="rival" onclick="showRivalsCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/user-silhouette-question.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Rivals</span>
+                            <span class="label floatLabel">Rivals</span>
                         </div>
                     </li>
                     <li class="button left-tab rankingCanvasTab">
@@ -418,7 +418,7 @@
                             <div class="tab-icon" data-link="ranking" onclick="showRankingCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/trophy.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Ranking</span>
+                            <span class="label floatLabel">Ranking</span>
                         </div>
                     </li>
                     <li class="button left-tab allianceCanvasTab">
@@ -426,7 +426,7 @@
                             <div class="tab-icon" data-link="alliance" onclick="showAllianceCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/puzzle.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Alliance</span>
+                            <span class="label floatLabel">Alliance</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab logCanvasTab">
@@ -434,7 +434,7 @@
                             <div class="tab-icon" data-link="log" onclick="showLogCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/book-open-text.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Log</span>
+                            <span class="label floatLabel">Log</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab eventCanvasTab">
@@ -442,7 +442,7 @@
                             <div class="tab-icon" data-link="event" onclick="showEventCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/olympics-medal.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Event</span>
+                            <span class="label floatLabel">Event</span>
                         </div>
                     </li>
                     <li class="button left-tab searchCanvasTab">
@@ -450,7 +450,7 @@
                             <div class="tab-icon" data-link="search" onclick="showSearchCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/magnifier.png")' style="margin: auto;">
                             </div>
-                            <span class="label">Search</span>
+                            <span class="label floatLabel">Search</span>
                         </div>
                     </li>
 				</ul>
