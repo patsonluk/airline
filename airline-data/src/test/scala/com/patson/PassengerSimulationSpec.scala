@@ -917,7 +917,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.2)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.3)
       assert(totalAcceptedRoutes / totalRoutes.toDouble > 0)
     }
     
@@ -1505,8 +1505,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.6)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.8)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.7)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.9)
     }
     
     "accept most at standard price if it fulfill all lounge requirements (level 3 at both airports from alliance)".in {
