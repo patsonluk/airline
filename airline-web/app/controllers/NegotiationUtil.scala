@@ -3,6 +3,7 @@ package controllers
 import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CycleSource, DelegateSource, LinkSource}
 import com.patson.model.FlightType._
 import com.patson.model._
+import com.patson.model.airplane._
 import com.patson.util.{AirportCache, ChampionUtil, CountryCache}
 
 import scala.collection.mutable.ListBuffer
@@ -69,17 +70,55 @@ object NegotiationUtil {
     val frequencyDelta = newFrequency - existingLinkOption.map(_.futureFrequency()).getOrElse(0)
     if (frequencyDelta > 0) {
       val maxFrequency = FlightType.getCategory(newLink.flightType) match {
-        case FlightCategory.DOMESTIC => 45
-        case FlightCategory.INTERNATIONAL => 40
-        case FlightCategory.INTERCONTINENTAL => 30
+          case FlightCategory.DOMESTIC => 45
+          case FlightCategory.INTERNATIONAL => 40
+          case FlightCategory.INTERCONTINENTAL => 30
       }
-      if (newFrequency > maxFrequency) {
-        requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - maxFrequency, s"Excessive frequency $newFrequency over allowed $maxFrequency"))
+
+      getMaxFrequencyByModel(newLink.getAssignedModel().get, airport) match {
+        case None =>
+          if (newFrequency > maxFrequency) {
+            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - maxFrequency, s"Excessive frequency $newFrequency over allowed $maxFrequency"))
+          }
+        case Some(FrequencyRestrictionByModel(threshold, frequencyRestriction)) =>
+          if (newFrequency > frequencyRestriction) {
+            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - frequencyRestriction, s"${airport.displayText} prefers not to have airplane < $threshold capacity with frequency > $frequencyRestriction"))
+          }
+
       }
+
+
     }
+
+
+
 
     requirements.toList
   }
+
+  /**
+    * What is the max preferred frequency on an airport by the airplane size.
+    *
+    * The bigger the airport the more "strict" it is - it wants bigger airplane
+    * @param airplaneModel
+    * @param airport
+    */
+  def getMaxFrequencyByModel(airplaneModel : Model, airport : Airport) = {
+    if (airport.size <= 3) { //too small to care
+      None
+    } else {
+      val thresholdCapacity = 30 * (airport.size - 3) //airport would complain about any model lower than this threshold
+      if (airplaneModel.capacity >= thresholdCapacity) {
+        None
+      } else {
+        val frequencyRestriction = 14
+        Some(FrequencyRestrictionByModel(thresholdCapacity, frequencyRestriction))
+      }
+    }
+
+  }
+
+  case class FrequencyRestrictionByModel(threshold : Int, frequencyRestriction : Int)
 
   def getToAirportRequirements(airline : Airline, newLink : Link, existingLinkOption : Option[Link], airlineLinks : List[Link]) = {
     val newCapacity : LinkClassValues = newLink.futureCapacity()
@@ -121,6 +160,12 @@ object NegotiationUtil {
     if (frequencyDelta > 0) {
       val frequencyChangeCost = frequencyDelta.toDouble / 3
       requirements.append(NegotiationRequirement(INCREASE_FREQUENCY, frequencyChangeCost, s"Frequency increment : $frequencyDelta"))
+    }
+
+    getMaxFrequencyByModel(newLink.getAssignedModel().get, newLink.to).foreach { entry =>
+      if (newFrequency > entry.frequencyRestriction) {
+        requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - entry.frequencyRestriction, s"${newLink.to.displayText} prefers not to have airplane < ${entry.threshold} capacity with frequency > ${entry.frequencyRestriction}"))
+      }
     }
 
     //val odds = new NegotiationOdds()
