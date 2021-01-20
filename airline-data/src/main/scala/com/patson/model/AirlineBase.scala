@@ -16,7 +16,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     return baseCost * Math.pow(COST_EXPONENTIAL_BASE, (scale - 1)).toLong
   }
 
-  val COST_EXPONENTIAL_BASE = 1.8
+  val COST_EXPONENTIAL_BASE = 1.7
   
   val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
@@ -40,14 +40,18 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
 //    base + titleBonus + scaleBonus
 //  }
 
-
   val getOfficeStaffCapacity = {
-    val base = 60
+    val base =
+      if (headquarter) {
+        60
+      } else {
+        0
+      }
     val scaleBonus =
       if (headquarter) {
         80 * scale
       } else {
-        40 * scale
+        60 * scale
       }
 
     base + scaleBonus
