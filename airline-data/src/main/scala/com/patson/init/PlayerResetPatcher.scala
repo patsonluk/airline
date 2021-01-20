@@ -1,10 +1,9 @@
 package com.patson.init
 
-import com.patson.data.{AirlineSource, AirportSource, CitySource, CountrySource}
-import com.patson.init.GeoDataGenerator.{CsvAirport, getCity, getIncomeInfo}
+import com.patson.data.airplane.ModelSource
+import com.patson.data._
 import com.patson.model._
 
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
@@ -26,7 +25,23 @@ object PlayerResetPatcher extends App {
     val airlines = AirlineSource.loadAllAirlines()
     airlines.foreach { airline =>
       Airline.resetAirline(airline.id, 0, true)
+
     }
+    LoyalistSource.deleteLoyalists(LoyalistSource.loadLoyalistsByCriteria(List.empty))
+    val nextCycle = CycleSource.loadCycle() + 1
+    LoyalistSource.deleteLoyalistHistoryBeforeCycle(nextCycle)
+    AllianceSource.deleteAllianceByCriteria(List.empty)
+    LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(nextCycle)
+    ConsumptionHistorySource.deleteAllConsumptions()
+    IncomeSource.deleteIncomesBefore(nextCycle, Period.MONTHLY)
+    IncomeSource.deleteIncomesBefore(nextCycle, Period.WEEKLY)
+    IncomeSource.deleteIncomesBefore(nextCycle, Period.YEARLY)
+    LinkConsumptionHistory
+    AirlineSource.deleteCashFlowItems(nextCycle)
+    AirlineSource.deleteTransactions(nextCycle)
+    ModelSource.deleteAllAirlineDiscounts()
+    ModelSource.deleteAllFavoriteModelIds()
+
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }

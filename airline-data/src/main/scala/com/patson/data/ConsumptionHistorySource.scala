@@ -75,6 +75,27 @@ object ConsumptionHistorySource {
       connection.close()
     }
   }
+
+  def deleteAllConsumptions() = {
+    val connection = Meta.getConnection()
+
+    try {
+      for (i <- MAX_CONSUMPTION_HISTORY_WEEK to 0 by -1) {
+        val tableName =
+          if (i == 0) {
+            PASSENGER_HISTORY_TABLE
+          } else {
+            PASSENGER_HISTORY_TABLE + "_" + i
+          }
+
+        connection.createStatement().executeUpdate(s"DROP TABLE IF EXISTS $tableName")
+      }
+    } finally {
+
+
+      connection.close()
+    }
+  }
   
 //  def loadAllConsumptions() : List[(PassengerType.Value, Int, Route)] = {
 //    val connection = Meta.getConnection()

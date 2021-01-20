@@ -205,6 +205,19 @@ object ModelSource {
     }
   }
 
+  def deleteAllFavoriteModelIds() = {
+    val connection = Meta.getConnection()
+
+    val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRPLANE_MODEL_FAVORITE_TABLE)
+
+    try {
+      preparedStatement.executeUpdate()
+    } finally {
+      preparedStatement.close()
+      connection.close()
+    }
+  }
+
   def saveAirlineDiscount(airlineId : Int, discount : ModelDiscount): Unit = {
     val connection = Meta.getConnection()
 
@@ -238,6 +251,15 @@ object ModelSource {
     preparedStatement.setInt(3, discountReason.id)
     preparedStatement.executeUpdate()
     connection.commit()
+    connection.close()
+  }
+
+  def deleteAllAirlineDiscounts() = {
+    val connection = Meta.getConnection()
+
+    val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRPLANE_MODEL_AIRLINE_DISCOUNT_TABLE)
+
+    preparedStatement.executeUpdate()
     connection.close()
   }
 
