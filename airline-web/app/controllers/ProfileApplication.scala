@@ -32,7 +32,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  val BASE_CAPiTAL = 40000000
+  val BASE_CAPITAL = 40000000
   val BONUS_PER_DIFFICULTY_POINT = 1000000
 
   def generateAirplanes(value : Int, capacityRange : scala.collection.immutable.Range, homeAirport : Airport, condition : Double, airline : Airline, random : Random) : List[Airplane] =  {
@@ -66,7 +66,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
   def generateProfiles(airline : Airline, airport : Airport) : List[Profile] = {
     val difficulty = AirportUtil.rateAirport(airport).overallDifficulty
-    val capital = BASE_CAPiTAL + difficulty * BONUS_PER_DIFFICULTY_POINT
+    val capital = BASE_CAPITAL + difficulty * BONUS_PER_DIFFICULTY_POINT
 
     val profiles = ListBuffer[Profile]()
     val cashProfile = Profile(name = "Entrepreneurial spirit", description = "You have sold all your assets to create this new airline of your dream! Plan carefully but make bold moves to thrive in this brave new world.", cash = capital, airport = airport)
@@ -77,7 +77,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       val smallAirplaneProfile = Profile(
         name = "A humble beginning",
         description = "A newly acquired airline with a modest aircraft fleet of young age. Grow this humble airline into the most powerful and respected brand in the aviation world!",
-        cash = (capital * 1.5).toInt - smallAirplanes.map(_.value).sum,
+        cash = (capital * 1.5).toInt - smallAirplanes.map(_.value).sum +  difficulty * BONUS_PER_DIFFICULTY_POINT / 2,
         airport = airport,
         awareness = 20,
         reputation = 10,
@@ -93,12 +93,12 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       val largeAirplaneProfile = Profile(
         name = "Revival of past glory",
         description = "An airline that has previously over-expanded by mismanagement of now retired CEO. It is left with some aging airplanes and heavy debt. Can you turn this airline around?",
-        cash = (capital * 4).toInt - largeAirplanes.map(_.value).sum,
+        cash = (capital * 4).toInt - largeAirplanes.map(_.value).sum + difficulty * BONUS_PER_DIFFICULTY_POINT,
         airport = airport,
         awareness = 50,
         reputation = 25,
         airplanes = largeAirplanes,
-        loan = Some(Bank.getLoanOptions((capital * 4).toInt).last.copy(airlineId = airline.id)))
+        loan = Some(Bank.getLoanOptions((capital * 3.5).toInt).last.copy(airlineId = airline.id)))
       profiles.append(largeAirplaneProfile)
     }
 
