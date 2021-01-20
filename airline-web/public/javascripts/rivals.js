@@ -332,8 +332,11 @@ function showRivalMap() {
                         $("#linkPopupAirline").html(getAirlineLogoImg(link.airlineId) + "&nbsp;" + link.airlineName)
 
                         infoWindow = new google.maps.InfoWindow({
-                             content: $("#linkPopup").html(),
                              maxWidth : 1200});
+
+                        var popup = $("#linkPopup").clone()
+                        popup.show()
+                        infoWindow.setContent(popup[0])
 
                         infoWindow.setPosition(event.latLng);
                         infoWindow.open(map);

@@ -694,8 +694,10 @@ function addCityMarkers(airportMap, airport) {
 			            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 			    }
 			});
-			
-			infoWindow.setContent($("#cityPopup").html())
+
+			var popup = $("#cityPopup").clone()
+            popup.show()
+            infoWindow.setContent(popup[0])
 			infoWindow.open(airportMap, this);
 			  
 			  

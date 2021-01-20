@@ -357,10 +357,12 @@ function populateOlympicsCityMap(map, candidateInfo) {
            	marker.addListener('mouseover', function(event) {
            		$("#olympicAirportPopup .airportName").text(airport.name + "(" + airport.iata + ")")
            		infowindow = new google.maps.InfoWindow({
-           		       content: $("#olympicAirportPopup").html(),
            		       maxWidth : 800,
                        disableAutoPan : true
                  });
+                 var popup = $("#olympicAirportPopup").clone()
+                 popup.show()
+                 infowindow.setContent(popup[0])
 
 
            		infowindow.open(map, marker);

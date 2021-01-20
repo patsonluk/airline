@@ -153,26 +153,30 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	}))
 	
 	container.empty()
+
+	var chartConfig = {
+                      	    	"theme": "fint",
+                      	        "lowerLimit": "0",
+                      	        "upperLimit": "100",
+                      	        "showTickMarks": "0",
+                      	        "showTickValues": "0",
+                      	        "showborder": "0",
+                      	        "showtooltip": "0",
+                      	        "chartBottomMargin": "0",
+                      	        "bgAlpha":"0",
+                      	        "valueFontSize": "11",
+                      	        "valueFontBold": "0",
+                      	        "animation": "0",
+                      	        "editMode": "0",
+                      	        "pointerBgAlpha":"0",
+                                  "pointerBorderAlpha":"0",
+                      	        containerBackgroundOpacity :'0',
+                      	        "baseFontColor": "#FFFFFF"
+                      	    }
+
+
 	var dataSource = { 
-		"chart": {
-	    	"theme": "fint",
-	        "lowerLimit": "0",
-	        "upperLimit": "100",
-	        "showTickMarks": "0",
-	        "showTickValues": "0",
-	        "showborder": "0",
-	        "showtooltip": "0",
-	        "chartBottomMargin": "0",
-	        "bgAlpha":"0",
-	        "valueFontSize": "11",  
-	        "valueFontBold": "0",
-	        "animation": "0",
-	        "editMode": "0",
-	        "pointerBgAlpha":"0",
-            "pointerBorderAlpha":"0",
-	        containerBackgroundOpacity :'0',
-	        "baseFontColor": "#FFFFFF"
-	    }
+		"chart": chartConfig
 //	    ,
 //	    "pointers": {
 //	        //Multiple pointers defined here
@@ -235,13 +239,14 @@ function plotSeatConfigurationGauge(container, configuration, maxSeats, spaceMul
 	}
 	
 	updateDataSource(configuration)
-	
+
 	var chart = container.insertFusionCharts(
 	{	
 		type: 'hlineargauge',
         width: '100%',
         height: '40px',
         dataFormat: 'json',
+        containerBackgroundOpacity :'0',
 	    dataSource: dataSource
 //	    ,
 //        "events": {

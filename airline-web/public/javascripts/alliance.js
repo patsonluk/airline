@@ -555,9 +555,10 @@ function showAllianceMap() {
                             $("#allianceBasePopup .airlineName").html(getAirlineLogoImg(baseInfo.airlineId) + "&nbsp;" + baseInfo.airlineName)
                             $("#allianceBasePopup .baseScale").html(baseInfo.scale)
 
-                            var infoWindow = new google.maps.InfoWindow({
-                                 content: $("#allianceBasePopup").html(),
-                                 maxWidth : 1200});
+                            var infoWindow = new google.maps.InfoWindow({ maxWidth : 1200});
+                            var popup = $("#allianceBasePopup").clone()
+                            popup.show()
+                            infoWindow.setContent(popup[0])
                             //infoWindow.setPosition(event.latLng);
                             infoWindow.open(map, marker);
                             map.allianceBasePopup = infoWindow
@@ -661,8 +662,11 @@ function drawAllianceLink(link) {
 
 
             var infowindow = new google.maps.InfoWindow({
-                 content: $("#linkPopup").html(),
                  maxWidth : 1200});
+
+            var popup = $("#linkPopup").clone()
+            popup.show()
+            infowindow.setContent(popup[0])
 
             infowindow.setPosition(event.latLng);
             infowindow.open(map);

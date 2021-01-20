@@ -278,9 +278,12 @@ function populateCampaignAirportMarkers(campaignMap, airports, hasCoverage) {
            		$("#campaignAirportPopup .airportName").text(getAirportText(airport.city, airport.iata))
            		$("#campaignAirportPopup .airportPopulation").text(airport.population)
            		infowindow = new google.maps.InfoWindow({
-           		       content: $("#campaignAirportPopup").html(),
            		       disableAutoPan : true
                  });
+
+                 var popup = $("#campaignAirportPopup").clone()
+                 popup.show()
+                 infowindow.setContent(popup[0])
 
 
            		infowindow.open(campaignMap, marker);
