@@ -21,7 +21,7 @@ object AirportUtil {
     val economicPowerRating = Math.max(0, (math.log10(ratioToModelAirportPower * 100) / 2 * 100).toInt)
     val ratioToModelCountryPower = country.airportPopulation * country.income.toDouble / modelCountryPower
     val countryPowerRating = Math.max(0,(math.log10(ratioToModelCountryPower * 100) / 2 * 100).toInt)
-    val competitionRating = (Math.min(MAX_COMPETITION_RATIO, departurePassenger.toDouble / airport.power) / MAX_COMPETITION_RATIO * 10000).toInt
+    val competitionRating = Math.min(100, (Math.min(MAX_COMPETITION_RATIO, departurePassenger.toDouble / airport.power) / MAX_COMPETITION_RATIO * 10000).toInt)
     import AirportFeatureType._
     val featureAdjustment = airport.getFeatures().map { feature =>
       feature.featureType match {
