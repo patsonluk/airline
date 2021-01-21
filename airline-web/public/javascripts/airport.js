@@ -574,7 +574,7 @@ function addMarkers(airports) {
 			  $("#airportPopupIncomeLevel").text(this.airport.incomeLevel)
 			  $("#airportPopupOpenness").html(getOpennessSpan(loadedCountriesByCode[this.airport.countryCode].openness))
 			  $("#airportPopupMaxRunwayLength").html(this.airport.runwayLength + "&nbsp;m")
-			  updateAirportExtendedDetails(this.airport.id)
+			  updateAirportExtendedDetails(this.airport.id, this.airport.countryCode)
 			  //updateAirportSlots(this.airport.id)
 			  
 			  $("#airportPopupId").val(this.airport.id)
@@ -806,8 +806,20 @@ function refreshAirportExtendedDetails(airport) {
                         $('.airportLoyaltyBonusTrigger').hide()
                     }
                 }
-                $(".airportAwareness").text(appeal.awareness)
-                $(".airportLoyalty").text(appeal.loyalty)
+
+                var fullHeartSource = "assets/images/icons/heart.png"
+                var halfHeartSource = "assets/images/icons/heart-half.png"
+                var fullStarSource = "assets/images/icons/star.png"
+                var halfStarSource = "assets/images/icons/star-half.png"
+
+                $("#airportCanvas .airportAwareness").empty()
+                $("#airportCanvas .airportLoyalty").empty()
+                getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, appeal.awareness).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportAwareness"))
+                getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, appeal.loyalty).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportLoyalty"))
+
+                $(".airportAwareness").append(appeal.awareness)
+                $(".airportLoyalty").append(appeal.loyalty)
+
                 hasMatch = true
             }
         });
@@ -816,12 +828,12 @@ function refreshAirportExtendedDetails(airport) {
             $(".airportLoyalty").text("0")
         }
 
-        var relationshipValue = loadedCountriesByCode[airport.countryCode].mutualRelationship
-        if (typeof relationshipValue != 'undefined') {
-            $(".airportRelationship").text(getCountryRelationshipDescription(relationshipValue))
-        } else {
-            $(".airportRelationship").text('-')
-        }
+//        var relationshipValue = loadedCountriesByCode[airport.countryCode].mutualRelationship
+//        if (typeof relationshipValue != 'undefined') {
+//            $(".airportRelationship").text(getCountryRelationshipDescription(relationshipValue))
+//        } else {
+//            $(".airportRelationship").text('-')
+//        }
     } else {
         $(".airportAwareness").text('-')
     	$(".airportLoyalty").text('-')
@@ -833,7 +845,7 @@ function refreshAirportExtendedDetails(airport) {
     })
 }
 
-function updateAirportExtendedDetails(airportId) {
+function updateAirportExtendedDetails(airportId, countryCode) {
 	//clear the old values
 	$(".airportAwareness").text('-')
 	$(".airportLoyalty").text('-')
@@ -857,6 +869,36 @@ function updateAirportExtendedDetails(airportId) {
                 console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
         }
     });
+
+    $("#airportCanvas .countryRelationship .total").text("-")
+    $("#airportCanvas .airlineTitle").text("-")
+    if (activeAirline) {
+        $.ajax({
+            type: 'GET',
+            url: "/countries/" + countryCode + "/airline/" + activeAirline.id,
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(info) {
+                var relationship = info.relationship
+                var relationshipSpan = getAirlineRelationshipDescriptionSpan(relationship.total)
+                $("#airportCanvas .countryRelationship .total").html(relationshipSpan)
+                var $relationshipDetailsIcon = $("#airportCanvas .countryRelationship .detailsIcon")
+                $relationshipDetailsIcon.data("relationship", relationship)
+                $relationshipDetailsIcon.data("title", info.title)
+                $relationshipDetailsIcon.data("countryCode", countryCode)
+                $relationshipDetailsIcon.show()
+
+                var title = info.title
+                updateAirlineTitle(title, $("#airportCanvas img.airlineTitleIcon"), $("#airportCanvas .airlineTitle"))
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(JSON.stringify(jqXHR));
+                    console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            }
+        });
+    } else {
+        $("#airportCanvas .countryRelationship .detailsIcon").hide()
+    }
 }
 
 //function updateBuildBaseButton(airportZone) { //check if the zone already has base

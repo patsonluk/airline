@@ -1090,13 +1090,27 @@
 									<div class="value" id="airportDetailsIncomeLevel"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>IATA:</h5></div>
-									<div class="value" id="airportDetailsIata"></div>
+									<div class="label"><h5>IATA/ICAO:</h5></div>
+									<div class="value"><span id="airportDetailsIata"></span>&nbsp;/&nbsp;<span id="airportDetailsIcao"></span></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>ICAO:</h5></div>
-									<div class="value" id="airportDetailsIcao"></div>
+									<div class="label"><h5>Country:</h5></div>
+									<div class="value"><span id="airportDetailsCountry"></span>&nbsp;(<span id="airportDetailsZone"></span>)</div>
 								</div>
+
+								<div class="table-row">
+									<div class="label"><h5>Country market openness:</h5></div>
+									<div class="value" id="airportDetailsOpenness"></div>
+								</div>
+								<div class="table-row">
+									<div class="label"><h5>Runways:</h5></div>
+									<div class="value">
+										<div class="runwayTable table data" style="width: 95%;">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="table verticalGroup" style="float: left;">
 								<div class="table-row">
 									<div class="label">
 										<h5>
@@ -1116,9 +1130,11 @@
 										</h5>
 									</div>
 									<div class="value">
-										<span class="airportAwareness" id="airportDetailsAwareness"></span>
-										<span class="airportAwarenessBonus"></span>
-										<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportAwarenessBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
+										<span style="display: flex; align-items: center;">
+											<span class="airportAwareness" id="airportDetailsAwareness" style="display: flex; align-items: center;"></span>
+											<span class="airportAwarenessBonus"></span>
+											<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportAwarenessBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
+										</span>
 									</div>
 								</div>
 								<div class="table-row">
@@ -1141,28 +1157,23 @@
 										</h5>
 									</div>
 									<div class="value">
-										<span class="airportLoyalty" id="airportDetailsLoyalty"></span>
-										<span class="airportLoyaltyBonus"></span>
-										<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
+										<span style="display: flex; align-items: center;">
+											<span class="airportLoyalty" id="airportDetailsLoyalty" style="display: flex; align-items: center;"></span>
+											<span class="airportLoyaltyBonus"></span>
+											<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
+										</span>
 									</div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Relationship with your country:</h5></div>
-									<div class="value airportRelationship" id="airportDetailsRelationship"></div>
+									<div class="label"><h5>Your Relationship:</h5></div>
+									<div class="value countryRelationship" style="display: flex; align-items: center;">
+										<span class="total"></span>
+										<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))" style="vertical-align: middle;">
+									</div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Country market openness:</h5></div>
-									<div class="value" id="airportDetailsOpenness"></div>
-								</div>
-							</div>
-							<div class="table verticalGroup" style="float: left;">
-								<div class="table-row">
-									<div class="label"><h5>Country:</h5></div>
-									<div class="value"><span id="airportDetailsCountry"></span></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Zone:</h5></div>
-									<div class="value"><span id="airportDetailsZone"></span></div>
+									<div class="label"><h5>Your Title:</h5></div>
+									<div class="value countryTitle" style="display: flex; align-items: center;"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle titleCue"></span></div>
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Weekly Passengers:</h5></div>
@@ -1187,13 +1198,6 @@
 								<div class="table-row">
 									<div class="label"><h5>Served By Airlines:</h5></div>
 									<div class="value" id="airportDetailsAirlineCount"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Runways:</h5></div>
-									<div class="value">
-										<div class="runwayTable table data" style="width: 100%;">
-										</div>
-									</div>
 								</div>
 							</div>
 							<div id="airportStatistics" style="width: 100%; float: left;">
