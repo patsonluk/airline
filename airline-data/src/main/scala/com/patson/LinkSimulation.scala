@@ -340,11 +340,11 @@ object LinkSimulation {
       } else if (star == 2) {
         4
       } else if (star == 3) {
-        10
+        8
       } else if (star == 4) {
-        17
+        13
       } else {
-        25
+        20
       }
 
     val costPerPassenger = BASE_INFLIGHT_COST + durationCostPerHour * link.duration.toDouble / 60
