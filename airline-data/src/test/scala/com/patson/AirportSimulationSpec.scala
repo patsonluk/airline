@@ -336,7 +336,7 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
     val goodAirline2Link2 = LinkConsideration(airline2Link2, 0, ECONOMY, false, 0)
     val badRoute = Route(List(badAirline1Link1, badAirline2Link2), 0)
     val goodRoute = Route(List(goodAirline1Link1, goodAirline2Link2), 0)
-    val passengerGroup = PassengerGroup(airport1, SimplePreference(airport1, 1, ECONOMY), PassengerType.TOURIST)
+    val passengerGroup = PassengerGroup(airport1, AppealPreference(airport1, ECONOMY, 0, 1, 1), PassengerType.BUSINESS)
     val allAirports = List(airport1, airport2, airport3)
     "Do nothing if there's no consumption".in {
       val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(allAirports, Map.empty, Map(1 -> List(Loyalist(airport1, airline1, 5)), 2 -> List(Loyalist(airport1, airline2, 50))))
