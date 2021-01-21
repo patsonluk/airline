@@ -1168,7 +1168,7 @@
 									<div class="label"><h5>Your Relationship:</h5></div>
 									<div class="value countryRelationship" style="display: flex; align-items: center;">
 										<span class="total"></span>
-										<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))" style="vertical-align: middle;">
+										<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'), function(){ showAirportDetails(activeAirportId) })" style="vertical-align: middle;">
 									</div>
 								</div>
 								<div class="table-row">
@@ -1366,7 +1366,7 @@
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Relationship with your airline:</h5></div>
-									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))"></div>
+									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'), showCountryView)"></div>
 								</div>
 								<div class="table-row">
 									<div class="label"><h5>Your airline title with this country:</h5></div>

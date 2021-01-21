@@ -365,7 +365,7 @@ function updateTitleProgressionInfo(currentAirlineTitle, countryCode) {
     });
 }
 
-function showRelationshipDetailsModal(relationship, title, countryCode) {
+function showRelationshipDetailsModal(relationship, title, countryCode, closeCallback) {
     $('#airlineCountryRelationshipModal .country').empty()
     $('#airlineCountryRelationshipModal .country').append(getCountryFlagImg(countryCode) + loadedCountriesByCode[countryCode].name)
 
@@ -382,6 +382,12 @@ function showRelationshipDetailsModal(relationship, title, countryCode) {
     $table.append('<div class="table-row"><div class="cell">Total</div><div class="cell"><b>' + relationship.total + '</b></div></div>')
 
     getCountryDelegatesSummary(countryCode)
+
+    if (closeCallback) {
+        $('#airlineCountryRelationshipModal').data('closeCallback', closeCallback)
+    } else {
+        $('#airlineCountryRelationshipModal').removeData('closeCallback')
+    }
 
     $('#airlineCountryRelationshipModal').fadeIn(500)
 }
@@ -423,7 +429,7 @@ function updateCountryDelegates() {
         data:  JSON.stringify({ 'delegateCount' : assignedDelegateCount }) ,
         dataType: 'json',
         success: function(result) {
-            var relationship = loadCountryAirlineDetails(countryCode, showRelationshipDetailsModal)
+            closeModal($('#airlineCountryRelationshipModal'))
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
