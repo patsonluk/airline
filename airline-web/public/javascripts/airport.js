@@ -812,8 +812,8 @@ function refreshAirportExtendedDetails(airport) {
                 var fullStarSource = "assets/images/icons/star.png"
                 var halfStarSource = "assets/images/icons/star-half.png"
 
-                $("#airportCanvas .airportAwareness").empty()
-                $("#airportCanvas .airportLoyalty").empty()
+                $(".airportAwareness").empty()
+                $(".airportLoyalty").empty()
                 getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, appeal.awareness).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportAwareness"))
                 getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, appeal.loyalty).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportLoyalty"))
 
@@ -834,10 +834,6 @@ function refreshAirportExtendedDetails(airport) {
 //        } else {
 //            $(".airportRelationship").text('-')
 //        }
-    } else {
-        $(".airportAwareness").text('-')
-    	$(".airportLoyalty").text('-')
-    	$(".airportRelationship").text('-')
     }
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {
