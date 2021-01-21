@@ -80,16 +80,13 @@ object ConsumptionHistorySource {
     val connection = Meta.getConnection()
 
     try {
-      for (i <- MAX_CONSUMPTION_HISTORY_WEEK to 0 by -1) {
+      for (i <- MAX_CONSUMPTION_HISTORY_WEEK to 1 by -1) {
         val tableName =
-          if (i == 0) {
-            PASSENGER_HISTORY_TABLE
-          } else {
-            PASSENGER_HISTORY_TABLE + "_" + i
-          }
+          PASSENGER_HISTORY_TABLE + "_" + i
 
         connection.createStatement().executeUpdate(s"DROP TABLE IF EXISTS $tableName")
       }
+      connection.createStatement().executeUpdate(s"TRUNCATE TABLE $PASSENGER_HISTORY_TABLE")
     } finally {
 
 
