@@ -169,6 +169,20 @@ object NegotiationUtil {
     }
 
     //val odds = new NegotiationOdds()
+
+    val airport = newLink.to
+    val country = CountryCache.getCountry(airport.countryCode).get
+    airline.getCountryCode().foreach { homeCountryCode =>
+      if (homeCountryCode != airport.countryCode) { //closed country are anti foreign airlines
+        var baseForeignAirline = (14 - country.openness) * 0.5
+        if (existingLinkOption.isDefined) { //cheaper if it's already established
+          baseForeignAirline = baseForeignAirline * 0.5
+        }
+
+        requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, baseForeignAirline, "Foreign Airline"))
+      }
+    }
+
     existingLinkOption match {
       case Some(link) => //then consider existing load factor of this link
         val loadFactor : Double =(link.getTotalCapacity - link.getTotalSoldSeats).toDouble / link.getTotalCapacity
@@ -187,13 +201,6 @@ object NegotiationUtil {
       //        }
         val airport = newLink.to
         CountryCache.getCountry(airport.countryCode).foreach { country =>
-          airline.getCountryCode().foreach { homeCountryCode =>
-            if (homeCountryCode != airport.countryCode) { //closed country are anti foreign airlines
-              val baseForeignAirline = (14 - country.openness) * 0.5
-              requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, baseForeignAirline, "Foreign Airline"))
-            }
-          }
-
           val flightCategory = FlightType.getCategory(newLink.flightType)
           if (flightCategory != FlightCategory.DOMESTIC) {
             airport.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
@@ -204,9 +211,6 @@ object NegotiationUtil {
             }
           }
         }
-
-
-
     }
     requirements.toList
   }
