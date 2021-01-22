@@ -54,7 +54,7 @@ function showOfficeCanvas() {
 	updateMaintenanceLevelDetails()
 	updateAirlineColorPicker()
 	updateResetAirlineInfo()
-	updateHeadquartersMap()
+	updateHeadquartersMap($('#officeCanvas .headquartersMap'), activeAirline.id)
 }
 
 function updateCampaignSummary() {
@@ -859,28 +859,4 @@ function resetAirline(keepAssets) {
 	    }
 	});
 	
-}
-
-
-function updateHeadquartersMap() {
-	$.ajax({
-		type: 'GET',
-		url: "airlines/" + activeAirline.id + "/headquarters-map",
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(tiles) {
-	        var checkInterval = setInterval(() => {
-	            if ($('#officeCanvas .headquartersMap').is(':visible')) {
-	                drawTiles($('#officeCanvas .headquartersMap'), tiles)
-	                clearInterval(checkInterval)
-	            }
-	        }, 100)
-
-
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
 }

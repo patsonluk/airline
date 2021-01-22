@@ -143,6 +143,7 @@ function loadRivalDetails(row, airlineId) {
 	updateRivalBasicsDetails(airlineId)
 	updateRivalCountriesAirlineTitles(airlineId)
 	updateRivalChampionedAirportsDetails(airlineId)
+	updateHeadquartersMap($('#rivalDetails .headquartersMap'), airlineId)
 	loadRivalLinks(airlineId)
 	
 	updateRivalBaseList(airlineId)
