@@ -54,9 +54,13 @@ object LinkCommentUtil {
       (weight, weightMarkerWalker)
     }
     def drawCommentWeight(random : Random) = {
-
-      val target = random.nextInt(totalWeights)
-      weightMarkers.find( weightMarker => weightMarker._2 >= target).map(_._1)
+      if (totalWeights == 0) {
+        println(s"Total weights is zero!!!!??? $weights")
+        None
+      } else {
+        val target = random.nextInt(totalWeights)
+        weightMarkers.find(weightMarker => weightMarker._2 >= target).map(_._1)
+      }
     }
   }
 
