@@ -60,19 +60,22 @@ object Bank {
     val currentCycle = CycleSource.loadCycle()
     BankSource.loadLoanInterestRateByCycle(currentCycle) match {
       case Some(currentRate) =>
-        val rateIncrementPerYear = 0.02 //2% more every extra year
-        LOAN_TERMS.map { term =>
-          val baseAnnualRate = currentRate.annualRate
-          val extraYears : Int = term / 52 - 1
-          val interestRate = baseAnnualRate + extraYears * rateIncrementPerYear
-          val interest = (loanAmount * interestRate).toLong
-          val total = loanAmount + interest
-          Loan(airlineId = 0, borrowedAmount = loanAmount, interest = interest, remainingAmount = total, creationCycle = 0, loanTerm = term)
-        }
+        getLoanOptions(loanAmount, currentRate.annualRate)
       case None =>
         List.empty[Loan]
     }
+  }
 
+  def getLoanOptions(loanAmount : Long, annualRate : BigDecimal) = {
+      val rateIncrementPerYear = 0.02 //2% more every extra year
+      LOAN_TERMS.map { term =>
+        val baseAnnualRate = annualRate
+        val extraYears : Int = term / 52 - 1
+        val interestRate = baseAnnualRate + extraYears * rateIncrementPerYear
+        val interest = (loanAmount * interestRate).toLong
+        val total = loanAmount + interest
+        Loan(airlineId = 0, borrowedAmount = loanAmount, interest = interest, remainingAmount = total, creationCycle = 0, loanTerm = term)
+      }
   }
   
   def getAssets(airlineId : Int) : Long = {
