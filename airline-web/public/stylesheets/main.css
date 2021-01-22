@@ -71,7 +71,7 @@ html[data-theme='dark'] {
   --modal-background-color: rgba(255,255,255,0.2);
   --modal-content-background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6));
   --chat-background: rgba(0, 0, 0, 0.4);
-  --chat-current-background: rgba(255, 255, 255, 0.1);
+  --chat-current-background: rgba(0, 0, 0, 0.7);
   --chat-shadow: inset 0 0 4px rgba(255, 255, 255, 0.4), 0 0 4px rgba(255, 255, 255, 0.2);
 
   --select-background-color: #555555;
