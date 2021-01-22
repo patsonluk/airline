@@ -163,7 +163,7 @@ object NegotiationUtil {
     }
 
     getMaxFrequencyByModel(newLink.getAssignedModel().get, newLink.to).foreach { entry =>
-      if (newFrequency > entry.frequencyRestriction) {
+      if (frequencyDelta > 0 && newFrequency > entry.frequencyRestriction) {
         requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - entry.frequencyRestriction, s"${newLink.to.displayText} prefers not to have airplane < ${entry.threshold} capacity with frequency > ${entry.frequencyRestriction}"))
       }
     }
