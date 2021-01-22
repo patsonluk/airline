@@ -65,6 +65,8 @@
 			border-right: var(--input-border-color) solid 1px;
 			border-top: var(--input-border-color) solid 1px;
 			border-radius: 3px 3px 0px 0px;
+			box-shadow: var(--chat-shadow);
+            font-weight: bolder;
 			
 			color: var(--text-color);
 		}
