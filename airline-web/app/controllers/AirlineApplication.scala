@@ -1,21 +1,20 @@
 package controllers
 
-import java.awt.Color
-import java.nio.file.Files
-import java.util.Calendar
-
 import com.patson.AirlineSimulation
 import com.patson.data._
 import com.patson.model.Computation.ResetAmountInfo
 import com.patson.model.{Title, _}
-import com.patson.util.{AirlineCache, AirportCache, AllianceCache, ChampionUtil, CountryCache, LogoGenerator}
+import com.patson.util._
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
-import javax.inject.Inject
-import models.{AirportFacility, Consideration, EntrepreneurProfile, FacilityType}
+import models.{AirportFacility, Consideration, FacilityType}
 import play.api.libs.json.{Json, _}
 import play.api.mvc._
 import websocket.chat.ChatControllerActor
 
+import java.awt.Color
+import java.nio.file.Files
+import java.util.Calendar
+import javax.inject.Inject
 import scala.util.{Failure, Success, Try}
 
 
