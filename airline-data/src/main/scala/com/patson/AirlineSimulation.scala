@@ -312,7 +312,7 @@ object AirlineSimulation {
             }
 
             //https://en.wikipedia.org/wiki/World%27s_largest_airlines
-            targetReputation = Math.log(totalPassengerKilometers / 5000) / Math.log(1.1)
+            targetReputation = Math.log(totalPassengerKilometers / 50000) * 30
             if (targetReputation > Airline.MAX_REPUTATION_BY_PASSENGERS) {
               targetReputation = Airline.MAX_REPUTATION_BY_PASSENGERS
             } else if (targetReputation < 10) {
