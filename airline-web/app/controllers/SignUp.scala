@@ -87,20 +87,6 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
 //    Ok(html.signup(signupForm.fill(existingUser)))
 //  }
   
-  implicit object ProfileWrites extends Writes[StartupProfile] {
-    def writes(profile: StartupProfile): JsValue = {
-          JsObject(List(
-      "id" -> JsNumber(profile.id),
-      "title" -> JsString(profile.title),
-      "description" -> JsString(profile.description),
-      "outlines" -> Json.toJson(profile.outlines)))
-    }
-  }
-  
-  def profiles = Action {
-    Ok(Json.toJson(StartupProfile.profiles))
-  }
-  
   /**
    * Handle form submission.
    */

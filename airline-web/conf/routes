@@ -191,7 +191,6 @@ PUT		 /admin/send-broadcast-message		            controllers.AdminApplication.se
 
 # Signup
 GET     /signup                     controllers.SignUp.form
-GET		/signup/profiles            controllers.SignUp.profiles
 #GET     /editUser/fakeuser             controllers.SignUp.editForm
 POST    /signup                     controllers.SignUp.submit
 
