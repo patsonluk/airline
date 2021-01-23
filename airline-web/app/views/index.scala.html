@@ -188,20 +188,24 @@
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div class="desktopOnly">
   			<span class="topBarDetails" style="display: none;">
-	  			<span class="currentTime label" style="margin: 0px 10px"></span>
-				<span style="margin: 0px 10px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span class="nextTickEstimation label" style="font-weight: bold;">-</span></span>
-	  			<span class="currentAirline label" style="margin: 0px 10px; font-weight: bold"></span>
-	  			<span style="margin: 0px 10px">Balance: $<span class="balance label"></span></span>
-	  			<span style="margin: 0px 10px">Reputation: <span class="reputation label"></span> <span class="reputationLevel label"></span> <span class="reputationStars"></span></span>
+				<span style="display: flex; flex-align: center;">
+					<span class="currentTime label" style="margin: 0px 10px"></span>
+					<span style="margin: 0px 10px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span class="nextTickEstimation label" style="font-weight: bold;">-</span></span>
+					<span style="margin: 0px 10px" title="Airline Balance">$<span class="balance label"></span></span>
+					<span class="currentAirline label" style="margin: 0; font-weight: bold"></span>
+					<span style="display: inline-block">
+						<span style="display: flex; flex-align: center;"><span class="reputationLevel label" style="margin: 0px 10px;"></span> <span class="reputationStars"></span></span>
+					</span>
+				</span>
   			</span>
   		</div>
-		<div style="max-width: 70%;" class="mobileOnly">
+		<div style="max-width: 35%;" class="mobileOnly">
 			<div class="topBarDetails">
 				<span class="currentAirline label" style="margin-left: 0px 5px; font-weight: bold"></span>
 				<span>$<span class="balance label"></span></span>
 			</div>
 		</div>
-  		<div style="display: flex; align-items: center;">
+  		<div style="display: flex; align-items: center; flex-wrap: wrap;">
 			<div class="switch" style="margin-right: 5px;">
 				<input type="radio" class="switch-input" name="theme" value="light" id="switchDark" onchange="switchTheme()">
 				<label for="switchDark" class="switch-label switch-label-off">Dark</label>

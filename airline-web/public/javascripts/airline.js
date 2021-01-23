@@ -41,10 +41,11 @@ function updateAirlineLogo() {
 	
 	
 function refreshTopBar(airline) {
-	changeColoredElementValue($(".balance"), airline.balance)
-	changeColoredElementValue($(".reputation"), airline.reputation)
+    changeColoredElementValue($(".balance"), airline.balance)
+	//changeColoredElementValue($(".reputation"), airline.reputation)
 	$(".reputationLevel").text("(" + airline.gradeDescription + ")")
-	$(".reputationStars").html(getGradeStarsImgs(airline.gradeValue))
+	$(".reputationStars").empty()
+	$(getGradeStarsImgs(airline.gradeValue)).attr('title', "Reputation: " + airline.reputation).appendTo($(".reputationStars"))
 }
 
 function getGradeStarsImgs(gradeValue) {
