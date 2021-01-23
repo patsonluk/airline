@@ -205,9 +205,10 @@ a {
     width: 30%;
 }
 
-#airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup {
+#airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, .campaignDetails .verticalGroup {
     width: 50%;
 }
+
 
 #loanInterestRateChart, #oilPriceChart {
     width: 90%;

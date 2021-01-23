@@ -2085,7 +2085,7 @@
 				</div>
 	<!--   			end office canvas -->
 
-				<div id="bankCanvas" class="canvas" style="height: 100%; display: none;">
+				<div id="bankCanvas" class="canvas" style="height: 100%; display: none; min-width: 600px;">
 					<div style="float: left;" class="verticalGroup bankCanvasLeftGroup">
 						<div style="width : 95%; float: left;" class="section">
 							<h4>Interest Rate History</h4>
@@ -2131,11 +2131,11 @@
 							<div class="table data" id="outstandingLoansTable" style="height: 100%; width: 100%; min-width: 400px;">
 								<div class="table-header">
 									<div class="cell" style="width: 15%" align="right">Principal Amount</div>
-									<div class="cell" style="width: 10%" align="right">Interest</div>
-									<div class="cell" style="width: 10%" align="right">Interest Rate</div>
+									<div class="cell" style="width: 12%" align="right">Interest</div>
+									<div class="cell" style="width: 8%" align="right">Interest Rate</div>
 									<div class="cell" style="width: 15%" align="right">Remaining Payment</div>
-									<div class="cell" style="width: 20%" align="right">Weekly Payment</div>
-									<div class="cell" style="width: 10%" align="right">Early Repayment Fee</div>
+									<div class="cell" style="width: 15%" align="right">Weekly Payment</div>
+									<div class="cell" style="width: 15%" align="right">Early Repayment Fee</div>
 									<div class="cell" style="width: 15%" align="right">Early Repayment Amount</div>
 									<div class="cell" style="width: 5%;  min-width: 22px;">&nbsp;</div>
 								</div>
@@ -4119,7 +4119,7 @@
 		<div class="modal-content"  style="width : 900px; height: 800px; margin: 5% auto; overflow-y: auto;">
 			<span class="close" onclick="closeModal($('#olympicsVoteModal'))">&times;</span>
 			<h4 style="margin-bottom: 10px;">Olympics Host City Voting (1 : highest precedence)</h4>
-			<div class="table data" id="olympicsCityVoteTable" style="width: 100%">
+			<div class="table data" id="olympicsCityVoteTable" style="width: 100%; min-width: 500px;">
 			</div>
 			<div class="button confirm" onclick="confirmOlympicsVotes()">Confirm</div>
 			<div class="button revert" onclick="revertOlympicsVotes()">Revert</div>
@@ -4305,16 +4305,16 @@
 				</div>
 			</div>
 
-			<div style="width: 100%; height: 500px;"> <!-- empty to take up the height otherwise popup would not scale properly -->
-				<div class="campaignDetails section" style="height: 100%; display: none;">
-					<div style="float: left; width: 50%;">
+			<div style="width: 100%;"> <!-- empty to take up the height otherwise popup would not scale properly -->
+				<div class="campaignDetails section" style="display: none;">
+					<div style="float: left;" class="left verticalGroup">
 						<div class="campaignMap" style="width: 350px; height: 350px;">
 
 
 						</div>
 					</div>
 
-					<div style="float: right; width: 50%">
+					<div style="float: right;" class="right verticalGroup">
 						<div style="width: 100%; height: 100%">
 							<div class="section">
 								<h4>Delegates Pool</h4>
