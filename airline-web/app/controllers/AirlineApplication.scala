@@ -174,8 +174,17 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       case Some(airport) => {
         val existingBase = airport.getAirlineBase(airlineId)
 
-        if (existingBase.isDefined) {
-          result = result + ("base" -> Json.toJson(existingBase)) 
+        existingBase.foreach { base =>
+            result = result + ("base" -> Json.toJson(base))
+
+            val linksFromThisBase = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airlineId)), LinkSource.SIMPLE_LOAD)
+            val currentStaffRequired = linksFromThisBase.map(_.getCurrentOfficeStaffRequired).sum
+            val futureStaffRequired =  linksFromThisBase.map(_.getFutureOfficeStaffRequired).sum
+            val staffCapacity = base.getOfficeStaffCapacity
+            result = result + ("officeCapacity"->
+              Json.obj("staffCapacity" -> staffCapacity,
+                "currentStaffRequired" -> currentStaffRequired,
+                "futureStaffRequired" -> futureStaffRequired))
         }
        
         val targetBase = existingBase match {

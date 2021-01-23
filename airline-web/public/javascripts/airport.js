@@ -93,6 +93,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 	updateAirportChampionDetails(airport)
 
+    $('#airportDetailsStaff').removeClass('fatal')
 	if (activeAirline) {
 		$('#airportBaseDetails').show()
 		$.ajax({
@@ -107,6 +108,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    			$('#airportDetailsBaseScale').text('-')
 	    			$('#airportDetailsBaseUpkeep').text('-')
 	    			$('#airportDetailsBaseDelegatesRequired').text('-')
+	    			$('#airportDetailsStaff').text('-')
 	    			$('#airportDetailsFacilities').empty()
 	    		} else {
 	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
@@ -122,6 +124,22 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
                         }
                         $('#airportDetailsBaseDelegatesRequired').append($delegatesSpan)
                     }
+
+
+                    var capacityInfo = baseDetails.officeCapacity
+                    var capacityText = capacityInfo.currentStaffRequired + "/" + capacityInfo.staffCapacity
+                    var $capacitySpan = $('#airportDetailsStaff')
+
+                    if (capacityInfo.staffCapacity < capacityInfo.currentStaffRequired) {
+                        $capacitySpan.addClass('fatal')
+                    }
+
+                    if (capacityInfo.currentStaffRequired != capacityInfo.futureStaffRequired) {
+                        capacityText += "(future : " + capacityInfo.futureStaffRequired + ")"
+                    }
+                    $capacitySpan.text(capacityText)
+
+
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
 	    			updateFacilityIcons(airport)
 	    		}
