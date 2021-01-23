@@ -90,13 +90,14 @@ object EventSimulation {
 
   val MAX_CANDIDATES_COUNT = 6
   val CANDIDATE_MIN_SIZE = 5
+  val CANDIDATE_MIN_POPULATION = 1000000
 
   def selectCandidates() : List[Airport] = {
     selectCandidates(AirportSource.loadAllAirports())
   }
 
   def selectCandidates(allAirports : List[Airport]) : List[Airport] = {
-    val randomizedAirports = Random.shuffle(allAirports.filter(_.size >= CANDIDATE_MIN_SIZE))
+    val randomizedAirports = Random.shuffle(allAirports.filter(airport => airport.size >= CANDIDATE_MIN_SIZE && airport.population >= CANDIDATE_MIN_POPULATION))
     val candidates = ListBuffer[Airport]()
     val candidateCountryCodes = mutable.HashSet[String]()
     randomizedAirports.foreach { airport =>
