@@ -44,6 +44,7 @@ function refreshTopBar(airline) {
     changeColoredElementValue($(".balance"), airline.balance)
 	//changeColoredElementValue($(".reputation"), airline.reputation)
 	$(".reputationLevel").text("(" + airline.gradeDescription + ")")
+	$(".reputationValue").text(airline.reputation)
 	$(".reputationStars").empty()
 	$(getGradeStarsImgs(airline.gradeValue)).attr('title', "Reputation: " + airline.reputation).appendTo($(".reputationStars"))
 }
