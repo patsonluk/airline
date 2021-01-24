@@ -22,6 +22,7 @@ html {
 
   --backdrop-filter: none;
   --menubar-background-image: linear-gradient(rgba(255,255,255,1), rgba(220,220,220,1));
+  --menubar-shadow: inset 0 -7px 9px -7px rgba(0,0,0,0.4);
   --scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
 
   --tooltip-background-color: rgba(0, 0, 0, 0.75);
@@ -64,6 +65,7 @@ html[data-theme='dark'] {
   --button-hover-color: #6093e7;
   --backdrop-filter: blur(2px);
   --menubar-background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
+  --menubar-shadow: inset 0 -7px 9px -7px rgba(255,255,255,0.4);
   --scrollbar-color: hsl(0, 50%, 90%) hsl(0, 50%, 100%);
 
   --tooltip-background-color: rgba(0, 0, 0, 0.5);
@@ -265,6 +267,7 @@ div#canvas.christmas {
     align-items: center;
     justify-content: space-between;
     backdrop-filter: var(--backdrop-filter);
+    box-shadow: var(--menubar-shadow);
     /* 	margin-top: -80px; */
 }
 
