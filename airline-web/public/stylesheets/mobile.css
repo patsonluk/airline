@@ -1,9 +1,13 @@
 /* mobile (portrait) ----------- */
 @media only screen
 and (max-device-width : 640px) {
+    html {
+        --top-bar-background-color : #FFFFFF;
+    }
     html[data-theme='dark'] {
         --backdrop-filter: none;
         --text-color: #DDDDDD;
+        --top-bar-background-color: rgba(0, 0, 0, 0.4);
     }
 /*and (orientation : portrait or max-device-width : 1024px) {*/
     .mainPanel, #map {
@@ -25,6 +29,40 @@ and (max-device-width : 640px) {
     #oilPriceChart, #loanInterestRateChart {
         height: 30vh
     }
+
+    .moreRow {
+      text-align: center;
+      list-style: none;
+      padding: 0;
+      overflow: hidden;
+      font-size: 12px;
+      position: relative;
+    }
+
+    .moreRow li, .extendedTopBarDetails {
+        background-color: var(--top-bar-background-color);
+    }
+
+    .moreRow li {
+      border: 1px solid #AAA;
+      display: inline-block;
+      position:relative;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+      padding: 0 30px;
+      border-top-color: var(--top-bar-background-color);
+    }
+
+    .moreRow li span {
+        display: block;
+        background-color: var(--text-color);
+        width: 20px;
+        height: 2px;
+        border-radius: 2px;
+        margin-bottom: 3px;
+        transition: all 0.3s linear;
+    }
+
 
     .mobileOnly {
         visibility: visible;
@@ -55,11 +93,6 @@ and (max-device-width : 640px) {
 
     .topBarItem, #patreonDiv {
         margin: 0px 4px;
-    }
-
-    .extendedTopBarDetails {
-        width: 100%;
-        background-color: var(--background-gradient-image);
     }
 
     #routeSearchResult {
