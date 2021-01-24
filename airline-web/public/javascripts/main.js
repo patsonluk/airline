@@ -398,7 +398,7 @@ function refreshPanels(airlineId) {
 	    	if ($("#worldMapCanvas").is(":visible")) {
 	    		refreshLinks()
 	    	}
-	    	if ($("#linkDetails").is(":visible")) {
+	    	if ($("#linkDetails").is(":visible") || $("#linkDetails").hasClass("active")) {
 	    		refreshLinkDetails(selectedLink)
 	    	}
 	    	if ($("#linksCanvas").is(":visible")) {

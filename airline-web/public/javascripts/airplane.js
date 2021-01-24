@@ -178,6 +178,7 @@ function updateUsedAirplaneTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>-</div>")
 		row.append("<div class='cell' align='right'>-</div>")
 		row.append("<div class='cell' align='right'>-</div>")
+		row.append("<div class='cell' align='right'>-</div>")
 		row.append("<div class='cell' align='right'></div>")
 		usedAirplaneTable.append(row)
 	}

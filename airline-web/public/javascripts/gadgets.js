@@ -377,6 +377,8 @@ function setActiveDiv(activeDiv, callback) {
 	}
 
 	if (existingActiveDiv.length > 0){
+	    existingActiveDiv.removeClass('active')
+	    activeDiv.addClass('active')
 	    existingActiveDiv.fadeOut(200, function() {
 		    activeDiv.fadeIn(200, callback)
         })
@@ -388,6 +390,7 @@ function setActiveDiv(activeDiv, callback) {
 			return false;
 		} else {
 			activeDiv.siblings().hide();
+			activeDiv.addClass('active')
     	    activeDiv.fadeIn(200, callback);
 		}
 	}
