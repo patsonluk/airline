@@ -201,7 +201,6 @@ GET   /forgot-password				controllers.AccountApplication.forgotPassword
 POST   /forgot-password				controllers.AccountApplication.forgotPasswordSubmit
 GET   /forgot-id				controllers.AccountApplication.forgotId
 POST   /forgot-id				controllers.AccountApplication.forgotIdSubmit
-GET   /send-email				controllers.AccountApplication.sendEmail
 
 GET     /about      controllers.AboutApplication.about
 
