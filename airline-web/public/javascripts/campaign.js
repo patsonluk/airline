@@ -26,6 +26,7 @@ function showCampaignModal() {
     $('#campaignModal div.delegateSection').data("delegatesRequired", 0)
     $('#campaignModal .campaignDetails').hide()
     $('#campaignModal .draftCampaign').hide()
+    $('#campaignModal').data('closeCallback', updateCampaignSummary)
     $('#campaignModal').fadeIn(500)
 }
 
