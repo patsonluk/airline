@@ -54,8 +54,7 @@ object LinkCommentUtil {
       (weight, weightMarkerWalker)
     }
     def drawCommentWeight(random : Random) = {
-      if (totalWeights == 0) {
-        println(s"Total weights is zero!!!!??? $weights")
+      if (totalWeights == 0) { //possible if all preference are close to neutral
         None
       } else {
         val target = random.nextInt(totalWeights)
