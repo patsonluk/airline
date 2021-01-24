@@ -3028,61 +3028,53 @@
     </div>
     
     <!-- popups and overlay buttons below. Hidden by default -->
-    <div style="display: none; width: 100%;" id="airportPopup" class="mapPopup">
+    <div style="display: none; width: 100%; white-space: normal;" id="airportPopup" class="mapPopup">
     	<input type="hidden" id="airportPopupId">
     	<div>
-    		<h4 id="airportPopupName"></h4>
+    		<h4><span id="airportPopupName"></span>&nbsp;(<span id="airportPopupIata"></span>)</h4>
     	</div>
+		<h5><span id="airportPopupCity"></span>(<span id="airportPopupZone"></span>)</h5>
     	<div id="airportIcons" class="airportFeatures">
     		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon" style="display: none">
     		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon" style="display:none">
     	</div>
-    	<div class="table" style="width: 100%">
-   			<div class="table-row">
-   				<div class="label" style="width: 55%"><h5>IATA code:</h5></div>
-   				<div class="value" id="airportPopupIata" style="width: 45%"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>City:</h5></div>
-   				<div class="value" id="airportPopupCity"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Zone:</h5></div>
-   				<div class="value" id="airportPopupZone"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Airport scale:</h5></div>
-   				<div class="value" id="airportPopupSize"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Population coverage (Income Level):</h5></div>
-   				<div class="value"><span id="airportPopupPopulation"></span>(<span id="airportPopupIncomeLevel"></span>)</div>
-   			</div>
-<!--   			<div class="table-row">-->
-<!--   				<div class="label"><h5>Country market openness:</h5></div>-->
-<!--   				<div class="value" id="airportPopupOpenness"></div>-->
-<!--   			</div>-->
-			<div class="table-row">
-				<div class="label"><h5>Max runway length:</h5></div>
-				<div class="value" id="airportPopupMaxRunwayLength"></div>
+    	<div style="margin: 10px 0 10px 0;">
+   			<div style="display: flex; flex-wrap: wrap; width: 100%">
+				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+					<img title="Population coverage (Income Level)" src='@routes.Assets.versioned("images/icons/users.png")' style="margin-right: 5px;">
+					<span id="airportPopupPopulation"></span>&nbsp;(<span id="airportPopupIncomeLevel"></span>)
+				</span>
+<!--				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">-->
+<!--					<img title="Income Level" src='@routes.Assets.versioned("images/icons/moneys.png")' style="margin-right: 5px;">-->
+<!--					<span id="airportPopupIncomeLevel"></span>-->
+<!--				</span>-->
+				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+					<img title="Airport Scale (Max Runway Length)" src='@routes.Assets.versioned("images/icons/star.png")' style="margin-right: 5px;">
+					<span id="airportPopupSize"></span>&nbsp;(<span id="airportPopupMaxRunwayLength"></span>)
+				</span>
 			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Awareness/Loyalty:</h5></div>
-   				<div class="value">
-                    <span class="airportAwareness" id="airportPopupAwareness"></span>
+
+			<div style="display: flex; flex-wrap: wrap; width: 100%">
+				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+					<img title="Awareness" src='@routes.Assets.versioned("images/icons/tick-circle.png")' style="margin-right: 5px;">
+					<span class="airportAwareness" id="airportPopupAwareness"></span>
 					<span class="airportAwarenessBonus"></span>
-					</span><img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportAwarenessBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
-					/
-                    <span class="airportLoyalty" id="airportPopupLoyalty"></span>
-                    <span class="airportLoyaltyBonus">
-                    </span><img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
-				</div>
-   			</div>
+					<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportAwarenessBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
+				</span>
+				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+					<img title="Loyalty" src='@routes.Assets.versioned("images/icons/heart.png")' style="margin-right: 5px;">
+					<span class="airportLoyalty" id="airportPopupLoyalty"></span>
+					<span class="airportLoyaltyBonus"></span>
+					<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
+				</span>
+			</div>
 		</div>
-		<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()" >Plan Flight</div>
-		<div class="button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
-		<div class="button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
-		<div class="button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
+		<div style="width: 100%;">
+			<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()" >Plan Flight</div>
+			<div class="button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
+			<div class="button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
+			<div class="button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
+		</div>
     </div>
     <div id="appealBonusDetailsTooltip" class="customTooltip" style="display: none; position: fixed;">
         <div class="tooltiptext below">

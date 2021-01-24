@@ -382,13 +382,13 @@ function updateAirportRating(rating) {
     var fullFireSource = "assets/images/icons/fire.png"
     var halfFireSource = "assets/images/icons/fire-small.png"
     $("#airportCanvas .economicRating").append(getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, rating.economicRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
-    $("#airportCanvas .economicRating").append(getRatingSpan(rating.economicRating, true))
+    $("#airportCanvas .economicRating").append(getRatingSpan(rating.economicRating, true).css('margin-left', '5px'))
     $("#airportCanvas .countryRating").append(getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, rating.countryRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
-    $("#airportCanvas .countryRating").append(getRatingSpan(rating.countryRating, true))
+    $("#airportCanvas .countryRating").append(getRatingSpan(rating.countryRating, true).css('margin-left', '5px'))
     $("#airportCanvas .competitionRating").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.competitionRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
-    $("#airportCanvas .competitionRating").append(getRatingSpan(rating.competitionRating, false))
+    $("#airportCanvas .competitionRating").append(getRatingSpan(rating.competitionRating, false).css('margin-left', '5px'))
     $("#airportCanvas .difficulty").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.difficulty).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
-    $("#airportCanvas .difficulty").append(getRatingSpan(rating.difficulty, false))
+    $("#airportCanvas .difficulty").append(getRatingSpan(rating.difficulty, false).css('margin-left', '5px'))
 }
 
 //if inverse is true then higher the rating, easier it is
@@ -515,7 +515,7 @@ function getAirports() {
 
 function addMarkers(airports) {
     var infoWindow = new google.maps.InfoWindow({
-		maxWidth : 470
+		maxWidth : 250
 	})
 	var originalOpacity = 0.7
 	currentZoom = map.getZoom()
@@ -855,7 +855,18 @@ function refreshAirportExtendedDetails(airport) {
     }
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {
-        $(".airportFeatures").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'><span>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>")
+        $("#airportPopup .airportFeatures").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'><span>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>")
+
+
+        var $featureDiv = $("<div class='feature'><img src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
+        $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
+        var featureText = feature.title
+        if (feature.strength != 0) {
+            featureText += " (strength: " + feature.strength + ")"
+        }
+        var $featureDescription = $('<span><span>').text(featureText)
+        $featureDiv.append($featureDescription)
+        $("#airportCanvas .airportFeatures").append($featureDiv)
     })
 }
 

@@ -2534,11 +2534,10 @@ function refreshSavedLink(savedLink) {
 		var newPath = drawFlightPath(savedLink)
 		selectLinkFromMap(savedLink.id, false)
 	}
+	setActiveDiv($('#linkDetails'))
+    hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
 	refreshPanels(activeAirline.id) //refresh panels would update link details
 
-
-	setActiveDiv($('#linkDetails'))
-	hideActiveDiv($('#extendedPanel #airplaneModelDetails'))
 
 	if ($('#linksCanvas').is(':visible')) { //reload the links table then
 		loadLinksTable()
