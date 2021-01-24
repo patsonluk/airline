@@ -939,8 +939,9 @@ function updateAirportExtendedDetails(airportId, countryCode) {
 var championMapMode = false
 function toggleChampionMap() {
    var zoom = map.getZoom();
+   championMapMode = !championMapMode
     $.each(markers, function(index, marker) {
-        if (!championMapMode) {
+        if (championMapMode) {
             if (marker.championIcon) {
                 marker.previousIcon = marker.icon
                 marker.previousTitle = marker.title
@@ -961,7 +962,7 @@ function toggleChampionMap() {
             updateAirportMarkers(activeAirline)
         }
     })
-    championMapMode = !championMapMode
+
 }
 
 
