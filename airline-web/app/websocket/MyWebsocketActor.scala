@@ -1,14 +1,14 @@
 package websocket
 
 import java.util.concurrent.TimeUnit
-
 import akka.actor._
 import com.patson.data.{CycleSource, UserSource}
+import com.patson.model.notice.NoticeCategory
 import com.patson.stream._
-import java.util.concurrent.atomic.AtomicLong
 
+import java.util.concurrent.atomic.AtomicLong
 import com.patson.util.{AirlineCache, AirportCache}
-import controllers.AirportUtil
+import controllers.{AirportUtil, NoticeUtil}
 import play.api.libs.json.JsNumber
 import play.api.libs.json.Json
 import websocket.chat.TriggerPing
@@ -49,7 +49,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
     case Notification(message) =>
 //      println("going to send " + message + " back to the websocket")
       out ! message
-    case JsNumber(_) => //directly recieve message from the websocket (the only message the websocket client send down now is the airline id
+    case JsNumber(_) => //directly receive message from the websocket (the only message the websocket client send down now is the airline id
       try {
           val subscriberId = MyWebSocketActor.nextSubscriberId(airlineId)
           RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
@@ -62,6 +62,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
 
               //println("Received cycle completed: " + cycle)
               out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
+              BroadcastActor.checkNotices(airlineId)
             case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
               //println("Received cycle info on cycle: " + cycle)
               out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
@@ -72,7 +73,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
           this.subscriberId = Some(subscriberId)
 
           //MyWebSocketActor.backgroundActor ! RegisterToBackground(airlineId.toInt)
-
+          BroadcastActor.checkNotices(airlineId) //check notice on connect
       } catch {
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
@@ -82,10 +83,12 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
       out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)
     case AirlineMessage(airline, text) =>
       out ! Json.obj("messageType" -> "airlineMessage", "message" -> text)
+    case AirlineNotice(airline, notice) =>
+      out ! Json.obj("messageType" -> "levelNotice", "category" -> NoticeCategory.LEVEL_UP.toString, "level" -> airline.airlineGrade.value, "description" -> airline.airlineGrade.description)
     case any =>
       println("received " + any + " not handled")  
   }
-  
+
   override def aroundPostStop() = {
     println("actor stopping")
     subscriberId.foreach { RemoteSubscribe.unsubscribe(_) }

@@ -907,7 +907,7 @@ function seqRandomShell() {
 	return 900 + Math.random() * 600 + extraDelay;
 }
 
-function seqRandomFastShell() {
+    function seqRandomFastShell() {
 	const shellType = randomFastShell();
 	const size = getRandomShellSize();
 	const shell = new Shell(shellType(size.size));
@@ -1063,53 +1063,47 @@ const sequences = [
 ];
 
 
-let isFirstSeq = true;
 const finaleCount = 32;
 let currentFinaleCount = 0;
 function startSequence() {
-	if (isFirstSeq) {
-		isFirstSeq = false;
-		if (IS_HEADER) {
-			return seqTwoRandom();
-		}
-		else {
-			const shell = new Shell(crysanthemumShell(shellSizeSelector()));
-			shell.launch(0.5, 0.5);
-			return 2400;
-		}
-	}
+    if (fireworkLevel <= 1) {
+        return seqRandomShell();
+    } else if (fireworkLevel == 2) {
+        return seqRandomFastShell();
+    } else if (fireworkLevel == 3) {
+        return seqTwoRandom();
+    } else if (fireworkLevel == 4) {
+        return seqTriple();
+    } else if (fireworkLevel == 5) {
+        return seqSmallBarrage();
+    } else if (fireworkLevel == 6) {
+        seqRandomFastShell();
+        seqRandomFastShell();
+        return seqSmallBarrage();
+    } else if (fireworkLevel == 7) {
+        seqRandomFastShell();
+        seqRandomFastShell();
+        seqTwoRandom();
+        seqPyramid();
+        return 2400;
+    } else {
+        seqRandomFastShell();
+        if (currentFinaleCount < finaleCount) {
+            currentFinaleCount++;
+            return 170;
+        } else {
+            seqSmallBarrage();
+            seqTwoRandom();
+            const shell = new Shell(crysanthemumShell(shellSizeSelector()));
+            shell.launch(0.5, 0.8);
+            currentFinaleCount = 0
+            return 9000;
+        }
 
-	if (finaleSelector()) {
-		seqRandomFastShell();
-		if (currentFinaleCount < finaleCount) {
-			currentFinaleCount++;
-			return 170;
-		}
-		else {
-			currentFinaleCount = 0;
-			return 6000;
-		}
-	}
+    }
 
-	const rand = Math.random();
 
-	if (rand < 0.08 && Date.now() - seqSmallBarrage.lastCalled > seqSmallBarrage.cooldown) {
-		return seqSmallBarrage();
-	}
 
-	if (rand < 0.1) {
-		return seqPyramid();
-	}
-
-	if (rand < 0.6 && !IS_HEADER) {
-		return seqRandomShell();
-	}
-	else if (rand < 0.8) {
-		return seqTwoRandom();
-	}
-	else if (rand < 1) {
-		return seqTriple();
-	}
 }
 
 
@@ -1500,11 +1494,14 @@ function colorSky(speed) {
 }
 
 let fireworkEndTimestamp = 0
-function startFirework(duration) {
+let fireworkLevel = 1
+function startFirework(duration, level) {
     //mainStage.addEventListener('ticker', update);
     Ticker.addListener(update)
     fireworkEndTimestamp = Date.now() + duration
     $('#firework-container').show()
+    fireworkLevel = level
+    currentFinaleCount = 0
 }
 
 function stopFirework() {

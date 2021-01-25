@@ -418,7 +418,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val normalizedCapacityChange = capacityChange(ECONOMY) * ECONOMY.spaceMultiplier + capacityChange(BUSINESS) * BUSINESS.spaceMultiplier + capacityChange(FIRST) * FIRST.spaceMultiplier
         val bonus = NegotiationUtil.getLinkBonus(resultLink, normalizedCapacityChange.toInt, busyDelegates)
         bonus.apply(airline)
-        result = result + ("negotiationBonus" -> JsString(bonus.description))
+        result = result + ("negotiationBonus" -> Json.obj("description" -> JsString(bonus.description), "intensity" -> JsNumber(bonus.intensity)))
+
       }
 
       result = result + ("negotiationResult" -> Json.toJson(negotiationResult))

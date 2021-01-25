@@ -62,6 +62,8 @@ function onMessage(evt) { //right now the message is just the cycle #, so refres
         queuePrompt("broadcastMessagePopup", json.message)
     } else if (json.messageType == "airlineMessage") {
         queuePrompt("airlineMessagePopup", json.message)
+    } else if (json.messageType == "levelNotice") {
+        queuePrompt("levelUpPopup", json)
     } else {
 		console.warn("unknown message type " + evt.data)
 	}

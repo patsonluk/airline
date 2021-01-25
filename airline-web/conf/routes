@@ -128,6 +128,9 @@ POST      /airlines/:airlineId/completed-tutorial/:tutorialId     controllers.Tu
 GET      /airlines/:airlineId/completed-tutorial               controllers.TutorialApplication.getCompletedTutorials(airlineId: Int)
 POST      /airlines/:airlineId/tutorial               controllers.TutorialApplication.setSkipTutorial(airlineId : Int, skipTutorial: Boolean)
 
+POST      /airlines/:airlineId/completed-notice/:noticeId     controllers.NoticeApplication.saveCompletedNotice(airlineId: Int, noticeId: String, category : String)
+
+
 GET     /airlines/:airlineId/profiles   controllers.ProfileApplication.getProfiles(airlineId : Int, airportId : Int)
 PUT     /airlines/:airlineId/profiles/:profileId     controllers.ProfileApplication.buildHqWithProfile(airlineId : Int, airportId : Int, profileId : Int)
 

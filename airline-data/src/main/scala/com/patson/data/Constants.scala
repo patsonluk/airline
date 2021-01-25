@@ -129,6 +129,7 @@ object Constants {
   val LOYALIST_TABLE = "loyalist"
   val LOYALIST_HISTORY_TABLE = "loyalist_history"
   val COMPLETED_TUTORIAL_TABLE = "completed_tutorial"
+  val COMPLETED_NOTICE_TABLE = "completed_notice"
 
   val CAMPAIGN_TABLE = "campaign"
   val CAMPAIGN_AREA_TABLE = "campaign_area"

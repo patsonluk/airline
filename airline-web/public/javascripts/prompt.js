@@ -86,9 +86,15 @@ function showPrompt() {
                 } else {
                     $(promptId).fadeIn(500)
                 }
-                $(promptId).data('closeCallback', function() {
-                    closePrompt($(promptId))
-                })
+                if ($(promptId).hasClass('notice')) {
+                    $(promptId).data('closeCallback', function() {
+                        closeNotice($(promptId))
+                    })
+                } else {
+                    $(promptId).data('closeCallback', function() {
+                        closePrompt($(promptId))
+                    })
+                }
             } else if (!activeTutorial && tutorialQueue.length > 0) {
                 activeTutorial = tutorialQueue.shift()
                 var tutorialId = '#' + activeTutorial
@@ -107,13 +113,32 @@ function showPrompt() {
     }
 }
 
+function closeNotice($promptModal) {
+    closePrompt($promptModal)
+
+    $.ajax({
+        type: 'POST',
+        url: "airlines/" + activeAirline.id + "/completed-notice/" + $promptModal.data('id') + "?category=" + $promptModal.data('category'),
+        data: { } ,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+}
+
 
 function closePrompt($promptModal) {
     activePrompt = undefined
-//    var callback = $promptModal.data('callback')
-//    if (callback) {
-//        callback()
-//    }
+    var callback = $promptModal.data('promptCloseCallback')
+    if (callback) {
+        callback()
+    }
 }
 
 
@@ -203,3 +228,24 @@ function setSkipTutorial(skipTutorial) {
     });
 }
 
+function initNotices() {
+    $('#levelUpPopup').data('function', function(json) {
+        $('#levelUpPopup').data('id', json.level)
+        $('#levelUpPopup').data('category', json.category)
+        showLevelUpPopup(json.level, json.description)
+    })
+    $('#levelUpPopup').data('promptCloseCallback', stopFirework)
+}
+
+function showLevelUpPopup(level, description) {
+    var $popup = $('#levelUpPopup')
+    var $starBar = $popup.find('.levelStarBar')
+    $starBar.empty()
+    $starBar.append(getGradeStarsImgs(level))
+
+    $('#levelUpPopup .description').text(description)
+    updateHeadquartersMap($('#levelUpPopup .headquartersMap'), activeAirline.id)
+    $popup.fadeIn(500)
+
+    startFirework(20000, Math.floor(level / 2) + 1)
+}

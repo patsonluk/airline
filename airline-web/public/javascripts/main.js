@@ -13,6 +13,8 @@ var airports = undefined
 
 $( document ).ready(function() {
 	mobileCheck()
+	$('#tutorialHtml').load('assets/html/tutorial.html')
+    $('#noticeHtml').load('assets/html/notice.html', initNotices)
 	populateNavigation()
     history.replaceState({"onclickFunction" : "showWorldMap()"}, null, "/") //set the initial state
 
@@ -33,7 +35,7 @@ $( document ).ready(function() {
 	updateAirlineColors()
 	initTabGroup()
 	populateTooltips()
-	$('#tutorialHtml').load('assets/html/tutorial.html')
+
 	
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())

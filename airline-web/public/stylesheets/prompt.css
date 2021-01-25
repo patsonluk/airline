@@ -1,7 +1,7 @@
-.tutorial li.label {
+.tutorial li.label, .notice li.label{
     padding: 10px 5px;
 }
-.tutorial .modal-content {
+.tutorial .modal-content, .notice .modal-content {
     position: relative;
 }
 .tutorial .modal-content .footer {

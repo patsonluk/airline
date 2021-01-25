@@ -2597,7 +2597,7 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
             callback = function() {
                            var result
                            if (negotiationResult.isGreatSuccess && savedLink.negotiationBonus) {
-                            $('#negotiationAnimation .negotiationBonus').text(savedLink.negotiationBonus)
+                            $('#negotiationAnimation .negotiationBonus').text(savedLink.negotiationBonus.description)
                             result = "Great Success"
                            } else if (negotiationResult.isSuccessful) {
                             result = "Success"
@@ -2609,7 +2609,7 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
 
                             if (negotiationResult.isGreatSuccess) {
                                 $('#negotiationAnimation').addClass('transparentBackground')
-                                startFirework(20000)
+                                startFirework(20000, savedLink.negotiationBonus.intensity)
                             } else if (negotiationResult.isSuccessful) {
                                showConfetti($("#negotiationAnimation"))
                            }

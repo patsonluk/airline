@@ -301,6 +301,7 @@ object Meta {
     createCampaign(connection)
     createLinkNegotiationCoolDown(connection)
     createTutorial(connection)
+    createNotice(connection)
     createAirportChampion(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
@@ -1658,6 +1659,24 @@ object Meta {
 
 
     statement = connection.prepareStatement("CREATE TABLE " + COMPLETED_TUTORIAL_TABLE + "(" +
+      "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "category VARCHAR(256)," +
+      "id VARCHAR(256), " +
+      "PRIMARY KEY (airline, id)" +
+      ")")
+
+    statement.execute()
+    statement.close()
+
+  }
+
+  def createNotice(connection : Connection) = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + COMPLETED_NOTICE_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + COMPLETED_NOTICE_TABLE + "(" +
       "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "category VARCHAR(256)," +
       "id VARCHAR(256), " +
