@@ -85,7 +85,11 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
       out ! Json.obj("messageType" -> "airlineMessage", "message" -> text)
     case AirlineNotice(airline, notice) =>
       println(s"Sending notice $notice to $airline")
-      out ! Json.obj("messageType" -> "levelNotice", "category" -> NoticeCategory.LEVEL_UP.toString, "level" -> airline.airlineGrade.value, "description" -> airline.airlineGrade.description)
+      notice.category match {
+        case NoticeCategory.LEVEL_UP =>
+          out ! Json.obj("messageType" -> "levelNotice", "category" -> notice.category.toString, "level" -> airline.airlineGrade.value, "description" -> airline.airlineGrade.description)
+      }
+
     case any =>
       println("received " + any + " not handled")  
   }
