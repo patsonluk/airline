@@ -274,16 +274,16 @@ function getOpennessSpan(openness) {
 	if (openness >= 7) {
 		description = "Opened Market"
 		icon = "globe--plus.png"
-	} else if (openness >= 4) {
+	} else {
 		description = "No International Connection"
 		icon = "globe--exclamation.png"
-	} else if (openness >= 2) { 
+	}/* else if (openness >= 2) {
 		description = "No Foreign Airline Base"
 		icon = "globe--minus.png"
 	} else {
 		description = "No Foreign Airline"
 		icon = "prohibition.png"
-	}
+	}*/
 	return "<span>" + description + "(" + openness + ")&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
 	
 }

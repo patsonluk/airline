@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CycleSource, DelegateSource, LinkSource}
+import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CountrySource, CycleSource, DelegateSource, LinkSource}
 import com.patson.model.FlightType._
 import com.patson.model._
 import com.patson.model.airplane._
@@ -64,6 +64,11 @@ object NegotiationUtil {
     } else {
       val requirement = (newTotal - officeStaffCount).toDouble / 20
       requirements.append(NegotiationRequirement(LINK_CAP, requirement, s"Requires ${newOfficeStaffRequired} office staff, over your base capacity : ${newTotal} / ${officeStaffCount}"))
+    }
+
+    val mutualRelationship = CountrySource.getCountryMutualRelationship(newLink.from.countryCode, newLink.to.countryCode)
+    if (mutualRelationship < 0) {
+      requirements.append(NegotiationRequirement(BAD_MUTUAL_RELATIONSHIP, mutualRelationship * 2, s"Bad mutual relationship between ${newLink.from.countryCode} and ${newLink.to.countryCode}"))
     }
 
     val newFrequency = newLink.futureFrequency()
@@ -148,6 +153,11 @@ object NegotiationUtil {
 
     if (existingLinkOption.isEmpty) {
       requirements.append(NegotiationRequirement(NEW_LINK, NEW_LINK_BASE_REQUIREMENT * flightTypeMultiplier, "New Flights"))
+      val mutualRelationship = CountrySource.getCountryMutualRelationship(newLink.from.countryCode, newLink.to.countryCode)
+      if (mutualRelationship < 0) {
+        requirements.append(NegotiationRequirement(BAD_MUTUAL_RELATIONSHIP, mutualRelationship * 2, s"Bad mutual relationship between ${newLink.from.countryCode} and ${newLink.to.countryCode}"))
+      }
+
     } else {
       requirements.append(NegotiationRequirement(UPDATE_LINK, UPDATE_BASE_REQUIREMENT * flightTypeMultiplier, "Update Flights"))
     }
@@ -431,7 +441,7 @@ case class NegotiationInfo(fromAirportRequirements : List[NegotiationRequirement
 
 object NegotiationRequirementType extends Enumeration {
   type NegotiationRequirementType = Value
-  val FROM_COUNTRY_RELATIONSHIP, TO_COUNTRY_RELATIONSHIP, EXISTING_COMPETITION, NEW_LINK, UPDATE_LINK, INCREASE_CAPACITY, INCREASE_FREQUENCY, EXCESSIVE_FREQUENCY, LOW_LOAD_FACTOR, FOREIGN_AIRLINE, NON_GATEWAY, LINK_CAP, OTHER = Value
+  val FROM_COUNTRY_RELATIONSHIP, TO_COUNTRY_RELATIONSHIP, EXISTING_COMPETITION, NEW_LINK, UPDATE_LINK, INCREASE_CAPACITY, INCREASE_FREQUENCY, EXCESSIVE_FREQUENCY, LOW_LOAD_FACTOR, FOREIGN_AIRLINE, NON_GATEWAY, LINK_CAP, BAD_MUTUAL_RELATIONSHIP, OTHER = Value
 
 //  def description(requirementType : NegotiationRequirementType.Value, link : Link) =  requirementType match {
 //    case EXISTING_COMPETITION => "Existing Routes by other Airlines"
