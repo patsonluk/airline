@@ -23,6 +23,7 @@
 	</div>
 </div>
 
+
 <div class="tutorial modal" data-category="airport" id="tutorialAirportDetails">
 	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
 		<h4>Airport Details</h4>
@@ -37,7 +38,7 @@
 	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
 		<h4>Airport Details</h4>
 		<ul>
-			<li class="label" style="padding: 5px;">Click the Build Headquarters icon if you decide to start your HQ here.</li>
+			<li class="label" style="padding: 5px;">Click the Build Headquarters button if you decide to start your HQ here.</li>
 			<li class="label" style="padding: 5px;">Take note that once HQ is built, you can no longer move it unless you rebuild your airlines.</li>
 			<li class="label" style="padding: 5px;">All your initial flights will depart from the HQ airport.</li>
 			<li class="label" style="padding: 5px;">The country houses your HQ will also become your company's home country, which determines your initial relationship with airplane manufacturers and other countries.</li>
@@ -45,6 +46,114 @@
 		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 </div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialSetupLink1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Start your first flight</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Set up your first flight by clicking "Plan Link" on the airport you want to fly to.</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-1.gif" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialSetupLink2">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Edit your flight details</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Select airplane model, assign airplane, frequency, pricing and service level</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-1.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialSetupLink3">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Purchase Airplanes</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">If you have not yet owned any airplanes of the selected model</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-2.png" style="vertical-align:middle; max-width: 100%">
+		<ul>
+			<li class="label" style="padding: 5px;">You can even purchase it in the short-cut section below</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-3.png" style="vertical-align:middle; max-width: 100%">
+		<ul>
+			<li class="label" style="padding: 5px;">Or click on the Airplane icon on the left side bar to buy new/used airplanes</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-4.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Negotiation</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Looks like negotiation is required to set up this flight!</li>
+		</ul>
+		<img src="assets/images/tutorial/negotiation-1.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation2">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Negotiation Difficulty</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Every negotiation has its difficulty, the higher the value the more difficult it gets!</li>
+		</ul>
+		<img src="assets/images/tutorial/negotiation-2.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation3">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Negotiation Difficulty Breakdown</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">To understand the difficulty details. Hover over the bubble next to the difficulty value.</li>
+		</ul>
+		<img src="assets/images/tutorial/negotiation-1.gif" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation4">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Assign Delegates</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">You would need to assign delegates to start the negotiations.</li>
+			<li class="label" style="padding: 5px;">The difficulty indicates the minimum delegates required.</li>
+			<li class="label" style="padding: 5px;">The more the delegates, the higher the success rate, the rate is indicated on the right side.</li>
+			<li class="label" style="padding: 5px;">Maximum of 10 delegates can be assigned for the negotiation.</li>
+			<li class="label" style="padding: 5px;">After the negotiation, the delegates involved will have 12 weeks cooldown if the negotiation was successful and 6 weeks if it failed</li>
+		</ul>
+		<img src="assets/images/tutorial/negotiation-3.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation5">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Too Difficult!</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Sometimes the negotiation could be too difficult for your available delegates to take action</li>
+			<li class="label" style="padding: 5px;">This will be indicated by the red cross next to the difficulty value</li>
+			<img src="assets/images/tutorial/negotiation-4.png" style="vertical-align:middle; max-width: 100%">
+		</ul>
+		<ul>
+			<li class="label" style="padding: 5px;">There are several ways to decrease the difficulty, for example:</li>
+			<li class="label" style="padding: 5px;">- Decrease the frequency of the flight</li>
+			<li class="label" style="padding: 5px;">- Improve the relationship with the target country with country delegates</li>
+			<li class="label" style="padding: 5px;">- Fly to a different airport etc</li>
+			<li class="label" style="padding: 5px;">Always inspect the difficulty breakdown to better understand the issues</li>
+		</ul>
+
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+
 
 <div class="tutorial modal" data-category="oil" id="tutorialOilIntro1">
 	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">

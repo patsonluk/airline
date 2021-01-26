@@ -835,6 +835,7 @@ function planToAirport(toAirportId, toAirportName) {
 }
 
 function planLink(fromAirport, toAirport) {
+    checkTutorial("planLink")
 	var airlineId = activeAirline.id
 	$("#planLinkFromAirportId").val(fromAirport)
 	$("#planLinkToAirportId").val(toAirport)
@@ -2374,6 +2375,7 @@ function getLinkNegotiation() {
 	        negotiationOddsLookup = negotiationInfo.odds
 
 	        if (negotiationInfo.fromAirportRequirements.length > 0 || negotiationInfo.toAirportRequirements.length > 0) {
+	            checkTutorial("negotiation")
                 $('#negotiationDifficultyModal div.negotiationInfo .requirement').empty()
                 $('#negotiationDifficultyModal div.negotiationInfo .discount').empty()
 

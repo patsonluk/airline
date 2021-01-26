@@ -152,24 +152,33 @@ function queueTutorial(tutorial) {
 
 }
 
-function checkTutorial(pageId) {
+function checkTutorial(flowId) {
     if (activeUser && !activeAirline.skipTutorial) {
-        if (pageId === "worldMap" || pageId === "/") {
+        if (flowId === "worldMap" || flowId === "/") {
             if (!activeAirline.headquarterAirport) {
                 queueTutorial("tutorialWelcome")
                 queueTutorial("tutorialViewAirport")
             } else if ($.isEmptyObject(flightPaths)) {
-                queueTutorial("tutorialSetupLink")
+                queueTutorial("tutorialSetupLink1")
             }
-        } else if (pageId == "airport") {
+        } else if (flowId == "airport") {
             queueTutorial("tutorialAirportDetails")
             if (!activeAirline.headquarterAirport) {
                 queueTutorial("tutorialBuildHq")
             }
-        } else if (pageId == "oil") {
+        } else if (flowId == "oil") {
             queueTutorial("tutorialOilIntro1")
             queueTutorial("tutorialOilIntro2")
             queueTutorial("tutorialOilIntro3")
+        } else if (flowId == "planLink") {
+            queueTutorial("tutorialSetupLink2")
+            queueTutorial("tutorialSetupLink3")
+        } else if (flowId == "negotiation") {
+            queueTutorial("tutorialNegotiation1")
+            queueTutorial("tutorialNegotiation2")
+            queueTutorial("tutorialNegotiation3")
+            queueTutorial("tutorialNegotiation4")
+            queueTutorial("tutorialNegotiation5")
         }
     }
 }
