@@ -233,7 +233,7 @@ object PassengerSimulation {
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
     
 
-      val incomeAdjustedFactor : Double = 
+      val incomeAdjustedFactor : Double =
         if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
           1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
         } else {

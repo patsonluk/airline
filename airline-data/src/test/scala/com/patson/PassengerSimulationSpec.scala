@@ -22,7 +22,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
   val standardIncome = Computation.getIncomeFromIncomeLevel(FlightPreference.STANDARD_INCOME_LEVEL)
   val testAirline1 = Airline("airline 1", id = 1)
   val testAirline2 = Airline("airline 2", id = 2)
-  val fromAirport = Airport.fromId(1).copy(power = standardIncome, population = 1) //income level 30
+  val fromAirport = Airport.fromId(1).copy(power = standardIncome, population = 1)
   val airlineAppeal = AirlineAppeal(0, 100)
   fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
   fromAirport.initLounges(List.empty)
@@ -731,7 +731,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
        assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
     }
     
-    "accept some (single link) at suggested price with neutral quality and no loyalty for very low income country".in {
+    "accept few (single link) at suggested price with neutral quality and no loyalty for very low income country".in {
       val clonedFromAirport  = fromAirport.copy(power = Country.LOW_INCOME_THRESHOLD / 10)
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
       
@@ -765,8 +765,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.4)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.6)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.2)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.4)
     }
     
     "accept almost no link at 1.2 suggested price with 0 quality and no loyalty".in {
@@ -942,7 +942,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
         DemandGenerator.getFlightPreferencePoolOnAirport(clonedFromAirport).pool.foreach {
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
-              val cost = flightPreference.computeCost(newLink, preferredLinkClass)
+              val costBreakdown = flightPreference.computeCostBreakdown(newLink, preferredLinkClass)
+              val cost = costBreakdown.cost
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
               
               
