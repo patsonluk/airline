@@ -299,7 +299,9 @@ object NegotiationUtil {
         if (allianceMember.airline.id == airline.id) { //self, always get discount
           discounts.append(NegotiationDiscount(BASE, 0.2))
         } else if (airportChampionAirlineIds.contains(allianceMember.airline.id)) {
-          discounts.append(NegotiationDiscount(ALLIANCE_BASE, 0.2))
+          if (discounts.find(_.adjustmentType == ALLIANCE_BASE).isEmpty) { //only add once
+            discounts.append(NegotiationDiscount(ALLIANCE_BASE, 0.2))
+          }
         }
       }
     }
