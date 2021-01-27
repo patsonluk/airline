@@ -98,7 +98,15 @@ abstract class FlightPreference(homeAirport : Airport) {
     val standardPrice = link.standardPrice(preferredLinkClass)
     val deltaFromStandardPrice = priceAdjustedByLinkDiff(link, linkClass) - standardPrice
 
-    1 + deltaFromStandardPrice * priceSensitivity / standardPrice
+    //low income country would perceive the price as higher in general. Opposite for higher income country (-0.1 to 0.1 adjust)
+    var incomeAdjust = (FlightPreference.STANDARD_INCOME_LEVEL - homeAirport.incomeLevel) * 0.005
+    if (incomeAdjust > 0.1) {
+      incomeAdjust = 0.1
+    } else if (incomeAdjust < -0.1) {
+      incomeAdjust = -0.1
+    }
+    
+    1 + deltaFromStandardPrice * priceSensitivity / standardPrice + incomeAdjust * priceSensitivity
   }
 
   def loyaltyAdjustRatio(link : Link) = {
@@ -217,6 +225,10 @@ abstract class FlightPreference(homeAirport : Airport) {
       1 + fromLoungeRatioDelta + toLoungeRatioDelta
     }
   }
+}
+
+object FlightPreference {
+  val STANDARD_INCOME_LEVEL = 30
 }
 
 object FlightPreferenceType extends Enumeration {

@@ -19,10 +19,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
   override def afterAll {
     TestKit.shutdownActorSystem(system)
   }
- 
+  val standardIncome = Computation.getIncomeFromIncomeLevel(FlightPreference.STANDARD_INCOME_LEVEL)
   val testAirline1 = Airline("airline 1", id = 1)
   val testAirline2 = Airline("airline 2", id = 2)
-  val fromAirport = Airport.fromId(1).copy(power = 40000, population = 1) //income 40k . mid income country
+  val fromAirport = Airport.fromId(1).copy(power = standardIncome, population = 1) //income level 30
   val airlineAppeal = AirlineAppeal(0, 100)
   fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
   fromAirport.initLounges(List.empty)

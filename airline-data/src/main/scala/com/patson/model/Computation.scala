@@ -114,6 +114,10 @@ object Computation {
       incomeLevel
     }
   }
+
+  def getIncomeFromIncomeLevel(incomeLevel : Int) : Int = {
+    Math.pow(Math.E, incomeLevel * Math.log(1.1) + Math.log(500)).toInt
+  }
   
   def getLinkCreationCost(from : Airport, to : Airport) : Int = {
     
