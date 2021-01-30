@@ -986,7 +986,7 @@ function addContestedMarker(airportMarker) {
       });
     //marker.setVisible(isShowMarker(airportMarker, zoom))
     contestedMarker.bindTo("visible", airportMarker)
-    contestedMarker.bindTo("zIndex", airportMarker)
+    contestedMarker.setZIndex(airportMarker.getZIndex() + 1)
     contestedMarkers.push(contestedMarker)
 }
 
