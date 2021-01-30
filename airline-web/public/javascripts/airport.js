@@ -559,6 +559,7 @@ function addMarkers(airports) {
 		  if (airportInfo.championAirlineId) {
             marker.championIcon = '/airlines/' + airportInfo.championAirlineId + '/logo'
             marker.championAirlineName = airportInfo.championAirlineName
+            marker.contested = airportInfo.contested
           }
 
 		  
@@ -938,6 +939,7 @@ function updateAirportExtendedDetails(airportId, countryCode) {
 //}
 
 var championMapMode = false
+var contestedMarkers = []
 function toggleChampionMap() {
    var zoom = map.getZoom();
    championMapMode = !championMapMode
@@ -951,19 +953,41 @@ function toggleChampionMap() {
                 marker.setTitle(marker.title + " - " + marker.championAirlineName)
         //        google.maps.event.clearListeners(marker, 'mouseover');
         //        google.maps.event.clearListeners(marker, 'mouseout');
+                if (marker.contested) {
+                    addContestedMarker(marker)
+                }
             } else {
                 marker.setVisible(false)
             }
         } else {
+
             if (marker.championIcon) {
                 marker.setTitle(marker.previousTitle)
                 marker.setIcon(marker.previousIcon)
             }
-            marker.setVisible(isShowMarker(marker, zoom));
+            while (contestedMarkers.length > 0) {
+                var contestedMarker = contestedMarkers.pop()
+                contestedMarker.setMap(null)
+            }
+            marker.setVisible(isShowMarker(marker, zoom))
             updateAirportMarkers(activeAirline)
         }
     })
 
+}
+
+function addContestedMarker(airportMarker) {
+    var contestedMarker = new google.maps.Marker({
+        position: airportMarker.getPosition(),
+        map,
+        title: "Contested",
+        icon: { anchor: new google.maps.Point(-5,15), url: "assets/images/icons/fire.png" },
+        zIndex: 500
+      });
+    //marker.setVisible(isShowMarker(airportMarker, zoom))
+    contestedMarker.bindTo("visible", airportMarker)
+    contestedMarker.bindTo("zIndex", airportMarker)
+    contestedMarkers.push(contestedMarker)
 }
 
 

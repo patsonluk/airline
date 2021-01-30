@@ -191,13 +191,25 @@ object LoyalistSource {
     }
   }
 
-  def loadLoyalistHistoryByCycleAndAirline(cycle : Int, airlineId : Int) : List[LoyalistHistory] = {
+  def loadLoyalistHistoryByCriteria(criteria : List[(String, Any)]) : List[LoyalistHistory] = {
+    var queryString = "SELECT * FROM " + LOYALIST_HISTORY_TABLE
+
+    if (!criteria.isEmpty) {
+      queryString += " WHERE "
+      for (i <- 0 until criteria.size - 1) {
+        queryString += criteria(i)._1 + " = ? AND "
+      }
+      queryString += criteria.last._1 + " = ?"
+    }
+
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("SELECT * FROM " + LOYALIST_HISTORY_TABLE + " WHERE cycle = ? AND airline = ?")
+      val preparedStatement = connection.prepareStatement(queryString)
 
-      preparedStatement.setInt(1, cycle)
-      preparedStatement.setInt(2, airlineId)
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+
 
       val resultSet = preparedStatement.executeQuery()
 
@@ -220,6 +232,13 @@ object LoyalistSource {
     } finally {
       connection.close()
     }
+  }
+
+  def loadLoyalistHistoryByCycleAndAirline(cycle : Int, airlineId : Int) : List[LoyalistHistory] = {
+    loadLoyalistHistoryByCriteria(List(("cycle", cycle), ("airline", airlineId)))
+  }
+  def loadLoyalistHistoryByCycle(cycle : Int) : List[LoyalistHistory] = {
+    loadLoyalistHistoryByCriteria(List(("cycle", cycle)))
   }
 
 

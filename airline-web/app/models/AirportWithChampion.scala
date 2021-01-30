@@ -3,4 +3,4 @@ package models
 import com.patson.model.Airline
 import com.patson.model.Airport
 
-case class AirportWithChampion(airport : Airport, champion : Option[Airline])
+case class AirportWithChampion(airport : Airport, champion : Option[Airline], contested : Boolean)
