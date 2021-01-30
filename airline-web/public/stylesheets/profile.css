@@ -20,7 +20,7 @@
 }
 
 .transparent-modal div.button {
-    color: #454544;
+    color: var(--text-color);
 }
 
 .transparent-modal div.button:hover {
