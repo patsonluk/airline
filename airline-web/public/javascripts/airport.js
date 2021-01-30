@@ -482,7 +482,6 @@ function updateFacilityList(statistics) {
 		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		$('#airportDetailsHeadquarterList').append(emptyRow)
 	}
 	if (!hasBases) {
@@ -497,6 +496,7 @@ function updateFacilityList(statistics) {
 	if (!hasLounges) {
 		var emptyRow = $("<div class='table-row'></div>")
 		emptyRow.append("<div class='cell'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
 		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
