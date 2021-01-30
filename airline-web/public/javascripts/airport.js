@@ -476,31 +476,32 @@ function updateFacilityList(statistics) {
 	})
 	
 	if (!hasHeadquarters) {
-		var emtpyRow = $("<div class='table-row'></div>")
-		emtpyRow.append("<div class='cell'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		$('#airportDetailsHeadquarterList').append(emtpyRow)
+		var emptyRow = $("<div class='table-row'></div>")
+		emptyRow.append("<div class='cell'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		$('#airportDetailsHeadquarterList').append(emptyRow)
 	}
 	if (!hasBases) {
-		var emtpyRow = $("<div class='table-row'></div>")
-		emtpyRow.append("<div class='cell'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		$('#airportDetailsBaseList').append(emtpyRow)
+		var emptyRow = $("<div class='table-row'></div>")
+		emptyRow.append("<div class='cell'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		$('#airportDetailsBaseList').append(emptyRow)
 	}
 	if (!hasLounges) {
-		var emtpyRow = $("<div class='table-row'></div>")
-		emtpyRow.append("<div class='cell'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		emtpyRow.append("<div class='cell' style='text-align: right;'>-</div>")
-		$('#airportDetailsLoungeList').append(emtpyRow)
+		var emptyRow = $("<div class='table-row'></div>")
+		emptyRow.append("<div class='cell'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		emptyRow.append("<div class='cell' style='text-align: right;'>-</div>")
+		$('#airportDetailsLoungeList').append(emptyRow)
 	}
 }
 
