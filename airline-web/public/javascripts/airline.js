@@ -2235,7 +2235,6 @@ function linkConfirmation() {
 	refreshAssignedAirplanesBar($('#linkConfirmationModal div.updating.airplanes'), assignedAirplaneFrequencies)
 
     var planInfo = getPlanLinkCapacity()
-    var planCapacity = planInfo.future ? planInfo.future.capacity : planInfo.current.capacity
     var planFrequency = planInfo.future ? planInfo.future.frequency : planInfo.current.frequency
 
 	for (i = 0 ; i < planFrequency ; i ++) {
@@ -2247,7 +2246,7 @@ function linkConfirmation() {
 		}
 	}
 
-	var planCapacitySpan = $('<span>' + toLinkClassValueString(planCapacity) + '</span>')
+	var planCapacitySpan = $('<span>' + toLinkClassValueString(planInfo.current.capacity) + '</span>')
     $("#linkConfirmationModal div.updating.capacity").append(planCapacitySpan)
     if (planInfo.future) {
         var futureCapacitySpan = $('<div class="future">(' + toLinkClassValueString(planInfo.future.capacity) + ')</div>')
