@@ -1539,9 +1539,10 @@ object Meta {
       "airline INTEGER, " +
       "user INTEGER, " +
       "room_id INTEGER, " +
-      "text VARCHAR(512) CHARACTER SET 'utf8'," +
+      "text VARCHAR(512) CHARACTER SET 'utf8mb4'," +
       "time VARCHAR(128)" +
       ")")
+
     statement.execute()
     statement.close()
 
