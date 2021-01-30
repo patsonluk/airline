@@ -203,6 +203,7 @@ class ChatControllerActor extends Actor {
     }
   }
 
+  private[this] val CHAT_HISTORY_ENTRIES = 10000
   def processMessage(message: ChatMessage): ChatMessage = {
     //check commands
     val processedMessage = ChatControllerActor.commands.find( command => command.hasPermission(message) && command.isCommand(message)) match {
@@ -211,6 +212,10 @@ class ChatControllerActor extends Actor {
     }
 
     ChatSource.insertChatMessage(processedMessage)
+    if (processedMessage.id % 1000 == 0) { //purge some older message
+      ChatSource.deleteChatMessagesBeforeId(processedMessage.id - CHAT_HISTORY_ENTRIES)
+    }
+
 
     processedMessage
   }
