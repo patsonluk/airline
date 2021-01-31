@@ -10,7 +10,6 @@ import com.patson.util.{AirlineCache, AirportCache, ChampionUtil}
 import controllers.AuthenticationObject.AuthenticatedAirline
 import controllers.WeatherUtil.{Coordinates, Weather}
 import javax.inject.Inject
-import models.AirportWithChampion
 import play.api.data.Form
 import play.api.data.Forms.{mapping, number}
 import play.api.libs.json.{Json, _}

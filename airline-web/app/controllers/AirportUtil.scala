@@ -3,7 +3,7 @@ package controllers
 import com.patson.AirportSimulation
 import com.patson.data.{AirportSource, CountrySource, LinkStatisticsSource, LoyalistSource}
 import com.patson.model._
-import com.patson.util.{AirportChampionInfo, ChampionUtil, CountryCache}
+import com.patson.util.{AirlineCache, AirportChampionInfo, ChampionUtil, CountryCache}
 import models.AirportWithChampion
 import websocket.MyWebSocketActor
 
@@ -71,19 +71,24 @@ object AirportUtil {
         loyalists.sortBy(_.ranking).map(_.loyalist.airline).head
       }
 
-      val contested = championAirline match {
-        case None => false
+      val contestingAirline = championAirline match {
+        case None => None
         case Some(championAirline) => topLoyalistGainAirlineIdByAirportId.get(airport.id) match {
-          case None => false
+          case None => None
           case Some(topLoyalistGainAirlineIdOption) => {
             topLoyalistGainAirlineIdOption match {
-              case Some(topLoyalistGainAirlineId) => topLoyalistGainAirlineId != championAirline.id
-              case None => false
+              case Some(topLoyalistGainAirlineId) =>
+                if (topLoyalistGainAirlineId != championAirline.id) {
+                  AirlineCache.getAirline(topLoyalistGainAirlineId)
+                } else {
+                  None
+                }
+              case None => None
             }
           }
         }
       }
-      AirportWithChampion(airport, championAirline, contested)
+      AirportWithChampion(airport, championAirline, contestingAirline)
     }
   }
 

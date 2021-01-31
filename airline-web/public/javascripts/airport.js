@@ -950,12 +950,14 @@ function toggleChampionMap() {
                 marker.previousTitle = marker.title
                 //marker.setIcon(marker.championIcon)
                 marker.setIcon(marker.championIcon)
-                marker.setTitle(marker.title + " - " + marker.championAirlineName)
+                var title = marker.title + " - " + marker.championAirlineName
         //        google.maps.event.clearListeners(marker, 'mouseover');
         //        google.maps.event.clearListeners(marker, 'mouseout');
                 if (marker.contested) {
                     addContestedMarker(marker)
+                    title += " (contested by " + marker.contested + ")"
                 }
+                marker.setTitle(title)
             } else {
                 marker.setVisible(false)
             }

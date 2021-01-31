@@ -593,7 +593,10 @@ package object controllers {
     override def writes(o : AirportWithChampion) : JsValue = {
       var result = Json.toJson(o.airport).asInstanceOf[JsObject]
       o.champion.foreach { champion =>
-        result = result + ("championAirlineId" -> JsNumber(champion.id)) + ("championAirlineName" -> JsString(champion.name)) + ("contested" -> JsBoolean(o.contested))
+        result = result + ("championAirlineId" -> JsNumber(champion.id)) + ("championAirlineName" -> JsString(champion.name))
+        o.contested.foreach { contestingAirline =>
+          result = result + ("contested" -> JsString(contestingAirline.name))
+        }
       }
       result
     }
