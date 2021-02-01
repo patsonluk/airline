@@ -1469,10 +1469,11 @@ function createLink() {
 		    	closeModal($('#linkConfirmationModal'))
                 if (savedLink.negotiationResult) {
                     isSuccessful = savedLink.negotiationResult.isSuccessful
+                    var animationUrl = savedLink.airportAnimationUrl
                     if (isSuccessful) {
-                        negotiationAnimation(savedLink, refreshSavedLink, savedLink)
+                        negotiationAnimation(savedLink, animationUrl, refreshSavedLink, savedLink)
                     } else {
-                        negotiationAnimation(savedLink)
+                        negotiationAnimation(savedLink, animationUrl)
                     }
                 } else {
                     refreshSavedLink(savedLink)
@@ -2546,7 +2547,7 @@ function refreshSavedLink(savedLink) {
 }
 
 
-function negotiationAnimation(savedLink, callback, callbackParam) {
+function negotiationAnimation(savedLink, animationUrl, callback, callbackParam) {
     var negotiationResult = savedLink.negotiationResult
     $('#negotiationAnimation .negotiationIcons').empty()
 	//plotNegotiationGauge($('#negotiationAnimation .negotiationBar'), negotiationResult.passingScore)
@@ -2554,6 +2555,8 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
 	$('#negotiationAnimation .negotiationDescriptions').text('')
 	$('#negotiationAnimation .negotiationBonus').text('')
 	$('#negotiationAnimation .negotiationResult').hide()
+
+	$('#negotiationAnimation .clip').attr('src', animationUrl)
 	var gaugeValue = 0
 
 	var index = 0

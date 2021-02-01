@@ -423,6 +423,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
       result = result + ("negotiationResult" -> Json.toJson(negotiationResult))
+
+      val airportAnimation = AirportAnimationUtil.getAnimation(toAirport, fromAirport) //to airport has higher priority
+      result = result + ("airportAnimationUrl" -> JsString(airportAnimation.url))
     }
 
 

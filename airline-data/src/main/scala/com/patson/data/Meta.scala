@@ -303,6 +303,7 @@ object Meta {
     createTutorial(connection)
     createNotice(connection)
     createAirportChampion(connection)
+    createAirportAnimation(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1709,8 +1710,21 @@ object Meta {
   }
 
 
+  def createAirportAnimation(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ANIMATION_TABLE)
+    statement.execute()
+    statement.close()
 
-
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ANIMATION_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airport INTEGER," +
+      "animation_type VARCHAR(256)," +
+      "url VARCHAR(256)," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
 
 
   def isTableExist(connection : Connection, tableName : String): Boolean = {
