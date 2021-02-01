@@ -11,6 +11,7 @@ object AirportAnimationPatcher extends App {
     ("LAX", AIRPORT, "https://player.vimeo.com/video/506879495"),
     ("LAX", CITY, "https://player.vimeo.com/video/506879854"),
     ("LAX", SCENERY, "https://player.vimeo.com/video/506879191"),
+    ("DUS", AIRPORT, "https://player.vimeo.com/video/506896956"),
     ("BOI", AIRPORT, "https://player.vimeo.com/video/506881395"),
   )
 
