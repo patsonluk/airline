@@ -48,7 +48,7 @@ object AirportAnimationUtil {
    */
   def findNearbyAirports() = {
     val airportsByCity = cachedAirportsByPower.filterNot(_.city.isBlank).groupBy(airport => (airport.city, airport.countryCode)) //might need to split since there are cities with same name within the country. o well...
-    airportsByCity.filter(_._2.size <= 1) //filter out loners
+    airportsByCity.filter(_._2.size > 1) //filter out loners
   }
 }
 

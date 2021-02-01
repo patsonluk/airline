@@ -981,7 +981,7 @@
 				</div>
 	<!--  end links canvas -->
 
-				<div id="airportCanvas" class="canvas" style="display: none; min-width: 500px;">
+				<div id="airportCanvas" class="canvas" style="display: none; min-width: 700px;">
 					<!-- left panel -->
 					<div style="float:left" class="verticalGroup airportCanvasLeftGroup">
 						<div style="box-sizing:border-box; width: 100%; display: flex;">
@@ -3797,7 +3797,10 @@
 	  <div class="modal-content" style="width : 520px; max-width : 95vw;">
 <!--		  <span class="close" onclick="closeModal($('#negotiationAnimation'))">&times;</span>-->
 		  <h4 class="modalHeader" style="margin-bottom: 10px; text-align: center;">Negotiation in progress... Success Rate:&nbsp;<span class="successRate"></span>%</h4>
-		  <iframe class="clip" width="480" height="270" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+		  <div class="clipContainer desktopOnly">
+		  	<iframe class="clip" width="480" height="270" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+			<input type="checkbox" class="autoplay" onclick="toggleAutoplay()">&nbsp;Autoplay
+		  </div>
 
 		  <div class="negotiationIcons" style="width: 260px; height: 35px; margin: auto;"></div>
 		  <div class="negotiationDescriptions" style="height: 15px; text-align: center;"></div>

@@ -2556,7 +2556,11 @@ function negotiationAnimation(savedLink, animationUrl, callback, callbackParam) 
 	$('#negotiationAnimation .negotiationBonus').text('')
 	$('#negotiationAnimation .negotiationResult').hide()
 
+    if (localStorage.getItem("autoplay") === 'true') {
+        animationUrl += "?autoplay=1"
+    }
 	$('#negotiationAnimation .clip').attr('src', animationUrl)
+
 	var gaugeValue = 0
 
 	var index = 0

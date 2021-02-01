@@ -69,7 +69,7 @@ and (max-device-width : 640px) {
         display: unset;
     }
 
-    .desktopOnly, div.button.desktopOnly, iframe.clip {
+    .desktopOnly, div.button.desktopOnly {
         visibility: hidden;
         display: none;
     }
@@ -110,5 +110,13 @@ and (max-device-width : 640px) {
     #routeSearchResult .ticketTitle, #routeSearchResult .price, #routeSearchResult .summary {
         font-size: 2.5vw;
         line-height: 1;
+    }
+}
+
+@media screen and (max-width: 640px),
+       screen and (max-height: 640px) {
+    div.clipContainer {
+        visibility: hidden;
+        display: none;
     }
 }

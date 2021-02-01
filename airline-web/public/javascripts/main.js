@@ -35,6 +35,7 @@ $( document ).ready(function() {
 	updateAirlineColors()
 	initTabGroup()
 	populateTooltips()
+	checkAutoplaySettings()
 
 	
 	if ($("#floatMessage").val()) {
@@ -705,6 +706,20 @@ function initTabGroup() {
              hideTabGroup()
         }
     )
+}
+
+function checkAutoplaySettings() {
+    var autoplayEnabled = true
+    if (localStorage.getItem("autoplay")){
+      autoplayEnabled = localStorage.getItem("autoplay") === 'true'
+    } else {
+      localStorage.setItem('autoplay', autoplayEnabled)
+    }
+    $('input.autoplay').prop('checked', autoplayEnabled)
+}
+
+function toggleAutoplay() {
+    localStorage.setItem('autoplay', $('input.autoplay').is(':checked'))
 }
 
 window.addEventListener('popstate', function(e) {
