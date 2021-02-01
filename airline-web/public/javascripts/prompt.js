@@ -87,6 +87,20 @@ function showPrompt() {
                     $(promptId).fadeIn(500)
                 }
                 if ($(promptId).hasClass('notice')) {
+                    $.ajax({
+                        type: 'POST',
+                        url: "airlines/" + activeAirline.id + "/completed-notice/" + activePrompt.id + "?category=" + $(promptId).data('category'),
+                        data: { } ,
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        success: function(result) {
+
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                                console.log(JSON.stringify(jqXHR));
+                                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                        }
+                    });
                     $(promptId).data('closeCallback', function() {
                         closeNotice($(promptId))
                     })
@@ -116,20 +130,20 @@ function showPrompt() {
 function closeNotice($promptModal) {
     closePrompt($promptModal)
 
-    $.ajax({
-        type: 'POST',
-        url: "airlines/" + activeAirline.id + "/completed-notice/" + $promptModal.data('id') + "?category=" + $promptModal.data('category'),
-        data: { } ,
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
-        success: function(result) {
-
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-                console.log(JSON.stringify(jqXHR));
-                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-        }
-    });
+//    $.ajax({
+//        type: 'POST',
+//        url: "airlines/" + activeAirline.id + "/completed-notice/" + $promptModal.data('id') + "?category=" + $promptModal.data('category'),
+//        data: { } ,
+//        contentType: 'application/json; charset=utf-8',
+//        dataType: 'json',
+//        success: function(result) {
+//
+//        },
+//        error: function(jqXHR, textStatus, errorThrown) {
+//                console.log(JSON.stringify(jqXHR));
+//                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+//        }
+//    });
 }
 
 
