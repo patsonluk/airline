@@ -1051,6 +1051,11 @@ div.remarks {
     align-items: center;
 }
 
+iframe.clip {
+    display:block;
+    margin:auto;
+}
+
 /* keep style for airportPopup */
 .mapPopup, .mapPopup div.table-row, .mapPopup .label, .mapPopup h4, .mapPopup .header,
 #floatMessageBox {
