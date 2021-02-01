@@ -89,7 +89,7 @@ function showPrompt() {
                 if ($(promptId).hasClass('notice')) {
                     $.ajax({
                         type: 'POST',
-                        url: "airlines/" + activeAirline.id + "/completed-notice/" + activePrompt.id + "?category=" + $(promptId).data('category'),
+                        url: "airlines/" + activeAirline.id + "/completed-notice/" + $(promptId).data('id') + "?category=" + $(promptId).data('category'),
                         data: { } ,
                         contentType: 'application/json; charset=utf-8',
                         dataType: 'json',
