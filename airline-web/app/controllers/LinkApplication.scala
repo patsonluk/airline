@@ -424,8 +424,12 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
       result = result + ("negotiationResult" -> Json.toJson(negotiationResult))
 
-      val airportAnimation = AirportAnimationUtil.getAnimation(toAirport, fromAirport) //to airport has higher priority
-      result = result + ("airportAnimationUrl" -> JsString(airportAnimation.url))
+      val airportAnimationDetails  = AirportAnimationUtil.getAnimation(toAirport, fromAirport) //to airport has higher priority
+      var animationJson = Json.obj("url" -> airportAnimationDetails.animation.url)
+      airportAnimationDetails.label.foreach { label =>
+        animationJson = animationJson + ("label" -> JsString(label))
+      }
+      result = result + ("airportAnimation" -> animationJson)
     }
 
 

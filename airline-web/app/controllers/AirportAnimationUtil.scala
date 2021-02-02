@@ -16,22 +16,29 @@ object AirportAnimationUtil {
     case None => AirportAnimation(Airport.fromId(0), AirportAnimationType.AIRPORT, "") //dummy
   } //smallest airport
 
-  def getAnimation(candidates : Airport*) : AirportAnimation = {
+  case class AirportAnimationDetails(animation : AirportAnimation, label : Option[String])
+
+  def getAnimation(candidates : Airport*) : AirportAnimationDetails = {
     candidates.foreach { candidate =>
       val animations = AirportAnimationSource.loadAirportAnimationByAirportId(candidate.id) ++ nearByAnimations(candidate)
       if (!animations.isEmpty) {
-        return animations(random.nextInt(animations.size))
+        val animation = animations(random.nextInt(animations.size))
+        val label = animation.animationType match {
+          case AirportAnimationType.AIRPORT => s"${animation.airport.name} (${animation.airport.iata})"
+          case _ => animation.airport.city
+        }
+        return AirportAnimationDetails(animation, Some(label))
       }
     }
 
     //cannot find an exact match, try to find sample
     candidates.foreach { candidate =>
       sampleAnimationsByAirportSize.get(candidate.size).foreach { sampleAnimations =>
-        return sampleAnimations(random.nextInt(sampleAnimations.size))
+        return AirportAnimationDetails(sampleAnimations(random.nextInt(sampleAnimations.size)), None)
       }
     }
 
-    return defaultAnimation
+    return AirportAnimationDetails(defaultAnimation, None)
   }
 
   def nearByAnimations(airport : Airport) = {

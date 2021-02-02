@@ -1469,11 +1469,10 @@ function createLink() {
 		    	closeModal($('#linkConfirmationModal'))
                 if (savedLink.negotiationResult) {
                     isSuccessful = savedLink.negotiationResult.isSuccessful
-                    var animationUrl = savedLink.airportAnimationUrl
                     if (isSuccessful) {
-                        negotiationAnimation(savedLink, animationUrl, refreshSavedLink, savedLink)
+                        negotiationAnimation(savedLink, refreshSavedLink, savedLink)
                     } else {
-                        negotiationAnimation(savedLink, animationUrl)
+                        negotiationAnimation(savedLink)
                     }
                 } else {
                     refreshSavedLink(savedLink)
@@ -2547,7 +2546,7 @@ function refreshSavedLink(savedLink) {
 }
 
 
-function negotiationAnimation(savedLink, animationUrl, callback, callbackParam) {
+function negotiationAnimation(savedLink, callback, callbackParam) {
     var negotiationResult = savedLink.negotiationResult
     $('#negotiationAnimation .negotiationIcons').empty()
 	//plotNegotiationGauge($('#negotiationAnimation .negotiationBar'), negotiationResult.passingScore)
@@ -2556,10 +2555,19 @@ function negotiationAnimation(savedLink, animationUrl, callback, callbackParam) 
 	$('#negotiationAnimation .negotiationBonus').text('')
 	$('#negotiationAnimation .negotiationResult').hide()
 
+    var animation = savedLink.airportAnimation
+    if (animation.label) {
+        $('#negotiationAnimation .animationLabel').text(animation.label)
+    } else {
+        $('#negotiationAnimation .animationLabel').empty()
+    }
+
+    var animationUrl = animation.url
     if (localStorage.getItem("autoplay") === 'true') {
         animationUrl += "?autoplay=1"
     }
-	$('#negotiationAnimation .clip').attr('src', animationUrl)
+    $('#negotiationAnimation .clip').attr('src', animationUrl)
+
 
 	var gaugeValue = 0
 
@@ -2639,6 +2647,8 @@ function negotiationAnimation(savedLink, animationUrl, callback, callbackParam) 
 		    } else if (negotiationResult.isSuccessful) {
                 removeConfetti($("#negotiationAnimation"))
             }
+            // sets the source to nothing, stopping the video
+            $('#negotiationAnimation .clip').attr('src','');
 			callback(callbackParam)
 		})
     } else {
