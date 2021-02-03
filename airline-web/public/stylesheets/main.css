@@ -246,9 +246,9 @@ div#canvas.christmas {
 
 #mainContainer {
     width: 100%;
-    height: -webkit-calc(100vh - 50px);
-    height: -moz-calc(100vh - 50px);
-    height: calc(100vh - 50px);
+    height: -webkit-calc(100vh - 40px);
+    height: -moz-calc(100vh - 40px);
+    height: calc(100vh - 40px);
 }
 
 #main {
