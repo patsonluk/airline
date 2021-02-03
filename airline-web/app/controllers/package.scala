@@ -295,6 +295,7 @@ package object controllers {
       "airportId" -> JsNumber(base.airport.id),
       "airportName" -> JsString(base.airport.name),
       "airportCode" -> JsString(base.airport.iata),
+      "airportRunwayLength" -> JsNumber(base.airport.runwayLength),
       "countryCode" -> JsString(base.airport.countryCode),
       "airportZone" -> JsString(base.airport.zone),
       "city" -> JsString(base.airport.city),
@@ -303,7 +304,7 @@ package object controllers {
       "scale" -> JsNumber(base.scale),
       "upkeep" -> JsNumber(base.getUpkeep),
       "value" -> JsNumber(base.getValue),
-        "delegatesRequired" -> JsNumber(base.delegatesRequired),
+      "delegatesRequired" -> JsNumber(base.delegatesRequired),
       "headquarter" -> JsBoolean(base.headquarter),
       "foundedCycle" -> JsNumber(base.foundedCycle)))
       

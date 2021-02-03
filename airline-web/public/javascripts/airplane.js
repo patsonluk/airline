@@ -300,21 +300,30 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
 	}
 
     var homeOptionsSelect = $("#buyAirplaneModal .homeOptions").empty()
+    var hasValidBase = false
     $.each(activeAirline.baseAirports, function(index, baseAirport) {
-        var option = $("<option value='" + baseAirport.airportId + "'>" + getAirportText(baseAirport.city, baseAirport.airportCode) + "</option>")
-        if (baseAirport.headquarter) {
-            homeOptionsSelect.prepend(option)
-        } else {
-            homeOptionsSelect.append(option)
+        if (baseAirport.airportRunwayLength >= model.runwayRequirement) {
+            var option = $("<option value='" + baseAirport.airportId + "'>" + getAirportText(baseAirport.city, baseAirport.airportCode) + "</option>")
+            if (baseAirport.headquarter) {
+                homeOptionsSelect.prepend(option)
+            } else {
+                homeOptionsSelect.append(option)
+            }
+            hasValidBase = true
         }
-        if (explicitHomeAirportId) { //if an explicit home is provided
-            if (explicitHomeAirportId == baseAirport.airportId) {
-                option.attr("selected", "selected")
+        if (hasValidBase) {
+            if (explicitHomeAirportId) { //if an explicit home is provided
+                if (explicitHomeAirportId == baseAirport.airportId) {
+                    option.attr("selected", "selected")
+                }
+            } else { //otherwise look for HQ
+                if (baseAirport.airportId == activeAirline.headquarterAirport.airportId) {
+                    option.attr("selected", "selected")
+                }
             }
-        } else { //otherwise look for HQ
-            if (baseAirport.airportId == activeAirline.headquarterAirport.airportId) {
-                option.attr("selected", "selected")
-            }
+            enableButton($('#buyAirplaneModal .add'))
+        } else {
+            disableButton($('#buyAirplaneModal .add'), "No base with runway >= " + model.runwayRequirement + "m")
         }
     })
     var airlineId = activeAirline.id
