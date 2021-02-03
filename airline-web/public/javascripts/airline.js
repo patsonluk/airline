@@ -2647,13 +2647,16 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
 		    } else if (negotiationResult.isSuccessful) {
                 removeConfetti($("#negotiationAnimation"))
             }
-            // sets the source to nothing, stopping the video
-            $('#negotiationAnimation .clip').attr('src','');
-			callback(callbackParam)
+            callback(callbackParam)
 		})
     } else {
         $('#negotiationAnimation .close, #negotiationAnimation .result').off("click.custom")
     }
+
+    $('#negotiationAnimation .close, #negotiationAnimation .result').on("click.reset", function() {
+        // sets the source to nothing, stopping the video
+        $('#negotiationAnimation .clip').attr('src','');
+    })
 
 	$('#negotiationAnimation').show()
 }
