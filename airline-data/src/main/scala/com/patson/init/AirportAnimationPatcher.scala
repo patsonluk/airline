@@ -8,6 +8,7 @@ object AirportAnimationPatcher extends App {
   val animations = Array(
     ("JFK", AIRPORT, "https://player.vimeo.com/video/506825925"),
     ("JFK", CITY, "https://player.vimeo.com/video/506868914"),
+    ("JFK", SCENERY, "https://player.vimeo.com/video/507867073"),
     ("LAX", AIRPORT, "https://player.vimeo.com/video/506879495"),
     ("LAX", CITY, "https://player.vimeo.com/video/506879854"),
     ("LAX", SCENERY, "https://player.vimeo.com/video/506879191"),
@@ -33,8 +34,11 @@ object AirportAnimationPatcher extends App {
     ("FRA", CITY, "https://player.vimeo.com/video/507434551"),
     ("YYZ", AIRPORT, "https://player.vimeo.com/video/507436551"),
     ("YYZ", CITY, "https://player.vimeo.com/video/507435617"),
-
-
+    ("BRU", AIRPORT, "https://player.vimeo.com/video/507869726"),
+    ("BRU", CITY, "https://player.vimeo.com/video/507868675"),
+    ("EWR", AIRPORT, "https://player.vimeo.com/video/507867951"),
+    ("ZRH", CITY, "https://player.vimeo.com/video/507870691"),
+    ("ZRH", AIRPORT, "https://player.vimeo.com/video/507866484"),
     ("BOI", AIRPORT, "https://player.vimeo.com/video/506881395"),
   )
 
