@@ -96,8 +96,14 @@ object EventSimulation {
     selectCandidates(AirportSource.loadAllAirports())
   }
 
+  val HOST_COOLDOWN = 4 //should not be hosting it in the last 4 times
   def selectCandidates(allAirports : List[Airport]) : List[Airport] = {
-    val randomizedAirports = Random.shuffle(allAirports.filter(airport => airport.size >= CANDIDATE_MIN_SIZE && airport.population >= CANDIDATE_MIN_POPULATION))
+    val previousOlympics = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).sortBy(_.startCycle).takeRight(HOST_COOLDOWN).map(_.asInstanceOf[Olympics])
+    val cooldownCountries : List[String] = previousOlympics.map{ olympics =>
+      Olympics.getSelectedAirport(olympics.id).map(_.countryCode)
+    }.flatten
+
+    val randomizedAirports = Random.shuffle(allAirports.filter(airport => airport.size >= CANDIDATE_MIN_SIZE && airport.population >= CANDIDATE_MIN_POPULATION && !cooldownCountries.contains(airport.countryCode)))
     val candidates = ListBuffer[Airport]()
     val candidateCountryCodes = mutable.HashSet[String]()
     randomizedAirports.foreach { airport =>
