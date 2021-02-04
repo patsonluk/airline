@@ -309,9 +309,6 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
             } else {
                 homeOptionsSelect.append(option)
             }
-            hasValidBase = true
-        }
-        if (hasValidBase) {
             if (explicitHomeAirportId) { //if an explicit home is provided
                 if (explicitHomeAirportId == baseAirport.airportId) {
                     option.attr("selected", "selected")
@@ -321,6 +318,10 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
                     option.attr("selected", "selected")
                 }
             }
+            hasValidBase = true
+        }
+
+        if (hasValidBase) {
             enableButton($('#buyAirplaneModal .add'))
         } else {
             disableButton($('#buyAirplaneModal .add'), "No base with runway >= " + model.runwayRequirement + "m")
