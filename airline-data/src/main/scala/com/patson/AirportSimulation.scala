@@ -169,13 +169,15 @@ object AirportSimulation {
             //at satisfaction of 1, all pax will become loyalist (MAX_LOYALIST_FLIP_RATIO = 1)
             //at satisfaction of NEUTRAL_SATISFACTION (0.4), no flipping
             //at satisfaction of 0, lose all (MAX_LOYALIST_FLIP_RATIO = 1)
-            val conversionRatio =
+            var conversionRatio =
             if (satisfaction < NEUTRAL_SATISFACTION) {
               (satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
             } else {
               (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * MAX_LOYALIST_FLIP_RATIO
             }
             //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
+
+            conversionRatio = conversionRatio / route.links.length // for example if the route has 3 legs, it will convert at most 1/3 of the ratio
 
             val loyalistDelta = (paxCount * conversionRatio).toInt
             val existingDelta = loyalistDeltaOfAirlines.getOrElse(link.airline.id, 0)
@@ -191,6 +193,10 @@ object AirportSimulation {
           walker = walker + loyalist.amount
           loyalistDistribution.append((loyalist.airline.id, walker))
         }
+//        if (loyalistDistribution.length == 4) {
+//          println(s"distribution $loyalistDistribution")
+//        }
+
         val flippedLoyalists = mutable.Map[Int, Int]() //airlineId, flipped amount
 
         val CHUNK_SIZE = 5
@@ -202,6 +208,7 @@ object AirportSimulation {
               while (remainingDelta > 0) {
                 val chunk = if (remainingDelta <= CHUNK_SIZE) remainingDelta else CHUNK_SIZE
                 val flipTrigger = random.nextInt(fromAirport.population.toInt)
+
                 val flippedAirlineIdOption = loyalistDistribution.find {
                   case (airlineId : Int, threshold : Int) => flipTrigger < threshold
                 }.map(_._1)
@@ -213,6 +220,9 @@ object AirportSimulation {
               }
             }
         }
+
+
+
         // now merge it with the original delta map
         val existingLoyalistOfThisAirportByAirlineId = existingLoyalistOfThisAirport.map(loyalist => (loyalist.airline.id, loyalist)).toMap
         val finalLoyalistDeltaForThisAirport : immutable.Map[Int, Int] = (loyalistDeltaOfAirlines.toList ++ flippedLoyalists.toList).groupBy(_._1).view.mapValues(_.map(_._2).sum).toMap

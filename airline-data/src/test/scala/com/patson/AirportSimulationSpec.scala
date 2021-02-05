@@ -321,8 +321,8 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
 //  }
 
   "computeLoyalists".must {
-    val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, power = 1000 * 10L, population = 1000L, 0, 0, id = 1)
-    val airport2 = Airport("", "", "Test Airport 2", 0, 0 , "", "", "", size = 1, power = 10000 * 10L, population = 10000L, 0, 0, id = 2)
+    val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, power = 10000 * 10L, population = 10000L, 0, 0, id = 1)
+    val airport2 = Airport("", "", "Test Airport 2", 0, 0 , "", "", "", size = 1, power = 100000 * 10L, population = 100000L, 0, 0, id = 2)
     val airport3 = Airport("", "", "Test Airport 3", 0, 0 , "", "", "", size = 1, power = 100000 * 10L, population = 100000L, 0, 0, id = 3)
     val airline1 = Airline.fromId(1)
     val airline2 = Airline.fromId(2)
@@ -367,8 +367,8 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
         Map((passengerGroup, airport3, badRoute) -> 100),
         Map(1 -> List(Loyalist(airport1, airline1, 200), Loyalist(airport1, airline2, 1000))))
       assert(updatingLoyalists.length == 2)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == 200 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == 1000 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == 200 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == 1000 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
 
       assert(deletingLoyalist.isEmpty)
     }
@@ -379,8 +379,8 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
         Map((passengerGroup, airport3, goodRoute) -> 100),
         Map.empty)
       assert(updatingLoyalists.length == 2)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
 
       assert(deletingLoyalist.isEmpty)
     }
@@ -389,12 +389,12 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
       val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
         allAirports,
         Map((passengerGroup, airport3, goodRoute) -> 100),
-        Map(1 -> List(Loyalist(airport1, airline3, 1000))))
+        Map(1 -> List(Loyalist(airport1, airline3, 10000))))
       assert(updatingLoyalists.length == 3)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
       //this does not make too much sense cause essentially it's the same pax, but for sim purpose this is okay. Otherwise we would need decimal points
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline3.id).get.amount == 1000 - 2 * ((100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt))
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline3.id).get.amount == 10000 - 2 * ((100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt))
 
       assert(deletingLoyalist.isEmpty)
     }
@@ -402,14 +402,14 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
     "Gain loyalists if there's good links but are existing loyalists, flip loyalists from other airlines - the one with MORE loyalists get bigger loss".in {
       val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
         allAirports,
-        Map((passengerGroup, airport3, goodRoute) -> 100),
-        Map(1 -> List(Loyalist(airport1, airline3, 300), Loyalist(airport1, airline4, 700))))
+        Map((passengerGroup, airport3, goodRoute) -> 1000),
+        Map(1 -> List(Loyalist(airport1, airline3, 3000), Loyalist(airport1, airline4, 7000))))
       assert(updatingLoyalists.length == 4)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == (1000 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == (1000 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
 
-      val airline3Delta = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline3.id).get.amount - 300
-      val airline4Delta = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline4.id).get.amount - 700
+      val airline3Delta = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline3.id).get.amount - 3000
+      val airline4Delta = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline4.id).get.amount - 7000
       assert(airline3Delta < 0)
       assert(airline4Delta < 0)
       assert(airline3Delta > airline4Delta) //airline 4 should lose more
@@ -419,7 +419,36 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
 
 
 
+    "Around net zero if both airlines have similar parameters (4 airlines)".in {
+      val linkConsideration1 = goodAirline1Link1
+      val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, power = 10000 * 4000000L, population = 4000000L, 0, 0, id = 1)
+      val passengerGroup = PassengerGroup(airport1, AppealPreference(airport1, ECONOMY, 0, 1, 1), PassengerType.BUSINESS)
+      val linkConsideration2 = linkConsideration1.copy(link = Link(airport1, airport2, airline2, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1))
+      val linkConsideration3 = linkConsideration1.copy(link = Link(airport1, airport2, airline3, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1))
+      val linkConsideration4 = linkConsideration1.copy(link = Link(airport1, airport2, airline4, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1))
+
+      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
+        allAirports,
+        Map(
+          (passengerGroup, airport2, Route(List(linkConsideration1), 0)) -> 1000000,
+          (passengerGroup, airport2, Route(List(linkConsideration2), 0)) -> 1000000,
+          (passengerGroup, airport2, Route(List(linkConsideration3), 0)) -> 1000000,
+          (passengerGroup, airport2, Route(List(linkConsideration4), 0)) -> 1000000
+        ),
+        Map(1 -> List(Loyalist(airport1, airline1, 1000000), Loyalist(airport1, airline2, 1000000), Loyalist(airport1, airline3, 1000000), Loyalist(airport1, airline4, 1000000))))
+      val airline1Loyalist = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount
+      val airline2Loyalist = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount
+      val airline3Loyalist = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline3.id).get.amount
+      val airline4Loyalist = updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline4.id).get.amount
+      assert(airline1Loyalist + airline2Loyalist  + airline3Loyalist + airline4Loyalist == 4000000)
+      println(s"$airline1Loyalist vs $airline2Loyalist vs $airline3Loyalist vs $airline4Loyalist")
+      assert(airline1Loyalist > 990000 && airline1Loyalist < 1010000) //around the same
+      assert(airline2Loyalist > 990000 && airline1Loyalist < 1010000) //around the same
+      assert(airline3Loyalist > 990000 && airline1Loyalist < 1010000) //around the same
+      assert(airline4Loyalist > 990000 && airline1Loyalist < 1010000) //around the same
+
+
+      assert(deletingLoyalist.isEmpty)
+    }
   }
-  
- 
 }
