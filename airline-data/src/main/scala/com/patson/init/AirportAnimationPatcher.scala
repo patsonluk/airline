@@ -8,6 +8,7 @@ object AirportAnimationPatcher extends App {
   val animations = Array(
     ("JFK", AIRPORT, "https://player.vimeo.com/video/506825925"),
     ("JFK", CITY, "https://player.vimeo.com/video/506868914"),
+    ("JFK", CITY, "https://player.vimeo.com/video/508765597"),
     ("JFK", SCENERY, "https://player.vimeo.com/video/507867073"),
     ("LAX", AIRPORT, "https://player.vimeo.com/video/506879495"),
     ("LAX", CITY, "https://player.vimeo.com/video/506879854"),
