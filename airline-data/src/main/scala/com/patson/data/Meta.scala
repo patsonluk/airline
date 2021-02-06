@@ -560,6 +560,7 @@ object Meta {
       "lifespan INTEGER, " +
       "construction_time INTEGER, " +
       "country_code CHAR(2), " +
+      "manufacturer VARCHAR(256)," +
       "image_url VARCHAR(256)," +
       "runway_requirement BIGINT)")
     statement.execute()

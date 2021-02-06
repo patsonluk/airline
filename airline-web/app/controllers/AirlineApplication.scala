@@ -154,7 +154,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        val destinations = if (airportsServed > 0) airportsServed - 1 else 0 //minus home base
        
        val currentCycle = CycleSource.loadCycle()
-       val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId).filter(_.isReady)
+       val airplanes = AirplaneOwnershipCache.getOwnership(airlineId).filter(_.isReady)
        
        val fleetSize = airplanes.length
        val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
@@ -449,7 +449,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                    AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
 
                      //assign airlinese that are not yet assigned
-                   AirplaneSource.updateAirplanesDetails(AirplaneSource.loadAirplanesByOwner(airlineId).map {
+                   AirplaneSource.updateAirplanesDetails(AirplaneOwnershipCache.getOwnership(airlineId).map {
                      airplane => airplane.home = airport
                      airplane
                    })

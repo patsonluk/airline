@@ -25,6 +25,7 @@ function loadAirplaneModels() {
 	});
 }
 
+
 //load model info on airplanes that matches the model ID
 function loadAirplaneModelOwnerInfoByModelId(modelId) {
     var airlineId = activeAirline.id
@@ -493,7 +494,11 @@ function updateModelInfo(modelId) {
 	$('#airplaneModelDetails #range').text(model.range + "km")
 	$('#airplaneModelDetails #speed').text(model.speed + "km/h")
 	$('#airplaneModelDetails #lifespan').text(model.lifespan / 52 + " years")
-	$('#airplaneModelDetails #airplaneCountry').html(getCountryFlagImg(model.countryCode))
+
+	var $manufacturerSpan = $('<span>' + model.manufacturer + '&nbsp;</span>')
+	$manufacturerSpan.append(getCountryFlagImg(model.countryCode))
+	$('#airplaneModelDetails .manufacturer').empty()
+	$('#airplaneModelDetails .manufacturer').append($manufacturerSpan)
 	$('#airplaneModelDetails .price').text("$" + commaSeparateNumber(model.price))
 	
 	if (model.constructionTime == 0) {
@@ -545,7 +550,12 @@ function selectAirplaneModel(model) {
 	$('#airplaneCanvas #range').text(model.range + " km")
 	$('#airplaneCanvas #speed').text(model.speed + " km/h")
 	$('#airplaneCanvas #lifespan').text(model.lifespan / 52 + " years")
-	$('#airplaneCanvas #airplaneCountry').html(getCountryFlagImg(model.countryCode))
+
+    $('#airplaneCanvas .manufacturer').empty()
+    var $manufacturerSpan = $('<span>' + model.manufacturer + '&nbsp;</span>')
+    $manufacturerSpan.append(getCountryFlagImg(model.countryCode))
+    $('#airplaneCanvas .manufacturer').append($manufacturerSpan)
+
 	if (model.originalPrice) {
 	    var priceSpan = $("<span><span style='text-decoration: line-through'>$" + commaSeparateNumber(model.originalPrice) + "</span>&nbsp;$" + commaSeparateNumber(model.price) + "</span>")
 	    priceSpan.append(getDiscountsTooltip(model.discounts.price))
@@ -815,6 +825,48 @@ function addAirplaneInventoryDivByBase(containerDiv, modelId, compareKey, compar
 
     containerDiv.append(airplanesDiv)
 }
+
+
+function addAirplaneHangarDivByModel($containerDiv, modelInfo) {
+    var $airplanesDiv = $("<div style= 'width : 100%; height : 70px; overflow: auto;'></div>")
+
+    var allAirplanes = $.merge($.merge($.merge([], modelInfo.assignedAirplanes), modelInfo.availableAirplanes), modelInfo.constructingAirplanes)
+    //group by base Id
+    var airplanesByAirportId = {}
+
+    $.each(allAirplanes, function( key, airplane ) {
+        var airportId = airplane.homeAirportId
+        var airplanesOfThisBase = airplanesByAirportId[airportId]
+        if (!airplanesByAirportId[airportId]) {
+           airplanesOfThisBase = []
+           airplanesByAirportId[airportId] = airplanesOfThisBase
+        }
+        airplanesOfThisBase.push(airplane)
+    })
+
+    $.each(airplanesByAirportId, function( airportId, airplanes ) {
+        var airportIata
+        $.each(activeAirline.baseAirports, function(index, baseAirport) {
+            if (baseAirport.airportId == airportId) {
+                airportIata = baseAirport.airportCode
+            }
+        })
+        var $airplanesByBaseDiv = $("<div style='width : 100%;'><div style='float: left; width: 35px;'>" + airportIata + ":</div></div>")
+        $.each(airplanes, function( index, airplane ) {
+            var airplaneId = airplane.id
+            var li = $("<div style='float: left;' class='clickable' onclick='loadOwnedAirplaneDetails(" + airplaneId + ", $(this), showAirplaneCanvas)'></div>").appendTo($airplanesByBaseDiv)
+            var airplaneIcon = getAirplaneIcon(airplane, modelInfo.badConditionThreshold)
+            li.append(airplaneIcon)
+        })
+        $airplanesByBaseDiv.append("<div style='clear:both; '></div>")
+        $airplanesDiv.append($airplanesByBaseDiv)
+
+    });
+
+    $containerDiv.append($airplanesDiv)
+}
+
+
 
 function getAirplaneIconImg(airplane, badConditionThreshold, isAssigned) {
     var img = $("<img>")
@@ -1216,9 +1268,112 @@ function showAirplaneCanvas() {
 	setActiveDiv($("#airplaneCanvas"))
 	highlightTab($('.airplaneCanvasTab'))
 
-	loadAirplaneModels()
-    loadAirplaneModelOwnerInfo()
+    var $selectedTab = $("#airplaneCanvas .detailsSelection.selected")
+    selectAirplaneTab($selectedTab)
+}
+
+function showAirplaneMarket() {
     updateAirplaneModelTable()
+}
+
+function selectAirplaneTab($selectedTab) {
+    $selectedTab.siblings().removeClass('selected')
+    $selectedTab.addClass('selected')
+    var selectedType = $selectedTab.data('type')
+
+    loadAirplaneModels()
+    loadAirplaneModelOwnerInfo()
+    if (selectedType === 'market') {
+      showAirplaneMarket()
+    } else if (selectedType === 'hangar') {
+      showAirplaneHangar()
+    }
+
+    var selectedDetails = $('#airplaneCanvas div.detailsGroup').children('.details.' + selectedType)
+    selectedDetails.siblings().hide()
+    selectedDetails.show()
+}
+
+function showAirplaneHangar() {
+    loadAirplaneModelOwnerInfo()
+    populatePreferredSuppliers()
+    var $container = $('#airplaneCanvas .hangar .sectionContainer')
+    $container.empty()
+    populateHangarByModel($container)
+
+    toggleUtilizationRate($container, $("#airplaneCanvas div.hangar .toggleUtilizationRateBox"))
+    toggleCondition($container, $("#airplaneCanvas div.hangar .toggleConditionBox"))
+}
+
+function populatePreferredSuppliers() {
+    $('#airplaneCanvas .hangar .preferredSupplier .supplierList').empty()
+    $('#airplaneCanvas .hangar .preferredSupplier .discount').empty()
+    $.ajax({
+          type: 'GET',
+          url: "airlines/" + activeAirline.id + "/preferred-suppliers",
+          contentType: 'application/json; charset=utf-8',
+          dataType: 'json',
+          success: function(result) {
+            var $container = $('#airplaneCanvas .preferredSuppliers')
+            $.each(result, function(category, info) {
+                var $categorySection = $container.find('.' + category)
+                if ($categorySection.length > 0) { //Super sonic has no section for now...
+                    var $supplierList = $categorySection.find('.supplierList')
+                    var $discount =  $categorySection.find('.discount')
+                    $supplierList.empty()
+
+                    $.each(info.ownership, function(manufacturer, ownedFamilies) {
+                        var $manufacturerLabel = $('<span style="font-weight: bold;">' + manufacturer + '</span>')
+                        var familyText = " : "
+                        $.each(ownedFamilies, function(index, ownedFamily) {
+                            if (index > 0) {
+                                familyText += ", "
+                            }
+                            familyText += ownedFamily
+                        })
+                        var $familyList = $('<span></span>')
+                        $familyList.text(familyText)
+
+                        var $ownershipDivByManufacturer = $('<div style="margin-bottom: 10px;"></div>')
+                        $ownershipDivByManufacturer.append($manufacturerLabel)
+                        $ownershipDivByManufacturer.append($familyList)
+                        $supplierList.append($ownershipDivByManufacturer)
+                    })
+
+                    if (info.discount) {
+                        $discount.text(info.discount)
+                    } else {
+                        $discount.text('-')
+                    }
+                }
+            })
+
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+                  console.log(JSON.stringify(jqXHR));
+                  console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+          }
+      });
+
+}
+function populateHangarByModel($container) {
+    $.each(loadedModelsOwnerInfo, function(index, modelOwnerInfo) {
+        if (modelOwnerInfo.totalOwned > 0) {
+            var modelId = modelOwnerInfo.id
+            var $inventoryDiv = $("<div style='min-width : 300px; min-height : 85px; flex: 1;' class='section clickable'></div>")
+            if (!modelOwnerInfo.isFullLoad) {
+                loadAirplaneModelOwnerInfoByModelId(modelId) //refresh to get the utility rate
+            }
+            $inventoryDiv.bind('click', function() {
+                selectAirplaneModel(loadedModelsById[modelId])
+                $inventoryDiv.siblings().removeClass('selected')
+                $inventoryDiv.addClass('selected')
+            })
+            $inventoryDiv.append("<h4>" + modelOwnerInfo.name  + "</h4>")
+            addAirplaneHangarDivByModel($inventoryDiv, modelOwnerInfo)
+            $container.append($inventoryDiv)
+        }
+    })
 }
 
 function toggleAirplaneConfiguration() {

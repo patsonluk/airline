@@ -6,8 +6,8 @@ import com.patson.model.airplane._
 import org.scalatest.{Matchers, WordSpecLike}
  
 class AirplaneModelSpec extends WordSpecLike with Matchers {
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, REGIONAL -> 0.20, SMALL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1, SUPERSONIC -> -0.05)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.55, SMALL -> 0.50, MEDIUM -> 0.35, LARGE -> 0.3, X_LARGE -> 0.3, JUMBO -> 0.25, SUPERSONIC -> 0.2)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, SMALL -> 0.20, REGIONAL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1, SUPERSONIC -> -0.05)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, SMALL -> 0.55, REGIONAL -> 0.50, MEDIUM -> 0.35, LARGE -> 0.3, X_LARGE -> 0.3, JUMBO -> 0.25, SUPERSONIC -> 0.2)
   
   "all airplane models".must {
     "Generate good profit at MAX LF at suitable range".in {
@@ -30,8 +30,8 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
     val distance = if (airplaneModel.range > 10000)  10000 else airplaneModel.range //cap at 10000, otherwise frequency will be very low
     val (flightType, airportSize) = airplaneModel.airplaneType match {
       case LIGHT => (FlightType.SHORT_HAUL_DOMESTIC, 3)
-      case REGIONAL => (FlightType.LONG_HAUL_DOMESTIC, 4)
-      case SMALL => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
+      case SMALL => (FlightType.LONG_HAUL_DOMESTIC, 4)
+      case REGIONAL => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
       case MEDIUM => (FlightType.LONG_HAUL_INTERCONTINENTAL, 7)
       case LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
       case X_LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)

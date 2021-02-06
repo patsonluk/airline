@@ -1,14 +1,14 @@
 package controllers
 
 import java.util.Calendar
-
 import com.patson.data._
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.{Airplane, LinkAssignments, Model}
 import com.patson.model.{FlightPreferenceType, _}
-import com.patson.util.{AirlineCache, AirportCache, AllianceCache, CountryCache}
+import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache, AllianceCache, CountryCache}
 import com.patson.{DemandGenerator, Util}
 import controllers.AuthenticationObject.AuthenticatedAirline
+
 import javax.inject.Inject
 import models.{LinkHistory, RelatedLink}
 import play.api.data.Form
@@ -619,7 +619,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           (countryCode, AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, airline))
         }.toMap
 
-        val ownedAirplanesByModel = AirplaneSource.loadAirplanesByOwner(airlineId).groupBy(_.model)
+        val ownedAirplanesByModel = AirplaneOwnershipCache.getOwnership(airlineId).groupBy(_.model)
         val modelsWithinRangeAndRelationship = modelsWithinRange.filter(model => model.purchasableWithRelationship(countryRelations(model.countryCode).relationship))
         val availableModels = modelsWithinRangeAndRelationship ++ ownedAirplanesByModel.keys.filter(_.range >= distance)
 
