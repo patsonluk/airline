@@ -1259,8 +1259,6 @@ function showAirplaneCanvas() {
 	setActiveDiv($("#airplaneCanvas"))
 	highlightTab($('.airplaneCanvasTab'))
 
-    loadAirplaneModels()
-    loadAirplaneModelOwnerInfo()
     var $selectedTab = $("#airplaneCanvas .detailsSelection.selected")
     selectAirplaneTab($selectedTab)
 }
@@ -1274,6 +1272,8 @@ function selectAirplaneTab($selectedTab) {
     $selectedTab.addClass('selected')
     var selectedType = $selectedTab.data('type')
 
+    loadAirplaneModels()
+    loadAirplaneModelOwnerInfo()
     if (selectedType === 'market') {
       showAirplaneMarket()
     } else if (selectedType === 'hangar') {
