@@ -180,7 +180,7 @@ a {
 
 .airplaneCanvasLeftGroup {
    width: 65%;
-   height: 90%
+   height: 95%
 }
 
 .bankCanvasLeftGroup, .oilCanvasLeftGroup {
@@ -354,6 +354,12 @@ div#canvas.christmas {
     background: var(--table-selected-row-background);
     box-shadow: var(--table-selected-row-shadow);
 }
+
+div.section.clickable:hover, div.section.clickable.selected {
+  background: var(--table-header-selected-background);
+  box-shadow: var(--table-header-selected-shadow);
+}
+
 
 .table.colored div.table-row:nth-child(even){
     background-color: var(--table-even-row-background-color);
