@@ -164,7 +164,7 @@ object Patchers extends App {
 
 
   def main(): Unit = {
-    patchLoyalist()
+    airplaneModelPatcher()
   }
 }
 
