@@ -31,14 +31,14 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   toAirport.initAirlineBases(List.empty)
   
   val lightModel = Model.modelByName("Cessna Caravan")
-  val regionalModel = Model.modelByName("Embraer ERJ140")
-  val smallModel = Model.modelByName("Bombardier CS100")
+  val smallModel = Model.modelByName("Embraer ERJ140")
+  val regionalModel = Model.modelByName("Bombardier CS100")
   val mediumModel = Model.modelByName("Boeing 787-8 Dreamliner")
   val largeAirplaneModel = Model.modelByName("Boeing 747-400")
                       
   val lightAirplane = Airplane(lightModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(lightModel, Airplane.MAX_CONDITION.toDouble / lightModel.lifespan), lightModel.price)
-  val regionalAirplane = Airplane(regionalModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(regionalModel, Airplane.MAX_CONDITION.toDouble / regionalModel.lifespan), regionalModel.price)
   val smallAirplane = Airplane(smallModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(smallModel, Airplane.MAX_CONDITION.toDouble / smallModel.lifespan), smallModel.price)
+  val regionalAirplane = Airplane(regionalModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(regionalModel, Airplane.MAX_CONDITION.toDouble / regionalModel.lifespan), regionalModel.price)
   val mediumAirplane = Airplane(mediumModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(mediumModel, Airplane.MAX_CONDITION.toDouble / mediumModel.lifespan), mediumModel.price)
   val largeAirplane = Airplane(largeAirplaneModel, testAirline1, 0, purchasedCycle = 0, 100, AirplaneSimulation.computeDepreciationRate(largeAirplaneModel, Airplane.MAX_CONDITION.toDouble / largeAirplaneModel.lifespan), largeAirplaneModel.price)
   
@@ -48,8 +48,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
 //  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.5, SMALL -> 0.4, MEDIUM -> 0.3, LARGE -> 0.2, JUMBO -> 0.2)
 //  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.6, REGIONAL -> 0.5, SMALL -> 0.3, MEDIUM -> 0.1, LARGE -> -0.15, X_LARGE-> -0.2, JUMBO -> -0.25)
 //  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.8, REGIONAL -> 0.7, SMALL -> 0.5, MEDIUM -> 0.2, LARGE -> 0.15, X_LARGE-> 0.1, JUMBO -> 0.1)
-  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.5, REGIONAL -> 0.4, SMALL -> 0.3, MEDIUM -> 0.2, LARGE -> 0.2, X_LARGE -> 0.15, JUMBO -> 0.1, SUPERSONIC -> 0.2)
-  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7, REGIONAL -> 0.7, SMALL -> 0.6, MEDIUM -> 0.45, LARGE -> 0.45, X_LARGE -> 0.45, JUMBO -> 0.35, SUPERSONIC -> 0.35)
+  private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.5, SMALL -> 0.4, REGIONAL -> 0.3, MEDIUM -> 0.2, LARGE -> 0.2, X_LARGE -> 0.15, JUMBO -> 0.1, SUPERSONIC -> 0.2)
+  private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.7,  SMALL -> 0.7, REGIONAL -> 0.6, MEDIUM -> 0.45, LARGE -> 0.45, X_LARGE -> 0.45, JUMBO -> 0.35, SUPERSONIC -> 0.35)
   
   "Compute profit".must {
     "More profitable with more frequency flight (max LF)".in {
@@ -82,11 +82,11 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       var consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 0.1, 3)
       consumptionResult.profit.should(be < 0)
       
-      airplane = regionalAirplane
+      airplane = smallAirplane
       consumptionResult = simulateStandard(1000, airplane, SHORT_HAUL_DOMESTIC, 0.1, 3)
       consumptionResult.profit.should(be < 0)
       
-      airplane = smallAirplane
+      airplane = regionalAirplane
       consumptionResult = simulateStandard(4000, airplane, LONG_HAUL_DOMESTIC, 0.1, 4)
       consumptionResult.profit.should(be < 0)
       
@@ -109,14 +109,14 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       profits += consumptionResult.profit
       profitMargins += getProfitMargin(consumptionResult)
       
-      airplane = regionalAirplane
+      airplane = smallAirplane
       consumptionResult = simulateStandard(1500, airplane, SHORT_HAUL_DOMESTIC, 0.7, 3)
       consumptionResult.profit.should(be > 0)
       verfiyProfitMargin(consumptionResult, airplane.model, false)
       profits += consumptionResult.profit
       profitMargins += getProfitMargin(consumptionResult)
       
-      airplane = smallAirplane
+      airplane = regionalAirplane
       consumptionResult = simulateStandard(4000, airplane, LONG_HAUL_INTERNATIONAL, 0.7, 4)
       //consumptionResult.profit.should(be > 0) //need higher price and loyalty to be profitable
       verfiyProfitMargin(consumptionResult, airplane.model, false)
@@ -150,12 +150,12 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       consumptionResult.profit.should(be > 0)
 //      verfiyReturnRate(consumptionResult, airplane.model, true)
       
-      airplane = regionalAirplane
+      airplane = smallAirplane
       consumptionResult = simulateStandard(1000, airplane, SHORT_HAUL_DOMESTIC, 1, 3)
       consumptionResult.profit.should(be > 0)
 //      verfiyReturnRate(consumptionResult, airplane.model, true)
       
-      airplane = smallAirplane
+      airplane = regionalAirplane
       consumptionResult = simulateStandard(4000, airplane, LONG_HAUL_DOMESTIC, 1, 4)
       consumptionResult.profit.should(be > 0)
 //      verfiyReturnRate(consumptionResult, airplane.model, true)
@@ -200,7 +200,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       var consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, airportSize = 2)
       verfiyProfitMargin(consumptionResult, airplane.model, true)
       
-      airplane = regionalAirplane
+      airplane = smallAirplane
       consumptionResult = simulateStandard(200, airplane, SHORT_HAUL_DOMESTIC, 1, airportSize = 2)
       verfiyProfitMargin(consumptionResult, airplane.model, true)
     }
@@ -210,8 +210,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
        
        fivePlaneResult.profit.should(be >= (onePlaneResult.profit * 4.9).toInt) //4.9 as some truncation might make the number off a tiny bit 
     }
-    "More profit at higher link class at max LF (regional plane)".in  {
-      val airplane = regionalAirplane
+    "More profit at higher link class at max LF (small plane)".in  {
+      val airplane = smallAirplane
       val airplaneModel = airplane.model
       val distance = 2000
       val duration = Computation.calculateDuration(airplaneModel, distance)
@@ -255,8 +255,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       (businessResult.profit.toDouble / businessResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType))
       //(firstResult.profit.toDouble / firstResult.revenue.toDouble).should(be < MAX_PROFIT_MARGIN(airplane.model.airplaneType)) OK to make good profit here 
     }
-    "More profit at higher link class at max LF (small plane)".in  {
-      val airplane = smallAirplane
+    "More profit at higher link class at max LF (regional plane)".in  {
+      val airplane = regionalAirplane
       val airplaneModel = airplane.model
       val distance = 5000
       val duration = Computation.calculateDuration(airplaneModel, distance)
