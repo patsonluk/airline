@@ -72,7 +72,8 @@ package object controllers {
       "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now
       "constructionTime" -> JsNumber(airplaneModel.constructionTime),
       "imageUrl" -> JsString(airplaneModel.imageUrl),
-      "countryCode" -> JsString(airplaneModel.countryCode)
+      "countryCode" -> JsString(airplaneModel.manufacturer.countryCode),
+      "manufacturer" -> JsString(airplaneModel.manufacturer.name)
           ))
       
     }

@@ -7,7 +7,7 @@ import com.patson.model.notice.NoticeCategory
 import com.patson.stream._
 
 import java.util.concurrent.atomic.AtomicLong
-import com.patson.util.{AirlineCache, AirportCache}
+import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
 import controllers.{AirportUtil, NoticeUtil}
 import play.api.libs.json.JsNumber
 import play.api.libs.json.Json
@@ -58,6 +58,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
               //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
               AirlineCache.invalidateAll()
               AirportCache.invalidateAll()
+              AirplaneOwnershipCache.invalidateAll()
               AirportUtil.refreshAirports()
 
               //println("Received cycle completed: " + cycle)

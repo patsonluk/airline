@@ -2,10 +2,12 @@ package com.patson.model.airplane
 
 import com.patson.model.IdObject
 import com.patson.model.Airline
+import com.patson.model.airplane.Model.Category
 
 case class Model(name : String, family : String = "", capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, lifespan : Int, constructionTime : Int, manufacturer: Manufacturer, runwayRequirement : Int, imageUrl : String = "", var id : Int = 0) extends IdObject {
   import Model.Type._
 
+  val countryCode = manufacturer.countryCode
   val SUPERSONIC_SPEED_THRESHOLD = 1236
   val airplaneType : Type = {
     if (speed > SUPERSONIC_SPEED_THRESHOLD) {
@@ -13,8 +15,8 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
     } else {
       capacity match {
         case x if (x <= 15) => LIGHT
-        case x if (x <= 60) => REGIONAL
-        case x if (x <= 150) => SMALL
+        case x if (x <= 60) => SMALL
+        case x if (x <= 150) => REGIONAL
         case x if (x <= 250) => MEDIUM
         case x if (x <= 350) => LARGE
         case x if (x <= 500) => X_LARGE
@@ -22,14 +24,15 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
       }
     }
   }
+  val category = Category.fromType(airplaneType)
 
   private[this]val BASE_TURNAROUND_TIME = 40
   val turnaroundTime : Int = {
     BASE_TURNAROUND_TIME +
       (airplaneType match {
         case LIGHT => capacity / 3 //45 - old value
-        case REGIONAL =>  capacity / 3 //70
-        case SMALL => capacity / 3 //100
+        case SMALL =>  capacity / 3 //70
+        case REGIONAL => capacity / 3 //100
         case MEDIUM =>  capacity / 2.5 //140
         case LARGE => capacity / 2.5 //180
         case X_LARGE => capacity / 2.5 //200
@@ -38,18 +41,7 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
       }).toInt
   }
 
-  val airplaneTypeLabel : String = {
-    airplaneType match {
-      case LIGHT => "Light"
-      case REGIONAL => "Regional"
-      case SMALL => "Small"
-      case MEDIUM => "Medium"
-      case LARGE => "Large"
-      case X_LARGE => "Extra large"
-      case JUMBO => "Jumbo"
-      case SUPERSONIC => "Supersonic"
-    }
-  }
+  val airplaneTypeLabel : String = label(airplaneType)
 
   //weekly fixed cost
   val maintenanceCost : Int = {
@@ -88,7 +80,34 @@ object Model {
 
   object Type extends Enumeration {
     type Type = Value
-    val LIGHT, REGIONAL, SMALL, MEDIUM, LARGE, X_LARGE, JUMBO, SUPERSONIC = Value
+    val LIGHT, SMALL, REGIONAL, MEDIUM, LARGE, X_LARGE, JUMBO, SUPERSONIC = Value
+
+    val label = (airplaneType : Type) => { airplaneType match {
+        case LIGHT => "Light"
+        case SMALL => "Small"
+        case REGIONAL => "Regional"
+        case MEDIUM => "Medium"
+        case LARGE => "Large"
+        case X_LARGE => "Extra large"
+        case JUMBO => "Jumbo"
+        case SUPERSONIC => "Supersonic"
+      }
+    }
+  }
+
+  object Category extends Enumeration {
+    type Category = Value
+    val LIGHT, MEDIUM, LARGE, SUPERSONIC = Value
+    val grouping = Map(
+      LIGHT -> List(Type.LIGHT, Type.SMALL),
+      MEDIUM -> List(Type.REGIONAL, Type.MEDIUM),
+      LARGE -> List(Type.LARGE, Type.X_LARGE, Type.JUMBO),
+      SUPERSONIC -> List(Type.SUPERSONIC)
+    )
+
+    val fromType = (airplaneType : Type.Value) => {
+      grouping.find(_._2.contains(airplaneType)).get._1
+    }
   }
 
   //https://en.wikipedia.org/wiki/List_of_jet_airliners
@@ -107,8 +126,8 @@ object Model {
     Model("Saab 340", "Saab Regional", capacity = 34, fuelBurn = (34 * 2).toInt, speed = 467, range = 1732, price = 12000000, lifespan = 35 * 52, constructionTime = 0, Manufacturer("Saab", countryCode = "SE"), runwayRequirement = 1395, imageUrl = "https://www.norebbo.com/2018/12/saab-340b-blank-illustration-templates/"),
     Model("Short 360-200", "Short", capacity = 36, fuelBurn = (36 * 2.4).toInt, speed = 393, range = 806, price = 12000000, lifespan = 30 * 52, constructionTime = 0, Manufacturer("Short Brothers", countryCode = "GB"), runwayRequirement = 1315, imageUrl = ""),
     Model("Embraer ERJ135", "Embraer ERJ", capacity = 37, fuelBurn = (37 * 2.2).toInt, speed = 850, range = 3241, price = 17500000, lifespan = 30 * 52, constructionTime = 0, Manufacturer("Embraer", countryCode = "BR"), runwayRequirement = 1580, imageUrl = "https://www.norebbo.com/2018/05/embraer-erj-135-blank-illustration-templates/"),
-    Model("Bombardier DHC-8-100", "Bombardier DHC-8", capacity = 40, fuelBurn = (40 * 2.2).toInt, speed = 448, range = 1889, price = 20000000, lifespan = 35 * 52, constructionTime = 0, Manufacturer("Dornier", countryCode = "CA"), runwayRequirement = 950, imageUrl = "https://www.norebbo.com/2018/01/de-havilland-dhc-8-200-dash-8-blank-illustration-templates/"),
-    Model("Bombardier DHC-8-200", "Bombardier DHC-8", capacity = 40, fuelBurn = (40 * 1.9).toInt, speed = 448, range = 1713, price = 22000000, lifespan = 35 * 52, constructionTime = 0, Manufacturer("Dornier", countryCode = "CA"), runwayRequirement = 1000, imageUrl = "https://www.norebbo.com/2018/01/de-havilland-dhc-8-200-dash-8-blank-illustration-templates/"),
+    Model("Bombardier DHC-8-100", "Bombardier DHC-8", capacity = 40, fuelBurn = (40 * 2.2).toInt, speed = 448, range = 1889, price = 20000000, lifespan = 35 * 52, constructionTime = 0, Manufacturer("Bombardier", countryCode = "CA"), runwayRequirement = 950, imageUrl = "https://www.norebbo.com/2018/01/de-havilland-dhc-8-200-dash-8-blank-illustration-templates/"),
+    Model("Bombardier DHC-8-200", "Bombardier DHC-8", capacity = 40, fuelBurn = (40 * 1.9).toInt, speed = 448, range = 1713, price = 22000000, lifespan = 35 * 52, constructionTime = 0, Manufacturer("Bombardier", countryCode = "CA"), runwayRequirement = 1000, imageUrl = "https://www.norebbo.com/2018/01/de-havilland-dhc-8-200-dash-8-blank-illustration-templates/"),
     Model("CASA CN-235", "CASA CN-235", capacity = 40, fuelBurn = (40 * 2.2).toInt, speed = 460, range = 3658, price = 25000000, lifespan = 30 * 52, constructionTime = 0, Manufacturer("CASA", countryCode = "ES"), runwayRequirement = 1204, imageUrl = ""),
     Model("Embraer ERJ140", "Embraer ERJ", capacity = 44, fuelBurn = (44 * 2.5).toInt, speed = 828, range = 2315, price = 15000000, lifespan = 30 * 52, constructionTime = 0, Manufacturer("Embraer", countryCode = "BR"), runwayRequirement = 1850, imageUrl = "https://www.norebbo.com/2018/05/embraer-erj-140-blank-illustration-templates/"),
     Model("Dornier 328JET", "Dornier 328", capacity = 44, fuelBurn = (44 * 1.9).toInt, speed = 740, range = 1665, price = 25000000, lifespan = 35 * 52, constructionTime = 0, Manufacturer("Dornier", countryCode = "DE"), runwayRequirement = 1367, imageUrl = "https://www.norebbo.com/2019/01/fairchild-dornier-328jet-illustrations/"),

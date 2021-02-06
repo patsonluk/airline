@@ -136,6 +136,8 @@ PUT     /airlines/:airlineId/profiles/:profileId     controllers.ProfileApplicat
 
 GET     /airlines/:airlineId/headquarters-map       controllers.TileApplication.getHeadquartersTiles(airlineId : Int)
 
+GET     /airlines/:airlineId/preferred-suppliers       controllers.AirplaneApplication.getPreferredSuppliers(airlineId : Int)
+
 GET		 /oil-prices	controllers.OilApplication.getOilPrices()
 GET		 /loan-interest-rates	controllers.BankApplication.getLoanInterestRates()
 

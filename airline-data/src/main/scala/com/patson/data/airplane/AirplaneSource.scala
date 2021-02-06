@@ -1,11 +1,10 @@
 package com.patson.data
 import java.sql.Statement
-
 import com.patson.data.Constants._
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane._
 import com.patson.model.{Airline, Airport}
-import com.patson.util.AirlineCache
+import com.patson.util.{AirlineCache, AirplaneOwnershipCache}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -239,7 +238,8 @@ object AirplaneSource {
       connection.setAutoCommit(false)    
       val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, purchased_cycle, airplane_condition, depreciation_rate, value, is_sold, dealer_ratio, home) VALUES(?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       val configurationStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_CONFIGURATION_TABLE + "(airplane, configuration) VALUES(?,?)")
-      
+
+
       airplanes.foreach { 
         airplane =>
           preparedStatement.setInt(1, airplane.owner.id)
@@ -270,6 +270,10 @@ object AirplaneSource {
       connection.commit()
       preparedStatement.close()
       configurationStatement.close()
+
+      airplanes.map(_.owner.id).distinct.foreach { airlineId =>
+        AirplaneOwnershipCache.invalidate(airlineId)
+      }
     } finally {
       connection.close()
     }
@@ -315,6 +319,10 @@ object AirplaneSource {
       preparedStatement.close()
       configurationStatement.close()
       purgeConfigurationStatement.close()
+
+      airplanes.map(_.owner.id).distinct.foreach { airlineId =>
+        AirplaneOwnershipCache.invalidate(airlineId)
+      }
     } finally {
       connection.close()
     }
@@ -346,6 +354,10 @@ object AirplaneSource {
       
       connection.commit()
       preparedStatement.close()
+
+      airplanes.map(_.owner.id).distinct.foreach { airlineId =>
+        AirplaneOwnershipCache.invalidate(airlineId)
+      }
     } finally {
       connection.close()
     }
