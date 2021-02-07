@@ -53,9 +53,20 @@ object AirportAnimationPatcher extends App {
     ("NGO", CITY, "https://player.vimeo.com/video/508308675"),
     ("LGW", AIRPORT, "https://player.vimeo.com/video/508302845"),
     ("ORY", AIRPORT, "https://player.vimeo.com/video/508308343"),
+    ("YUL", CITY, "https://player.vimeo.com/video/509375841"),
+    ("YUL", AIRPORT, "https://player.vimeo.com/video/509376388"),
+    ("MUC", CITY, "https://player.vimeo.com/video/509376687"),
+    ("MUC", AIRPORT, "https://player.vimeo.com/video/509377200"),
+    ("GRU", CITY, "https://player.vimeo.com/video/509373993"),
+    ("GRU", AIRPORT, "https://player.vimeo.com/video/509374672"),
+    ("MEL", CITY, "https://player.vimeo.com/video/509377717"),
+    ("MEL", AIRPORT, "https://player.vimeo.com/video/509372694"),
+    ("MAD", CITY, "https://player.vimeo.com/video/509372849"),
+    ("MAD", AIRPORT, "https://player.vimeo.com/video/509373594"),
+    ("BER", CITY, "https://player.vimeo.com/video/509375162"),
+    ("BER", AIRPORT, "https://player.vimeo.com/video/509375681"),
     ("BOI", CITY, "https://player.vimeo.com/video/506881395"),
   )
-
 
   def patchAirportAnimations() = {
     val animationList = animations.map {
