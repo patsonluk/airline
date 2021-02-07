@@ -981,17 +981,19 @@ function updatePlanLinkInfo(linkInfo) {
 		$('#planLinkModelRow').show()
 	}
 
+    var initialPrice = {}
 	if (!linkInfo.existingLink) {
-		$('#planLinkEconomyPrice').val(linkInfo.suggestedPrice.economy)
-		$('#planLinkBusinessPrice').val(linkInfo.suggestedPrice.business)
-		$('#planLinkFirstPrice').val(linkInfo.suggestedPrice.first)
+	    initialPrice.economy = linkInfo.suggestedPrice.economy
+	    initialPrice.business = linkInfo.suggestedPrice.business
+	    initialPrice.first = linkInfo.suggestedPrice.first
+
 		$('#addLinkButton').show()
 		$('#deleteLinkButton').hide()
 		$('#updateLinkButton').hide()
 	} else {
-		$('#planLinkEconomyPrice').val(linkInfo.existingLink.price.economy)
-		$('#planLinkBusinessPrice').val(linkInfo.existingLink.price.business)
-		$('#planLinkFirstPrice').val(linkInfo.existingLink.price.first)
+	    initialPrice.economy = linkInfo.existingLink.price.economy
+        initialPrice.business = linkInfo.existingLink.price.business
+        initialPrice.first = linkInfo.existingLink.price.first
 		$('#addLinkButton').hide()
 		if (linkInfo.deleteRejection) {
 			$('#deleteLinkButton').hide()
@@ -1000,6 +1002,20 @@ function updatePlanLinkInfo(linkInfo) {
 		}
 		$('#updateLinkButton').show()
 	}
+	$('#planLinkEconomyPrice').val(initialPrice.economy)
+    $('#planLinkBusinessPrice').val(initialPrice.business)
+    $('#planLinkFirstPrice').val(initialPrice.first)
+
+	$('.planLinkPrice').off(".priceChange").on("focusout.priceChange", function() {
+        var defaultPrice = initialPrice[$(this).data('class')]
+        if (isNaN($(this).val())) {
+            $(this).val(defaultPrice)
+        } else {
+            var inputPrice = Number($(this).val());
+            $(this).val(Math.floor(inputPrice))
+        }
+	})
+
 
     //reset/display warnings
     $("#planLinkDetails .warningList").empty()

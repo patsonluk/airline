@@ -727,9 +727,9 @@
 									<div class="table-row">
 										<div class="label"><h5>Price (Y/J/F):</h5></div>
 										<div class="value">
-											<input type="text" id="planLinkEconomyPrice"/>
-											<input type="text" id="planLinkBusinessPrice"/>
-											<input type="text" id="planLinkFirstPrice"/>
+											<input type="text" id="planLinkEconomyPrice" data-class="economy" class="planLinkPrice"/>
+											<input type="text" id="planLinkBusinessPrice" data-class="business" class="planLinkPrice"/>
+											<input type="text" id="planLinkFirstPrice" data-class="first" class="planLinkPrice"/>
 											<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class='button' onclick='increasePrice()'  title="Increase all price by 5% of Default">
 											<img src='@routes.Assets.versioned("images/icons/minus-button.png")' class='button' onclick='decreasePrice()'  title="Decrease all price by 5% of Default">
 											<img src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' class='button' onclick='resetPrice()'  title="Reset to Default Ticket Prices">
