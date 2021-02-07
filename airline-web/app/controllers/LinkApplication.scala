@@ -619,7 +619,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           (countryCode, AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, airline))
         }.toMap
 
-        val ownedAirplanesByModel = AirplaneOwnershipCache.getOwnership(airlineId).groupBy(_.model)
+        val ownedAirplanesByModel = AirplaneSource.loadAirplanesByOwner(airlineId).groupBy(_.model)
         val modelsWithinRangeAndRelationship = modelsWithinRange.filter(model => model.purchasableWithRelationship(countryRelations(model.countryCode).relationship))
         val availableModels = modelsWithinRangeAndRelationship ++ ownedAirplanesByModel.keys.filter(_.range >= distance)
 
