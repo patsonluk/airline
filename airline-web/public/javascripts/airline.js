@@ -1012,7 +1012,11 @@ function updatePlanLinkInfo(linkInfo) {
             $(this).val(defaultPrice)
         } else {
             var inputPrice = Number($(this).val());
-            $(this).val(Math.floor(inputPrice))
+            if (inputPrice < 0) {
+                $(this).val(defaultPrice)
+            } else {
+                $(this).val(Math.floor(inputPrice))
+            }
         }
 	})
 
