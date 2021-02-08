@@ -30,6 +30,22 @@ object GoogleResourceSource {
     }
   }
 
+  def deleteResource(resourceId : Int, resourceType : ResourceType.Value): Unit = {
+    val connection = Meta.getConnection()
+    //case class Log(airline : Airline, message : String, cateogry : LogCategory.Value, severity : LogSeverity.Value, cycle : Int)
+    val statement = connection.prepareStatement("DELETE FROM " + GOOGLE_RESOURCE_TABLE + " WHERE resource_id = ? AND resource_type = ?")
+
+
+    try {
+      statement.setInt(1, resourceId)
+      statement.setInt(2, resourceType.id)
+      statement.executeUpdate()
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
   def loadResource(resourceId : Int, resourceType : ResourceType.Value) = {
     val result = loadResourceByCriteria(List(("resource_id", resourceId), (("resource_type"), resourceType.id)))
     if (result.length > 0) {

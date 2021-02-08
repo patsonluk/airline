@@ -43,10 +43,11 @@ public class GoogleImageUtil {
 	private static LoadingCache<AirportKey, Optional<URL>> airportCache = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(1, TimeUnit.DAYS).build(new ResourceCacheLoader<>(key -> 	loadAirportImageUrl(key.airportName, key.latitude, key.longitude), ResourceType.AIRPORT_IMAGE().id()));
 
 	private interface LoadFunction<T, R> {
-		R apply(T t) throws OverLimitException;
+		R apply(T t) throws OverLimitException, NoLongerValidException;
 	}
 
 	private static class ResourceCacheLoader<KeyType extends Key> extends CacheLoader<KeyType, Optional<URL>> {
+		private static final int DEFAULT_MAX_AGE = 24 * 60 * 60; //in sec
 		private final LoadFunction<KeyType, UrlResult> loadFunction;
 		private final int resourceTypeValue;
 
@@ -64,7 +65,7 @@ public class GoogleImageUtil {
 				if (googleResource.url() == null) { //previous successful query returns no result, do not proceed
 					return Optional.empty();
 				}
-				if (googleResource.maxAgeDeadline().isEmpty() || System.currentTimeMillis() <= (Long) googleResource.maxAgeDeadline().get()) {
+				if (!googleResource.maxAgeDeadline().isEmpty() && System.currentTimeMillis() <= (Long) googleResource.maxAgeDeadline().get()) {
 					try {
 						return Optional.of(new URL(googleResource.url()));
 					} catch (MalformedURLException e) {
@@ -89,7 +90,7 @@ public class GoogleImageUtil {
 				UrlResult result = loadFunction.apply(key);
 				logger.info("loaded " + ResourceType.apply(resourceTypeValue) + " image for  " + key + " " + result);
 				if (result != null) {
-					Long deadline = result.maxAge != null ? System.currentTimeMillis() + result.maxAge * 1000 : null;
+					Long deadline = result.maxAge != null ? System.currentTimeMillis() + result.maxAge * 1000 : DEFAULT_MAX_AGE * 1000;
 					GoogleResourceSource.insertResource().apply(GoogleResource.apply(key.getId(), ResourceType.apply(resourceTypeValue), result.url.toString(), deadline != null ? Option.apply(deadline) : Option.empty()));
 
 					return Optional.of(result.url);
@@ -99,6 +100,10 @@ public class GoogleImageUtil {
 				}
 			} catch (OverLimitException e) {
 				//result unknown since it was over the limit, try later
+				return Optional.empty();
+			} catch (NoLongerValidException e) {
+				//purge the old record since it's no longer valid
+				GoogleResourceSource.deleteResource(key.getId(), ResourceType.apply(resourceTypeValue));
 				return Optional.empty();
 			}
 		}
@@ -314,14 +319,14 @@ public class GoogleImageUtil {
 	}
 
 
-	public static UrlResult loadCityImageUrl(String cityName, Double latitude, Double longitude) throws OverLimitException {
+	public static UrlResult loadCityImageUrl(String cityName, Double latitude, Double longitude) throws OverLimitException, NoLongerValidException {
 		if (cityName == null) {
 			return null;
 		}
 		return loadImageUrl(Collections.singletonList(cityName), latitude, longitude, "(regions)");
 	}
 
-	public static UrlResult loadAirportImageUrl(String airportName, Double latitude, Double longitude) throws OverLimitException {
+	public static UrlResult loadAirportImageUrl(String airportName, Double latitude, Double longitude) throws OverLimitException, NoLongerValidException {
 		if (airportName == null) {
 			return null;
 		}
@@ -339,7 +344,7 @@ public class GoogleImageUtil {
 	 * @return
 	 * @throws OverLimitException
 	 */
-	public static UrlResult loadImageUrl(List<String> phrases, Double latitude, Double longitude, String types) throws OverLimitException {
+	public static UrlResult loadImageUrl(List<String> phrases, Double latitude, Double longitude, String types) throws OverLimitException, NoLongerValidException {
 		if (phrases.isEmpty()) {
 			return null;
 		}
@@ -465,6 +470,9 @@ public class GoogleImageUtil {
 			conn = (HttpURLConnection) imageUrl.openConnection();
 			conn.setInstanceFollowRedirects(false);
 			conn.connect();
+			if (conn.getResponseCode() == 403 || conn.getResponseCode() == 404) { //forbidden/not found
+				throw new NoLongerValidException();
+			}
 			String location = conn.getHeaderField("Location");
 
 			if (location == null) {
@@ -480,7 +488,7 @@ public class GoogleImageUtil {
 			//System.out.println("==>" + imageUrl);
 			//return imageUrl;
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.warn("Failed to load google place API redirect : " + e.getMessage(), e);
 			return null;
 		}
 	}
@@ -551,4 +559,8 @@ public class GoogleImageUtil {
 
 	private static class OverLimitException extends Exception {
     }
+
+    private static class NoLongerValidException extends Exception{
+
+	}
 }
