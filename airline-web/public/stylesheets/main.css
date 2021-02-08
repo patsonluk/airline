@@ -415,7 +415,7 @@ div.button, .ajax-file-upload {
 	padding: 5px 15px;
 	margin: 5px 5px;
 	box-shadow: var(--button-shadow);
-	backdrop-filter: var(--button-backdrop-filter);
+	/*backdrop-filter: var(--button-backdrop-filter);*/ /*otherwise touch title will be blurred*/
 }
 
 div.button:hover {
@@ -1020,7 +1020,7 @@ input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover {
     z-index: 1;
     white-space: nowrap;
     background: linear-gradient(#F0E069 0%, #FFF6B3 10%);
-    color : var(--text-color);
+    color : #606060;
     border-radius: 3px 3px 3px 3px;
     text-transform: none !important;
 }

@@ -474,6 +474,7 @@ function disableButton(button, reason) {
                      touchTitleSpan.show()
                  }
              }
+            $(button).removeAttr("onclick") //remove on click function
             $(button).click(addedClickFunction)
             $(button).data("addedClickFunction", addedClickFunction)
         }
