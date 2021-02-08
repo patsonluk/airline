@@ -79,7 +79,7 @@ object NegotiationUtil {
       val (maxFrequency, multiplier) = newLink.flightType match {
         case SHORT_HAUL_DOMESTIC => (20 + baseLevel * 2, 2)
         case LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 2)
-        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1).toInt, 3)
+        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 3)
       }
 
 
