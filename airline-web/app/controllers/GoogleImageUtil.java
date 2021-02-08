@@ -90,7 +90,7 @@ public class GoogleImageUtil {
 				UrlResult result = loadFunction.apply(key);
 				logger.info("loaded " + ResourceType.apply(resourceTypeValue) + " image for  " + key + " " + result);
 				if (result != null) {
-					Long deadline = result.maxAge != null ? System.currentTimeMillis() + result.maxAge * 1000 : DEFAULT_MAX_AGE * 1000;
+					Long deadline = System.currentTimeMillis() + (result.maxAge != null ? result.maxAge * 1000 : DEFAULT_MAX_AGE * 1000);
 					GoogleResourceSource.insertResource().apply(GoogleResource.apply(key.getId(), ResourceType.apply(resourceTypeValue), result.url.toString(), deadline != null ? Option.apply(deadline) : Option.empty()));
 
 					return Optional.of(result.url);
