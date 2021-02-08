@@ -921,7 +921,7 @@ function updatePlanLinkInfo(linkInfo) {
     var title = linkInfo.toCountryTitle
     updateAirlineTitle(title, $("#planLinkToCountryTitle img.airlineTitleIcon"), $("#planLinkToCountryTitle .airlineTitle"))
 
-	$('#planLinkDistance').text(linkInfo.distance + " km")
+	$('#planLinkDistance').text(linkInfo.distance + " km" + '(' + linkInfo.flightType + ')')
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand) + " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
 	

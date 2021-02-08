@@ -85,7 +85,7 @@ object NegotiationUtil {
       getMaxFrequencyByModel(newLink.getAssignedModel().get, airport) match {
         case None =>
           if (newFrequency > maxFrequency) {
-            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - maxFrequency, s"Excessive frequency $newFrequency is over your base level($baseLevel) frequency threshold $maxFrequency for ${FlightCategory.label(flight)}"))
+            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - maxFrequency, s"Excessive frequency $newFrequency is over your base level($baseLevel) frequency threshold $maxFrequency for ${newLink.flightType}"))
           }
         case Some(FrequencyRestrictionByModel(threshold, frequencyRestriction)) =>
           if (newFrequency > frequencyRestriction) {

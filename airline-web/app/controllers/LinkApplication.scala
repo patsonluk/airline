@@ -693,10 +693,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
         val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
         val flightCode = LinkUtil.getFlightCode(request.user, flightNumber)
+        val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
 
         val estimatedDifficulty : Option[Double] =
           if (existingLink.isEmpty) {
-            val mockedLink = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(), distance, LinkClassValues.getInstance(), 0, 0, frequency = 1, Computation.getFlightType(fromAirport, toAirport, distance), flightNumber)
+            val mockedLink = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(), distance, LinkClassValues.getInstance(), 0, 0, frequency = 1, flightType, flightNumber)
             val mockedAirplane = Airplane(Model.fromId(0), airline, 0, 0, 0, 0, 0)
             mockedLink.setAssignedAirplanes(Map(mockedAirplane -> LinkAssignment(1, 0)))
             Some(NegotiationUtil.getLinkNegotiationInfo(airline, mockedLink, None).finalRequirementValue)
@@ -721,6 +722,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "flightCode" -> flightCode,
           "mutualRelationship" -> countryRelationship,
           "distance" -> distance,
+          "flightType" -> FlightType.label(flightType),
           "suggestedPrice" -> suggestedPrice,
           "economySpaceMultiplier" -> ECONOMY.spaceMultiplier,
           "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
