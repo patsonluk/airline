@@ -83,7 +83,7 @@ object NegotiationUtil {
       }
 
       if (baseLevel >= 8) {
-        maxFrequency += (baseLevel - 7)
+        maxFrequency += (baseLevel - 7) * 2
       }
 
       getMaxFrequencyByModel(newLink.getAssignedModel().get, airport) match {
