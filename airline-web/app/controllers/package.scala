@@ -201,6 +201,7 @@ package object controllers {
       "airlineName" -> JsString(link.airline.name),
       "price" -> Json.toJson(link.price),
       "distance" -> JsNumber(link.distance),
+      "flightType" -> JsString(FlightType.label(link.flightType)),
       "capacity" -> Json.toJson(link.capacity),
       "rawQuality" -> JsNumber(link.rawQuality),
       "computedQuality" -> JsNumber(link.computedQuality),
@@ -211,7 +212,6 @@ package object controllers {
       "fromLongitude" -> JsNumber(link.from.longitude),
       "toLatitude" -> JsNumber(link.to.latitude),
       "toLongitude" -> JsNumber(link.to.longitude),
-      "flightType" -> JsString(link.flightType.toString()),
       "flightCode" -> JsString(LinkUtil.getFlightCode(link.airline, link.flightNumber))
       ))
 

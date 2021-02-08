@@ -625,7 +625,7 @@ function refreshLinkDetails(linkId) {
 	    		$('#linkAirplaneModel').text("-")
 	    	}
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
-	    	$("#linkDistance").text(link.distance + " km")
+	    	$("#linkDistance").text(link.distance + " km (" + link.flightType + ")")
 	    	$("#linkQuality").html(getGradeStarsImgs(Math.round(link.computedQuality / 10)) + link.computedQuality)
 	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
 	    	if (link.future) {
@@ -921,7 +921,7 @@ function updatePlanLinkInfo(linkInfo) {
     var title = linkInfo.toCountryTitle
     updateAirlineTitle(title, $("#planLinkToCountryTitle img.airlineTitleIcon"), $("#planLinkToCountryTitle .airlineTitle"))
 
-	$('#planLinkDistance').text(linkInfo.distance + " km" + '(' + linkInfo.flightType + ')')
+	$('#planLinkDistance').text(linkInfo.distance + " km (" + linkInfo.flightType + ')')
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand) + " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
 	

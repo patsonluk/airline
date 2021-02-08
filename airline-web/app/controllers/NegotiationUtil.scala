@@ -76,20 +76,21 @@ object NegotiationUtil {
     val frequencyDelta = newFrequency - existingLinkOption.map(_.futureFrequency()).getOrElse(0)
     if (frequencyDelta > 0) {
       val baseLevel = baseOption.map(_.scale).getOrElse(0)
-      val maxFrequency = newLink.flightType match {
-        case SHORT_HAUL_DOMESTIC | LONG_HAUL_DOMESTIC => 20 + baseLevel * 2
-        case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 15 + baseLevel * 2
-        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => 15 + (baseLevel * 1.5).toInt
+      val (maxFrequency, multiplier) = newLink.flightType match {
+        case SHORT_HAUL_DOMESTIC => (20 + baseLevel * 2, 2)
+        case LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 2)
+        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1).toInt, 3)
       }
+
 
       getMaxFrequencyByModel(newLink.getAssignedModel().get, airport) match {
         case None =>
           if (newFrequency > maxFrequency) {
-            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - maxFrequency, s"Excessive frequency $newFrequency is over your base level($baseLevel) frequency threshold $maxFrequency for ${newLink.flightType}"))
+            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, (newFrequency - maxFrequency) * multiplier, s"Excessive frequency $newFrequency is over your base level($baseLevel) frequency threshold $maxFrequency for ${FlightType.label(newLink.flightType)}"))
           }
         case Some(FrequencyRestrictionByModel(threshold, frequencyRestriction)) =>
           if (newFrequency > frequencyRestriction) {
-            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - frequencyRestriction, s"${airport.displayText} prefers not to have airplane < $threshold capacity with frequency > $frequencyRestriction"))
+            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, (newFrequency - frequencyRestriction) * multiplier, s"${airport.displayText} prefers not to have airplane < $threshold capacity with frequency > $frequencyRestriction"))
           }
 
       }
