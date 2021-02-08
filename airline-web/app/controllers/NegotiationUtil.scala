@@ -76,12 +76,15 @@ object NegotiationUtil {
     val frequencyDelta = newFrequency - existingLinkOption.map(_.futureFrequency()).getOrElse(0)
     if (frequencyDelta > 0) {
       val baseLevel = baseOption.map(_.scale).getOrElse(0)
-      val (maxFrequency, multiplier) = newLink.flightType match {
+      var (maxFrequency, multiplier) = newLink.flightType match {
         case SHORT_HAUL_DOMESTIC => (20 + baseLevel * 2, 2)
         case LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 2)
         case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 3)
       }
 
+      if (baseLevel >= 8) {
+        maxFrequency += (baseLevel - 7)
+      }
 
       getMaxFrequencyByModel(newLink.getAssignedModel().get, airport) match {
         case None =>
