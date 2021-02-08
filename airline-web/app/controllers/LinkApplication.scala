@@ -3,7 +3,7 @@ package controllers
 import java.util.Calendar
 import com.patson.data._
 import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane.{Airplane, LinkAssignments, Model}
+import com.patson.model.airplane.{Airplane, LinkAssignments, LinkAssignment, Model}
 import com.patson.model.{FlightPreferenceType, _}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache, AllianceCache, CountryCache}
 import com.patson.{DemandGenerator, Util}
@@ -694,6 +694,16 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
         val flightCode = LinkUtil.getFlightCode(request.user, flightNumber)
 
+        val estimatedDifficulty : Option[Double] =
+          if (existingLink.isEmpty) {
+            val mockedLink = Link(fromAirport, toAirport, airline, LinkClassValues.getInstance(), distance, LinkClassValues.getInstance(), 0, 0, frequency = 1, Computation.getFlightType(fromAirport, toAirport, distance), flightNumber)
+            val mockedAirplane = Airplane(Model.fromId(0), airline, 0, 0, 0, 0, 0)
+            mockedLink.setAssignedAirplanes(Map(mockedAirplane -> LinkAssignment(1, 0)))
+            Some(NegotiationUtil.getLinkNegotiationInfo(airline, mockedLink, None).finalRequirementValue)
+          } else {
+            None
+          }
+
         var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
           "fromAirportName" -> fromAirport.name,
           "fromAirportCode" -> fromAirport.iata,
@@ -719,6 +729,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "businessPassengers" -> directBusinessDemand.total,
           "touristPassengers" -> directTouristDemand.total,
           "cost" -> cost).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
+
+        estimatedDifficulty.foreach { difficulty => resultObject = resultObject + ("estimatedDifficulty" -> JsNumber(difficulty)) }
 
 
         val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>

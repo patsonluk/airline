@@ -945,6 +945,12 @@ function updatePlanLinkInfo(linkInfo) {
 	}
 	
 	$('#planLinkCost').text('$' + commaSeparateNumber(linkInfo.cost))
+
+	if (linkInfo.estimatedDifficulty) {
+	    $('#planLinkEstimatedDifficulty').text(linkInfo.estimatedDifficulty.toFixed(2) + " +")
+    } else {
+        $('#planLinkEstimatedDifficulty').text('-')
+    }
     
 	//unhighlight the existing path if any
 	if (selectedLink) {
