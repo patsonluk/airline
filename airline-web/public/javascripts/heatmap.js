@@ -38,13 +38,19 @@ function showHeatmap() {
 }
 
 function closeHeatmap() {
+    clearHeatmap()
+    $("#heatmapControlPanel").hide()
+}
+
+function clearHeatmap() {
     if (heatmapPositive) {
         heatmapPositive.setMap(null)
+        heatmapPositive = undefined
     }
     if (heatmapNegative) {
         heatmapNegative.setMap(null)
+        heatmapPositive = undefined
     }
-     $("#heatmapControlPanel").hide()
 }
 
 var heatmapPositive
@@ -93,13 +99,6 @@ function updateHeatmap(airlineId) {
 //        path.shadowPath.setMap(null)
 //    })
 
-    if (heatmapPositive) {
-        heatmapPositive.setMap(null) //clear previous one
-    }
-    if (heatmapNegative) {
-        heatmapNegative.setMap(null) //clear previous one
-    }
-
     var cycleDelta = $('#heatmapControlPanel').data('cycleDelta')
     var heatmapType = $('input[name=heatmapType]:checked', '#heatmapControlPanel').val()
     $.ajax({
@@ -108,6 +107,10 @@ function updateHeatmap(airlineId) {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(result) {
+            clearHeatmap()
+            if (!$("#heatmapControlPanel").is(":visible")) { //heatmap closed already
+                return
+            }
             var heatmapPositiveData = []
             var heatmapNegativeData = []
             $.each(result.points, function(index, entry) {
