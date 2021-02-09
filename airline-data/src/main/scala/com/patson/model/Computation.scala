@@ -80,12 +80,16 @@ object Computation {
     if (fromAirport.countryCode == toAirport.countryCode) { //domestic
       if (distance <= 1000) {
         SHORT_HAUL_DOMESTIC
+      } else if (distance <= 3000) {
+        MEDIUM_HAUL_DOMESTIC
       } else {
         LONG_HAUL_DOMESTIC
       }
     } else if (fromAirport.zone == toAirport.zone) { //international but same continent
       if (distance <= 2000) {
         SHORT_HAUL_INTERNATIONAL
+      } else if (distance <= 4000) {
+        MEDIUM_HAUL_INTERNATIONAL
       } else {
         LONG_HAUL_INTERNATIONAL
       }

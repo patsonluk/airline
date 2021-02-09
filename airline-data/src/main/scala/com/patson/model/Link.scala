@@ -243,9 +243,11 @@ object Link {
     } else {
       Computation.getFlightType(from, to) match {
         case SHORT_HAUL_DOMESTIC => 5
+        case MEDIUM_HAUL_DOMESTIC => 7
         case LONG_HAUL_DOMESTIC => 8
         case SHORT_HAUL_INTERNATIONAL => 10
-        case LONG_HAUL_INTERNATIONAL => 12
+        case MEDIUM_HAUL_INTERNATIONAL => 12
+        case LONG_HAUL_INTERNATIONAL => 15
         case SHORT_HAUL_INTERCONTINENTAL => 12
         case MEDIUM_HAUL_INTERCONTINENTAL => 20
         case LONG_HAUL_INTERCONTINENTAL => 40
@@ -255,8 +257,10 @@ object Link {
 
     val multiplyFactor = Computation.getFlightType(from, to) match {
       case SHORT_HAUL_DOMESTIC => 1
+      case MEDIUM_HAUL_DOMESTIC => 1
       case LONG_HAUL_DOMESTIC => 1
       case SHORT_HAUL_INTERNATIONAL => 2
+      case MEDIUM_HAUL_INTERNATIONAL => 2
       case LONG_HAUL_INTERNATIONAL => 2
       case SHORT_HAUL_INTERCONTINENTAL => 3
       case MEDIUM_HAUL_INTERCONTINENTAL => 3
