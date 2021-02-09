@@ -78,8 +78,8 @@ object NegotiationUtil {
       val baseLevel = baseOption.map(_.scale).getOrElse(0)
       var (maxFrequency, multiplier) = newLink.flightType match {
         case SHORT_HAUL_DOMESTIC => (20 + baseLevel * 2, 2)
-        case LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 2)
-        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 3)
+        case MEDIUM_HAUL_DOMESTIC | LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 2)
+        case MEDIUM_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL | LONG_HAUL_INTERCONTINENTAL | ULTRA_LONG_HAUL_INTERCONTINENTAL => (15 + (baseLevel * 1.5).toInt, 3)
       }
 
       if (baseLevel >= 8) {
@@ -140,8 +140,10 @@ object NegotiationUtil {
 
     val flightTypeMultiplier = Computation.getFlightType(newLink.from, newLink.to) match {
       case SHORT_HAUL_DOMESTIC => 1
+      case MEDIUM_HAUL_DOMESTIC => 1.5
       case LONG_HAUL_DOMESTIC => 1.5
       case SHORT_HAUL_INTERNATIONAL => 2
+      case MEDIUM_HAUL_INTERNATIONAL => 2
       case LONG_HAUL_INTERNATIONAL => 2.5
       case SHORT_HAUL_INTERCONTINENTAL => 4
       case MEDIUM_HAUL_INTERCONTINENTAL => 5
