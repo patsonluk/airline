@@ -61,7 +61,7 @@ sealed case class VacationHubFeature(strength : Int) extends AirportFeature {
       val goFactor = { //out of how many people, will there be 1 going to this spot per year
         if (flightType == SHORT_HAUL_DOMESTIC) {
           50
-        } else if (flightType == LONG_HAUL_DOMESTIC || FlightType == MEDIUM_HAUL_DOMESTIC) {
+        } else if (flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_DOMESTIC) {
           150  
         } else if (flightType == SHORT_HAUL_INTERNATIONAL) {
           100
