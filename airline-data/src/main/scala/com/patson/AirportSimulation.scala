@@ -157,7 +157,8 @@ object AirportSimulation {
     consumptionResult.groupBy(_._1._1.fromAirport).foreach {
       case ((fromAirport, passengersFromThisAirport)) =>
         val loyalistDeltaOfAirlines = Map[Int, Int]() //airlineId, delta
-        passengersFromThisAirport.filter(_._1._1.preference.loyaltySensitivity > 0).toList.foreach { //only count pax that actually cares about loyalty now
+        //passengersFromThisAirport.filter(_._1._1.preference.loyaltySensitivity > 0).toList.foreach { //only count pax that actually cares about loyalty now
+        passengersFromThisAirport.toList.foreach {
           case ((passengerGroup, toAirport, route), paxCount) => route.links.foreach { linkConsideration =>
             val link = linkConsideration.link
             val preferredLinkClass = passengerGroup.preference.preferredLinkClass
@@ -171,7 +172,8 @@ object AirportSimulation {
             //at satisfaction of 0, lose all (MAX_LOYALIST_FLIP_RATIO = 1)
             var conversionRatio =
             if (satisfaction < NEUTRAL_SATISFACTION) {
-              (satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
+              //(satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
+              0
             } else {
               (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * MAX_LOYALIST_FLIP_RATIO
             }
