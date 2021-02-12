@@ -149,7 +149,7 @@ object AirportSimulation {
   }
 
   //val MAX_LOYALIST_FLIP_RATIO = 1
-  val NEUTRAL_SATISFACTION = 0.4
+  val NEUTRAL_SATISFACTION = 0.6
   private[patson] def computeLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int],  existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) = {
     val updatingLoyalists = ListBuffer[Loyalist]()
     val deletingLoyalists = ListBuffer[Loyalist]()
