@@ -173,7 +173,7 @@ object AirportSimulation {
               //(satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
               0
             } else {
-              val multiplier = passengerGroup.preference.loyaltySensitivity + 0.5
+              val multiplier = Math.min(1, passengerGroup.preference.loyaltySensitivity + 0.3)
               (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
             }
             //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
