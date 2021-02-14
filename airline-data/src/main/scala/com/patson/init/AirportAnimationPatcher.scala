@@ -102,6 +102,15 @@ object AirportAnimationPatcher extends App {
     ("CAN", AIRPORT, "https://player.vimeo.com/video/511023023"),
     ("BCN", CITY, "https://player.vimeo.com/video/511023294"),
     ("BCN", AIRPORT, "https://player.vimeo.com/video/511024646"),
+    ("LYS", CITY, "https://player.vimeo.com/video/512054162"),
+    ("LYS", AIRPORT, "https://player.vimeo.com/video/512053460"),
+    ("LAS", CITY, "https://player.vimeo.com/video/512052441"),
+    ("LAS", AIRPORT, "https://player.vimeo.com/video/512051702"),
+    ("GVA", CITY, "https://player.vimeo.com/video/512050597"),
+    ("GVA", AIRPORT, "https://player.vimeo.com/video/512049721"),
+    ("GIG", CITY, "https://player.vimeo.com/video/512047998"),
+    ("GIG", AIRPORT, "https://player.vimeo.com/video/512046860"),
+    ("ARN", CITY, "https://player.vimeo.com/video/512046161"),
     ("BOI", CITY, "https://player.vimeo.com/video/506881395"),
   )
 
@@ -114,3 +123,4 @@ object AirportAnimationPatcher extends App {
 
   patchAirportAnimations()
 }
+
