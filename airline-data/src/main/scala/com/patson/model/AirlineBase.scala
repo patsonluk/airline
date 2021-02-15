@@ -1,6 +1,8 @@
 package com.patson.model
 
-import com.patson.data.CountrySource
+import com.patson.data.{AirportSource, CountrySource}
+import com.patson.model.AirlineBaseSpecialization.FlightTypeSpecialization
+
 
 case class AirlineBase(airline : Airline, airport : Airport, countryCode : String, scale : Int, foundedCycle : Int, headquarter : Boolean = false) {
   def getValue : Long = {
@@ -102,6 +104,20 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
       Left(requiredTitle)
     }
   }
+
+  lazy val getStaffModifier : (FlightCategory.Value => Double) = flightCategory => {
+    specializations.find(_.getType == BaseSpecializationType.FLIGHT_TYPE) match {
+      case Some(specialization) => specialization.asInstanceOf[FlightTypeSpecialization].staffModifier(flightCategory)
+      case None => 1
+    }
+  }
+
+  lazy val specializations : List[AirlineBaseSpecialization.Value] = {
+    AirportSource.loadAirportBaseSpecializations(airport.id, airline.id).filter(_.scaleRequirement <= scale)
+  }
 }
+
+
+
 
 

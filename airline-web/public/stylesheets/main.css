@@ -1034,6 +1034,22 @@ input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover {
     cursor: pointer;
 }
 
+#baseSpecializationModal .specialization.available, #baseSpecializationModal .specialization.active {
+    cursor: pointer;
+}
+
+#baseSpecializationModal .specialization.active, #baseSpecializationModal .specialization.available:hover {
+    box-shadow: var(--table-header-selected-shadow);
+    background: var(--table-header-selected-background);
+    color: var(--table-header-selected-color);
+    text-shadow: var(--table-header-selected-text-shadow);
+}
+
+#baseSpecializationModal .specialization.unavailable {
+    cursor: not-allowed;
+}
+
+
 .mobileOnly {
     visibility: hidden;
     display: none;
@@ -1056,6 +1072,7 @@ div.remarks {
     display: flex;
     align-items: center;
 }
+
 
 iframe.clip {
     display:block;

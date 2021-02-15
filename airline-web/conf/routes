@@ -55,6 +55,8 @@ PUT	 	 /airlines/:airlineId/facilities/:airportId  		controllers.AirlineApplicat
 POST     /airlines/:airlineId/facility-consideration/:airportId	controllers.AirlineApplication.getFacilityConsideration(airlineId : Int, airportId : Int)
 GET	 	 /airlines/:airlineId/facilities/:airportId  		controllers.AirlineApplication.getFacilities(airlineId : Int, airportId : Int)
 GET		 /airlines/:airlineId/downgradeBase/:airportId  controllers.AirlineApplication.downgradeBase(airlineId : Int, airportId : Int)
+GET      /airlines/:airlineId/bases/:airportId/specialization-info  controllers.AirlineApplication.getBaseSpecializationInfo(airlineId: Int, airportId : Int)
+PUT      /airlines/:airlineId/bases/:airportId/specializations  controllers.AirlineApplication.setBaseSpecializations(airlineId: Int, airportId : Int)
 GET		 /airlines/:airlineId/link-consumptions/:linkId	  controllers.LinkApplication.getLinkConsumption(airlineId : Int, linkId: Int, cycleCount : Int ?= 1)
 #PUT		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.setWatchedLink(airlineId: Int, linkId: Int)
 #GET		 /airlines/:airlineId/watched-link 				controllers.LinkApplication.getWatchedLink(airlineId: Int)

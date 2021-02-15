@@ -15,6 +15,8 @@ import java.awt.Color
 import java.nio.file.Files
 import java.util.Calendar
 import javax.inject.Inject
+import scala.collection.immutable.SortedSet
+import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 
@@ -826,5 +828,34 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        case None => Ok(Json.obj())
      } 
      
+  }
+
+  def getBaseSpecializationInfo(airlineId: Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val base = AirportCache.getAirport(airportId, true).get.getAirlineBase(airlineId).get
+    val activeSpecializations : List[AirlineBaseSpecialization.Value] = AirportSource.loadAirportBaseSpecializations(airportId, airlineId)
+    val specializationByScaleRequirement : Map[Int, List[AirlineBaseSpecialization.Value]] = AirlineBaseSpecialization.values.toList.groupBy(_.scaleRequirement)
+
+    var result = Json.arr()
+
+    specializationByScaleRequirement.foreach {
+      case(scaleRequirement, specializations) =>
+        var specializationsJson = Json.arr()
+        specializations.foreach { specialization =>
+          specializationsJson = specializationsJson.append(Json.toJsObject(specialization) +
+            ("active" -> JsBoolean(activeSpecializations.contains(specialization))) +
+            ("available" -> JsBoolean(base.scale >= specialization.scaleRequirement))
+          )
+        }
+
+        result = result.append(Json.obj("scaleRequirement" -> scaleRequirement, "specializations" -> specializationsJson))
+    }
+    Ok(result)
+
+  }
+
+  def setBaseSpecializations(airlineId: Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val selectedSpecializations = request.body.asInstanceOf[AnyContentAsJson].json.\("selectedSpecializations").as[List[String]].map(AirlineBaseSpecialization.withName(_))
+    AirportSource.updateAirportBaseSpecializations(airportId, airlineId, selectedSpecializations)
+    Ok(Json.obj())
   }
 }

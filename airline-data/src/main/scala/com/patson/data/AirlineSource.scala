@@ -469,6 +469,7 @@ object AirlineSource {
       preparedStatement.close()
 
       AirlineCache.invalidateAirline(airlineBase.airline.id)
+      AirportCache.invalidateAirport(airlineBase.airport.id)
     } finally {
       connection.close()
     }
@@ -477,6 +478,7 @@ object AirlineSource {
   def deleteAirlineBase(airlineBase : AirlineBase) = {
     deleteAirlineBaseByCriteria(List(("airline", airlineBase.airline.id), ("airport", airlineBase.airport.id)))
     AirlineCache.invalidateAirline(airlineBase.airline.id)
+    AirportCache.invalidateAirport(airlineBase.airport.id)
   }
   
   def deleteAirlineBaseByCriteria(criteria : List[(String, Any)]) = {
@@ -614,6 +616,7 @@ object AirlineSource {
       preparedStatement.close()
 
       AirlineCache.invalidateAirline(lounge.airline.id)
+      AirportCache.invalidateAirport(lounge.airport.id)
     } finally {
       connection.close()
     }
@@ -622,6 +625,7 @@ object AirlineSource {
   def deleteLounge(lounge : Lounge) = {
     deleteLoungeByCriteria(List(("airline", lounge.airline.id), ("airport", lounge.airport.id)))
     AirlineCache.invalidateAirline(lounge.airline.id)
+    AirportCache.invalidateAirport(lounge.airport.id)
   }
   
   def deleteLoungeByCriteria(criteria : List[(String, Any)]) = {

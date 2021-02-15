@@ -109,6 +109,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    			$('#airportDetailsBaseUpkeep').text('-')
 	    			$('#airportDetailsBaseDelegatesRequired').text('-')
 	    			$('#airportDetailsStaff').text('-')
+	    			$('#airportBaseDetails .baseSpecializations').text('-')
 	    			$('#airportDetailsFacilities').empty()
 	    		} else {
 	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
@@ -138,6 +139,18 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
                         capacityText += "(future : " + capacityInfo.futureStaffRequired + ")"
                     }
                     $capacitySpan.text(capacityText)
+
+
+                    if (airportBase.specializations) {
+                        var specializationList = $('<ul></ul>')
+                        $.each(airportBase.specializations, function(index, specialization) {
+                            specializationList.append($('<li class="dot">' + specialization.label + '</li>'))
+                        })
+                        $('#airportBaseDetails .baseSpecializations').empty()
+                        $('#airportBaseDetails .baseSpecializations').append(specializationList)
+                    } else {
+                        $('#airportBaseDetails .baseSpecializations').text('-')
+                    }
 
 
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
@@ -1242,4 +1255,79 @@ function showAppealBreakdown($icon, bonusDetails) {
         $row.css('color', 'white')
         $('#appealBonusDetailsTooltip .table').append($row)
     })
+}
+
+function showSpecializationModal() {
+    var $container = $('#baseSpecializationModal .container')
+    $container.empty()
+    $.ajax({
+		type: 'GET',
+		url: "airlines/" + activeAirline.id + "/bases/" + activeAirportId + "/specialization-info",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(info) {
+            $.each(info, function(index, specializationsByScale) {
+                var $scaleDiv = $('<div class="section"></div>').appendTo($container)
+                $scaleDiv.append($('<h4>Hub Scale Requirement ' + specializationsByScale.scaleRequirement + '</h4>'))
+                var $flexDiv = $('<div style="display: flex; flex-wrap: wrap;"></div>').appendTo($scaleDiv)
+                $.each(specializationsByScale.specializations, function(index, specialization) {
+                    var $specializationDiv = $('<div class="section specialization" style="min-width: 200px; flex:1;"></div>').appendTo($flexDiv)
+                    $specializationDiv.data('id', specialization.id)
+                    $specializationDiv.append($('<h4>' + specialization.label + '</h4>'))
+                    var $descriptionList = $('<ul></ul>').appendTo($specializationDiv)
+                    $.each(specialization.descriptions, function(index, description) {
+                        $descriptionList.append($('<li class="dot">' + description + '</li>'))
+                    })
+
+                    if (specialization.available) {
+                        $specializationDiv.addClass('available')
+                        $specializationDiv.on('click', function() {
+                            $(this).siblings().removeClass('active')
+                            $(this).toggleClass('active')
+                        })
+                    } else {
+                        $specializationDiv.addClass('unavailable')
+                        $specializationDiv.attr('title', 'Do not meet hub scale requirement: ' + specializationsByScale.scaleRequirement)
+                    }
+
+                    if (specialization.active) {
+                        $specializationDiv.addClass('active')
+                    }
+                })
+            })
+            $('#baseSpecializationModal').fadeIn(500)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+
+}
+
+function confirmSpecializations() {
+    var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/bases/" + activeAirportId + "/specializations"
+	var selectedSpecializations = []
+	$('#baseSpecializationModal .specialization.active').each(function(index) {
+	    selectedSpecializations.push($(this).data('id'))
+	})
+
+	$.ajax({
+		type: 'PUT',
+		data: JSON.stringify({
+		    "selectedSpecializations" : selectedSpecializations
+		}),
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(response) {
+	        closeModal($('#baseSpecializationModal'))
+	        showAirportDetails(activeAirportId)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }

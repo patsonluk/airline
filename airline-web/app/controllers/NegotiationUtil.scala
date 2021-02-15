@@ -241,9 +241,6 @@ object NegotiationUtil {
     }
   }
 
-  val getBaseStaffCount = (base : AirlineBase) =>  {
-
-  }
 
   def getNegotiationRequirements(newLink : Link, existingLinkOption : Option[Link], airline : Airline, airlineLinks : List[Link]) = {
     val fromAirportRequirements : List[NegotiationRequirement] = getFromAirportRequirements(airline, newLink, existingLinkOption, airlineLinks)

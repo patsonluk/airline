@@ -1048,6 +1048,13 @@
 											<div class="value" id="airportDetailsBaseUpgradeUpkeep"></div>
 										</div>
 										<div class="table-row">
+											<div class="label"><h5>Specialization:</h5></div>
+											<div class="value">
+												<span class="baseSpecializations"></span>
+												<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="showSpecializationModal()"/>
+											</div>
+										</div>
+										<div class="table-row">
 											<div class="label"><h5>Facilities:</h5></div>
 											<div class="value" id="airportDetailsFacilities"></div>
 										</div>
@@ -3414,6 +3421,21 @@
 	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
 	  </div>
 	</div>
+
+  <div id="baseSpecializationModal" class="modal">
+	  <div class="modal-content"  style="width : 600px;">
+		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
+		  <h4>Specializations</h4>
+		  <div class="container" style="width: 100%">
+
+		  </div>
+		  <div>
+		  	<div class="button" onclick="confirmSpecializations()">Confirm</div>
+		  	<div class="button" onclick="closeModal($(this).closest('.modal'))">Cancel</div>
+		  </div>
+
+	  </div>
+  </div>
 
 	<!-- Santa Claus modal -->
 	<div id="santaClausModal" class="modal christmas-event" aria-hidden="true">

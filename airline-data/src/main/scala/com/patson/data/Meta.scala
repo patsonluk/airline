@@ -304,6 +304,7 @@ object Meta {
     createNotice(connection)
     createAirportChampion(connection)
     createAirportAnimation(connection)
+    createAirlineBaseSpecialization(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1722,6 +1723,24 @@ object Meta {
       "animation_type VARCHAR(256)," +
       "url VARCHAR(256)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+
+  def createAirlineBaseSpecialization(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_BASE_SPECIALIZATION_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_BASE_SPECIALIZATION_TABLE + "(" +
+      "airport INTEGER, " +
+      "airline INTEGER, " +
+      "specialization_type VARCHAR(256), " +
+      "PRIMARY KEY (airport, airline)," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()
