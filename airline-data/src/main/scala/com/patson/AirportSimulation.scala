@@ -148,7 +148,7 @@ object AirportSimulation {
 
   }
 
-  //val MAX_LOYALIST_FLIP_RATIO = 1
+  val MAX_LOYALIST_FLIP_RATIO = 1
   val NEUTRAL_SATISFACTION = 0.6
   private[patson] def computeLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int],  existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) = {
     val updatingLoyalists = ListBuffer[Loyalist]()
@@ -173,7 +173,7 @@ object AirportSimulation {
               //(satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
               0
             } else {
-              val multiplier = Math.min(1, passengerGroup.preference.loyaltySensitivity + 0.3)
+              val multiplier = Math.min(MAX_LOYALIST_FLIP_RATIO, passengerGroup.preference.loyaltySensitivity + 0.3)
               (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
             }
             //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
