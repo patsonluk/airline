@@ -1,9 +1,9 @@
 package com.patson.model
 
 import java.util.concurrent.ConcurrentHashMap
-
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.airplane.{Airplane, LinkAssignment, Model}
+import com.patson.util.AirportCache
 
 /**
  * 
@@ -170,11 +170,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
 
   lazy val getFutureOfficeStaffRequired = {
-    Link.getOfficeStaffRequired(from, to, futureFrequency(), futureCapacity())
+    getOfficeStaffRequired(from, to, futureFrequency(), futureCapacity())
   }
 
   lazy val getCurrentOfficeStaffRequired = {
-    Link.getOfficeStaffRequired(from, to, frequency, capacity)
+    getOfficeStaffRequired(from, to, frequency, capacity)
   }
 
 
@@ -211,6 +211,46 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
 
   lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
+
+  lazy val getOfficeStaffRequired = (from : Airport, to : Airport, frequency : Int, capacity : LinkClassValues) => {
+    import FlightType._
+    val flightType = Computation.getFlightType(from, to)
+    val base =
+      if (frequency == 0) { //future flights
+        0
+      } else {
+        flightType match {
+          case SHORT_HAUL_DOMESTIC => 5
+          case MEDIUM_HAUL_DOMESTIC => 7
+          case LONG_HAUL_DOMESTIC => 8
+          case SHORT_HAUL_INTERNATIONAL => 10
+          case MEDIUM_HAUL_INTERNATIONAL => 12
+          case LONG_HAUL_INTERNATIONAL => 15
+          case SHORT_HAUL_INTERCONTINENTAL => 12
+          case MEDIUM_HAUL_INTERCONTINENTAL => 20
+          case LONG_HAUL_INTERCONTINENTAL => 40
+          case ULTRA_LONG_HAUL_INTERCONTINENTAL => 40
+        }
+      }
+
+    val multiplyFactor = flightType match {
+      case SHORT_HAUL_DOMESTIC => 1
+      case MEDIUM_HAUL_DOMESTIC => 1
+      case LONG_HAUL_DOMESTIC => 1
+      case SHORT_HAUL_INTERNATIONAL => 2
+      case MEDIUM_HAUL_INTERNATIONAL => 2
+      case LONG_HAUL_INTERNATIONAL => 2
+      case SHORT_HAUL_INTERCONTINENTAL => 3
+      case MEDIUM_HAUL_INTERCONTINENTAL => 3
+      case LONG_HAUL_INTERCONTINENTAL => 4
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 4
+    }
+
+    val airlineBaseModifier : Double = AirportCache.getAirport(from.id, true).get.getAirlineBase(airline.id).map(_.getStaffModifier(FlightType.getCategory(flightType))).getOrElse(1)
+    val frequencyStaff = frequency / 5
+    val capacityStaff = capacity.total / 1000
+    ((base + (frequencyStaff + capacityStaff) * multiplyFactor) * airlineBaseModifier).toInt
+  }
 }
 
 object Link {
@@ -235,42 +275,7 @@ object Link {
 //      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 60 + linkClassMultiplier * 15
 //    }
 //  }
-  val getOfficeStaffRequired = (from : Airport, to : Airport, frequency : Int, capacity : LinkClassValues) => {
-  import FlightType._
-  val base =
-    if (frequency == 0) { //future flights
-      0
-    } else {
-      Computation.getFlightType(from, to) match {
-        case SHORT_HAUL_DOMESTIC => 5
-        case MEDIUM_HAUL_DOMESTIC => 7
-        case LONG_HAUL_DOMESTIC => 8
-        case SHORT_HAUL_INTERNATIONAL => 10
-        case MEDIUM_HAUL_INTERNATIONAL => 12
-        case LONG_HAUL_INTERNATIONAL => 15
-        case SHORT_HAUL_INTERCONTINENTAL => 12
-        case MEDIUM_HAUL_INTERCONTINENTAL => 20
-        case LONG_HAUL_INTERCONTINENTAL => 40
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL => 40
-      }
-    }
 
-    val multiplyFactor = Computation.getFlightType(from, to) match {
-      case SHORT_HAUL_DOMESTIC => 1
-      case MEDIUM_HAUL_DOMESTIC => 1
-      case LONG_HAUL_DOMESTIC => 1
-      case SHORT_HAUL_INTERNATIONAL => 2
-      case MEDIUM_HAUL_INTERNATIONAL => 2
-      case LONG_HAUL_INTERNATIONAL => 2
-      case SHORT_HAUL_INTERCONTINENTAL => 3
-      case MEDIUM_HAUL_INTERCONTINENTAL => 3
-      case LONG_HAUL_INTERCONTINENTAL => 4
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 4
-    }
-    val frequencyStaff = frequency / 5
-    val capacityStaff = capacity.total / 1000
-    base + frequencyStaff * multiplyFactor + capacityStaff * multiplyFactor
-  }
 }
 
 

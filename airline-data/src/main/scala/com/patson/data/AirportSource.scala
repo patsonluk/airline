@@ -378,7 +378,62 @@ object AirportSource {
     }
       
   }
-  
+
+  def updateAirportBaseSpecializations(airportId : Int, airlineId : Int, airlineBaseSpecializationTypes : List[AirlineBaseSpecialization.Value]) = {
+    val connection = Meta.getConnection()
+    try {
+      val purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_BASE_SPECIALIZATION_TABLE WHERE airport = ? AND airline = ?")
+      purgeStatement.setInt(1, airportId)
+      purgeStatement.setInt(2, airlineId)
+      purgeStatement.executeUpdate()
+      purgeStatement.close()
+
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_BASE_SPECIALIZATION_TABLE  (airport, airline, specialization_type) VALUES(?,?,?)")
+      airlineBaseSpecializationTypes.foreach { airlineBaseSpecializationType =>
+        preparedStatement.setInt(1, airportId)
+        preparedStatement.setInt(2, airlineId)
+        preparedStatement.setString(3, airlineBaseSpecializationType.toString)
+        preparedStatement.executeUpdate()
+      }
+
+      preparedStatement.close()
+
+      AirportCache.invalidateAirport(airportId)
+
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def loadAirportBaseSpecializations(airportId : Int, airlineId : Int) : List[AirlineBaseSpecialization.Value] = {
+    val connection = Meta.getConnection()
+    try {
+      var queryString = s"SELECT * FROM $AIRLINE_BASE_SPECIALIZATION_TABLE WHERE airport = ? AND airline = ?"
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      preparedStatement.setInt(1, airportId)
+      preparedStatement.setInt(2, airlineId)
+
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = ListBuffer[AirlineBaseSpecialization.Value]()
+
+      while (resultSet.next()) {
+        val specialization = AirlineBaseSpecialization.withName(resultSet.getString("specialization_type"))
+        result.append(specialization)
+      }
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
   
   def loadAirportById(id : Int, fullLoad : Boolean = false) = {
       val result = loadAirportsByCriteria(List(("id", id)), fullLoad)

@@ -14,8 +14,8 @@ object AirportCache {
 
   def getAirport(airportId : Int, fullLoad : Boolean = false) : Option[Airport] = {
     if (fullLoad) {
-      //detailedCache.get(airportId) //disable full load cache for now, as it's very tricky to get it right
-      AirportSource.loadAirportById(airportId, true)
+      detailedCache.get(airportId) //disable full load cache for now, as it's very tricky to get it right (experimental)
+      //AirportSource.loadAirportById(airportId, true)
     } else {
       simpleCache.get(airportId)
     }

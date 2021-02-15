@@ -3,7 +3,7 @@ import akka.stream.ActorMaterializer
 import com.patson.Util
 import com.patson.data._
 import com.patson.data.airplane._
-import com.patson.model.{AirlineCashFlow, AirlineIncome, Computation, _}
+import com.patson.model.{AirlineBaseSpecialization, AirlineCashFlow, AirlineIncome, Computation, _}
 import com.patson.model.airplane._
 import com.patson.model.event.EventReward
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo, ChampionUtil, CountryChampionInfo}
@@ -312,10 +312,23 @@ package object controllers {
       base.airline.getCountryCode().foreach { countryCode =>
         jsObject = jsObject + ("airlineCountryCode" -> JsString(countryCode))
       }
+
+      if (!base.specializations.isEmpty) {
+        jsObject = jsObject + ("specializations" -> Json.toJson(base.specializations))
+      }
       
       jsObject
     }
-        
+  }
+
+  implicit object AirlineBaseSpecializationWrites extends OWrites[AirlineBaseSpecialization.Value] {
+    override def writes(specialization : AirlineBaseSpecialization.Value) : JsObject = {
+      Json.obj(
+        "id" -> specialization.toString,
+        "label" -> specialization.label,
+        "descriptions" -> specialization.descriptions,
+      )
+    }
   }
   
   implicit object FacilityReads extends Reads[AirportFacility] {
