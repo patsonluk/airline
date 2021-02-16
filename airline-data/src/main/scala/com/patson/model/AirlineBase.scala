@@ -106,14 +106,17 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   }
 
   lazy val getStaffModifier : (FlightCategory.Value => Double) = flightCategory => {
-    specializations.find(_.getType == BaseSpecializationType.FLIGHT_TYPE) match {
-      case Some(specialization) => specialization.asInstanceOf[FlightTypeSpecialization].staffModifier(flightCategory)
-      case None => 1
+    val flightTypeSpecializations = specializations.filter(_.getType == BaseSpecializationType.FLIGHT_TYPE).map(_.asInstanceOf[FlightTypeSpecialization])
+    if (flightTypeSpecializations.isEmpty) {
+      1
+    } else {
+      flightTypeSpecializations.map(_.staffModifier(flightCategory)).sum - (flightTypeSpecializations.size - 1)
     }
   }
 
   lazy val specializations : List[AirlineBaseSpecialization.Value] = {
-    AirportSource.loadAirportBaseSpecializations(airport.id, airline.id).filter(_.scaleRequirement <= scale)
+    (AirlineBaseSpecialization.values.filter(_.free).toList ++
+    AirportSource.loadAirportBaseSpecializations(airport.id, airline.id)).filter(_.scaleRequirement <= scale)
   }
 }
 

@@ -1,14 +1,15 @@
 package controllers
 
 import java.util.Random
-
 import com.patson.AirportSimulation
 import com.patson.data._
 import com.patson.model.Scheduling.{TimeSlot, TimeSlotStatus}
 import com.patson.model.{Link, _}
 import com.patson.util.{AirlineCache, AirportCache, ChampionUtil}
 import controllers.AuthenticationObject.AuthenticatedAirline
+import controllers.NegotiationUtil.FlightTypeGroup
 import controllers.WeatherUtil.{Coordinates, Weather}
+
 import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms.{mapping, number}
@@ -527,6 +528,33 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
       case None =>
         Ok(Json.obj("current" -> currentLoyalistEntries))
     }
+  }
+
+  def getScaleDetails() = Action {
+    var maxFrequencyResult = Json.arr()
+    (1 to 15).map { scale =>
+      var perScaleResult = Json.obj("scale" -> scale)
+      FlightTypeGroup.values.foreach { group =>
+        perScaleResult =  perScaleResult + (group.toString -> JsNumber(NegotiationUtil.getMaxFrequencyByGroup(scale, group)))
+      }
+
+      maxFrequencyResult = maxFrequencyResult.append(perScaleResult)
+    }
+
+    var groupInfoJson = Json.obj()
+    FlightType.values.toList.groupBy(NegotiationUtil.getFlightTypeGroup(_)).foreach {
+      case (group, flightTypes) => groupInfoJson = groupInfoJson + (group.toString -> JsString(flightTypes.map(FlightType.label(_)).mkString(", ")))
+    }
+    var result = Json.obj("maxFrequency" -> maxFrequencyResult, "groupInfo" -> groupInfoJson)
+
+
+    Ok(result)
+  }
+
+  def getLookups() = Action {
+    val airlineGradeLookup = AirlineGrade.allGrades.map(grade => (grade.value.toString, grade.reputationCeiling)).toMap
+
+    Ok(Json.obj("airlineGradeLookup" -> airlineGradeLookup))
   }
 
   def getAirportChampions(airportId : Int) = Action {

@@ -193,8 +193,8 @@
 					<span style="margin: 0px 10px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span class="nextTickEstimation label" style="font-weight: bold;">-</span></span>
 					<span style="margin: 0px 10px" title="Airline Balance">$<span class="balance label"></span></span>
 					<span class="currentAirline label" style="margin: 0; font-weight: bold"></span>
-					<span style="display: inline-block">
-						<span style="display: flex; flex-align: center;"><span class="reputationLevel label" style="margin: 0px 10px;"></span> <span class="reputationStars"></span></span>
+					<span style="display: inline-block; margin-left: 5px;">
+						<span style="display: flex; flex-align: center;"><span class="reputationStars"></span></span>
 					</span>
 				</span>
   			</span>
@@ -851,6 +851,10 @@
 										<div class="value"><div id="serviceLevelBar"  data-empty-icon='@routes.Assets.versioned("images/icons/star-empty.png")' data-fill-icon='@routes.Assets.versioned("images/icons/star.png")'></div>
 										<input type="hidden" id="planLinkServiceLevel" value="1"/></div>
 									</div>
+									<div class="table-row">
+										<div class="label"><h5>Office Staff Req.:</h5></div>
+										<div class="value" style="display:flex; align-items: center"><span class="staffRequired"></span><img src='@routes.Assets.versioned("images/icons/information.png")' onmouseover="showLinkStaffBreakdown()"></div>
+									</div>
 								</div>
 								<div class="linkRejection warning">
 									<div><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason"></span></div>
@@ -1036,7 +1040,10 @@
 										</div>
 										<div class="table-row">
 											<div class="label"><h5>Office Staff: (req/cap)</h5></div>
-											<div class="value" id="airportDetailsStaff"></div>
+											<div class="value" style="display: flex; align-items: center;">
+												<span id="airportDetailsStaff"></span>
+												<img src='@routes.Assets.versioned("images/icons/information.png")' onmouseover="showBaseDetailsModal()">
+											</div>
 										</div>
 
 										<div class="table-row">
@@ -4466,6 +4473,50 @@
 		</div>
       </div>
 <!--  end campaign model-->
+	  <div id="linkStaffBreakdownModal" class="modal">
+		  <div class="modal-content"  style="width : 400px;">
+			  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
+			  <h4 style="margin-bottom: 10px;">Office Staff Requirement Breakdown <span class="airlineName"></span></h4>
+			  <div class="table data" style="width: 100%;">
+				  <div class="table-row">
+					  <div class="label"><h5>Flight Type:</h5></div>
+					  <div class="value flightType"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Basic support:</h5></div>
+					  <div class="value basic"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Frequency support:</h5></div>
+					  <div class="value frequency"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Capacity support:</h5></div>
+					  <div class="value capacity"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Modifier:</h5></div>
+					  <div class="value modifier"></div>
+				  </div>
+			  </div>
+			  <h4 style="margin-top: 10px">Total: <span class="total"></span></h4>
+		  </div>
+	  </div>
+	  <div id="baseDetailsModal" class="modal">
+		  <div class="modal-content"  style="width : 400px;">
+			  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
+			  <h4 style="margin-bottom: 10px;">Office Scale Details</h4>
+			  <div class="table data scaleDetails" style="width: 100%;">
+				  <div class="table-header">
+					  <div class="cell" style="width: 25%;"><h5>Scale</h5></div>
+					  <div class="cell" data-group="GROUP_1" style="width: 25%;"><h5>Freq Cap I</h5></div>
+					  <div class="cell" data-group="GROUP_2" style="width: 25%;"><h5>Freq Cap II</h5></div>
+					  <div class="cell" data-group="GROUP_3" style="width: 25%;"><h5>Freq Cap III</h5></div>
+				  </div>
+			  </div>
+		  </div>
+	  </div>
+
 	  <div id="sendAirlineMessageModal" class="modal">
 		  <div class="modal-content"  style="width : 500px;">
 			  <span class="close" onclick="closeModal($('#sendAirlineMessageModal'))">&times;</span>
@@ -4526,6 +4577,7 @@
 			  </div>
 		  </div>
 	  </div>
+
 <!--  end profiles-->
 
     <div id="tutorialHtml"></div>

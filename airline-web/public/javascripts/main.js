@@ -19,7 +19,8 @@ $( document ).ready(function() {
     history.replaceState({"onclickFunction" : "showWorldMap()"}, null, "/") //set the initial state
 
 	window.addEventListener('orientationchange', refreshMobileLayout)
-	
+
+    populateLookups()
 	if ($.cookie('sessionActive')) {
 		loadUser(false)
 	} else {
@@ -31,8 +32,7 @@ $( document ).ready(function() {
 	}
 
     registerEscape()
-	loadAllCountries()
-	updateAirlineColors()
+    updateAirlineColors()
 	initTabGroup()
 	populateTooltips()
 	checkAutoplaySettings()
@@ -550,6 +550,25 @@ function populateTooltips() {
             $(this).load("assets/html/tooltip/" + htmlSource + ".html")
         }
     })
+}
+
+var airlineGradeLookup
+function populateLookups() {
+    loadAllCountries()
+    $.ajax({
+		type: 'GET',
+		url: "lookups",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    async: false,
+	    success: function(result) {
+	    	airlineGradeLookup = result.airlineGradeLookup
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function showTutorial() {

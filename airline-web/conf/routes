@@ -15,6 +15,7 @@ POST	 /logout						  controllers.UserApplication.logout
 #GET	 	 /login							  controllers.UserApplication.login
 #PUT		 /users							  controllers.UserApplication.putUser
 GET      /current-cycle                   controllers.Application.getCurrentCycle()
+GET      /lookups                   controllers.Application.getLookups()
 GET		 /airports						  controllers.Application.getAirports(count : Int ?= 100)
 GET		 /airports/:airportId 		  	  controllers.Application.getAirport(airportId : Int, image : Boolean ?= false)
 GET		 /airports/:airportId/images	  	  controllers.Application.getAirportImages(airportId : Int)
@@ -28,7 +29,10 @@ GET		 /airports/:airportId/link-consumptions	controllers.Application.getLinkCons
 GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportProjects(airportId : Int)
 PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
 GET	 	 /airports/:airportId/champions	      controllers.Application.getAirportChampions(airportId : Int)
+GET		 /airports/base/scale-details			  controllers.Application.getScaleDetails()
+
 GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
+
 GET		 /airlines						  controllers.AirlineApplication.getAllAirlines(loginStatus : Boolean ?= false, hideInactive : Boolean ?= false)
 GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int, extendedInfo : Boolean ?= false)
 GET		 /airlines/:airlineId/airplane-models	  controllers.AirplaneApplication.getAirplaneModelsByAirline(airlineId : Int)

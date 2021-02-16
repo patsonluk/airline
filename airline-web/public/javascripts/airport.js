@@ -111,6 +111,8 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    			$('#airportDetailsStaff').text('-')
 	    			$('#airportBaseDetails .baseSpecializations').text('-')
 	    			$('#airportDetailsFacilities').empty()
+
+	    			$('#baseDetailsModal').removeData('scale')
 	    		} else {
 	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
 	    			$('#airportDetailsBaseScale').text(airportBase.scale)
@@ -154,6 +156,8 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
+
+	    			$('#baseDetailsModal').data('scale', airportBase.scale)
 	    			updateFacilityIcons(airport)
 	    		}
 
@@ -1281,10 +1285,14 @@ function showSpecializationModal() {
 
                     if (specialization.available) {
                         $specializationDiv.addClass('available')
-                        $specializationDiv.on('click', function() {
-                            $(this).siblings().removeClass('active')
-                            $(this).toggleClass('active')
-                        })
+                        if (!specialization.free) {
+                            $specializationDiv.on('click', function() {
+                                $(this).siblings().removeClass('active')
+                                $(this).toggleClass('active')
+                            })
+                        } else {
+                            $specializationDiv.attr('title', 'Free at scale ' + specializationsByScale.scaleRequirement)
+                        }
                     } else {
                         $specializationDiv.addClass('unavailable')
                         $specializationDiv.attr('title', 'Do not meet hub scale requirement: ' + specializationsByScale.scaleRequirement)

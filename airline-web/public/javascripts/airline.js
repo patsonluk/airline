@@ -43,10 +43,19 @@ function updateAirlineLogo() {
 function refreshTopBar(airline) {
     changeColoredElementValue($(".balance"), airline.balance)
 	//changeColoredElementValue($(".reputation"), airline.reputation)
-	$(".reputationLevel").text("(" + airline.gradeDescription + ")")
 	$(".reputationValue").text(airline.reputation)
 	$(".reputationStars").empty()
-	$(getGradeStarsImgs(airline.gradeValue)).attr('title', "Reputation: " + airline.reputation).appendTo($(".reputationStars"))
+
+	//mobile
+	$(".reputation").text(airline.reputation)
+	$(".reputationLevel").text(" " + airline.gradeDescription + " (Next Grade: " + airlineGradeLookup[airline.gradeValue] + ")")
+
+	//desktop
+	//$(getGradeStarsImgs(airline.gradeValue)).attr('title', "Reputation: " + airline.reputation).appendTo($(".reputationStars"))
+	var reputationText = "Reputation: " + airline.reputation + " (" + airline.gradeDescription + ") Next Grade: " + airlineGradeLookup[airline.gradeValue]
+	var $starBar = $(getGradeStarsImgs(airline.gradeValue))
+	$(".reputationStars").append($starBar)
+	addTooltip($(".reputationStars"), reputationText, {'top' : 0, 'width' : '350px', 'white-space' : 'nowrap'})
 }
 
 function getGradeStarsImgs(gradeValue) {
@@ -1424,7 +1433,7 @@ function updateTotalValues() {
     } else {
         enableButton($("#planLinkDetails .modifyLink"))
     }
-    getLinkOvertimeCompensation()
+    getLinkStaffingInfo()
 }
 
 
@@ -1533,7 +1542,7 @@ function deleteLink() {
 	});
 }
 
-function getLinkOvertimeCompensation() {
+function getLinkStaffingInfo() {
     var airlineId = activeAirline.id
     var url = "airlines/" + airlineId + "/link-overtime-compensation"
     //console.log("selected " + $("#planLinkAirplaneSelect").val())
@@ -1563,6 +1572,24 @@ function getLinkOvertimeCompensation() {
             } else {
                 $('#planLinkDetails .overtimeCompensation').hide()
             }
+
+            $('#planLinkDetails .staffRequired').text(result.staffBreakdown.total)
+
+            $('#linkStaffBreakdownModal .flightType').text(result.flightType)
+            $('#linkStaffBreakdownModal .basic').text(result.staffBreakdown.basic)
+            var frequencyStaff = result.staffBreakdown.frequency.toFixed(1)
+            $('#linkStaffBreakdownModal .frequency').text(frequencyStaff)
+            var capacityStaff = result.staffBreakdown.capacity.toFixed(1)
+            $('#linkStaffBreakdownModal .capacity').text(capacityStaff)
+            $('#linkStaffBreakdownModal .modifier').text(result.staffBreakdown.modifier == 1 ? "-" : result.staffBreakdown.modifier)
+
+            var totalText = result.staffBreakdown.basic + " + " + frequencyStaff + " + " + capacityStaff
+            if (result.staffBreakdown.modifier != 1) {
+                totalText = "(" + totalText + ") * " + result.staffBreakdown.modifier
+            }
+            totalText += " = " + result.staffBreakdown.total
+            $('#linkStaffBreakdownModal .total').text(totalText)
+
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
@@ -2685,4 +2712,8 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
     })
 
 	$('#negotiationAnimation').show()
+}
+
+function showLinkStaffBreakdown() {
+ $('#linkStaffBreakdownModal').fadeIn(500)
 }

@@ -36,6 +36,8 @@ $( document ).ready(function() {
     $box.bind("change", function() {
 		setAirlineColor()
     });
+
+    populateBaseDetailsModal()
 })
 
 function showOfficeCanvas() {
@@ -859,4 +861,51 @@ function resetAirline(keepAssets) {
 	    }
 	});
 	
+}
+
+function populateBaseDetailsModal() {
+	$.ajax({
+		type: 'GET',
+		url: "airports/base/scale-details",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+
+	    success: function(result) {
+	        var $table = $('#baseDetailsModal .scaleDetails')
+
+	        $.each(result.groupInfo, function(group, description) {
+                var $header = $table.find('.table-header .cell[data-group="' + group + '"]')
+                addTooltip($header, description, {'width' : '200px'})
+            })
+
+	        $table.children("div.table-row").remove()
+	    	$.each(result.maxFrequency, function(index, entry) {
+                var row = $("<div class='table-row'></div>")
+                row.append("<div class='cell'>" + entry.scale + "</div>")
+                row.append("<div class='cell'>" + entry.GROUP_1 + "</div>")
+                row.append("<div class='cell'>" + entry.GROUP_2 + "</div>")
+                row.append("<div class='cell'>" + entry.GROUP_3 + "</div>")
+                row.attr('data-scale', entry.scale)
+
+                $table.append(row)
+	    	})
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function showBaseDetailsModal() {
+    var scale = $('#baseDetailsModal').data('scale')
+    $('#baseDetailsModal .table-row').removeClass('selected')
+
+    if (scale) {
+        var $selectRow = $('#baseDetailsModal').find('.table-row[data-scale="' + scale + '"]')
+        $selectRow.addClass('selected')
+    }
+
+    $('#baseDetailsModal').fadeIn(500)
+
 }

@@ -1,15 +1,12 @@
 package com.patson.data
 
-import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
-import com.patson.model._
-import com.patson.model.AirlineAppeal
-import java.sql.Statement
-
-import com.patson.model.event.EventReward
+import com.patson.model.{AirlineAppeal, _}
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo}
 
-import scala.collection.{MapView, immutable, mutable}
+import java.sql.Statement
+import scala.collection.mutable.ListBuffer
+import scala.collection.{immutable, mutable}
 
 object AirportSource {
   private[this] val BASE_QUERY = "SELECT * FROM airport"
@@ -170,6 +167,23 @@ object AirportSource {
       result.view.mapValues { airlineAppealBonusMap =>
         airlineAppealBonusMap.view.mapValues(_.toList).toMap
       }.toMap
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteAirlineAppealBonus(airportId : Int, airlineId : Int, bonusType : BonusType.Value) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_AIRLINE_APPEAL_BONUS_TABLE + " where airport = ? AND airline = ? AND bonus_type = ?")
+
+      preparedStatement.setInt(1, airportId)
+      preparedStatement.setInt(2, airlineId)
+      preparedStatement.setInt(3, bonusType.id)
+
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+
     } finally {
       connection.close()
     }
@@ -357,8 +371,6 @@ object AirportSource {
 
           val featureResultSet = featureStatement.executeQuery()
           val features = ListBuffer[AirportFeature]()
-
-          import AirportFeatureType._
           while (featureResultSet.next()) {
             val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
             val strength = featureResultSet.getInt("strength")
@@ -399,7 +411,7 @@ object AirportSource {
       preparedStatement.close()
 
       AirportCache.invalidateAirport(airportId)
-
+      AirlineCache.invalidateAirline(airlineId)
     } finally {
       connection.close()
     }
@@ -1058,9 +1070,6 @@ object AirportSource {
       
       val projects = ListBuffer[AirportProject]()
       val airports = mutable.Map[Int, Airport]()
-      
-      import ProjectStatus._
-      import ProjectType._
       while (resultSet.next()) {
         val airportId = resultSet.getInt("airport")
         val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, false).get)

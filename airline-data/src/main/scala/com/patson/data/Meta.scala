@@ -1738,7 +1738,7 @@ object Meta {
       "airport INTEGER, " +
       "airline INTEGER, " +
       "specialization_type VARCHAR(256), " +
-      "PRIMARY KEY (airport, airline)," +
+      "PRIMARY KEY (airport, airline, specialization_type)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

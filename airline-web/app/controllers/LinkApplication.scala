@@ -202,6 +202,17 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
   }
 
+  implicit object LinkStaffBreakdownWrites extends Writes[StaffBreakdown] {
+    def writes(entry: StaffBreakdown): JsValue = {
+      Json.obj("basic" -> entry.basicStaff,
+        "frequency" -> entry.frequencyStaff,
+        "capacity" -> entry.capacityStaff,
+        "modifier" -> entry.modifier,
+        "total" -> entry.total
+      )
+    }
+  }
+
   
   case class PlanLinkData(fromAirportId: Int, toAirportId: Int)
   val planLinkForm = Form(
@@ -456,11 +467,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val existingListOption = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
 
     val airline = request.user
+    val staffBreakdown : StaffBreakdown = incomingLink.getFutureOfficeStaffBreakdown
+    val staffRequiredByThisLink = staffBreakdown.total
     val extraOvertimeCompensation = airline.getBases().find(_.airport.id == incomingLink.from.id) match {
       case Some(base) =>
         val existingLinks = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD)
         val existingStaffRequired = existingLinks.map(_.getFutureOfficeStaffRequired).sum
-        val newStaffRequired = existingStaffRequired - existingListOption.map(_.getFutureOfficeStaffRequired).getOrElse(0) + incomingLink.getFutureOfficeStaffRequired
+        val newStaffRequired = existingStaffRequired - existingListOption.map(_.getFutureOfficeStaffRequired).getOrElse(0) + staffRequiredByThisLink
         val extraCompensation = base.getOvertimeCompensation(newStaffRequired) - base.getOvertimeCompensation(existingStaffRequired)
         if (extraCompensation > 0) { //then we should prompt warning of over limit
           extraCompensation
@@ -469,8 +482,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         }
       case None => 0
     }
-    Ok(Json.obj("extraOvertimeCompensation" -> extraOvertimeCompensation))
+
+    Ok(Json.obj(
+      "extraOvertimeCompensation" -> extraOvertimeCompensation,
+      "staffBreakdown" -> staffBreakdown,
+      "flightType" -> FlightType.label(Computation.getFlightType(incomingLink.from, incomingLink.to, incomingLink.distance))
+    ))
   }
+
 
   def getExpectedQuality(airlineId : Int, fromAirportId : Int, toAirportId : Int, queryAirportId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirportCache.getAirport(fromAirportId) match {

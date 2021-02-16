@@ -20,3 +20,9 @@ UPDATE `airline_v2`.`airplane_model` SET name = 'McDonnell Douglas DC-10-30' WHE
 
 ALTER TABLE `airline_v2`.`airplane_model`
 ADD COLUMN `manufacturer` VARCHAR(256) NULL AFTER `country_code`;
+
+
+ALTER TABLE `airline_v2`.`airline_base_specialization`
+CHANGE COLUMN `specialization_type` `specialization_type` VARCHAR(256) NOT NULL ,
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (`airport`, `airline`, `specialization_type`);
