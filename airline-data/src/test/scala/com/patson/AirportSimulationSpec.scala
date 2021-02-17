@@ -350,28 +350,28 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
       assert(deletingLoyalist.isEmpty)
     }
 
-    "Delete all loyalists if there's bad links but a few remaining loyalists".in {
-      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
-        allAirports,
-        Map((passengerGroup, airport3, badRoute) -> 100),
-        Map(1 -> List(Loyalist(airport1, airline1, 1), Loyalist(airport1, airline2, 2))))
-      assert(updatingLoyalists.isEmpty)
-      assert(deletingLoyalist.length == 2)
-      assert(deletingLoyalist.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).isDefined)
-      assert(deletingLoyalist.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).isDefined)
-    }
+//    "Delete all loyalists if there's bad links but a few remaining loyalists".in {
+//      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
+//        allAirports,
+//        Map((passengerGroup, airport3, badRoute) -> 100),
+//        Map(1 -> List(Loyalist(airport1, airline1, 1), Loyalist(airport1, airline2, 2))))
+//      assert(updatingLoyalists.isEmpty)
+//      assert(deletingLoyalist.length == 2)
+//      assert(deletingLoyalist.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).isDefined)
+//      assert(deletingLoyalist.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).isDefined)
+//    }
 
-    "Delete some loyalists if there's bad links but have remaining loyalists".in {
-      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
-        allAirports,
-        Map((passengerGroup, airport3, badRoute) -> 100),
-        Map(1 -> List(Loyalist(airport1, airline1, 200), Loyalist(airport1, airline2, 1000))))
-      assert(updatingLoyalists.length == 2)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == 200 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == 1000 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
-
-      assert(deletingLoyalist.isEmpty)
-    }
+//    "Delete some loyalists if there's bad links but have remaining loyalists".in {
+//      val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(
+//        allAirports,
+//        Map((passengerGroup, airport3, badRoute) -> 100),
+//        Map(1 -> List(Loyalist(airport1, airline1, 200), Loyalist(airport1, airline2, 1000))))
+//      assert(updatingLoyalists.length == 2)
+//      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount == 200 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
+//      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline2.id).get.amount == 1000 - (100 * AirportSimulation.MAX_LOYALIST_FLIP_RATIO / 2).toInt)
+//
+//      assert(deletingLoyalist.isEmpty)
+//    }
 
     "Gain loyalists if there's good links but a no existing loyalists".in {
       val (updatingLoyalists, deletingLoyalist) = AirportSimulation.computeLoyalists(

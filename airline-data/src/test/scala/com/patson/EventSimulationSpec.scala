@@ -15,7 +15,7 @@ class EventSimulationSpec extends WordSpecLike with Matchers {
   countries.foreach { country =>
     val countryCode = country.countryCode
     for (i <- 1 to 10) {
-      val airport = Airport("", "", "", latitude = 0, longitude = 0, countryCode = countryCode, "", "", size = i, power = 1000, population = 1000, 0, id = airportId)
+      val airport = Airport("", "", "", latitude = 0, longitude = 0, countryCode = countryCode, "", "", size = i, power = 1000, population = EventSimulation.CANDIDATE_MIN_POPULATION, 0, id = airportId)
       airports.append(airport)
       airportId += 1
 
