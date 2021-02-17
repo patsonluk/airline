@@ -67,7 +67,7 @@ object NegotiationUtil {
       case FlightTypeGroup.GROUP_3 => 6 + (baseScale * 1.5).toInt
     }
     if (baseScale >= 8) {
-      maxFrequency += (baseScale - 7) * 2
+      maxFrequency += (baseScale - 7) * 1
     }
     maxFrequency
   }
