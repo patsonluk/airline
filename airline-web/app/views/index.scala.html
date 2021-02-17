@@ -853,7 +853,38 @@
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Office Staff Req.:</h5></div>
-										<div class="value" style="display:flex; align-items: center"><span class="staffRequired"></span><img src='@routes.Assets.versioned("images/icons/information.png")' onmouseover="showLinkStaffBreakdown()"></div>
+										<div class="value" style="display:flex; align-items: center"><span class="staffRequired"></span>
+<!--											<img src='@routes.Assets.versioned("images/icons/information.png")' onmouseover="showLinkStaffBreakdown()" onmouseout="closeModal($('#linkStaffBreakdownModal'))">-->
+											<span id="linkStaffBreakdownTooltip" class="tooltip">
+												<img src='@routes.Assets.versioned("images/icons/information.png")'>
+												<span class="tooltiptext alignLeft" style="width: 400px;">
+													<h4 style="margin-bottom: 10px;">Office Staff Requirement Breakdown <span class="airlineName"></span></h4>
+													<div class="table data" style="width: 100%;">
+														<div class="table-row">
+															<div class="label"><h5>Flight Type:</h5></div>
+															<div class="value flightType"></div>
+														</div>
+														<div class="table-row">
+															<div class="label"><h5>Basic support:</h5></div>
+															<div class="value basic"></div>
+														</div>
+														<div class="table-row">
+															<div class="label"><h5>Frequency support:</h5></div>
+															<div class="value frequency"></div>
+														</div>
+														<div class="table-row">
+															<div class="label"><h5>Capacity support:</h5></div>
+															<div class="value capacity"></div>
+														</div>
+														<div class="table-row">
+															<div class="label"><h5>Modifier:</h5></div>
+															<div class="value modifier"></div>
+														</div>
+													</div>
+													<h4 style="margin-top: 10px">Total: <span class="total"></span></h4>
+												</span>
+											</span>
+										</div>
 									</div>
 								</div>
 								<div class="linkRejection warning">
@@ -4473,35 +4504,7 @@
 		</div>
       </div>
 <!--  end campaign model-->
-	  <div id="linkStaffBreakdownModal" class="modal">
-		  <div class="modal-content"  style="width : 400px;">
-			  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
-			  <h4 style="margin-bottom: 10px;">Office Staff Requirement Breakdown <span class="airlineName"></span></h4>
-			  <div class="table data" style="width: 100%;">
-				  <div class="table-row">
-					  <div class="label"><h5>Flight Type:</h5></div>
-					  <div class="value flightType"></div>
-				  </div>
-				  <div class="table-row">
-					  <div class="label"><h5>Basic support:</h5></div>
-					  <div class="value basic"></div>
-				  </div>
-				  <div class="table-row">
-					  <div class="label"><h5>Frequency support:</h5></div>
-					  <div class="value frequency"></div>
-				  </div>
-				  <div class="table-row">
-					  <div class="label"><h5>Capacity support:</h5></div>
-					  <div class="value capacity"></div>
-				  </div>
-				  <div class="table-row">
-					  <div class="label"><h5>Modifier:</h5></div>
-					  <div class="value modifier"></div>
-				  </div>
-			  </div>
-			  <h4 style="margin-top: 10px">Total: <span class="total"></span></h4>
-		  </div>
-	  </div>
+
 	  <div id="baseDetailsModal" class="modal">
 		  <div class="modal-content"  style="width : 400px;">
 			  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>

@@ -1575,20 +1575,20 @@ function getLinkStaffingInfo() {
 
             $('#planLinkDetails .staffRequired').text(result.staffBreakdown.total)
 
-            $('#linkStaffBreakdownModal .flightType').text(result.flightType)
-            $('#linkStaffBreakdownModal .basic').text(result.staffBreakdown.basic)
+            $('#linkStaffBreakdownTooltip .flightType').text(result.flightType)
+            $('#linkStaffBreakdownTooltip .basic').text(result.staffBreakdown.basic)
             var frequencyStaff = result.staffBreakdown.frequency.toFixed(1)
-            $('#linkStaffBreakdownModal .frequency').text(frequencyStaff)
+            $('#linkStaffBreakdownTooltip .frequency').text(frequencyStaff)
             var capacityStaff = result.staffBreakdown.capacity.toFixed(1)
-            $('#linkStaffBreakdownModal .capacity').text(capacityStaff)
-            $('#linkStaffBreakdownModal .modifier').text(result.staffBreakdown.modifier == 1 ? "-" : result.staffBreakdown.modifier)
+            $('#linkStaffBreakdownTooltip .capacity').text(capacityStaff)
+            $('#linkStaffBreakdownTooltip .modifier').text(result.staffBreakdown.modifier == 1 ? "-" : result.staffBreakdown.modifier)
 
             var totalText = result.staffBreakdown.basic + " + " + frequencyStaff + " + " + capacityStaff
             if (result.staffBreakdown.modifier != 1) {
                 totalText = "(" + totalText + ") * " + result.staffBreakdown.modifier
             }
             totalText += " = " + result.staffBreakdown.total
-            $('#linkStaffBreakdownModal .total').text(totalText)
+            $('#linkStaffBreakdownTooltip .total').text(totalText)
 
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -2714,6 +2714,5 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
 	$('#negotiationAnimation').show()
 }
 
-function showLinkStaffBreakdown() {
- $('#linkStaffBreakdownModal').fadeIn(500)
-}
+
+
