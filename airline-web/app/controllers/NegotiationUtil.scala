@@ -195,11 +195,11 @@ object NegotiationUtil {
       requirements.append(NegotiationRequirement(INCREASE_FREQUENCY, frequencyChangeCost, s"Frequency increment : $frequencyDelta"))
     }
 
-    getMaxFrequencyByModel(newLink.getAssignedModel().get, newLink.to).foreach { entry =>
-      if (frequencyDelta > 0 && newFrequency > entry.frequencyRestriction) {
-        requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - entry.frequencyRestriction, s"${newLink.to.displayText} prefers not to have airplane < ${entry.threshold} capacity with frequency > ${entry.frequencyRestriction}"))
-      }
-    }
+//    getMaxFrequencyByModel(newLink.getAssignedModel().get, newLink.to).foreach { entry =>
+//      if (frequencyDelta > 0 && newFrequency > entry.frequencyRestriction) {
+//        requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, newFrequency - entry.frequencyRestriction, s"${newLink.to.displayText} prefers not to have airplane < ${entry.threshold} capacity with frequency > ${entry.frequencyRestriction}"))
+//      }
+//    }
 
     //val odds = new NegotiationOdds()
 
