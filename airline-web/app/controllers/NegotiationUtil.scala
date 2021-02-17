@@ -62,7 +62,7 @@ object NegotiationUtil {
 
   def getMaxFrequencyByGroup(baseScale : Int, flightTypeGroup : FlightTypeGroup.Value) : Int = {
     var maxFrequency = flightTypeGroup match {
-      case FlightTypeGroup.GROUP_1 => 4 + baseScale * 2.5
+      case FlightTypeGroup.GROUP_1 => 4 + (baseScale * 2.5).toInt
       case FlightTypeGroup.GROUP_2 => 5 + (baseScale * 2).toInt
       case FlightTypeGroup.GROUP_3 => 6 + (baseScale * 1.5).toInt
     }
