@@ -299,7 +299,7 @@ object NegotiationUtil {
 //          0.35 + (relationship - 50) * 0.003
 //        }
 
-      discount = Math.min(discount, 0.5)
+      discount = Math.min(discount, 0.4)
       discounts.append(NegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     } else if (relationship < 0) { //very penalizing
       val discount = relationship * 0.1
@@ -309,7 +309,7 @@ object NegotiationUtil {
     val loyalty = airport.getAirlineLoyalty(airline.id)
     val MAX_LOYALTY_DISCOUNT = 0.5
     if (loyalty > 0) {
-      val discount = Math.min(MAX_LOYALTY_DISCOUNT, MAX_LOYALTY_DISCOUNT * loyalty / AirlineAppeal.MAX_LOYALTY)
+      val discount = Math.min(MAX_LOYALTY_DISCOUNT, loyalty / AirlineAppeal.MAX_LOYALTY)
       discounts.append(NegotiationDiscount(LOYALTY, discount))
     }
 
