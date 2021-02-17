@@ -62,9 +62,9 @@ object NegotiationUtil {
 
   def getMaxFrequencyByGroup(baseScale : Int, flightTypeGroup : FlightTypeGroup.Value) : Int = {
     var maxFrequency = flightTypeGroup match {
-      case FlightTypeGroup.GROUP_1 => 20 + baseScale * 2
-      case FlightTypeGroup.GROUP_2 => 20 + (baseScale * 1.5).toInt
-      case FlightTypeGroup.GROUP_3 => 15 + (baseScale * 1.5).toInt
+      case FlightTypeGroup.GROUP_1 => 4 + baseScale * 3
+      case FlightTypeGroup.GROUP_2 => 5 + (baseScale * 2.5).toInt
+      case FlightTypeGroup.GROUP_3 => 6 + (baseScale * 1.5).toInt
     }
     if (baseScale >= 8) {
       maxFrequency += (baseScale - 7) * 2
@@ -112,16 +112,8 @@ object NegotiationUtil {
       val maxFrequency = getMaxFrequencyByFlightType(baseLevel, newLink.flightType)
       val multiplier = getRequirementMultiplier(newLink.flightType)
 
-      getMaxFrequencyByModel(newLink.getAssignedModel().get, airport) match {
-        case None =>
-          if (newFrequency > maxFrequency) {
-            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, (newFrequency - maxFrequency) * multiplier, s"Excessive frequency $newFrequency is over your base level($baseLevel) frequency threshold $maxFrequency for ${FlightType.label(newLink.flightType)}"))
-          }
-        case Some(FrequencyRestrictionByModel(threshold, frequencyRestriction)) =>
-          if (newFrequency > frequencyRestriction) {
-            requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, (newFrequency - frequencyRestriction) * multiplier, s"${airport.displayText} prefers not to have airplane < $threshold capacity with frequency > $frequencyRestriction"))
-          }
-
+      if (newFrequency > maxFrequency) {
+        requirements.append(NegotiationRequirement(EXCESSIVE_FREQUENCY, (newFrequency - maxFrequency) * multiplier, s"Excessive frequency $newFrequency is over your base level($baseLevel) frequency threshold $maxFrequency for ${FlightType.label(newLink.flightType)}"))
       }
     }
 
@@ -135,7 +127,7 @@ object NegotiationUtil {
     * The bigger the airport the more "strict" it is - it wants bigger airplane
     * @param airplaneModel
     * @param airport
-    */
+
   def getMaxFrequencyByModel(airplaneModel : Model, airport : Airport) = {
     if (airport.size <= 3) { //too small to care
       None
@@ -150,6 +142,7 @@ object NegotiationUtil {
     }
 
   }
+  */
 
   case class FrequencyRestrictionByModel(threshold : Int, frequencyRestriction : Int)
 
@@ -306,7 +299,7 @@ object NegotiationUtil {
 //          0.35 + (relationship - 50) * 0.003
 //        }
 
-      discount = Math.min(discount, 0.7)
+      discount = Math.min(discount, 0.5)
       discounts.append(NegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     } else if (relationship < 0) { //very penalizing
       val discount = relationship * 0.1

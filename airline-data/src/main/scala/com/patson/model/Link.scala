@@ -259,22 +259,22 @@ object Link {
 //  }
   val staffScheme : Map[model.FlightType.Value, StaffSchemeBreakdown] = {
       val basicLookup = Map(
-        SHORT_HAUL_DOMESTIC -> 5,
-        MEDIUM_HAUL_DOMESTIC -> 7,
-        LONG_HAUL_DOMESTIC -> 8,
+        SHORT_HAUL_DOMESTIC -> 8,
+        MEDIUM_HAUL_DOMESTIC -> 10,
+        LONG_HAUL_DOMESTIC -> 12,
         SHORT_HAUL_INTERNATIONAL -> 10,
-        MEDIUM_HAUL_INTERNATIONAL -> 12,
-        LONG_HAUL_INTERNATIONAL -> 15,
-        SHORT_HAUL_INTERCONTINENTAL -> 12,
-        MEDIUM_HAUL_INTERCONTINENTAL -> 20,
+        MEDIUM_HAUL_INTERNATIONAL -> 15,
+        LONG_HAUL_INTERNATIONAL -> 20,
+        SHORT_HAUL_INTERCONTINENTAL -> 15,
+        MEDIUM_HAUL_INTERCONTINENTAL -> 25,
         LONG_HAUL_INTERCONTINENTAL -> 40,
         ULTRA_LONG_HAUL_INTERCONTINENTAL -> 40)
 
 
       val multiplyFactorLookup = Map(
-        SHORT_HAUL_DOMESTIC -> 1,
-        MEDIUM_HAUL_DOMESTIC -> 1,
-        LONG_HAUL_DOMESTIC -> 1,
+        SHORT_HAUL_DOMESTIC -> 2,
+        MEDIUM_HAUL_DOMESTIC -> 2,
+        LONG_HAUL_DOMESTIC -> 2,
         SHORT_HAUL_INTERNATIONAL -> 2,
         MEDIUM_HAUL_INTERNATIONAL -> 2,
         LONG_HAUL_INTERNATIONAL -> 2,
@@ -287,7 +287,7 @@ object Link {
       val lookup = FlightType.values.toList.map { flightType =>
         val basic = basicLookup(flightType)
         val multiplyFactor = multiplyFactorLookup(flightType)
-        val staffPerFrequency = 1.0 / 5 * multiplyFactor
+        val staffPerFrequency = 2.0 / 5 * multiplyFactor
         val staffPer1000Pax = 1 * multiplyFactor
         (flightType, StaffSchemeBreakdown(basic, staffPerFrequency, staffPer1000Pax))
       }.toMap
