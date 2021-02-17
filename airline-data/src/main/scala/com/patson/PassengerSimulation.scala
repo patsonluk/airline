@@ -216,7 +216,9 @@ object PassengerSimulation {
     (collapsedMap.toMap, missedMap)
   }
 
-  val LINK_COST_TOLERANCE_FACTOR = 1
+  val LINK_COST_TOLERANCE_FACTOR = 0.9
+  val LINK_COST_TOLERANCE_NOISE_RANGE = 0.4 //ie -0.2 to 0.2
+  val random = new Random()
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
     val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
@@ -224,7 +226,8 @@ object PassengerSimulation {
     if (routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR <= routeDistance) { //a route that distance is too long (too indirect)
       return false
     }
-    
+
+
 //    val ROUTE_COST_TOLERANCE_FACTOR = 1.4
 //    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
 
@@ -239,11 +242,13 @@ object PassengerSimulation {
         } else {
           1
         }
+
+      val noise = (1 + (random.nextDouble() - 0.5) * LINK_COST_TOLERANCE_NOISE_RANGE)
       val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
           val link = linkConsideration.link 
           
           
-          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass) * LINK_COST_TOLERANCE_FACTOR * incomeAdjustedFactor
+          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass) * LINK_COST_TOLERANCE_FACTOR * incomeAdjustedFactor * noise
           
 //          if (linkConsideration.linkClass == BUSINESS) {
 //            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 
