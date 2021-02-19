@@ -879,12 +879,16 @@ function populateBaseDetailsModal() {
             })
 
 	        $table.children("div.table-row").remove()
-	    	$.each(result.maxFrequency, function(index, entry) {
+	    	$.each(result.scaleProgression, function(index, entry) {
+	    	    var maxFrequency = entry.maxFrequency
+
                 var row = $("<div class='table-row'></div>")
                 row.append("<div class='cell'>" + entry.scale + "</div>")
-                row.append("<div class='cell'>" + entry.GROUP_1 + "</div>")
-                row.append("<div class='cell'>" + entry.GROUP_2 + "</div>")
-                row.append("<div class='cell'>" + entry.GROUP_3 + "</div>")
+
+                row.append("<div class='cell'>" + entry.headquartersStaffCapacity + "/" + entry.baseStaffCapacity + "</div>")
+                row.append("<div class='cell'>" + maxFrequency.GROUP_1 + "</div>")
+                row.append("<div class='cell'>" + maxFrequency.GROUP_2 + "</div>")
+                row.append("<div class='cell'>" + maxFrequency.GROUP_3 + "</div>")
                 row.attr('data-scale', entry.scale)
 
                 $table.append(row)

@@ -42,22 +42,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
 //    base + titleBonus + scaleBonus
 //  }
 
-  val getOfficeStaffCapacity = {
-    val base =
-      if (headquarter) {
-        60
-      } else {
-        0
-      }
-    val scaleBonus =
-      if (headquarter) {
-        80 * scale
-      } else {
-        60 * scale
-      }
-
-    base + scaleBonus
-  }
+  val getOfficeStaffCapacity = AirlineBase.getOfficeStaffCapacity(scale, headquarter)
 
 //  val HQ_BASIC_DELEGATE = 7
 //  val NON_HQ_BASIC_DELEGATE = 3
@@ -120,6 +105,24 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   }
 }
 
+object AirlineBase {
+  def getOfficeStaffCapacity(scale : Int, isHeadquarters : Boolean) = {
+    val base =
+      if (isHeadquarters) {
+        60
+      } else {
+        0
+      }
+    val scaleBonus =
+      if (isHeadquarters) {
+        80 * scale
+      } else {
+        60 * scale
+      }
+
+    base + scaleBonus
+  }
+}
 
 
 

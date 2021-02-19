@@ -531,21 +531,27 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   }
 
   def getScaleDetails() = Action {
-    var maxFrequencyResult = Json.arr()
+    var scaleProgressionResult = Json.arr()
     (1 to 15).map { scale =>
       var perScaleResult = Json.obj("scale" -> scale)
+      var maxFrequencyJson = Json.obj()
       FlightTypeGroup.values.foreach { group =>
-        perScaleResult =  perScaleResult + (group.toString -> JsNumber(NegotiationUtil.getMaxFrequencyByGroup(scale, group)))
+        maxFrequencyJson = maxFrequencyJson + (group.toString -> JsNumber(NegotiationUtil.getMaxFrequencyByGroup(scale, group)))
       }
 
-      maxFrequencyResult = maxFrequencyResult.append(perScaleResult)
+      perScaleResult =  perScaleResult +
+        ("maxFrequency" -> maxFrequencyJson) +
+        ("baseStaffCapacity" -> JsNumber(AirlineBase.getOfficeStaffCapacity(scale, false))) +
+        ("headquartersStaffCapacity" -> JsNumber(AirlineBase.getOfficeStaffCapacity(scale, true)))
+
+      scaleProgressionResult = scaleProgressionResult.append(perScaleResult)
     }
 
     var groupInfoJson = Json.obj()
     FlightType.values.toList.groupBy(NegotiationUtil.getFlightTypeGroup(_)).foreach {
       case (group, flightTypes) => groupInfoJson = groupInfoJson + (group.toString -> JsString(flightTypes.map(FlightType.label(_)).mkString(", ")))
     }
-    var result = Json.obj("maxFrequency" -> maxFrequencyResult, "groupInfo" -> groupInfoJson)
+    var result = Json.obj("scaleProgression" -> scaleProgressionResult, "groupInfo" -> groupInfoJson)
 
 
     Ok(result)
