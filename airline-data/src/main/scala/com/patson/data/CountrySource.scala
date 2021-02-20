@@ -149,12 +149,15 @@ object CountrySource {
   
   def updateCountryMutualRelationships(relationships : Map[(String, String), Int]) = {
      val connection = Meta.getConnection()
-     try {  
-       connection.setAutoCommit(false)
+     try {
        val purgeStatement = connection.prepareStatement("DELETE FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE)
-       purgeStatement.execute()
+       purgeStatement.executeUpdate()
 
        purgeStatement.close()
+
+       println("purged")
+
+       connection.setAutoCommit(false)
        val insertStatement = connection.prepareStatement("INSERT INTO " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + "(country_1, country_2, relationship) VALUES (?,?,?)")
        relationships.foreach { 
          case ((country1, country2), relationShip) => {
