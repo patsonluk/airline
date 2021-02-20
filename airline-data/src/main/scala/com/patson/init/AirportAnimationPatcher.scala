@@ -117,9 +117,18 @@ object AirportAnimationPatcher extends App {
     ("IAH", AIRPORT, "https://player.vimeo.com/video/514188872"),
     ("CPH", CITY, "https://player.vimeo.com/video/514182192"),
     ("CPH", AIRPORT, "https://player.vimeo.com/video/514183474"),
-    ("SAN", CITY, "https://player.vimeo.com/video/514184236"),
+    ("SAN", AIRPORT, "https://player.vimeo.com/video/514184236"),
+    ("SAN", CITY, "https://player.vimeo.com/video/514581108"),
+    ("SAN", SCENERY, "https://player.vimeo.com/video/514580492"),
+    ("VCE", CITY, "https://player.vimeo.com/video/514582833"),
+    ("VCE", AIRPORT, "https://player.vimeo.com/video/514584250"),
+    ("SFO", CITY, "https://player.vimeo.com/video/514584771"),
+    ("SFO", AIRPORT, "https://player.vimeo.com/video/514586925"),
+    ("SCL", CITY, "https://player.vimeo.com/video/514579280"),
+    ("SCL", AIRPORT, "https://player.vimeo.com/video/514580072"),
+    ("VRN", CITY, "https://player.vimeo.com/video/514582214"),
+    ("ONT", AIRPORT, "https://player.vimeo.com/video/514581713"),
     ("CRL", AIRPORT, "https://player.vimeo.com/video/514181568"),
-//TODO missig SAN CITY
     ("BOI", CITY, "https://player.vimeo.com/video/506881395"),
   )
 
