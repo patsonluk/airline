@@ -19,3 +19,6 @@ IR,IQ,-3
 IL,IQ,-2
 IL,IR,-2
 IN,PK,-1
+JP,CN,0
+JP,KR,1
+CN,KR,1
