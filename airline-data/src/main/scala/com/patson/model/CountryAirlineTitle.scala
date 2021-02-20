@@ -46,8 +46,8 @@ object Title extends Enumeration {
 }
 
 object CountryAirlineTitle {
-  val MAX_LOYALTY_BONUS = 25
-  val MIN_LOYALTY_BONUS = 5
+  val MAX_LOYALTY_BONUS = 30
+  val MIN_LOYALTY_BONUS = 10
 
   val getBonusType : (Title.Value => BonusType.Value) = {
     case Title.NATIONAL_AIRLINE => BonusType.NATIONAL_AIRLINE
