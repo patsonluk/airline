@@ -427,7 +427,12 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val existingCapacity = existingLink.fold(LinkClassValues.getInstance())(_.futureCapacity())
         val capacityChange = incomingLink.futureCapacity() - existingCapacity //use future capacity here
         val normalizedCapacityChange = capacityChange(ECONOMY) * ECONOMY.spaceMultiplier + capacityChange(BUSINESS) * BUSINESS.spaceMultiplier + capacityChange(FIRST) * FIRST.spaceMultiplier
-        val bonus = NegotiationUtil.getLinkBonus(resultLink, normalizedCapacityChange.toInt, busyDelegates)
+        val capacityMonetaryBaseValue = (resultLink.standardPrice(ECONOMY) * normalizedCapacityChange).toLong //this could be negative if freq increased but capacity decreased
+        val frequencyChange = incomingLink.futureFrequency() - existingFrequency
+        val frequencyMonetaryBaseValue = frequencyChange.toLong * resultLink.getAssignedModel().get.capacity * resultLink.standardPrice(ECONOMY)
+        val monetaryBaseValue = Math.max(0, Math.max(capacityMonetaryBaseValue, frequencyMonetaryBaseValue))
+
+        val bonus = NegotiationUtil.getLinkBonus(resultLink, monetaryBaseValue, busyDelegates)
         bonus.apply(airline)
         result = result + ("negotiationBonus" -> Json.obj("description" -> JsString(bonus.description), "intensity" -> JsNumber(bonus.intensity)))
 

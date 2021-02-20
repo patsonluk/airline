@@ -423,8 +423,7 @@ object NegotiationUtil {
     }.toMap
   }
 
-  def getLinkBonus(link : Link, capacityDelta : Int, delegates : List[BusyDelegate]) : NegotiationBonus = {
-    val monetaryBaseValue = link.standardPrice(ECONOMY) * capacityDelta
+  def getLinkBonus(link : Link, monetaryBaseValue : Long, delegates : List[BusyDelegate]) : NegotiationBonus = {
     NegotiationBonus.drawBonus(monetaryBaseValue, delegates, link.to)
   }
 
