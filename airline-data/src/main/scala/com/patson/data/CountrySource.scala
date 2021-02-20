@@ -152,7 +152,8 @@ object CountrySource {
      try {  
        connection.setAutoCommit(false)
        val purgeStatement = connection.prepareStatement("DELETE FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE)
-       purgeStatement.addBatch()
+       purgeStatement.execute()
+
        purgeStatement.close()
        val insertStatement = connection.prepareStatement("INSERT INTO " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + "(country_1, country_2, relationship) VALUES (?,?,?)")
        relationships.foreach { 
