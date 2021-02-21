@@ -164,13 +164,14 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     val originalModelsById = originalModels.map(model => (model.id, model)).toMap
 //    val airlineDiscountsByModelId = ModelSource.loadAirlineDiscountsByAirlineId(airlineId).groupBy(_.modelId)
 //    val blanketDiscountsByModelId = ModelSource.loadAllModelDiscounts().groupBy(_.modelId)
-    val discountsByModelId = originalModels.map { model =>
-      (model.id, ModelDiscount.getDiscounts(airlineId, model.id))
-    }.toMap
+    val discountsByModelId = ModelDiscount.getAllCombinedDiscountsByAirlineId(airlineId)
 
     val discountedModels = originalModels.map { originalModel =>
-      val discounts = discountsByModelId(originalModel.id)
-      originalModel.applyDiscount(discounts)
+      discountsByModelId.get(originalModel.id) match {
+        case Some(discounts) => originalModel.applyDiscount(discounts)
+        case None => originalModel
+      }
+
     }
 
     val discountedModelWithRejections : Map[Model, Option[String]]= getRejections(discountedModels, request.user)
@@ -180,13 +181,13 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     discountedModelWithRejections.toList.foreach {
       case(discountedModel, rejectionOption) =>
         val originalModel = originalModelsById(discountedModel.id)
-        val discounts = discountsByModelId(originalModel.id)
 
         var modelJson =
-          if (!discounts.isEmpty) {
-            Json.toJson(ModelWithDiscounts(originalModel, discounts)).asInstanceOf[JsObject]
-          } else {
-            Json.toJson(originalModel).asInstanceOf[JsObject]
+          discountsByModelId.get(originalModel.id) match {
+            case Some(discounts) =>
+              Json.toJson (ModelWithDiscounts (originalModel, discounts) ).asInstanceOf[JsObject]
+            case None =>
+              Json.toJson (originalModel).asInstanceOf[JsObject]
           }
 
 
@@ -506,7 +507,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
             val originalModel = airplane.model
 
-            val model = originalModel.applyDiscount(ModelDiscount.getDiscounts(airlineId, originalModel.id))
+            val model = originalModel.applyDiscount(ModelDiscount.getCombinedDiscountsByModelId(airlineId, originalModel.id))
 
             val replaceCost = model.price - sellValue
             val purchaseRate = model.price.toDouble / originalModel.price
@@ -546,7 +547,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         BadRequest("unknown model or airline")
       case Some(originalModel) =>
         //now check for discounts
-        val model = originalModel.applyDiscount(ModelDiscount.getDiscounts(airlineId, originalModel.id))
+        val model = originalModel.applyDiscount(ModelDiscount.getCombinedDiscountsByModelId(airlineId, originalModel.id))
 
         val airline = request.user
         val currentCycle = CycleSource.loadCycle()
@@ -711,6 +712,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     val ownedModelsByCategory : MapView[Model.Category.Value, List[Model]] = AirplaneOwnershipCache.getOwnership(airlineId).groupBy(_.model.category).view.mapValues(_.map(_.model).distinct)
 
     var categoryJson = Json.obj()
+    val supplierDiscountInfo = ModelDiscount.getPreferredSupplierDiscounts(airlineId)
 
     Category.grouping.foreach {
       case (category, airplaneTypes) =>
@@ -724,7 +726,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           case None =>
         }
         categoryInfoJson = categoryInfoJson + ("ownership" -> ownershipJson)
-        val categoryDiscount = ModelDiscount.getPreferredCategoryDiscount(airlineId, category)
+        val categoryDiscount = supplierDiscountInfo(category)
         categoryInfoJson = categoryInfoJson + ("discount" -> JsString(categoryDiscount.description))
 
         categoryJson = categoryJson + (category.toString -> categoryInfoJson)

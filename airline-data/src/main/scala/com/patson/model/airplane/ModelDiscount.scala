@@ -36,22 +36,35 @@ object ModelDiscount {
     List(ModelDiscount(model.id, priceDiscount, DiscountType.PRICE, DiscountReason.FAVORITE, None), constructionTimeDiscount)
   }
 
+  def getAllCombinedDiscountsByAirlineId(airlineId : Int) : Map[Int, List[ModelDiscount]] = {
+    val airlineDiscountByModelId : Map[Int, List[ModelDiscount]] = ModelSource.loadAirlineDiscountsByAirlineId(airlineId).groupBy(_.modelId)
+    val supplierDiscountInfoByCategory : Map[Model.Category.Value, PreferredSupplierDiscountInfo] = getPreferredSupplierDiscounts(airlineId)
+    val blanketModelDiscountByModelId : Map[Int, List[ModelDiscount]] = ModelSource.loadAllModelDiscounts().groupBy(_.modelId)
+    AirplaneModelCache.allModels.values.map { model =>
+      val discounts = ListBuffer[ModelDiscount]()
+      airlineDiscountByModelId.get(model.id).foreach(discounts.appendAll(_))
+      getPreferredSupplierDiscountByModelId(supplierDiscountInfoByCategory, model.id).foreach(discounts.append(_))
+      blanketModelDiscountByModelId.get(model.id).foreach(discounts.appendAll(_))
+      (model.id, discounts.toList)
+    }.toMap
+  }
+
   /**
     * Get discounts including both specific to airline and those blanket to model
     * @param airlineId
     * @param modelId
     * @return
     */
-  def getDiscounts(airlineId : Int, modelId : Int) : List[ModelDiscount] = {
+  def getCombinedDiscountsByModelId(airlineId : Int, modelId : Int) : List[ModelDiscount] = {
     val discounts = ListBuffer[ModelDiscount]()
     //get airline specific discounts
     discounts.appendAll(ModelSource.loadAirlineDiscountsByAirlineIdAndModelId(airlineId, modelId))
     //get preferred supplier discounts
-    getPreferredModelDiscount(airlineId, modelId).foreach {
+    getPreferredSupplierDiscountByModelId(airlineId, modelId).foreach {
       discounts.append(_)
     }
     //get blanket model discounts
-    discounts.appendAll(getDiscounts(modelId))
+    discounts.appendAll(getBlanketModelDiscounts(modelId))
     discounts.toList
   }
 
@@ -60,61 +73,83 @@ object ModelDiscount {
     * @param modelId
     * @return
     */
-  def getDiscounts(modelId : Int)  : List[ModelDiscount] = {
+  def getBlanketModelDiscounts(modelId : Int)  : List[ModelDiscount] = {
     val discounts = ListBuffer[ModelDiscount]()
     //get blanket model discounts
     discounts.appendAll(ModelSource.loadModelDiscountsByModelId(modelId))
     discounts.toList
   }
 
-  def getPreferredCategoryDiscount(airlineId: Int, category : Category.Value) = {
+
+  def getPreferredSupplierDiscounts(airlineId: Int) : Map[Model.Category.Value, PreferredSupplierDiscountInfo] = {
     val currentSuppliersByCategory : MapView[Model.Category.Value, List[Manufacturer]] = AirplaneOwnershipCache.getOwnership(airlineId).groupBy(_.model.category).view.mapValues(_.map(_.model.manufacturer).distinct)
-    currentSuppliersByCategory.get(category) match {
-      case None => PreferredCategoryDiscount(None, "No preferred Supplier")
-      case Some(currentSuppliers) =>
-        if (currentSuppliers.length == 1) {
-          val discount = category match {
-            case Category.LIGHT => 0.1
-            case Category.MEDIUM => 0.05
-            case Category.LARGE => 0.02
-            case Category.SUPERSONIC => 0
-          }
-          if (discount > 0) {
-            val modelDiscount = ModelDiscount(0, discount, DiscountType.PRICE, DiscountReason.PREFERRED_SUPPLIER, None)
-            PreferredCategoryDiscount(Some(modelDiscount), modelDiscount.description)
+    Category.values.toList.map { category =>
+      val info = currentSuppliersByCategory.get(category) match {
+        case None => PreferredSupplierDiscountInfo(None, category, None, "No preferred Supplier")
+        case Some(currentSuppliers) =>
+          if (currentSuppliers.length == 1) {
+            val discount = category match {
+              case Category.LIGHT => 0.1
+              case Category.MEDIUM => 0.05
+              case Category.LARGE => 0.02
+              case Category.SUPERSONIC => 0
+            }
+            if (discount > 0) {
+              PreferredSupplierDiscountInfo(Some(discount), category, Some(currentSuppliers(0)), s"${(discount * 100).toInt}% off price for being preferred supplier")
+            } else {
+              PreferredSupplierDiscountInfo(None, category, Some(currentSuppliers(0)), s"${category.toString} offers no discount")
+            }
           } else {
-            PreferredCategoryDiscount(None, s"${category.toString} offers no discount")
+            PreferredSupplierDiscountInfo(None, category, None, "No discount as there are more than one supplier")
           }
-        } else {
-          PreferredCategoryDiscount(None, "No discount as there are more than one supplier")
-        }
-    }
+      }
+      (category, info)
+    }.toMap
   }
-  case class PreferredCategoryDiscount(discount : Option[ModelDiscount], description : String)
+  case class PreferredSupplierDiscountInfo(discount : Option[Double], category: Model.Category.Value, soleSupplier : Option[Manufacturer], description : String)
 
 
 
-  def getPreferredModelDiscount(airlineId : Int, modelId : Int) = {
+  def getPreferredSupplierDiscountByModelId(airlineId : Int, modelId : Int) : Option[ModelDiscount] = {
+//    val model = AirplaneModelCache.getModel(modelId).get
+//    val currentSuppliersByCategory : MapView[Model.Category.Value, List[Manufacturer]] = AirplaneOwnershipCache.getOwnership(airlineId).groupBy(_.model.category).view.mapValues(_.map(_.model.manufacturer).distinct)
+//    currentSuppliersByCategory.get(model.category) match {
+//      case None => None
+//      case Some(currentSuppliers) =>
+//        if (currentSuppliers.length == 1 && currentSuppliers(0) == model.manufacturer) {
+//          val discount = model.category match {
+//            case Category.LIGHT => 0.1
+//            case Category.MEDIUM => 0.05
+//            case Category.LARGE => 0.02
+//            case Category.SUPERSONIC => 0
+//          }
+//          if (discount > 0) {
+//            Some(ModelDiscount(model.id, discount, DiscountType.PRICE, DiscountReason.PREFERRED_SUPPLIER, None))
+//          } else {
+//            None
+//          }
+//        } else {
+//          None
+//        }
+//    }
+    getPreferredSupplierDiscountByModelId(getPreferredSupplierDiscounts(airlineId), modelId)
+  }
+
+  def getPreferredSupplierDiscountByModelId(lookup : Map[Category.Value, PreferredSupplierDiscountInfo], modelId : Int) : Option[ModelDiscount] = {
     val model = AirplaneModelCache.getModel(modelId).get
-    val currentSuppliersByCategory : MapView[Model.Category.Value, List[Manufacturer]] = AirplaneOwnershipCache.getOwnership(airlineId).groupBy(_.model.category).view.mapValues(_.map(_.model.manufacturer).distinct)
-    currentSuppliersByCategory.get(model.category) match {
-      case None => None
-      case Some(currentSuppliers) =>
-        if (currentSuppliers.length == 1 && currentSuppliers(0) == model.manufacturer) {
-          val discount = model.category match {
-            case Category.LIGHT => 0.1
-            case Category.MEDIUM => 0.05
-            case Category.LARGE => 0.02
-            case Category.SUPERSONIC => 0
-          }
-          if (discount > 0) {
-            Some(ModelDiscount(model.id, discount, DiscountType.PRICE, DiscountReason.PREFERRED_SUPPLIER, None))
-          } else {
-            None
+    val supplierDiscountInfo = lookup(model.category)
+
+    supplierDiscountInfo.soleSupplier match {
+      case Some(soleSupplier) =>
+        if (soleSupplier == model.manufacturer) {
+          supplierDiscountInfo.discount match {
+            case Some(discount) => Some(ModelDiscount(modelId, discount, DiscountType.PRICE, DiscountReason.PREFERRED_SUPPLIER, None))
+            case None => None
           }
         } else {
           None
         }
+      case None => None
     }
   }
 }
