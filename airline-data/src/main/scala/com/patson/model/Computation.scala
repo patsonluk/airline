@@ -61,7 +61,7 @@ object Computation {
   
   def calculateAirplaneSellValue(airplane : Airplane) : Int = {
     val currentNewMarketPrice = airplane.model.applyDiscount(ModelDiscount.getDiscounts(airplane.model.id)).price
-    val value = airplane.value * Math.min(airplane.purchaseRate, SELL_RATE) //airplane.purchase < 1 means it was bought with a discount, selling should be lower price
+    val value = airplane.value * airplane.purchaseRate * SELL_RATE //airplane.purchase < 1 means it was bought with a discount, selling should be lower price
     if (value < 0) 0 else value.toInt
   }
   
