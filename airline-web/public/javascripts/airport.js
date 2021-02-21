@@ -30,6 +30,7 @@ function showAirportDetails(airportId) {
 //	    		$("#floatBackButton").show()
 //	    		shimmeringDiv($("#floatBackButton"))
             updateAirportDetails(airport, airport.cityImageUrl, airport.airportImageUrl)
+            updateAirportExtendedDetails(airport.id, airport.countryCode)
     		activeAirport = airport
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
