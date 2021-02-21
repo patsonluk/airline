@@ -411,6 +411,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                         val actualValue = airplane.value
                         airplane.buyFromDealer(airline, CycleSource.loadCycle())
                         airplane.home = homeBase.airport
+                        airplane.purchaseRate = 1 //no discount
                         configuration.foreach { configuration =>
                           airplane.configuration = configuration
                         }
@@ -508,6 +509,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
             val model = originalModel.applyDiscount(ModelDiscount.getDiscounts(airlineId, originalModel.id))
 
             val replaceCost = model.price - sellValue
+            val purchaseRate = model.price.toDouble / originalModel.price
             if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
               BadRequest("Not enough money")
             } else {
@@ -515,7 +517,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 //                  AirplaneSource.saveAirplanes(List(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0)))
 //               }
 
-              val replacingAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = originalModel.price)
+              val replacingAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = originalModel.price, purchaseRate = purchaseRate)
 
               AirplaneSource.updateAirplanes(List(replacingAirplane)) //TODO MAKE SURE SYNCHONRIZE WITH AIRPLANE UPDATE SIMULATION
               AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
@@ -555,7 +557,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           case None =>
             BadRequest(s"Home airport ID $homeAirportId is not valid")
           case Some(homeBase) =>
-            val airplane = Airplane(model, airline, constructedCycle = constructedCycle , purchasedCycle = constructedCycle, Airplane.MAX_CONDITION, depreciationRate = 0, value = originalModel.price, home = homeBase.airport)
+            val purchaseRate = model.price.toDouble / originalModel.price
+            val airplane = Airplane(model, airline, constructedCycle = constructedCycle , purchasedCycle = constructedCycle, Airplane.MAX_CONDITION, depreciationRate = 0, value = originalModel.price, home = homeBase.airport, purchaseRate = purchaseRate)
 
             val rejectionOption = getRejection(model, quantity, airline)
             if (rejectionOption.isDefined) {
@@ -613,14 +616,16 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         val fromPurchaseCycle = fromAirplane.purchasedCycle
         val fromCondition = fromAirplane.condition
         val fromValue = fromAirplane.value
+        val fromPurchaseRate = fromAirplane.purchaseRate
 
         val toConstructedCycle = toAirplane.constructedCycle
         val toPurchaseCycle = toAirplane.purchasedCycle
         val toCondition = toAirplane.condition
         val toValue = toAirplane.value
+        val toPurchaseRate = toAirplane.purchaseRate
 
-        val swappedFromAirplane = fromAirplane.copy(constructedCycle = toConstructedCycle, purchasedCycle = toPurchaseCycle, condition = toCondition, value = toValue)
-        val swappedToAirplane = toAirplane.copy(constructedCycle = fromConstructedCycle, purchasedCycle = fromPurchaseCycle, condition = fromCondition, value = fromValue)
+        val swappedFromAirplane = fromAirplane.copy(constructedCycle = toConstructedCycle, purchasedCycle = toPurchaseCycle, condition = toCondition, value = toValue, purchaseRate = toPurchaseRate)
+        val swappedToAirplane = toAirplane.copy(constructedCycle = fromConstructedCycle, purchasedCycle = fromPurchaseCycle, condition = fromCondition, value = fromValue, purchaseRate = fromPurchaseRate)
 
         AirplaneSource.updateAirplanes(List(swappedFromAirplane, swappedToAirplane))
         LinkUtil.adjustLinksAfterAirplaneConfigurationChange(swappedFromAirplane.id)

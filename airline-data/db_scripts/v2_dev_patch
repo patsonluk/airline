@@ -26,3 +26,6 @@ ALTER TABLE `airline_v2`.`airline_base_specialization`
 CHANGE COLUMN `specialization_type` `specialization_type` VARCHAR(256) NOT NULL ,
 DROP PRIMARY KEY,
 ADD PRIMARY KEY (`airport`, `airline`, `specialization_type`);
+
+ALTER TABLE `airline_v2`.`airplane`
+ADD COLUMN `purchase_rate` DECIMAL(4,3) NULL DEFAULT 1 AFTER `home`;
