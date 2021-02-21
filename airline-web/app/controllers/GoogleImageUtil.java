@@ -132,10 +132,10 @@ public class GoogleImageUtil {
 				Long maxAge = getMaxAge(conn);
 				if (maxAge != null) {
 					long newDeadline = System.currentTimeMillis() + maxAge * 1000;
-					logger.info(urlString + " is still valid, new max age deadline: " + newDeadline) ;
+					logger.debug(urlString + " is still valid, new max age deadline: " + newDeadline) ;
 					return Optional.of(newDeadline);
 				} else {
-					logger.info(urlString + " is still valid, no max age deadline");
+					logger.debug(urlString + " is still valid, no max age deadline");
 					return Optional.empty();
 				}
 			} else {
