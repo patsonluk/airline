@@ -32,7 +32,7 @@ object ChampionUtil {
 
     allMarketShares.map {
       case CountryMarketShare(countryCode, airlineShares) => {
-        val country = CountrySource.loadCountryByCode(countryCode).get
+        val country = CountryCache.getCountry(countryCode).get
         val topAirlineSharesWithSortedIndex : List[((Int, Long), Int)] = airlineShares.toList.sortBy(_._2)(Ordering.Long.reverse).take(10).zipWithIndex
 
         val championInfoForThisCountry = topAirlineSharesWithSortedIndex.map {
