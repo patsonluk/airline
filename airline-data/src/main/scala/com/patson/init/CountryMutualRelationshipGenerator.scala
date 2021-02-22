@@ -27,6 +27,8 @@ object CountryMutualRelationshipGenerator extends App {
     println("Saving country mutual relationships: " + finalMutualRelationshipMap)
 
     CountrySource.updateCountryMutualRelationships(finalMutualRelationshipMap)
+
+    println("DONE")
   }
 
   def affiliationAdjustment(existingMap : mutable.Map[(String, String), Int]) : Map[(String, String), Int] = {
