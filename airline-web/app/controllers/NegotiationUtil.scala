@@ -316,7 +316,7 @@ object NegotiationUtil {
     val airportChampionAirlineIds = ChampionUtil.loadAirportChampionInfoByAirport(airport.id).map(_.loyalist.airline.id)
     allianceMembers.foreach { allianceMember =>
       if (allianceMember.airline.getBases().map(_.airport.id).contains(airport.id)) {
-        if (allianceMember.airline.id == airline.id && airportChampionAirlineIds.contains(allianceMember.airline.id)) {
+        if (allianceMember.airline.id != airline.id && airportChampionAirlineIds.contains(allianceMember.airline.id)) {
           if (discounts.find(_.adjustmentType == ALLIANCE_BASE).isEmpty) { //only add once
             discounts.append(NegotiationDiscount(ALLIANCE_BASE, 0.2))
           }
