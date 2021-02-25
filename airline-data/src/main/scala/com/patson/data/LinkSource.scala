@@ -852,12 +852,14 @@ object LinkSource {
     }
   }
 
-  def saveNegotiationCoolDown(linkId : Int, expirationCycle : Int) = {
+  def saveNegotiationCoolDown(airline : Airline, fromAirport : Airport, toAirport : Airport, expirationCycle : Int) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $LINK_NEGOTIATION_COOL_DOWN_TABLE (link, expiration_cycle) VALUES(?,?)")
-      preparedStatement.setInt(1, linkId)
-      preparedStatement.setInt(2, expirationCycle)
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $LINK_NEGOTIATION_COOL_DOWN_TABLE (airline, from_airport, to_airport, expiration_cycle) VALUES(?,?,?,?)")
+      preparedStatement.setInt(1, airline.id)
+      preparedStatement.setInt(2, fromAirport.id)
+      preparedStatement.setInt(3, toAirport.id)
+      preparedStatement.setInt(4, expirationCycle)
 
       preparedStatement.executeUpdate()
       preparedStatement.close()
@@ -866,11 +868,13 @@ object LinkSource {
     }
   }
 
-  def loadNegotiationCoolDownExpirationCycle(linkId : Int): Option[Int] = {
+  def loadNegotiationCoolDownExpirationCycle(airline : Airline, fromAirport : Airport, toAirport : Airport): Option[Int] = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement(s"SELECT * FROM  $LINK_NEGOTIATION_COOL_DOWN_TABLE WHERE link = ?")
-      preparedStatement.setInt(1, linkId)
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM  $LINK_NEGOTIATION_COOL_DOWN_TABLE WHERE airline = ? AND from_airport = ? AND to_airport = ?")
+      preparedStatement.setInt(1, airline.id)
+      preparedStatement.setInt(2, fromAirport.id)
+      preparedStatement.setInt(3, toAirport.id)
 
       val resultSet = preparedStatement.executeQuery()
 
