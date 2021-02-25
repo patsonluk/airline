@@ -3,7 +3,8 @@ package controllers
 import java.util.Calendar
 import com.patson.data._
 import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane.{Airplane, LinkAssignments, LinkAssignment, Model}
+import com.patson.model.airplane.{Airplane, LinkAssignment, LinkAssignments, Model}
+import com.patson.model.negotiation.LinkNegotiationDiscount
 import com.patson.model.{FlightPreferenceType, _}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache, AllianceCache, CountryCache}
 import com.patson.{DemandGenerator, Util}
@@ -419,9 +420,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
       DelegateSource.saveBusyDelegates(busyDelegates)
 
-      if (negotiationResult.isSuccessful) { //if negotiation was successful, add a link negotiation cooldown as well
-        LinkSource.saveNegotiationCoolDown(resultLink.id, cycle + Link.LINK_NEGOTIATION_COOL_DOWN)
-      }
+      LinkSource.saveNegotiationCoolDown(resultLink.airline, resultLink.from, resultLink.to, cycle + Link.LINK_NEGOTIATION_COOL_DOWN)
+
+
 
       if (negotiationResult.isGreatSuccess) {
         val existingCapacity = existingLink.fold(LinkClassValues.getInstance())(_.futureCapacity())
@@ -435,7 +436,17 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val bonus = NegotiationUtil.getLinkBonus(resultLink, monetaryBaseValue, busyDelegates)
         bonus.apply(airline)
         result = result + ("negotiationBonus" -> Json.obj("description" -> JsString(bonus.description), "intensity" -> JsNumber(bonus.intensity)))
+      }
 
+      if (negotiationResult.isSuccessful) { //purge all previous discounts if successful
+        NegotiationSource.deleteLinkDiscountsByAirlineAndAirport(airline.id, fromAirport.id, toAirport.id)
+      }
+
+      NegotiationUtil.getNextNegotiationDiscount(resultLink, negotiationResult).foreach { discount =>
+        NegotiationSource.saveLinkDiscount(discount)
+        if (discount.discount > 0) {
+          result = result + ("nextNegotiationDiscount" -> JsString(s"Some progress made. ${(discount.discount * 100).toInt}% Negotiation Discount for the next ${LinkNegotiationDiscount.DURATION} weeks"))
+        }
       }
 
       result = result + ("negotiationResult" -> Json.toJson(negotiationResult))
@@ -859,13 +870,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
 
   def getNegotiationRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, existingLink : Option[Link]) : Option[(String, RejectionType.Value)]= {
-    existingLink match {
-      case Some(existingLink) =>
-        LinkSource.loadNegotiationCoolDownExpirationCycle(existingLink.id).foreach { expirationCycle =>
-          return Some(s"Can only re-negotiate in ${expirationCycle - CycleSource.loadCycle()} week(s)", RejectionType.NEGOTIATION_COOL_DOWN)
-        }
-      case None =>
-    }
+      LinkSource.loadNegotiationCoolDownExpirationCycle(airline, fromAirport, toAirport).foreach { expirationCycle =>
+        return Some(s"Can only re-negotiate in ${expirationCycle - CycleSource.loadCycle()} week(s)", RejectionType.NEGOTIATION_COOL_DOWN)
+      }
+
     return None
   }
 

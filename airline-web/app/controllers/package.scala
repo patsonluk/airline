@@ -718,7 +718,7 @@ package object controllers {
   case class NegotiationDiscountWrites(airport : Airport) extends Writes[NegotiationDiscount] {
     def writes(discount : NegotiationDiscount): JsValue = {
       Json.obj(
-        "description" -> JsString(NegotiationDiscountType.description(discount.adjustmentType, airport)),
+        "description" -> JsString(discount.description(airport)),
         "value" -> JsNumber(discount.value))
     }
   }

@@ -137,6 +137,8 @@ object Constants {
   val CAMPAIGN_AREA_TABLE = "campaign_area"
   val CAMPAIGN_DELEGATE_TASK_TABLE = "campaign_delegate_task"
 
+  val LINK_NEGOTIATION_DISCOUNT_TABLE = "link_negotiation_discount"
+
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"
   val SANTA_CLAUS_GUESS_TABLE = "santa_claus_guess"

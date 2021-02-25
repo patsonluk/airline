@@ -2665,14 +2665,19 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
         if (index == negotiationResult.sessions.length) {
             callback = function() {
                            var result
-                           if (negotiationResult.isGreatSuccess && savedLink.negotiationBonus) {
-                            $('#negotiationAnimation .negotiationBonus').text(savedLink.negotiationBonus.description)
+                           if (negotiationResult.isGreatSuccess) {
                             result = "Great Success"
                            } else if (negotiationResult.isSuccessful) {
                             result = "Success"
                            } else {
                             result = "Failure"
                            }
+                           if (savedLink.negotiationBonus) {
+                             $('#negotiationAnimation .negotiationBonus').text(savedLink.negotiationBonus.description)
+                           } else if (savedLink.nextNegotiationDiscount) {
+                             $('#negotiationAnimation .negotiationBonus').text(savedLink.nextNegotiationDiscount)
+                           }
+
                            $('#negotiationAnimation .negotiationResult .result').text(result)
                            $('#negotiationAnimation .negotiationResult').show()
 

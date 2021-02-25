@@ -291,6 +291,8 @@ object Airline {
           }
         }
 
+        NegotiationSource.deleteLinkDiscountsByAirline(airline.id)
+
         airline.setBalance(newBalance)
 
         //unset country code

@@ -299,7 +299,7 @@ object Meta {
     createChatMessage(connection)
     createLoyalist(connection)
     createCampaign(connection)
-    createLinkNegotiationCoolDown(connection)
+    createLinkNegotiation(connection)
     createTutorial(connection)
     createNotice(connection)
     createAirportChampion(connection)
@@ -1641,14 +1641,34 @@ object Meta {
     statement.close()
   }
 
-  def createLinkNegotiationCoolDown(connection : Connection) = {
+  def createLinkNegotiation(connection : Connection) = {
     var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_NEGOTIATION_COOL_DOWN_TABLE)
     statement.execute()
     statement.close()
 
 
     statement = connection.prepareStatement(s"CREATE TABLE $LINK_NEGOTIATION_COOL_DOWN_TABLE (" +
-      s"link INTEGER PRIMARY KEY REFERENCES $LINK_TABLE(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      s"airline INTEGER REFERENCES $AIRLINE_TABLE(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      s"from_airport INTEGER REFERENCES $AIRPORT_TABLE(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      s"to_airport INTEGER REFERENCES $AIRPORT_TABLE(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "expiration_cycle INTEGER, " +
+      "PRIMARY KEY (airline, from_airport, to_airport)" +
+      ")")
+
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_NEGOTIATION_DISCOUNT_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement(s"CREATE TABLE $LINK_NEGOTIATION_DISCOUNT_TABLE (" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      s"airline INTEGER REFERENCES $AIRLINE_TABLE(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      s"from_airport INTEGER REFERENCES $AIRPORT_TABLE(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      s"to_airport INTEGER REFERENCES $AIRPORT_TABLE(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "discount DECIMAL(3,2), " +
       "expiration_cycle INTEGER" +
       ")")
 
@@ -1656,6 +1676,8 @@ object Meta {
     statement.close()
 
   }
+
+
 
   def createTutorial(connection : Connection) = {
     var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + COMPLETED_TUTORIAL_TABLE)
