@@ -310,12 +310,16 @@ function changeCampaignRadius(delta) {
 }
 
 function updateCampaignRadiusControl(radius) {
-    if (radius > MIN_CAMPAIGN_RADIUS && radius < MAX_CAMPAIGN_RADIUS ) {
+    if (radius > MIN_CAMPAIGN_RADIUS) {
         enableButton($("#campaignModal .radiusControl .decrease"))
+    }
+    if (radius < MAX_CAMPAIGN_RADIUS) {
         enableButton($("#campaignModal .radiusControl .increase"))
-    } else if (radius <= MIN_CAMPAIGN_RADIUS) {
+    }
+
+    if (radius <= MIN_CAMPAIGN_RADIUS) {
         disableButton($("#campaignModal .radiusControl .decrease"), "Min campaign radius at " + MIN_CAMPAIGN_RADIUS + " km" )
-    } else {
+    } else if (radius >= MAX_CAMPAIGN_RADIUS) {
         disableButton($("#campaignModal .radiusControl .increase"), "Max campaign radius at " + MAX_CAMPAIGN_RADIUS + " km" )
     }
 }
