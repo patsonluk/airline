@@ -443,8 +443,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
       NegotiationUtil.getNextNegotiationDiscount(resultLink, negotiationResult).foreach { discount =>
-        NegotiationSource.saveLinkDiscount(discount)
         if (discount.discount > 0) {
+          NegotiationSource.saveLinkDiscount(discount)
           result = result + ("nextNegotiationDiscount" -> JsString(s"Some progress made. ${(discount.discount * 100).toInt}% Negotiation Discount for the next ${LinkNegotiationDiscount.DURATION} weeks"))
         }
       }
