@@ -444,6 +444,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
       NegotiationUtil.getNextNegotiationDiscount(resultLink, negotiationResult).foreach { discount =>
         if (discount.discount > 0) {
+          val logMessage =  s"Negotiation Discount of ${(discount.discount * 100).toInt}% for ${fromAirport.displayText} -> ${toAirport.displayText} (expires after ${LinkNegotiationDiscount.DURATION} weeks)"
+          LogSource.insertLogs(List(Log(airline, logMessage, LogCategory.NEGOTIATION, LogSeverity.INFO, cycle)))
           NegotiationSource.saveLinkDiscount(discount)
           result = result + ("nextNegotiationDiscount" -> JsString(s"Some progress made. ${(discount.discount * 100).toInt}% Negotiation Discount for the next ${LinkNegotiationDiscount.DURATION} weeks"))
         }
