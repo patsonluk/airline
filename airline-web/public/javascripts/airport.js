@@ -112,6 +112,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    			$('#airportDetailsStaff').text('-')
 	    			$('#airportBaseDetails .baseSpecializations').text('-')
 	    			$('#airportDetailsFacilities').empty()
+	    			disableButton($('#airportBaseDetails .specialization.button'), "This is not your airline base")
 
 	    			$('#baseDetailsModal').removeData('scale')
 	    		} else {
@@ -160,6 +161,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 	    			$('#baseDetailsModal').data('scale', airportBase.scale)
 	    			updateFacilityIcons(airport)
+	    			enableButton($('#airportBaseDetails .specialization.button'))
 	    		}
 
 		    	var targetBase = baseDetails.targetBase
@@ -217,7 +219,6 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    		} else {
 	    			$('#deleteBaseButton').show()
 	    		}
-		    	
 		    },
 		    error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));
