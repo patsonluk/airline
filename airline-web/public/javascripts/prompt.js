@@ -69,9 +69,43 @@ function initPrompts() {
 }
 
 function queuePrompt(promptId, args) {
-    promptQueue.push({ id : promptId, args : args })
+    promptQueue.push({ htmlId : promptId, args : args }) //id here determines the ID of the html popup, not the prompt itself
     if (!promptInterval) {
         promptInterval = setInterval('showPrompt()', 100)
+    }
+}
+
+function queueNotice(noticeJson) {
+    //map the category to html element ID here
+    var htmlId
+    var category = noticeJson.category
+    if (category === "LEVEL_UP") {
+        htmlId = "levelUpPopup"
+    } else if (category === "LOYALIST") {
+        htmlId = "loyalistMilestonePopup"
+    } else {
+        console.warn("Unhandled notice " + noticeJson)
+    }
+
+    if (htmlId) {
+        queuePrompt(htmlId, noticeJson)
+    }
+}
+
+function queueTutorialByJson(json) {
+    //map the category/id to html element ID here
+    var htmlId
+    var category = json.category
+    if (category === "airlineGrade") {
+        htmlId = "tutorialAirlineGrade"
+    } else if (category === "loyalist") {
+        htmlId = "tutorialLoyalistMilestone"
+    } else {
+        console.warn("Unhandled tutorial " + noticeJson)
+    }
+
+    if (htmlId) {
+        queueTutorial(htmlId)
     }
 }
 
@@ -80,7 +114,7 @@ function showPrompt() {
         if (!activePrompt) {
             if (promptQueue.length > 0) {
                 activePrompt = promptQueue.shift()
-                var promptId = '#' + activePrompt.id
+                var promptId = '#' + activePrompt.htmlId
                 if ($(promptId).data("function")) {
                     $(promptId).data("function")(activePrompt.args)
                 } else {
@@ -260,11 +294,18 @@ function setSkipTutorial(skipTutorial) {
 
 function initNotices() {
     $('#levelUpPopup').data('function', function(json) {
-        $('#levelUpPopup').data('id', json.level)
+        $('#levelUpPopup').data('id', json.id)
         $('#levelUpPopup').data('category', json.category)
         showLevelUpPopup(json.level, json.description)
     })
     $('#levelUpPopup').data('promptCloseCallback', stopFirework)
+
+    $('#loyalistMilestonePopup').data('function', function(json) {
+        $('#loyalistMilestonePopup').data('id', json.id)
+        $('#loyalistMilestonePopup').data('category', json.category)
+        showLoyalistPopup(json.level, json.description)
+    })
+    $('#loyalistMilestonePopup').data('promptCloseCallback', stopFirework)
 }
 
 function showLevelUpPopup(level, description) {
@@ -278,4 +319,14 @@ function showLevelUpPopup(level, description) {
     $popup.fadeIn(500)
 
     startFirework(20000, Math.floor(level / 2) + 1)
+}
+
+function showLoyalistPopup(level, description) {
+    var $popup = $('#loyalistMilestonePopup')
+
+    $('#loyalistMilestonePopup .description').text(description)
+    updateHeadquartersMap($('#loyalistMilestonePopup .headquartersMap'), activeAirline.id)
+    $popup.fadeIn(500)
+
+    startFirework(20000, level)
 }

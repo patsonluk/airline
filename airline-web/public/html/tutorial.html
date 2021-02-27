@@ -262,3 +262,40 @@
 </div>
 
 
+<div class="tutorial modal" data-category="airlineGrade" id="tutorialAirlineGrade">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Airline Grade</h4>
+		<ul>
+			<li class="label">Congratulations on leveling up!</li>
+			<li class="label">Your airline progresses on Airline Grade (the star level) based on your reputation</li>
+			<br/>
+			<li class="label">Reputation accumulates by:</li>
+			<li class="label">1. Carrying more PAX and travel further</li>
+			<li class="label">2. Becoming a ranked Champion in an airport by having more loyalists</li>
+			<li class="label">3. In a ranked Alliance</li>
+			<br/>
+			<li class="label">You will get more delegates (the little green men in office view) each time you level up.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="loyalist" id="tutorialLoyalistMilestone">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Loyalist</h4>
+		<ul>
+			<li class="label">Your airline has started accumulating loyalists!</li>
+			<br/>
+			<li class="label">Loyalists are gained by providing a satisfying flying experience for the virtual PAX based in that airport</li>
+			<br/>
+			<li class="label">Loyalists are useful in many ways:</li>
+			<li class="label">1. Increase loyalty strength of that airport. PAX are more willing to travel with your airline with a stronger brand presence</li>
+			<li class="label">2. Loyalty also gives discount in negotiations</li>
+			<li class="label">3. Top N airlines with most loyalist in an airport will become ranked champions which earn extra reputation points</li>
+			<br/>
+			<li class="label">You can have an overview of your loyalist by clicking the "heatmap" icon <img src="assets/images/icons/table-heatmap.png"> on the map. Info for each airport can be inspected in the Airport View</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+
+</div>

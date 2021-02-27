@@ -314,6 +314,9 @@ object Airline {
         //reset all campaigns, has to be after delegate
         CampaignSource.deleteCampaignsByAirline(airline.id)
 
+        //reset all notice
+        NoticeSource.deleteNoticesByAirline(airline.id)
+
         AirlineSource.saveAirlineInfo(airline)
         println(s"Reset airline - $airline")
         Some(airline)

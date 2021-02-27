@@ -3,12 +3,12 @@ package websocket
 import java.util.concurrent.TimeUnit
 import akka.actor._
 import com.patson.data.{CycleSource, UserSource}
-import com.patson.model.notice.NoticeCategory
+import com.patson.model.notice.{AirlineNotice, LoyalistNotice, NoticeCategory}
 import com.patson.stream._
 
 import java.util.concurrent.atomic.AtomicLong
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
-import controllers.{AirportUtil, NoticeUtil}
+import controllers.{AirlineTutorial, AirportUtil, PromptUtil}
 import play.api.libs.json.JsNumber
 import play.api.libs.json.Json
 import websocket.chat.TriggerPing
@@ -63,7 +63,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
 
               //println("Received cycle completed: " + cycle)
               out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
-              BroadcastActor.checkNotices(airlineId)
+              BroadcastActor.checkPrompts(airlineId)
             case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
               //println("Received cycle info on cycle: " + cycle)
               out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
@@ -74,7 +74,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
           this.subscriberId = Some(subscriberId)
 
           //MyWebSocketActor.backgroundActor ! RegisterToBackground(airlineId.toInt)
-          BroadcastActor.checkNotices(airlineId) //check notice on connect
+          BroadcastActor.checkPrompts(airlineId) //check notice on connect
       } catch {
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
@@ -84,13 +84,18 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
       out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)
     case AirlineMessage(airline, text) =>
       out ! Json.obj("messageType" -> "airlineMessage", "message" -> text)
-    case AirlineNotice(airline, notice) =>
+    case AirlineNotice(airline, notice, description) =>
       println(s"Sending notice $notice to $airline")
       notice.category match {
         case NoticeCategory.LEVEL_UP =>
-          out ! Json.obj("messageType" -> "levelNotice", "category" -> notice.category.toString, "level" -> airline.airlineGrade.value, "description" -> airline.airlineGrade.description)
-      }
+          out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
+        case NoticeCategory.LOYALIST =>
+          out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
 
+      }
+    case AirlineTutorial(airline, tutorial) =>
+      println(s"Sending tutorial $tutorial to $airline")
+      out ! Json.obj("messageType" -> "tutorial", "category" -> tutorial.category, "id" -> tutorial.id)
     case any =>
       println("received " + any + " not handled")  
   }
