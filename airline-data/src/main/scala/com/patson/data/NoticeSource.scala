@@ -42,6 +42,8 @@ object NoticeSource {
         val notice = category match {
           case LEVEL_UP =>
             LevelNotice(id.toInt)
+          case LOYALIST =>
+            LoyalistNotice(id.toInt)
         }
 
         completedNotices += notice
