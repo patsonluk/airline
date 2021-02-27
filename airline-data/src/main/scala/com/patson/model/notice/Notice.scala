@@ -11,21 +11,7 @@ case class LoyalistNotice(level : Int) extends Notice(NoticeCategory.LOYALIST) {
 }
 object LoyalistNotice {
   val getLevel = (loyalist : Long) => {
-    if (loyalist < 10) {
-      0
-    } else if (loyalist < 100) {
-      1
-    } else if (loyalist < 1000) {
-      2
-    } else if (loyalist < 10000) {
-      3
-    } else if (loyalist < 100000) {
-      4
-    } else if (loyalist < 1000000) {
-      5
-    } else {
-      6
-    }
+      Math.log10(loyalist).toInt
   }
 }
 
