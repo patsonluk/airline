@@ -17,8 +17,14 @@ object LoyalistNotice {
       1
     } else if (loyalist < 1000) {
       2
-    } else {
+    } else if (loyalist < 10000) {
       3
+    } else if (loyalist < 100000) {
+      4
+    } else if (loyalist < 1000000) {
+      5
+    } else {
+      6
     }
   }
 }
