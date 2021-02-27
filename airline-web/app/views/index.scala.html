@@ -275,23 +275,26 @@
 	<div style="position: relative;" id="mainContainer" > <!-- Main container for the contents + the landing masks-->
 		<div id="landing">
 			<div id="landing-content">
-				<div class="title" style="display: flex; ">
-					<span class="text write" data-splitting="lines">
-					The most sophisticated airline sim ever made.<br/>
-					Track pax movement throughout your network,<br/>
-					join an alliance and become the Ultimate airline!<br/>
-					<br/>
-					100% free and open source!
-				 </span>
-					<span aria-hidden="true" class="text laser" data-splitting="lines">
-					The most sophisticated airline sim ever made.<br/>
-					Track pax movement throughout your network,<br/>
-					join an alliance and become the Ultimate airline!<br/>
-					<br/>
-					100% free and open source!
-				</span>
+<!--				<div class="title" style="display: flex; ">-->
+<!--					<span class="text write" data-splitting="lines">-->
+<!--					The most sophisticated airline sim ever made.<br/>-->
+<!--					Track pax movement throughout your network,<br/>-->
+<!--					join an alliance and become the Ultimate airline!<br/>-->
+<!--					<br/>-->
+<!--					100% free and open source!-->
+<!--				 </span>-->
+<!--					<span aria-hidden="true" class="text laser" data-splitting="lines">-->
+<!--					The most sophisticated airline sim ever made.<br/>-->
+<!--					Track pax movement throughout your network,<br/>-->
+<!--					join an alliance and become the Ultimate airline!<br/>-->
+<!--					<br/>-->
+<!--					100% free and open source!-->
+<!--				</span>-->
+<!--				</div>-->
+				<div style="width:100%; display:flex; align-items:center; flex-direction: column;">
+					<iframe id="landingVideo" src="https://player.vimeo.com/video/517246577?autoplay=1&muted=1" max-width="95%" width="960" height="540" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen> </iframe>
 				</div>
-				<div><a href="about" class="landing-link">&gt;&gt; Tell me more</a></div>
+				<div style="margin-top:20px;"><a href="about" class="landing-link">&gt;&gt; Tell me more</a></div>
 				<div><a href="signup" class="landing-link">&gt;&gt; Sign me up</a></div>
 				<div><a href="#"  class="landing-link" onclick="closeAbout()">&gt;&gt; Check out the game world</a></div>
 				<div><a href="#"  class="landing-link" onclick="closeAbout(); showSearchCanvas();">&gt;&gt; Search for a Flight in-game</a></div>
