@@ -1,6 +1,11 @@
 <div class="tutorial modal" data-category="welcome" id="tutorialWelcome">
 	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
-	WELCOME!! Press Escape or Tap on this dialog to proceed
+		<h4>Welcome to airline-club.com!</h4>
+		<div>
+			<img src="assets/images/tutorial/logo.png">
+		</div>
+
+		<h4>Press Escape or Tap on this dialog to proceed</h4>
 		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 
@@ -28,7 +33,10 @@
 	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
 		<h4>Airport Details</h4>
 		<ul>
-			<li class="label" style="padding: 5px;">WIP</li>
+			<li class="label" style="padding: 5px;">Airport View contains many crucial information and statistics.</li>
+			<li class="label" style="padding: 5px;">For a quick overview of the airport's strength, inspect the "Airport Rating" box on the top left.</li>
+			<br/>
+			<li class="label" style="padding: 5px;">The more challenging the airport, the more start-up capital you will obtain.</li>
 		</ul>
 		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
@@ -191,4 +199,66 @@
 		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
 	</div>
 </div>
+
+<div class="tutorial modal" data-category="search" id="tutorialSearch1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Ticket Search</h4>
+		<ul>
+			<li class="label">Ticket search shows flight ticket sold in previous weeks</li>
+			<br/>
+			<li class="label">You can research on passenger flight itineraries here.</li>
+			<li class="label">For example, you can search on airport pair you wish to establish a new flight for and check your competitions and how much the PAX willing to pay.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+
+<div class="tutorial modal" data-category="office" id="tutorialOffice1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Office</h4>
+		<ul>
+			<li class="label">In Office View, you can find various information about your airlines</li>
+			<br/>
+			<li class="label">You can also set various important parameters here</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="office" id="tutorialOffice2">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Service Quality</h4>
+		<ul>
+			<li class="label">"Service Quality" refers to the R&D and training of your airline overall.</li>
+			<li class="label">This applies to all your flights and affect the overall flight quality level</li>
+			<br/>
+			<li class="label">You can set the desired "Service Quality" level by clicking on the gear icon next to Target Service Quality</li>
+			<li class="label">Service quality will climb slowly to your target level, after all, R&D and training take time!</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="office" id="tutorialOffice3">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Office Staff</h4>
+		<ul>
+			<li class="label">Next, you will find a table of Airline Bases with office staff and overtime information</li>
+			<li class="label">Each of you base/hub has office staff capacity based on its scale and type (HQs have higher staff capacity)</li>
+			<br/>
+			<li class="label">Each of your flight will take up a base number of staff depending on the flight type - longer and internation flights require more staff to maintain</li>
+			<li class="label">Extra frequency and capacity will consumer more staff as well, with higher frequency usually take up more staff than high capacity</li>
+			<br/>
+			<li class="label">If your flights require more staff than the base can provide, extra overtime compensation will be incurred every week</li>
+			<br/>
+			<li class="label">In order to avoid overtime compensation you might:</li>
+			<li class="label">1. Drop flights that are not profitable or not crucial for your network</li>
+			<li class="label">2. Level up your base/hub</li>
+			<li class="label">3. Use bigger airplanes to increase capacity instead of high frequency with smaller airplane models</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
 

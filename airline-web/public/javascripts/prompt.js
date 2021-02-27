@@ -33,7 +33,7 @@ function initPrompts() {
 //
 //    }
 
-    $('.left-tab').bind('click.tutorial', function() {
+    $('.tab-icon').bind('click.tutorial', function() {
         var pageId = $(this).data('link')
         checkTutorial(pageId)
     })
@@ -180,6 +180,10 @@ function checkTutorial(flowId) {
             if (!activeAirline.headquarterAirport) {
                 queueTutorial("tutorialBuildHq")
             }
+        } else if (flowId == "office") {
+            queueTutorial("tutorialOffice1")
+            queueTutorial("tutorialOffice2")
+            queueTutorial("tutorialOffice3")
         } else if (flowId == "oil") {
             queueTutorial("tutorialOilIntro1")
             queueTutorial("tutorialOilIntro2")
@@ -193,6 +197,9 @@ function checkTutorial(flowId) {
             queueTutorial("tutorialNegotiation3")
             queueTutorial("tutorialNegotiation4")
             queueTutorial("tutorialNegotiation5")
+        } else if (flowId == "search") {
+            queueTutorial("tutorialSearch1")
+            queueTutorial("tutorialSearch2")
         }
     }
 }
