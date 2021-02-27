@@ -76,7 +76,7 @@ function queuePrompt(promptId, args) {
 }
 
 function showPrompt() {
-    if (!$('#annoucementModal').is(':visible')) {
+    if (!$('#announcementModal').is(':visible')) {
         if (!activePrompt) {
             if (promptQueue.length > 0) {
                 activePrompt = promptQueue.shift()

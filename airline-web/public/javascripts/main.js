@@ -533,10 +533,10 @@ function switchMap() {
 
 function showAnnoucement() {
 	// Get the modal
-	var modal = $('#annoucementModal')
+	var modal = $('#announcementModal')
 	// Get the <span> element that closes the modal
-	$('#annoucementContainer').empty()
-	$('#annoucementContainer').load('assets/html/annoucement.html')
+	$('#announcementContainer').empty()
+	$('#announcementContainer').load('assets/html/announcement.html')
 
 	modal.fadeIn(1000)
 }
