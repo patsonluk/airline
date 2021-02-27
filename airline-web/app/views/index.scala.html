@@ -291,13 +291,17 @@
 <!--					100% free and open source!-->
 <!--				</span>-->
 <!--				</div>-->
-				<div style="width:100%; display:flex; align-items:center; flex-direction: column;">
-					<iframe id="landingVideo" src="https://player.vimeo.com/video/517246577?autoplay=1&muted=1&quality=720p" max-width="95%" width="960" height="540" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen> </iframe>
+				<div style="width:100%; position: relative; padding-bottom: min(540px, 56.25%);">
+<!--					<iframe id="landingVideo" style="max-width : 95%;" src="https://player.vimeo.com/video/517246577?autoplay=1&muted=1&quality=720p" width="960" height="540" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen> </iframe>-->
+					<iframe id="landingVideo" style="width:100%;height:100%;position:absolute;left:50%;top:0px; max-width:960px; max-height:540px; transform:translateX(-50%);"
+							frameborder="0" width="100%" height="100%"  src="https://player.vimeo.com/video/517246577?autoplay=1&muted=1&quality=720p" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen> </iframe>
 				</div>
-				<div style="margin-top:20px;"><a href="about" class="landing-link">&gt;&gt; Tell me more</a></div>
-				<div><a href="signup" class="landing-link">&gt;&gt; Sign me up</a></div>
-				<div><a href="#"  class="landing-link" onclick="closeAbout()">&gt;&gt; Check out the game world</a></div>
-				<div><a href="#"  class="landing-link" onclick="closeAbout(); showSearchCanvas();">&gt;&gt; Search for a Flight in-game</a></div>
+				<div style="width:100%; max-width: 540px; margin:auto;">
+					<div style="margin-top:20px;"><a href="about" class="landing-link">&gt;&gt; Tell me more</a></div>
+					<div><a href="signup" class="landing-link">&gt;&gt; Sign me up</a></div>
+					<div><a href="#"  class="landing-link" onclick="closeAbout()">&gt;&gt; Check out the game world</a></div>
+					<div><a href="#"  class="landing-link" onclick="closeAbout(); showSearchCanvas();">&gt;&gt; Search for a Flight in-game</a></div>
+				</div>
 
 			</div>
 		</div>

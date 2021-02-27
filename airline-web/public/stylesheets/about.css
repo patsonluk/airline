@@ -21,13 +21,14 @@ body {
 #landing-content {
     color: #fff;
     margin: 3% auto; /* 3% from the top and centered */
-    width: 60%; /* Could be more or less, depending on screen size */
+    /*width: 60%;  Could be more or less, depending on screen size */
 }
 
 a.landing-link:hover {
    border-radius: 0px;
    background-color: transparent ;
    text-shadow: 0 0 0.5em #0ff, 0 -1px 0 #000;
+   background: none;
 }
 
 
