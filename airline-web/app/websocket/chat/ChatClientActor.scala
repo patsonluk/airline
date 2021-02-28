@@ -58,7 +58,10 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
           json_text.\("type").asOpt[String] match {
             case Some(callType) =>
               if (callType == "ack") {
-                ChatSource.updateLastChatId(user.id, json_text.\("ackId").as[Long])
+                val newLastChatId = json_text.\("ackId").as[Long]
+                if (newLastChatId > ChatSource.getLastChatId(user.id).getOrElse(0)) { //avoid reverting when there are multiple connections
+                  ChatSource.updateLastChatId(user.id, newLastChatId)
+                }
               } else if (callType == "previous") {
                 chatControllerActor ! PreviousMessagesRequest(airline, json_text.\("firstMessageId").as[Long], json_text.\("roomId").as[Int])
               }
