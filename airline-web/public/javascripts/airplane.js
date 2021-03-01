@@ -415,7 +415,13 @@ function buyAirplane(modelId, quantity, homeAirportId, configurationId, fromPlan
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+	    beforeSend: function() {
+            $('body .loadingSpinner').show()
+        },
+        complete: function(){
+            $('body .loadingSpinner').hide()
+        }
 	});
 }
 
@@ -433,7 +439,13 @@ function sellAirplane(airplaneId) {
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+        beforeSend: function() {
+             $('body .loadingSpinner').show()
+         },
+         complete: function(){
+             $('body .loadingSpinner').hide()
+         }
 	});
 }
 
@@ -454,7 +466,13 @@ function replaceAirplane(airplaneId) {
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+        beforeSend: function() {
+             $('body .loadingSpinner').show()
+         },
+         complete: function(){
+             $('body .loadingSpinner').hide()
+         }
 	});
 }
 
@@ -475,7 +493,13 @@ function buyUsedAirplane(airplaneId, homeAirportId, configurationId) {
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+        beforeSend: function() {
+             $('body .loadingSpinner').show()
+        },
+        complete: function(){
+             $('body .loadingSpinner').hide()
+        }
 	});
 }
 
