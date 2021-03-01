@@ -46,6 +46,8 @@ html {
   --float-message-box-shadow: var(--table-header-shadow);
   --float-message-box-text-shadow: var(--table-header-text-shadow);
 
+  --loading-spinner-background: rgba( 255, 255, 255, .8 );
+
 }
 
 html[data-theme='dark'] {
@@ -96,6 +98,8 @@ html[data-theme='dark'] {
   --float-message-box-color: var(--table-header-color);
   --float-message-box-shadow: var(--table-header-shadow);
   --float-message-box-text-shadow: var(--table-header-text-shadow);
+
+  --loading-spinner-background: rgba(0, 0, 0, .6);
 }
 
 
@@ -869,7 +873,7 @@ img.flag {
     left:       0;
     height:     100%;
     width:      100%;
-    background: rgba( 255, 255, 255, .8 )
+    background: var(--loading-spinner-background)
                 url('https://i.stack.imgur.com/FhHRx.gif')
                 50% 50%
                 no-repeat;
