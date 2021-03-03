@@ -42,7 +42,7 @@ object PromptUtil {
     }
     if (airline.airlineGrade.value > notifiedLevel) { //level up!
       notices.append(AirlineNotice(airline, LevelNotice(airline.airlineGrade.value), airline.airlineGrade.description))
-      if (!airline.isSkipTutorial) {
+      if (!airline.isSkipTutorial && airline.airlineGrade.value > 1) {
         if (completedTutorials.isEmpty) {
           tutorials.append(AirlineTutorial(airline, Tutorial("airlineGrade", "")))
         }

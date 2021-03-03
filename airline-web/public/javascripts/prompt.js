@@ -205,6 +205,7 @@ function checkTutorial(flowId) {
         if (flowId === "worldMap" || flowId === "/") {
             if (!activeAirline.headquarterAirport) {
                 queueTutorial("tutorialWelcome")
+                queueTutorial("tutorialControl")
                 queueTutorial("tutorialViewAirport")
             } else if ($.isEmptyObject(flightPaths)) {
                 queueTutorial("tutorialSetupLink1")
