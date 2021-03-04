@@ -158,7 +158,7 @@ object ModelSource {
             preparedStatement.setInt(7, model.lifespan)
             preparedStatement.setInt(8, model.constructionTime)
             preparedStatement.setString(9, model.manufacturer.countryCode)
-            preparedStatement.setString(10, model.manufacturer.countryCode)
+            preparedStatement.setString(10, model.manufacturer.name)
             preparedStatement.setString(11, model.imageUrl)
             preparedStatement.setString(12, model.family)
             preparedStatement.setInt(13, model.runwayRequirement)
