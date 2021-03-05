@@ -39,7 +39,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
     mapping(
       "username" -> text(minLength = 4, maxLength = 20).verifying(
         "username can only contain alphanumeric characters",
-        userName => userName.forall(_.isLetterOrDigit)).verifying(
+        userName => userName.forall(char => char.isLetterOrDigit && char <= 'z')).verifying(
         "This username is not available",
         userName => !UserSource.loadUsersByCriteria(List.empty).map { _.userName.toLowerCase() }.contains(userName.toLowerCase())    
       ),
@@ -55,7 +55,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
       "recaptchaToken" -> text,
       "airlineName" -> text(minLength = 1, maxLength = 50).verifying(
         "Airline name can only contain space and characters",
-        airlineName => airlineName.forall(char => char.isLetter || char == ' ') && !"".equals(airlineName.trim())).verifying(
+        airlineName => airlineName.forall(char => (char.isLetter && char <= 'z')  || char == ' ') && !"".equals(airlineName.trim())).verifying(
         "This airline name is not available",
         airlineName => !AirlineSource.loadAllAirlines(false).map { _.name.toLowerCase().replaceAll("\\s", "") }.contains(airlineName.replaceAll("\\s", "").toLowerCase())
       )
