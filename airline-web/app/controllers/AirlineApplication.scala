@@ -726,7 +726,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       
       if (airlineCode.length != 2) {
         BadRequest("Should be 2 characters") 
-      } else if (airlineCode.filter(Character.isLetter(_)).length != 2) {
+      } else if (airlineCode.filter(character => Character.isLetter(character) && character <= 'z').length != 2) {
         BadRequest("Should be all letters")
       } 
       
