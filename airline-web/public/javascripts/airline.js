@@ -1813,6 +1813,7 @@ function showLinkComposition(linkId) {
 	    	updateTopCountryComposition(result.country)
 	    	updatePassengerTypeComposition(result.passengerType)
 	    	updatePrefernceTypeComposition(result.preferenceType)
+	    	updateTopAirportComposition(result.airport)
 	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
 	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
 	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
@@ -2166,6 +2167,20 @@ function updateTopCountryComposition(countryComposition) {
 		if (index >= max) {
 			return false;
 		}
+	});
+}
+
+function updateTopAirportComposition(airportComposition) {
+	var maxPerColumn = 10;
+	var index = 0;
+	$('#linkCompositionModal .topAirportTables').empty()
+	var $table
+	$.each(airportComposition, function(index, entry) {
+	    if (index % maxPerColumn == 0) { //flush a column (a table)
+	        $table = $('<div class="table data" style="flex : 1; min-width: 200px;"></div>').appendTo($('#linkCompositionModal .topAirportTables'))
+	    }
+		$table.append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.airport
+	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 
