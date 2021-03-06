@@ -434,6 +434,7 @@ function sellAirplane(airplaneId) {
 	    success: function(response) {
 	        refreshPanels(activeAirline.id)
 	    	$("#ownedAirplaneDetailModal").data("hasChange", true)
+	    	showAirplaneCanvas()
 	    	closeModal($('#ownedAirplaneDetailModal'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
