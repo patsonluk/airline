@@ -477,14 +477,14 @@ object AirlineSource {
   
   def deleteAirlineBase(airlineBase : AirlineBase) = {
     deleteAirlineBaseByCriteria(List(("airline", airlineBase.airline.id), ("airport", airlineBase.airport.id)))
-    AirlineCache.invalidateAirline(airlineBase.airline.id)
-    AirportCache.invalidateAirport(airlineBase.airport.id)
   }
   
   def deleteAirlineBaseByCriteria(criteria : List[(String, Any)]) = {
       //open the hsqldb
     val connection = Meta.getConnection()
     try {
+      val deletingBases = loadAirlineBasesByCriteria(criteria)
+
       var queryString = "DELETE FROM " + AIRLINE_BASE_TABLE
       
       if (!criteria.isEmpty) {
@@ -504,9 +504,15 @@ object AirlineSource {
       val deletedCount = preparedStatement.executeUpdate()
       
       preparedStatement.close()
+      deletingBases.foreach{ base =>
+        AirlineCache.invalidateAirline(base.airline.id)
+        AirportCache.invalidateAirport(base.airport.id)
+        println(s"Purged from cache base record $base")
+      }
+
       println("Deleted " + deletedCount + " airline base records")
       deletedCount
-      
+
     } finally {
       connection.close()
     }
