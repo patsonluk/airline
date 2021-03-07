@@ -18,7 +18,8 @@ and (max-device-width : 640px) {
         width: auto !important;
     }
 
-    .verticalGroup, .sidePanel, #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, #eventCanvas .verticalGroup, .campaignDetails .verticalGroup {
+    .verticalGroup, .sidePanel, #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, #eventCanvas .verticalGroup, .campaignDetails .verticalGroup,
+    #allianceCanvas .verticalGroup {
         width: 100%
     }
 
