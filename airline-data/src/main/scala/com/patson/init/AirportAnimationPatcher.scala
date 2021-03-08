@@ -210,7 +210,7 @@ object AirportAnimationPatcher extends App {
     ("NCE", AIRPORT, "https://player.vimeo.com/video/520465776"),
     ("OAK", CITY, "https://player.vimeo.com/video/520458669"),
     ("OAK", AIRPORT, "https://player.vimeo.com/video/520458138"),
-    ("SJC", CITY, "https://player.vimeo.com/video/520459869s"),
+    ("SJC", CITY, "https://player.vimeo.com/video/520459869"),
     ("SJC", AIRPORT, "https://player.vimeo.com/video/520459302"),
     ("SOF", CITY, "https://player.vimeo.com/video/520461666"),
     ("SOF", AIRPORT, "https://player.vimeo.com/video/520461111"),
