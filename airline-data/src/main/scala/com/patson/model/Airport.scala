@@ -440,10 +440,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     }
     
     import Model.Type._
-    val multipler = airplaneModel.airplaneType match {
+    val multiplier = airplaneModel.airplaneType match {
       case LIGHT => 1
-      case REGIONAL => 1
-      case SMALL => 3
+      case SMALL => 1
+      case REGIONAL => 3
       case MEDIUM => 8
       case LARGE => 12
       case X_LARGE => 15
@@ -459,7 +459,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
         1 //no discount
     }
     
-    (baseSlotFee * multipler * discount).toInt    
+    (baseSlotFee * multiplier * discount).toInt
   }
   
   def landingFee(airplaneModel : Model) : Int = {
