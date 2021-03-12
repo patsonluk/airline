@@ -262,6 +262,8 @@ object AirportFeaturePatcher extends App {
       }
 
     AirportSource.updateAirportFeatures(updatingAirports.toList)
+
+    IsolatedAirportPatcher.patchIsolatedAirports()
   }
 
   def getGatewayAirports() : List[String] = {
