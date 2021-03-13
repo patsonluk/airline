@@ -762,7 +762,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       clonedFromAirport.initAirlineAppeals(scala.collection.immutable.Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0),
                                                testAirline2.id -> AirlineAppeal(loyalty = 0, 0)))
       
-      val link1 = airline1Link.copy(price = defaultPrice * 1.15, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val link1 = airline1Link.copy(price = defaultPrice * 1.2, frequency = Link.HIGH_FREQUENCY_THRESHOLD)
       val link2 = airline2Link.copy(price = defaultPrice, frequency = 1)
       link1.setQuality(80)    
       link2.setQuality(40)
