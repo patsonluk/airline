@@ -7,14 +7,14 @@ import com.patson.model.airplane.{Airplane, LinkAssignment, Model}
 import com.patson.util.AirportCache
 import FlightType._
 import com.patson.model
+
 /**
  * 
  * Frequency sum of all assigned plane
  */
-case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, var capacity: LinkClassValues, rawQuality : Int, duration : Int, var frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends IdObject{
-  @volatile var availableSeats : LinkClassValues = capacity.copy()
-  @volatile var soldSeats : LinkClassValues = LinkClassValues.getInstance()
-  @volatile var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
+case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, var capacity: LinkClassValues, rawQuality : Int, duration : Int, var frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends Transport {
+  override val transportType = TransportType.FLIGHT
+  override val cost = price
   @volatile var cancellationCount = 0
   @volatile var majorDelayCount = 0
   @volatile var minorDelayCount = 0
@@ -25,8 +25,6 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   @volatile private var computedQualityStore : Int = 0
 
   var inServiceAirplanes : Map[Airplane, LinkAssignment] = Map.empty
-
-  private val standardPrice : ConcurrentHashMap[LinkClass, Int] = new ConcurrentHashMap[LinkClass, Int]()
 
   def setAssignedAirplanes(assignedAirplanes : Map[Airplane, LinkAssignment]) = {
     this.assignedAirplanes = assignedAirplanes
@@ -64,45 +62,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     this.assignedModel = Some(model)
   }
 
-  import FlightType._
-  /**
-   * Find seats at or below the requestedLinkClass
-   * 
-   * Returns the tuple of the matching class and seats available for that class
-   */
-  def availableSeatsAtOrBelowClass(targetLinkClass : LinkClass) : Option[(LinkClass, Int)] = {
-    if (targetLinkClass == ECONOMY) {
-      if (availableSeats(ECONOMY) > 0) {
-        return Some(ECONOMY, availableSeats(ECONOMY))
-      }
-    } else {
-      if (availableSeats(targetLinkClass) > 0) {
-        return Some(targetLinkClass, availableSeats(targetLinkClass))
-      } else  {
-        if (targetLinkClass.level > ECONOMY.level) {
-          val classDiff = flightType match {
-            case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERCONTINENTAL | SHORT_HAUL_INTERNATIONAL => targetLinkClass.level - 1//accept all classes
-            case _ => 1
-          }
-          val lowestAcceptableLevel = targetLinkClass.level - classDiff
-          var level = targetLinkClass.level - 1
-
-          while (level >= lowestAcceptableLevel) {
-            val lowerClass = LinkClass.fromLevel(level)
-            val seatsAvailable = availableSeats(lowerClass)
-            if (seatsAvailable > 0) {
-              return Some(lowerClass, seatsAvailable)
-            }
-            level -= 1
-          }
-        }
-      }
-    }
-
-    return None
-  }
-
-  def computedQuality : Int= {
+  override def computedQuality : Int= {
     if (!hasComputedQuality) {
 
       if (inServiceAirplanes.isEmpty) {
@@ -126,49 +86,12 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     hasComputedQuality = true
   }
 
-  def getTotalCapacity : Int = {
-    capacity.total
-  }
-
-  def getTotalAvailableSeats : Int = {
-    availableSeats.total
-  }
-
-  def getTotalSoldSeats : Int = {
-    soldSeats.total
-  }
-
-
-  def addSoldSeats(soldSeats : LinkClassValues) = {
-    this.soldSeats = this.soldSeats + soldSeats;
-    this.availableSeats = this.availableSeats - soldSeats;
-  }
-  
-  def addSoldSeatsByClass(linkClass : LinkClass, soldSeats : Int) = {
-    val soldSeatsClassValues = LinkClassValues.getInstanceByMap(Map(linkClass -> soldSeats))
-    addSoldSeats(soldSeatsClassValues) 
-  }
-  
-  def addCancelledSeats(cancelledSeats : LinkClassValues) = {
-    this.cancelledSeats = this.cancelledSeats + cancelledSeats;
-    this.availableSeats = this.availableSeats - cancelledSeats;
-  }
-  
   def capacityPerFlight() = {
     if (frequency > 0) {
       capacity / frequency
     } else { //error 
       LinkClassValues.getInstance()
     }
-  }
-
-  def standardPrice(linkClass : LinkClass) : Int = {
-    var price = standardPrice.get(linkClass)
-    if (price == null.asInstanceOf[Int]) {
-      price = Pricing.computeStandardPrice(distance, flightType, linkClass)
-      standardPrice.put(linkClass, price)
-    }
-    price
   }
 
   lazy val getFutureOfficeStaffRequired : Int = {
@@ -307,7 +230,7 @@ case class StaffSchemeBreakdown(basic : Int, perFrequency : Double, per1000Pax :
 /**
  * Cost is the adjusted price
  */
-case class LinkConsideration(link : Link, cost : Double, linkClass : LinkClass, inverted : Boolean, var id : Int = 0) extends IdObject {
+case class LinkConsideration(link : Transport, cost : Double, linkClass : LinkClass, inverted : Boolean, var id : Int = 0) extends IdObject {
     def from : Airport = if (inverted) link.to else link.from
     def to : Airport = if (inverted) link.from else link.to
     

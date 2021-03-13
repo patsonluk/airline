@@ -98,7 +98,7 @@ object LinkSimulation {
     val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
     val allAirplaneAssignments: immutable.Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
     //cost by link
-    val costByLink = mutable.HashMap[Link, ListBuffer[PassengerCost]]()
+    val costByLink = mutable.HashMap[Transport, ListBuffer[PassengerCost]]()
     consumptionResult.foreach {
       case((passengerGroup, airport, route), passengerCount) => route.links.foreach { linkConsideration =>
         costByLink.getOrElseUpdate(linkConsideration.link, ListBuffer[PassengerCost]()).append(PassengerCost(passengerGroup, passengerCount, linkConsideration.cost))
