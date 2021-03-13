@@ -2536,88 +2536,114 @@
 					</div>
 
 					<div id="rivalDetails" class="sidePanel" style="float: left; display: none;">
-						<div class="section" style="width: 95%;">
-							<h4><span class="airlineName"></span></h4>
+						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+							<div style="min-width: 200px; flex: 1;">
+								<h4><span class="airlineName"></span></h4>
 
-							<div class="table" style="width: 100%;">
-								<div class="table-row">
-									<div class="label"><h5>Airline Code:</h5></div>
-									<div class="value airlineCode"></div>
+								<div class="table" style="width: 100%;">
+									<div class="table-row">
+										<div class="label"><h5>Airline Code:</h5></div>
+										<div class="value airlineCode"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Airline Color:</h5></div>
+										<div class="value"><span class="airlineColorDot"></span></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Grade:</h5></div>
+										<div class="value"><span class="airlineGrade"></span></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Alliance:</h5></div>
+										<div class="value alliance"></div>
+									</div>
 								</div>
-								<div class="table-row">
-									<div class="label"><h5>Airline Color:</h5></div>
-									<div class="value"><span class="airlineColorDot"></span></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Grade:</h5></div>
-									<div class="value"><span class="airlineGrade"></span></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Alliance:</h5></div>
-									<div class="value alliance"></div>
-								</div>
-							</div>
-							<div class="button" onclick="showRivalMap()">Flight Map</div>
+								<div class="button" onclick="showRivalMap()">Flight Map</div>
 
-                            <div class="adminActions" style="display: none;">
-                                <h4>Admin Action</h4>
-                                <div>Username: <span class="username"></span></div>
-                                <div>User ID: <span class="userId"></span></div>
-                                <div>Status: <span class="status"></span></div>
-                                <div class="clickable" onclick="banChat()">Ban Chat</div>
-                                <div class="clickable" onclick="ban()">Ban</div>
-                                <div class="clickable" onclick="unban()">Un-Ban</div>
-								<div class="clickable" onclick="promptAirlineMessage()">Send Direct Message</div>
-                            </div>
-							<div class="superAdminActions" style="display: none;">
-								<h4>Super Admin Action</h4>
-								<div class="clickable" onclick="switchUser()">Switch to this user</div>
-								<div class="clickable" onclick="promptBroadcastMessage()">Send Broadcast Message</div>
-							</div>
-						</div>
-						<div class="section" style="width: 95%;">
-							<h4>Airline Headquarters</h4>
-							<div style="position: relative; height: 150px; width: 100%" class="headquartersMap">
-							</div>
-						</div>
-
-						<div class="section" style="width: 95%; height: 20%;  overflow: auto;">
-							<h4>Airline Bases</h4>
-							<div id="rivalBases" style="width: 100%;" class="table data">
-							</div>
-						</div>
-
-						<div class="section" style="width: 95%; height: 30%;  overflow: auto;">
-							<h4>National Airline of</h4>
-							<div class="table data nationalAirlineCountryList" style="width: 100%;">
-								<div class="table-header">
-									<div class="cell" style="width: 70%">&nbsp;</div>
-									<div class="cell" style="width: 30%">Loyalty Bonus</div>
+								<div class="adminActions" style="display: none;">
+									<h4>Admin Action</h4>
+									<div>Username: <span class="username"></span></div>
+									<div>User ID: <span class="userId"></span></div>
+									<div>Status: <span class="status"></span></div>
+									<div class="clickable" onclick="banChat()">Ban Chat</div>
+									<div class="clickable" onclick="ban()">Ban</div>
+									<div class="clickable" onclick="unban()">Un-Ban</div>
+									<div class="clickable" onclick="promptAirlineMessage()">Send Direct Message</div>
+								</div>
+								<div class="superAdminActions" style="display: none;">
+									<h4>Super Admin Action</h4>
+									<div class="clickable" onclick="switchUser()">Switch to this user</div>
+									<div class="clickable" onclick="promptBroadcastMessage()">Send Broadcast Message</div>
 								</div>
 							</div>
-
-							<h4>Partnered Airline of</h4>
-							<div class="table data partneredAirlineCountryList" style="width: 100%;">
-								<div class="table-header">
-									<div class="cell" style="width: 70%">&nbsp;</div>
-									<div class="cell" style="width: 30%">Loyalty Bonus</div>
-								</div>
-							</div>
-
-							<h4>Champion Airline of</h4>
-							<div class="table data" style="width: 100%;">
-								<div class="table-header">
-									<div class="cell" style="width: 5%">&nbsp;</div>
-									<div class="cell" style="width: 70%">Airport</div>
-									<div class="cell" style="width: 25% align='right'">Reputation Bonus</div>
-								</div>
-							</div>
-							<div style="max-height: 250px; overflow: auto;">
-								<div class="table data" id="rivalChampionedAirportsList" style="width: 100%;">
+							<div style="min-width: 200px; flex: 1;">
+								<h4>Fleet</h4>
+								<div class="table data" style="width: 100%;">
 									<div class="table-header">
-										<div class="cell" style="width: 5%; border-bottom: none;"></div>
+										<div class="cell" style="width: 70%">Model</div>
+										<div class="cell" style="width: 30%">Quantity</div>
+									</div>
+								</div>
+								<div class="table data fleetList" style="width: 100%; max-height: 50px; overflow: auto;">
+									<div class="cell" style="width: 70%; border-bottom: none;"></div>
+									<div class="cell" style="width: 30%; border-bottom: none;"></div>
+								</div>
+							</div>
+						</div>
+						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+							<div style="min-width: 200px; flex: 1;">
+								<h4>Airline Headquarters</h4>
+								<div style="position: relative; height: 150px; width: 100%" class="headquartersMap"></div>
+							</div>
+
+							<div style="min-width: 200px; height: 100%;  overflow: auto; flex: 1;">
+								<h4>Airline Bases</h4>
+								<div id="rivalBases" style="width: 100%;" class="table data">
+								</div>
+							</div>
+						</div>
+
+						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+							<div style="min-width: 200px; flex: 1;">
+								<h4>National Airline of</h4>
+								<div class="table data nationalAirlineCountryList" style="width: 100%;">
+									<div class="table-header">
+										<div class="cell" style="width: 70%">&nbsp;</div>
+										<div class="cell" style="width: 30%">Loyalty Bonus</div>
+									</div>
+								</div>
+
+								<h4>Partnered Airline of</h4>
+								<div class="table data" style="width: 100%;">
+									<div class="table-header">
+										<div class="cell" style="width: 70%">&nbsp;</div>
+										<div class="cell" style="width: 30%">Loyalty Bonus</div>
+									</div>
+								</div>
+								<div class="table data partneredAirlineCountryList" style="width: 100%; max-height: 250px; overflow: auto;">
+									<div class="table-header">
 										<div class="cell" style="width: 70%; border-bottom: none;"></div>
-										<div class="cell" style="width: 25%; border-bottom: none;"></div>
+										<div class="cell" style="width: 30%; border-bottom: none;"></div>
+									</div>
+								</div>
+							</div>
+
+							<div style="min-width: 200px; flex: 1;">
+								<h4>Champion Airline of</h4>
+								<div class="table data" style="width: 100%;">
+									<div class="table-header">
+										<div class="cell" style="width: 5%">&nbsp;</div>
+										<div class="cell" style="width: 70%">Airport</div>
+										<div class="cell" style="width: 25% align='right'">Reputation Bonus</div>
+									</div>
+								</div>
+								<div style="max-height: 250px; overflow: auto;">
+									<div class="table data" id="rivalChampionedAirportsList" style="width: 100%;">
+										<div class="table-header">
+											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+											<div class="cell" style="width: 70%; border-bottom: none;"></div>
+											<div class="cell" style="width: 25%; border-bottom: none;"></div>
+										</div>
 									</div>
 								</div>
 							</div>

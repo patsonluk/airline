@@ -640,6 +640,15 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      val cashFlows = CashFlowSource.loadCashFlowsByAirline(airlineId)
      Ok(Json.obj("incomes" -> Json.toJson(incomes), "cashFlows" -> Json.toJson(cashFlows)))
   }
+
+  def getFleet(airlineId : Int) = Action { request =>
+    var result = Json.arr()
+    AirplaneSource.loadAirplanesByOwner(airlineId).groupBy(_.model).toList.sortBy(_._1.name).foreach {
+      case(model, airplanes) => result = result.append(Json.obj("name" -> model.name, "quantity" -> airplanes.size))
+    }
+
+    Ok(result)
+  }
   
   def getServiceFundingProjection(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
      val targetQuality = request.user.getTargetServiceQuality()

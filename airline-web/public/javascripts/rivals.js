@@ -141,6 +141,7 @@ function loadRivalDetails(row, airlineId) {
 	
 	
 	updateRivalBasicsDetails(airlineId)
+	updateRivalFleet(airlineId)
 	updateRivalCountriesAirlineTitles(airlineId)
 	updateRivalChampionedAirportsDetails(airlineId)
 	updateHeadquartersMap($('#rivalDetails .headquartersMap'), airlineId)
@@ -228,6 +229,33 @@ function updateRivalBasicsDetails(airlineId) {
 	} else {
 		$("#rivalsCanvas .alliance").text('-')
 	}
+}
+
+function updateRivalFleet(airlineId) {
+    $('#rivalDetails .fleetList').children('div.table-row').remove()
+
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + airlineId + "/fleet",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	$(result).each(function(index, modelDetails) {
+                var row = $("<div class='table-row'></div>")
+                row.append("<div class='cell'>" + modelDetails.name + "</div>")
+                row.append("<div class='cell'>" + modelDetails.quantity + "</div>")
+                $('#rivalDetails .fleetList').append(row)
+            })
+            if (result.length == 0) {
+                $('#rivalDetails .fleetList').append('<div class="cell"></div><div class="cell"></div>')
+            }
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+
 }
 
 
