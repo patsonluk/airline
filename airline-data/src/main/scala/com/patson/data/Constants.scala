@@ -100,6 +100,7 @@ object Constants {
   val LOAN_TABLE = "loan"
   val LOUNGE_TABLE = "lounge"
   val LOUNGE_CONSUMPTION_TABLE = "lounge_consumption"
+  val SHUTTLE_SERVICE_TABLE = "shuttle_service"
   val OIL_CONTRACT_TABLE = "oil_contract"
   val OIL_PRICE_TABLE = "oil_price"
   val OIL_CONSUMPTION_HISTORY_TABLE = "oil_consumption_history"

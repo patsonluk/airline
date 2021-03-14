@@ -15,7 +15,7 @@ object Scheduling {
   
   
   
-  def getLinkSchedule(link : Link) : Array[TimeSlot] = {
+  def getLinkSchedule(link : Transport) : Array[TimeSlot] = {
     val airportTimeslots = if (link.from.size >= Airport.MAJOR_AIRPORT_LOWER_THRESHOLD) largeAirportTimeSlots else smallAirportTimeSlots  
     
     val slotCount = airportTimeslots.size

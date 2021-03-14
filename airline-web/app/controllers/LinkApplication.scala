@@ -261,7 +261,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val toAirport = AirportCache.getAirport(incomingLink.to.id, true).getOrElse(return BadRequest("To airport not found"))
 
 
-    val existingLink : Option[Link] = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
+    val existingLink : Option[Link] = LinkSource.loadFlightLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
 
     if (existingLink.isDefined) {
       incomingLink.id = existingLink.get.id
@@ -468,7 +468,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   def addLink(airlineId : Int) = AuthenticatedAirline(airlineId) { request => addLinkBlock(request) }
 
   def getLink(airlineId : Int, linkId : Int) = AuthenticatedAirline(airlineId) { request =>
-    LinkSource.loadLinkById(linkId, LinkSource.FULL_LOAD) match {
+    LinkSource.loadFlightLinkById(linkId, LinkSource.FULL_LOAD) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
           Ok(Json.toJson(link))
@@ -482,14 +482,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   def getOvertimeCompensation(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
-    val existingListOption = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
+    val existingListOption = LinkSource.loadFlightLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
 
     val airline = request.user
     val staffBreakdown : StaffBreakdown = incomingLink.getFutureOfficeStaffBreakdown
     val staffRequiredByThisLink = staffBreakdown.total
     val extraOvertimeCompensation = airline.getBases().find(_.airport.id == incomingLink.from.id) match {
       case Some(base) =>
-        val existingLinks = LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", airline.id)), LinkSource.SIMPLE_LOAD)
+        val existingLinks = LinkSource.loadFlightLinksByFromAirportAndAirlineId(base.airport.id, airline.id, LinkSource.SIMPLE_LOAD)
         val existingStaffRequired = existingLinks.map(_.getFutureOfficeStaffRequired).sum
         val newStaffRequired = existingStaffRequired - existingListOption.map(_.getFutureOfficeStaffRequired).getOrElse(0) + staffRequiredByThisLink
         val extraCompensation = base.getOvertimeCompensation(newStaffRequired) - base.getOvertimeCompensation(existingStaffRequired)
@@ -530,7 +530,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
 
   def getAllLinks() = Action {
-     val links = LinkSource.loadAllLinks()
+     val links = LinkSource.loadAllFlightLinks()
     Ok(Json.toJson(links))
   }
 
@@ -538,9 +538,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     val links =
       if (toAirportId == -1) {
-        LinkSource.loadLinksByAirlineId(airlineId)
+        LinkSource.loadFlightLinksByAirlineId(airlineId)
       } else {
-        LinkSource.loadLinksByCriteria(List(("airline", airlineId), ("to_airport", toAirportId)))
+        LinkSource.loadFlightLinksByToAirportAndAirlineId(toAirportId, airlineId)
       }
     Ok(Json.toJson(links)).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
@@ -548,7 +548,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
 
   def getLinksDetails(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val links = LinkSource.loadLinksByAirlineId(airlineId)
+    val links = LinkSource.loadFlightLinksByAirlineId(airlineId)
     val consumptions = LinkSource.loadLinkConsumptionsByAirline(airlineId).foldLeft(immutable.Map[Int, LinkConsumptionDetails]()) { (foldMap, linkConsumptionDetails) =>
       foldMap + (linkConsumptionDetails.link.id -> linkConsumptionDetails)
     }
@@ -567,7 +567,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   def deleteLink(airlineId : Int, linkId: Int) = AuthenticatedAirline(airlineId) { request =>
     //verify the airline indeed has that link
-    LinkSource.loadLinkById(linkId) match {
+    LinkSource.loadFlightLinkById(linkId) match {
       case Some(link) =>
         if (link.airline.id != request.user.id) {
           Forbidden
@@ -593,7 +593,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
 
   def getLinkConsumption(airlineId : Int, linkId : Int, cycleCount : Int) = AuthenticatedAirline(airlineId) { request =>
-    LinkSource.loadLinkById(linkId) match {
+    LinkSource.loadFlightLinkById(linkId) match {
       case Some(link) =>
         if (link.airline.id == airlineId) {
           val linkConsumptions = LinkSource.loadLinkConsumptionsByLinkId(linkId, cycleCount)
@@ -640,7 +640,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val airline = request.user
     preparePlanLink(airline, fromAirportId, toAirportId) match {
       case Right((fromAirport, toAirport)) => {
-        var existingLink: Option[Link] = LinkSource.loadLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
+        var existingLink: Option[Link] = LinkSource.loadFlightLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
 
         val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
 
@@ -772,7 +772,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         estimatedDifficulty.foreach { difficulty => resultObject = resultObject + ("estimatedDifficulty" -> JsNumber(difficulty)) }
 
 
-        val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
+        val competitorLinkConsumptions = (LinkSource.loadFlightLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
           LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
         }
         var otherLinkArray = Json.toJson(competitorLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq)
@@ -807,7 +807,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   def getDeleteLinkRejection(link : Link, airline : Airline) : Option[String] = {
     if (airline.getBases().map { _.airport.id}.contains(link.to.id)) {
       //then make sure there's still some link other then this pointing to the target
-      if (LinkSource.loadLinksByAirlineId(airline.id).filter(_.to.id == link.to.id).size == 1) {
+      if (LinkSource.loadFlightLinksByAirlineId(airline.id).filter(_.to.id == link.to.id).size == 1) {
         Some("Cannot delete this route as this flies to a base. Must remove the base before this can be deleted")
       } else { //ok, more than 1 link
         None
@@ -907,7 +907,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //  }
   
   def getRelatedLinkConsumption(airlineId : Int, linkId : Int, cycleDelta : Int, selfOnly : Boolean) =  AuthenticatedAirline(airlineId) {
-    LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
+    LinkSource.loadFlightLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
       case Some(link) => {
         if (link.airline.id != airlineId) {
           Forbidden(Json.obj())
@@ -1016,7 +1016,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     var topNegativeCommentsByPreferenceJson = Json.obj()
 
 
-    LinkSource.loadLinkById(linkId).foreach { link =>
+    LinkSource.loadFlightLinkById(linkId).foreach { link =>
       val consumptionByLinkClass = consumptionEntries.groupBy(_.linkClass)
       val satisfactionByLinkClass = consumptionByLinkClass.view.mapValues(entries => (entries.map( entry => entry.satisfaction * entry.passengerCount)).sum / entries.map(_.passengerCount).sum)
 
@@ -1112,9 +1112,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   def getLinkRivalHistory(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
     var result = Json.obj()
     //get competitor history
-    LinkSource.loadLinkById(linkId).foreach { link =>
+    LinkSource.loadFlightLinkById(linkId).foreach { link =>
       //find all link with same from and to
-      val overlappingLinks = LinkSource.loadLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadLinksByAirports(link.to.id, link.from.id)
+      val overlappingLinks = LinkSource.loadFlightLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadFlightLinksByAirports(link.to.id, link.from.id)
       val rivals = scala.collection.mutable.HashSet[Airline]()
 
       var overlappingLinksJson = Json.arr()
@@ -1132,17 +1132,17 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   def getLinkRivalDetails(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) {
     var result = Json.obj()
     //get competitor history
-    LinkSource.loadLinkById(linkId).foreach { link =>
+    LinkSource.loadFlightLinkById(linkId).foreach { link =>
       //find all link with same from and to
-      val overlappingLinks = LinkSource.loadLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadLinksByAirports(link.to.id, link.from.id)
+      val overlappingLinks = LinkSource.loadFlightLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadFlightLinksByAirports(link.to.id, link.from.id)
       val rivals = scala.collection.mutable.HashSet[Airline]()
 
       overlappingLinks.filter(_.capacity.total > 0).foreach { overlappingLink => //only work on links that have capacity
         rivals += overlappingLink.airline
       }
 
-      val fromAirportLinks = LinkSource.loadLinksByFromAirport(link.from.id) ++ LinkSource.loadLinksByToAirport(link.from.id)
-      val toAirportLinks =  LinkSource.loadLinksByFromAirport(link.to.id) ++ LinkSource.loadLinksByToAirport(link.to.id)
+      val fromAirportLinks = LinkSource.loadFlightLinksByFromAirport(link.from.id) ++ LinkSource.loadFlightLinksByToAirport(link.from.id)
+      val toAirportLinks =  LinkSource.loadFlightLinksByFromAirport(link.to.id) ++ LinkSource.loadFlightLinksByToAirport(link.to.id)
 
       val fromAirport = AirportCache.getAirport(link.from.id, fullLoad = true).get
       val toAirport = AirportCache.getAirport(link.to.id, fullLoad = true).get
@@ -1197,7 +1197,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   def getLinkNegotiation(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
     //val delegatesCount = request.body.asInstanceOf[AnyContentAsJson].json.\("assignedDelegates").as[Int]
-    val existingLinkOption = LinkSource.loadLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
+    val existingLinkOption = LinkSource.loadFlightLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
     val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(request.user, incomingLink, existingLinkOption)
 
 

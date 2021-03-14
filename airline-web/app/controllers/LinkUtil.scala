@@ -15,7 +15,7 @@ object LinkUtil {
 
     val affectedLinks = ListBuffer[Link]()
     affectedLinkIds.foreach { linkId =>
-      LinkSource.loadLinkById(linkId).foreach { link =>
+      LinkSource.loadFlightLinkById(linkId).foreach { link =>
         affectedLinks.append(link)
       }
     }
@@ -28,7 +28,7 @@ object LinkUtil {
 
     val affectedLinks = ListBuffer[Link]()
     affectedLinkIds.foreach { linkId =>
-      LinkSource.loadLinkById(linkId).foreach { link =>
+      LinkSource.loadFlightLinkById(linkId).foreach { link =>
         affectedLinks.append(link)
       }
     }

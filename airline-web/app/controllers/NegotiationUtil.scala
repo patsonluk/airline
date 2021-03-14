@@ -363,7 +363,7 @@ object NegotiationUtil {
     val capacityDelta = normalizedCapacity(newCapacity - existingCapacity)
     val frequencyDelta = newFrequency - existingFrequency
 
-    val airlineLinks = LinkSource.loadLinksByAirlineId(airline.id)
+    val airlineLinks = LinkSource.loadFlightLinksByAirlineId(airline.id)
 
     //reduction of service is always okay for now
     if (capacityDelta <= 0 && frequencyDelta <= 0) {

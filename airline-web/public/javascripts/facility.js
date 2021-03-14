@@ -62,7 +62,23 @@ function updateFacilityIcons(airport) {
     			//attach to modal
 	    		iconImg.data("facility", facilityDetails.lounge)
 	    		$('#airportDetailsFacilities').append(iconImg)
-    		}	    	
+    		}
+    		if (facilityDetails.shuttleService) { //lounge
+                var imageUrl
+                var imageTitle
+                if (facilityDetails.lounge > 0) {
+                    imageUrl = 'assets/images/icons/shuttle.png'
+                    imageTitle = 'Shuttle Service Level ' + facilityDetails.shuttleService.level + " - " + facilityDetails.shuttleService.name
+                } else {
+                    imageUrl = 'assets/images/icons/shuttle-grey.png'
+                    imageTitle = 'No Shuttle Service'
+                }
+
+                var iconImg = $("<img class='button' src='" + imageUrl +  "' onclick='showFacilityModal($(this).data(&quot;facility&quot;))' title='" + imageTitle + "'>")
+                //attach to modal
+                iconImg.data("facility", facilityDetails.shuttleService)
+                $('#airportDetailsFacilities').append(iconImg)
+            }
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

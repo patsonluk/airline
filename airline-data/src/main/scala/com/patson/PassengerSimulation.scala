@@ -61,7 +61,7 @@ object PassengerSimulation {
     //findRandomRoutes(airportGroups(0)(0), airportGroups(4)(0), links.toList, 10)
   }
   
-  def passengerConsume(demand : List[(PassengerGroup, Airport, Int)], links : List[Link]) : (Map[(PassengerGroup, Airport, Route), Int], Map[(PassengerGroup, Airport), Int]) = {
+  def passengerConsume[T <: Transport](demand : List[(PassengerGroup, Airport, Int)], links : List[T]) : (Map[(PassengerGroup, Airport, Route), Int], Map[(PassengerGroup, Airport), Int]) = {
      val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
     val missedDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
      val consumptionCycleMax = 10; //try and rebuild routes 10 times
@@ -606,24 +606,24 @@ object PassengerSimulation {
       }
     }
 
-    //TODO remove shuttle only
-
-    //println("cost found : " + distanceMap(to))
-    
     val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]()
     val maxHop = maxIteration * (maxIteration + 1) / 2
     toAirports.foreach{ to =>  
       var walker = to.id
       var noSolution = false;
       var foundSolution = false
+      var hasFlight = false
       var route = ListBuffer[LinkConsideration]()
       var hopCounter = 0
       while (!foundSolution && !noSolution && hopCounter < maxIteration) {
         val link = predecessorMap.get(walker)
         if (link != null) {
           route.prepend(link)
+          if (link.link.transportType == TransportType.FLIGHT) {
+            hasFlight = true
+          }
           walker = link.from.id
-          if (walker == from.id) {
+          if (walker == from.id && hasFlight) { //at least 1 leg has to be a flight. We don't want route with no flights
             foundSolution = true
           }
         } else { 

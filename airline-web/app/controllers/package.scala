@@ -358,6 +358,22 @@ package object controllers {
       jsObject
     }
   }
+
+  implicit object ShuttleServiceWrites extends Writes[ShuttleService] {
+    def writes(shuttleService: ShuttleService): JsValue = {
+      var jsObject = JsObject(List(
+        "airportId" -> JsNumber(shuttleService.airport.id),
+        "airportName" -> JsString(shuttleService.airport.name),
+        "airlineId" -> JsNumber(shuttleService.airline.id),
+        "airlineName" -> JsString(shuttleService.airline.name),
+        "name" ->  JsString(shuttleService.name),
+        "level" -> JsNumber(shuttleService.level),
+        "upkeep" -> JsNumber(Shuttle.UPKEEP_PER_CAPACITY),
+        "type" -> JsString(FacilityType.SHUTTLE.toString()),
+        "foundedCycle" -> JsNumber(shuttleService.foundedCycle)))
+      jsObject
+    }
+  }
   
   implicit object LoungeConsumptionDetailsWrites extends Writes[LoungeConsumptionDetails] {
     def writes(details: LoungeConsumptionDetails): JsValue = {
@@ -404,6 +420,7 @@ package object controllers {
         "othersLoungeUpkeep" -> JsNumber(airlineIncome.others.loungeUpkeep),
         "othersLoungeCost" -> JsNumber(airlineIncome.others.loungeCost),
         "othersLoungeIncome" -> JsNumber(airlineIncome.others.loungeIncome),
+        "othersShuttleCost" -> JsNumber(airlineIncome.others.shuttleCost),
         "othersServiceInvestment" -> JsNumber(airlineIncome.others.serviceInvestment),
         "othersMaintenanceInvestment" -> JsNumber(airlineIncome.others.maintenanceInvestment),
         "othersAdvertisement" -> JsNumber(airlineIncome.others.advertisement),

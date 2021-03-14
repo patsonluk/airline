@@ -20,16 +20,21 @@ object AirlineSimulation {
   val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUTATION_DELTA = 1
 
-  def airlineSimulation(cycle: Int, linkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane]) = {
+  def airlineSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
     val allAirlines = AirlineSource.loadAllAirlines(true)
-    val allLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).groupBy { _.airline.id }
+    val allLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
+    val allFlightLinksByAirlineId = allLinks.filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link]).groupBy(_.airline.id)
+    val allShuttleLinksByAirlineId = allLinks.filter(_.transportType == TransportType.SHUTTLE).map(_.asInstanceOf[Shuttle]).groupBy(_.airline.id)
     val allTransactions = AirlineSource.loadTransactions(cycle).groupBy { _.airlineId }
     val allTransactionalCashFlowItems: scala.collection.immutable.Map[Int, List[AirlineCashFlowItem]] = AirlineSource.loadCashFlowItems(cycle).groupBy { _.airlineId }
     //purge the older transactions
     AirlineSource.deleteTransactions(cycle - 1)
     AirlineSource.deleteCashFlowItems(cycle - 1)
-    val linkResultByAirline = linkResult.groupBy { _.link.airline.id }
+    val flightLinkResultByAirline = flightLinkResult.groupBy(_.link.airline.id)
+    //val otherTransportResultByAirline = linkResult.filter(_.link.transportType != TransportType.FLIGHT).groupBy(_.link.airline.id)
+
+
     val airplanesByAirline = airplanes.groupBy(_.owner.id)
     val allCountries = CountrySource.loadAllCountries().map( country => (country.countryCode, country)).toMap
 
@@ -60,7 +65,7 @@ object AirlineSimulation {
         var totalCashRevenue = 0L
         var totalCashExpense = 0L
         var linksDepreciation = 0L
-        val linksIncome = linkResultByAirline.get(airline.id) match {
+        val linksIncome = flightLinkResultByAirline.get(airline.id) match {
           case Some(linkConsumptions) => {
             val linksProfit = linkConsumptions.foldLeft(0L)(_ + _.profit)
             val linksAirportFee = linkConsumptions.foldLeft(0L)(_ + _.airportFees)
@@ -106,7 +111,7 @@ object AirlineSimulation {
 
         val othersSummary = Map[OtherIncomeItemType.Value, Long]()
         //calculate service funding required
-        val linksOfThisAirline = allLinks.getOrElse(airline.id, List.empty)
+        val linksOfThisAirline = allFlightLinksByAirlineId.getOrElse(airline.id, List.empty)
         var serviceFunding = getServiceFunding(airline.getTargetServiceQuality(), linksOfThisAirline)
         val targetServiceQuality =
           if (airline.getBalance() < 0) { //cease all funding, target will be 0
@@ -129,7 +134,7 @@ object AirlineSimulation {
         totalCashExpense += baseUpkeep
 
       //overtime compensation
-        val linksByFromAirportId = allLinks.get(airline.id).getOrElse(List.empty).groupBy(_.from.id)
+        val linksByFromAirportId = allFlightLinksByAirlineId.get(airline.id).getOrElse(List.empty).groupBy(_.from.id)
 
         var overtimeCompensation = 0
         airline.bases.foreach { base =>
@@ -182,7 +187,14 @@ object AirlineSimulation {
         othersSummary.put(OtherIncomeItemType.LOUNGE_COST, -1 * loungeCost)
         othersSummary.put(OtherIncomeItemType.LOUNGE_INCOME, loungeIncome)
 
-        totalCashExpense += loungeUpkeep + loungeCost
+
+        var shuttleCost = 0L
+        allShuttleLinksByAirlineId.get(airline.id).foreach { links =>
+          shuttleCost = links.map(_.upkeep).sum
+          othersSummary.put(OtherIncomeItemType.SHUTTLE_COST, -1 * shuttleCost)
+        }
+
+        totalCashExpense += loungeUpkeep + loungeCost + shuttleCost
         totalCashRevenue += loungeIncome
 
         //calculate extra cash flow due to difference in fuel cost
@@ -261,6 +273,7 @@ object AirlineSimulation {
             , loungeUpkeep = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_UPKEEP, 0)
             , loungeCost = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_COST, 0)
             , loungeIncome = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_INCOME, 0)
+            , shuttleCost = othersSummary.getOrElse(OtherIncomeItemType.SHUTTLE_COST, 0)
             , fuelProfit = othersSummary.getOrElse(OtherIncomeItemType.FUEL_PROFIT, 0)
             , depreciation = othersSummary.getOrElse(OtherIncomeItemType.DEPRECIATION, 0)
             , cycle = currentCycle
@@ -305,7 +318,7 @@ object AirlineSimulation {
 
         //update reputation
         var targetReputation = 0.0
-        linkResultByAirline.get(airline.id) match {
+        flightLinkResultByAirline.get(airline.id) match {
           case Some(linkConsumptions) =>
             val totalPassengerKilometers = linkConsumptions.foldLeft(0L) { (foldLong, linkConsumption) =>
               foldLong + linkConsumption.link.soldSeats.total * linkConsumption.link.distance
@@ -354,7 +367,7 @@ object AirlineSimulation {
 
         //check bankruptcy
         if (airline.getBalance() < 0) {
-          val shouldReset = allLinks.get(airline.id) match {
+          val shouldReset = allFlightLinksByAirlineId.get(airline.id) match {
             case Some(links) =>
               links.map(_.capacity.total).sum == 0
             case None => true

@@ -173,7 +173,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
        case Some(airport) =>
          var result = Json.toJson(airport).asInstanceOf[JsObject]
          //find links going to this airport too, send simplified data
-         val links = LinkSource.loadLinksByFromAirport(airportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByToAirport(airportId, LinkSource.ID_LOAD)
+         val links = LinkSource.loadFlightLinksByFromAirport(airportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByToAirport(airportId, LinkSource.ID_LOAD)
          val linkCountJson = links.groupBy { _.airline.id }.foldRight(Json.obj()) { 
            case((airlineId, links), foldJson) => foldJson + (airlineId.toString() -> JsNumber(links.length)) 
          }
@@ -261,7 +261,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
             (airline, totalPassengersOfThisAirline) :: foldList
         }
         
-        val links = LinkSource.loadLinksByFromAirport(airportId) ++ LinkSource.loadLinksByToAirport(airportId)
+        val links = LinkSource.loadFlightLinksByFromAirport(airportId) ++ LinkSource.loadFlightLinksByToAirport(airportId)
         
         val servedCountries = Set[String]()
         val servedAirports = Set[Airport]()
@@ -315,7 +315,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   }
   
   def getDepartures(airportId : Int, dayOfWeek : Int, hour : Int, minute : Int) = Action {
-    val links = LinkSource.loadLinksByFromAirport(airportId, LinkSource.SIMPLE_LOAD) ++ (LinkSource.loadLinksByToAirport(airportId, LinkSource.SIMPLE_LOAD).map { link => link.copy(from = link.to, to = link.from) })
+    val links = LinkSource.loadFlightLinksByFromAirport(airportId, LinkSource.SIMPLE_LOAD) ++ (LinkSource.loadFlightLinksByToAirport(airportId, LinkSource.SIMPLE_LOAD).map { link => link.copy(from = link.to, to = link.from) })
     
     val map = Map[Int, String]()
     
@@ -477,7 +477,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   
   
   def getAirportLinkConsumptions(fromAirportId : Int, toAirportId : Int) = Action {
-    val competitorLinkConsumptions = (LinkSource.loadLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
+    val competitorLinkConsumptions = (LinkSource.loadFlightLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
       LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
     }
     Ok(Json.toJson(competitorLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq))

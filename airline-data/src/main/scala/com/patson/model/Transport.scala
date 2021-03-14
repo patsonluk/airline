@@ -3,6 +3,7 @@ package com.patson.model
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class Transport extends IdObject{
+  var id : Int
   val from, to : Airport
   val airline: Airline
   val distance : Int
@@ -13,6 +14,9 @@ abstract class Transport extends IdObject{
   val price: LinkClassValues
   val flightType : FlightType.Value
   var availableSeats : LinkClassValues = capacity.copy()
+  var minorDelayCount : Int
+  var majorDelayCount : Int
+  var cancellationCount : Int
 
   @volatile var soldSeats : LinkClassValues = LinkClassValues.getInstance()
   @volatile var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
