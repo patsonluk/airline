@@ -368,8 +368,9 @@ package object controllers {
         "airlineName" -> JsString(shuttleService.airline.name),
         "name" ->  JsString(shuttleService.name),
         "level" -> JsNumber(shuttleService.level),
-        "upkeep" -> JsNumber(Shuttle.UPKEEP_PER_CAPACITY),
+        "upkeep" -> JsNumber(shuttleService.basicUpkeep),
         "type" -> JsString(FacilityType.SHUTTLE.toString()),
+        "capacity" -> JsNumber(shuttleService.getCapacity),
         "foundedCycle" -> JsNumber(shuttleService.foundedCycle)))
       jsObject
     }

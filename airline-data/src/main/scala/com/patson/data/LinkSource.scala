@@ -1,5 +1,5 @@
 package com.patson.data
-import java.sql.{Connection, Statement}
+import java.sql.{Connection, Statement, Types}
 import java.util.{Calendar, Date}
 import com.patson.data.Constants._
 import com.patson.data.LinkSource.DetailType
@@ -137,8 +137,7 @@ object LinkSource {
                   airline.get,
                   resultSet.getInt("distance"),
                   LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
-                  resultSet.getInt("duration"),
-                  resultSet.getInt("frequency")
+                  resultSet.getInt("duration")
                 )
             }
 
@@ -358,7 +357,7 @@ object LinkSource {
     }
     //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model, from_country, to_country) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model, from_country, to_country, transport_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
     try {
       preparedStatement.setInt(1, fromAirportId)
@@ -378,9 +377,12 @@ object LinkSource {
       preparedStatement.setInt(15, flightNumber)
       if (link.isInstanceOf[Link]) {
         preparedStatement.setInt(16, link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+      } else {
+        preparedStatement.setNull(16, Types.INTEGER)
       }
       preparedStatement.setString(17, link.from.countryCode)
       preparedStatement.setString(18, link.to.countryCode)
+      preparedStatement.setInt(19, link.transportType.id)
 
       val updateCount = preparedStatement.executeUpdate()
       //println("Saved " + updateCount + " link!")
@@ -411,7 +413,7 @@ object LinkSource {
   def saveLinks[T <: Transport](links : List[T]) : Int = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model, from_country, to_country, transport_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     var updateCount = 0
     val changeHistoryEntries = ListBuffer[LinkChange]()
     connection.setAutoCommit(false)
@@ -429,6 +431,8 @@ object LinkSource {
         preparedStatement.setInt(10, link.capacity(FIRST))
         if (link.isInstanceOf[Link]) {
           preparedStatement.setInt(11, link.asInstanceOf[Link].rawQuality)
+        } else {
+          preparedStatement.setNull(11, Types.INTEGER)
         }
         preparedStatement.setInt(12, link.duration)
         preparedStatement.setInt(13, link.frequency)
@@ -436,7 +440,13 @@ object LinkSource {
         if (link.isInstanceOf[Link]) {
           preparedStatement.setInt(15, link.asInstanceOf[Link].flightNumber)
           preparedStatement.setInt(16, link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+        } else {
+          preparedStatement.setNull(15, Types.INTEGER)
+          preparedStatement.setNull(16, Types.INTEGER)
         }
+        preparedStatement.setString(17, link.from.countryCode)
+        preparedStatement.setString(18, link.to.countryCode)
+        preparedStatement.setInt(19, link.transportType.id)
 
 
         updateCount += preparedStatement.executeUpdate()
@@ -482,6 +492,8 @@ object LinkSource {
       preparedStatement.setInt(6, link.capacity(FIRST))
       if (link.isInstanceOf[Link]) {
         preparedStatement.setInt(7, link.asInstanceOf[Link].rawQuality)
+      } else {
+        preparedStatement.setNull(7, Types.INTEGER)
       }
       preparedStatement.setInt(8, link.duration)
       preparedStatement.setInt(9, link.frequency)
@@ -489,6 +501,9 @@ object LinkSource {
       if (link.isInstanceOf[Link]) {
         preparedStatement.setInt(11, link.asInstanceOf[Link].flightNumber)
         preparedStatement.setInt(12, link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+      } else {
+        preparedStatement.setNull(11, Types.INTEGER)
+        preparedStatement.setNull(12, Types.INTEGER)
       }
       preparedStatement.setTimestamp(13, new java.sql.Timestamp(new Date().getTime()))
       preparedStatement.setInt(14, link.id)
@@ -527,6 +542,8 @@ object LinkSource {
         preparedStatement.setInt(6, link.capacity(FIRST))
         if (link.isInstanceOf[Link]) {
           preparedStatement.setInt(7, link.asInstanceOf[Link].rawQuality)
+        } else {
+          preparedStatement.setNull(7, Types.INTEGER)
         }
         preparedStatement.setInt(8, link.duration)
         preparedStatement.setInt(9, link.frequency)
@@ -534,6 +551,9 @@ object LinkSource {
         if (link.isInstanceOf[Link]) {
           preparedStatement.setInt(11, link.asInstanceOf[Link].flightNumber)
           preparedStatement.setInt(12, link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+        } else {
+          preparedStatement.setNull(11, Types.INTEGER)
+          preparedStatement.setNull(12, Types.INTEGER)
         }
         preparedStatement.setTimestamp(13, new java.sql.Timestamp(new Date().getTime()))
         preparedStatement.setInt(14, link.id)
@@ -786,6 +806,10 @@ object LinkSource {
             preparedStatement.setInt(32, linkConsumption.link.asInstanceOf[Link].flightNumber)
             preparedStatement.setInt(33, linkConsumption.link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
             preparedStatement.setInt(34, linkConsumption.link.asInstanceOf[Link].rawQuality)
+          } else {
+            preparedStatement.setNull(32, Types.INTEGER)
+            preparedStatement.setNull(33, Types.INTEGER)
+            preparedStatement.setNull(34, Types.INTEGER)
           }
           preparedStatement.setDouble(35, linkConsumption.satisfaction)
           preparedStatement.setInt(36, linkConsumption.cycle)

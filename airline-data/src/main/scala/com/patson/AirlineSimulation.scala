@@ -43,6 +43,8 @@ object AirlineSimulation {
       loungesByAirlineId.getOrElseUpdate(lounge.airline.id, ListBuffer[Lounge]()) += lounge
     )
 
+    val shuttleServicesByAirlineId = AirlineSource.loadShuttleServiceByCriteria(List.empty).groupBy(_.airline.id)
+
     val allIncomes = ListBuffer[AirlineIncome]()
     val allCashFlows = ListBuffer[AirlineCashFlow]() //cash flow for accounting purpose
 
@@ -191,8 +193,9 @@ object AirlineSimulation {
         var shuttleCost = 0L
         allShuttleLinksByAirlineId.get(airline.id).foreach { links =>
           shuttleCost = links.map(_.upkeep).sum
-          othersSummary.put(OtherIncomeItemType.SHUTTLE_COST, -1 * shuttleCost)
         }
+        shuttleCost += shuttleServicesByAirlineId.getOrElse(airline.id, List.empty).map(_.basicUpkeep).sum
+        othersSummary.put(OtherIncomeItemType.SHUTTLE_COST, -1 * shuttleCost)
 
         totalCashExpense += loungeUpkeep + loungeCost + shuttleCost
         totalCashRevenue += loungeIncome

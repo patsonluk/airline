@@ -155,32 +155,33 @@ object AirportSimulation {
         val loyalistDeltaOfAirlines = Map[Int, Int]() //airlineId, delta
         //passengersFromThisAirport.filter(_._1._1.preference.loyaltySensitivity > 0).toList.foreach { //only count pax that actually cares about loyalty now
         passengersFromThisAirport.toList.foreach {
-          case ((passengerGroup, toAirport, route), paxCount) => route.links.foreach { linkConsideration =>
+          case ((passengerGroup, toAirport, route), paxCount) =>
+            val flightLinks = route.links.filter(_.link.transportType == TransportType.FLIGHT) //only flights would generate loyalist
+            flightLinks.foreach { linkConsideration =>
             val link = linkConsideration.link
-            if (link.transportType == TransportType.FLIGHT) { //only flights would generate loyalist
-              val preferredLinkClass = passengerGroup.preference.preferredLinkClass
-              val standardPrice = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass)
+            val preferredLinkClass = passengerGroup.preference.preferredLinkClass
+            val standardPrice = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass)
 
 
-              val satisfaction = Computation.computePassengerSatisfaction(linkConsideration.cost, standardPrice)
+            val satisfaction = Computation.computePassengerSatisfaction(linkConsideration.cost, standardPrice)
 
 
-              var conversionRatio =
-                if (satisfaction < NEUTRAL_SATISFACTION) {
-                  //(satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
-                  0
-                } else {
-                  val multiplier = Math.min(MAX_LOYALIST_FLIP_RATIO, passengerGroup.preference.loyaltySensitivity + 0.3)
-                  (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
-                }
-              //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
+            var conversionRatio =
+              if (satisfaction < NEUTRAL_SATISFACTION) {
+                //(satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
+                0
+              } else {
+                val multiplier = Math.min(MAX_LOYALIST_FLIP_RATIO, passengerGroup.preference.loyaltySensitivity + 0.3)
+                (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
+              }
+            //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
 
-              conversionRatio = conversionRatio / route.links.length // for example if the route has 3 legs, it will convert at most 1/3 of the ratio
 
-              val loyalistDelta = (paxCount * conversionRatio).toInt
-              val existingDelta = loyalistDeltaOfAirlines.getOrElse(link.airline.id, 0)
-              loyalistDeltaOfAirlines.put(link.airline.id, existingDelta + loyalistDelta)
-            }
+            conversionRatio = conversionRatio / flightLinks.length // for example if the route has 3 legs, it will convert at most 1/3 of the ratio
+
+            val loyalistDelta = (paxCount * conversionRatio).toInt
+            val existingDelta = loyalistDeltaOfAirlines.getOrElse(link.airline.id, 0)
+            loyalistDeltaOfAirlines.put(link.airline.id, existingDelta + loyalistDelta)
           }
         }
 

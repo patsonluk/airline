@@ -120,13 +120,7 @@ object EventSimulation {
 
   val AFFECT_RADIUS = 80 //80km
   def simulateOlympicsAffectedAirport(principalAirport : Airport): List[Airport] = {
-    val affectedAirports = ListBuffer[Airport]()
-    AirportSource.loadAirportsByCountry(principalAirport.countryCode).foreach { airport =>
-      if (Computation.calculateDistance(principalAirport, airport) <= AFFECT_RADIUS) {
-        affectedAirports.append(airport)
-      }
-    }
-    affectedAirports.toList
+    Computation.getDomesticAirportWithinRange(principalAirport, AFFECT_RADIUS)
   }
 
   def simulateOlympicsVoteRounds(olympics: Olympics) : List[OlympicsVoteRound] = {

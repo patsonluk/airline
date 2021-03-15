@@ -1,8 +1,9 @@
 package com.patson.model
 
-case class Shuttle(from : Airport, to : Airport, airline: Airline, distance : Int, var capacity: LinkClassValues, duration : Int, var frequency : Int, var id : Int = 0) extends Transport {
+case class Shuttle(from : Airport, to : Airport, airline: Airline, distance : Int, var capacity: LinkClassValues, var id : Int = 0) extends Transport {
   override val transportType : TransportType.Value = TransportType.SHUTTLE
-
+  override val duration = (distance.toDouble / 30 * 60).toInt
+  override var frequency : Int = if (capacity.total == 0) 0 else 24 * 7
   override def computedQuality() : Int = Shuttle.QUALITY //constant quality
   override val price : LinkClassValues = LinkClassValues.getInstance()
   //override val price : LinkClassValues = LinkClassValues.getInstance() //has to have some hidden price? otherwise it will be too strong?
@@ -20,4 +21,5 @@ case class Shuttle(from : Airport, to : Airport, airline: Airline, distance : In
 object Shuttle {
   val QUALITY = 40
   val UPKEEP_PER_CAPACITY = 10
+  val SPEED = 30 //30km/hr
 }

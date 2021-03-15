@@ -138,6 +138,8 @@ POST      /airlines/:airlineId/tutorial               controllers.TutorialApplic
 
 POST      /airlines/:airlineId/completed-notice/:noticeId     controllers.NoticeApplication.saveCompletedNotice(airlineId: Int, noticeId: String, category : String)
 
+GET      /airlines/:airlineId/airport/:airportId/shuttles     controllers.ShuttleApplication.getShuttles(airlineId: Int, airportId: Int)
+POST      /airlines/:airlineId/airport/:airportId/shuttles     controllers.ShuttleApplication.updateShuttles(airlineId: Int, airportId: Int)
 
 GET     /airlines/:airlineId/profiles   controllers.ProfileApplication.getProfiles(airlineId : Int, airportId : Int)
 PUT     /airlines/:airlineId/profiles/:profileId     controllers.ProfileApplication.buildHqWithProfile(airlineId : Int, airportId : Int, profileId : Int)

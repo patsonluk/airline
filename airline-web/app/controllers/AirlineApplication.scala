@@ -372,7 +372,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airline.id, airport.id) match {
       case Some(base) =>
         if (base.scale < Lounge.getBaseScaleRequirement(newShuttleService.level)) {
-          return Consideration(0, newShuttleService, Some("Require base at scale at " + ShuttleService.getBaseScaleRequirement(newShuttleService.level) + " to build level " + newShuttleService.level + " Lounge "))
+          return Consideration(cost, newShuttleService, Some("Require base at scale at " + ShuttleService.getBaseScaleRequirement(newShuttleService.level) + " to build level " + newShuttleService.level + " Lounge "))
         }
       case None => return Consideration(0, newShuttleService, Some("Cannot build Lounge without a base in this airport"))
     }
@@ -389,12 +389,16 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (airline.getBases().find( _.airport.id ==  airport.id).isEmpty) {
       return Consideration(cost, newShuttleService, Some("Cannot build shuttle service without a base"))
     }
-    //TODO check whether the downgrade has correct capacity
+
     if (levelChange < 0) {
       val existingShuttleCapacity = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_airport", inputFacility.airport.id), ("transport_type", TransportType.SHUTTLE.id))).map(_.capacity.total).sum
       if (newShuttleService.getCapacity < existingShuttleCapacity) {
         return Consideration(0, newShuttleService, Some(s"Cannot downgrade as current shuttle service utilize $existingShuttleCapacity capacity while the downgraded service will only have ${newShuttleService.getCapacity}"))
       }
+    }
+
+    if (Computation.getDomesticAirportWithinRange(airport, ShuttleService.COVERAGE_RANGE).filter(_.id != airport.id).isEmpty) {
+      return Consideration(0, newShuttleService, Some(s"No airports within ${ShuttleService.COVERAGE_RANGE} km"))
     }
 
     return Consideration(cost, newShuttleService)
@@ -565,7 +569,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
     AirportCache.getAirport(airportId) match {
       case Some(airport) =>
-        val loungeJson = AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId) match {
+        var loungeJson : JsObject = AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId) match {
           case Some(lounge) =>
             var loungeJson = Json.toJson(lounge).asInstanceOf[JsObject]
             
@@ -581,38 +585,18 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
             loungeJson + ("profit" -> JsNumber(profit))
           case None =>
             //Ok(Json.obj())
-            Json.toJson(Lounge(airline = airline, allianceId = airline.getAllianceId, airport = airport, name = "", level = 0, status = LoungeStatus.INACTIVE, foundedCycle = 0))
+            Json.toJson(Lounge(airline = airline, allianceId = airline.getAllianceId, airport = airport, name = "", level = 0, status = LoungeStatus.INACTIVE, foundedCycle = 0)).asInstanceOf[JsObject]
         }
 
-        val shuttleServiceJson = AirlineSource.loadShuttleServiceByAirlineAndAirport(airlineId, airportId) match {
+
+        var shuttleServiceJson : JsObject = AirlineSource.loadShuttleServiceByAirlineAndAirport(airlineId, airportId) match {
           case Some(shuttleService) =>
-            var shuttleServiceJson = Json.toJson(shuttleService).asInstanceOf[JsObject]
-
-            val shuttles = LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_airport", airport.id), ("transport_type", TransportType.SHUTTLE.id))).map(_.asInstanceOf[Shuttle])
-            val upkeep = shuttles.map(_.upkeep).sum
-            shuttleServiceJson = shuttleServiceJson + ("upkeep" -> JsNumber(upkeep))
-
-            var shuttlesJson = Json.arr()
-            val consumptionByLinkId = LinkSource.loadLinkConsumptionsByLinksId(shuttles.map(_.id)).map(entry => (entry.link.id, entry)).toMap
-            shuttles.foreach { shuttle =>
-              var shuttleJson = Json.obj("toAirportId"-> shuttle.to.id, "toAirportText" -> shuttle.to.displayText, "capacity" -> shuttle.capacity.total)
-              consumptionByLinkId.get(shuttle.id) match {
-                case Some(consumption) =>
-                  shuttleJson = shuttleJson + ("ridership" -> JsNumber(consumption.link.getTotalSoldSeats))
-                case None =>
-                  shuttleJson = shuttleJson + ("ridership" -> JsNumber(0))
-              }
-              shuttlesJson = shuttlesJson.append(shuttleJson)
-            }
-            shuttleServiceJson + ("shuttles" -> shuttlesJson)
+            Json.toJson(shuttleService).asInstanceOf[JsObject]
           case None =>
-            Json.toJson(ShuttleService(airline = airline, allianceId = airline.getAllianceId, airport = airport, name = "", level = 0, foundedCycle = 0))
+            Json.toJson(ShuttleService(airline = airline, allianceId = airline.getAllianceId, airport = airport, name = "", level = 0, foundedCycle = 0)).asInstanceOf[JsObject]
         }
-
 
         Ok(Json.obj("lounge" -> loungeJson, "shuttleService" -> shuttleServiceJson))
-
-
       case None => NotFound
     }
 
@@ -675,12 +659,20 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       val inputFacility = request.body.asInstanceOf[AnyContentAsJson].json.as[AirportFacility]
       //todo validate the user is the same
       val airline = request.user
+      val airport = inputFacility.airport
       
       if (inputFacility.airline.id != airline.id) {
         BadRequest("not the same user!")
       } else {
         val name = inputFacility.name.trim
-        AirportFacility.getNameRejection(name) match {
+        val nameRejection =
+          if (inputFacility.facilityType == FacilityType.LOUNGE) {
+            AirportFacility.getNameRejection(name)
+          } else {
+            None
+          }
+
+        nameRejection match {
           case Some(nameRejection) =>
             Ok(Json.obj("nameRejection" -> nameRejection))
           case None =>
@@ -711,8 +703,19 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                   val shuttleService = consideration.newFacility
                   if (shuttleService.level > 0) {
                     AirlineSource.saveShuttleService(shuttleService)
+                    //establish shuttles if none is found
+                    if (LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_airport", airport.id), ("transport_type", TransportType.SHUTTLE.id))).map(_.asInstanceOf[Shuttle]).isEmpty) {
+                      val shuttles = Computation.getDomesticAirportWithinRange(airport, ShuttleService.COVERAGE_RANGE).filter(_.id != airport.id).map { toAirport =>
+                        val distance = Computation.calculateDistance(airport, toAirport)
+                        Shuttle(from = airport, to = toAirport, airline = airline, distance = distance, capacity = LinkClassValues.getInstance())
+                      }
+                      LinkSource.saveLinks(shuttles)
+                    }
                   } else{
                     AirlineSource.deleteShuttleService(shuttleService)
+                    LinkSource.loadLinksByCriteria(List(("airline", airline.id), ("from_airport", airport.id), ("transport_type", TransportType.SHUTTLE.id))).foreach { link =>
+                      LinkSource.deleteLink(link.id)
+                    }
                   }
 
                   if (consideration.cost > 0) {
@@ -722,13 +725,13 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                   Ok(Json.toJson(consideration.newFacility))
                 }
             }
-        } 
-        
+        }
       }
     } else {
       BadRequest("Cannot build facitilty")
     }
   }
+
 
   def getOfficeCapacity(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline = request.user

@@ -3447,9 +3447,9 @@
 	</div>
 	
 	<!-- airport facility modal -->
-	<div id="facilityModal" class="modal">
+	<div id="facilityModal" class="modal facility">
 	  <div class="modal-content"  style="width : 400px;">
-	    <span class="close" onclick="closeFacilityModal()">&times;</span>
+	    <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
 	    <h4><span class="facilityType"></span></h4>
 	    <div class="table" style="width: 100%">
 	    	<div class="table-row">
@@ -3494,7 +3494,51 @@
 		<div class="button buildButton" onclick="buildFacility($('#facilityModal').data('facility'), 1)">Build</div>
 	    <div class="button upgradeButton" onclick="buildFacility($('#facilityModal').data('facility'), 1)">Upgrade</div>
 	    <div class="button downgradeButton" onclick="buildFacility($('#facilityModal').data('facility'), -1)">Downgrade</div>
-	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility')); closeFacilityModal()">Remove</div>
+	    <div class="button removeButton" onclick="removeFacility($('#facilityModal').data('facility'));">Remove</div>
+	  </div>
+	</div>
+
+    <div id="shuttleModal" class="modal facility">
+	  <div class="modal-content"  style="width : 500px;">
+		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
+		  <h4>Shuttle Service</h4>
+		  <div class="table" style="width: 100%">
+			  <div class="table-row">
+				  <div class="label" style="width: 50%"><h5>Level:</h5></div>
+				  <div class="value facilityLevel" style="width: 50%"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Basic Upkeep:</h5></div>
+				  <div class="value facilityUpkeep"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Operation Cost:</h5></div>
+				  <div class="value facilityCost"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Upgrade Cost:</h5></div>
+				  <div class="value upgradeCost"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Capacity:</h5></div>
+				  <div class="value totalCapacity"></div>
+			  </div>
+		  </div>
+		  <div class="data table shuttles" style="width: 100%">
+			  <div class="table-header">
+				  <div class="cell" style="width: 40%">To Airport</div>
+				  <div class="cell" style="width: 15%" align="right">Pop</div>
+				  <div class="cell" style="width: 15%" align="right">Cap</div>
+				  <div class="cell" style="width: 15%" align="right">PAX</div>
+				  <div class="cell" style="width: 15%">&nbsp;</div>
+			  </div>
+		  </div>
+
+		  <div class="button confirmButton" onclick="updateShuttles()">Confirm</div>
+		  <div class="button buildButton" onclick="buildFacility($('#shuttleModal').data('facility'), 1)">Build</div>
+		  <div class="button upgradeButton" onclick="buildFacility($('#shuttleModal').data('facility'), 1)">Upgrade</div>
+		  <div class="button downgradeButton" onclick="buildFacility($('#shuttleModal').data('facility'), -1)">Downgrade</div>
+		  <div class="button removeButton" onclick="removeFacility($('#shuttleModal').data('facility'))">Remove</div>
 	  </div>
 	</div>
 
