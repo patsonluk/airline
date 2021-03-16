@@ -81,8 +81,22 @@ function searchFlight(fromAirportId, toAirportId) {
                     itineraryDiv.append(routeDiv)
 
                      //Generate Summary
-                    var startLink = entry.route[0]
-                    var endLink = entry.route[entry.route.length - 1]
+                    var startLink
+                    for (i = 0 ; i < entry.route.length; i ++) {
+                        if (entry.route[i].transportType == 'FLIGHT') {
+                            startLink = entry.route[i]
+                            break;
+                        }
+                    }
+
+                    var endLink
+                    for (i = entry.route.length - 1 ; i >= 0 ; i --) {
+                        if (entry.route[i].transportType == 'FLIGHT') {
+                            endLink = entry.route[i]
+                            break;
+                        }
+                    }
+
                     var startDay = Math.floor(startLink.departure / (24 * 60))
                     var summaryDiv = $("<div class='summary'  style='display: flex; align-items: center;'></div>")
                     summaryDiv.append("<div style='width: 50%; float:left;'> " + getAirlineTimeSlotText(startLink.departure, startDay) + " - " + getAirlineTimeSlotText(endLink.arrival, startDay) + "</div>")
