@@ -371,7 +371,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     //check base requirement
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airline.id, airport.id) match {
       case Some(base) =>
-        if (base.scale < Lounge.getBaseScaleRequirement(newShuttleService.level)) {
+        if (base.scale < ShuttleService.getBaseScaleRequirement(newShuttleService.level)) {
           return Consideration(cost, newShuttleService, Some("Require base at scale at " + ShuttleService.getBaseScaleRequirement(newShuttleService.level) + " to build level " + newShuttleService.level + " Lounge "))
         }
       case None => return Consideration(0, newShuttleService, Some("Cannot build Lounge without a base in this airport"))

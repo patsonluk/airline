@@ -158,16 +158,19 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
               "fromAirportName" -> from.name,
               "fromAirportIata" -> from.iata,
               "fromAirportCity" -> from.city,
+              "fromAirportText" -> from.displayText,
               "fromAirportCountryCode" -> from.countryCode,
               "toAirportId" -> to.id,
               "toAirportName" -> to.name,
               "toAirportIata" -> to.iata,
               "toAirportCity" -> to.city,
+              "toAirportText" -> to.displayText,
               "duration" -> link.duration,
               "toAirportCountryCode" -> to.countryCode,
               "price" -> link.price(linkClass),
               "departure" -> departureMinutes,
-              "arrival" -> arrivalMinutes
+              "arrival" -> arrivalMinutes,
+              "transportType" -> link.transportType.toString
             )
 
             if (link.isInstanceOf[Link]) {
@@ -189,7 +192,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 
                   linkJson = linkJson + ("features" -> Json.toJson(getLinkFeatures(detailedLink).map(_.toString)))
                 case TransportType.SHUTTLE =>
-                  linkJson = linkJson + ("features" -> Json.toJson(List(LinkFeature.SHUTTLE.toString)))
+                  //linkJson = linkJson + ("features" -> Json.toJson(List(LinkFeature.SHUTTLE.toString)))
               }
               linkJson = linkJson + ("transportType" -> JsString(detailedTransport.transportType.toString))
             }

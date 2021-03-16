@@ -72,6 +72,7 @@ function searchFlight(fromAirportId, toAirportId) {
             dataType: 'json',
             success: function(searchResult) {
                 $("#routeSearchResult").empty()
+
                 $.each(searchResult, function(index, entry) {
                     var itineraryDiv = $("<div class='section itinerary' onclick='toggleSearchLinkDetails($(this))'></div>")
                     var total = 0
@@ -91,55 +92,99 @@ function searchFlight(fromAirportId, toAirportId) {
                     routeDiv.append(summaryDiv)
 
                     var previousLink
+                    var flightCount = 0
                     $.each(entry.route, function(index, link) {
-                        var linkDiv = $("<div style='margin-bottom: 10px;'></div>")
-                        var linkSummaryDiv = $("<div style='margin : 10px 0;'></div>")
-                        linkSummaryDiv.append("<div style='width: 50%; float:left; display: flex; align-items: center;'> " + getAirlineLogoImg(link.airlineId) + "<span class='summary'>" + link.airlineName + "</span></div>")
-                        var linkDurationText = getDurationText(link.arrival - link.departure)
-                        if (index > 0) {
-                            linkDurationText += " (+" + getDurationText(link.departure - previousLink.arrival) + " layover at " + link.fromAirportIata + ")"
+                        if (link.transportType == 'FLIGHT') {
+                            flightCount ++
+                            //check shuttle
+                            var preShuttle
+                            var postShuttle
+                            if (index > 0) {
+                                if (entry.route[index - 1].transportType == 'SHUTTLE') {
+                                    preShuttle = entry.route[index - 1]
+                                }
+                            }
+                            if (index < entry.route.length - 1) {
+                                if (entry.route[index + 1].transportType == 'SHUTTLE') {
+                                    postShuttle = entry.route[index + 1]
+                                }
+                            }
+
+                            var linkDiv = $("<div style='margin-bottom: 10px;'></div>")
+                            var linkSummaryDiv = $("<div style='margin : 10px 0;'></div>")
+                            linkSummaryDiv.append("<div style='width: 50%; float:left; display: flex; align-items: center;'> " + getAirlineLogoImg(link.airlineId) + "<span class='summary'>" + link.airlineName + "</span></div>")
+                            var linkDurationText = getDurationText(link.arrival - link.departure)
+                            var remarks = []
+                            if (preShuttle) {
+                                remarks.push("Depart from " + link.fromAirportIata)
+                            }
+                            if (postShuttle) {
+                                remarks.push("Arrive at " + link.toAirportIata)
+                            }
+                            if (previousLink) {
+                                remarks.push("+" + getDurationText(link.departure - previousLink.arrival) + " layover at " + link.fromAirportIata)
+                            }
+
+                            if (remarks.length > 0) {
+                                var remarksText = ""
+                                for (i = 0 ; i < remarks.length; i++) {
+                                    if (i > 0) {
+                                        linkDurationText += ", "
+                                    }
+                                    remarksText += remarks[i]
+                                }
+                                linkDurationText += "(" + remarksText + ")"
+                            }
+
+                            linkSummaryDiv.append("<div style='width: 50%; float:left;'> " + linkDurationText + "</div>")
+    //                        airlineSpan.append("<div style='width: 50%; float:left;'> " + link.flightCode + "&nbsp;" + getAirlineTimeSlotText(link.departure, startDay) + " - " + getAirlineTimeSlotText(link.arrival, startDay) + "</div>")
+                            linkSummaryDiv.append("<div style='clear:both; '></div>")
+                            linkDiv.append(linkSummaryDiv)
+
+                            var linkDetailDiv = $("<div style='display: flex; align-items: center; margin: 0 10px;' class='linkDetails'></div>")
+                            var linkDetailLeftDiv = $("<div style='width: 50%;'></div>").appendTo(linkDetailDiv)
+                            linkDetailLeftDiv.append("<div style='display: inline-block; width: 75px;' class='summary'> " + link.flightCode + "</div>")
+                            linkDetailLeftDiv.append("<span>" + getAirlineTimeSlotText(link.departure, startDay) + " - " + getAirlineTimeSlotText(link.arrival, startDay) + "</span>")
+                            linkDetailLeftDiv.append("<div>$" + link.price + " (" +  link.linkClass + ")</div>")
+                            $featureIconsDiv = getLinkFeatureIconsDiv(link.features, preShuttle || postShuttle)
+                            linkDetailLeftDiv.append($featureIconsDiv)
+                            linkDetailLeftDiv.append(getLinkReviewDiv(link.computedQuality))
+
+
+                            var linkDetailRightDiv = $("<div style='width: 50%;'></div>").appendTo(linkDetailDiv)
+                            linkDetailRightDiv.append("<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportIata) + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>" + getAirportText(link.toAirportCity, link.toAirportIata) + "</div>")
+                            linkDetailRightDiv.append("<div>Aircraft : " + (link.airplaneModelName ? link.airplaneModelName : "-") + "</div>")
+                            if (link.operatorAirlineId) { //code share
+                                linkDetailRightDiv.append("<div>Operated by " + getAirlineLogoImg(link.operatorAirlineId) + link.operatorAirlineName + "</div>")
+                            }
+                            if (preShuttle) {
+                                linkDetailRightDiv.append("<div>Free shuttle from " + preShuttle.fromAirportText + " to " + preShuttle.toAirportText + " by " + getAirlineLogoImg(preShuttle.airlineId) + preShuttle.airlineName + "</div>")
+                            }
+                            if (postShuttle) {
+                                linkDetailRightDiv.append("<div>Free shuttle from " + postShuttle.fromAirportText + " to " + postShuttle.toAirportText + " by " + getAirlineLogoImg(postShuttle.airlineId) + postShuttle.airlineName + "</div>")
+                            }
+
+
+                            linkDetailDiv.append("<div style='clear:both; '></div>")
+
+                            linkDetailDiv.hide()
+                            linkDiv.append(linkDetailDiv)
+
+    //                        var directionDiv = $("<div style='display: flex; align-items: center;' >" + link.flightCode + "&nbsp;" + getAirportText(link.fromAirportCity, link.fromAirportIata) + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>" + getDurationText(link.duration) + " " + link.linkClass + "</div>")
+    //                        linkDiv.append(directionDiv)
+
+                            routeDiv.append(linkDiv)
+                            total += link.price
+                            previousLink = link
                         }
-                        linkSummaryDiv.append("<div style='width: 50%; float:left;'> " + linkDurationText + "</div>")
-//                        airlineSpan.append("<div style='width: 50%; float:left;'> " + link.flightCode + "&nbsp;" + getAirlineTimeSlotText(link.departure, startDay) + " - " + getAirlineTimeSlotText(link.arrival, startDay) + "</div>")
-                        linkSummaryDiv.append("<div style='clear:both; '></div>")
-                        linkDiv.append(linkSummaryDiv)
-
-                        var linkDetailDiv = $("<div style='display: flex; align-items: center; margin: 0 10px;' class='linkDetails'></div>")
-                        var linkDetailLeftDiv = $("<div style='width: 50%;'></div>").appendTo(linkDetailDiv)
-                        linkDetailLeftDiv.append("<div style='display: inline-block; width: 75px;' class='summary'> " + link.flightCode + "</div>")
-                        linkDetailLeftDiv.append("<span>" + getAirlineTimeSlotText(link.departure, startDay) + " - " + getAirlineTimeSlotText(link.arrival, startDay) + "</span>")
-                        linkDetailLeftDiv.append("<div>$" + link.price + " (" +  link.linkClass + ")</div>")
-                        linkDetailLeftDiv.append(getLinkFeatureIconsDiv(link.features))
-                        linkDetailLeftDiv.append(getLinkReviewDiv(link.computedQuality))
-
-
-                        var linkDetailRightDiv = $("<div style='width: 50%;'></div>").appendTo(linkDetailDiv)
-                        linkDetailRightDiv.append("<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportIata) + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>" + getAirportText(link.toAirportCity, link.toAirportIata) + "</div>")
-                        linkDetailRightDiv.append("<div>Aircraft : " + (link.airplaneModelName ? link.airplaneModelName : "-") + "</div>")
-                        if (link.operatorAirlineId) { //code share
-                            linkDetailRightDiv.append("<div>Operated by " + getAirlineLogoImg(link.operatorAirlineId) + link.operatorAirlineName + "</div>")
-                        }
-
-
-                        linkDetailDiv.append("<div style='clear:both; '></div>")
-
-                        linkDetailDiv.hide()
-                        linkDiv.append(linkDetailDiv)
-
-//                        var directionDiv = $("<div style='display: flex; align-items: center;' >" + link.flightCode + "&nbsp;" + getAirportText(link.fromAirportCity, link.fromAirportIata) + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>" + getDurationText(link.duration) + " " + link.linkClass + "</div>")
-//                        linkDiv.append(directionDiv)
-
-                        routeDiv.append(linkDiv)
-                        total += link.price
-                        previousLink = link
                     })
                     var stopDescription
-                    if (entry.route.length == 1) {
+                    if (flightCount == 1) {
                         stopDescription = "Direct Flight"
-                    } else if (entry.route.length == 2) {
+                    } else if (flightCount == 2) {
                         stopDescription = "1 Stop"
                     } else {
-                        stopDescription = (entry.route.length - 1) + " Stops"
+                        stopDescription = (flightCount - 1) + " Stops"
                     }
                     var priceDiv = $("<div style='float: right; width: 15%;'><div class='price'>$ " + total + "</div></div>")
                     var priceTextDiv = priceDiv.find('div.price')
@@ -387,7 +432,8 @@ var linkFeatureIconsLookup = {
     "IFE" : { "description" : "In-flight entertainment", "icon" : "assets/images/icons/media-player-phone-horizontal.png"},
     "GAME" : { "description" : "Video game system", "icon" : "assets/images/icons/controller.png"},
     "POSH" : { "description" : "Luxurious", "icon" : "assets/images/icons/diamond.png"},
-    "POWER_OUTLET" : { "description" : "Power outlet", "icon" : "assets/images/icons/plug.png"}
+    "POWER_OUTLET" : { "description" : "Power outlet", "icon" : "assets/images/icons/plug.png"},
+    "SHUTTLE" : { "description" : "Free Shuttle", "icon" : "assets/images/icons/shuttle.png"}
 }
 
 function toggleSearchLinkDetails(containerDiv) {
@@ -398,13 +444,18 @@ function toggleSearchLinkDetails(containerDiv) {
     }
 }
 
-function getLinkFeatureIconsDiv(features) {
+function getLinkFeatureIconsDiv(features, hasShuttle) {
     var featureIconsDiv = $("<div></div>")
     $.each(features, function(index, feature) {
         var featureInfo = linkFeatureIconsLookup[feature]
         var icon = $("<img src='" + featureInfo.icon + "' title='" + featureInfo.description + "' style='margin: 2px;'>")
          featureIconsDiv.append(icon)
     })
+
+    if (hasShuttle) {
+        var featureInfo = linkFeatureIconsLookup['SHUTTLE']
+        featureIconsDiv.append($("<img src='" + featureInfo.icon + "' title='" + featureInfo.description + "' style='margin: 2px;'>"))
+    }
     return featureIconsDiv
 }
 
