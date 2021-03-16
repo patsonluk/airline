@@ -1,8 +1,8 @@
 package com.patson.data
-import java.sql.{Connection, Statement}
+import java.sql.{Connection, Statement, Types}
 import java.util.{Calendar, Date}
-
 import com.patson.data.Constants._
+import com.patson.data.LinkSource.DetailType
 import com.patson.data.UserSource.dateFormat
 import com.patson.model._
 import com.patson.model.airplane._
@@ -34,6 +34,18 @@ object LinkSource {
     
     loadLinksByQueryString(queryString, criteria.map(_._2), loadDetails)
   }
+
+  def loadFlightLinksByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    var queryString = BASE_QUERY
+
+    queryString += " WHERE "
+    for (i <- 0 until criteria.size) {
+      queryString += criteria(i)._1 + " = ? AND "
+    }
+    queryString += "transport_type = " + TransportType.FLIGHT.id
+
+    loadLinksByQueryString(queryString, criteria.map(_._2), loadDetails).map(_.asInstanceOf[Link])
+  }
   
   def loadLinksByIds(ids : List[Int], loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
     if (ids.isEmpty) {
@@ -61,7 +73,7 @@ object LinkSource {
       
       val resultSet = preparedStatement.executeQuery()
       
-      val links = new ListBuffer[Link]()
+      val links = new ListBuffer[Transport]()
       
       val linkIds : Set[Int] = new HashSet[Int]
       val airportIds : Set[Int] = new HashSet[Int]
@@ -100,26 +112,46 @@ object LinkSource {
         }
         
         if (fromAirport.isDefined && toAirport.isDefined && airline.isDefined) {
-          val link = Link(
-            fromAirport.get,
-            toAirport.get,
-            airline.get,
-            LinkClassValues.getInstance(resultSet.getInt("price_economy"), resultSet.getInt("price_business"), resultSet.getInt("price_first")),
-            resultSet.getInt("distance"),
-            LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
-            resultSet.getInt("quality"),
-            resultSet.getInt("duration"),
-            resultSet.getInt("frequency"),
-            FlightType(resultSet.getInt("flight_type")),
-            resultSet.getInt("flight_number"))
+          val transportType = TransportType(resultSet.getInt("transport_type"))
+          val link = {
+            import TransportType._
+            transportType match {
+              case FLIGHT =>
+                Link(
+                  fromAirport.get,
+                  toAirport.get,
+                  airline.get,
+                  LinkClassValues.getInstance(resultSet.getInt("price_economy"), resultSet.getInt("price_business"), resultSet.getInt("price_first")),
+                  resultSet.getInt("distance"),
+                  LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
+                  resultSet.getInt("quality"),
+                  resultSet.getInt("duration"),
+                  resultSet.getInt("frequency"),
+                  FlightType(resultSet.getInt("flight_type")),
+                  resultSet.getInt("flight_number"))
+              case SHUTTLE =>
+                //from : Airport, to : Airport, airline: Airline, distance : Int, var capacity: LinkClassValues, duration : Int, var frequency : Int, var id : Int = 0
+                Shuttle(
+                  fromAirport.get,
+                  toAirport.get,
+                  airline.get,
+                  resultSet.getInt("distance"),
+                  LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
+                  resultSet.getInt("duration")
+                )
+            }
+
+          }
           link.id = resultSet.getInt("id")
 
-          assignedAirplaneCache.get(link.id).foreach { airplaneAssignments =>
-            link.setAssignedAirplanes(airplaneAssignments)
-          }
-          if (assignedAirplaneCache.isEmpty) { //then try to load the assigned model by the record
-            AirplaneModelCache.getModel(resultSet.getInt("airplane_model")).foreach {
-              model => link.setAssignedModel(model)
+          if (link.isInstanceOf[Link]) {
+            assignedAirplaneCache.get(link.id).foreach { airplaneAssignments =>
+              link.asInstanceOf[Link].setAssignedAirplanes(airplaneAssignments)
+            }
+            if (assignedAirplaneCache.isEmpty) { //then try to load the assigned model by the record
+              AirplaneModelCache.getModel(resultSet.getInt("airplane_model")).foreach {
+                model => link.asInstanceOf[Link].setAssignedModel(model)
+              }
             }
           }
           
@@ -252,42 +284,54 @@ object LinkSource {
     }
   }
   
-  def loadLinkById(linkId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : Option[Link] = {
-    val result = loadLinksByCriteria(List(("id", linkId)), loadDetails)
+  def loadFlightLinkById(linkId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : Option[Link] = {
+    val result = loadFlightLinksByCriteria(List(("id", linkId)), loadDetails)
     if (result.isEmpty) {
       None
     } else {
       Some(result(0))
     }
   }
-  def loadLinkByAirportsAndAirline(fromAirportId : Int,  toAirportId : Int, airlineId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : Option[Link] = {
-    val result = loadLinksByCriteria(List(("from_airport", fromAirportId), ("to_airport", toAirportId), ("airline", airlineId)), loadDetails)
+  def loadFlightLinkByAirportsAndAirline(fromAirportId : Int, toAirportId : Int, airlineId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : Option[Link] = {
+    val result = loadFlightLinksByCriteria(List(("from_airport", fromAirportId), ("to_airport", toAirportId), ("airline", airlineId)), loadDetails)
     if (result.isEmpty) {
       None
     } else {
       Some(result(0))
     }
   }
-  def loadLinksByAirports(fromAirportId : Int, toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) : List[Link] = {
-    loadLinksByCriteria(List(("from_airport", fromAirportId), ("to_airport", toAirportId)), loadDetails)
+  def loadFlightLinksByAirports(fromAirportId : Int, toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) : List[Link] = {
+    loadFlightLinksByCriteria(List(("from_airport", fromAirportId), ("to_airport", toAirportId)), loadDetails)
   }
-  
+
   def loadAllLinks(loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
       loadLinksByCriteria(List.empty, loadDetails)
   }
-  
-  def loadLinksByAirlineId(airlineId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
-    loadLinksByCriteria(List(("airline", airlineId)), loadDetails)
+
+  def loadAllFlightLinks(loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadFlightLinksByCriteria(List.empty, loadDetails)
   }
-  
-  def loadLinksByFromAirport(fromAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
-    loadLinksByCriteria(List(("from_airport", fromAirportId)), loadDetails)
+
+  def loadFlightLinksByAirlineId(airlineId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadFlightLinksByCriteria(List(("airline", airlineId)), loadDetails)
   }
-  
-  def loadLinksByToAirport(toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
-    loadLinksByCriteria(List(("to_airport", toAirportId)), loadDetails)
+
+  def loadFlightLinksByFromAirport(fromAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadFlightLinksByCriteria(List(("from_airport", fromAirportId)), loadDetails)
   }
-  
+
+  def loadFlightLinksByFromAirportAndAirlineId(fromAirportId : Int, airlineId: Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadFlightLinksByCriteria(List(("from_airport", fromAirportId), ("airline", airlineId)), loadDetails)
+  }
+
+  def loadFlightLinksByToAirportAndAirlineId(toAirportId : Int, airlineId: Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadFlightLinksByCriteria(List(("to_airport", toAirportId), ("airline", airlineId)), loadDetails)
+  }
+
+  def loadFlightLinksByToAirport(toAirportId : Int, loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
+    loadFlightLinksByCriteria(List(("to_airport", toAirportId)), loadDetails)
+  }
+
 //  def saveLink2(link : Link) : Option[Link] = {
 //       case Some(generatedId) =>
 //         link.id = generatedId
@@ -296,12 +340,24 @@ object LinkSource {
 //         None
 //     }
 //  }
-  
-  def saveLink(link : Link) : Option[Link] = {
-    val (fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Int, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, flightNumber : Int, assignedAirplanes : Map[Airplane, LinkAssignment]) = (link.from.id, link.to.id, link.airline.id, link.price, link.distance, link.capacity, link.rawQuality, link.duration, link.frequency, link.flightType, link.flightNumber, link.getAssignedAirplanes)
-     //open the hsqldb
+
+    //[T <: RequestType](t: T)
+  def saveLink[T <: Transport](link : T) : Option[T] = {
+    val (fromAirportId : Int, toAirportId : Int, airlineId : Int, price : LinkClassValues, distance : Int, capacity : LinkClassValues, rawQuality : Int,  duration : Int, frequency : Int, flightType : FlightType.Value, flightNumber : Int, assignedAirplanes : Map[Airplane, LinkAssignment]) = {
+      link.transportType match {
+        case TransportType.FLIGHT =>
+          val flightLink = link.asInstanceOf[Link]
+          (flightLink.from.id, flightLink.to.id, flightLink.airline.id, flightLink.price, flightLink.distance, flightLink.capacity, flightLink.rawQuality, flightLink.duration, flightLink.frequency, flightLink.flightType, flightLink.flightNumber, flightLink.getAssignedAirplanes)
+        case TransportType.SHUTTLE =>
+          val shuttle = link.asInstanceOf[Shuttle]
+          (shuttle.from.id, shuttle.to.id, shuttle.airline.id, shuttle.price, shuttle.distance, shuttle.capacity, Shuttle.QUALITY, shuttle.duration, shuttle.frequency, shuttle.flightType, 0, Map.empty)
+      }
+
+
+    }
+    //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model, from_country, to_country) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model, from_country, to_country, transport_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
     try {
       preparedStatement.setInt(1, fromAirportId)
@@ -319,13 +375,18 @@ object LinkSource {
       preparedStatement.setInt(13, frequency)
       preparedStatement.setInt(14, flightType.id)
       preparedStatement.setInt(15, flightNumber)
-      preparedStatement.setInt(16, link.getAssignedModel().map(_.id).getOrElse(0))
+      if (link.isInstanceOf[Link]) {
+        preparedStatement.setInt(16, link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+      } else {
+        preparedStatement.setNull(16, Types.INTEGER)
+      }
       preparedStatement.setString(17, link.from.countryCode)
       preparedStatement.setString(18, link.to.countryCode)
-      
+      preparedStatement.setInt(19, link.transportType.id)
+
       val updateCount = preparedStatement.executeUpdate()
       //println("Saved " + updateCount + " link!")
-      
+
       if (updateCount > 0) {
         val generatedKeys = preparedStatement.getGeneratedKeys
         if (generatedKeys.next()) {
@@ -335,7 +396,9 @@ object LinkSource {
           updateAssignedPlanes(generatedId, assignedAirplanes)
           link.id = generatedId
 
-          ChangeHistorySource.saveLinkChange(buildChangeHistory(None, Some(link)))
+          if (link.isInstanceOf[Link]) {
+            ChangeHistorySource.saveLinkChange(buildChangeHistory(None, Some(link.asInstanceOf[Link])))
+          }
 
           return Some(link)
         }
@@ -346,11 +409,11 @@ object LinkSource {
       connection.close()
     }
   }
-  
-  def saveLinks(links : List[Link]) : Int = {
+
+  def saveLinks[T <: Transport](links : List[T]) : Int = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_TABLE + "(from_airport, to_airport, airline, price_economy, price_business, price_first, distance, capacity_economy, capacity_business, capacity_first, quality, duration, frequency, flight_type, flight_number, airplane_model, from_country, to_country, transport_type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     var updateCount = 0
     val changeHistoryEntries = ListBuffer[LinkChange]()
     connection.setAutoCommit(false)
@@ -366,23 +429,37 @@ object LinkSource {
         preparedStatement.setInt(8, link.capacity(ECONOMY))
         preparedStatement.setInt(9, link.capacity(BUSINESS))
         preparedStatement.setInt(10, link.capacity(FIRST))
-        preparedStatement.setInt(11, link.rawQuality)
+        if (link.isInstanceOf[Link]) {
+          preparedStatement.setInt(11, link.asInstanceOf[Link].rawQuality)
+        } else {
+          preparedStatement.setNull(11, Types.INTEGER)
+        }
         preparedStatement.setInt(12, link.duration)
         preparedStatement.setInt(13, link.frequency)
         preparedStatement.setInt(14, link.flightType.id)
-        preparedStatement.setInt(15, link.flightNumber)
-        preparedStatement.setInt(16, link.getAssignedModel().map(_.id).getOrElse(0))
-        
+        if (link.isInstanceOf[Link]) {
+          preparedStatement.setInt(15, link.asInstanceOf[Link].flightNumber)
+          preparedStatement.setInt(16, link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+        } else {
+          preparedStatement.setNull(15, Types.INTEGER)
+          preparedStatement.setNull(16, Types.INTEGER)
+        }
+        preparedStatement.setString(17, link.from.countryCode)
+        preparedStatement.setString(18, link.to.countryCode)
+        preparedStatement.setInt(19, link.transportType.id)
+
+
         updateCount += preparedStatement.executeUpdate()
         //println("Saved " + updateCount + " link!")
-        
+
         if (updateCount > 0) {
           val generatedKeys = preparedStatement.getGeneratedKeys
           if (generatedKeys.next()) {
             val generatedId = generatedKeys.getInt(1)
             link.id = generatedId
-
-            changeHistoryEntries.append(buildChangeHistory(None, Some(link)))
+            if (link.isInstanceOf[Link]) {
+              changeHistoryEntries.append(buildChangeHistory(None, Some(link.asInstanceOf[Link])))
+            }
           }
         }
       }
@@ -392,18 +469,18 @@ object LinkSource {
       connection.close()
     }
 
-    links.foreach { link =>
-      updateAssignedPlanes(link.id, link.getAssignedAirplanes())
+    links.filter(_.transportType == TransportType.FLIGHT).foreach { link =>
+      updateAssignedPlanes(link.id, link.asInstanceOf[Link].getAssignedAirplanes())
     }
 
     ChangeHistorySource.saveLinkChanges(changeHistoryEntries.toList)
     updateCount
   }
-  
-  def updateLink(link : Link) = {
+
+  def updateLink(link : Transport) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val existingLink = loadLinkById(link.id)
+    val existingLink = loadFlightLinkById(link.id)
     val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, airplane_model = ?, last_update = ? WHERE id = ?")
 
     try {
@@ -413,20 +490,31 @@ object LinkSource {
       preparedStatement.setInt(4, link.capacity(ECONOMY))
       preparedStatement.setInt(5, link.capacity(BUSINESS))
       preparedStatement.setInt(6, link.capacity(FIRST))
-      preparedStatement.setInt(7, link.rawQuality)
+      if (link.isInstanceOf[Link]) {
+        preparedStatement.setInt(7, link.asInstanceOf[Link].rawQuality)
+      } else {
+        preparedStatement.setNull(7, Types.INTEGER)
+      }
       preparedStatement.setInt(8, link.duration)
       preparedStatement.setInt(9, link.frequency)
       preparedStatement.setInt(10, link.flightType.id)
-      preparedStatement.setInt(11, link.flightNumber)
-      preparedStatement.setInt(12, link.getAssignedModel().map(_.id).getOrElse(0))
+      if (link.isInstanceOf[Link]) {
+        preparedStatement.setInt(11, link.asInstanceOf[Link].flightNumber)
+        preparedStatement.setInt(12, link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+      } else {
+        preparedStatement.setNull(11, Types.INTEGER)
+        preparedStatement.setNull(12, Types.INTEGER)
+      }
       preparedStatement.setTimestamp(13, new java.sql.Timestamp(new Date().getTime()))
       preparedStatement.setInt(14, link.id)
       
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
 
-      if (hasChange(existingLink.get, link)) {
-        ChangeHistorySource.saveLinkChange(buildChangeHistory(existingLink, Some(link)))
+      if (link.isInstanceOf[Link]) {
+        if (hasChange(existingLink.get, link)) {
+          ChangeHistorySource.saveLinkChange(buildChangeHistory(existingLink.map(_.asInstanceOf[Link]), Some(link.asInstanceOf[Link])))
+        }
       }
 
       updateCount
@@ -436,7 +524,7 @@ object LinkSource {
     }
   }
 
-  def updateLinks(links : List[Link]) = {
+  def updateLinks[T <: Transport](links : List[T]) = {
     //open the hsqldb
     val connection = Meta.getConnection()
     val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, airplane_model = ?, last_update = ? WHERE id = ?")
@@ -452,18 +540,30 @@ object LinkSource {
         preparedStatement.setInt(4, link.capacity(ECONOMY))
         preparedStatement.setInt(5, link.capacity(BUSINESS))
         preparedStatement.setInt(6, link.capacity(FIRST))
-        preparedStatement.setInt(7, link.rawQuality)
+        if (link.isInstanceOf[Link]) {
+          preparedStatement.setInt(7, link.asInstanceOf[Link].rawQuality)
+        } else {
+          preparedStatement.setNull(7, Types.INTEGER)
+        }
         preparedStatement.setInt(8, link.duration)
         preparedStatement.setInt(9, link.frequency)
         preparedStatement.setInt(10, link.flightType.id)
-        preparedStatement.setInt(11, link.flightNumber)
-        preparedStatement.setInt(12, link.getAssignedModel().map(_.id).getOrElse(0))
+        if (link.isInstanceOf[Link]) {
+          preparedStatement.setInt(11, link.asInstanceOf[Link].flightNumber)
+          preparedStatement.setInt(12, link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+        } else {
+          preparedStatement.setNull(11, Types.INTEGER)
+          preparedStatement.setNull(12, Types.INTEGER)
+        }
         preparedStatement.setTimestamp(13, new java.sql.Timestamp(new Date().getTime()))
         preparedStatement.setInt(14, link.id)
         preparedStatement.addBatch()
 
-        if (hasChange(existingLinks.get(link.id).get, link)) {
-          changeEntries.append(buildChangeHistory(existingLinks.get(link.id), Some(link)))
+        if (link.transportType == TransportType.FLIGHT) {
+          val flightLink = link.asInstanceOf[Link]
+          if (hasChange(existingLinks.get(link.id).get.asInstanceOf[Link], flightLink)) {
+            changeEntries.append(buildChangeHistory(existingLinks.get(flightLink.id).map(_.asInstanceOf[Link]), Some(flightLink)))
+          }
         }
       }
       
@@ -478,7 +578,7 @@ object LinkSource {
     
   }
 
-  def hasChange(existingLink : Link, newLink : Link) : Boolean = {
+  def hasChange(existingLink : Transport, newLink : Transport) : Boolean = {
     newLink.capacity.economyVal != existingLink.capacity.economyVal ||
     newLink.capacity.businessVal != existingLink.capacity.businessVal ||
     newLink.capacity.firstVal != existingLink.capacity.firstVal ||
@@ -604,7 +704,9 @@ object LinkSource {
       val changeEntries = ListBuffer[LinkChange]()
       purgingLinks.foreach {
         case (linkId, link) =>
-          changeEntries.append(buildChangeHistory(Some(link), None))
+          if (link.isInstanceOf[Link]) {
+            changeEntries.append(buildChangeHistory(Some(link.asInstanceOf[Link]), None))
+          }
       }
 
       ChangeHistorySource.saveLinkChanges(changeEntries.toList)
@@ -700,9 +802,15 @@ object LinkSource {
           preparedStatement.setInt(29, linkConsumption.link.frequency)
           preparedStatement.setInt(30, linkConsumption.link.duration)
           preparedStatement.setInt(31, linkConsumption.link.flightType.id)
-          preparedStatement.setInt(32, linkConsumption.link.flightNumber)
-          preparedStatement.setInt(33, linkConsumption.link.getAssignedModel().map(_.id).getOrElse(0))
-          preparedStatement.setInt(34, linkConsumption.link.rawQuality)
+          if (linkConsumption.link.isInstanceOf[Link]) {
+            preparedStatement.setInt(32, linkConsumption.link.asInstanceOf[Link].flightNumber)
+            preparedStatement.setInt(33, linkConsumption.link.asInstanceOf[Link].getAssignedModel().map(_.id).getOrElse(0))
+            preparedStatement.setInt(34, linkConsumption.link.asInstanceOf[Link].rawQuality)
+          } else {
+            preparedStatement.setNull(32, Types.INTEGER)
+            preparedStatement.setNull(33, Types.INTEGER)
+            preparedStatement.setNull(34, Types.INTEGER)
+          }
           preparedStatement.setDouble(35, linkConsumption.satisfaction)
           preparedStatement.setInt(36, linkConsumption.cycle)
           preparedStatement.executeUpdate()

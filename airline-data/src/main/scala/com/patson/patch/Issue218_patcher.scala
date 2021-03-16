@@ -28,7 +28,7 @@ object Issue218_patcher extends App {
 
   def patchAirplaneConfiguration() = {
     var count = 0
-    val links =LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
+    val links =LinkSource.loadAllFlightLinks(LinkSource.FULL_LOAD)
     links.foreach { link =>
       if (link.getAssignedAirplanes().size > 0) {
         val updatedAssignments: Map[Airplane, LinkAssignment] = link.getAssignedAirplanes().view.map {

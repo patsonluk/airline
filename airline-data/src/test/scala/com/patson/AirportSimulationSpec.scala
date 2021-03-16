@@ -89,9 +89,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        assert(AirportSimulation.getPenalty(consumptions.toList) == 0)
        
        val singleMinorDelaySmallAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == smallAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == smallAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.minorDelayCount = 1
              newLink
            })
@@ -100,9 +100,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
          }
        }
        val singleMinorDelayLargeAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == largeAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == largeAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.minorDelayCount = 1
              newLink
            })
@@ -111,9 +111,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
          }
        }
        val singleMajorDelaySmallAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == smallAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == smallAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.majorDelayCount = 1
              newLink
            })
@@ -123,9 +123,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        }
        
        val singleMajorDelayLargeAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == largeAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == largeAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.majorDelayCount = 1
              newLink
            })
@@ -135,9 +135,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        }
        
        val singleCancellationSmallAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == smallAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == smallAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.cancellationCount = 1
              newLink
            })
@@ -147,9 +147,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        }
        
        val singleCancellationLargeAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == largeAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == largeAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.cancellationCount = 1
              newLink
            })
@@ -159,9 +159,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        }
        
        val allMinorDelaySmallAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == smallAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == smallAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.minorDelayCount = consumption.link.frequency
              newLink
            })
@@ -170,9 +170,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
          }
        }
        val allMinorDelayLargeAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == largeAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == largeAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.minorDelayCount = consumption.link.frequency
              newLink
            })
@@ -181,9 +181,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
          }
        }
        val allMajorDelaySmallAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == smallAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == smallAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.majorDelayCount = consumption.link.frequency
              newLink
            })
@@ -193,9 +193,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        }
        
        val allMajorDelayLargeAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == largeAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == largeAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.majorDelayCount = consumption.link.frequency
              newLink
            })
@@ -205,9 +205,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        }
        
        val allCancellationSmallAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == smallAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == smallAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.cancellationCount = consumption.link.frequency
              newLink
            })
@@ -217,9 +217,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        }
        
        val allCancellationLargeAirplaneConsumptions = consumptions.map { consumption =>
-         if (consumption.link.getAssignedModel().get == largeAirplaneModel) {
+         if (consumption.link.asInstanceOf[Link].getAssignedModel().get == largeAirplaneModel) {
            consumption.copy(link = {
-             val newLink = consumption.link.copy()
+             val newLink = consumption.link.asInstanceOf[Link].copy()
              newLink.cancellationCount = consumption.link.frequency
              newLink
            })
@@ -230,7 +230,7 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        
        val allMinorDelayConsumptions = consumptions.map { consumption =>
          consumption.copy(link = {
-           val newLink = consumption.link.copy()
+           val newLink = consumption.link.asInstanceOf[Link].copy()
            newLink.minorDelayCount = consumption.link.frequency
            newLink
          })
@@ -238,7 +238,7 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        
        val allMajorDelayConsumptions = consumptions.map { consumption =>
          consumption.copy(link = {
-           val newLink = consumption.link.copy()
+           val newLink = consumption.link.asInstanceOf[Link].copy()
            newLink.majorDelayCount = consumption.link.frequency
            newLink
          })
@@ -246,7 +246,7 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
        
        val allCancellationConsumptions = consumptions.map { consumption =>
          consumption.copy(link = {
-           val newLink = consumption.link.copy()
+           val newLink = consumption.link.asInstanceOf[Link].copy()
            newLink.cancellationCount = consumption.link.frequency
            newLink
          })

@@ -29,3 +29,8 @@ ADD PRIMARY KEY (`airport`, `airline`, `specialization_type`);
 
 ALTER TABLE `airline_v2`.`airplane`
 ADD COLUMN `purchase_rate` DECIMAL(4,3) NULL DEFAULT 1 AFTER `home`;
+
+ALTER TABLE `airline_v2`.`link`
+ADD COLUMN `transport_type` SMALLINT NULL AFTER `to_country`;
+
+UPDATE `airline_v2`.`link` SET `transport_type` = 0 WHERE `transport_type` IS NULL;

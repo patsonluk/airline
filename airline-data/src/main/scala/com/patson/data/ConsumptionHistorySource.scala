@@ -157,7 +157,7 @@ object ConsumptionHistorySource {
   def loadConsumptionsByAirport(airportId : Int) : Map[Link, Int] = {
     val connection = Meta.getConnection()
     try {
-      val links = LinkSource.loadLinksByFromAirport(airportId) ++ LinkSource.loadLinksByToAirport(airportId)
+      val links = LinkSource.loadFlightLinksByFromAirport(airportId) ++ LinkSource.loadFlightLinksByToAirport(airportId)
       if (links.isEmpty) {
         Map.empty
       } else {
@@ -259,7 +259,7 @@ object ConsumptionHistorySource {
         PASSENGER_HISTORY_TABLE + "_" + (cycleDelta * -1)
       }
 
-    LinkSource.loadLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
+    LinkSource.loadFlightLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
       case Some(link) =>
         val connection = Meta.getConnection()
         try {
@@ -335,7 +335,7 @@ object ConsumptionHistorySource {
   }
   
   def loadConsumptionByLinkId(linkId : Int) : List[LinkConsumptionHistory] = {
-    LinkSource.loadLinkById(linkId) match {
+    LinkSource.loadFlightLinkById(linkId) match {
       case Some(link) => 
         val connection = Meta.getConnection()
         val standardPrice = Pricing.computeStandardPriceForAllClass(link.distance, link.flightType)

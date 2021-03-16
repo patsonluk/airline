@@ -220,7 +220,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       case None => NotFound("Alliance with " + allianceId + " is not found")
       case Some(alliance) => {
         val links = alliance.members.flatMap { allianceMember =>
-          LinkSource.loadLinksByAirlineId(allianceMember.airline.id)
+          LinkSource.loadFlightLinksByAirlineId(allianceMember.airline.id)
         }
 
         Ok(Json.obj("links" -> Json.toJson(links)(SimpleLinkWrites), "members" -> Json.toJson(alliance.members.map(_.airline))(AllianceAirlinesWrites)))

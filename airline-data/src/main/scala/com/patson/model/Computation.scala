@@ -1,10 +1,12 @@
 package com.patson.model
 
-import com.patson.PassengerSimulation.{LINK_COST_TOLERANCE_FACTOR}
+import com.patson.PassengerSimulation.LINK_COST_TOLERANCE_FACTOR
 import com.patson.model.airplane._
-import com.patson.data.{AirlineSource, AirplaneSource, AllianceSource, BankSource, CountrySource, CycleSource, OilSource}
+import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, BankSource, CountrySource, CycleSource, OilSource}
 import com.patson.Util
 import com.patson.util.{AirlineCache, AllianceRankingUtil}
+
+import scala.collection.mutable.ListBuffer
 
 object Computation {
   val MODEL_COUNTRY_CODE = "US"
@@ -243,5 +245,15 @@ object Computation {
         800
       }
     Computation.calculateDuration(standardSpeed, distance)
+  }
+
+  def getDomesticAirportWithinRange(principalAirport : Airport, range : Int) = { //range in km
+    val affectedAirports = ListBuffer[Airport]()
+    AirportSource.loadAirportsByCountry(principalAirport.countryCode).foreach { airport =>
+      if (Computation.calculateDistance(principalAirport, airport) <= range) {
+        affectedAirports.append(airport)
+      }
+    }
+    affectedAirports.toList
   }
 }

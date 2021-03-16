@@ -130,7 +130,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
         var routeJson = Json.arr()
         var index = 0
         var previousArrivalMinutes = 0
-        val schedule : Map[Link, TimeSlot] = generateRouteSchedule(route.links.map(_._1)).toMap
+        val schedule : Map[Transport, TimeSlot] = generateRouteSchedule(route.links.map(_._1)).toMap
         var principleAirline = route.links(0)._1.airline
         route.links.foreach {
           case(link, linkClass, inverted) => {
@@ -153,37 +153,50 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
             var linkJson = Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
-              "flightCode" -> LinkUtil.getFlightCode(airline, link.flightNumber),
               "linkClass" -> linkClass.label,
               "fromAirportId" -> from.id,
               "fromAirportName" -> from.name,
               "fromAirportIata" -> from.iata,
               "fromAirportCity" -> from.city,
+              "fromAirportText" -> from.displayText,
               "fromAirportCountryCode" -> from.countryCode,
               "toAirportId" -> to.id,
               "toAirportName" -> to.name,
               "toAirportIata" -> to.iata,
               "toAirportCity" -> to.city,
+              "toAirportText" -> to.displayText,
               "duration" -> link.duration,
               "toAirportCountryCode" -> to.countryCode,
               "price" -> link.price(linkClass),
               "departure" -> departureMinutes,
-              "arrival" -> arrivalMinutes
+              "arrival" -> arrivalMinutes,
+              "transportType" -> link.transportType.toString
             )
+
+            if (link.isInstanceOf[Link]) {
+              linkJson = linkJson + ("flightCode" -> JsString(LinkUtil.getFlightCode(airline, link.asInstanceOf[Link].flightNumber)))
+            }
 
             if (codeShareFlight) {
               linkJson = linkJson + ("operatorAirlineName" -> JsString(link.airline.name)) +  ("operatorAirlineId" -> JsNumber(link.airline.id))
             }
 
-            detailedLinkLookup.get(link.id).foreach { detailedLink =>
-              linkJson = linkJson + ("computedQuality" -> JsNumber(detailedLink.computedQuality))
-              detailedLink.getAssignedModel().foreach { model =>
-                linkJson = linkJson + ("airplaneModelName" -> JsString(model.name))
-              }
+            detailedLinkLookup.get(link.id).foreach { detailedTransport =>
+              detailedTransport.transportType match {
+                case TransportType.FLIGHT =>
+                  val detailedLink = detailedTransport.asInstanceOf[Link]
+                  linkJson = linkJson + ("computedQuality" -> JsNumber(detailedLink.computedQuality))
+                  detailedLink.getAssignedModel().foreach { model =>
+                    linkJson = linkJson + ("airplaneModelName" -> JsString(model.name))
+                  }
 
-              linkJson = linkJson + ("features" -> Json.toJson(getLinkFeatures(detailedLink).map(_.toString)))
+                  linkJson = linkJson + ("features" -> Json.toJson(getLinkFeatures(detailedLink).map(_.toString)))
+                case TransportType.SHUTTLE =>
+                  //linkJson = linkJson + ("features" -> Json.toJson(List(LinkFeature.SHUTTLE.toString)))
+              }
+              linkJson = linkJson + ("transportType" -> JsString(detailedTransport.transportType.toString))
             }
-                        previousArrivalMinutes = arrivalMinutes
+            previousArrivalMinutes = arrivalMinutes
 
             routeJson = routeJson.append(linkJson)
             index += 1
@@ -268,7 +281,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     }
   }
 
-  case class SimpleRoute(links : List[(Link, LinkClass, Boolean)]) {
+  case class SimpleRoute(links : List[(Transport, LinkClass, Boolean)]) {
     val totalPrice = links.map {
       case (link, linkClass, _) => link.price(linkClass)
     }.sum
@@ -281,8 +294,8 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 //    (((random.nextDouble() + 2) * 24 * 60) / frequency).toInt + 15 //some randomness
 //  }
 
-  def generateRouteSchedule(links : List[Link]) : List[(Link, TimeSlot)] = {
-    val scheduleOptions : ListBuffer[List[(Link, TimeSlot)]] = ListBuffer()
+  def generateRouteSchedule(links : List[Transport]) : List[(Transport, TimeSlot)] = {
+    val scheduleOptions : ListBuffer[List[(Transport, TimeSlot)]] = ListBuffer()
     val random = new Random()
     for (i <- 0 until 7) {
       var previousLinkArrivalTime : TimeSlot = TimeSlot(i, random.nextInt(24), random.nextInt(60))
@@ -293,7 +306,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       }
       scheduleOptions.append(scheduleOption)
     }
-    val sortedScheduleOptions: mutable.Seq[List[(Link, TimeSlot)]] = scheduleOptions.sortBy {
+    val sortedScheduleOptions: mutable.Seq[List[(Transport, TimeSlot)]] = scheduleOptions.sortBy {
       case (scheduleOption) =>  {
         var previousArrivalMinutes = 0
         scheduleOption.foreach {
@@ -309,7 +322,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     sortedScheduleOptions(0)//find the one with least total duration
   }
 
-  def generateDepartureTime(link : Link, after : TimeSlot) : TimeSlot = {
+  def generateDepartureTime(link : Transport, after : TimeSlot) : TimeSlot = {
     val availableSlots = Scheduling.getLinkSchedule(link).sortBy(_.totalMinutes)
     availableSlots.find(_.compare(after) > 0).getOrElse(availableSlots(0)) //find the first slot that is right after the "after option"
   }
@@ -400,7 +413,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 
   object LinkFeature extends Enumeration {
     type LinkFeature = Value
-    val WIFI, BEVERAGE_SERVICE, HOT_MEAL_SERVICE, PREMIUM_DRINK_SERVICE, IFE, POWER_OUTLET, GAME, POSH, LOUNGE = Value //No LOUNGE for now, code is too ugly...
+    val WIFI, BEVERAGE_SERVICE, HOT_MEAL_SERVICE, PREMIUM_DRINK_SERVICE, IFE, POWER_OUTLET, GAME, POSH, SHUTTLE, LOUNGE  = Value //No LOUNGE for now, code is too ugly...
   }
 
   object LinkRemark extends Enumeration {

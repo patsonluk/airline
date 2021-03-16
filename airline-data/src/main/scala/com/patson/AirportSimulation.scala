@@ -29,23 +29,23 @@ object AirportSimulation {
 
 
 
-  def airportSimulation(cycle: Int, linkConsumptions : List[LinkConsumptionDetails], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
+  def airportSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("starting airport simulation")
     println("loading all airports")
     //do decay
     val allAirports = AirportSource.loadAllAirports(true)
     println("finished loading all airports")
 
-    val links = LinkSource.loadAllLinks(LinkSource.ID_LOAD)
-    val linksByFromAirportId = links.groupBy(_.from.id)
-    val linksByToAirportId = links.groupBy(_.to.id)
+    val flightLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD).filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link])
+    val linksByFromAirportId = flightLinks.groupBy(_.from.id)
+    val linksByToAirportId = flightLinks.groupBy(_.to.id)
 
     println("Compute awareness")
     simulateAwareness(allAirports, linksByFromAirportId, linksByToAirportId)
 
     //update the loyalist on airports based on link consumption
     println("Adjust loyalist by link consumptions")
-    simulateLoyalists(allAirports, consumptionResult, cycle)
+    simulateLoyalists(allAirports, linkRidershipDetails, cycle)
 
 
     println("Finished simulation of loyalty by link consumption")
@@ -117,9 +117,9 @@ object AirportSimulation {
     baseCycle + delta * LOYALIST_HISTORY_SAVE_INTERVAL
   }
 
-  def simulateLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) = {
+  def simulateLoyalists(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) = {
     val existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]] = LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport.id)
-    val (updatingLoyalists, deletingLoyalists) = computeLoyalists(allAirports, consumptionResult, existingLoyalistByAirportId)
+    val (updatingLoyalists, deletingLoyalists) = computeLoyalists(allAirports, linkRidershipDetails, existingLoyalistByAirportId)
     println(s"Updating ${updatingLoyalists.length} loyalists entries")
     LoyalistSource.updateLoyalists(updatingLoyalists)
 
@@ -142,24 +142,22 @@ object AirportSimulation {
       println(s"Saving ${historyEntries.length} loyalist history entries")
       LoyalistSource.updateLoyalistHistory(historyEntries)
     }
-
-
-
-
   }
 
   val MAX_LOYALIST_FLIP_RATIO = 1
   val NEUTRAL_SATISFACTION = 0.6
-  private[patson] def computeLoyalists(allAirports : List[Airport], consumptionResult : immutable.Map[(PassengerGroup, Airport, Route), Int],  existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) = {
+  private[patson] def computeLoyalists(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) = {
     val updatingLoyalists = ListBuffer[Loyalist]()
     val deletingLoyalists = ListBuffer[Loyalist]()
 
-    consumptionResult.groupBy(_._1._1.fromAirport).foreach {
+    linkRidershipDetails.groupBy(_._1._1.fromAirport).foreach {
       case ((fromAirport, passengersFromThisAirport)) =>
         val loyalistDeltaOfAirlines = Map[Int, Int]() //airlineId, delta
         //passengersFromThisAirport.filter(_._1._1.preference.loyaltySensitivity > 0).toList.foreach { //only count pax that actually cares about loyalty now
         passengersFromThisAirport.toList.foreach {
-          case ((passengerGroup, toAirport, route), paxCount) => route.links.foreach { linkConsideration =>
+          case ((passengerGroup, toAirport, route), paxCount) =>
+            val flightLinks = route.links.filter(_.link.transportType == TransportType.FLIGHT) //only flights would generate loyalist
+            flightLinks.foreach { linkConsideration =>
             val link = linkConsideration.link
             val preferredLinkClass = passengerGroup.preference.preferredLinkClass
             val standardPrice = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass)
@@ -169,16 +167,17 @@ object AirportSimulation {
 
 
             var conversionRatio =
-            if (satisfaction < NEUTRAL_SATISFACTION) {
-              //(satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
-              0
-            } else {
-              val multiplier = Math.min(MAX_LOYALIST_FLIP_RATIO, passengerGroup.preference.loyaltySensitivity + 0.3)
-              (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
-            }
+              if (satisfaction < NEUTRAL_SATISFACTION) {
+                //(satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
+                0
+              } else {
+                val multiplier = Math.min(MAX_LOYALIST_FLIP_RATIO, passengerGroup.preference.loyaltySensitivity + 0.3)
+                (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
+              }
             //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
 
-            conversionRatio = conversionRatio / route.links.length // for example if the route has 3 legs, it will convert at most 1/3 of the ratio
+
+            conversionRatio = conversionRatio / flightLinks.length // for example if the route has 3 legs, it will convert at most 1/3 of the ratio
 
             val loyalistDelta = (paxCount * conversionRatio).toInt
             val existingDelta = loyalistDeltaOfAirlines.getOrElse(link.airline.id, 0)
