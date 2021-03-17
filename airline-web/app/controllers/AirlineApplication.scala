@@ -832,7 +832,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   def resetAirlineConsideration(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     var result = Json.toJson(Computation.getResetAmount(airlineId))(ResetAmountInfoWrites).asInstanceOf[JsObject]
     getResetRejection(request.user, false).foreach { rejection =>
-      result = result + ("bankruptrejection" -> JsString(rejection))
+      result = result + ("bankruptRejection" -> JsString(rejection))
     }
     getResetRejection(request.user, true).foreach { rejection =>
       result = result + ("rebuildRejection" -> JsString(rejection))
