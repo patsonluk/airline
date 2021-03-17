@@ -164,7 +164,7 @@ function createCampaign() {
          }) ,
         dataType: 'json',
         success: function(result) {
-            closeCampaignDetails()
+            closeCampaignDetails(true)
             updateCampaignTable()
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -188,7 +188,7 @@ function updateCampaign() {
          }) ,
         dataType: 'json',
         success: function(result) {
-            closeCampaignDetails()
+            closeCampaignDetails(true)
             updateCampaignTable()
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -209,7 +209,7 @@ function deleteCampaign() {
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             success: function(result) {
-                closeCampaignDetails()
+                closeCampaignDetails(true)
                 updateCampaignTable()
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -373,6 +373,9 @@ function updateCampaignDetails(campaign) {
 
 }
 
-function closeCampaignDetails() {
+function closeCampaignDetails(updated) {
+    if (updated) {
+        updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
+    }
     $('#campaignModal .campaignDetails').fadeOut(500)
 }

@@ -456,7 +456,9 @@ function disableButton(button, reason) {
        $(button).after('<div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 50, 50, 0.2)"></div>')
     }
 
-    $(button).data("originalClickFunction", $(button).attr("onclick"))
+    $(button).each(function() {
+      $(this).data("originalClickFunction", $(this).attr("onclick"))
+    })
 
 //    if (!$(button).data("replacedTitle")) { //only store the title if it was NOT replaced (ie the original one)
 //        $(button).data("originalTitle", $(button).attr("title"))
@@ -537,25 +539,21 @@ function getGoogleZoomLevel(distanceMeterAsMaxDimension, $container, latitude) {
 
 function enableButton(button) {
     $(button).removeClass("disabled")
-    var addedClickFunction = $(button).data("addedClickFunction")
-    if (addedClickFunction) {
-        $(button).unbind("click", addedClickFunction)
-    }
-    var originalClickFunction = $(button).data("originalClickFunction")
-    if (originalClickFunction) {
-        $(button).attr("onclick", originalClickFunction) //set it back
-    }
-    if ($(button).is(':input')) { //then have to manually remove overlay
-         $(button).next('div.overlay').remove()
-    }
 
-//    if ($(button).data("originalTitle")) {
-//        $(button).attr("title",  $(button).data("originalTitle"))
-//    } else {
-//        $(button).removeAttr("title")
-//    }
-//
-//    $(button).data("replacedTitle", false)
+    $(button).each(function() {
+        var addedClickFunction = $(this).data("addedClickFunction")
+        if (addedClickFunction) {
+            $(this).unbind("click", addedClickFunction)
+        }
+        var originalClickFunction = $(this).data("originalClickFunction")
+        if (originalClickFunction) {
+            $(this).attr("onclick", originalClickFunction) //set it back
+        }
+        if ($(this).is(':input')) { //then have to manually remove overlay
+             $(this).next('div.overlay').remove()
+        }
+    })
+
 
     //remove tooltip
 
