@@ -49,9 +49,10 @@ function updateOlympicTable(sortProperty, sortOrder) {
         }
 		row.append("<div class='cell'>" + event.remainingDuration + " week(s)</div>")
 		row.append("<div class='cell'>" + event.status + "</div>")
+		row.data('event', event)
 
 		row.click(function() {
-		   loadOlympicsDetails(row, event)
+		   loadOlympicsDetails(row)
 		})
 
 		olympicsTable.append(row)
@@ -62,7 +63,8 @@ function updateOlympicTable(sortProperty, sortOrder) {
 	}
 }
 
-function loadOlympicsDetails(row, event) {
+function loadOlympicsDetails(row) {
+    var event = row.data('event')
     row.siblings().removeClass("selected")
     row.addClass("selected")
     $("#olympicsDetails").data("eventId", event.id)
@@ -478,6 +480,7 @@ function confirmOlympicsVotes() {
 	    dataType: 'json',
 	    success: function(airline) {
 	        closeModal($("#olympicsVoteModal"))
+	        loadOlympicsDetails($('#olympicsTable .table-row.selected'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -573,6 +576,7 @@ function pickEventReward(eventId, categoryId, optionId) {
         success: function(result) {
             closeEventRewardModal()
             updateAirlineInfo(activeAirline.id)
+            loadOlympicsDetails($('#olympicsTable .table-row.selected'))
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
