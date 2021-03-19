@@ -793,6 +793,7 @@ object Meta {
       "lounge_upkeep LONG, " +
       "lounge_cost LONG, " +
       "lounge_income LONG, " +
+      "shuttle_cost LONG, " +
       "fuel_profit LONG, " +
       "depreciation LONG," +
       "overtime_compensation LONG," +

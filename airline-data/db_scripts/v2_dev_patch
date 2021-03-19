@@ -34,3 +34,6 @@ ALTER TABLE `airline_v2`.`link`
 ADD COLUMN `transport_type` SMALLINT NULL AFTER `to_country`;
 
 UPDATE `airline_v2`.`link` SET `transport_type` = 0 WHERE `transport_type` IS NULL;
+
+ALTER TABLE `airline_v2`.`others_income`
+ADD COLUMN `shuttle_cost` MEDIUMTEXT NULL DEFAULT NULL AFTER `lounge_income`;
