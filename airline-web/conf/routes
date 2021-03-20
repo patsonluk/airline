@@ -175,6 +175,8 @@ GET     /search-alliance  controllers.SearchApplication.searchAlliance(input: St
 
 POST    /search-link-history    controllers.ChangeHistoryApplication.searchLinkHistory()
 
+GET     /research-link/:fromAirportId/:toAirportId  controllers.SearchApplication.researchLink(fromAirportId : Int, toAirportId : Int)
+
 #PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
 #GET		 /links							  controllers.LinkApplication.getAllLinks
 #GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes

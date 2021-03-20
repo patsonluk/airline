@@ -17,6 +17,7 @@ import play.api.libs.json.{Json, _}
 import play.api.mvc._
 
 import scala.collection.mutable.{ListBuffer, Set}
+import scala.math.BigDecimal.RoundingMode
 
 
 class Application @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -499,35 +500,37 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     val airlineDeltas = ListBuffer[(Airline, Int)]()
     val airport = AirportCache.getAirport(airportId).get
     val currentCycle = CycleSource.loadCycle()
-    historyEntries.toList.sortBy(_._1).lastOption match {
-      case Some((lastCycle, lastEntry)) =>
-        val topAirlineIds = lastEntry.sortBy(_.entry.amount).takeRight(MAX_LOYALIST_HISTORY_AIRLINE).map(_.entry.airline.id).toSet
-        val reportingAirlineIds : List[Int] = airlineIdOption match {
-          case Some(airlineId) => (topAirlineIds + airlineId).toList
-          case None => topAirlineIds.toList
-        }
+    var result =
+      historyEntries.toList.sortBy(_._1).lastOption match {
+        case Some((lastCycle, lastEntry)) =>
+          val topAirlineIds = lastEntry.sortBy(_.entry.amount).takeRight(MAX_LOYALIST_HISTORY_AIRLINE).map(_.entry.airline.id).toSet
+          val reportingAirlineIds : List[Int] = airlineIdOption match {
+            case Some(airlineId) => (topAirlineIds + airlineId).toList
+            case None => topAirlineIds.toList
+          }
 
-        val processedEntries : List[(Int, List[LoyalistHistory])] = historyEntries.toList.sortBy(_._1).map {
-          case((cycle, entries)) =>
-            val entriesByAirlineId = entries.map(entry => (entry.entry.airline.id, entry)).toMap
-            val paddedEntries = reportingAirlineIds.map {  reportingAirlineId =>
-              entriesByAirlineId.getOrElse(reportingAirlineId, LoyalistHistory(Loyalist(airport, AirlineCache.getAirline(reportingAirlineId).get, 0), cycle)) //pad with zero entries
-            }
-            val cycleDelta = currentCycle - cycle
-            if (cycleDelta > 1 &&  cycleDelta <= AirportSimulation.LOYALIST_HISTORY_SAVE_INTERVAL + 1) { //then it is the closest historical entry from current turn
-              reportingAirlineIds.foreach { reportingAirlineId =>
-                val previousLoyalistCount = entriesByAirlineId.get(reportingAirlineId).map(_.entry.amount).getOrElse(0)
-                airlineDeltas.append((AirlineCache.getAirline(reportingAirlineId).get, (currentLoyalistByAirlineId.get(reportingAirlineId).map(_.amount).getOrElse(0) - previousLoyalistCount) / cycleDelta))
+          val processedEntries : List[(Int, List[LoyalistHistory])] = historyEntries.toList.sortBy(_._1).map {
+            case((cycle, entries)) =>
+              val entriesByAirlineId = entries.map(entry => (entry.entry.airline.id, entry)).toMap
+              val paddedEntries = reportingAirlineIds.map {  reportingAirlineId =>
+                entriesByAirlineId.getOrElse(reportingAirlineId, LoyalistHistory(Loyalist(airport, AirlineCache.getAirline(reportingAirlineId).get, 0), cycle)) //pad with zero entries
               }
-            }
+              val cycleDelta = currentCycle - cycle
+              if (cycleDelta > 1 &&  cycleDelta <= AirportSimulation.LOYALIST_HISTORY_SAVE_INTERVAL + 1) { //then it is the closest historical entry from current turn
+                reportingAirlineIds.foreach { reportingAirlineId =>
+                  val previousLoyalistCount = entriesByAirlineId.get(reportingAirlineId).map(_.entry.amount).getOrElse(0)
+                  airlineDeltas.append((AirlineCache.getAirline(reportingAirlineId).get, (currentLoyalistByAirlineId.get(reportingAirlineId).map(_.amount).getOrElse(0) - previousLoyalistCount) / cycleDelta))
+                }
+              }
 
-            (cycle, paddedEntries)
-        }
+              (cycle, paddedEntries)
+          }
 
-        Ok(Json.obj("current" -> currentLoyalistEntries, "history" -> processedEntries, "airlineDeltas" -> airlineDeltas.toList.sortBy(_._2)(Ordering[Int].reverse)))
-      case None =>
-        Ok(Json.obj("current" -> currentLoyalistEntries))
-    }
+          Json.obj("current" -> currentLoyalistEntries, "history" -> processedEntries, "airlineDeltas" -> airlineDeltas.toList.sortBy(_._2)(Ordering[Int].reverse))
+        case None =>
+          Json.obj("current" -> currentLoyalistEntries)
+      }
+    Ok(result)
   }
 
   def getScaleDetails() = Action {
@@ -564,9 +567,14 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   }
 
   def getAirportChampions(airportId : Int) = Action {
-    Ok(Json.toJson(ChampionUtil.loadAirportChampionInfoByAirport(airportId).sortBy(_.ranking)))
+    var result = Json.arr()
+    val airport = AirportCache.getAirport(airportId, true).get
+    ChampionUtil.loadAirportChampionInfoByAirport(airportId).sortBy(_.ranking).foreach { info =>
+      result = result.append(Json.toJson(info).asInstanceOf[JsObject] + ("loyalty" -> JsNumber(BigDecimal(airport.getAirlineLoyalty(info.loyalist.airline.id)).setScale(2, RoundingMode.HALF_EVEN))))
+    }
+    Ok(result)
   }
-  
+
   def getAirportProjects(airportId : Int) = Action {
     val airportProjects = AirportSource.loadAirportProjectsByAirport(airportId)
     Ok(Json.toJson(airportProjects))

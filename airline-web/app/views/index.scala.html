@@ -1290,6 +1290,7 @@
 										<div class="cell" style="width: 5%">&nbsp;</div>
 										<div class="cell" style="width: 50%">Airline</div>
 										<div class="cell" style="width: 20%; text-align: right;">Loyalist</div>
+										<div class="cell" style="width: 20%; text-align: right;">Loyalty</div>
 										<div class="cell" style="width: 20%; text-align: right;">Reputation Boost</div>
 									</div>
 								</div>
@@ -3002,7 +3003,8 @@
 							  <div style="float:right;" class="right" onclick="titleNavigate($(this), 1)"><img class='button' src='@routes.Assets.versioned("images/icons/24px/arrow.png")' style="opacity: 0.8"></div>
 						  </div>
 					    <div class="titleSelection selected" data-search-type="route">Tickets</div>
-					    <div class="titleSelection" data-search-type="history">History</div>
+						<div class="titleSelection" data-search-type="history">History</div>
+						<div class="titleSelection" data-search-type="research">Research</div>
 					  </div>
 					  <div class="routeSearch searchContainer" style="display: flex; flex-flow: column; flex-grow : 1;">
 						  <div style="margin-top: 10px">
@@ -3149,6 +3151,87 @@
 								</div>
 							</div>
                          </div>
+					  </div>
+
+					  <div class="research searchContainer" style="display: flex; flex-flow: column; flex-grow : 1;">
+						  <div style="margin-top: 10px">
+							  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="airport">
+										  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.research input.fromAirport'))" onkeydown="searchKeyDown(event, $('div.research input.fromAirport'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
+								  </div>
+								  <div style="float: left; width : 50%; position: relative;">
+									  <div class="searchInput" data-search-type="airport">
+										  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.research input.toAirport'))" onkeydown="searchKeyDown(event, $('div.research input.toAirport'))">
+										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+									  </div>
+									  <div class="searchResult"></div>
+								  </div>
+								  <div style="clear: both;"></div>
+							  </div>
+
+							  <div class="button search" tabindex="103" onkeypress="searchButtonKeyPress(event, $(this))" onclick="researchFlight($('div.research input.fromAirport').data('selectedId'), $('div.research input.toAirport').data('selectedId'))">Search</div>
+						  </div>
+
+						  <div id="researchSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px; height: 0px;"><!-- need height otherwise the scroll would not work -->
+							  <div style="width: 600px; max-width:100%; margin: auto;">
+								  <div style=" float: left; width:50%; min-width: 200px; padding-left: 10%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; " class="fromAirport">
+									  <img class="fromAirport roundImage" style="height: 150px; width:150px; max-height: 30vw; max-width: 30vw;">
+									  <div style="display:inline-block; align-self: center; margin-top:5px; font-weight: bold;" class="fromAirportText"></div>
+									  <div class="table" style="width: 100%">
+										  <div class="table-row">
+											  <div class="label"><h5>Population</h5></div>
+											  <div class="value population" style="text-align:right;  padding-right: 10px;"></div>
+										  </div>
+										  <div class="table-row">
+											  <div class="label"><h5>Income Level</h5></div>
+											  <div class="value incomeLevel" style="text-align:right; padding-right: 10px; "></div>
+										  </div>
+									  </div>
+								  </div>
+								  <div style=" float: right; width:50%; min-width: 200px; padding-right: 10%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center;" class="toAirport">
+									  <img class="toAirport roundImage" style="height: 150px; width:150px; max-height: 30vw; max-width: 30vw;">
+									  <div style="display:inline-block; align-self: center; margin-top:5px; font-weight: bold;" class="toAirportText"></div>
+									  <div class="table" style="width: 100%">
+										  <div class="table-row">
+											  <div class="label"><h5>Population</h5></div>
+											  <div class="value from population" style="text-align:right; padding-right: 10px;"></div>
+										  </div>
+										  <div class="table-row">
+											  <div class="label"><h5>Income Level</h5></div>
+											  <div class="value from incomeLevel" style="text-align:right; padding-right: 10px;"></div>
+										  </div>
+									  </div>
+								  </div>
+								  <div style="clear:both;"></div>
+								  <div class="table" style="margin:auto; width: 300px; max-width:100%; margin-top: 20px;">
+									  <div class="table-row">
+										  <div class="label" style="width:50%"><h5>Distance</h5></div>
+										  <div class="value" style="text-align:right; width:50%"><span class="distance"></span>&nbsp;km</div>
+									  </div>
+									  <div class="table-row">
+										  <div class="label" style="width:50%"><h5>Direct Demand (Y/J/F)</h5></div>
+										  <div class="value" style="text-align:right; width:50%"><span class="demand"></span></div>
+									  </div>
+								  </div>
+							  </div>
+
+							  <h4>Existing Flights</h4>
+							  <div class="table data links" style="width: 100%">
+								  <div class='table-header'>
+									  <div class="cell" style="width: 30%;"><h5>Airline</h5></div>
+									  <div class="cell" style="width: 24%;"><h5>Price</h5></div>
+									  <div class="cell" style="width: 20%;"><h5>Capacity</h5></div>
+									  <div class="cell" style="width: 13%;"><h5>Quality</h5></div>
+									  <div class="cell" style="width: 13%;"><h5>Freq.</h5></div>
+								  </div>
+							  </div>
+							  <div class="linksPie" align="center"></div>
+
+						  </div>
 					  </div>
 
 

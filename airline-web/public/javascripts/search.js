@@ -56,6 +56,10 @@ function refreshSearchDiv(selectedDiv) {
     } else if (searchTitleType === 'history') {
         $('#searchCanvas div.historySearch').show();
         $('#searchCanvas div.historySearch').siblings('.searchContainer').hide();
+    } else if (searchTitleType === 'research') {
+        $('#searchCanvas div.research').show();
+        $('#researchSearchResult').hide();
+        $('#searchCanvas div.research').siblings('.searchContainer').hide();
     }
 
 }
@@ -737,6 +741,84 @@ function search(event, input, retry) {
         }
 	});
 }
+
+
+function researchFlight(fromAirportId, toAirportId) {
+    if (fromAirportId && toAirportId) {
+        var url = "research-link/" + fromAirportId + "/" + toAirportId
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(result) {
+                var fromAirport = result.fromAirport
+                var toAirport = result.toAirport
+                var fromAirportId = fromAirport.id
+                var toAirportId = toAirport.id
+                loadAirportImage(fromAirportId, $('#researchSearchResult img.fromAirport') )
+                loadAirportImage(toAirportId, $('#researchSearchResult img.toAirport'))
+                $("#researchSearchResult .fromAirportText").text(result.fromAirportText)
+                $("#researchSearchResult .fromAirport .population").text(commaSeparateNumber(result.fromAirport.population))
+                $("#researchSearchResult .fromAirport .incomeLevel").text(result.fromAirport.incomeLevel)
+                $("#researchSearchResult .toAirportText").text(result.toAirportText)
+                $("#researchSearchResult .toAirport .population").text(commaSeparateNumber(result.toAirport.population))
+                $("#researchSearchResult .toAirport .incomeLevel").text(result.toAirport.incomeLevel)
+
+                $("#researchSearchResult .distance").text(result.distance)
+                $("#researchSearchResult .demand").text(toLinkClassValueString(result.directDemand))
+
+                $("#researchSearchResult .table.links .table-row").remove()
+
+                $.each(result.links, function(index, link) {
+                    var $row = $("<div class='table-row'><div class='cell'>" + link.airlineName
+                        + "</div><div class='cell'>" + toLinkClassValueString(link.price, "$")
+                        + "</div><div class='cell'>" + toLinkClassValueString(link.capacity)
+                        + "</div><div class='cell'>" + link.computedQuality
+                        + "</div><div class='cell'>" + link.frequency + "</div></div>")
+                    $('#researchSearchResult .table.links').append($row)
+                })
+                if (result.links.length == 0) {
+                    var $row = $("<div class='table-row'><div class='cell'>-"
+                                            + "</div><div class='cell'>-"
+                                            + "</div><div class='cell'>-"
+                                            + "</div><div class='cell'>-"
+                                            + "</div><div class='cell'>-</div></div>")
+                    $('#researchSearchResult .table.links').append($row)
+                }
+
+                assignAirlineColors(result.consumptions, "airlineId")
+                plotPie(result.consumptions, null, $("#researchSearchResult .linksPie"), "airlineName", "soldSeats")
+
+                $('#researchSearchResult').show()
+
+                //plot consumptions
+             },
+             error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(JSON.stringify(jqXHR));
+                            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+             },
+             complete:function() {
+                          //Hide the loader over here
+                          input.parent().find(".spinner").hide()
+                          currentSearchAjax = undefined
+             },
+             beforeSend: function() {
+                 $('body .loadingSpinner').show()
+             },
+             complete: function(){
+                 $('body .loadingSpinner').hide()
+             }
+        });
+    }
+}
+
+
+
+
+
+
 
 function getCountryTextEntry(country) {
    return country.countryName + "(" + country.countryCode + ")"

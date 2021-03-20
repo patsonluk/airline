@@ -166,8 +166,7 @@ object Patchers extends App {
 
 
   def main(): Unit = {
-    //airplaneModelPatcher()
-    println(TransportType.FLIGHT.id)
+    airplaneModelPatcher()
   }
 }
 

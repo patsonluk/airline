@@ -1,8 +1,11 @@
 package controllers
 
-import com.patson.data.{AllianceSource, ConsumptionHistorySource, LinkSource}
+import com.patson.DemandGenerator
+import com.patson.data.{AllianceSource, ConsumptionHistorySource, CountrySource, LinkSource}
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.{PassengerType, _}
+import com.patson.util.AirportCache
+
 import javax.inject.Inject
 import play.api.libs.json._
 import play.api.mvc._
@@ -409,7 +412,38 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     result.view.mapValues(_.toList).toMap
   }
 
+  def researchLink(fromAirportId : Int, toAirportId : Int) = Action {
+    val fromAirport = AirportCache.getAirport(fromAirportId, true).get
+    val toAirport = AirportCache.getAirport(toAirportId, true).get
+    val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+    val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
+    val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+    val directDemand = directBusinessDemand + directTouristDemand
 
+
+    //basic details
+    var result = Json.obj(
+      "fromAirport" -> fromAirport,
+      "fromAirportText" -> fromAirport.displayText,
+      "toAirport" -> toAirport,
+      "toAirportText" -> toAirport.displayText,
+      "distance" -> Computation.calculateDistance(fromAirport, toAirport),
+      "directDemand" -> directDemand,
+      "businessPassengers" -> directBusinessDemand.total,
+      "touristPassengers" -> directTouristDemand.total,
+    )
+
+
+    //load existing links
+    val links = LinkSource.loadFlightLinksByAirports(fromAirportId, toAirportId) ++ LinkSource.loadFlightLinksByAirports(toAirportId, fromAirportId)
+    result = result + ("links" -> Json.toJson(links))
+    val consumptions = LinkSource.loadLinkConsumptionsByLinksId(links.map(_.id))
+
+
+
+    result = result + ("consumptions" -> Json.toJson(consumptions)(Writes.traversableWrites(MinimumLinkConsumptionWrite)))
+    Ok(result)
+  }
 
   object LinkFeature extends Enumeration {
     type LinkFeature = Value
