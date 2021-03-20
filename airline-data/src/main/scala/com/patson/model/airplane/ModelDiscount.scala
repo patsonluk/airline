@@ -90,6 +90,7 @@ object ModelDiscount {
           if (currentSuppliers.length == 1) {
             val discount = category match {
               case Category.LIGHT => 0.1
+              case Category.REGIONAL => 0.07
               case Category.MEDIUM => 0.05
               case Category.LARGE => 0.02
               case Category.SUPERSONIC => 0

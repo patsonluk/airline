@@ -3,6 +3,7 @@ package com.patson.model.airplane
 import com.patson.model.IdObject
 import com.patson.model.Airline
 import com.patson.model.airplane.Model.Category
+import com.patson.util.AirplaneModelCache
 
 case class Model(name : String, family : String = "", capacity : Int, fuelBurn : Int, speed : Int, range : Int, price : Int, lifespan : Int, constructionTime : Int, manufacturer: Manufacturer, runwayRequirement : Int, imageUrl : String = "", var id : Int = 0) extends IdObject {
   import Model.Type._
@@ -97,10 +98,11 @@ object Model {
 
   object Category extends Enumeration {
     type Category = Value
-    val LIGHT, MEDIUM, LARGE, SUPERSONIC = Value
+    val LIGHT, REGIONAL, MEDIUM, LARGE, SUPERSONIC = Value
     val grouping = Map(
       LIGHT -> List(Type.LIGHT, Type.SMALL),
-      MEDIUM -> List(Type.REGIONAL, Type.MEDIUM),
+      REGIONAL -> List(Type.REGIONAL),
+      MEDIUM -> List(Type.MEDIUM),
       LARGE -> List(Type.LARGE, Type.X_LARGE, Type.JUMBO),
       SUPERSONIC -> List(Type.SUPERSONIC)
     )
@@ -108,6 +110,18 @@ object Model {
     val fromType = (airplaneType : Type.Value) => {
       grouping.find(_._2.contains(airplaneType)).get._1
     }
+
+    val capacityRange : Map[Category.Value, (Int, Int)]= {
+      AirplaneModelCache.allModels.map(_._2).groupBy(_.category).view.mapValues { models =>
+        val sortedByCapacity = models.toList.sortBy(_.capacity)
+        (sortedByCapacity.head.capacity, sortedByCapacity.last.capacity)
+      }.toMap
+    }
+
+    def getCapacityRange(category: Category.Value) = {
+      capacityRange.get(category).getOrElse((0, 0))
+    }
+
   }
 
   //https://en.wikipedia.org/wiki/List_of_jet_airliners

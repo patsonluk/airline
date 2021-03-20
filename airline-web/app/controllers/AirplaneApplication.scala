@@ -728,6 +728,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         categoryInfoJson = categoryInfoJson + ("ownership" -> ownershipJson)
         val categoryDiscount = supplierDiscountInfo(category)
         categoryInfoJson = categoryInfoJson + ("discount" -> JsString(categoryDiscount.description))
+        val (minCapacity, maxCapacity) = Category.getCapacityRange(category)
+        categoryInfoJson = categoryInfoJson + ("minCapacity" -> JsNumber(minCapacity)) + ("maxCapacity" -> JsNumber(maxCapacity))
 
         categoryJson = categoryJson + (category.toString -> categoryInfoJson)
     }
