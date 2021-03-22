@@ -97,7 +97,7 @@ object EventSimulation {
   }
 
   val HOST_COUNTRY_COOLDOWN = 4 //should not be hosting it in the last 4 times
-  val HOST_ZONE_COOLDOWN = 2 //should not be hosting it in last 2 times
+  val HOST_ZONE_COOLDOWN = 1 //should not be hosting it in last time
   def selectCandidates(allAirports : List[Airport]) : List[Airport] = {
     val previousOlympics = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).sortBy(_.startCycle)
 
