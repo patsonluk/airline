@@ -21,6 +21,7 @@ object NegotiationUtil {
   val FREE_LINK_FREQUENCY_THRESHOLD = 5
   val FREE_LINK_DIFFICULTY_THRESHOLD = 10
   val GREAT_SUCCESS_THRESHOLD = 0.95 // 5%
+  val FREE_CAPACITY = 500 //first 500 free
 
 
   def negotiate(info : NegotiationInfo, delegateCount : Int) = {
@@ -156,6 +157,7 @@ object NegotiationUtil {
     val existingFrequency = existingLinkOption.map(_.futureFrequency()).getOrElse(0)
 
     val capacityDelta = normalizedCapacity(newCapacity - existingCapacity)
+
     val frequencyDelta = newFrequency - existingFrequency
     val requirements = ListBuffer[NegotiationRequirement]()
 
@@ -187,7 +189,7 @@ object NegotiationUtil {
       requirements.append(NegotiationRequirement(UPDATE_LINK, UPDATE_BASE_REQUIREMENT * flightTypeMultiplier, "Update Flights"))
     }
 
-    if (capacityDelta > 0) {
+    if (capacityDelta > 0 && newCapacity.total >= FREE_CAPACITY) {
       val capacityChangeCost = capacityDelta.toDouble / 2000
       requirements.append(NegotiationRequirement(INCREASE_CAPACITY, capacityChangeCost * flightTypeMultiplier, s"Capacity increment : $capacityDelta"))
     }
