@@ -94,6 +94,7 @@ object AirportFeaturePatcher extends App {
       "GIG" -> 26, //Rio
       "KOA" -> 25, //Kailua Hawaii
       "NAS" -> 25, //Bahamas (nassau)
+      "DBV" -> 25, //Dubrovnik (Croatia)
       "KEF" -> 24, //Reykjavik
       "FLL" -> 22, //Fort Lauderdale
       "AMS" -> 21, //Amsterdam
