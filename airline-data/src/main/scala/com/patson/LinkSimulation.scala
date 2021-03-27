@@ -589,5 +589,6 @@ object LinkSimulation {
 
   def purgeNegotiationCoolDowns(cycle: Int): Unit = {
     LinkSource.purgeNegotiationCoolDowns(cycle)
+    NegotiationSource.deleteLinkDiscountBeforeExpiry(cycle)
   }
 }
