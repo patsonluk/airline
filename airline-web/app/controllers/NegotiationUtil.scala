@@ -7,7 +7,7 @@ import com.patson.model._
 import com.patson.model.airplane._
 import com.patson.model.negotiation.LinkNegotiationDiscount
 import com.patson.util.{AirportCache, ChampionUtil, CountryCache}
-import controllers.NegotiationDiscountType.{ALLIANCE_BASE, BASE, BELOW_CAPACITY, COUNTRY_RELATIONSHIP, LOYALTY, NEW_AIRLINE, OVER_CAPACITY, PREVIOUS_NEGOTIATION}
+import controllers.NegotiationDiscountType.{ALLIANCE_BASE, BASE, BELOW_CAPACITY, COUNTRY_RELATIONSHIP, LOYALTY, MAIDEN_INTERNATIONAL, NEW_AIRLINE, OVER_CAPACITY, PREVIOUS_NEGOTIATION}
 
 import scala.collection.mutable.ListBuffer
 import scala.math.BigDecimal.RoundingMode
@@ -280,8 +280,23 @@ object NegotiationUtil {
       NegotiationSource.loadLinkDiscounts(airline.id, fromAirport.id, toAirport.id).map { discount =>
         PreviousNegotiationDiscount(discount.discount.toDouble, discount.expiry - CycleSource.loadCycle())
       }
-    }
+    } ++ getMaidenInternationalLinkDiscount(fromAirport, toAirport)
     (fromAirportDiscounts ++ generalDiscounts, toAirportDiscounts ++ generalDiscounts)
+  }
+
+  def getMaidenInternationalLinkDiscount(fromAirport: Airport, toAirport: Airport) = {
+    if (fromAirport.countryCode == toAirport.countryCode) {
+      List.empty
+    } else {
+      val existingLinks =
+        LinkSource.loadFlightLinksByCriteria(List(("from_country", fromAirport.countryCode),("to_country", toAirport.countryCode))) ++
+        LinkSource.loadFlightLinksByCriteria(List(("from_country", toAirport.countryCode),("to_country", fromAirport.countryCode)))
+      if (existingLinks.isEmpty) {
+        List(SimpleNegotiationDiscount(NegotiationDiscountType.MAIDEN_INTERNATIONAL, 0.3))
+      } else {
+        List.empty
+      }
+    }
   }
 
   def getNegotiationDiscountsByAirport(airport : Airport, airline : Airline, allianceMembers : List[AllianceMember]) = {
@@ -508,7 +523,7 @@ object NegotiationRequirementType extends Enumeration {
 
 object NegotiationDiscountType extends Enumeration {
   type NegotiationDiscountType = Value
-  val COUNTRY_RELATIONSHIP, BELOW_CAPACITY, OVER_CAPACITY, LOYALTY, BASE, ALLIANCE_BASE, NEW_AIRLINE, PREVIOUS_NEGOTIATION = Value
+  val COUNTRY_RELATIONSHIP, BELOW_CAPACITY, OVER_CAPACITY, LOYALTY, BASE, ALLIANCE_BASE, NEW_AIRLINE, PREVIOUS_NEGOTIATION, MAIDEN_INTERNATIONAL = Value
 }
 
 case class NegotiationRequirement(requirementType : NegotiationRequirementType.Value, value : Double, description : String) {
@@ -523,6 +538,7 @@ abstract class NegotiationDiscount(val adjustmentType : NegotiationDiscountType.
     case BASE => s"Airline base"
     case ALLIANCE_BASE => s"Alliance member base as ranked champion "
     case NEW_AIRLINE => s"New airline bonus"
+    case MAIDEN_INTERNATIONAL => "No flights between these 2 countries yet"
     case _ => s"Unknown"
   }
 }
