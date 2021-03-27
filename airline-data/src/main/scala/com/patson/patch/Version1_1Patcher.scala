@@ -58,7 +58,7 @@ object Version1_1Patcher extends App {
     AirlineSource.loadAllAirlines().foreach { airline =>
       val updatingLinks = ListBuffer[Link]()
       val updatingAssignedAirplanes = mutable.HashMap[Int, Map[Airplane, LinkAssignment]]()
-      LinkSource.loadLinksByAirlineId(airline.id).foreach { link =>
+      LinkSource.loadFlightLinksByAirlineId(airline.id).foreach { link =>
         if (link.capacity.total > 0) {
           val capacityPerAirplane = link.capacity / link.frequency
           var airplanes = link.getAssignedAirplanes().toList.map(_._1)
@@ -116,7 +116,7 @@ object Version1_1Patcher extends App {
 
     AirlineSource.loadAllAirlines().foreach { airline =>
       val existingConfigurationsByModel = new mutable.HashMap[Model, mutable.HashSet[AirplaneConfiguration]]()
-      val links = LinkSource.loadLinksByAirlineId(airline.id)
+      val links = LinkSource.loadFlightLinksByAirlineId(airline.id)
       links.foreach{ link =>
         if (link.capacity.total > 0) {
           val configurationsForThisModel = existingConfigurationsByModel.getOrElseUpdate(link.getAssignedModel().get, new mutable.HashSet[AirplaneConfiguration]())
@@ -243,7 +243,7 @@ object Version1_1Patcher extends App {
     AirplaneSource.loadAllAirplanes().foreach { airplane =>
       if (!airplane.isSold) { //only patched owned airplane
         val homeBase : Option[Airport] = linkAssignments.get(airplane.id) match {
-          case Some(assignments) => LinkSource.loadLinkById(assignments.assignedLinkIds(0), LinkSource.ID_LOAD).map(link => link.from)
+          case Some(assignments) => LinkSource.loadFlightLinkById(assignments.assignedLinkIds(0), LinkSource.ID_LOAD).map(link => link.from)
           case None => airlinesById(airplane.owner.id).getHeadQuarter().map { _.airport } //unassigned airplanes, find HQ
         }
         homeBase.foreach { base => //if a home base can be determined

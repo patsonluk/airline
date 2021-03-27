@@ -59,9 +59,9 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
     link.setTestingAssignedAirplanes(Map(updatedAirplane -> frequency))
     link.addSoldSeats(LinkClassValues.getInstanceByMap(Map(ECONOMY -> (capacity * loadFactor).toInt)))
     
-    LinkSimulation.computeLinkConsumptionDetail(link, 0)
+    LinkSimulation.computeFlightLinkConsumptionDetail(link, 0)
     
-    val consumptionResult = LinkSimulation.computeLinkConsumptionDetail(link , 0)
+    val consumptionResult = LinkSimulation.computeFlightLinkConsumptionDetail(link , 0)
     consumptionResult
   }
 }

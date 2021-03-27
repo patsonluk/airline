@@ -240,7 +240,8 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         Olympics.getSelectedAirport(eventId) match {
           case Some(selectedAirport) =>
             if (!vote.voteList.isEmpty) {
-              vote.voteList(0).id == selectedAirport.id
+              //vote.voteList(0).id == selectedAirport.id
+              true //as far as a vote is casted it's considered okay now
             } else {
               false
             }

@@ -96,14 +96,25 @@ object EventSimulation {
     selectCandidates(AirportSource.loadAllAirports())
   }
 
-  val HOST_COOLDOWN = 4 //should not be hosting it in the last 4 times
+  val HOST_COUNTRY_COOLDOWN = 4 //should not be hosting it in the last 4 times
+  val HOST_ZONE_COOLDOWN = 2 //should not be hosting it in last 2 times
   def selectCandidates(allAirports : List[Airport]) : List[Airport] = {
-    val previousOlympics = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).sortBy(_.startCycle).takeRight(HOST_COOLDOWN).map(_.asInstanceOf[Olympics])
-    val cooldownCountries : List[String] = previousOlympics.map{ olympics =>
+    val previousOlympics = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).sortBy(_.startCycle)
+
+    val cooldownCountries : List[String] = previousOlympics.takeRight(HOST_COUNTRY_COOLDOWN).map(_.asInstanceOf[Olympics]).map{ olympics =>
       Olympics.getSelectedAirport(olympics.id).map(_.countryCode)
     }.flatten
 
-    val randomizedAirports = Random.shuffle(allAirports.filter(airport => airport.size >= CANDIDATE_MIN_SIZE && airport.population >= CANDIDATE_MIN_POPULATION && !cooldownCountries.contains(airport.countryCode)))
+    val cooldownZones : List[String] = previousOlympics.takeRight(HOST_ZONE_COOLDOWN).map(_.asInstanceOf[Olympics]).map{ olympics =>
+      Olympics.getSelectedAirport(olympics.id).map(_.zone)
+    }.flatten
+
+    val randomizedAirports = Random.shuffle(allAirports.filter { airport =>
+      airport.size >= CANDIDATE_MIN_SIZE &&
+      airport.population >= CANDIDATE_MIN_POPULATION &&
+      !cooldownCountries.contains(airport.countryCode) &&
+      !cooldownZones.contains(airport.zone)
+    })
     val candidates = ListBuffer[Airport]()
     val candidateCountryCodes = mutable.HashSet[String]()
     randomizedAirports.foreach { airport =>
@@ -120,13 +131,7 @@ object EventSimulation {
 
   val AFFECT_RADIUS = 80 //80km
   def simulateOlympicsAffectedAirport(principalAirport : Airport): List[Airport] = {
-    val affectedAirports = ListBuffer[Airport]()
-    AirportSource.loadAirportsByCountry(principalAirport.countryCode).foreach { airport =>
-      if (Computation.calculateDistance(principalAirport, airport) <= AFFECT_RADIUS) {
-        affectedAirports.append(airport)
-      }
-    }
-    affectedAirports.toList
+    Computation.getDomesticAirportWithinRange(principalAirport, AFFECT_RADIUS)
   }
 
   def simulateOlympicsVoteRounds(olympics: Olympics) : List[OlympicsVoteRound] = {

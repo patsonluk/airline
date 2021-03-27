@@ -95,6 +95,7 @@ PUT		 /airlines/:airlineId/airline-code	   controllers.AirlineApplication.setAir
 GET		 /colors			  controllers.AirlineApplication.getColors()
 GET		 /airlines/:airlineId/set-color			  controllers.AirlineApplication.setColor(airlineId : Int, color : String)
 GET		 /airlines/:airlineId/alliance-details  controllers.AllianceApplication.getAirlineAllianceDetails(airlineId : Int)
+GET      /airlines/:airlineId/fleet			  controllers.AirlineApplication.getFleet(airlineId : Int)
 GET		 /alliances  controllers.AllianceApplication.getAlliances()
 GET		 /alliances/:allianceId/details  controllers.AllianceApplication.getAllAllianceDetails(allianceId : Int)
 GET		 /alliances/:allianceId/championed-airports	controllers.AllianceApplication.getAllianceAirportChampions(allianceId : Int)
@@ -130,12 +131,15 @@ POST 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.sa
 DELETE 	 /airlines/:airlineId/campaigns/:campaignId         controllers.CampaignApplication.deleteCampaign(airlineId: Int, campaignId : Int)
 GET 	 /airlines/:airlineId/campaign-airports/:airportId         controllers.CampaignApplication.getCampaignAirports(airlineId: Int, airportId: Int, radius : Int)
 
+
 POST      /airlines/:airlineId/completed-tutorial/:tutorialId     controllers.TutorialApplication.saveCompletedTutorial(airlineId: Int, tutorialId: String, category : String)
 GET      /airlines/:airlineId/completed-tutorial               controllers.TutorialApplication.getCompletedTutorials(airlineId: Int)
 POST      /airlines/:airlineId/tutorial               controllers.TutorialApplication.setSkipTutorial(airlineId : Int, skipTutorial: Boolean)
 
 POST      /airlines/:airlineId/completed-notice/:noticeId     controllers.NoticeApplication.saveCompletedNotice(airlineId: Int, noticeId: String, category : String)
 
+GET      /airlines/:airlineId/airport/:airportId/shuttles     controllers.ShuttleApplication.getShuttles(airlineId: Int, airportId: Int)
+POST      /airlines/:airlineId/airport/:airportId/shuttles     controllers.ShuttleApplication.updateShuttles(airlineId: Int, airportId: Int)
 
 GET     /airlines/:airlineId/profiles   controllers.ProfileApplication.getProfiles(airlineId : Int, airportId : Int)
 PUT     /airlines/:airlineId/profiles/:profileId     controllers.ProfileApplication.buildHqWithProfile(airlineId : Int, airportId : Int, profileId : Int)
@@ -170,6 +174,8 @@ GET     /search-airline  controllers.SearchApplication.searchAirline(input: Stri
 GET     /search-alliance  controllers.SearchApplication.searchAlliance(input: String ?= "")
 
 POST    /search-link-history    controllers.ChangeHistoryApplication.searchLinkHistory()
+
+GET     /research-link/:fromAirportId/:toAirportId  controllers.SearchApplication.researchLink(fromAirportId : Int, toAirportId : Int)
 
 #PUT 	 /test-links 				      controllers.LinkApplication.addTestLink
 #GET		 /links							  controllers.LinkApplication.getAllLinks

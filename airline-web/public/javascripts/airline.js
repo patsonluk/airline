@@ -601,7 +601,7 @@ function highlightLink(linkId, refocus) {
 	if (tempPath) {
 		removeTempPath(tempPath)
 	}
-	
+
 	//highlight the selected link's flight path
 	highlightPath(flightPaths[linkId].path, refocus)
 	
@@ -966,7 +966,7 @@ function updatePlanLinkInfo(linkInfo) {
 		unhighlightLink(selectedLink)
 	}
 	
-	if (!linkInfo.existingLink) { //new link
+	if (!linkInfo.existingLink || !flightPaths[linkInfo.existingLink.id]) { //new link or link show visible (other views)
 		//create a temp path
 		var tempLink = {fromLatitude : linkInfo.fromAirportLatitude, fromLongitude : linkInfo.fromAirportLongitude, toLatitude : linkInfo.toAirportLatitude, toLongitude : linkInfo.toAirportLongitude}
 		//set the temp path

@@ -28,10 +28,12 @@ object Patchers extends App {
   //ADD COLUMN `flight_type` INT(2) NULL AFTER `frequency`;
 
   def patchFlightType() {
-    val updatingLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).map { link =>
+    val updatingLinks = LinkSource.loadAllFlightLinks(LinkSource.FULL_LOAD).map { link =>
       val flightType = Computation.getFlightType(link.from, link.to, link.distance)
       println(flightType.id)
       link.copy(flightType = flightType)
+
+
       //LinkSource.updateLink(link)
     }
 
@@ -133,7 +135,7 @@ object Patchers extends App {
   def patchFlightNumber() = {
     AirlineSource.loadAllAirlines(false).foreach { airline =>
       var counter = 0
-      LinkSource.updateLinks(LinkSource.loadLinksByAirlineId(airline.id).map { link =>
+      LinkSource.updateLinks(LinkSource.loadFlightLinksByAirlineId(airline.id).map { link =>
         counter = counter + 1
         link.copy(flightNumber = counter)
       })

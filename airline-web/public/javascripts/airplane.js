@@ -1343,6 +1343,7 @@ function populatePreferredSuppliers() {
             $.each(result, function(category, info) {
                 var $categorySection = $container.find('.' + category)
                 if ($categorySection.length > 0) { //Super sonic has no section for now...
+                    $categorySection.find('.capacityRange').text(info.minCapacity + " - " + info.maxCapacity)
                     var $supplierList = $categorySection.find('.supplierList')
                     var $discount =  $categorySection.find('.discount')
                     $supplierList.empty()

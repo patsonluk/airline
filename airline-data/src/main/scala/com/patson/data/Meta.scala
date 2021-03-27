@@ -282,6 +282,7 @@ object Meta {
     createAlliance(connection)
     createLounge(connection)
     createLoungeConsumption(connection)
+    createShuttleService(connection)
     createOil(connection)
     createLoanInterestRate(connection)
     createResetUser(connection)
@@ -375,6 +376,7 @@ object Meta {
       "airplane_model SMALLINT," +
       "from_country CHAR(2)," +
       "to_country CHAR(2)," +
+      "transport_type SMALLINT," +
       "last_update DATETIME DEFAULT CURRENT_TIMESTAMP," +
       "FOREIGN KEY(from_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(to_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
@@ -791,6 +793,7 @@ object Meta {
       "lounge_upkeep LONG, " +
       "lounge_cost LONG, " +
       "lounge_income LONG, " +
+      "shuttle_cost LONG, " +
       "fuel_profit LONG, " +
       "depreciation LONG," +
       "overtime_compensation LONG," +
@@ -991,6 +994,25 @@ object Meta {
       "name VARCHAR(256), " +
       "level INTEGER," +
       "status VARCHAR(16)," +
+      "founded_cycle INTEGER," +
+      "PRIMARY KEY (airport, airline), " +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createShuttleService(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + SHUTTLE_SERVICE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + SHUTTLE_SERVICE_TABLE + "(" +
+      "airport INTEGER, " +
+      "airline INTEGER, " +
+      "name VARCHAR(256), " +
+      "level INTEGER," +
       "founded_cycle INTEGER," +
       "PRIMARY KEY (airport, airline), " +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
@@ -1689,7 +1711,7 @@ object Meta {
       "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "category VARCHAR(256)," +
       "id VARCHAR(256), " +
-      "PRIMARY KEY (airline, id)" +
+      "PRIMARY KEY (airline, category, id)" +
       ")")
 
     statement.execute()
@@ -1707,7 +1729,7 @@ object Meta {
       "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "category VARCHAR(256)," +
       "id VARCHAR(256), " +
-      "PRIMARY KEY (airline, id)" +
+      "PRIMARY KEY (airline, category, id)" +
       ")")
 
     statement.execute()
