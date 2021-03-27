@@ -59,8 +59,9 @@ object PromptUtil {
       case None => 0
     }
     val currentLevel = LoyalistNotice.getLevel(totalLoyalist)
+    val threshold = LoyalistNotice.getThreshold(currentLevel)
     if (currentLevel > completedLevel) {
-      val notice = AirlineNotice(airline, LoyalistNotice(currentLevel), s"Reaching $totalLoyalist Loyalists!")
+      val notice = AirlineNotice(airline, LoyalistNotice(currentLevel), s"Reaching $threshold Loyalists!")
       val tutorial = AirlineTutorial(airline, Tutorial("loyalist", ""))
       if (!airline.isSkipTutorial && !completedTutorials.contains(tutorial)) {
         Prompts(ListBuffer(notice), ListBuffer(tutorial))
