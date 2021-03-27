@@ -292,7 +292,7 @@ object NegotiationUtil {
         LinkSource.loadFlightLinksByCriteria(List(("from_country", fromAirport.countryCode),("to_country", toAirport.countryCode))) ++
         LinkSource.loadFlightLinksByCriteria(List(("from_country", toAirport.countryCode),("to_country", fromAirport.countryCode)))
       if (existingLinks.isEmpty) {
-        List(SimpleNegotiationDiscount(NegotiationDiscountType.MAIDEN_INTERNATIONAL, 0.3))
+        List(SimpleNegotiationDiscount(NegotiationDiscountType.MAIDEN_INTERNATIONAL, 0.2))
       } else {
         List.empty
       }
