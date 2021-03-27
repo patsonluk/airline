@@ -11,7 +11,11 @@ case class LoyalistNotice(level : Int) extends Notice(NoticeCategory.LOYALIST) {
 }
 object LoyalistNotice {
   val getLevel = (loyalist : Long) => {
-      Math.log10(loyalist).toInt
+    Math.log10(loyalist).toInt
+  }
+
+  val getThreshold = (level : Int) => {
+    Math.pow(10, level)
   }
 }
 
