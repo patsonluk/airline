@@ -1711,7 +1711,7 @@ object Meta {
       "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "category VARCHAR(256)," +
       "id VARCHAR(256), " +
-      "PRIMARY KEY (airline, id)" +
+      "PRIMARY KEY (airline, category, id)" +
       ")")
 
     statement.execute()
@@ -1729,7 +1729,7 @@ object Meta {
       "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "category VARCHAR(256)," +
       "id VARCHAR(256), " +
-      "PRIMARY KEY (airline, id)" +
+      "PRIMARY KEY (airline, category, id)" +
       ")")
 
     statement.execute()
