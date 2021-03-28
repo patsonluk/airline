@@ -7,6 +7,15 @@ import com.patson.model.Country
 import scala.collection.mutable.ListBuffer
 
 object AdditionalLoader {
+  def loadRemovalAirportIatas() : List[String] = {
+    val removalAirportSource = scala.io.Source.fromFile("additional-airports.csv").getLines()
+    val result = removalAirportSource.filter(!_.startsWith("#")).map(_.trim)
+
+
+    println(s"Removal Airports: $result")
+    result.toList
+  }
+
   def loadAdditionalAirports() : List[Airport] = {
     val additionalAirportSource = scala.io.Source.fromFile("additional-airports.csv").getLines()
     val additionalAirports = ListBuffer[Airport]()
