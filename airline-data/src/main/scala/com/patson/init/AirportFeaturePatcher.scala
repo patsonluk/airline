@@ -234,12 +234,14 @@ object AirportFeaturePatcher extends App {
       "WUH" -> 14, //Wuhan
       "NKG" -> 14, //Nanjing
       "LIM" -> 12, //Lima
+      "MEL" -> 22, //Melbourne
       "CMN" -> 14, //Casablanca
       "NBO" -> 11, //Nairobi
       "DUB" -> 13, //Dublin
       "LOS" -> 13, //Lagos
       "ALG" -> 12, //Algeria
       "MNL" -> 13, //Manila
+      "SGN" -> 11, //Ho Chi Minh City
       "KHH" -> 22 //Kaohsiung
     ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()
