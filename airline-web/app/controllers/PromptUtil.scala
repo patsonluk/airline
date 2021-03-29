@@ -59,7 +59,7 @@ object PromptUtil {
       case None => 0
     }
     val currentLevel = LoyalistNotice.getLevel(totalLoyalist)
-    val threshold = LoyalistNotice.getThreshold(currentLevel)
+    val threshold = LoyalistNotice.getThreshold(currentLevel).toLong
     if (currentLevel > completedLevel) {
       val notice = AirlineNotice(airline, LoyalistNotice(currentLevel), s"Reaching $threshold Loyalists!")
       val tutorial = AirlineTutorial(airline, Tutorial("loyalist", ""))
