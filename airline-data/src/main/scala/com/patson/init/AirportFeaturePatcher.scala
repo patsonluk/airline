@@ -146,6 +146,7 @@ object AirportFeaturePatcher extends App {
       "CEB" -> 16, //Cebu
       "ITO" -> 15, //Hilo hawaii
       "WAW" -> 15, //Warsaw
+      "SAW" -> 15, //Istanbul Sabiha Gökçen
       "KWL" -> 15, //Guilin China
       "DRW" -> 14, //Darwin Australia
       "STX" -> 14, //US Virgin Island
@@ -179,6 +180,7 @@ object AirportFeaturePatcher extends App {
       "EWR" -> 33,
       "SHA" -> 33, //Shanghai Hongqiao
       "LGW" -> 32, //London Gatwick
+      "IST" -> 30, //Istanbul
       "ITM" -> 28,
       "CLT" -> 28,
       "ATL" -> 27,
