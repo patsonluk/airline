@@ -48,6 +48,7 @@ object AirportFeaturePatcher extends App {
       "ARN" -> 20,
       "MEX" -> 18,
       "BRU" -> 18,
+      "DOH" -> 15,
       "WAW" -> 15,
       "LUX" -> 11,
       "BOM" -> 10
@@ -80,6 +81,7 @@ object AirportFeaturePatcher extends App {
       "ORY" -> 32, //Paris Orly
       "GUM" -> 31, //Guam
       "FCO" -> 38, //Rome
+      "JED" -> 32, //Jeddah/Mecca
       "KIX" -> 30,
       "LAS" -> 30, //Vegas
       "MIA" -> 30,
@@ -180,13 +182,14 @@ object AirportFeaturePatcher extends App {
       "EWR" -> 33,
       "SHA" -> 33, //Shanghai Hongqiao
       "LGW" -> 32, //London Gatwick
+      "CAN" -> 32, //Guangzhou
+      "SZX" -> 31, //Shenzhen
       "IST" -> 30, //Istanbul
+      "MEX" -> 30,
       "ITM" -> 28,
       "CLT" -> 28,
       "ATL" -> 27,
       "ORY" -> 25, //Paris Orly
-      "CAN" -> 25, //Guangzhou
-      "SZX" -> 25, //Shenzhen
       "GMP" -> 24, //Seoul Gimpo
       "TSN" -> 23, //Tianjin
       "BHX" -> 22, //Birmingham
@@ -198,12 +201,13 @@ object AirportFeaturePatcher extends App {
       "LGA" -> 19,
       "DUS" -> 18,
       "CGN" -> 18,
-      "MEX" -> 18,
+      "OTP" -> 18,
       "PHL" -> 17,
       "MUC" -> 23,
       "SEA" -> 22,
       "CPT" -> 19,
       "BWI" -> 18, //Baltimore
+      "JED" -> 17, //Jeddah/Mecca
       "MAA" -> 17, //Chennai
       "FUK" -> 20,
       "PUS" -> 22, //Busan
@@ -216,21 +220,27 @@ object AirportFeaturePatcher extends App {
       "NGO" -> 18,
       "MAN" -> 18,
       "HAM" -> 18,
+      "CKG" -> 17, //Chongqing
       "BER" -> 16,
       "BOG" -> 15, //Bogota alpha-
       "YUL" -> 18, //Montreal
       "RUH" -> 15,
+      "CTU" -> 15, //Chengdu
       "SCL" -> 16, //Santiago alpha-
       "DCA" -> 19,
       "ARN" -> 17,
       "SVO" -> 19, //Moscow
       "DME" -> 19, //Moscow
+      "WUH" -> 14, //Wuhan
+      "NKG" -> 14, //Nanjing
+      "LIM" -> 12, //Lima
+      "CMN" -> 14, //Casablanca
+      "NBO" -> 11, //Nairobi
       "DUB" -> 13, //Dublin
+      "LOS" -> 13, //Lagos
+      "ALG" -> 12, //Algeria
       "MNL" -> 13, //Manila
-      "CKG" -> 10, //Chongqing
-      "WUH" -> 10, //Wuhan
-      "CTU" -> 10, //Chengdu
-      "KHH" -> 11 //Kaohsiung
+      "KHH" -> 22 //Kaohsiung
     ), //frankfrut
     DOMESTIC_AIRPORT -> Map[String, Int]()
   ) + (GATEWAY_AIRPORT -> getGatewayAirports().map(iata => (iata, 0)).toMap)
