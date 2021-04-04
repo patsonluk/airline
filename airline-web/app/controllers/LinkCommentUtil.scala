@@ -233,9 +233,9 @@ object LinkComment {
     val ratioDelta = ratio - expectedRatio
 
     val comment =
-      if (ratioDelta < -0.4) {
+      if (ratioDelta < -0.2) {
         Some("I would never travel with any airline other than yours!")
-      } else if (ratioDelta < -0.2) {
+      } else if (ratioDelta < -0.1) {
         Some("I am a fan of your airline!")
       } else if (ratioDelta < 0) {
         Some("I have heard some nice things about your airline.")
