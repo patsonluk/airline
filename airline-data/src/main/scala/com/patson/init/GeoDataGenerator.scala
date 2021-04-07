@@ -241,7 +241,6 @@ object GeoDataGenerator extends App {
     airportResult = adjustAirportSize(airportResult)
 
     val additionalAirports : List[Airport] = AdditionalLoader.loadAdditionalAirports()
-    val removalAirports
 
     airportResult = airportResult ++ additionalAirports
 
