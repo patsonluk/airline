@@ -121,7 +121,7 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
         if (base >= 1) {
           val distanceMultiplier = {
             if (flightType == FlightType.SHORT_HAUL_INTERNATIONAL) {
-              20
+              6
             } else if (flightType ==  FlightType.SHORT_HAUL_INTERCONTINENTAL ||
               flightType ==  FlightType.MEDIUM_HAUL_INTERNATIONAL
             ) {
