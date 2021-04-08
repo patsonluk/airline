@@ -491,7 +491,10 @@ object GeoDataGenerator extends App {
           countries += Country(countryCode, countryCodeToNameMap(countryCode), totalAirportPopulation.toInt, averageIncome.toInt, opennessMap.getOrElse(countryCode, 0))
     }
 
+    CountrySource.purgeAllCountries()
+    println("Truncated all countries")
     CountrySource.saveCountries(countries.toList)
+    println(s"Saved ${countries.length} countries")
 
     CountryMutualRelationshipGenerator.mainFlow()
   }
