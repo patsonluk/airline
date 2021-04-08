@@ -6,7 +6,7 @@ import scala.collection.mutable
 import scala.collection.mutable.Map
 
 object CountryMutualRelationshipGenerator extends App {
-  val AFFILIATIONS = List(
+  lazy val AFFILIATIONS = List(
     Affiliation("EU", 2, List(
       "BE", "GR", "LT", "PT", "BG", "ES", "LU", "RO", "CZ", "FR", "HU", "SI", "DK", "HR", "MT", "SK", "DE", "IT", "NL", "FI", "EE", "CY", "AT", "SE", "IE", "LV", "PL"
     ))
