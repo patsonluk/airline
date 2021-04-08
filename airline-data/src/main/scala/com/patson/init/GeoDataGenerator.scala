@@ -57,6 +57,8 @@ object GeoDataGenerator extends App {
 
     val airports = buildAirportData(getAirport(), getRunway(), cities)
 
+    AirportAnimationPatcher.patchAirportAnimations()
+
     buildCountryData(airports)
 
     Await.result(actorSystem.terminate(), Duration.Inf)

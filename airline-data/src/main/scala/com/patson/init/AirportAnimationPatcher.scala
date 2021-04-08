@@ -5,7 +5,7 @@ import com.patson.model.animation._
 
 object AirportAnimationPatcher extends App {
   import AirportAnimationType._
-  val animations = Array(
+  lazy val animations = Array(
     ("JFK", AIRPORT, "https://player.vimeo.com/video/506825925"),
     ("JFK", CITY, "https://player.vimeo.com/video/506868914"),
     ("JFK", CITY, "https://player.vimeo.com/video/508765597"),
