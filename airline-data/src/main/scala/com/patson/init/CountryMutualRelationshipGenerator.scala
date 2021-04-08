@@ -32,6 +32,7 @@ object CountryMutualRelationshipGenerator extends App {
   }
 
   def affiliationAdjustment(existingMap : mutable.Map[(String, String), Int]) : Map[(String, String), Int] = {
+    println(s"affiliations: $AFFILIATIONS")
     AFFILIATIONS.foreach {
       case Affiliation(id, relationship, members) =>
         members.foreach { memberX =>
