@@ -234,6 +234,9 @@ object GeoDataGenerator extends App {
     val specialAirportNames = AdditionalLoader.loadSpecialAirportNames()
     val removalAirportIatas = AdditionalLoader.loadRemovalAirportIatas()
 
+    println(s"Removal iatas")
+    removalAirportIatas.foreach(println)
+
     var airportResult = adjustAirportByRunway(rawAirportResult.filter { case(CsvAirport(airport, _, scheduledService)) =>
       airport.iata != "" && scheduledService && airport.size > 0 && !removalAirportIatas.contains(airport.iata)
     }, runwayResult) //
