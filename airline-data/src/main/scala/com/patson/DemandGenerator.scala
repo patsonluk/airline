@@ -191,11 +191,11 @@ object DemandGenerator {
       
       //adjust by features
       fromAirport.getFeatures().foreach { feature =>
-        val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType)
+        val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, relationship)
         adjustedDemand += adjustment
       }
       toAirport.getFeatures().foreach { feature => 
-        val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType)
+        val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType, relationship)
         adjustedDemand += adjustment
       }
       

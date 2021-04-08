@@ -12,7 +12,7 @@ abstract class AirportFeature {
   def featureType : AirportFeatureType.Value
   val strengthFactor : Double = strength.toDouble / MAX_STRENGTH
   
-  def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double
+  def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double
 }
 
 object AirportFeature {
@@ -33,7 +33,7 @@ object AirportFeature {
 
 sealed case class InternationalHubFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.INTERNATIONAL_HUB
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType, relationship : Int) : Double = {
     if (airportId == toAirport.id) { //only affect if as a destination
       val multiplier =
         if (passengerType == PassengerType.BUSINESS) { //more obvious for business travelers
@@ -56,7 +56,7 @@ sealed case class InternationalHubFeature(strength : Int) extends AirportFeature
 
 sealed case class VacationHubFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.VACATION_HUB
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     if (toAirport.id == airportId && passengerType == PassengerType.TOURIST) { //only affect if as a destination and tourists
       val goFactor = { //out of how many people, will there be 1 going to this spot per year
         if (flightType == SHORT_HAUL_DOMESTIC) {
@@ -78,7 +78,7 @@ sealed case class VacationHubFeature(strength : Int) extends AirportFeature {
 
 sealed case class FinancialHubFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.FINANCIAL_HUB
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     if (toAirport.id == airportId && passengerType == PassengerType.BUSINESS) { //only affect if as a destination and tourists
       val goFactor = 500 //out of how many people, will there be 1 going to this spot per year
 
@@ -91,7 +91,7 @@ sealed case class FinancialHubFeature(strength : Int) extends AirportFeature {
 
 sealed case class DomesticAirportFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.DOMESTIC_AIRPORT
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     if (FlightType.getCategory(flightType) == FlightCategory.DOMESTIC) {
        (rawDemand * (strengthFactor)).toInt // * 2 demand 
     } else {
@@ -103,15 +103,48 @@ sealed case class DomesticAirportFeature(strength : Int) extends AirportFeature 
 sealed case class GatewayAirportFeature() extends AirportFeature {
   val featureType = AirportFeatureType.GATEWAY_AIRPORT
   def strength = 0
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
-    0
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
+    if (airportId != fromAirport.id) {
+      0
+    } else if (relationship < 0) {
+      0
+    } else if (FlightType.getCategory(flightType) == FlightCategory.DOMESTIC) {
+      0
+    } else {
+      if (
+        fromAirport.getFeatures().map(_.featureType).contains(AirportFeatureType.GATEWAY_AIRPORT) &&
+          toAirport.getFeatures().map(_.featureType).contains(AirportFeatureType.GATEWAY_AIRPORT)
+      ) { //extra demand if both airports are gateway, mostly for tiny island nations
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
+        val base = (fromAirport.power + toAirport.power) / 20000
+
+        if (base >= 1) {
+          val distanceMultiplier = {
+            if (flightType == FlightType.SHORT_HAUL_INTERNATIONAL) {
+              20
+            } else if (flightType ==  FlightType.SHORT_HAUL_INTERCONTINENTAL ||
+              flightType ==  FlightType.MEDIUM_HAUL_INTERNATIONAL
+            ) {
+              3
+            } else {
+              1
+            }
+          }
+          Math.log(base) * distanceMultiplier
+        } else {
+          0
+        }
+      } else {
+        0
+      }
+    }
   }
 }
 
 sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.ISOLATED_TOWN
   val HUB_MIN_POPULATION = 100000 // 
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     if (flightType == SHORT_HAUL_DOMESTIC && toAirport.population >= HUB_MIN_POPULATION) {
       if (rawDemand < 0.01) { //up to 10 
         rawDemand * 1000 
@@ -136,14 +169,14 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
 
 sealed case class OlympicsPreparationsFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.OLYMPICS_PREPARATIONS
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     0
   }
 }
 
 sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.OLYMPICS_IN_PROGRESS
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     0
   }
 }

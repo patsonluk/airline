@@ -21,7 +21,13 @@ object Computation {
   //distance vs max speed
   val speedLimits = List((300, 350), (400, 500), (400, 700))  
   def calculateDuration(airplaneModel: Model, distance : Int) : Int = {
-    calculateDuration(airplaneModel.speed, distance)
+    val speed =
+      if (airplaneModel.category == com.patson.model.airplane.Model.Category.SUPERSONIC) {
+        (airplaneModel.speed * 1.5).toInt //up adjusted for SST
+      } else {
+        airplaneModel.speed
+      }
+    calculateDuration(speed, distance)
   }
   def calculateDuration(airplaneSpeed : Int, distance : Int) = {
     var remainDistance = distance
