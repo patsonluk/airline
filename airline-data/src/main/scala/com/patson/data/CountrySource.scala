@@ -118,7 +118,7 @@ object CountrySource {
   def purgeAllCountries() = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("TRUNCATE " + COUNTRY_TABLE)
+      val preparedStatement = connection.prepareStatement("DELETE FROM " + COUNTRY_TABLE)
       preparedStatement.executeUpdate()
       preparedStatement.close()
     } finally {
