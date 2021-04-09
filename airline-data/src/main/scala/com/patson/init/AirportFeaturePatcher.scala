@@ -160,7 +160,7 @@ object AirportFeaturePatcher extends App {
       "BGI" -> 11, //Barbados
       "IBZ" -> 11, //Ibiza
       "TAO" -> 10, //Qingdao China
-      "GEA" -> 10,
+      "NOU" -> 10, //Nouméa
       "YZF" -> 10, //Yellowknife
       "CUR" -> 10 //Curacao
     ),
