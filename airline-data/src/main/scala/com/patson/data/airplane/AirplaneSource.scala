@@ -201,34 +201,30 @@ object AirplaneSource {
  }
  
  def deleteAirplanesByCriteria (criteria : List[(String, Any)]) = {
-    val connection = Meta.getConnection()
-    
-    var deleteCount = 0
-    try {
-      var queryString = "DELETE FROM  " + AIRPLANE_TABLE 
-      
-      if (!criteria.isEmpty) {
-        queryString += " WHERE "
-        for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
-        }
-        queryString += criteria.last._1 + " = ?"
-      }
-      
-      val preparedStatement = connection.prepareStatement(queryString)
-      
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
-      }
-      
-      deleteCount = preparedStatement.executeUpdate()
-      
-      preparedStatement.close()
-    } finally {
-      connection.close()
-    }
+   val airplanes = loadAirplanesCriteria(criteria)
+   val connection = Meta.getConnection()
 
-    deleteCount
+   if (airplanes.isEmpty) {
+     0
+   } else {
+     var deleteCount = 0
+     try {
+       val idsString = airplanes.map(_.id).mkString(",")
+       val queryString = s"DELETE FROM $AIRPLANE_TABLE WHERE id IN ($idsString)"
+
+       val preparedStatement = connection.prepareStatement(queryString)
+       deleteCount = preparedStatement.executeUpdate()
+
+       preparedStatement.close()
+
+       airplanes.map(_.owner.id).distinct.foreach { airlineId =>
+         AirplaneOwnershipCache.invalidate(airlineId)
+       }
+     } finally {
+       connection.close()
+     }
+     deleteCount
+    }
   }
 
   def saveAirplanes(airplanes : List[Airplane]) = {
