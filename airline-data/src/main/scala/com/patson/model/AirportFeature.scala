@@ -127,7 +127,7 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
             ) {
               3
             } else {
-              1
+              0.25
             }
           }
           Math.log(base) * distanceMultiplier
