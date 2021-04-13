@@ -197,7 +197,7 @@ object AirplaneSource {
  }
  
  def deleteAirplane(airplaneId : Int) = {
-    deleteAirplanesByCriteria(List((s"$AIRPLANE_TABLE.id", airplaneId)))
+    deleteAirplanesByCriteria(List(("a.id", airplaneId)))
  }
  
  def deleteAirplanesByCriteria (criteria : List[(String, Any)]) = {
