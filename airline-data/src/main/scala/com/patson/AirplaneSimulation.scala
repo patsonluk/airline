@@ -86,7 +86,7 @@ object AirplaneSimulation {
 
     AirplaneSource.updateAirplanesDetails(allUpdatingAirplanes.toList)
     allRemovingAirplanes.foreach { airplane =>
-      AirplaneSource.deleteAirplanesByCriteria(List(("id", airplane.id), ("is_sold", true))) //need to be careful here, make sure it is still in 2nd hand market
+      AirplaneSource.deleteAirplanesByCriteria(List((s"${Constants.AIRPLANE_TABLE}.id", airplane.id), ("is_sold", true))) //need to be careful here, make sure it is still in 2nd hand market
     }
     
   }
