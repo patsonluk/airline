@@ -1,7 +1,7 @@
 package com.patson.model
 
 case class ShuttleService(airline : Airline, allianceId : Option[Int], airport : Airport, name : String = "", level : Int, foundedCycle : Int) {
-  val getValue = level * 100000000
+  val getValue = level * 25000000
   val getCapacity = level * 2000
 
   val basicUpkeep : Long = {
