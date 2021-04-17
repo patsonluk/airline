@@ -8,7 +8,8 @@ import com.patson.data.AirplaneSource
 
 object Bank {
   //val LOAN_TERMS = Map(52 -> 0.25 , 2 * 52 -> 0.28, 3 *52 -> 0.32, 5 * 52 -> 0.35)
-  val LOAN_TERMS = List[Int](52, 2 * 52, 3 * 52, 5 * 52)
+  val WEEKS_PER_YEAR = 52
+  val LOAN_TERMS = List[Int](WEEKS_PER_YEAR, 2 * WEEKS_PER_YEAR, 3 * WEEKS_PER_YEAR, 4 * WEEKS_PER_YEAR, 5 * WEEKS_PER_YEAR)
   val MAX_LOANS = 10
   val MIN_LOAN_AMOUNT = 10000
   val MAX_LOAN_AMOUNT = 500000000 //500 million as max
@@ -70,7 +71,7 @@ object Bank {
       val rateIncrementPerYear = 0.005 //0.5% more every extra year
       LOAN_TERMS.map { term =>
         val baseAnnualRate = annualRate
-        val years : Int = term
+        val years : Int = term / WEEKS_PER_YEAR
         val interestRate = baseAnnualRate + (years - 1) * rateIncrementPerYear
         val interest = (loanAmount * interestRate).toLong * years
         val total = loanAmount + interest
