@@ -196,19 +196,13 @@ object AirplaneSimulation {
     
     airplanesWithAssignedLink.foreach { 
       case(airplane, linkAssignments) =>
-        val minDecay = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
-        val maxDecay = minDecay * 2
-        val baseDecayRate = maxDecay - (maxDecay - minDecay) * (owner.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
-        var decayRate =
-          if (linkAssignments.isEmpty) { //not assigned to any links, decay slower
-            baseDecayRate / 3 
-          } else {
-            baseDecayRate
-          }
-        if (decayRate > airplane.condition) {
-          decayRate = airplane.condition
-        }
-        
+        //val minDecay = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
+        //val maxDecay = minDecay * 2
+        //val baseDecayRate = maxDecay - (maxDecay - minDecay) * (owner.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
+        val baseDecayRate = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
+
+        val decayRate = baseDecayRate / 3 + baseDecayRate * (2.0 / 3) * airplane.utilizationRate
+
         val newCondition = airplane.condition - decayRate
         val depreciationRate = computeDepreciationRate(airplane.model, decayRate)
         val newValue = airplane.value - depreciationRate

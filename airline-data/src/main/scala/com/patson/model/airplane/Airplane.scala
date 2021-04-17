@@ -46,6 +46,10 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
     Airplane.MAX_FLIGHT_MINUTES - occupiedFlightMinutes
   }
 
+  lazy val utilizationRate : Double = {
+    (Airplane.MAX_FLIGHT_MINUTES - availableFlightMinutes).toDouble / Airplane.MAX_FLIGHT_MINUTES
+  }
+
 //  lazy val remainingFlightHour = usableFlightHour - linkAssignments.map {
 //    case ((link, hours)) => hours
 //  }.sum
