@@ -785,6 +785,7 @@ package object controllers {
       "airlineId" -> JsNumber(loan.airlineId),
       "borrowedAmount" -> JsNumber(loan.borrowedAmount),
       "interest" -> JsNumber(loan.interest),
+      "interestRate" -> JsNumber(loan.interestRate),
       "remainingAmount" -> JsNumber(loan.remainingAmount),
       "earlyRepaymentFee" -> JsNumber(loan.earlyRepaymentFee),
       "earlyRepayment" -> JsNumber(loan.earlyRepayment),

@@ -9,6 +9,7 @@ case class Loan(airlineId : Int, borrowedAmount : Long, interest : Long, var rem
   val remainingPrincipal = principalWeeklyPayment * remainingTerm
   val earlyRepaymentFee = remainingInterest / 3
   val earlyRepayment = remainingPrincipal + earlyRepaymentFee
+  val interestRate = interest.toDouble / borrowedAmount / (loanTerm / 52)
 }
 
 

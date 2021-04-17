@@ -67,12 +67,12 @@ object Bank {
   }
 
   def getLoanOptions(loanAmount : Long, annualRate : BigDecimal) = {
-      val rateIncrementPerYear = 0.02 //2% more every extra year
+      val rateIncrementPerYear = 0.005 //0.5% more every extra year
       LOAN_TERMS.map { term =>
         val baseAnnualRate = annualRate
-        val extraYears : Int = term / 52 - 1
-        val interestRate = baseAnnualRate + extraYears * rateIncrementPerYear
-        val interest = (loanAmount * interestRate).toLong
+        val years : Int = term
+        val interestRate = baseAnnualRate + (years - 1) * rateIncrementPerYear
+        val interest = (loanAmount * interestRate).toLong * years
         val total = loanAmount + interest
         Loan(airlineId = 0, borrowedAmount = loanAmount, interest = interest, remainingAmount = total, creationCycle = 0, loanTerm = term)
       }
