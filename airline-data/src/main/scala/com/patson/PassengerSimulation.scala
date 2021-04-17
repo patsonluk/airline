@@ -563,7 +563,9 @@ object PassengerSimulation {
             val previousLinkAirlineId = predecessorLink.airline.id
             val currentLinkAirlineId = linkConsideration.link.airline.id
 
-            if (predecessorLink.transportType == TransportType.SHUTTLE || linkConsideration.link.transportType == TransportType.SHUTTLE) {
+            if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
+              isValid = false
+            } else if (predecessorLink.transportType == TransportType.SHUTTLE || linkConsideration.link.transportType == TransportType.SHUTTLE) {
               if (previousLinkAirlineId == currentLinkAirlineId ||
                 (allianceIdByAirlineId.containsKey(previousLinkAirlineId) &&
                   allianceIdByAirlineId.get(previousLinkAirlineId) == allianceIdByAirlineId.get(currentLinkAirlineId))) { //same airline or same alliance - shuttle okay
