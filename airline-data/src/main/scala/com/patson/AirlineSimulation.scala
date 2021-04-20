@@ -388,7 +388,7 @@ object AirlineSimulation {
         println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
     }
     
-    AirlineSource.saveAirlinesInfo(allAirlines, updateBalance = false)
+    AirlineSource.saveAirlinesInfo(allAirlines)
     cashFlows.foreach { //for balance it's safer to use adjust instead of setting it directly
       case(airline, cashFlow) => AirlineSource.adjustAirlineBalance(airline.id, cashFlow)
     }

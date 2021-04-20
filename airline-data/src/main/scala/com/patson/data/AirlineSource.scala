@@ -248,15 +248,12 @@ object AirlineSource {
     }
   }
   
-  def saveAirlinesInfo(airlines : List[Airline], updateBalance : Boolean = true) = {
+  def saveAirlinesInfo(airlines : List[Airline]) = {
     this.synchronized {
       val connection = Meta.getConnection()
       
       var query = "UPDATE " + AIRLINE_INFO_TABLE + " SET "
-      if (updateBalance) {
-        query += "balance = ?, "
-      }
-      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ?, skip_tutorial = ?, initialized= ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?  WHERE airline = ?"
       
       
       try {
@@ -266,10 +263,6 @@ object AirlineSource {
         airlines.foreach { airline =>
           var index = 0
           
-          if (updateBalance) {
-            index += 1
-            updateStatement.setLong(index, airline.getBalance())
-          }
           index += 1
           updateStatement.setDouble(index, airline.getCurrentServiceQuality())
           index += 1
@@ -278,15 +271,6 @@ object AirlineSource {
           updateStatement.setDouble(index, airline.getMaintenanceQuality())
           index += 1
           updateStatement.setDouble(index, airline.getReputation())
-          index += 1
-          updateStatement.setString(index, airline.getCountryCode().getOrElse(null))
-          index += 1
-          updateStatement.setString(index, airline.getAirlineCode())
-          index += 1
-          updateStatement.setBoolean(index, airline.isSkipTutorial)
-          index += 1
-          updateStatement.setBoolean(index, airline.isInitialized)
-
           index += 1
           updateStatement.setInt(index, airline.id)
           
