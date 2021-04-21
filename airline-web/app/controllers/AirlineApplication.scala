@@ -222,7 +222,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     
     if (targetBase.scale == 1) { //building something new
       if (airline.getHeadQuarter().isDefined) { //building non-HQ
-        AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
+        AllianceSource.loadAllianceMemberByAirline(airline).filter(_.role != AllianceRole.APPLICANT).foreach { allianceMember =>
           AllianceCache.getAlliance(allianceMember.allianceId, true).foreach { alliance =>
             val allAllianceBaseAirports : List[(Airport, Airline)] = alliance.members.flatMap { allianceMember =>
               allianceMember.airline.getBases().filter(!_.headquarter).map { base =>

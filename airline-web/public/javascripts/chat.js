@@ -3,7 +3,7 @@ var firstAllianceMessageId = -1
 var firstGeneralMessageId = -1
 
 function updateChatTabs() {
-	if (activeUser.allianceName) {
+	if (activeUser.allianceName && activeUser.allianceRole != 'APPLICANT') {
 		$("#allianceChatTab").text(activeUser.allianceName)
 		$("#allianceChatTab").data('roomId', activeUser.allianceId)
 		$("#allianceChatTab").show()

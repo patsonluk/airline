@@ -94,6 +94,9 @@ function loadCurrentAirlineMemberDetails() {
 
 function loadAllAlliances() {
 	var getUrl = "alliances"
+	if (activeAirline) {
+	    getUrl += "?airlineId=" + activeAirline.id
+	}
 	
 	loadedAlliances = []
 	loadedAlliancesById = {}
@@ -107,7 +110,12 @@ function loadAllAlliances() {
 	    	loadedAlliances = alliances
 	    	$.each(alliances, function(index, alliance) {
 	    		loadedAlliancesById[alliance.id] = alliance
-	    		alliance.memberCount = alliance.members.length
+	    		alliance.memberCount = 0
+	    		$.each(alliance.members, function(index, member) {
+	    		    if (member.allianceRole != 'Applicant') {
+	    		        alliance.memberCount ++
+	    		    }
+	    		})
 			if (alliance.leader) {
 	    			alliance.leaderAirlineName = alliance.leader.name
 			} else {
@@ -162,7 +170,7 @@ function updateAllianceTable(sortProperty, sortOrder) {
 		} else {
 			row.append("<div class='cell'>-</div>")
 		}
-		row.append("<div class='cell' align='right'>" + alliance.members.length + "</div>")
+		row.append("<div class='cell' align='right'>" + alliance.memberCount + "</div>")
 		if (alliance.championPoints) {
 			row.append("<div class='cell' align='right'>" + alliance.championPoints + "</div>")
 		} else {
@@ -244,7 +252,11 @@ function updateAllianceBasicsDetails(allianceId) {
 				if (member.allianceRole == "Applicant") {
 					var acceptQuestion = "Accept application from " + member.airlineName + "?"
 					var rejectQuestion = "Reject application from " + member.airlineName + "?"
-					row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/tick.png' class='button' title='Accept Member' onclick='promptConfirm(\"" + acceptQuestion + "\", acceptAllianceMember, " + member.airlineId + ")'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"" + rejectQuestion + "\", removeAllianceMember, " + member.airlineId + ")'></div>")
+					if (member.rejection) {
+					   row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/exclamation-circle.png' class='button disabled' title='Cannot accept member : " + member.rejection + "'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"" + rejectQuestion + "\", removeAllianceMember, " + member.airlineId + ")'></div>")
+					} else {
+					   row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/tick.png' class='button' title='Accept Member' onclick='promptConfirm(\"" + acceptQuestion + "\", acceptAllianceMember, " + member.airlineId + ")'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"" + rejectQuestion + "\", removeAllianceMember, " + member.airlineId + ")'></div>")
+                    }
 				} else {
 					row.append("<div class='cell' style='vertical-align: middle;'><img src='assets/images/icons/user-promote.png' class='button' title='Promote Member to Leader' onclick='promptConfirm(\"Promote " + member.airlineName + " as alliance leader?<br/><br/><b>Your airline will lose the leadership and be demoted to member!!</b>\", promoteAllianceMember, " + member.airlineId + ")'><img src='assets/images/icons/cross.png' class='button' title='Remove Member' onclick='promptConfirm(\"Remove " + member.airlineName + " from alliance?\", removeAllianceMember, " + member.airlineId + ")'></div>")
 				}
@@ -512,8 +524,7 @@ function applyForAlliance() {
 	    success: function(result) {
 	    	showAllianceCanvas()
 	    	activeUser.allianceId = result.allianceId
-	    	activeUser.allianceName = result.allianceName
-	    	updateChatTabs()
+	    	//activeUser.allianceName = result.allianceName //not yet a member
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

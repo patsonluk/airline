@@ -1,12 +1,12 @@
 package websocket.chat
 
 import akka.actor._
+
 import java.util.Calendar
 import java.text.SimpleDateFormat
-
 import play.api.libs.json._
 import com.patson.data.{AllianceSource, ChatSource, UserSource}
-import com.patson.model.User
+import com.patson.model.{AllianceRole, User}
 import com.patson.model.chat.ChatMessage
 import com.patson.util.UserCache
 import play.api.Logger
@@ -125,7 +125,11 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
     if (user.getAccessibleAirlines().isEmpty) {
       None
     } else {
-      AllianceSource.loadAllianceMemberByAirline(user.getAccessibleAirlines()(0)).map(_.allianceId) //load first owned airline only for now    
+      AllianceSource.loadAllianceMemberByAirline(user.getAccessibleAirlines()(0)) match {  //load first owned airline only for now
+        case Some(allianceMember) =>
+          if (allianceMember.role != AllianceRole.APPLICANT) Some(allianceMember.allianceId) else None
+        case None => None
+      }
     }
   }
 }

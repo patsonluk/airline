@@ -3,12 +3,11 @@ package websocket.chat
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
-
 import akka.actor._
 import akka.stream.ActorMaterializer
 import com.patson.data.{AllianceSource, ChatSource}
 import com.patson.model.chat.ChatMessage
-import com.patson.model.{Airline, User}
+import com.patson.model.{Airline, AllianceRole, User}
 import play.api.Logger
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
@@ -134,7 +133,11 @@ class ChatControllerActor extends Actor {
       val allianceArchivedMessages =
         user.getAccessibleAirlines().flatMap { airline =>
         AllianceSource.loadAllianceMemberByAirline(airline).flatMap { allianceMember =>
-          allianceMessageHistory.get(allianceMember.allianceId)
+          if (allianceMember.role != AllianceRole.APPLICANT) {
+            allianceMessageHistory.get(allianceMember.allianceId)
+          } else {
+            None
+          }
         }
       }.flatten
 

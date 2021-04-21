@@ -29,7 +29,7 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         AllianceSource.loadAllianceMemberByAirline(user.getAccessibleAirlines()(0)).foreach { allianceMember => //if this airline belongs to an alliance
           val allianceId = allianceMember.allianceId
           AllianceCache.getAlliance(allianceId).foreach { alliance =>
-            result = result + ("allianceId" -> JsNumber(allianceId)) + ("allianceName" -> JsString(alliance.name))  
+            result = result + ("allianceId" -> JsNumber(allianceId)) + ("allianceName" -> JsString(alliance.name)) + ("allianceRole" -> JsString(allianceMember.role.toString))
           }
         }
       }

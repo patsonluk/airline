@@ -132,7 +132,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
   
   
-  def getAlliances() = Action { request =>
+  def getAlliances(airlineId : Option[Int]) = Action { request =>
     val alliances : List[Alliance] = AllianceSource.loadAllAlliances(true)
     
     var result = Json.arr()
@@ -140,11 +140,22 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     val alliancesWithRanking : Map[Int, (Int, BigDecimal)] = AllianceRankingUtil.getRankings()
     
     alliances.foreach {
-      alliance => 
+      alliance =>
+        val isCurrentMember = airlineId match {
+          case Some(airlineId) => alliance.members.map(_.airline.id).contains(airlineId)
+          case None => false
+        }
+
         var allianceJson = Json.toJson(alliance).asInstanceOf[JsObject]
         var allianceMemberJson = Json.arr()
         alliance.members.foreach { allianceMember =>
-          allianceMemberJson = allianceMemberJson.append(Json.toJson(allianceMember))
+          var thisMemberJson = Json.toJson(allianceMember).asInstanceOf[JsObject]
+          if (isCurrentMember && allianceMember.role == APPLICANT) { //current airline is within this alliance, get more info about applicant
+            getApplyRejection(allianceMember.airline, alliance).foreach {
+              rejection => thisMemberJson = thisMemberJson + ("rejection" -> JsString(rejection))
+            }
+          }
+          allianceMemberJson = allianceMemberJson.append(thisMemberJson)
           if (allianceMember.role == LEADER) {
             allianceJson = allianceJson.asInstanceOf[JsObject] + ("leader" -> Json.toJson(allianceMember.airline))
           }
@@ -342,6 +353,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
  
   def addToAlliance(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
        val currentCycle = CycleSource.loadCycle
+
        AllianceSource.loadAllianceMemberByAirline(request.user) match {
           case None => BadRequest("Current airline " + request.user + " cannot add airline id "+ targetAirlineId + " to alliance as current airline does not belong to any alliance")
           case Some(currentAirlineAllianceMember) =>
@@ -350,7 +362,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
              BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline is not leader")
            } else {
              val alliance = AllianceCache.getAlliance(currentAirlineAllianceMember.allianceId, false).get
-             AirlineCache.getAirline(targetAirlineId) match {
+             AirlineCache.getAirline(targetAirlineId, true) match {
                case None => NotFound("Airline with id " + targetAirlineId + " not found")
                case Some(targetAirline) =>
                  AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
@@ -360,11 +372,16 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                        BadRequest("Airline " + targetAirline + " does not belong to alliance " + alliance)
                      } else if (allianceMember.role != APPLICANT) {
                        BadRequest("Airline " + targetAirline + " is not applicant of " + alliance)
-                     } else { //OK ..adding
-                       AllianceSource.saveAllianceMember(allianceMember.copy(role = MEMBER))
-                       AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = JOIN_ALLIANCE, cycle = currentCycle))
-                       
-                       Ok(Json.toJson(allianceMember))
+                     } else {
+                       getApplyRejection(targetAirline, alliance) match {
+                         case Some(rejection) => BadRequest(rejection) //confirm once more as there could be other approved applicant now with conflicting base
+                         case None =>
+                           //OK ..adding
+                           AllianceSource.saveAllianceMember(allianceMember.copy(role = MEMBER))
+                           AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = JOIN_ALLIANCE, cycle = currentCycle))
+
+                           Ok(Json.toJson(allianceMember))
+                       }
                      }
                   }
              }
@@ -406,28 +423,26 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   
   
   def getApplyRejection(airline : Airline, alliance : Alliance) : Option[String] = {
-    val allianceMembers = alliance.members
+    val approvedMembers = alliance.members.filter(_.role != AllianceRole.APPLICANT)
     
     if (airline.getHeadQuarter.isEmpty) { 
       return Some("Airline does not have headquarters")
     }
     
-    if (allianceMembers.size >= Alliance.MAX_MEMBER_COUNT) {
+    if (approvedMembers.size >= Alliance.MAX_MEMBER_COUNT) {
       return Some("Alliance has reached max member size " + Alliance.MAX_MEMBER_COUNT + " already")
     }
     
     
-    val allAllianceHeadquarters = allianceMembers.flatMap(_.airline.getHeadQuarter).map(_.airport)
-    
-   
-    
+    val allAllianceHeadquarters = approvedMembers.flatMap(_.airline.getHeadQuarter).map(_.airport)
+
     val airlineHeadquarters = airline.getHeadQuarter.get.airport
     
     if (allAllianceHeadquarters.contains(airlineHeadquarters)) {
-      return Some("One of the alliance members has Headquarters at " + getAirportText(airlineHeadquarters) + " which is same as your airline's headquarters")  
+      return Some("One of the alliance members has Headquarters at " + getAirportText(airlineHeadquarters))
     }
     
-    val allAllianceBases = allianceMembers.flatMap { _.airline.getBases().filter( !_.headquarter) }.map(_.airport)
+    val allAllianceBases = approvedMembers.flatMap { _.airline.getBases().filter( !_.headquarter) }.map(_.airport)
     val airlineBases = airline.getBases.filter(!_.headquarter).map(_.airport) 
     val overlappingBases = allAllianceBases.filter(allianceBase => airlineBases.contains(allianceBase))
    
@@ -435,7 +450,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 //     println("YOURS " + airlineHeadquarters)
     
     if (!overlappingBases.isEmpty) {
-      var message = "Alliance members overlap with your airport bases: "
+      var message = "Alliance members have overlapping airport bases: "
       overlappingBases.foreach { overlappingBase =>
         message += getAirportText(overlappingBase) + "; "
       }
@@ -445,10 +460,13 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     
      AllianceSource.loadAllianceMemberByAirline(airline) match {
        case Some(allianceMember) =>
-         return Some("Airline is already a member of another alliance " + AllianceCache.getAlliance(allianceMember.allianceId).get.name)
+         if (allianceMember.allianceId != alliance.id) {
+           return Some("Airline is already a member of another alliance " + AllianceCache.getAlliance(allianceMember.allianceId).get.name)
+         }
        case None =>
-         return None
+
      }
+    return None
   }
   
   def getAirportText(airport : Airport) = {
