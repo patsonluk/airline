@@ -100,7 +100,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         awareness = 50,
         reputation = 25,
         airplanes = largeAirplanes,
-        loan = Some(Bank.getLoanOptions((capital * 2.75).toInt, BASE_INTEREST_RATE).last.copy(airlineId = airline.id)))
+        loan = Some(Bank.getLoanOptions((capital * 3.5).toInt, BASE_INTEREST_RATE).last.copy(airlineId = airline.id)))
       profiles.append(largeAirplaneProfile)
     }
 
