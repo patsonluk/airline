@@ -53,7 +53,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
       try {
           val subscriberId = MyWebSocketActor.nextSubscriberId(airlineId)
           RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
-            case CycleCompleted(cycle) =>
+            case CycleCompleted(cycle, cycleEndTime) =>
               MyWebSocketActor.lastSimulatedCycle = cycle
               //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
               AirlineCache.invalidateAll()
