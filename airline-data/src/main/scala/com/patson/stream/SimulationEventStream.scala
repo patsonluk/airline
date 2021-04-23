@@ -49,7 +49,8 @@ object SimulationEventStream{
         topic match {
           case CycleStart(cycle, newCycleStartTime) => //notified by the simulation process that a cycle has started
             currentCycle = cycle
-          case CycleCompleted(cycle, cycleEndTime) =>
+          case cycleComplete : CycleCompleted =>
+            val CycleCompleted(cycle, cycleEndTime) = cycleComplete
             if (cycleCount > 0) { //with previous record, calculate the average then
               val durationSinceLastCycle = cycleEndTime - previousCycleEndTime
 
@@ -64,8 +65,8 @@ object SimulationEventStream{
             cycleCount += 1
 
             registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
-              println("Bridge actor: forwarding " + cycle + " back to " + registeredActor.path)
-              registeredActor ! (cycle, None)
+              println("Bridge actor: forwarding " + cycleComplete + " back to " + registeredActor.path)
+              registeredActor ! (cycleComplete, None)
             }
 
             registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
