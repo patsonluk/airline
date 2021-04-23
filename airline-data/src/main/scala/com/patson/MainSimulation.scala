@@ -71,12 +71,10 @@ object MainSimulation extends App {
       println("Purging link history")
       ChangeHistorySource.deleteLinkChangeByCriteria(List(("cycle", "<", cycle - 100)))
 
-      //notify the websockets via EventStream
-      println("Publish Cycle Complete message")
-      SimulationEventStream.publish(CycleCompleted(cycle), None)
       val cycleEnd = System.currentTimeMillis()
       
       println("cycle " + cycle + " spent " + (cycleEnd - cycleStartTime) / 1000 + " secs")
+      cycleEnd
   }
 
   def postCycle(currentCycle : Int) = {
@@ -107,12 +105,16 @@ object MainSimulation extends App {
     def receive = {
       case Start =>
         status = SimulationStatus.IN_PROGRESS
-        startCycle(currentWeek)
+        val endTime = startCycle(currentWeek)
+
         currentWeek += 1
         CycleSource.setCycle(currentWeek)
         status = SimulationStatus.WAITING_CYCLE_START
         postCycle(currentWeek) //post cycle do some quick updates, no long simulation
 
+        //notify the websockets via EventStream
+        println("Publish Cycle Complete message")
+        SimulationEventStream.publish(CycleCompleted(currentWeek - 1, endTime), None)
     }
   }
    

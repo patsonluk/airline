@@ -25,7 +25,7 @@ object SimulationEventStream{
   
   class BridgeActor extends Actor {
     var currentCycle : Int = 0
-    var previousCycleStartTime : Long = 0
+    var previousCycleEndTime : Long = 0
     var cycleDurationHistory = ListBuffer[Long]()
     var cycleDurationAverage : Long = 0
     var cycleCount : Int = 0
@@ -36,7 +36,7 @@ object SimulationEventStream{
     def receive = {
       case "subscribe" =>
         println("subscribing actor " + sender().path)
-        var elapsedFraction = (System.currentTimeMillis() - previousCycleStartTime).toDouble / cycleDurationAverage
+        var elapsedFraction = (System.currentTimeMillis() - previousCycleEndTime).toDouble / cycleDurationAverage
         if (elapsedFraction > 1) { //if this time is slower than average, it could be bigger than 1
           elapsedFraction = 1
         }
@@ -49,8 +49,9 @@ object SimulationEventStream{
         topic match {
           case CycleStart(cycle, newCycleStartTime) => //notified by the simulation process that a cycle has started
             currentCycle = cycle
+          case CycleCompleted(cycle, cycleEndTime) =>
             if (cycleCount > 0) { //with previous record, calculate the average then
-              val durationSinceLastCycle = newCycleStartTime - previousCycleStartTime
+              val durationSinceLastCycle = cycleEndTime - previousCycleEndTime
 
               cycleDurationHistory.append(durationSinceLastCycle)
               if (cycleDurationHistory.length > MAX_DURATION_SAMPLE) { //drop the first record
@@ -59,17 +60,18 @@ object SimulationEventStream{
 
               cycleDurationAverage = cycleDurationHistory.sum / cycleDurationHistory.length
             }
-            previousCycleStartTime = newCycleStartTime
+            previousCycleEndTime = cycleEndTime
             cycleCount += 1
+
+            registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
+              println("Bridge actor: forwarding " + cycle + " back to " + registeredActor.path)
+              registeredActor ! (cycle, None)
+            }
+
             registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
               val message = CycleInfo(currentCycle, 0, cycleDurationAverage)
               println("Bridge actor: forwarding " + message + " back to " + registeredActor.path)
               registeredActor ! (message, None) //send to actors on the airline-web side
-            }
-          case cycleCompleted: CycleCompleted =>
-            registeredActors.foreach { registeredActor => //now notify the browser client of updated CycleInfo
-              println("Bridge actor: forwarding " + cycleCompleted + " back to " + registeredActor.path)
-              registeredActor ! (cycleCompleted, None)
             }
 
           case _ => //nothing
@@ -86,6 +88,6 @@ object SimulationEventStream{
 
 
 class SimulationEvent
-case class CycleCompleted(cycle : Int) extends SimulationEvent //main simulation send this, this will be relayed directly to client
+case class CycleCompleted(cycle : Int, cycleEndTime : Long) extends SimulationEvent //main simulation send this, this will be relayed directly to client
 case class CycleStart(cycle: Int, cycleStartTime : Long) extends SimulationEvent //main simulation send this, this will NOT be relay back to client
 case class CycleInfo(cycle: Int, fraction : Double, cycleDurationEstimation : Long) extends SimulationEvent  //bridge actor convert a CycleStart into CycleInfo and send back to client
