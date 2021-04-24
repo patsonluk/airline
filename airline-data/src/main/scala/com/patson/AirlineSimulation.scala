@@ -512,8 +512,8 @@ object AirlineSimulation {
     var totalLoanPayment = 0L
     var totalLoanInterest = 0L
     loans.foreach { loan =>
-      if (loan.lastPaymentCycle == currentCycle) { //something wrong with sim, avoid duplicated payment
-        println("Skipping double payment on $loan")
+      if (loan.lastPaymentCycle >= currentCycle) { //something wrong with sim, avoid duplicated payment
+        println(s"Skipping double payment on $loan")
       } else {
         val weeklyPayment = loan.weeklyPayment
         val weeklyInterest = loan.weeklyInterest(currentCycle)

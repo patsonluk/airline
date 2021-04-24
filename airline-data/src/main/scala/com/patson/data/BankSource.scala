@@ -33,7 +33,7 @@ object BankSource {
   def updateLoanLastPayment(loanId: Int, lastPaymentCycle : Int) = {
     val connection = Meta.getConnection()
     try {
-      var deleteStatement = connection.prepareStatement("UPDATE " + LOAN_TABLE + " SET lastPaymentCycle = ? WHERE id = ?")
+      var deleteStatement = connection.prepareStatement("UPDATE " + LOAN_TABLE + " SET last_payment_cycle = ? WHERE id = ?")
       deleteStatement.setInt(1, lastPaymentCycle)
       deleteStatement.setInt(2, loanId)
       deleteStatement.executeUpdate()
