@@ -92,9 +92,17 @@ function updateNewLoanOptionsTable(loanOptions) {
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.interest) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.remainingAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(weeklyPayment) + " for " + loanOption.loanTerm + " weeks</div>")
-		row.append("<div class='cell'><img src='assets/images/icons/money--plus.png' title='Borrow with this Term' class='button' onclick='takeoutLoan(" + loanOption.borrowedAmount + "," + loanOption.loanTerm + ")'/></div>")
-		
-		
+
+		var loanFunction = function() {
+		    var action = function() {
+		        takeoutLoan(loanOption.borrowedAmount, loanOption.loanTerm)
+            }
+
+		    promptConfirm("Confirm taking out this loan with term " + loanOption.loanTerm + " months?", action)
+
+		}
+		var cell = $("<div class='cell'><img src='assets/images/icons/money--plus.png' title='Borrow with this Term' class='button'></div>").appendTo(row)
+		cell.find('.button').click(loanFunction)
 		optionsTable.append(row)
 	});
 }
