@@ -10,14 +10,14 @@ case class Loan(airlineId : Int, principal : Long, annualRate : BigDecimal, crea
   val total = principal + interest
 
   val remainingTerm = (currentCycle : Int) => creationCycle + term - currentCycle
-  val remainingPayment = (currentCycle : Int) => (total - (term - remainingTerm(currentCycle)) * weeklyPayment).toLong
+  val remainingPayment : (Int => Long)= (currentCycle : Int) => (total - (term - remainingTerm(currentCycle)) * weeklyPayment).toLong
 //  val remainingInterest = (currentCycle : Int) => interestWeeklyPayment(currentCycle) * remainingTerm
-  val remainingPrincipal = (currentCycle : Int) => {
+  val remainingPrincipal : (Int => Long) = (currentCycle : Int) => {
     val paidMonth = currentCycle - creationCycle
     (principal * Math.pow(1 + weeklyRate, paidMonth) - weeklyPayment * (Math.pow(1 + weeklyRate, paidMonth) - 1) / weeklyRate).toLong
   }
 
-  val weeklyInterest = (currentCycle : Int) => {
+  val weeklyInterest : (Int => Long) = (currentCycle : Int) => {
     if (currentCycle <= creationCycle) {
       0
     } else {
@@ -25,7 +25,7 @@ case class Loan(airlineId : Int, principal : Long, annualRate : BigDecimal, crea
     }
   }
 
-  val weeklyPrincipal = (currentCycle : Int) => {
+  val weeklyPrincipal : (Int => Long) = (currentCycle : Int) => {
     if (currentCycle <= creationCycle) {
       0
     } else {
@@ -34,8 +34,8 @@ case class Loan(airlineId : Int, principal : Long, annualRate : BigDecimal, crea
   }
 
 
-  val earlyRepaymentFee = (currentCycle : Int) => ((remainingPayment(currentCycle) - remainingPrincipal(currentCycle)) * 0.5).toLong //half of the remaining interest
-  val earlyRepayment = (currentCycle : Int) => remainingPrincipal(currentCycle) + earlyRepaymentFee(currentCycle)
+  val earlyRepaymentFee : (Int => Long) = (currentCycle : Int) => ((remainingPayment(currentCycle) - remainingPrincipal(currentCycle)) * 0.5).toLong //half of the remaining interest
+  val earlyRepayment : (Int => Long) = (currentCycle : Int) => remainingPrincipal(currentCycle) + earlyRepaymentFee(currentCycle)
 
 
 
