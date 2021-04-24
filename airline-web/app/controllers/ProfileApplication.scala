@@ -26,7 +26,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         "reputation" -> profile.reputation,
         "airportText" -> profile.airport.displayText)
       profile.loan.foreach { loan =>
-        result = result + ("loan" -> Json.toJson(loan))
+        result = result + ("loan" -> Json.toJson(loan)(new LoanWrites(CycleSource.loadCycle())))
       }
       result
     }
@@ -64,7 +64,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  val BASE_INTEREST_RATE = 0.05 //5%
+  val BASE_INTEREST_RATE = 0.1 //10%
 
   def generateProfiles(airline : Airline, airport : Airport) : List[Profile] = {
     val difficulty = AirportUtil.rateAirport(airport).overallDifficulty
@@ -84,7 +84,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         awareness = 20,
         reputation = 10,
         airplanes = smallAirplanes,
-        loan = Some(Bank.getLoanOptions((capital * 1).toInt, BASE_INTEREST_RATE).last.copy(airlineId = airline.id)))
+        loan = Some(Bank.getLoanOptions((capital * 1).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
 
 
       profiles.append(smallAirplaneProfile)
@@ -100,7 +100,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         awareness = 50,
         reputation = 25,
         airplanes = largeAirplanes,
-        loan = Some(Bank.getLoanOptions((capital * 3.5).toInt, BASE_INTEREST_RATE).last.copy(airlineId = airline.id)))
+        loan = Some(Bank.getLoanOptions((capital * 3.5).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
       profiles.append(largeAirplaneProfile)
     }
 
