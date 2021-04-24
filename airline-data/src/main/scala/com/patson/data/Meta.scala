@@ -854,11 +854,11 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + LOAN_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "airline INTEGER, " +
-      "borrowed_amount LONG, " +
-      "interest LONG, " +
-      "remaining_amount LONG," +
+      "principal LONG, " +
+      "annual_rate DECIMAL(7,6), " +
       "creation_cycle INTEGER," +
-      "loan_term LONG," +
+      "last_payment_cycle INTEGER," +
+      "term LONG," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
