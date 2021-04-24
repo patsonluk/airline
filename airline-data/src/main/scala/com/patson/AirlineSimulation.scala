@@ -168,7 +168,7 @@ object AirlineSimulation {
         val unassignedAirplanesDepreciation = allAirplanesDepreciation - linksDepreciation //account depreciation on planes that are without assigned links
         othersSummary.put(OtherIncomeItemType.DEPRECIATION, -1 * unassignedAirplanesDepreciation) //not a cash expense
 
-        val (loanPayment, interestPayment) = updateLoans(airline)
+        val (loanPayment, interestPayment) = updateLoans(airline, currentCycle + 1) //have to plus one here, as this is supposed to be done postcycle, but for accounting purpose we have to put it here
         othersSummary.put(OtherIncomeItemType.LOAN_INTEREST, -1 * interestPayment)
         totalCashExpense += loanPayment //paying both principle + interest
 
@@ -507,24 +507,27 @@ object AirlineSimulation {
   /**
    * Returns a tuple of (totalLoanRepayment, totalLoanInterest)
    */
-  def updateLoans(airline : Airline) : (Long, Long) = {
+  def updateLoans(airline : Airline, paymentCycle : Int) : (Long, Long) = {
     val loans = BankSource.loadLoansByAirline(airline.id)
-    var totalPrincipalPayment = 0L
+    var totalLoanPayment = 0L
     var totalLoanInterest = 0L
-    loans.foreach { loan => 
-      val principlePayment = loan.principalWeeklyPayment
-      val interestPayment = loan.interestWeeklyPayment
-      totalLoanInterest = totalLoanInterest + interestPayment
-      totalPrincipalPayment = totalPrincipalPayment + principlePayment
-      loan.remainingAmount = loan.remainingAmount - interestPayment - principlePayment 
-      if (loan.remainingAmount <= 0) {
+    loans.foreach { loan =>
+      if (loan.lastPaymentCycle >= paymentCycle) { //something wrong with sim, avoid duplicated payment
+        println(s"Skipping double payment on $loan")
+      } else {
+        val weeklyPayment = loan.weeklyPayment
+        val weeklyInterest = loan.weeklyInterest(paymentCycle)
+        totalLoanPayment = totalLoanPayment + weeklyPayment
+        totalLoanInterest = totalLoanInterest + weeklyInterest
+      }
+      if (loan.remainingTerm(paymentCycle) <= 0) {
         BankSource.deleteLoan(loan.id)
       } else {
-        BankSource.updateLoan(loan)
+        BankSource.updateLoanLastPayment(loan.id, paymentCycle)
       }
     }
     
-    (totalPrincipalPayment + totalLoanInterest, totalLoanInterest)
+    (totalLoanPayment, totalLoanInterest)
   }
   
 //  def getTargetQuality(serviceFunding : Int, links : List[Link]) : Double = {

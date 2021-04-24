@@ -209,10 +209,11 @@ object Computation {
 //  }
   
   def getResetAmount(airlineId : Int) : ResetAmountInfo = {
+    val currentCycle = CycleSource.loadCycle()
     val amountFromAirplanes = AirplaneSource.loadAirplanesByOwner(airlineId, false).map(Computation.calculateAirplaneSellValue(_).toLong).sum
     val amountFromBases = AirlineSource.loadAirlineBasesByAirline(airlineId).map(_.getValue * 0.2).sum.toLong //only get 20% back
-    val amountFromLoans = BankSource.loadLoansByAirline(airlineId).map(_.earlyRepayment * -1).sum //repay all loans now
-    val amountFromOilContracts = OilSource.loadOilContractsByAirline(airlineId).map(_.contractTerminationPenalty(CycleSource.loadCycle()) * -1).sum //termination penalty
+    val amountFromLoans = BankSource.loadLoansByAirline(airlineId).map(_.earlyRepayment(currentCycle) * -1).sum //repay all loans now
+    val amountFromOilContracts = OilSource.loadOilContractsByAirline(airlineId).map(_.contractTerminationPenalty(currentCycle) * -1).sum //termination penalty
     val existingBalance = AirlineCache.getAirline(airlineId).get.airlineInfo.balance
     
     ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromLoans, amountFromOilContracts, existingBalance)
