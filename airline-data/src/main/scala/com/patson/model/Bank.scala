@@ -42,7 +42,7 @@ object Bank {
     
     val totalCredit = creditFromAssets + creditFromProfit.getOrElse(0L)
     
-    val liability = existingLoans.map(_.remainingAmount).sum
+    val liability = existingLoans.map(_.remainingPayment(currentCycle)).sum
     
     var availableLoanAmount = totalCredit - liability
     
@@ -57,25 +57,24 @@ object Bank {
     }
   }
  
-  def getLoanOptions(loanAmount : Long) : List[Loan] = {
+  def getLoanOptions(principal : Long) : List[Loan] = {
     val currentCycle = CycleSource.loadCycle()
     BankSource.loadLoanInterestRateByCycle(currentCycle) match {
       case Some(currentRate) =>
-        getLoanOptions(loanAmount, currentRate.annualRate)
+        getLoanOptions(principal, currentRate.annualRate, currentCycle)
       case None =>
         List.empty[Loan]
     }
   }
 
-  def getLoanOptions(loanAmount : Long, annualRate : BigDecimal) = {
+  def getLoanOptions(principal : Long, annualRate : BigDecimal, currentCycle : Int) = {
       val rateIncrementPerYear = 0.005 //0.5% more every extra year
       LOAN_TERMS.map { term =>
+        //Payment = P x (r / n) x (1 + r / n)^n(t)] / ((1 + r / n)^n(t) - 1)
+        val years = term / WEEKS_PER_YEAR
         val baseAnnualRate = annualRate
-        val years : Int = term / WEEKS_PER_YEAR
-        val interestRate = baseAnnualRate + (years - 1) * rateIncrementPerYear
-        val interest = (loanAmount * interestRate).toLong * years
-        val total = loanAmount + interest
-        Loan(airlineId = 0, borrowedAmount = loanAmount, interest = interest, remainingAmount = total, creationCycle = 0, loanTerm = term)
+        val annualRateByTerm = baseAnnualRate + (years - 1) * rateIncrementPerYear
+        Loan(airlineId = 0, principal = principal, annualRate = annualRateByTerm, creationCycle = currentCycle, lastPaymentCycle = currentCycle, term = term)
       }
   }
   

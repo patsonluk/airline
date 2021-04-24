@@ -10,19 +10,19 @@ import com.patson.model.bank.LoanInterestRate
 
 
 object BankSource {
-//case class Loan(owner : Airline, borrowedAmount : Long, interest : Long, remainingAmount : Long, creationCycle : Int, loanTerm : Int, var id : Int = 0) extends IdObject  
+//case class Loan(airlineId : Int, principal : Long, annualRate : BigDecimal, creationCycle : Int, lastPaymentCycle : Int, term : Int, var id : Int = 0) extends IdObject {
   def saveLoan(loan: Loan) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LOAN_TABLE + "(airline, borrowed_amount, interest, remaining_amount, creation_cycle, loan_term) VALUES(?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LOAN_TABLE + "(airline, principal, annual_rate, creation_cycle, last_payment_cycle, term) VALUES(?,?,?,?,?,?)")
     
     try {
       preparedStatement.setInt(1, loan.airlineId)
-      preparedStatement.setLong(2, loan.borrowedAmount)
-      preparedStatement.setLong(3, loan.interest)
-      preparedStatement.setLong(4, loan.remainingAmount)
-      preparedStatement.setInt(5, loan.creationCycle)
-      preparedStatement.setInt(6, loan.loanTerm)
+      preparedStatement.setLong(2, loan.principal)
+      preparedStatement.setBigDecimal(3, loan.annualRate.bigDecimal)
+      preparedStatement.setInt(4, loan.creationCycle)
+      preparedStatement.setInt(5, loan.lastPaymentCycle)
+      preparedStatement.setInt(6, loan.term)
       preparedStatement.executeUpdate()
       preparedStatement.close()
     } finally {
@@ -30,12 +30,12 @@ object BankSource {
     }
   }
   
-  def updateLoan(loan: Loan) = {
+  def updateLoanLastPayment(loanId: Int, lastPaymentCycle : Int) = {
     val connection = Meta.getConnection()
     try {
-      var deleteStatement = connection.prepareStatement("UPDATE " + LOAN_TABLE + " SET remaining_amount = ? WHERE id = ?")
-      deleteStatement.setLong(1, loan.remainingAmount)
-      deleteStatement.setInt(2, loan.id)
+      var deleteStatement = connection.prepareStatement("UPDATE " + LOAN_TABLE + " SET lastPaymentCycle = ? WHERE id = ?")
+      deleteStatement.setInt(1, lastPaymentCycle)
+      deleteStatement.setInt(2, loanId)
       deleteStatement.executeUpdate()
     } finally {
       connection.close()
@@ -79,11 +79,11 @@ object BankSource {
       while (resultSet.next()) {
         loans += Loan(
             airlineId = resultSet.getInt("airline"),
-            borrowedAmount = resultSet.getLong("borrowed_amount"),
-            interest = resultSet.getLong("interest"), 
-            remainingAmount = resultSet.getLong("remaining_amount"),
+            principal = resultSet.getLong("principal"),
+            annualRate = resultSet.getBigDecimal("annual_rate"),
             creationCycle = resultSet.getInt("creation_cycle"),
-            loanTerm = resultSet.getInt("loan_term"),
+            lastPaymentCycle = resultSet.getInt("last_payment_cycle"),
+            term = resultSet.getInt("term"),
             id = resultSet.getInt("id"))
       }
        
