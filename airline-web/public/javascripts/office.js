@@ -174,11 +174,11 @@ function updateAirlineDetails() {
             if (airline.reputationBreakdowns.breakdowns.length == 0) { //not yet updated by sim on first creation
                 reputationHtml.append("<div>Target Reputation: -</div>")
             } else {
-                reputationHtml.append("<div>Target Reputation: " + airline.reputationBreakdowns.total + "</div>")
+                reputationHtml.append("<div>Target Reputation: " + airline.reputationBreakdowns.total.toFixed(2) + "</div>")
             }
             var breakdownList = $("<ul></ul>")
             $.each(airline.reputationBreakdowns.breakdowns, function(index, breakdown) {
-                breakdownList.append("<li>" + breakdown.description + " : " + breakdown.value + "</li>")
+                breakdownList.append("<li>" + breakdown.description + " : " + breakdown.value.toFixed(2) + "</li>")
             })
             reputationHtml.append(breakdownList)
             reputationHtml.append("<div class='remarks'>Current reputation adjusts slowly towards the target reputation</div>")
