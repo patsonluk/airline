@@ -177,6 +177,7 @@ function updateAirlineDetails() {
                 breakdownList.append("<li>" + breakdown.description + " : " + breakdown.value + "</li>")
             })
             reputationHtml.append(breakdownList)
+            reputationHtml.append("<div class='remarks'>Current reputation adjusts slowly towards the target reputation</div>")
             reputationHtml.append("<div>Next Grade: " + airlineGradeLookup[airline.gradeValue] + "</div>")
             addTooltipHtml(infoIcon, reputationHtml, {'width' : '350px'})
 
