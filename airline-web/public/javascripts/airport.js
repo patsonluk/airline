@@ -116,7 +116,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 	    			$('#baseDetailsModal').removeData('scale')
 	    		} else {
-	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarter" : "Base")
+	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarters" : "Base")
 	    			$('#airportDetailsBaseScale').text(airportBase.scale)
 	    			if (airportBase.delegatesRequired == 0) {
 	    			    $('#airportDetailsBaseDelegatesRequired').text('None')

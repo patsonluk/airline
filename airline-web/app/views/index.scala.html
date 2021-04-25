@@ -1109,7 +1109,20 @@
 								</div>
 							</div>
 							<div class="section loyalistDetails" style="width: 65%; margin:10px 0 10px 0;">
-								<h4>Loyalist Statistics</h4>
+								<h4>
+									Loyalist Statistics
+									<span class="tooltip">
+										<img src='@routes.Assets.versioned("images/icons/information.png")'>
+										<span class="tooltiptext below alignLeft" style="width: 400px;">
+											<p>Loyalist are gained by providing satisfying services to passengers originate from this airport.</p>
+											<p>Passenger satisfaction is reflected by Satisfaction Factor (SF) of a flight.</p>
+											<p>For more info, please refer to the survey</p>
+											<br/><br/>
+											<img src='@routes.Assets.versioned("images/tutorial/survey-button.png")' style="box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.2);">
+										</span>
+									</span>
+
+								</h4>
 								<div>
 									<div style="width: 35%; display: inline-block;">
 										<div class="loyalistPie" style="height: 160px; padding: 10px 0 0 0; margin: auto" align="center"></div>
@@ -1178,12 +1191,15 @@
 											<div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
 												<span class="tooltiptext alignLeft" style="width: 400px;">
-													Airport awareness affects:<br/>
-													- How likely a passenger from this airport will consider your route for his trip<br/>
-													<br/>
-													Airport awareness builds up slowly by:<br/>
-													- Routes serving this airport offered by your airline<br/>
-													- Airline base in this airport if present<br/>
+													<h5>Airport awareness affects:</h5>
+													<ul>
+														<li>How likely a passenger from this airport will consider your route for his trip</li>
+													</ul>
+													<h5>Airport awareness builds up slowly by:</h5>
+													<ul>
+														<li>Routes serving this airport offered by your airline</li>
+														<li>Airline base in this airport if present</li>
+													</ul>
 												</span>
 											</div>
 										</h5>
@@ -1203,14 +1219,17 @@
 											<div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
 												<span class="tooltiptext alignLeft" style="width: 400px;">
-													Airport loyalty affects:<br/>
-													- How likely a passenger from this airport would choose your airline<br/>
-													- How much will a passenger willing to pay for your ticket<br/>
-													<br/>
-													Airport loyalty is built up by:<br/>
-													- Increasing number of loyalists of this airport<br/>
-													- Becoming national or partnered airlines of this country<br/>
-													- Temporary boost such as negotiation great success or events<br/>
+													<h5>Airport loyalty affects:</h5>
+													<ul>
+														<li>How likely a passenger from this airport would choose your airline</li>
+														<li>How much will a passenger willing to pay for your ticket</li>
+													</ul>
+													<h5>Airport loyalty is built up by:</h5>
+													<ul>
+														<li>Increasing number of loyalists of this airport</li>
+														<li>Becoming national or partnered airlines of this country</li>
+														<li>Temporary boost such as negotiation great success or events</li>
+													</ul>
 												</span>
 											</div>
 										</h5>
@@ -2090,7 +2109,7 @@
                         </div>
 
                         <div class="section" style="width: 95%;">
-                            <h4>Delegates Pool</h4>
+                            <h4>Delegates Pool<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
                             <div class="delegateStatus"></div>
                         </div>
                         <div class="section" style="width: 95%;">
@@ -3929,7 +3948,7 @@
 				  <img class="clickable error" src='@routes.Assets.versioned("images/icons/24px/cross-circle.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)" style="display: hidden;">
 
 			  </h4>
-			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h4>
+			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Delegates<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
 			  <div class="section">
 				  <h4>Pool</h4>
 				  <div class="delegateStatus"></div>
@@ -4518,7 +4537,7 @@
 				  </div>
 			  </div>
 
-			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Delegates</h4>
+			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Delegates<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
 			  <div class="delegateSection section" style="width: 95%; margin: auto;">
 				  <h4>Pool</h4>
 				  <div class="delegateStatus">
@@ -4604,7 +4623,7 @@
 					<div style="float: right;" class="right verticalGroup">
 						<div style="width: 100%; height: 100%">
 							<div class="section">
-								<h4>Delegates Pool</h4>
+								<h4>Delegates Pool<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
 								<div class="delegateStatus"></div>
 							</div>
 
