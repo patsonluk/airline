@@ -1075,7 +1075,7 @@ object AirlineSource {
     try {
       connection.setAutoCommit(false)
 
-      val preparedStatement = connection.prepareStatement(s"DELETE $AIRLINE_REPUTATION_BREAKDOWN WHERE airline = ?")
+      val preparedStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_REPUTATION_BREAKDOWN WHERE airline = ?")
       preparedStatement.setInt(1, airlineId)
       preparedStatement.executeUpdate()
       preparedStatement.close()
