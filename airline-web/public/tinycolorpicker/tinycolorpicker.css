@@ -158,8 +158,6 @@
     top:            -31px;
     display:        none;
     border:         1px solid #ccc;
-    z-index:        11;
-
 }
 
 #colorPicker3 .color {
@@ -169,7 +167,6 @@
     border:         1px solid #ccc;
     display:        block;
     position:       relative;
-    z-index:        11;
     background-color: #EFEFEF;
     -webkit-border-radius: 17px;
     -moz-border-radius: 17px;

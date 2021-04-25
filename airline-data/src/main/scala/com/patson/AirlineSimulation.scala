@@ -320,23 +320,26 @@ object AirlineSimulation {
 
 
         //update reputation
-        var targetReputation = 0.0
-        flightLinkResultByAirline.get(airline.id) match {
+        val reputationBreakdowns = ListBuffer[ReputationBreakdown]()
+        val reputationByPassengers = flightLinkResultByAirline.get(airline.id) match {
           case Some(linkConsumptions) =>
             val totalPassengerKilometers = linkConsumptions.foldLeft(0L) { (foldLong, linkConsumption) =>
               foldLong + linkConsumption.link.soldSeats.total * linkConsumption.link.distance
             }
 
             //https://en.wikipedia.org/wiki/World%27s_largest_airlines
-            targetReputation = Math.log(totalPassengerKilometers / 50000) * 30
-            if (targetReputation > Airline.MAX_REPUTATION_BY_PASSENGERS) {
-              targetReputation = Airline.MAX_REPUTATION_BY_PASSENGERS
-            } else if (targetReputation < 10) {
-              targetReputation = 10
+            val reputation = Math.log(totalPassengerKilometers / 50000) * 30
+            if (reputation > Airline.MAX_REPUTATION_BY_PASSENGERS) {
+              Airline.MAX_REPUTATION_BY_PASSENGERS
+            } else if (reputation < 10) { //any pax
+              10
+            } else {
+              reputation
             }
           case None =>
-            targetReputation = 0
+            0
         }
+        reputationBreakdowns.append(ReputationBreakdown(ReputationType.FLIGHT_PASSENGERS, reputationByPassengers))
 
 //        champions.get(airline).foreach { //if this airline championed anything
 //          _.foreach { championInfo =>
@@ -344,9 +347,11 @@ object AirlineSimulation {
 //          }
 //        }
 
-      airportChampionsByAirlineId.get(airline.id).foreach { airportChampions =>
-        targetReputation += airportChampions.map(_.reputationBoost).sum
-      }
+        val reputationByAirportChampions = airportChampionsByAirlineId.get(airline.id) match {
+          case Some(airportChampions) => airportChampions.map(_.reputationBoost).sum
+          case None => 0
+        }
+        reputationBreakdowns.append(ReputationBreakdown(ReputationType.AIRPORT_LOYALIST_RANKING, reputationByAirportChampions))
 
         val reputationBonusFromAlliance : Double = allianceByAirlineId.get(airline.id) match {
           case Some(alliance) => allianceRankings.get(alliance) match {
@@ -356,17 +361,23 @@ object AirlineSimulation {
           case None => 0.0
         }
 
-        targetReputation = targetReputation + reputationBonusFromAlliance
+        reputationBreakdowns.append(ReputationBreakdown(ReputationType.ALLIANCE_BONUS, reputationBonusFromAlliance))
+
+        val finalBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
+        AirlineSource.updateReputationBreakdowns(airline.id, finalBreakdowns)
 
         val currentReputation = airline.getReputation()
+        var targetReputation = finalBreakdowns.total
         //make sure it increases/decreases gradually based on passenger volume
         if (targetReputation >  currentReputation && targetReputation - currentReputation > MAX_REPUTATION_DELTA) {
           targetReputation = currentReputation + MAX_REPUTATION_DELTA
         } else if (targetReputation <  currentReputation && currentReputation - targetReputation > MAX_REPUTATION_DELTA) {
           targetReputation = currentReputation - MAX_REPUTATION_DELTA
         }
-        
+
+
         airline.setReputation(targetReputation)
+
 
         //check bankruptcy
         if (airline.getBalance() < 0) {

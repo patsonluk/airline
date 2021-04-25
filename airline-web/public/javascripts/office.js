@@ -167,6 +167,19 @@ function updateAirlineDetails() {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airline) {
+	        $('#officeCanvas .reputationDetails').empty()
+	        $('#officeCanvas .reputationDetails').append("<span>" + airline.reputation + " (" + airline.gradeDescription + ")</span>")
+            var infoIcon = $('<span><img src="/assets/images/icons/information.png"></span>').appendTo($('#officeCanvas .reputationDetails'))
+            var reputationHtml = $("<div></div>")
+            reputationHtml.append("<div>Target Reputation: " + airline.reputationBreakdowns.total + "</div>")
+            var breakdownList = $("<ul></ul>")
+            $.each(airline.reputationBreakdowns.breakdowns, function(index, breakdown) {
+                breakdownList.append("<li>" + breakdown.description + " : " + breakdown.value + "</li>")
+            })
+            reputationHtml.append(breakdownList)
+            reputationHtml.append("<div>Next Grade: " + airlineGradeLookup[airline.gradeValue] + "</div>")
+            addTooltipHtml(infoIcon, reputationHtml, {'width' : '350px'})
+
 	    	$('#airlineCode').text(airline.airlineCode)
 	    	$('#airlineCodeInput').val(airline.airlineCode)
 	    	$('#destinations').text(airline.destinations)

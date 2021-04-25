@@ -1045,4 +1045,61 @@ object AirlineSource {
       connection.close()
     }
   }
+
+  def loadReputationBreakdowns(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $AIRLINE_REPUTATION_BREAKDOWN WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+
+      val result = ListBuffer[ReputationBreakdown]()
+      val resultSet = preparedStatement.executeQuery()
+      while (resultSet.next()) {
+        val breakdown = ReputationBreakdown(
+          ReputationType.withName(resultSet.getString("reputation_type")),
+          resultSet.getDouble("value")
+        )
+        result.append(breakdown)
+      }
+      resultSet.close()
+      preparedStatement.close()
+      ReputationBreakdowns(result.toList)
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteReputationBreakdowns(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement(s"DELETE $AIRLINE_REPUTATION_BREAKDOWN WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def updateReputationBreakdowns(airlineId : Int, breakdowns : ReputationBreakdowns): Unit = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_REPUTATION_BREAKDOWN(airline, reputation_type, value) VALUES(?,?,?)")
+      breakdowns.breakdowns.foreach { breakdown =>
+        preparedStatement.setInt(1, airlineId)
+        preparedStatement.setString(2, breakdown.reputationType.toString)
+        preparedStatement.setDouble(3, breakdown.value)
+        preparedStatement.executeUpdate()
+      }
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
 }

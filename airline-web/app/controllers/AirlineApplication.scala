@@ -86,6 +86,16 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
+  implicit object ReputationBreakdownsWrites extends Writes[ReputationBreakdowns] {
+    def writes(entry: ReputationBreakdowns): JsValue = {
+      var breakdownsJson = Json.arr()
+      entry.breakdowns.foreach { breakdown =>
+        breakdownsJson = breakdownsJson.append(Json.obj("description" -> breakdown.reputationType.label, "value" -> breakdown.value))
+      }
+      Json.obj("total" -> entry.total, "breakdowns" -> breakdownsJson)
+    }
+  }
+
   def getAllAirlines(loginStatus : Boolean, hideInactive : Boolean) = Authenticated { implicit request =>
      //val airlines = AirlineSource.loadAllAirlines(fullLoad = true)
     val airlinesByUser = scala.collection.mutable.Map[Airline, User]()
@@ -145,7 +155,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        airlineJson = airlineJson + ("headquarterAirport"-> Json.toJson(headquarter))
      }
      val bases = AirlineSource.loadAirlineBasesByAirline(airlineId)
-     airlineJson = airlineJson + ("baseAirports"-> Json.toJson(bases))
+     val reputationBreakdowns = AirlineSource.loadReputationBreakdowns(airlineId)
+     airlineJson = airlineJson + ("baseAirports"-> Json.toJson(bases)) + ("reputationBreakdowns" -> Json.toJson(reputationBreakdowns))
      
      if (extendedInfo) {
        val links = LinkSource.loadFlightLinksByAirlineId(airlineId)
@@ -161,7 +172,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        val fleetSize = airplanes.length
        val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
        val assets = Bank.getAssets(airlineId)
-       
+
+
        airlineJson = airlineJson + ("linkCount" -> JsNumber(links.length)) + ("destinations"-> JsNumber(destinations)) + ("fleetSize"-> JsNumber(fleetSize)) + ("fleetAge"-> JsNumber(fleetAge)) + ("assets"-> JsNumber(assets))
      }
      

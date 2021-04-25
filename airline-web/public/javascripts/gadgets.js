@@ -580,6 +580,20 @@ function addTooltip($target, text, css) {
     $target.append($descriptionSpan)
 }
 
+function addTooltipHtml($target, html, css) {
+    $target.addClass('tooltip')
+    if ($target.css('overflow') === 'hidden') {
+        $target.css('overflow', 'unset')
+    }
+    $target.children('span.tooltiptext').remove()
+    var $descriptionSpan = $('<span class="tooltiptext below alignLeft" style="text-transform: none;">')
+    $descriptionSpan.html(html)
+    if (css) {
+        $descriptionSpan.css(css)
+    }
+    $target.append($descriptionSpan)
+}
+
 function isIe() {
    if (/MSIE 10/i.test(navigator.userAgent)) {
       // This is internet explorer 10

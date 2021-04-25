@@ -48,7 +48,7 @@ object QuickCreateSchema extends App {
 //    Meta.createLog(connection)
 //    Meta.createAlert(connection)
     //Meta.createDelegate(connection)
-    Meta.createShuttleService(connection)
+    Meta.createReputationBreakdown(connection)
   }
   
   

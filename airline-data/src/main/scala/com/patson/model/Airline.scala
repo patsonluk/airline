@@ -292,6 +292,8 @@ object Airline {
           }
         }
 
+        AirlineSource.deleteReputationBreakdowns(airline.id)
+
         NegotiationSource.deleteLinkDiscountsByAirline(airline.id)
 
         airline.setBalance(newBalance)

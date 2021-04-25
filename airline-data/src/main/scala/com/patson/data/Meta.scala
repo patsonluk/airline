@@ -306,6 +306,7 @@ object Meta {
     createAirportChampion(connection)
     createAirportAnimation(connection)
     createAirlineBaseSpecialization(connection)
+    createReputationBreakdown(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1790,6 +1791,23 @@ object Meta {
     statement.execute()
     statement.close()
   }
+
+  def createReputationBreakdown(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_REPUTATION_BREAKDOWN)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_REPUTATION_BREAKDOWN + "(" +
+      "airline INTEGER, " +
+      "reputation_type VARCHAR(256), " +
+      "value DECIMAL(10, 2), " +
+      "PRIMARY KEY (airline, reputation_type)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
 
 
   def isTableExist(connection : Connection, tableName : String): Boolean = {
