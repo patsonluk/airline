@@ -171,7 +171,11 @@ function updateAirlineDetails() {
 	        $('#officeCanvas .reputationDetails').append("<span>" + airline.reputation + " (" + airline.gradeDescription + ")</span>")
             var infoIcon = $('<span><img src="/assets/images/icons/information.png"></span>').appendTo($('#officeCanvas .reputationDetails'))
             var reputationHtml = $("<div></div>")
-            reputationHtml.append("<div>Target Reputation: " + airline.reputationBreakdowns.total + "</div>")
+            if (airline.reputationBreakdowns.breakdowns.length == 0) { //not yet updated by sim on first creation
+                reputationHtml.append("<div>Target Reputation: -</div>")
+            } else {
+                reputationHtml.append("<div>Target Reputation: " + airline.reputationBreakdowns.total + "</div>")
+            }
             var breakdownList = $("<ul></ul>")
             $.each(airline.reputationBreakdowns.breakdowns, function(index, breakdown) {
                 breakdownList.append("<li>" + breakdown.description + " : " + breakdown.value + "</li>")
