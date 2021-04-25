@@ -21,16 +21,22 @@ class LoanSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSende
   override def afterAll {
     TestKit.shutdownActorSystem(system)
   }
- 
+
   "early payment".must {
     "compute right values".in {
-      val loan = Loan(airlineId = 0, borrowedAmount = 1000000, interest = 200000, remainingAmount = 600000, creationCycle = 0, loanTerm = 100) //1.2mill total 600k paid, so remaining 50 weeks
-      assert(loan.weeklyPayment == 12000)
-      assert(loan.principalWeeklyPayment == 10000)
-      assert(loan.interestWeeklyPayment == 2000)
-      assert(loan.remainingPrincipal == 500000)
-      assert(loan.earlyRepayment < loan.remainingAmount)
-      assert(loan.earlyRepayment > loan.remainingPrincipal)
+      val loan = Loan(airlineId = 0, principal = 1000000, annualRate = 0.1, creationCycle = 0, lastPaymentCycle = 0, term = 4 * 52)
+      for (i <- 0 to 4 * 52) {
+        println(s"Remaining principal on week $i : ${loan.remainingPrincipal(i)}, remaining payment : ${loan.remainingPayment(i)}")
+      }
+
+      assert(loan.weeklyPayment == 5838)
+      assert(loan.interest == 214304)
+      assert(loan.remainingPayment(0) == loan.principal + loan.interest)
+      assert(loan.remainingPayment(4 * 52) <= 0 )
+      assert(loan.remainingPayment(4 * 52) > -100 ) //could be a small negative due to weekly payment is "ceil"
+
+      assert(loan.earlyRepayment(2 * 52) < loan.remainingPayment(2 * 52))
+      assert(loan.earlyRepayment(2 * 52) > loan.remainingPrincipal(2 * 52))
     }
   }
 }

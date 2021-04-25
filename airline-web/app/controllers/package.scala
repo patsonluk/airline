@@ -779,20 +779,20 @@ package object controllers {
     }
   }
 
-  implicit object LoanWrites extends Writes[Loan] {
+  class LoanWrites(currentCycle : Int) extends OWrites[Loan] {
     //case class Loan(airlineId : Int, borrowedAmount : Long, interest : Long, var remainingAmount : Long, creationCycle : Int, loanTerm : Int, var id : Int = 0) extends IdObject
-    def writes(loan: Loan): JsValue = JsObject(List(
+    def writes(loan: Loan) : JsObject = JsObject(List(
       "airlineId" -> JsNumber(loan.airlineId),
-      "borrowedAmount" -> JsNumber(loan.borrowedAmount),
+      "borrowedAmount" -> JsNumber(loan.principal),
       "interest" -> JsNumber(loan.interest),
-      "interestRate" -> JsNumber(loan.interestRate),
-      "remainingAmount" -> JsNumber(loan.remainingAmount),
-      "earlyRepaymentFee" -> JsNumber(loan.earlyRepaymentFee),
-      "earlyRepayment" -> JsNumber(loan.earlyRepayment),
-      "remainingTerm" -> JsNumber(loan.remainingTerm),
+      "interestRate" -> JsNumber(loan.annualRate),
+      "remainingAmount" -> JsNumber(loan.remainingPayment(currentCycle)),
+      "earlyRepaymentFee" -> JsNumber(loan.earlyRepaymentFee(currentCycle)),
+      "earlyRepayment" -> JsNumber(loan.earlyRepayment(currentCycle)),
+      "remainingTerm" -> JsNumber(loan.remainingTerm(currentCycle)),
       "weeklyPayment" -> JsNumber(loan.weeklyPayment),
       "creationCycle" -> JsNumber(loan.creationCycle),
-      "loanTerm" ->  JsNumber(loan.loanTerm),
+      "loanTerm" ->  JsNumber(loan.term),
       "id" -> JsNumber(loan.id)))
   }
 
