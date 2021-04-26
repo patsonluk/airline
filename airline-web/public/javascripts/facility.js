@@ -97,6 +97,7 @@ function updateFacilityIcons(airport) {
 
 function showLoungeModal(currentFacility) {
     $('#facilityModal .facitilyNameWarningDiv').hide()
+
 	var facitlityData = {
 			"airportId" : parseInt(currentFacility.airportId),
 			"airlineId" : activeAirline.id,
@@ -112,7 +113,7 @@ function showLoungeModal(currentFacility) {
 	    dataType: 'json',
 	    success: function(facilityConsideration) {
 	    	$('#facilityModal .facilityType').text("Airport Lounge") //for now only one
-
+	    	$('#facilityModal .facilityDescription').text("Serves Business and First class passengers taking flights offered by your airline or your alliance network. You charge alliance members for using of your lounge.")
 	    	if (currentFacility.level) {
 	    		$('#facilityModal .facilityLevel').empty()
 	    		$('#facilityModal .facilityLevel').append(getLevelStarsImgs(currentFacility.level, 3))
