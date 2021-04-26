@@ -98,7 +98,7 @@ function updateNewLoanOptionsTable(loanOptions) {
 		        takeoutLoan(loanOption.borrowedAmount, loanOption.loanTerm)
             }
 
-		    promptConfirm("Confirm taking out this loan with term " + loanOption.loanTerm / 52 + " year(s)?", action)
+		    promptConfirm("Confirm taking out this loan with term " + loanOption + " weeks?", action)
 
 		}
 		var cell = $("<div class='cell'><img src='assets/images/icons/money--plus.png' title='Borrow with this Term' class='button'></div>").appendTo(row)
