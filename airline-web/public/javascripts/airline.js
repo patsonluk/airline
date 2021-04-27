@@ -1644,8 +1644,9 @@ function loadLinksTable() {
 	    	updateLoadedLinks(links);
 	    	$.each(links, function(key, link) {
 				link.totalCapacity = link.capacity.economy + link.capacity.business + link.capacity.first
+				link.totalCapacityHistory = link.capacityHistory.economy + link.capacityHistory.business + link.capacityHistory.first
 				link.totalPassengers = link.passengers.economy + link.passengers.business + link.passengers.first
-				link.totalLoadFactor = link.totalCapacity > 0 ? Math.round(link.totalPassengers / link.totalCapacity * 100) : 0
+				link.totalLoadFactor = link.totalCapacityHistory > 0 ? Math.round(link.totalPassengers / link.totalCapacityHistory * 100) : 0
 				var assignedModel 
 				if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
 					assignedModel = link.assignedAirplanes[0].airplane.name
