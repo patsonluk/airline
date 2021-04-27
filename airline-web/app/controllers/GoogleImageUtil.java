@@ -57,10 +57,12 @@ public class GoogleImageUtil {
 		}
 
 		public Optional<URL> load(KeyType key) {
+			logger.debug("Loading google resource on " + key);
 			//try from db first
 			Option<GoogleResource> googleResourceOption = GoogleResourceSource.loadResource(key.getId(), ResourceType.apply(resourceTypeValue));
 
 			if (googleResourceOption.isDefined()) {
+				logger.debug("Found previous google resource on " + key + " resource " + googleResourceOption.get());
 				GoogleResource googleResource = googleResourceOption.get();
 				if (googleResource.url() == null) { //previous successful query returns no result, do not proceed
 					return Optional.empty();
@@ -82,6 +84,8 @@ public class GoogleImageUtil {
 						}
 					}
 				}
+			} else {
+				logger.debug("No previous google resource on " + key);
 			}
 
 			//no previous successful query done, or the result is no longer valid
