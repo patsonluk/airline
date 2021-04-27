@@ -109,6 +109,9 @@ public class GoogleImageUtil {
 				//purge the old record since it's no longer valid
 				GoogleResourceSource.deleteResource(key.getId(), ResourceType.apply(resourceTypeValue));
 				return Optional.empty();
+			} catch (Throwable t) {
+				logger.warn("Unexpected failure for google resource loading on " + key + " : " + t.getMessage(), t);
+				return Optional.empty();
 			}
 		}
 	}
