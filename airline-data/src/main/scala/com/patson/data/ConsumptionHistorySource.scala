@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 
 
 object ConsumptionHistorySource {
-  var MAX_CONSUMPTION_HISTORY_WEEK = 10
+  var MAX_CONSUMPTION_HISTORY_WEEK = 30
 
   val updateConsumptions = (consumptions : Map[(PassengerGroup, Airport, Route), Int]) => {
     val connection = Meta.getConnection()
