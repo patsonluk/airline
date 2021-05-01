@@ -3,6 +3,7 @@ package com.patson.model
 import com.patson.model.airplane.Model
 import com.patson.model.airplane.Model.Type
 import FlightType._
+import com.patson.model.IsolatedTownFeature.HUB_RANGE_BRACKETS
 
 
 abstract class AirportFeature {
@@ -141,25 +142,43 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
   }
 }
 
+object IsolatedTownFeature {
+  val ISOLATION_MAX_POP = 50000 //MAX pop to be consider isolated. Otherwise it has the right mass to be alone
+  val HUB_MIN_POP = 100000 //Not considered as isolated if there's a HUB within HUB_RANGE
+  val HUB_RANGE_BRACKETS = Array(300, 500, 1000, 2000) //if couldn't find a major airport within
+}
+
 sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.ISOLATED_TOWN
-  val HUB_MIN_POPULATION = 100000 // 
+  val boostRange =
+    if (strength < HUB_RANGE_BRACKETS.size) { //up to 4
+      HUB_RANGE_BRACKETS(strength)
+    } else {
+      HUB_RANGE_BRACKETS.last + 1000
+    }
+
+  import IsolatedTownFeature._
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
-    if (flightType == SHORT_HAUL_DOMESTIC && toAirport.population >= HUB_MIN_POPULATION) {
-      if (rawDemand < 0.01) { //up to 10 
-        rawDemand * 1000 
-      } else if (rawDemand <= 0.1) { //up to 20
-        rawDemand * 200 
-      } else if (rawDemand <= 0.5) { //up to 30
-        rawDemand * 60
-      } else if (rawDemand <= 2) { //up to 40
-        rawDemand * 20
-      } else if (rawDemand <= 5) { //up to 50
-        rawDemand * 10
-      } else if (rawDemand <= 10) { //up to 60
-        rawDemand * 6
+    if (toAirport.population >= HUB_MIN_POP) {
+      val distance = Computation.calculateDistance(fromAirport, toAirport)
+      if (distance <= boostRange) {
+        if (rawDemand < 0.01) { //up to 10
+          rawDemand * 1000
+        } else if (rawDemand <= 0.1) { //up to 20
+          rawDemand * 200
+        } else if (rawDemand <= 0.5) { //up to 30
+          rawDemand * 60
+        } else if (rawDemand <= 2) { //up to 40
+          rawDemand * 20
+        } else if (rawDemand <= 5) { //up to 50
+          rawDemand * 10
+        } else if (rawDemand <= 10) { //up to 60
+          rawDemand * 6
+        } else {
+          rawDemand * 2
+        }
       } else {
-        rawDemand * 2
+        0
       }
     } else {
       0
@@ -191,7 +210,7 @@ object AirportFeatureType extends Enumeration {
         case VACATION_HUB => "Vacation Hub - Attracts more tourist passengers"
         case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers"
         case DOMESTIC_AIRPORT => "Domestic Airport"
-        case ISOLATED_TOWN => "Isolated Town - Increases demand flying to domestic airport with at least 100000 pop within 1000km"
+        case ISOLATED_TOWN => "Isolated Town - Increases demand flying to airport with at least 100000 pop within range. The higher the strength, the longer the range"
         case GATEWAY_AIRPORT => "Gateway Airport"
         case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games"
         case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games"
