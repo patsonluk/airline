@@ -140,15 +140,21 @@ function changeColoredElementValue(element, newValue) {
 		
 		if (parseFloat(oldValue) < parseFloat(newValue)) {
 			element.animate({"background-color" : "#A1D490", "color" : "#248F00"}, 1000, function() {
-				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000, function() {
+                    element.css({backgroundColor : "", color : ""})
+                })
 			})
 		} else if (parseFloat(oldValue) > parseFloat(newValue)) {
 			element.animate({"background-color" : "#F7B6A1", "color" : "#FA7246"}, 1000, function() {
-				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000, function() {
+                    element.css({backgroundColor : "", color : ""})
+                })
 			})
 		} else {
 			element.animate({"background-color" : "#FFFC9E", "color" : "#FFDD00"}, 1000, function() {
-				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000, function() {
+                    element.css({backgroundColor : "", color : ""})
+                })
 			})
 		}
 	}
