@@ -422,12 +422,14 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 
 
     //basic details
+    val distance = Computation.calculateDistance(fromAirport, toAirport)
     var result = Json.obj(
       "fromAirport" -> fromAirport,
       "fromAirportText" -> fromAirport.displayText,
       "toAirport" -> toAirport,
       "toAirportText" -> toAirport.displayText,
-      "distance" -> Computation.calculateDistance(fromAirport, toAirport),
+      "distance" -> distance,
+      "flightType" -> FlightType.label(Computation.getFlightType(fromAirport, toAirport, distance)),
       "directDemand" -> directDemand,
       "businessPassengers" -> directBusinessDemand.total,
       "touristPassengers" -> directTouristDemand.total,

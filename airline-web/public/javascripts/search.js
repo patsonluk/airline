@@ -767,6 +767,7 @@ function researchFlight(fromAirportId, toAirportId) {
                 $("#researchSearchResult .toAirport .incomeLevel").text(result.toAirport.incomeLevel)
 
                 $("#researchSearchResult .distance").text(result.distance)
+                $("#researchSearchResult .flightType").text(result.flightType)
                 $("#researchSearchResult .demand").text(toLinkClassValueString(result.directDemand))
 
                 $("#researchSearchResult .table.links .table-row").remove()
