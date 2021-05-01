@@ -188,7 +188,11 @@ object DemandGenerator {
       if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN") {
         adjustedDemand *= 0.6
       }
-      
+
+      if (adjustedDemand >= 100 && distance < 200) { //diminished demand for close short routes
+        adjustedDemand = 100 + Math.pow(adjustedDemand - 100, 0.6)
+      }
+
       //adjust by features
       fromAirport.getFeatures().foreach { feature =>
         val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, relationship)

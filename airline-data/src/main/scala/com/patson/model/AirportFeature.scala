@@ -163,19 +163,19 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
       val distance = Computation.calculateDistance(fromAirport, toAirport)
       if (distance <= boostRange) {
         if (rawDemand < 0.01) { //up to 10
-          rawDemand * 1000
-        } else if (rawDemand <= 0.1) { //up to 20
-          rawDemand * 200
-        } else if (rawDemand <= 0.5) { //up to 30
-          rawDemand * 60
-        } else if (rawDemand <= 2) { //up to 40
-          rawDemand * 20
-        } else if (rawDemand <= 5) { //up to 50
-          rawDemand * 10
-        } else if (rawDemand <= 10) { //up to 60
-          rawDemand * 6
+          5 + rawDemand / 0.01 * 5
+        } else if (rawDemand <= 0.1) {
+          10 + rawDemand / 0.1 * 10
+        } else if (rawDemand <= 0.5) {
+          20 + rawDemand / 0.5 * 10
+        } else if (rawDemand <= 2) {
+          30 + rawDemand / 2 * 10
+        } else if (rawDemand <= 5) {
+          40 + rawDemand / 5 * 10
+        } else if (rawDemand <= 10) {
+          50 + rawDemand / 10 * 10
         } else {
-          rawDemand * 2
+          60 + rawDemand
         }
       } else {
         0
