@@ -56,6 +56,24 @@ function refreshTopBar(airline) {
 	var $starBar = $(getGradeStarsImgs(airline.gradeValue))
 	$(".reputationStars").append($starBar)
 	addTooltip($(".reputationStars"), reputationText, {'top' : 0, 'width' : '350px', 'white-space' : 'nowrap'})
+
+	//updateTopBarDelegatesStatus
+	$('#topBar .delegatesStatus').empty()
+	var availableDelegates = airline.delegatesInfo.availableCount
+	var busyDelegates = airline.delegatesInfo.busyDelegates.length
+	var $delegateIconDiv = $('<div style="position: relative; display: inline-block;"></div>').appendTo($('#topBar .delegatesStatus'))
+    var $delegateIcon = $('<img>').appendTo($delegateIconDiv)
+
+    if (availableDelegates == 0) {
+        $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-unavailable.png')
+    } else {
+        $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-available.png')
+    }
+
+    var $availableCountDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #a4f5b0; color: #454544; font-size: 8px; font-weight: bold;'></div>")
+    $availableCountDiv.text(availableDelegates)
+    $delegateIconDiv.append($availableCountDiv)
+    $delegateIconDiv.attr('title', "Delegates (available/total) : " + availableDelegates + "/" + (availableDelegates + busyDelegates))
 }
 
 function getGradeStarsImgs(gradeValue) {

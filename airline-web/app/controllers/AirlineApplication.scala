@@ -156,7 +156,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      }
      val bases = AirlineSource.loadAirlineBasesByAirline(airlineId)
      val reputationBreakdowns = AirlineSource.loadReputationBreakdowns(airlineId)
-     airlineJson = airlineJson + ("baseAirports"-> Json.toJson(bases)) + ("reputationBreakdowns" -> Json.toJson(reputationBreakdowns))
+     airlineJson = airlineJson + ("baseAirports"-> Json.toJson(bases)) + ("reputationBreakdowns" -> Json.toJson(reputationBreakdowns)) +
+       ("delegatesInfo" -> Json.toJson(airline.getDelegateInfo()))
      
      if (extendedInfo) {
        val links = LinkSource.loadFlightLinksByAirlineId(airlineId)
@@ -173,8 +174,14 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
        val assets = Bank.getAssets(airlineId)
 
+       airlineJson =
+         airlineJson +
+         ("linkCount" -> JsNumber(links.length)) +
+           ("destinations"-> JsNumber(destinations)) +
+           ("fleetSize"-> JsNumber(fleetSize)) +
+           ("fleetAge"-> JsNumber(fleetAge)) +
+           ("assets"-> JsNumber(assets))
 
-       airlineJson = airlineJson + ("linkCount" -> JsNumber(links.length)) + ("destinations"-> JsNumber(destinations)) + ("fleetSize"-> JsNumber(fleetSize)) + ("fleetAge"-> JsNumber(fleetAge)) + ("assets"-> JsNumber(assets))
      }
      
      Ok(airlineJson)
