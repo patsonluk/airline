@@ -67,8 +67,8 @@ function refreshTopBar(airline) {
     if (availableDelegates == 0) {
         $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-unavailable.png')
     } else {
-        $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-available.png')
     }
+        $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-available.png')
 
     var $availableCountDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #a4f5b0; color: #454544; font-size: 8px; font-weight: bold;'></div>")
     $availableCountDiv.text(availableDelegates)

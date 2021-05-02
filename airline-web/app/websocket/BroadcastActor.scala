@@ -1,10 +1,11 @@
 package websocket
 
 import akka.actor.{Actor, ActorRef, Props, Terminated}
-import com.patson.model.Airline
+import com.patson.model.{Airline, Alert}
 import com.patson.model.notice.{AirlineNotice, Notice}
 import com.patson.util.AirlineCache
-import controllers.{AirlineTutorial, PromptUtil}
+import controllers.{AirlineTutorial, PendingActionUtil, PromptUtil}
+import models.PendingAction
 import play.api.libs.json.Json
 import websocket.RemoteSubscribe.system
 
@@ -13,6 +14,7 @@ import scala.collection.mutable
 case class BroadcastMessage(text : String)
 case class AirlineMessage(airline : Airline, text : String)
 case class Subscribe(subscriber : ActorRef, airline : Airline)
+case class AirlinePendingActions(airline : Airline, actions : List[PendingAction])
 
 object BroadcastActor {
   private[this] val broadcastActor = system.actorOf(Props(classOf[BroadcastActor]), "broadcast-actor")
@@ -32,6 +34,7 @@ object BroadcastActor {
     val prompts = PromptUtil.getPrompts(airline)
     prompts.notices.foreach(broadcastActor ! _)
     prompts.tutorials.foreach(broadcastActor ! _)
+    broadcastActor ! AirlinePendingActions(airline, PendingActionUtil.getPendingActions(airline)) //should send empty list if none, so front end can clear
   }
 }
 
@@ -52,6 +55,9 @@ class BroadcastActor() extends Actor {
     }
     case tutorial : AirlineTutorial => {
       airlineActors.find(_._2.id == tutorial.airline.id).foreach( actor => actor._1 ! tutorial)
+    }
+    case airlinePendingActions : AirlinePendingActions => {
+      airlineActors.find(_._2.id == airlinePendingActions.airline.id).foreach( actor => actor._1 ! airlinePendingActions)
     }
     case message : Subscribe => {
       airlineActors.add((message.subscriber, message.airline))

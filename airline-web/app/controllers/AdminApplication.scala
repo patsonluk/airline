@@ -3,8 +3,10 @@ package controllers
 import com.patson.data.UserSource
 import com.patson.model.UserStatus
 import com.patson.model.UserStatus.UserStatus
-import com.patson.util.AirlineCache
+import com.patson.util.{AirlineCache, AirportCache}
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
+import controllers.GoogleImageUtil.{AirportKey, CityKey}
+
 import javax.inject.Inject
 import play.api.mvc._
 import play.api.libs.json.{Json, _}
@@ -37,6 +39,28 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
           println(s"unknown admin action $action")
           BadRequest(Json.obj("action" -> action))
       }
+
+    } else {
+      println(s"Non admin ${request.user} tried to access admin operations!!")
+      Forbidden("Not an admin user")
+    }
+  }
+
+  def invalidateImage(imageType : String, airportId : Int) = Authenticated { implicit request =>
+    if (request.user.isAdmin) {
+      AirportCache.getAirport(airportId) match {
+        case Some(airport) =>
+          val key : controllers.GoogleImageUtil.Key =
+            if (imageType == "airport") {
+              new AirportKey(airport.id, airport.name, airport.latitude, airport.longitude)
+            } else {
+              new CityKey(airport.id, airport.city, airport.latitude, airport.longitude)
+            }
+          GoogleImageUtil.invalidate(key)
+          Ok(Json.obj("result" -> airport))
+        case None => NotFound(s"Airport $airportId not found")
+      }
+
 
     } else {
       println(s"Non admin ${request.user} tried to access admin operations!!")

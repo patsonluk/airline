@@ -9,6 +9,7 @@ import com.patson.stream._
 import java.util.concurrent.atomic.AtomicLong
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
 import controllers.{AirlineTutorial, AirportUtil, PromptUtil}
+import models.{PendingAction, PendingActionCategory}
 import play.api.libs.json.JsNumber
 import play.api.libs.json.Json
 import websocket.chat.TriggerPing
@@ -96,6 +97,8 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
     case AirlineTutorial(airline, tutorial) =>
       println(s"Sending tutorial $tutorial to $airline")
       out ! Json.obj("messageType" -> "tutorial", "category" -> tutorial.category, "id" -> tutorial.id)
+    case AirlinePendingActions(airline, pendingActions : List[PendingAction]) =>
+      out ! Json.obj("messageType" -> "pendingAction", "actions" -> Json.toJson(pendingActions.map(_.category.toString)))
     case any =>
       println("received " + any + " not handled")  
   }

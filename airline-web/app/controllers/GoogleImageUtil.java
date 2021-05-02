@@ -116,6 +116,16 @@ public class GoogleImageUtil {
 		}
 	}
 
+	public static void invalidate(Key key) {
+		if (key instanceof CityKey) {
+			cityCache.invalidate(key);
+			GoogleResourceSource.deleteResource(key.getId(), ResourceType.CITY_IMAGE());
+		} else if (key instanceof AirportKey) {
+			airportCache.invalidate(key);
+			GoogleResourceSource.deleteResource(key.getId(), ResourceType.AIRPORT_IMAGE());
+		}
+	}
+
 	/**
 	 *
 	 * @param urlString
@@ -178,7 +188,7 @@ public class GoogleImageUtil {
 		return null;
 	}
 
-	private static class CityKey extends Key {
+	public static class CityKey extends Key {
 		private final int id;
 		private String cityName;
 		private double latitude;
@@ -234,7 +244,7 @@ public class GoogleImageUtil {
 		}
 	}
 
-	private static class AirportKey extends Key{
+	public static class AirportKey extends Key{
 		private final int id;
 		private String airportName;
 		private double latitude;
@@ -290,7 +300,7 @@ public class GoogleImageUtil {
 		}
 	}
 
-	private static abstract class Key {
+	public static abstract class Key {
 		abstract int getId();
 	}
 

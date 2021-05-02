@@ -66,6 +66,8 @@ function onMessage(evt) { //right now the message is just the cycle #, so refres
         queueNotice(json)
     } else if (json.messageType == "tutorial") {
         queueTutorialByJson(json)
+    } else if (json.messageType == "pendingAction") {
+        handlePendingActions(json.actions)
     } else {
 		console.warn("unknown message type " + evt.data)
 	}

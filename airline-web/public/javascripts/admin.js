@@ -21,12 +21,42 @@ function adminAction(action, targetUserId, callback) {
 	    }
 	});
 }
+
+function invalidateImage(imageType) {
+	var url = "/admin/invalidate-image/" + activeAirportId +  "/" + imageType
+	$.ajax({
+		type: 'GET',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+            showAirportDetails(activeAirportId)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
 function isAdmin() {
     return activeUser && activeUser.level >= 10
 }
 
 function isSuperAdmin() {
     return activeUser && activeUser.level >= 20
+}
+
+function initAdminActions() {
+    if (isAdmin()) {
+        $(".adminActions").show()
+    } else {
+        $(".adminActions").hide()
+    }
+    if (isSuperAdmin()) {
+        $(".superAdminActions").show()
+    } else {
+        $(".superAdminActions").hide()
+    }
 }
 
 
@@ -36,18 +66,6 @@ function showAdminActions(airline) {
     $("#rivalDetails .adminActions .username").text(airline.username)
     $("#rivalDetails .adminActions .userId").text(airline.userId)
     $("#rivalDetails .adminActions .status").text(airline.userStatus)
-
-
-    if (isAdmin()) {
-        $("#rivalDetails .adminActions").show()
-    } else {
-        $("#rivalDetails .adminActions").hide()
-    }
-    if (isSuperAdmin()) {
-        $("#rivalDetails .superAdminActions").show()
-    } else {
-        $("#rivalDetails .superAdminActions").hide()
-    }
 }
 
 function ban() {

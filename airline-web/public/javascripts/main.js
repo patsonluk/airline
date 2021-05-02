@@ -34,6 +34,7 @@ $( document ).ready(function() {
     registerEscape()
     updateAirlineColors()
 	initTabGroup()
+	initAdminActions()
 	populateTooltips()
 	checkAutoplaySettings()
 

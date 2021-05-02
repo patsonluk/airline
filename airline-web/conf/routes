@@ -204,6 +204,7 @@ GET     /event/:eventId/airline/:airlineId/reward/olympics-passenger  controller
 PUT		 /admin-action/:action/:targetUserId		controllers.AdminApplication.adminAction(action : String, targetUserId : Int)
 PUT		 /admin/send-airline-message/:targetAirlineId		controllers.AdminApplication.sendAirlineMessage(targetAirlineId : Int)
 PUT		 /admin/send-broadcast-message		            controllers.AdminApplication.sendBroadcastMessage()
+GET      /admin/invalidate-image/:airportId/:imageType  controllers.AdminApplication.invalidateImage(imageType : String, airportId : Int)
 
 
 # Signup
