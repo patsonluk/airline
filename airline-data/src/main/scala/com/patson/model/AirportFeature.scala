@@ -162,20 +162,20 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
     if (toAirport.population >= HUB_MIN_POP) {
       val distance = Computation.calculateDistance(fromAirport, toAirport)
       if (distance <= boostRange) {
-        if (rawDemand < 0.01) { //up to 10
-          5 + rawDemand / 0.01 * 5
-        } else if (rawDemand <= 0.1) {
-          10 + rawDemand / 0.1 * 10
-        } else if (rawDemand <= 0.5) {
-          20 + rawDemand / 0.5 * 10
-        } else if (rawDemand <= 2) {
-          30 + rawDemand / 2 * 10
-        } else if (rawDemand <= 5) {
-          40 + rawDemand / 5 * 10
-        } else if (rawDemand <= 10) {
-          50 + rawDemand / 10 * 10
+        if (rawDemand < 0.01) { //up to 30
+          5 + rawDemand / 0.01 * 25
+        } else if (rawDemand <= 0.1) { //up to 60
+          30 + rawDemand / 0.1 * 30
+        } else if (rawDemand <= 0.5) { //up to 100
+          60 + rawDemand / 0.5 * 40
+        } else if (rawDemand <= 2) { //up to 150
+          100 + rawDemand / 2 * 50
+        } else if (rawDemand <= 5) { //up to 200
+          150 + rawDemand / 5 * 50
+        } else if (rawDemand <= 10) { //up to 250
+          200 + rawDemand / 10 * 50
         } else {
-          60 + rawDemand
+          350 + rawDemand * 3
         }
       } else {
         0
