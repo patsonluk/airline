@@ -26,7 +26,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
       val currentYear = olympics.currentYear(currentCycle)
       import OlympicsStatus._
-      val status = olympics.status(currentYear) match {
+      val status = olympics.status(currentCycle) match {
         case VOTING => "Voting for Host City"
         case HOST_CITY_SELECTED => "Host City Voted"
         case PREPARATION => "Preparation for the Games"
