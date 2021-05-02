@@ -175,7 +175,7 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
         } else if (rawDemand <= 10) { //up to 250
           200 + rawDemand / 10 * 50
         } else {
-          350 + rawDemand * 3
+          250 + rawDemand * 3
         }
       } else {
         0
