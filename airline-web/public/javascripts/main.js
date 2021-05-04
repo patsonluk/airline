@@ -34,7 +34,7 @@ $( document ).ready(function() {
     registerEscape()
     updateAirlineColors()
 	initTabGroup()
-	initAdminActions()
+
 	populateTooltips()
 	checkAutoplaySettings()
 
@@ -175,6 +175,7 @@ function loadUser(isLogin) {
 			  getAirports()
 			  showUserSpecificElements();
 			  updateChatTabs()
+			  initAdminActions()
 			  
 			  if (window.location.hostname != 'localhost') {
 				  FS.identify(user.id, {
