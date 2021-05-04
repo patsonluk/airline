@@ -695,7 +695,7 @@ li.row, div.table-row {
 	padding: 3px;
 }
 
-.warning, .fatal {
+.warning, .fatal, .negative {
 	color: #D46A6A;
 }
 .fatal {

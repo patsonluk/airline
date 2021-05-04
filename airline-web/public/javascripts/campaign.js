@@ -166,6 +166,7 @@ function createCampaign() {
         success: function(result) {
             closeCampaignDetails(true)
             updateCampaignTable()
+            updateTopBarDelegates(activeAirline.id)
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
@@ -190,6 +191,7 @@ function updateCampaign() {
         success: function(result) {
             closeCampaignDetails(true)
             updateCampaignTable()
+            updateTopBarDelegates(activeAirline.id)
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
@@ -211,6 +213,7 @@ function deleteCampaign() {
             success: function(result) {
                 closeCampaignDetails(true)
                 updateCampaignTable()
+                updateTopBarDelegates(activeAirline.id)
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));

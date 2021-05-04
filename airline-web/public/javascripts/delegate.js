@@ -103,3 +103,43 @@ function updateAirlineDelegateStatus($delegateStatusDiv, successFunction) {
 	    }
 	});
 }
+
+function updateTopBarDelegates(airlineId) {
+    $.ajax({
+    		type: 'GET',
+    		url: "airlines/" + airlineId,
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(airline) {
+    	    	refreshTopBarDelegates(airline)
+    	    },
+    	    error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    }
+    	});
+}
+
+function refreshTopBarDelegates(airline) {
+    $('#topBar .delegatesShortcut').empty()
+	var availableDelegates = airline.delegatesInfo.availableCount
+	var busyDelegates = airline.delegatesInfo.busyDelegates.length
+	var $delegateIconDiv = $('<div style="position: relative; display: inline-block;"></div>').appendTo($('#topBar .delegatesShortcut'))
+    var $delegateIcon = $('<img>').appendTo($delegateIconDiv)
+
+    if (availableDelegates == 0) {
+        $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-unavailable.png')
+    } else {
+    }
+        $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-available.png')
+
+    var $availableCountDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #a4f5b0; color: #454544; font-size: 8px; font-weight: bold;'></div>")
+    $availableCountDiv.text(availableDelegates)
+    $delegateIconDiv.append($availableCountDiv)
+    $delegateIconDiv.attr('title', "Delegates (available/total) : " + availableDelegates + "/" + (availableDelegates + busyDelegates))
+}
+
+function showDelegateStatusModal() {
+    updateAirlineDelegateStatus($('#delegateStatusModal .delegateStatus'))
+    $('#delegateStatusModal').fadeIn(500)
+}

@@ -160,6 +160,11 @@ function changeColoredElementValue(element, newValue) {
 	}
 	if ($.isNumeric(newValue)) {
 		element.text(commaSeparateNumber(newValue))
+		if (newValue < 0) {
+		    element.addClass('negative')
+		} else {
+		    element.removeClass('negative')
+		}
 	} else {
 		element.text(newValue)
 	}

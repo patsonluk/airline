@@ -429,6 +429,7 @@ function updateCountryDelegates() {
         data:  JSON.stringify({ 'delegateCount' : assignedDelegateCount }) ,
         dataType: 'json',
         success: function(result) {
+            updateTopBarDelegates(activeAirline.id)
             closeModal($('#airlineCountryRelationshipModal'))
         },
         error: function(jqXHR, textStatus, errorThrown) {
