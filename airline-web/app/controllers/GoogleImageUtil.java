@@ -57,7 +57,7 @@ public class GoogleImageUtil {
 		}
 
 		public Optional<URL> load(KeyType key) {
-			logger.debug("Loading google resource on " + key);
+			logger.info("Loading google resource on " + key);
 			//try from db first
 			Option<GoogleResource> googleResourceOption = GoogleResourceSource.loadResource(key.getId(), ResourceType.apply(resourceTypeValue));
 

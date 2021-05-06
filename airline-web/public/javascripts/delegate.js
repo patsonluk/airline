@@ -129,14 +129,30 @@ function refreshTopBarDelegates(airline) {
 
     if (availableDelegates == 0) {
         $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-unavailable.png')
+        var minCoolDown = -1
+        $.each(airline.delegatesInfo.busyDelegates, function(index, busyDelegate) {
+            if (busyDelegate.completed) {
+                if (minCoolDown == -1 || busyDelegate.coolDown < minCoolDown) {
+                    minCoolDown = busyDelegate.coolDown
+                }
+            }
+        })
+        if (minCoolDown != -1) {
+            var $coolDownDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #FFC273; color: #454544; font-size: 8px; font-weight: bold;'></div>")
+            $coolDownDiv.text(minCoolDown)
+            $delegateIconDiv.append($coolDownDiv)
+        }
+        $delegateIconDiv.attr('title', "Next delegate available in " + minCoolDown + " weeks. Delegates (available/total) : 0/" + busyDelegates)
     } else {
-    }
         $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-available.png')
+        var $availableCountDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #a4f5b0; color: #454544; font-size: 8px; font-weight: bold;'></div>")
+        $availableCountDiv.text(availableDelegates)
+        $delegateIconDiv.append($availableCountDiv)
+        $delegateIconDiv.attr('title', "Delegates (available/total) : " + availableDelegates + "/" + (availableDelegates + busyDelegates))
+    }
 
-    var $availableCountDiv = $("<div style='position: absolute; left: 1px; bottom: 0; background-color: #a4f5b0; color: #454544; font-size: 8px; font-weight: bold;'></div>")
-    $availableCountDiv.text(availableDelegates)
-    $delegateIconDiv.append($availableCountDiv)
-    $delegateIconDiv.attr('title', "Delegates (available/total) : " + availableDelegates + "/" + (availableDelegates + busyDelegates))
+
+
 }
 
 function showDelegateStatusModal() {
