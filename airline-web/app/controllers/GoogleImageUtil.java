@@ -62,7 +62,7 @@ public class GoogleImageUtil {
 			Option<GoogleResource> googleResourceOption = GoogleResourceSource.loadResource(key.getId(), ResourceType.apply(resourceTypeValue));
 
 			if (googleResourceOption.isDefined()) {
-				logger.debug("Found previous google resource on " + key + " resource " + googleResourceOption.get());
+				logger.info("Found previous google resource on " + key + " resource " + googleResourceOption.get());
 				GoogleResource googleResource = googleResourceOption.get();
 				if (googleResource.url() == null) { //previous successful query returns no result, do not proceed
 					return Optional.empty();
@@ -85,7 +85,7 @@ public class GoogleImageUtil {
 					}
 				}
 			} else {
-				logger.debug("No previous google resource on " + key);
+				logger.info("No previous google resource on " + key);
 			}
 
 			//no previous successful query done, or the result is no longer valid
@@ -104,9 +104,11 @@ public class GoogleImageUtil {
 				}
 			} catch (OverLimitException e) {
 				//result unknown since it was over the limit, try later
+				logger.info("Google resource on " + key + " failed due to overlimit");
 				return Optional.empty();
 			} catch (NoLongerValidException e) {
 				//purge the old record since it's no longer valid
+				logger.info("Google resource on " + key + " is no longer valid");
 				GoogleResourceSource.deleteResource(key.getId(), ResourceType.apply(resourceTypeValue));
 				return Optional.empty();
 			} catch (Throwable t) {
