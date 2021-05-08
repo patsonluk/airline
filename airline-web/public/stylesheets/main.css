@@ -643,7 +643,7 @@ div.divider {
 }
 
 
-a.selected, :not(.button) > a:hover, span.selected, .clickable:hover:not(.cell), .clickable.selected:not(.cell) {
+a.selected, :not(.button):not(.no-highlight) > a:hover, span.selected, .clickable:hover:not(.cell), .clickable.selected:not(.cell) {
 	border-radius: 3px 3px 3px 3px;
 	background: #72ad5f;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#72ad5f, #90be81);  /* Chrome 10-25, Safari 5.1-6 */
