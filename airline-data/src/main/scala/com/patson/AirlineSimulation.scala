@@ -383,7 +383,7 @@ object AirlineSimulation {
         if (airline.getBalance() < 0) {
           val shouldReset = allFlightLinksByAirlineId.get(airline.id) match {
             case Some(links) =>
-              links.map(_.capacity.total).sum == 0
+              links.map(_.futureCapacity().total).sum == 0
             case None => true
           }
           if (shouldReset) {
