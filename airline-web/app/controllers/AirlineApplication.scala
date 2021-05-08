@@ -541,11 +541,15 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
             } { airport =>
                   AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match { 
                   case Some(base) => //updating
-                    val updateBase = base.copy(scale = inputBase.scale)
-                    AirlineSource.saveAirlineBase(updateBase)
-                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
-                    AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
-                    Created(Json.toJson(updateBase))
+                    if (base.scale + 1 == inputBase.scale) { //only allow one level at a time now
+                      val updateBase = base.copy(scale = inputBase.scale)
+                      AirlineSource.saveAirlineBase(updateBase)
+                      AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                      AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
+                      Created(Json.toJson(updateBase))
+                    } else {
+                      BadRequest(s"Cannot upgrade existing base $base to $inputBase")
+                    }
                   case None => //ok to add
                     AirportCache.getAirport(inputBase.airport.id, true).fold {
                          BadRequest("airport id " +  inputBase.airport.id + " not found!")
