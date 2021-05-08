@@ -216,6 +216,7 @@ function loadSheets() {
 
 	officeSheetPage = 0
 	officePeriod = 'WEEKLY'
+	$('#officeCanvas select.period').val(officePeriod)
 
 		
 	$.ajax({
