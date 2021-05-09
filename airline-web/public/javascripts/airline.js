@@ -2757,5 +2757,16 @@ function negotiationAnimation(savedLink, callback, callbackParam) {
 	$('#negotiationAnimation').show()
 }
 
-
+function addAirlineTooltip($target, airlineId, slogan, airlineName) {
+    var $airlineTooltip = $('<div style="min-width: 150px;"></div>')
+    var $liveryImg = $('<img style="max-height: 100px; max-width: 250px; display: block; margin: auto;">').appendTo($airlineTooltip)
+    $liveryImg.attr('src', 'airlines/' + airlineId + "/livery")
+    var $sloganDiv =$("<h5></h5>").appendTo($airlineTooltip)
+    if (slogan) {
+        $sloganDiv.text(slogan)
+    } else {
+        $sloganDiv.text(airlineName)
+    }
+    addTooltipHtml($target, $airlineTooltip, {'top' : '100%'})
+}
 

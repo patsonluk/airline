@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.UserSource
+import com.patson.data.{AirlineSource, UserSource}
 import com.patson.model.UserStatus
 import com.patson.model.UserStatus.UserStatus
 import com.patson.util.{AirlineCache, AirportCache}
@@ -40,6 +40,17 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
           BadRequest(Json.obj("action" -> action))
       }
 
+    } else {
+      println(s"Non admin ${request.user} tried to access admin operations!!")
+      Forbidden("Not an admin user")
+    }
+  }
+
+  def invalidateCustomization(airlineId : Int) = Authenticated { implicit request =>
+    if (request.user.isAdmin) {
+      LiveryUtil.deleteLivery(airlineId)
+      AirlineSource.saveSlogan(airlineId, "")
+      Ok(Json.obj("result" -> airlineId))
     } else {
       println(s"Non admin ${request.user} tried to access admin operations!!")
       Forbidden("Not an admin user")

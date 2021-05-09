@@ -69,6 +69,8 @@ object Constants {
   val INCOME_TABLE = "income"
   val CASH_FLOW_TABLE = "cash_flow"
   val AIRLINE_LOGO_TABLE = "airline_logo"
+  val AIRLINE_LIVERY_TABLE = "airline_livery"
+  val AIRLINE_SLOGAN_TABLE = "airline_slogan"
   val ALLIANCE_TABLE = "alliance"
   val ALLIANCE_MEMBER_TABLE = "alliance_member"
   val ALLIANCE_HISTORY_TABLE = "alliance_history"

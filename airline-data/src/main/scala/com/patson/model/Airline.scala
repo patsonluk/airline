@@ -122,6 +122,8 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     code
   }
 
+  lazy val slogan = AirlineSource.loadSlogan(id)
+
   def getDelegateInfo() : DelegateInfo = {
     val busyDelegates = DelegateSource.loadBusyDelegatesByAirline(id)
     val availableCount = delegateCount - busyDelegates.size

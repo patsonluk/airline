@@ -277,6 +277,8 @@ object Meta {
     createCountryMarketShare(connection)
     createCountryAirlineTitle(connection)
     createAirlineLogo(connection)
+    createAirlineLivery(connection)
+    createAirlineSlogan(connection)
     createAirplaneRenewal(connection)
     createAirplaneConfiguration(connection)
     createAlliance(connection)
@@ -709,6 +711,36 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_LOGO_TABLE + "(" +
       "airline INTEGER, " +
       "logo BLOB, " +
+      "PRIMARY KEY (airline)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirlineLivery(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_LIVERY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_LIVERY_TABLE + "(" +
+      "airline INTEGER, " +
+      "livery MEDIUMBLOB, " +
+      "PRIMARY KEY (airline)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirlineSlogan(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_SLOGAN_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_SLOGAN_TABLE + "(" +
+      "airline INTEGER, " +
+      "slogan VARCHAR(256), " +
       "PRIMARY KEY (airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

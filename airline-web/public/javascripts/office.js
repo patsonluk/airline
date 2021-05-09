@@ -3,7 +3,8 @@ var loadedCashFlows = {}
 var officeSheetPage = 0;
 var officePeriod;
 
-var fileuploaderObj;
+var logoUploaderObj;
+var liveryUploaderObj
 var airlineColorPicker;
 
 $( document ).ready(function() {
@@ -57,6 +58,8 @@ function showOfficeCanvas() {
 	updateAirlineColorPicker()
 	updateResetAirlineInfo()
 	updateHeadquartersMap($('#officeCanvas .headquartersMap'), activeAirline.id)
+	updateLiveryInfo()
+	loadSlogan(function(slogan) { $('#officeCanvas .slogan').val(slogan)})
 }
 
 function updateCampaignSummary() {
@@ -591,24 +594,25 @@ function setAirlineColor() {
 function showUploadLogo() {
 	if (activeAirline.reputation >= 40) {
 		updateLogoUpload()
-		$('#uploadLogoPanelForbidden').hide()
-		$('#uploadLogoPanel').show()
+		$('#uploadLogoModal .uploadForbidden').hide()
+		$('#uploadLogoModal .uploadPanel').show()
 	} else {
-		$('#uploadLogoPanelForbidden .warning').text('You may only upload airline banner at Reputation 40 or above')
-		$('#uploadLogoPanelForbidden').show()
-		$('#uploadLogoPanel').hide()
+		$('#uploadLogoModal .uploadForbidden .warning').text('You may only upload airline banner at Reputation 40 or above')
+		$('#uploadLogoModal .uploadForbidden').show()
+		$('#uploadLogoModal .uploadPanel').hide()
 	}
 	
 	$('#uploadLogoModal').fadeIn(200)
 }
 
+
 function updateLogoUpload() {
-	$('#uploadLogoPanel .warning').hide()
-	if (fileuploaderObj) {
-		fileuploaderObj.reset()
+	$('#uploadLogoModal .uploadPanel .warning').hide()
+	if (logoUploaderObj) {
+		logoUploaderObj.reset()
 	}
 	
-	fileuploaderObj = $("#fileuploader").uploadFile({
+	logoUploaderObj = $("#uploadLogoModal .uploadPanel .fileuploader").uploadFile({
 		url:"airlines/" + activeAirline.id + "/logo",
 		multiple:false,
 		dragDrop:false,
@@ -618,17 +622,120 @@ function updateLogoUpload() {
 		onSuccess:function(files,data,xhr,pd)
 		{
 			if (data.success) {
-				$('#uploadLogoPanel .warning').hide()
+				$('#uploadLogoModal .uploadPanel .warning').hide()
 				closeModal($('#uploadLogoModal'))
 				updateAirlineLogo()
 			} else if (data.error) {
-				$('#uploadLogoPanel .warning').text(data.error)	
-				$('#uploadLogoPanel .warning').show()
+				$('#uploadLogoModal .uploadPanel .warning').text(data.error)
+				$('#uploadLogoModal .uploadPanel .warning').show()
 			}
 			
 		}
 	});
 }
+
+function updateLiveryInfo() {
+    $('#officeCanvas img.livery').attr('src', 'airlines/' + activeAirline.id + "/livery?dummy=" + Math.random())
+}
+
+function showUploadLivery() {
+	if (activeAirline.reputation >= 40) {
+		updateLiveryUpload()
+		$('#uploadLiveryModal .uploadForbidden').hide()
+		$('#uploadLiveryModal .uploadPanel').show()
+	} else {
+		$('#uploadLiveryModal .uploadForbidden .warning').text('You may only upload airline livery at Reputation 40 or above')
+		$('#uploadLiveryModal .uploadForbidden').show()
+		$('#uploadLiveryModal .uploadPanel').hide()
+	}
+
+	$('#uploadLiveryModal').fadeIn(200)
+}
+
+
+function updateLiveryUpload() {
+	$('#uploadLiveryModal .uploadPanel .warning').hide()
+	if (liveryUploaderObj) {
+		liveryUploaderObj.reset()
+	}
+
+	liveryUploaderObj = $("#uploadLiveryModal .uploadPanel .fileuploader").uploadFile({
+		url:"airlines/" + activeAirline.id + "/livery",
+		multiple:false,
+		dragDrop:false,
+		acceptFiles:"image/png",
+		fileName:"liveryFile",
+		maxFileSize:1 * 1024 * 1024,
+		onSuccess:function(files,data,xhr,pd)
+		{
+			if (data.success) {
+				$('#uploadLiveryModal .uploadPanel .warning').hide()
+				closeModal($('#uploadLiveryModal'))
+				updateLiveryInfo()
+			} else if (data.error) {
+				$('#uploadLiveryModal .uploadPanel .warning').text(data.error)
+				$('#uploadLiveryModal .uploadPanel .warning').show()
+			}
+
+		}
+	});
+}
+
+function deleteLivery() {
+    var url = "airlines/" + activeAirline.id + "/livery"
+    $.ajax({
+		type: 'DELETE',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(dummy) {
+	    	updateLiveryInfo()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function saveSlogan() {
+    var url = "airlines/" + activeAirline.id + "/slogan"
+    $.ajax({
+		type: 'PUT',
+		url: url,
+		contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+	    data: JSON.stringify({ 'slogan' : $('#officeCanvas .slogan').val() }) ,
+
+
+	    success: function(result) {
+	    	$('#officeCanvas .slogan').val(result.slogan)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function loadSlogan(callback) {
+    var url = "airlines/" + activeAirline.id + "/slogan"
+    $.ajax({
+		type: 'GET',
+		url: url,
+	    dataType: 'json',
+	    success: function(result) {
+	    	callback(result.slogan)
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+
+
 
 function editTargetServiceQuality() {
 	$('#serviceFundingDisplaySpan').hide()
