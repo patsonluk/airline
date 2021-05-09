@@ -888,16 +888,9 @@ input {
 	background-color: var(--input-background-color);
 	color: var(--input-color);
 }
+
 textarea {
-	line-height: 50px;
-	height: 200px;
-	font-size: 18px;
-	width: 500px;
 	border: 1px solid var(--input-border-color);
-	outline: none;
-	border-radius: 3px;
-	margin-bottom: 20px;
-	text-align: center;
 	background-color: var(--input-background-color);
 	color: var(--input-color);
 }

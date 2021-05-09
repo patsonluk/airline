@@ -65,6 +65,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       loginStatus.foreach { status => //if there's a login status
         result = result + ("loginStatus" -> JsNumber(status.id))
       }
+
+      result = result + ("slogan" -> JsString(airline.slogan.getOrElse("")))
         
       alliance.foreach { alliance =>
         result = result + ("allianceName" -> JsString(alliance.name))
@@ -900,7 +902,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
    )
    //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
  }
- 
+
  def setLogo(airlineId : Int, templateIndex : Int, color1 : String, color2 : String) = AuthenticatedAirline(airlineId) { request =>
    val logo = LogoGenerator.generateLogo(templateIndex, Color.decode(color1).getRGB, Color.decode(color2).getRGB)
    LogoUtil.saveLogo(airlineId, logo)
@@ -930,6 +932,61 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
     }
   }
+
+  def uploadLivery(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.user.getReputation < 40) {
+      Ok(Json.obj("error" -> JsString("Cannot upload img at current reputation"))) //have to send ok as the jquery plugin's error cannot read the response
+    } else {
+      request.body.asMultipartFormData.map { data =>
+
+        val file = data.file("liveryFile").get.ref.path
+        LiveryUtil.validateUpload(file) match {
+          case Some(rejection) =>
+            Ok(Json.obj("error" -> JsString(rejection))) //have to send ok as the jquery plugin's error cannot read the response
+          case None =>
+            val data =Files.readAllBytes(file)
+            LiveryUtil.saveLivery(airlineId, data)
+
+            println("Uploaded livery for airline " + request.user)
+            Ok(Json.obj("success" -> JsString("File uploaded")))
+        }
+      }.getOrElse {
+        Ok(Json.obj("error" -> JsString("Cannot find uploaded contents"))) //have to send ok as the jquery plugin's error cannot read the response
+      }
+    }
+  }
+
+  def deleteLivery(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    LiveryUtil.deleteLivery(airlineId)
+    Ok(Json.obj("success" -> JsString("File deleted")))
+  }
+
+  def getLivery(airlineId : Int) = Action {
+    Ok(LiveryUtil.getLivery(airlineId)).as("image/png").withHeaders(
+      CACHE_CONTROL -> "max-age=3600"
+    )
+    //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
+  }
+
+  val MAX_SLOGAN_LENGTH = 200
+  def saveSlogan(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    var slogan = request.body.asInstanceOf[AnyContentAsJson].json.\("slogan").as[String]
+
+    if (slogan.length > MAX_SLOGAN_LENGTH) {
+      slogan = slogan.substring(0, MAX_SLOGAN_LENGTH)
+    }
+    AirlineSource.saveSlogan(airlineId, slogan)
+    Ok(Json.obj("slogan" -> slogan))
+
+  }
+
+
+  def getSlogan(airlineId : Int) = Action {
+    val slogan : String = AirlineSource.loadSlogan(airlineId).getOrElse("")
+    Ok(Json.obj("slogan" -> slogan))
+    //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
+  }
+
  
  
   def setColor(airlineId : Int, color : String) = AuthenticatedAirline(airlineId) { request =>

@@ -2112,6 +2112,10 @@
 					</div>
 	<!-- 				end left section  -->
 					<div style="float: left;" class="verticalGroup officeCanvasRightGroup">
+						<div class="section" style="width: 95%;">
+							<h4>Delegates Pool<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
+							<div class="delegateStatus"></div>
+						</div>
                         <div class="section" style="width: 95%;">
                             <h4>Headquarters</h4>
 							<div style="position: relative; height: 150px; width: 100%" class="headquartersMap">
@@ -2123,10 +2127,20 @@
 							</div>
                         </div>
 
-                        <div class="section" style="width: 95%;">
-                            <h4>Delegates Pool<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
-                            <div class="delegateStatus"></div>
-                        </div>
+						<div class="section" style="width: 95%;">
+							<h4>Airplane Livery
+								<img src='@routes.Assets.versioned("images/icons/picture--plus.png")' class='button' style="vertical-align: middle;" onclick="showUploadLivery()">
+								<img src='@routes.Assets.versioned("images/icons/picture--minus.png")' class='button' style="vertical-align: middle;" onclick="deleteLivery()">
+							</h4>
+							<div style="position: relative; width: 100%">
+								<img class="livery" style="max-height: 300px; max-width: 100%; display: block; margin: auto;">
+							</div>
+							<h4 style="margin-top: 5px;">Company Slogan
+								<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="saveSlogan()">
+							</h4>
+							<textarea rows="3" cols="40" maxlength="200" class="slogan" style="width:95%; height: 50px;" placeholder="You airline slogan..."></textarea>
+						</div>
+
                         <div class="section" style="width: 95%;">
 							<div style="display: flex; align-items: base-line;">
 								<span><h4>Campaigns</h4></span>
@@ -2607,6 +2621,7 @@
 									<div>User ID: <span class="userId"></span></div>
 									<div>Status: <span class="status"></span></div>
 									<div class="clickable" onclick="banChat()">Ban Chat</div>
+									<div class="clickable" onclick="invalidateCustomization()">Remove Livery/Slogan</div>
 									<div class="clickable" onclick="ban()">Ban</div>
 									<div class="clickable" onclick="unban()">Un-Ban</div>
 									<div class="clickable" onclick="promptAirlineMessage()">Send Direct Message</div>
@@ -3559,15 +3574,33 @@
 				<li class="label" style="padding: 5px;">- Logo should be in png format</li>
 				<li class="label" style="padding: 5px;">- Logo should be 24px wide and 12px tall</li>
 			</ul>
-			<div id="uploadLogoPanel" style="display:none" >
-		    	<div id="fileuploader">Upload</div>
+			<div class="uploadPanel" style="display:none" >
+		    	<div class="fileuploader">Upload</div>
 		    	<div class="warning" style="display:none;"></div>
 		    </div>
-		    <div id="uploadLogoPanelForbidden" style="display:none" >
+		    <div class="uploadForbidden" style="display:none" >
 		    	<div class="warning"></div>
 		    </div>
 	    </div>
 	</div>
+
+  <div id="uploadLiveryModal" class="modal">
+	  <div class="modal-content"  style="width : 400px;">
+		  <span class="close" onclick="closeModal($('#uploadLiveryModal'))">&times;</span>
+		  <h4>Upload Airline Livery</h4>
+		  <ul>
+			  <li class="label" style="padding: 5px;">- Livery should be in png format, transparent background recommended</li>
+			  <li class="label" style="padding: 5px;">- Image should not be larger than 1MB</li>
+		  </ul>
+		  <div class="uploadPanel" style="display:none" >
+			  <div class="fileuploader">Upload</div>
+			  <div class="warning" style="display:none;"></div>
+		  </div>
+		  <div class="uploadForbidden" style="display:none" >
+			  <div class="warning"></div>
+		  </div>
+	  </div>
+  </div>
 	
 	<!-- airport facility modal -->
 	<div id="facilityModal" class="modal facility">

@@ -77,6 +77,24 @@ function unban() {
 function banChat() {
     adminAction("ban-chat", $("#rivalDetails .adminActions").data("userId"))
 }
+function invalidateCustomization() {
+    var airlineId = $("#rivalDetails .adminActions").data("airlineId")
+    var url = "/admin/invalidate-customization/" + airlineId
+    $.ajax({
+        type: 'GET',
+        url: url,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            showRivalsCanvas(selectedAirlineId)
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+}
+
 function switchUser() {
     adminAction("switch", $("#rivalDetails .adminActions").data("userId"), function() { loadUser(false)})
 }

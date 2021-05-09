@@ -91,6 +91,11 @@ GET		 /airlines/:airlineId/reset	   controllers.AirlineApplication.resetAirline(
 GET		 /airlines/:airlineId/logo	controllers.AirlineApplication.getLogo(airlineId : Int)
 GET		 /airlines/:airlineId/set-logo	controllers.AirlineApplication.setLogo(airlineId : Int, templateIndex : Int, color1 : String, color2 : String)
 POST	 /airlines/:airlineId/logo	controllers.AirlineApplication.uploadLogo(airlineId : Int)
+GET		 /airlines/:airlineId/livery	controllers.AirlineApplication.getLivery(airlineId : Int)
+POST	 /airlines/:airlineId/livery	controllers.AirlineApplication.uploadLivery(airlineId : Int)
+DELETE	 /airlines/:airlineId/livery	controllers.AirlineApplication.deleteLivery(airlineId : Int)
+GET		 /airlines/:airlineId/slogan	controllers.AirlineApplication.getSlogan(airlineId : Int)
+PUT	     /airlines/:airlineId/slogan	controllers.AirlineApplication.saveSlogan(airlineId : Int)
 PUT		 /airlines/:airlineId/airline-code	   controllers.AirlineApplication.setAirlineCode(airlineId : Int)
 GET		 /colors			  controllers.AirlineApplication.getColors()
 GET		 /airlines/:airlineId/set-color			  controllers.AirlineApplication.setColor(airlineId : Int, color : String)
@@ -205,6 +210,7 @@ PUT		 /admin-action/:action/:targetUserId		controllers.AdminApplication.adminAct
 PUT		 /admin/send-airline-message/:targetAirlineId		controllers.AdminApplication.sendAirlineMessage(targetAirlineId : Int)
 PUT		 /admin/send-broadcast-message		            controllers.AdminApplication.sendBroadcastMessage()
 GET      /admin/invalidate-image/:airportId/:imageType  controllers.AdminApplication.invalidateImage(imageType : String, airportId : Int)
+GET      /admin/invalidate-customization/:airlineId  controllers.AdminApplication.invalidateCustomization(airlineId : Int)
 
 
 # Signup

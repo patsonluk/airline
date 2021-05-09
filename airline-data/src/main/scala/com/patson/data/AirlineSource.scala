@@ -938,6 +938,89 @@ object AirlineSource {
       connection.close()
     }
   }
+
+  def saveLivery(airlineId : Int, livery : Array[Byte]) = {
+    val connection = Meta.getConnection()
+    val stream = new ByteArrayInputStream(livery)
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_LIVERY_TABLE + " VALUES(?, ?)")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.setBlob(2, stream)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+      stream.close()
+    }
+  }
+
+  def deleteLivery(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_LIVERY_TABLE WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadLivery(airlineId : Int) : Option[Array[Byte]] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $AIRLINE_LIVERY_TABLE WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      val resultSet = preparedStatement.executeQuery()
+      if (resultSet.next()) {
+        val blob = resultSet.getBlob("livery")
+        val result = Some(blob.getBytes(1, blob.length.toInt))
+        blob.free()
+        result
+      } else {
+        None
+      }
+    } finally {
+      connection.close()
+    }
+  }
+
+  def saveSlogan(airlineId : Int, slogan : String) = {
+    val connection = Meta.getConnection()
+
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_SLOGAN_TABLE + " VALUES(?, ?)")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.setString(2, slogan)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def loadSlogan(airlineId : Int) : Option[String] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $AIRLINE_SLOGAN_TABLE WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      val resultSet = preparedStatement.executeQuery()
+      if (resultSet.next()) {
+        Some(resultSet.getString("slogan"))
+      } else {
+        None
+      }
+    } finally {
+      connection.close()
+    }
+  }
   
   def saveColor(airlineId : Int, color : String) = {
     val connection = Meta.getConnection()

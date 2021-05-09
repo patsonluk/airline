@@ -1,11 +1,14 @@
 package com.patson.data
 
 import com.patson.data.Constants._
+
 import scala.collection.mutable.ListBuffer
 import com.patson.model.Airline
 import com.patson.model.airplane.Airplane
 import com.patson.data.airplane.ModelSource
 import com.mchange.v2.c3p0.ComboPooledDataSource
+import com.patson.data.Meta.createAirlineSlogan
+
 import java.sql.Connection
 import java.sql.PreparedStatement
 
@@ -24,7 +27,7 @@ object QuickCreateSchema extends App {
   dataSource.setJdbcUrl(DATABASE_CONNECTION)
   dataSource.setMaxPoolSize(100)
   val connection = getConnection(false)
-  createSchema(connection) 
+  createSchema(connection)
   connection.close
   
   def getConnection(enforceForeignKey: Boolean = true) = {
@@ -48,7 +51,8 @@ object QuickCreateSchema extends App {
 //    Meta.createLog(connection)
 //    Meta.createAlert(connection)
     //Meta.createDelegate(connection)
-    Meta.createReputationBreakdown(connection)
+    Meta.createAirlineLivery(connection)
+    Meta.createAirlineSlogan(connection)
   }
   
   
