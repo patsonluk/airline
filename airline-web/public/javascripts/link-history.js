@@ -341,7 +341,7 @@ function showLinkHistory() {
     $("#linkHistoryControlPanel .cycleDeltaText").text(cycleDelta * -1 + 1)
     var disablePrev = false
     var disableNext= false
-    if (cycleDelta <= -9) {
+    if (cycleDelta <= -29) {
         disablePrev = true
     } else if (cycleDelta >= 0) {
         disableNext = true
