@@ -321,7 +321,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                SearchUtil.removeAlliance(alliance.id)
              }
              
-             Ok(Json.toJson(currentAirlineAllianceMember))
+             Ok(Json.obj("removed" -> "alliance"))
            } else { //check if current airline is leader and the target airline is within this alliance
              if (currentAirlineAllianceMember.role != LEADER) {
                BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline is not leader")
@@ -341,8 +341,8 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                          } else {
                            AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = BOOT_ALLIANCE, cycle = currentCycle))
                          }
-                         
-                         Ok(Json.toJson(allianceMember))
+
+                         Ok(Json.obj("removed" -> "member"))
                        }
                     }
                }
