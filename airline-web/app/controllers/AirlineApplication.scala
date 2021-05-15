@@ -321,7 +321,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      AirlineSource.loadAirlineBaseByAirlineAndAirport(airline.id, airport.id) match {
        case Some(base) => 
          if (base.scale < Lounge.getBaseScaleRequirement(newLounge.level)) {
-           return Consideration(0, newLounge, Some("Require base at scale at " + Lounge.getBaseScaleRequirement(newLounge.level) + " to build level " + newLounge.level + " Lounge "))
+           return Consideration(0, newLounge, Some("Require base at scale " + Lounge.getBaseScaleRequirement(newLounge.level) + " to build level " + newLounge.level + " Lounge "))
          }
        case None => return Consideration(0, newLounge, Some("Cannot build Lounge without a base in this airport"))
      }
@@ -393,7 +393,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airline.id, airport.id) match {
       case Some(base) =>
         if (base.scale < ShuttleService.getBaseScaleRequirement(newShuttleService.level)) {
-          return Consideration(cost, newShuttleService, Some("Require base at scale at " + ShuttleService.getBaseScaleRequirement(newShuttleService.level) + " to build level " + newShuttleService.level + " Shuttle Service"))
+          return Consideration(cost, newShuttleService, Some("Require base at scale " + ShuttleService.getBaseScaleRequirement(newShuttleService.level) + " to build level " + newShuttleService.level + " Shuttle Service"))
         }
       case None => return Consideration(0, newShuttleService, Some("Cannot build Shuttle Service without a base in this airport"))
     }
