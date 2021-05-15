@@ -67,7 +67,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   val BASE_INTEREST_RATE = 0.1 //10%
 
   def generateProfiles(airline : Airline, airport : Airport) : List[Profile] = {
-    val difficulty = AirportUtil.rateAirport(airport).overallDifficulty
+    val difficulty = AirportRating.rateAirport(airport).overallDifficulty
     val capital = BASE_CAPITAL + difficulty * BONUS_PER_DIFFICULTY_POINT
 
     val profiles = ListBuffer[Profile]()

@@ -308,7 +308,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
                     "transitPassengers" -> transitPassengers,
                     "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),
                     "airlineArrival" -> Json.toJson(statisticsArrivalByAirline),
-                    "rating" -> Json.toJson(AirportUtil.rateAirport(airport))))
+                    "rating" -> Json.toJson(AirportRating.rateAirport(airport))))
       }
       case None => NotFound
     }

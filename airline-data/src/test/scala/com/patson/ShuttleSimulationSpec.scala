@@ -103,6 +103,16 @@ class ShuttleSimulationSpec(_system: ActorSystem) extends TestKit(_system) with 
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 3)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
     }
+    "find no route if there's a shuttle offered by different alliance".in {
+      val links = List(
+        LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+        LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+        LinkConsideration(Shuttle(toAirportsList(1), toAirportsList(2), testAirline2, 50, LinkClassValues.getInstance(10000)), 100, ECONOMY, false)) //shuttle by different airline
+
+      val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, links.asJava, Map(testAirline1.id -> 1, testAirline2.id -> 2).asJava, 3)
+      routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
+    }
+
     "direct flight more preferable than shuttle".in {
       val links = List(LinkConsideration(Shuttle(fromAirport, toAirportsList(0), testAirline1, 50, LinkClassValues.getInstance(10000)), 100, ECONOMY, false),
         LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),

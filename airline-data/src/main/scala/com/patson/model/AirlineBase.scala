@@ -2,20 +2,20 @@ package com.patson.model
 
 import com.patson.data.{AirportSource, CountrySource}
 import com.patson.model.AirlineBaseSpecialization.FlightTypeSpecialization
+import com.patson.util.AirportCache
 
 
 case class AirlineBase(airline : Airline, airport : Airport, countryCode : String, scale : Int, foundedCycle : Int, headquarter : Boolean = false) {
-  def getValue : Long = {
+  lazy val getValue : Long = {
     if (scale == 0) {
-      return 0
+      0
+    } else if (headquarter && scale == 1) { //free to start HQ
+      0
+    } else {
+      val baseCost = (1000000 + AirportRating.rateAirport(airport).overallRating * 120000).toLong
+
+      baseCost * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) ).toLong
     }
-    if (headquarter && scale == 1) { //free to start HQ
-      return 0
-    } 
-    
-    val baseCost = (200000 + airport.income * 30) * airport.size //for a airport size 7, income 50k city, it will be 12 million base
-      
-    return baseCost * Math.pow(COST_EXPONENTIAL_BASE, (scale - 1)).toLong
   }
 
   val COST_EXPONENTIAL_BASE = 1.7
