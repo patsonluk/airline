@@ -19,6 +19,7 @@ object AirlineSimulation {
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
   val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUTATION_DELTA = 1
+  val BANKRUPTCY_CASH_THRESHOLD = -10000000 //-10M
 
   def airlineSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
@@ -379,23 +380,21 @@ object AirlineSimulation {
         airline.setReputation(targetReputation)
 
 
+
         //check bankruptcy
-        if (airline.getBalance() < 0) {
-          val shouldReset = allFlightLinksByAirlineId.get(airline.id) match {
-            case Some(links) =>
-              links.map(_.futureCapacity().total).sum == 0
-            case None => true
-          }
+        if (airline.getBalance() < BANKRUPTCY_CASH_THRESHOLD) {
+          val shouldReset = linksIncome.profit < 0
           if (shouldReset) {
             var resetBalance = Computation.getResetAmount(airline.id).overall
             if (resetBalance < 0) {
               resetBalance = 0
             }
+            println(s"Resetting $airline due to negative cash and unprofitable flights")
             Airline.resetAirline(airline.id, newBalance = resetBalance)
           }
         }
 
-        
+
         println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
     }
     
