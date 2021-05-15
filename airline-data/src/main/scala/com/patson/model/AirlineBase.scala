@@ -20,9 +20,10 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
 
   val COST_EXPONENTIAL_BASE = 1.7
   
-  val getUpkeep : Long = {
+  lazy val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
-    (10000 + airport.income) / 10 * airport.size * (Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt  / (if (headquarter) 1 else 2)
+    val baseUpkeep = (5000 + AirportRating.rateAirport(airport).overallRating * 150).toLong
+    baseUpkeep * (Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
   }
 
 //  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
@@ -74,7 +75,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   /**
     * if not allowed, return LEFT[the title required]
     */
-  val allowAirline : Airline => Either[Title.Value, Title.Value]= (airline : Airline) => {
+  lazy val allowAirline : Airline => Either[Title.Value, Title.Value]= (airline : Airline) => {
 
     val requiredTitle =
       if (airport.isGateway()) {
