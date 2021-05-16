@@ -17,7 +17,7 @@ import scala.util.Random
 object NegotiationUtil {
   val NEW_LINK_BASE_COST = 100
   val MAX_ASSIGNED_DELEGATE = 10
-  val FREE_LINK_THRESHOLD = 5 //for newbie
+  val FREE_LINK_THRESHOLD = 4 //for newbie
   val FREE_LINK_FREQUENCY_THRESHOLD = 5
   val FREE_LINK_DIFFICULTY_THRESHOLD = 10
   val GREAT_SUCCESS_THRESHOLD = 0.95 // 5%
@@ -404,12 +404,12 @@ object NegotiationUtil {
     val finalRequirementValue = fromAirportRequirementValue + toAirportRequirementValue
 
     //check for freebie bonus
-    if (airlineLinks.length < FREE_LINK_THRESHOLD &&
-      newFrequency < FREE_LINK_FREQUENCY_THRESHOLD &&  //to prevent many small increase
+    if (airlineLinks.length <= FREE_LINK_THRESHOLD &&
+      newFrequency <= FREE_LINK_FREQUENCY_THRESHOLD &&  //to prevent many small increase
       finalRequirementValue < FREE_LINK_DIFFICULTY_THRESHOLD &&
       FlightType.getCategory(newLink.flightType) != FlightCategory.INTERCONTINENTAL
     ) {
-      return NegotiationUtil.NO_NEGOTIATION_REQUIRED
+      return NegotiationUtil.NO_NEGOTIATION_REQUIRED.copy(remarks = Some(s"Free for first $FREE_LINK_THRESHOLD routes of freq <= $FREE_LINK_FREQUENCY_THRESHOLD (< $FREE_LINK_DIFFICULTY_THRESHOLD difficulty)"))
     }
 
     val info = NegotiationInfo(fromAirportRequirements, toAirportRequirements, fromAirportDiscounts, toAirportDiscounts, totalFromDiscount, totalToDiscount, finalRequirementValue, computeOdds(finalRequirementValue, Math.min(MAX_ASSIGNED_DELEGATE, airline.getDelegateInfo.availableCount)))
@@ -504,7 +504,7 @@ object NegotiationUtil {
 //  }
 //}
 
-case class NegotiationInfo(fromAirportRequirements : List[NegotiationRequirement], toAirportRequirements : List[NegotiationRequirement], fromAirportDiscounts : List[NegotiationDiscount], toAirportDiscounts : List[NegotiationDiscount], finalFromDiscountValue : Double, finalToDiscountValue : Double, finalRequirementValue : Double, odds : Map[Int, Double])
+case class NegotiationInfo(fromAirportRequirements : List[NegotiationRequirement], toAirportRequirements : List[NegotiationRequirement], fromAirportDiscounts : List[NegotiationDiscount], toAirportDiscounts : List[NegotiationDiscount], finalFromDiscountValue : Double, finalToDiscountValue : Double, finalRequirementValue : Double, odds : Map[Int, Double], remarks : Option[String] = None)
 
 object NegotiationRequirementType extends Enumeration {
   type NegotiationRequirementType = Value

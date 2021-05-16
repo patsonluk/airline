@@ -1437,11 +1437,17 @@ function updateTotalValues() {
         enableButton($("#planLinkDetails .modifyLink"))
     }
     getLinkStaffingInfo()
+
+    $('#planLinkEstimatedDifficulty').remove('.remarks')
     getLinkNegotiation(function(result) {
         if (result.negotiationInfo.finalRequirementValue) {
             $('#planLinkEstimatedDifficulty').text(result.negotiationInfo.finalRequirementValue.toFixed(2))
         } else {
-            if (futureFrequency > 0) { //otherwise it might just overwrite estimated difficulty on new link
+            if (result.negotiationInfo.remarks) {
+                $('#planLinkEstimatedDifficulty').empty()
+                var $remarksSpan = $('<span class="remarks glow"></span>').appendTo($('#planLinkEstimatedDifficulty'))
+                $remarksSpan.text(result.negotiationInfo.remarks)
+            } else if (futureFrequency > 0) { //otherwise it might just overwrite estimated difficulty on new link
                 $('#planLinkEstimatedDifficulty').text('-')
             }
         }

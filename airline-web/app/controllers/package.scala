@@ -684,7 +684,7 @@ package object controllers {
 //      }
 
 
-      Json.obj(
+      var result = Json.obj(
         "odds" -> info.odds.map {
           case (delegateCount : Int, odds : Double) => (delegateCount.toString(), odds)
         },
@@ -695,6 +695,12 @@ package object controllers {
         "finalFromDiscountValue" -> info.finalFromDiscountValue,
         "finalToDiscountValue" -> info.finalToDiscountValue,
         "finalRequirementValue" -> info.finalRequirementValue)
+
+      info.remarks.foreach { remarks =>
+        result = result + ("remarks" -> JsString(remarks))
+      }
+
+      result
     }
   }
 
