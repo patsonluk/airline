@@ -204,8 +204,8 @@ function loadCountryDetails(countryCode) {
 	    	$("#countryDetailsMediumAirportCount").text(country.mediumAirportCount)
 	    	$("#countryDetailsSmallAirportCount").text(country.smallAirportCount)
 	    	$("#countryDetailsSmallAirportCount").text(country.smallAirportCount)
-    		$("#countryDetailsAirlineHeadquarters").text(country.headquarters.length)
-    		$("#countryDetailsAirlineBases").text(country.bases.length)
+    		$("#countryDetailsAirlineHeadquarters").text(country.headquartersCount)
+    		$("#countryDetailsAirlineBases").text(country.basesCount)
 
     		$("#countryCanvas .nationalAirlines").empty()
             if (country.nationalAirlines && country.nationalAirlines.length > 0) {
