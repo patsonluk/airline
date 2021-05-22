@@ -3,6 +3,7 @@ package com.patson.model
 import com.patson.model.airplane.Model
 import com.patson.model.airplane.Model.Type
 import FlightType._
+import com.patson.model.AirportFeatureType.{AirportFeatureType, DOMESTIC_AIRPORT, FINANCIAL_HUB, GATEWAY_AIRPORT, INTERNATIONAL_HUB, ISOLATED_TOWN, OLYMPICS_IN_PROGRESS, OLYMPICS_PREPARATIONS, UNKNOWN, VACATION_HUB}
 import com.patson.model.IsolatedTownFeature.HUB_RANGE_BRACKETS
 
 
@@ -14,6 +15,20 @@ abstract class AirportFeature {
   val strengthFactor : Double = strength.toDouble / MAX_STRENGTH
   
   def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double
+
+  lazy val getDescription = {
+    featureType match {
+      case INTERNATIONAL_HUB => "International Hub - Attracts more international passengers especially business travelers"
+      case VACATION_HUB => "Vacation Hub - Attracts more tourist passengers"
+      case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers"
+      case DOMESTIC_AIRPORT => "Domestic Airport"
+      case ISOLATED_TOWN => s"Isolated Town - Increases demand flying to airport with at least 100000 pop within ${this.asInstanceOf[IsolatedTownFeature].boostRange}km. The higher the strength, the longer the range"
+      case GATEWAY_AIRPORT => "Gateway Airport - Easier negotiation and more passengers with other gateway airports"
+      case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games"
+      case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games"
+      case UNKNOWN => "Unknown"
+    }
+  }
 }
 
 object AirportFeature {
@@ -204,17 +219,4 @@ sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeatu
 object AirportFeatureType extends Enumeration {
     type AirportFeatureType = Value
     val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, ISOLATED_TOWN, GATEWAY_AIRPORT, OLYMPICS_PREPARATIONS, OLYMPICS_IN_PROGRESS, UNKNOWN = Value
-    def getDescription(featureType : AirportFeatureType) = {
-      featureType match {
-        case INTERNATIONAL_HUB => "International Hub - Attracts more international passengers especially business travelers"
-        case VACATION_HUB => "Vacation Hub - Attracts more tourist passengers"
-        case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers"
-        case DOMESTIC_AIRPORT => "Domestic Airport"
-        case ISOLATED_TOWN => "Isolated Town - Increases demand flying to airport with at least 100000 pop within range. The higher the strength, the longer the range"
-        case GATEWAY_AIRPORT => "Gateway Airport"
-        case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games"
-        case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games"
-        case UNKNOWN => "Unknown"
-      }
-    }
 }

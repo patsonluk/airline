@@ -120,7 +120,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
         "countryRating" -> entry.countryPowerRating,
         "difficulty" -> entry.overallDifficulty,
         "features" -> JsArray(entry.features.sortBy(_.featureType.id).map { airportFeature =>
-          Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> AirportFeatureType.getDescription(airportFeature.featureType))
+          Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> airportFeature.getDescription)
         })
       )
     }

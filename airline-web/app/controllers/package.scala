@@ -569,8 +569,8 @@ package object controllers {
           case (airlineId, bonuses) => {
             var totalLoyaltyBonus = 0.0
             var totalAwarenessBonus = 0.0
-            var loyaltyBreakdownJson = Json.arr()
-            var awarenessBreakdownJson = Json.arr()
+            var loyaltyBreakdownJson = Json.arr(Json.obj("description" -> "Basic", "value" -> BigDecimal(airport.getAirlineBaseAppeal(airlineId).loyalty).setScale(2, RoundingMode.HALF_EVEN)))
+            var awarenessBreakdownJson = Json.arr(Json.obj("description" -> "Basic", "value" -> BigDecimal(airport.getAirlineBaseAppeal(airlineId).awareness).setScale(2, RoundingMode.HALF_EVEN)))
             bonuses.foreach { entry =>
               val loyaltyBonus = entry.bonus.loyalty
               if (loyaltyBonus != 0) {
@@ -594,7 +594,7 @@ package object controllers {
       }
       if (airport.isFeaturesLoaded) {
         airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().sortBy(_.featureType.id).map { airportFeature =>
-          Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> AirportFeatureType.getDescription(airportFeature.featureType))
+          Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> airportFeature.getDescription)
         }
         ))
       }
