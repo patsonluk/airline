@@ -417,6 +417,22 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
       assert(deletingLoyalist.isEmpty)
     }
 
+    "Only Gain in loyalists to max pop".in {
+      val (updatingLoyalists, deletingLoyalists) = AirportSimulation.computeLoyalists(
+        allAirports,
+        Map((passengerGroup, airport2, Route(List(goodAirline1Link1), 0)) -> 1000),
+        Map(1 -> List(Loyalist(airport1, airline1, airport1.population.toInt - 50))))
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount >= airport1.population.toInt - 50)
+      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount <= airport1.population.toInt)
+    }
+
+    "No Gain in loyalists if there's only one airline and it's already at max".in {
+      val (updatingLoyalists, deletingLoyalists) = AirportSimulation.computeLoyalists(
+        allAirports,
+        Map((passengerGroup, airport2, Route(List(goodAirline1Link1), 0)) -> 1000),
+        Map(1 -> List(Loyalist(airport1, airline1, airport1.population.toInt))))
+      assert(updatingLoyalists.isEmpty)
+    }
 
 
     "Around net zero if both airlines have similar parameters (4 airlines)".in {

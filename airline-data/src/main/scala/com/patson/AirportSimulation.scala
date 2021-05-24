@@ -119,7 +119,7 @@ object AirportSimulation {
 
   def simulateLoyalists(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) = {
     val existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]] = LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport.id)
-    val (updatingLoyalists, deletingLoyalists) = computeLoyalists(allAirports, linkRidershipDetails, existingLoyalistByAirportId)
+    val (updatingLoyalists,deletingLoyalists) = computeLoyalists(allAirports, linkRidershipDetails, existingLoyalistByAirportId)
     println(s"Updating ${updatingLoyalists.length} loyalists entries")
     LoyalistSource.updateLoyalists(updatingLoyalists)
 
@@ -147,12 +147,11 @@ object AirportSimulation {
   val MAX_LOYALIST_FLIP_RATIO = 1
   val NEUTRAL_SATISFACTION = 0.6
   private[patson] def computeLoyalists(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) = {
-    val updatingLoyalists = ListBuffer[Loyalist]()
-    val deletingLoyalists = ListBuffer[Loyalist]()
+    val result = ListBuffer[Loyalist]() //airlineId, amount
 
     linkRidershipDetails.groupBy(_._1._1.fromAirport).foreach {
       case ((fromAirport, passengersFromThisAirport)) =>
-        val loyalistDeltaOfAirlines = Map[Int, Int]() //airlineId, delta
+        val loyalistIncrementOfAirlines = Map[Int, Int]() //airlineId, delta
         //passengersFromThisAirport.filter(_._1._1.preference.loyaltySensitivity > 0).toList.foreach { //only count pax that actually cares about loyalty now
         passengersFromThisAirport.toList.foreach {
           case ((passengerGroup, toAirport, route), paxCount) =>
@@ -180,68 +179,94 @@ object AirportSimulation {
             conversionRatio = conversionRatio / flightLinks.length // for example if the route has 3 legs, it will convert at most 1/3 of the ratio
 
             val loyalistDelta = (paxCount * conversionRatio).toInt
-            val existingDelta = loyalistDeltaOfAirlines.getOrElse(link.airline.id, 0)
-            loyalistDeltaOfAirlines.put(link.airline.id, existingDelta + loyalistDelta)
+            val existingDelta = loyalistIncrementOfAirlines.getOrElse(link.airline.id, 0)
+            loyalistIncrementOfAirlines.put(link.airline.id, existingDelta + loyalistDelta)
           }
         }
 
         //put a map of current royalist status to draw which loyalist to flip
         val loyalistDistribution = ListBuffer[(Int, Int)]() //airlineId, threshold
         var walker = 0
-        val existingLoyalistOfThisAirport = existingLoyalistByAirportId.get(fromAirport.id).getOrElse(List.empty)
-        existingLoyalistOfThisAirport.foreach { loyalist =>
-          walker = walker + loyalist.amount
-          loyalistDistribution.append((loyalist.airline.id, walker))
+        val existingLoyalistOfThisAirport = existingLoyalistByAirportId.get(fromAirport.id).getOrElse(List.empty).map(entry => (entry.airline.id, entry.amount)).toMap
+        existingLoyalistOfThisAirport.foreach {
+          case(airlineId, loyalistAmount) =>
+            walker = walker + loyalistAmount
+            loyalistDistribution.append((airlineId, walker))
         }
 //        if (loyalistDistribution.length == 4) {
 //          println(s"distribution $loyalistDistribution")
 //        }
 
-        val flippedLoyalists = mutable.Map[Int, Int]() //airlineId, flipped amount
+//        val flippedLoyalists = mutable.Map[Int, Int]() //airlineId, flipped amount
 
         val CHUNK_SIZE = 5
+        val updatingLoyalists = mutable.HashMap[Int, Int]() //airlineId, amount
+
         //now with delta, see what the flips are
-        loyalistDeltaOfAirlines.foreach {
-          case (gainAirlineId, delta) => //split into chunks for better randomness
-            if (delta > 0) {
-              var remainingDelta = delta
-              while (remainingDelta > 0) {
-                val chunk = if (remainingDelta <= CHUNK_SIZE) remainingDelta else CHUNK_SIZE
+        loyalistIncrementOfAirlines.foreach {
+          case (gainAirlineId, increment) => //split into chunks for better randomness
+            if (increment > 0) {
+              var unclaimedLoyalist = (fromAirport.population - existingLoyalistOfThisAirport.values.sum).toInt
+              var remainingIncrement = increment
+              while (remainingIncrement > 0) {
+                val chunk = if (remainingIncrement <= CHUNK_SIZE) remainingIncrement else CHUNK_SIZE
                 val flipTrigger = random.nextInt(fromAirport.population.toInt)
 
                 val flippedAirlineIdOption = loyalistDistribution.find {
                   case (airlineId : Int, threshold : Int) => flipTrigger < threshold
                 }.map(_._1)
-                flippedAirlineIdOption.foreach { flippedAirlineId =>
-                  flippedLoyalists.put(flippedAirlineId, flippedLoyalists.getOrElse(flippedAirlineId, 0) - chunk)
-                }
 
-                remainingDelta = remainingDelta - chunk
+                flippedAirlineIdOption match {
+                  case Some(flippedAirlineId) => //flip from existing airline - could be itself
+                    if (flippedAirlineId == gainAirlineId) { //flipping from itself, ignore
+
+                    } else {
+                      val existingAmountOfFlippedAirline : Int = updatingLoyalists.get(flippedAirlineId) match {
+                        case Some(existingAmount) => existingAmount
+                        case None => existingLoyalistOfThisAirport.getOrElse(flippedAirlineId, 0)
+                      }
+
+
+                      if (existingAmountOfFlippedAirline <= 0) { //cannot flip, ignore...
+
+                      } else {
+                        val finalChunk =
+                          if (existingAmountOfFlippedAirline < chunk) { //partial flip
+                            existingAmountOfFlippedAirline
+                          } else {
+                            chunk
+                          }
+                        updatingLoyalists.put(flippedAirlineId, existingAmountOfFlippedAirline - finalChunk)
+                        val existingAmountOfGainAirline = updatingLoyalists.getOrElse(gainAirlineId, existingLoyalistOfThisAirport.getOrElse(gainAirlineId, 0))
+                        updatingLoyalists.put(gainAirlineId, existingAmountOfGainAirline + finalChunk)
+                      }
+                    }
+                  case None => //flip from unclaimed
+                    if (unclaimedLoyalist == 0) { //ignore, can no longer draw loyalist
+
+                    } else {
+                      val finalChunk =
+                        if (unclaimedLoyalist < chunk) { //partial flip
+                          unclaimedLoyalist
+                        } else {
+                          chunk
+                        }
+                      unclaimedLoyalist = unclaimedLoyalist - finalChunk
+                      val existingAmountOfGainAirline = updatingLoyalists.getOrElse(gainAirlineId, existingLoyalistOfThisAirport.getOrElse(gainAirlineId, 0))
+                      updatingLoyalists.put(gainAirlineId, existingAmountOfGainAirline + finalChunk)
+                    }
+                }
+                remainingIncrement = remainingIncrement - chunk
               }
             }
         }
 
-
-
-        // now merge it with the original delta map
-        val existingLoyalistOfThisAirportByAirlineId = existingLoyalistOfThisAirport.map(loyalist => (loyalist.airline.id, loyalist)).toMap
-        val finalLoyalistDeltaForThisAirport : immutable.Map[Int, Int] = (loyalistDeltaOfAirlines.toList ++ flippedLoyalists.toList).groupBy(_._1).view.mapValues(_.map(_._2).sum).toMap
-        finalLoyalistDeltaForThisAirport.foreach {
-          case((airlineId, delta)) => existingLoyalistOfThisAirportByAirlineId.get(airlineId) match {
-            case Some(existingLoyalist) =>
-              if (existingLoyalist.amount + delta <= 0) { //opps no more loyalist left :(
-                deletingLoyalists.append(existingLoyalist)
-              } else {
-                updatingLoyalists.append(existingLoyalist.copy(amount = existingLoyalist.amount + delta))
-              }
-            case None =>
-              if (delta > 0) {
-                updatingLoyalists.append(Loyalist(fromAirport, AirlineCache.getAirline(airlineId).get, delta))
-              }
-          }
+        //write result of this airport to final result
+        updatingLoyalists.foreach {
+          case (airlineId, amount) => result.append(Loyalist(fromAirport, AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId)), amount))
         }
     }
-    (updatingLoyalists.toList, deletingLoyalists.toList)
+    result.toList.partition(_.amount > 0)
   }
 
   def airportProjectSimulation(allAirports : List[Airport]) = {

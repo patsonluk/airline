@@ -121,7 +121,7 @@ object ChampionUtil {
       case (airportId, loyalists) =>
         val airport = AirportCache.getAirport(airportId, true).get //need to load detailed airport here to get features
         val championCount = getAirportChampionCount(airport)
-        val loyalistToPopRatio = loyalists.map(_.amount).sum.toDouble / airport.population
+        val loyalistToPopRatio = Math.min(1, loyalists.map(_.amount).sum.toDouble / airport.population) //just in case the loyalist is out of wack, ie > pop
         val topAirlineWithSortedIndex : List[(Loyalist, Int)] = loyalists.sortBy(_.amount)(Ordering.Int.reverse).take(championCount).zipWithIndex
 
         val championInfoForThisAirport = topAirlineWithSortedIndex.map {
