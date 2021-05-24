@@ -35,15 +35,22 @@ object SimulationEventStream{
 
     def receive = {
       case "subscribe" =>
-        println("subscribing actor " + sender().path)
         var elapsedFraction = (System.currentTimeMillis() - previousCycleEndTime).toDouble / cycleDurationAverage
         if (elapsedFraction > 1) { //if this time is slower than average, it could be bigger than 1
           elapsedFraction = 1
         }
         sender() ! (CycleInfo(currentCycle, elapsedFraction, cycleDurationAverage), None)
         registeredActors += sender()
+        context.watch(sender())
+        println("subscribed and watching actor " + sender().path)
       case "unsubscribe" =>
-        println("unsubcribing actor " + sender().path)
+        println("unsubscribing actor " + sender().path)
+        registeredActors -= sender()
+        context.unwatch(sender())
+        sender() ! PoisonPill
+      case Terminated(actor) =>
+        println("Watched actor is terminated " + sender().path)
+        context.unwatch(actor)
         registeredActors -= sender()
       case (topic: SimulationEvent, payload: Any) =>
         topic match {

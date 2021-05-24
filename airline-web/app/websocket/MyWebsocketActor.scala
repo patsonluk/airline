@@ -104,7 +104,6 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
   }
 
   override def aroundPostStop() = {
-    println("actor stopping")
     subscriberId.foreach { RemoteSubscribe.unsubscribe(_) }
     actorSystem.eventStream.unsubscribe(self)
     

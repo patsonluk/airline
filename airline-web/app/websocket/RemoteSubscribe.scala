@@ -17,6 +17,9 @@ sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
         println(self.path.toString +  " Attempting to resubscribe")
         remoteActor ! "subscribe"
   }
+  override def postStop() = {
+    println(self.path.toString + " stopped (post stop)")
+  }
 }
 
 sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
