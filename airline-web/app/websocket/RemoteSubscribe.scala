@@ -23,7 +23,7 @@ sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
   }
 }
 
-sealed class LocalMainActor() extends Actor { //only 1 locally, fan out message to all local actors to reduce connections required
+sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor { //only 1 locally, fan out message to all local actors to reduce connections required
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
       context.system.eventStream.publish(topic, payload) //relay to local event stream... since i don't know if I can subscribe to remote event stream...
@@ -32,6 +32,12 @@ sealed class LocalMainActor() extends Actor { //only 1 locally, fan out message 
       remoteActor ! "subscribe"
     case unknown : Any => println(s"Unknown message for local main actor : $unknown")
   }
+
+  override def preStart = {
+    super.preStart()
+    remoteActor ! "subscribe"
+  }
+
   override def postStop() = {
     println(self.path.toString + " stopped (post stop)")
   }
@@ -97,6 +103,8 @@ object RemoteSubscribe {
   val subscribers = mutable.HashSet[ActorRef]()
   val remoteMainActor = system.actorSelection("akka.tcp://" + REMOTE_SYSTEM_NAME + "@" + actorHost + "/user/" + BRIDGE_ACTOR_NAME)
   val localMainActor = system.actorOf(Props(classOf[LocalMainActor]), "local-main-actor")
+
+
   val reconnectActor = system.actorOf(Props(classOf[ReconnectActor], remoteMainActor), "reconnect-actor")
   reconnectActor ! remoteMainActor //why?
 

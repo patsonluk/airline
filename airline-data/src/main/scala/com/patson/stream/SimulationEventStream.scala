@@ -40,6 +40,7 @@ object SimulationEventStream{
     def receive = {
       case "subscribe" =>
         //only allow one subscriber (the web application actor) for now
+        System.out.println(s"$sender() subscribed")
         registeredActor = Set(sender())
 
 //      case "unsubscribe" =>
