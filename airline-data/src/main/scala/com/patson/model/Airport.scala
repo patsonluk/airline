@@ -364,7 +364,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       } else {
         val loyalistRatio = amount.toDouble / population //to attain 100, it requires full conversion
         val baseLoyalty = Math.log10(1 + loyalistRatio * 9) * 100 // 0 -> 0, 1 -> 100
-        (airline.id, baseLoyalty)
+        (airline.id, Math.min(AirlineAppeal.MAX_LOYALTY, baseLoyalty))
       }
     }
   }.toMap
