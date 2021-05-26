@@ -102,7 +102,7 @@ object RemoteSubscribe {
 
   val subscribers = mutable.HashSet[ActorRef]()
   val remoteMainActor = system.actorSelection("akka.tcp://" + REMOTE_SYSTEM_NAME + "@" + actorHost + "/user/" + BRIDGE_ACTOR_NAME)
-  val localMainActor = system.actorOf(Props(classOf[LocalMainActor]), "local-main-actor")
+  val localMainActor = system.actorOf(Props(classOf[LocalMainActor], remoteMainActor), "local-main-actor")
 
 
   val reconnectActor = system.actorOf(Props(classOf[ReconnectActor], remoteMainActor), "reconnect-actor")
