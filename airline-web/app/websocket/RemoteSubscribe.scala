@@ -26,6 +26,7 @@ sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
 sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor { //only 1 locally, fan out message to all local actors to reduce connections required
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
+      println(s"Local main action received topic $topic")
       context.system.eventStream.publish(topic, payload) //relay to local event stream... since i don't know if I can subscribe to remote event stream...
     case Resubscribe(remoteActor) =>
       println(self.path.toString +  " Attempting to resubscribe")
