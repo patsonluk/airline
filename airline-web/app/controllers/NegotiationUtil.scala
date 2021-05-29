@@ -17,7 +17,7 @@ import scala.util.Random
 object NegotiationUtil {
   val NEW_LINK_BASE_COST = 100
   val MAX_ASSIGNED_DELEGATE = 10
-  val FREE_LINK_THRESHOLD = 4 //for newbie
+  val FREE_LINK_THRESHOLD = 5 //for newbie
   val FREE_LINK_FREQUENCY_THRESHOLD = 5
   val FREE_LINK_DIFFICULTY_THRESHOLD = 10
   val GREAT_SUCCESS_THRESHOLD = 0.95 // 5%
@@ -404,7 +404,7 @@ object NegotiationUtil {
     val finalRequirementValue = fromAirportRequirementValue + toAirportRequirementValue
 
     //check for freebie bonus
-    if (airlineLinks.length <= FREE_LINK_THRESHOLD &&
+    if (airlineLinks.length < FREE_LINK_THRESHOLD &&
       newFrequency <= FREE_LINK_FREQUENCY_THRESHOLD &&  //to prevent many small increase
       finalRequirementValue < FREE_LINK_DIFFICULTY_THRESHOLD &&
       FlightType.getCategory(newLink.flightType) != FlightCategory.INTERCONTINENTAL
