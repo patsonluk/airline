@@ -239,6 +239,8 @@ object GeoDataGenerator extends App {
     println(s"Removal iatas")
     removalAirportIatas.foreach(println)
 
+    setAirportRunwayDetails(rawAirportResult, runwayResult)
+
     var airportResult = adjustAirportByRunway(rawAirportResult.filter { case(CsvAirport(airport, _, scheduledService)) =>
       airport.iata != "" && scheduledService && airport.size > 0 && !removalAirportIatas.contains(airport.iata)
     }, runwayResult) //
