@@ -379,6 +379,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         (cost, newShuttleService, inputFacility.level - shuttleService.level)
       case None =>
         val newShuttleService = ShuttleService(airline, airline.getAllianceId, airport, name = inputFacility.name, level = 1, CycleSource.loadCycle())
+        if (inputFacility.level != 1) {
+          return Consideration(0, newShuttleService, Some(s"Cannot build shuttle service of level ${inputFacility.level}"))
+        }
         val cost = newShuttleService.getValue
         (cost, newShuttleService, inputFacility.level)
     }
