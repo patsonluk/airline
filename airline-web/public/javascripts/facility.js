@@ -268,30 +268,32 @@ function showShuttleModal(currentFacility) {
     			disableButton($('#shuttleModal .upgradeButton'), facilityConsideration.upgrade.rejection)
 	    	}
 
-	    	if (!facilityConsideration.downgrade.rejection) {
-	    	    enableButton($('#shuttleModal .downgradeButton'))
-                enableButton($('#shuttleModal .removeButton'))
-                if (currentFacility.level <= 0) {
+            if (currentFacility.level <= 0) {
                     $('#shuttleModal .downgradeButton').hide()
                     $('#shuttleModal .removeButton').hide()
-                } else if (currentFacility.level == 1) {
-                    $('#shuttleModal .downgradeButton').hide()
-                    $('#shuttleModal .removeButton').show()
-	    		} else {
-	    		    $('#shuttleModal .downgradeButton').show()
-                    $('#shuttleModal .removeButton').show()
-	    		}
-	    	} else {
-	    	    if (currentFacility.level >= 2) {
-	    	        disableButton($('#shuttleModal .downgradeButton'), facilityConsideration.downgrade.rejection)
-	    	        $('#shuttleModal .downgradeButton').show()
-	    	        $('#shuttleModal .removeButton').hide()
-	    		} else {
-	    		    disableButton($('#shuttleModal .removeButton'), facilityConsideration.downgrade.rejection)
-	    		    $('#shuttleModal .downgradeButton').hide()
-    			    $('#shuttleModal .removeButton').show()
+            } else {
+                if (!facilityConsideration.downgrade.rejection) {
+                    enableButton($('#shuttleModal .downgradeButton'))
+                    enableButton($('#shuttleModal .removeButton'))
+                    if (currentFacility.level == 1) {
+                        $('#shuttleModal .downgradeButton').hide()
+                        $('#shuttleModal .removeButton').show()
+                    } else {
+                        $('#shuttleModal .downgradeButton').show()
+                        $('#shuttleModal .removeButton').show()
+                    }
+                } else {
+                    if (currentFacility.level >= 2) {
+                        disableButton($('#shuttleModal .downgradeButton'), facilityConsideration.downgrade.rejection)
+                        $('#shuttleModal .downgradeButton').show()
+                        $('#shuttleModal .removeButton').hide()
+                    } else {
+                        disableButton($('#shuttleModal .removeButton'), facilityConsideration.downgrade.rejection)
+                        $('#shuttleModal .downgradeButton').hide()
+                        $('#shuttleModal .removeButton').show()
+                    }
                 }
-	    	}
+            }
 
             $('#shuttleModal').data("facility", currentFacility)
             loadShuttleLinks(currentFacility)
