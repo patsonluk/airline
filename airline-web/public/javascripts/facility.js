@@ -168,43 +168,38 @@ function showLoungeModal(currentFacility) {
 	    		$('#facilityModal .facilityNameInputDiv').hide()
 			}
 
+            if (currentFacility.level == 0) {
+                $('#facilityModal .buildButton').show()
+                $('#facilityModal .upgradeButton').hide()
+                $('#facilityModal .downgradeButton').hide()
+                $('#facilityModal .removeButton').hide()
+            } else if (currentFacility.level == 1){
+                $('#facilityModal .buildButton').hide()
+                $('#facilityModal .upgradeButton').show()
+                $('#facilityModal .downgradeButton').hide()
+                $('#facilityModal .removeButton').show()
+            } else {
+                $('#facilityModal .buildButton').hide()
+                $('#facilityModal .upgradeButton').show()
+                $('#facilityModal .downgradeButton').show()
+                $('#facilityModal .removeButton').show()
+            }
+
 	    	if (!facilityConsideration.upgrade.rejection) {
-	    		if (currentFacility.level == 0) {
-	    			$('#facilityModal .buildButton').show()
-	    			$('#facilityModal .upgradeButton').hide()
-	    		} else {
-	    			$('#facilityModal .buildButton').hide()
-	    			$('#facilityModal .upgradeButton').show()
-	    			enableButton($('#facilityModal .upgradeButton'))
-	    		}
-	    		$('#facilityModal .upgradeRejectionDiv').hide()
+	    	    $('#facilityModal .upgradeRejectionDiv').hide()
+	    		enableButton($('#facilityModal .upgradeButton'))
 	    	} else {
-	    		$('#facilityModal .buildButton').hide()
+	    		$('#facilityModal .upgradeRejectionDiv').show()
     			disableButton($('#facilityModal .upgradeButton'), facilityConsideration.upgrade.rejection)
 	    	}
 
 	    	if (!facilityConsideration.downgrade.rejection) {
 	    	    enableButton($('#facilityModal .downgradeButton'))
                 enableButton($('#facilityModal .removeButton'))
-	    		if (currentFacility.level >= 2) {
-	    		    $('#facilityModal .downgradeButton').show()
-	    			$('#facilityModal .removeButton').show()
-	    		} else {
-	    			$('#facilityModal .downgradeButton').hide()
-	    			$('#facilityModal .removeButton').show()
-	    		}
 	    	} else {
-	    	    if (currentFacility.level >= 2) {
-	    	        disableButton($('#facilityModal .downgradeButton'), facilityConsideration.downgrade.rejection)
-	    	        $('#facilityModal .downgradeButton').show()
-	    	        $('#facilityModal .removeButton').hide()
-	    		} else {
-	    		    disableButton($('#facilityModal .removeButton'), facilityConsideration.downgrade.rejection)
-	    		    $('#facilityModal .downgradeButton').hide()
-    			    $('#facilityModal .removeButton').show()
-                }
+    	        disableButton($('#facilityModal .downgradeButton'), facilityConsideration.downgrade.rejection)
+    		    disableButton($('#facilityModal .removeButton'), facilityConsideration.downgrade.rejection)
 	    	}
-
 
 	    	$('#facilityModal').data("facility", currentFacility)
 	    	$('#facilityModal').fadeIn(200)
