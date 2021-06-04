@@ -1182,6 +1182,7 @@ function updateFrequencyBar(frequencyBar, valueContainer, airplane, currentFrequ
 
 function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
     selectedModelId = newModelId //modify the global one
+    selectedModel = loadedModelsById[newModelId]
 	if (selectedModelId) {
 		var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
 		
