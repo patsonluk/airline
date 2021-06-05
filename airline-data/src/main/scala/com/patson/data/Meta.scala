@@ -925,7 +925,11 @@ object Meta {
   }
 
   def createAirplaneRenewal(connection : Connection) {
-    var statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_RENEWAL_TABLE + "(" +
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPLANE_RENEWAL_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPLANE_RENEWAL_TABLE + "(" +
       "airline INTEGER, " +
       "threshold INTEGER, " +
       "PRIMARY KEY (airline)," +
