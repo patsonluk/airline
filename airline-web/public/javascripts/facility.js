@@ -157,7 +157,7 @@ function showLoungeModal(currentFacility) {
 	    			$('#facilityModal .facilityName').text('-')
 		    		$('#facilityModal .facilityName').show()
 		    		$('#facilityModal .facilityNameInputDiv').hide()
-	    		} else { //allow inputing name
+	    		} else { //allow name input
 	    			$('#facilityModal .facilityName').hide()
 		    		$('#facilityModal .facilityNameInputDiv').show()
 	    		}
@@ -188,9 +188,11 @@ function showLoungeModal(currentFacility) {
 	    	if (!facilityConsideration.upgrade.rejection) {
 	    	    $('#facilityModal .upgradeRejectionDiv').hide()
 	    		enableButton($('#facilityModal .upgradeButton'))
+	    		enableButton($('#facilityModal .buildButton'))
 	    	} else {
 	    		$('#facilityModal .upgradeRejectionDiv').show()
     			disableButton($('#facilityModal .upgradeButton'), facilityConsideration.upgrade.rejection)
+    			disableButton($('#facilityModal .buildButton'), facilityConsideration.upgrade.rejection)
 	    	}
 
 	    	if (!facilityConsideration.downgrade.rejection) {
