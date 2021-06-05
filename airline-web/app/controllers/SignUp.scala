@@ -112,7 +112,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
           
 //          val profile = StartupProfile.profilesById(userInput.profileId)
 //          profile.initializeAirline(newAirline)
-          Redirect("/").withCookies(Cookie("sessionActive", "true", httpOnly = false)).withSession("userId" -> String.valueOf(user.id))
+          Redirect("/").withCookies(Cookie("sessionActive", "true", httpOnly = false)).withSession("userToken" -> SessionUtil.addUserId(user.id))
         } else {
           BadRequest("Recaptcha check failed!")
         }

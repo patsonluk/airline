@@ -27,11 +27,11 @@ class ChatApplication @Inject()(cc: ControllerComponents)(implicit actorSystem: 
  //   Props(new ClientActor(out, chat))
  //  }	 
    def chatSocket = WebSocket.acceptOrResult[String, String] { request =>
-    Future.successful(request.session.get("userId") match {
+    Future.successful(request.session.get("userToken").flatMap(SessionUtil.getUserId(_)) match {
       case None =>
         logger.debug("Chatsocket rejected")
         Left(Forbidden)
-      case Some(userId) => 
+      case Some(userId) =>
         UserSource.loadUserById(userId.toInt) match {
           case None =>
             logger.info("Chatsocket rejected : user not found for id " + userId)
@@ -43,7 +43,6 @@ class ChatApplication @Inject()(cc: ControllerComponents)(implicit actorSystem: 
               bufferSize = 1024 //otherwise it drops the message when it couldn't send fast enough...
             ))
         }
-        
     })
   }
 }

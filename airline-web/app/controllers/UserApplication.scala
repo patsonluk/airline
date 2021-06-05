@@ -43,7 +43,7 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (request.user.status == UserStatus.INACTIVE) {
       UserSource.updateUser(request.user.copy(status = UserStatus.ACTIVE))
     }
-    Ok(Json.toJson(request.user)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userId" -> String.valueOf(request.user.id))
+    Ok(Json.toJson(request.user)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
   }
   
   def logout = Authenticated { implicit request =>

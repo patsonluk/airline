@@ -31,32 +31,36 @@ object AuthenticationObject {
   case class AuthenticatedAirline(airlineId : Int) extends AuthenticatedBuilder(req => getUserAirlineFromRequest(req, airlineId), defaultBodyParser)
   
   def getUserFromRequest(request : RequestHeader) : Option[User] = {
-    if (!request.session.isEmpty && request.session.get("userId").isDefined) {
-      val userId = request.session.get("userId").get
-//      println("from session userId " + userId)
-      UserSource.loadUserById(userId.toInt)
-    } else { 
-      if (!request.headers.get("Authorization").isEmpty) {
-        val result = request.headers.get("Authorization").flatMap { authorization =>
-          authorization.split(" ").drop(1).headOption.flatMap { encoded =>
-            new String(org.apache.commons.codec.binary.Base64.decodeBase64(encoded.getBytes)).split(":").toList match {
-              case userName :: password :: Nil  =>
+    if (!request.session.isEmpty && request.session.get("userToken").isDefined) {
+      request.session.get("userToken").foreach{ userToken =>
+        SessionUtil.getUserId(userToken) match {
+          case Some(userId) => return UserSource.loadUserById(userId)//success!
+          case None => println(s"Invalid token $userToken")
+        }
+      }
+
+    }
+    if (!request.headers.get("Authorization").isEmpty) {
+      val result = request.headers.get("Authorization").flatMap { authorization =>
+        authorization.split(" ").drop(1).headOption.flatMap { encoded =>
+          new String(org.apache.commons.codec.binary.Base64.decodeBase64(encoded.getBytes)).split(":").toList match {
+            case userName :: password :: Nil  =>
 //                println("from header " + userName + " : " + password)
-                if (Authentication.authenticate(userName, password)) {
-                  UserSource.loadUserByUserName(userName)                
-                } else {
-                  println("invalid userName and password on user " + userName)
-                  None
-                }
-              case _ => None
-            }
+              if (Authentication.authenticate(userName, password)) {
+                UserSource.loadUserByUserName(userName)
+              } else {
+                println("invalid userName and password on user " + userName)
+                None
+              }
+            case _ => None
           }
         }
-        result
-      } else {
-        None
       }
+      return result
+    } else {
+      return None
     }
+
   }
   
   def getUserAirlineFromRequest(request : RequestHeader, airlineId : Int) = {

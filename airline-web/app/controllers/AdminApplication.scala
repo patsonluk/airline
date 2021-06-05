@@ -31,7 +31,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
           Ok(Json.obj("action" -> action))
         case "switch" =>
           if (request.user.isSuperAdmin) {
-            Ok(Json.obj("action" -> action)).withSession("userId" -> String.valueOf(targetUserId))
+            Ok(Json.obj("action" -> action)).withSession("userToken" -> SessionUtil.addUserId(targetUserId))
           } else {
             Forbidden("Not a super admin user")
           }

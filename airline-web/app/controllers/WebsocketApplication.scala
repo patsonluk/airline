@@ -12,7 +12,7 @@ import scala.concurrent.Future
 class WebsocketApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   val logger = Logger(this.getClass)
   def wsWithActor = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
-    Future.successful(request.session.get("userId") match {
+    Future.successful(request.session.get("userToken").flatMap(SessionUtil.getUserId(_)) match {
       case None =>
         logger.info("websocket rejected")
         Left(Forbidden)
