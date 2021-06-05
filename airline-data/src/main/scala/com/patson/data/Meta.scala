@@ -994,6 +994,10 @@ object Meta {
       ")")
     statement.execute()
 
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MEMBER_TABLE)
+    statement.execute()
+    statement.close()
+
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MEMBER_TABLE + "(" +
       "alliance INTEGER," +
       "airline INTEGER, " +
@@ -1004,6 +1008,10 @@ object Meta {
       "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_HISTORY_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
