@@ -190,7 +190,11 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           if (user.email == userInput.email) {
             println("Sending email for reset password " + user)
             val scheme = if (request.secure) "https://" else "http://"
-            val host = request.host
+            val host = request.headers.get("X-Forwarded-Host") match {
+              case Some(host) => host
+              case None => request.host
+            }
+
             val baseUrl = s"$scheme$host/password-reset"
             EmailUtil.sendEmail(user.email, fromEmail, "Reset password for airline-club.com", getResetPasswordMessage(user, baseUrl))
           } else {
