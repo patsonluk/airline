@@ -12,7 +12,7 @@ import scala.math.BigDecimal.int2bigDecimal
 
 
 class LogApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-  implicit object LogWrites extends Writes[Log] {
+  case class LogWrites(currentCycle : Int) extends Writes[Log] {
     def writes(log: Log): JsValue = JsObject(List(
       "airlineName" -> JsString(log.airline.name),
       "airlineId" -> JsNumber(log.airline.id),
@@ -21,7 +21,7 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
       "categoryText" -> JsString(LogCategory.getDescription(log.category)),
       "severity" -> JsNumber(log.severity.id),
       "severityText" -> JsString(LogSeverity.getDescription(log.severity)),
-      "cycle" -> JsNumber(log.cycle)
+      "cycleAgo" -> JsNumber(currentCycle - log.cycle)
       ))
   }
   
@@ -30,7 +30,9 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
   
   
   def getLogs(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, CycleSource.loadCycle - LOG_RANGE)))
+    val cycle = CycleSource.loadCycle
+    implicit val logWrites = LogWrites(cycle)
+    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, cycle - LOG_RANGE)))
   }
   
   

@@ -1,0 +1,50 @@
+.modal-content.transparent-modal {
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    background-image: none;
+    color: hsl(0, 0%, 80%);
+}
+
+.profile-section {
+  border-radius: 8px;
+  background: rgba(255,255,255,0.2);
+  margin: 10px 20px 10px 0px;
+  padding: 10px 10px 20px 10px;
+  box-sizing:border-box;
+  width: 400px;
+  height: 300px;
+}
+
+.customTooltip div.table-row {
+    color: hsl(0, 0%, 80%);
+}
+
+.transparent-modal div.button {
+    color: var(--text-color);
+}
+
+.transparent-modal div.button:hover {
+    box-shadow: inset 0 0 10px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.6);
+}
+
+
+.profile-section.selected, .profile-section:hover{
+  border-radius: 8px;
+  background: rgba(255,255,255,0.4);
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.6);
+  cursor: pointer;
+}
+
+@media only screen
+and (max-device-width : 640px) {
+   .profile-section {
+        width: auto;
+        height: auto;
+        margin: 10px 0px;
+   }
+   h1 {
+    font-size: 1.5em;
+   }
+}
+
+

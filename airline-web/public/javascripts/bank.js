@@ -85,16 +85,24 @@ function updateNewLoanOptionsTable(loanOptions) {
 	optionsTable.children(".table-row").remove()
 	$.each(loanOptions, function(index, loanOption) {
 		var weeklyPayment = Math.ceil((loanOption.borrowedAmount + loanOption.interest) / loanOption.loanTerm)
-		var interestRate = Math.round(loanOption.interest / loanOption.borrowedAmount * 1000) / 10 //1 decimal point
+		var interestRate = loanOption.interestRate * 100
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.borrowedAmount) + "</div>")
-		row.append("<div class='cell' align='right'>" + interestRate  + "%</div>")
+		row.append("<div class='cell' align='right'>" + interestRate.toFixed(1)  + "%</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.interest) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loanOption.remainingAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(weeklyPayment) + " for " + loanOption.loanTerm + " weeks</div>")
-		row.append("<div class='cell'><img src='assets/images/icons/money--plus.png' title='Borrow with this Term' class='button' onclick='takeoutLoan(" + loanOption.borrowedAmount + "," + loanOption.loanTerm + ")'/></div>")
-		
-		
+
+		var loanFunction = function() {
+		    var action = function() {
+		        takeoutLoan(loanOption.borrowedAmount, loanOption.loanTerm)
+            }
+
+		    promptConfirm("Confirm taking out this loan with term " + loanOption.loanTerm + " weeks?", action)
+
+		}
+		var cell = $("<div class='cell'><img src='assets/images/icons/money--plus.png' title='Borrow with this Term' class='button'></div>").appendTo(row)
+		cell.find('.button').click(loanFunction)
 		optionsTable.append(row)
 	});
 }
@@ -113,7 +121,13 @@ function takeoutLoan(amount, term) {
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
             console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+        beforeSend: function() {
+            $('body .loadingSpinner').show()
+        },
+        complete: function(){
+            $('body .loadingSpinner').hide()
+        }
 	});
 }
 
@@ -154,11 +168,11 @@ function updateOutstandingLoansTable() {
 	loansTable.children("div.table-row").remove()
 	
 	$.each(loadedLoans, function(index, loan) {
-	    var interestRate = loan.interest / loan.borrowedAmount * 100
+	    var interestRate = loan.interestRate * 100
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.borrowedAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.interest) + "</div>")
-		row.append("<div class='cell' align='right'>" + '$' + interestRate.toFixed(1) + "%</div>")
+		row.append("<div class='cell' align='right'>" + interestRate.toFixed(1) + "%</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.remainingAmount) + "</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.weeklyPayment) + " remaining " + loan.remainingTerm + " week(s)</div>")
 		row.append("<div class='cell' align='right'>" + '$' + commaSeparateNumber(loan.earlyRepaymentFee) + "</div>")

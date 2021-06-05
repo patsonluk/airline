@@ -41,6 +41,7 @@ function showLinkHistoryView() {
 function loadLinkHistory(linkId) {
     $.each(historyPaths, function(index, path) { //clear all history path
         path.setMap(null)
+        path.shadowPath.setMap(null)
     })
     historyPaths = {}
 	var linkInfo = loadedLinksById[linkId]
@@ -103,8 +104,8 @@ function loadLinkHistory(linkId) {
                     var tableRow = $("<div class='table-row' style='display: none;'></div>")
                     tableRow.addClass("forward")
                     var airlineId = entry[0]
-                    tableRow.append("<div class='cell'>" + getAirlineLogoImg(airlineId) + airlineNamesById[airlineId] + "</div>")
-                    tableRow.append("<div class='cell'>" + entry[1] + "</div>")
+                    tableRow.append("<div class='cell' style='width: 70%'>" + getAirlineLogoImg(airlineId) + airlineNamesById[airlineId] + "</div>")
+                    tableRow.append("<div class='cell' style='width: 30%'>" + entry[1] + "</div>")
 
                     $("#linkHistoryControlPanel .transitAirlineList").append(tableRow)
                 })
@@ -112,8 +113,8 @@ function loadLinkHistory(linkId) {
                     var tableRow = $("<div class='table-row' style='display: none;'></div>")
                     tableRow.addClass("backward")
                     var airlineId = entry[0]
-                    tableRow.append("<div class='cell'>" + getAirlineLogoImg(airlineId) + airlineNamesById[airlineId] + "</div>")
-                    tableRow.append("<div class='cell'>" + entry[1] + "</div>")
+                    tableRow.append("<div class='cell' style='width: 70%'>" + getAirlineLogoImg(airlineId) + airlineNamesById[airlineId] + "</div>")
+                    tableRow.append("<div class='cell' style='width: 30%'>" + entry[1] + "</div>")
 
                     $("#linkHistoryControlPanel .transitAirlineList").append(tableRow)
                 })
@@ -340,7 +341,7 @@ function showLinkHistory() {
     $("#linkHistoryControlPanel .cycleDeltaText").text(cycleDelta * -1 + 1)
     var disablePrev = false
     var disableNext= false
-    if (cycleDelta <= -9) {
+    if (cycleDelta <= -29) {
         disablePrev = true
     } else if (cycleDelta >= 0) {
         disableNext = true
@@ -415,8 +416,11 @@ function showLinkHistory() {
                  }
 
                 infowindow = new google.maps.InfoWindow({
-                     content: $("#linkHistoryPopup").html(),
                      maxWidth : 400});
+
+                var popup = $("#linkHistoryPopup").clone()
+    			popup.show()
+                infowindow.setContent(popup[0])
 
                 infowindow.setPosition(event.latLng);
                 infowindow.open(map);

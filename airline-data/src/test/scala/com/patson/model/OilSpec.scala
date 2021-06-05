@@ -47,8 +47,8 @@ class OilSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
       val priceAverage = prices.sum / prices.length
       
       println("average " + priceAverage)
-      assert(priceAverage >= OilPrice.DEFAULT_PRICE - 2)
-      assert(priceAverage <= OilPrice.DEFAULT_PRICE + 2)
+      assert(priceAverage >= OilPrice.DEFAULT_PRICE - 3)
+      assert(priceAverage <= OilPrice.DEFAULT_PRICE + 3)
     }
     
     "generate price mostly in the boundary zone".in {

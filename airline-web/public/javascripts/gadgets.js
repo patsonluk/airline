@@ -140,20 +140,31 @@ function changeColoredElementValue(element, newValue) {
 		
 		if (parseFloat(oldValue) < parseFloat(newValue)) {
 			element.animate({"background-color" : "#A1D490", "color" : "#248F00"}, 1000, function() {
-				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000, function() {
+                    element.css({backgroundColor : "", color : ""})
+                })
 			})
 		} else if (parseFloat(oldValue) > parseFloat(newValue)) {
 			element.animate({"background-color" : "#F7B6A1", "color" : "#FA7246"}, 1000, function() {
-				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000, function() {
+                    element.css({backgroundColor : "", color : ""})
+                })
 			})
 		} else {
 			element.animate({"background-color" : "#FFFC9E", "color" : "#FFDD00"}, 1000, function() {
-				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000)
+				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000, function() {
+                    element.css({backgroundColor : "", color : ""})
+                })
 			})
 		}
 	}
 	if ($.isNumeric(newValue)) {
 		element.text(commaSeparateNumber(newValue))
+		if (newValue < 0) {
+		    element.addClass('negative')
+		} else {
+		    element.removeClass('negative')
+		}
 	} else {
 		element.text(newValue)
 	}
@@ -274,16 +285,16 @@ function getOpennessSpan(openness) {
 	if (openness >= 7) {
 		description = "Opened Market"
 		icon = "globe--plus.png"
-	} else if (openness >= 4) {
+	} else {
 		description = "No International Connection"
 		icon = "globe--exclamation.png"
-	} else if (openness >= 2) { 
+	}/* else if (openness >= 2) {
 		description = "No Foreign Airline Base"
 		icon = "globe--minus.png"
 	} else {
 		description = "No Foreign Airline"
 		icon = "prohibition.png"
-	}
+	}*/
 	return "<span>" + description + "(" + openness + ")&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
 	
 }
@@ -363,6 +374,10 @@ function getAirportText(city, airportCode) {
 	}
 }
 
+function getAirportSpan(airport) {
+    return "<span style='display:inline-flex; align-items: center;'>" + getCountryFlagImg(airport.countryCode) + getAirportText(airport.city, airport.iata) + "</span>"
+}
+
 function setActiveDiv(activeDiv, callback) {
 	var existingActiveDiv = activeDiv.siblings(":visible").filter(function (index) {
 		return $(this).css("clear") != "both"
@@ -373,6 +388,8 @@ function setActiveDiv(activeDiv, callback) {
 	}
 
 	if (existingActiveDiv.length > 0){
+	    existingActiveDiv.removeClass('active')
+	    activeDiv.addClass('active')
 	    existingActiveDiv.fadeOut(200, function() {
 		    activeDiv.fadeIn(200, callback)
         })
@@ -384,6 +401,7 @@ function setActiveDiv(activeDiv, callback) {
 			return false;
 		} else {
 			activeDiv.siblings().hide();
+			activeDiv.addClass('active')
     	    activeDiv.fadeIn(200, callback);
 		}
 	}
@@ -414,9 +432,11 @@ function toggleOnOff(element) {
  * @returns
  */
 function highlightTab(tab) {
-	tab.siblings().children("span").removeClass("selected")
-	//highlight the selected model
-	tab.children("span").addClass("selected")
+//	tab.siblings().children("span").removeClass("selected")
+//	//highlight the selected model
+//	tab.children("span").addClass("selected")
+    tab.siblings().find('.tab-icon').removeClass('selected')
+    tab.find('.tab-icon').addClass('selected')
 }
 
 function highlightSwitch(selectedSwitch) {
@@ -443,24 +463,22 @@ function closeAllModals() {
 
 function disableButton(button, reason) {
     $(button).addClass("disabled")
-    $(button).data("originalClickFunction", $(button).attr("onclick"))
-
-    if (!$(button).data("replacedTitle")) { //only store the title if it was NOT replaced (ie the original one)
-        $(button).data("originalTitle", $(button).attr("title"))
+    if ($(button).is(':input')) { //then have to manually add overlay
+       $(button).after('<div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 50, 50, 0.2)"></div>')
     }
 
-    if (reason) {
-        $(button).attr("title", reason)
-        $(button).data("replacedTitle", true)
-    }
-    $(button).removeAttr("onclick") //remove on click function
+    $(button).each(function() {
+      $(this).data("originalClickFunction", $(this).attr("onclick"))
+    })
 
-
+//    if (!$(button).data("replacedTitle")) { //only store the title if it was NOT replaced (ie the original one)
+//        $(button).data("originalTitle", $(button).attr("title"))
+//    }
     if (isTouchDevice()) {
         $(button).find(".touchTitle").remove()
         if (reason) {
             $(button).css({position: 'relative'});
-            var touchTitleSpan = $("<span style='display: none;' class='touchTitle'>" + reason + "</span>");
+            var touchTitleSpan = $("<span style='display: none; text-transform: none;' class='touchTitle'>" + reason + "</span>");
             $(button).append(touchTitleSpan)
             var addedClickFunction = function() {
                  if (touchTitleSpan.is(":visible")) {
@@ -469,34 +487,122 @@ function disableButton(button, reason) {
                      touchTitleSpan.show()
                  }
              }
+            $(button).removeAttr("onclick") //remove on click function
             $(button).click(addedClickFunction)
             $(button).data("addedClickFunction", addedClickFunction)
         }
+    } else {
+        if (reason) {
+    //        $(button).attr("title", reason)
+    //        $(button).data("replacedTitle", true)
+
+            //add tooltip
+            $(button).addClass("tooltip")
+            var $descriptionSpan = $('<span class="tooltiptext below alignLeft" style="width: 400px;  text-transform: none;">')
+            $descriptionSpan.text(reason)
+            $(button).append($descriptionSpan)
+        }
+        $(button).removeAttr("onclick") //remove on click function
     }
 }
 
+var googleZoomRatio = [
+    { 20 : 1128.497220 },
+    { 19 : 2256.994440 },
+    { 18 : 4513.988880 },
+    { 17 : 9027.977761 },
+    { 16 : 18055.955520 },
+    { 15 : 36111.911040 },
+    { 14 : 72223.822090 },
+    { 13 : 144447.644200 },
+    { 12 : 288895.288400 },
+    { 11 : 577790.576700 },
+    { 10 : 1155581.153000 },
+    { 9  : 2311162.307000 },
+    { 8  : 4622324.614000 },
+    { 7  : 9244649.227000 },
+    { 6  : 18489298.450000 },
+    { 5  : 36978596.910000 },
+    { 4  : 73957193.820000 },
+    { 3  : 147914387.600000 },
+    { 2  : 295828775.300000 },
+    { 1  : 591657550.500000 }
+]
+
+function getGoogleZoomLevel(distanceMeterAsMaxDimension, $container, latitude) {
+  var dimension = Math.min($container.width(), $container.height())
+  var result = 1
+  var adjustmentRatio = 5000 //just a relative number
+  $.each(googleZoomRatio, function(index, entry) {
+     var zoom = Object.keys(entry)[0];
+     var ratio = entry[zoom]
+     if (ratio * dimension > distanceMeterAsMaxDimension * adjustmentRatio) {
+        result = parseInt(zoom)
+        return false;
+     }
+  })
+  if (result <= 8 && result > 1 && (latitude > 45 || latitude < -45)) {
+    result -= 1
+  }
+  return result
+}
+
+
 function enableButton(button) {
     $(button).removeClass("disabled")
-    var addedClickFunction = $(button).data("addedClickFunction")
-    if (addedClickFunction) {
-        $(button).unbind("click", addedClickFunction)
-    }
-    var originalClickFunction = $(button).data("originalClickFunction")
-    if (originalClickFunction) {
-        $(button).attr("onclick", originalClickFunction) //set it back
-    }
-    if ($(button).data("originalTitle")) {
-        $(button).attr("title",  $(button).data("originalTitle"))
-    } else {
-        $(button).removeAttr("title")
-    }
 
-    $(button).data("replacedTitle", false)
+    $(button).each(function() {
+        var addedClickFunction = $(this).data("addedClickFunction")
+        if (addedClickFunction) {
+            $(this).unbind("click", addedClickFunction)
+        }
+        var originalClickFunction = $(this).data("originalClickFunction")
+        if (originalClickFunction) {
+            $(this).attr("onclick", originalClickFunction) //set it back
+        }
+        if ($(this).is(':input')) { //then have to manually remove overlay
+             $(this).next('div.overlay').remove()
+        }
+    })
+
+
+    //remove tooltip
+
 
     if (isTouchDevice()) {
         $(button).find(".touchTitle").remove()
+    } else {
+        $(button).removeClass("tooltip")
+        $(button).find('span.tooltiptext').remove()
     }
+}
 
+function addTooltip($target, text, css) {
+    $target.addClass('tooltip')
+    if ($target.css('overflow') === 'hidden') {
+        $target.css('overflow', 'unset')
+    }
+    $target.children('span.tooltiptext').remove()
+    var $descriptionSpan = $('<span class="tooltiptext below alignLeft" style="text-transform: none;">')
+    $descriptionSpan.text(text)
+    if (css) {
+        $descriptionSpan.css(css)
+    }
+    $target.append($descriptionSpan)
+}
+
+function addTooltipHtml($target, html, css) {
+    $target.addClass('tooltip')
+    if ($target.css('overflow') === 'hidden') {
+        $target.css('overflow', 'unset')
+    }
+    $target.children('span.tooltiptext').remove()
+    var $descriptionSpan = $('<span class="tooltiptext below alignLeft" style="text-transform: none;">')
+    $descriptionSpan.html(html)
+    if (css) {
+        $descriptionSpan.css(css)
+    }
+    $target.append($descriptionSpan)
 }
 
 function isIe() {

@@ -1,10 +1,11 @@
 package controllers
 
 import java.util.UUID
-
 import com.patson.Authentication
 import com.patson.data.UserSource
 import com.patson.model._
+import com.typesafe.config.ConfigFactory
+
 import javax.inject.{Inject, Singleton}
 import models._
 import play.api.data.Forms._
@@ -15,6 +16,14 @@ import views._
 
 @Singleton
 class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) with play.api.i18n.I18nSupport {
+  private[this] val configFactory = ConfigFactory.load()
+  private[this] val fromEmail =
+    if (configFactory.hasPath("server.email")) {
+      configFactory.getString("server.email")
+    } else {
+      "info@airline-club.com"
+    }
+
   /**
    * Sign Up Form definition.
    *
@@ -112,10 +121,10 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     Ok(html.forgotPassword(forgotPasswordForm.fill(ForgotPassword("", ""))))
   }
   
-  def sendEmail() = Action {
-    EmailUtil.sendEmail("patson_luk@hotmail.com", "info@airline-club.com", "testing", "testing");
-    Ok(Json.obj())
-  }
+//  def sendEmail() = Action {
+//    EmailUtil.sendEmail("patson_luk@hotmail.com", "info@airline-club.com", "testing", "testing");
+//    Ok(Json.obj())
+//  }
   
   
   
@@ -160,7 +169,7 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           val users = UserSource.loadUsersByCriteria(List(("email", userInput.email)))
           if (users.size > 0) {
             println("Sending email for forgot ID " + users)
-            EmailUtil.sendEmail(userInput.email, "info@airline-club.com", "Forgot User Name from airline-club.com", getForgotIdMessage(users))
+            EmailUtil.sendEmail(userInput.email, fromEmail, "Forgot User Name from airline-club.com", getForgotIdMessage(users))
           } else {
             println("Sending email for forgot ID but email " + userInput.email + " has no account!")
           }
@@ -180,7 +189,10 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           val user = UserSource.loadUserByUserName(userInput.userName).get
           if (user.email == userInput.email) {
             println("Sending email for reset password " + user)
-            EmailUtil.sendEmail(user.email, "info@airline-club.com", "Reset password for airline-club.com", getResetPasswordMessage(user))  
+            val scheme = if (request.secure) "https://" else "http://"
+            val host = request.host
+            val baseUrl = s"$scheme$host/password-reset"
+            EmailUtil.sendEmail(user.email, fromEmail, "Reset password for airline-club.com", getResetPasswordMessage(user, baseUrl))
           } else {
             println("Want to reset password for " + user.userName + " but email does not match!")
           }
@@ -189,7 +201,7 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
     )
   }
-  
+
   def getForgotIdMessage(users : List[User]) = {
      val message =  new StringBuilder("Your User Name(s) registered with this email address : \r\n")
      users.foreach { user =>
@@ -199,15 +211,16 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     message.toString()
   }
   
-  def getResetPasswordMessage(user : User) = {
-    val resetLink = generateResetLink(user)
+  def getResetPasswordMessage(user : User, baseUrl: String) = {
+    val resetLink = generateResetLink(user, baseUrl)
     "Please follow this link \r\n" + resetLink + "\r\nto reset your password."
   }
   
-  def generateResetLink(user : User) = {
+  def generateResetLink(user : User, baseUrl : String) = {
     val resetToken = UUID.randomUUID().toString()
     
-    UserSource.saveResetUser(user.userName, resetToken)    
-    "https://www.airline-club.com/password-reset?resetToken=" + resetToken
+    UserSource.saveResetUser(user.userName, resetToken)
+
+    s"$baseUrl?resetToken=" + resetToken
   }
 }

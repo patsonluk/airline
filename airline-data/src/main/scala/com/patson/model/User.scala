@@ -27,6 +27,8 @@ case class User(userName : String, email : String, creationTime : Calendar, last
 object User {
   val SUPER_ADMIN_LEVEL = 20
   val ADMIN_LEVEL = 10
+
+  val fromId = (id : Int) => User("<unknown>", "", Calendar.getInstance(), Calendar.getInstance(), UserStatus.INACTIVE, 0, id)
 }
 
 case class UserSecret(userName : String, digest : String, salt : String)

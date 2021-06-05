@@ -49,9 +49,10 @@ function updateOlympicTable(sortProperty, sortOrder) {
         }
 		row.append("<div class='cell'>" + event.remainingDuration + " week(s)</div>")
 		row.append("<div class='cell'>" + event.status + "</div>")
+		row.data('event', event)
 
 		row.click(function() {
-		   loadOlympicsDetails(row, event)
+		   loadOlympicsDetails(row)
 		})
 
 		olympicsTable.append(row)
@@ -62,7 +63,8 @@ function updateOlympicTable(sortProperty, sortOrder) {
 	}
 }
 
-function loadOlympicsDetails(row, event) {
+function loadOlympicsDetails(row) {
+    var event = row.data('event')
     row.siblings().removeClass("selected")
     row.addClass("selected")
     $("#olympicsDetails").data("eventId", event.id)
@@ -160,7 +162,7 @@ function loadOlympicsDetails(row, event) {
                                 var votedAirport = votes.votedAirport
                                 $("#olympicsDetails .votedCity").html(getCountryFlagImg(votedAirport.countryCode) + votedAirport.city)
                                 if (event.currentYear) { //still active
-                                    if (details.selectedAirport && details.selectedAirport.id == votedAirport.id && !votes.claimedVoteReward) { //yay
+                                    if (details.selectedAirport /*&& details.selectedAirport.id == votedAirport.id*/ && !votes.claimedVoteReward) { //yay
                                         $("#olympicsDetails .button.votedCityReward").data("eventId", eventId)
                                         $("#olympicsDetails .button.votedCityReward").show()
                                     }
@@ -357,10 +359,12 @@ function populateOlympicsCityMap(map, candidateInfo) {
            	marker.addListener('mouseover', function(event) {
            		$("#olympicAirportPopup .airportName").text(airport.name + "(" + airport.iata + ")")
            		infowindow = new google.maps.InfoWindow({
-           		       content: $("#olympicAirportPopup").html(),
            		       maxWidth : 800,
                        disableAutoPan : true
                  });
+                 var popup = $("#olympicAirportPopup").clone()
+                 popup.show()
+                 infowindow.setContent(popup[0])
 
 
            		infowindow.open(map, marker);
@@ -476,6 +480,7 @@ function confirmOlympicsVotes() {
 	    dataType: 'json',
 	    success: function(airline) {
 	        closeModal($("#olympicsVoteModal"))
+	        loadOlympicsDetails($('#olympicsTable .table-row.selected'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -571,6 +576,7 @@ function pickEventReward(eventId, categoryId, optionId) {
         success: function(result) {
             closeEventRewardModal()
             updateAirlineInfo(activeAirline.id)
+            loadOlympicsDetails($('#olympicsTable .table-row.selected'))
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
@@ -595,9 +601,9 @@ function showOlympicsRankingModal() {
                 })
                 if (result.currentAirline) {
                     var dividerRow = $("<div class='table-row'></div>")
-                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
+                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+                    dividerRow.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
 
                     rankingTable.append(dividerRow)
                     rankingTable.append(getOlympicsAirlineRankingRow(result.currentAirline.rank, result.currentAirline)) //lastly append a row of current airline

@@ -1,5 +1,5 @@
 body {
-    background: linear-gradient(to bottom, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(../images/background/city1.gif);
+    background: linear-gradient(to bottom, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(../images/background/pixel_city.gif);
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
@@ -20,14 +20,15 @@ body {
 
 #landing-content {
     color: #fff;
-    margin: 10% auto; /* 10% from the top and centered */
-    width: 60%; /* Could be more or less, depending on screen size */
+    margin: 3% auto; /* 3% from the top and centered */
+    /*width: 60%;  Could be more or less, depending on screen size */
 }
 
 a.landing-link:hover {
    border-radius: 0px;
    background-color: transparent ;
    text-shadow: 0 0 0.5em #0ff, 0 -1px 0 #000;
+   background: none;
 }
 
 
@@ -59,6 +60,10 @@ a.landing-link, #about-canvas a {
    text-transform: uppercase;
    line-height: 2;
    font-size: 14px;
+}
+
+#landingVideo {
+    box-shadow : 0 0 10px 3px rgb(255 255 255 / 30%);
 }
 
 .title .laser {

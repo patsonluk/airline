@@ -72,6 +72,8 @@ object AirlineSource {
           if (countryCode != null) {
             airline.setCountryCode(countryCode)
           }
+          airline.setSkipTutorial(resultSet.getBoolean("skip_tutorial"))
+          airline.setInitialized(resultSet.getBoolean("initialized"))
           
           airlines += airline
         }
@@ -191,7 +193,7 @@ object AirlineSource {
       if (updateBalance) {
         query += "balance = ?, "
       }
-      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ?, skip_tutorial = ?, initialized = ?  WHERE airline = ?"
       
       try {
         val updateStatement = connection.prepareStatement(query)
@@ -214,6 +216,11 @@ object AirlineSource {
         index += 1
         updateStatement.setString(index, airline.getAirlineCode())
         index += 1
+        updateStatement.setBoolean(index, airline.isSkipTutorial)
+        index += 1
+        updateStatement.setBoolean(index, airline.isInitialized)
+        index += 1
+
         updateStatement.setInt(index, airline.id)
         updateStatement.executeUpdate()
         updateStatement.close()
@@ -241,15 +248,12 @@ object AirlineSource {
     }
   }
   
-  def saveAirlinesInfo(airlines : List[Airline], updateBalance : Boolean = true) = {
+  def saveAirlinesInfo(airlines : List[Airline]) = {
     this.synchronized {
       val connection = Meta.getConnection()
       
       var query = "UPDATE " + AIRLINE_INFO_TABLE + " SET "
-      if (updateBalance) {
-        query += "balance = ?, "
-      }
-      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?  WHERE airline = ?"
       
       
       try {
@@ -259,10 +263,6 @@ object AirlineSource {
         airlines.foreach { airline =>
           var index = 0
           
-          if (updateBalance) {
-            index += 1
-            updateStatement.setLong(index, airline.getBalance())
-          }
           index += 1
           updateStatement.setDouble(index, airline.getCurrentServiceQuality())
           index += 1
@@ -271,10 +271,6 @@ object AirlineSource {
           updateStatement.setDouble(index, airline.getMaintenanceQuality())
           index += 1
           updateStatement.setDouble(index, airline.getReputation())
-          index += 1
-          updateStatement.setString(index, airline.getCountryCode().getOrElse(null))
-          index += 1
-          updateStatement.setString(index, airline.getAirlineCode())
           index += 1
           updateStatement.setInt(index, airline.id)
           
@@ -457,6 +453,7 @@ object AirlineSource {
       preparedStatement.close()
 
       AirlineCache.invalidateAirline(airlineBase.airline.id)
+      AirportCache.invalidateAirport(airlineBase.airport.id)
     } finally {
       connection.close()
     }
@@ -464,13 +461,14 @@ object AirlineSource {
   
   def deleteAirlineBase(airlineBase : AirlineBase) = {
     deleteAirlineBaseByCriteria(List(("airline", airlineBase.airline.id), ("airport", airlineBase.airport.id)))
-    AirlineCache.invalidateAirline(airlineBase.airline.id)
   }
   
   def deleteAirlineBaseByCriteria(criteria : List[(String, Any)]) = {
       //open the hsqldb
     val connection = Meta.getConnection()
     try {
+      val deletingBases = loadAirlineBasesByCriteria(criteria)
+
       var queryString = "DELETE FROM " + AIRLINE_BASE_TABLE
       
       if (!criteria.isEmpty) {
@@ -490,9 +488,15 @@ object AirlineSource {
       val deletedCount = preparedStatement.executeUpdate()
       
       preparedStatement.close()
+      deletingBases.foreach{ base =>
+        AirlineCache.invalidateAirline(base.airline.id)
+        AirportCache.invalidateAirport(base.airport.id)
+        println(s"Purged from cache base record $base")
+      }
+
       println("Deleted " + deletedCount + " airline base records")
       deletedCount
-      
+
     } finally {
       connection.close()
     }
@@ -530,7 +534,7 @@ object AirlineSource {
       Some(result(0))
     }
   }
-  
+
   def loadLoungesByCriteria(criteria : List[(String, Any)], airports : Map[Int, Airport] = Map[Int, Airport]()) : List[Lounge] = {
       //open the hsqldb
       val connection = Meta.getConnection() 
@@ -602,6 +606,7 @@ object AirlineSource {
       preparedStatement.close()
 
       AirlineCache.invalidateAirline(lounge.airline.id)
+      AirportCache.invalidateAirport(lounge.airport.id)
     } finally {
       connection.close()
     }
@@ -610,6 +615,7 @@ object AirlineSource {
   def deleteLounge(lounge : Lounge) = {
     deleteLoungeByCriteria(List(("airline", lounge.airline.id), ("airport", lounge.airport.id)))
     AirlineCache.invalidateAirline(lounge.airline.id)
+    AirportCache.invalidateAirport(lounge.airport.id)
   }
   
   def deleteLoungeByCriteria(criteria : List[(String, Any)]) = {
@@ -642,6 +648,127 @@ object AirlineSource {
       connection.close()
     }
       
+  }
+
+  def loadShuttleServiceByAirlineAndAirport(airlineId : Int, airportId : Int) : Option[ShuttleService] = {
+    val result = loadShuttleServiceByCriteria(List(("airline", airlineId), ("airport", airportId)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+  }
+
+  def loadShuttleServiceByCriteria(criteria : List[(String, Any)], airports : Map[Int, Airport] = Map[Int, Airport]()) : List[ShuttleService] = {
+    //open the hsqldb
+    val connection = Meta.getConnection()
+    try {
+      var queryString = "SELECT * FROM " + SHUTTLE_SERVICE_TABLE
+
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val services = new ListBuffer[ShuttleService]()
+
+      val airlines = Map[Int, Airline]()
+      while (resultSet.next()) {
+        val airlineId = resultSet.getInt("airline")
+        val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
+        AllianceSource.loadAllianceMemberByAirline(airline).foreach { member =>
+          airline.setAllianceId(member.allianceId)
+        }
+
+        //val airport = Airport.fromId(resultSet.getInt("airport"))
+        val airportId = resultSet.getInt("airport")
+        val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, false).get)
+        val name = resultSet.getString("name")
+        val level = resultSet.getInt("level")
+        val foundedCycle = resultSet.getInt("founded_cycle")
+
+
+        services += ShuttleService(airline, airline.getAllianceId(), airport, name, level, foundedCycle)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      services.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  //case class AirlineBase(airline : Airline, airport : Airport, scale : Int, headQuarter : Boolean = false, var id : Int = 0) extends IdObject
+  def saveShuttleService(shuttleService : ShuttleService) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + SHUTTLE_SERVICE_TABLE + "(airline, airport, name, level, founded_cycle) VALUES(?, ?, ?, ?, ?)")
+
+      preparedStatement.setInt(1, shuttleService.airline.id)
+      preparedStatement.setInt(2, shuttleService.airport.id)
+      preparedStatement.setString(3, shuttleService.name)
+      preparedStatement.setInt(4, shuttleService.level)
+      preparedStatement.setInt(5, shuttleService.foundedCycle)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+
+      AirlineCache.invalidateAirline(shuttleService.airline.id)
+      AirportCache.invalidateAirport(shuttleService.airport.id)
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteShuttleService(shuttleService : ShuttleService) = {
+    deleteShuttleServiceByCriteria(List(("airline", shuttleService.airline.id), ("airport", shuttleService.airport.id)))
+    AirlineCache.invalidateAirline(shuttleService.airline.id)
+    AirportCache.invalidateAirport(shuttleService.airport.id)
+  }
+
+  def deleteShuttleServiceByCriteria(criteria : List[(String, Any)]) = {
+    //open the hsqldb
+    val connection = Meta.getConnection()
+    try {
+      var queryString = "DELETE FROM " + SHUTTLE_SERVICE_TABLE
+
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " = ? AND "
+        }
+        queryString += criteria.last._1 + " = ?"
+      }
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
+
+      val deletedCount = preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+      println("Deleted " + deletedCount + " shuttleService records")
+      deletedCount
+
+    } finally {
+      connection.close()
+    }
+
   }
   
   
@@ -811,6 +938,89 @@ object AirlineSource {
       connection.close()
     }
   }
+
+  def saveLivery(airlineId : Int, livery : Array[Byte]) = {
+    val connection = Meta.getConnection()
+    val stream = new ByteArrayInputStream(livery)
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_LIVERY_TABLE + " VALUES(?, ?)")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.setBlob(2, stream)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+      stream.close()
+    }
+  }
+
+  def deleteLivery(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_LIVERY_TABLE WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadLivery(airlineId : Int) : Option[Array[Byte]] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $AIRLINE_LIVERY_TABLE WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      val resultSet = preparedStatement.executeQuery()
+      if (resultSet.next()) {
+        val blob = resultSet.getBlob("livery")
+        val result = Some(blob.getBytes(1, blob.length.toInt))
+        blob.free()
+        result
+      } else {
+        None
+      }
+    } finally {
+      connection.close()
+    }
+  }
+
+  def saveSlogan(airlineId : Int, slogan : String) = {
+    val connection = Meta.getConnection()
+
+    try {
+      val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_SLOGAN_TABLE + " VALUES(?, ?)")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.setString(2, slogan)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def loadSlogan(airlineId : Int) : Option[String] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $AIRLINE_SLOGAN_TABLE WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      val resultSet = preparedStatement.executeQuery()
+      if (resultSet.next()) {
+        Some(resultSet.getString("slogan"))
+      } else {
+        None
+      }
+    } finally {
+      connection.close()
+    }
+  }
   
   def saveColor(airlineId : Int, color : String) = {
     val connection = Meta.getConnection()
@@ -914,6 +1124,63 @@ object AirlineSource {
         preparedStatement.close()
         
         result.toMap
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadReputationBreakdowns(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $AIRLINE_REPUTATION_BREAKDOWN WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+
+      val result = ListBuffer[ReputationBreakdown]()
+      val resultSet = preparedStatement.executeQuery()
+      while (resultSet.next()) {
+        val breakdown = ReputationBreakdown(
+          ReputationType.withName(resultSet.getString("reputation_type")),
+          resultSet.getDouble("value")
+        )
+        result.append(breakdown)
+      }
+      resultSet.close()
+      preparedStatement.close()
+      ReputationBreakdowns(result.toList)
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteReputationBreakdowns(airlineId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_REPUTATION_BREAKDOWN WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def updateReputationBreakdowns(airlineId : Int, breakdowns : ReputationBreakdowns): Unit = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_REPUTATION_BREAKDOWN(airline, reputation_type, value) VALUES(?,?,?)")
+      breakdowns.breakdowns.foreach { breakdown =>
+        preparedStatement.setInt(1, airlineId)
+        preparedStatement.setString(2, breakdown.reputationType.toString)
+        preparedStatement.setDouble(3, breakdown.value)
+        preparedStatement.executeUpdate()
+      }
+      preparedStatement.close()
+      connection.commit()
     } finally {
       connection.close()
     }

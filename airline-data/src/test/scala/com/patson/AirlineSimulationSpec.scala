@@ -37,12 +37,12 @@ class AirlineSimulationSpec extends WordSpecLike with Matchers {
        assert(AirlineSimulation.getNewQuality(Airline.MAX_SERVICE_QUALITY - 1, Airline.MAX_SERVICE_QUALITY) > Airline.MAX_SERVICE_QUALITY - 1) //but should still have increment
     }
     "for decrement at current quality 0, multiplier 0.1x; current quality 100, multiplier 1x".in {
-       assert(AirlineSimulation.getNewQuality(Airline.MAX_SERVICE_QUALITY, 0) == Airline.MAX_SERVICE_QUALITY - AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT) //get full decrement
+       assert(AirlineSimulation.getNewQuality(Airline.MAX_SERVICE_QUALITY, 0) == Airline.MAX_SERVICE_QUALITY - AirlineSimulation.MAX_SERVICE_QUALITY_DECREMENT) //get full decrement
        assert(AirlineSimulation.getNewQuality(0, 0) == 0) //no decrement
-       assert(AirlineSimulation.getNewQuality(50, 0) > 50 - AirlineSimulation.MAX_SERVICE_QUALITY_INCREMENT) //slow down
+       assert(AirlineSimulation.getNewQuality(50, 0) > 50 - AirlineSimulation.MAX_SERVICE_QUALITY_DECREMENT) //slow down
        assert(AirlineSimulation.getNewQuality(50, 0) < 50) //but should still have decrement
-       assert(AirlineSimulation.getNewQuality(1, 0) > 0) //slow down
-       assert(AirlineSimulation.getNewQuality(1, 0) < 1) //but should still have decrement
+       assert(AirlineSimulation.getNewQuality(1, 0) == 0)
+
     }
   }
   

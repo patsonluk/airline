@@ -12,7 +12,9 @@ import com.patson.LinkSimulation
 import scala.collection.mutable.ListBuffer
 import com.patson.util.LogoGenerator
 
-object Patchers {
+object Patchers extends App {
+  main()
+
   def patchHomeCountry() {
     AirlineSource.loadAllAirlines(true).foreach { airline =>
       airline.bases.find(_.headquarter).foreach { headquarter =>
@@ -26,10 +28,12 @@ object Patchers {
   //ADD COLUMN `flight_type` INT(2) NULL AFTER `frequency`;
 
   def patchFlightType() {
-    val updatingLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).map { link =>
+    val updatingLinks = LinkSource.loadAllFlightLinks(LinkSource.FULL_LOAD).map { link =>
       val flightType = Computation.getFlightType(link.from, link.to, link.distance)
       println(flightType.id)
       link.copy(flightType = flightType)
+
+
       //LinkSource.updateLink(link)
     }
 
@@ -131,7 +135,7 @@ object Patchers {
   def patchFlightNumber() = {
     AirlineSource.loadAllAirlines(false).foreach { airline =>
       var counter = 0
-      LinkSource.updateLinks(LinkSource.loadLinksByAirlineId(airline.id).map { link =>
+      LinkSource.updateLinks(LinkSource.loadFlightLinksByAirlineId(airline.id).map { link =>
         counter = counter + 1
         link.copy(flightNumber = counter)
       })
@@ -145,7 +149,25 @@ object Patchers {
       }
     }
   }
-  //
+
+  def patchLoyalist(): Unit = {
+    //it might have overflow, adjust proportionally
+    LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport).foreach {
+      case((airport, loyalistsOfThisAirport)) =>
+        val total = loyalistsOfThisAirport.map(_.amount).sum
+        if (total > airport.population) {
+          val ratio = airport.population / total.toDouble
+          println(s"Going to adjust loyalist for ${airport.displayText} as total pop is ${airport.population} but has $total loyalist. Going to patch with ratio $ratio")
+          val adjustedEntries = loyalistsOfThisAirport.map(entry => entry.copy(amount = (entry.amount * ratio).toInt))
+          LoyalistSource.updateLoyalists(adjustedEntries)
+        }
+    }
+  }
+
+
+  def main(): Unit = {
+    airplaneModelPatcher()
+  }
 }
 
  

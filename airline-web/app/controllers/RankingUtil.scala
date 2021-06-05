@@ -31,7 +31,7 @@ object RankingUtil {
   private[this] def updateRankings() = {
     val linkConsumptions = LinkSource.loadLinkConsumptions()
     val linkConsumptionsByAirline = linkConsumptions.groupBy(_.link.airline.id)
-    val links = LinkSource.loadAllLinks().groupBy(_.airline.id)
+    val links = LinkSource.loadAllFlightLinks().groupBy(_.airline.id)
     val airlinesById = AirlineSource.loadAllAirlines(fullLoad = true).map( airline => (airline.id, airline)).toMap
     
     val updatedRankings = scala.collection.mutable.Map[RankingType.Value, List[Ranking]]()
@@ -122,7 +122,7 @@ object RankingUtil {
         val airlineId = linkConsumption.link.airline.id
         val ranking = Ranking(RankingType.PASSENGER_MILE,
                 key = linkConsumption.link.id,
-                entry = linkConsumption.link.copy(airline = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId))),
+                entry = linkConsumption.link.asInstanceOf[Link].copy(airline = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId))),
                 ranking = index + 1,
                 rankedValue = linkConsumption.profit)
         ranking

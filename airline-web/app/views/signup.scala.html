@@ -14,7 +14,6 @@
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/new-style.css")">
-	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/sign-up.css")">
 	<link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/mobile.css")">
 	<script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
     <script src="@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")"></script>
@@ -39,7 +38,8 @@
 	</script>
 </head>
 <body>
-	<div class="frost-section">
+	<div style="width: 100%">
+	<div class="frost-section" style="margin-top: 20vh; left: 50%; transform: translateX(-50%);">
 		<div class="display-area">
 			<h1>New Airline Sign-up</h1>
 
@@ -85,10 +85,10 @@
 					)
 				</div>
 			</fieldset>
-			<input type="hidden" id="profileId" name="profileId" value="1"/>
-			<div id ="profiles" style="padding: 10px;">
-				<h4>Pick your airline:</h4>
-			</div>
+<!--			<input type="hidden" id="profileId" name="profileId" value="1"/>-->
+<!--			<div id ="profiles" style="padding: 10px;">-->
+<!--				<h4>Pick your airline:</h4>-->
+<!--			</div>-->
 			<div style="clear: both;"></div>
 			<div class="actions">
 				<div class="button" onclick="signup($(this).parents('form:first'))">Sign Up</div>
@@ -97,6 +97,7 @@
 			</div>
 			}
 		</div>
+	</div>
 	</div>
 </body>
 </html>

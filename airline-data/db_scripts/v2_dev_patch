@@ -1,0 +1,39 @@
+ALTER TABLE `airline_v2`.`link_consumption`
+ADD COLUMN `satisfaction` DECIMAL(5,4) NULL AFTER `raw_quality`;
+
+ALTER TABLE `airline_v2`.`airline_info`
+ADD COLUMN `skip_tutorial` TINYINT NULL AFTER `color`;
+
+ALTER TABLE `airline_v2`.`airline_info`
+ADD COLUMN `initialized` TINYINT NULL AFTER `skip_tutorial`;
+
+ALTER TABLE `airline_v2`.`airport_airline_appeal_bonus`
+CHANGE COLUMN `loyalty_bonus` `loyalty_bonus` DECIMAL(5,2) NULL DEFAULT NULL ,
+CHANGE COLUMN `awareness_bonus` `awareness_bonus` DECIMAL(5,2) NULL DEFAULT NULL ;
+
+
+UPDATE `airline_v2`.`airplane_model` SET name = 'McDonnell Douglas MD-81' WHERE name = 'McDonnel Douglas MD-81';
+UPDATE `airline_v2`.`airplane_model` SET name = 'McDonnell Douglas MD-90' WHERE name = 'McDonnel Douglas MD-90';
+UPDATE `airline_v2`.`airplane_model` SET name = 'McDonnell Douglas MD-11' WHERE name = 'McDonnel Douglas MD-11';
+UPDATE `airline_v2`.`airplane_model` SET name = 'McDonnell Douglas DC-10-30' WHERE name = 'McDonnel Douglas DC-10-30';
+
+
+ALTER TABLE `airline_v2`.`airplane_model`
+ADD COLUMN `manufacturer` VARCHAR(256) NULL AFTER `country_code`;
+
+
+ALTER TABLE `airline_v2`.`airline_base_specialization`
+CHANGE COLUMN `specialization_type` `specialization_type` VARCHAR(256) NOT NULL ,
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (`airport`, `airline`, `specialization_type`);
+
+ALTER TABLE `airline_v2`.`airplane`
+ADD COLUMN `purchase_rate` DECIMAL(4,3) NULL DEFAULT 1 AFTER `home`;
+
+ALTER TABLE `airline_v2`.`link`
+ADD COLUMN `transport_type` SMALLINT NULL AFTER `to_country`;
+
+UPDATE `airline_v2`.`link` SET `transport_type` = 0 WHERE `transport_type` IS NULL;
+
+ALTER TABLE `airline_v2`.`others_income`
+ADD COLUMN `shuttle_cost` MEDIUMTEXT NULL DEFAULT NULL AFTER `lounge_income`;

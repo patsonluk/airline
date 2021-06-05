@@ -13,24 +13,31 @@ var airports = undefined
 
 $( document ).ready(function() {
 	mobileCheck()
+	$('#tutorialHtml').load('assets/html/tutorial.html')
+    $('#noticeHtml').load('assets/html/notice.html', initNotices)
 	populateNavigation()
     history.replaceState({"onclickFunction" : "showWorldMap()"}, null, "/") //set the initial state
 
 	window.addEventListener('orientationchange', refreshMobileLayout)
-	
+
+    populateLookups()
 	if ($.cookie('sessionActive')) {
 		loadUser(false)
 	} else {
 		hideUserSpecificElements()
 		refreshLoginBar()
 		getAirports();
-		printConsole("Please log in")
+//		printConsole("Please log in")
         showAbout();
 	}
-	
-	loadAllCountries()
-	updateAirlineColors()
+
+    registerEscape()
+    updateAirlineColors()
+	initTabGroup()
+
 	populateTooltips()
+	checkAutoplaySettings()
+
 	
 	if ($("#floatMessage").val()) {
 		showFloatMessage($("#floatMessage").val())
@@ -51,8 +58,29 @@ $( document ).ready(function() {
         $(".laser").hide()
     }
 
+//    startFirework(10000)
+
 	//plotSeatConfigurationGauge($("#seatConfigurationGauge"), {"first" : 0, "business" : 0, "economy" : 220}, 220)
 })
+
+$(window).on('focus', function() {
+    if (selectedAirlineId) {
+        checkWebSocket(selectedAirlineId)
+    }
+})
+
+function registerEscape() {
+    $(document).keyup(function(e) {
+         if (e.key === "Escape") { // escape key maps to keycode `27`
+            var $topModal = $(".modal:visible").last()
+            if ($topModal.length > 0) {
+                closeModal($topModal)
+            } else {
+                closeAirportInfoPopup()
+            }
+        }
+    });
+}
 
 
 function mobileCheck() {
@@ -143,10 +171,11 @@ function loadUser(isLogin) {
 				  showAnnoucement()
 			  }
     		  refreshLoginBar()
-			  printConsole('') //clear console
-			  getAirports();
+//			  printConsole('') //clear console
+			  getAirports()
 			  showUserSpecificElements();
 			  updateChatTabs()
+			  initAdminActions()
 			  
 			  if (window.location.hostname != 'localhost') {
 				  FS.identify(user.id, {
@@ -160,7 +189,10 @@ function loadUser(isLogin) {
 			  selectAirline(user.airlineIds[0])
 			  loadAllCountries() //load country again for relationship
 			  loadAllLogs()
+			  addAirlineSpecificMapControls(map)
+              initPrompts()
 		  }
+
 		  
 	  },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -269,30 +301,49 @@ function addCustomMapControls(map) {
 //			<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style="display: none;"><span class="alignHelper"></span><img src='@routes.Assets.versioned("images/icons/switch.png")' title='toggle dark/light themed map' style="vertical-align: middle;"/></div>-->
    var toggleMapChristmasButton = $('<div id="toggleMapChristmasButton" class="googleMapIcon" onclick="toggleChristmasMarker()" align="center" style="display: none; margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/icons/bauble.png" title=\'Merry Christmas!\' style="vertical-align: middle;"/></div>')
    var toggleMapAnimationButton = $('<div id="toggleMapAnimationButton" class="googleMapIcon" onclick="toggleMapAnimation()" align="center" style="margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/icons/arrow-step-over.png" title=\'toggle flight marker animation\' style="vertical-align: middle;"/></div>')
+   var toggleChampionButton = $('<div id="toggleChampionButton" class="googleMapIcon" onclick="toggleChampionMap()" align="center"  style="margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/icons/crown.png" title=\'toggle champion\' style="vertical-align: middle;"/></div>')
    var toggleMapLightButton = $('<div id="toggleMapLightButton" class="googleMapIcon" onclick="toggleMapLight()" align="center" style=""><span class="alignHelper"></span><img src="assets/images/icons/switch.png" title=\'toggle dark/light themed map\' style="vertical-align: middle;"/></div>')
+
 
   toggleMapLightButton.index = 1
   toggleMapAnimationButton.index = 2
-  toggleMapChristmasButton.index = 3
+  toggleChampionButton.index = 3
+  toggleMapChristmasButton.index = 5
 
 
-  if ($("#map").height() > 400) {
+  if ($("#map").height() > 500) {
     map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapLightButton[0]);
     map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapAnimationButton[0]);
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleChampionButton[0])
+    //map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleHeatmapButton[0])
+
     if (christmasFlag) {
        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(toggleMapChristmasButton[0]);
        toggleMapChristmasButton.show()
     }
+
   } else {
     map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleMapLightButton[0]);
     map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleMapAnimationButton[0]);
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleChampionButton[0])
+    //map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleHeatmapButton[0])
+
     if (christmasFlag) {
        map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(toggleMapChristmasButton[0]);
     }
   }
+}
 
+function addAirlineSpecificMapControls(map) {
+    var toggleHeatmapButton = $('<div id="toggleMapHeatmapButton" class="googleMapIcon" onclick="toggleHeatmap()" align="center"  style="margin-bottom: 10px;"><span class="alignHelper"></span><img src="assets/images/icons/table-heatmap.png" title=\'toggle heatmap\' style="vertical-align: middle;"/></div>')
 
+    toggleHeatmapButton.index = 4
 
+    if ($("#map").height() > 500) {
+        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].insertAt(3, toggleHeatmapButton[0])
+     } else {
+        map.controls[google.maps.ControlPosition.LEFT_BOTTOM].insertAt(3, toggleHeatmapButton[0])
+    }
 }
 
 function LinkHistoryControl(controlDiv, map) {
@@ -329,19 +380,12 @@ function LinkHistoryControl(controlDiv, map) {
 function updateAllPanels(airlineId) {
 	updateAirlineInfo(airlineId)
 	
-	if (activeAirline) {
-		if (!activeAirline.headquarterAirport) {
-			showTutorial()
-			printConsole("Zoom into the map and click on an airport icon. Select 'View Airport' to view details on the airport and build your airline Headquarter. Smaller airports will only show when you zoom close enough", 1, true, true)
-		} else if ($.isEmptyObject(flightPaths)) {
-			printConsole("Select another airport and click 'Plan Route' to plan your first route to it. You might want to select a closer domestic airport for shorter haul airplanes within your budget", 1, true, true)
-//		} else {
-//			printConsole("Adjustment to difficulty - high ticket price with less passengers. Coming soon: Departures Board! Flight delays and cancellation if airplane condition is too low. Flight code and number.")
-		} else if (christmasFlag) {
-		    printConsole("Breaking news - Santa went missing!!! Whoever finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
-		}
-		
-	}
+//	if (activeAirline) {
+//		if (christmasFlag) {
+//		    printConsole("Breaking news - Santa went missing!!! Whoever finds Santa will be rewarded handsomely! He could be hiding in one of the size 6 or above airports! View the airport page to track him down!", true, true)
+//		}
+//
+//	}
 	
 }
 
@@ -359,7 +403,7 @@ function refreshPanels(airlineId) {
 	    	if ($("#worldMapCanvas").is(":visible")) {
 	    		refreshLinks()
 	    	}
-	    	if ($("#linkDetails").is(":visible")) {
+	    	if ($("#linkDetails").is(":visible") || $("#linkDetails").hasClass("active")) {
 	    		refreshLinkDetails(selectedLink)
 	    	}
 	    	if ($("#linksCanvas").is(":visible")) {
@@ -419,51 +463,51 @@ function updateTime(cycle, fraction, cycleDurationEstimation) {
 }
 
 
-function printConsole(message, messageLevel, activateConsole, persistMessage) {
-	messageLevel = messageLevel || 1
-	activateConsole = activateConsole || false
-	persistMessage = persistMessage || false
-	var messageClass
-	if (messageLevel == 1) {
-		messageClass = 'actionMessage'
-	} else {
-		messageClass = 'errorMessage'
-	}
-
-	if (message == '') { //try to clear message, check if there was a persistent message
-		var previousMessage = $('#console #consoleMessage').data('persistentMessage')
-		if (previousMessage) {
-			message = previousMessage
-		}
-	}
-	
-	if (persistMessage) {
-		$('#console #consoleMessage').data('persistentMessage', message)
-	}
-	var consoleVisible = $('#console #consoleMessage').is(':visible')
-	
-	if (consoleVisible) {
-		$('#console #consoleMessage').fadeOut('slow', function() { //fade out and reset positions
-			$('#console #consoleMessage').text(message)
-			$('#console #consoleMessage').removeClass().addClass(messageClass)
-			$('#console #consoleMessage').fadeIn('slow')
-		}) 
-	} else {
-		$('#console #consoleMessage').text(message)
-		$('#console #consoleMessage').removeClass().addClass(messageClass)
-		if (activateConsole) {
-			$('#console #consoleMessage').fadeIn('slow')
-		}
-	}
-}
-
-function toggleConsoleMessage() {
-	if ($('#console #consoleMessage').is(':visible')) {
-		$('#console #consoleMessage').fadeOut('slow')
-	} else {
-		$('#console #consoleMessage').fadeIn('slow')
-	}
-}
+//function printConsole(message, messageLevel, activateConsole, persistMessage) {
+//	messageLevel = messageLevel || 1
+//	activateConsole = activateConsole || false
+//	persistMessage = persistMessage || false
+//	var messageClass
+//	if (messageLevel == 1) {
+//		messageClass = 'actionMessage'
+//	} else {
+//		messageClass = 'errorMessage'
+//	}
+//
+//	if (message == '') { //try to clear message, check if there was a persistent message
+//		var previousMessage = $('#console #consoleMessage').data('persistentMessage')
+//		if (previousMessage) {
+//			message = previousMessage
+//		}
+//	}
+//
+//	if (persistMessage) {
+//		$('#console #consoleMessage').data('persistentMessage', message)
+//	}
+//	var consoleVisible = $('#console #consoleMessage').is(':visible')
+//
+//	if (consoleVisible) {
+//		$('#console #consoleMessage').fadeOut('slow', function() { //fade out and reset positions
+//			$('#console #consoleMessage').text(message)
+//			$('#console #consoleMessage').removeClass().addClass(messageClass)
+//			$('#console #consoleMessage').fadeIn('slow')
+//		})
+//	} else {
+//		$('#console #consoleMessage').text(message)
+//		$('#console #consoleMessage').removeClass().addClass(messageClass)
+//		if (activateConsole) {
+//			$('#console #consoleMessage').fadeIn('slow')
+//		}
+//	}
+//}
+//
+//function toggleConsoleMessage() {
+//	if ($('#console #consoleMessage').is(':visible')) {
+//		$('#console #consoleMessage').fadeOut('slow')
+//	} else {
+//		$('#console #consoleMessage').fadeIn('slow')
+//	}
+//}
 
 function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
@@ -473,6 +517,7 @@ function showWorldMap() {
 	if (selectedLink) {
 		selectLinkFromMap(selectedLink, true)
 	}
+	checkTutorial('worldMap')
 }
 
 //switch to map view w/o considering leaving current tab
@@ -490,10 +535,10 @@ function switchMap() {
 
 function showAnnoucement() {
 	// Get the modal
-	var modal = $('#annoucementModal')
+	var modal = $('#announcementModal')
 	// Get the <span> element that closes the modal
-	$('#annoucementContainer').empty()
-	$('#annoucementContainer').load('assets/html/annoucement.html')
+	$('#announcementContainer').empty()
+	$('#announcementContainer').load('assets/html/announcement.html')
 
 	modal.fadeIn(1000)
 }
@@ -507,6 +552,35 @@ function populateTooltips() {
             $(this).load("assets/html/tooltip/" + htmlSource + ".html")
         }
     })
+
+    populateDelegatesTooltips()
+
+}
+function populateDelegatesTooltips() {
+    var $html = $("<div></div>")
+    $html.append("<p>Gained my leveling up your airline. Airline grade is determined by reputation points.</p>")
+    $html.append("<p>Delegates conduct various tasks, such as Flight negotiations, Country relationship improvements, Advertisement campaigns etc.</p>")
+
+    addTooltipHtml($('.delegatesTooltip'), $html, {'width' : '350px'})
+}
+
+var airlineGradeLookup
+function populateLookups() {
+    loadAllCountries()
+    $.ajax({
+		type: 'GET',
+		url: "lookups",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    async: false,
+	    success: function(result) {
+	    	airlineGradeLookup = result.airlineGradeLookup
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 }
 
 function showTutorial() {
@@ -582,7 +656,102 @@ function populateNavigation(parent) { //change all the tabs to do fake url
     })
 }
 
+let tabGroupState = {}
 
+function showTabGroup() {
+    if (tabGroupState.hideTimeout) {
+        clearTimeout(tabGroupState.hideTimeout)
+        tabGroupState.hideTimeout = undefined
+    }
+    $('#tabGroup').fadeIn(200)
+}
+
+function hideTabGroup(waitDuration) {
+    if (tabGroupState.hideTimeout) {
+        clearTimeout(tabGroupState.hideTimeout)
+    }
+    var timeout = setTimeout(() => $('#tabGroup').fadeOut(500), waitDuration ? waitDuration : 2000)
+    tabGroupState.hideTimeout = timeout
+}
+
+function initTabGroup() {
+    //$('#tabGroup .left-tab').bind('mouseout', () => { console.log('out'); hideTabGroup })
+    //$("#tabGroup").mouseenter(() => showTabGroup()).mouseleave(() => { console.log('out'); hideTabGroup() })
+
+
+    $("#tabGroup .tab-icon").on('mouseenter touchstart',
+        function() {
+            $(this).closest('.left-tab').find('.label').fadeIn(200)
+        }
+    )
+    $("#tabGroup .tab-icon").on('mouseleave touchend',
+        function() {
+            $(this).closest('.left-tab').find('.label').hide()
+        }
+    )
+
+//    $("#canvas").on( "swiperight", function( e ) {
+//        if ($('#canvas')[0].scrollLeft == 0) {
+//            showTabGroup()
+//            hideTabGroup(5000)
+//        }
+//    });
+    $("#canvas").on('touchstart', function(e) {
+        var swipe = e.originalEvent.touches,
+        startX = swipe[0].pageX;
+        startY = swipe[0].pageY;
+        $(this).on('touchmove', function(e) {
+            var contact = e.originalEvent.touches,
+            endX = contact[0].pageX,
+            endY = contact[0].pageY,
+            distanceX = endX - startX;
+            distanceY = endY - startY
+            if (Math.abs(distanceX) > Math.abs(distanceY) && distanceX > 30 && $('#main')[0].scrollLeft == 0) {
+                showTabGroup()
+                hideTabGroup(5000)
+            }
+        })
+        .one('touchend', function() {
+            $(this).off('touchmove touchend');
+        });
+    });
+
+    $("#tabGroupCue").on('mouseenter touchstart',
+        function() {
+            showTabGroup()
+        }
+    )
+    $("#tabGroupCue").on('mouseleave touchend',
+        function() {
+             hideTabGroup(5000)
+        }
+    )
+
+    $("#tabGroup").on('mouseenter touchstart',
+        function() {
+            showTabGroup()
+        }
+    )
+    $("#tabGroup").on('mouseleave touchend',
+        function() {
+             hideTabGroup()
+        }
+    )
+}
+
+function checkAutoplaySettings() {
+    var autoplayEnabled = true
+    if (localStorage.getItem("autoplay")){
+      autoplayEnabled = localStorage.getItem("autoplay") === 'true'
+    } else {
+      localStorage.setItem('autoplay', autoplayEnabled)
+    }
+    $('input.autoplay').prop('checked', autoplayEnabled)
+}
+
+function toggleAutoplay() {
+    localStorage.setItem('autoplay', $('input.autoplay').is(':checked'))
+}
 
 window.addEventListener('popstate', function(e) {
     if (e.state && e.state.onclickFunction) {

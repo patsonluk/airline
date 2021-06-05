@@ -1,0 +1,316 @@
+<div class="tutorial modal" data-category="welcome" id="tutorialWelcome">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Welcome to airline-club.com!</h4>
+		<div>
+			<img src="assets/images/tutorial/logo.png">
+		</div>
+
+		<h4>Press Escape or Tap on this dialog to proceed</h4>
+	</div>
+</div>
+
+<div class="modal tutorial" data-category="control" id="tutorialControl">
+	<div class="modal-content" style="width: 500px; display: flex; flex-direction: column; align-items: center;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Menu</h4>
+
+		<h4>Hover your mouse to left side of the window to show the Menu</h4>
+		<div>
+			<img src="assets/images/tutorial/desktop-menu.gif">
+		</div>
+
+		<h4>On Touch Device, slightly swipe right to pull out the Menu</h4>
+		<div>
+			<img src="assets/images/tutorial/mobile-menu.gif">
+		</div>
+
+		<h4>Press Escape or Tap on this dialog to proceed</h4>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="welcome" id="tutorialViewAirport">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Tutorial</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">You must first select an airport to build your Headquarters!</li>
+			<li class="label" style="padding: 5px;">Zoom in and click on the airport icon, then click "View Airport" to see the details of that airport</li>
+			<li class="label" style="padding: 5px;">Smaller airports might require further zoom in before they become visible on the map</li>
+			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport-gateway.png" style="vertical-align:middle">Country Gateway Airport</li>
+			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport-darker.png" style="vertical-align:middle">Large Airport</li>
+			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport.png" style="vertical-align:middle">Medium Airport</li>
+			<li class="label" style="padding: 5px;"><img src="assets/images/markers/airport-lighter.png" style="vertical-align:middle">Small Airport</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+
+<div class="tutorial modal" data-category="airport" id="tutorialAirportDetails">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Airport Details</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Airport View contains many crucial information and statistics.</li>
+			<li class="label" style="padding: 5px;">For a quick overview of the airport's strength, inspect the "Airport Rating" box on the top left.</li>
+			<br/>
+			<li class="label" style="padding: 5px;">The more challenging the airport, the more start-up capital you will obtain.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="airport" id="tutorialBuildHq">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Airport Details</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Click the Build Headquarters button if you decide to start your HQ here.</li>
+			<li class="label" style="padding: 5px;">Take note that once HQ is built, you can no longer move it unless you rebuild your airlines.</li>
+			<li class="label" style="padding: 5px;">All your initial flights will depart from the HQ airport.</li>
+			<li class="label" style="padding: 5px;">The country houses your HQ will also become your company's home country, which determines your initial relationship with airplane manufacturers and other countries.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialSetupLink1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Start your first flight</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Set up your first flight by clicking "Plan Link" on the airport you want to fly to.</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-1.gif" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialSetupLink2">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Edit your flight details</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Select airplane model, assign airplane, frequency, pricing and service level</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-1.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialSetupLink3">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Purchase Airplanes</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">If you have not yet owned any airplanes of the selected model</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-2.png" style="vertical-align:middle; max-width: 100%">
+		<ul>
+			<li class="label" style="padding: 5px;">You can even purchase it in the short-cut section below</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-3.png" style="vertical-align:middle; max-width: 100%">
+		<ul>
+			<li class="label" style="padding: 5px;">Or click on the Airplane icon on the left side bar to buy new/used airplanes</li>
+		</ul>
+		<img src="assets/images/tutorial/plan-link-4.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Negotiation</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Looks like negotiation is required to set up this flight!</li>
+		</ul>
+		<img src="assets/images/tutorial/negotiation-1.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation2">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Negotiation Difficulty</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Every negotiation has its difficulty, the higher the value the more difficult it gets!</li>
+		</ul>
+		<img src="assets/images/tutorial/negotiation-2.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation3">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Negotiation Difficulty Breakdown</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">To understand the difficulty details. Hover over the bubble next to the difficulty value.</li>
+		</ul>
+		<img src="assets/images/tutorial/negotiation-1.gif" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation4">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Assign Delegates</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">You would need to assign delegates to start the negotiations.</li>
+			<li class="label" style="padding: 5px;">The difficulty indicates the minimum delegates required.</li>
+			<li class="label" style="padding: 5px;">The more the delegates, the higher the success rate, the rate is indicated on the right side.</li>
+			<li class="label" style="padding: 5px;">Maximum of 10 delegates can be assigned for the negotiation.</li>
+			<li class="label" style="padding: 5px;">After the negotiation, the delegates involved will have 12 weeks cooldown if the negotiation was successful and 6 weeks if it failed</li>
+		</ul>
+		<img src="assets/images/tutorial/negotiation-3.png" style="vertical-align:middle; max-width: 100%">
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="plan-link" id="tutorialNegotiation5">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Too Difficult!</h4>
+		<ul>
+			<li class="label" style="padding: 5px;">Sometimes the negotiation could be too difficult for your available delegates to take action</li>
+			<li class="label" style="padding: 5px;">This will be indicated by the red cross next to the difficulty value</li>
+			<img src="assets/images/tutorial/negotiation-4.png" style="vertical-align:middle; max-width: 100%">
+		</ul>
+		<ul>
+			<li class="label" style="padding: 5px;">There are several ways to decrease the difficulty, for example:</li>
+			<li class="label" style="padding: 5px;">- Decrease the frequency of the flight</li>
+			<li class="label" style="padding: 5px;">- Improve the relationship with the target country with country delegates</li>
+			<li class="label" style="padding: 5px;">- Fly to a different airport etc</li>
+			<li class="label" style="padding: 5px;">Always inspect the difficulty breakdown to better understand the issues</li>
+		</ul>
+
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+
+
+<div class="tutorial modal" data-category="oil" id="tutorialOilIntro1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Introduction</h4>
+		<ul>
+			<li class="label">Watch the Oil market price and manage your oil contract here.</li>
+			<li class="label" style="font-weight: bolder;">You do NOT need to buy any oil contract to have your airplanes fueled.</li>
+			<li class="label">Oil will be auto purchased by the inventory price if there's no active contract or the contracts do not cover all the consumption</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="oil" id="tutorialOilIntro2">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Inventory Price and Policy</h4>
+		<ul>
+			<li class="label" style="font-weight: bolder;">$70 is considered the "neutral" oil price. Price above is considered over-priced and below is under-priced.</li>
+			<li class="label">By default, your airline will be assigned the "conservative" inventory policy which shields your airline from 90% of price fluctuation.</li>
+			<li class="label">For example, if the current oil market price is $80 which is $10 above the neutral price, you will only need to pay $71 which is 90% off the price delta ($10).</li>
+			<li class="label">Though conservative policy protects you from price fluctuation, it also means that you will reap less benefit when the oil price is low.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+<div class="tutorial modal" data-category="oil" id="tutorialOilIntro3">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Oil Contract</h4>
+		<ul>
+			<li class="label">You can also sign an oil contract with a specified duration to lock the price you pay.</li>
+			<li class="label">The contract price is based on current oil price and the duration of the contract.</li>
+			<li class="label">You might terminate the contract early by paying termination fee.</li>
+			<li class="label">Please be reminded that excessive oil from the contract will be sold back to the market at half the market price.</li>
+			<li class="label">The default contract volume is the barrels required to fulfill your need based on the oil consumption from previous week.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="search" id="tutorialSearch1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Ticket Search</h4>
+		<ul>
+			<li class="label">Ticket search shows flight ticket sold in previous weeks</li>
+			<br/>
+			<li class="label">You can research on passenger flight itineraries here.</li>
+			<li class="label">For example, you can search on airport pair you wish to establish a new flight for and check your competitions and how much the PAX willing to pay.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+
+<div class="tutorial modal" data-category="office" id="tutorialOffice1">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Office</h4>
+		<ul>
+			<li class="label">In Office View, you can find various information about your airlines</li>
+			<br/>
+			<li class="label">You can also set various important parameters here</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="office" id="tutorialOffice2">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Service Quality</h4>
+		<ul>
+			<li class="label">"Service Quality" refers to the R&D and training of your airline overall.</li>
+			<li class="label">This applies to all your flights and affect the overall flight quality level</li>
+			<br/>
+			<li class="label">You can set the desired "Service Quality" level by clicking on the gear icon next to Target Service Quality</li>
+			<li class="label">Service quality will climb slowly to your target level, after all, R&D and training take time!</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="office" id="tutorialOffice3">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Office Staff</h4>
+		<ul>
+			<li class="label">Next, you will find a table of Airline Bases with office staff and overtime information</li>
+			<li class="label">Each of you base/hub has office staff capacity based on its scale and type (HQs have higher staff capacity)</li>
+			<br/>
+			<li class="label">Each of your flight will take up a base number of staff depending on the flight type - longer and internation flights require more staff to maintain</li>
+			<li class="label">Extra frequency and capacity will consumer more staff as well, with higher frequency usually take up more staff than high capacity</li>
+			<br/>
+			<li class="label">If your flights require more staff than the base can provide, extra overtime compensation will be incurred every week</li>
+			<br/>
+			<li class="label">In order to avoid overtime compensation you might:</li>
+			<li class="label">1. Drop flights that are not profitable or not crucial for your network</li>
+			<li class="label">2. Level up your base/hub</li>
+			<li class="label">3. Use bigger airplanes to increase capacity instead of high frequency with smaller airplane models</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+
+<div class="tutorial modal" data-category="airlineGrade" id="tutorialAirlineGrade">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Airline Grade</h4>
+		<ul>
+			<li class="label">Congratulations on leveling up!</li>
+			<li class="label">Your airline progresses on Airline Grade (the star level) based on your reputation</li>
+			<img src="assets/images/tutorial/level.png">
+			<li class="label">Reputation accumulates by:</li>
+			<li class="label">1. Carrying more PAX and travel further</li>
+			<li class="label">2. Becoming a ranked Champion in an airport by having more loyalists</li>
+			<li class="label">3. In a ranked Alliance</li>
+			<br/>
+			<li class="label">You will get more delegates (the little green men in office view) each time you level up.</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+</div>
+
+<div class="tutorial modal" data-category="loyalist" id="tutorialLoyalistMilestone">
+	<div class="modal-content" style="width: 500px;" onclick="closeModal($(this).closest('.modal'))">
+		<h4>Loyalist</h4>
+		<ul>
+			<li class="label">Your airline has started accumulating loyalists!</li>
+			<img src="assets/images/tutorial/loyalist.png">
+			<li class="label">Loyalists are gained by providing a satisfying flying experience for the virtual PAX based in that airport</li>
+			<br/>
+			<li class="label">Loyalists are useful in many ways:</li>
+			<li class="label">1. Increase loyalty strength of that airport. PAX are more willing to travel with your airline with a stronger brand presence</li>
+			<li class="label">2. Loyalty also gives discount in negotiations</li>
+			<li class="label">3. Top N airlines with most loyalist in an airport will become ranked champions which earn extra reputation points</li>
+			<br/>
+			<li class="label">You can have an overview of your loyalist by clicking the "heatmap" icon <img src="assets/images/icons/table-heatmap.png"> on the map. Info for each airport can be inspected in the Airport View</li>
+		</ul>
+		<div class="clickable footer" onclick='promptSkipTutorial(event)'>Disable Tutorials</div>
+	</div>
+
+</div>

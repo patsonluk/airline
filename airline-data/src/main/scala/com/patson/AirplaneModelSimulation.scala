@@ -2,7 +2,7 @@ package com.patson
 
 import com.patson.data._
 import com.patson.data.airplane.ModelSource
-import com.patson.model.airplane.Model.Type.{JUMBO, LARGE, LIGHT, MEDIUM, REGIONAL, SMALL, X_LARGE}
+import com.patson.model.airplane.Model.Type.{JUMBO, LARGE, LIGHT, MEDIUM, REGIONAL, SMALL, X_LARGE, SUPERSONIC}
 import com.patson.model.airplane._
 
 import scala.collection.mutable.ListBuffer
@@ -63,6 +63,7 @@ object AirplaneModelSimulation {
       case LARGE => 150
       case X_LARGE => 100
       case JUMBO => 50
+      case SUPERSONIC => 100
     }
   }
 

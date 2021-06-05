@@ -36,7 +36,7 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       if (ranking.entry.isInstanceOf[Airline]) { 
         val airline = ranking.entry.asInstanceOf[Airline]
         //if (ranking.ranking <= MAX_ENTRY || airline.
-        result = result + ("airlineName" -> JsString(airline.name)) + ("airlineId" -> JsNumber(airline.id))
+        result = result + ("airlineName" -> JsString(airline.name)) + ("airlineId" -> JsNumber(airline.id)) + ("airlineSlogan" -> JsString(airline.slogan.getOrElse("")))
       } else if (ranking.entry.isInstanceOf[Link]) {
         val link = ranking.entry.asInstanceOf[Link]
         result = result + ("airlineName" -> JsString(link.airline.name)) + ("airlineId" -> JsNumber(link.airline.id)) + ("rankInfo" -> JsString(getLinkDescription(link)))

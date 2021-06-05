@@ -20,6 +20,12 @@ var selectedAirlineId
 
 $( document ).ready(function() {})
 
+function checkWebSocket(selectedAirlineId) {
+    if (websocket.readyState === WebSocket.CLOSED) {
+        connectWebSocket(selectedAirlineId)
+    }
+}
+
 function connectWebSocket(airlineId) {
 	websocket = new WebSocket(wsUri); 
 	websocket.onopen = function(evt) {
@@ -52,7 +58,17 @@ function onMessage(evt) { //right now the message is just the cycle #, so refres
 		if (selectedAirlineId) {
 			refreshPanels(selectedAirlineId)
 		}
-	} else {
+	} else if (json.messageType == "broadcastMessage") {
+        queuePrompt("broadcastMessagePopup", json.message)
+    } else if (json.messageType == "airlineMessage") {
+        queuePrompt("airlineMessagePopup", json.message)
+    } else if (json.messageType == "notice") {
+        queueNotice(json)
+    } else if (json.messageType == "tutorial") {
+        queueTutorialByJson(json)
+    } else if (json.messageType == "pendingAction") {
+        handlePendingActions(json.actions)
+    } else {
 		console.warn("unknown message type " + evt.data)
 	}
 }  

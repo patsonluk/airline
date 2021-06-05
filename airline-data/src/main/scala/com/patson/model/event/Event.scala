@@ -15,7 +15,34 @@ case class Olympics(override val startCycle : Int, override val duration : Int =
   } //start from 1 to 4
   val isNewYear = (currentCycle : Int) => currentWeek(currentCycle) == 0
   val currentWeek = (currentCycle : Int) => (currentCycle - startCycle) % Olympics.WEEKS_PER_YEAR //start from 0 to WEEKS_PER_YEAR
+
+  import OlympicsStatus._
+  val status = (currentCycle : Int) =>
+    if (isActive(currentCycle)) {
+      currentYear(currentCycle) match {
+        case 1 => VOTING
+        case 2 => HOST_CITY_SELECTED
+        case 3 => PREPARATION
+        case 4 =>
+          val weeksBeforeGames = Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION - currentWeek(currentCycle)
+          if (weeksBeforeGames > 0) {
+            OLYMPICS_YEAR
+          } else {
+            IN_PROGRESS
+          }
+        case _ => UNKNOWN
+      }
+    } else {
+      CONCLUDED
+    }
 }
+
+object OlympicsStatus extends Enumeration {
+  type RewardCategory = Value
+  val VOTING, HOST_CITY_SELECTED, PREPARATION, OLYMPICS_YEAR, IN_PROGRESS, CONCLUDED, UNKNOWN = Value
+}
+
+
 
 object Olympics {
   val WEEKS_PER_YEAR = 52

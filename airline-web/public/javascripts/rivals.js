@@ -72,8 +72,9 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 //		}
 
 		row.append("<div class='cell'><img src='" + getStatusLogo(airline.loginStatus) + "' title='" + getStatusTitle(airline.loginStatus) + "' style='vertical-align:middle;'/>")
-		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) + airline.name + getUserLevelImg(airline.userLevel) 
-				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>")
+		var $nameDiv = $("<div class='cell' style='vertical-align:unset;'>" + getAirlineLogoImg(airline.id) + airline.name + getUserLevelImg(airline.userLevel)
+				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>").appendTo(row)
+		addAirlineTooltip($nameDiv, airline.id, airline.slogan, airline.name)
 		if (airline.headquartersAirportName) {
 			row.append("<div class='cell'>" + getAirportText(airline.headquartersCity, airline.headquartersAirportIata) + "</div>")
 		} else {
@@ -141,8 +142,10 @@ function loadRivalDetails(row, airlineId) {
 	
 	
 	updateRivalBasicsDetails(airlineId)
-	updateRivalChampionedCountriesDetails(airlineId)
+	updateRivalFleet(airlineId)
 	updateRivalCountriesAirlineTitles(airlineId)
+	updateRivalChampionedAirportsDetails(airlineId)
+	updateHeadquartersMap($('#rivalDetails .headquartersMap'), airlineId)
 	loadRivalLinks(airlineId)
 	
 	updateRivalBaseList(airlineId)
@@ -229,31 +232,52 @@ function updateRivalBasicsDetails(airlineId) {
 	}
 }
 
-function updateRivalChampionedCountriesDetails(airlineId) {
-	$('#rivalChampionedCountriesList').children('div.table-row').remove()
-	
+function updateRivalFleet(airlineId) {
+    $('#rivalDetails .fleetList').children('div.table-row').remove()
+
 	$.ajax({
 		type: 'GET',
-		url: "airlines/" + airlineId + "/championed-countries",
+		url: "airlines/" + airlineId + "/fleet",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(championedCountries) {
-	    	$(championedCountries).each(function(index, championDetails) {
-	    		var country = championDetails.country
-	    		var row = $("<div class='table-row clickable' onclick=\" showCountryView('" + country.countryCode + "');\"></div>")
-	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
-	    		row.append("<div class='cell'>" + getCountryFlagImg(country.countryCode) + country.name + "</div>")
-	    		row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>") 
-	    		$('#rivalChampionedCountriesList').append(row)
-	    	})
-	    	
-	    	if ($(championedCountries).length == 0) {
-	    		var row = $("<div class='table-row'></div>")
-	    		row.append("<div class='cell'>-</div>")
-	    		row.append("<div class='cell'>-</div>")
-	    		row.append("<div class='cell'>-</div>")
-	    		$('#rivalChampionedCountriesList').append(row)
-	    	}
+	    success: function(result) {
+	    	$(result).each(function(index, modelDetails) {
+                var row = $("<div class='table-row'></div>")
+                row.append("<div class='cell'>" + modelDetails.name + "</div>")
+                row.append("<div class='cell'>" + modelDetails.quantity + "</div>")
+                $('#rivalDetails .fleetList').append(row)
+            })
+            if (result.length == 0) {
+                $('#rivalDetails .fleetList').append('<div class="cell"></div><div class="cell"></div>')
+            }
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+
+}
+
+
+function updateRivalChampionedAirportsDetails(airlineId) {
+	$('#rivalChampionedAirportsList').children('div.table-row').remove()
+
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + airlineId + "/championed-airports",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(championedAirports) {
+	    	$(championedAirports).each(function(index, championDetails) {
+                var row = $("<div class='table-row clickable' data-link='airport' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
+                row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+                row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
+                row.append("<div class='cell'>" + championDetails.reputationBoost + "</div>")
+                $('#rivalChampionedAirportsList').append(row)
+            })
+
+            populateNavigation($('#rivalChampionedAirportsList'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -307,11 +331,13 @@ function updateRivalBaseList(airlineId) {
     updateAirlineBaseList(airlineId, $('#rivalBases'))
 }
 
+var rivalMapAirlineId
+
 function showRivalMap() {
     var airlineId = $('#rivalDetails').data("airlineId")
 	clearAllPaths()
 	deselectLink()
-
+    rivalMapAirlineId = airlineId
 	var paths = []
 
     var getUrl = "airlines/" + airlineId + "/links"
@@ -336,8 +362,11 @@ function showRivalMap() {
                         $("#linkPopupAirline").html(getAirlineLogoImg(link.airlineId) + "&nbsp;" + link.airlineName)
 
                         infoWindow = new google.maps.InfoWindow({
-                             content: $("#linkPopup").html(),
                              maxWidth : 1200});
+
+                        var popup = $("#linkPopup").clone()
+                        popup.show()
+                        infoWindow.setContent(popup[0])
 
                         infoWindow.setPosition(event.latLng);
                         infoWindow.open(map);
@@ -395,5 +424,6 @@ function hideRivalMap() {
 	map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
 	clearAllPaths()
 	updateAirportBaseMarkers([]) //revert base markers
+	rivalMapAirlineId = undefined
 	setActiveDiv($("#rivalsCanvas"))
 }

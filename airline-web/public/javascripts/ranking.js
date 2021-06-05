@@ -99,7 +99,8 @@ function getRankingRow(ranking) {
 		if (ranking.rankInfo) {
 			entry += ' : ' + ranking.rankInfo
 		}
-		row.append("<div class='cell'>" + entry + "</div>")
+		var $airlineDiv = $("<div class='cell'>" + entry + "</div>").appendTo(row)
+		addAirlineTooltip($airlineDiv, ranking.airlineId, ranking.airlineSlogan, ranking.airlineName)
 	} else if (ranking.airportId) {
 		var entry = getCountryFlagImg(ranking.countryCode) + ranking.iata + " : " + ranking.airportName 
 		row.append("<div class='cell'>" + entry + "</div>")
@@ -112,10 +113,10 @@ function getRankingRow(ranking) {
 
 function getDividerRow() {
 	var row = $("<div class='table-row'></div>")
-	row.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-	row.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-	row.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
-	row.append("<div class='cell' style='border-top: 1px solid #6093e7;'></div>")
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
 	
 	return row
 }

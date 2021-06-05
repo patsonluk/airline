@@ -4,6 +4,8 @@ import scala.collection.mutable.ListBuffer
 import com.patson.data.CountrySource
 import com.patson.util.ChampionUtil
 
+import scala.math.BigDecimal.RoundingMode
+
 case class Alliance(name: String, creationCycle: Int, members: List[AllianceMember], var id: Int = 0) {
   val status = {
     if (members.filter(_.role != AllianceRole.APPLICANT).length < Alliance.ESTABLISH_MIN_MEMBER_COUNT) {
@@ -39,43 +41,43 @@ object Alliance {
 
   val getReputationBonus: (Int => Double) = { (ranking: Int) =>
     if (ranking == 1) {
-      20
+      50
     } else if (ranking == 2) {
-      15
+      40
     } else if (ranking == 3) {
-      12
+      30
     } else if (ranking == 4) {
-      10
+      25
     } else if (ranking == 5) {
-      8
+      20
     } else if (ranking == 6) {
-      7
+      15
     } else if (ranking == 7) {
-      6
+      12
     } else if (ranking == 8) {
-      5
+      10
     } else if (ranking == 9) {
-      4
+      9
     } else if (ranking == 10) {
-      3      
+      8
     } else {
-      2
+      5
     }
   }
 
-  val getMaxFrequencyBonus: (Int => Int) = { (ranking: Int) =>
-    if (ranking == 1) {
-      15
-    } else if (ranking == 2) {
-      10
-    } else if (ranking == 3) {
-      5
-    } else if (ranking <= 10) {
-      2
-    } else {
-      0
-    }
-  }
+//  val getMaxFrequencyBonus: (Int => Int) = { (ranking: Int) =>
+//    if (ranking == 1) {
+//      15
+//    } else if (ranking == 2) {
+//      10
+//    } else if (ranking == 3) {
+//      5
+//    } else if (ranking <= 10) {
+//      2
+//    } else {
+//      0
+//    }
+//  }
 
   /**
     *
@@ -83,20 +85,23 @@ object Alliance {
     * @return Map[Alliance, (ranking, champion points)] . Take note that ranking starts with 1 as the top alliance
     */
   def getRankings(alliances: List[Alliance]): Map[Alliance, (Int, BigDecimal)] = {
-    val countryChampions = ChampionUtil.getAllChampionInfo()
+    //val countryChampions = ChampionUtil.getAllCountryChampionInfo()
+    val airportChampionsByAirlineId = ChampionUtil.loadAirportChampionInfo().groupBy(_.loyalist.airline.id)
     val alliancesWithChampionPoints: List[(Alliance, BigDecimal)] = alliances.filter(_.status == AllianceStatus.ESTABLISHED).map {
       alliance =>
         var allianceChampionPoints: BigDecimal = 0.0
         alliance.members.foreach { allianceMember =>
-          val memberChampiontPoints: BigDecimal =
+          val memberChampionPoints: BigDecimal =
             if (allianceMember.role == AllianceRole.APPLICANT) { //do not add champion points from applicant
               0
             } else {
-              countryChampions.filter(_.airline.id == allianceMember.airline.id).map(champion => BigDecimal.valueOf(champion.reputationBoost)).sum
+              BigDecimal(airportChampionsByAirlineId.get(allianceMember.airline.id).map(_.map(_.reputationBoost).sum).getOrElse(0.0))
             }
-          allianceChampionPoints = allianceChampionPoints + memberChampiontPoints
+          //println(s"${allianceMember.airline.name} => " + memberChampionPoints)
+          allianceChampionPoints = allianceChampionPoints + memberChampionPoints
         }
-        (alliance, allianceChampionPoints)
+
+        (alliance, allianceChampionPoints.setScale(2, RoundingMode.HALF_UP))
     }
 
     val alliancesWithRanking = alliancesWithChampionPoints.sortBy(_._2)(Ordering.BigDecimal.reverse).zipWithIndex.map {

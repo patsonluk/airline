@@ -40,7 +40,7 @@ object Issue310_patcher extends App {
   def patchLinkAirplaneModel(connection : Connection) = {
     connection.setAutoCommit(false)
     val statement = connection.prepareStatement("UPDATE " + Constants.LINK_TABLE + " SET airplane_model = ? WHERE id = ?")
-    LinkSource.loadAllLinks(LinkSource.FULL_LOAD).foreach { link =>
+    LinkSource.loadAllFlightLinks(LinkSource.FULL_LOAD).foreach { link =>
       link.getAssignedModel().foreach { model =>
         statement.setInt(1, model.id)
         statement.setInt(2, link.id)

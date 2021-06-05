@@ -1,8 +1,12 @@
-var lastMessageId = 0
+var lastMessageId = -1
+var firstAllianceMessageId = -1
+var firstGeneralMessageId = -1
 
 function updateChatTabs() {
-	if (activeUser.allianceName) {
+	if (activeUser.allianceName && activeUser.allianceRole != 'APPLICANT') {
 		$("#allianceChatTab").text(activeUser.allianceName)
+		$("#allianceChatTab").data('roomId', activeUser.allianceId)
+		$("#allianceChatTab").show()
 	} else {
 		$("#allianceChatTab").hide()
 	}
@@ -105,6 +109,7 @@ RateLimit.prototype = {
 };
 
 var isFromEmoji = false; //yike ugly!
+var ws
 
 angular.module("ChatApp", []).controller("ChatController", function($scope, $timeout){
    // var ws = new WebSocket("ws://localhost:9000/chat");
@@ -127,14 +132,12 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	}
 
 	var wsUri = wsProtocol + "//" +  window.location.hostname + ":" + port + "/chat";
-    var ws = new ReconnectingWebSocket(function() {
-        return wsUri + "?last-message-id=" + lastMessageId
+    ws = new ReconnectingWebSocket(function() {
+        return wsUri + "?reconnect=true&lastMessageId=" + lastMessageId
     });
 
   // binding model for the UI
   var chat = this;
-  chat.gmessages = []; // Global
-  chat.amessages = []; // Alliance
   chat.username = "";
 
   // what happens when user enters message
@@ -144,6 +147,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
         return;
       }
       limit.tick('myevent_id');
+      adjustScroll()
       var currentMessage = $('#chattext').val()
       if (activeAirline && (currentMessage !== "") && (limit.count('myevent_id') <= 20)) {
         var active_tab = $("li.tab-link.current").attr('data-tab');
@@ -155,7 +159,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 
       } else {
           $timeout(function(){
-            $scope.chat.gmessages.push("Message Not Sent : Rate Filter or Invalid Message");
+            $('#chat-box li.tab-link.current ul').append('<li class="message">Message Not Sent : Rate Filter or Invalid Message</li>')
           });
 
           $timeout(function(){
@@ -169,8 +173,8 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 
    ws.onopen = function () {
 	    $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat.png\")"});
-		$timeout(function(){ 
-			chat.gmessages.push("Chat Connected");
+		$timeout(function(){
+            $('#chat-box #chatBox-1 ul').append('<li class="status">Chat Connected</li>')
 		});
 	    $timeout(function(){ 
 			var scroller = document.getElementById("chatBox-1");
@@ -181,7 +185,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
    ws.onclose = function () {
 	   $("#live-chat i").css({"background-image":"url(\"../../assets/images/icons/32px/balloon-chat-red.png\")"});
 	   $timeout(function(){ 
-			chat.gmessages.push("Chat Disconnected");
+			            $('#chat-box #chatBox-1 ul').append('<li class="status">Chat Disconnected</li>')
 	   });
 	   $timeout(function(){ 
 			var scroller = document.getElementById("chatBox-1");
@@ -200,70 +204,226 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
 	//console.log(r_text);
 	var r_msg = JSON.parse(r_text);
 
-	var date = new Date(r_msg.timestamp)
-	var airlineName = r_msg.airlineName
-	var userLevel = r_msg.userLevels
-	var hourString = date.getHours()
-	var minuteString = date.getMinutes()
-	var secondString = date.getSeconds()
+    $('#chat-box .chat-history.tab-content div.loading').remove()
+    var $activeHistory = $("#chat-box .chat-history.current")
 
-	if (hourString < 10) {
-	    hourString = "0" + hourString
+	if (r_msg.type === 'newSession') { //session join message
+	    $('#chat-box .chat-history.tab-content ul li.message').remove()
+        for (i = 0; i < r_msg.messages.length ; i ++) {
+            pushMessage(r_msg.messages[i])
+        }
+
+
+        if ($('.chat').is(':hidden')) {
+            if (r_msg.unreadMessageCount > 0) {
+                $('.notify-bubble').show(400);
+                $('.notify-bubble').text(r_msg.unreadMessageCount);
+            }
+        }
+        adjustScroll()
+    } else if (r_msg.type === 'previous') { //scroll up
+        for (i = r_msg.messages.length - 1; i >= 0 ; i --) { //prepend from latest to oldest
+            var message = r_msg.messages[i]
+
+            prependMessage(message)
+        }
+        if (r_msg.messages.length == 0) {
+            $activeHistory.find('ul').prepend('<li class="message"><b>No more previous messages</b></li>')
+            $activeHistory.data("historyExhausted", true)
+        }
+
+    } else { //incoming message from broadcast
+        var atScrollBottom = ($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop === $activeHistory[0].clientHeight)
+
+        pushMessage(r_msg)
+        if ($('.chat').is(':hidden')) {
+            $('.notify-bubble').show(400);
+            $('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
+        }
+        if (atScrollBottom) {
+            adjustScroll()
+        }
+    }
+
+
+
+    //ACK if chat is active
+    if ($("#live-chat h4").is(":visible") && r_msg.latest) {
+        ackChatId()
+    }
+
+  };
+
+
+
+
+  $(".chat-history").each(function() {
+    $(this).on('touchstart', function(e) {
+        var swipe = e.originalEvent.touches,
+        start = swipe[0].pageY;
+        $(this).on('touchmove', function(e) {
+            var contact = e.originalEvent.touches,
+            end = contact[0].pageY,
+            distance = end-start;
+            if (distance > 30  && $(this).scrollTop()  <= 0) {
+                handleScrollChatTop()
+            }
+        })
+        .one('touchend', function() {
+            $(this).off('touchmove touchend');
+        });
+    });
+
+      $(this).bind('wheel', function(event) {
+        if (event.originalEvent.deltaY < 0 && $(this).scrollTop()  <= 0) { //scroll up and at the top
+            handleScrollChatTop()
+        }
+      });
+  })
+});
+
+function handleScrollChatTop() {
+  var $activeHistory = $("#chat-box .chat-history.current")
+  if ($activeHistory.data('historyExhausted') == true) { //exhausted all previous messages
+    return;
+  }
+
+
+  $chatTab = $('#chat-box .chat-history.tab-content')
+  //$(this).css('overflow', 'hidden')
+
+  if (!$chatTab.find('.loading').length){ //scrolled to top and not already loading
+     var $loadingDiv = $("<div class='loading'><img src='https://i.stack.imgur.com/FhHRx.gif'></div>")
+     $chatTab.prepend($loadingDiv)
+     //scrolled to top
+     var activeRoomId = parseInt($('#live-chat .tab-link.current').data('roomId'))
+     var firstMessageId = (activeRoomId == 0) ? firstGeneralMessageId : firstAllianceMessageId
+
+     var text = { airlineId: activeAirline.id, firstMessageId : firstMessageId, type: "previous", roomId : activeRoomId};
+               // send it to the server through websockets
+     ws.send(JSON.stringify(text));
+  }
+
+}
+
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
+
+function buildPrefix(r_msg) {
+    var date = new Date(r_msg.timestamp)
+    var airlineName = r_msg.airlineName
+    var userLevel = r_msg.userLevels
+    var monthString = monthNames[date.getMonth()]
+    var dateString = date.getDate()
+    var hourString = date.getHours()
+    var minuteString = date.getMinutes()
+
+    if (hourString < 10) {
+        hourString = "0" + hourString
     }
     if (minuteString < 10) {
         minuteString = "0" + minuteString
     }
-    if (secondString < 10) {
-        secondString = "0" + secondString
-    }
 
-	var dateString = hourString + ":" + minuteString + ":" + secondString
+    var dateString = monthString + " " + dateString + " " + hourString + ":" + minuteString
 //	var airlineSpan = $("<span>" + airlineName + "</span>")
 //	var userIcon = getUserLevelImg(userLevel)
 //	airlineSpan.append(userIcon)
 
     var prefix = "[" + dateString + "] " + airlineName + ": "
-	if (!r_msg.allianceRoomId) {
-		chat.gmessages.push(prefix + r_msg.text);
-	} else {
-		chat.amessages.push(prefix + r_msg.text);
-	}
-    $scope.$digest();
+    return prefix
+}
+
+function prependMessage(r_msg) {
+    var prefix = buildPrefix(r_msg)
+    if (!r_msg.allianceRoomId) {
+        if (r_msg.id < firstGeneralMessageId) { //prevent duplicate calls
+            $('#chat-box #chatBox-1 ul').prepend('<li class="message">' + prefix + r_msg.text + '</li>')
+
+            if (firstGeneralMessageId == -1 || r_msg.id < firstGeneralMessageId) {
+                firstGeneralMessageId = r_msg.id
+            }
+        }
+    } else {
+        if (r_msg.id < firstAllianceMessageId) { //prevent duplicate calls
+            $('#chat-box #chatBox-2 ul').prepend('<li class="message">' + prefix + r_msg.text + '</li>')
+            if (firstAllianceMessageId == -1 || r_msg.id < firstAllianceMessageId) {
+                firstAllianceMessageId = r_msg.id
+            }
+        }
+    }
+
+
+
+    var isMobileDeviceValue = isMobileDevice()
+    $('.chat-history').each (function(){
+        emojify.run($(this).find("li:first-child")[0]);   // translate emoji to images
+        if (r_msg.imagePermission && !isMobileDeviceValue) {
+            replaceImg($(this).find("li:first-child"), prefix, false)
+        }
+    })
+
+
+}
+
+
+function pushMessage(r_msg) {
+    var $activeHistory = $("#chat-box .chat-history.current")
+    var atScrollBottom = ($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop === $activeHistory[0].clientHeight)
+    var prefix = buildPrefix(r_msg)
+    if (!r_msg.allianceRoomId) {
+        $('#chat-box #chatBox-1 ul').append('<li class="message">' + prefix + r_msg.text + '</li>')
+        if (firstGeneralMessageId == -1 || r_msg.id < firstGeneralMessageId) {
+            firstGeneralMessageId = r_msg.id
+        }
+    } else {
+        $('#chat-box #chatBox-2 ul').append('<li class="message">' + prefix + r_msg.text + '</li>')
+        if (firstAllianceMessageId == -1 || r_msg.id < firstAllianceMessageId) {
+            firstAllianceMessageId = r_msg.id
+        }
+    }
+
 
 
     var isMobileDeviceValue = isMobileDevice()
     $('.chat-history').each (function(){
         emojify.run($(this).find("li:last-child")[0]);   // translate emoji to images
         if (r_msg.imagePermission && !isMobileDeviceValue) {
-            replaceImg($(this).find("li:last-child"), prefix)
+            replaceImg($(this).find("li:last-child"), prefix, atScrollBottom)
         }
     })
 
-    adjustScroll()
+    if (r_msg.id > lastMessageId) {
+        lastMessageId = r_msg.id
+    }
+}
 
-	if ($('.chat').is(':hidden')) {
-		$('.notify-bubble').show(400);
-		$('.notify-bubble').text(parseInt($('.notify-bubble').text())+1);
-	}
+function ackChatId() {
+      if (activeAirline && lastMessageId > -1) {
+          var text = { airlineId: activeAirline.id, ackId : lastMessageId, type : "ack" };
+          // send it to the server through websockets
+          ws.send(JSON.stringify(text));
+      }
+  }
 
-    lastMessageId = r_msg.id
-  };
-});
+
 
 emojify.setConfig({img_dir : 'assets/images/emoji'});
 
 function adjustScroll() {
-    if (!$('#scroll_lockc').is(":checked")) {
-        $(".chat-history").each(function() {
-            $(this).scrollTop($(this).prop("scrollHeight"))
-        })
-    }
+    //if (!$('#scroll_lockc').is(":checked")) {
+
+    $(".chat-history").each(function() {
+        setTimeout(100, $(this).scrollTop($(this).prop("scrollHeight")))
+    })
+
 }
 
 var imgTag = "/img"
-function replaceImg(input, prefix) {
+function replaceImg(input, prefix, scrollToBottom) {
     var text= input.text().trim().substring(prefix.length) //strip the airline name and date
-
     if (text.startsWith(imgTag)) {
         var src = text.substring(imgTag.length)
         var img = $("<img>")
@@ -281,9 +441,12 @@ function replaceImg(input, prefix) {
             }
         })
         //img.attr("src", "assets/images/emoji/banana.png")
-        img.on('load', function() {
-            adjustScroll()
-            })
+
+        if (scrollToBottom) {
+            img.on('load', function() {
+                adjustScroll()
+                })
+        }
         input.html(prefix)
         input.append(img)
     }

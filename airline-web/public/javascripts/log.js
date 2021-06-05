@@ -63,7 +63,7 @@ function updateLogTable(sortProperty, sortOrder) {
 	
 	$.each(loadedLogs, function(index, log) {
 		var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell'>" + log.cycle + "</div>")
+		row.append("<div class='cell'>" + log.cycleAgo + " week(s) ago</div>")
 		row.append("<div class='cell'>" + log.severityText + "</div>")
 		row.append("<div class='cell'>" + log.categoryText + "</div>")
 		row.append("<div class='cell'>" + getAirlineLogoImg(log.airlineId) + log.airlineName + "</div>")

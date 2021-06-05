@@ -17,13 +17,13 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
  
   def this() = this(ActorSystem("MySpec"))
  
-  val airport : Airport = Airport("A", "", "Airport A", 0, 0, countryCode = "A", "", "", 1, 0, 0, slots = 100)
+  val airport : Airport = Airport("A", "", "Airport A", 0, 0, countryCode = "A", "", "", 1, 0, population = 100, slots = 100)
   airport.country = Some(Country(countryCode = "A", name = "Country A", airportPopulation = 1000000, income = 500000, openness = 10))
   val otherAirport : Airport = Airport("B", "", "Airport B", 0, 0, countryCode = "B", "", "", 1, 0, 0, slots = 100)
   otherAirport.country = Some(Country(countryCode = "B", name = "Country B", airportPopulation = 1000000, income = 500000, openness = 3))
   
   val highReputationLocalHqAirline = Airline("airline 1", id = 1)
-  highReputationLocalHqAirline.setReputation(Airline.MAX_REPUTATION)
+  highReputationLocalHqAirline.setReputation(AirlineGrade.CONTINENTAL.reputationCeiling)
   highReputationLocalHqAirline.setCountryCode("A")
   val base1 = AirlineBase(highReputationLocalHqAirline, airport, countryCode = "A", scale = 1, foundedCycle = 1, headquarter = true) 
   highReputationLocalHqAirline.setBases(List[AirlineBase](base1))
@@ -43,6 +43,34 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
   val base4 = AirlineBase(lowReputationForeignHqAirline, otherAirport, countryCode = "B", scale = 1, foundedCycle = 1, headquarter = true)
   lowReputationForeignHqAirline.setBases(List[AirlineBase](base4))
   lowReputationForeignHqAirline.setCountryCode("B")
+
+
+
+  "computeLoyaltyByLoyalist".must {
+    "give no loyalty if loyalist is empty".in {
+      val airport = this.airport.copy()
+      assert(airport.computeLoyaltyByLoyalist(List.empty).isEmpty)
+    }
+    "give 0 loyalty if loyalist is 0".in {
+      val airport = this.airport.copy()
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), 0)))(1) == 0.0)
+    }
+    "give 100 loyalty if loyalist is same as pop".in {
+      val airport = this.airport.copy()
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt)))(1) == 100.0)
+    }
+    "give x loyalty if loyalist is 0.5 * pop, which 70 < x < 80".in {
+      val airport = this.airport.copy()
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 2)))(1) > 70.0)
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 2)))(1) < 80.0)
+    }
+    "give x loyalty if loyalist is 0.2 * pop, which 40 < x < 50".in {
+      val airport = this.airport.copy()
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 5)))(1) > 40.0)
+      assert(airport.computeLoyaltyByLoyalist(List(Loyalist(airport, Airline.fromId(1), airport.population.toInt / 5)))(1) < 50.0)
+    }
+
+  }
   
   override def afterAll {
     TestKit.shutdownActorSystem(system)
@@ -50,100 +78,10 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
   
   override def beforeEach {
     airport.initAirlineBases(List(base1, base2))
-    airport.initSlotAssignments(Map())
+    //airport.initSlotAssignments(Map())
     airport.initAirlineAppeals(Map())
     otherAirport.initAirlineBases(List(base3, base4))
-    otherAirport.initSlotAssignments(Map())
+    //otherAirport.initSlotAssignments(Map())
     otherAirport.initAirlineAppeals(Map())
-  }
- 
-  
-  
-  "Airport.availableSlots()".must {
-    "return 0 if all slots are taken".in {
-      airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 100))
-      airport.availableSlots.shouldBe(0)
-    }
-    "return all slots if no slots are taken".in {
-      airport.initSlotAssignments(Map())
-      airport.availableSlots.shouldBe(100)
-    }
-    "return correct slots if some slots are taken".in {
-      airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 10, lowReputationLocalHqAirline.id -> 20))
-      airport.availableSlots.shouldBe(70)
-    }
-  }
-  "Airport.getAirlineSlotAssignment()".must {
-    "return correct slots assigned to corresponding airline".in {
-      airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 50, lowReputationLocalHqAirline.id -> 30))
-      airport.getAirlineSlotAssignment(highReputationLocalHqAirline.id).shouldBe(50)
-      airport.getAirlineSlotAssignment(lowReputationLocalHqAirline.id).shouldBe(30)
-    }
-    "return no slots if none assigned".in {
-      airport.initSlotAssignments(Map())
-      airport.getAirlineSlotAssignment(highReputationLocalHqAirline.id).shouldBe(0)
-      airport.getAirlineSlotAssignment(lowReputationLocalHqAirline.id).shouldBe(0)
-    }
-  }
-  "Airport.getMaxSlotAssignment()".must {
-    "no slots changes if all slots are taken".in {
-      airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 100))
-      airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(100)
-      airport.getMaxSlotAssignment(lowReputationLocalHqAirline).shouldBe(0)
-      airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe(0)
-      airport.getMaxSlotAssignment(lowReputationForeignHqAirline).shouldBe(0)
-    }
-    "no slots changes if the airline is no longer loved :<".in {
-      airport.initAirlineAppeals(Map())
-      airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 50))
-      airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(50)
-    }
-    "get more slots based on reputation".in {
-      airport.initSlotAssignments(Map())
-      airport.initAirlineAppeals(Map())
-      airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(airport.getMaxSlotAssignment(lowReputationLocalHqAirline)) //doesn't matter for local HQ airlines with low loyalty, they both get 10 at the minimum
-      airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe( > (airport.getMaxSlotAssignment(lowReputationForeignHqAirline))) //doesn't matter for local HQ airlines with low loyalty, they both get 10 at the minimum
-    }
-    "get some slots based on HQ". in {
-      airport.initSlotAssignments(Map())
-      airport.initAirlineAppeals(Map())
-      assert(airport.getMaxSlotAssignment(lowReputationLocalHqAirline) == Airport.HQ_GUARANTEED_SLOTS)
-    }
-    "get more slots based on loyalty".in {
-      airport.initSlotAssignments(Map())
-      airport.initAirlineAppeals(Map(highReputationForeignHqAirline.id -> AirlineAppeal(100, 0), lowReputationForeignHqAirline.id -> AirlineAppeal(20, 0)))
-      airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe( > (airport.getMaxSlotAssignment(lowReputationForeignHqAirline)))
-      assert(airport.getMaxSlotAssignment(highReputationForeignHqAirline) == Airport.NON_BASE_MAX_SLOT)
-    }
-    "get correct slot when in reserved range yet with available slots".in {
-      airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 50, lowReputationLocalHqAirline.id -> 45))
-      airport.initAirlineAppeals(Map(highReputationLocalHqAirline.id -> AirlineAppeal(100, 0)))
-      airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(50) //no change, into reserved range
-      airport.getPreferredSlotAssignment(highReputationLocalHqAirline).shouldBe(35) //airport want to reduce it to 20% empty so 45 + 35 = 80 = 80% of 100
-      airport.getMaxSlotAssignment(lowReputationLocalHqAirline).shouldBe(45) //no change, into reserved range
-      airport.getPreferredSlotAssignment(lowReputationLocalHqAirline).shouldBe(20) //HQ guaranteed slots
-      airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe(5) //new airline in open country
-      airport.getMaxSlotAssignment(lowReputationForeignHqAirline).shouldBe(5) //new airline in open country
-    }
-    "get correct slot when close to reserved range".in {
-      airport.initSlotAssignments(Map(highReputationLocalHqAirline.id -> 5, lowReputationLocalHqAirline.id -> 70))
-      airport.initAirlineAppeals(Map(highReputationLocalHqAirline.id -> AirlineAppeal(100, 0)))
-      airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(20) //HQ always get 20 at least  
-      airport.getPreferredSlotAssignment(highReputationLocalHqAirline).shouldBe(20) //HQ always get 20 at least
-      airport.getMaxSlotAssignment(lowReputationLocalHqAirline).shouldBe(70) //keep what u had...
-      airport.getPreferredSlotAssignment(lowReputationLocalHqAirline).shouldBe(20) 
-      airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe(5) //new airline in open country
-      airport.getMaxSlotAssignment(lowReputationForeignHqAirline).shouldBe(5) //new airline in open country
-    }
-    "get max slot limited by base type".in {
-      airport.initSlotAssignments(Map())
-      airport.initAirlineAppeals(Map(highReputationLocalHqAirline.id -> AirlineAppeal(100, 0), highReputationForeignHqAirline.id -> AirlineAppeal(100, 0)))
-      airport.getMaxSlotAssignment(highReputationLocalHqAirline).shouldBe(80)  // give up to reserved range
-      airport.getMaxSlotAssignment(highReputationForeignHqAirline).shouldBe(Airport.NON_BASE_MAX_SLOT)
-    }
-    "get slot base on openness".in {
-      assert(airport.getMaxSlotAssignment(highReputationForeignHqAirline) > otherAirport.getMaxSlotAssignment(highReputationLocalHqAirline))
-      assert(airport.getMaxSlotAssignment(lowReputationForeignHqAirline) > otherAirport.getMaxSlotAssignment(lowReputationLocalHqAirline))
-    }
   }
 }

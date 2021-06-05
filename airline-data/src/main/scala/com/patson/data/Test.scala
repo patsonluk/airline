@@ -39,6 +39,11 @@ object Test extends App {
 //  val olympics = EventSource.loadEvents().last.asInstanceOf[Olympics]
 //  val voteRounds = EventSimulation.simulateOlympicsVoteRounds(olympics)
 //  EventSource.saveOlympicsVoteRounds(olympics.id, voteRounds)
+  val allAirports = AirportSource.loadAllAirports(true).sortBy(_.power)
+  allAirports.reverse.foreach { airport =>
+    println(s"${airport.displayText} - ${AirportRating.rateAirport(airport).overallRating}")
+  }
+
 }
 
 

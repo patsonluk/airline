@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   guice,
   specs2 % Test,
   "com.typesafe.akka" %% "akka-remote" % "2.5.26",
-  "default" %% "airline-data" % "1.3-SNAPSHOT",
+  "default" %% "airline-data" % "2.0",
   "com.google.api-client" % "google-api-client" % "1.30.4",
   "com.google.oauth-client" % "google-oauth-client-jetty" % "1.30.4",
   "com.google.apis" % "google-api-services-gmail" % "v1-rev103-1.25.0",
@@ -26,7 +26,7 @@ libraryDependencies += "org.elasticsearch.client" % "elasticsearch-rest-high-lev
 
 
 
-resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
+resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.

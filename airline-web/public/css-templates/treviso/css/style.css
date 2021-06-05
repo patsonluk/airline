@@ -21,7 +21,7 @@ Designed & Handcrafted by Zan from ninetofive.me
 /******************************************************************
 	This is the CSS Reset
 ******************************************************************/
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -29,7 +29,7 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
 	font: inherit;
 	vertical-align: baseline;
 }
-article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+article, aside, details, figcaption, figure, header, hgroup, menu, nav, section {
 	display: block;
 }
 body {
@@ -117,13 +117,17 @@ h3 {
 	text-decoration: none;
 	font-size: 16px;
 }
+
 h4 {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
-	/*color: #454544;*/
 	text-decoration: none;
-	font-size: 15px;
+	font: bold 15px Arial, sans-serif;
+	color: var(--text-color);
+    text-shadow: var(--text-shadow);
+    margin-bottom: 5px;
 }
+
 h5 {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
@@ -423,27 +427,6 @@ ul.mainmenu li.active a {
 /******************************************************************
 	Footer
 ******************************************************************/
-footer.main {
-	height: 195px;
-	width: 100%;
-	margin-top: 60px;
-	text-align: center;
-}
-footer.main div.twitter {
-	width: 100%;
-	padding-bottom: 30px;
-	background-color: #343434;
-}
-footer.main h5.twitter {
-	color: #FFF;
-	line-height: 90px;
-	background-color: #343434;
-}
-footer.main h6.copyright {
-	color: #FFF;
-	line-height: 50px;
-	background-color: #272727;
-}
 
 /******************************************************************
 	Home Page
@@ -897,39 +880,21 @@ input {
 	font-size: 12px;
 /* 	width: 500px; */
 /* 	height: 50px; */
-	border: 1px solid #6093e7;
+	border: 1px solid var(--input-border-color);
 	outline: none;
 	border-radius: 3px;
 /* 	margin-bottom: 20px; */
 	text-align: center;
-}
-textarea {
-	line-height: 50px;
-	height: 200px;
-	font-size: 18px;
-	width: 500px;
-	border: 1px solid #6093e7;
-	outline: none;
-	border-radius: 3px;
-	margin-bottom: 20px;
-	text-align: center;
+	background-color: var(--input-background-color);
+	color: var(--input-color);
 }
 
-/******************************************************************
-	Footer
-******************************************************************/
-.footer {
-	width: 100%;
-	margin-top: 50px;
-	height: 50px;
-	text-align: center;
-	line-height: 50px;
-	background-color: #6093e7;
+textarea {
+	border: 1px solid var(--input-border-color);
+	background-color: var(--input-background-color);
+	color: var(--input-color);
 }
-.footer h6 {
-	line-height: 50px;
-	color: #FFF;
-}
+
 
 /******************************************************************
 	Mobile

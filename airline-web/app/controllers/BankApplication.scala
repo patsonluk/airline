@@ -15,21 +15,6 @@ import scala.math.BigDecimal.int2bigDecimal
 
 
 class BankApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-  implicit object LoanWrites extends Writes[Loan] {
-    //case class Loan(airlineId : Int, borrowedAmount : Long, interest : Long, var remainingAmount : Long, creationCycle : Int, loanTerm : Int, var id : Int = 0) extends IdObject
-    def writes(loan: Loan): JsValue = JsObject(List(
-      "airlineId" -> JsNumber(loan.airlineId),
-      "borrowedAmount" -> JsNumber(loan.borrowedAmount),
-      "interest" -> JsNumber(loan.interest),
-      "remainingAmount" -> JsNumber(loan.remainingAmount),
-      "earlyRepaymentFee" -> JsNumber(loan.earlyRepaymentFee),
-      "earlyRepayment" -> JsNumber(loan.earlyRepayment),
-      "remainingTerm" -> JsNumber(loan.remainingTerm),
-      "weeklyPayment" -> JsNumber(loan.weeklyPayment),
-      "creationCycle" -> JsNumber(loan.creationCycle),
-      "loanTerm" ->  JsNumber(loan.loanTerm),
-      "id" -> JsNumber(loan.id)))
-  }
   implicit object LoanInterestRateWrites extends Writes[LoanInterestRate] {
     def writes(rate: LoanInterestRate): JsValue = {
 
@@ -39,7 +24,7 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     }
   }
-  
+
   case class LoanRequest(requestedAmount: Long, requestedTerm: Int)
   val loanForm = Form(
     Forms.mapping(
@@ -49,12 +34,13 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   )
 
   def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request : AuthenticatedRequest[Any, Airline] =>
-    Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id)))
+    Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id))(Writes.traversableWrites(new LoanWrites(CycleSource.loadCycle()))))
   }
   
   def takeOutLoan(airlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
     val LoanRequest(requestedAmount, requestedTerm) = loanForm.bindFromRequest.get
     val loanReply = Bank.getMaxLoan(airlineId)
+    val currentCycle = CycleSource.loadCycle()
     if (loanReply.rejectionOption.isDefined) {
       BadRequest("Loan rejected [" + requestedAmount + "] reason [" + loanReply.rejectionOption.get + "]")
     } else {
@@ -63,11 +49,11 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       } else if (requestedAmount > loanReply.maxLoan) {
         BadRequest("Borrowing [" + requestedAmount + "] which is above limit [" + loanReply.maxLoan + "]")
       } else {
-        Bank.getLoanOptions(requestedAmount).find( loanOption => loanOption.loanTerm == requestedTerm) match {
+        Bank.getLoanOptions(requestedAmount).find( loanOption => loanOption.term == requestedTerm) match {
           case Some(loan) =>
-            BankSource.saveLoan(loan.copy(airlineId = request.user.id, creationCycle = CycleSource.loadCycle()))
-            AirlineSource.adjustAirlineBalance(request.user.id, loan.borrowedAmount)
-            Ok(Json.toJson(loan))
+            BankSource.saveLoan(loan.copy(airlineId = request.user.id, creationCycle = currentCycle))
+            AirlineSource.adjustAirlineBalance(request.user.id, loan.principal)
+            Ok(Json.toJson(loan)(new LoanWrites(currentCycle)))
           case None => BadRequest("Bad loan term [" + requestedTerm + "]")
         }
       }
@@ -78,7 +64,7 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val loanReply = Bank.getMaxLoan(request.user.id)
     if (loanAmount <= loanReply.maxLoan) {
       val options = Bank.getLoanOptions(loanAmount)
-      Ok(Json.toJson(options))  
+      Ok(Json.toJson(options)(Writes.traversableWrites(new LoanWrites(CycleSource.loadCycle()))))
     } else {
       BadRequest("Borrowing [" + loanAmount + "] which is above limit [" + loanReply.maxLoan + "]")
     }
@@ -95,16 +81,17 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
   
   def repayLoan(airlineId : Int, loanId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val currentCycle = CycleSource.loadCycle()
     BankSource.loadLoanById(loanId) match {
       case Some(loan) => { 
         if (loan.airlineId != request.user.id) {
           BadRequest("Cannot repay loan not owned by this airline") 
         } else {
           val balance = request.user.getBalance 
-          if (balance < loan.earlyRepayment) {
+          if (balance < loan.earlyRepayment(currentCycle)) {
             BadRequest("Not enough cash to repay this loan")
           } else {
-            AirlineSource.adjustAirlineBalance(request.user.id, -1 * loan.earlyRepayment)
+            AirlineSource.adjustAirlineBalance(request.user.id, -1 * loan.earlyRepayment(currentCycle))
             BankSource.deleteLoan(loanId)
             Ok
           }
