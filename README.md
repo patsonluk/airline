@@ -13,7 +13,7 @@ Version 2 alpha at https://v2.airline-club.com
 
 ## Setup
 1. install git :D of course
-2. clone this repo ;D
+2. clone this repo ;D , to setup for V2 use `git checkout v2`
 3. Install at least java development kit 8+
 4. The 2 main projects are : airline-web (all the front-end stuff) and airline-data (the backend simulation).(Optional) If you want to import them to Scala IDE (if you want to code), goto the folder of those and run `activator eclipse` to generate the eclipse project files and then import those projects into your IDE
 5. This runs on mysql db (install veresion 5.x, i heard newest version 8.x? might not work). install Mysql server and then create database `airline`, create a user `sa`, for password you might use `admin` or change it to something else. Make sure you change the corresponding password logic in the code to match that (https://github.com/patsonluk/airline/blob/master/airline-data/src/main/scala/com/patson/data/Constants.scala#L99)
