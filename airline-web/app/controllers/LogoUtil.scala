@@ -24,13 +24,22 @@ object LogoUtil {
   }
   
   def validateUpload(logoFile : Path) : Option[String] = {
-    val image = ImageIO.read(logoFile.toFile)
-    println("!!!!!!!!!!!!!!!!!!!!" + image.getHeight + " X " + image.getWidth)
-    if (image.getHeight() != imageHeight || image.getWidth() != imageWidth) {
-      Some("Image should be " + imageWidth + "px wide and " + imageHeight + "px tall") 
-    } else {
-      None
+    val imageInputStream = ImageIO.createImageInputStream(logoFile.toFile)
+    val readers = ImageIO.getImageReaders(imageInputStream)
+    if (!readers.hasNext) {
+      return Some("Cannot identify image format")
     }
+    val reader = readers.next();
+    val format = reader.getFormatName
+    if (!format.equalsIgnoreCase("png")) {
+      return Some(s"Invalid image format: $format")
+    }
+
+    val image = ImageIO.read(logoFile.toFile)
+    if (image.getHeight() != imageHeight || image.getWidth() != imageWidth) {
+      return Some("Image should be " + imageWidth + "px wide and " + imageHeight + "px tall")
+    }
+    return None
   }
   
   def getBlankLogo() = {
