@@ -253,7 +253,7 @@ object AirlineSimulation {
       //campaign/ads
         val advertisementCost = DelegateSource.loadCampaignTasksByAirlineId(airline.id).map(_.cost).sum
         if (advertisementCost > 0) {
-          totalCashExpense += advertisementCost * -1
+          totalCashExpense += advertisementCost
         }
         othersSummary.put(OtherIncomeItemType.ADVERTISEMENT, advertisementCost * -1)
 
