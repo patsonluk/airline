@@ -335,7 +335,7 @@ object LinkComment {
           if (random == 0) {
             Some("The flight attendants are helpful!")
           } else if (random == 1) {
-            Some("This seat is pretty comfy for a short fight like this!")
+            Some("This seat is pretty comfy for a short flight like this!")
           } else {
             Some("The entertainment options are decent!")
           }
