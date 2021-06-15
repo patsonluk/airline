@@ -480,7 +480,8 @@ object LinkSource {
   def updateLink(link : Transport) = {
     //open the hsqldb
     val connection = Meta.getConnection()
-    val existingLink = loadFlightLinkById(link.id)
+    val existingLink = loadFlightLinkById(link.id, ID_LOAD) //use ID load to get the simple freq/capacity of previous state (even tho some airplanes might have just arrived)
+
     val preparedStatement = connection.prepareStatement("UPDATE " + LINK_TABLE + " SET price_economy = ?, price_business = ?, price_first = ?, capacity_economy = ?, capacity_business = ?, capacity_first = ?, quality = ?, duration = ?, frequency = ?, flight_type = ?, flight_number = ?, airplane_model = ?, last_update = ? WHERE id = ?")
 
     try {
