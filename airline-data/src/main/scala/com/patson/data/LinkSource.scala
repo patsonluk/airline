@@ -741,20 +741,24 @@ object LinkSource {
 
     val link = existingLinkOption.getOrElse(newLinkOption.get)
 
+    val fromAirport = AirportCache.getAirport(link.from.id).get //in some case it could be just ID, need to reload
+    val toAirport =  AirportCache.getAirport(link.to.id).get //in some case it could be just ID, need to reload
+    val airline = AirlineCache.getAirline(link.airline.id, true).get
+
     val entry = LinkChange(
       linkId = link.id,
       price = newPrice,
       priceDelta = newPrice - existingPrice,
       capacity = newCapacity,
       capacityDelta = newCapacity - existingCapacity,
-      fromAirport = link.from,
-      toAirport = link.to,
-      fromCountry = Country.fromCode(link.from.countryCode),
-      toCountry = Country.fromCode(link.to.countryCode),
-      fromZone = link.from.zone,
-      toZone = link.to.zone,
-      airline = link.airline,
-      alliance = link.airline.getAllianceId().map(Alliance.fromId(_)),
+      fromAirport = fromAirport,
+      toAirport = toAirport,
+      fromCountry = Country.fromCode(fromAirport.countryCode),
+      toCountry = Country.fromCode(toAirport.countryCode),
+      fromZone = fromAirport.zone,
+      toZone = toAirport.zone,
+      airline = airline,
+      alliance = airline.getAllianceId().map(Alliance.fromId(_)),
       frequency = newLinkOption.map(_.frequency).getOrElse(0),
       flightNumber = link.flightNumber,
       airplaneModel = link.getAssignedModel().getOrElse(Model.fromId(0)),
