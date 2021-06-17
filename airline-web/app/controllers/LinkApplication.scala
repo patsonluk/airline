@@ -840,7 +840,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     existingLink match {
       case None => //new link
         //validate there's no existing link with opposite direction
-        LinkSource.loadFlightLinkByAirportsAndAirline(toAirport.id, fromAirport.id, airline.id).foreach {
+        LinkSource.loadFlightLinkByAirportsAndAirline(toAirport.id, fromAirport.id, airline.id).foreach { _ =>
           return Some(("Cannot create this route as your airline already has one flying between these 2 airports"), DUPLICATED_LINK)
         }
 
