@@ -827,7 +827,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   object RejectionType extends Enumeration {
     type RejectionType = Value
-    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH, NEGOTIATION_COOL_DOWN = Value
+    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH, NEGOTIATION_COOL_DOWN, DUPLICATED_LINK = Value
   }
 
   def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, existingLink : Option[Link]) : Option[(String, RejectionType.Value)]= {
@@ -839,6 +839,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     existingLink match {
       case None => //new link
+        //validate there's no existing link with opposite direction
+        LinkSource.loadFlightLinkByAirportsAndAirline(toAirport.id, fromAirport.id, airline.id).foreach {
+          return Some(("Cannot create this route as your airline already has one flying between these 2 airports"), DUPLICATED_LINK)
+        }
+
         //validate from airport is a base
         val base = fromAirport.getAirlineBase(airline.id) match {
           case None => return Some(("Cannot fly from this airport, this is not a base!", NO_BASE))
