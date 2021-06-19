@@ -637,12 +637,63 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 }
 
 
+function stringHashCode(s) {
+  var h = 0, l = s.length, i = 0;
+  if ( l > 0 )
+    while (i < l)
+      h = (h << 5) - h + s.charCodeAt(i++) | 0;
+  return h;
+};
+
+var rgbMask = 0xff
+function colorFromString(s) {
+  var hashCode = stringHashCode(s)
+  var r = (hashCode & rgbMask)
+  hashCode = hashCode >> 2
+  var g = (hashCode & rgbMask)
+  hashCode = hashCode >> 2
+  var b = (hashCode & rgbMask)
+  //adjust
+  if (r < 64 && g < 64 && b < 64) { //too dark
+    r *= 2
+    g *= 2
+    b *= 2
+  }
+
+  r = r.toString(16)
+  g = g.toString(16)
+  b = b.toString(16)
+
+
+  const rr = (r.length < 2 ? '0' : '') + r
+  const gg = (g.length < 2 ? '0' : '') + g
+  const bb = (b.length < 2 ? '0' : '') + b
+
+    return `#${rr}${gg}${bb}`
+}
+
+var defaultPieColors = {
+    "Business" : "#2e287d",
+    "Tourist" : "#fc7a57",
+    "Olympics" : "#c8d143",
+    "Budget": "#c8d143",
+    "Carefree": "#b287a3",
+    "Swift": "#ff5a5f",
+    "Comprehensive": "#9bf3f0",
+    "Brand Conscious": "#fc7a57",
+    "Elite": "#2e287d",
+    "departure/arrival passengers" : "#FC7A57",
+    "transit passengers": "#9BF3F0",
+}
+
+
 function plotPie(dataSource, currentKey, container, keyName, valueName) {
 	container.children(':FusionCharts').each((function(i) {
 		  $(this)[0].dispose();
 	}))
 	
 	var data = []
+
 	$.each(dataSource, function(key, dataEntry) {
 		var entry = {
 			label : dataEntry[keyName],
@@ -651,6 +702,10 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 		
 		if (dataEntry.color) {
 			entry.color = dataEntry.color
+		} else if (defaultPieColors[dataEntry[keyName]]) {
+		    entry.color = defaultPieColors[dataEntry[keyName]]
+		} else {
+		    entry.color = colorFromString(dataEntry[keyName])
 		}
 		
 		if (currentKey && dataEntry[keyName] == currentKey) {
@@ -664,7 +719,9 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 		data.push(entry)
 	})
 
+    //sort by value for less chaotic arrangement
 	data.sort(function(a, b){ return a.value - b.value } );
+
 
 	var ref = container.insertFusionCharts({
 		type: 'pie2d',
