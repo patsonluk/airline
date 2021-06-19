@@ -663,6 +663,9 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 //		}
 		data.push(entry)
 	})
+
+	data.sort(function(a, b){ return a.value - b.value } );
+
 	var ref = container.insertFusionCharts({
 		type: 'pie2d',
 	    width: '100%',
