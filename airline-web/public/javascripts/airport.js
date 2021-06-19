@@ -631,8 +631,6 @@ function addMarkers(airports) {
 			  if (activeAirline) {
 				  if (!activeAirline.headquarterAirport) {
 					  $("#planToAirportButton").hide()
-				  } else if (this.airport.id == activeAirline.headquarterAirport.airportId) {
-					  $("#planToAirportButton").hide()
 				  } else {
 					  $("#planToAirportButton").show()
 				  }
