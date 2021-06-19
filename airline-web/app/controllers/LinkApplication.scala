@@ -862,7 +862,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //            return Some((s"Cannot fly Intercontinental to this ${if (toAirport.isGateway()) "Gateway" else "Non-gateway"} airport until your airline attain title ${Title.description(requiredTitle)} with ${CountryCache.getCountry(toCountryCode).get.name}", TITLE_REQUIREMENT))
 //          }
 //        }
-
+        if (fromAirport == toAirport) {
+          return Some("Departure and Destination airports cannot be the same. Click and select a different destination airport.", DISTANCE)
+        }
 
         //check distance
         val distance = Computation.calculateDistance(fromAirport, toAirport)
