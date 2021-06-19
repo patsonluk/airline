@@ -5,38 +5,43 @@ var officePeriod;
 
 var logoUploaderObj;
 var liveryUploaderObj
-var airlineColorPicker;
 
 $( document ).ready(function() {
 	loadLogoTemplates()
 //	$('#colorpicker1').farbtastic($('#logoColor1'));
 //	$('#colorpicker2').farbtastic($('#logoColor2'));
 	
-	var $box = $('#colorPicker1');
-    $box.tinycolorpicker();
-    var picker = $('#colorPicker1').data("plugin_tinycolorpicker");
-    picker.setColor("#000000");
-    $box.bind("change", function() {
-    			generateLogoPreview()
-    	    });
-    
-    $box = $('#colorPicker2');
-    $box.tinycolorpicker();
-    picker = $('#colorPicker2').data("plugin_tinycolorpicker");
-    picker.setColor("#FFFFFF");
-    
-    $box.bind("change", function() {
-		generateLogoPreview()
+//	var $box = $('#colorPicker1');
+//    $box.tinycolorpicker();
+//    var picker = $('#colorPicker1').data("plugin_tinycolorpicker");
+//    picker.setColor("#000000");
+//    $box.bind("change", function() {
+//        generateLogoPreview()
+//    });
+//
+//    $box = $('#colorPicker2');
+//    $box.tinycolorpicker();
+//    picker = $('#colorPicker2').data("plugin_tinycolorpicker");
+//    picker.setColor("#FFFFFF");
+//
+//    $box.bind("change", function() {
+//		generateLogoPreview()
+//    });
+
+    $('#logoModal .picker.color1').val("#000000")
+    $('#logoModal .picker.color2').val("#FFFFFF")
+
+    $('#logoModal .picker').change(function() {
+        generateLogoPreview()
     });
+
     
-    
-    $box = $('#colorPicker3');
-    $box.tinycolorpicker();
-    airlineColorPicker = $('#colorPicker3').data("plugin_tinycolorpicker");
-     
-    $box.bind("change", function() {
-		setAirlineColor()
+    var $airlineColorPicker = $('#officeCanvas .airlineColor .picker')
+    $airlineColorPicker.change(function() {
+        setAirlineColor($(this).val())
     });
+
+
 
     populateBaseDetailsModal()
 })
@@ -154,10 +159,11 @@ function updateAirlineBases() {
 }
 
 function updateAirlineColorPicker() {
+    var $colorPicker = $('#officeCanvas .airlineColor .picker')
 	if (airlineColors[activeAirline.id]) {
-		airlineColorPicker.setColor(airlineColors[activeAirline.id]);
+		$colorPicker.val(airlineColors[activeAirline.id]);
     } else {
-    	airlineColorPicker.setColor("#FFFFFF");
+    	$colorPicker.val("#FFFFFF");
 	}
 }
 
@@ -542,10 +548,11 @@ function selectLogoTemplate(templateIndex) {
 }
 
 function generateLogoPreview() {
-	var logoTemplate = $('#logoTemplateIndex').val() 
-	var color1 = $('#colorPicker1 .colorInput').val()
-	var color2 = $('#colorPicker2 .colorInput').val()
-	
+	var logoTemplate = $('#logoTemplateIndex').val()
+
+	var color1 = $('#logoModal .picker.color1').val()
+    var color2 = $('#logoModal .picker.color2').val()
+
 	var url = "logos/preview?templateIndex=" + logoTemplate + "&color1=" + encodeURIComponent(color1) + "&color2=" + encodeURIComponent(color2)
 	$('#logoPreview').empty();
 	$('#logoPreview').append('<img src="' + url + '">')
@@ -553,8 +560,8 @@ function generateLogoPreview() {
 
 function setAirlineLogo() {
 	var logoTemplate = $('#logoTemplateIndex').val() 
-	var color1 = $('#colorPicker1 .colorInput').val()
-	var color2 = $('#colorPicker2 .colorInput').val()
+	var color1 = $('#logoModal .picker.color1').val()
+    var color2 = $('#logoModal .picker.color2').val()
 	
 	var url = "airlines/" + activeAirline.id + "/set-logo?templateIndex=" + logoTemplate + "&color1=" + encodeURIComponent(color1) + "&color2=" + encodeURIComponent(color2)
     $.ajax({
@@ -572,9 +579,7 @@ function setAirlineLogo() {
 	});
 }
 
-function setAirlineColor() {
-	var color = $('#colorPicker3 .colorInput').val()
-	
+function setAirlineColor(color) {
 	var url = "airlines/" + activeAirline.id + "/set-color?color=" + encodeURIComponent(color)
     $.ajax({
 		type: 'GET',

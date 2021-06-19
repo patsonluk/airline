@@ -57,9 +57,6 @@
 	<script type="text/javascript" src='@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")' defer></script>
 	<script src='@routes.Assets.versioned("javascripts/plot-fusioncharts.js")' defer></script>
 	
-	<script type="text/javascript" src='@routes.Assets.versioned("tinycolorpicker/jquery.tinycolorpicker.js")' defer></script>
-	<link rel="stylesheet" href='@routes.Assets.versioned("tinycolorpicker/tinycolorpicker.css")' type="text/css" />
-
 	<script type="text/javascript" src='@routes.Assets.versioned("progress-bar/progress-bar.js")' defer></script>
 	  <link rel="stylesheet" href='@routes.Assets.versioned("progress-bar/progress-bar.css")' type="text/css" />
 	
@@ -1754,17 +1751,12 @@
 											</span>
                                         </div>
                                     </div>
-                                    <div class="table-row">
-                                        <div class="cell label">Airline Color:</div>
-                                        <div class="cell value">
-                                            <div id="colorPicker3">
-                                                <a class="color"><div class="colorInner"></div></a>
-                                                <div class="track"></div>
-                                                <ul class="dropdown"><li></li></ul>
-                                                <input type="hidden" class="colorInput">
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <div class="table-row airlineColor">
+										<div class="cell label">Airline Color:</div>
+										<div class="cell value">
+											<input type="color" class="picker">
+										</div>
+									</div>
                                     <div class="table-row">
                                         <div class="cell label">Destinations:</div>
                                         <div id="destinations" class="cell value"></div>
@@ -3544,18 +3536,13 @@
 	    <span class="close" onclick="closeModal($('#logoModal'))">&times;</span>
 	    <h4>Logo Templates</h4>
 	    <div id="logoTemplates"></div>
+	    <div style="clear:both;"></div>
 	    <input type="hidden" id="logoTemplateIndex"/>
-	    <div id="colorPicker1">
-	        <a class="color">Color 1:<div class="colorInner"></div></a>
-	        <div class="track"></div>
-	        <ul class="dropdown"><li></li></ul>
-	        <input type="hidden" class="colorInput">
+	    <div>
+	        Color 1 : <input type="color" class="picker color1">
 	    </div>
-		<div id="colorPicker2">
-	        <a class="color">Color 2:<div class="colorInner"></div></a>
-	        <div class="track"></div>
-	        <ul class="dropdown"><li></li></ul>
-	        <input type="hidden" class="colorInput"/>
+		<div>
+	        Color 2 : <input type="color" class="picker color2">
 	    </div>
 	    <h4>Preview</h4>
 	    <div id="logoPreview" style="height: 30px">
