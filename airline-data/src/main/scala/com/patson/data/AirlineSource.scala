@@ -87,7 +87,10 @@ object AirlineSource {
           val allianceMembers = AllianceSource.loadAllianceMemberByAirlines(airlines.toList)
           airlines.foreach { airline =>
             allianceMembers.get(airline) match { //i don't like foreach or fold... hard to read
-              case Some(allianceMember) => airline.setAllianceId(allianceMember.allianceId)
+              case Some(allianceMember) =>
+                if (allianceMember.role != AllianceRole.APPLICANT) {
+                  airline.setAllianceId(allianceMember.allianceId)
+                }
               case None => //do nothing
             }
           }
@@ -565,7 +568,9 @@ object AirlineSource {
           val airlineId = resultSet.getInt("airline")
           val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
           AllianceSource.loadAllianceMemberByAirline(airline).foreach { member =>
-            airline.setAllianceId(member.allianceId)
+            if (member.role != AllianceRole.APPLICANT) {
+              airline.setAllianceId(member.allianceId)
+            }
           }
           
           //val airport = Airport.fromId(resultSet.getInt("airport"))
@@ -689,7 +694,9 @@ object AirlineSource {
         val airlineId = resultSet.getInt("airline")
         val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
         AllianceSource.loadAllianceMemberByAirline(airline).foreach { member =>
-          airline.setAllianceId(member.allianceId)
+          if (member.role != AllianceRole.APPLICANT) {
+            airline.setAllianceId(member.allianceId)
+          }
         }
 
         //val airport = Airport.fromId(resultSet.getInt("airport"))

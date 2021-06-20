@@ -213,13 +213,13 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
 
-  object AllianceAirlinesWrites extends Writes[List[Airline]] { //a bit more info -nothing confidential tho! since this is accessible to public
-    def writes(airlines: List[Airline]): JsValue =  {
+  object AllianceAirlinesWrites extends Writes[List[(Airline, AllianceRole.Value)]] { //a bit more info -nothing confidential tho! since this is accessible to public
+    def writes(entries: List[(Airline, AllianceRole.Value)]): JsValue =  {
       var result = Json.arr()
-      airlines.foreach { airline =>
+      entries.foreach { case(airline, role) =>
         var airlineJson = Json.toJson(airline).asInstanceOf[JsObject]
         //then add base info
-        airlineJson = airlineJson + ("bases", Json.toJson(airline.getBases()))
+        airlineJson = airlineJson + ("bases", Json.toJson(airline.getBases())) + ("role" -> JsString(role.toString))
         result = result.append(airlineJson)
       }
       result
@@ -231,10 +231,14 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       case None => NotFound("Alliance with " + allianceId + " is not found")
       case Some(alliance) => {
         val links = alliance.members.flatMap { allianceMember =>
-          LinkSource.loadFlightLinksByAirlineId(allianceMember.airline.id)
+          if (allianceMember.role != AllianceRole.APPLICANT) {
+            LinkSource.loadFlightLinksByAirlineId(allianceMember.airline.id)
+          } else {
+            List.empty
+          }
         }
 
-        Ok(Json.obj("links" -> Json.toJson(links)(SimpleLinkWrites), "members" -> Json.toJson(alliance.members.map(_.airline))(AllianceAirlinesWrites)))
+        Ok(Json.obj("links" -> Json.toJson(links)(SimpleLinkWrites), "members" -> Json.toJson(alliance.members.map(member => (member.airline, member.role)))(AllianceAirlinesWrites)))
       }
     }
   }

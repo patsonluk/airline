@@ -551,7 +551,9 @@ function showAllianceMap() {
 				})
 				var allianceBases = []
 				 $.each(result.members, function(index, airline) {
-                    $.merge(allianceBases, airline.bases)
+				    if (airline.role != "APPLICANT") {
+				        $.merge(allianceBases, airline.bases)
+                    }
                 })
 
 				var airportMarkers = updateAirportBaseMarkers(allianceBases, alliancePaths)
