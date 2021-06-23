@@ -1,6 +1,5 @@
 package controllers
 
-import java.util.Random
 import com.patson.AirportSimulation
 import com.patson.data._
 import com.patson.model.Scheduling.{TimeSlot, TimeSlotStatus}
@@ -9,13 +8,13 @@ import com.patson.util.{AirlineCache, AirportCache, ChampionUtil}
 import controllers.AuthenticationObject.AuthenticatedAirline
 import controllers.NegotiationUtil.FlightTypeGroup
 import controllers.WeatherUtil.{Coordinates, Weather}
-
-import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms.{mapping, number}
 import play.api.libs.json.{Json, _}
 import play.api.mvc._
 
+import java.util.Random
+import javax.inject.Inject
 import scala.collection.mutable.{ListBuffer, Set}
 import scala.math.BigDecimal.RoundingMode
 
@@ -509,14 +508,17 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
             case None => topAirlineIds.toList
           }
 
+          val referenceCycle = AirportSimulation.getHistoryCycle(currentCycle, -2) //get something further in the past for more stable number
           val processedEntries : List[(Int, List[LoyalistHistory])] = historyEntries.toList.sortBy(_._1).map {
             case((cycle, entries)) =>
               val entriesByAirlineId = entries.map(entry => (entry.entry.airline.id, entry)).toMap
               val paddedEntries = reportingAirlineIds.map {  reportingAirlineId =>
                 entriesByAirlineId.getOrElse(reportingAirlineId, LoyalistHistory(Loyalist(airport, AirlineCache.getAirline(reportingAirlineId).get, 0), cycle)) //pad with zero entries
               }
-              val cycleDelta = currentCycle - cycle
-              if (cycleDelta > 1 &&  cycleDelta <= AirportSimulation.LOYALIST_HISTORY_SAVE_INTERVAL + 1) { //then it is the closest historical entry from current turn
+
+
+              if (cycle == referenceCycle) {
+                val cycleDelta = currentCycle - cycle
                 reportingAirlineIds.foreach { reportingAirlineId =>
                   val previousLoyalistCount = entriesByAirlineId.get(reportingAirlineId).map(_.entry.amount).getOrElse(0)
                   airlineDeltas.append((AirlineCache.getAirline(reportingAirlineId).get, (currentLoyalistByAirlineId.get(reportingAirlineId).map(_.amount).getOrElse(0) - previousLoyalistCount) / cycleDelta))
