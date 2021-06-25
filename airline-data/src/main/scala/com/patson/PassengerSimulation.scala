@@ -534,7 +534,7 @@ object PassengerSimulation {
     //val allVertices = allVerticesSource.map { _.id }
     
     val distanceMap = new java.util.HashMap[Int, Double]()
-    val predecessorMap = new java.util.HashMap[Int, LinkConsideration]()
+    var predecessorMap = new java.util.HashMap[Int, LinkConsideration]()
     allVertices.foreach { vertex => 
       if (vertex == from.id) {
         distanceMap.put(vertex, 0)
@@ -552,6 +552,22 @@ object PassengerSimulation {
     for (i <- 0 until maxIteration) {
       //val updatingLinks = ArrayBuffer[LinkConsideration]()
       val linkConsiderationsIterator = linkConsiderations.iterator()
+      val newPredecessorMap = new java.util.HashMap[Int, LinkConsideration](predecessorMap)
+      //create a clone of last run, we update this map, but for lookup we use the previous one
+      //this is necessary to avoid "previous leg replacement problem"
+      //for example on first iteration, there is F0, T1 and T2. If there are links:
+      // Link Consideration 1 : Airline A, F0 -> T1, cost 50
+      // Link Consideration 2 : Airline A, T1 -> T2, cost 50
+      // Link Consideration 3 : Airline B, F0 -> T1, cost 40
+      //If we do NOT use a clone and lookup the current predecessorMap, from F0
+      // It will be:
+      // 1. Process Link Consideration 1, predecessorMap: T1 -> (Link 1, 50)
+      // 2. Process Link Consideration 2, predecessorMap: T1 -> (Link 1, 50), T2 -> (Link 2, 50 + 50 + Connection cost of SAME airline)
+      // 3. Process Link Consideration 3, predecessorMap: T1 -> (Link 3, 40), T2 -> (Link 2, 50 + 50 + Connection cost of SAME airline)
+      // At the end it will be wrong as solution for route from F0 to T2, will be Link 3 and Link 2 while the final cost is incorrect
+      // This also create the shuttle from other alliance problem
+      //The fix for this is never use the current predecessorMap for lookup, instead, use the previous map
+
       while (linkConsiderationsIterator.hasNext) {
         val linkConsideration = linkConsiderationsIterator.next()
         val predecessorLinkConsideration = predecessorMap.get(linkConsideration.from.id)
@@ -601,11 +617,12 @@ object PassengerSimulation {
 
             if (newCost < distanceMap.get(linkConsideration.to.id)) {
               distanceMap.put(linkConsideration.to.id, newCost)
-              predecessorMap.put(linkConsideration.to.id, linkConsideration.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
+              newPredecessorMap.put(linkConsideration.to.id, linkConsideration.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
             }
           }
         }
       }
+      predecessorMap = newPredecessorMap
     }
 
     val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]()
