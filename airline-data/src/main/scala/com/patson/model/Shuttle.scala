@@ -16,6 +16,10 @@ case class Shuttle(from : Airport, to : Airport, airline: Airline, distance : In
   override var minorDelayCount : Int = 0
   override var majorDelayCount : Int = 0
   override var cancellationCount : Int = 0
+
+  override def toString() = {
+    s"Shuttle $id; ${airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); distance $distance"
+  }
 }
 
 object Shuttle {
