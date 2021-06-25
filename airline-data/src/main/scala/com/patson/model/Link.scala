@@ -136,7 +136,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
   
   override def toString() = {
-    s"$id; ${airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); distance $distance; freq $frequency; capacity $capacity; price $price"
+    s"Flight $id; ${airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); distance $distance; freq $frequency; capacity $capacity; price $price"
   }
 
   lazy val schedule : Seq[TimeSlot] = Scheduling.getLinkSchedule(this)
@@ -235,7 +235,7 @@ case class LinkConsideration(link : Transport, cost : Double, linkClass : LinkCl
     def to : Airport = if (inverted) link.from else link.to
     
     override def toString() : String = {
-      this.getClass.getSimpleName + "(" + from.name + " => " + to.name + " " + linkClass + " (inverted?) " + inverted + ")"
+      s"Consideration (${from.name} =>  ${to.name}  ${linkClass} - $link)"
     }
 }
 

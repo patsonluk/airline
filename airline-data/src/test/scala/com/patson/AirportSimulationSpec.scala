@@ -422,8 +422,10 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
         allAirports,
         Map((passengerGroup, airport2, Route(List(goodAirline1Link1), 0)) -> 1000),
         Map(1 -> List(Loyalist(airport1, airline1, airport1.population.toInt - 50))))
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount >= airport1.population.toInt - 50)
-      assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount <= airport1.population.toInt)
+      if (updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).isDefined) { //possible that there's no change
+        assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount >= airport1.population.toInt - 50)
+        assert(updatingLoyalists.find(loyalist => loyalist.airport.id == airport1.id && loyalist.airline.id == airline1.id).get.amount <= airport1.population.toInt)
+      }
     }
 
     "No Gain in loyalists if there's only one airline and it's already at max".in {

@@ -47,7 +47,15 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
   }
 
   lazy val utilizationRate : Double = {
-    (Airplane.MAX_FLIGHT_MINUTES - availableFlightMinutes).toDouble / Airplane.MAX_FLIGHT_MINUTES
+    testUtilizationRate match {
+      case Some(rate) => rate
+      case None => (Airplane.MAX_FLIGHT_MINUTES - availableFlightMinutes).toDouble / Airplane.MAX_FLIGHT_MINUTES
+    }
+  }
+
+  var testUtilizationRate : Option[Double] = None
+  def setTestUtilizationRate(rate : Double): Unit = {
+    testUtilizationRate = Some(rate)
   }
 
 //  lazy val remainingFlightHour = usableFlightHour - linkAssignments.map {
