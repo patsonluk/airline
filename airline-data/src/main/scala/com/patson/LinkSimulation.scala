@@ -229,7 +229,7 @@ object LinkSimulation {
               val ascendTime, descendTime = (flightLink.duration / 2)
               (model.fuelBurn * 10 * ascendTime + model.fuelBurn * descendTime) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount)
             } else {
-              (model.fuelBurn * 10 * 45 + model.fuelBurn * (flightLink.duration - 30)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) //first 60 minutes huge burn, then cruising at 1/4 the cost
+              (model.fuelBurn * 10 * 45 + model.fuelBurn * (flightLink.duration - 45)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) //first 45 minutes huge burn, then cruising at 1/10 the cost
             } * (0.7 + 0.3 * loadFactor)).toInt //at 0 LF, 70% fuel cost
           case None => 0
         }
