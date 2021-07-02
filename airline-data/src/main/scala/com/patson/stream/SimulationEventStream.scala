@@ -54,6 +54,7 @@ object SimulationEventStream{
         if (elapsedFraction > 1) { //if this time is slower than average, it could be bigger than 1
           elapsedFraction = 1
         }
+        println(s"Return cycle info to ${sender()}")
         sender() ! (CycleInfo(currentCycle, elapsedFraction, cycleDurationAverage), None)
       case Terminated(actor) =>
         println("Watched actor is terminated " + sender().path)

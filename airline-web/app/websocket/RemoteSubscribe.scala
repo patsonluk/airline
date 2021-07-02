@@ -8,8 +8,9 @@ import com.typesafe.config.ConfigFactory
 
 import java.util.concurrent.TimeUnit
 import scala.collection.mutable
+import scala.util.{Failure, Success}
 
-//Instead of maintaining a new actor connection whenever someone logs in, we will only maintain one connnection between sim and web app, once sim finishes a cycle, it will send one message the the web app actor, and the web app actor will relay the message in an event stream, which is subscribed by each login section.
+//Instead of maintaining a new actor connection whenever someone logs in, we will only maintain one connection between sim and web app, once sim finishes a cycle, it will send one message the the web app actor, and the web app actor will relay the message in an event stream, which is subscribed by each login section.
 //
 //For new login, the web app local actor will directly send one message to the remote actor, and the remote actor will in this case reply directly to the web app local actor - this is the ONLY time that the 2 talk directly
 sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
@@ -26,7 +27,7 @@ sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
 sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor { //only 1 locally, fan out message to all local actors to reduce connections required
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
-      println(s"Local main action received topic $topic")
+      println(s"Local main actor received topic $topic, re-publishing to ${context.system}")
       context.system.eventStream.publish(topic, payload) //relay to local event stream... since i don't know if I can subscribe to remote event stream...
     case Resubscribe(remoteActor) =>
       println(self.path.toString +  " Attempting to resubscribe")
@@ -127,10 +128,15 @@ object RemoteSubscribe {
     val localSubscriber = system.actorOf(props, name = getLocalSubscriberName(subscriberId))
     system.eventStream.subscribe(localSubscriber, classOf[(SimulationEvent, Any)])
 
-    println("Subscriber " + localSubscriber.path + " subscribed")
+    println("Subscriber " + localSubscriber.path + " subscribed to system event stream")
 
     //now get updated cycle info once
-    remoteMainActor.!("getCycleInfo")(localSubscriber)
+    remoteMainActor.resolveOne()(Timeout(5000, TimeUnit.MILLISECONDS)).onComplete {
+      case Success(actor) => actor.!("getCycleInfo")(localSubscriber)
+      case Failure(exception) =>
+        println(s"Remote main actor is no longer found... $exception")
+    }
+
   }
 
 
