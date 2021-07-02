@@ -47,7 +47,8 @@ object BroadcastActor {
             actor ! message
           case Failure(ex) =>
             println(s"Still failed after using $actorPath. Giving up...")
-            ex.printStackTrace()
+            println(ex.getMessage());
+            println(ex);
         }
     }
   }
