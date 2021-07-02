@@ -198,6 +198,8 @@ function loadUser(isLogin) {
 	    error: function(jqXHR, textStatus, errorThrown) {
 	    	if (jqXHR.status == 401) {
 	    		showFloatMessage("Incorrect username or password")
+	    	} else if (jqXHR.status == 400) {
+	    		showFloatMessage("Session expired. Please log in again")
 	    	} else {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);

@@ -22,14 +22,23 @@ import com.patson.data.AirlineSource
 import com.patson.util.AirlineCache
 
 object AuthenticationObject {
-//  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), _ => 
-//    Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured Area"""")) {
-//  }
+  //  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), _ =>
+  //    Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured Area"""")) {
+  //  }
   val defaultBodyParser = new BodyParsers.Default
-  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), defaultBodyParser)
-  
-  case class AuthenticatedAirline(airlineId : Int) extends AuthenticatedBuilder(req => getUserAirlineFromRequest(req, airlineId), defaultBodyParser)
-  
+
+  object Authenticated extends AuthenticatedBuilder(req => getUserFromRequest(req), defaultBodyParser, unauthorizedHandler)
+
+  case class AuthenticatedAirline(airlineId : Int) extends AuthenticatedBuilder(req => getUserAirlineFromRequest(req, airlineId), defaultBodyParser, unauthorizedHandler)
+
+  val unauthorizedHandler = (request : RequestHeader) =>
+    if (!request.session.isEmpty && request.session.get("userToken").isDefined) {
+      BadRequest("User token is invalid")
+    } else {
+      Unauthorized("Invalid login")
+    }
+
+
   def getUserFromRequest(request : RequestHeader) : Option[User] = {
     if (!request.session.isEmpty && request.session.get("userToken").isDefined) {
       request.session.get("userToken").foreach{ userToken =>
@@ -49,7 +58,7 @@ object AuthenticationObject {
               if (Authentication.authenticate(userName, password)) {
                 UserSource.loadUserByUserName(userName)
               } else {
-                println("invalid userName and password on user " + userName)
+                println("Invalid userName and password on user " + userName)
                 None
               }
             case _ => None
