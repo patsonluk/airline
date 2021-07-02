@@ -1004,10 +1004,13 @@ function populateBaseDetailsModal() {
 
 	    success: function(result) {
 	        var $table = $('#baseDetailsModal .scaleDetails')
-
+            var $remarks = $('#baseDetailsModal .groupRemarks')
+            $remarks.empty()
+            var index = 1
 	        $.each(result.groupInfo, function(group, description) {
-                var $header = $table.find('.table-header .cell[data-group="' + group + '"]')
-                addTooltip($header, description, {'width' : '200px'})
+//                var $header = $table.find('.table-header .cell[data-group="' + group + '"]')
+//                addTooltip($header, description, {'width' : '200px'})
+                $remarks.append("<h5><span class='dot'>Freq Cap " + (index ++) +  " - " + description + "</span></h5>")
             })
 
 	        $table.children("div.table-row").remove()

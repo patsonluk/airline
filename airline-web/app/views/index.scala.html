@@ -1082,7 +1082,28 @@
 											<div class="label"><h5>Office Staff: (req/cap)</h5></div>
 											<div class="value" style="display: flex; align-items: center;">
 												<span id="airportDetailsStaff"></span>
-												<img src='@routes.Assets.versioned("images/icons/information.png")' onmouseover="showBaseDetailsModal()">
+
+												<span class="tooltip" onmouseover="showBaseDetailsModal()" >
+													<img src='@routes.Assets.versioned("images/icons/information.png")'>
+													<span class="tooltiptext below alignLeft" style="width: 400px;">
+														<div id="baseDetailsModal">
+														  <h4 style="margin-bottom: 10px;">Office Scale Details</h4>
+														  <div class="table data scaleDetails" style="width: 100%;">
+															  <div class="table-header">
+																  <div class="cell" style="width: 20%;"><h5>Scale</h5></div>
+																  <div class="cell" style="width: 20%;"><h5>Staff Cap (HQ/base)</h5></div>
+																  <div class="cell" data-group="GROUP_1" style="width: 20%;"><h5>Freq Cap 1</h5></div>
+																  <div class="cell" data-group="GROUP_2" style="width: 20%;"><h5>Freq Cap 2</h5></div>
+																  <div class="cell" data-group="GROUP_3" style="width: 20%;"><h5>Freq Cap 3</h5></div>
+															  </div>
+														  </div>
+														  <div class="groupRemarks">
+														  </div>
+													  </div>
+													</span>
+												</span>
+
+<!--												<img src='@routes.Assets.versioned("images/icons/information.png")' onmouseover="showBaseDetailsModal()" onmouseout="$('#baseDetailsModal').fadeOut(500)">-->
 											</div>
 										</div>
 
@@ -4736,21 +4757,23 @@
       </div>
 <!--  end campaign model-->
 
-	  <div id="baseDetailsModal" class="modal">
-		  <div class="modal-content"  style="width : 400px;">
-			  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
-			  <h4 style="margin-bottom: 10px;">Office Scale Details</h4>
-			  <div class="table data scaleDetails" style="width: 100%;">
-				  <div class="table-header">
-					  <div class="cell" style="width: 20%;"><h5>Scale</h5></div>
-					  <div class="cell" style="width: 20%;"><h5>Staff Cap (HQ/base)</h5></div>
-					  <div class="cell" data-group="GROUP_1" style="width: 20%;"><h5>Freq Cap I</h5></div>
-					  <div class="cell" data-group="GROUP_2" style="width: 20%;"><h5>Freq Cap II</h5></div>
-					  <div class="cell" data-group="GROUP_3" style="width: 20%;"><h5>Freq Cap III</h5></div>
-				  </div>
-			  </div>
-		  </div>
-	  </div>
+<!--	  <div id="baseDetailsModal" class="modal">-->
+<!--		  <div class="modal-content"  style="width : 400px;">-->
+<!--			  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>-->
+<!--			  <h4 style="margin-bottom: 10px;">Office Scale Details</h4>-->
+<!--			  <div class="table data scaleDetails" style="width: 100%;">-->
+<!--				  <div class="table-header">-->
+<!--					  <div class="cell" style="width: 20%;"><h5>Scale</h5></div>-->
+<!--					  <div class="cell" style="width: 20%;"><h5>Staff Cap (HQ/base)</h5></div>-->
+<!--					  <div class="cell" data-group="GROUP_1" style="width: 20%;"><h5>Freq Cap 1</h5></div>-->
+<!--					  <div class="cell" data-group="GROUP_2" style="width: 20%;"><h5>Freq Cap 2</h5></div>-->
+<!--					  <div class="cell" data-group="GROUP_3" style="width: 20%;"><h5>Freq Cap 3</h5></div>-->
+<!--				  </div>-->
+<!--			  </div>-->
+<!--			  <div class="groupRemarks">-->
+<!--			  </div>-->
+<!--		  </div>-->
+<!--	  </div>-->
 
 	  <div id="sendAirlineMessageModal" class="modal">
 		  <div class="modal-content"  style="width : 500px;">
