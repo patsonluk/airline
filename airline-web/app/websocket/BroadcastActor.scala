@@ -1,6 +1,6 @@
 package websocket
 
-import akka.actor.{Actor, ActorRef, Props, Terminated}
+import akka.actor.{Actor, ActorPath, ActorRef, Props, Terminated}
 import akka.util.Timeout
 import com.patson.model.{Airline, Alert}
 import com.patson.model.notice.{AirlineNotice, Notice}
@@ -35,21 +35,39 @@ object BroadcastActor {
     sendMessageToBroadcaster(Subscribe(subscriber, airline))
   }
   val counter = new AtomicInteger(0)
-  var actorName = "broadcast-actor-" + counter.getAndIncrement()
-  var actorPath = system.actorOf(Props(classOf[BroadcastActor]), actorName).path
-  println(s"created new broadcast actor $actorName with path $actorPath")
+  var actorPath = createBroadcastActor(counter.get())
+
   def sendMessageToBroadcaster(message : Any) = {
     system.actorSelection(actorPath).resolveOne()(Timeout(5000, TimeUnit.MILLISECONDS)).onComplete {
       case Success(actor) =>
         actor ! message
       case Failure(ex) =>
-        actorName = "broadcast-actor-" + counter.getAndIncrement()
-        val actor = system.actorOf(Props(classOf[BroadcastActor]), actorName)
-        println(s"Recreated new broadcast actor $actorName with path $actorPath")
-        actorPath = actor.path
-        actor ! message
+        system.actorSelection(createBroadcastActor(counter.get())).resolveOne()(Timeout(5000, TimeUnit.MILLISECONDS)).onComplete {
+          case Success(actor) =>
+            actor ! message
+          case Failure(ex) =>
+            println(s"Still failed after using $actorPath. Giving up...")
+            ex.printStackTrace()
+        }
     }
   }
+
+  def createBroadcastActor(currentIndex : Int) : ActorPath = {
+    counter.synchronized {
+      if (counter.get <= currentIndex) { //then create a new actor
+        val actorName = "broadcast-actor-" + counter.getAndIncrement()
+        val actor = system.actorOf(Props(classOf[BroadcastActor]), actorName)
+        println(s"Created new broadcast actor $actorName with path ${actor.path}")
+        actorPath = actor.path
+      } else {
+        println(s"Not creating new broadcast actor as current actor ${actorPath} is ahead of the current index ${currentIndex}")
+      }
+    }
+    actorPath
+  }
+
+
+
 
   def checkPrompts(airlineId : Int) = {
 
