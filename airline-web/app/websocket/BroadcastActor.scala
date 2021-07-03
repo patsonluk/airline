@@ -10,6 +10,7 @@ import models.PendingAction
 import play.api.libs.json.Json
 import websocket.ActorCenter.{localMainActor, system}
 
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
@@ -17,7 +18,9 @@ import scala.util.{Failure, Success}
 
 case class BroadcastMessage(text : String)
 case class AirlineMessage(airline : Airline, text : String)
-case class BroadcastSubscribe(subscriber : ActorRef, airline : Airline)
+case class BroadcastSubscribe(subscriber : ActorRef, airline : Airline, remoteAddress: String) {
+  val creationTime = Calendar.getInstance().getTime
+}
 case class AirlinePendingActions(airline : Airline, actions : List[PendingAction])
 case class BroadcastWrapper(message : Any)
 
@@ -29,8 +32,8 @@ object BroadcastActor {
     localMainActor ! BroadcastWrapper(AirlineMessage(airline, message))
   }
 
-  def subscribeToBroadcaster(subscriber : ActorRef, airline : Airline) = {
-    localMainActor ! BroadcastWrapper(BroadcastSubscribe(subscriber, airline))
+  def subscribeToBroadcaster(subscriber : ActorRef, airline : Airline, remoteAddress : String) = {
+    localMainActor ! BroadcastWrapper(BroadcastSubscribe(subscriber, airline, remoteAddress))
   }
 
   def checkPrompts(airlineId : Int) = {
@@ -66,7 +69,7 @@ class BroadcastActor() extends Actor {
     case message : BroadcastSubscribe => {
       airlineActors.add((message.subscriber, message.airline))
       context.watch(message.subscriber)
-      println(s"Joining $message. Active broadcast subscribers ${airlineActors.size}" )
+      println(s"${Calendar.getInstance().getTime} : Joining $message. Active broadcast subscribers ${airlineActors.size} of remote address ${message.remoteAddress} message creation time ${message.creationTime}" )
     }
 
     case Terminated(clientActor) => {

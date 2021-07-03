@@ -18,7 +18,7 @@ class WebsocketApplication @Inject()(cc: ControllerComponents) extends AbstractC
         Left(Forbidden)
       case Some(userId) =>
         logger.info("wsWithActor, client connected with userId " + userId)
-        Right(ActorFlow.actorRef { out => MyWebSocketActor.props(out, userId.toInt)})
+        Right(ActorFlow.actorRef { out => MyWebSocketActor.props(out, userId.toInt, request.remoteAddress)})
     })
   }
 }

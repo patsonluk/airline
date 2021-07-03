@@ -19,7 +19,7 @@ import scala.concurrent.duration.Duration
 object MyWebSocketActor {
   val counter = new AtomicLong()
 
-  def props(out: ActorRef, airlineId: Int) = Props(new MyWebSocketActor(out, airlineId))
+  def props(out: ActorRef, airlineId: Int, remoteAddress : String) = Props(new MyWebSocketActor(out, airlineId, remoteAddress))
 
   def nextSubscriberId(airlineId: Int) = {
     airlineId.toString + "-" + counter.getAndIncrement
@@ -40,10 +40,12 @@ object MyWebSocketActor {
 
 
 
-class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
+class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) extends Actor {
   var subscriberId : Option[String] = None
   override def preStart = {
-    BroadcastActor.subscribeToBroadcaster(self, AirlineCache.getAirline(airlineId).get)
+    val airline = AirlineCache.getAirline(airlineId).get
+    println(s"Starting websocket on airline $airline with remoteAddress $remoteAddress")
+    BroadcastActor.subscribeToBroadcaster(self, airline, remoteAddress)
   }
 
   def receive = {
