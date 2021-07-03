@@ -43,7 +43,7 @@ object MyWebSocketActor {
 class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
   var subscriberId : Option[String] = None
   override def preStart = {
-    BroadcastActor.subscribe(self, AirlineCache.getAirline(airlineId).get)
+    BroadcastActor.subscribeToBroadcaster(self, AirlineCache.getAirline(airlineId).get)
   }
 
   def receive = {
@@ -53,7 +53,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
     case JsNumber(_) => //directly receive message from the websocket (the only message the websocket client send down now is the airline id
       try {
           val subscriberId = MyWebSocketActor.nextSubscriberId(airlineId)
-          RemoteSubscribe.subscribe( (topic: SimulationEvent, payload: Any) => Some(topic).collect {
+          ActorCenter.subscribe((topic: SimulationEvent, payload: Any) => Some(topic).collect {
             case CycleCompleted(cycle, cycleEndTime) =>
               MyWebSocketActor.lastSimulatedCycle = cycle
               //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
@@ -75,7 +75,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
           this.subscriberId = Some(subscriberId)
 
           //MyWebSocketActor.backgroundActor ! RegisterToBackground(airlineId.toInt)
-          BroadcastActor.checkPrompts(airlineId) //check notice on connect
+        BroadcastActor.checkPrompts(airlineId) //check notice on connect
       } catch {
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
@@ -104,7 +104,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int) extends Actor {
   }
 
   override def aroundPostStop() = {
-    subscriberId.foreach { RemoteSubscribe.unsubscribe(_) }
+    subscriberId.foreach { ActorCenter.unsubscribe(_) }
     actorSystem.eventStream.unsubscribe(self)
     
     //MyWebSocketActor.backgroundActor ! RemoveFromBackground
