@@ -52,29 +52,42 @@ class BroadcastActor() extends Actor {
 
   override def receive = {
     case message : BroadcastMessage => {
+      println(s"Broadcasting message $message")
       airlineActors.map(_._1).foreach( actor => actor ! message)
+      println(s"Finished Broadcasting message $message")
     }
     case message : AirlineMessage => {
+      println(s"Sending airline message $message")
       airlineActors.find(_._2.id == message.airline.id).foreach( actor => actor._1 ! message)
+      println(s"Sent airline message $message")
     }
     case notice : AirlineNotice => {
+      println(s"Sending airline notice $notice")
       airlineActors.find(_._2.id == notice.airline.id).foreach( actor => actor._1 ! notice)
+      println(s"Sent airline notice $notice")
     }
     case tutorial : AirlineTutorial => {
+      println(s"Sending airline tutorial $tutorial")
       airlineActors.find(_._2.id == tutorial.airline.id).foreach( actor => actor._1 ! tutorial)
+      println(s"Sent airline tutorial $tutorial")
     }
     case airlinePendingActions : AirlinePendingActions => {
+      println(s"Sending airline pendingActions $airlinePendingActions")
       airlineActors.find(_._2.id == airlinePendingActions.airline.id).foreach( actor => actor._1 ! airlinePendingActions)
+      println(s"Sent airline pendingActions $airlinePendingActions")
     }
     case message : BroadcastSubscribe => {
+      println(s"Adding subscriber to broadcast actor $message")
       airlineActors.add((message.subscriber, message.airline))
       context.watch(message.subscriber)
       println(s"${Calendar.getInstance().getTime} : Joining $message. Active broadcast subscribers ${airlineActors.size} of remote address ${message.remoteAddress} message creation time ${message.creationTime}" )
     }
 
     case Terminated(clientActor) => {
+      println(s"Unwatching $clientActor")
       context.unwatch(clientActor)
       airlineActors.find(_._1 == clientActor).foreach(airlineActors.remove(_))
+      println(s"Unwatched $clientActor")
     }
 
   }
