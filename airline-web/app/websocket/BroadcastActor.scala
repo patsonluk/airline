@@ -50,44 +50,46 @@ object BroadcastActor {
 class BroadcastActor() extends Actor {
   val airlineActors = mutable.LinkedHashSet[(ActorRef, Airline)]()
 
+  def tag = "[ACTOR] " + Thread.currentThread().toString
+
   override def receive = {
     case message : BroadcastMessage => {
-      println(s"[ACTOR] Broadcasting message $message")
+      println(s"$tag Broadcasting message $message")
       airlineActors.map(_._1).foreach( actor => actor ! message)
-      println(s"Finished Broadcasting message $message")
+      println(s"$tag Finished Broadcasting message $message")
     }
     case message : AirlineMessage => {
-      println(s"[ACTOR] Sending airline message $message")
+      println(s"$tag Sending airline message $message")
       airlineActors.find(_._2.id == message.airline.id).foreach( actor => actor._1 ! message)
-      println(s"Sent airline message $message")
+      println(s"$tag Sent airline message $message")
     }
     case notice : AirlineNotice => {
-      println(s"[ACTOR] Sending airline notice $notice")
+      println(s"$tag Sending airline notice $notice")
       airlineActors.find(_._2.id == notice.airline.id).foreach( actor => actor._1 ! notice)
-      println(s"Sent airline notice $notice")
+      println(s"$tag Sent airline notice $notice")
     }
     case tutorial : AirlineTutorial => {
-      println(s"[ACTOR] Sending airline tutorial $tutorial")
+      println(s"$tag Sending airline tutorial $tutorial")
       airlineActors.find(_._2.id == tutorial.airline.id).foreach( actor => actor._1 ! tutorial)
-      println(s"Sent airline tutorial $tutorial")
+      println(s"$tag Sent airline tutorial $tutorial")
     }
     case airlinePendingActions : AirlinePendingActions => {
-      println(s"[ACTOR] Sending airline pendingActions $airlinePendingActions")
+      println(s"$tag Sending airline pendingActions $airlinePendingActions")
       airlineActors.find(_._2.id == airlinePendingActions.airline.id).foreach( actor => actor._1 ! airlinePendingActions)
-      println(s"Sent airline pendingActions $airlinePendingActions")
+      println(s"$tag Sent airline pendingActions $airlinePendingActions")
     }
     case message : BroadcastSubscribe => {
-      println(s"[ACTOR] Adding subscriber to broadcast actor $message")
+      println(s"$tag Adding subscriber to broadcast actor $message")
       airlineActors.add((message.subscriber, message.airline))
       context.watch(message.subscriber)
-      println(s"${Calendar.getInstance().getTime} : Joining $message. Active broadcast subscribers ${airlineActors.size} of remote address ${message.remoteAddress} message creation time ${message.creationTime}" )
+      println(s"$tag ${Calendar.getInstance().getTime} : Joining $message. Active broadcast subscribers ${airlineActors.size} of remote address ${message.remoteAddress} message creation time ${message.creationTime}" )
     }
 
     case Terminated(clientActor) => {
-      println(s"[ACTOR] Unwatching $clientActor")
+      println(s"$tag Unwatching $clientActor")
       context.unwatch(clientActor)
       airlineActors.find(_._1 == clientActor).foreach(airlineActors.remove(_))
-      println(s"Unwatched $clientActor")
+      println(s"$tag Unwatched $clientActor")
     }
 
   }

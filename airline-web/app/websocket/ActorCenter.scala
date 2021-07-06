@@ -33,7 +33,7 @@ sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
 //also manage the broadcast actor
 sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
   //also create BroadcastActor
-  val broadcastActor = context.actorOf(Props(classOf[BroadcastActor]), "broadcast-actor")
+  val broadcastActor = context.actorOf(Props(classOf[BroadcastActor]).withDispatcher("my-pinned-dispatcher"), "broadcast-actor")
   context.watch(broadcastActor)
 
   override def receive = {
