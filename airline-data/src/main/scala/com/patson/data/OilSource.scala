@@ -142,9 +142,14 @@ object OilSource {
   
   def loadOilPriceByCycle(cycle : Int) : Option[OilPrice] = {
     var queryString = "SELECT * FROM " + OIL_PRICE_TABLE + " WHERE cycle = ?"
-    val result = loadOilPricesByQueryString(queryString, List(cycle))
+    var result = loadOilPricesByQueryString(queryString, List(cycle))
     if (result.isEmpty) {
-      None
+      result = loadOilPricesByQueryString(queryString, List(cycle-1))
+      if (result.isEmpty) {
+        None
+      } else {
+        Some(result(0))
+      }
     } else {
       Some(result(0))
     }
