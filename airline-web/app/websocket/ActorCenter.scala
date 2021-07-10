@@ -5,14 +5,16 @@ import akka.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import akka.util.Timeout
 import com.patson.model.Airline
 import com.patson.model.notice.AirlineNotice
-import com.patson.stream.SimulationEvent
+import com.patson.stream.{KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
 import com.patson.util.AirlineCache
 import com.typesafe.config.ConfigFactory
 import controllers.{AirlineTutorial, PendingActionUtil, PromptUtil}
 
+import java.util.{Timer, TimerTask}
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 //Instead of maintaining a new actor connection whenever someone logs in, we will only maintain one connection between sim and web app, once sim finishes a cycle, it will send one message the the web app actor, and the web app actor will relay the message in an event stream, which is subscribed by each login section.
@@ -29,12 +31,24 @@ sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
   }
 }
 
+class ResetTask(localActor : ActorRef, remoteActor : ActorSelection) extends TimerTask {
+  override def run() : Unit = {
+    println(s"${localActor.path} resubscribe due to ping timeout")
+    remoteActor.tell("subscribe", localActor)
+  }
+}
+
 //only 1 locally, fan out message to all local actors to reduce connections required
 //also manage the broadcast actor
 sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
   //also create BroadcastActor
-  val broadcastActor = context.actorOf(Props(classOf[BroadcastActor]).withDispatcher("my-pinned-dispatcher"), "broadcast-actor")
-  context.watch(broadcastActor)
+//  val broadcastActor = context.actorOf(Props(classOf[BroadcastActor]).withDispatcher("my-pinned-dispatcher"), "broadcast-actor")
+//  context.watch(broadcastActor)
+
+  val pingInterval = 60000 //how often do we check
+  val resetTimeout = 10000
+  var pendingResetTask : Option[ResetTask] = None
+  val timer = new Timer()
 
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
@@ -45,9 +59,17 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
       remoteActor ! "subscribe"
     case Terminated(actor) =>
       println(s"$actor is terminated!!")
-    case BroadcastWrapper(message) => {
-      broadcastActor ! message
-    }
+//    case BroadcastWrapper(message) => {
+//      broadcastActor ! message
+//    }
+    case KeepAlivePing =>
+      remoteActor ! KeepAlivePing
+      val resetTask = new ResetTask(self, remoteActor)
+      timer.schedule(resetTask, resetTimeout)
+      pendingResetTask = Some(resetTask)
+    case KeepAlivePong => //diffuse the reset!
+      println("Connection to sim is healthy!")
+      pendingResetTask.foreach( _.cancel() )
     case unknown : Any => println(s"Unknown message for local main actor : $unknown")
   }
 
@@ -56,11 +78,16 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
   override def preStart = {
     super.preStart()
     remoteActor ! "subscribe"
-
+    timer.scheduleAtFixedRate(new TimerTask {
+      override def run() : Unit = {
+          self ! KeepAlivePing
+      }
+    }, 0, pingInterval)
   }
 
   override def postStop() = {
-    println(self.path.toString + " stopped (post stop)")
+    println(self.path.toString + " local main actor stopped (post stop)")
+    timer.cancel()
   }
 }
 
@@ -97,7 +124,7 @@ sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
         var sleepTime = 5000
         val MAX_SLEEP_TIME = 10 * 60 * 1000 //10 mins
         while (disconnected) {
-          remoteActor ! "ping"
+          remoteActor ! ReconnectPing()
           sleepTime *= 2
           sleepTime = Math.min(MAX_SLEEP_TIME, sleepTime)
           Thread.sleep(sleepTime)

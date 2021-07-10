@@ -95,8 +95,9 @@ object SimulationEventStream{
         
         println("Bridge actor: received from simulation that " + topic)
 
-      case "ping" => //do nothing
-      case _ => println("UNKNOWN message")
+      case ReconnectPing => //do nothing
+      case KeepAlivePing => sender() ! KeepAlivePong
+      case unknown : Any => println(s"UNKNOWN message $unknown")
       
     }
   }
@@ -107,4 +108,7 @@ class SimulationEvent
 case class CycleCompleted(cycle : Int, cycleEndTime : Long) extends SimulationEvent //main simulation send this, this will be relayed directly to client
 case class CycleStart(cycle: Int, cycleStartTime : Long) extends SimulationEvent //main simulation send this, this will NOT be relay back to client
 case class CycleInfo(cycle: Int, fraction : Double, cycleDurationEstimation : Long) extends SimulationEvent  //bridge actor convert a CycleStart into CycleInfo and send back to client
+case class ReconnectPing()
+case class KeepAlivePing()
+case class KeepAlivePong()
 

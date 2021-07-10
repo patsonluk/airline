@@ -10,7 +10,7 @@ import controllers.GoogleImageUtil.{AirportKey, CityKey}
 import javax.inject.Inject
 import play.api.mvc._
 import play.api.libs.json.{Json, _}
-import websocket.BroadcastActor
+import websocket.Broadcaster
 
 
 class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -92,7 +92,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
   def sendBroadcastMessage() = Authenticated { implicit request =>
     if (request.user.isSuperAdmin) {
       val message = request.body.asInstanceOf[AnyContentAsJson].json.\("message").as[String]
-      BroadcastActor.broadcastMessage(message)
+      Broadcaster.broadcastMessage(message)
       Ok(Json.obj())
     } else {
       println(s"Non admin ${request.user} tried to access admin operations!!")
@@ -105,7 +105,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
       AirlineCache.getAirline(targetAirlineId) match {
         case Some(airline) =>
           val message = request.body.asInstanceOf[AnyContentAsJson].json.\("message").as[String]
-          BroadcastActor.sendMessage(airline, message)
+          Broadcaster.sendMessage(airline, message)
           Ok(Json.obj())
         case None =>
           NotFound(s"Airline with id $targetAirlineId not found")

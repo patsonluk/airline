@@ -45,7 +45,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
   override def preStart = {
     val airline = AirlineCache.getAirline(airlineId).get
     println(s"Starting websocket on airline $airline with remoteAddress $remoteAddress")
-    BroadcastActor.subscribeToBroadcaster(self, airline, remoteAddress)
+    Broadcaster.subscribeToBroadcaster(self, airline, remoteAddress)
   }
 
   def receive = {
@@ -66,7 +66,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
 
               //println("Received cycle completed: " + cycle)
               out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
-              BroadcastActor.checkPrompts(airlineId)
+              Broadcaster.checkPrompts(airlineId)
             case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
               //println("Received cycle info on cycle: " + cycle)
               out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
@@ -77,7 +77,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
           this.subscriberId = Some(subscriberId)
 
           //MyWebSocketActor.backgroundActor ! RegisterToBackground(airlineId.toInt)
-        BroadcastActor.checkPrompts(airlineId) //check notice on connect
+        Broadcaster.checkPrompts(airlineId) //check notice on connect
       } catch {
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
@@ -85,20 +85,25 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
       out ! Json.obj("ping" -> true)
     case BroadcastMessage(text) =>
       out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)
-    case AirlineMessage(airline, text) =>
+    case AirlineDirectMessage(airline, text) =>
       out ! Json.obj("messageType" -> "airlineMessage", "message" -> text)
-    case AirlineNotice(airline, notice, description) =>
-      println(s"Sending notice $notice to $airline")
-      notice.category match {
-        case NoticeCategory.LEVEL_UP =>
-          out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
-        case NoticeCategory.LOYALIST =>
-          out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
+    case AirlinePrompts(_, prompts) =>
+      prompts.notices.foreach {
+        case AirlineNotice(airline, notice, description) =>
+          println(s"Sending notice $notice to $airline")
+          notice.category match {
+            case NoticeCategory.LEVEL_UP =>
+              out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
+            case NoticeCategory.LOYALIST =>
+              out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
 
+          }
       }
-    case AirlineTutorial(airline, tutorial) =>
-      println(s"Sending tutorial $tutorial to $airline")
-      out ! Json.obj("messageType" -> "tutorial", "category" -> tutorial.category, "id" -> tutorial.id)
+      prompts.tutorials.foreach {
+        case AirlineTutorial(airline, tutorial) =>
+          println(s"Sending tutorial $tutorial to $airline")
+          out ! Json.obj("messageType" -> "tutorial", "category" -> tutorial.category, "id" -> tutorial.id)
+      }
     case AirlinePendingActions(airline, pendingActions : List[PendingAction]) =>
       out ! Json.obj("messageType" -> "pendingAction", "actions" -> Json.toJson(pendingActions.map(_.category.toString)))
     case any =>
