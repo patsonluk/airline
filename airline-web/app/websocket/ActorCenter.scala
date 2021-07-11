@@ -20,17 +20,17 @@ import scala.util.{Failure, Success}
 //Instead of maintaining a new actor connection whenever someone logs in, we will only maintain one connection between sim and web app, once sim finishes a cycle, it will send one message the the web app actor, and the web app actor will relay the message in an event stream, which is subscribed by each login section.
 //
 //For new login, the web app local actor will directly send one message to the remote actor, and the remote actor will in this case reply directly to the web app local actor - this is the ONLY time that the 2 talk directly
-sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
-  override def receive = {
-      case (topic: SimulationEvent, payload: Any) =>
-        println(s"Local actor ${self.path} received $topic")
-        f(topic, payload)
-      case unknown : Any => println(s"Unknown message for local actor : $unknown")
-  }
-  override def postStop() = {
-    println(self.path.toString + " stopped (post stop)")
-  }
-}
+//sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
+//  override def receive = {
+//      case (topic: SimulationEvent, payload: Any) =>
+//        println(s"Local actor ${self.path} received $topic")
+//        f(topic, payload)
+//      case unknown : Any => println(s"Unknown message for local actor : $unknown")
+//  }
+//  override def postStop() = {
+//    println(self.path.toString + " stopped (post stop)")
+//  }
+//}
 
 class ResetTask(localActor : ActorRef, remoteActor : ActorSelection) extends TimerTask {
   override def run() : Unit = {
@@ -143,7 +143,7 @@ sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
 object ActorCenter {
   val REMOTE_SYSTEM_NAME = "websocketActorSystem"
   val BRIDGE_ACTOR_NAME = "bridgeActor"
-  implicit val system = ActorSystem("localWebsocketSystem")
+  implicit val system = actorSystem //ActorSystem("localWebsocketSystem")
 
   val configFactory = ConfigFactory.load()
   val actorHost = if (configFactory.hasPath("airline.akka-actor.host")) configFactory.getString("airline.akka-actor.host") else "127.0.0.1:2552"
@@ -170,32 +170,32 @@ object ActorCenter {
 //    }
 //  }
 
-  def subscribe(f: (SimulationEvent, Any) => Option[Unit], subscriberId: String) = {
-    val props = Props(classOf[LocalActor], f)
-    val localSubscriber = system.actorOf(props, name = getLocalSubscriberName(subscriberId))
-    system.eventStream.subscribe(localSubscriber, classOf[(SimulationEvent, Any)])
+//  def subscribe(f: (SimulationEvent, Any) => Option[Unit], subscriberId: String) = {
+//    val props = Props(classOf[LocalActor], f)
+//    val localSubscriber = system.actorOf(props, name = getLocalSubscriberName(subscriberId))
+//    system.eventStream.subscribe(localSubscriber, classOf[(SimulationEvent, Any)])
+//
+//    println("Subscriber " + localSubscriber.path + " subscribed to system event stream")
+//
+//    //now get updated cycle info once
+//    remoteMainActor.resolveOne()(Timeout(5000, TimeUnit.MILLISECONDS)).onComplete {
+//      case Success(actor) => actor.!("getCycleInfo")(localSubscriber)
+//      case Failure(exception) =>
+//        println(s"Remote main actor is no longer found... $exception")
+//    }
+//
+//  }
 
-    println("Subscriber " + localSubscriber.path + " subscribed to system event stream")
 
-    //now get updated cycle info once
-    remoteMainActor.resolveOne()(Timeout(5000, TimeUnit.MILLISECONDS)).onComplete {
-      case Success(actor) => actor.!("getCycleInfo")(localSubscriber)
-      case Failure(exception) =>
-        println(s"Remote main actor is no longer found... $exception")
-    }
-
-  }
-
-
-  def unsubscribe(subscriberid : String) = {
-    system.actorSelection(system./(getLocalSubscriberName(subscriberid))).resolveOne()(Timeout(10, TimeUnit.SECONDS)).map {
-      actorRef =>
-        println("Unsubscribing " + actorRef.path)
-        system.eventStream.unsubscribe(actorRef)
-        actorRef ! PoisonPill
-        actorRef
-    }
-  }
+//  def unsubscribe(subscriberid : String) = {
+//    system.actorSelection(system./(getLocalSubscriberName(subscriberid))).resolveOne()(Timeout(10, TimeUnit.SECONDS)).map {
+//      actorRef =>
+//        println("Unsubscribing " + actorRef.path)
+//        system.eventStream.unsubscribe(actorRef)
+//        actorRef ! PoisonPill
+//        actorRef
+//    }
+//  }
 
   def getLocalSubscriberName(subscriberId : String) = {
     "local-subscriber-" + subscriberId

@@ -55,24 +55,8 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
     case JsNumber(_) => //directly receive message from the websocket (the only message the websocket client send down now is the airline id
       try {
           val subscriberId = MyWebSocketActor.nextSubscriberId(airlineId)
-          ActorCenter.subscribe((topic: SimulationEvent, payload: Any) => Some(topic).collect {
-            case CycleCompleted(cycle, cycleEndTime) =>
-              MyWebSocketActor.lastSimulatedCycle = cycle
-              //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
-              AirlineCache.invalidateAll()
-              AirportCache.invalidateAll()
-              AirplaneOwnershipCache.invalidateAll()
-              AirportUtil.refreshAirports()
-
-              println("Received cycle completed: " + cycle)
-              out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
-              Broadcaster.checkPrompts(airlineId)
-            case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
-              println("Received cycle info on cycle: " + cycle)
-              out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
-          }, subscriberId)
-
           actorSystem.eventStream.subscribe(self, classOf[TriggerPing])
+          actorSystem.eventStream.subscribe(self, classOf[(SimulationEvent, Any)])
 
           this.subscriberId = Some(subscriberId)
 
@@ -81,6 +65,23 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
       } catch {
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
+    case (topic: SimulationEvent, payload: Any) => Some(topic).collect {
+      case CycleCompleted(cycle, cycleEndTime) =>
+        MyWebSocketActor.lastSimulatedCycle = cycle
+        //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
+        AirlineCache.invalidateAll()
+        AirportCache.invalidateAll()
+        AirplaneOwnershipCache.invalidateAll()
+        AirportUtil.refreshAirports()
+
+        println(s"[DEBUG] ${self.path} Received cycle completed: " + cycle)
+        out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
+        Broadcaster.checkPrompts(airlineId)
+      case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
+        println(s"[DEBUG] ${self.path} Received cycle info on cycle: " + cycle)
+        out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
+
+    }
     case TriggerPing() =>
       out ! Json.obj("ping" -> true)
     case BroadcastMessage(text) =>
@@ -111,7 +112,8 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
   }
 
   override def aroundPostStop() = {
-    subscriberId.foreach { ActorCenter.unsubscribe(_) }
+    //subscriberId.foreach { ActorCenter.unsubscribe(_) }
+    println(s"${self.path} is stopped")
     actorSystem.eventStream.unsubscribe(self)
     
     //MyWebSocketActor.backgroundActor ! RemoveFromBackground
