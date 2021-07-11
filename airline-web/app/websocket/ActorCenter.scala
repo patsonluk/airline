@@ -23,6 +23,7 @@ import scala.util.{Failure, Success}
 sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
   override def receive = {
       case (topic: SimulationEvent, payload: Any) =>
+        println(s"Local actor ${self.path} received $topic")
         f(topic, payload)
       case unknown : Any => println(s"Unknown message for local actor : $unknown")
   }

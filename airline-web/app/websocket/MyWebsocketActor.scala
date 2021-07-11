@@ -64,11 +64,11 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
               AirplaneOwnershipCache.invalidateAll()
               AirportUtil.refreshAirports()
 
-              //println("Received cycle completed: " + cycle)
+              println("Received cycle completed: " + cycle)
               out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
               Broadcaster.checkPrompts(airlineId)
             case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
-              //println("Received cycle info on cycle: " + cycle)
+              println("Received cycle info on cycle: " + cycle)
               out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
           }, subscriberId)
 
