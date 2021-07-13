@@ -87,10 +87,10 @@ object Broadcaster {
     airlineEventBus.publish(AirlineDirectMessage(airline, message))
   }
 
-  def subscribeToBroadcaster(subscriber : ActorRef, airline : Airline, remoteAddress : String) = {
+  def subscribeToBroadcaster(subscriber : ActorRef, airlineId : Int) = {
     //localMainActor ! BroadcastWrapper(BroadcastSubscribe(subscriber, airline, remoteAddress))
     broadcastEventBus.subscribe(subscriber, "")
-    airlineEventBus.subscribe(subscriber, airline.id)
+    airlineEventBus.subscribe(subscriber, airlineId)
   }
 
   def checkPrompts(airlineId : Int) = {

@@ -1,36 +1,87 @@
 package websocket
 
-import akka.actor.{Actor, ActorPath, ActorRef, ActorSelection, ActorSystem, PoisonPill, Props, Terminated}
+import akka.actor.{Actor, ActorRef, ActorSelection, Props, Terminated}
 import akka.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
-import akka.util.Timeout
 import com.patson.model.Airline
-import com.patson.model.notice.AirlineNotice
-import com.patson.stream.{KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
-import com.patson.util.AirlineCache
+import com.patson.model.notice.{AirlineNotice, NoticeCategory}
+import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
+import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
 import com.typesafe.config.ConfigFactory
-import controllers.{AirlineTutorial, PendingActionUtil, PromptUtil}
+import controllers.{AirlineTutorial, AirportUtil}
+import models.PendingAction
+import play.api.libs.json.{JsNumber, Json}
+import websocket.chat.TriggerPing
 
 import java.util.{Timer, TimerTask}
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 //Instead of maintaining a new actor connection whenever someone logs in, we will only maintain one connection between sim and web app, once sim finishes a cycle, it will send one message the the web app actor, and the web app actor will relay the message in an event stream, which is subscribed by each login section.
 //
 //For new login, the web app local actor will directly send one message to the remote actor, and the remote actor will in this case reply directly to the web app local actor - this is the ONLY time that the 2 talk directly
-//sealed class LocalActor(f: (SimulationEvent, Any) => Unit) extends Actor {
-//  override def receive = {
-//      case (topic: SimulationEvent, payload: Any) =>
-//        println(s"Local actor ${self.path} received $topic")
-//        f(topic, payload)
-//      case unknown : Any => println(s"Unknown message for local actor : $unknown")
-//  }
-//  override def postStop() = {
-//    println(self.path.toString + " stopped (post stop)")
-//  }
-//}
+
+sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
+  override def preStart() = {
+    Broadcaster.subscribeToBroadcaster(self, airlineId)
+    actorSystem.eventStream.subscribe(self, classOf[TriggerPing])
+    actorSystem.eventStream.subscribe(self, classOf[(SimulationEvent, Any)])
+
+    ActorCenter.remoteMainActor ! "getCycleInfo" //get cycle info once on start
+  }
+
+  def receive = {
+    case Notification(message) =>
+      //      println("going to send " + message + " back to the websocket")
+      out ! message
+    case (topic: SimulationEvent, payload: Any) => Some(topic).collect {
+      case CycleCompleted(cycle, cycleEndTime) =>
+        MyWebSocketActor.lastSimulatedCycle = cycle
+        //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
+        AirlineCache.invalidateAll()
+        AirportCache.invalidateAll()
+        AirplaneOwnershipCache.invalidateAll()
+        AirportUtil.refreshAirports()
+
+        println("Received cycle completed: " + cycle)
+        out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
+        Broadcaster.checkPrompts(airlineId)
+      case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
+        println("Received cycle info on cycle: " + cycle)
+        out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
+    }
+    case TriggerPing() =>
+      out ! Json.obj("ping" -> true)
+    case BroadcastMessage(text) =>
+      out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)
+    case AirlineDirectMessage(airline, text) =>
+      out ! Json.obj("messageType" -> "airlineMessage", "message" -> text)
+    case AirlinePrompts(_, prompts) =>
+      //println(s"$self get prompts")
+      prompts.notices.foreach {
+        case AirlineNotice(airline, notice, description) =>
+          println(s"Sending notice $notice to $airline")
+          notice.category match {
+            case NoticeCategory.LEVEL_UP =>
+              out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
+            case NoticeCategory.LOYALIST =>
+              out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
+
+          }
+      }
+      prompts.tutorials.foreach {
+        case AirlineTutorial(airline, tutorial) =>
+          println(s"Sending tutorial $tutorial to $airline")
+          out ! Json.obj("messageType" -> "tutorial", "category" -> tutorial.category, "id" -> tutorial.id)
+      }
+    case AirlinePendingActions(airline, pendingActions : List[PendingAction]) =>
+      //println(s"$self get pending actions")
+      out ! Json.obj("messageType" -> "pendingAction", "actions" -> Json.toJson(pendingActions.map(_.category.toString)))
+    case any =>
+      println("received " + any + " not handled")
+  }
+  override def postStop() = {
+    println(self.path.toString + " stopped (post stop)")
+  }
+}
 
 class ResetTask(localActor : ActorRef, remoteActor : ActorSelection) extends TimerTask {
   override def run() : Unit = {
@@ -98,7 +149,7 @@ sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
   override def preStart = {
     super.preStart()
     context.system.eventStream.subscribe(self, classOf[RemotingLifecycleEvent])
-    remoteActor ! "ping" //establish connection
+    remoteActor ! KeepAlivePing() //establish connection
   }
   override def receive = {
     case lifeCycleEvent : DisassociatedEvent => {
