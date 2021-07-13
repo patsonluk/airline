@@ -42,16 +42,27 @@ object MyWebSocketActor {
 }
 
 
-
+/**
+ * This should ONLY handle incoming socket message. this actor acts so weird:
+ * To send message to itself => Send: OK ; Receive: OK
+ * To send message to remote actor => Send : OK
+ * To receive message from remote actor => Receive : Failed
+ *
+ * Not quite sure why it does not work, perhaps it can only work with web socket traffic
+ *
+ * Tried to create a child actor, same thing, but if we create another actor that is NOT a child of this, then it seems to work fine...
+ *
+ *
+ * @param out
+ * @param airlineId
+ * @param remoteAddress
+ */
 class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) extends Actor {
-  val outActor = actorSystem.actorOf(Props(classOf[LocalActor], out, airlineId), nextSubscriberId(airlineId))
+  val outActor = actorSystem.actorOf(Props(classOf[LocalActor], out, airlineId), nextSubscriberId(airlineId)) //do NOT create as a child, otherwise it cannot receive message from remote actor...
 
   override def preStart = {
     val airline = AirlineCache.getAirline(airlineId).get
     println(s"Starting websocket on airline $airline with remoteAddress $remoteAddress path ${self}. With output actor ${outActor.path}")
-//    Broadcaster.subscribeToBroadcaster(self, airline, remoteAddress)
-//    actorSystem.eventStream.subscribe(self, classOf[TriggerPing])
-//    actorSystem.eventStream.subscribe(self, classOf[(SimulationEvent, Any)])
   }
 
   def receive = {
@@ -69,7 +80,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
     //subscriberId.foreach { ActorCenter.unsubscribe(_) }
     println(s"${self.path} is stopped")
     actorSystem.eventStream.unsubscribe(self)
-    outActor ! PoisonPill
+    outActor ! PoisonPill //have to explicitly kill the output actor since it is not a child
     //MyWebSocketActor.backgroundActor ! RemoveFromBackground
   }
 }
