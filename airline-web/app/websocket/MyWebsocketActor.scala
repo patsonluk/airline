@@ -2,6 +2,7 @@ package websocket
 
 import java.util.concurrent.TimeUnit
 import akka.actor._
+import akka.util.Timeout
 import com.patson.data.{CycleSource, UserSource}
 import com.patson.model.notice.{AirlineNotice, LoyalistNotice, NoticeCategory}
 import com.patson.stream._
@@ -12,14 +13,16 @@ import controllers.{AirlineTutorial, AirportUtil, PromptUtil}
 import models.{PendingAction, PendingActionCategory}
 import play.api.libs.json.JsNumber
 import play.api.libs.json.Json
+import websocket.MyWebSocketActor.nextSubscriberId
 import websocket.chat.TriggerPing
 
 import scala.concurrent.duration.Duration
+import scala.util.{Failure, Success}
 
 object MyWebSocketActor {
   val counter = new AtomicLong()
 
-  def props(out: ActorRef, airlineId: Int, remoteAddress : String) = Props(new MyWebSocketActor(out, airlineId, remoteAddress))
+  def props(out: ActorRef, airlineId: Int, remoteAddress : String) = Props(classOf[MyWebSocketActor], out, airlineId, remoteAddress)
 
   def nextSubscriberId(airlineId: Int) = {
     airlineId.toString + "-" + counter.getAndIncrement
@@ -39,81 +42,46 @@ object MyWebSocketActor {
 }
 
 
-
+/**
+ * This should ONLY handle incoming socket message. this actor acts so weird:
+ * To send message to itself => Send: OK ; Receive: OK
+ * To send message to remote actor => Send : OK
+ * To receive message from remote actor => Receive : Failed
+ *
+ * Not quite sure why it does not work, perhaps it can only work with web socket traffic
+ *
+ * Tried to create a child actor, same thing, but if we create another actor that is NOT a child of this, then it seems to work fine...
+ *
+ *
+ * @param out
+ * @param airlineId
+ * @param remoteAddress
+ */
 class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) extends Actor {
-  var subscriberId : Option[String] = None
+  val outActor = actorSystem.actorOf(Props(classOf[LocalActor], out, airlineId), nextSubscriberId(airlineId)) //do NOT create as a child, otherwise it cannot receive message from remote actor...
+
   override def preStart = {
     val airline = AirlineCache.getAirline(airlineId).get
-    println(s"Starting websocket on airline $airline with remoteAddress $remoteAddress")
-    Broadcaster.subscribeToBroadcaster(self, airline, remoteAddress)
+    println(s"Starting websocket on airline $airline with remoteAddress $remoteAddress path ${self}. With output actor ${outActor.path}")
   }
 
   def receive = {
-    case Notification(message) =>
-//      println("going to send " + message + " back to the websocket")
-      out ! message
     case JsNumber(_) => //directly receive message from the websocket (the only message the websocket client send down now is the airline id
       try {
-          val subscriberId = MyWebSocketActor.nextSubscriberId(airlineId)
-          ActorCenter.subscribe((topic: SimulationEvent, payload: Any) => Some(topic).collect {
-            case CycleCompleted(cycle, cycleEndTime) =>
-              MyWebSocketActor.lastSimulatedCycle = cycle
-              //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
-              AirlineCache.invalidateAll()
-              AirportCache.invalidateAll()
-              AirplaneOwnershipCache.invalidateAll()
-              AirportUtil.refreshAirports()
-
-              println("Received cycle completed: " + cycle)
-              out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
-              Broadcaster.checkPrompts(airlineId)
-            case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
-              println("Received cycle info on cycle: " + cycle)
-              out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
-          }, subscriberId)
-
-          actorSystem.eventStream.subscribe(self, classOf[TriggerPing])
-
-          this.subscriberId = Some(subscriberId)
-
-          //MyWebSocketActor.backgroundActor ! RegisterToBackground(airlineId.toInt)
         Broadcaster.checkPrompts(airlineId) //check notice on connect
       } catch {
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
-    case TriggerPing() =>
-      out ! Json.obj("ping" -> true)
-    case BroadcastMessage(text) =>
-      out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)
-    case AirlineDirectMessage(airline, text) =>
-      out ! Json.obj("messageType" -> "airlineMessage", "message" -> text)
-    case AirlinePrompts(_, prompts) =>
-      prompts.notices.foreach {
-        case AirlineNotice(airline, notice, description) =>
-          println(s"Sending notice $notice to $airline")
-          notice.category match {
-            case NoticeCategory.LEVEL_UP =>
-              out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
-            case NoticeCategory.LOYALIST =>
-              out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
-
-          }
-      }
-      prompts.tutorials.foreach {
-        case AirlineTutorial(airline, tutorial) =>
-          println(s"Sending tutorial $tutorial to $airline")
-          out ! Json.obj("messageType" -> "tutorial", "category" -> tutorial.category, "id" -> tutorial.id)
-      }
-    case AirlinePendingActions(airline, pendingActions : List[PendingAction]) =>
-      out ! Json.obj("messageType" -> "pendingAction", "actions" -> Json.toJson(pendingActions.map(_.category.toString)))
     case any =>
       println("received " + any + " not handled")  
   }
 
   override def aroundPostStop() = {
-    subscriberId.foreach { ActorCenter.unsubscribe(_) }
+    //subscriberId.foreach { ActorCenter.unsubscribe(_) }
+    println(s"${self.path} is stopped")
     actorSystem.eventStream.unsubscribe(self)
-    
+    outActor ! PoisonPill //have to explicitly kill the output actor since it is not a child
     //MyWebSocketActor.backgroundActor ! RemoveFromBackground
   }
 }
+
