@@ -25,6 +25,7 @@ html {
   --menubar-background-image: linear-gradient(rgba(255,255,255,1), rgba(220,220,220,1));
   --menubar-shadow: inset 0 -7px 9px -7px rgba(0,0,0,0.4);
   --scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
+  --scrollbar-shadow-color: rgba(0, 0, 0, 0.5);
 
   --tooltip-background-color: rgba(0, 0, 0, 0.75);
   --modal-background-color: rgba(0,0,0,0.4);
@@ -47,6 +48,8 @@ html {
   --float-message-box-text-shadow: var(--table-header-text-shadow);
 
   --loading-spinner-background: rgba( 255, 255, 255, .8 );
+
+
 
 }
 
@@ -77,6 +80,7 @@ html[data-theme='dark'] {
   --menubar-background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
   --menubar-shadow: inset 0 -7px 9px -7px rgba(255,255,255,0.4);
   --scrollbar-color: hsl(0, 50%, 90%) hsl(0, 50%, 100%);
+  --scrollbar-shadow-color: rgba(255, 255, 255, 0.5);
 
   --tooltip-background-color: rgba(0, 0, 0, 0.5);
   --modal-background-color: rgba(255,255,255,0.5);
@@ -997,10 +1001,10 @@ img.flag {
     width: 6px;
 }
 ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    -webkit-box-shadow: inset 0 0 6px var(--scrollbar-shadow-color);
 }
 ::-webkit-scrollbar-thumb {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    -webkit-box-shadow: inset 0 0 6px var(--scrollbar-shadow-color);
 }
 
 div {
