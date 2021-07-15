@@ -130,8 +130,7 @@ object PassengerSimulation {
 //             if (!toAirportRouteMap.isEmpty) {
 //               println("to airport route map" + toAirportRouteMap)
 //             }
-             
-             toAirportRouteMap.get(toAirport) match { 
+             toAirportRouteMap.get(toAirport) match {
                case Some(pickedRoute) =>
                  //println("picked route info" + passengerGroup + " " + pickedRoute.links(0).airline)
                  //val totalDistance = pickedRoute.links.foldLeft(0.0)(_ + _.link.distance)
@@ -220,23 +219,26 @@ object PassengerSimulation {
   val LINK_COST_TOLERANCE_NOISE_RANGE = 0.4 //ie -0.2 to 0.2
   val random = new Random()
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
-    val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
-    val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
-    val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
-    if (routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR <= routeDistance) { //a route that distance is too long (too indirect)
-      return false
-    }
+
+    //do not do distance check...since cost should already take that into account (duration/price etc)
+    //this is important as some airlines offer $0, and people would use some weird route since if they can travel in opposite direction but save money, they will do it
+//    val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
+//    val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
+//    val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
+//    if (routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR <= routeDistance) { //a route that distance is too long (too indirect)
+//      return false
+//    }
 
 
 //    val ROUTE_COST_TOLERANCE_FACTOR = 1.4
-//    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), linkClass) * ROUTE_COST_TOLERANCE_FACTOR   
+//    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), linkClass) * ROUTE_COST_TOLERANCE_FACTOR
 
-//    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute) 
-    
+//    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute)
+
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
-    
 
-      val incomeAdjustedFactor : Double = 
+
+      val incomeAdjustedFactor : Double =
         if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
           1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
         } else {
