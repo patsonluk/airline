@@ -186,7 +186,11 @@ object DemandGenerator {
       
       //adjustments : China has very extensive highspeed rail network
       if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN") {
-        adjustedDemand *= 0.6
+        if (distance < 1800)
+	  adjustedDemand *= 0.5
+        } else if (distance < 3000)
+	  adjustedDemand *= 0.75
+    	}
       }
 
       if (adjustedDemand >= 100 && distance < 200) { //diminished demand for close short routes
