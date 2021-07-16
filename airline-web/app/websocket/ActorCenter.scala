@@ -41,11 +41,11 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
         AirplaneOwnershipCache.invalidateAll()
         AirportUtil.refreshAirports()
 
-        println("Received cycle completed: " + cycle)
+        println(s"${self.path} Received cycle completed: " + cycle)
         out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
         Broadcaster.checkPrompts(airlineId)
       case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
-        println("Received cycle info on cycle: " + cycle)
+        println(s"${self.path} Received cycle info on cycle: " + cycle)
         out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
     }
     case TriggerPing() =>
@@ -78,8 +78,12 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
     case any =>
       println("received " + any + " not handled")
   }
+
   override def postStop() = {
-    println(self.path.toString + " stopped (post stop)")
+    Broadcaster.unsubscribeFromBroadcaster(self)
+    actorSystem.eventStream.unsubscribe(self)
+
+    println(self.path.toString + " stopped (post stop), unsubscribed from all event streams")
   }
 }
 

@@ -76,7 +76,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
       println("received " + any + " not handled")  
   }
 
-  override def aroundPostStop() = {
+  override def postStop() = {
     //subscriberId.foreach { ActorCenter.unsubscribe(_) }
     println(s"${self.path} is stopped")
     actorSystem.eventStream.unsubscribe(self)

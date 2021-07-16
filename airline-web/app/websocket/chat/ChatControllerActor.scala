@@ -57,7 +57,7 @@ class ChatControllerActor extends Actor {
 
   val messageIdCounter = new AtomicLong(0)
 
-  context.system.scheduler.schedule(Duration.ZERO, Duration.ofSeconds(10), self, TriggerPing, ec, self)
+  context.system.scheduler.schedule(Duration.ZERO, Duration.ofMinutes(1), self, TriggerPing, ec, self)
 
 
 
