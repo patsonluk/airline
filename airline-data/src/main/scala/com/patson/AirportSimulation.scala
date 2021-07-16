@@ -1,12 +1,11 @@
 package com.patson
 
 import java.util.Random
-
 import com.patson.data._
 import com.patson.model._
 import com.patson.util.{AirlineCache, AirportCache, ChampionUtil}
 
-import scala.collection.{immutable, mutable}
+import scala.collection.{MapView, immutable, mutable}
 import scala.collection.mutable.{ListBuffer, Map, Set}
 
 object AirportSimulation {
@@ -28,7 +27,6 @@ object AirportSimulation {
   private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 1.0
 
 
-
   def airportSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("starting airport simulation")
     println("loading all airports")
@@ -46,6 +44,9 @@ object AirportSimulation {
     //update the loyalist on airports based on link consumption
     println("Adjust loyalist by link consumptions")
     simulateLoyalists(allAirports, linkRidershipDetails, cycle)
+
+    //check whether lounge is still active
+    updateLoungeStatus(allAirports, linkRidershipDetails)
 
 
     println("Finished simulation of loyalty by link consumption")
@@ -267,6 +268,42 @@ object AirportSimulation {
         }
     }
     result.toList.partition(_.amount > 0)
+  }
+
+  def updateLoungeStatus(allAirports : List[Airport], linkRidershipDetails : Predef.Map[(PassengerGroup, Airport, Route), Int]) = {
+    println("Checking lounge status")
+    val passengersByAirport : MapView[Airport, MapView[Airline, Int]] = linkRidershipDetails.toList.flatMap {
+      case ((passengerGroup, airport, route), count) => List((route.links.head.link.airline, route.links.head.from, count), (route.links.last.link.airline, route.links.last.to, count))
+    }.groupBy {
+      case (airline, airport, count) => airport
+    }.view.mapValues { list =>
+      list.map {
+        case (airline, airport, count) => (airline, count)
+      }.groupBy(_._1).view.mapValues(_.map(_._2).sum)
+    }
+
+
+    allAirports.foreach { airport =>
+      if (!airport.getLounges().isEmpty) {
+        println(s"AIRPORT $airport : ${passengersByAirport.get(airport).map(_.toList)}")
+        val airlinesByPassengers : List[(Airline, Int)] = passengersByAirport.get(airport).map(_.toList).getOrElse(List.empty)
+
+        val eligibleAirlines = airlinesByPassengers.sortBy(_._2).takeRight(airport.getLounges()(0).getActiveRankingThreshold).map(_._1)
+        airport.getLounges().foreach { lounge =>
+          val newStatus =
+            if (eligibleAirlines.contains(lounge.airline)) {
+              LoungeStatus.ACTIVE
+            } else {
+              LoungeStatus.INACTIVE
+            }
+
+          if (lounge.status != newStatus) {
+            println(s"Flipping status for lounge $lounge to $newStatus")
+            AirlineSource.saveLounge(lounge.copy(status = newStatus))
+          }
+        }
+      }
+    }
   }
 
   def airportProjectSimulation(allAirports : List[Airport]) = {
