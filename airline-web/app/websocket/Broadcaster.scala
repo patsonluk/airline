@@ -102,6 +102,11 @@ object Broadcaster {
     airlineEventBus.publish(AirlinePrompts(airline, prompts))
     airlineEventBus.publish(AirlinePendingActions(airline, PendingActionUtil.getPendingActions(airline))) //should send empty list if none, so front end can clear
   }
+
+  def unsubscribeFromBroadcaster(subscribe: ActorRef) = {
+    broadcastEventBus.unsubscribe(subscribe)
+    airlineEventBus.unsubscribe(subscribe)
+  }
 }
 
 

@@ -78,8 +78,12 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
     case any =>
       println("received " + any + " not handled")
   }
+
   override def postStop() = {
-    println(self.path.toString + " stopped (post stop)")
+    Broadcaster.unsubscribeFromBroadcaster(self)
+    actorSystem.eventStream.unsubscribe(self)
+
+    println(self.path.toString + " stopped (post stop), unsubscribed from all event streams")
   }
 }
 
