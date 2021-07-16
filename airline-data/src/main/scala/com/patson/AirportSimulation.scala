@@ -285,7 +285,7 @@ object AirportSimulation {
 
     allAirports.foreach { airport =>
       if (!airport.getLounges().isEmpty) {
-        println(s"AIRPORT $airport : ${passengersByAirport.get(airport).map(_.toList)}")
+        //println(s"AIRPORT $airport : ${passengersByAirport.get(airport).map(_.toList)}")
         val airlinesByPassengers : List[(Airline, Int)] = passengersByAirport.get(airport).map(_.toList).getOrElse(List.empty)
 
         val eligibleAirlines = airlinesByPassengers.sortBy(_._2).takeRight(airport.getLounges()(0).getActiveRankingThreshold).map(_._1)
