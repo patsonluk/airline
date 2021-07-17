@@ -34,15 +34,7 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
       out ! message
     case (topic: SimulationEvent, payload: Any) => Some(topic).collect {
       case CycleCompleted(cycle, cycleEndTime) =>
-        println(s"${self.path} Received cycle completed: $cycle, invalidating cache")
-        MyWebSocketActor.lastSimulatedCycle = cycle
-        //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
-        AirlineCache.invalidateAll()
-        AirportCache.invalidateAll()
-        AirplaneOwnershipCache.invalidateAll()
-        AirportUtil.refreshAirports()
-
-        println(s"${self.path} Received cycle completed: $cycle, complete cache cleanup")
+        println(s"${self.path} Received cycle completed: $cycle")
         out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
         Broadcaster.checkPrompts(airlineId)
       case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
@@ -111,6 +103,17 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
       println(s"Local main actor received topic $topic, re-publishing to ${actorSystem}")
+      Some(topic).collect {
+        case CycleCompleted(cycle, cycleEndTime) =>
+          println(s"${self.path} invalidating cache")
+          MyWebSocketActor.lastSimulatedCycle = cycle
+          AirlineCache.invalidateAll()
+          AirportCache.invalidateAll()
+          AirplaneOwnershipCache.invalidateAll()
+          AirportUtil.refreshAirports()
+          println(s"${self.path} invalidated cache")
+      }
+
       actorSystem.eventStream.publish(topic, payload) //relay to local event stream... since i don't know if I can subscribe to remote event stream...
     case Resubscribe(remoteActor) =>
       println(self.path.toString +  " Attempting to resubscribe")
