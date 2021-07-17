@@ -46,6 +46,7 @@ function onClose(evt) {}
 function onMessage(evt) { //right now the message is just the cycle #, so refresh the panels
 	var json = JSON.parse(evt.data)
 	if (json.ping) { //ok
+	    console.debug("ping : " + json.ping)
         return
     }
 	console.log("websocket received message : " + evt.data)

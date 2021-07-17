@@ -196,7 +196,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
   // what to do when we receive message from the webserver
   ws.onmessage = function(msg) {
     if (msg.data == "ping") {
-        console.debug("ping from server")
+        console.debug("chat ping from server")
         return
      //ok
     }

@@ -43,7 +43,7 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
     }
     case TriggerPing() =>
       println(s"${new Date()} - ${self.path} trigger ping")
-      out ! Json.obj("ping" -> true)
+      out ! Json.obj("ping" -> "event")
     case BroadcastMessage(text) =>
       out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)
     case AirlineDirectMessage(airline, text) =>
