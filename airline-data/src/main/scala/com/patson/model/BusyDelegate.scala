@@ -78,7 +78,11 @@ abstract class LevelingDelegateTask(startCycle : Int, delegateTaskType: Delegate
 
 case class LinkNegotiationDelegateTask(startCycle : Int, fromAirport : Airport, toAirport : Airport) extends DelegateTask(startCycle, DelegateTaskType.LINK_NEGOTIATION) {
   override val description: String = s"Flight from ${fromAirport.displayText} to ${toAirport.displayText}"
-  override val coolDown: Int = 12
+  override val coolDown: Int = LinkNegotiationDelegateTask.COOL_DOWN
+}
+
+object LinkNegotiationDelegateTask {
+  val COOL_DOWN = 12
 }
 
 object DelegateTaskType extends Enumeration {

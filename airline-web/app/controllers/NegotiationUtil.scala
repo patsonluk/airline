@@ -3,7 +3,7 @@ package controllers
 import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CountrySource, CycleSource, DelegateSource, LinkSource, NegotiationSource}
 import com.patson.model
 import com.patson.model.FlightType._
-import com.patson.model._
+import com.patson.model.{LinkNegotiationDelegateTask, _}
 import com.patson.model.airplane._
 import com.patson.model.negotiation.LinkNegotiationDiscount
 import com.patson.util.{AirportCache, ChampionUtil, CountryCache}
@@ -585,7 +585,7 @@ case class NegotiationSession(passingScore : Double, sessionScores : List[Double
 object NegotiationBonus {
   val pool = List(
     NegotiationCashBonusTemplate(1), NegotiationCashBonusTemplate(2), NegotiationCashBonusTemplate(5), NegotiationCashBonusTemplate(10),
-    NegotiationCooldownBonusTemplate(2), NegotiationCooldownBonusTemplate(4), NegotiationCooldownBonusTemplate(6),
+    NegotiationCooldownBonusTemplate(LinkNegotiationDelegateTask.COOL_DOWN / 2), NegotiationCooldownBonusTemplate(LinkNegotiationDelegateTask.COOL_DOWN / 2), NegotiationCooldownBonusTemplate(LinkNegotiationDelegateTask.COOL_DOWN),
     NegotiationAwarenessBonusTemplate(50),
     NegotiationLoyaltyBonusTemplate(1), NegotiationLoyaltyBonusTemplate(2), NegotiationLoyaltyBonusTemplate(5)
   )
@@ -662,10 +662,10 @@ case class NegotiationCooldownBonusTemplate(discountCycle : Int) extends Negotia
   val intensityCompute = if (discountCycle <= 3) 1 else 2
   override def computeBonus(monetaryBaseValue : Long, delegates : List[BusyDelegate], airport : Airport) : NegotiationBonus = {
     val description =
-      if (discountCycle <= 3) {
+      if (discountCycle < LinkNegotiationDelegateTask.COOL_DOWN) {
         s"The delegates are encouraged by the success, cooldown reduced by $discountCycle weeks!"
       } else {
-        s"The delegates are energized by the great success, cooldown reduced by $discountCycle weeks!"
+        s"The delegates are energized by the great success, they are ready for next assignment!"
       }
     NegotiationCooldownBonus(delegates, discountCycle, description, intensity)
   }
@@ -683,7 +683,7 @@ case class NegotiationAwarenessBonusTemplate(awarenessBonus : Int) extends Negot
 case class NegotiationLoyaltyBonusTemplate(bonusFactor : Int) extends NegotiationBonusTemplate {
   val duration = 52
   val MAX_BONUS = 20
-  val intensityCompute = bonusFactor / 2 + 1
+  val intensityCompute = bonusFactor + 1
   override def computeBonus(monetaryBaseValue : Long, delegates : List[BusyDelegate], airport : Airport) : NegotiationBonus = {
     val loyaltyBonus = BigDecimal(Math.min(20, monetaryBaseValue.toDouble / airport.power * 1000000)).setScale(2, RoundingMode.HALF_UP)
     val description =
