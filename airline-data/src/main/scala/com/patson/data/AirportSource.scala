@@ -473,23 +473,24 @@ object AirportSource {
     try {
       connection.setAutoCommit(false)
 
-      val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
-      purgeStatement.setInt(1, airportId)
+      val purgeStatement = connection.prepareStatement("TRUNCATE " + AIRLINE_APPEAL_TABLE)
       purgeStatement.executeUpdate()
       purgeStatement.close()
 
       val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
-      airlineAppeals.foreach {
-        case(airlineId, airlineAwareness) =>
-          //if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
-          if (airlineAwareness > 0) {
+      airlineAppealsByAirport.foreach {
+        case(airport, map) => map.foreach {
+          case (airlineId, airlineAwareness) =>
+            //if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
+            if (airlineAwareness > 0) {
 
-            insertStatement.setInt(1, airportId)
-            insertStatement.setInt(2, airlineId)
-            insertStatement.setDouble(3, 0) //no longer using this
-            insertStatement.setDouble(4, airlineAwareness)
-            insertStatement.addBatch()
-          }
+              insertStatement.setInt(1, airport.id)
+              insertStatement.setInt(2, airlineId)
+              insertStatement.setDouble(3, 0) //no longer using this
+              insertStatement.setDouble(4, airlineAwareness)
+              insertStatement.addBatch()
+            }
+        }
       }
       insertStatement.executeBatch()
       insertStatement.close()
