@@ -11,6 +11,7 @@ import com.patson.model.{Airline, AllianceRole, User}
 import play.api.Logger
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
+import java.util.Date
 import scala.collection.mutable
 import scala.collection.mutable.{Map, Queue}
 import scala.concurrent.{Await, ExecutionContext}
@@ -18,7 +19,9 @@ import scala.concurrent.{Await, ExecutionContext}
 // our domain message protocol
 case class Join(user : User)
 case class Leave(user : User)
-case class TriggerPing()
+case class TriggerPing() {
+  val date = new Date()
+}
 class Message
 final case class ClientSentMessage(text: String)
 
@@ -57,7 +60,7 @@ class ChatControllerActor extends Actor {
 
   val messageIdCounter = new AtomicLong(0)
 
-  context.system.scheduler.schedule(Duration.ZERO, Duration.ofMinutes(1), self, TriggerPing, ec, self)
+  //context.system.scheduler.schedule(Duration.ZERO, Duration.ofMinutes(1), self, TriggerPing, ec, self)
 
 
 

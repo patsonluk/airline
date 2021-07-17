@@ -12,7 +12,7 @@ import models.PendingAction
 import play.api.libs.json.{JsNumber, Json}
 import websocket.chat.TriggerPing
 
-import java.util.{Timer, TimerTask}
+import java.util.{Date, Timer, TimerTask}
 import scala.collection.mutable
 
 //Instead of maintaining a new actor connection whenever someone logs in, we will only maintain one connection between sim and web app, once sim finishes a cycle, it will send one message the the web app actor, and the web app actor will relay the message in an event stream, which is subscribed by each login section.
@@ -34,6 +34,7 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
       out ! message
     case (topic: SimulationEvent, payload: Any) => Some(topic).collect {
       case CycleCompleted(cycle, cycleEndTime) =>
+        println(s"${self.path} Received cycle completed: $cycle, invalidating cache")
         MyWebSocketActor.lastSimulatedCycle = cycle
         //TODO invalidate the caches -> not the best thing to do it here, as this runs for each connected user. we should subscribe to remote with another separate actor. For now this is a quick fix
         AirlineCache.invalidateAll()
@@ -41,7 +42,7 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
         AirplaneOwnershipCache.invalidateAll()
         AirportUtil.refreshAirports()
 
-        println(s"${self.path} Received cycle completed: " + cycle)
+        println(s"${self.path} Received cycle completed: $cycle, complete cache cleanup")
         out ! Json.obj("messageType" -> "cycleCompleted", "cycle" -> cycle) //if a CycleCompleted is published to the stream, notify the out(websocket) of the cycle
         Broadcaster.checkPrompts(airlineId)
       case CycleInfo(cycle, fraction, cycleDurationEstimation) =>
@@ -49,6 +50,7 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
         out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
     }
     case TriggerPing() =>
+      println(s"${new Date()} - ${self.path} trigger ping")
       out ! Json.obj("ping" -> true)
     case BroadcastMessage(text) =>
       out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)
@@ -108,8 +110,8 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
 
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
-      println(s"Local main actor received topic $topic, re-publishing to ${context.system}")
-      context.system.eventStream.publish(topic, payload) //relay to local event stream... since i don't know if I can subscribe to remote event stream...
+      println(s"Local main actor received topic $topic, re-publishing to ${actorSystem}")
+      actorSystem.eventStream.publish(topic, payload) //relay to local event stream... since i don't know if I can subscribe to remote event stream...
     case Resubscribe(remoteActor) =>
       println(self.path.toString +  " Attempting to resubscribe")
       remoteActor ! "subscribe"

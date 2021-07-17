@@ -31,7 +31,7 @@ object MyWebSocketActor {
   startBackgroundPingTrigger()
 
   def startBackgroundPingTrigger(): Unit = {
-    actorSystem.scheduler.schedule(Duration.Zero, Duration(10, TimeUnit.SECONDS), new Runnable {
+    actorSystem.scheduler.schedule(Duration.Zero, Duration(30, TimeUnit.SECONDS), new Runnable {
       def run(): Unit = {
         actorSystem.eventStream.publish(TriggerPing())
       }
@@ -79,7 +79,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
   override def postStop() = {
     //subscriberId.foreach { ActorCenter.unsubscribe(_) }
     println(s"${self.path} is stopped")
-    actorSystem.eventStream.unsubscribe(self)
+    //actorSystem.eventStream.unsubscribe(self)
     outActor ! PoisonPill //have to explicitly kill the output actor since it is not a child
     //MyWebSocketActor.backgroundActor ! RemoveFromBackground
   }
