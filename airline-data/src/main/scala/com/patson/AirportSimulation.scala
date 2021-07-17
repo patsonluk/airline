@@ -273,7 +273,11 @@ object AirportSimulation {
   def updateLoungeStatus(allAirports : List[Airport], linkRidershipDetails : Predef.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("Checking lounge status")
     val passengersByAirport : MapView[Airport, MapView[Airline, Int]] = linkRidershipDetails.toList.flatMap {
-      case ((passengerGroup, airport, route), count) => List((route.links.head.link.airline, route.links.head.from, count), (route.links.last.link.airline, route.links.last.to, count))
+      case ((passengerGroup, airport, route), count) =>
+        route.links.flatMap { linkConsideration =>
+          List((linkConsideration.link.airline, linkConsideration.from, count), (linkConsideration.link.airline, linkConsideration.to, count))
+        }
+
     }.groupBy {
       case (airline, airport, count) => airport
     }.view.mapValues { list =>
