@@ -97,9 +97,7 @@ object AirportSimulation {
             existingAwareness + AWARENESS_INCREMENT_WITH_LINKS
           }
         //airport.setAirlineAwareness(airlineId, newAwareness)
-        if (existingAwareness != newAwareness) {
-          updatingAwareness.put(airlineIdConnectedToThisAirport, newAwareness)
-        }
+        updatingAwareness.put(airlineIdConnectedToThisAirport, newAwareness)
       }
 
 
