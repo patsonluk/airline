@@ -41,8 +41,8 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
         println(s"${self.path} Received cycle info on cycle: " + cycle)
         out ! Json.obj("messageType" -> "cycleInfo", "cycle" -> cycle, "fraction" -> fraction, "cycleDurationEstimation" -> cycleDurationEstimation)
     }
-    case TriggerPing() =>
-      println(s"${new Date()} - ${self.path} trigger ping")
+    case ping : TriggerPing =>
+      println(s"${new Date()} - ${self.path} trigger ping created at ${ping.creationDate}")
       out ! Json.obj("ping" -> "event")
     case BroadcastMessage(text) =>
       out ! Json.obj("messageType" -> "broadcastMessage", "message" -> text)

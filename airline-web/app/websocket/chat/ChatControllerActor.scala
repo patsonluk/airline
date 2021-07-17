@@ -20,7 +20,7 @@ import scala.concurrent.{Await, ExecutionContext}
 case class Join(user : User)
 case class Leave(user : User)
 case class TriggerPing() {
-  val date = new Date()
+  val creationDate = new Date()
 }
 class Message
 final case class ClientSentMessage(text: String)
