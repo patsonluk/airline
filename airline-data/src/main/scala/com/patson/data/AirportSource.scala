@@ -468,7 +468,7 @@ object AirportSource {
     loadAirportsByCriteria(List(("country_code", countryCode)))
   }
 
-  def replaceAirlineAppeals(airportId : Int, airlineAppeals : Map[Int, Double]) = {
+  def replaceAirlineAppeals(airlineAppealsByAirport : Map[Airport, Map[Int, Double]]) = {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)

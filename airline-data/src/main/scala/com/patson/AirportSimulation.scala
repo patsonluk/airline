@@ -38,7 +38,6 @@ object AirportSimulation {
     val linksByFromAirportId = flightLinks.groupBy(_.from.id)
     val linksByToAirportId = flightLinks.groupBy(_.to.id)
 
-    println("Compute awareness")
     simulateAwareness(allAirports, linksByFromAirportId, linksByToAirportId)
 
     //update the loyalist on airports based on link consumption
@@ -59,6 +58,8 @@ object AirportSimulation {
   }
 
   def simulateAwareness(allAirports : List[Airport], linksByFromAirportId : immutable.Map[Int, List[Link]], linksByToAirportId : immutable.Map[Int, List[Link]]) = {
+    val finalUpdates = mutable.HashMap[Airport, immutable.Map[Int, Double]]()
+    println("Compute awareness")
     allAirports.foreach { airport =>
       val updatingAwareness = mutable.HashMap[Int, Double]()
       airport.getAirlineBaseAppeals().foreach {
@@ -102,10 +103,13 @@ object AirportSimulation {
 
 
       if (!updatingAwareness.isEmpty || !airport.getAirlineBaseAppeals().isEmpty) { //2nd or is for removal of existing appeals
-        AirportSource.replaceAirlineAppeals(airport.id, updatingAwareness.toMap)
+        //AirportSource.replaceAirlineAppeals(airport.id, updatingAwareness.toMap)
+        finalUpdates.put(airport, updatingAwareness.toMap)
       }
-
     }
+    println("Finished computation of awareness, now updating")
+    AirportSource.replaceAirlineAppeals(finalUpdates.toMap)
+    println("Finished updating awareness")
   }
 
 
