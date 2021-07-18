@@ -186,6 +186,9 @@ object PassengerSimulation {
      
     println("Total chunks that consume something " + consumptionResult.size)
     println("Total missed chunks " + missedDemandChunks.size)
+
+    println("Total transported pax " + consumptionResult.map(_._3).sum)
+    println("Total missed pax " + missedDemandChunks.map(_._3).sum)
     
     //collapse it now
     val collapsedMap = consumptionResult.groupBy { 
