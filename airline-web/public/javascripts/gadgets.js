@@ -1,5 +1,11 @@
 var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
 
+function htmlEncode(str){
+  return String(str).replace(/[^\w. ]/gi, function(c){
+     return '&#'+c.charCodeAt(0)+';';
+  });
+}
+
 function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, callback) {
     generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, 10, callback)
 }

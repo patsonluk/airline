@@ -340,7 +340,7 @@ function prependMessage(r_msg) {
     var prefix = buildPrefix(r_msg)
     if (!r_msg.allianceRoomId) {
         if (r_msg.id < firstGeneralMessageId) { //prevent duplicate calls
-            $('#chat-box #chatBox-1 ul').prepend('<li class="message">' + prefix + r_msg.text + '</li>')
+            $('#chat-box #chatBox-1 ul').prepend('<li class="message">' + prefix + htmlEncode(r_msg.text) + '</li>')
 
             if (firstGeneralMessageId == -1 || r_msg.id < firstGeneralMessageId) {
                 firstGeneralMessageId = r_msg.id
@@ -348,7 +348,7 @@ function prependMessage(r_msg) {
         }
     } else {
         if (r_msg.id < firstAllianceMessageId) { //prevent duplicate calls
-            $('#chat-box #chatBox-2 ul').prepend('<li class="message">' + prefix + r_msg.text + '</li>')
+            $('#chat-box #chatBox-2 ul').prepend('<li class="message">' + prefix + htmlEncode(r_msg.text) + '</li>')
             if (firstAllianceMessageId == -1 || r_msg.id < firstAllianceMessageId) {
                 firstAllianceMessageId = r_msg.id
             }
@@ -374,12 +374,12 @@ function pushMessage(r_msg) {
     var atScrollBottom = ($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop === $activeHistory[0].clientHeight)
     var prefix = buildPrefix(r_msg)
     if (!r_msg.allianceRoomId) {
-        $('#chat-box #chatBox-1 ul').append('<li class="message">' + prefix + r_msg.text + '</li>')
+        $('#chat-box #chatBox-1 ul').append('<li class="message">' + prefix + htmlEncode(r_msg.text) + '</li>')
         if (firstGeneralMessageId == -1 || r_msg.id < firstGeneralMessageId) {
             firstGeneralMessageId = r_msg.id
         }
     } else {
-        $('#chat-box #chatBox-2 ul').append('<li class="message">' + prefix + r_msg.text + '</li>')
+        $('#chat-box #chatBox-2 ul').append('<li class="message">' + prefix + htmlEncode(r_msg.text) + '</li>')
         if (firstAllianceMessageId == -1 || r_msg.id < firstAllianceMessageId) {
             firstAllianceMessageId = r_msg.id
         }

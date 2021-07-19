@@ -485,7 +485,7 @@ function updateFacilityList(statistics) {
 	$.each(statistics.lounges, function(index, loungeStats) {
 		var lounge = loungeStats.lounge
 		var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell'>" +  getAirlineLogoImg(lounge.airlineId) + lounge.airlineName + "</div>")
+		row.append("<div class='cell'>" +  getAirlineLogoImg(lounge.airlineId) + htmlEncode(lounge.airlineName) + "</div>")
 		row.append("<div class='cell'>" + lounge.name + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + lounge.level + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + lounge.status + "</div>")
