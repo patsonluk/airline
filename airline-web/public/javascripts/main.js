@@ -11,6 +11,13 @@ var airlineColors = {}
 var polylines = []
 var airports = undefined
 
+var old = alert;
+
+alert = function() {
+  console.log(new Error().stack);
+  old.apply(window, arguments);
+};
+
 $( document ).ready(function() {
 	mobileCheck()
 	$('#tutorialHtml').load('assets/html/tutorial.html')
