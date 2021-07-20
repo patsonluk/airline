@@ -192,6 +192,11 @@ object DemandGenerator {
 	  adjustedDemand *= 0.75
     	}
       }
+      
+      //adjustments: People from NK don't travel a lot.
+      if (fromAirport.countryCode == "NK" || toAirport.countryCode == "NK") {
+	adjustedDemand *= 0.5 
+      }
 
       if (adjustedDemand >= 100 && distance < 200) { //diminished demand for close short routes
         adjustedDemand = 100 + Math.pow(adjustedDemand - 100, 0.6)
