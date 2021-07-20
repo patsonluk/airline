@@ -51,8 +51,7 @@ object QuickCreateSchema extends App {
 //    Meta.createLog(connection)
 //    Meta.createAlert(connection)
     //Meta.createDelegate(connection)
-    Meta.createAirlineLivery(connection)
-    Meta.createAirlineSlogan(connection)
+    Meta.createIp(connection)
   }
   
   

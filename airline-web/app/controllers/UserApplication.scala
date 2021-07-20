@@ -7,9 +7,9 @@ import play.api.mvc._
 import play.api.libs.json.Writes
 import com.patson.model.{Airline, User, UserStatus}
 import play.api.libs.json._
-import com.patson.data.UserSource
-import com.patson.data.AllianceSource
+import com.patson.data.{AllianceSource, IpSource, UserSource}
 import com.patson.util.AllianceCache
+
 import javax.inject.Inject
 
 class UserApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -43,7 +43,13 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (request.user.status == UserStatus.INACTIVE) {
       UserSource.updateUser(request.user.copy(status = UserStatus.ACTIVE))
     }
-    Ok(Json.toJson(request.user)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
+    IpSource.saveUserIp(request.user.id, request.remoteAddress)
+    if (request.user.status == UserStatus.BANNED) {
+      println(s"Banned user ${request.user} tried to login")
+      Forbidden("User is banned")
+    } else {
+      Ok(Json.toJson(request.user)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
+    }
   }
   
   def logout = Authenticated { implicit request =>
