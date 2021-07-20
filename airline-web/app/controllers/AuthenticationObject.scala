@@ -33,7 +33,7 @@ object AuthenticationObject {
 
   val unauthorizedHandler = (request : RequestHeader) =>
     if (!request.session.isEmpty && request.session.get("userToken").isDefined) {
-      BadRequest("User token is invalid")
+      BadRequest("User token is invalid").removingFromSession("userToken")(request)
     } else {
       Unauthorized("Invalid login")
     }
@@ -47,7 +47,6 @@ object AuthenticationObject {
           case None => println(s"Invalid token $userToken")
         }
       }
-
     }
     if (!request.headers.get("Authorization").isEmpty) {
       val result = request.headers.get("Authorization").flatMap { authorization =>
@@ -59,6 +58,7 @@ object AuthenticationObject {
                 UserSource.loadUserByUserName(userName)
               } else {
                 println("Invalid userName and password on user " + userName)
+                request.session.+(("rejection", "password"))
                 None
               }
             case _ => None

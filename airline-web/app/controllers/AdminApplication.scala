@@ -1,7 +1,7 @@
 package controllers
 
-import com.patson.data.{AirlineSource, UserSource}
-import com.patson.model.UserStatus
+import com.patson.data.{AirlineSource, AllianceSource, IpSource, UserSource}
+import com.patson.model.{Airline, AirlineGrade, AllianceRole, UserStatus}
 import com.patson.model.UserStatus.UserStatus
 import com.patson.util.{AirlineCache, AirportCache}
 import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
@@ -26,8 +26,21 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
         case "ban-chat" =>
           changeUserStatus(UserStatus.CHAT_BANNED, targetUserId)
           Ok(Json.obj("action" -> action))
+        case "ban-reset" =>
+          changeUserStatus(UserStatus.BANNED, targetUserId)
+          UserSource.loadUserById(targetUserId).foreach { user =>
+            user.getAccessibleAirlines().foreach { airline =>
+              Airline.resetAirline(airline.id, newBalance = 0, true) match {
+                case Some(airline) =>
+                  Ok(Json.obj("action" -> action))
+                case None => NotFound
+              }
+            }
+          }
+          Ok(Json.obj("action" -> action))
         case "un-ban" =>
           changeUserStatus(UserStatus.ACTIVE, targetUserId)
+          //unbanUserIp(targetUserId)
           Ok(Json.obj("action" -> action))
         case "switch" =>
           if (request.user.isSuperAdmin) {
@@ -45,6 +58,14 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
       Forbidden("Not an admin user")
     }
   }
+
+//  def banUserIp(userId : Int) = {
+//    IpSource.saveBannedIps(userId)
+//  }
+//
+//  def unbanUserIp(userId : Int) = {
+//    IpSource.deleteBannedIps(userId)
+//  }
 
   def invalidateCustomization(airlineId : Int) = Authenticated { implicit request =>
     if (request.user.isAdmin) {

@@ -71,6 +71,9 @@ function showAdminActions(airline) {
 function ban() {
     adminAction("ban", $("#rivalDetails .adminActions").data("userId"))
 }
+function banAndReset() {
+    adminAction("ban-reset", $("#rivalDetails .adminActions").data("userId"))
+}
 function unban() {
     adminAction("un-ban", $("#rivalDetails .adminActions").data("userId"))
 }

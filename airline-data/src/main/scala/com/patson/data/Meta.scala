@@ -309,6 +309,7 @@ object Meta {
     createAirportAnimation(connection)
     createAirlineBaseSpecialization(connection)
     createReputationBreakdown(connection)
+    createIp(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1847,6 +1848,31 @@ object Meta {
       "value DECIMAL(10, 2), " +
       "PRIMARY KEY (airline, reputation_type)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createIp(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_IP_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + USER_IP_TABLE + "(" +
+      "user INTEGER, " +
+      "ip VARCHAR(256) NOT NULL, " +
+      "PRIMARY KEY(user, ip)," +
+      "FOREIGN KEY(user) REFERENCES " + USER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + BANNED_IP_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + BANNED_IP_TABLE + "(" +
+      "ip VARCHAR(256) PRIMARY KEY" +
       ")")
     statement.execute()
     statement.close()
