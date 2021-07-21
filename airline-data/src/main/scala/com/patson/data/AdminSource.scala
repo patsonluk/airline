@@ -10,7 +10,7 @@ object AdminSource {
   def saveLog(action : String, adminUserName : String, targetUserId : Int) = {
     val connection = Meta.getConnection()
     //case class Log(airline : Airline, message : String, cateogry : LogCategory.Value, severity : LogSeverity.Value, cycle : Int)
-    val statement = connection.prepareStatement(s"INSERT INTO $ADMIN_LOG_TABLE (admin, action, user_id) VALUES(?,?,?)")
+    val statement = connection.prepareStatement(s"INSERT INTO $ADMIN_LOG_TABLE (admin_user, admin_action, user_id) VALUES(?,?,?)")
 
     try {
       statement.setString(1, adminUserName)

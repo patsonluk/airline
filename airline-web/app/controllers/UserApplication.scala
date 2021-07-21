@@ -24,6 +24,10 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         "creationTime" -> JsString(user.creationTime.getTime.toString()),
         "lastActiveTime" -> JsString(user.lastActiveTime.getTime.toString()),
         "airlineIds" -> JsArray(user.getAccessibleAirlines().map { airline => JsNumber(airline.id) })))
+
+      user.adminStatus.foreach { adminStatus =>
+        result = result + ("adminStatus" -> JsString(adminStatus.toString))
+      }
       
       if (user.getAccessibleAirlines().isDefinedAt(0)) {
         AllianceSource.loadAllianceMemberByAirline(user.getAccessibleAirlines()(0)).foreach { allianceMember => //if this airline belongs to an alliance

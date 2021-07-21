@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.{AirlineSource, AllianceSource, IpSource, UserSource}
+import com.patson.data.{AdminSource, AirlineSource, AllianceSource, IpSource, UserSource}
 import com.patson.model.{Airline, AirlineGrade, AllianceRole, UserStatus}
 import com.patson.model.UserStatus.UserStatus
 import com.patson.util.{AirlineCache, AirportCache}
@@ -19,6 +19,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
 
   def adminAction(action : String, targetUserId : Int) = Authenticated { implicit request =>
     if (request.user.isAdmin) {
+      AdminSource.saveLog(action, request.user.userName, targetUserId)
       action match {
         case "ban" =>
           changeUserStatus(UserStatus.BANNED, targetUserId)
@@ -52,7 +53,6 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
           println(s"unknown admin action $action")
           BadRequest(Json.obj("action" -> action))
       }
-      AdminSource.saveLog(action, request.user.userName, targetUserId)
     } else {
       println(s"Non admin ${request.user} tried to access admin operations!!")
       Forbidden("Not an admin user")

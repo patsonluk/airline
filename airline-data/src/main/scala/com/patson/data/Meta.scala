@@ -1886,9 +1886,10 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + ADMIN_LOG_TABLE + "(" +
-      "admin VARCHAR(256) NOT NULL, " +
-      "action VARCHAR(256) NOT NULL, " +
-      "user INTEGER" +
+      "admin_user VARCHAR(256) NOT NULL, " +
+      "admin_action VARCHAR(256) NOT NULL, " +
+      "user_id INTEGER, " +
+      "action_time DATETIME DEFAULT CURRENT_TIMESTAMP" +
       ")")
     statement.execute()
     statement.close()
