@@ -52,7 +52,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
           println(s"unknown admin action $action")
           BadRequest(Json.obj("action" -> action))
       }
-
+      AdminSource.saveLog(action, request.user.userName, targetUserId)
     } else {
       println(s"Non admin ${request.user} tried to access admin operations!!")
       Forbidden("Not an admin user")

@@ -228,9 +228,6 @@ function getUserLevelImg(level) {
 	} else if (level == 3) {
 		levelIcon = "assets/images/icons/medal-red-premium.png"
 		levelTitle = "Patreon : Gold"
-	} else if (level == 10 || 20) {
-		levelIcon = "assets/images/icons/star.png"
-        levelTitle = "Game Admin"
 	}
 	
 	if (levelIcon) {
@@ -238,6 +235,21 @@ function getUserLevelImg(level) {
 	} else {
 		return ""
 	} 
+}
+
+function getAdminImg(adminStatus) {
+	if (!adminStatus) {
+		return ""
+	}
+
+	var	levelIcon = "assets/images/icons/star.png"
+    var levelTitle = "Game Admin"
+
+	if (levelIcon) {
+		return "<img src='" + levelIcon + "' title='" + levelTitle + "' style='vertical-align:middle;'/>"
+	} else {
+		return ""
+	}
 }
 
 function getRankingImg(ranking) {

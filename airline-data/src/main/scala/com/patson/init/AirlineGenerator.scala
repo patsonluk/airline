@@ -45,7 +45,7 @@ object AirlineGenerator extends App {
     val airportsByZone = airports.groupBy { _.zone }
     for (i <- 0 until count) {
       val baseAirport = topAirports(i)
-      val user = User(userName = baseAirport.iata, email = "", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0)
+      val user = User(userName = baseAirport.iata, email = "", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None)
       UserSource.saveUser(user)
       Authentication.createUserSecret(baseAirport.iata, "1234")
       
