@@ -310,6 +310,7 @@ object Meta {
     createAirlineBaseSpecialization(connection)
     createReputationBreakdown(connection)
     createIp(connection)
+    createAdminLog(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -606,6 +607,7 @@ object Meta {
       "user_name VARCHAR(100) UNIQUE, " +
       "email VARCHAR(256) NOT NULL, " +
       "status  VARCHAR(256) NOT NULL, " +
+      "admin_status VARCHAR(256), " +
       "creation_time DATETIME DEFAULT CURRENT_TIMESTAMP, " +
       "level INTEGER NOT NULL DEFAULT 0, " +
       "last_active DATETIME DEFAULT CURRENT_TIMESTAMP)")
@@ -1873,6 +1875,21 @@ object Meta {
 
     statement = connection.prepareStatement("CREATE TABLE " + BANNED_IP_TABLE + "(" +
       "ip VARCHAR(256) PRIMARY KEY" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAdminLog(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ADMIN_LOG_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ADMIN_LOG_TABLE + "(" +
+      "admin_user VARCHAR(256) NOT NULL, " +
+      "admin_action VARCHAR(256) NOT NULL, " +
+      "user_id INTEGER, " +
+      "action_time DATETIME DEFAULT CURRENT_TIMESTAMP" +
       ")")
     statement.execute()
     statement.close()

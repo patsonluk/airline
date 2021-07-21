@@ -39,11 +39,11 @@ function invalidateImage(imageType) {
 	});
 }
 function isAdmin() {
-    return activeUser && activeUser.level >= 10
+    return activeUser && activeUser.adminStatus
 }
 
 function isSuperAdmin() {
-    return activeUser && activeUser.level >= 20
+    return activeUser && activeUser.adminStatus === "SUPER_ADMIN"
 }
 
 function initAdminActions() {

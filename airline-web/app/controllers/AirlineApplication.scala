@@ -56,6 +56,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       var result = Json.toJson(airline).asInstanceOf[JsObject] +
         ("userLevel" -> JsNumber(user.level)) +
         ("username" -> JsString(user.userName))
+      user.adminStatus.foreach { adminStatus =>
+        result = result + ("adminStatus" -> JsString(adminStatus.toString))
+      }
 
       if (isCurrentUserAdmin) {
         result = result + ("userStatus" -> JsString(user.status.toString)) + ("userId" -> JsNumber(user.id))

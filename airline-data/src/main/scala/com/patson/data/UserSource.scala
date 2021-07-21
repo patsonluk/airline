@@ -92,7 +92,11 @@ object UserSource {
           val lastActiveTime = Calendar.getInstance()
           lastActiveTime.setTime(dateFormat.get().parse(resultSet.getString("u.last_active")))
           val status = UserStatus.withName(resultSet.getString("u.status"))
-          (User(userName, resultSet.getString("u.email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"), id = userId), ListBuffer[Int]())  
+          val adminStatusObject = resultSet.getObject("u.admin_status")
+          val adminStatus = if (adminStatusObject == null) None else Some(AdminStatus.withName(adminStatusObject.asInstanceOf[String]))
+
+
+          (User(userName, resultSet.getString("u.email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"),  adminStatus = adminStatus, id = userId), ListBuffer[Int]())
         })
         
         userAirlines += resultSet.getInt("ua.airline") 
