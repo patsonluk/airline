@@ -434,7 +434,7 @@ object LinkComment {
   }
 
   def loungeComment(loungeRequirement: Int, airport : Airport, airlineId : Int, allianceIdOption : Option[Int])(implicit random : Random) = {
-    val loungeOption = airport.getLounge(airlineId, allianceIdOption)
+    val loungeOption = airport.getLounge(airlineId, allianceIdOption, activeOnly = true)
     val loungeLevel = loungeOption.map(_.level).getOrElse(0)
     val adjustedLoungeRequirement = Math.max(1, Math.min(Lounge.MAX_LEVEL, (loungeRequirement + com.patson.Util.getBellRandom(0, Lounge.MAX_LEVEL, Some(random.nextInt()))).toInt))
     val delta = loungeLevel - adjustedLoungeRequirement
