@@ -82,6 +82,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 		}
 		row.append("<div class='cell' align='right'>" + airline.reputation + "</div>")
 		row.append("<div class='cell' align='right'>" + airline.baseCount + "</div>")
+		row.append("<div class='cell' align='right' hidden>" + airline.id + "</div>")
 		
 		if (selectedAirline == airline.id) {
 			row.addClass("selected")
