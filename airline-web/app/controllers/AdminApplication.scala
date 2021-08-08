@@ -66,6 +66,14 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
 //  def unbanUserIp(userId : Int) = {
 //    IpSource.deleteBannedIps(userId)
 //  }
+  def getUserIps(userId : Int) = Authenticated { implicit request =>
+    if (request.user.isAdmin) {
+      Ok(Json.obj("result" -> IpSource.loadUserIps(userId)))
+    } else {
+      println(s"Non admin ${request.user} tried to access admin operations!!")
+      Forbidden("Not an admin user")
+    }
+  }
 
   def invalidateCustomization(airlineId : Int) = Authenticated { implicit request =>
     if (request.user.isAdmin) {
