@@ -73,9 +73,15 @@ function showAdminActions(airline) {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(ips) {
-            $.each(ips, function(index, ip) {
-                $("#rivalDetails .adminActions .ips").append("<div>" + ip + "<div>")
+            ips.sort(function(a, b){
+                if(a < b) { return -1; }
+                if(a > b) { return 1; }
+                return 0;
             })
+            $.each(ips, function(index, ip) {
+                $("#rivalDetails .adminActions .ips").append("<div style='padding-right : 10px; float: left'>" + ip + "</div>")
+            })
+            $("#rivalDetails .adminActions .ips").append("<div style='clear : both;'></div>")
 
         },
         error: function(jqXHR, textStatus, errorThrown) {
