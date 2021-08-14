@@ -119,7 +119,8 @@ object AirlineSimulation {
         val targetServiceQuality =
           if (airline.getBalance() < 0) { //service quality is now 90% of what it was before to reduce costs (reduces by 10% every cycle I think)
             serviceFunding = airline.getTargetServiceQuality() * 0.9
-            airline.getTargetServiceQuality() * 0.9
+            serviceFunding = serviceFunding.toInt
+            serviceFunding
           } else {
             airline.getTargetServiceQuality()
           }
