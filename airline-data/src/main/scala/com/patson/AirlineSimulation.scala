@@ -118,8 +118,8 @@ object AirlineSimulation {
         var serviceFunding = getServiceFunding(airline.getTargetServiceQuality(), linksOfThisAirline)
         val targetServiceQuality =
           if (airline.getBalance() < 0) { //cease all funding, target will be 0
-            serviceFunding = 0
-            0
+            serviceFunding = airline.getTargetServiceQuality() * 0.9
+            airline.getTargetServiceQuality() * 0.9
           } else {
             airline.getTargetServiceQuality()
           }
