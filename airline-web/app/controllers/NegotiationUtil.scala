@@ -609,10 +609,24 @@ case class NegotiationCashBonus(cash : Long, description : String, val intensity
 
 case class NegotiationCooldownBonus(delegates : List[BusyDelegate], cooldownDiscount : Int, description : String, val intensity: Int) extends NegotiationBonus {
   def apply(airline : Airline) = {
-    val updatingDelegates = delegates.map { delegate =>
-      delegate.copy(availableCycle = delegate.availableCycle.map(_ - cooldownDiscount))
+    val currentCycle = CycleSource.loadCycle()
+
+    val updatingDelegates = ListBuffer[BusyDelegate]()
+    val freeDelegates = ListBuffer[BusyDelegate]()
+
+    delegates.foreach { delegate =>
+      delegate.availableCycle.foreach { cycle =>
+        val newCycle = cycle - cooldownDiscount
+        if (newCycle > currentCycle) {
+          updatingDelegates.append(delegate.copy(availableCycle = Some(newCycle)))
+        } else {
+          freeDelegates.append(delegate)
+        }
+      }
     }
-    DelegateSource.updateBusyDelegateAvailableCycle(updatingDelegates)
+
+    DelegateSource.updateBusyDelegateAvailableCycle(updatingDelegates.toList)
+    DelegateSource.deleteBusyDelegates(freeDelegates.toList)
   }
 }
 
