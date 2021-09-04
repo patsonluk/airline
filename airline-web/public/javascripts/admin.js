@@ -61,11 +61,35 @@ function initAdminActions() {
 
 
 function showAdminActions(airline) {
-    $("#rivalDetails .adminActions").data("airlineId", airline.id)
     $("#rivalDetails .adminActions").data("userId", airline.userId)
+    $("#rivalDetails .adminActions").data("airlineId", airline.id)
     $("#rivalDetails .adminActions .username").text(airline.username)
     $("#rivalDetails .adminActions .userId").text(airline.userId)
     $("#rivalDetails .adminActions .status").text(airline.userStatus)
+    $("#rivalDetails .adminActions .ips").empty()
+    $.ajax({
+        type: 'GET',
+        url: "/admin/user-ips/" + airline.userId,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(ips) {
+            ips.sort(function(a, b){
+                if(a < b) { return -1; }
+                if(a > b) { return 1; }
+                return 0;
+            })
+            $.each(ips, function(index, ip) {
+                $("#rivalDetails .adminActions .ips").append("<div style='padding-right : 10px; float: left'>" + ip + "</div>")
+            })
+            $("#rivalDetails .adminActions .ips").append("<div style='clear : both;'></div>")
+
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+
 }
 
 function ban() {

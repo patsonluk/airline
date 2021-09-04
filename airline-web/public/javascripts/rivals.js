@@ -82,7 +82,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 		}
 		row.append("<div class='cell' align='right'>" + airline.reputation + "</div>")
 		row.append("<div class='cell' align='right'>" + airline.baseCount + "</div>")
-		
+
 		if (selectedAirline == airline.id) {
 			row.addClass("selected")
 			selectedRow = row
@@ -129,7 +129,8 @@ function toggleRivalsTableSortOrder(sortHeader) {
 		sortHeader.data("sort-order", "ascending")
 	}
 	
-	sortHeader.siblings().removeClass("selected")
+	$('#rivalsTableSortHeader .cell').removeClass("selected")
+	$('#rivalIdSortButton').removeClass("selected")
 	sortHeader.addClass("selected")
 	
 	updateRivalsTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))

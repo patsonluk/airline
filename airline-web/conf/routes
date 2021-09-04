@@ -211,6 +211,7 @@ PUT		 /admin/send-airline-message/:targetAirlineId		controllers.AdminApplication
 PUT		 /admin/send-broadcast-message		            controllers.AdminApplication.sendBroadcastMessage()
 GET      /admin/invalidate-image/:airportId/:imageType  controllers.AdminApplication.invalidateImage(imageType : String, airportId : Int)
 GET      /admin/invalidate-customization/:airlineId  controllers.AdminApplication.invalidateCustomization(airlineId : Int)
+GET      /admin/user-ips/:userId   controllers.AdminApplication.getUserIps(userId : Int)
 
 
 # Signup

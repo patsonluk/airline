@@ -145,29 +145,33 @@ object PassengerSimulation {
                  //val linkClass = passengerGroup.preference.preferredLinkClass
                  
                  if (isRouteAffordable(pickedRoute, fromAirport, toAirport, passengerGroup.preference.preferredLinkClass)) {
-                   val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
-                     val actualLinkClass = linkConsideration.linkClass
-                     val availableSeats = linkConsideration.link.availableSeats(actualLinkClass) 
-                     if (availableSeats < foldInt) { availableSeats } else { foldInt }
-                   }
-                   //some capacity available on all the links, consume them NOMNOM NOM!
-                   if (consumptionSize > 0) {
-                     pickedRoute.links.foreach { linkConsideration =>
+                   if (isReasonableRouteDistance(pickedRoute, fromAirport, toAirport)) {
+                     val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
                        val actualLinkClass = linkConsideration.linkClass
-                       //val newAvailableSeats = linkConsideration.link.availableSeats(actualLinkClass) - consumptionSize
-                       
-                       linkConsideration.link.addSoldSeatsByClass(actualLinkClass, consumptionSize)
-                       //linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(actualLinkClass -> newAvailableSeats))
-    //                   if (link.availableSeats == 0) {
-    //                     println("EXHAUSED!! = " + link)
-    //                   }
+                       val availableSeats = linkConsideration.link.availableSeats(actualLinkClass)
+                       if (availableSeats < foldInt) { availableSeats } else { foldInt }
                      }
-                     consumptionResult.append((passengerGroup, toAirport, consumptionSize, pickedRoute))
-                   }
-                   //update the remaining demand chunk list
-                   if (consumptionSize < chunkSize) { //not totally satisfied 
-                     //put a updated demand chunk
-                     remainingDemandChunks.append((passengerGroup, toAirport, chunkSize - consumptionSize));
+                     //some capacity available on all the links, consume them NOMNOM NOM!
+                     if (consumptionSize > 0) {
+                       pickedRoute.links.foreach { linkConsideration =>
+                         val actualLinkClass = linkConsideration.linkClass
+                         //val newAvailableSeats = linkConsideration.link.availableSeats(actualLinkClass) - consumptionSize
+
+                         linkConsideration.link.addSoldSeatsByClass(actualLinkClass, consumptionSize)
+                         //linkConsideration.link.availableSeats = LinkClassValues(linkConsideration.link.availableSeats.map.+(actualLinkClass -> newAvailableSeats))
+                         //                   if (link.availableSeats == 0) {
+                         //                     println("EXHAUSED!! = " + link)
+                         //                   }
+                       }
+                       consumptionResult.append((passengerGroup, toAirport, consumptionSize, pickedRoute))
+                     }
+                     //update the remaining demand chunk list
+                     if (consumptionSize < chunkSize) { //not totally satisfied
+                       //put a updated demand chunk
+                       remainingDemandChunks.append((passengerGroup, toAirport, chunkSize - consumptionSize));
+                     }
+                   } else { //try again to see if there's any route within reasonable route distance
+                     remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
                    }
                  } else {
                    missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
@@ -220,17 +224,18 @@ object PassengerSimulation {
 
   val LINK_COST_TOLERANCE_FACTOR = 0.9
   val LINK_COST_TOLERANCE_NOISE_RANGE = 0.4 //ie -0.2 to 0.2
+  val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2.5
   val random = new Random()
+  def isReasonableRouteDistance(route: Route, fromAirport: Airport, toAirport: Airport) : Boolean = {
+    val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
+    val routeDistance = route.links.foldLeft(0)(_ + _.link.distance)
+
+    routeDistance <= routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR
+  }
+
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
 
-    //do not do distance check...since cost should already take that into account (duration/price etc)
-    //this is important as some airlines offer $0, and people would use some weird route since if they can travel in opposite direction but save money, they will do it
-//    val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2
-//    val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
-//    val routeDistance = pickedRoute.links.foldLeft(0)(_ + _.link.distance)
-//    if (routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR <= routeDistance) { //a route that distance is too long (too indirect)
-//      return false
-//    }
+
 
 
 //    val ROUTE_COST_TOLERANCE_FACTOR = 1.4

@@ -71,7 +71,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val capital = BASE_CAPITAL + difficulty * BONUS_PER_DIFFICULTY_POINT
 
     val profiles = ListBuffer[Profile]()
-    val cashProfile = Profile(name = "Entrepreneurial spirit", description = "You have sold all your assets to create this new airline of your dream! Plan carefully but make bold moves to thrive in this brave new world.", cash = capital, airport = airport)
+    val cashProfile = Profile(name = "Entrepreneurial spirit", description = "You have sold all your assets to create this new airline of your dream! Plan carefully but make bold moves to thrive in this brave new world. Recommended for new players.", cash = capital, airport = airport)
     profiles.append(cashProfile)
     val random = new Random(airport.id)
     val smallAirplanes = generateAirplanes(capital, (15 to 50), airport, 90, airline, random)
