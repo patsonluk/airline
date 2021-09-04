@@ -154,7 +154,7 @@ function editOilInventoryPolicy() {
 	    	$('#currentInventoryPolicyDiv').hide()
 	    	var table = $("#editInventoryPolicyTable")
 	    	table.children("div.table-row").remove()
-	    	
+
 	    	$.each(result.options, function(index, option) {
 	    		var row = $("<div class='table-row'></div>")
 	    		row.append("<div class='cell'>" + option.description + "</div>")
@@ -167,8 +167,16 @@ function editOilInventoryPolicy() {
 	    		
 	    		table.append(row)
 			});
-	    	
-	    	$('#editInventoryPolicyDiv .warning').text(result.warning)
+
+	    	if (result.rejection) {
+	    	    $('#editInventoryPolicyDiv .warning').text(result.rejection)
+	    	    $('#editInventoryPolicyDiv .warning').show()
+            } else if (result.warning) {
+                $('#editInventoryPolicyDiv .warning').text(result.warning)
+                $('#editInventoryPolicyDiv .warning').show()
+            } else {
+                $('#editInventoryPolicyDiv .warning').hide()
+            }
 	    	
 	    	$('#editInventoryPolicyDiv').show()
 	    },
