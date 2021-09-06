@@ -229,6 +229,11 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           downgradeRejection.foreach{ rejection =>
             result = result + ("downgradeRejection" -> JsString(rejection))
           }
+          val deleteRejection = getDeleteBaseRejection(request.user, existingBase.get)
+          deleteRejection.foreach { rejection =>
+            result = result + ("deleteRejection" -> JsString(rejection))
+          }
+
         }
         
         Ok(result)
@@ -459,37 +464,61 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      
      return None
   }
-  
+
+  def getDeleteBaseRejection(airline : Airline, base : AirlineBase) : Option[String] = {
+    if (base.headquarter) {
+      return Some("Cannot remove Headquarters")
+    }
+    //check connectivity
+    val airlineBases = airline.getBases().filterNot(_.headquarter).map { _.airport.id} //non hq bases
+    val links = LinkSource.loadFlightLinksByAirlineId(airline.id)
+    links.filter(_.from.id == base.airport.id).foreach { link =>
+      if (airlineBases.contains(link.to.id)) {
+        //then make sure there's still some link other then this pointing to the target
+        if (links.filter(_.to.id == link.to.id).size <= 1) {
+          return Some(s"Cannot remove this base as this flies to ${link.to.displayText}. Removing this will create a disconnected network" )
+        }
+      }
+    }
+    return None
+  }
+
+
   def deleteBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
       case Some(base) if base.headquarter => //no deleting head quarter for now
         BadRequest("Not allowed to delete headquarter for now")
       case Some(base) =>
-        //remove all links from that base
-        val linksFromThisAirport = LinkSource.loadLinksByCriteria(List(("airline", airlineId))).filter(_.from.id == airportId)
-        linksFromThisAirport.foreach { link =>
-          LinkSource.deleteLink(link.id)
-        }
+        getDeleteBaseRejection(request.user, base) match {
+          case Some(rejection) => BadRequest(rejection)
+          case None =>
+            //remove all links from that base
+            val linksFromThisAirport = LinkSource.loadLinksByCriteria(List(("airline", airlineId))).filter(_.from.id == airportId)
+            linksFromThisAirport.foreach { link =>
+              LinkSource.deleteLink(link.id)
+            }
 
-        //assign all airplanes on this base to HQ
-        val headquarters = request.user.getHeadQuarter().get
-        val updatingAirplanes = AirplaneSource.loadAirplanesCriteria(List(("home", airportId), ("owner", airlineId))).map { airplane =>
-          airplane.home = headquarters.airport
-          airplane
-        }
-        AirplaneSource.updateAirplanes(updatingAirplanes)
-        
-        AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId).foreach { lounge =>
-          AirlineSource.deleteLounge(lounge)
-        }
+            //assign all airplanes on this base to HQ
+            val headquarters = request.user.getHeadQuarter().get
+            val updatingAirplanes = AirplaneSource.loadAirplanesCriteria(List(("home", airportId), ("owner", airlineId))).map { airplane =>
+              airplane.home = headquarters.airport
+              airplane
+            }
+            AirplaneSource.updateAirplanes(updatingAirplanes)
 
-        AirlineSource.deleteAirlineBase(base)
+            AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId).foreach { lounge =>
+              AirlineSource.deleteLounge(lounge)
+            }
 
-        Ok(Json.toJson(base))
+            AirlineSource.deleteAirlineBase(base)
+
+            Ok(Json.toJson(base))
+        }
       case None => //
         NotFound 
     }
   }
+
   def putBase(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
       val inputBase = request.body.asInstanceOf[AnyContentAsJson].json.as[AirlineBase]

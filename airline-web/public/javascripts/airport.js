@@ -212,13 +212,18 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 		    			$('#downgradeBaseButton').hide()
 		    		}
 		    	}
-		    	
-	    		
-	    		if (!airportBase || airportBase.headquarter) {
-	    			$('#deleteBaseButton').hide()
-	    		} else {
-	    			$('#deleteBaseButton').show()
-	    		}
+
+		    	if (baseDetails.deleteRejection) {
+                    disableButton($('#deleteBaseButton'), baseDetails.deleteRejection)
+                    $('#deleteBaseButton').show()
+                } else {
+                    if (!airportBase) {
+                        $('#deleteBaseButton').hide()
+                    } else {
+                        enableButton($('#deleteBaseButton'))
+                        $('#deleteBaseButton').show()
+                    }
+                }
 		    },
 		    error: function(jqXHR, textStatus, errorThrown) {
 		            console.log(JSON.stringify(jqXHR));
