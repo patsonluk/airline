@@ -66,7 +66,8 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       println(s"Banned user ${request.user} tried to login")
       Forbidden("User is banned")
     } else {
-      Ok(Json.toJson(request.user)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
+      val wallpaperIndex = request.cookies.get("wallpaperIndex").map(_.value).getOrElse("0")
+      Ok(Json.toJson(request.user)).withCookies(Cookie("wallpaperIndex", wallpaperIndex, httpOnly = false)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
     }
   }
   

@@ -95,6 +95,7 @@
 	<script src='@routes.Assets.versioned("javascripts/heatmap.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/campaign.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/profile.js")'></script>
+    <script src='@routes.Assets.versioned("javascripts/settings.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/prompt.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/pending-action.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/map-style.js")'></script>
@@ -214,13 +215,7 @@
 			</div>
 		</div>
   		<div style="display: flex; align-items: center; flex-wrap: wrap;">
-			<div class="switch" style="margin-right: 5px;">
-				<input type="radio" class="switch-input" name="theme" value="light" id="switchDark" onchange="switchTheme()">
-				<label for="switchDark" class="switch-label switch-label-off">Dark</label>
-				<input type="radio" class="switch-input dark" name="theme" value="dark" id="switchLight" onchange="switchTheme()">
-				<label for="switchLight" class="switch-label switch-label-on">Light</label>
-				<span class="switch-selection"></span>
-			</div>
+			<span  style="padding: 0 4px;"><img class="clickable" src='@routes.Assets.versioned("images/icons/24px/equalizer.png")' onclick="showSettings()" title="Settings"></span>
 			<div style="display: none; display: flex; align-items: center;" id="loginDiv" class="topBarItem">
 				<input type="text" id="loginUserName" placeholder="username" tabindex=1/>
 				<a href="/forgot-id"  target="_blank" style="margin-right: 4px">
@@ -4855,6 +4850,40 @@
 		  <span class="close" onclick="closeModal($('#delegateStatusModal'))">&times;</span>
 		  <h4>Delegates Pool<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
 		  <div class="delegateStatus"></div>
+	  </div>
+  </div>
+
+  <div id="settingsModal" class="modal">
+	  <div class="modal-content"  style="width : 400px; max-width: 80%">
+		  <span class="close" onclick="closeModal($('#settingsModal'))">&times;</span>
+		  <h4>Settings</h4>
+		  <div class="table" style="width: 80%;">
+			  <div class="table-row">
+				  <div class="cell">
+					  <h5>Color Theme</h5>
+				  </div>
+<!--				  <div style="display: flex; align-items: center; flex-wrap: wrap;">-->
+				  <div class="cell" style="vertical-align:middle; text-align:center;">
+					  <div class="switch" style="display: inline-block">
+						  <input type="radio" class="switch-input" name="theme" value="light" id="switchDark" onchange="switchTheme()">
+						  <label for="switchDark" class="switch-label switch-label-off">Dark</label>
+						  <input type="radio" class="switch-input dark" name="theme" value="dark" id="switchLight" onchange="switchTheme()">
+						  <label for="switchLight" class="switch-label switch-label-on">Light</label>
+						  <span class="switch-selection"></span>
+					  </div>
+				  </div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell">
+					  <h5>Wallpaper</h5>
+				  </div>
+				  <div class="cell" style="vertical-align:middle; text-align:center;">
+					  <img style="margin: 4px" class="clickable" src='@routes.Assets.versioned("images/icons/24px/arrow-circle-double.png")' onclick="changeWallpaper()">
+				  </div>
+			  </div>
+		  </div>
+
+
 	  </div>
   </div>
 

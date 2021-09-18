@@ -48,9 +48,7 @@ html {
   --float-message-box-text-shadow: var(--table-header-text-shadow);
 
   --loading-spinner-background: rgba( 255, 255, 255, .8 );
-
-
-
+  --fallback-background: #aaaaaa;
 }
 
 html[data-theme='dark'] {
@@ -104,6 +102,7 @@ html[data-theme='dark'] {
   --float-message-box-text-shadow: var(--table-header-text-shadow);
 
   --loading-spinner-background: rgba(0, 0, 0, .6);
+  --fallback-background: #222222;
 }
 
 
@@ -113,7 +112,7 @@ body {
 	font-family: "Open Sans", Verdana, Arial, sans-serif;
 	color: var(--text-color);
 
-	background: #abbaab;  /* fallback for old browsers */
+	background: var(--fallback-background);  /* fallback for old browsers */
 }
 
 a {

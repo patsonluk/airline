@@ -37,6 +37,7 @@ $( document ).ready(function() {
 
 	populateTooltips()
 	checkAutoplaySettings()
+	refreshWallpaper()
 
 	
 	if ($("#floatMessage").val()) {
@@ -183,7 +184,6 @@ function loadUser(isLogin) {
 					  email: user.email
 					 });
 		      }
-			  
 		  }
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
