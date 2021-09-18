@@ -2584,7 +2584,7 @@
 					<div style="float: left;" class="mainPanel">
 						<div style="width : 95%; height: 95%; float: left;" class="section">
 							<div style="height: 20px;">
-								<input type="checkbox" id="hideInactive" onchange="toggleRivalsTableSortOrder('')" checked/><span class="label">Hide Inactive Airlines</span>
+								<input type="checkbox" id="hideInactive" onchange="toggleHideInactive(this.checked)" checked/><span class="label">Hide Inactive Airlines</span>
 								<span id="rivalIdSortButton" data-sort-property="id" data-sort-order="descending" class="button adminActions" title="Sort by created date"
 									  onclick="toggleRivalsTableSortOrder($(this))" style="vertical-align: text-bottom">
 									<img src='@routes.Assets.versioned("images/icons/clock-frame.png")'>
@@ -4855,6 +4855,27 @@
 		  <span class="close" onclick="closeModal($('#delegateStatusModal'))">&times;</span>
 		  <h4>Delegates Pool<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
 		  <div class="delegateStatus"></div>
+	  </div>
+  </div>
+
+  <div id="airlinesByIpModal" class="modal">
+	  <div class="modal-content"  style="width : 800px;">
+		  <span class="close" onclick="closeModal($('#airlinesByIpModal'))">&times;</span>
+		  <h4>Airlines by IP&nbsp;<span class="ip"></span></h4>
+		  <div class="table data airlineByIpTable" style="max-height: 100%; width: 100%">
+			  <div class="table-header">
+				  <div class="cell" style="width: 3%; border-bottom: none;"></div>
+				  <div class="cell" style="width: 32%; border-bottom: none;">Airline</div>
+				  <div class="cell" style="width: 20%; border-bottom: none;">User</div>
+				  <div class="cell" style="width: 20%; border-bottom: none;">User Status</div>
+				  <div class="cell" style="width: 15%; border-bottom: none;">Last Seen</div>
+				  <div class="cell" style="width: 10%; border-bottom: none;">Occurrence</div>
+			  </div>
+		  </div>
+		  <div style="text-align: center">
+			  <div class="button" onclick="banUsers()">Ban</div>
+			  <div class="button" onclick="nerfUsers()">Nerf</div>
+		  </div>
 	  </div>
   </div>
 

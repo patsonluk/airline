@@ -137,6 +137,9 @@ function toggleRivalsTableSortOrder(sortHeader) {
 }
 
 function loadRivalDetails(row, airlineId) {
+    if (row === null) { //find the row
+        row = $('#rivalsCanvas #rivalsTable div.table-row[data-airline-id="' + airlineId + '"]');
+    }
 	//update table
 	row.siblings().removeClass("selected")
 	row.addClass("selected")

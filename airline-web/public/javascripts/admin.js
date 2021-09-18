@@ -73,13 +73,10 @@ function showAdminActions(airline) {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(ips) {
-            ips.sort(function(a, b){
-                if(a < b) { return -1; }
-                if(a > b) { return 1; }
-                return 0;
-            })
-            $.each(ips, function(index, ip) {
-                $("#rivalDetails .adminActions .ips").append("<div style='padding-right : 10px; float: left'>" + ip + "</div>")
+            $.each(ips, function(index, ipEntry) {
+                var ip = ipEntry[0]
+                var occurrence = ipEntry[1]
+                $("#rivalDetails .adminActions .ips").append("<div style='padding-right : 10px; float: left' class='clickable' onclick='showAirlinesByIp(\"" + ip + "\")'>" + ip + "(" + occurrence + ")</div>")
             })
             $("#rivalDetails .adminActions .ips").append("<div style='clear : both;'></div>")
 
@@ -91,6 +88,38 @@ function showAdminActions(airline) {
     });
 
 }
+
+function showAirlinesByIp(ip) {
+    $.ajax({
+        type: 'GET',
+        url: "/admin/ip-airlines/" + ip,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            $("#airlinesByIpModal .airlineByIpTable .ip").text(ip)
+            $("#airlinesByIpModal .airlineByIpTable div.table-row").remove()
+            $.each(result, function(index, entry) {
+                var $row = $("<div class='table-row'></div>")
+                var airline = entry.airline
+                $row.append("<div class='cell'><input type='checkbox' checked='checked'></div>")
+                $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByIpModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
+                $row.append("<div class='cell'>" + entry.username + "</div>")
+                $row.append("<div class='cell'>" + entry.userStatus + "</div>")
+                $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")
+                $row.append("<div class='cell' align='right'>" + entry.occurrence + "</div>")
+                 $("#airlinesByIpModal .airlineByIpTable").append($row)
+            })
+            $("#airlinesByIpModal").fadeIn(500)
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+
+}
+
+
 
 function ban() {
     adminAction("ban", $("#rivalDetails .adminActions").data("userId"))
