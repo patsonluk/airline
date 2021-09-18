@@ -45,7 +45,15 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
           Ok(Json.obj("action" -> action))
         case "switch" =>
           if (request.user.isSuperAdmin) {
-            Ok(Json.obj("action" -> action)).withSession("userToken" -> SessionUtil.addUserId(targetUserId))
+
+            request.session.get("userToken") match {
+              case Some(userToken) =>
+                SessionUtil.getUserId(userToken) match {
+                  case Some(userId) => Ok(Json.obj("action" -> action)).withSession("userToken" -> SessionUtil.addUserId(targetUserId), "adminToken" -> userToken)
+                  case None => BadRequest(s"Invalid token (admin) $userToken")
+                }
+              case None => BadRequest("no current admin token")
+            }
           } else {
             Forbidden("Not a super admin user")
           }

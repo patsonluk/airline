@@ -47,7 +47,21 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (request.user.status == UserStatus.INACTIVE) {
       UserSource.updateUser(request.user.copy(status = UserStatus.ACTIVE))
     }
-    IpSource.saveUserIp(request.user.id, request.remoteAddress)
+
+    var isSuperAdmin = false
+    //check if it's super admin switching
+    request.session.get("adminToken").foreach{ adminToken =>
+      SessionUtil.getUserId(adminToken).foreach { adminId =>
+        UserSource.loadUserById(adminId).foreach { user =>
+          isSuperAdmin = user.isSuperAdmin
+        }
+      }
+    }
+
+    if (!isSuperAdmin) { //do not track if admin is switching, otherwise that would be confusing
+      IpSource.saveUserIp(request.user.id, request.remoteAddress)
+    }
+
     if (request.user.status == UserStatus.BANNED) {
       println(s"Banned user ${request.user} tried to login")
       Forbidden("User is banned")
