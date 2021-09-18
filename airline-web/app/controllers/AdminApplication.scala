@@ -1,21 +1,21 @@
 package controllers
 
-import com.patson.data.{AdminSource, AirlineSource, AllianceSource, IpSource, UserSource}
-import com.patson.model.{Airline, AirlineGrade, AllianceRole, UserStatus}
+import com.patson.data.{AdminSource, AirlineSource, IpSource, UserSource}
 import com.patson.model.UserStatus.UserStatus
+import com.patson.model.{Airline, UserStatus}
 import com.patson.util.{AirlineCache, AirportCache}
-import controllers.AuthenticationObject.{Authenticated, AuthenticatedAirline}
+import controllers.AuthenticationObject.Authenticated
 import controllers.GoogleImageUtil.{AirportKey, CityKey}
-
-import javax.inject.Inject
+import play.api.libs.json.Json
 import play.api.mvc._
-import play.api.libs.json.{Json, _}
 import websocket.Broadcaster
+
+import java.text.DateFormat
+import java.util.Calendar
+import javax.inject.Inject
 
 
 class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-
-
 
   def adminAction(action : String, targetUserId : Int) = Authenticated { implicit request =>
     if (request.user.isAdmin) {
@@ -68,7 +68,37 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
 //  }
   def getUserIps(userId : Int) = Authenticated { implicit request =>
     if (request.user.isAdmin) {
-      Ok(Json.toJson(IpSource.loadUserIps(userId)))
+      val cutoff = Calendar.getInstance()
+      cutoff.add(Calendar.DATE, -30)
+
+      Ok(Json.toJson(IpSource.loadUserIps(userId).toList.sortBy(_._2.occurrence)(Ordering[Int].reverse).filter(_._2.lastUpdated.after(cutoff.getTime)).map {
+        case (ip, ipDetails) => (ip, ipDetails.occurrence, ipDetails.lastUpdated)
+      }))
+    } else {
+      println(s"Non admin ${request.user} tried to access admin operations!!")
+      Forbidden("Not an admin user")
+    }
+  }
+
+  def getAirlinesByIp(ip : String) = Authenticated { implicit request =>
+    if (request.user.isAdmin) {
+      var result = Json.arr()
+      IpSource.loadUsersByIp(ip).foreach {
+        case (user, ipDetails) =>
+          user.getAccessibleAirlines().foreach { airline =>
+            result = result.append(Json.obj(
+              "airlineName" -> airline.name,
+              "airlineId" -> airline.id,
+              "username" -> user.userName,
+              "userStatus" -> user.status.toString,
+              "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
+              "occurrence" -> ipDetails.occurrence,
+            ))
+          }
+
+      }
+
+      Ok(result)
     } else {
       println(s"Non admin ${request.user} tried to access admin operations!!")
       Forbidden("Not an admin user")

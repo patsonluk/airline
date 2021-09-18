@@ -1863,6 +1863,8 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + USER_IP_TABLE + "(" +
       "user INTEGER, " +
       "ip VARCHAR(256) NOT NULL, " +
+      "occurrence INT NULL DEFAULT 0, " +
+      "last_update DATETIME DEFAULT CURRENT_TIMESTAMP," +
       "PRIMARY KEY(user, ip)," +
       "FOREIGN KEY(user) REFERENCES " + USER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
