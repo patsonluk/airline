@@ -96,7 +96,7 @@ function showAirlinesByIp(ip) {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(result) {
-            $("#airlinesByIpModal .airlineByIpTable .ip").text(ip)
+            $("#airlinesByIpModal .ip").text(ip)
             $("#airlinesByIpModal .airlineByIpTable div.table-row").remove()
             $.each(result, function(index, entry) {
                 var $row = $("<div class='table-row'></div>")
