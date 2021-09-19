@@ -162,12 +162,13 @@ function loadUser(isLogin) {
 	  success: function(user) {
 		  if (user) {
 		    closeAbout()
-			  activeUser = user
+		      activeUser = user
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
 			  $("#loginPassword").val("")
 
 			  if (isLogin) {
+			      refreshWallpaper()
 				  showFloatMessage("Successfully logged in")
 				  showAnnoucement()
 			  }
