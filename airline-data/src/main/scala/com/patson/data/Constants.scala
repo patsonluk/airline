@@ -139,6 +139,7 @@ object Constants {
   val COMPLETED_NOTICE_TABLE = "completed_notice"
   val AIRPORT_ANIMATION_TABLE = "airport_animation"
   val ADMIN_LOG_TABLE = "admin_log"
+  val USER_WALLPAPER_TABLE = "user_wallpaper"
 
   val CAMPAIGN_TABLE = "campaign"
   val CAMPAIGN_AREA_TABLE = "campaign_area"

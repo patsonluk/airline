@@ -7,7 +7,7 @@ import play.api.mvc._
 import play.api.libs.json.Writes
 import com.patson.model.{Airline, User, UserStatus}
 import play.api.libs.json._
-import com.patson.data.{AllianceSource, IpSource, UserSource}
+import com.patson.data.{AllianceSource, IpSource, SettingsSource, UserSource}
 import com.patson.util.AllianceCache
 
 import javax.inject.Inject
@@ -61,13 +61,13 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (!isSuperAdmin) { //do not track if admin is switching, otherwise that would be confusing
       IpSource.saveUserIp(request.user.id, request.remoteAddress)
     }
-
     if (request.user.status == UserStatus.BANNED) {
       println(s"Banned user ${request.user} tried to login")
       Forbidden("User is banned")
     } else {
-      val wallpaperIndex = request.cookies.get("wallpaperIndex").map(_.value).getOrElse("0")
-      Ok(Json.toJson(request.user)).withCookies(Cookie("wallpaperIndex", wallpaperIndex, httpOnly = false)).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
+      val result = Json.toJson(request.user).asInstanceOf[JsObject] + ("hasWallpaper" -> JsBoolean(SettingsSource.hasWallpaper(request.user.id)))
+
+      Ok(result).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
     }
   }
   

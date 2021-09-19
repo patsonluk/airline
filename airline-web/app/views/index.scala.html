@@ -4857,7 +4857,7 @@
 	  <div class="modal-content"  style="width : 400px; max-width: 80%">
 		  <span class="close" onclick="closeModal($('#settingsModal'))">&times;</span>
 		  <h4>Settings</h4>
-		  <div class="table" style="width: 80%;">
+		  <div class="table" style="width: 90%;">
 			  <div class="table-row">
 				  <div class="cell">
 					  <h5>Color Theme</h5>
@@ -4875,12 +4875,25 @@
 			  </div>
 			  <div class="table-row">
 				  <div class="cell">
-					  <h5>Wallpaper</h5>
+					  <h5>Default Wallpaper</h5>
 				  </div>
 				  <div class="cell" style="vertical-align:middle; text-align:center;">
 					  <img style="margin: 4px" class="clickable" src='@routes.Assets.versioned("images/icons/24px/arrow-circle-double.png")' onclick="changeWallpaper()">
 				  </div>
 			  </div>
+			  <div class="table-row customWallpaper">
+				  <div class="cell">
+					  <h5>Custom Wallpaper</h5>
+				  </div>
+				  <div class="cell" style="vertical-align:middle; text-align:center;">
+					  <div>
+						  <div class="fileuploader"></div>
+						  <div class="warning" style="display:none;"></div>
+					  </div>
+				  </div>
+			  </div>
+
+
 		  </div>
 
 

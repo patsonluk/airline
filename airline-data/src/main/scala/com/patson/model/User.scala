@@ -23,6 +23,7 @@ case class User(userName : String, email : String, creationTime : Calendar, last
   val isAdmin = adminStatus.isDefined
   val isSuperAdmin = adminStatus.isDefined && adminStatus.get == AdminStatus.SUPER_ADMIN
   val isChatBanned = status == UserStatus.CHAT_BANNED || status == UserStatus.BANNED
+  val isPremium = level > 0
 }
 
 object User {

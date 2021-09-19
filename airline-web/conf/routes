@@ -214,6 +214,9 @@ GET      /admin/invalidate-customization/:airlineId  controllers.AdminApplicatio
 GET      /admin/user-ips/:userId   controllers.AdminApplication.getUserIps(userId : Int)
 GET      /admin/ip-airlines/:ip    controllers.AdminApplication.getAirlinesByIp(ip : String)
 
+POST	 /users/:userId/wallpaper	controllers.SettingsApplication.uploadWallpaper(userId : Int)
+GET	     /users/:userId/wallpaper	controllers.SettingsApplication.getWallpaper(userId : Int)
+DELETE	 /users/:userId/wallpaper	controllers.SettingsApplication.deleteWallpaper(userId : Int)
 
 # Signup
 GET     /signup                     controllers.SignUp.form

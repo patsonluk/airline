@@ -279,6 +279,7 @@ object Meta {
     createAirlineLogo(connection)
     createAirlineLivery(connection)
     createAirlineSlogan(connection)
+    createUserWallpaper(connection)
     createAirplaneRenewal(connection)
     createAirplaneConfiguration(connection)
     createAlliance(connection)
@@ -746,6 +747,21 @@ object Meta {
       "slogan VARCHAR(256), " +
       "PRIMARY KEY (airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createUserWallpaper(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_WALLPAPER_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + USER_WALLPAPER_TABLE + "(" +
+      "user INTEGER, " +
+      "wallpaper MEDIUMBLOB, " +
+      "PRIMARY KEY (user)," +
+      "FOREIGN KEY(user) REFERENCES " + USER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()
