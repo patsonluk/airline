@@ -21,9 +21,11 @@ var wallpaperTemplates = [
 ]
 
 function changeWallpaper() {
+    var wallpaperIndex = 0
     if ($.cookie('wallpaperIndex')) {
         wallpaperIndex = parseInt($.cookie('wallpaperIndex'))
     }
+
     if (activeUser && activeUser.hasWallpaper) {
         removeCustomWallpaper()
     }
