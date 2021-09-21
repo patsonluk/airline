@@ -30,7 +30,7 @@ function changeWallpaper() {
         removeCustomWallpaper()
     }
     wallpaperIndex = (wallpaperIndex + 1) % wallpaperTemplates.length
-    $.cookie('wallpaperIndex', wallpaperIndex)
+    $.cookie('wallpaperIndex', wallpaperIndex, { expires: 9999 })
     refreshWallpaper()
 }
 

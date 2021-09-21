@@ -7,9 +7,10 @@ import play.api.mvc._
 import play.api.libs.json.Writes
 import com.patson.model.{Airline, User, UserStatus}
 import play.api.libs.json._
-import com.patson.data.{AllianceSource, IpSource, SettingsSource, UserSource}
+import com.patson.data.{AllianceSource, IpSource, SettingsSource, UserSource, UserUuidSource}
 import com.patson.util.AllianceCache
 
+import java.util.UUID
 import javax.inject.Inject
 
 class UserApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -67,7 +68,13 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     } else {
       val result = Json.toJson(request.user).asInstanceOf[JsObject] + ("hasWallpaper" -> JsBoolean(SettingsSource.hasWallpaper(request.user.id)))
 
-      Ok(result).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
+      val uuid : String = request.cookies.get("uuid").map(_.value).getOrElse {
+        val newUuid = UUID.randomUUID().toString
+        newUuid
+      }
+      UserUuidSource.saveUserUuid(request.user.id, uuid)
+
+      Ok(result).withCookies(Cookie("uuid", uuid, maxAge = Some(Integer.MAX_VALUE))).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
     }
   }
   

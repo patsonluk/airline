@@ -312,6 +312,7 @@ object Meta {
     createReputationBreakdown(connection)
     createIp(connection)
     createAdminLog(connection)
+    createUserUuid(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1893,6 +1894,23 @@ object Meta {
 
     statement = connection.prepareStatement("CREATE TABLE " + BANNED_IP_TABLE + "(" +
       "ip VARCHAR(256) PRIMARY KEY" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createUserUuid(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_UUID_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + USER_UUID_TABLE + "(" +
+      "user INTEGER, " +
+      "uuid VARCHAR(256) NOT NULL, " +
+      "occurrence INT NULL DEFAULT 0, " +
+      "last_update DATETIME DEFAULT CURRENT_TIMESTAMP," +
+      "PRIMARY KEY(user, uuid)," +
+      "FOREIGN KEY(user) REFERENCES " + USER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

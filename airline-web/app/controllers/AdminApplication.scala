@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.{AdminSource, AirlineSource, IpSource, UserSource}
+import com.patson.data.{AdminSource, AirlineSource, IpSource, UserSource, UserUuidSource}
 import com.patson.model.UserStatus.UserStatus
 import com.patson.model.{Airline, UserStatus}
 import com.patson.util.{AirlineCache, AirportCache}
@@ -112,6 +112,46 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
       Forbidden("Not an admin user")
     }
   }
+
+  def getUserUuids(userId : Int) = Authenticated { implicit request =>
+    if (request.user.isAdmin) {
+      val cutoff = Calendar.getInstance()
+      cutoff.add(Calendar.DATE, -30)
+
+      Ok(Json.toJson(UserUuidSource.loadUserUuids(userId).toList.sortBy(_._2.occurrence)(Ordering[Int].reverse).filter(_._2.lastUpdated.after(cutoff.getTime)).map {
+        case (ip, ipDetails) => (ip, ipDetails.occurrence, ipDetails.lastUpdated)
+      }))
+    } else {
+      println(s"Non admin ${request.user} tried to access admin operations!!")
+      Forbidden("Not an admin user")
+    }
+  }
+
+  def getAirlinesByUuid(uuid : String) = Authenticated { implicit request =>
+    if (request.user.isAdmin) {
+      var result = Json.arr()
+      UserUuidSource.loadUsersByUuid(uuid).foreach {
+        case (user, ipDetails) =>
+          user.getAccessibleAirlines().foreach { airline =>
+            result = result.append(Json.obj(
+              "airlineName" -> airline.name,
+              "airlineId" -> airline.id,
+              "username" -> user.userName,
+              "userStatus" -> user.status.toString,
+              "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
+              "occurrence" -> ipDetails.occurrence,
+            ))
+          }
+
+      }
+
+      Ok(result)
+    } else {
+      println(s"Non admin ${request.user} tried to access admin operations!!")
+      Forbidden("Not an admin user")
+    }
+  }
+
 
   def invalidateCustomization(airlineId : Int) = Authenticated { implicit request =>
     if (request.user.isAdmin) {

@@ -212,7 +212,9 @@ PUT		 /admin/send-broadcast-message		            controllers.AdminApplication.se
 GET      /admin/invalidate-image/:airportId/:imageType  controllers.AdminApplication.invalidateImage(imageType : String, airportId : Int)
 GET      /admin/invalidate-customization/:airlineId  controllers.AdminApplication.invalidateCustomization(airlineId : Int)
 GET      /admin/user-ips/:userId   controllers.AdminApplication.getUserIps(userId : Int)
+GET      /admin/user-uuids/:userId   controllers.AdminApplication.getUserUuids(userId : Int)
 GET      /admin/ip-airlines/:ip    controllers.AdminApplication.getAirlinesByIp(ip : String)
+GET      /admin/uuid-airlines/:uuid    controllers.AdminApplication.getAirlinesByUuid(uuid : String)
 
 POST	 /users/:userId/wallpaper	controllers.SettingsApplication.uploadWallpaper(userId : Int)
 GET	     /users/:userId/wallpaper	controllers.SettingsApplication.getWallpaper(userId : Int)

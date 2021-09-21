@@ -94,6 +94,7 @@ object Constants {
   val RESET_USER_TABLE = "reset_user"
   val USER_IP_TABLE = "user_ip"
   val BANNED_IP_TABLE = "banned_ip"
+  val USER_UUID_TABLE = "user_uuid"
   val USER_AIRLINE_TABLE = "user_airline"
   val VIP_ROUTE_TABLE = "vip_route"
   val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"

@@ -67,6 +67,7 @@ function showAdminActions(airline) {
     $("#rivalDetails .adminActions .userId").text(airline.userId)
     $("#rivalDetails .adminActions .status").text(airline.userStatus)
     $("#rivalDetails .adminActions .ips").empty()
+    $("#rivalDetails .adminActions .uuids").empty()
     $.ajax({
         type: 'GET',
         url: "/admin/user-ips/" + airline.userId,
@@ -79,6 +80,25 @@ function showAdminActions(airline) {
                 $("#rivalDetails .adminActions .ips").append("<div style='padding-right : 10px; float: left' class='clickable' onclick='showAirlinesByIp(\"" + ip + "\")'>" + ip + "(" + occurrence + ")</div>")
             })
             $("#rivalDetails .adminActions .ips").append("<div style='clear : both;'></div>")
+
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+    $.ajax({
+        type: 'GET',
+        url: "/admin/user-uuids/" + airline.userId,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            $.each(result, function(index, entry) {
+                var uuid = entry[0]
+                var occurrence = entry[1]
+                $("#rivalDetails .adminActions .uuids").append("<div style='padding-right : 10px; float: left' class='clickable' onclick='showAirlinesByUuid(\"" + uuid + "\")'>" + uuid.substring(0, 8) + "(" + occurrence + ")</div>")
+            })
+            $("#rivalDetails .adminActions .uuids").append("<div style='clear : both;'></div>")
 
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -110,6 +130,36 @@ function showAirlinesByIp(ip) {
                  $("#airlinesByIpModal .airlineByIpTable").append($row)
             })
             $("#airlinesByIpModal").fadeIn(500)
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+
+}
+
+function showAirlinesByUuid(uuid) {
+    $.ajax({
+        type: 'GET',
+        url: "/admin/uuid-airlines/" + uuid,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            $("#airlinesByUuidModal .uuid").text(uuid)
+            $("#airlinesByUuidModal .airlineByUuidTable div.table-row").remove()
+            $.each(result, function(index, entry) {
+                var $row = $("<div class='table-row'></div>")
+                var airline = entry.airline
+                $row.append("<div class='cell'><input type='checkbox' checked='checked'></div>")
+                $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByUuidModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
+                $row.append("<div class='cell'>" + entry.username + "</div>")
+                $row.append("<div class='cell'>" + entry.userStatus + "</div>")
+                $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")
+                $row.append("<div class='cell' align='right'>" + entry.occurrence + "</div>")
+                 $("#airlinesByUuidModal .airlineByUuidTable").append($row)
+            })
+            $("#airlinesByUuidModal").fadeIn(500)
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
