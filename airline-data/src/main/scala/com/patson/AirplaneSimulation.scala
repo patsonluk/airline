@@ -40,8 +40,8 @@ object AirplaneSimulation {
     }
     
     var updatingAirplanes = updatingAirplanesListBuffer.toList 
-    AirplaneSource.updateAirplanesDetails(updatingAirplanes)
-    println("Finished updating all airplanes")
+    val updatedCount = AirplaneSource.updateAirplanesDetails(updatingAirplanes, true) //version check to avoid manual renewal from web UI
+    println(s"Finished updating all airplanes expected ${updatingAirplanes.size} actual $updatedCount")
     
     println("Start renewing airplanes")
     updatingAirplanes = renewAirplanes(updatingAirplanes, cycle)
@@ -173,7 +173,7 @@ object AirplaneSimulation {
     //save the 2nd hand airplanes
     AirplaneSource.saveAirplanes(secondHandAirplanes.toList)
     //save the renewed airplanes
-    AirplaneSource.updateAirplanes(renewedAirplanes.toList)
+    AirplaneSource.updateAirplanes(renewedAirplanes.toList) //no version check, since money is deducted already, and renewed airplanes are safe to save
       
     updatingAirplanes
   }
@@ -181,7 +181,7 @@ object AirplaneSimulation {
   def retireAgingAirplanes(airplanes : List[Airplane]) {
     airplanes.filter(_.condition <= 0).foreach { airplane =>
       println("Deleting airplane " + airplane)
-      AirplaneSource.deleteAirplane(airplane.id)
+      println(AirplaneSource.deleteAirplane(airplane.id, Some(airplane.version)))
     }
   }
   

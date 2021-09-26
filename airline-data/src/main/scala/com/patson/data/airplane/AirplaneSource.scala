@@ -14,7 +14,7 @@ object AirplaneSource {
   val LINK_SIMPLE_LOAD = Map(DetailType.LINK -> false)
   val LINK_ID_LOAD : Map[DetailType.Value, Boolean] = Map.empty
   
-  private[this] val BASE_QUERY = "SELECT owner, a.id as id, a.model as model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, purchased_cycle, airplane_condition, a.depreciation_rate, a.value, is_sold, dealer_ratio, configuration, home, purchase_rate, economy, business, first, is_default FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + AIRPLANE_CONFIGURATION_TABLE + " c ON c.airplane = a.id LEFT JOIN " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + " t ON c.configuration = t.id"
+  private[this] val BASE_QUERY = "SELECT owner, a.id as id, a.model as model, name, capacity, fuel_burn, speed, fly_range, price, constructed_cycle, purchased_cycle, airplane_condition, a.depreciation_rate, a.value, is_sold, dealer_ratio, configuration, home, purchase_rate, version, economy, business, first, is_default FROM " + AIRPLANE_TABLE + " a LEFT JOIN " + AIRPLANE_MODEL_TABLE + " m ON a.model = m.id LEFT JOIN " + AIRPLANE_CONFIGURATION_TABLE + " c ON c.airplane = a.id LEFT JOIN " + AIRPLANE_CONFIGURATION_TEMPLATE_TABLE + " t ON c.configuration = t.id"
   
   val allModels = ModelSource.loadAllModels().map(model => (model.id, model)).toMap
   
@@ -65,7 +65,8 @@ object AirplaneSource {
         val constructedCycle = resultSet.getInt("constructed_cycle")
         val isReady = !isSold && currentCycle >= constructedCycle
         val purchaseRate = resultSet.getDouble("purchase_rate")
-        val airplane = Airplane(model, airline, constructedCycle, resultSet.getInt("purchased_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"), isSold = isSold, dealerRatio = resultSet.getDouble("dealer_ratio"), configuration = configuration, home = Airport.fromId(resultSet.getInt("home")), isReady = isReady, purchaseRate = purchaseRate)
+        val version = resultSet.getInt("version")
+        val airplane = Airplane(model, airline, constructedCycle, resultSet.getInt("purchased_cycle"), resultSet.getDouble("airplane_condition"), depreciationRate = resultSet.getInt("depreciation_rate"), value = resultSet.getInt("value"), isSold = isSold, dealerRatio = resultSet.getDouble("dealer_ratio"), configuration = configuration, home = Airport.fromId(resultSet.getInt("home")), isReady = isReady, purchaseRate = purchaseRate, version = version)
         airplane.id = resultSet.getInt("id")
         airplanes.append(airplane)
       }
@@ -196,8 +197,12 @@ object AirplaneSource {
     deleteAirplanesByCriteria(List.empty)
  }
  
- def deleteAirplane(airplaneId : Int) = {
-    deleteAirplanesByCriteria(List(("a.id", airplaneId)))
+ def deleteAirplane(airplaneId : Int, airplaneVersion : Option[Int]) = {
+    airplaneVersion match {
+      case Some(version) => deleteAirplanesByCriteria(List(("a.id", airplaneId), ("version", version)))
+      case None => deleteAirplanesByCriteria(List(("a.id", airplaneId)))
+    }
+
  }
  
  def deleteAirplanesByCriteria (criteria : List[(String, Any)]) = {
@@ -233,7 +238,7 @@ object AirplaneSource {
       
     try {
       connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, purchased_cycle, airplane_condition, depreciation_rate, value, is_sold, dealer_ratio, home, purchase_rate) VALUES(?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_TABLE + "(owner, model, constructed_cycle, purchased_cycle, airplane_condition, depreciation_rate, value, is_sold, dealer_ratio, home, purchase_rate, version) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       val configurationStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_CONFIGURATION_TABLE + "(airplane, configuration) VALUES(?,?)")
 
 
@@ -250,6 +255,7 @@ object AirplaneSource {
           preparedStatement.setDouble(9, airplane.dealerRatio)
           preparedStatement.setInt(10, airplane.home.id)
           preparedStatement.setDouble(11, airplane.purchaseRate)
+          preparedStatement.setInt(12, airplane.version)
           updateCount += preparedStatement.executeUpdate()
           
           val generatedKeys = preparedStatement.getGeneratedKeys
@@ -279,13 +285,17 @@ object AirplaneSource {
     updateCount
   }
   
-  def updateAirplanes(airplanes : List[Airplane]) = {
+  def updateAirplanes(airplanes : List[Airplane], versionCheck : Boolean = false) = {
     val connection = Meta.getConnection()
     var updateCount = 0
       
     try {
-      connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET owner = ?, airplane_condition = ?, depreciation_rate = ?, value = ?, constructed_cycle = ?, purchased_cycle = ?, is_sold = ?, dealer_ratio = ?, home = ?, purchase_rate = ? WHERE id = ?")
+      connection.setAutoCommit(false)
+      var updateStatement = "UPDATE " + AIRPLANE_TABLE + " SET owner = ?, airplane_condition = ?, depreciation_rate = ?, value = ?, constructed_cycle = ?, purchased_cycle = ?, is_sold = ?, dealer_ratio = ?, home = ?, purchase_rate = ?, version = ? WHERE id = ?"
+      if (versionCheck) {
+        updateStatement += " AND version = ?"
+      }
+      val preparedStatement = connection.prepareStatement(updateStatement)
       val configurationStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_CONFIGURATION_TABLE + "(airplane, configuration) VALUES(?,?)")
       val purgeConfigurationStatement = connection.prepareStatement("DELETE FROM " + AIRPLANE_CONFIGURATION_TABLE + " WHERE airplane = ?")
       airplanes.foreach { 
@@ -300,7 +310,11 @@ object AirplaneSource {
           preparedStatement.setDouble(8, airplane.dealerRatio)
           preparedStatement.setInt(9, airplane.home.id)
           preparedStatement.setDouble(10, airplane.purchaseRate)
-          preparedStatement.setInt(11, airplane.id)
+          preparedStatement.setInt(11, airplane.version + 1)
+          preparedStatement.setInt(12, airplane.id)
+          if (versionCheck) {
+            preparedStatement.setInt(13, airplane.version)
+          }
 
           updateCount += preparedStatement.executeUpdate()
 
@@ -332,13 +346,17 @@ object AirplaneSource {
   /**
    * Update an airplane's details except owner, construction_cycle and isSold information
    */
-   def updateAirplanesDetails(airplanes : List[Airplane]) = {
+   def updateAirplanesDetails(airplanes : List[Airplane], versionCheck : Boolean = false) = {
     val connection = Meta.getConnection()
     var updateCount = 0
       
     try {
-      connection.setAutoCommit(false)    
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_TABLE + " SET airplane_condition = ?, depreciation_rate = ?, value = ?, dealer_ratio = ?, home = ? WHERE id = ?")
+      connection.setAutoCommit(false)
+      var statement = "UPDATE " + AIRPLANE_TABLE + " SET airplane_condition = ?, depreciation_rate = ?, value = ?, dealer_ratio = ?, home = ?, version = ? WHERE id = ?"
+      if (versionCheck) {
+        statement += " AND version = ?"
+      }
+      val preparedStatement = connection.prepareStatement(statement)
       
       airplanes.foreach { 
         airplane =>
@@ -347,7 +365,11 @@ object AirplaneSource {
           preparedStatement.setInt(3, airplane.value)
           preparedStatement.setDouble(4, airplane.dealerRatio)
           preparedStatement.setInt(5, airplane.home.id)
-          preparedStatement.setInt(6, airplane.id)
+          preparedStatement.setInt(6, airplane.version + 1)
+          preparedStatement.setInt(7, airplane.id)
+          if (versionCheck) {
+            preparedStatement.setInt(8, airplane.version)
+          }
           updateCount += preparedStatement.executeUpdate()
       }
       

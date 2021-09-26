@@ -17,7 +17,7 @@ object UserSimulation {
     val generousThreshold = Calendar.getInstance()
     generousThreshold.add(Calendar.DAY_OF_YEAR, -1 * LARGE_AIRLINE_PURGE_USER_THRESHOLD)
 
-    println(s"starting resetting strict threshold - active before $strictThreshold; and generous threshold - active before $generousThreshold")
+    println(s"starting resetting strict threshold - active before ${strictThreshold.getTime}; and generous threshold - active before ${generousThreshold.getTime}")
 
 
     UserSource.loadUsersByCriteria(List.empty).foreach { user =>

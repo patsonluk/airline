@@ -589,6 +589,7 @@ object Meta {
       "dealer_ratio DECIMAL(7,6)," +
       "home INTEGER," +
       "purchase_rate DECIMAL(4,3) DEFAULT 1," +
+      "version INTEGER DEFAULT 0," +
       "FOREIGN KEY(model) REFERENCES " + AIRPLANE_MODEL_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(owner) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

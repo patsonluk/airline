@@ -470,9 +470,9 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
             val updateCount =
               if (airplane.condition >= Airplane.BAD_CONDITION) { //then put in 2nd handmarket
                 airplane.sellToDealer()
-                AirplaneSource.updateAirplanes(List(airplane.copy()))
+                AirplaneSource.updateAirplanes(List(airplane.copy()), true)
               } else {
-                AirplaneSource.deleteAirplane(airplaneId)
+                AirplaneSource.deleteAirplane(airplaneId, Some(airplane.version))
               }
 
             if (updateCount == 1) {
@@ -484,7 +484,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
               Ok(Json.toJson(airplane))
             } else {
-              NotFound
+              BadRequest("Update failed")
             }
           }
         }
@@ -520,17 +520,21 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
               val replacingAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = originalModel.price, purchaseRate = purchaseRate)
 
-              AirplaneSource.updateAirplanes(List(replacingAirplane)) //TODO MAKE SURE SYNCHONRIZE WITH AIRPLANE UPDATE SIMULATION
-              AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
+              val updateCount = AirplaneSource.updateAirplanes(List(replacingAirplane), true)
+              if (updateCount == 1) {
+                AirlineSource.adjustAirlineBalance(airlineId, -1 * replaceCost)
 
-              val sellAirplaneLoss = sellValue - airplane.value
-              val discountAirplaneGain = originalModel.price - model.price
-              AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellAirplaneLoss + discountAirplaneGain))
+                val sellAirplaneLoss = sellValue - airplane.value
+                val discountAirplaneGain = originalModel.price - model.price
+                AirlineSource.saveTransaction(AirlineTransaction(airlineId, TransactionType.CAPITAL_GAIN, sellAirplaneLoss + discountAirplaneGain))
 
-              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellValue))
-              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, model.price * -1))
+                AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.SELL_AIRPLANE, sellValue))
+                AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, model.price * -1))
 
-              Ok(Json.toJson(airplane))
+                Ok(Json.toJson(airplane))
+              } else {
+                BadRequest("Something went wrong, try again!")
+              }
             }
           }
         } else {
