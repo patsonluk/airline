@@ -38,7 +38,7 @@ object CycleSource {
       insertStatement.executeUpdate()
       insertStatement.close()
 
-      // also clean up old (-48)  balance audit entries
+      // also clean up old (-48) balance audit entries
       val cleanupStatement = connection.prepareStatement(s"DELETE FROM $BALANCE_AUDIT WHERE cycle <= ?")
       cleanupStatement.setInt(1, cycle - 48)
       cleanupStatement.executeQuery()
