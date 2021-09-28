@@ -165,6 +165,15 @@ object AirlineSource {
   	      updateStatement.setInt(2, airlineId)
   	      updateStatement.executeUpdate()
   	      updateStatement.close()
+
+          // update balance audit table
+          val insertToBalanceAuditStatement = connection.prepareStatement(
+            s"REPLACE INTO $BALANCE_AUDIT (airline, cycle, balance) VALUES (?, (SELECT cycle + 1 FROM cycle), (SELECT balance FROM $AIRLINE_INFO_TABLE WHERE airline = ?))")
+          insertToBalanceAuditStatement.setInt(1, airlineId)
+          insertToBalanceAuditStatement.setInt(2, airlineId)
+          insertToBalanceAuditStatement.executeQuery();
+          insertToBalanceAuditStatement.close();
+
           AirlineCache.invalidateAirline(airlineId)
 	      } finally {
   	      connection.close()

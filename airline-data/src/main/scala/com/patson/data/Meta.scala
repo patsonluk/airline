@@ -313,6 +313,7 @@ object Meta {
     createIp(connection)
     createAdminLog(connection)
     createUserUuid(connection)
+    createBalanceAudit(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1912,6 +1913,25 @@ object Meta {
       "PRIMARY KEY(user, uuid)," +
       "FOREIGN KEY(user) REFERENCES " + USER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createBalanceAudit(connection: Connection): Unit = {
+    var statement = connection.prepareStatement(s"DROP TABLE IF EXISTS $BALANCE_AUDIT")
+    statement.execute()
+    statement.close()
+
+    val sql = s"""
+                 |CREATE TABLE `$BALANCE_AUDIT` (
+                 |  `airline` int(11) NOT NULL,
+                 |  `cycle` int(11) NOT NULL,
+                 |  `balance` mediumtext,
+                 |  UNIQUE KEY `balance_audit_UN` (`airline`,`cycle`),
+                 |  CONSTRAINT `balance_audit_FK` FOREIGN KEY (`$AIRLINE_TABLE`) REFERENCES `airline` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+                 |)
+                 |""".stripMargin
+    statement = connection.prepareStatement(sql)
     statement.execute()
     statement.close()
   }
