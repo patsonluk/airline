@@ -117,29 +117,36 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
   }
 
+  private[this] val buildHqWithProfileLock = new Object()
   def buildHqWithProfile(airlineId : Int, airportId : Int, profileId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val airport = AirportCache.getAirport(airportId, true).get
     val airline = request.user
-    val profile = generateProfiles(airline, airport)(profileId)
+    buildHqWithProfileLock.synchronized {
+      if (!airline.isInitialized) {
+        val airport = AirportCache.getAirport(airportId, true).get
+        val profile = generateProfiles(airline, airport)(profileId)
 
-    val base = AirlineBase(airline, airport, airport.countryCode, 1, CycleSource.loadCycle(), true)
-    AirlineSource.saveAirlineBase(base)
-    airline.setCountryCode(airport.countryCode)
-    airline.setReputation(profile.reputation)
-    airline.setBalance(profile.cash)
-    AirportSource.updateAirlineAppeal(airportId, airlineId, AirlineAppeal(loyalty = 0, awareness = profile.awareness))
+        val base = AirlineBase(airline, airport, airport.countryCode, 1, CycleSource.loadCycle(), true)
+        AirlineSource.saveAirlineBase(base)
+        airline.setCountryCode(airport.countryCode)
+        airline.setReputation(profile.reputation)
+        airline.setBalance(profile.cash)
+        AirportSource.updateAirlineAppeal(airportId, airlineId, AirlineAppeal(loyalty = 0, awareness = profile.awareness))
 
-    profile.airplanes.foreach(_.assignDefaultConfiguration())
-    AirplaneSource.saveAirplanes(profile.airplanes)
+        profile.airplanes.foreach(_.assignDefaultConfiguration())
+        AirplaneSource.saveAirplanes(profile.airplanes)
 
-    profile.loan.foreach { loan =>
-      BankSource.saveLoan(loan)
+        profile.loan.foreach { loan =>
+          BankSource.saveLoan(loan)
+        }
+
+        airline.setInitialized(true)
+        AirlineSource.saveAirlineInfo(airline, true)
+        val updatedAirline = AirlineSource.loadAirlineById(airlineId, true)
+
+        Ok(Json.toJson(updatedAirline))
+      } else {
+        BadRequest(s"${request.user} was already initialized")
+      }
     }
-
-    airline.setInitialized(true)
-    AirlineSource.saveAirlineInfo(airline, true)
-    val updatedAirline = AirlineSource.loadAirlineById(airlineId, true)
-
-    Ok(Json.toJson(updatedAirline))
   }
 }
