@@ -51,7 +51,8 @@ object QuickCreateSchema extends App {
 //    Meta.createLog(connection)
 //    Meta.createAlert(connection)
     //Meta.createDelegate(connection)
-    Meta.createUserUuid(connection)
+    //Meta.createUserUuid(connection)
+    Meta.createBalanceAudit(connection)
   }
   
   
