@@ -2,7 +2,7 @@ package controllers
 
 import com.patson.data.{AdminSource, AirlineSource, IpSource, UserSource, UserUuidSource}
 import com.patson.model.UserStatus.UserStatus
-import com.patson.model.{Airline, UserStatus}
+import com.patson.model.{Airline, UserStatus, User}
 import com.patson.util.{AirlineCache, AirportCache}
 import controllers.AuthenticationObject.Authenticated
 import controllers.GoogleImageUtil.{AirportKey, CityKey}
@@ -20,47 +20,59 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
   def adminAction(action : String, targetUserId : Int) = Authenticated { implicit request =>
     if (request.user.isAdmin) {
       AdminSource.saveLog(action, request.user.userName, targetUserId)
-      action match {
-        case "ban" =>
-          changeUserStatus(UserStatus.BANNED, targetUserId)
-          Ok(Json.obj("action" -> action))
-        case "ban-chat" =>
-          changeUserStatus(UserStatus.CHAT_BANNED, targetUserId)
-          Ok(Json.obj("action" -> action))
-        case "ban-reset" =>
-          changeUserStatus(UserStatus.BANNED, targetUserId)
-          UserSource.loadUserById(targetUserId).foreach { user =>
-            user.getAccessibleAirlines().foreach { airline =>
-              Airline.resetAirline(airline.id, newBalance = 0, true) match {
-                case Some(airline) =>
-                  Ok(Json.obj("action" -> action))
-                case None => NotFound
-              }
-            }
-          }
-          Ok(Json.obj("action" -> action))
-        case "un-ban" =>
-          changeUserStatus(UserStatus.ACTIVE, targetUserId)
-          //unbanUserIp(targetUserId)
-          Ok(Json.obj("action" -> action))
-        case "switch" =>
-          if (request.user.isSuperAdmin) {
 
-            request.session.get("userToken") match {
-              case Some(userToken) =>
-                SessionUtil.getUserId(userToken) match {
-                  case Some(userId) => Ok(Json.obj("action" -> action)).withSession("userToken" -> SessionUtil.addUserId(targetUserId), "adminToken" -> userToken)
-                  case None => BadRequest(s"Invalid token (admin) $userToken")
-                }
-              case None => BadRequest("no current admin token")
-            }
+      UserSource.loadUserById(targetUserId) match {
+        case Some(targetUser) =>
+          if (targetUser.isAdmin) {
+            println(s"ADMIN - Forbidden action $action user $targetUser as the target user is admin")
+            BadRequest(s"ADMIN - Failed action $action as User $targetUser is admin")
           } else {
-            Forbidden("Not a super admin user")
+            action match {
+              case "ban" =>
+                changeUserStatus(UserStatus.BANNED, targetUser)
+                Ok(Json.obj("action" -> action))
+              case "ban-chat" =>
+                changeUserStatus(UserStatus.CHAT_BANNED, targetUser)
+                Ok(Json.obj("action" -> action))
+              case "ban-reset" =>
+                changeUserStatus(UserStatus.BANNED, targetUser)
+
+                targetUser.getAccessibleAirlines().foreach { airline =>
+                  Airline.resetAirline(airline.id, newBalance = 0, true) match {
+                    case Some(airline) =>
+                      Ok(Json.obj("action" -> action))
+                    case None => NotFound
+                  }
+                }
+
+                Ok(Json.obj("action" -> action))
+              case "un-ban" =>
+                changeUserStatus(UserStatus.ACTIVE, targetUser)
+                //unbanUserIp(targetUserId)
+                Ok(Json.obj("action" -> action))
+              case "switch" =>
+                if (request.user.isSuperAdmin) {
+
+                  request.session.get("userToken") match {
+                    case Some(userToken) =>
+                      SessionUtil.getUserId(userToken) match {
+                        case Some(userId) => Ok(Json.obj("action" -> action)).withSession("userToken" -> SessionUtil.addUserId(targetUserId), "adminToken" -> userToken)
+                        case None => BadRequest(s"Invalid token (admin) $userToken")
+                      }
+                    case None => BadRequest("no current admin token")
+                  }
+                } else {
+                  Forbidden("Not a super admin user")
+                }
+              case _ =>
+                println(s"unknown admin action $action")
+                BadRequest(Json.obj("action" -> action))
+            }
+            BadRequest(s"ADMIN - Failed action $action as User $targetUserId is not found")
           }
-        case _ =>
-          println(s"unknown admin action $action")
-          BadRequest(Json.obj("action" -> action))
+        case None => BadRequest(s"ADMIN - Failed action $action as User $targetUserId is not found")
       }
+
     } else {
       println(s"Non admin ${request.user} tried to access admin operations!!")
       Forbidden("Not an admin user")
@@ -186,14 +198,10 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
     }
   }
 
-  def changeUserStatus(userStatus: UserStatus, targetUserId: Int) = {
-    UserSource.loadUserById(targetUserId) match {
-      case Some(user) =>
-        val updatingUser = user.copy(status = userStatus)
-        UserSource.updateUser(updatingUser)
-        println(s"ADMIN - updated user status $userStatus on user $updatingUser")
-      case None => println(s"Failed to update user status $userStatus on user id $targetUserId, the user is not found!")
-    }
+  def changeUserStatus(userStatus: UserStatus, targetUser: User) = {
+    val updatingUser = targetUser.copy(status = userStatus)
+    UserSource.updateUser(updatingUser)
+    println(s"ADMIN - updated user status $userStatus on user $updatingUser")
   }
 
   def sendBroadcastMessage() = Authenticated { implicit request =>
