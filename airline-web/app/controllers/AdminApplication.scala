@@ -23,9 +23,9 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
 
       UserSource.loadUserById(targetUserId) match {
         case Some(targetUser) =>
-          if (targetUser.isAdmin) {
-            println(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is admin")
-            BadRequest(s"ADMIN - Failed action $action as User ${targetUser.userName} is admin")
+          if (targetUser.isAdmin && request.user.adminStatus.get.id <= targetUser.adminStatus.get.id) {
+            println(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is ${targetUser.adminStatus} while current user is ${request.user.adminStatus}")
+            BadRequest(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is ${targetUser.adminStatus} while current user is ${request.user.adminStatus}")
           } else {
             action match {
               case "ban" =>
@@ -68,7 +68,6 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
                 println(s"unknown admin action $action")
                 BadRequest(Json.obj("action" -> action))
             }
-            BadRequest(s"ADMIN - Failed action $action as User $targetUserId is not found")
           }
         case None => BadRequest(s"ADMIN - Failed action $action as User $targetUserId is not found")
       }
