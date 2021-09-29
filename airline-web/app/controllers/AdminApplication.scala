@@ -24,8 +24,8 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
       UserSource.loadUserById(targetUserId) match {
         case Some(targetUser) =>
           if (targetUser.isAdmin) {
-            println(s"ADMIN - Forbidden action $action user $targetUser as the target user is admin")
-            BadRequest(s"ADMIN - Failed action $action as User $targetUser is admin")
+            println(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is admin")
+            BadRequest(s"ADMIN - Failed action $action as User ${targetUser.userName} is admin")
           } else {
             action match {
               case "ban" =>
@@ -201,7 +201,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
   def changeUserStatus(userStatus: UserStatus, targetUser: User) = {
     val updatingUser = targetUser.copy(status = userStatus)
     UserSource.updateUser(updatingUser)
-    println(s"ADMIN - updated user status $userStatus on user $updatingUser")
+    println(s"ADMIN - updated user status $userStatus on user ${updatingUser.userName}")
   }
 
   def sendBroadcastMessage() = Authenticated { implicit request =>
