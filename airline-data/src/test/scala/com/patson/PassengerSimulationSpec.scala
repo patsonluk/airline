@@ -1405,7 +1405,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              assert(!PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, preferredLinkClass), route + " " + flightPreference)
+              assert(!PassengerSimulation.isReasonableRouteDistance(route, clonedFromAirport, toAirports.last), route + " " + flightPreference)
             }
           }
         }

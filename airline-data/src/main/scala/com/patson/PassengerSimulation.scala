@@ -2,9 +2,8 @@
 
 package com.patson
 
-import java.util.ArrayList
+import java.util.{ArrayList, Collections}
 import java.util.concurrent.atomic.AtomicInteger
-
 import com.patson.data.{AllianceSource, CountrySource, LinkSource}
 import com.patson.model._
 
@@ -92,8 +91,12 @@ object PassengerSimulation {
      
      println("After pruning : " + demandChunks.size);
 
+    val establishedAlliances = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED)
+    val establishedAllianceIdByAirlineId :java.util.Map[Int, Int] = new java.util.HashMap[Int, Int]()
 
-     while (consumptionCycleCount < consumptionCycleMax) {
+    establishedAlliances.foreach { alliance => alliance.members.filter(_.role != AllianceRole.APPLICANT).foreach(member => establishedAllianceIdByAirlineId.put(member.airline.id, alliance.id)) }
+
+    while (consumptionCycleCount < consumptionCycleMax) {
        println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
        println("links: " + links.size)
        
@@ -115,7 +118,7 @@ object PassengerSimulation {
 //       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
 //       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
        val iterationCount = if (consumptionCycleCount < 3) 5 else 6
-       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, iterationCount)
+       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId, iterationCount)
        
        //start consuming routes
        println()
@@ -234,18 +237,12 @@ object PassengerSimulation {
   }
 
   def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
-
-
-
-
 //    val ROUTE_COST_TOLERANCE_FACTOR = 1.4
 //    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), linkClass) * ROUTE_COST_TOLERANCE_FACTOR
 
 //    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute)
 
 //    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
-
-
       val incomeAdjustedFactor : Double =
         if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
           1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
@@ -360,7 +357,7 @@ object PassengerSimulation {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Transport], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness, iterationCount : Int = 4) : Map[PassengerGroup, Map[Airport, Route]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Transport], activeAirportIds : Set[Int], countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId : java.util.Map[Int, Int] = Collections.emptyMap[Int, Int](), iterationCount : Int = 4) : Map[PassengerGroup, Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
@@ -372,11 +369,6 @@ object PassengerSimulation {
     val counter = new AtomicInteger(0)
     val progressCount = new AtomicInteger(0)
     val progressChunk = requiredRoutes.size / 100
-    
-    val establishedAlliances = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED)
-    val establishedAllianceIdByAirlineId :java.util.Map[Int, Int] = new java.util.HashMap[Int, Int]()
-
-    establishedAlliances.foreach { alliance => alliance.members.filter(_.role != AllianceRole.APPLICANT).foreach(member => establishedAllianceIdByAirlineId.put(member.airline.id, alliance.id)) }
 
 //    val traceTimestampMap = new ConcurrentHashMap[Long, Long]()
 //    val maxTraceDuration = 60 * 1000; //1 min
