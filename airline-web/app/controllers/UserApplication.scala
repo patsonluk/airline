@@ -51,7 +51,8 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     var isSuperAdmin = false
     //check if it's super admin switching
-    request.session.get("adminToken").foreach{ adminToken =>
+    val adminTokenOption = request.session.get("adminToken")
+    adminTokenOption.foreach{ adminToken =>
       SessionUtil.getUserId(adminToken).foreach { adminId =>
         UserSource.loadUserById(adminId).foreach { user =>
           isSuperAdmin = user.isSuperAdmin
@@ -74,7 +75,12 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
       UserUuidSource.saveUserUuid(request.user.id, uuid)
 
-      Ok(result).withCookies(Cookie("uuid", uuid, maxAge = Some(Integer.MAX_VALUE))).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
+      var response = Ok(result).withCookies(Cookie("uuid", uuid, maxAge = Some(Integer.MAX_VALUE))).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
+      adminTokenOption.foreach { adminToken =>
+        response = response.addingToSession("adminToken"-> adminToken)
+      }
+
+      response
     }
   }
   
