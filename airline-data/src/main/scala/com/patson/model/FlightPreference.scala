@@ -192,7 +192,7 @@ abstract class FlightPreference(homeAirport : Airport) {
       val fromLoungeRatioDelta : Double =
         if (fromLoungeLevel < loungeLevelRequired) { //penalty for not having lounge required
           if (link.distance <= 2000) { //shorter flight has much less impact
-            (loungeLevelRequired - fromLoungeLevel) * 0.05
+            (loungeLevelRequired - fromLoungeLevel) * 0.03
           } else if (link.distance <= 5000) {
             (loungeLevelRequired - fromLoungeLevel) * 0.1
           } else {

@@ -247,7 +247,7 @@ class ShuttleSimulationSpec(_system: ActorSystem) extends TestKit(_system) with 
 
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
 
-              if (PassengerSimulation.isRouteAffordable(route, sfo, lgb, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, sfo, lgb, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes += 1
               }
               totalRoutes += 1

@@ -5,6 +5,7 @@ package com.patson
 import java.util.{ArrayList, Collections}
 import java.util.concurrent.atomic.AtomicInteger
 import com.patson.data.{AllianceSource, CountrySource, LinkSource}
+import com.patson.model.FlightType.Value
 import com.patson.model._
 
 import scala.collection.mutable.{ListBuffer, Set}
@@ -146,9 +147,10 @@ object PassengerSimulation {
                  //val affordableCost = totalDistance * (Util.getBellRandom(1))
                  //val MIN_AIPLANE_SPEED = 300.0
                  //val linkClass = passengerGroup.preference.preferredLinkClass
-                 
-                 if (isRouteAffordable(pickedRoute, fromAirport, toAirport, passengerGroup.preference.preferredLinkClass)) {
-                   if (isReasonableRouteDistance(pickedRoute, fromAirport, toAirport)) {
+
+                 val rejection = getRouteRejection(pickedRoute, fromAirport, toAirport, passengerGroup.preference.preferredLinkClass)
+                 rejection match {
+                   case None =>
                      val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
                        val actualLinkClass = linkConsideration.linkClass
                        val availableSeats = linkConsideration.link.availableSeats(actualLinkClass)
@@ -173,11 +175,16 @@ object PassengerSimulation {
                        //put a updated demand chunk
                        remainingDemandChunks.append((passengerGroup, toAirport, chunkSize - consumptionSize));
                      }
-                   } else { //try again to see if there's any route within reasonable route distance
-                     remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
-                   }
-                 } else {
-                   missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
+                   case Some(rejection) =>
+                    import RouteRejectionReason._
+                    rejection match {
+                      case TOTAL_COST => // do not retry
+                        missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
+                      case DISTANCE => //try again to see if there's any route within reasonable route distance
+                        remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
+                      case LINK_COST =>//try again to see if there's any route with better links
+                        remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
+                    }
                  }
                case None => //no route
                  missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
@@ -185,24 +192,24 @@ object PassengerSimulation {
            }
         }
        println("Done!")
-       
-       //now process the remainingDemandChunks in next cycle 
-       demandChunks = remainingDemandChunks.toList     
+
+       //now process the remainingDemandChunks in next cycle
+       demandChunks = remainingDemandChunks.toList
        consumptionCycleCount += 1
      }
-     
+
     println("Total chunks that consume something " + consumptionResult.size)
     println("Total missed chunks " + missedDemandChunks.size)
 
     println("Total transported pax " + consumptionResult.map(_._3).sum)
     println("Total missed pax " + missedDemandChunks.map(_._3).sum)
-    
+
     //collapse it now
-    val collapsedMap = consumptionResult.groupBy { 
-      case(passengerGroup, toAirport, passengerCount, route) => (passengerGroup, toAirport, route)  
+    val collapsedMap = consumptionResult.groupBy {
+      case(passengerGroup, toAirport, passengerCount, route) => (passengerGroup, toAirport, route)
     }.mapValues { consumptions => consumptions.map(_._3).sum }
-    
-    
+
+
     println("Collasped consumption map size: " + collapsedMap.size)
 
     val missedMap = missedDemandChunks.groupBy {
@@ -212,65 +219,72 @@ object PassengerSimulation {
 //    val soldLinks = links.filter{ link => link.availableSeats < link.capacity  }.map { link =>
 //      (link, link.capacity - link.availableSeats)
 //      }.sortBy {
-//        case (_, soldSeats) => soldSeats 
+//        case (_, soldSeats) => soldSeats
 //      }
-//      
+//
 //    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + Pricing.computeStandardPrice(link.distance) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
 //    println("seats sold: " + soldLinks.foldLeft(0) {
 //      case (holder, (link, soldSeats)) => holder + soldSeats
 //    })
-//    
+//
 //    LinkSource.saveLinkConsumptions(soldLinks)
-    
+
     (collapsedMap.toMap, missedMap)
   }
 
+  val ROUTE_COST_TOLERANCE_FACTOR = 1.5
   val LINK_COST_TOLERANCE_FACTOR = 0.9
   val LINK_COST_TOLERANCE_NOISE_RANGE = 0.4 //ie -0.2 to 0.2
   val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2.5
   val random = new Random()
-  def isReasonableRouteDistance(route: Route, fromAirport: Airport, toAirport: Airport) : Boolean = {
+
+
+  object RouteRejectionReason extends Enumeration {
+    type RouteRejectionReason = Value
+    val TOTAL_COST, LINK_COST, DISTANCE = Value
+  }
+
+  def getRouteRejection(route: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Option[RouteRejectionReason.Value] = {
+    import RouteRejectionReason._
     val routeDisplacement = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
     val routeDistance = route.links.foldLeft(0)(_ + _.link.distance)
 
-    routeDistance <= routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR
-  }
+    if (routeDistance > routeDisplacement * ROUTE_DISTANCE_TOLERANCE_FACTOR) {
+      return Some(DISTANCE)
+    }
 
-  def isRouteAffordable(pickedRoute: Route, fromAirport: Airport, toAirport: Airport, preferredLinkClass : LinkClass) : Boolean = {
-//    val ROUTE_COST_TOLERANCE_FACTOR = 1.4
-//    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), linkClass) * ROUTE_COST_TOLERANCE_FACTOR
-
-//    println("affordable: " + routeAffordableCost + " cost : " + pickedRoute.totalCost + " => " + pickedRoute)
-
-//    if (pickedRoute.totalCost < routeAffordableCost) { //only consider individual ones for now
-      val incomeAdjustedFactor : Double =
-        if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
-          1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
-        } else {
-          1
-        }
-
-      val noise = (1 + (random.nextDouble() - 0.5) * LINK_COST_TOLERANCE_NOISE_RANGE)
-      val unaffordableLink = pickedRoute.links.find { linkConsideration => {//find links that are too expensive
-          val link = linkConsideration.link 
-          
-          
-          val linkAffordableCost = Pricing.computeStandardPrice(link.distance, link.flightType, preferredLinkClass) * LINK_COST_TOLERANCE_FACTOR * incomeAdjustedFactor * noise
-          
-//          if (linkConsideration.linkClass == BUSINESS) {
-//            println("affordable: " + linkAffordableCost + " cost : " + linkConsideration.cost + " => " + link) 
-//          }
-          linkConsideration.cost > linkAffordableCost
-          
-          
-        }
+    val incomeAdjustedFactor : Double =
+      if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
+        1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
+      } else {
+        1
       }
-      return unaffordableLink.isEmpty
-//    }  
+
+    val routeAffordableCost = Pricing.computeStandardPrice(routeDisplacement, Computation.getFlightType(fromAirport, toAirport, routeDisplacement), preferredLinkClass) * ROUTE_COST_TOLERANCE_FACTOR * incomeAdjustedFactor
+    if (route.totalCost > routeAffordableCost) {
+      //println(s"rejected affordable: $routeAffordableCost, cost : , ${route.totalCost}  $route" )
+      return Some(TOTAL_COST)
+    }
+
+    //now check individual link
+    val unaffordableLink = route.links.find { linkConsideration => //find links that are too expensive
+      val link = linkConsideration.link
+
+
+      val linkAffordableCost = link.standardPrice(preferredLinkClass) * LINK_COST_TOLERANCE_FACTOR * incomeAdjustedFactor
+
+      linkConsideration.cost > linkAffordableCost
+    }
+
+    if (unaffordableLink.isDefined) {
+      return Some(LINK_COST)
+    }
+    return None
+
   }
-  
-  
-   
+
+
+
  
 //  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Link], activeAirportIds : Set[Int],  countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness) : Future[Map[PassengerGroup, Map[Airport, Route]]] = {
 //    val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }

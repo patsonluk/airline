@@ -1,14 +1,14 @@
 package com.patson
 
 import java.util.Collections
-
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
+import com.patson.PassengerSimulation.RouteRejectionReason
 import com.patson.model.FlightType._
 import com.patson.model._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import scala.jdk.CollectionConverters._
 
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.Set
  
 class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
@@ -602,7 +602,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -636,7 +636,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
                }
               totalRoutes = totalRoutes + 1
@@ -673,7 +673,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -710,7 +710,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -747,7 +747,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -785,7 +785,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -821,7 +821,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -859,7 +859,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -898,9 +898,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
-                println(s"accepted $flightPreference -> $breakdown")
+                //println(s"accepted $flightPreference -> $breakdown")
               }
               totalRoutes = totalRoutes + 1
             }
@@ -936,9 +936,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
 
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
-                println(s"$flightPreference to $cost")
+                //println(s"$flightPreference to $cost")
               }
               totalRoutes = totalRoutes + 1
             }
@@ -975,7 +975,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1012,7 +1012,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1051,7 +1051,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1092,7 +1092,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               totalRoutes += 1
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirportsList.last, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirportsList.last, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes += 1
               }
             }
@@ -1140,7 +1140,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              assert(!PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, preferredLinkClass))
+              assert(!PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirports.last, preferredLinkClass).isEmpty)
             }
           }
         }
@@ -1185,7 +1185,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
 
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirports.last, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes += 1
               }
               totalRoutes += 1
@@ -1234,7 +1234,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
 
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirports.last, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes += 1
               }
               totalRoutes += 1
@@ -1284,7 +1284,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirports.last, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes += 1
               }
               totalRoutes += 1
@@ -1323,7 +1323,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               
-              assert(!PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirportsList.last, preferredLinkClass), route + " " + flightPreference)
+              assert(PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirportsList.last, preferredLinkClass) == Some(RouteRejectionReason.TOTAL_COST), route + " " + flightPreference)
             }
           }
         }
@@ -1363,7 +1363,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirports.last, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirports.last, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes += 1
               }
               totalRoutes += 1
@@ -1405,7 +1405,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              assert(!PassengerSimulation.isReasonableRouteDistance(route, clonedFromAirport, toAirports.last), route + " " + flightPreference)
+              assert(PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirports.last, preferredLinkClass) == Some(RouteRejectionReason.DISTANCE), route + " " + flightPreference)
             }
           }
         }
@@ -1436,7 +1436,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1451,7 +1451,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val clonedFromAirport  = fromAirport.copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
 
-      val toAirport = toAirportsList(0).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) //no lounge on the other side... so it's a no
+      val toAirport = toAirportsList(0).copy(longitude = 10, size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) //no lounge on the other side... so it's a no
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
       val duration = Computation.computeStandardFlightDuration(distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
@@ -1471,7 +1471,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1479,8 +1479,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.5)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.2)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.7)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.4)
     }
   
     "accept few links at standard price if it fulfill some lounge requirement (long flight level 1 at departing airport only)".in {
@@ -1508,7 +1508,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1546,7 +1546,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1555,7 +1555,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
         }
       }
       assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.2)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.4)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.5)
     }
     
     "accept most links at standard price if it fulfill all lounge requirements (level 3 at both airports)".in {
@@ -1585,7 +1585,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1623,7 +1623,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1662,7 +1662,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
               val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
-              if (PassengerSimulation.isRouteAffordable(route, clonedFromAirport, toAirport, preferredLinkClass)) {
+              if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
               }
               totalRoutes = totalRoutes + 1
@@ -1672,7 +1672,41 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       }
       assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.9)
     }
-    
-    
+  }
+  "Find affordable route".must {
+    "accept a route if all links are reasonable".in {
+      val distances = List(
+        Computation.calculateDistance(fromAirport, toAirportsList(0)),
+        Computation.calculateDistance(toAirportsList(0), toAirportsList(1)),
+          Computation.calculateDistance(toAirportsList(1), toAirportsList(2))
+      )
+      val flightTypes = List(
+        Computation.getFlightType(fromAirport, toAirportsList(0)),
+        Computation.getFlightType(toAirportsList(0), toAirportsList(1)),
+        Computation.getFlightType(toAirportsList(1), toAirportsList(2))
+      )
+      val standardPrices = List(
+        Pricing.computeStandardPriceForAllClass(distances(0), flightTypes(0)),
+        Pricing.computeStandardPriceForAllClass(distances(1), flightTypes(1)),
+        Pricing.computeStandardPriceForAllClass(distances(2), flightTypes(2))
+      )
+      val durations = List(
+        Computation.calculateDuration(900, distances(0)),
+        Computation.calculateDuration(900, distances(0)),
+        Computation.calculateDuration(900, distances(0)),
+      )
+
+      val links =
+        List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, standardPrices(0), distances(0), LinkClassValues.getInstance(10000), 0, durations(0), 1, flightTypes(0)), 100, ECONOMY, false),
+        LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, standardPrices(1), distances(1), LinkClassValues.getInstance(10000), 0, durations(1), 1, flightTypes(1)), 100, ECONOMY, false),
+        LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, standardPrices(2), distances(2), LinkClassValues.getInstance(10000), 0, durations(2), 1, flightTypes(2)), 100, ECONOMY, false))
+      assignLinkConsiderationIds(links)
+
+      val routes = PassengerSimulation.findShortestRoute(passengerGroup, Set(toAirportsList(2)), allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 3)
+      assert(routes.size == 1)
+      for (i <- 0 until 10000) {
+        assert(PassengerSimulation.getRouteRejection(routes(toAirportsList(2)), fromAirport, toAirportsList(2), ECONOMY).isEmpty)
+      }
+    }
   }
 }
