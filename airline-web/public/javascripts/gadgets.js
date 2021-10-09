@@ -257,8 +257,10 @@ function getUserStatusSpan(userStatus) {
 		return ""
 	}
 
-    if (userStatus == "ACTIVE") {
+    if (userStatus == "ACTIVE" || userStatus == "INACTIVE") {
         return ""
+    } else if (userStatus == "WARNED") {
+       return "<span><img src='assets/images/icons/exclamation.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
     } else if (userStatus == "CHAT_BANNED") {
 		return "<span><img src='assets/images/icons/mute.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
     } else if (userStatus == "BANNED") {

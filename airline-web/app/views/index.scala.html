@@ -2645,6 +2645,7 @@
 									<div><span>UUID:</span>&nbsp;<div class="uuids" style="display: inline-block; width: 90%"></div></div>
 									<div class="clickable" onclick="banChat()">Ban Chat</div>
 									<div class="clickable" onclick="invalidateCustomization()">Remove Livery/Slogan</div>
+									<div class="clickable" onclick="banWarning()">Warn about ban</div>
 									<div class="clickable" onclick="ban()">Ban</div>
 									<div class="clickable" onclick="nerf()">Nerf</div>
 									<div class="clickable" onclick="promptConfirm('Confirm to ban and reset this user? This cannot be undo!', banAndReset)">Ban and reset</div>
@@ -4918,6 +4919,7 @@
 			  </div>
 		  </div>
 		  <div style="text-align: center">
+			  <div class="button" onclick="adminSetUsers('warn', $('#airlinesByIpModal'))">Warn</div>
 			  <div class="button" onclick="adminSetUsers('ban', $('#airlinesByIpModal'))">Ban</div>
 			  <div class="button" onclick="adminSetUsers('nerf', $('#airlinesByIpModal'))">Nerf</div>
 			  <div class="button" onclick="adminSetUsers('restore', $('#airlinesByIpModal'))">Restore</div>
@@ -4940,6 +4942,7 @@
 			  </div>
 		  </div>
 		  <div style="text-align: center">
+			  <div class="button" onclick="adminSetUsers('warn', $('#airlinesByUuidModal'))">Warn</div>
 			  <div class="button" onclick="adminSetUsers('ban', $('#airlinesByUuidModal'))">Ban</div>
 			  <div class="button" onclick="adminSetUsers('nerf', $('#airlinesByUuidModal'))">Nerf</div>
 			  <div class="button" onclick="adminSetUsers('restore', $('#airlinesByUuidModal'))">Restore</div>

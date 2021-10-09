@@ -24,6 +24,7 @@ function adminAction(action, targetUserId, callback) {
 
 function adminMultiAction(action, targetUserIds, callback) {
 	var url = "/admin-multi-action/" + action
+	var selectedAirlineId =  $("#rivalDetails .adminActions").data("airlineId")
 
     var data = {
         "userIds" : targetUserIds
@@ -199,7 +200,9 @@ function showAirlinesByUuid(uuid) {
 
 }
 
-
+function banWarning() {
+    adminAction("warn", $("#rivalDetails .adminActions").data("userId"))
+}
 
 function ban() {
     adminAction("ban", $("#rivalDetails .adminActions").data("userId"))

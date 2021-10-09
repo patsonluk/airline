@@ -137,6 +137,16 @@ object UserSource {
         Some(result(0))
       }
   }
+
+  def loadUserByAirlineId(airlineId : Int) = {
+    val result = loadUsersByCriteria(List(("ua.airline", airlineId)))
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result(0))
+    }
+
+  }
   
   def saveUser(user: User) = {
     val connection = Meta.getConnection()

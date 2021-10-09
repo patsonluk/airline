@@ -66,6 +66,9 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
             Left(BadRequest(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is ${targetUser.adminStatus} while current user is ${adminUser.adminStatus}"))
           } else {
             action match {
+              case "warn" =>
+                changeUserStatus(UserStatus.WARNED, targetUser)
+                Right(Ok(Json.obj("action" -> action)))
               case "ban" =>
                 changeUserStatus(UserStatus.BANNED, targetUser)
                 Right(Ok(Json.obj("action" -> action)))

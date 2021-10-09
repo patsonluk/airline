@@ -24,6 +24,8 @@ case class User(userName : String, email : String, creationTime : Calendar, last
   val isSuperAdmin = adminStatus.isDefined && adminStatus.get == AdminStatus.SUPER_ADMIN
   val isChatBanned = status == UserStatus.CHAT_BANNED || status == UserStatus.BANNED
   val isPremium = level > 0
+
+  val maxAirlinesAllowed = if (isPremium) 3 else 2
 }
 
 object User {
@@ -37,7 +39,7 @@ case class UserSecret(userName : String, digest : String, salt : String)
 
 object UserStatus extends Enumeration {
     type UserStatus = Value
-    val ACTIVE, INACTIVE, CHAT_BANNED, BANNED = Value
+    val ACTIVE, INACTIVE, CHAT_BANNED, BANNED, WARNED = Value
 }
 
 object AdminStatus extends Enumeration {

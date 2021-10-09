@@ -4,11 +4,12 @@ import java.util.concurrent.TimeUnit
 import akka.actor._
 import akka.util.Timeout
 import com.patson.data.{CycleSource, UserSource}
+import com.patson.model.UserStatus
 import com.patson.model.notice.{AirlineNotice, LoyalistNotice, NoticeCategory}
 import com.patson.stream._
 
 import java.util.concurrent.atomic.AtomicLong
-import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
+import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache, UserCache}
 import controllers.{AirlineTutorial, AirportUtil, PromptUtil}
 import models.{PendingAction, PendingActionCategory}
 import play.api.libs.json.JsNumber
@@ -69,6 +70,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
     case JsNumber(_) => //directly receive message from the websocket (the only message the websocket client send down now is the airline id
       try {
         Broadcaster.checkPrompts(airlineId) //check notice on connect
+        checkWarnings(airlineId)
       } catch {
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
@@ -82,6 +84,14 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
     //actorSystem.eventStream.unsubscribe(self)
     outActor ! PoisonPill //have to explicitly kill the output actor since it is not a child
     //MyWebSocketActor.backgroundActor ! RemoveFromBackground
+  }
+
+  def checkWarnings(airlineId : Int) = {
+    UserSource.loadUserByAirlineId(airlineId).foreach { user =>
+      if (user.status == UserStatus.WARNED) {
+        Broadcaster.sendMessage(AirlineCache.getAirline(airlineId).get, s"Our systems have detected you own more airlines than the allowed ${user.maxAirlinesAllowed} airlines limit. Please take actions to reset your airlines and maintain only active airlines according to the limit.  Otherwise we might ban all your accounts after 3 days. Please contact our admins on discord for disputes.")
+      }
+    }
   }
 }
 

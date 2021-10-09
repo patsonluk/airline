@@ -58,12 +58,12 @@ function initPrompts() {
         });
 
     $('#broadcastMessagePopup').data('function', function(message) {
-        $('#broadcastMessagePopup .sendMessage').text(message)
+        $('#broadcastMessagePopup .sendMessage').text(htmlEncode(message))
         $('#broadcastMessagePopup').fadeIn(500)
     })
 
     $('#airlineMessagePopup').data('function', function(message) {
-        $('#airlineMessagePopup .sendMessage').text(message)
+        $('#airlineMessagePopup .sendMessage').text(htmlEncode(message))
         $('#airlineMessagePopup').fadeIn(500)
     })
 }
