@@ -99,7 +99,7 @@ object NegotiationUtil {
     if (newTotal < officeStaffCount) {
       requirements.append(NegotiationRequirement(STAFF_CAP, 0, s"Requires ${newOfficeStaffRequired} office staff, within your base capacity : ${newTotal} / ${officeStaffCount}"))
     } else {
-      val requirement = (newTotal - officeStaffCount).toDouble / 20
+      val requirement = (newTotal - officeStaffCount).toDouble / 10
       requirements.append(NegotiationRequirement(STAFF_CAP, requirement, s"Requires ${newOfficeStaffRequired} office staff, over your base capacity : ${newTotal} / ${officeStaffCount}"))
     }
 
