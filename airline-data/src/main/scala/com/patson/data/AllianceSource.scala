@@ -101,7 +101,8 @@ object AllianceSource {
           airlineIds.append(resultSet.getInt("airline"))
         }
         
-        val airlinesById = AirlineSource.loadAirlinesByIds(airlineIds.toList, fullLoad).map( airline => (airline.id , airline)).toMap
+        //val airlinesById = AirlineSource.loadAirlinesByIds(airlineIds.toList, fullLoad).map( airline => (airline.id , airline)).toMap
+        val airlinesById = AirlineCache.getAirlines(airlineIds.toList, fullLoad)
         
         resultSet.beforeFirst()
         while (resultSet.next()) {
@@ -221,7 +222,8 @@ object AllianceSource {
           airlineIds.append(resultSet.getInt("airline"))
         }
         
-        val airlinesById = AirlineSource.loadAirlinesByIds(airlineIds.toList, fullLoad).map( airline => (airline.id , airline)).toMap
+        //val airlinesById = AirlineSource.loadAirlinesByIds(airlineIds.toList, fullLoad).map( airline => (airline.id , airline)).toMap
+        val airlinesById = AirlineCache.getAirlines(airlineIds.toList, fullLoad)
         
         resultSet.beforeFirst()
         
