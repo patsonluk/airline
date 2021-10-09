@@ -5,10 +5,9 @@ import scala.collection.mutable.Map
 import com.patson.data.Constants._
 import com.patson.model._
 import com.patson.MainSimulation
-import java.sql.Statement
-import java.io.ByteArrayInputStream
-import java.sql.Blob
 
+import java.sql.{Blob, Date, Statement}
+import java.io.ByteArrayInputStream
 import com.patson.util.{AirlineCache, AirportCache}
 
 
@@ -1188,6 +1187,68 @@ object AirlineSource {
       }
       preparedStatement.close()
       connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def deleteAirlineModifier(airlineId : Int, modifierType : AirlineModifierType.Value) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_MODIFIER_TABLE WHERE airline = ? AND modifier_name = ?")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.setString(2, modifierType.toString)
+
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def saveAirlineModifier(airlineId : Int, modifier : AirlineModifier) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_MODIFIER_TABLE (airline, modifier_name, creation, expiry) VALUES(?, ?, ?, ?)")
+      preparedStatement.setInt(1, airlineId)
+      preparedStatement.setString(2, modifier.modifierType.toString)
+      preparedStatement.setInt(3, modifier.creationCycle)
+      modifier.expiryCycle match {
+        case Some(expiryCycle) => preparedStatement.setInt(4, expiryCycle)
+        case None => preparedStatement.setNull(4, java.sql.Types.INTEGER)
+      }
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def loadAirlineModifiers() : List[(Int, AirlineModifier)] = { //_1 is airline Id
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_MODIFIER_TABLE)
+
+      val resultSet = preparedStatement.executeQuery()
+      val result : ListBuffer[(Int, AirlineModifier)] = ListBuffer[(Int, AirlineModifier)]()
+      while (resultSet.next()) {
+        val expiryObject = resultSet.getObject("expiry", classOf[Int])
+        val airlineModifier = AirlineModifier.fromValues(
+          AirlineModifierType.withName(resultSet.getString("modifier_name")),
+          resultSet.getInt("creation"),
+          if (expiryObject == null) None else Some(expiryObject)
+        )
+        result.append((resultSet.getInt("airline"), airlineModifier))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
     } finally {
       connection.close()
     }

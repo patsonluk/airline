@@ -2640,13 +2640,15 @@
 									<div>Username: <span class="username"></span></div>
 									<div>User ID: <span class="userId"></span></div>
 									<div>Status: <span class="status"></span></div>
+									<div>Modifiers: <span class="modifiers"></span></div>
 									<div><span>IP:</span>&nbsp;<div class="ips" style="display: inline-block; width: 90%"></div></div>
 									<div><span>UUID:</span>&nbsp;<div class="uuids" style="display: inline-block; width: 90%"></div></div>
 									<div class="clickable" onclick="banChat()">Ban Chat</div>
 									<div class="clickable" onclick="invalidateCustomization()">Remove Livery/Slogan</div>
 									<div class="clickable" onclick="ban()">Ban</div>
+									<div class="clickable" onclick="nerf()">Nerf</div>
 									<div class="clickable" onclick="promptConfirm('Confirm to ban and reset this user? This cannot be undo!', banAndReset)">Ban and reset</div>
-									<div class="clickable" onclick="unban()">Un-Ban</div>
+									<div class="clickable" onclick="restore()">Restore</div>
 									<div class="clickable" onclick="promptAirlineMessage()">Send Direct Message</div>
 								</div>
 								<div class="superAdminActions" style="display: none;">
@@ -4916,8 +4918,9 @@
 			  </div>
 		  </div>
 		  <div style="text-align: center">
-			  <div class="button" onclick="banUsers()">Ban</div>
-			  <div class="button" onclick="nerfUsers()">Nerf</div>
+			  <div class="button" onclick="adminSetUsers('ban', $('#airlinesByIpModal'))">Ban</div>
+			  <div class="button" onclick="adminSetUsers('nerf', $('#airlinesByIpModal'))">Nerf</div>
+			  <div class="button" onclick="adminSetUsers('restore', $('#airlinesByIpModal'))">Restore</div>
 		  </div>
 	  </div>
   </div>
@@ -4937,8 +4940,9 @@
 			  </div>
 		  </div>
 		  <div style="text-align: center">
-			  <div class="button" onclick="banUsers()">Ban</div>
-			  <div class="button" onclick="nerfUsers()">Nerf</div>
+			  <div class="button" onclick="adminSetUsers('ban', $('#airlinesByUuidModal'))">Ban</div>
+			  <div class="button" onclick="adminSetUsers('nerf', $('#airlinesByUuidModal'))">Nerf</div>
+			  <div class="button" onclick="adminSetUsers('restore', $('#airlinesByUuidModal'))">Restore</div>
 		  </div>
 	  </div>
   </div>

@@ -4,7 +4,7 @@ package com.patson
 
 import java.util.{ArrayList, Collections}
 import java.util.concurrent.atomic.AtomicInteger
-import com.patson.data.{AllianceSource, CountrySource, LinkSource}
+import com.patson.data.{AirlineSource, AllianceSource, CountrySource, CycleSource, LinkSource}
 import com.patson.model.FlightType.Value
 import com.patson.model._
 
@@ -97,6 +97,14 @@ object PassengerSimulation {
 
     establishedAlliances.foreach { alliance => alliance.members.filter(_.role != AllianceRole.APPLICANT).foreach(member => establishedAllianceIdByAirlineId.put(member.airline.id, alliance.id)) }
 
+    val currentCycle = CycleSource.loadCycle()
+    val airlineCostModifiers = AirlineSource.loadAirlineModifiers().filter(_._2.modifierType == AirlineModifierType.NERFED).map {
+      case (airlineId, modifier) => (airlineId, modifier.asInstanceOf[NerfedAirlineModifier].costMultiplier(currentCycle))
+    }.toMap
+
+
+    println(s"Cost modifiers $airlineCostModifiers")
+
     while (consumptionCycleCount < consumptionCycleMax) {
        println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
        println("links: " + links.size)
@@ -119,7 +127,7 @@ object PassengerSimulation {
 //       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
 //       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
        val iterationCount = if (consumptionCycleCount < 3) 5 else 6
-       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId, iterationCount)
+       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId, airlineCostModifiers, iterationCount)
        
        //start consuming routes
        println()
@@ -371,7 +379,13 @@ object PassengerSimulation {
    * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
    *    
    */
-  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]], linksList : List[Transport], activeAirportIds : Set[Int], countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId : java.util.Map[Int, Int] = Collections.emptyMap[Int, Int](), iterationCount : Int = 4) : Map[PassengerGroup, Map[Airport, Route]] = {
+  def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]],
+                    linksList : List[Transport],
+                    activeAirportIds : Set[Int],
+                    countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness,
+                    establishedAllianceIdByAirlineId : java.util.Map[Int, Int] = Collections.emptyMap[Int, Int](),
+                    airlineCostModifiers : Map[Int, Double] = Map.empty,
+                    iterationCount : Int = 4) : Map[PassengerGroup, Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
     
     println("Total routes to compute : " + totalRequiredRoutes)
@@ -418,6 +432,11 @@ object PassengerSimulation {
               
               if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
                 var cost = passengerGroup.preference.computeCost(link, matchingLinkClass)
+
+                val modifier = airlineCostModifiers.get(link.airline.id)
+                modifier.foreach { modifier =>
+                  cost *= modifier
+                }
                 
                 //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
                 val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)

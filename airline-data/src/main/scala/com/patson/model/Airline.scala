@@ -1,8 +1,9 @@
 package com.patson.model
 
 import com.patson.data._
-import com.patson.model.AirlineBaseSpecialization.{Specialization, DelegateSpecialization}
+import com.patson.model.AirlineBaseSpecialization.{DelegateSpecialization, Specialization}
 
+import java.util.{Calendar, Date}
 import scala.collection.mutable.ListBuffer
 
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
@@ -374,4 +375,35 @@ object AirlineGrade {
   def findGrade(reputation : Double) = {
     allGrades.find(_.reputationCeiling > reputation).getOrElse(allGrades.last)
   }
+}
+
+object AirlineModifier {
+  def fromValues(modifierType : AirlineModifierType.Value, creationCycle : Int, expiryCycle : Option[Int]) : AirlineModifier = {
+    import AirlineModifierType._
+    modifierType match {
+      case NERFED => NerfedAirlineModifier(creationCycle)
+    }
+  }
+}
+
+abstract class AirlineModifier(val modifierType : AirlineModifierType.Value, val creationCycle : Int, val expiryCycle : Option[Int])
+
+case class NerfedAirlineModifier(override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.NERFED, creationCycle, None) {
+  val FULL_EFFECT_DURATION = 100 //completely kicks in after 100 cycles
+  val FULL_COST_MULTIPLIER = 1.5
+  val costMultiplier = (currentCycle : Int) => {
+    val age = currentCycle - creationCycle
+    if (age >= FULL_EFFECT_DURATION) {
+      FULL_COST_MULTIPLIER
+    } else if (age >= 0) {
+      1 + age.toDouble / FULL_EFFECT_DURATION * (FULL_COST_MULTIPLIER - 1)
+    } else {
+      1
+    }
+  }
+}
+
+object AirlineModifierType extends Enumeration {
+  type AirlineModifierType = Value
+  val NERFED = Value
 }
