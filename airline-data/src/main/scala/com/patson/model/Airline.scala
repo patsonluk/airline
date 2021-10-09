@@ -396,7 +396,7 @@ case class NerfedAirlineModifier(override val creationCycle : Int) extends Airli
     if (age >= FULL_EFFECT_DURATION) {
       FULL_COST_MULTIPLIER
     } else if (age >= 0) {
-      age.toDouble / FULL_EFFECT_DURATION * FULL_COST_MULTIPLIER
+      1 + age.toDouble / FULL_EFFECT_DURATION * (FULL_COST_MULTIPLIER - 1)
     } else {
       1
     }
