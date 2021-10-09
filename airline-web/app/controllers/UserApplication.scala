@@ -68,7 +68,7 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
     if (request.user.status == UserStatus.BANNED && !isSuperAdmin) {
-      println(s"Banned user ${request.user} tried to login")
+      println(s"Banned user ${request.user.userName} tried to login")
       Forbidden("User is banned")
     } else {
       val result = Json.toJson(request.user).asInstanceOf[JsObject] + ("hasWallpaper" -> JsBoolean(SettingsSource.hasWallpaper(request.user.id)))
