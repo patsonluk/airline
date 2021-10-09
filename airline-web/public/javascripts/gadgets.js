@@ -252,6 +252,40 @@ function getAdminImg(adminStatus) {
 	}
 }
 
+function getUserStatusSpan(userStatus) {
+	if (!userStatus) {
+		return ""
+	}
+
+    if (userStatus == "ACTIVE") {
+        return ""
+    } else if (userStatus == "CHAT_BANNED") {
+		return "<span><img src='assets/images/icons/mute.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
+    } else if (userStatus == "BANNED") {
+        return "<span><img src='assets/images/icons/prohibition.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
+    } else if (userStatus == "NERFED") {
+        return "<span><img src='assets/images/icons/ghost.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
+    } else {
+        return "<span>" + userStatus + "</span>"
+    }
+}
+
+function getAirlineModifiersSpan(modifiers) {
+	if (!modifiers) {
+		return ""
+	}
+
+    var result = ""
+    $.each(modifiers, function(index, modifier) {
+        if (modifier == "NERFED") {
+           result += "<span><img src='assets/images/icons/ghost.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
+        } else {
+           result += "<span>" + modifier + "</span>"
+        }
+    })
+    return result
+}
+
 function getRankingImg(ranking) {
 	var rankingIcon
 	var rankingTitle

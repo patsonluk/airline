@@ -1,12 +1,13 @@
 package controllers
 
-import com.patson.data.{AdminSource, AirlineSource, IpSource, UserSource, UserUuidSource}
+import com.patson.data.{AdminSource, AirlineSource, CycleSource, IpSource, UserSource, UserUuidSource}
 import com.patson.model.UserStatus.UserStatus
-import com.patson.model.{Airline, UserStatus, User}
+import com.patson.model.{Airline, AirlineModifier, AirlineModifierType, User, UserStatus}
 import com.patson.util.{AirlineCache, AirportCache}
 import controllers.AuthenticationObject.Authenticated
 import controllers.GoogleImageUtil.{AirportKey, CityKey}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsArray, Json}
+import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
 import websocket.Broadcaster
 
@@ -17,64 +18,107 @@ import javax.inject.Inject
 
 class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
+  def adminMultiAction(action : String) = Authenticated { implicit request =>
+    val userIds = request.body.asInstanceOf[AnyContentAsJson].json.\("userIds").get.asInstanceOf[JsArray].value.map(_.as[Int])
+    doAdminActions(request, action, userIds.toList)
+  }
+
+  def doAdminActions(request : AuthenticatedRequest[AnyContent, User], action : String, userIds : List[Int]) : Result = {
+    userIds.foreach { userId =>
+      doAdminAction(request, action, userId) match {
+        case Left(errorResult) => return errorResult
+        case Right(okResult) =>
+      }
+    }
+    return Ok(Json.obj("userIds" -> userIds))
+  }
+
+
   def adminAction(action : String, targetUserId : Int) = Authenticated { implicit request =>
-    if (request.user.isAdmin) {
-      AdminSource.saveLog(action, request.user.userName, targetUserId)
+    doAdminAction(request, action, targetUserId) match {
+      case Left(errorResult) => errorResult
+      case Right(okResult) => okResult
+    }
+  }
+
+  def addAirlineModifier(modifier : AirlineModifierType.Value, airlines : List[Airline]) = {
+    val currentCycle = CycleSource.loadCycle()
+    airlines.foreach { airline =>
+      AirlineSource.saveAirlineModifier(airline.id, AirlineModifier.fromValues(modifier, currentCycle, None))
+    }
+  }
+
+  def removeAirlineModifier(modifierType : AirlineModifierType.Value, airlines : List[Airline]) = {
+    airlines.foreach { airline =>
+      AirlineSource.deleteAirlineModifier(airline.id, modifierType)
+    }
+  }
+
+  def doAdminAction(request : AuthenticatedRequest[AnyContent, User], action : String, targetUserId : Int) : Either[Result, Result] = {
+    val adminUser = request.user
+    if (adminUser.isAdmin) {
+      AdminSource.saveLog(action, adminUser.userName, targetUserId)
 
       UserSource.loadUserById(targetUserId) match {
         case Some(targetUser) =>
-          if (targetUser.isAdmin && request.user.adminStatus.get.id <= targetUser.adminStatus.get.id) {
-            println(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is ${targetUser.adminStatus} while current user is ${request.user.adminStatus}")
-            BadRequest(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is ${targetUser.adminStatus} while current user is ${request.user.adminStatus}")
+          if (targetUser.isAdmin && adminUser.adminStatus.get.id <= targetUser.adminStatus.get.id) {
+            println(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is ${targetUser.adminStatus} while current user is ${adminUser.adminStatus}")
+            Left(BadRequest(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the target user is ${targetUser.adminStatus} while current user is ${adminUser.adminStatus}"))
           } else {
             action match {
               case "ban" =>
                 changeUserStatus(UserStatus.BANNED, targetUser)
-                Ok(Json.obj("action" -> action))
+                Right(Ok(Json.obj("action" -> action)))
               case "ban-chat" =>
                 changeUserStatus(UserStatus.CHAT_BANNED, targetUser)
-                Ok(Json.obj("action" -> action))
+                Right(Ok(Json.obj("action" -> action)))
+              case "nerf" =>
+                //changeUserStatus(UserStatus.NERFED, targetUser)
+                //changeAirlineStatus(AirlineStatus.NERFED,
+                addAirlineModifier(AirlineModifierType.NERFED, targetUser.getAccessibleAirlines())
+                Right(Ok(Json.obj("action" -> action)))
               case "ban-reset" =>
                 changeUserStatus(UserStatus.BANNED, targetUser)
 
                 targetUser.getAccessibleAirlines().foreach { airline =>
                   Airline.resetAirline(airline.id, newBalance = 0, true) match {
                     case Some(airline) =>
-                      Ok(Json.obj("action" -> action))
-                    case None => NotFound
+                      Right(Ok(Json.obj("action" -> action)))
+                    case None => Left(NotFound)
                   }
                 }
 
-                Ok(Json.obj("action" -> action))
-              case "un-ban" =>
+                Right(Ok(Json.obj("action" -> action)))
+              case "restore" =>
                 changeUserStatus(UserStatus.ACTIVE, targetUser)
+                removeAirlineModifier(AirlineModifierType.NERFED, targetUser.getAccessibleAirlines())
                 //unbanUserIp(targetUserId)
-                Ok(Json.obj("action" -> action))
+                Right(Ok(Json.obj("action" -> action)))
               case "switch" =>
-                if (request.user.isSuperAdmin) {
+                if (adminUser.isSuperAdmin) {
 
                   request.session.get("userToken") match {
                     case Some(userToken) =>
                       SessionUtil.getUserId(userToken) match {
-                        case Some(userId) => Ok(Json.obj("action" -> action)).withSession("userToken" -> SessionUtil.addUserId(targetUserId), "adminToken" -> userToken)
-                        case None => BadRequest(s"Invalid token (admin) $userToken")
+                        case Some(userId) => Right(Ok(Json.obj("action" -> action)).withSession("userToken" -> SessionUtil.addUserId(targetUserId), "adminToken" -> userToken))
+                        case None => Left(BadRequest(s"Invalid token (admin) $userToken"))
                       }
-                    case None => BadRequest("no current admin token")
+                    case None => Left(BadRequest("no current admin token"))
                   }
                 } else {
-                  Forbidden("Not a super admin user")
+                  Left(Forbidden("Not a super admin user"))
                 }
               case _ =>
                 println(s"unknown admin action $action")
-                BadRequest(Json.obj("action" -> action))
+                Left(BadRequest(Json.obj("action" -> action)))
             }
           }
-        case None => BadRequest(s"ADMIN - Failed action $action as User $targetUserId is not found")
+        case None => Left(BadRequest(s"ADMIN - Failed action $action as User $targetUserId is not found"))
       }
 
     } else {
-      println(s"Non admin ${request.user} tried to access admin operations!!")
-      Forbidden("Not an admin user")
+      println(s"Non admin ${adminUser} tried to access admin operations!!")
+      Left(Forbidden("Not an admin user"))
     }
   }
 
@@ -108,6 +152,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
             result = result.append(Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
+              "userId" -> user.id,
               "username" -> user.userName,
               "userStatus" -> user.status.toString,
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
@@ -147,6 +192,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
             result = result.append(Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
+              "userId" -> user.id,
               "username" -> user.userName,
               "userStatus" -> user.status.toString,
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),

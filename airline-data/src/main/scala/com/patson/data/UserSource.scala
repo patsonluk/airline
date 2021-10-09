@@ -8,8 +8,7 @@ import java.util.Calendar
 import java.text.SimpleDateFormat
 import java.sql.Statement
 import java.util.Date
-
-import com.patson.util.UserCache
+import com.patson.util.{AirlineCache, UserCache}
 
 object UserSource {
   val dateFormat = new ThreadLocal[SimpleDateFormat]() {
@@ -104,8 +103,9 @@ object UserSource {
       
       val allAirlineIds : List[Int] = userList.values.map(_._2).flatten.toSet.toList
       
-      val airlinesMap = AirlineSource.loadAirlinesByIds(allAirlineIds, true).map(airline => (airline.id, airline)).toMap
-      
+      //val airlinesMap = AirlineSource.loadAirlinesByIds(allAirlineIds, true).map(airline => (airline.id, airline)).toMap
+      val airlinesMap = AirlineCache.getAirlines(allAirlineIds, true)
+
       userList.values.foreach {
         case(user,userAirlineIds) =>
           user.setAccesibleAirlines(userAirlineIds.map(airlineId => airlinesMap.get(airlineId)).flatten.toList)

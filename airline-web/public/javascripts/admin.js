@@ -22,6 +22,31 @@ function adminAction(action, targetUserId, callback) {
 	});
 }
 
+function adminMultiAction(action, targetUserIds, callback) {
+	var url = "/admin-multi-action/" + action
+
+    var data = {
+        "userIds" : targetUserIds
+     }
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	        showRivalsCanvas(selectedAirlineId)
+	        if (callback) {
+                callback()
+            }
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 function invalidateImage(imageType) {
 	var url = "/admin/invalidate-image/" + activeAirportId +  "/" + imageType
 	$.ajax({
@@ -66,6 +91,11 @@ function showAdminActions(airline) {
     $("#rivalDetails .adminActions .username").text(airline.username)
     $("#rivalDetails .adminActions .userId").text(airline.userId)
     $("#rivalDetails .adminActions .status").text(airline.userStatus)
+    if (airline.modifiers) {
+        $("#rivalDetails .adminActions .modifiers").text(airline.modifiers.join(";"))
+    } else {
+        $("#rivalDetails .adminActions .modifiers").text('-')
+    }
     $("#rivalDetails .adminActions .ips").empty()
     $("#rivalDetails .adminActions .uuids").empty()
     $.ajax({
@@ -121,7 +151,7 @@ function showAirlinesByIp(ip) {
             $.each(result, function(index, entry) {
                 var $row = $("<div class='table-row'></div>")
                 var airline = entry.airline
-                $row.append("<div class='cell'><input type='checkbox' checked='checked'></div>")
+                $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
                 $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByIpModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
                 $row.append("<div class='cell'>" + entry.username + "</div>")
                 $row.append("<div class='cell'>" + entry.userStatus + "</div>")
@@ -151,7 +181,7 @@ function showAirlinesByUuid(uuid) {
             $.each(result, function(index, entry) {
                 var $row = $("<div class='table-row'></div>")
                 var airline = entry.airline
-                $row.append("<div class='cell'><input type='checkbox' checked='checked'></div>")
+                $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
                 $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByUuidModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
                 $row.append("<div class='cell'>" + entry.username + "</div>")
                 $row.append("<div class='cell'>" + entry.userStatus + "</div>")
@@ -177,12 +207,26 @@ function ban() {
 function banAndReset() {
     adminAction("ban-reset", $("#rivalDetails .adminActions").data("userId"))
 }
-function unban() {
-    adminAction("un-ban", $("#rivalDetails .adminActions").data("userId"))
+function nerf() {
+    adminAction("nerf", $("#rivalDetails .adminActions").data("userId"))
+}
+function restore() {
+    adminAction("restore", $("#rivalDetails .adminActions").data("userId"))
 }
 function banChat() {
     adminAction("ban-chat", $("#rivalDetails .adminActions").data("userId"))
 }
+function adminSetUsers(action, $modal) {
+    var targetUserIds = []
+    $.each($modal.find('input:checked'), function(index, input) {
+        targetUserIds.push($(input).data('userId'))
+    })
+
+    adminMultiAction(action, targetUserIds, function() {
+        closeModal($modal)
+    })
+}
+
 function invalidateCustomization() {
     var airlineId = $("#rivalDetails .adminActions").data("airlineId")
     var url = "/admin/invalidate-customization/" + airlineId

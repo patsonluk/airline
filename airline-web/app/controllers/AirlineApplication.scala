@@ -50,9 +50,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val ONLINE, ACTIVE_7_DAYS, ACTIVE_30_DAYS, INACTIVE = Value
   }
   
-  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance], Boolean)] {
-    def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance], Boolean)): JsValue = {
-      val (airline, user, loginStatus, alliance, isCurrentUserAdmin) = entry
+  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], Boolean)] {
+    def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], Boolean)): JsValue = {
+      val (airline, user, loginStatus, alliance, modifiers, isCurrentUserAdmin) = entry
       var result = Json.toJson(airline).asInstanceOf[JsObject] +
         ("userLevel" -> JsNumber(user.level)) +
         ("username" -> JsString(user.userName))
@@ -73,6 +73,10 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         
       alliance.foreach { alliance =>
         result = result + ("allianceName" -> JsString(alliance.name))
+      }
+
+      if (!modifiers.isEmpty) {
+        result = result + ("modifiers" -> Json.toJson(modifiers.map(_.modifierType.toString)))
       }
         //("lastActiveTime" -> JsString(user.lastActive.getTime.toString)) //maybe last active time is still too sensitive
       result
@@ -140,12 +144,17 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         Map.empty[User, LoginStatus.Value]
       }
 
-
+    val airlineModifiers : Map[Int, List[AirlineModifier]]  =
+      if (request.user.isAdmin) { //modifiers are only visible to admins
+        AirlineSource.loadAirlineModifiers().groupBy(_._1).view.mapValues(_.toList.map(_._2)).toMap
+      } else {
+        Map.empty
+      }
 
 
     val alliances = AllianceSource.loadAllAlliances().map(alliance => (alliance.id, alliance)).toMap
     Ok(Json.toJson(airlinesByUser.toList.map {
-      case(airline, user) => (airline, user, userStatusMap.get(user), airline.getAllianceId.map(alliances(_)), request.user.isAdmin)
+      case(airline, user) => (airline, user, userStatusMap.get(user), airline.getAllianceId.map(alliances(_)), airlineModifiers.getOrElse(airline.id, List.empty), request.user.isAdmin)
     })).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"
