@@ -56,6 +56,7 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       SessionUtil.getUserId(adminToken).foreach { adminId =>
         UserSource.loadUserById(adminId).foreach { user =>
           isSuperAdmin = user.isSuperAdmin
+          println(s"Admin ${user.userName} is logging in on behave of ${request.user.userName}")
         }
       }
     }
@@ -63,7 +64,10 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (!isSuperAdmin) { //do not track if admin is switching, otherwise that would be confusing
       IpSource.saveUserIp(request.user.id, request.remoteAddress)
     }
-    if (request.user.status == UserStatus.BANNED) {
+
+
+
+    if (request.user.status == UserStatus.BANNED && !isSuperAdmin) {
       println(s"Banned user ${request.user} tried to login")
       Forbidden("User is banned")
     } else {
