@@ -390,7 +390,7 @@ abstract class AirlineModifier(val modifierType : AirlineModifierType.Value, val
 
 case class NerfedAirlineModifier(override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.NERFED, creationCycle, None) {
   val FULL_EFFECT_DURATION = 300 //completely kicks in after 100 cycles
-  val FULL_COST_MULTIPLIER = 1.3
+  val FULL_COST_MULTIPLIER = 1.25
   val costMultiplier = (currentCycle : Int) => {
     val age = currentCycle - creationCycle
     if (age >= FULL_EFFECT_DURATION) {
