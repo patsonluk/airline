@@ -66,7 +66,6 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
 
 
-
     if (request.user.status == UserStatus.BANNED && !isSuperAdmin) {
       println(s"Banned user ${request.user.userName} tried to login")
       Forbidden("User is banned")
@@ -77,7 +76,9 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val newUuid = UUID.randomUUID().toString
         newUuid
       }
-      UserUuidSource.saveUserUuid(request.user.id, uuid)
+      if (!isSuperAdmin) {
+        UserUuidSource.saveUserUuid(request.user.id, uuid)
+      }
 
       var response = Ok(result).withCookies(Cookie("uuid", uuid, maxAge = Some(Integer.MAX_VALUE))).withHeaders("Access-Control-Allow-Credentials" -> "true").withSession("userToken" -> SessionUtil.addUserId(request.user.id))
       adminTokenOption.foreach { adminToken =>
