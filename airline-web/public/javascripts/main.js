@@ -201,7 +201,8 @@ function loadUser(isLogin) {
 	    		showFloatMessage("Incorrect username or password")
 	    	} else if (jqXHR.status == 400) {
 	    		showFloatMessage("Session expired. Please log in again")
-	    	} else { //do not even give a reason for banned user 403
+	    	} else {
+	    	    showFloatMessage("Error logging in, error code " + jqXHR.status + ". Please contact admins on Discord for assistance.")
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    	}
