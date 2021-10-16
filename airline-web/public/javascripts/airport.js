@@ -1277,7 +1277,7 @@ function showSpecializationModal() {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(info) {
-            $.each(info, function(index, specializationsByScale) {
+            $.each(info.specializations, function(index, specializationsByScale) {
                 var $scaleDiv = $('<div class="section"></div>').appendTo($container)
                 $scaleDiv.append($('<h4>Hub Scale Requirement ' + specializationsByScale.scaleRequirement + '</h4>'))
                 var $flexDiv = $('<div style="display: flex; flex-wrap: wrap;"></div>').appendTo($scaleDiv)
@@ -1310,6 +1310,15 @@ function showSpecializationModal() {
                     }
                 })
             })
+
+            if (info.cooldown > 0) {
+                disableButton($('#baseSpecializationModal .confirm'), info.cooldown + " more week(s) before another change")
+            } else {
+                enableButton($('#baseSpecializationModal .confirm'))
+            }
+
+            $('#baseSpecializationModal').data("defaultCooldown", info.defaultCooldown)
+
             $('#baseSpecializationModal').fadeIn(500)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -1321,28 +1330,31 @@ function showSpecializationModal() {
 }
 
 function confirmSpecializations() {
-    var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/bases/" + activeAirportId + "/specializations"
-	var selectedSpecializations = []
-	$('#baseSpecializationModal .specialization.active').each(function(index) {
-	    selectedSpecializations.push($(this).data('id'))
-	})
+    var defaultCooldown = $('#baseSpecializationModal').data("defaultCooldown")
+    promptConfirm("Changes can only be made every " + defaultCooldown + " weeks, confirm?", function() {
+        var airlineId = activeAirline.id
+        var url = "airlines/" + airlineId + "/bases/" + activeAirportId + "/specializations"
+        var selectedSpecializations = []
+        $('#baseSpecializationModal .specialization.active').each(function(index) {
+            selectedSpecializations.push($(this).data('id'))
+        })
 
-	$.ajax({
-		type: 'PUT',
-		data: JSON.stringify({
-		    "selectedSpecializations" : selectedSpecializations
-		}),
-		url: url,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(response) {
-	        closeModal($('#baseSpecializationModal'))
-	        showAirportDetails(activeAirportId)
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+        $.ajax({
+            type: 'PUT',
+            data: JSON.stringify({
+                "selectedSpecializations" : selectedSpecializations
+            }),
+            url: url,
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(response) {
+                closeModal($('#baseSpecializationModal'))
+                showAirportDetails(activeAirportId)
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(JSON.stringify(jqXHR));
+                    console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            }
+        });
+    })
 }

@@ -309,6 +309,7 @@ object Meta {
     createAirportChampion(connection)
     createAirportAnimation(connection)
     createAirlineBaseSpecialization(connection)
+    createAirlineBaseSpecializationLastUpdate(connection)
     createReputationBreakdown(connection)
     createIp(connection)
     createAdminLog(connection)
@@ -1851,6 +1852,23 @@ object Meta {
       "airline INTEGER, " +
       "specialization_type VARCHAR(256), " +
       "PRIMARY KEY (airport, airline, specialization_type)," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirlineBaseSpecializationLastUpdate(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE + "(" +
+      "airport INTEGER, " +
+      "airline INTEGER, " +
+      "update_cycle INTEGER, " +
+      "PRIMARY KEY (airport, airline, update_cycle)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

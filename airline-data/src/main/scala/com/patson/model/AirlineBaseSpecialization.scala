@@ -99,4 +99,5 @@ object AirlineBaseSpecialization extends Enumeration {
 object BaseSpecializationType extends Enumeration {
   type SpecializationType = Value
   val FLIGHT_TYPE, DELEGATE, LOYALTY, NEGOTIATION = Value
+  val COOLDOWN = 100 //change every 100 cycles
 }

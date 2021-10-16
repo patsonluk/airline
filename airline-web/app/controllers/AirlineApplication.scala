@@ -1088,8 +1088,19 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val base = AirportCache.getAirport(airportId, true).get.getAirlineBase(airlineId).get
     val activeSpecializations : List[AirlineBaseSpecialization.Value] = base.specializations
     val specializationByScaleRequirement : List[(Int, List[AirlineBaseSpecialization.Value])] = AirlineBaseSpecialization.values.toList.groupBy(_.scaleRequirement).toList.sortBy(_._1)
+    val cooldown =
+      AirportSource.loadAirportBaseSpecializationsLastUpdate(airportId, airlineId) match {
+        case Some(lastUpdate) =>
+          val currentCycle = CycleSource.loadCycle()
+          if (BaseSpecializationType.COOLDOWN + lastUpdate <= currentCycle) {
+            0
+          } else {
+            BaseSpecializationType.COOLDOWN + lastUpdate - currentCycle
+          }
+        case None => 0
+      }
 
-    var result = Json.arr()
+    var specializationJson = Json.arr()
 
     specializationByScaleRequirement.foreach {
       case(scaleRequirement, specializations) =>
@@ -1101,36 +1112,49 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
             ("free" -> JsBoolean(specialization.free))
           )
         }
-
-        result = result.append(Json.obj("scaleRequirement" -> scaleRequirement, "specializations" -> specializationsJson))
+        specializationJson = specializationJson.append(Json.obj("scaleRequirement" -> scaleRequirement, "specializations" -> specializationsJson))
     }
-    Ok(result)
+
+    Ok(Json.obj("specializations" -> specializationJson, "cooldown" -> cooldown, "defaultCooldown" -> BaseSpecializationType.COOLDOWN))
 
   }
 
   def setBaseSpecializations(airlineId: Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
     val inputSpecializations = request.body.asInstanceOf[AnyContentAsJson].json.\("selectedSpecializations").as[List[String]].map(AirlineBaseSpecialization.withName(_))
-    //validate
-    AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
-      case Some(base) =>
-        val specializationByScale = mutable.HashMap[Int, AirlineBaseSpecialization.Value]() //use a map by scale, to avoid selecting multiple spec per scale
-        inputSpecializations.foreach { specialization =>
-          specializationByScale.put(specialization.scaleRequirement, specialization)
 
-        }
-        val selectedSpecializations = specializationByScale.values.toList.filter(!_.free)
-        val existingSpecializations = base.specializations.filter(!_.free)
-        val newSpecializations = selectedSpecializations.filter(!existingSpecializations.contains(_))
-        val removedSpecializations = existingSpecializations.filter(!selectedSpecializations.contains(_))
+    val cooldown =
+      AirportSource.loadAirportBaseSpecializationsLastUpdate(airportId, airlineId).map { lastUpdate =>
+        val currentCycle = CycleSource.loadCycle()
+        BaseSpecializationType.COOLDOWN + lastUpdate - currentCycle
+      }.getOrElse(0)
 
-        AirportSource.updateAirportBaseSpecializations(airportId, airlineId, selectedSpecializations)
-        val airport = AirportCache.getAirport(airportId, true).get
-        removedSpecializations.foreach(_.unapply(request.user, airport))
-        newSpecializations.foreach(_.apply(request.user, airport))
+    if (cooldown > 0) {
+      BadRequest(s"cooldown $cooldown")
+    } else {
+      //validate
+      AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
+        case Some(base) =>
+          val specializationByScale = mutable.HashMap[Int, AirlineBaseSpecialization.Value]() //use a map by scale, to avoid selecting multiple spec per scale
+          inputSpecializations.foreach { specialization =>
+            specializationByScale.put(specialization.scaleRequirement, specialization)
 
-      case None => NotFound("Base $airlineId / $airportId not found")
+          }
+          val selectedSpecializations = specializationByScale.values.toList.filter(!_.free)
+          val existingSpecializations = base.specializations.filter(!_.free)
+          val newSpecializations = selectedSpecializations.filter(!existingSpecializations.contains(_))
+          val removedSpecializations = existingSpecializations.filter(!selectedSpecializations.contains(_))
+
+          if (!(newSpecializations.isEmpty && removedSpecializations.isEmpty)) {
+            AirportSource.updateAirportBaseSpecializations(airportId, airlineId, selectedSpecializations)
+            val airport = AirportCache.getAirport(airportId, true).get
+            removedSpecializations.foreach(_.unapply(request.user, airport))
+            newSpecializations.foreach(_.apply(request.user, airport))
+          }
+
+        case None => NotFound("Base $airlineId / $airportId not found")
+      }
+
+      Ok(Json.obj())
     }
-
-    Ok(Json.obj())
   }
 }

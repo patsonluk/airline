@@ -401,13 +401,21 @@ object AirportSource {
       purgeStatement.executeUpdate()
       purgeStatement.close()
 
-      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_BASE_SPECIALIZATION_TABLE  (airport, airline, specialization_type) VALUES(?,?,?)")
+      var preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_BASE_SPECIALIZATION_TABLE  (airport, airline, specialization_type) VALUES(?,?,?)")
       airlineBaseSpecializationTypes.foreach { airlineBaseSpecializationType =>
         preparedStatement.setInt(1, airportId)
         preparedStatement.setInt(2, airlineId)
         preparedStatement.setString(3, airlineBaseSpecializationType.toString)
         preparedStatement.executeUpdate()
       }
+
+      preparedStatement.close()
+
+      preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE  (airport, airline, update_cycle) VALUES(?,?,?)")
+      preparedStatement.setInt(1, airportId)
+      preparedStatement.setInt(2, airlineId)
+      preparedStatement.setInt(3, CycleSource.loadCycle())
+      preparedStatement.executeUpdate()
 
       preparedStatement.close()
 
@@ -442,6 +450,34 @@ object AirportSource {
       preparedStatement.close()
 
       result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadAirportBaseSpecializationsLastUpdate(airportId : Int, airlineId : Int) : Option[Int] = {
+    val connection = Meta.getConnection()
+    try {
+      var queryString = s"SELECT * FROM $AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE WHERE airport = ? AND airline = ?"
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      preparedStatement.setInt(1, airportId)
+      preparedStatement.setInt(2, airlineId)
+
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result =
+        if (resultSet.next()) {
+          Some(resultSet.getInt("update_cycle"))
+        } else {
+          None
+        }
+      resultSet.close()
+      preparedStatement.close()
+
+      result
     } finally {
       connection.close()
     }
