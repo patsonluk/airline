@@ -426,6 +426,31 @@ object AirportSource {
     }
   }
 
+  def loadAllAirportBaseSpecializations : List[(Airline, Airport, AirlineBaseSpecialization.Value)] = {
+    val connection = Meta.getConnection()
+    try {
+      val queryString = s"SELECT * FROM $AIRLINE_BASE_SPECIALIZATION_TABLE"
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = ListBuffer[(Airline, Airport, AirlineBaseSpecialization.Value)]()
+
+      while (resultSet.next()) {
+        val specialization = AirlineBaseSpecialization.withName(resultSet.getString("specialization_type"))
+        result.append((AirlineCache.getAirline(resultSet.getInt("airline")).get, AirportCache.getAirport(resultSet.getInt("airport")).get, specialization))
+
+
+      }
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
+    } finally {
+      connection.close()
+    }
+  }
 
   def loadAirportBaseSpecializations(airportId : Int, airlineId : Int) : List[AirlineBaseSpecialization.Value] = {
     val connection = Meta.getConnection()

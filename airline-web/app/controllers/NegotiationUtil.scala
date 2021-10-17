@@ -72,6 +72,10 @@ object NegotiationUtil {
     if (baseScale >= 8) {
       maxFrequency += (baseScale - 7) * 1
     }
+    if (baseScale >= 13) { //accumulative with the >= 8 buff
+      maxFrequency += (baseScale - 12) * 2
+    }
+
     maxFrequency
   }
 
