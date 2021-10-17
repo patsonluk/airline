@@ -401,13 +401,21 @@ object AirportSource {
       purgeStatement.executeUpdate()
       purgeStatement.close()
 
-      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_BASE_SPECIALIZATION_TABLE  (airport, airline, specialization_type) VALUES(?,?,?)")
+      var preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_BASE_SPECIALIZATION_TABLE  (airport, airline, specialization_type) VALUES(?,?,?)")
       airlineBaseSpecializationTypes.foreach { airlineBaseSpecializationType =>
         preparedStatement.setInt(1, airportId)
         preparedStatement.setInt(2, airlineId)
         preparedStatement.setString(3, airlineBaseSpecializationType.toString)
         preparedStatement.executeUpdate()
       }
+
+      preparedStatement.close()
+
+      preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE  (airport, airline, update_cycle) VALUES(?,?,?)")
+      preparedStatement.setInt(1, airportId)
+      preparedStatement.setInt(2, airlineId)
+      preparedStatement.setInt(3, CycleSource.loadCycle())
+      preparedStatement.executeUpdate()
 
       preparedStatement.close()
 
@@ -418,6 +426,31 @@ object AirportSource {
     }
   }
 
+  def loadAllAirportBaseSpecializations : List[(Airline, Airport, AirlineBaseSpecialization.Value)] = {
+    val connection = Meta.getConnection()
+    try {
+      val queryString = s"SELECT * FROM $AIRLINE_BASE_SPECIALIZATION_TABLE"
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result = ListBuffer[(Airline, Airport, AirlineBaseSpecialization.Value)]()
+
+      while (resultSet.next()) {
+        val specialization = AirlineBaseSpecialization.withName(resultSet.getString("specialization_type"))
+        result.append((AirlineCache.getAirline(resultSet.getInt("airline")).get, AirportCache.getAirport(resultSet.getInt("airport")).get, specialization))
+
+
+      }
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
+    } finally {
+      connection.close()
+    }
+  }
 
   def loadAirportBaseSpecializations(airportId : Int, airlineId : Int) : List[AirlineBaseSpecialization.Value] = {
     val connection = Meta.getConnection()
@@ -442,6 +475,34 @@ object AirportSource {
       preparedStatement.close()
 
       result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadAirportBaseSpecializationsLastUpdate(airportId : Int, airlineId : Int) : Option[Int] = {
+    val connection = Meta.getConnection()
+    try {
+      var queryString = s"SELECT * FROM $AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE WHERE airport = ? AND airline = ?"
+
+      val preparedStatement = connection.prepareStatement(queryString)
+
+      preparedStatement.setInt(1, airportId)
+      preparedStatement.setInt(2, airlineId)
+
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result =
+        if (resultSet.next()) {
+          Some(resultSet.getInt("update_cycle"))
+        } else {
+          None
+        }
+      resultSet.close()
+      preparedStatement.close()
+
+      result
     } finally {
       connection.close()
     }
