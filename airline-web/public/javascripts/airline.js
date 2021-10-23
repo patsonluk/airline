@@ -1112,8 +1112,11 @@ function updatePlanLinkInfo(linkInfo) {
 	$.each(linkInfo.modelPlanLinkInfo, function(key, modelPlanLinkInfo) {
 		var modelId = modelPlanLinkInfo.modelId
 		var modelname = modelPlanLinkInfo.modelName
-		
-		var option = $("<option></option>").attr("value", modelId).text(modelname + " (" + modelPlanLinkInfo.airplanes.length + ")")
+
+		var option = $("<option></option>").attr("value", modelId).text(modelname + " (" + modelPlanLinkInfo.maxFrequency + ")")
+		if (modelPlanLinkInfo.airplanes.length > 0) {
+		    option.css("font-weight", "bold")
+		}
 		option.appendTo($("#planLinkModelSelect"))
 		
 		if (selectedModelId == modelId) {

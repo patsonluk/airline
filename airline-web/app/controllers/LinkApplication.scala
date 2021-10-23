@@ -143,6 +143,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       "capacity" -> JsNumber(modelPlanLinkInfo.model.capacity),
       "duration" -> JsNumber(modelPlanLinkInfo.duration),
       "flightMinutesRequired" -> JsNumber(modelPlanLinkInfo.flightMinutesRequired),
+      "maxFrequency" -> JsNumber(modelPlanLinkInfo.maxFrequency),
       "isAssigned" -> JsBoolean(modelPlanLinkInfo.isAssigned)))
       
       var airplaneArray = JsArray()
@@ -705,8 +706,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             val duration = Computation.calculateDuration(model, distance)
 
             val flightMinutesRequired = Computation.calculateFlightMinutesRequired(model, distance)
+            val maxFrequency = Airplane.MAX_FLIGHT_MINUTES / flightMinutesRequired
 
-            planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, flightMinutesRequired, assignedModel.isDefined && assignedModel.get.id == model.id, airplaneList))
+            planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, flightMinutesRequired, assignedModel.isDefined && assignedModel.get.id == model.id, maxFrequency, airplaneList))
         }
 
 
@@ -1239,7 +1241,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   class PlanLinkResult(distance : Double, availableAirplanes : List[Airplane])
   //case class AirplaneWithPlanRouteInfo(airplane : Airplane, duration : Int, maxFrequency : Int, limitingFactor : String, isAssigned : Boolean)
-  case class ModelPlanLinkInfo(model: Model, duration : Int, flightMinutesRequired : Int, isAssigned : Boolean, airplanes : List[(Airplane, Int)])
+  case class ModelPlanLinkInfo(model: Model, duration : Int, flightMinutesRequired : Int, isAssigned : Boolean, maxFrequency : Int, airplanes : List[(Airplane, Int)])
 }
 
 object LinkApplication {
