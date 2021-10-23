@@ -1115,8 +1115,9 @@ function updatePlanLinkInfo(linkInfo) {
 
 		var option = $("<option></option>").attr("value", modelId).text(modelname + " (" + modelPlanLinkInfo.maxFrequency + ")")
 		if (modelPlanLinkInfo.airplanes.length > 0) {
-		    option.css("font-weight", "bold")
+		    option.addClass("highlight-text")
 		}
+
 		option.appendTo($("#planLinkModelSelect"))
 		
 		if (selectedModelId == modelId) {

@@ -49,6 +49,8 @@ html {
 
   --loading-spinner-background: rgba( 255, 255, 255, .8 );
   --fallback-background: #aaaaaa;
+
+  --highlight-text-color: #dddddd;
 }
 
 html[data-theme='dark'] {
@@ -103,6 +105,8 @@ html[data-theme='dark'] {
 
   --loading-spinner-background: rgba(0, 0, 0, .6);
   --fallback-background: #222222;
+
+  --highlight-text-color: rgb(140, 185, 217);
 }
 
 
@@ -758,6 +762,11 @@ div#canvas {
 
 .canvas {
     padding-left: 20px;
+}
+
+.highlight-text {
+    color : var(--highlight-text-color) !important;
+    font-weight: bold !important;
 }
 
 
