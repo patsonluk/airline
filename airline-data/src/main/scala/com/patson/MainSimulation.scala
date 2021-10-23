@@ -69,7 +69,7 @@ object MainSimulation extends App {
 
       //purge history
       println("Purging link history")
-      ChangeHistorySource.deleteLinkChangeByCriteria(List(("cycle", "<", cycle - 100)))
+      ChangeHistorySource.deleteLinkChangeByCriteria(List(("cycle", "<", cycle - 500)))
 
       val cycleEnd = System.currentTimeMillis()
       
