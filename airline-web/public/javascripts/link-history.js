@@ -74,7 +74,7 @@ function loadLinkHistory(linkId) {
                 $.each(linkHistory.invertedRelatedLinks, function(step, relatedLinksOnStep) {
                     $.each(relatedLinksOnStep, function(key, relatedLink) {
                         drawLinkHistoryPath(relatedLink, true, linkId, step)
-                        if (linkInfo.fromAirportId != relatedLink.fromAirportId || linkInfo.toAirportId != relatedLink.toAirportId || linkInfo.airlineId != linkInfo.airlineId) { //transit should not count the selected link
+                        if (linkInfo.fromAirportId != relatedLink.toAirportId || linkInfo.toAirportId != relatedLink.fromAirportId || linkInfo.airlineId != linkInfo.airlineId) { //transit should not count the selected link
                             airlineNamesById[relatedLink.airlineId] = relatedLink.airlineName
                             if (!backwardTransitPaxByAirlineId[relatedLink.airlineId]) {
                                 backwardTransitPaxByAirlineId[relatedLink.airlineId] = relatedLink.passenger
