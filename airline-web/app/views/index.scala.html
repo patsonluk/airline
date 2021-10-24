@@ -1137,9 +1137,9 @@
 			<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
 								</div>
 							</div>
-							<div class="section loyalistDetails" style="width: 65%; margin:10px 0 10px 0;">
+							<div class="section loyalistDetails" style="width: 25%; margin:10px 10px 10px 0;">
 								<h4>
-									Loyalist Statistics
+									Loyalist Trend
 									<span class="tooltip">
 										<img src='@routes.Assets.versioned("images/icons/information.png")'>
 										<span class="tooltiptext below alignLeft" style="width: 400px;">
@@ -1150,21 +1150,56 @@
 											<img src='@routes.Assets.versioned("images/tutorial/survey-button.png")' style="box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.2);">
 										</span>
 									</span>
-
+									<img src='@routes.Assets.versioned("images/icons/chart-up.png")' class="clickable" title="View History"onclick="showLoyalistHistoryModal()" style="vertical-align: text-bottom">
 								</h4>
 								<div>
-									<div style="width: 35%; display: inline-block;">
-										<div class="loyalistPie" style="height: 160px; padding: 10px 0 0 0; margin: auto" align="center"></div>
-                                        <div class="table data loyalistDelta" style="width: 100%">
-                                            <div class="table-header">
-                                                <div class="cell" style="width: 70%">Airline</div>
-                                                <div class="cell" style="width: 30%; text-align: right;">Trend</div>
-                                            </div>
-                                        </div>
+									<div class="loyalistPie" style="height: 160px; padding: 10px 0 0 0; margin: auto" align="center"></div>
+									<div class="table data loyalistDelta" style="width: 100%">
+										<div class="table-header">
+											<div class="cell" style="width: 70%">Airline</div>
+											<div class="cell" style="width: 30%; text-align: right;">Trend</div>
+										</div>
 									</div>
-									<div style="width: 60%; display: inline-block">
-										<div class="loyalistHistoryChart" style="height: 250px; width: 100%"></div>
+<!--									<div style="width: 60%; display: inline-block">-->
+<!--										<div class="loyalistHistoryChart" style="height: 250px; width: 100%"></div>-->
+<!--									</div>-->
+								</div>
+							</div>
+							<div class="section assetsDetails" style="width: 50%; margin:10px 0 10px 0;">
+								<h4>
+									Assets
+								</h4>
+								<div class="sectionContainer" style="display: flex; flex-wrap: wrap;">
+									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable selected">
+										<h5>Air Canada World
+											<img class="logo" src="/airlines/1/logo" style="vertical-align:middle;">
+										</h5>
+										<img style="max-width:100%" src='@routes.Assets.versioned("images/airport-assets/amusement-park.png")'>
+										<img src="assets/images/icons/airport-features/VACATION_HUB.png" style="margin-right: 5px;">+10
 									</div>
+									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">
+										<h5>Ski Resort</h5>
+										<img style="max-width:100%; filter: grayscale(100%);" src='@routes.Assets.versioned("images/airport-assets/ski-resort.png")'>
+									</div>
+									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">
+										<h5>Beach Resort</h5>
+										<img style="max-width:100%; filter: grayscale(100%);" src='@routes.Assets.versioned("images/airport-assets/beach-resort.png")'>
+									</div>
+									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">
+										<h5>Cinema</h5>
+										<img style="max-width:100%; filter: grayscale(100%);" src='@routes.Assets.versioned("images/airport-assets/cinema.png")'>
+									</div>
+									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable selected">
+										<h5>Air Chocobo Place
+											<img class="logo" src="/airlines/2/logo" style="vertical-align:middle;">
+										</h5>
+										<img style="max-width:100%;" src='@routes.Assets.versioned("images/airport-assets/stadium.png")'>
+										<img src="assets/images/icons/user-silhouette-available.png" style="margin-right: 5px;">+10,000
+									</div>
+									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">
+										<h5>...</h5>
+									</div>
+
 								</div>
 							</div>
 						</div>
