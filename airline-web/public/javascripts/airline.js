@@ -934,7 +934,20 @@ function updatePlanLinkInfo(linkInfo) {
     updateAirlineTitle(title, $("#planLinkToCountryTitle img.airlineTitleIcon"), $("#planLinkToCountryTitle .airlineTitle"))
 
 	$('#planLinkDistance').text(linkInfo.distance + " km (" + linkInfo.flightType + ')')
-	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand) + " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
+	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
+
+    var $breakdown = $("#planLinkDetails .directDemandBreakdown")
+    $breakdown.find(".fromAirport .airportLabel").empty()
+    $breakdown.find(".fromAirport .airportLabel").append(getAirportSpan({ "iata" : linkInfo.fromAirportCode, "countryCode" : linkInfo.fromCountryCode, "city" : linkInfo.fromAirportCity}))
+    $breakdown.find(".fromAirport .businessDemand").text(toLinkClassValueString(linkInfo.fromAirportBusinessDemand))
+    $breakdown.find(".fromAirport .touristDemand").text(toLinkClassValueString(linkInfo.fromAirportTouristDemand))
+
+    $breakdown.find(".toAirport .airportLabel").empty()
+    $breakdown.find(".toAirport .airportLabel").append(getAirportSpan({ "iata" : linkInfo.toAirportCode, "countryCode" : linkInfo.toCountryCode, "city" : linkInfo.toAirportCity}))
+    $breakdown.find(".toAirport .businessDemand").text(toLinkClassValueString(linkInfo.toAirportBusinessDemand))
+    $breakdown.find(".toAirport .touristDemand").text(toLinkClassValueString(linkInfo.toAirportTouristDemand))
+
+	 //+ " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
 	
 	

@@ -730,8 +730,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
         }
         val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
-        val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
-        val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+        val directFromAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS)
+        val directToAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
+        val directBusinessDemand =  directFromAirportBusinessDemand + directToAirportBusinessDemand
+
+        val directFromAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST)
+        val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+        val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
         val directDemand = directBusinessDemand + directTouristDemand
         //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum
@@ -750,6 +755,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           } else {
             None
           }
+
+
 
         var resultObject = Json.obj("fromAirportId" -> fromAirport.id,
           "fromAirportName" -> fromAirport.name,
@@ -774,8 +781,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
           "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
           "directDemand" -> directDemand,
-          "businessPassengers" -> directBusinessDemand.total,
-          "touristPassengers" -> directTouristDemand.total,
+          "fromAirportBusinessDemand" -> directFromAirportBusinessDemand,
+          "toAirportBusinessDemand" -> directToAirportBusinessDemand,
+          "fromAirportTouristDemand" -> directFromAirportTouristDemand,
+          "toAirportTouristDemand" -> directToAirportTouristDemand,
           "cost" -> cost).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
 
         estimatedDifficulty.foreach { difficulty => resultObject = resultObject + ("estimatedDifficulty" -> JsNumber(difficulty)) }

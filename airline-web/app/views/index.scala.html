@@ -709,7 +709,26 @@
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Direct Demand (Y/J/F):</h5></div>
-										<div class="value" id="planLinkDirectDemand"></div>
+										<div class="value">
+											<div style="display: flex; align-items : center">
+												<span id="planLinkDirectDemand"></span>
+												<div class="tooltip">
+													<img src='@routes.Assets.versioned("images/icons/information.png")'>
+													<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+														<div class="fromAirport">
+															<h4 class="airportLabel"></h4>
+															<div> Business PAX : <span class="businessDemand"></span></div>
+															<div> Tourist PAX : <span class="touristDemand"></span></div>
+														</div>
+														<div class="toAirport" style="margin-top: 10px;">
+															<h4 class="airportLabel"></h4>
+															<div> Business PAX : <span class="businessDemand"></span></div>
+															<div> Tourist PAX : <span class="touristDemand"></span></div>
+														</div>
+													</span>
+												</div>
+											</div>
+										</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Direct Competitions:</h5></div>
@@ -3286,7 +3305,27 @@
 									  </div>
 									  <div class="table-row">
 										  <div class="label" style="width:50%"><h5>Direct Demand (Y/J/F)</h5></div>
-										  <div class="value" style="text-align:right; width:50%"><span class="demand"></span></div>
+										  <div class="value" style="width:50%">
+											  <div style="display: flex; align-items: center">
+												  <span class="demand" style="text-align:right;">
+												  </span>
+												  <div class="tooltip">
+													  <img src='@routes.Assets.versioned("images/icons/information.png")'>
+													  <span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+															<div class="fromAirport">
+																<h4 class="airportLabel"></h4>
+																<div> Business PAX : <span class="businessDemand"></span></div>
+																<div> Tourist PAX : <span class="touristDemand"></span></div>
+															</div>
+															<div class="toAirport" style="margin-top: 10px;">
+																<h4 class="airportLabel"></h4>
+																<div> Business PAX : <span class="businessDemand"></span></div>
+																<div> Tourist PAX : <span class="touristDemand"></span></div>
+															</div>
+														</span>
+												  </div>
+											  </div>
+										  </div>
 									  </div>
 								  </div>
 							  </div>
