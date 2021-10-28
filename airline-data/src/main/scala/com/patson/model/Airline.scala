@@ -284,6 +284,7 @@ object Airline {
         }
         //remove all facilities
         AirlineSource.deleteLoungeByCriteria(List(("airline", airlineId)))
+        AirlineSource.deleteShuttleServiceByCriteria(List(("airline", airlineId)))
 
         //remove all oil contract
         OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
