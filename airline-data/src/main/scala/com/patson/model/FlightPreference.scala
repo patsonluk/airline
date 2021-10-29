@@ -21,7 +21,7 @@ abstract class FlightPreference(homeAirport : Airport) {
 
     cost = (cost * qualityAdjustRatio(homeAirport, link, linkClass)).toInt
 
-    cost = (cost * tripDurationAdjustRatio(link)).toInt
+    cost = (cost * tripDurationAdjustRatio(link, linkClass)).toInt
 
     if (loyaltySensitivity > 0) {
       cost = (cost * loyaltyAdjustRatio(link)).toInt
@@ -46,7 +46,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     val qualityAdjust = qualityAdjustRatio(homeAirport, link, linkClass)
     cost = (cost * qualityAdjust).toInt
 
-    val tripDurationAdjust = tripDurationAdjustRatio(link)
+    val tripDurationAdjust = tripDurationAdjustRatio(link, linkClass)
     cost = (cost * tripDurationAdjust).toInt
 
     var loyaltyAdjust = 1.0
@@ -162,10 +162,10 @@ abstract class FlightPreference(homeAirport : Airport) {
 
   //waitThreshold => if lower than threshold, adjust cost down (< 1); otherwise adjust up
   //waitMultiplier, flightDurationMultiplier => how does wait time and speed affect ratio, 0 = no effect, 0.1 = 10%
-  val tripDurationAdjustRatio = (link : Transport) => {
+  val tripDurationAdjustRatio = (link : Transport, linkClass : LinkClass) => {
     //by default waitThreshold extra minute increases ratio by 0.1 (max). and no wait (infinity frequency) decreases ratio by 0.1 (min)
     //full penalty on 0 freq, full bonus if 2 * theshold. at threshold it's neutral
-    val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequency).toDouble / frequencyThreshold) * frequencySensitivity
+    val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequencyByClass(linkClass)).toDouble / frequencyThreshold) * frequencySensitivity
 
     val flightDurationRatioDelta =
       if (flightDurationSensitivity == 0) {

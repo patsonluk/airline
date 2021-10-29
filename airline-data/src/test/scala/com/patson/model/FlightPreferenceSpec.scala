@@ -8,8 +8,7 @@ import org.scalatest.WordSpecLike
 import akka.actor.ActorSystem
 import akka.testkit.ImplicitSender
 import akka.testkit.TestKit
-import com.patson.model.airplane.Airplane
-import com.patson.model.airplane.Model
+import com.patson.model.airplane.{Airplane, AirplaneConfiguration, LinkAssignment, Model}
 import com.patson.DemandGenerator
 import com.patson.Util
 
@@ -595,6 +594,46 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       val ratio = airline1Picked.toDouble / airline2Picked
       assert(ratio > 1)
       assert(ratio < 1.2)
+    }
+
+    "consider frequency by class".in {
+      val link1 = airline1Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val link2 = airline2Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+      val config1 = AirplaneConfiguration(100, 0, 0, testAirline1, model, false)
+      val config2 = AirplaneConfiguration(0, 50, 0, testAirline1, model, false)
+      link1.setAssignedAirplanes(
+        scala.collection.immutable.Map(
+          Airplane(model, testAirline1, 0, purchasedCycle = 0, 100, 0, 0, configuration = config1) -> LinkAssignment(Link.HIGH_FREQUENCY_THRESHOLD - 2, 6000) //more freq econ
+          , Airplane(model, testAirline1, 0, purchasedCycle = 0, 100, 0, 0, configuration = config2) -> LinkAssignment(2, 6000)))
+      link2.setAssignedAirplanes(
+        scala.collection.immutable.Map(
+          Airplane(model, testAirline1, 0, purchasedCycle = 0, 100, 0, 0, configuration = config2) -> LinkAssignment(Link.HIGH_FREQUENCY_THRESHOLD - 2, 6000) //more freq business
+          , Airplane(model, testAirline1, 0, purchasedCycle = 0, 100, 0, 0, configuration = config1) -> LinkAssignment(2, 6000)))
+
+      var airline1Picked = 0
+      var airline2Picked = 0
+      for (i <- 0 until 100000) {
+        val preference = AppealPreference(fromAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 0, 0)
+        val link1Cost = preference.computeCost(link1, ECONOMY)
+        val link2Cost = preference.computeCost(link2, ECONOMY)
+        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+      }
+      var ratio = airline1Picked.toDouble / airline2Picked //more airline1 as it has more freq econ services
+      assert(ratio > 1.4)
+      assert(ratio < 1.8)
+
+      airline1Picked = 0
+      airline2Picked = 0
+      for (i <- 0 until 100000) {
+        val preference = AppealPreference(fromAirport, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 0, 0)
+        val link1Cost = preference.computeCost(link1, BUSINESS)
+        val link2Cost = preference.computeCost(link2, BUSINESS)
+        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+      }
+      ratio = airline2Picked.toDouble / airline1Picked //more airline2 as it has more freq econ services
+      assert(ratio > 1.4)
+      assert(ratio < 1.8)
+
     }
 
     "higher link class should care less about price".in {

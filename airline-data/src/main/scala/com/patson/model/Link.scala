@@ -106,7 +106,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     getOfficeStaffRequired(from, to, frequency, capacity)
   }
 
-
+  val loadedFrequencyByClass = HashMap[LinkClass, Int]()
 
   /**
     * Recomputes capacity base on assigned airplanes
@@ -114,10 +114,18 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   private def recomputeCapacityAndFrequency() = {
     var newCapacity = LinkClassValues.getInstance()
     var newFrequency = 0
+
+    LinkClass.values.foreach(loadedFrequencyByClass.put(_, 0))
     inServiceAirplanes.foreach {
       case(airplane, assignment) =>
         newCapacity = newCapacity + (LinkClassValues(airplane.configuration.economyVal, airplane.configuration.businessVal, airplane.configuration.firstVal) * assignment.frequency)
         newFrequency += assignment.frequency
+
+        LinkClass.values.foreach { linkClass =>
+          if (airplane.configuration(linkClass) > 0) {
+            loadedFrequencyByClass.put(linkClass, loadedFrequencyByClass(linkClass) + assignment.frequency)
+          }
+        }
     }
     capacity = newCapacity
     frequency = newFrequency
@@ -154,6 +162,12 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     } else {
       val StaffSchemeBreakdown(basicStaff, perFrequencyStaff, per1000PaxStaff) = Link.staffScheme(flightType)
       StaffBreakdown(basicStaff, perFrequencyStaff * frequency, per1000PaxStaff * capacity.total / 1000, airlineBaseModifier)
+    }
+  }
+  override val frequencyByClass = (linkClass : LinkClass) => {
+    loadedFrequencyByClass.get(linkClass) match {
+      case Some(classFrequency) => classFrequency
+      case None => frequency //fall back to global freq
     }
   }
 }

@@ -20,6 +20,8 @@ case class Shuttle(from : Airport, to : Airport, airline: Airline, distance : In
   override def toString() = {
     s"Shuttle $id; ${airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); distance $distance"
   }
+
+  override val frequencyByClass  = (_ : LinkClass) =>  frequency
 }
 
 object Shuttle {

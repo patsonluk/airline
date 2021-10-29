@@ -653,7 +653,7 @@ object PassengerSimulation {
             } else {
               connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
-              val frequency = Math.max(predecessorLink.frequency, linkConsideration.link.frequency)
+              val frequency = Math.max(predecessorLink.frequencyByClass(predecessorLinkConsideration.linkClass), linkConsideration.link.frequencyByClass(linkConsideration.linkClass))
               //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
               if (frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
                 connectionCost += (3.5 * 24 * 5) / frequency //each extra hour wait is like $5 more
