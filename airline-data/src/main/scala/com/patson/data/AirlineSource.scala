@@ -412,7 +412,7 @@ object AirlineSource {
           airportIds.add(resultSet.getInt("airport"))
         }
         
-        val airports = AirportSource.loadAirportsByIds(airportIds.toList, false).map(airport => (airport.id, airport)).toMap
+        val airports = AirportCache.getAirports(airportIds.toList, false)
         
         resultSet.beforeFirst()
         while (resultSet.next()) {
