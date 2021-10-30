@@ -91,9 +91,7 @@ object LinkSource {
 
       val airportCache : Map[Int, Airport] = loadDetails.get(DetailType.AIRPORT) match {
         case Some(fullLoad) => {
-          val airports = AirportSource.loadAirportsByIds(airportIds.toList, fullLoad)
-          airports.map( airport => (airport.id, airport)).toMap
-
+          AirportCache.getAirports(airportIds.toList, fullLoad)
         }
         case None => airportIds.map(id => (id, Airport.fromId(id))).toMap
       }
