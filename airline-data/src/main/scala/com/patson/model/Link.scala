@@ -24,12 +24,6 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   @volatile private var hasComputedQuality = false
   @volatile private var computedQualityStore : Int = 0
 
-  override def equals(other: Any) = other match {
-    case that: Airport  => id == that.id
-    case _                        => false
-  }
-  override def hashCode: Int = id
-
   var inServiceAirplanes : Map[Airplane, LinkAssignment] = Map.empty
 
   def setAssignedAirplanes(assignedAirplanes : Map[Airplane, LinkAssignment]) = {
