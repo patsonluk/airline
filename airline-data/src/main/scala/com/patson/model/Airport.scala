@@ -31,13 +31,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   val income = if (population > 0) (power / population).toInt  else 0
   lazy val incomeLevel = Computation.getIncomeLevel(income)
 
-
-  override def equals(other: Any) = other match {
-    case that: Airport  => id == that.id
-    case _                        => false
-  }
-  override def hashCode: Int = id
-
 //  def availableSlots : Int = {
 //    if (slotAssignmentsLoaded) {
 //      slots - slotAssignments.foldLeft(0)(_ + _._2)
