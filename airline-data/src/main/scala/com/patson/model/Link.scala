@@ -24,6 +24,12 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   @volatile private var hasComputedQuality = false
   @volatile private var computedQualityStore : Int = 0
 
+  override def equals(other: Any) = other match {
+    case that: Airport  => id == that.id
+    case _                        => false
+  }
+  override def hashCode: Int = id
+
   var inServiceAirplanes : Map[Airplane, LinkAssignment] = Map.empty
 
   def setAssignedAirplanes(assignedAirplanes : Map[Airplane, LinkAssignment]) = {
@@ -107,6 +113,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   }
 
   val loadedFrequencyByClass = HashMap[LinkClass, Int]()
+  var frequencyByClassLoaded = false
 
   /**
     * Recomputes capacity base on assigned airplanes
@@ -127,6 +134,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
           }
         }
     }
+    frequencyByClassLoaded = true
     capacity = newCapacity
     frequency = newFrequency
   }
@@ -165,11 +173,13 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     }
   }
   override val frequencyByClass = (linkClass : LinkClass) => {
-    loadedFrequencyByClass.get(linkClass) match {
-      case Some(classFrequency) => classFrequency
-      case None => frequency //fall back to global freq
+    if (frequencyByClassLoaded) {
+      loadedFrequencyByClass(linkClass)
+    } else {
+      frequency
     }
   }
+
 }
 
 object Link {
