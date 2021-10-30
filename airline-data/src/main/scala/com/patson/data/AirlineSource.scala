@@ -1236,11 +1236,11 @@ object AirlineSource {
       val resultSet = preparedStatement.executeQuery()
       val result : ListBuffer[(Int, AirlineModifier)] = ListBuffer[(Int, AirlineModifier)]()
       while (resultSet.next()) {
-        val expiryObject = resultSet.getObject("expiry", classOf[Int])
+        val expiryObject = resultSet.getObject("expiry")
         val airlineModifier = AirlineModifier.fromValues(
           AirlineModifierType.withName(resultSet.getString("modifier_name")),
           resultSet.getInt("creation"),
-          if (expiryObject == null) None else Some(expiryObject)
+          if (expiryObject == null) None else Some(expiryObject.asInstanceOf[Int])
         )
         result.append((resultSet.getInt("airline"), airlineModifier))
       }
