@@ -63,49 +63,60 @@ object PassengerSimulation {
   }
   
   def passengerConsume[T <: Transport](demand : List[(PassengerGroup, Airport, Int)], links : List[T]) : (Map[(PassengerGroup, Airport, Route), Int], Map[(PassengerGroup, Airport), Int]) = {
-     val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
+    val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
     val missedDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
-     val consumptionCycleMax = 10; //try and rebuild routes 10 times
-     var consumptionCycleCount = 0;
-     //start consumption cycles
-     
-     //find all active Airports
-     val activeAirportIds = Set[Int]()
-     links.foreach { link => 
-       activeAirportIds.add(link.from.id)
-       activeAirportIds.add(link.to.id)
-     }
-     println("Total active airports: " + activeAirportIds.size)
-     
-     println("Remove demand that is not covered by active airports, before " + demand.size);
+    val consumptionCycleMax = 10; //try and rebuild routes 10 times
+    var consumptionCycleCount = 0;
+    //start consumption cycles
 
-     //randomize the demand chunks so later on it's consumed in a random (relatively even) manner
-     var demandChunks = Random.shuffle(demand.filter { demandChunk =>
-       val (passengerGroup, toAirport, chunkSize) = demandChunk
-         val isConnected = activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
-         if (!isConnected) {
-           missedDemandChunks.append(demandChunk)
-         }
-         isConnected
-     }).sortWith((entry1, entry2) =>
-       if (entry1._1.passengerType == PassengerType.OLYMPICS && entry2._1.passengerType == PassengerType.OLYMPICS) false else entry1._1.passengerType == PassengerType.OLYMPICS
-     ) //olympics always come first
-     
-     println("After pruning : " + demandChunks.size);
+    //find all active Airports
+    val activeAirportIds = Set[Int]()
+    val activeAirlineIds = Set[Int]()
+    links.foreach { link =>
+      activeAirportIds.add(link.from.id)
+      activeAirportIds.add(link.to.id)
+      activeAirlineIds.add(link.airline.id)
+    }
+    println("Total active airports: " + activeAirportIds.size)
+
+    println("Remove demand that is not covered by active airports, before " + demand.size);
+
+    //randomize the demand chunks so later on it's consumed in a random (relatively even) manner
+    var demandChunks = Random.shuffle(demand.filter { demandChunk =>
+      val (passengerGroup, toAirport, chunkSize) = demandChunk
+      val isConnected = activeAirportIds.contains(passengerGroup.fromAirport.id) && activeAirportIds.contains(toAirport.id)
+      if (!isConnected) {
+        missedDemandChunks.append(demandChunk)
+      }
+      isConnected
+    }).sortWith((entry1, entry2) =>
+      if (entry1._1.passengerType == PassengerType.OLYMPICS && entry2._1.passengerType == PassengerType.OLYMPICS) false else entry1._1.passengerType == PassengerType.OLYMPICS
+    ) //olympics always come first
+
+    println("After pruning : " + demandChunks.size);
 
     val establishedAlliances = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED)
-    val establishedAllianceIdByAirlineId :java.util.Map[Int, Int] = new java.util.HashMap[Int, Int]()
+    val establishedAllianceIdByAirlineId : java.util.Map[Int, Int] = new java.util.HashMap[Int, Int]()
 
-    establishedAlliances.foreach { alliance => alliance.members.filter(_.role != AllianceRole.APPLICANT).foreach(member => establishedAllianceIdByAirlineId.put(member.airline.id, alliance.id)) }
+    establishedAlliances.foreach { alliance =>
+      alliance.members.filter { member =>
+        member.role != AllianceRole.APPLICANT && activeAirlineIds.contains(member.airline.id)
+      }.foreach(member => establishedAllianceIdByAirlineId.put(member.airline.id, alliance.id))
+    }
 
     val currentCycle = CycleSource.loadCycle()
-    val airlineCostModifiers = AirlineSource.loadAirlineModifiers().filter(_._2.modifierType == AirlineModifierType.NERFED).map {
+    val airlineCostModifiers = AirlineSource.loadAirlineModifiers().filter {
+      case (airlineId, modifier) => modifier.modifierType == AirlineModifierType.NERFED && activeAirlineIds.contains(airlineId)
+    }.map {
       case (airlineId, modifier) => (airlineId, modifier.asInstanceOf[NerfedAirlineModifier].costMultiplier(currentCycle))
     }.toMap
 
     println(s"Simple Cost modifiers $airlineCostModifiers")
 
-    val specializationCostModifiers : Map[(Int, Int), SpecializationModifier] = AirportSource.loadAllAirportBaseSpecializations.filter(_._3.getType == BaseSpecializationType.BRANDING).map {
+    val specializationCostModifiers : Map[(Int, Int), SpecializationModifier] = AirportSource.loadAllAirportBaseSpecializations.filter{
+      case(airline, airport, specialization) =>
+        activeAirlineIds.contains(airline.id) && specialization == BaseSpecializationType.BRANDING
+    }.map {
       case (airline, airport, brandingSpecialization) => ((airline.id, airport.id), SpecializationModifier(brandingSpecialization.asInstanceOf[BrandSpecialization].linkCostDeltaByClass))
     }.toMap
 
