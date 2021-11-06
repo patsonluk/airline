@@ -76,10 +76,10 @@ object LinkSimulation {
 
     
     //save all consumptions
-    val startTime = System.currentTimeMillis()
+    var startTime = System.currentTimeMillis()
     println("Saving " + consumptionResult.size +  " consumptions")
     ConsumptionHistorySource.updateConsumptions(consumptionResult)
-    val endTime = System.currentTimeMillis()
+    var endTime = System.currentTimeMillis()
     println(s"Saved all consumptions. Took ${endTime - startTime} millisecs")
 
 
@@ -95,6 +95,7 @@ object LinkSimulation {
 //    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
     
     println("Calculating profits by links")
+    startTime = System.currentTimeMillis()
     val linkConsumptionDetails = ListBuffer[LinkConsumptionDetails]()
     val loungeConsumptionDetails = ListBuffer[LoungeConsumptionDetails]()
     val allAirplaneAssignments: immutable.Map[Int, LinkAssignments] = AirplaneSource.loadAirplaneLinkAssignmentsByCriteria(List.empty)
@@ -108,11 +109,14 @@ object LinkSimulation {
 
     links.foreach { link =>
       if (link.capacity.total > 0) {
-        val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle, allAirplaneAssignments, costByLink.toMap.getOrElse(link, List.empty).toList)
+        val (linkResult, loungeResult) = computeLinkAndLoungeConsumptionDetail(link, cycle, allAirplaneAssignments, costByLink.getOrElse(link, List.empty).toList)
         linkConsumptionDetails += linkResult
         loungeConsumptionDetails ++= loungeResult
       }
     }
+
+    endTime = System.currentTimeMillis()
+    println(s"Finished calculation on profits by links. Took ${endTime - startTime} millisecs")
 
     purgeAlerts()
     checkLoadFactor(flightLinks, cycle)
@@ -320,7 +324,7 @@ object LinkSimulation {
         passengerCostEntries.foreach {
           case PassengerCost(passengerGroup, passengerCount, cost) =>
             val preferredLinkClass = passengerGroup.preference.preferredLinkClass
-            val standardPrice = Pricing.computeStandardPrice(flightLink.distance, flightLink.flightType, preferredLinkClass)
+            val standardPrice = flightLink.standardPrice(preferredLinkClass)
             val satisfaction = Computation.computePassengerSatisfaction(cost, standardPrice)
             satisfactionTotalValue += satisfaction * passengerCount
             totalPassengerCount += passengerCount
