@@ -133,7 +133,10 @@ object PassengerSimulation {
 
 //       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
 //       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
-       val iterationCount = if (consumptionCycleCount < 3) 5 else 6
+       val iterationCount =
+        if (consumptionCycleCount < 3) 4
+        else if (consumptionCycleCount < 6) 5
+        else 6
        val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId, airlineCostModifiers, specializationCostModifiers, iterationCount)
 
        //start consuming routes
@@ -449,14 +452,17 @@ object PassengerSimulation {
               if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
                 var cost = passengerGroup.preference.computeCost(link, matchingLinkClass)
 
-                airlineCostModifiers.get(link.airline.id).foreach { modifier =>
-                  cost *= modifier
+                if (airlineCostModifiers.contains(link.airline.id)) {
+                  cost *= airlineCostModifiers(link.airline.id)
                 }
-                specializationCostModifiers.get((link.airline.id, link.from.id)).foreach { modifier =>
-                  cost *= modifier.value(preferredLinkClass)
+
+                val airlineFromAirportTuple = (link.airline.id, link.from.id)
+                if (specializationCostModifiers.contains(airlineFromAirportTuple)) {
+                  cost *= specializationCostModifiers(airlineFromAirportTuple).value(preferredLinkClass)
                 }
-                specializationCostModifiers.get((link.airline.id, link.to.id)).foreach { modifier =>
-                  cost *= modifier.value(preferredLinkClass)
+                val airlineToAirportTuple = (link.airline.id, link.to.id)
+                if (specializationCostModifiers.contains(airlineToAirportTuple)) {
+                  cost *= specializationCostModifiers(airlineToAirportTuple).value(preferredLinkClass)
                 }
 
                 
@@ -474,7 +480,7 @@ object PassengerSimulation {
         }
 
         //then find the shortest route based on the cost
-        
+
         val routeMap : Map[Airport, Route] = findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, iterationCount)
         if (progressChunk == 0 || counter.incrementAndGet() % progressChunk == 0) {
           print(".")
@@ -714,8 +720,8 @@ object PassengerSimulation {
     
     resultMap.toMap
   }
-  
-  
+
+
 //  def findRandomRoutes(from : Airport, to : Airport, links : List[Link], routeCount : Int) = {
 //    val linkMap = scala.collection.mutable.Map[Airport, ListBuffer[Link]]()
 //    
