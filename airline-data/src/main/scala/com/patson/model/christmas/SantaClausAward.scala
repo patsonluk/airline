@@ -1,7 +1,7 @@
 package com.patson.model.christmas
 
 import com.patson.data.{AirlineSource, AirportSource, ChristmasSource, CycleSource}
-import com.patson.model.{Airline, AirlineAppeal, AirlineBonus, BonusType}
+import com.patson.model.{Airline, AirlineAppeal, AirlineBonus, BonusType, DelegateBoostAirlineModifier}
 import com.patson.util.AirlineCache
 
 abstract class SantaClausAward(santaClausInfo: SantaClausInfo) {
@@ -28,21 +28,20 @@ class CashAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaCla
 
 class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.SERVICE_QUALITY
-  val BONUS = 5
-  val DURATION = 8
+  val BONUS = 10
   override def applyAward(): Unit = {
     val newQuality = Math.min(santaClausInfo.airline.getCurrentServiceQuality() + BONUS, Airline.MAX_SERVICE_QUALITY)
 
     santaClausInfo.airline.setCurrentServiceQuality(newQuality)
     AirlineSource.saveAirlineInfo(santaClausInfo.airline, updateBalance = false)
   }
-  override val description: String = "Santa Claus offers you his pro tips on making your flights magical! Overall Airline Service Quality bonus +" + BONUS + " !"
+  override val description: String = "Santa Claus offers you his pro tips on making your flights magical! Overall Airline Service Quality bonus +" + BONUS + " ! (not permanent, level will eventually return to normal level)"
 }
 
 class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.HQ_LOYALTY
-  val BONUS = 3
-  val DURATION = 8
+  val BONUS = 5
+  val DURATION = 52
   override def applyAward(): Unit = {
     AirlineCache.getAirline(santaClausInfo.airline.id, fullLoad = true).foreach { airline =>
       airline.getHeadQuarter().foreach { hq =>
@@ -62,8 +61,8 @@ class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(san
 
 class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.AIRPORT_LOYALTY
-  val BONUS = 10
-  val DURATION = 8
+  val BONUS = 20
+  val DURATION = 52
   override def applyAward(): Unit = {
     val airline = santaClausInfo.airline
     val bonus = AirlineBonus(BonusType.SANTA_CLAUS, AirlineAppeal(loyalty = BONUS, awareness = 0), Some(CycleSource.loadCycle() + DURATION))
@@ -75,7 +74,7 @@ class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
 
 class ReputationAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.REPUTATION
-  val BONUS = 5
+  val BONUS = 10
   override def applyAward(): Unit = {
     val newReputation = santaClausInfo.airline.getReputation() + BONUS
 
@@ -83,12 +82,23 @@ class ReputationAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(sa
     AirlineSource.saveAirlineInfo(santaClausInfo.airline, updateBalance = false)
   }
 
-  override val description: String = "Santa Claus will make an appearance on your TV commercial! Boosting your airline reputation by +" + BONUS + " !"
+  override val description: String = "Santa Claus will make an appearance on your TV commercial! Boosting your airline reputation by +" + BONUS + " ! (not permanent, reputation will eventually return to normal level)"
 }
 
 
+class DelegateAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
+  override val getType: SantaClausAwardType.Value = SantaClausAwardType.DELEGATE
+  override def applyAward(): Unit = {
+    AirlineSource.saveAirlineModifier(santaClausInfo.airline.id, DelegateBoostAirlineModifier(CycleSource.loadCycle()))
+  }
+
+  override val description: String = s"Santa Claus dispatches his elves to help you! ${DelegateBoostAirlineModifier.AMOUNT} extra delegates for ${DelegateBoostAirlineModifier.DURATION} weeks"
+}
+
+
+
 object SantaClausAwardType extends Enumeration {
-  val CASH, SERVICE_QUALITY, HQ_LOYALTY, AIRPORT_LOYALTY, REPUTATION = Value
+  val CASH, SERVICE_QUALITY, HQ_LOYALTY, AIRPORT_LOYALTY, REPUTATION, DELEGATE = Value
 }
 
 object SantaClausAward {
@@ -105,6 +115,7 @@ object SantaClausAward {
       case SantaClausAwardType.HQ_LOYALTY => new HqLoyaltyAward(info)
       case SantaClausAwardType.AIRPORT_LOYALTY => new AirportLoyaltyAward(info)
       case SantaClausAwardType.REPUTATION => new ReputationAward(info)
+      case SantaClausAwardType.DELEGATE => new DelegateAward(info)
     }
   }
 }

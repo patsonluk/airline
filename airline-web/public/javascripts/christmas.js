@@ -1,4 +1,4 @@
-var christmasFlag = false
+var christmasFlag = true
 var santaFound = false
 
 function initSantaClaus() {
@@ -31,11 +31,17 @@ function updateSantaClausModal() {
     	            return
     	        }
     	        $.each(result.guesses, function(index, guess) {
-                         	var row = $("<div class='table-row'></div>")
-                    		row.append("<div class='cell label'>" + getAirportText(guess.city, guess.airportCode) + "</div>")
-                            row.append("<div class='cell label'>" + guess.distanceText + "</div>")
-                    		table.append(row)
-                    	});
+                    var row = $("<div class='table-row'></div>")
+                    row.append("<div class='cell label'>" + getAirportText(guess.city, guess.airportCode) + "</div>")
+                    row.append("<div class='cell label'>" + guess.distanceText + "</div>")
+                    table.append(row)
+                });
+                if (result.guesses.length == 0) {
+                    var row = $("<div class='table-row'></div>")
+                    row.append("<div class='cell label'>-</div>")
+                    row.append("<div class='cell label'>-</div>")
+                    table.append(row)
+                }
 
 
                  $("#santaClausAttemptsLeft").text(result.attemptsLeft)
@@ -168,7 +174,7 @@ function toggleChristmasMarker() {
 		currentAnimationStatus = true
 		christmasMarker = true
 		document.getElementById('christmasMusic').play()
-		$("#canvas").addClass('christmas')
+		$("body").addClass('christmas')
 
         putSnowflakes($("#main"), snowflakeCount)
 	} else {
@@ -183,7 +189,7 @@ function toggleChristmasMarker() {
 			    };
 			})
 		})
-		$("#canvas").removeClass('christmas')
+		$("body").removeClass('christmas')
 		$("#main").children(".snowflake").remove()
 	}
 }

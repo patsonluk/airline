@@ -135,7 +135,9 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   val BASE_DELEGATE_COUNT = 5
   val DELEGATE_PER_LEVEL = 3
   lazy val delegateCount = BASE_DELEGATE_COUNT + airlineGrade.value * DELEGATE_PER_LEVEL +
+    AirlineSource.loadAirlineModifierByAirlineId(id).find(_.modifierType == AirlineModifierType.DELEGATE_BOOST).map(_ => DelegateBoostAirlineModifier.AMOUNT).getOrElse(0) +
     AirlineSource.loadAirlineBasesByAirline(id).flatMap(_.specializations).filter(_.isInstanceOf[DelegateSpecialization]).map(_.asInstanceOf[DelegateSpecialization].delegateBoost).sum
+
 }
 
 case class DelegateInfo(availableCount : Int, busyDelegates: List[BusyDelegate])
@@ -383,6 +385,7 @@ object AirlineModifier {
     import AirlineModifierType._
     modifierType match {
       case NERFED => NerfedAirlineModifier(creationCycle)
+      case DELEGATE_BOOST => DelegateBoostAirlineModifier(creationCycle)
     }
   }
 }
@@ -404,7 +407,17 @@ case class NerfedAirlineModifier(override val creationCycle : Int) extends Airli
   }
 }
 
+case class DelegateBoostAirlineModifier(override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.DELEGATE_BOOST, creationCycle, Some(creationCycle + DelegateBoostAirlineModifier.DURATION)) {
+}
+
+object DelegateBoostAirlineModifier {
+  val DURATION = 52
+  val AMOUNT = 3
+}
+
+
+
 object AirlineModifierType extends Enumeration {
   type AirlineModifierType = Value
-  val NERFED = Value
+  val NERFED, DELEGATE_BOOST = Value
 }
