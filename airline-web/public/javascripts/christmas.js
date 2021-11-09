@@ -36,7 +36,7 @@ function updateSantaClausModal() {
                     row.append("<div class='cell label'>" + guess.distanceText + "</div>")
                     table.append(row)
                 });
-                if (!result.guesses) {
+                if (result.guesses.length == 0) {
                     var row = $("<div class='table-row'></div>")
                     row.append("<div class='cell label'>-</div>")
                     row.append("<div class='cell label'>-</div>")
