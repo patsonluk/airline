@@ -71,6 +71,10 @@ object MainSimulation extends App {
       println("Purging link history")
       ChangeHistorySource.deleteLinkChangeByCriteria(List(("cycle", "<", cycle - 500)))
 
+      //purge airline modifier
+      println("Purging airline modifier")
+      AirlineSource.deleteAirlineModifierByExpiry(cycle)
+
       val cycleEnd = System.currentTimeMillis()
       
       println("cycle " + cycle + " spent " + (cycleEnd - cycleStartTime) / 1000 + " secs")
