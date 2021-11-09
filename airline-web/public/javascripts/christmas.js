@@ -189,7 +189,7 @@ function toggleChristmasMarker() {
 			    };
 			})
 		})
-		$("#canvas").removeClass('christmas')
+		$("body").removeClass('christmas')
 		$("#main").children(".snowflake").remove()
 	}
 }
