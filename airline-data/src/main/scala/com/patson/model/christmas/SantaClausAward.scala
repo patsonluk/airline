@@ -13,7 +13,9 @@ abstract class SantaClausAward(santaClausInfo: SantaClausInfo) {
   protected def applyAward() : Unit
 
   val description : String
+  val integerFormatter = java.text.NumberFormat.getIntegerInstance
 }
+
 
 
 class CashAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
@@ -23,7 +25,7 @@ class CashAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaCla
     AirlineSource.adjustAirlineBalance(santaClausInfo.airline.id, CASH_AMOUNT)
   }
 
-  override val description: String = "Santa Claus is feeling generous! He is giving you $" + CASH_AMOUNT + " cash!"
+  override val description: String = s"Santa Claus is feeling generous! He is giving you $$${integerFormatter.format(CASH_AMOUNT)} cash!"
 }
 
 class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
