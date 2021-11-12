@@ -35,9 +35,7 @@ object UserSimulation {
           }
         }
 
-        if (user.status == UserStatus.ACTIVE) {
-          UserSource.updateUser(user.copy(status = UserStatus.INACTIVE))
-        }
+        UserSource.updateUser(user.copy(status = UserStatus.INACTIVE))
       }
     }
   }
