@@ -93,6 +93,7 @@ object Constants {
   val AIRPLANE_INDEX_2 = "airplane_index_2"
   val USER_TABLE = "user"
   val USER_SECRET_TABLE = "user_secret"
+  val USER_MODIFIER_TABLE = "user_modifier"
   val RESET_USER_TABLE = "reset_user"
   val USER_IP_TABLE = "user_ip"
   val BANNED_IP_TABLE = "banned_ip"

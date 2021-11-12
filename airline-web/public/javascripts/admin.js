@@ -91,11 +91,16 @@ function showAdminActions(airline) {
     $("#rivalDetails .adminActions").data("airlineId", airline.id)
     $("#rivalDetails .adminActions .username").text(airline.username)
     $("#rivalDetails .adminActions .userId").text(airline.userId)
-    $("#rivalDetails .adminActions .status").text(airline.userStatus)
-    if (airline.modifiers) {
-        $("#rivalDetails .adminActions .modifiers").text(airline.modifiers.join(";"))
+
+    if (airline.userModifiers) {
+        $("#rivalDetails .adminActions .userModifiers").text(airline.userModifiers.join(";"))
     } else {
-        $("#rivalDetails .adminActions .modifiers").text('-')
+        $("#rivalDetails .adminActions .userModifiers").text('-')
+    }
+    if (airline.airlineModifiers) {
+        $("#rivalDetails .adminActions .airlineModifiers").text(airline.airlineModifiers.join(";"))
+    } else {
+        $("#rivalDetails .adminActions .airlineModifiers").text('-')
     }
     $("#rivalDetails .adminActions .ips").empty()
     $("#rivalDetails .adminActions .uuids").empty()

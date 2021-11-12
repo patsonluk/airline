@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor._
 import akka.util.Timeout
 import com.patson.data.{CycleSource, UserSource}
-import com.patson.model.UserStatus
+import com.patson.model.{UserModifier, UserStatus}
 import com.patson.model.notice.{AirlineNotice, LoyalistNotice, NoticeCategory}
 import com.patson.stream._
 
@@ -88,7 +88,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
 
   def checkWarnings(airlineId : Int) = {
     UserSource.loadUserByAirlineId(airlineId).foreach { user =>
-      if (user.status == UserStatus.WARNED) {
+      if (user.modifiers.contains(UserModifier.WARNED)) {
         Broadcaster.sendMessage(AirlineCache.getAirline(airlineId).get, s"Our systems have detected you own more airlines than the allowed ${user.maxAirlinesAllowed} airlines limit. Please take actions to reset your airlines and maintain only active airlines according to the limit.  Otherwise we might ban all your accounts after 3 days. Please contact our admins on discord for disputes.")
       }
     }

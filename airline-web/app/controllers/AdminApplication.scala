@@ -2,7 +2,7 @@ package controllers
 
 import com.patson.data.{AdminSource, AirlineSource, CycleSource, IpSource, UserSource, UserUuidSource}
 import com.patson.model.UserStatus.UserStatus
-import com.patson.model.{Airline, AirlineModifier, AirlineModifierType, User, UserStatus}
+import com.patson.model.{Airline, AirlineModifier, AirlineModifierType, User, UserModifier, UserStatus}
 import com.patson.util.{AirlineCache, AirportCache}
 import controllers.AuthenticationObject.Authenticated
 import controllers.GoogleImageUtil.{AirportKey, CityKey}
@@ -67,13 +67,13 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
           } else {
             action match {
               case "warn" =>
-                changeUserStatus(UserStatus.WARNED, targetUser)
+                setUserModifier(UserModifier.WARNED, targetUser)
                 Right(Ok(Json.obj("action" -> action)))
               case "ban" =>
-                changeUserStatus(UserStatus.BANNED, targetUser)
+                setUserModifier(UserModifier.BANNED, targetUser)
                 Right(Ok(Json.obj("action" -> action)))
               case "ban-chat" =>
-                changeUserStatus(UserStatus.CHAT_BANNED, targetUser)
+                setUserModifier(UserModifier.CHAT_BANNED, targetUser)
                 Right(Ok(Json.obj("action" -> action)))
               case "nerf" =>
                 //changeUserStatus(UserStatus.NERFED, targetUser)
@@ -81,7 +81,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
                 addAirlineModifier(AirlineModifierType.NERFED, targetUser.getAccessibleAirlines())
                 Right(Ok(Json.obj("action" -> action)))
               case "ban-reset" =>
-                changeUserStatus(UserStatus.BANNED, targetUser)
+                setUserModifier(UserModifier.BANNED, targetUser)
 
                 targetUser.getAccessibleAirlines().foreach { airline =>
                   Airline.resetAirline(airline.id, newBalance = 0, true) match {
@@ -93,7 +93,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
 
                 Right(Ok(Json.obj("action" -> action)))
               case "restore" =>
-                changeUserStatus(UserStatus.ACTIVE, targetUser)
+                clearUserModifiers(targetUser)
                 removeAirlineModifier(AirlineModifierType.NERFED, targetUser.getAccessibleAirlines())
                 //unbanUserIp(targetUserId)
                 Right(Ok(Json.obj("action" -> action)))
@@ -246,10 +246,14 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
     }
   }
 
-  def changeUserStatus(userStatus: UserStatus, targetUser: User) = {
-    val updatingUser = targetUser.copy(status = userStatus)
-    UserSource.updateUser(updatingUser)
-    println(s"ADMIN - updated user status $userStatus on user ${updatingUser.userName}")
+  def setUserModifier(userModifier: UserModifier.Value, targetUser: User) = {
+    UserSource.saveUserModifier(targetUser.id, userModifier)
+    println(s"ADMIN - updated user modifier $userModifier on user ${targetUser.userName}")
+  }
+
+  def clearUserModifiers(targetUser: User) = {
+    UserSource.deleteUserModifiers(targetUser.id)
+    println(s"ADMIN - clear user modifier on user ${targetUser.userName}")
   }
 
   def sendBroadcastMessage() = Authenticated { implicit request =>

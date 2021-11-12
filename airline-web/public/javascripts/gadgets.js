@@ -252,24 +252,24 @@ function getAdminImg(adminStatus) {
 	}
 }
 
-function getUserStatusSpan(userStatus) {
-	if (!userStatus) {
+function getUserModifiersSpan(modifiers) {
+	if (!modifiers) {
 		return ""
 	}
 
-    if (userStatus == "ACTIVE" || userStatus == "INACTIVE") {
-        return ""
-    } else if (userStatus == "WARNED") {
-       return "<span><img src='assets/images/icons/exclamation.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
-    } else if (userStatus == "CHAT_BANNED") {
-		return "<span><img src='assets/images/icons/mute.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
-    } else if (userStatus == "BANNED") {
-        return "<span><img src='assets/images/icons/prohibition.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
-    } else if (userStatus == "NERFED") {
-        return "<span><img src='assets/images/icons/ghost.png' title='" + userStatus + "' style='vertical-align:middle;'/></span>"
-    } else {
-        return "<span>" + userStatus + "</span>"
-    }
+    var result = ""
+    $.each(modifiers, function(index, modifier) {
+        if (modifier == "WARNED") {
+           result += "<span><img src='assets/images/icons/exclamation.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
+        } else if (modifier == "CHAT_BANNED") {
+           result += "<span><img src='assets/images/icons/mute.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
+        } else if (modifier == "BANNED") {
+           result += "<span><img src='assets/images/icons/prohibition.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
+        } else {
+           result += "<span>" + modifier + "</span>"
+        }
+    })
+    return result
 }
 
 function getAirlineModifiersSpan(modifiers) {
