@@ -94,8 +94,8 @@ object UserSource {
           val adminStatusObject = resultSet.getObject("u.admin_status")
           val adminStatus = if (adminStatusObject == null) None else Some(AdminStatus.withName(adminStatusObject.asInstanceOf[String]))
 
-
-          (User(userName, resultSet.getString("u.email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"),  adminStatus = adminStatus, id = userId), ListBuffer[Int]())
+          val modifiers = UserSource.loadUserModifierByUserId(userId) //this could be slow if we load all users
+          (User(userName, resultSet.getString("u.email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"),  adminStatus = adminStatus, modifiers = modifiers, id = userId), ListBuffer[Int]())
         })
         
         userAirlines += resultSet.getInt("ua.airline") 
@@ -278,6 +278,82 @@ object UserSource {
         
         preparedStatement.close()
         updateCount == 1
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteUserModifiers(userId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"DELETE FROM $USER_MODIFIER_TABLE WHERE user = ?")
+      preparedStatement.setInt(1, userId)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+
+
+  def saveUserModifier(userId : Int, modifier : UserModifier.Value) = {
+    val connection = Meta.getConnection()
+    val cycle = CycleSource.loadCycle()
+    try {
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $USER_MODIFIER_TABLE (user, modifier_name, creation) VALUES(?, ?, ?)")
+      preparedStatement.setInt(1, userId)
+      preparedStatement.setString(2, modifier.toString)
+      preparedStatement.setInt(3, cycle)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+      UserCache.invalidateUser(userId)
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def loadUserModifiers() : List[(Int, UserModifier.Value)] = { //_1 is user Id
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + USER_MODIFIER_TABLE)
+
+      val resultSet = preparedStatement.executeQuery()
+      val result : ListBuffer[(Int, UserModifier.Value)] = ListBuffer[(Int, UserModifier.Value)]()
+      while (resultSet.next()) {
+        val userModifier = UserModifier.withName(resultSet.getString("modifier_name"))
+        result.append((resultSet.getInt("user"), userModifier))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadUserModifierByUserId(userId : Int) : List[UserModifier.Value] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + USER_MODIFIER_TABLE + " WHERE user = ?")
+      preparedStatement.setInt(1, userId)
+
+      val resultSet = preparedStatement.executeQuery()
+      val result = ListBuffer[UserModifier.Value]()
+      while (resultSet.next()) {
+        val userModifier = UserModifier.withName(resultSet.getString("modifier_name"))
+        result.append(userModifier)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
     } finally {
       connection.close()
     }

@@ -315,6 +315,7 @@ object Meta {
     createAdminLog(connection)
     createUserUuid(connection)
     createAirlineModifier(connection)
+    createUserModifier(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1963,6 +1964,23 @@ object Meta {
       "expiry INTEGER," +
       "PRIMARY KEY (airline, modifier_name)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")"
+    )
+    statement.execute()
+    statement.close()
+  }
+
+  def createUserModifier(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + USER_MODIFIER_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + USER_MODIFIER_TABLE + "(" +
+      "user INTEGER, " +
+      "modifier_name CHAR(20), " +
+      "creation INTEGER," +
+      "PRIMARY KEY (user, modifier_name)," +
+      "FOREIGN KEY(user) REFERENCES " + USER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")"
     )
     statement.execute()
