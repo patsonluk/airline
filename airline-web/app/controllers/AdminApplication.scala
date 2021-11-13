@@ -138,7 +138,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
       cutoff.add(Calendar.DATE, -30)
 
       Ok(Json.toJson(IpSource.loadUserIps(userId).toList.sortBy(_._2.occurrence)(Ordering[Int].reverse).filter(_._2.lastUpdated.after(cutoff.getTime)).map {
-        case (ip, ipDetails) => (ip, ipDetails.occurrence, ipDetails.lastUpdated)
+          case (ip, ipDetails) => (ip, ipDetails.occurrence, ipDetails.lastUpdated)
       }))
     } else {
       println(s"Non admin ${request.user} tried to access admin operations!!")
@@ -152,12 +152,15 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
       IpSource.loadUsersByIp(ip).foreach {
         case (user, ipDetails) =>
           user.getAccessibleAirlines().foreach { airline =>
+            val airlineModifiers = AirlineSource.loadAirlineModifierByAirlineId(airline.id)
             result = result.append(Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
               "userId" -> user.id,
               "username" -> user.userName,
-              "userStatus" -> user.status.toString,
+              "userModifiers" -> user.modifiers,
+              "userStatus" -> user.status,
+              "airlineModifiers" -> airlineModifiers.map(_.modifierType),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
               "occurrence" -> ipDetails.occurrence,
             ))
@@ -192,12 +195,15 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
       UserUuidSource.loadUsersByUuid(uuid).foreach {
         case (user, ipDetails) =>
           user.getAccessibleAirlines().foreach { airline =>
+            val airlineModifiers = AirlineSource.loadAirlineModifierByAirlineId(airline.id)
             result = result.append(Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
               "userId" -> user.id,
               "username" -> user.userName,
-              "userStatus" -> user.status.toString,
+              "userStatus" -> user.status,
+              "userModifiers" -> user.modifiers,
+              "airlineModifiers" -> airlineModifiers.map(_.modifierType),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
               "occurrence" -> ipDetails.occurrence,
             ))
