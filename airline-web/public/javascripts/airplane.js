@@ -1320,7 +1320,6 @@ function selectAirplaneTab($selectedTab) {
 }
 
 function showAirplaneHangar() {
-    loadAirplaneModelOwnerInfo()
     populatePreferredSuppliers()
     var $container = $('#airplaneCanvas .hangar .sectionContainer')
     $container.empty()
