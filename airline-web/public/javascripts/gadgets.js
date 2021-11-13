@@ -281,8 +281,8 @@ function getAirlineModifiersSpan(modifiers) {
     $.each(modifiers, function(index, modifier) {
         if (modifier == "NERFED") {
            result += "<span><img src='assets/images/icons/ghost.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
-        } else {
-           result += "<span>" + modifier + "</span>"
+//        } else { //let's no show modifiers that are not listed for now. since they could be common
+//           result += "<span>" + modifier + "</span>"
         }
     })
     return result

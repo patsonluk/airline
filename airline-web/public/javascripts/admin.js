@@ -155,15 +155,20 @@ function showAirlinesByIp(ip) {
             $("#airlinesByIpModal .ip").text(ip)
             $("#airlinesByIpModal .airlineByIpTable div.table-row").remove()
             $.each(result, function(index, entry) {
-                var $row = $("<div class='table-row'></div>")
-                var airline = entry.airline
-                $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
-                $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByIpModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
-                $row.append("<div class='cell'>" + entry.username + "</div>")
-                $row.append("<div class='cell'>" + entry.userStatus + "</div>")
-                $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")
-                $row.append("<div class='cell' align='right'>" + entry.occurrence + "</div>")
-                 $("#airlinesByIpModal .airlineByIpTable").append($row)
+               var $row = $("<div class='table-row'></div>")
+               var airline = entry.airline
+               var modifiersSpan = getUserModifiersSpan(entry.userModifiers) + getAirlineModifiersSpan(entry.airlineModifiers)
+               if (modifiersSpan === "") {
+                   modifiersSpan = "<span>-</span>"
+               }
+               $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
+               $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByUuidModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
+               $row.append("<div class='cell'>" + entry.username + "</div>")
+               $row.append("<div class='cell'>" + entry.userStatus + "</div>")
+               $row.append("<div class='cell'>" + modifiersSpan + "</div>")
+               $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")
+               $row.append("<div class='cell' align='right'>" + entry.occurrence + "</div>")
+               $("#airlinesByIpModal .airlineByIpTable").append($row)
             })
             $("#airlinesByIpModal").fadeIn(500)
         },
@@ -187,10 +192,15 @@ function showAirlinesByUuid(uuid) {
             $.each(result, function(index, entry) {
                 var $row = $("<div class='table-row'></div>")
                 var airline = entry.airline
+                var modifiersSpan = getUserModifiersSpan(entry.userModifiers) + getAirlineModifiersSpan(entry.airlineModifiers)
+               if (modifiersSpan === "") {
+                   modifiersSpan = "<span>-</span>"
+               }
                 $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
                 $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByUuidModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
                 $row.append("<div class='cell'>" + entry.username + "</div>")
                 $row.append("<div class='cell'>" + entry.userStatus + "</div>")
+                $row.append("<div class='cell'>" + modifiersSpan + "</div>")
                 $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")
                 $row.append("<div class='cell' align='right'>" + entry.occurrence + "</div>")
                  $("#airlinesByUuidModal .airlineByUuidTable").append($row)
