@@ -14,7 +14,6 @@ object AirplaneModelCache {
     allModels.get(modelId)
   }
 
-
 //  class SimpleLoader(models: List[Model]) extends CacheLoader[Int, Option[Model]] {
 //    val modelLookup = models.map(model => (model.id, model)).toMap
 //    override def load(modelId: Int) = {
