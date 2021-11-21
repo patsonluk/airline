@@ -12,7 +12,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     } else if (headquarter && scale == 1) { //free to start HQ
       0
     } else {
-      val baseCost = (1000000 + AirportRating.rateAirport(airport).overallRating * 120000).toLong
+      val baseCost = (1000000 + airport.rating.overallRating * 120000).toLong
 
       baseCost * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) ).toLong
     }
@@ -22,7 +22,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   
   lazy val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
-    val baseUpkeep = (5000 + AirportRating.rateAirport(airport).overallRating * 150).toLong
+    val baseUpkeep = (5000 + airport.rating.overallRating * 150).toLong
     baseUpkeep * (Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
   }
 

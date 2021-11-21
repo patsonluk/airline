@@ -66,7 +66,7 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
 
 
-    if (request.user.status == UserStatus.BANNED && !isSuperAdmin) {
+    if (request.user.isBanned && !isSuperAdmin) {
       println(s"Banned user ${request.user.userName} tried to login")
       Forbidden("User is banned")
     } else {

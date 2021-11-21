@@ -4,7 +4,7 @@ import com.patson.data.AirplaneSource
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.Model.Category
 import com.patson.model.airplane.Model.Type.{JUMBO, LARGE, LIGHT, MEDIUM, REGIONAL, SMALL, SUPERSONIC, X_LARGE}
-import com.patson.util.{AirplaneModelCache, AirplaneOwnershipCache}
+import com.patson.util.{AirplaneModelCache, AirplaneModelDiscountCache, AirplaneOwnershipCache}
 
 import scala.collection.MapView
 import scala.collection.mutable.ListBuffer
@@ -39,7 +39,7 @@ object ModelDiscount {
   def getAllCombinedDiscountsByAirlineId(airlineId : Int) : Map[Int, List[ModelDiscount]] = {
     val airlineDiscountByModelId : Map[Int, List[ModelDiscount]] = ModelSource.loadAirlineDiscountsByAirlineId(airlineId).groupBy(_.modelId)
     val supplierDiscountInfoByCategory : Map[Model.Category.Value, PreferredSupplierDiscountInfo] = getPreferredSupplierDiscounts(airlineId)
-    val blanketModelDiscountByModelId : Map[Int, List[ModelDiscount]] = ModelSource.loadAllModelDiscounts().groupBy(_.modelId)
+    val blanketModelDiscountByModelId = AirplaneModelDiscountCache.getAllModelDiscounts()
     AirplaneModelCache.allModels.values.map { model =>
       val discounts = ListBuffer[ModelDiscount]()
       airlineDiscountByModelId.get(model.id).foreach(discounts.appendAll(_))
@@ -74,10 +74,7 @@ object ModelDiscount {
     * @return
     */
   def getBlanketModelDiscounts(modelId : Int)  : List[ModelDiscount] = {
-    val discounts = ListBuffer[ModelDiscount]()
-    //get blanket model discounts
-    discounts.appendAll(ModelSource.loadModelDiscountsByModelId(modelId))
-    discounts.toList
+    AirplaneModelDiscountCache.getModelDiscount(modelId)
   }
 
 

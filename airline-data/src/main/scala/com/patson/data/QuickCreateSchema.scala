@@ -51,7 +51,7 @@ object QuickCreateSchema extends App {
 //    Meta.createLog(connection)
 //    Meta.createAlert(connection)
     //Meta.createDelegate(connection)
-    Meta.createAirlineBaseSpecializationLastUpdate(connection)
+    Meta.createUserModifier(connection)
   }
   
   
