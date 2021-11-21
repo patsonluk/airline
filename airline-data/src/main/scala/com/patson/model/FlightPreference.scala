@@ -38,7 +38,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     * @param linkClass
     * @return
     */
-  def computeCostBreakdown(link : Link, linkClass : LinkClass) : CostBreakdown = {
+  def computeCostBreakdown(link : Transport, linkClass : LinkClass) : CostBreakdown = {
     val standardPrice = link.standardPrice(preferredLinkClass)
     val priceAdjust = priceAdjustRatio(link, linkClass)
     var cost = standardPrice * priceAdjust
@@ -168,7 +168,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequencyByClass(linkClass)).toDouble / frequencyThreshold) * frequencySensitivity
 
     val flightDurationRatioDelta =
-      if (flightDurationSensitivity == 0) {
+      if (flightDurationSensitivity == 0 || link.transportType == TransportType.SHUTTLE) {
         0
       } else {
         val flightDurationThreshold = Computation.computeStandardFlightDuration(link.distance)
@@ -251,7 +251,7 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     val noise = 0.8 + getFlatTopBellRandom(0.2, 0.1)
     
     val finalCost = baseCost * noise
-    
+
     if (finalCost >= 0) {
       finalCost  
     } else { //just to play safe - do NOT allow negative cost link

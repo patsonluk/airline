@@ -558,8 +558,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       }
 
       assert(economyAirline1.toDouble / iterations > 0.7) //most pax should choose airline 1
-      assert(businessAirline1.toDouble / iterations < 0.2) //most pax should choose airline 2 which has proper business class
-      assert(firstAirline1.toDouble / iterations < 0.2) //most pax should choose airline 2 which has proper first class
+      assert(businessAirline1.toDouble / iterations < 0.4) //most pax should choose airline 2 which has proper business class
+      assert(firstAirline1.toDouble / iterations < 0.4) //most pax should choose airline 2 which has proper first class
     }
     
   }
@@ -1025,7 +1025,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     
 
-    "accept very few link at suggested price with neutral quality and decent loyalty but downgrade in class (from business to econ)".in {
+    "accept few link at suggested price with neutral quality and decent loyalty but downgrade in class (from business to econ)".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
       
@@ -1059,7 +1059,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.15)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.25)
     }
     
     "accept very few route with links are at 1.3 price with neutral quality and 0 loyalty".in { //will be less than single link cause each run fitler out some

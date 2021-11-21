@@ -208,10 +208,10 @@ class ShuttleSimulationSpec(_system: ActorSystem) extends TestKit(_system) with 
   
   "IsLinkAffordable".must {
     "accept some routes with neutral conditions and shuttle as first and last link".in {
-      val sfo = fromAirport.copy(latitude = 37.61899948120117, longitude = -122.375, id = 1)
-      val sjc = fromAirport.copy(latitude = 37.362598, longitude = -121.929001, id = 2)
-      val lax = fromAirport.copy(latitude = 33.942501, longitude = -118.407997, id = 3)
-      val lgb = fromAirport.copy(latitude = 33.817699, longitude = -118.152, id = 4) //long beach
+      val sfo = fromAirport.copy(iata = "SFO", name = "SFO", latitude = 37.61899948120117, longitude = -122.375, id = 1)
+      val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
+      val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
+      val lgb = fromAirport.copy(iata = "LGB", name = "LGB", latitude = 33.817699, longitude = -118.152, id = 4) //long beach
       sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
       sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
       lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
@@ -241,14 +241,15 @@ class ShuttleSimulationSpec(_system: ActorSystem) extends TestKit(_system) with 
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
-                val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                val costBreakdown = flightPreference.computeCostBreakdown(link, preferredLinkClass)
+                LinkConsideration(link, costBreakdown.cost, preferredLinkClass, false)
               }
 
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
 
-              if (PassengerSimulation.getRouteRejection(route, sfo, lgb, preferredLinkClass).isEmpty) {
-                totalAcceptedRoutes += 1
+              PassengerSimulation.getRouteRejection(route, sfo, lgb, preferredLinkClass) match {
+                case None => totalAcceptedRoutes += 1
+                case Some(rejection) => //println(s"$flightPreference $rejection on $route")
               }
               totalRoutes += 1
             }
