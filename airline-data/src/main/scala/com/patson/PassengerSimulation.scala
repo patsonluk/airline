@@ -500,8 +500,9 @@ object PassengerSimulation {
 
 
                 //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
-                val linkConsideration1 = LinkConsideration(link, matchingLinkClass, false, passengerGroup, externalCostModifier)
-                val linkConsideration2 = LinkConsideration(link, matchingLinkClass, true, passengerGroup, externalCostModifier)
+                val costProvider = CostStoreProvider() //use same instance of costProvider so this is only computed once
+                val linkConsideration1 = LinkConsideration(link, matchingLinkClass, false, passengerGroup, externalCostModifier, costProvider)
+                val linkConsideration2 = LinkConsideration(link, matchingLinkClass, true, passengerGroup, externalCostModifier, costProvider)
                 if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
                   linkConsiderations.add(linkConsideration1)
                 }

@@ -253,11 +253,10 @@ object ExplicitLinkConsideration {
 object LinkConsideration {
   val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new SimplePreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.BUSINESS)
   def getExplicit(link : Transport, cost : Double, linkClass : LinkClass, inverted : Boolean, id : Int = 0) : LinkConsideration = {
-    val result = LinkConsideration(link, linkClass, inverted, DUMMY_PASSENGER_GROUP, None, id)
-    result.setCost(cost)
-    result
+    LinkConsideration(link, linkClass, inverted, DUMMY_PASSENGER_GROUP, None, SimpleCostProvider(cost), id)
   }
 }
+
 
 /**
  * Cost is the adjusted price
@@ -267,6 +266,7 @@ case class LinkConsideration(link : Transport,
                              inverted : Boolean,
                              passengerGroup : PassengerGroup,
                              modifier : Option[CostModifier],
+                             costProvider : CostProvider,
                              var id : Int = 0) extends IdObject {
     def from : Airport = if (inverted) link.to else link.from
     def to : Airport = if (inverted) link.from else link.to
@@ -275,20 +275,41 @@ case class LinkConsideration(link : Transport,
       s"Consideration [${linkClass} - $link cost: $cost]"
     }
 
-    private var costSet : Option[Double] = None
 
-    lazy val cost = costSet.getOrElse(passengerGroup.preference.computeCost(link, linkClass, modifier.map(_.value(link, linkClass)).getOrElse(1.0)))
+    lazy val cost : Double = costProvider(this)
 
-    def setCost(explicitCost : Double) = {
-      costSet = Some(explicitCost)
-    }
+      //costSet.getOrElse()
 
     def copyWithCost(explicitCost : Double) : LinkConsideration = {
-      val cloned = this.copy()
-      cloned.costSet = Some(explicitCost)
-      cloned
+      this.copy(costProvider = SimpleCostProvider(explicitCost))
     }
 }
+
+trait CostProvider {
+  def apply(linkConsideration: LinkConsideration) : Double
+}
+case class SimpleCostProvider(cost : Double) extends CostProvider{
+  override def apply(linkConsideration: LinkConsideration) : Double = cost
+}
+case class CostStoreProvider() extends CostProvider {
+  var computed = false
+  var computedValue : Double = 0
+  override def apply(linkConsideration: LinkConsideration) : Double = {
+    //this.synchronized { //no sync as it does not have to be threadsafe
+      if (!computed) {
+        computedValue = linkConsideration.passengerGroup.preference.computeCost(
+          linkConsideration.link,
+          linkConsideration.linkClass,
+          linkConsideration.modifier.map(_.value(linkConsideration.link, linkConsideration.linkClass)).getOrElse(1.0))
+        computed = true
+      }
+    //}
+    computedValue
+  }
+
+
+}
+
 
 sealed abstract class LinkClass(val code : String, val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val priceSensitivity : Double, val level : Int) {
   def label : String //level for sorting/comparison purpose
