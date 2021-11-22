@@ -622,7 +622,7 @@ object PassengerSimulation {
   def findShortestRoute(passengerGroup : PassengerGroup, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : java.util.Map[Int, Int], maxIteration : Int) : Map[Airport, Route] = {
     val from = passengerGroup.fromAirport
     import scala.jdk.CollectionConverters._
-    val linkConsiderationsByFrom = linkConsiderations.asScala.groupBy(_.link.from.id)
+    val linkConsiderationsByFrom = linkConsiderations.asScala.groupBy(_.from.id)
 
     //     // Step 1: initialize graph
 //   for each vertex v in vertices:
