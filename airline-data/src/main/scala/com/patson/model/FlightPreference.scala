@@ -15,7 +15,7 @@ abstract class FlightPreference(homeAirport : Airport) {
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean //whether this flight preference is applicable to this from/to airport
   def getPreferenceType : FlightPreferenceType.Value
 
-  def computeCost(link : Transport, linkClass : LinkClass) : Double = {
+  def computeCost(link : Transport, linkClass : LinkClass, externalCostModifier : Double = 1.0) : Double = {
     val standardPrice = link.standardPrice(preferredLinkClass)
     var cost = standardPrice * priceAdjustRatio(link, linkClass)
 
@@ -28,6 +28,8 @@ abstract class FlightPreference(homeAirport : Airport) {
     }
 
     cost = cost * loungeAdjustRatio(link, loungeLevelRequired, linkClass)
+
+    cost *= externalCostModifier
 
     computeCost(cost, link, linkClass)
   }

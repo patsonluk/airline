@@ -122,6 +122,7 @@ object PassengerSimulation {
 
     //specializationCostModifiers : Map[(Int, Int), Double] = Map.empty, //(airlineId , airportId) -> modifier
 
+    val externalCostModifier = ExternalCostModifier(airlineCostModifiers, specializationCostModifiers)
 
     while (consumptionCycleCount < consumptionCycleMax) {
        println("Run " + consumptionCycleCount + " demand chunk count " + demandChunks.size)
@@ -148,7 +149,7 @@ object PassengerSimulation {
         if (consumptionCycleCount < 3) 4
         else if (consumptionCycleCount < 6) 5
         else 6
-       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId, airlineCostModifiers, specializationCostModifiers, iterationCount)
+       val allRoutesMap = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId, Some(externalCostModifier), iterationCount)
 
        //start consuming routes
        println()
@@ -396,6 +397,26 @@ object PassengerSimulation {
     }
   }
 
+  case class ExternalCostModifier(airlineCostModifiers : Map[Int, Double] = Map.empty,
+                                  specializationCostModifiers : Map[(Int, Int), SpecializationModifier] = Map.empty) extends CostModifier { //(airlineId , airportId) -> modifier)
+    override def value(link : Transport, linkClass : LinkClass) : Double = {
+      var modifier = 1.0
+      if (airlineCostModifiers.contains(link.airline.id)) {
+        modifier *= airlineCostModifiers(link.airline.id)
+      }
+
+      val airlineFromAirportTuple = (link.airline.id, link.from.id)
+      if (specializationCostModifiers.contains(airlineFromAirportTuple)) {
+        modifier *= specializationCostModifiers(airlineFromAirportTuple).value(linkClass)
+      }
+      val airlineToAirportTuple = (link.airline.id, link.to.id)
+      if (specializationCostModifiers.contains(airlineToAirportTuple)) {
+        modifier *= specializationCostModifiers(airlineToAirportTuple).value(linkClass)
+      }
+      modifier
+    }
+  }
+
   
    /**
    * Return all routes if available, with destination defined in the input Map's value, the Input map key indicates various Passenger Group
@@ -413,8 +434,7 @@ object PassengerSimulation {
                     activeAirportIds : Set[Int],
                     countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness,
                     establishedAllianceIdByAirlineId : java.util.Map[Int, Int] = Collections.emptyMap[Int, Int](),
-                    airlineCostModifiers : Map[Int, Double] = Map.empty,
-                    specializationCostModifiers : Map[(Int, Int), SpecializationModifier] = Map.empty, //(airlineId , airportId) -> modifier
+                    externalCostModifier : Option[CostModifier] = None,
                     iterationCount : Int = 4) : Map[PassengerGroup, Map[Airport, Route]] = {
     val totalRequiredRoutes = requiredRoutes.foldLeft(0){ case (currentCount, (fromAirport, toAirports)) => currentCount + toAirports.size }
 
@@ -427,6 +447,8 @@ object PassengerSimulation {
     val counter = new AtomicInteger(0)
     val progressCount = new AtomicInteger(0)
     val progressChunk = requiredRoutes.size / 100
+
+
 
 //    val traceTimestampMap = new ConcurrentHashMap[Long, Long]()
 //    val maxTraceDuration = 60 * 1000; //1 min
@@ -461,25 +483,25 @@ object PassengerSimulation {
               val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
 
               if (airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)) {
-                var cost = passengerGroup.preference.computeCost(link, matchingLinkClass)
+//                var cost = passengerGroup.preference.computeCost(link, matchingLinkClass)
+//
+//                if (airlineCostModifiers.contains(link.airline.id)) {
+//                  cost *= airlineCostModifiers(link.airline.id)
+//                }
+//
+//                val airlineFromAirportTuple = (link.airline.id, link.from.id)
+//                if (specializationCostModifiers.contains(airlineFromAirportTuple)) {
+//                  cost *= specializationCostModifiers(airlineFromAirportTuple).value(preferredLinkClass)
+//                }
+//                val airlineToAirportTuple = (link.airline.id, link.to.id)
+//                if (specializationCostModifiers.contains(airlineToAirportTuple)) {
+//                  cost *= specializationCostModifiers(airlineToAirportTuple).value(preferredLinkClass)
+//                }
 
-                if (airlineCostModifiers.contains(link.airline.id)) {
-                  cost *= airlineCostModifiers(link.airline.id)
-                }
 
-                val airlineFromAirportTuple = (link.airline.id, link.from.id)
-                if (specializationCostModifiers.contains(airlineFromAirportTuple)) {
-                  cost *= specializationCostModifiers(airlineFromAirportTuple).value(preferredLinkClass)
-                }
-                val airlineToAirportTuple = (link.airline.id, link.to.id)
-                if (specializationCostModifiers.contains(airlineToAirportTuple)) {
-                  cost *= specializationCostModifiers(airlineToAirportTuple).value(preferredLinkClass)
-                }
-
-                
                 //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
-                val linkConsideration1 = LinkConsideration(link, cost, matchingLinkClass, false)
-                val linkConsideration2 = LinkConsideration(link, cost, matchingLinkClass, true)
+                val linkConsideration1 = LinkConsideration(link, matchingLinkClass, false, passengerGroup, externalCostModifier)
+                val linkConsideration2 = LinkConsideration(link, matchingLinkClass, true, passengerGroup, externalCostModifier)
                 if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
                   linkConsiderations.add(linkConsideration1)
                 }
@@ -599,6 +621,8 @@ object PassengerSimulation {
    */
   def findShortestRoute(passengerGroup : PassengerGroup, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : java.util.Map[Int, Int], maxIteration : Int) : Map[Airport, Route] = {
     val from = passengerGroup.fromAirport
+    import scala.jdk.CollectionConverters._
+    val linkConsiderationsByFrom = linkConsiderations.asScala.groupBy(_.link.from.id)
 
     //     // Step 1: initialize graph
 //   for each vertex v in vertices:
@@ -609,6 +633,8 @@ object PassengerSimulation {
     
     val distanceMap = new java.util.HashMap[Int, Double]()
     var predecessorMap = new java.util.HashMap[Int, LinkConsideration]()
+    var activeVertices = new java.util.HashSet[Int]()
+    activeVertices.add(from.id)
     allVertices.foreach { vertex => 
       if (vertex == from.id) {
         distanceMap.put(vertex, 0)
@@ -625,8 +651,9 @@ object PassengerSimulation {
 //               predecessor[v] := u
     for (i <- 0 until maxIteration) {
       //val updatingLinks = ArrayBuffer[LinkConsideration]()
-      val linkConsiderationsIterator = linkConsiderations.iterator()
+      //val linkConsiderationsIterator = linkConsiderations.iterator()
       val newPredecessorMap = new java.util.HashMap[Int, LinkConsideration](predecessorMap)
+      val newActiveVertices = new java.util.HashSet[Int]()
       //create a clone of last run, we update this map, but for lookup we use the previous one
       //this is necessary to avoid "previous leg replacement problem"
       //for example on first iteration, there is F0, T1 and T2. If there are links:
@@ -642,61 +669,71 @@ object PassengerSimulation {
       // This also create the shuttle from other alliance problem
       //The fix for this is never use the current predecessorMap for lookup, instead, use the previous map
 
-      while (linkConsiderationsIterator.hasNext) {
-        val linkConsideration = linkConsiderationsIterator.next()
-        val predecessorLinkConsideration = predecessorMap.get(linkConsideration.from.id)
-        if (linkConsideration.from.id == from.id || predecessorLinkConsideration != null) {
-          var connectionCost = 0.0
-          var isValid : Boolean = true
-          if (linkConsideration.from.id != from.id) { //then it should be a connection flight
-            val predecessorLink = predecessorLinkConsideration.link
-            val previousLinkAirlineId = predecessorLink.airline.id
-            val currentLinkAirlineId = linkConsideration.link.airline.id
+      val vertexIterator = activeVertices.iterator()
+      while (vertexIterator.hasNext) {
+        val vertexWalker = vertexIterator.next()
+        //val linkConsideration = linkConsiderationsIterator.next()
+        //if (activeVertices.contains(linkConsideration.from.id)) { //optimization - only need to re-run if the vertex was update in last iteration
+        if (linkConsiderationsByFrom.contains(vertexWalker)) {
+          val linkConsiderationIter = linkConsiderationsByFrom(vertexWalker).iterator
+          while (linkConsiderationIter.hasNext) {
+            val linkConsideration = linkConsiderationIter.next
+            val predecessorLinkConsideration = predecessorMap.get(linkConsideration.from.id)
 
-            if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
-              isValid = false
-            } else if (predecessorLink.transportType == TransportType.SHUTTLE || linkConsideration.link.transportType == TransportType.SHUTTLE) {
-              if (previousLinkAirlineId == currentLinkAirlineId ||
-                (allianceIdByAirlineId.containsKey(previousLinkAirlineId) &&
-                  allianceIdByAirlineId.get(previousLinkAirlineId) == allianceIdByAirlineId.get(currentLinkAirlineId))) { //same airline or same alliance - shuttle okay
-                connectionCost = 25
+            var connectionCost = 0.0
+            var isValid : Boolean = true
+            if (predecessorLinkConsideration != null) { //then it should be a connection flight
+              val predecessorLink = predecessorLinkConsideration.link
+              val previousLinkAirlineId = predecessorLink.airline.id
+              val currentLinkAirlineId = linkConsideration.link.airline.id
+
+              if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
+                isValid = false
+              } else if (predecessorLink.transportType == TransportType.SHUTTLE || linkConsideration.link.transportType == TransportType.SHUTTLE) {
+                if (previousLinkAirlineId == currentLinkAirlineId ||
+                  (allianceIdByAirlineId.containsKey(previousLinkAirlineId) &&
+                    allianceIdByAirlineId.get(previousLinkAirlineId) == allianceIdByAirlineId.get(currentLinkAirlineId))) { //same airline or same alliance - shuttle okay
+                  connectionCost = 25
+                } else {
+                  isValid = false //shuttle only allows same network
+                }
+
+                //THIS ONLY WORKS since the shuttle distance is less than min flight distance, if we introduce shuttle that overlaps flight distance, it will have issues
+                //for example airport A -> B , 100 km , if covered by a long range shuttle, vertex B will have the shuttle as edge, but then it forbids all other airlines heading out from B
+                //a more "correct" way would be to create shuttle assisted "flight" that is a Link combining shuttle and the actual link. Though this would require quite a bit of changes
               } else {
-                isValid = false //shuttle only allows same network
-              }
+                connectionCost += 25 //base cost for connection
+                //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
+                val frequency = Math.max(predecessorLink.frequencyByClass(predecessorLinkConsideration.linkClass), linkConsideration.link.frequencyByClass(linkConsideration.linkClass))
+                //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
+                if (frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
+                  connectionCost += (3.5 * 24 * 5) / frequency //each extra hour wait is like $5 more
+                }
 
-              //THIS ONLY WORKS since the shuttle distance is less than min flight distance, if we introduce shuttle that overlaps flight distance, it will have issues
-              //for example airport A -> B , 100 km , if covered by a long range shuttle, vertex B will have the shuttle as edge, but then it forbids all other airlines heading out from B
-              //a more "correct" way would be to create shuttle assisted "flight" that is a Link combining shuttle and the actual link. Though this would require quite a bit of changes
-            } else {
-              connectionCost += 25 //base cost for connection
-              //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
-              val frequency = Math.max(predecessorLink.frequencyByClass(predecessorLinkConsideration.linkClass), linkConsideration.link.frequencyByClass(linkConsideration.linkClass))
-              //if the bigger of the 2 is less than 42, impose extra layover time (if either one is frequent enough, then consider that as ok)
-              if (frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
-                connectionCost += (3.5 * 24 * 5) / frequency //each extra hour wait is like $5 more
+                if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
+                  connectionCost += 75
+                }
               }
-
-              if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
-                connectionCost += 75
-              }
+              connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
             }
-            connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
-          }
-          
-          if (isValid) {
-            val cost = linkConsideration.cost + connectionCost
-            val fromCost = distanceMap.get(linkConsideration.from.id)
-            val newCost = fromCost + cost
+
+            if (isValid) {
+              val cost = linkConsideration.cost + connectionCost
+              val fromCost = distanceMap.get(linkConsideration.from.id)
+              val newCost = fromCost + cost
 
 
-            if (newCost < distanceMap.get(linkConsideration.to.id)) {
-              distanceMap.put(linkConsideration.to.id, newCost)
-              newPredecessorMap.put(linkConsideration.to.id, linkConsideration.copy(cost = cost)) //clone it, do not modify the existing linkWithCost
+              if (newCost < distanceMap.get(linkConsideration.to.id)) {
+                distanceMap.put(linkConsideration.to.id, newCost)
+                newPredecessorMap.put(linkConsideration.to.id, linkConsideration.copyWithCost(cost)) //clone it, do not modify the existing linkWithCost
+                newActiveVertices.add(linkConsideration.to.id)
+              }
             }
           }
         }
       }
       predecessorMap = newPredecessorMap
+      activeVertices = newActiveVertices
     }
 
     val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]()
