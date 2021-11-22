@@ -242,18 +242,51 @@ case class StaffBreakdown(basicStaff : Int, frequencyStaff : Double, capacitySta
 }
 case class StaffSchemeBreakdown(basic : Int, perFrequency : Double, per1000Pax : Double)
 
+trait CostModifier {
+  def value(link : Transport, linkClass : LinkClass) : Double
+}
 
+object ExplicitLinkConsideration {
 
+}
+
+object LinkConsideration {
+  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new SimplePreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.BUSINESS)
+  def getExplicit(link : Transport, cost : Double, linkClass : LinkClass, inverted : Boolean, id : Int = 0) : LinkConsideration = {
+    val result = LinkConsideration(link, linkClass, inverted, DUMMY_PASSENGER_GROUP, None, id)
+    result.setCost(cost)
+    result
+  }
+}
 
 /**
  * Cost is the adjusted price
  */
-case class LinkConsideration(link : Transport, cost : Double, linkClass : LinkClass, inverted : Boolean, var id : Int = 0) extends IdObject {
+case class LinkConsideration(link : Transport,
+                             linkClass : LinkClass,
+                             inverted : Boolean,
+                             passengerGroup : PassengerGroup,
+                             modifier : Option[CostModifier],
+                             var id : Int = 0) extends IdObject {
     def from : Airport = if (inverted) link.to else link.from
     def to : Airport = if (inverted) link.from else link.to
     
     override def toString() : String = {
       s"Consideration [${linkClass} - $link cost: $cost]"
+    }
+
+    private var costSet : Option[Double] = None
+
+    lazy val cost = costSet.getOrElse(passengerGroup.preference.computeCost(link, linkClass, modifier.map(_.value(link, linkClass)).getOrElse(1.0)))
+
+    def setCost(explicitCost : Double) = {
+      costSet = Some(explicitCost)
+    }
+
+    def copyWithCost(explicitCost : Double) : LinkConsideration = {
+      val cloned = this.copy()
+      cloned.costSet = Some(explicitCost)
+      cloned
     }
 }
 
