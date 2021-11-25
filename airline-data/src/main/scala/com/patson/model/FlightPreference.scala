@@ -15,7 +15,7 @@ abstract class FlightPreference(homeAirport : Airport) {
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean //whether this flight preference is applicable to this from/to airport
   def getPreferenceType : FlightPreferenceType.Value
 
-  def computeCost(link : Transport, linkClass : LinkClass) : Double = {
+  def computeCost(link : Transport, linkClass : LinkClass, externalCostModifier : Double = 1.0) : Double = {
     val standardPrice = link.standardPrice(preferredLinkClass)
     var cost = standardPrice * priceAdjustRatio(link, linkClass)
 
@@ -29,6 +29,8 @@ abstract class FlightPreference(homeAirport : Airport) {
 
     cost = cost * loungeAdjustRatio(link, loungeLevelRequired, linkClass)
 
+    cost *= externalCostModifier
+
     computeCost(cost, link, linkClass)
   }
 
@@ -38,7 +40,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     * @param linkClass
     * @return
     */
-  def computeCostBreakdown(link : Link, linkClass : LinkClass) : CostBreakdown = {
+  def computeCostBreakdown(link : Transport, linkClass : LinkClass) : CostBreakdown = {
     val standardPrice = link.standardPrice(preferredLinkClass)
     val priceAdjust = priceAdjustRatio(link, linkClass)
     var cost = standardPrice * priceAdjust
@@ -168,7 +170,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequencyByClass(linkClass)).toDouble / frequencyThreshold) * frequencySensitivity
 
     val flightDurationRatioDelta =
-      if (flightDurationSensitivity == 0) {
+      if (flightDurationSensitivity == 0 || link.transportType == TransportType.SHUTTLE) {
         0
       } else {
         val flightDurationThreshold = Computation.computeStandardFlightDuration(link.distance)
@@ -251,7 +253,7 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
     val noise = 0.8 + getFlatTopBellRandom(0.2, 0.1)
     
     val finalCost = baseCost * noise
-    
+
     if (finalCost >= 0) {
       finalCost  
     } else { //just to play safe - do NOT allow negative cost link
@@ -286,7 +288,7 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 14
   override val frequencySensitivity = 0.15
-  override val flightDurationSensitivity = 0.4
+  override val flightDurationSensitivity = 0.7
 
   def computeCost(baseCost : Double, link : Transport, linkClass : LinkClass) = {
     val noise = 0.9 + getFlatTopBellRandom(0.2, 0.1)
@@ -313,7 +315,7 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   override val loyaltySensitivity = loyaltyRatio
   override val frequencyThreshold = 14
   override val frequencySensitivity = 0.05
-  override val flightDurationSensitivity = 0.15
+  override val flightDurationSensitivity = 0.25
   override val loungeSensitivity : Double = 1
 
   def computeCost(baseCost: Double, link : Transport, linkClass : LinkClass) : Double = {

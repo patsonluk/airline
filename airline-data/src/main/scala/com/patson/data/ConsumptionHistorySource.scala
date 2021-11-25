@@ -229,7 +229,7 @@ object ConsumptionHistorySource {
         val passengerCount = resultSet.getInt("passenger_count")
         val cost = resultSet.getInt("cost")
         linkConsumptionById.get(linkId).foreach { linkConsumption =>
-          val linkConsideration = new LinkConsideration(linkConsumption.link, cost = cost, LinkClass.fromCode(resultSet.getString("link_class")), resultSet.getBoolean("inverted"))
+          val linkConsideration = LinkConsideration.getExplicit(linkConsumption.link, cost = cost, LinkClass.fromCode(resultSet.getString("link_class")), resultSet.getBoolean("inverted"))
           val existingConsiderationsForThisRoute = linkConsiderationsByRouteId.getOrElseUpdate(routeId, ListBuffer[LinkConsideration]())
 
           existingConsiderationsForThisRoute += linkConsideration
@@ -308,7 +308,7 @@ object ConsumptionHistorySource {
                 val relatedLinkId = relatedRouteSet.getInt("link")
                 val relatedLink = linkMap.getOrElse(relatedLinkId, Link.fromId(relatedLinkId))
                 val cost = relatedRouteSet.getInt("cost")
-                val linkConsideration = new LinkConsideration(relatedLink, cost = cost, LinkClass.fromCode(relatedRouteSet.getString("link_class")), relatedRouteSet.getBoolean("inverted"))
+                val linkConsideration = LinkConsideration.getExplicit(relatedLink, cost = cost, LinkClass.fromCode(relatedRouteSet.getString("link_class")), relatedRouteSet.getBoolean("inverted"))
 
                 val existingConsiderationsForThisRoute = linkConsiderationsByRouteId.getOrElseUpdate(routeId, ListBuffer[LinkConsideration]())
 

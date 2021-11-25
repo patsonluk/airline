@@ -75,7 +75,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     }
     "find n route if there's 1 link to each target".in {
       val links = toAirports.foldRight(List[LinkConsideration]()) { (airport, foldList) =>
-        LinkConsideration(Link(fromAirport, airport, testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false) :: foldList
+        LinkConsideration.getExplicit(Link(fromAirport, airport, testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false) :: foldList
       }
       assignLinkConsiderationIds(links)
 
@@ -84,9 +84,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       toAirports.foreach { toAirport => routes.isDefinedAt(toAirport).shouldBe(true) }
     }
     "find route if there's a link chain to target within max hop".in {
-      val links = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false))
+      val links = List(LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false))
       assignLinkConsiderationIds(links)
 
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 3)
@@ -96,9 +96,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(links)
     }
     "find route if there's a reverse link chain to target within max hop".in {
-      val links = List(LinkConsideration(Link(toAirportsList(2), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, true),
-          LinkConsideration(Link(toAirportsList(1), toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, true),
-          LinkConsideration(Link(toAirportsList(0), fromAirport, testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, true))
+      val links = List(LinkConsideration.getExplicit(Link(toAirportsList(2), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, true),
+          LinkConsideration.getExplicit(Link(toAirportsList(1), toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, true),
+          LinkConsideration.getExplicit(Link(toAirportsList(0), fromAirport, testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, true))
       assignLinkConsiderationIds(links)
 
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 3)
@@ -108,19 +108,19 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(links)
     }
     "find no route if there's a link chain to target but exceed max hop".in {
-     val links = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false))
+     val links = List(LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false))
       assignLinkConsiderationIds(links)
 
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 2)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
     }
     "find a cheaper route even with connection flights (with frequent service)".in {
-     val cheapLinks = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), distance = 3500, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 42, SHORT_HAUL_DOMESTIC), 3500, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), distance = 3500, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 42, SHORT_HAUL_DOMESTIC), 3500, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), distance = 3500, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 42, SHORT_HAUL_DOMESTIC), 3500, ECONOMY, false))
-     val allLinks = LinkConsideration(Link(fromAirport, toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 600, frequency = 1, SHORT_HAUL_DOMESTIC), 13000, ECONOMY, false) :: cheapLinks
+     val cheapLinks = List(LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), distance = 3500, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 42, SHORT_HAUL_DOMESTIC), 3500, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), distance = 3500, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 42, SHORT_HAUL_DOMESTIC), 3500, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), distance = 3500, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 42, SHORT_HAUL_DOMESTIC), 3500, ECONOMY, false))
+     val allLinks = LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 600, frequency = 1, SHORT_HAUL_DOMESTIC), 13000, ECONOMY, false) :: cheapLinks
       assignLinkConsiderationIds(allLinks)
 
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, allLinks.asJava, Collections.emptyMap[Int, Int](), 3)
@@ -130,10 +130,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(cheapLinks)
     }
     "use direct route even though it's more expensive as connection flight is not frequent enough".in {
-     val cheapLinks = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1, SHORT_HAUL_DOMESTIC), 400, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1, SHORT_HAUL_DOMESTIC), 400, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1, SHORT_HAUL_DOMESTIC), 400, ECONOMY, false))
-     val expensiveLink = LinkConsideration(Link(fromAirport, toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 600, frequency = 1, SHORT_HAUL_DOMESTIC), 1400, ECONOMY, false)
+     val cheapLinks = List(LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1, SHORT_HAUL_DOMESTIC), 400, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1, SHORT_HAUL_DOMESTIC), 400, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 200, frequency = 1, SHORT_HAUL_DOMESTIC), 400, ECONOMY, false))
+     val expensiveLink = LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, duration = 600, frequency = 1, SHORT_HAUL_DOMESTIC), 1400, ECONOMY, false)
      val allLinks =  expensiveLink :: cheapLinks
       assignLinkConsiderationIds(allLinks)
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, allLinks.asJava, Collections.emptyMap[Int, Int](), 3)
@@ -144,10 +144,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     }
 
     "use expensive route if cheaper route exceed max hop".in {
-     val cheapLinks = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false))
-     val expensiveLink = LinkConsideration(Link(fromAirport, toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 301, ECONOMY, false)
+     val cheapLinks = List(LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false))
+     val expensiveLink = LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 301, ECONOMY, false)
      val allLinks = expensiveLink :: cheapLinks
       assignLinkConsiderationIds(allLinks)
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, allLinks.asJava, Collections.emptyMap[Int, Int](), 2)
@@ -157,9 +157,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       route.links.equals(List(expensiveLink))
     }
     "find no route if there's a link chain to target but one is not in correct direction".in {
-     val links = List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
-          LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, true), //wrong direction
-          LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false))
+     val links = List(LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false),
+          LinkConsideration.getExplicit(Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, true), //wrong direction
+          LinkConsideration.getExplicit(Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100), 10000, LinkClassValues.getInstance(10000), 0, 600, 1, SHORT_HAUL_DOMESTIC), 100, ECONOMY, false))
       assignLinkConsiderationIds(links)
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 3)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
@@ -558,8 +558,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       }
 
       assert(economyAirline1.toDouble / iterations > 0.7) //most pax should choose airline 1
-      assert(businessAirline1.toDouble / iterations < 0.2) //most pax should choose airline 2 which has proper business class
-      assert(firstAirline1.toDouble / iterations < 0.2) //most pax should choose airline 2 which has proper first class
+      assert(businessAirline1.toDouble / iterations < 0.4) //most pax should choose airline 2 which has proper business class
+      assert(firstAirline1.toDouble / iterations < 0.4) //most pax should choose airline 2 which has proper first class
     }
     
   }
@@ -598,7 +598,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -632,7 +632,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -669,7 +669,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -706,7 +706,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -743,7 +743,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -781,7 +781,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -817,7 +817,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -855,7 +855,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -894,7 +894,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val breakdown = flightPreference.computeCostBreakdown(newLink, preferredLinkClass)
               val cost = breakdown.cost
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -932,7 +932,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCostBreakdown(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost.cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost.cost, preferredLinkClass, false))
 
 
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -971,7 +971,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1008,7 +1008,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1025,7 +1025,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     
 
-    "accept very few link at suggested price with neutral quality and decent loyalty but downgrade in class (from business to econ)".in {
+    "accept few link at suggested price with neutral quality and decent loyalty but downgrade in class (from business to econ)".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
       
@@ -1047,7 +1047,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, ECONOMY)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, ECONOMY, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, ECONOMY, false))
               
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1059,7 +1059,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           }
         }
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.15)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.25)
     }
     
     "accept very few route with links are at 1.3 price with neutral quality and 0 loyalty".in { //will be less than single link cause each run fitler out some
@@ -1087,7 +1087,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                LinkConsideration.getExplicit(link, cost, preferredLinkClass, false)
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1136,7 +1136,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                LinkConsideration.getExplicit(link, cost, preferredLinkClass, false)
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1180,7 +1180,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                LinkConsideration.getExplicit(link, cost, preferredLinkClass, false)
               }
 
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1229,7 +1229,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                LinkConsideration.getExplicit(link, cost, preferredLinkClass, false)
               }
 
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1279,7 +1279,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                LinkConsideration.getExplicit(link, cost, preferredLinkClass, false)
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1318,7 +1318,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                LinkConsideration.getExplicit(link, cost, preferredLinkClass, false)
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1359,7 +1359,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                LinkConsideration.getExplicit(link, cost, preferredLinkClass, false)
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1401,7 +1401,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
             flightPreference.filter(!isLoungePreference(_)).foreach {  flightPreference =>
               val linkConsiderations = links.map { link =>
                 val cost = flightPreference.computeCost(link, preferredLinkClass)
-                new LinkConsideration(link, cost, preferredLinkClass, false)
+                LinkConsideration.getExplicit(link, cost, preferredLinkClass, false)
               }
               
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
@@ -1434,7 +1434,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
@@ -1469,7 +1469,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
@@ -1506,7 +1506,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
@@ -1544,7 +1544,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
@@ -1583,7 +1583,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
@@ -1621,7 +1621,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
@@ -1660,7 +1660,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           case(preferredLinkClass, flightPreference) => {
             flightPreference.filter(isLoungePreference(_)).foreach {  flightPreference =>
               val cost = flightPreference.computeCost(newLink, preferredLinkClass)
-              val linkConsiderations = List[LinkConsideration] (new LinkConsideration(newLink, cost, preferredLinkClass, false))
+              val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
               val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
               if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
                 totalAcceptedRoutes = totalAcceptedRoutes + 1
@@ -1697,9 +1697,9 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       )
 
       val links =
-        List(LinkConsideration(Link(fromAirport, toAirportsList(0), testAirline1, standardPrices(0), distances(0), LinkClassValues.getInstance(10000), 0, durations(0), 1, flightTypes(0)), 100, ECONOMY, false),
-        LinkConsideration(Link(toAirportsList(0), toAirportsList(1), testAirline1, standardPrices(1), distances(1), LinkClassValues.getInstance(10000), 0, durations(1), 1, flightTypes(1)), 100, ECONOMY, false),
-        LinkConsideration(Link(toAirportsList(1), toAirportsList(2), testAirline1, standardPrices(2), distances(2), LinkClassValues.getInstance(10000), 0, durations(2), 1, flightTypes(2)), 100, ECONOMY, false))
+        List(LinkConsideration.getExplicit(Link(fromAirport, toAirportsList(0), testAirline1, standardPrices(0), distances(0), LinkClassValues.getInstance(10000), 0, durations(0), 1, flightTypes(0)), 100, ECONOMY, false),
+        LinkConsideration.getExplicit(Link(toAirportsList(0), toAirportsList(1), testAirline1, standardPrices(1), distances(1), LinkClassValues.getInstance(10000), 0, durations(1), 1, flightTypes(1)), 100, ECONOMY, false),
+        LinkConsideration.getExplicit(Link(toAirportsList(1), toAirportsList(2), testAirline1, standardPrices(2), distances(2), LinkClassValues.getInstance(10000), 0, durations(2), 1, flightTypes(2)), 100, ECONOMY, false))
       assignLinkConsiderationIds(links)
 
       val routes = PassengerSimulation.findShortestRoute(passengerGroup, Set(toAirportsList(2)), allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 3)

@@ -518,8 +518,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       assert(profitMargin1 > 0.2 && profitMargin1 < 0.3)
       assert(profitMargin2 > 0.1 && profitMargin2 < 0.2)
       assert(profitMargin3 > 0.0 && profitMargin3 < 0.1)
-      assert(profitMargin4 > -0.1 && profitMargin4 < 0) //not profitable with standard price
-      assert(profitMargin5 > -0.3 && profitMargin5 < 0.1) //not profitable with standard price
+      assert(profitMargin4 > -0.1 && profitMargin4 < 0.05) //not profitable with standard price
+      assert(profitMargin5 > -0.3 && profitMargin5 < 0.05) //not profitable with standard price
     }
 
     "Reasonable profit margin for each raw service level (intercontinental) ".in  {
