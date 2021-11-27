@@ -52,7 +52,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   
   implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], Boolean)] {
     def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], Boolean)): JsValue = {
-      val (airline, user, loginStatus, alliance, modifiers, isCurrentUserAdmin) = entry
+      val (airline, user, loginStatus, alliance, airlineModifiers, isCurrentUserAdmin) = entry
       var result = Json.toJson(airline).asInstanceOf[JsObject] +
         ("userLevel" -> JsNumber(user.level)) +
         ("username" -> JsString(user.userName))
@@ -62,7 +62,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
       if (isCurrentUserAdmin) {
         result = result + ("userStatus" -> JsString(user.status.toString)) + ("userId" -> JsNumber(user.id))
-
+        result = result + ("userModifiers" -> Json.toJson(user.modifiers.map(_.toString)))
       }
 
       loginStatus.foreach { status => //if there's a login status
@@ -75,8 +75,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         result = result + ("allianceName" -> JsString(alliance.name))
       }
 
-      if (!modifiers.isEmpty) {
-        result = result + ("modifiers" -> Json.toJson(modifiers.map(_.modifierType.toString)))
+      if (!airlineModifiers.isEmpty) {
+        result = result + ("airlineModifiers" -> Json.toJson(airlineModifiers.map(_.modifierType.toString)))
       }
         //("lastActiveTime" -> JsString(user.lastActive.getTime.toString)) //maybe last active time is still too sensitive
       result

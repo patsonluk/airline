@@ -412,7 +412,7 @@ object AirlineSource {
           airportIds.add(resultSet.getInt("airport"))
         }
         
-        val airports = AirportSource.loadAirportsByIds(airportIds.toList, false).map(airport => (airport.id, airport)).toMap
+        val airports = AirportCache.getAirports(airportIds.toList, false)
         
         resultSet.beforeFirst()
         while (resultSet.next()) {
@@ -1208,6 +1208,20 @@ object AirlineSource {
     }
   }
 
+
+  def deleteAirlineModifierByExpiry(cutoff : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_MODIFIER_TABLE WHERE expiry IS NOT NULL && expiry <= ?")
+      preparedStatement.setInt(1, cutoff)
+      preparedStatement.executeUpdate()
+
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
   def saveAirlineModifier(airlineId : Int, modifier : AirlineModifier) = {
     val connection = Meta.getConnection()
     try {
@@ -1222,6 +1236,7 @@ object AirlineSource {
       preparedStatement.executeUpdate()
 
       preparedStatement.close()
+      AirlineCache.invalidateAirline(airlineId)
     } finally {
       connection.close()
     }
@@ -1236,13 +1251,40 @@ object AirlineSource {
       val resultSet = preparedStatement.executeQuery()
       val result : ListBuffer[(Int, AirlineModifier)] = ListBuffer[(Int, AirlineModifier)]()
       while (resultSet.next()) {
-        val expiryObject = resultSet.getObject("expiry", classOf[Int])
+        val expiryObject = resultSet.getObject("expiry")
         val airlineModifier = AirlineModifier.fromValues(
           AirlineModifierType.withName(resultSet.getString("modifier_name")),
           resultSet.getInt("creation"),
-          if (expiryObject == null) None else Some(expiryObject)
+          if (expiryObject == null) None else Some(expiryObject.asInstanceOf[Int])
         )
         result.append((resultSet.getInt("airline"), airlineModifier))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadAirlineModifierByAirlineId(airlineId : Int) : List[AirlineModifier] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_MODIFIER_TABLE + " WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+
+      val resultSet = preparedStatement.executeQuery()
+      val result = ListBuffer[AirlineModifier]()
+      while (resultSet.next()) {
+        val expiryObject = resultSet.getObject("expiry")
+        val airlineModifier = AirlineModifier.fromValues(
+          AirlineModifierType.withName(resultSet.getString("modifier_name")),
+          resultSet.getInt("creation"),
+          if (expiryObject == null) None else Some(expiryObject.asInstanceOf[Int])
+        )
+        result.append(airlineModifier)
       }
 
       resultSet.close()

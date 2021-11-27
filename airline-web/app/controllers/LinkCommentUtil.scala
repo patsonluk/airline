@@ -79,7 +79,7 @@ object LinkCommentUtil {
          PRICE -> preference.priceAdjustRatio(link, linkClass),
          LOYALTY -> preference.loyaltyAdjustRatio(link),
          QUALITY -> preference.qualityAdjustRatio(homeAirport, link, linkClass),
-         DURATION -> preference.tripDurationAdjustRatio(link),
+         DURATION -> preference.tripDurationAdjustRatio(link, linkClass),
          LOUNGE -> preference.loungeAdjustRatio(link, preference.loungeLevelRequired, linkClass)
       )
 

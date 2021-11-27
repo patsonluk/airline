@@ -10,6 +10,7 @@ abstract class Transport extends IdObject{
   var capacity: LinkClassValues
   val duration : Int
   var frequency : Int
+  val frequencyByClass : LinkClass => Int
   val transportType : TransportType.Value
   val price: LinkClassValues
   val flightType : FlightType.Value

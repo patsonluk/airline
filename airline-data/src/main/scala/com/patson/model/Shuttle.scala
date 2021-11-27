@@ -10,7 +10,7 @@ case class Shuttle(from : Airport, to : Airport, airline: Airline, distance : In
 
   override val flightType : FlightType.Value = FlightType.SHORT_HAUL_DOMESTIC
 
-  override val cost = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) //hidden cost of taking shuttle
+  override val cost = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) * 0.8 //hidden cost of taking shuttle
 
   val upkeep = capacity.total * Shuttle.UPKEEP_PER_CAPACITY
   override var minorDelayCount : Int = 0
@@ -20,6 +20,8 @@ case class Shuttle(from : Airport, to : Airport, airline: Airline, distance : In
   override def toString() = {
     s"Shuttle $id; ${airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); distance $distance"
   }
+
+  override val frequencyByClass  = (_ : LinkClass) =>  frequency
 }
 
 object Shuttle {

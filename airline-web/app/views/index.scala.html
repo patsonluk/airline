@@ -235,11 +235,11 @@
 				<div class="button desktopOnly" onclick="logout()">Logout</div>
 				<div class="mobileOnly" onclick="logout()"><img src='@routes.Assets.versioned("images/icons/24px/logout.png")' title="Login"></div>
 			</div>
-			<div class="button desktopOnly topBarItem">
-				<a href="https://airlineclub.createaforum.com/" target="_blank">
-					Forums
-				</a>
-			</div>
+<!--			<div class="button desktopOnly topBarItem">-->
+<!--				<a href="https://airlineclub.createaforum.com/" target="_blank">-->
+<!--					Forums-->
+<!--				</a>-->
+<!--			</div>-->
 <!--			<div class="mobileOnly topBarItem">-->
 <!--				<a href="https://airlineclub.createaforum.com/" target="_blank">-->
 <!--					<img src='@routes.Assets.versioned("images/icons/24px/forums.png")' style="vertical-align: middle;" title="Forums">-->
@@ -709,7 +709,26 @@
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Direct Demand (Y/J/F):</h5></div>
-										<div class="value" id="planLinkDirectDemand"></div>
+										<div class="value">
+											<div style="display: flex; align-items : center">
+												<span id="planLinkDirectDemand"></span>
+												<div class="tooltip">
+													<img src='@routes.Assets.versioned("images/icons/information.png")'>
+													<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+														<div class="fromAirport">
+															<h4 class="airportLabel"></h4>
+															<div> Business PAX : <span class="businessDemand"></span></div>
+															<div> Tourist PAX : <span class="touristDemand"></span></div>
+														</div>
+														<div class="toAirport" style="margin-top: 10px;">
+															<h4 class="airportLabel"></h4>
+															<div> Business PAX : <span class="businessDemand"></span></div>
+															<div> Tourist PAX : <span class="touristDemand"></span></div>
+														</div>
+													</span>
+												</div>
+											</div>
+										</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Direct Competitions:</h5></div>
@@ -2674,8 +2693,8 @@
 									<h4>Admin Action</h4>
 									<div>Username: <span class="username"></span></div>
 									<div>User ID: <span class="userId"></span></div>
-									<div>Status: <span class="status"></span></div>
-									<div>Modifiers: <span class="modifiers"></span></div>
+									<div>User Mod: <span class="userModifiers"></span></div>
+									<div>Airline Mod: <span class="airlineModifiers"></span></div>
 									<div><span>IP:</span>&nbsp;<div class="ips" style="display: inline-block; width: 90%"></div></div>
 									<div><span>UUID:</span>&nbsp;<div class="uuids" style="display: inline-block; width: 90%"></div></div>
 									<div class="clickable" onclick="banChat()" style="margin-top: 10px;">Ban Chat</div>
@@ -3321,7 +3340,27 @@
 									  </div>
 									  <div class="table-row">
 										  <div class="label" style="width:50%"><h5>Direct Demand (Y/J/F)</h5></div>
-										  <div class="value" style="text-align:right; width:50%"><span class="demand"></span></div>
+										  <div class="value" style="width:50%">
+											  <div style="display: flex; align-items: center">
+												  <span class="demand" style="text-align:right;">
+												  </span>
+												  <div class="tooltip">
+													  <img src='@routes.Assets.versioned("images/icons/information.png")'>
+													  <span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+															<div class="fromAirport">
+																<h4 class="airportLabel"></h4>
+																<div> Business PAX : <span class="businessDemand"></span></div>
+																<div> Tourist PAX : <span class="touristDemand"></span></div>
+															</div>
+															<div class="toAirport" style="margin-top: 10px;">
+																<h4 class="airportLabel"></h4>
+																<div> Business PAX : <span class="businessDemand"></span></div>
+																<div> Tourist PAX : <span class="touristDemand"></span></div>
+															</div>
+														</span>
+												  </div>
+											  </div>
+										  </div>
 									  </div>
 								  </div>
 							  </div>
@@ -3773,7 +3812,7 @@
 
 	<!-- Santa Claus modal -->
 	<div id="santaClausModal" class="modal christmas-event" aria-hidden="true">
-		<div class="modal-content snow-background"  style="width : 500px;">
+		<div class="modal-content"  style="width : 500px;">
 			<span class="close" onclick="closeSantaClausModal()">&times;</span>
 			<div style="margin-bottom: 30px"><h2>Santa, Where are you?</h2></div>
 			<h4 style="margin-bottom: 10px;">Search History</h4>
@@ -3792,6 +3831,9 @@
 						</div>
 					</div>
 				</div>
+			</div>
+			<div class="remarks" style="margin-bottom: 15px; display: block;">
+				You will get new clue for each guess you make
 			</div>
 			<div class="warning" style="margin-bottom: 15px;">
 				<span>Attempts Left: </span><span id="santaClausAttemptsLeft"></span>
@@ -4940,15 +4982,16 @@
   </div>
 
   <div id="airlinesByIpModal" class="modal">
-	  <div class="modal-content"  style="width : 800px;">
+	  <div class="modal-content"  style="width : 900px;">
 		  <span class="close" onclick="closeModal($('#airlinesByIpModal'))">&times;</span>
 		  <h4>Airlines by IP&nbsp;<span class="ip"></span></h4>
 		  <div class="table data airlineByIpTable" style="max-height: 100%; width: 100%">
 			  <div class="table-header">
-				  <div class="cell" style="width: 3%; border-bottom: none;"></div>
-				  <div class="cell" style="width: 32%; border-bottom: none;">Airline</div>
-				  <div class="cell" style="width: 20%; border-bottom: none;">User</div>
-				  <div class="cell" style="width: 20%; border-bottom: none;">User Status</div>
+				  <div class="cell" style="width: 5%; border-bottom: none;"></div>
+				  <div class="cell" style="width: 25%; border-bottom: none;">Airline</div>
+				  <div class="cell" style="width: 15%; border-bottom: none;">User</div>
+				  <div class="cell" style="width: 10%; border-bottom: none;">User status</div>
+				  <div class="cell" style="width: 15%; border-bottom: none;">Modifiers</div>
 				  <div class="cell" style="width: 15%; border-bottom: none;">Last Seen</div>
 				  <div class="cell" style="width: 10%; border-bottom: none;">Occurrence</div>
 			  </div>
@@ -4963,15 +5006,16 @@
   </div>
 
   <div id="airlinesByUuidModal" class="modal">
-	  <div class="modal-content"  style="width : 800px;">
+	  <div class="modal-content"  style="width : 900px;">
 		  <span class="close" onclick="closeModal($('#airlinesByUuidModal'))">&times;</span>
 		  <h4>Airlines by UUID&nbsp;<span class="uuid"></span></h4>
 		  <div class="table data airlineByUuidTable" style="max-height: 100%; width: 100%">
 			  <div class="table-header">
-				  <div class="cell" style="width: 3%; border-bottom: none;"></div>
-				  <div class="cell" style="width: 32%; border-bottom: none;">Airline</div>
-				  <div class="cell" style="width: 20%; border-bottom: none;">User</div>
-				  <div class="cell" style="width: 20%; border-bottom: none;">User Status</div>
+				  <div class="cell" style="width: 5%; border-bottom: none;"></div>
+				  <div class="cell" style="width: 25%; border-bottom: none;">Airline</div>
+				  <div class="cell" style="width: 15%; border-bottom: none;">User</div>
+				  <div class="cell" style="width: 10%; border-bottom: none;">User status</div>
+				  <div class="cell" style="width: 15%; border-bottom: none;">Modifiers</div>
 				  <div class="cell" style="width: 15%; border-bottom: none;">Last Seen</div>
 				  <div class="cell" style="width: 10%; border-bottom: none;">Occurrence</div>
 			  </div>

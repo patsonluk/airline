@@ -39,6 +39,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 //    }
 //  }
 
+  lazy val rating =  AirportRating.rateAirport(this)
+
   def addCityServed(city : City, share : Double) {
     citiesServed += Tuple2(city, share)
   }

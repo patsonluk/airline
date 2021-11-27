@@ -416,8 +416,16 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     val fromAirport = AirportCache.getAirport(fromAirportId, true).get
     val toAirport = AirportCache.getAirport(toAirportId, true).get
     val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
-    val directBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
-    val directTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST) + DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+
+
+    val directFromAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS)
+    val directToAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
+    val directBusinessDemand =  directFromAirportBusinessDemand + directToAirportBusinessDemand
+
+    val directFromAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST)
+    val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+    val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
+
     val directDemand = directBusinessDemand + directTouristDemand
 
 
@@ -431,8 +439,10 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       "distance" -> distance,
       "flightType" -> FlightType.label(Computation.getFlightType(fromAirport, toAirport, distance)),
       "directDemand" -> directDemand,
-      "businessPassengers" -> directBusinessDemand.total,
-      "touristPassengers" -> directTouristDemand.total,
+      "fromAirportBusinessDemand" -> directFromAirportBusinessDemand,
+      "toAirportBusinessDemand" -> directToAirportBusinessDemand,
+      "fromAirportTouristDemand" -> directFromAirportTouristDemand,
+      "toAirportTouristDemand" -> directToAirportTouristDemand,
     )
 
 

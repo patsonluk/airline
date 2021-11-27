@@ -4,8 +4,9 @@ import scala.collection.mutable.ListBuffer
 import com.patson.data.Constants._
 import com.patson.model.airplane._
 import com.patson.data.Meta
-import java.sql.{ResultSet, Types}
+import com.patson.util.AirplaneModelDiscountCache
 
+import java.sql.{ResultSet, Types}
 import scala.collection.mutable
 
 object ModelSource {
@@ -357,6 +358,7 @@ object ModelSource {
       }
       preparedStatement.executeUpdate()
     }
+    AirplaneModelDiscountCache.updateModelDiscounts(discounts)
 
     connection.commit()
     connection.close()

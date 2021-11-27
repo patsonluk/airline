@@ -97,7 +97,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
         
         if (isValidRecaptcha(userInput.recaptchaToken)) {
           // We got a valid User value, display the summary
-          val user = User(userInput.username, userInput.email, Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None)
+          val user = User(userInput.username, userInput.email, Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
           UserSource.saveUser(user)
           Authentication.createUserSecret(userInput.username, userInput.password)
           

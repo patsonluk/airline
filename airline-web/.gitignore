@@ -11,3 +11,4 @@ target
 /.cache-main
 /.cache-tests
 /.sbtserver
+/conf/gmail-credentials.json

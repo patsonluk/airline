@@ -770,6 +770,18 @@ function researchFlight(fromAirportId, toAirportId) {
                 $("#researchSearchResult .flightType").text(result.flightType)
                 $("#researchSearchResult .demand").text(toLinkClassValueString(result.directDemand))
 
+                var $breakdown = $("#researchSearchResult .directDemandBreakdown")
+                $breakdown.find(".fromAirport .airportLabel").empty()
+                $breakdown.find(".fromAirport .airportLabel").append(getAirportSpan(fromAirport))
+                $breakdown.find(".fromAirport .businessDemand").text(toLinkClassValueString(result.fromAirportBusinessDemand))
+                $breakdown.find(".fromAirport .touristDemand").text(toLinkClassValueString(result.fromAirportTouristDemand))
+
+                $breakdown.find(".toAirport .airportLabel").empty()
+                $breakdown.find(".toAirport .airportLabel").append(getAirportSpan(toAirport))
+                $breakdown.find(".toAirport .businessDemand").text(toLinkClassValueString(result.toAirportBusinessDemand))
+                $breakdown.find(".toAirport .touristDemand").text(toLinkClassValueString(result.toAirportTouristDemand))
+
+
                 $("#researchSearchResult .table.links .table-row").remove()
 
                 $.each(result.links, function(index, link) {
