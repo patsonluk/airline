@@ -4,7 +4,7 @@ import com.patson.data.Constants._
 import com.patson.model.{AirlineAppeal, _}
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo}
 
-import java.sql.Statement
+import java.sql.{Statement, Types}
 import scala.collection.mutable.ListBuffer
 import scala.collection.{immutable, mutable}
 
@@ -235,9 +235,8 @@ object AirportSource {
           resultSet.getString("city"),
           resultSet.getString("zone"),
           resultSet.getInt("airport_size"),
-          resultSet.getLong("power"),
+          resultSet.getInt("income"),
           resultSet.getLong("population"),
-          resultSet.getInt("slots"),
           runwayLength = resultSet.getInt("runway_length"))
         airport.id = resultSet.getInt("id")
         airportData += airport
@@ -637,7 +636,7 @@ object AirportSource {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, zone, airport_size, power, population, slots, runway_length)  VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, zone, airport_size, power, population, runway_length)  VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     
       connection.setAutoCommit(false)
       airports.foreach { 
@@ -651,10 +650,9 @@ object AirportSource {
           preparedStatement.setString(7, airport.city)
           preparedStatement.setString(8, airport.zone)
           preparedStatement.setInt(9, airport.size)
-          preparedStatement.setLong(10, airport.power)
-          preparedStatement.setLong(11, airport.population)
-          preparedStatement.setInt(12, airport.slots)
-          preparedStatement.setInt(13, airport.runwayLength)
+          preparedStatement.setLong(10, airport.baseIncome)
+          preparedStatement.setLong(11, airport.basePopulation)
+          preparedStatement.setInt(12, airport.runwayLength)
           
           preparedStatement.executeUpdate()
           val generatedKeys = preparedStatement.getGeneratedKeys
@@ -707,7 +705,7 @@ object AirportSource {
     val connection = Meta.getConnection()
 
     try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, power = ?, population = ?, slots = ?, name = ?, city = ?, runway_length = ?  WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, income = ?, population = ?, name = ?, city = ?, runway_length = ?  WHERE id = ?")
 
       connection.setAutoCommit(false)
 
@@ -715,13 +713,12 @@ object AirportSource {
       airports.foreach {
         airport =>
           preparedStatement.setInt(1, airport.size)
-          preparedStatement.setLong(2, airport.power)
-          preparedStatement.setLong(3, airport.population)
-          preparedStatement.setInt(4, airport.slots)
-          preparedStatement.setString(5, airport.name)
-          preparedStatement.setString(6, airport.city)
-          preparedStatement.setInt(7, airport.runwayLength)
-          preparedStatement.setInt(8, airport.id)
+          preparedStatement.setInt(2, airport.baseIncome)
+          preparedStatement.setLong(3, airport.basePopulation)
+          preparedStatement.setString(6, airport.name)
+          preparedStatement.setString(7, airport.city)
+          preparedStatement.setInt(8, airport.runwayLength)
+          preparedStatement.setInt(9, airport.id)
 
           preparedStatement.addBatch()
           //preparedStatement.executeUpdate()
@@ -793,7 +790,7 @@ object AirportSource {
     val connection = Meta.getConnection()
 
     try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, power = ?, population = ?, slots = ?, runway_length = ?  WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, income = ?, population = ?, runway_length = ?  WHERE id = ?")
 
       connection.setAutoCommit(false)
 
@@ -802,11 +799,10 @@ object AirportSource {
         airport =>
           if (airport.id != 0) {
             preparedStatement.setInt(1, airport.size)
-            preparedStatement.setLong(2, airport.power)
-            preparedStatement.setLong(3, airport.population)
-            preparedStatement.setInt(4, airport.slots)
-            preparedStatement.setInt(5, airport.runwayLength)
-            preparedStatement.setInt(6, airport.id)
+            preparedStatement.setLong(2, airport.baseIncome)
+            preparedStatement.setLong(3, airport.basePopulation)
+            preparedStatement.setInt(4, airport.runwayLength)
+            preparedStatement.setInt(5, airport.id)
 
             preparedStatement.addBatch()
             //preparedStatement.executeUpdate()
@@ -1132,17 +1128,20 @@ object AirportSource {
       val resultSet = preparedStatement.executeQuery()
       
       val projects = ListBuffer[AirportProject]()
-      val airports = mutable.Map[Int, Airport]()
       while (resultSet.next()) {
-        val airportId = resultSet.getInt("airport")
-        val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, false).get)
-        projects += AirportProject(airport = airport, 
-                                   projectType = ProjectType.withName(resultSet.getString("project_type")),
-                                   status = ProjectStatus.withName(resultSet.getString("project_status")),
-                                   progress = resultSet.getInt("progress"),
-                                   duration = resultSet.getInt("duration"),
-                                   level = resultSet.getInt("level"),
-                                   id = resultSet.getInt("id"))
+        val projectType = ProjectType.withName(resultSet.getString("project_type"))
+        val status = ProjectStatus.withName(resultSet.getString("project_status"))
+        val level = resultSet.getInt("level")
+        val id = resultSet.getInt("id")
+        val airport = AirportCache.getAirport(resultSet.getInt("airport"), false)
+        val airline = AirlineCache.getAirline(resultSet.getInt("airline"), false)
+
+        val project : AirportProject = projectType match {
+          case ProjectType.SKI_RESORT => ???
+          case ProjectType.RESIDENTIAL_COMPLEX => ???
+        }
+
+        projects += project
         
       }    
       resultSet.close()
@@ -1174,19 +1173,26 @@ object AirportSource {
   def saveAirportProject(project : AirportProject) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_PROJECT_TABLE + "(airport, project_type, project_status, progress, duration, level)  VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_PROJECT_TABLE + "(airport, airline, project_type, project_status, level)  VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       preparedStatement.setInt(1, project.airport.id)
-      preparedStatement.setString(2, project.projectType.toString)
-      preparedStatement.setString(3, project.status.toString)
-      preparedStatement.setDouble(4, project.progress)
+      project.airline match {
+        case Some(airline) => preparedStatement.setInt(2, airline.id)
+        case None => preparedStatement.setNull(2, Types.INTEGER)
+      }
+      preparedStatement.setString(3, project.projectType.toString)
+      preparedStatement.setString(4, project.status.toString)
+      preparedStatement.setInt(5, project.level)
       preparedStatement.executeUpdate()
+
       val generatedKeys = preparedStatement.getGeneratedKeys
       if (generatedKeys.next()) {
         val generatedId = generatedKeys.getInt(1)
         project.id = generatedId
       }
       preparedStatement.close()
-      
+      AirportCache.invalidateAirport(project.airport.id)
+
+      project
     } finally {
       connection.close()
     }
@@ -1196,21 +1202,26 @@ object AirportSource {
             
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_PROJECT_TABLE + " project_status = ?, project_progress = ? WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_PROJECT_TABLE + " airline = ? ,project_status = ?, level = ? WHERE id = ?")
     
       connection.setAutoCommit(false)
       projects.foreach { 
         project =>
-          preparedStatement.setString(1, project.status.toString())
-          preparedStatement.setDouble(2, project.progress)
-          preparedStatement.setInt(3, project.id)
+          project.airline match {
+            case Some(airline) => preparedStatement.setInt(1, airline.id)
+            case None => preparedStatement.setNull(1, Types.INTEGER)
+          }
+          preparedStatement.setString(2, project.status.toString)
+          preparedStatement.setInt(3, project.level)
+          preparedStatement.setInt(4, project.id)
           
           preparedStatement.executeUpdate()
-          //AirportCache.invalidateAirport(project.airport.id)
+          AirportCache.invalidateAirport(project.airport.id)
       }
-      
+
       preparedStatement.close()
       connection.commit()
+
     } finally {
       connection.close()
     }

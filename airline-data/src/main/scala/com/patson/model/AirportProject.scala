@@ -6,33 +6,33 @@ import ProjectStatus.ProjectStatus
 import scala.collection.mutable.Map
 
 
-case class AirportProject(airport : Airport, projectType : ProjectType, status : ProjectStatus, progress : Double, duration : Int, level : Int, var id : Int = 0) extends IdObject
-
-//object ProjectType extends Enumeration {
-//    type ProjectType = Value
-//    val AIRPORT_EXPANSION, AIRPORT_UPGRADE = Value
-//}
-
-class ProjectType(val name: String, val isSingleton : Boolean) {
-  ProjectType.allTypes(name) = this
+abstract class AirportProject() extends IdObject {
+    val airport : Airport
+    val airline : Option[Airline]
+    val projectType : ProjectType.Value
+    val status : ProjectStatus.Value
+    val level : Int
+    var id : Int = 0
+    val airportBoosts : List[AirportBoost]
 }
 
-object ProjectType {
-  val allTypes = Map[String, ProjectType]()
-  //have to list all the types here other the lookup map wouldn't instantiate...
-  val AirportExpansion = new ProjectType("AIRPORT_EXPANSION", true)
-  val AirportUpgrade = new ProjectType("AIRPORT_UPGRADE", true)
-  
-  val withName = (value : String) => {
-      allTypes(value)
-   }
+case class AirportBoost(boostType : AirportBoostType.Value, value : Int)
+
+
+object AirportBoostType extends Enumeration {
+    type AirportBoostType = Value
+    val POPULATION, INCOME, INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB = Value
+
 }
+
+object ProjectType extends Enumeration {
+    type ProjectType = Value
+    val SKI_RESORT, RESIDENTIAL_COMPLEX = Value
+}
+
 
 object ProjectStatus extends Enumeration {
     type ProjectStatus = Value
-    val INITIATED, BUILDING, COMPLETED = Value
+    val BLUEPRINT, BUILDING, COMPLETED = Value
 }
 
-object Test extends App {
-  println(ProjectType.withName("AIRPORT_EXPANSION"))
-}

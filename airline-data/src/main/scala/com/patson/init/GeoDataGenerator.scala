@@ -312,12 +312,13 @@ object GeoDataGenerator extends App {
     }
 
     val airports = airportResult.map { airport =>
-      airport.power = airport.citiesServed.foldLeft(0.toLong) {
+      val power = airport.citiesServed.foldLeft(0.toLong) {
         case (foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong * city.income
       }
-      airport.population = airport.citiesServed.foldLeft(0.toLong) {
+      val population = airport.citiesServed.foldLeft(0.toLong) {
         case (foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong
       }
+
 
       //calculate slots
       //https://en.wikipedia.org/wiki/List_of_busiest_airports_by_aircraft_movements#2017_statistics (take 30% discount assumimg those are freight service)
@@ -336,7 +337,7 @@ object GeoDataGenerator extends App {
       }
       airport.slots = slots
 
-      airport
+      airport.copy(power = power, population = population)
     }.sortBy {
       _.power
     }
