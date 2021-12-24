@@ -127,12 +127,11 @@ object LinkSource {
                   resultSet.getInt("frequency"),
                   FlightType(resultSet.getInt("flight_type")),
                   resultSet.getInt("flight_number"))
-              case SHUTTLE =>
+              case GENERIC_TRANSIT =>
                 //from : Airport, to : Airport, airline: Airline, distance : Int, var capacity: LinkClassValues, duration : Int, var frequency : Int, var id : Int = 0
-                Shuttle(
+                GenericTransit(
                   fromAirport.get,
                   toAirport.get,
-                  airline.get,
                   resultSet.getInt("distance"),
                   LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
                   resultSet.getInt("duration")
@@ -346,9 +345,9 @@ object LinkSource {
         case TransportType.FLIGHT =>
           val flightLink = link.asInstanceOf[Link]
           (flightLink.from.id, flightLink.to.id, flightLink.airline.id, flightLink.price, flightLink.distance, flightLink.capacity, flightLink.rawQuality, flightLink.duration, flightLink.frequency, flightLink.flightType, flightLink.flightNumber, flightLink.getAssignedAirplanes)
-        case TransportType.SHUTTLE =>
-          val shuttle = link.asInstanceOf[Shuttle]
-          (shuttle.from.id, shuttle.to.id, shuttle.airline.id, shuttle.price, shuttle.distance, shuttle.capacity, Shuttle.QUALITY, shuttle.duration, shuttle.frequency, shuttle.flightType, 0, Map.empty)
+        case TransportType.GENERIC_TRANSIT =>
+          val genericTransit = link.asInstanceOf[GenericTransit]
+          (genericTransit.from.id, genericTransit.to.id, 0, genericTransit.price, genericTransit.distance, genericTransit.capacity, GenericTransit.QUALITY, genericTransit.duration, genericTransit.frequency, genericTransit.flightType, 0, Map.empty)
       }
 
 

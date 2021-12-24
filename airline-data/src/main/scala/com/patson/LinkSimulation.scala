@@ -335,7 +335,7 @@ object LinkSimulation {
         val result = LinkConsumptionDetails(flightLink, fuelCost, crewCost, airportFees, inflightCost, delayCompensation = delayCompensation, maintenanceCost, depreciation = depreciation, loungeCost = loungeCost, revenue, profit, overallSatisfaction, cycle)
         //println("model : " + link.getAssignedModel().get + " profit : " + result.profit + " result: " + result)
         (result, loungeConsumptionDetails.toList)
-      case TransportType.SHUTTLE =>
+      case _ =>
         (LinkConsumptionDetails(link, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle), List.empty)
     }
 
