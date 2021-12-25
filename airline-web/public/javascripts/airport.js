@@ -1389,7 +1389,7 @@ function showGenericTransitModal() {
         $row.append($('<div class="cell">' + transit.toAirportText + '</div>'))
         $row.append($('<div class="cell" align="right">' + commaSeparateNumber(transit.toAirportPopulation) + '</div>'))
         $row.append($('<div class="cell capacity" align="right">' + commaSeparateNumber(transit.capacity) + '</div>'))
-        $row.append($('<div class="cell" align="right">' + transit.passenger + '</div>'))
+        $row.append($('<div class="cell" align="right">' + commaSeparateNumber(transit.passenger) + '</div>'))
 
         $table.append($row)
     })
