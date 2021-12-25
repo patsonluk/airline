@@ -17,12 +17,16 @@ import scala.util.Random
 
 object GenericTransitGenerator {
 
-  def generateGenericTransit(airportCount : Int, range : Int) : Unit = {
+  def generateGenericTransit(airportCount : Int = 4000, range : Int = 50) : Unit = {
+    //purge existing generic transit
+    LinkSource.deleteLinksByCriteria(List(("transport_type", TransportType.GENERIC_TRANSIT.id)))
+
     val airports = AirportSource.loadAllAirports(true).sortBy { _.power }.takeRight(airportCount)
 
     var counter = 0;
     var progressCount = 0;
 
+    val processed = mutable.HashSet[(Int, Int)]()
     val countryRelationships = CountrySource.getCountryMutualRelationships()
     for (airport <- airports) {
       //calculate max and min longitude that we should kick off the calculation
@@ -30,21 +34,24 @@ object GenericTransitGenerator {
       val airportsInRange = scala.collection.mutable.ListBuffer[(Airport, Double)]()
       for (targetAirport <- airports) {
         if (airport.id != targetAirport.id &&
+            !processed.contains((targetAirport.id, airport.id)) && //check the swap pairs are not processed already to avoid duplicates
             airport.longitude >= boundaryLongitude._1 && airport.longitude <= boundaryLongitude._2 &&
             countryRelationships.getOrElse((airport.countryCode, targetAirport.countryCode), 0) >= 3) {
           val distance = Util.calculateDistance(airport.latitude, airport.longitude, targetAirport.latitude, targetAirport.longitude)
           if (range >= distance) {
-            airportsInRange += Tuple2(airport, distance)
+            airportsInRange += Tuple2(targetAirport, distance)
           }
         }
+
+        processed.add((airport.id, targetAirport.id))
       }
 
       airportsInRange.foreach { case (targetAirport, distance) =>
         val minSize = Math.min(airport.size, targetAirport.size)
-        val capacity = minSize * 10000 //kinda random, final will be double from -> to , to -> from
+        val capacity = minSize * 10000 //kinda random
         val genericTransit = GenericTransit(from = airport, to = targetAirport, distance = distance.toInt, capacity = LinkClassValues.getInstance(economy = capacity))
         LinkSource.saveLink(genericTransit)
-
+        println(genericTransit)
       }
 
       val progressChunk = airports.size / 100

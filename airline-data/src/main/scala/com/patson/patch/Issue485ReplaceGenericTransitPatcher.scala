@@ -3,16 +3,18 @@ package com.patson.patch
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import com.patson.data.Constants.{AIRLINE_INFO_TABLE, DATABASE_CONNECTION, DATABASE_PASSWORD, DATABASE_USER, DB_DRIVER}
 import com.patson.data.Meta
+import com.patson.init.GenericTransitGenerator
 
 import scala.collection.mutable.ListBuffer
 
 
-object CompensateShuttleService extends App {
+object Issue485ReplaceGenericTransitPatcher extends App {
   mainFlow
 
 
   def mainFlow() {
     compensateShuttleService()
+    GenericTransitGenerator.generateGenericTransit(4000, 50)
   }
 
   def compensateShuttleService() = {
@@ -42,8 +44,11 @@ object CompensateShuttleService extends App {
         patchStatement.executeUpdate()
         patchStatement.close
       }
-
       connection.commit()
+
+      val purgeStatement = connection.prepareStatement("DELETE FROM shuttle_service")
+      purgeStatement.executeUpdate()
+      purgeStatement.close()
     } finally {
       connection.close
     }

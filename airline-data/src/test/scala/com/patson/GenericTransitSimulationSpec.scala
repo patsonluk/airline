@@ -7,6 +7,7 @@ import com.patson.model._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import java.util.Collections
+import scala.collection.mutable
 import scala.collection.mutable.Set
 import scala.jdk.CollectionConverters._
 
@@ -135,6 +136,230 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
       }
     }
 
+    "prefer direct flights but a few might still go for generic transit (from SFO to LAX , Transit LAX -> LGB, Flight SFO -> LAX, SFO -> LGB)".in {
+      val sfo = fromAirport.copy(iata = "SFO", name = "SFO", latitude = 37.61899948120117, longitude = -122.375, id = 1)
+      val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
+      val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
+      val lgb = fromAirport.copy(iata = "LGB", name = "LGB", latitude = 33.817699, longitude = -118.152, id = 4) //long beach
+      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+
+      val sjcToSfo = GenericTransit(sjc, sfo, Computation.calculateDistance(sfo, sjc), LinkClassValues.getInstance(economy = 10000), id = 1)
+      val sfoToLax = {
+        val fromAirport = sfo
+        val toAirport = lax
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
+        val duration = Computation.computeStandardFlightDuration(distance)
+        val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+        val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
+        val newLink = Link(fromAirport, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType, id = 2)
+        newLink.setQuality(50)
+        newLink
+      }
+      val sfoToLgb = {
+        val fromAirport = sfo
+        val toAirport = lgb
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
+        val duration = Computation.computeStandardFlightDuration(distance)
+        val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+        val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
+        val newLink = Link(fromAirport, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType, id = 3)
+        newLink.setQuality(50)
+        newLink
+      }
+
+      val laxToLgb = GenericTransit(lax, lgb, Computation.calculateDistance(lax, lgb), LinkClassValues.getInstance(economy = 10000), id = 4)
+
+      val links = List(sjcToSfo, sfoToLax, sfoToLgb, laxToLgb)
+      val economyPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, FIRST, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val toAirports = Set(lax)
+      val paxDirectCount = mutable.HashMap(economyPassengerGroup -> 0, businessPassengerGroup -> 0, firstPassengerGroup -> 0)
+      val paxTransitCount = mutable.HashMap(economyPassengerGroup -> 0, businessPassengerGroup -> 0, firstPassengerGroup -> 0)
+      for (i <- 0 until 1000) {
+        DemandGenerator.getFlightPreferencePoolOnAirport(sfo).pool.foreach {
+          case(preferredLinkClass, flightPreferences) => {
+            flightPreferences.filter(!isLoungePreference(_)).foreach {  flightPreference =>
+              val result = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds)
+              result.foreach {
+                case (paxGroup, routesByAirport) =>
+                  //println(preferredLinkClass + " " + flightPreferences)
+                  if (routesByAirport(lax).links.length == 1) {
+                    paxDirectCount.put(paxGroup, paxDirectCount(paxGroup) + 1)
+                  } else if (routesByAirport(lax).links.length == 2) {
+                    paxTransitCount.put(paxGroup, paxTransitCount(paxGroup) + 1)
+                  } else {
+                    println(s"Unexpected route: ${routesByAirport(lax)}")
+                  }
+              }
+            }
+          }
+        }
+      }
+      println(s"paxDirectCount $paxDirectCount")
+      println(s"paxTransitCount $paxTransitCount")
+      assert(paxTransitCount(economyPassengerGroup).toDouble / paxDirectCount(economyPassengerGroup) < 0.2)
+      assert(paxTransitCount(economyPassengerGroup).toDouble / paxDirectCount(economyPassengerGroup) > 0.01)
+      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) < 0.2)
+      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) > 0.01)
+      assert(paxTransitCount(firstPassengerGroup).toDouble / paxDirectCount(firstPassengerGroup) < 0.2)
+      assert(paxTransitCount(firstPassengerGroup).toDouble / paxDirectCount(firstPassengerGroup) > 0.005)
+
+    }
+
+    "prefer direct flights but a few might still go for generic transit (from SFO to LAX , Transit SFO -> SJC, Flight SFO -> LAX, SJC -> LAX".in {
+      val sfo = fromAirport.copy(iata = "SFO", name = "SFO", latitude = 37.61899948120117, longitude = -122.375, id = 1)
+      val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
+      val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
+      val lgb = fromAirport.copy(iata = "LGB", name = "LGB", latitude = 33.817699, longitude = -118.152, id = 4) //long beach
+      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+
+      val sjcToSfo = GenericTransit(sjc, sfo, Computation.calculateDistance(sfo, sjc), LinkClassValues.getInstance(economy = 10000), id = 1)
+      val sfoToLax = {
+        val fromAirport = sfo
+        val toAirport = lax
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
+        val duration = Computation.computeStandardFlightDuration(distance)
+        val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+        val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
+        val newLink = Link(fromAirport, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType, id = 2)
+        newLink.setQuality(50)
+        newLink
+      }
+      val sjcToLax = {
+        val fromAirport = sjc
+        val toAirport = lax
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
+        val duration = Computation.computeStandardFlightDuration(distance)
+        val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+        val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
+        val newLink = Link(fromAirport, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType, id = 3)
+        newLink.setQuality(50)
+        newLink
+      }
+
+      val laxToLgb = GenericTransit(lax, lgb, Computation.calculateDistance(lax, lgb), LinkClassValues.getInstance(economy = 10000), id = 4)
+
+      val links = List(sjcToSfo, sfoToLax, sjcToLax, laxToLgb)
+      val economyPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, FIRST, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val toAirport = lax
+      val toAirports = Set(toAirport)
+      val paxDirectCount = mutable.HashMap(economyPassengerGroup -> 0, businessPassengerGroup -> 0, firstPassengerGroup -> 0)
+      val paxTransitCount = mutable.HashMap(economyPassengerGroup -> 0, businessPassengerGroup -> 0, firstPassengerGroup -> 0)
+      for (i <- 0 until 1000) {
+        DemandGenerator.getFlightPreferencePoolOnAirport(sfo).pool.foreach {
+          case(preferredLinkClass, flightPreferences) => {
+            flightPreferences.filter(!isLoungePreference(_)).foreach {  flightPreference =>
+              val result = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds)
+              result.foreach {
+                case (paxGroup, routesByAirport) =>
+                  //println(preferredLinkClass + " " + flightPreferences)
+                  if (routesByAirport(toAirport).links.length == 1) {
+                    paxDirectCount.put(paxGroup, paxDirectCount(paxGroup) + 1)
+                  } else if (routesByAirport(toAirport).links.length == 2) {
+                    paxTransitCount.put(paxGroup, paxTransitCount(paxGroup) + 1)
+                  } else {
+                    println(s"Unexpected route: ${routesByAirport(toAirport)}")
+                  }
+              }
+            }
+          }
+        }
+      }
+      println(s"paxDirectCount $paxDirectCount")
+      println(s"paxTransitCount $paxTransitCount")
+      assert(paxTransitCount(economyPassengerGroup).toDouble / paxDirectCount(economyPassengerGroup) < 0.2)
+      assert(paxTransitCount(economyPassengerGroup).toDouble / paxDirectCount(economyPassengerGroup) > 0.01)
+      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) < 0.2)
+      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) > 0.01)
+      assert(paxTransitCount(firstPassengerGroup).toDouble / paxDirectCount(firstPassengerGroup) < 0.2)
+      assert(paxTransitCount(firstPassengerGroup).toDouble / paxDirectCount(firstPassengerGroup) > 0.005)
+
+    }
+
+    "super cheap flight with generic transit can steal many pax but not all (from SFO to LAX , Transit SFO -> SJC, Flight SFO -> LAX, SJC -> LAX".in {
+      val sfo = fromAirport.copy(iata = "SFO", name = "SFO", latitude = 37.61899948120117, longitude = -122.375, id = 1)
+      val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
+      val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
+      val lgb = fromAirport.copy(iata = "LGB", name = "LGB", latitude = 33.817699, longitude = -118.152, id = 4) //long beach
+      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+
+      val sjcToSfo = GenericTransit(sjc, sfo, Computation.calculateDistance(sfo, sjc), LinkClassValues.getInstance(economy = 10000), id = 1)
+      val sfoToLax = {
+        val fromAirport = sfo
+        val toAirport = lax
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
+        val duration = Computation.computeStandardFlightDuration(distance)
+        val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+        val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
+        val newLink = Link(fromAirport, toAirport, testAirline1, price = suggestedPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType, id = 2)
+        newLink.setQuality(50)
+        newLink
+      }
+      val sjcToLax = {
+        val fromAirport = sjc
+        val toAirport = lax
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
+        val duration = Computation.computeStandardFlightDuration(distance)
+        val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+        val cheapPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport) * 0.7
+        val newLink = Link(fromAirport, toAirport, testAirline1, price = cheapPrice, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType, id = 3)
+        newLink.setQuality(50)
+        newLink
+      }
+
+      val laxToLgb = GenericTransit(lax, lgb, Computation.calculateDistance(lax, lgb), LinkClassValues.getInstance(economy = 10000), id = 4)
+
+      val links = List(sjcToSfo, sfoToLax, sjcToLax, laxToLgb)
+      val economyPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(sfo, AppealPreference(sfo, FIRST, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val toAirport = lax
+      val toAirports = Set(toAirport)
+      val paxDirectCount = mutable.HashMap(economyPassengerGroup -> 0, businessPassengerGroup -> 0, firstPassengerGroup -> 0)
+      val paxTransitCount = mutable.HashMap(economyPassengerGroup -> 0, businessPassengerGroup -> 0, firstPassengerGroup -> 0)
+      for (i <- 0 until 1000) {
+        DemandGenerator.getFlightPreferencePoolOnAirport(sfo).pool.foreach {
+          case(preferredLinkClass, flightPreferences) => {
+            flightPreferences.filter(!isLoungePreference(_)).foreach {  flightPreference =>
+              val result = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports, businessPassengerGroup -> toAirports, firstPassengerGroup -> toAirports), links, allAirportIds)
+              result.foreach {
+                case (paxGroup, routesByAirport) =>
+                  //println(preferredLinkClass + " " + flightPreferences)
+                  if (routesByAirport(toAirport).links.length == 1) {
+                    paxDirectCount.put(paxGroup, paxDirectCount(paxGroup) + 1)
+                  } else if (routesByAirport(toAirport).links.length == 2) {
+                    paxTransitCount.put(paxGroup, paxTransitCount(paxGroup) + 1)
+                  } else {
+                    println(s"Unexpected route: ${routesByAirport(toAirport)}")
+                  }
+              }
+            }
+          }
+        }
+      }
+      println(s"paxDirectCount $paxDirectCount")
+      println(s"paxTransitCount $paxTransitCount")
+      assert(paxTransitCount(economyPassengerGroup).toDouble / paxDirectCount(economyPassengerGroup) > 2)
+      assert(paxTransitCount(economyPassengerGroup).toDouble / paxDirectCount(economyPassengerGroup) < 5)
+      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) > 0.7)
+      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) < 1.5)
+      assert(paxTransitCount(firstPassengerGroup).toDouble / paxDirectCount(firstPassengerGroup) > 0.2)
+      assert(paxTransitCount(firstPassengerGroup).toDouble / paxDirectCount(firstPassengerGroup) < 0.5)
+
+    }
+
   }
   
   
@@ -149,7 +374,7 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
 
   
   "IsLinkAffordable".must {
-    "accept some routes with neutral conditions and shuttle as first and last link".in {
+    "accept some routes with neutral conditions and generic transit as first and last link".in {
       val sfo = fromAirport.copy(iata = "SFO", name = "SFO", latitude = 37.61899948120117, longitude = -122.375, id = 1)
       val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
       val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
@@ -198,8 +423,8 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
           }
         }
       }
-      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.3)
-      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.5)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes < 0.7)
+      assert(totalAcceptedRoutes.toDouble / totalRoutes > 0.5)
     }
   }
 }

@@ -105,7 +105,7 @@ object LinkSource {
         val fromAirport = airportCache.get(fromAirportId) //Do not use AirportCache as fullLoad will be slow
         val toAirport = airportCache.get(toAirportId) //Do not use AirportCache as fullLoad will be slow
         val airline = loadDetails.get(DetailType.AIRLINE) match {
-          case Some(fullLoad) => AirlineCache.getAirline(airlineId, fullLoad)
+          case Some(fullLoad) => AirlineCache.getAirline(airlineId, fullLoad).orElse(Some(Airline.fromId(airlineId)))
           case None => Some(Airline.fromId(airlineId))
         }
         
