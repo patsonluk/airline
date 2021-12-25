@@ -761,6 +761,7 @@ function researchFlight(fromAirportId, toAirportId) {
                 $("#researchSearchResult .toAirport .population").text(commaSeparateNumber(result.toAirport.population))
                 $("#researchSearchResult .toAirport .incomeLevel").text(result.toAirport.incomeLevel)
 
+                $("#researchSearchResult .relationship").html(getCountryFlagImg(result.fromAirport.countryCode) + "&nbsp;vs&nbsp;" + getCountryFlagImg(result.toAirport.countryCode) + getCountryRelationshipDescription(result.mutualRelationship))
                 $("#researchSearchResult .distance").text(result.distance)
                 $("#researchSearchResult .flightType").text(result.flightType)
                 $("#researchSearchResult .demand").text(toLinkClassValueString(result.directDemand))
