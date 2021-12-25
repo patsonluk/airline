@@ -348,6 +348,7 @@ function populateAirportDetails(airport) {
 		        map: airportMap
 		    });
 		loadAirportStatistics(airport)
+		loadGenericTransits(airport)
 		updateAirportLoyalistDetails(airport)
 
 		google.maps.event.addListenerOnce(airportMap, 'idle', function() {
@@ -400,6 +401,25 @@ function loadAirportStatistics(airport) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function loadGenericTransits(airport) {
+    $.ajax({
+        type: 'GET',
+        url: "airports/" + activeAirportId + "/generic-transits",
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(transits) {
+            $('#genericTransitModal .table.genericTransits').data('transits', transits) //set the loaded data to modal as well
+            $('#airportDetailsNearbyAirportCount').text(transits.length)
+
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+	});
+
 }
 
 function updateAirportRating(rating) {
@@ -1357,4 +1377,24 @@ function confirmSpecializations() {
             }
         });
     })
+}
+
+function showGenericTransitModal() {
+    var $table = $('#genericTransitModal .table.genericTransits')
+    $table.find('.table-row').remove()
+
+    var transits = $table.data('transits')
+    $.each(transits, function(index, transit) {
+        $row = $('<div class="table-row" style="width: 100%"></div>')
+        $row.append($('<div class="cell">' + transit.toAirportText + '</div>'))
+        $row.append($('<div class="cell" align="right">' + commaSeparateNumber(transit.toAirportPopulation) + '</div>'))
+        $row.append($('<div class="cell capacity" align="right">' + commaSeparateNumber(transit.capacity) + '</div>'))
+        $row.append($('<div class="cell" align="right">' + commaSeparateNumber(transit.passenger) + '</div>'))
+
+        $table.append($row)
+    })
+    if (transits.length == 0) {
+        $table.append('<div class="table-row"><div class="cell">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div></div>')
+    }
+    $('#genericTransitModal').fadeIn(200)
 }
