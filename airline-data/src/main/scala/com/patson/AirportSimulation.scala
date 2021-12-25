@@ -278,7 +278,7 @@ object AirportSimulation {
     println("Checking lounge status")
     val passengersByAirport : MapView[Airport, MapView[Airline, Int]] = linkRidershipDetails.toList.flatMap {
       case ((passengerGroup, airport, route), count) =>
-        route.links.flatMap { linkConsideration =>
+        route.links.filter(_.link.transportType == TransportType.FLIGHT).flatMap { linkConsideration =>
           List((linkConsideration.link.airline, linkConsideration.from, count), (linkConsideration.link.airline, linkConsideration.to, count))
         }
 

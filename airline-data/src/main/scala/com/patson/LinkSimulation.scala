@@ -41,12 +41,12 @@ object LinkSimulation {
     val (consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], missedPassengerResult : immutable.Map[(PassengerGroup, Airport), Int])= PassengerSimulation.passengerConsume(demand, links)
     
     //generate statistic 
-    println("Generating stats")
-    val linkStatistics = generateLinkStatistics(consumptionResult, cycle)
+    println("Generating flight stats")
+    val linkStatistics = generateFlightStatistics(consumptionResult, cycle)
     println("Saving generated stats to DB")
     LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
-    
+
     //generate country market share
     println("Generating country market share")
     val countryMarketShares = generateCountryMarketShares(consumptionResult)
@@ -74,7 +74,7 @@ object LinkSimulation {
 
     }
 
-    
+
     //save all consumptions
     var startTime = System.currentTimeMillis()
     println("Saving " + consumptionResult.size +  " consumptions")
@@ -88,12 +88,12 @@ object LinkSimulation {
 //    val linkHistory = generateLinkHistory(consumptionResult)
 //    println("Saving " + linkHistory.size + " generated history to DB")
 //    LinkHistorySource.updateLinkHistory(linkHistory)
-    
+
 //    println("Generating VIP")
 //    val vipRoutes = generateVipRoutes(consumptionResult)
 //    RouteHistorySource.deleteVipRouteBeforeCycle(cycle)
 //    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
-    
+
     println("Calculating profits by links")
     startTime = System.currentTimeMillis()
     val linkConsumptionDetails = ListBuffer[LinkConsumptionDetails]()
@@ -361,7 +361,7 @@ object LinkSimulation {
     val costPerPassenger = BASE_INFLIGHT_COST + durationCostPerHour * link.duration.toDouble / 60
     (costPerPassenger * soldSeats * 2).toInt //Roundtrip X 2
   }
-  
+
   val LOAD_FACTOR_ALERT_LINK_COUNT_THRESHOLD = 3 //how many airlines before load factor is checked
   val LOAD_FACTOR_ALERT_THRESHOLD = 0.5 //LF threshold
   val LOAD_FACTOR_ALERT_DURATION = 52
@@ -436,7 +436,7 @@ object LinkSimulation {
         }
     }
 
-    
+
     deletingLinks.foreach { link =>
        println("Revoked link: " + link)
        LinkSource.deleteLink(link.id)
@@ -444,31 +444,33 @@ object LinkSimulation {
     AlertSource.updateAlerts(updatingAlerts.toList)
     AlertSource.insertAlerts(newAlerts.toList)
     AlertSource.deleteAlerts(deletingAlerts.toList)
-    
+
     LogSource.insertLogs(newLogs.toList)
   }
-  
-  def generateLinkStatistics(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : List[LinkStatistics] = {
+
+  def generateFlightStatistics(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : List[LinkStatistics] = {
     val statistics = Map[LinkStatisticsKey, Int]()
     consumptionResult.foreach {
       case ((_, _, route), passengerCount) =>
         for (i <- 0 until route.links.size) {
-          val link = route.links(i) 
-          val airline = link.link.airline
-          val key = 
-            if (i == 0) {
-              if (route.links.size == 1) {
-                LinkStatisticsKey(link.from, link.to, true, true, airline)  
-              } else {
-                LinkStatisticsKey(link.from, link.to, true, false, airline)
+          val link = route.links(i)
+          if (link.link.transportType == TransportType.FLIGHT) { //only do stats on flights here
+            val airline = link.link.airline
+            val key =
+              if (i == 0) {
+                if (route.links.size == 1) {
+                  LinkStatisticsKey(link.from, link.to, true, true, airline)
+                } else {
+                  LinkStatisticsKey(link.from, link.to, true, false, airline)
+                }
+              } else if (i == route.links.size - 1) { //last one in list
+                LinkStatisticsKey(link.from, link.to, false, true, airline)
+              } else { //in the middle
+                LinkStatisticsKey(link.from, link.to, false, false, airline)
               }
-            } else if (i == route.links.size -1) { //last one in list
-              LinkStatisticsKey(link.from, link.to, false, true, airline)
-            } else { //in the middle
-              LinkStatisticsKey(link.from, link.to, false, false, airline)
-            }
-          val newPassengerCount = statistics.getOrElse(key, 0) + passengerCount
-          statistics.put(key, newPassengerCount)
+            val newPassengerCount = statistics.getOrElse(key, 0) + passengerCount
+            statistics.put(key, newPassengerCount)
+          }
         }
     }
     
