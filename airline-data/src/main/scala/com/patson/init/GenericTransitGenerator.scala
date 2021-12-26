@@ -37,7 +37,7 @@ object GenericTransitGenerator {
             !processed.contains((targetAirport.id, airport.id)) && //check the swap pairs are not processed already to avoid duplicates
             airport.longitude >= boundaryLongitude._1 && airport.longitude <= boundaryLongitude._2 &&
             countryRelationships.getOrElse((airport.countryCode, targetAirport.countryCode), 0) >= 2) {
-          val distance = Util.calculateDistance(airport.latitude, airport.longitude, targetAirport.latitude, targetAirport.longitude)
+          val distance = Util.calculateDistance(airport.latitude, airport.longitude, targetAirport.latitude, targetAirport.longitude).toInt
           if (range >= distance) {
             airportsInRange += Tuple2(targetAirport, distance)
           }
