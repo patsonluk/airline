@@ -114,7 +114,8 @@ object LinkSimulation {
           linkConsumptionDetails += linkResult
           loungeConsumptionDetails ++= loungeResult
         }
-      case _ => //only compute for flights (class Link)
+      case nonFlightLink => //only compute for flights (class Link)
+        linkConsumptionDetails += LinkConsumptionDetails(nonFlightLink, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle)
     }
 
     endTime = System.currentTimeMillis()
