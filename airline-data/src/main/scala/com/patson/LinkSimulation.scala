@@ -559,8 +559,10 @@ object LinkSimulation {
     olympicsConsumptions.foreach {
       case ((_, _, Route(links, _, _)), passengerCount) =>
         links.foreach { link =>
-          val existingScore : BigDecimal = scoresByAirline.getOrElse(link.link.airline, 0)
-          scoresByAirline.put(link.link.airline, existingScore + passengerCount.toDouble / links.size)
+          if (link.link.transportType == TransportType.FLIGHT) {
+            val existingScore : BigDecimal = scoresByAirline.getOrElse(link.link.airline, 0)
+            scoresByAirline.put(link.link.airline, existingScore + passengerCount.toDouble / links.size)
+          }
         }
     }
 
