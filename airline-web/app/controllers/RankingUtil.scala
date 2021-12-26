@@ -29,20 +29,20 @@ object RankingUtil {
   }
   
   private[this] def updateRankings() = {
-    val linkConsumptions = LinkSource.loadLinkConsumptions()
-    val linkConsumptionsByAirline = linkConsumptions.groupBy(_.link.airline.id)
+    val flightConsumptions = LinkSource.loadLinkConsumptions().filter(_.link.transportType == TransportType.FLIGHT)
+    val flightConsumptionsByAirline = flightConsumptions.groupBy(_.link.airline.id)
     val links = LinkSource.loadAllFlightLinks().groupBy(_.airline.id)
     val airlinesById = AirlineSource.loadAllAirlines(fullLoad = true).map( airline => (airline.id, airline)).toMap
     
     val updatedRankings = scala.collection.mutable.Map[RankingType.Value, List[Ranking]]()
-    updatedRankings.put(RankingType.PASSENGER, getPassengerRanking(linkConsumptionsByAirline, airlinesById))
-    updatedRankings.put(RankingType.PASSENGER_MILE, getPassengerMileRanking(linkConsumptionsByAirline, airlinesById))
+    updatedRankings.put(RankingType.PASSENGER, getPassengerRanking(flightConsumptionsByAirline, airlinesById))
+    updatedRankings.put(RankingType.PASSENGER_MILE, getPassengerMileRanking(flightConsumptionsByAirline, airlinesById))
     updatedRankings.put(RankingType.REPUTATION, getReputationRanking(airlinesById))
     updatedRankings.put(RankingType.SERVICE_QUALITY, getServiceQualityRanking(airlinesById))
     updatedRankings.put(RankingType.LINK_COUNT, getLinkCountRanking(links, airlinesById))
-    updatedRankings.put(RankingType.LINK_PROFIT, getLinkProfitRanking(linkConsumptions, airlinesById))
+    updatedRankings.put(RankingType.LINK_PROFIT, getLinkProfitRanking(flightConsumptions, airlinesById))
     updatedRankings.put(RankingType.LOUNGE, getLoungeRanking(LoungeHistorySource.loadAll, airlinesById))
-    updatedRankings.put(RankingType.AIRPORT, getAirportRanking(linkConsumptions))
+    updatedRankings.put(RankingType.AIRPORT, getAirportRanking(flightConsumptions))
 //    val linkConsumptionsByAirlineAndZone = getPassengersByZone(linkConsumptionsByAirline)
 //    updatedRankings.put(RankingType.PASSENGER_AS, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AS, "AS"))
 //    updatedRankings.put(RankingType.PASSENGER_AF, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AF, "AF"))
