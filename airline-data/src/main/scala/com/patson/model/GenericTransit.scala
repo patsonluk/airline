@@ -22,11 +22,12 @@ case class GenericTransit(from : Airport, to : Airport, distance : Int, var capa
   }
 
   override val frequencyByClass  = (_ : LinkClass) =>  frequency
-  override val airline : Airline = Airline.fromId(0)
+  override val airline : Airline = GenericTransit.TRANSIT_PROVIDER
 }
 
 object GenericTransit {
   val QUALITY = 35
+  val TRANSIT_PROVIDER = Airline.fromId(0).copy(name = "Local Transit")
 }
 
 
