@@ -272,7 +272,7 @@ case class LinkConsideration(link : Transport,
     def to : Airport = if (inverted) link.from else link.to
     
     override def toString() : String = {
-      s"Consideration [${linkClass} - $link cost: $cost]"
+      s"Consideration [${linkClass} -  Flight $id; ${link.airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); capacity ${link.capacity}; price ${link.price}; cost: $cost]"
     }
 
 

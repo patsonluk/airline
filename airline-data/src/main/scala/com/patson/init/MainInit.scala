@@ -9,6 +9,7 @@ object MainInit extends App {
   Meta.createSchema()
   GeoDataGenerator.mainFlow()
   AirplaneModelInitializer.mainFlow()
+  GenericTransitGenerator.generateGenericTransit()
   //AirlineGenerator.mainFlow()
  // AirportProfilePicturePatcher.patchProfilePictures()
 }

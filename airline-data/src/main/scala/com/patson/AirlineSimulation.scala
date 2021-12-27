@@ -26,7 +26,7 @@ object AirlineSimulation {
     val allAirlines = AirlineSource.loadAllAirlines(true)
     val allLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
     val allFlightLinksByAirlineId = allLinks.filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link]).groupBy(_.airline.id)
-    val allShuttleLinksByAirlineId = allLinks.filter(_.transportType == TransportType.SHUTTLE).map(_.asInstanceOf[Shuttle]).groupBy(_.airline.id)
+    //val allShuttleLinksByAirlineId = allLinks.filter(_.transportType == TransportType.SHUTTLE).map(_.asInstanceOf[Shuttle]).groupBy(_.airline.id)
     val allTransactions = AirlineSource.loadTransactions(cycle).groupBy { _.airlineId }
     val allTransactionalCashFlowItems: scala.collection.immutable.Map[Int, List[AirlineCashFlowItem]] = AirlineSource.loadCashFlowItems(cycle).groupBy { _.airlineId }
     //purge the older transactions
@@ -44,7 +44,7 @@ object AirlineSimulation {
       loungesByAirlineId.getOrElseUpdate(lounge.airline.id, ListBuffer[Lounge]()) += lounge
     )
 
-    val shuttleServicesByAirlineId = AirlineSource.loadShuttleServiceByCriteria(List.empty).groupBy(_.airline.id)
+    //val shuttleServicesByAirlineId = AirlineSource.loadShuttleServiceByCriteria(List.empty).groupBy(_.airline.id)
 
     val allIncomes = ListBuffer[AirlineIncome]()
     val allCashFlows = ListBuffer[AirlineCashFlow]() //cash flow for accounting purpose
@@ -191,14 +191,14 @@ object AirlineSimulation {
         othersSummary.put(OtherIncomeItemType.LOUNGE_INCOME, loungeIncome)
 
 
-        var shuttleCost = 0L
-        allShuttleLinksByAirlineId.get(airline.id).foreach { links =>
-          shuttleCost = links.map(_.upkeep).sum
-        }
-        shuttleCost += shuttleServicesByAirlineId.getOrElse(airline.id, List.empty).map(_.basicUpkeep).sum
-        othersSummary.put(OtherIncomeItemType.SHUTTLE_COST, -1 * shuttleCost)
+//        var shuttleCost = 0L
+//        allShuttleLinksByAirlineId.get(airline.id).foreach { links =>
+//          shuttleCost = links.map(_.upkeep).sum
+//        }
+//        shuttleCost += shuttleServicesByAirlineId.getOrElse(airline.id, List.empty).map(_.basicUpkeep).sum
+//        othersSummary.put(OtherIncomeItemType.SHUTTLE_COST, -1 * shuttleCost)
 
-        totalCashExpense += loungeUpkeep + loungeCost + shuttleCost
+        totalCashExpense += loungeUpkeep + loungeCost
         totalCashRevenue += loungeIncome
 
         //calculate extra cash flow due to difference in fuel cost

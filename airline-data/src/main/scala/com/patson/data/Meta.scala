@@ -446,6 +446,7 @@ object Meta {
       "distance INTEGER, " +
       "frequency SMALLINT, " +
       "duration SMALLINT, " +
+      "transport_type TINYINT, " +
       "flight_type TINYINT, " +
       "flight_number SMALLINT, " +
       "airplane_model SMALLINT, " +

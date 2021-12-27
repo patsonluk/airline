@@ -170,7 +170,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequencyByClass(linkClass)).toDouble / frequencyThreshold) * frequencySensitivity
 
     val flightDurationRatioDelta =
-      if (flightDurationSensitivity == 0 || link.transportType == TransportType.SHUTTLE) {
+      if (flightDurationSensitivity == 0 || link.transportType != TransportType.FLIGHT) {
         0
       } else {
         val flightDurationThreshold = Computation.computeStandardFlightDuration(link.distance)
