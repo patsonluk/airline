@@ -41,7 +41,7 @@ class AirplaneModelSpec extends WordSpecLike with Matchers {
     val duration = Computation.calculateDuration(airplaneModel, distance)
     val frequency = Computation.calculateMaxFrequency(airplaneModel, distance)
     val capacity = frequency * airplaneModel.capacity
-    val fromAirport = Airport.fromId(1).copy(size = airportSize, power = Country.HIGH_INCOME_THRESHOLD, population = 1)
+    val fromAirport = Airport.fromId(1).copy(size = airportSize, baseIncome = Country.HIGH_INCOME_THRESHOLD, basePopulation = 1)
     fromAirport.initAirlineBases(List())
     val toAirport = Airport.fromId(2).copy(size = airportSize)
     toAirport.initAirlineBases(List())

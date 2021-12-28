@@ -14,8 +14,8 @@ class LinkSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSende
   def this() = this(ActorSystem("MySpec"))
 
   val testAirline1 = Airline("airline 1", id = 1)
-  val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, power = 40000, population = 1, 0, 0)
-  val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, power = 40000, population = 1, 0, 0)
+  val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, baseIncome = 40000, basePopulation = 1, 0, 0)
+  val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, baseIncome = 40000, basePopulation = 1, 0, 0)
   val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   val defaultPrice = Pricing.computeStandardPriceForAllClass(distance, fromAirport, toAirport)
 

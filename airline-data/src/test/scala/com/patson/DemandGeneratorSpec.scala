@@ -10,10 +10,10 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     "Generate more demand with higher pop to airports".in {
        val highPopulation = 10000000
        val lowPopulation = highPopulation / 2
-       val income : Long = 50000
-       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = highPopulation * income, population = highPopulation, 0, id = 1)
-       val highPopToAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = highPopulation * income, population = highPopulation, 0, id = 2)
-       val lowPopToAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = lowPopulation * income, population = lowPopulation, 0, id = 3)
+       val income = 50000
+       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = income, basePopulation = highPopulation, 0, id = 1)
+       val highPopToAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = income, basePopulation = highPopulation, 0, id = 2)
+       val lowPopToAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = income, basePopulation = lowPopulation, 0, id = 3)
       
        //val totalWorldPower = fromAirport.power + highPopToAirport.power + lowPopToAirport.power
        val highPopDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, highPopToAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
@@ -26,10 +26,10 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     "Generate more demand with higher pop from airports".in {
        val highPopulation = 10000000
        val lowPopulation = highPopulation / 2
-       val income : Long = 50000
-       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = highPopulation * income, population = highPopulation, 0, id = 1)
-       val highPopFromAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = highPopulation * income, population = highPopulation, 0, id = 2)
-       val lowPopFromAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = lowPopulation * income, population = lowPopulation, 0, id = 3)
+       val income = 50000
+       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = income, basePopulation = highPopulation, 0, id = 1)
+       val highPopFromAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = income, basePopulation = highPopulation, 0, id = 2)
+       val lowPopFromAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = income, basePopulation = lowPopulation, 0, id = 3)
       
        //val totalWorldPower = fromAirport.power + highPopToAirport.power + lowPopToAirport.power
        val highPopDemand = DemandGenerator.computeDemandBetweenAirports(highPopFromAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
@@ -41,11 +41,11 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate more demand with higher income from airports".in {
        val population = 10000000
-       val highIncome : Long = 50000
-       val lowIncome : Long = 10000
-       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
-       val highAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
-       val lowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * lowIncome, population = population, 0, id = 3)
+       val highIncome = 50000
+       val lowIncome = 10000
+       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
+       val highAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 2)
+       val lowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = lowIncome, basePopulation = population, 0, id = 3)
       
        val totalWorldPower = fromAirport.power + highAirport.power + lowAirport.power
        val highDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, highAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
@@ -57,11 +57,11 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate more demand with higher income from toAirports".in {
        val population = 10000000
-       val highIncome : Long = 50000
-       val lowIncome : Long = 10000
-       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
-       val highAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
-       val lowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * lowIncome, population = population, 0, id = 3)
+       val highIncome = 50000
+       val lowIncome = 10000
+       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
+       val highAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 2)
+       val lowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = lowIncome, basePopulation = population, 0, id = 3)
       
        //val totalWorldPower = fromAirport.power + highAirport.power + lowAirport.power
        val highDemand = DemandGenerator.computeDemandBetweenAirports(highAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
@@ -73,12 +73,12 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate higher first class and business class ratio for higher income airports".in {
        val population = 10000000
-       val highIncome : Long = 50000
-       val lowIncome : Long = 30000
+       val highIncome = 50000
+       val lowIncome = 30000
        
-       val fromHighAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
-       val fromLowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * lowIncome, population = population, 0, id = 3)
-       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
+       val fromHighAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 2)
+       val fromLowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = lowIncome, basePopulation = population, 0, id = 3)
+       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
       
        val highDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        val lowDemand = DemandGenerator.computeDemandBetweenAirports(fromLowAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
@@ -92,10 +92,10 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate more passenger for shorter routes".in {
       val population = 10000000
-       val highIncome : Long = 50000
-       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
-       val closeAirport = Airport("", "", "", latitude = 0, longitude = 10, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
-       val farAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 3)
+       val highIncome = 50000
+       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
+       val closeAirport = Airport("", "", "", latitude = 0, longitude = 10, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 2)
+       val farAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 3)
       
        val closeDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, closeAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        val farDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, farAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
@@ -107,10 +107,10 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate more passenger for domestic routes".in {
       val population = 10000000
-       val highIncome : Long = 50000
-       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
-       val toDomesticAirport = Airport("", "", "", latitude = 0, longitude = 10, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
-       val toInternationalAirport =  Airport("", "", "", latitude = 0, longitude = 10, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 3)
+       val highIncome = 50000
+       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
+       val toDomesticAirport = Airport("", "", "", latitude = 0, longitude = 10, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 2)
+       val toInternationalAirport =  Airport("", "", "", latitude = 0, longitude = 10, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 3)
       
        val domesticDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toDomesticAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        val internationalDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toInternationalAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
@@ -119,10 +119,10 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate higher first class and business class ratio for business passengers".in {
        val population = 10000000
-       val highIncome : Long = 50000
+       val highIncome = 50000
        
-       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
-       val toAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
+       val fromAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
+       val toAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 2)
        
        val businessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        val touristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.TOURIST)
@@ -136,12 +136,12 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate higher ratio of tourist in higher income from Airport".in {
       val population = 10000000
-       val highIncome : Long = 50000
-       val lowIncome : Long = 30000
+       val highIncome = 50000
+       val lowIncome = 30000
        
-       val fromHighAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
-       val fromLowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * lowIncome, population = population, 0, id = 3)
-       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
+       val fromHighAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 2)
+       val fromLowAirport =  Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = lowIncome, basePopulation = population, 0, id = 3)
+       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
       
        val highBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.BUSINESS)
        val highTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromHighAirport, toAirport, DEFAULT_RELATIONSHIP, PassengerType.TOURIST)
@@ -154,10 +154,10 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate demand based on country relationships".in {
        val population = 10000000
-       val highIncome : Long = 50000
+       val highIncome = 50000
        
-       val fromAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, power = population * highIncome, population = population, 0, id = 2)
-       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
+       val fromAirport = Airport("", "", "", latitude = 0, longitude = 180, "B", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 2)
+       val toAirport = Airport("", "", "", latitude= 0, longitude = 0, "A", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
       
        val demandBusiness = scala.collection.mutable.Map[Int, LinkClassValues]()
        val demandTourist = scala.collection.mutable.Map[Int, LinkClassValues]()
@@ -209,14 +209,14 @@ class DemandGeneratorSpec extends WordSpecLike with Matchers {
     }
     "Generate expected base demand for olympics".in {
       val population = 10000000
-      val highIncome : Long = 50000
-      val lowIncome : Long = 25000
+      val highIncome = 50000
+      val lowIncome = 25000
 
-      val fromAirport1 = Airport("", "", "", latitude = 0, longitude = 180, "f1", "", "", size = 3, power = population * highIncome, population = population, 0, id = 1)
-      val fromAirport2 = Airport("", "", "", latitude = 0, longitude = 180, "f2", "", "", size = 5, power = population * 5 * highIncome, population = population * 5, 0, id = 2)
-      val fromAirport3 = Airport("", "", "", latitude = 0, longitude = 180, "f3", "", "", size = 5, power = population * 5 * lowIncome, population = population * 5, 0, id = 3)
-      val olympicsAirport1 = Airport("", "", "", latitude= 0, longitude = 0, "o1", "", "", size = 5, power = population * highIncome, population = population, 0, id = 4)
-      val olympicsAirport2 = Airport("", "", "", latitude= 0, longitude = 0, "o2", "", "", size = 7, power = population * 5 * highIncome, population = population * 5, 0, id = 5)
+      val fromAirport1 = Airport("", "", "", latitude = 0, longitude = 180, "f1", "", "", size = 3, baseIncome = highIncome, basePopulation = population, 0, id = 1)
+      val fromAirport2 = Airport("", "", "", latitude = 0, longitude = 180, "f2", "", "", size = 5, baseIncome = highIncome, basePopulation = 5 * population, 0, id = 2)
+      val fromAirport3 = Airport("", "", "", latitude = 0, longitude = 180, "f3", "", "", size = 5, baseIncome = lowIncome, basePopulation = 5 * population, 0, id = 3)
+      val olympicsAirport1 = Airport("", "", "", latitude= 0, longitude = 0, "o1", "", "", size = 5, baseIncome = highIncome, basePopulation = population, 0, id = 4)
+      val olympicsAirport2 = Airport("", "", "", latitude= 0, longitude = 0, "o2", "", "", size = 7, baseIncome = highIncome, basePopulation = 5 * population, 0, id = 5)
 
       //all 4 airports
       val result: List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])] = DemandGenerator.generateOlympicsDemand(cycle = 0, demandMultiplier = 1, olympicsAirports = List(olympicsAirport1, olympicsAirport2), allAirports = List(fromAirport1, fromAirport2, fromAirport3, olympicsAirport1, olympicsAirport2))

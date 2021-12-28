@@ -5,9 +5,9 @@ import com.patson.model.campaign._
 import org.scalatest.{Matchers, WordSpecLike}
 
 class CampaignSpec extends WordSpecLike with Matchers {
-  val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, power = 1000000L * 10L, population = 1000000L, 0, 0, id = 1)
-  val airport2 = Airport("", "", "Test Airport 2", 0, 0 , "", "", "", size = 1, power = 2000000L * 10L, population = 2000000L, 0, 0, id = 2)
-  val airport3 = Airport("", "", "Test Airport 3", 0, 0 , "", "", "", size = 1, power = 3000000L * 10L, population = 3000000L, 0, 0, id = 3)
+  val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 1000000L, 0, id = 1)
+  val airport2 = Airport("", "", "Test Airport 2", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 2000000L, 0, id = 2)
+  val airport3 = Airport("", "", "Test Airport 3", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 3000000L, 0, id = 3)
   val airline1 = Airline.fromId(1)
   val airline2 = Airline.fromId(2)
 

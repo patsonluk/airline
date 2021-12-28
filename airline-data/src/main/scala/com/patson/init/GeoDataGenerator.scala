@@ -320,26 +320,26 @@ object GeoDataGenerator extends App {
       }
 
 
-      //calculate slots
-      //https://en.wikipedia.org/wiki/List_of_busiest_airports_by_aircraft_movements#2017_statistics (take 30% discount assumimg those are freight service)
-      val slots = airport.size match {
-        case 1 => 200
-        case 2 => 500
-        case 3 => 1000
-        case 4 => 2000
-        case 5 => 2500
-        case 6 => 3000
-        case 7 => 4000
-        case 8 => 6000
-        case 9 => 8000
-        case size : Int if size >= 10 => 12000
-        case _ => 0
-      }
-      airport.slots = slots
+//      //calculate slots
+//      //https://en.wikipedia.org/wiki/List_of_busiest_airports_by_aircraft_movements#2017_statistics (take 30% discount assumimg those are freight service)
+//      val slots = airport.size match {
+//        case 1 => 200
+//        case 2 => 500
+//        case 3 => 1000
+//        case 4 => 2000
+//        case 5 => 2500
+//        case 6 => 3000
+//        case 7 => 4000
+//        case 8 => 6000
+//        case 9 => 8000
+//        case size : Int if size >= 10 => 12000
+//        case _ => 0
+//      }
+//      airport.slots = slots
 
-      airport.copy(power = power, population = population)
-    }.sortBy {
-      _.power
+      airport.copy(baseIncome = (power / population).toInt, basePopulation = population)
+    }.sortBy { airport =>
+      airport.baseIncome * airport.basePopulation
     }
 
     airports

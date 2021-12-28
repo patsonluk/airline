@@ -22,7 +22,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
  
   val testAirline1 = Airline("airline 1", id = 1)
   val testAirline2 = Airline("airline 2", id = 2)
-  val fromAirport = Airport.fromId(1).copy(power = 40000, population = 1) //income 40k . mid income country
+  val fromAirport = Airport.fromId(1).copy(baseIncome = 40000, basePopulation = 1) //income 40k . mid income country
   val airlineAppeal = AirlineAppeal(0, 100)
   fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
   fromAirport.initLounges(List.empty)
@@ -722,7 +722,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.5)
     }
     "accept some (single link) at suggested price with neutral quality and no loyalty for low income country".in {
-      val clonedFromAirport  = fromAirport.copy(power = Country.LOW_INCOME_THRESHOLD / 2)
+      val clonedFromAirport  = fromAirport.copy(baseIncome = Country.LOW_INCOME_THRESHOLD / 2)
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
       
       val toAirport = toAirportsList(0)
@@ -760,7 +760,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     }
     
     "accept some (single link) at suggested price with neutral quality and no loyalty for very low income country".in {
-      val clonedFromAirport  = fromAirport.copy(power = Country.LOW_INCOME_THRESHOLD / 10)
+      val clonedFromAirport  = fromAirport.copy(baseIncome = Country.LOW_INCOME_THRESHOLD / 10)
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
       
       val toAirport = toAirportsList(0)
@@ -950,7 +950,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     }
     
     "accept very few link at 2 x suggested price with max quality and max loyalty but very low income country".in {
-      val clonedFromAirport  = fromAirport.copy(power = 1000)
+      val clonedFromAirport  = fromAirport.copy(baseIncome = 1000)
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100, 0)))
       
       val toAirport = toAirportsList(0)

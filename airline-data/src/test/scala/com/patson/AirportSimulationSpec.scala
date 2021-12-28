@@ -321,9 +321,9 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
 //  }
 
   "computeLoyalists".must {
-    val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, power = 10000 * 10L, population = 10000L, 0, 0, id = 1)
-    val airport2 = Airport("", "", "Test Airport 2", 0, 0 , "", "", "", size = 1, power = 100000 * 10L, population = 100000L, 0, 0, id = 2)
-    val airport3 = Airport("", "", "Test Airport 3", 0, 0 , "", "", "", size = 1, power = 100000 * 10L, population = 100000L, 0, 0, id = 3)
+    val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 10000L, 0, id = 1)
+    val airport2 = Airport("", "", "Test Airport 2", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 100000L, 0, id = 2)
+    val airport3 = Airport("", "", "Test Airport 3", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 100000L, 0, id = 3)
     val airline1 = Airline.fromId(1)
     val airline2 = Airline.fromId(2)
     val airline3 = Airline.fromId(3)
@@ -439,7 +439,7 @@ class AirportSimulationSpec extends WordSpecLike with Matchers {
 
     "Around net zero if both airlines have similar parameters (4 airlines)".in {
       val linkConsideration1 = goodAirline1Link1
-      val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, power = 10000 * 4000000L, population = 4000000L, 0, 0, id = 1)
+      val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, baseIncome = 10000, basePopulation = 4000000L, 0, id = 1)
       val passengerGroup = PassengerGroup(airport1, AppealPreference(airport1, ECONOMY, 0, 1, 1), PassengerType.BUSINESS)
       val linkConsideration2 = linkConsideration1.copy(link = Link(airport1, airport2, airline2, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1))
       val linkConsideration3 = linkConsideration1.copy(link = Link(airport1, airport2, airline3, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1))

@@ -17,9 +17,9 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
  
   def this() = this(ActorSystem("MySpec"))
  
-  val airport : Airport = Airport("A", "", "Airport A", 0, 0, countryCode = "A", "", "", 1, 0, population = 100, slots = 100)
+  val airport : Airport = Airport("A", "", "Airport A", 0, 0, countryCode = "A", "", "", 1, 0, basePopulation = 100)
   airport.country = Some(Country(countryCode = "A", name = "Country A", airportPopulation = 1000000, income = 500000, openness = 10))
-  val otherAirport : Airport = Airport("B", "", "Airport B", 0, 0, countryCode = "B", "", "", 1, 0, 0, slots = 100)
+  val otherAirport : Airport = Airport("B", "", "Airport B", 0, 0, countryCode = "B", "", "", 1, 0, basePopulation = 100)
   otherAirport.country = Some(Country(countryCode = "B", name = "Country B", airportPopulation = 1000000, income = 500000, openness = 3))
   
   val highReputationLocalHqAirline = Airline("airline 1", id = 1)

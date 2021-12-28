@@ -28,8 +28,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
   val testAirline1 = Airline("airline 1", id = 1)
   val testAirline2 = Airline("airline 2", id = 2)
   val topAirline = Airline("top airline", id = 3)
-  val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, power = 40000, population = 1, 0, 0)
-  val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, power = 40000, population = 1, 0, 0)
+  val fromAirport = Airport("", "", "From Airport", 0, 0, "", "", "", 1, baseIncome = 40000, basePopulation = 1, 0, 0)
+  val toAirport = Airport("", "", "To Airport", 0, 180, "", "", "", 1, baseIncome = 40000, basePopulation = 1, 0, 0)
   
   
   val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
@@ -306,7 +306,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     "generate no overlap cost if everything is the same, but quality at big difference and the country has high quality expectation".in {
       val adjustedAirline1 = testAirline1.copy()
       val adjustedAirline2 = testAirline2.copy()
-      val fromAirport = this.fromAirport.copy(power = 1000000, population = 1)
+      val fromAirport = this.fromAirport.copy(baseIncome = 1000000, basePopulation = 1)
       fromAirport.initAirlineAppeals(scala.collection.immutable.Map[Int, AirlineAppeal](adjustedAirline1.id -> AirlineAppeal(50, 0), adjustedAirline2.id -> AirlineAppeal(50, 0)))
       
       val airline1Link = Link(fromAirport, toAirport, adjustedAirline1, defaultPrice, 10000, defaultCapacity, 60, 600, 1, flightType)
@@ -769,7 +769,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     }
     
     "generate preference that compute to similar cost if price is balanced with quality/loyalty difference (high income country)".in { 
-      val clonedFromAirport = fromAirport.copy(power = Country.HIGH_INCOME_THRESHOLD, population = 1)
+      val clonedFromAirport = fromAirport.copy(baseIncome = Country.HIGH_INCOME_THRESHOLD, basePopulation = 1)
       
       clonedFromAirport.initAirlineAppeals(scala.collection.immutable.Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0),
                                                testAirline2.id -> AirlineAppeal(loyalty = 0, 0)))
@@ -796,7 +796,7 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
     }
     
     "generate preference that compute to similar cost if price is balanced with quality/loyalty difference (low income country)".in { 
-      val clonedFromAirport = fromAirport.copy(power = Country.HIGH_INCOME_THRESHOLD / 10, population = 1)
+      val clonedFromAirport = fromAirport.copy(baseIncome = Country.HIGH_INCOME_THRESHOLD / 10, basePopulation = 1)
       
       clonedFromAirport.initAirlineAppeals(scala.collection.immutable.Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0),
                                                testAirline2.id -> AirlineAppeal(loyalty = 0, 0)))

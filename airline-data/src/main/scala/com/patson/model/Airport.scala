@@ -34,6 +34,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[model] var country : Option[Country] = None
 
   //val baseIncome = if (basePopulation > 0) (power / basePopulation).toInt  else 0
+
+
   lazy val projectBoosts : Map[AirportBoostType.Value, List[AirportBoost]] = projects.filter(_.status == ProjectStatus.COMPLETED).flatMap(_.airportBoosts).groupBy(_.boostType)
 
   lazy val incomeBoost = projectBoosts.get(AirportBoostType.INCOME) match {
@@ -48,7 +50,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     case None => 0
   }
   lazy val population = basePopulation + populationBoost
-
+  lazy val power = income * population
 
 
 
