@@ -21,7 +21,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var projectsLoaded = false
   private[this] val loungesByAirline = scala.collection.mutable.Map[Int, Lounge]()
   private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
-  private[this] var projects = List[AirportProject]()
+  private[this] var assets = List[AirportAsset]()
 
 
 
@@ -36,16 +36,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   //val baseIncome = if (basePopulation > 0) (power / basePopulation).toInt  else 0
 
 
-  lazy val projectBoosts : Map[AirportBoostType.Value, List[AirportBoost]] = projects.filter(_.status == ProjectStatus.COMPLETED).flatMap(_.airportBoosts).groupBy(_.boostType)
+  lazy val assetBoosts : Map[AirportBoostType.Value, List[AirportBoost]] = assets.filter(_.status == AirportAssetStatus.COMPLETED).flatMap(_.boosts).groupBy(_.boostType)
 
-  lazy val incomeBoost = projectBoosts.get(AirportBoostType.INCOME) match {
-    case Some(boosts) => boosts.map(_.value).sum
+  lazy val incomeBoost = assetBoosts.get(AirportBoostType.INCOME) match {
+    case Some(boosts) => boosts.map(_.value).sum.toInt
     case None => 0
   }
   lazy val income = baseIncome + incomeBoost
   lazy val incomeLevel = Computation.getIncomeLevel(income)
 
-  lazy val populationBoost = projectBoosts.get(AirportBoostType.POPULATION) match {
+  lazy val populationBoost = assetBoosts.get(AirportBoostType.POPULATION) match {
     case Some(boosts) => boosts.map(_.value).sum
     case None => 0
   }
@@ -278,8 +278,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     featuresLoaded = true
   }
 
-  def initProjects(projects : List[AirportProject]) = {
-    this.projects = projects
+  def initAssets(assets : List[AirportAsset]) = {
+    this.assets = assets
     projectsLoaded = true
   }
 

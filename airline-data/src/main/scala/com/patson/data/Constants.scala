@@ -12,8 +12,6 @@ object Constants {
   val AIRPORT_CITY_SHARE_TABLE = "airport_city"
   val AIRPORT_FEATURE_TABLE = "airport_feature"
   val AIRPORT_FEATURE_INDEX_1 = "airport_feature_index_1"
-  val AIRPORT_PROJECT_TABLE = "airport_project"
-  val AIRPORT_PROJECT_INDEX_1 = "airport_project_index_1"
   val AIRPORT_IMAGE_TABLE = "airport_image"
   val AIRPORT_AIRLINE_APPEAL_BONUS_TABLE = "airport_airline_appeal_bonus"
   val AIRPORT_AIRLINE_APPEAL_BONUS_INDEX_1 =  "airport_airline_appeal_bonus_index_1"
@@ -57,7 +55,7 @@ object Constants {
   val AIRPORT_ASSET_TABLE = "airport_asset"
   val AIRPORT_ASSET_BLUEPRINT_TABLE = "airport_asset_blueprint"
   val AIRPORT_ASSET_PROPERTY_TABLE = "airport_asset_property"
-  val AIRPORT_ASSET_BONUS_TABLE = "airport_bonus_property"
+  val AIRPORT_ASSET_BOOST_TABLE = "airport_boost_property"
 //  val AIRPORT_SLOT_ASSIGNMENT_TABLE = "airport_slot_assignment"
   val AIRLINE_APPEAL_TABLE = "airline_appeal"
   val AIRLINE_APPEAL_INDEX_1 = "airline_appeal_index_1"
@@ -166,7 +164,7 @@ object Constants {
   println("!!!!!!!!!!!!!!!DB HOST IS " + DB_HOST)
   
   //val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
-  val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline_v2.1?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
+  val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline_v2_1?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
   val DB_DRIVER = "com.mysql.jdbc.Driver"
   val DATABASE_USER = "sa" 
   val DATABASE_PASSWORD = "admin"

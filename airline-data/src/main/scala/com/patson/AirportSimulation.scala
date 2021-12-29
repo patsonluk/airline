@@ -52,7 +52,7 @@ object AirportSimulation {
 
 
     println("Finished loyalist and awareness simulation")
-    airportProjectSimulation(allAirports)
+    //airportProjectSimulation(allAirports)
 
     AirportSource.purgeAirlineAppealBonus(cycle)
   }
@@ -313,13 +313,13 @@ object AirportSimulation {
       }
     }
   }
-
-  def airportProjectSimulation(allAirports : List[Airport]) = {
-    import ProjectStatus._
-    println("simulating airport projects")
-    
-    val inProgressProjects = AirportSource.loadAllAirportProjects().filter { _.status != COMPLETED }
-  }
+//
+//  def airportProjectSimulation(allAirports : List[Airport]) = {
+//    import ProjectStatus._
+//    println("simulating airport projects")
+//
+//    val inProgressProjects = AirportSource.loadAllAirportProjects().filter { _.status != COMPLETED }
+//  }
   
 //  private def simulateAirlineAppeals(airport : Airport, soldLinksByAirline : Map[Int, Seq[LinkConsumptionDetails]]) = {
 //    val newAppeals = mutable.HashMap[Int, AirlineAppeal]()

@@ -102,10 +102,6 @@ object Meta {
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_PROJECT_TABLE)
-    statement.execute()
-    statement.close()
-
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_TABLE)
     statement.execute()
     statement.close()
@@ -170,7 +166,7 @@ object Meta {
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG, runway_length SMALLINT)")
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, income BIGINT, population LONG, slots LONG, runway_length SMALLINT)")
     statement.execute()
     statement.close()
     
@@ -347,23 +343,6 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + AIRPORT_FEATURE_INDEX_1 + " ON " + AIRPORT_FEATURE_TABLE + "(airport)")
-    statement.execute()
-    statement.close()
-
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_PROJECT_TABLE + "(" +
-      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-      "airport INTEGER," +
-      "project_type VARCHAR(256)," +
-      "project_status VARCHAR(256)," +
-      "progress DOUBLE," +
-      "duration INTEGER," +
-      "level INTEGER," +
-      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
-      ")")
-    statement.execute()
-    statement.close()
-
-    statement = connection.prepareStatement("CREATE INDEX " + AIRPORT_PROJECT_INDEX_1 + " ON " + AIRPORT_PROJECT_TABLE + "(airport)")
     statement.execute()
     statement.close()
 
@@ -1989,29 +1968,11 @@ object Meta {
     statement.close()
   }
 
-  def createAirportProject(connection : Connection): Unit = {
-    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_PROJECT_TABLE)
-    statement.execute()
-    statement.close()
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_PROJECT_TABLE + "(" +
-      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-      "airport INTEGER," +
-      "project_type VARCHAR(256)," +
-      "project_status VARCHAR(256)," +
-      "progress DOUBLE," +
-      "duration INTEGER," +
-      "level INTEGER," +
-      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
-      ")")
-    statement.execute()
-    statement.close()
-  }
-
   def createAirportAsset(connection : Connection): Unit = {
     var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_PROPERTY_TABLE)
     statement.execute()
     statement.close()
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_BONUS_TABLE)
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_BOOST_TABLE)
     statement.execute()
     statement.close()
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_TABLE)
@@ -2031,22 +1992,25 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_TABLE + "(" +
-      "blueprint INTEGER PRIMARY KEY, " +
+      "id INTEGER PRIMARY KEY, " +
       "airline INTEGER, " +
+      "airport INTEGER," +
+      "asset_type VARCHAR(256)," +
       "level INTEGER, " +
-      "revenue LONG, " +
-      "expense LONG, " +
-      "FOREIGN KEY(blueprint) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "completion_cycle INTEGER, " +
+      "revenue BIGINT, " +
+      "expense BIGINT, " +
+      "FOREIGN KEY(id) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()
 
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BONUS_TABLE + "(" +
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BOOST_TABLE + "(" +
       "blueprint INTEGER, " +
-      "bonus_type VARCHAR(256), " +
-      "value INTEGER, " +
-      "PRIMARY KEY (blueprint, bonus_type)," +
+      "boost_type VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (blueprint, boost_type)," +
       "FOREIGN KEY(blueprint) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
@@ -2055,7 +2019,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_PROPERTY_TABLE + "(" +
       "blueprint INTEGER, " +
       "property VARCHAR(256), " +
-      "value LONG, " +
+      "value BIGINT, " +
       "PRIMARY KEY (blueprint, property)," +
       "FOREIGN KEY(blueprint) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
