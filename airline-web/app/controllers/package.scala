@@ -536,7 +536,6 @@ package object controllers {
         "longitude" -> JsNumber(airport.longitude),
         "countryCode" -> JsString(airport.countryCode),
         "population" -> JsNumber(airport.population),
-        "slots" -> JsNumber(airport.slots),
         "radius" -> JsNumber(airport.airportRadius),
         "zone" -> JsString(airport.zone),
         "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
