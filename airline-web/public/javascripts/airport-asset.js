@@ -8,9 +8,12 @@ function showAirportAssets(airport) {
   		dataType: 'json',
   	    success: function(assets) {
   	        $.each(assets, function(index, asset) {
-                var $assetDiv = $('<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">')
+                var $assetDiv = $('<div style="min-height : 85px" class="section clickable">')
+
                 if (asset.status != "BLUEPRINT") {
                     $assetDiv.addClass('selected')
+                } else {
+                    $assetDiv.addClass('blueprint')
                 }
                 var $title = $('<h5>' + asset.name  + '</h5>')
                 if (asset.airline) {
@@ -21,13 +24,11 @@ function showAirportAssets(airport) {
                 $assetDiv.append($title)
                 var $assetImage = $('<img style="max-width:100%">')
                 $assetImage.attr('src', 'assets/images/airport-assets/' + asset.assetType + '.png')
-                if (asset.status === "BLUEPRINT") {
-                    $assetImage.css("filter", "grayscale(100%)")
-                }
+
                 $assetDiv.append($assetImage)
                 $.each(asset.boosts, function(index, boost) {
-                    var $boostDiv = $('<div></div>')
-                    var $boostImage = $('<img src=' + boost.boostType + '.png>')
+                    var $boostDiv = $('<div style="display: flex; align-items: center;"></div>')
+                    var $boostImage = $('<img src=assets/images/icons/airport-features/' + boost.boostType + '.png>')
                     $boostDiv.append($boostImage)
                     var boostText = boost.value > 0 ? ('+' + boost.value) : boost.value
                     $boostDiv.append($('<span>' + boostText + '</span>'))

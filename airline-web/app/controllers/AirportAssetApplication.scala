@@ -24,13 +24,16 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
 
   implicit object AirportAssetWrites extends Writes[AirportAsset] {
     def writes(entry : AirportAsset): JsValue = {
-      //val countryCode : String = ranking.airline.getCountryCode().getOrElse("")
+      val name = entry.status match {
+        case AirportAssetStatus.BLUEPRINT => entry.assetType.label
+        case _ => entry.name
+      }
       Json.obj(
         "airline" -> entry.airline,
         "airport" -> entry.blueprint.airport,
         "assetType" ->  entry.assetType,
         "level" -> entry.level,
-        "name" -> entry.name,
+        "name" -> name,
         "status" -> entry.status.toString,
         "boosts" -> entry.boosts,
         "id" -> entry.id

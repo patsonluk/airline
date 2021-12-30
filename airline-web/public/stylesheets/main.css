@@ -234,6 +234,13 @@ a {
     width: 50%;
 }
 
+.assetsDetails div.blueprint {
+    filter : grayscale(100%);
+}
+
+.assetsDetails div.blueprint:hover {
+    filter : none;
+}
 
 #loanInterestRateChart, #oilPriceChart {
     width: 90%;
