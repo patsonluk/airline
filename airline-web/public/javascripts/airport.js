@@ -350,6 +350,7 @@ function populateAirportDetails(airport) {
 		loadAirportStatistics(airport)
 		loadGenericTransits(airport)
 		updateAirportLoyalistDetails(airport)
+		showAirportAssets(airport)
 
 		google.maps.event.addListenerOnce(airportMap, 'idle', function() {
            setTimeout(function() { //set a timeout here, otherwise it might not render part of the map...

@@ -2010,7 +2010,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BOOST_TABLE + "(" +
       "blueprint INTEGER, " +
       "boost_type VARCHAR(256), " +
-      "value BIGINT, " +
+      "value DECIMAL(12,2), " +
       "PRIMARY KEY (blueprint, boost_type)," +
       "FOREIGN KEY(blueprint) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

@@ -46,7 +46,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   lazy val incomeLevel = Computation.getIncomeLevel(income)
 
   lazy val populationBoost = assetBoosts.get(AirportBoostType.POPULATION) match {
-    case Some(boosts) => boosts.map(_.value).sum
+    case Some(boosts) => boosts.map(_.value).sum.toInt
     case None => 0
   }
   lazy val population = basePopulation + populationBoost

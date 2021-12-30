@@ -74,7 +74,7 @@ object AssetBlueprintGenerator {
         0.5
       case AMUSEMENT_PARK =>
         0.2
-      case ZOO =>
+      case SUBWAY =>
         0.2
       case STADIUM =>
         0.5
@@ -102,7 +102,7 @@ object AssetBlueprintGenerator {
         0.2
       case INN =>
         0.3
-      case GOLF_COURSES =>
+      case GOLF_COURSE =>
         0.25
       case OFFICE_BUILDING_1 =>
         0.3
@@ -141,8 +141,8 @@ object AssetBlueprintGenerator {
       airport.getFeatures().find(_.featureType == AirportFeatureType.FINANCIAL_HUB).isDefined
     case AMUSEMENT_PARK =>
       airport.basePopulation >= 500000 && airport.size >= 5
-    case ZOO =>
-      airport.basePopulation >= 500000 && airport.size >= 5
+    case SUBWAY =>
+      airport.basePopulation >= 2000000 && airport.size >= 6
     case STADIUM =>
       airport.basePopulation >= 1000000 && airport.size >= 5
     case SCIENCE_PARK =>
@@ -182,7 +182,7 @@ object AssetBlueprintGenerator {
       airport.basePopulation >= 100000 && airport.incomeLevel >= 20
     case INN =>
       airport.basePopulation >= 10000
-    case GOLF_COURSES =>
+    case GOLF_COURSE =>
       airport.basePopulation >= 100000 && airport.incomeLevel >= 40
     case OFFICE_BUILDING_1 =>
       airport.basePopulation >= 500000
@@ -219,7 +219,7 @@ object GenerationGroup extends Enumeration {
     case GRAND_HOTEL_TOURIST => UNIQUE
     case GRAND_HOTEL_BUSINESS => UNIQUE
     case AMUSEMENT_PARK => UNIQUE
-    case ZOO => UNIQUE
+    case SUBWAY => UNIQUE
     case STADIUM => UNIQUE
     case SCIENCE_PARK => UNIQUE
     case CONVENTION_CENTER => UNIQUE
@@ -235,7 +235,7 @@ object GenerationGroup extends Enumeration {
     case GAME_ARCADE => GENERAL
     case CINEMA => GENERAL
     case INN => GENERAL
-    case GOLF_COURSES => GENERAL
+    case GOLF_COURSE => GENERAL
     case OFFICE_BUILDING_1 => GENERAL
     case HOTEL => GENERAL
     case OFFICE_BUILDING_2 => GENERAL

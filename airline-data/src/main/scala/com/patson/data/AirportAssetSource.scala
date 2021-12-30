@@ -160,7 +160,7 @@ object AirportAssetSource {
         val result = mutable.HashMap[Int, ListBuffer[AirportBoost]]()
         while (resultSet.next()) {
           val boostType = AirportBoostType.withName(resultSet.getString("boost_type"))
-          val boost = AirportBoost(boostType, resultSet.getLong("value"))
+          val boost = AirportBoost(boostType, resultSet.getDouble("value"))
           val blueprintId = resultSet.getInt("blueprint")
           val boosts = result.getOrElseUpdate(blueprintId, ListBuffer[AirportBoost]())
           boosts.append(boost)
@@ -264,7 +264,7 @@ object AirportAssetSource {
         preparedStatement = connection.prepareStatement(s"INSERT INTO $AIRPORT_ASSET_BOOST_TABLE (blueprint, boost_type, value) VALUES(?,?,?)")
         preparedStatement.setInt(1, asset.id)
         preparedStatement.setString(2, boost.boostType.toString)
-        preparedStatement.setLong(3, boost.value)
+        preparedStatement.setDouble(3, boost.value)
         preparedStatement.executeUpdate()
         preparedStatement.close()
       }
