@@ -61,6 +61,8 @@ object GeoDataGenerator extends App {
 
     buildCountryData(airports)
 
+    AssetBlueprintGenerator.main(airports)
+
     Await.result(actorSystem.terminate(), Duration.Inf)
   }
 

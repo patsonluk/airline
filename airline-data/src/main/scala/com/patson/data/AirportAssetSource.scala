@@ -74,12 +74,13 @@ object AirportAssetSource {
         val airport = AirportCache.getAirport(resultSet.getInt("airport"), false).get
 
         val airline = AirlineCache.getAirline(resultSet.getInt("airline"))
+        val name = resultSet.getString("name")
         val level = resultSet.getInt("level")
         val completionCycle = resultSet.getInt("completion_cycle")
         val revenue = resultSet.getLong("revenue")
         val expense = resultSet.getLong("expense")
 
-        assets += AirportAsset.getAirportAsset(id, airport, assetType, airline, level, Some(completionCycle), idToBoost.getOrElse(id, List.empty), revenue, expense, idToProperties.getOrElse(id, Map.empty), currentCycle)
+        assets += AirportAsset.getAirportAsset(id, airport, assetType, airline, name, level, Some(completionCycle), idToBoost.getOrElse(id, List.empty), revenue, expense, idToProperties.getOrElse(id, Map.empty), currentCycle)
       }
 
       assets.toList
@@ -128,7 +129,7 @@ object AirportAssetSource {
 
       val result = idToAssetBlueprint.map {
         case (id, blueprint) =>
-          idToOwnedAssets.getOrElse(id, AirportAsset.getAirportAsset(blueprint, airline = None, level = 0, completionCycle = None,  boosts = List.empty, revenue = 0, expense = 0, properties = Map.empty, currentCycle))
+          idToOwnedAssets.getOrElse(id, AirportAsset.getAirportAsset(blueprint, airline = None, name = "", level = 0, completionCycle = None,  boosts = List.empty, revenue = 0, expense = 0, properties = Map.empty, currentCycle))
       }
 
       result.toList
@@ -236,18 +237,6 @@ object AirportAssetSource {
   def updateAirportAsset(asset : AirportAsset) = {
     val connection = Meta.getConnection()
     try {
-      var preparedStatement = connection.prepareStatement(s"UPDATE $AIRPORT_ASSET_TABLE SET airline = ?, level = ?, completion_cycle = ?, revenue = ?, expense = ? WHERE id = ?")
-
-      preparedStatement.setInt(1, asset.airline.get.id)
-      preparedStatement.setInt(2, asset.level)
-      preparedStatement.setInt(3, asset.completionCycle.get)
-      preparedStatement.setLong(4, asset.revenue)
-      preparedStatement.setLong(5, asset.expense)
-      preparedStatement.setInt(6, asset.id)
-
-      preparedStatement.executeUpdate()
-      preparedStatement.close()
-
       var purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRPORT_ASSET_BOOST_TABLE WHERE blueprint = ?")
       purgeStatement.executeUpdate()
       purgeStatement.close()
@@ -255,6 +244,21 @@ object AirportAssetSource {
       purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRPORT_ASSET_PROPERTY_TABLE WHERE blueprint = ?")
       purgeStatement.executeUpdate()
       purgeStatement.close()
+
+      //var preparedStatement = connection.prepareStatement(s"UPDATE $AIRPORT_ASSET_TABLE SET airline = ?, name = ?, level = ?, completion_cycle = ?, revenue = ?, expense = ? WHERE id = ?")
+      var preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRPORT_ASSET_TABLE (airline, name, level, completion_cycle, revenue, expense, id) VALUES(?,?,?,?,?,?,?)")
+
+      preparedStatement.setInt(1, asset.airline.get.id)
+      preparedStatement.setString(2, asset.name)
+      preparedStatement.setInt(3, asset.level)
+      preparedStatement.setInt(4, asset.completionCycle.get)
+      preparedStatement.setLong(5, asset.revenue)
+      preparedStatement.setLong(6, asset.expense)
+      preparedStatement.setInt(7, asset.id)
+
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+
 
       asset.boosts.foreach { boost =>
         preparedStatement = connection.prepareStatement(s"INSERT INTO $AIRPORT_ASSET_BOOST_TABLE (blueprint, boost_type, value) VALUES(?,?,?)")

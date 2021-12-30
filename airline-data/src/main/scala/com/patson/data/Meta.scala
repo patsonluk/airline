@@ -1996,6 +1996,7 @@ object Meta {
       "airline INTEGER, " +
       "airport INTEGER," +
       "asset_type VARCHAR(256)," +
+      "name VARCHAR(256)," +
       "level INTEGER, " +
       "completion_cycle INTEGER, " +
       "revenue BIGINT, " +
