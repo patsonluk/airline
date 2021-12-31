@@ -1150,9 +1150,9 @@
 									</div>
 									<div class="button" id="buildHeadquarterButton" style="display: none;" onclick='selectHeadquarters(activeAirportId)'>Build Headquarters</div>
 									<div class="button" id="buildBaseButton" style="display: none;" onclick='promptConfirm("Build a base at this airport?", data => buildBase(false))'>Build Base</div>
-									<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade Base</div>
-									<div class="button" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade Base</div>
-									<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs.", deleteBase)'>Remove Base</div>
+									<div class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade</div>
+									<div class="button" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade</div>
+									<div class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs.", deleteBase)'>Remove</div>
 
 			<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
 								</div>
@@ -1189,38 +1189,7 @@
 								<h4>
 									Assets
 								</h4>
-<!--								<div class="sectionContainer assetsDetails" style="display: flex; flex-wrap: wrap;">-->
-								<div class="sectionContainer assetsDetails" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
-<!--									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable selected">-->
-<!--										<h5>Air Canada World-->
-<!--											<img class="logo" src="/airlines/1/logo" style="vertical-align:middle;">-->
-<!--										</h5>-->
-<!--										<img style="max-width:100%" src='@routes.Assets.versioned("images/airport-assets/amusement-park.png")'>-->
-<!--										<img src="assets/images/icons/airport-features/VACATION_HUB.png" style="margin-right: 5px;">+10-->
-<!--									</div>-->
-<!--									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">-->
-<!--										<h5>Ski Resort</h5>-->
-<!--										<img style="max-width:100%; filter: grayscale(100%);" src='@routes.Assets.versioned("images/airport-assets/ski-resort.png")'>-->
-<!--									</div>-->
-<!--									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">-->
-<!--										<h5>Beach Resort</h5>-->
-<!--										<img style="max-width:100%; filter: grayscale(100%);" src='@routes.Assets.versioned("images/airport-assets/beach-resort.png")'>-->
-<!--									</div>-->
-<!--									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">-->
-<!--										<h5>Cinema</h5>-->
-<!--										<img style="max-width:100%; filter: grayscale(100%);" src='@routes.Assets.versioned("images/airport-assets/cinema.png")'>-->
-<!--									</div>-->
-<!--									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable selected">-->
-<!--										<h5>Air Chocobo Place-->
-<!--											<img class="logo" src="/airlines/2/logo" style="vertical-align:middle;">-->
-<!--										</h5>-->
-<!--										<img style="max-width:100%;" src='@routes.Assets.versioned("images/airport-assets/stadium.png")'>-->
-<!--										<img src="assets/images/icons/user-silhouette-available.png" style="margin-right: 5px;">+10,000-->
-<!--									</div>-->
-<!--									<div style="min-width : 150px; min-height : 85px; flex: 1;" class="section clickable">-->
-<!--										<h5>...</h5>-->
-<!--									</div>-->
-
+								<div class="sectionContainer assetsDetails" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
 								</div>
 							</div>
 						</div>
@@ -3460,7 +3429,6 @@
             </div>
         </div>
     </div>
-
   <div id="airplaneSummaryTooltip" class="customTooltip" style="display: none; position: fixed; z-index: 12;">
 	  <div class="tooltiptext below">
 		  <div class="table" style="min-width: 150px;">
@@ -4919,6 +4887,70 @@
 		  <div class="delegateStatus"></div>
 	  </div>
   </div>
+
+
+  <div id="airportAssetDetailsModal" class="modal">
+	  <div class="modal-content"  style="width : 400px;">
+		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
+		  <h4><span class="name"></span></h4>
+		  <div class="descriptions"></div>
+		  <div class="table" style="width: 100%">
+			  <div class="table-row">
+				  <div class="label" style="width: 50%"><h5>Name:</h5></div>
+				  <div class="value assetName" style="width: 50%"></div>
+				  <div class="value assetNameInputDiv" style="width: 50%"><input type="text" class="assetNameInput"></div>
+			  </div>
+			  <div class="table-row assetNameWarningDiv" style="display: none;">
+				  <div class="warning"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label" style="width: 50%"><h5>Asset Type:</h5></div>
+				  <div class="value assetType" style="width: 50%"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label" style="width: 50%"><h5>Status:</h5></div>
+				  <div class="value assetStatus" style="width: 50%"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label" style="width: 50%"><h5>Owner:</h5></div>
+				  <div class="value assetOwner" style="width: 50%"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label" style="width: 50%"><h5>Level:</h5></div>
+				  <div class="value assetLevel" style="width: 50%"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Expense:</h5></div>
+				  <div class="value assetExpense"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Income:</h5></div>
+				  <div class="value assetIncome"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Profit:</h5></div>
+				  <div class="value assetProfit"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Build/Upgrade Cost:</h5></div>
+				  <div class="value cost"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Build/Upgrade Duration:</h5></div>
+				  <div class="value constructionDuration"></div>
+			  </div>
+			  <div class="table-row">
+				  <div class="label"><h5>Sell Value:</h5></div>
+				  <div class="value sellValue"></div>
+			  </div>
+
+		  </div>
+		  <div class="button buildButton" onclick="promptConfirm('Build this Asset?', buildOrUpgradeAsset, $('#airportAssetDetailsModal').data('asset'))">Build</div>
+		  <div class="button upgradeButton" onclick="promptConfirm('Upgrade this Asset?', buildOrUpgradeAsset, $('#airportAssetDetailsModal').data('asset'))">Upgrade</div>
+		  <div class="button sellButton" onclick="promptConfirm('Sell this Asset?', sellAsset, $('#airportAssetDetailsModal').data('asset'))">Sell</div>
+	  </div>
+  </div>
+
 
   <div id="settingsModal" class="modal">
 	  <div class="modal-content"  style="width : 400px; max-width: 80%">

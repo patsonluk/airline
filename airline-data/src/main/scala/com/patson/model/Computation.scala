@@ -18,6 +18,8 @@ object Computation {
       1
   }
 
+  lazy val MODEL_AIRPORT_POWER : Long = AirportSource.loadAllAirports().map(_.power).sorted.last
+
   //distance vs max speed
   val speedLimits = List((300, 350), (400, 500), (400, 700))  
   def calculateDuration(airplaneModel: Model, distance : Int) : Int = {
@@ -118,14 +120,19 @@ object Computation {
   /**
    * Returns a normalized income level, should be greater than 0
    */
-  def getIncomeLevel(income : Int) : Int = {
-    val incomeLevel = (Math.log(income.toDouble / 500) / Math.log(1.1)).toInt
+  def getIncomeLevel(income : Int) : Double = {
+    val incomeLevel = (Math.log(income.toDouble / 500) / Math.log(1.1))
     if (incomeLevel < 1) {
       1
     } else {
       incomeLevel
     }
   }
+  def fromIncomeLevel(incomeLevel : Double) : Int = {
+    (Math.pow(Math.E, incomeLevel * Math.log(1.1)) * 500).toInt
+  }
+
+
   
   def getLinkCreationCost(from : Airport, to : Airport) : Int = {
     

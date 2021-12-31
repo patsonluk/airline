@@ -47,7 +47,7 @@ object AirportFeature {
   }
 }
 
-sealed case class InternationalHubFeature(strength : Int) extends AirportFeature {
+sealed case class InternationalHubFeature(baseStrength : Int, boosts : List[AirportBoost] = List.empty) extends AirportFeature {
   val featureType = AirportFeatureType.INTERNATIONAL_HUB
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType, relationship : Int) : Double = {
     if (airportId == toAirport.id) { //only affect if as a destination
@@ -68,9 +68,11 @@ sealed case class InternationalHubFeature(strength : Int) extends AirportFeature
       0
     }
   }
+
+  override lazy val strength = baseStrength + boosts.filter(_.boostType == AirportBoostType.INTERNATIONAL_HUB).map(_.value).sum.toInt
 }
 
-sealed case class VacationHubFeature(strength : Int) extends AirportFeature {
+sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBoost] = List.empty) extends AirportFeature {
   val featureType = AirportFeatureType.VACATION_HUB
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     if (toAirport.id == airportId && passengerType == PassengerType.TOURIST) { //only affect if as a destination and tourists
@@ -90,9 +92,11 @@ sealed case class VacationHubFeature(strength : Int) extends AirportFeature {
       0
     }
   }
+
+  override lazy val strength = baseStrength + boosts.filter(_.boostType == AirportBoostType.VACATION_HUB).map(_.value).sum.toInt
 }
 
-sealed case class FinancialHubFeature(strength : Int) extends AirportFeature {
+sealed case class FinancialHubFeature(baseStrength : Int, boosts : List[AirportBoost] = List.empty) extends AirportFeature {
   val featureType = AirportFeatureType.FINANCIAL_HUB
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     if (toAirport.id == airportId && passengerType == PassengerType.BUSINESS) { //only affect if as a destination and tourists
@@ -103,6 +107,7 @@ sealed case class FinancialHubFeature(strength : Int) extends AirportFeature {
       0
     }
   }
+  override lazy val strength = baseStrength + boosts.filter(_.boostType == AirportBoostType.FINANCIAL_HUB).map(_.value).sum.toInt
 }
 
 sealed case class DomesticAirportFeature(strength : Int) extends AirportFeature {

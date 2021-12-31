@@ -16,7 +16,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 //  private[this] var slotAssignmentsLoaded = false
   private[this] val airlineBases = scala.collection.mutable.Map[Int, AirlineBase]()
   private[this] var airlineBasesLoaded = false
-  private[this] val features = ListBuffer[AirportFeature]()
+  private[this] val baseFeatures = ListBuffer[AirportFeature]()
   private[this] var featuresLoaded = false
   private[this] var projectsLoaded = false
   private[this] val loungesByAirline = scala.collection.mutable.Map[Int, Lounge]()
@@ -36,14 +36,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   //val baseIncome = if (basePopulation > 0) (power / basePopulation).toInt  else 0
 
 
-  lazy val assetBoosts : Map[AirportBoostType.Value, List[AirportBoost]] = assets.filter(_.status == AirportAssetStatus.COMPLETED).flatMap(_.boosts).groupBy(_.boostType)
+  private[this] var assetBoosts : Map[AirportBoostType.Value, List[AirportBoost]] = Map.empty
 
-  lazy val incomeBoost = assetBoosts.get(AirportBoostType.INCOME) match {
-    case Some(boosts) => boosts.map(_.value).sum.toInt
+  val baseIncomeLevel = Computation.getIncomeLevel(baseIncome)
+  lazy val incomeLevelBoost = assetBoosts.get(AirportBoostType.INCOME) match {
+    case Some(boosts) => boosts.map(_.value).sum
     case None => 0
   }
-  lazy val income = baseIncome + incomeBoost
-  lazy val incomeLevel = Computation.getIncomeLevel(income)
+  lazy val incomeLevel = baseIncomeLevel + incomeLevelBoost
+  lazy val income = if (incomeLevelBoost == 0) baseIncome else Computation.fromIncomeLevel(incomeLevel) //have to deduce from income level (after boost)
+
 
   lazy val populationBoost = assetBoosts.get(AirportBoostType.POPULATION) match {
     case Some(boosts) => boosts.map(_.value).sum.toInt
@@ -52,6 +54,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   lazy val population = basePopulation + populationBoost
   lazy val power = income * population
 
+
+  lazy val features : List[AirportFeature] = computeFeatures()
 
 
 //  def availableSlots : Int = {
@@ -205,7 +209,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
 
   def isGateway() = {
-    features.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
+    baseFeatures.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
   }
 
   def initAirlineAppealsComputeLoyalty(airlineBaseAwareness : Map[Int, Double], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty, loyalistEntries : List[Loyalist]) = {
@@ -273,18 +277,19 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     airlineBasesLoaded = true
   }
   def initFeatures(features : List[AirportFeature]) = {
-    this.features.clear()
-    this.features ++= features
+    this.baseFeatures.clear()
+    this.baseFeatures ++= features
     featuresLoaded = true
   }
 
   def initAssets(assets : List[AirportAsset]) = {
     this.assets = assets
     projectsLoaded = true
+    assetBoosts = assets.filter(_.status == AirportAssetStatus.COMPLETED).flatMap(_.boosts).groupBy(_.boostType)
   }
 
   def addFeature(feature : AirportFeature) = {
-    this.features += feature
+    this.baseFeatures += feature
   }
   
   def initLounges(lounges : List[Lounge]) = {
@@ -347,7 +352,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   
   val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
-    Math.max(0, Math.min(incomeLevel, 50) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //50% on income level, 50% on flight adjust
+    Math.max(0, Math.min(incomeLevel.toInt, 50) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //50% on income level, 50% on flight adjust
   }
   
   private[this] def getCountry() : Country = {
@@ -369,6 +374,35 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   val displayText = city + "(" + iata + ")"
 
   var loyalistEntries : List[Loyalist] = List.empty
+
+  def computeFeatures() = {
+    val newFeatures = ListBuffer[AirportFeature]()
+    assetBoosts.foreach {
+      case(boostType, boosts) =>
+        boostType match {
+          case com.patson.model.AirportBoostType.INTERNATIONAL_HUB =>
+            newFeatures.append(InternationalHubFeature(0, boosts))
+          case com.patson.model.AirportBoostType.VACATION_HUB =>
+            newFeatures.append(VacationHubFeature(0, boosts))
+          case com.patson.model.AirportBoostType.FINANCIAL_HUB =>
+            newFeatures.append(FinancialHubFeature(0, boosts))
+          case _ =>
+        }
+    }
+    (baseFeatures ++ newFeatures).groupBy(_.getClass).map {
+      case(clazz, features) =>
+        if (features.size <= 1) {
+          features(0)
+        } else { //should be 2
+          features(0) match {
+            case basicFeature : InternationalHubFeature => InternationalHubFeature(basicFeature.baseStrength, features(1).asInstanceOf[InternationalHubFeature].boosts)
+            case basicFeature : FinancialHubFeature => FinancialHubFeature(basicFeature.baseStrength, features(1).asInstanceOf[FinancialHubFeature].boosts)
+            case basicFeature : VacationHubFeature => VacationHubFeature(basicFeature.baseStrength, features(1).asInstanceOf[VacationHubFeature].boosts)
+            case _ => features(0) //don't know how to merge
+          }
+        }
+    }.toList
+  }
 }
 
 case class AirlineAppeal(loyalty : Double, awareness : Double)

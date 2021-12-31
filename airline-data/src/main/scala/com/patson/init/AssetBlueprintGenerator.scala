@@ -183,7 +183,7 @@ object AssetBlueprintGenerator {
     case INN =>
       airport.basePopulation >= 10000
     case GOLF_COURSE =>
-      airport.basePopulation >= 100000 && airport.incomeLevel >= 40
+      airport.basePopulation >= 100000 && airport.incomeLevel >= 40 && airport.size <= 5
     case OFFICE_BUILDING_1 =>
       airport.basePopulation >= 500000
     case HOTEL =>

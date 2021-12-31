@@ -16,7 +16,11 @@ object AirportAssetSource {
     loadAirportAssetsByAssetCriteria(List(("airline", airlineId)))
   }
 
-  def loadAirportAssetsByIds(ids : List[Int]) = {
+  def loadAirportAssetByAssetId(id : Int) : Option[AirportAsset] = {
+    loadAirportAssetsByBlueprintCriteria(List(("id", id))).headOption //do not use loadAirportAssetsByIds, as it expects those IDs is built already
+  }
+
+  def loadBuiltAirportAssetsByIds(ids : List[Int]) = {
     if (ids.isEmpty) {
       List.empty
     } else {
@@ -89,12 +93,12 @@ object AirportAssetSource {
     }
   }
 
-  def loadAirportAssetsByAirport(airportId : Int) = {
-    loadAirportAssetsByBlueprintCriteria(List(("airport", airportId)))
+  def loadAirportAssetsByAirport(airportId : Int, loadAirport : Boolean = true) = {
+    loadAirportAssetsByBlueprintCriteria(List(("airport", airportId)), loadAirport)
   }
 
 
-  private[this] def loadAirportAssetsByBlueprintCriteria(criteria : List[(String, Any)]) = {
+  private[this] def loadAirportAssetsByBlueprintCriteria(criteria : List[(String, Any)], loadAirport : Boolean = true) = {
     val connection = Meta.getConnection()
     try {
       var queryString = s"SELECT * FROM $AIRPORT_ASSET_BLUEPRINT_TABLE"
@@ -120,12 +124,18 @@ object AirportAssetSource {
       while (resultSet.next()) {
         val assetType = AirportAssetType.withName(resultSet.getString("asset_type"))
         val id = resultSet.getInt("id") //same id as blueprint
-        val airport = AirportCache.getAirport(resultSet.getInt("airport"), false).get
+        val airportId = resultSet.getInt("airport")
+        val airport =
+          if (loadAirport) {
+            AirportCache.getAirport(airportId, false).get
+          } else {
+            Airport.fromId(airportId) //Since Airport loading might call this method, this is to avoid cyclic dependency
+          }
 
         idToAssetBlueprint.put(id, AirportAssetBlueprint(airport, assetType, id))
       }
 
-      val idToOwnedAssets = loadAirportAssetsByIds(idToAssetBlueprint.keys.toList).map(entry => (entry.id, entry)).toMap
+      val idToOwnedAssets = loadBuiltAirportAssetsByIds(idToAssetBlueprint.keys.toList).map(entry => (entry.id, entry)).toMap
 
       val result = idToAssetBlueprint.map {
         case (id, blueprint) =>
@@ -238,23 +248,28 @@ object AirportAssetSource {
     val connection = Meta.getConnection()
     try {
       var purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRPORT_ASSET_BOOST_TABLE WHERE blueprint = ?")
+      purgeStatement.setInt(1, asset.id)
       purgeStatement.executeUpdate()
       purgeStatement.close()
 
       purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRPORT_ASSET_PROPERTY_TABLE WHERE blueprint = ?")
+      purgeStatement.setInt(1, asset.id)
       purgeStatement.executeUpdate()
       purgeStatement.close()
 
       //var preparedStatement = connection.prepareStatement(s"UPDATE $AIRPORT_ASSET_TABLE SET airline = ?, name = ?, level = ?, completion_cycle = ?, revenue = ?, expense = ? WHERE id = ?")
-      var preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRPORT_ASSET_TABLE (airline, name, level, completion_cycle, revenue, expense, id) VALUES(?,?,?,?,?,?,?)")
+      var preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRPORT_ASSET_TABLE (airline, airport, asset_type, name, level, completion_cycle, revenue, expense, id) VALUES(?,?,?,?,?,?,?,?,?)")
+
 
       preparedStatement.setInt(1, asset.airline.get.id)
-      preparedStatement.setString(2, asset.name)
-      preparedStatement.setInt(3, asset.level)
-      preparedStatement.setInt(4, asset.completionCycle.get)
-      preparedStatement.setLong(5, asset.revenue)
-      preparedStatement.setLong(6, asset.expense)
-      preparedStatement.setInt(7, asset.id)
+      preparedStatement.setInt(2, asset.blueprint.airport.id)
+      preparedStatement.setString(3, asset.assetType.toString)
+      preparedStatement.setString(4, asset.name)
+      preparedStatement.setInt(5, asset.level)
+      preparedStatement.setInt(6, asset.completionCycle.get)
+      preparedStatement.setLong(7, asset.revenue)
+      preparedStatement.setLong(8, asset.expense)
+      preparedStatement.setInt(9, asset.id)
 
       preparedStatement.executeUpdate()
       preparedStatement.close()
@@ -279,7 +294,7 @@ object AirportAssetSource {
           preparedStatement.close()
       }
 
-
+      AirportCache.invalidateAirport(asset.blueprint.airport.id)
     } finally {
       connection.close()
     }
@@ -287,6 +302,7 @@ object AirportAssetSource {
 
   def deleteAirportAsset(id : Int) = {
     val connection = Meta.getConnection()
+    val airportId = loadAirportAssetByAssetId(id).get.blueprint.airport.id
     try {
       val preparedStatement = connection.prepareStatement(s"DELETE FROM $AIRPORT_ASSET_TABLE WHERE id = ?")
 
@@ -295,6 +311,8 @@ object AirportAssetSource {
       preparedStatement.executeUpdate()
 
       preparedStatement.close()
+
+      AirportCache.invalidateAirport(airportId)
     } finally {
       connection.close()
     }

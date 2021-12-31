@@ -241,6 +241,26 @@ object AirportSource {
         airport.id = resultSet.getInt("id")
         airportData += airport
         if (fullLoad) {
+          if (fullLoad || loadFeatures) {
+            //load features first, as it might affect income level and pop, which both might affect later loading
+            val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
+            featureStatement.setInt(1, airport.id)
+
+            val featureResultSet = featureStatement.executeQuery()
+            val features = ListBuffer[AirportFeature]()
+            while (featureResultSet.next()) {
+              val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
+              val strength = featureResultSet.getInt("strength")
+
+              features += AirportFeature(featureType, strength)
+            }
+            featureStatement.close()
+            airport.initFeatures(features.toList)
+
+            //load assets
+            airport.initAssets(AirportAssetSource.loadAirportAssetsByAirport(airport.id, false))
+          }
+
           val airlineAwareness = mutable.Map[Int, Double]()
           val loyaltyStatement = connection.prepareStatement("SELECT airline, loyalty, awareness FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
           loyaltyStatement.setInt(1, airport.id)
@@ -362,23 +382,6 @@ object AirportSource {
           }
           runwayStatement.close()
           airport.setRunways(runways.toList)
-        }
-
-        if (fullLoad || loadFeatures) {
-          //load features
-          val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
-          featureStatement.setInt(1, airport.id)
-
-          val featureResultSet = featureStatement.executeQuery()
-          val features = ListBuffer[AirportFeature]()
-          while (featureResultSet.next()) {
-            val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
-            val strength = featureResultSet.getInt("strength")
-
-            features += AirportFeature(featureType, strength)
-          }
-          featureStatement.close()
-          airport.initFeatures(features.toList)
         }
       }
       
@@ -516,8 +519,8 @@ object AirportSource {
         Some(result(0))
       }
   }
-  def loadAirportByIata(iata : String) = {
-      val result = loadAirportsByCriteria(List(("iata", iata)))
+  def loadAirportByIata(iata : String, fullLoad : Boolean = false) = {
+      val result = loadAirportsByCriteria(List(("iata", iata)), fullLoad)
       if (result.isEmpty) {
         None
       } else {

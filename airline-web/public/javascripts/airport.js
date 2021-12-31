@@ -77,10 +77,21 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    var row = $("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
 	}
 	
-	$('#airportDetailsPopulation').text(commaSeparateNumber(airport.population))
-    $("#airportDetailsCity").text(airport.city)
+	$("#airportDetailsCity").text(airport.city)
     $("#airportDetailsSize").text(airport.size)
-    $("#airportDetailsIncomeLevel").text(airport.incomeLevel)
+    $("#airportDetailsIncomeLevel").text(airport.incomeLevel) //ABC
+
+    var $populationSpan = $('<span>' + commaSeparateNumber(airport.population) + '</span>')
+    if (airport.populationBoost) {
+        $populationSpan.css('color', '#41A14D')
+    }
+    $("#airportDetailsPopulation").html($populationSpan)
+    var $incomeLevelSpan = $('<span>' + airport.incomeLevel + '</span>')
+    if (airport.incomeLevelBoost) {
+        $incomeLevelSpan.css('color', '#41A14D')
+    }
+    $("#airportDetailsIncomeLevel").html($incomeLevelSpan)
+
 	$("#airportDetailsCountry").text(loadedCountriesByCode[airport.countryCode].name)
 	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
 	if (countryFlagUrl) {
@@ -637,8 +648,8 @@ function addMarkers(airports) {
 			  $("#airportPopupCity").html(this.airport.city + "&nbsp;" + getCountryFlagImg(this.airport.countryCode))
 			  $("#airportPopupZone").text(zoneById[this.airport.zone])
 			  $("#airportPopupSize").text(this.airport.size)
-			  $("#airportPopupPopulation").text(commaSeparateNumber(this.airport.population))
-			  $("#airportPopupIncomeLevel").text(this.airport.incomeLevel)
+			  $("#airportPopupPopulation").text('-') //wait for extended details
+			  $("#airportPopupIncomeLevel").text('-') //wait for extended details
 			  $("#airportPopupOpenness").html(getOpennessSpan(loadedCountriesByCode[this.airport.countryCode].openness))
 			  $("#airportPopupMaxRunwayLength").html(this.airport.runwayLength + "&nbsp;m")
 			  updateAirportExtendedDetails(this.airport.id, this.airport.countryCode)
@@ -900,18 +911,37 @@ function refreshAirportExtendedDetails(airport) {
 //            $(".airportRelationship").text('-')
 //        }
     }
+    var $populationSpan = $('<span>' + commaSeparateNumber(airport.population) + '</span>')
+    if (airport.populationBoost) {
+        $populationSpan.css('color', '#41A14D')
+    }
+    $("#airportPopupPopulation").html($populationSpan)
+    var $incomeLevelSpan = $('<span>' + airport.incomeLevel + '</span>')
+    if (airport.incomeLevelBoost) {
+        $incomeLevelSpan.css('color', '#41A14D')
+    }
+    $("#airportPopupIncomeLevel").html($incomeLevelSpan)
+
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {
-        $("#airportPopup .airportFeatures").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'><span>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>")
+        var $popupFeatureDiv = $("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'><span>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>").appendTo($("#airportPopup .airportFeatures"))
+        if (feature.boosts && feature.boosts.length > 0) {
+            $popupFeatureDiv.css('color', '#41A14D')
+        }
 
 
         var $featureDiv = $("<div class='feature'><img src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
         $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
         var featureText = feature.title
         if (feature.strength != 0) {
-            featureText += " (strength: " + feature.strength + ")"
+            if (feature.boosts && feature.boosts.length > 0) {
+                featureText += " (strength: <span style='color: #41A14D'>" + feature.strength + "</span>)"
+            } else {
+                featureText += " (strength: " + feature.strength + ")"
+            }
         }
-        var $featureDescription = $('<span><span>').text(featureText)
+        var $featureDescription = $('<span><span>').html(featureText)
+
         $featureDiv.append($featureDescription)
         $("#airportCanvas .airportFeatures").append($featureDiv)
     })

@@ -1,7 +1,7 @@
 package com.patson.util
 
 import com.patson.model._
-import com.patson.data.{AirlineSource, AirportSource, CountrySource, LoyalistSource}
+import com.patson.data.{AirlineSource, AirportSource, Constants, CountrySource, LoyalistSource}
 
 import scala.collection.mutable.ListBuffer
 
@@ -52,7 +52,6 @@ object ChampionUtil {
     result.toList
   }
 
-  lazy val modelAirportPower : Long = AirportSource.loadAllAirports().map(_.power).sorted.last
   val BASE_BOOST = 0.5
   val MAX_ECONOMIC_BOOST = 20.0
   val reputationBoostTop10 : Map[Int, Double] = Map(
@@ -75,7 +74,7 @@ object ChampionUtil {
     * @return
     */
   def computeFullReputationBoost(airport : Airport, ranking : Int) : Double = {
-    val ratioToModelAirportPower = airport.power.toDouble / modelAirportPower
+    val ratioToModelAirportPower = airport.power.toDouble / Computation.MODEL_AIRPORT_POWER
     var boost = BASE_BOOST
     //val economicPowerRating = Math.max(0, math.log10(ratioToModelAirportPower * 100) / 2) //0 to 1
     val economicPowerRating = Math.max(0, math.log(ratioToModelAirportPower * 16) / math.log(2) / 4) //0 to 1

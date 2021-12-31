@@ -509,6 +509,16 @@ package object controllers {
     }
   }
 
+  implicit object AirportAssetBoostWrites extends Writes[AirportBoost] {
+    def writes(entry : AirportBoost): JsValue = {
+      Json.obj(
+        "boostType" -> entry.boostType.toString,
+        "label" -> AirportBoostType.getLabel(entry.boostType),
+        "value" -> entry.value,
+      )
+    }
+  }
+
   implicit object AirportFormat extends Format[Airport] {
     def reads(json: JsValue): JsResult[Airport] = {
       val airport = Airport.fromId((json \ "id").as[Int])
@@ -516,7 +526,6 @@ package object controllers {
     }
 
     def writes(airport: Airport): JsValue = {
-      val incomeLevel = Computation.getIncomeLevel(airport.income)
       //      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
       //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)
       //      }
@@ -538,7 +547,7 @@ package object controllers {
         "population" -> JsNumber(airport.population),
         "radius" -> JsNumber(airport.airportRadius),
         "zone" -> JsString(airport.zone),
-        "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
+        "incomeLevel" -> JsNumber(airport.incomeLevel.toInt)))
 
 
       if (airport.isAirlineAppealsInitialized) {
@@ -577,9 +586,23 @@ package object controllers {
       }
       if (airport.isFeaturesLoaded) {
         airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().sortBy(_.featureType.id).map { airportFeature =>
-          Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> airportFeature.getDescription)
+          var featureJson = Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> airportFeature.getDescription)
+          airportFeature match {
+            case f : InternationalHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
+            case f : FinancialHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
+            case f : VacationHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
+            case _ =>
+          }
+          featureJson
         }
         ))
+
+        if (airport.populationBoost > 0) {
+          airportObject = airportObject + ("populationBoost" -> JsNumber(airport.populationBoost))
+        }
+        if (airport.incomeLevelBoost > 0) {
+          airportObject = airportObject + ("incomeLevelBoost" -> JsNumber(airport.incomeLevelBoost))
+        }
       }
       if (airport.isGateway()) {
         airportObject = airportObject + ("isGateway" -> JsBoolean(true))
@@ -592,12 +615,9 @@ package object controllers {
         }
         ))
       }
-//      if (airport.getAirportImageUrl.isDefined) {
-//        airportObject = airportObject + ("airportImageUrl" -> JsString(airport.getAirportImageUrl.get))
-//      }
-//      if (airport.getCityImageUrl.isDefined) {
-//        airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
-//      }
+
+
+
 
       airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.map(_._1).toList))
 

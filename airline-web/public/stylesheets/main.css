@@ -217,8 +217,11 @@ a {
    width: 35%;
 }
 
-.airportCanvasLeftGroup, .officeCanvasLeftGroup  {
+.officeCanvasLeftGroup  {
     width: 70%;
+}
+.airportCanvasLeftGroup {
+    width: 80%;
 }
 
 .airportCanvasLeftGroup {
@@ -226,8 +229,11 @@ a {
     box-sizing: border-box;
 }
 
-.airportCanvasRightGroup, .officeCanvasRightGroup {
+.officeCanvasRightGroup {
     width: 30%;
+}
+.airportCanvasRightGroup {
+    width: 20%;
 }
 
 #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, .campaignDetails .verticalGroup, #allianceCanvas .verticalGroup {
