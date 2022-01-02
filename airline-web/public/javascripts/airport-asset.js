@@ -11,6 +11,10 @@ function showAirportAssets(airport) {
                 var $assetDiv = $('<div style="min-height : 85px; max-width : 270px;" class="section clickable">')
                 $assetDiv.click( function() {
                     showAssetModal(asset)
+                    $("#airportAssetDetailsModal").data('postUpdateFunc', function() {
+                        showAirportDetails(asset.airport.id)
+                    })
+
                 })
 
                 if (asset.status != "BLUEPRINT") {
@@ -97,8 +101,11 @@ function buildOrUpgradeAsset(asset) {
 	    		$('#airportAssetDetailsModal .assetNameWarningDiv').show()
 	    	} else {
 	    		refreshPanels(activeAirline.id)
-	    		showAirportDetails(asset.airport.id)
 	    		showAssetModal(result)
+	    		var postUpdateFunc = $("#airportAssetDetailsModal").data('postUpdateFunc')
+	    		if (postUpdateFunc) {
+	    		    postUpdateFunc()
+	    		}
 	    	}
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -122,8 +129,11 @@ function sellAsset(asset) {
     	    contentType: 'application/json; charset=utf-8',
     	    success: function(result) {
                 refreshPanels(activeAirline.id)
-                showAirportDetails(asset.airport.id)
                 closeModal($("#airportAssetDetailsModal"))
+                var postUpdateFunc = $("#airportAssetDetailsModal").data('postUpdateFunc')
+                if (postUpdateFunc) {
+                    postUpdateFunc()
+                }
     	    },
             error: function(jqXHR, textStatus, errorThrown) {
     	            console.log(JSON.stringify(jqXHR));
@@ -141,6 +151,7 @@ function sellAsset(asset) {
 
 function showAssetModal(asset) {
     $('#airportAssetDetailsModal').data('asset', asset)
+    $('#airportAssetDetailsModal img.assetImage').attr('src', 'assets/images/airport-assets/' + asset.assetType + '.png')
     var owned = asset.airline && activeAirline && activeAirline.id == asset.airline.id
     $('#airportAssetDetailsModal .name').text(asset.name)
     $('#airportAssetDetailsModal .assetNameWarningDiv').hide()

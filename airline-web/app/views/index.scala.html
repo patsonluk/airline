@@ -2051,17 +2051,17 @@
 											<div class="cell">Lounge Income:</div>
 											<div id="othersLoungeIncome" class="cell" style="text-align: right;"></div>
 										</div>
-<!--										<div class="table-row">-->
-<!--											<div class="cell">Shuttle Cost:</div>-->
-<!--											<div id="othersShuttleCost" class="cell" style="text-align: right;"></div>-->
-<!--										</div>-->
+										<div class="table-row">
+											<div class="cell">Asset Expense:</div>
+											<div id="othersAssetExpense" class="cell" style="text-align: right;"></div>
+										</div>
+										<div class="table-row">
+											<div class="cell">Asset Revenue:</div>
+											<div id="othersAssetRevenue" class="cell" style="text-align: right;"></div>
+										</div>
 										<div class="table-row">
 											<div class="cell">Service Investment:</div>
 											<div id="othersServiceInvestment" class="cell" style="text-align: right;"></div>
-										</div>
-										<div class="table-row">
-											<div class="cell">Maintenance Investment:</div>
-											<div id="othersMaintenanceInvestment" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
 											<div class="cell">Campaign/Advertisement:</div>
@@ -2148,6 +2148,10 @@
 												<div class="cell">Oil Contract Cost/Penalty:</div>
 												<div class="oilContract cell" style="text-align: right;"></div>
 											</div>
+											<div class="table-row">
+												<div class="cell">Airport Asset Transactions:</div>
+												<div class="assetTransactions cell" style="text-align: right;"></div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -2162,21 +2166,21 @@
 							<h4>Assets</h4>
 							<div class="table data" style="width: 100%;">
 								<div class="table-header">
-									<div class="cell" style="width: 20%">Airport</div>
+									<div class="cell" style="width: 15%">Airport</div>
 									<div class="cell" style="width: 40%">Asset</div>
 									<div class="cell" style="width: 10%">Level</div>
 									<div class="cell" style="width: 20%">Profit</div>
-									<div class="cell" style="width: 10%">Mgn</div>
+									<div class="cell" style="width: 15%">Mgn</div>
 								</div>
 							</div>
 							<div style="max-height: 250px; overflow: auto;">
 								<div class="table data assetList" style="width: 100%; max-height: 200px; overflow-y: auto;">
 									<div class="table-header">
-										<div class="cell" style="width: 20%; border-bottom: none;"></div>
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
 										<div class="cell" style="width: 40%; border-bottom: none;"></div>
 										<div class="cell" style="width: 10%; border-bottom: none;"></div>
 										<div class="cell" style="width: 20%; border-bottom: none;"></div>
-										<div class="cell" style="width: 10%; border-bottom: none;"></div>
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
 									</div>
 								</div>
 							</div>
@@ -4912,7 +4916,10 @@
 	  <div class="modal-content" style="width : 500px; max-width: 100%">
 		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
 		  <h4><span class="name"></span></h4>
-		  <div class="descriptions"></div>
+<!--		  <div class="descriptions"></div>-->
+		  <div style="margin-bottom : 5px;">
+			  <img class="assetImage" src="" style="width: 200px; display: block; margin: auto;" >
+		  </div>
 		  <div class="table" style="width: 100%">
 			  <div class="table-row">
 				  <div class="label" style="width: 50%"><h5>Name:</h5></div>

@@ -44,6 +44,8 @@ object AirlineSimulation {
       loungesByAirlineId.getOrElseUpdate(lounge.airline.id, ListBuffer[Lounge]()) += lounge
     )
 
+    val assetsByAirlineId = AirportAssetSource.loadAirportAssetsByAssetCriteria(List.empty).groupBy(_.airline.get.id) //load all owned assets
+
     //val shuttleServicesByAirlineId = AirlineSource.loadShuttleServiceByCriteria(List.empty).groupBy(_.airline.id)
 
     val allIncomes = ListBuffer[AirlineIncome]()
@@ -190,16 +192,20 @@ object AirlineSimulation {
         othersSummary.put(OtherIncomeItemType.LOUNGE_COST, -1 * loungeCost)
         othersSummary.put(OtherIncomeItemType.LOUNGE_INCOME, loungeIncome)
 
-
-//        var shuttleCost = 0L
-//        allShuttleLinksByAirlineId.get(airline.id).foreach { links =>
-//          shuttleCost = links.map(_.upkeep).sum
-//        }
-//        shuttleCost += shuttleServicesByAirlineId.getOrElse(airline.id, List.empty).map(_.basicUpkeep).sum
-//        othersSummary.put(OtherIncomeItemType.SHUTTLE_COST, -1 * shuttleCost)
-
         totalCashExpense += loungeUpkeep + loungeCost
         totalCashRevenue += loungeIncome
+
+        val (assetExpense, assetRevenue) = assetsByAirlineId.get(airline.id) match {
+          case Some(assets) => (assets.map(_.expense).sum, assets.map(_.revenue).sum)
+          case None => (0L, 0L)
+        }
+
+        othersSummary.put(OtherIncomeItemType.ASSET_EXPENSE, -1 * assetExpense)
+        othersSummary.put(OtherIncomeItemType.ASSET_REVENUE, assetRevenue)
+
+        totalCashExpense += assetExpense
+        totalCashRevenue += assetRevenue
+
 
         //calculate extra cash flow due to difference in fuel cost
         val accountingFuelCost = linksIncome.fuelCost * -1
@@ -275,12 +281,12 @@ object AirlineSimulation {
             , baseUpkeep = othersSummary.getOrElse(OtherIncomeItemType.BASE_UPKEEP, 0)
             , overtimeCompensation = othersSummary.getOrElse(OtherIncomeItemType.OVERTIME_COMPENSATION, 0)
             , serviceInvestment = othersSummary.getOrElse(OtherIncomeItemType.SERVICE_INVESTMENT, 0)
-            , maintenanceInvestment = othersSummary.getOrElse(OtherIncomeItemType.MAINTENANCE_INVESTMENT, 0)
             , advertisement = othersSummary.getOrElse(OtherIncomeItemType.ADVERTISEMENT, 0)
             , loungeUpkeep = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_UPKEEP, 0)
             , loungeCost = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_COST, 0)
             , loungeIncome = othersSummary.getOrElse(OtherIncomeItemType.LOUNGE_INCOME, 0)
-            , shuttleCost = othersSummary.getOrElse(OtherIncomeItemType.SHUTTLE_COST, 0)
+            , assetExpense = othersSummary.getOrElse(OtherIncomeItemType.ASSET_EXPENSE, 0)
+            , assetRevenue = othersSummary.getOrElse(OtherIncomeItemType.ASSET_REVENUE, 0)
             , fuelProfit = othersSummary.getOrElse(OtherIncomeItemType.FUEL_PROFIT, 0)
             , depreciation = othersSummary.getOrElse(OtherIncomeItemType.DEPRECIATION, 0)
             , cycle = currentCycle
@@ -314,11 +320,12 @@ object AirlineSimulation {
         val createLink = transactionalCashFlowItems.getOrElse(CashFlowType.CREATE_LINK, 0L)
         val facilityConstruction = transactionalCashFlowItems.getOrElse(CashFlowType.FACILITY_CONSTRUCTION, 0L)
         val oilContract = transactionalCashFlowItems.getOrElse(CashFlowType.OIL_CONTRACT, 0L)
+        val assetTransactions = transactionalCashFlowItems.getOrElse(CashFlowType.ASSET_TRANSACTION, 0L)
 
-        val accountingCashFlow = totalCashFlow + baseConstruction + buyAirplane + sellAirplane + createLink + facilityConstruction + oilContract
+        val accountingCashFlow = totalCashFlow + baseConstruction + buyAirplane + sellAirplane + createLink + facilityConstruction + oilContract + assetTransactions
 
         val loanPrincipal = loanPayment - interestPayment
-        val airlineWeeklyCashFlow = AirlineCashFlow(airline.id, cashFlow = accountingCashFlow, operation = operationCashFlow, loanInterest = interestPayment * -1, loanPrincipal = loanPrincipal * -1, baseConstruction = baseConstruction, buyAirplane = buyAirplane, sellAirplane = sellAirplane, createLink = createLink, facilityConstruction = facilityConstruction, oilContract = oilContract, cycle = currentCycle)
+        val airlineWeeklyCashFlow = AirlineCashFlow(airline.id, cashFlow = accountingCashFlow, operation = operationCashFlow, loanInterest = interestPayment * -1, loanPrincipal = loanPrincipal * -1, baseConstruction = baseConstruction, buyAirplane = buyAirplane, sellAirplane = sellAirplane, createLink = createLink, facilityConstruction = facilityConstruction, oilContract = oilContract, assetTransactions = assetTransactions, cycle = currentCycle)
         allCashFlows += airlineWeeklyCashFlow
         allCashFlows ++= computeAccumulateCashFlow(airlineWeeklyCashFlow)
 

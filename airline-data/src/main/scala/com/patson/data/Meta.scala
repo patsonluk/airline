@@ -826,12 +826,12 @@ object Meta {
       "loan_interest LONG," +
       "base_upkeep LONG," +
       "service_investment LONG," +
-      "maintenance_investment LONG," +
       "advertisement LONG," +
       "lounge_upkeep LONG, " +
       "lounge_cost LONG, " +
       "lounge_income LONG, " +
-      "shuttle_cost LONG, " +
+      "asset_expense LONG, " +
+      "asset_revenue LONG, " +
       "fuel_profit LONG, " +
       "depreciation LONG," +
       "overtime_compensation LONG," +
@@ -860,6 +860,7 @@ object Meta {
       "create_link BIGINT(20), " +
       "facility_construction BIGINT(20), " +
       "oil_contract BIGINT(20), " +
+      "asset_transactions BIGINT(20), " +
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +

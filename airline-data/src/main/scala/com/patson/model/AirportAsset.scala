@@ -406,7 +406,7 @@ abstract class AirportAsset() extends IdObject{
     }
 
     val status : AirportAssetStatus.Value
-    val cost = (blueprint.assetType.baseCost * costModifier).toLong
+    val cost = (blueprint.assetType.baseCost * costModifier).toLong / 1000 * 1000 //zero last 3 digits
     val value = cost * level
     val sellValue = (value * 0.5).toLong
 

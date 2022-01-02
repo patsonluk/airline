@@ -405,9 +405,9 @@ package object controllers {
         "othersLoungeUpkeep" -> JsNumber(airlineIncome.others.loungeUpkeep),
         "othersLoungeCost" -> JsNumber(airlineIncome.others.loungeCost),
         "othersLoungeIncome" -> JsNumber(airlineIncome.others.loungeIncome),
-        "othersShuttleCost" -> JsNumber(airlineIncome.others.shuttleCost),
+        "othersAssetExpense" -> JsNumber(airlineIncome.others.assetExpense),
+        "othersAssetRevenue" -> JsNumber(airlineIncome.others.assetRevenue),
         "othersServiceInvestment" -> JsNumber(airlineIncome.others.serviceInvestment),
-        "othersMaintenanceInvestment" -> JsNumber(airlineIncome.others.maintenanceInvestment),
         "othersAdvertisement" -> JsNumber(airlineIncome.others.advertisement),
         "othersFuelProfit" -> JsNumber(airlineIncome.others.fuelProfit),
         "othersDepreciation" -> JsNumber(airlineIncome.others.depreciation),
@@ -430,6 +430,7 @@ package object controllers {
         "createLink" -> JsNumber(airlineCashFlow.createLink),
         "facilityConstruction" -> JsNumber(airlineCashFlow.facilityConstruction),
         "oilContract" -> JsNumber(airlineCashFlow.oilContract),
+        "assetTransactions" -> JsNumber(airlineCashFlow.assetTransactions),
         "period" -> JsString(airlineCashFlow.period.toString()),
         "cycle" -> JsNumber(airlineCashFlow.cycle)))
     }

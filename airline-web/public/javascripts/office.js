@@ -117,12 +117,15 @@ function updateAirlineAssets() {
                 var $row = $("<div class='table-row clickable'></div>")
                 $row.append("<div class='cell'>" + getCountryFlagImg(asset.airport.countryCode) + asset.airport.iata + "</div>")
                 $row.append("<div class='cell'>" + asset.name + "</div>")
-                $row.append("<div class='cell' style='align : right;'>" + asset.level + "</div>")
-                $row.append("<div class='cell' style='align : right;'>$" + commaSeparateNumber(profit) + "</div>")
-                $row.append("<div class='cell' style='align : right;'>" + margin  + "%</div>")
+                $row.append("<div class='cell' style='text-align: right;'>" + asset.level + "</div>")
+                $row.append("<div class='cell' style='text-align: right;'>$" + commaSeparateNumber(profit) + "</div>")
+                $row.append("<div class='cell' style='text-align: right;'>" + margin  + "%</div>")
 
                 $row.click(function() {
                     showAssetModal(asset)
+                    $("#airportAssetDetailsModal").data('postUpdateFunc', function() {
+                        updateAirlineAssets()
+                    })
                 })
                 $assetList.append($row)
             });
@@ -401,9 +404,9 @@ function updateIncomeSheet(airlineIncome) {
         $("#othersLoungeUpkeep").text('$' + commaSeparateNumber(airlineIncome.othersLoungeUpkeep))
         $("#othersLoungeCost").text('$' + commaSeparateNumber(airlineIncome.othersLoungeCost))
         $("#othersLoungeIncome").text('$' + commaSeparateNumber(airlineIncome.othersLoungeIncome))
-        //$("#othersShuttleCost").text('$' + commaSeparateNumber(airlineIncome.othersShuttleCost))
+        $("#othersAssetExpense").text('$' + commaSeparateNumber(airlineIncome.othersAssetExpense))
+        $("#othersAssetRevenue").text('$' + commaSeparateNumber(airlineIncome.othersAssetRevenue))
         $("#othersServiceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersServiceInvestment))
-        $("#othersMaintenanceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersMaintenanceInvestment))
         $("#othersAdvertisement").text('$' + commaSeparateNumber(airlineIncome.othersAdvertisement))
         $("#othersFuelProfit").text('$' + commaSeparateNumber(airlineIncome.othersFuelProfit))
         $("#othersDepreciation").text('$' + commaSeparateNumber(airlineIncome.othersDepreciation))
@@ -447,6 +450,7 @@ function updateCashFlowSheet(airlineCashFlow) {
         $("#cashFlowSheet .createLink").text('$' + commaSeparateNumber(airlineCashFlow.createLink))
         $("#cashFlowSheet .facilityConstruction").text('$' + commaSeparateNumber(airlineCashFlow.facilityConstruction))
         $("#cashFlowSheet .oilContract").text('$' + commaSeparateNumber(airlineCashFlow.oilContract))
+        $("#cashFlowSheet .assetTransactions").text('$' + commaSeparateNumber(airlineCashFlow.assetTransactions))
 	}
 }
 
