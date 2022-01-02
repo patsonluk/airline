@@ -151,36 +151,39 @@ object AirportAssetSimulation {
     */
   def simulateAssetBusiness(asset : AirportAsset, paxStats : PassengerStats) : AssetSimulationResult = {
     import com.patson.model.AirportAssetType._
-    val result : AssetSimulationResult = asset.assetType match {
-      case CITY_TRANSIT => ???
-      case AIRPORT_HOTEL | GRAND_HOTEL_TOURIST | GRAND_HOTEL_BUSINESS | BEACH_RESORT | SKI_RESORT | INN | HOTEL | LUXURIOUS_HOTEL =>
-        simulateAirportHotelPerformance(asset.asInstanceOf[HotelAsset], paxStats)
-      case AMUSEMENT_PARK => ???
-      case SUBWAY => ???
-      case STADIUM => ???
-      case CONVENTION_CENTER => ???
-      case MUSEUM => ???
-      case LANDMARK => ???
-      case SCIENCE_PARK => ???
-      case SOLAR_POWER_PLANT => ???
-      case TRAVEL_AGENCY => ???
-      case SPORT_ARENA => ???
-      case GAME_ARCADE => ???
-      case CINEMA => ???
-      case GOLF_COURSE => ???
-      case OFFICE_BUILDING_1 => ???
-      case OFFICE_BUILDING_2 => ???
-      case RESTAURANT => ???
-      case OFFICE_BUILDING_3 => ???
-      case SHOPPING_MALL => ???
-      case OFFICE_BUILDING_4 => ???
-      case RESIDENTIAL_COMPLEX => ???
-      case _ =>
-        println(s"Missing business sim for ${asset.assetType}")
-        AssetSimulationResult(0, 0, Map.empty)
+    if (asset.level == 1 && asset.status != AirportAssetStatus.COMPLETED) {
+      AssetSimulationResult(0, 0, Map.empty)
+    } else {
+      val result : AssetSimulationResult = asset.assetType match {
+        case CITY_TRANSIT => ???
+        case AIRPORT_HOTEL | GRAND_HOTEL_TOURIST | GRAND_HOTEL_BUSINESS | BEACH_RESORT | SKI_RESORT | INN | HOTEL | LUXURIOUS_HOTEL =>
+          simulateAirportHotelPerformance(asset.asInstanceOf[HotelAsset], paxStats)
+        case AMUSEMENT_PARK => ???
+        case SUBWAY => ???
+        case STADIUM => ???
+        case CONVENTION_CENTER => ???
+        case MUSEUM => ???
+        case LANDMARK => ???
+        case SCIENCE_PARK => ???
+        case SOLAR_POWER_PLANT => ???
+        case TRAVEL_AGENCY => ???
+        case SPORT_ARENA => ???
+        case GAME_ARCADE => ???
+        case CINEMA => ???
+        case GOLF_COURSE => ???
+        case OFFICE_BUILDING_1 => ???
+        case OFFICE_BUILDING_2 => ???
+        case RESTAURANT => ???
+        case OFFICE_BUILDING_3 => ???
+        case SHOPPING_MALL => ???
+        case OFFICE_BUILDING_4 => ???
+        case RESIDENTIAL_COMPLEX => ???
+        case _ =>
+          println(s"Missing business sim for ${asset.assetType}")
+          AssetSimulationResult(0, 0, Map.empty)
+      }
+      result
     }
-
-    result
   }
 
   case class PassengerStats(transferPax : Long, arrivalTourist : Long, arrivalBusiness : Long) {
