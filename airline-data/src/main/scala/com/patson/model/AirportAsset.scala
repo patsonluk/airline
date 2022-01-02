@@ -261,7 +261,7 @@ object AirportAssetType extends Enumeration {
         override val label = "Hotel"
         override val constructionDuration : Int = 5 * 52
         override val baseBoosts : List[AirportBoost] = List(AirportBoost(INCOME, 0.50))
-        override val baseCost : Long = 200000000
+        override val baseCost : Long = 100000000
         override val baseRequirement : Int = 5
 
         override val maxRoi : Double = 1.0 / 30
@@ -401,7 +401,7 @@ abstract class AirportAsset() extends IdObject{
           (airport.income / Computation.MAX_INCOME) * 0.2 + //20% by income
             (1 + 0.1 * Math.max(-10, (Math.log(airport.population.toDouble / Computation.MAX_POPULATION))))  * 0.8 //Each e away, 10% less.
 
-        val randomRatio = 0.9 + new Random(id).nextDouble() * 0.2   //10% fluctuation ie 0.9 - 1.1
+        val randomRatio = 0.8 + new Random(id).nextDouble() * 0.4   //20% fluctuation ie 0.8 - 1.2
         (0.5 + (ratioToModelAirportPower * 3)) * randomRatio
     }
 
