@@ -18,7 +18,17 @@ object Computation {
       1
   }
 
-  lazy val MODEL_AIRPORT_POWER : Long = AirportSource.loadAllAirports().map(_.power).sorted.last
+  lazy val MAX_VALUES = getMaxValues()
+  lazy val MODEL_AIRPORT_POWER = MAX_VALUES._1
+  lazy val MAX_INCOME_LEVEL = MAX_VALUES._2
+  lazy val MAX_POPULATION = MAX_VALUES._3
+  lazy val MAX_INCOME = MAX_VALUES._4
+
+
+  def getMaxValues(): (Long, Double, Long, Long) = {
+    val allAirports = AirportSource.loadAllAirports()
+    (allAirports.maxBy(_.power).power, allAirports.maxBy(_.incomeLevel).incomeLevel, allAirports.maxBy(_.population).population, allAirports.maxBy(_.income).income)
+  }
 
   //distance vs max speed
   val speedLimits = List((300, 350), (400, 500), (400, 700))  

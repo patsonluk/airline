@@ -55,8 +55,10 @@ object Constants {
   val AIRPORT_ASSET_TABLE = "airport_asset"
   val AIRPORT_ASSET_BLUEPRINT_TABLE = "airport_asset_blueprint"
   val AIRPORT_ASSET_PROPERTY_TABLE = "airport_asset_property"
-  val AIRPORT_ASSET_BOOST_TABLE = "airport_boost_property"
-//  val AIRPORT_SLOT_ASSIGNMENT_TABLE = "airport_slot_assignment"
+  val AIRPORT_ASSET_BOOST_TABLE = "airport_asset_boost"
+  val AIRPORT_ASSET_PROPERTY_HISTORY_TABLE = "airport_asset_property_history"
+  val AIRPORT_ASSET_BOOST_HISTORY_TABLE = "airport_asset_boost_history"
+
   val AIRLINE_APPEAL_TABLE = "airline_appeal"
   val AIRLINE_APPEAL_INDEX_1 = "airline_appeal_index_1"
   val AIRLINE_APPEAL_INDEX_2 = "airline_appeal_index_2"

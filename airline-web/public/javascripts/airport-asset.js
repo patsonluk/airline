@@ -40,16 +40,26 @@ function showAirportAssets(airport) {
                     var $levelBar = getHalfStepImageBarByValue(fullStarSource, halfStarSource, 1, asset.level).css({ 'position' : 'absolute', 'bottom' : '0', 'right' : '0'})
                     $assetImageDiv.append($levelBar)
                 }
+
+                if (asset.status === "UNDER_CONSTRUCTION") {
+                    var $constructionLogo = $('<img src="assets/images/icons/construction.gif">')
+                    $constructionLogo.attr('title', asset.name + " is under construction")
+                    $constructionLogo.css('position', 'absolute')
+                    $constructionLogo.css('bottom', '0')
+                    $constructionLogo.css('left', '0')
+                    $assetImageDiv.append($constructionLogo)
+                }
+
                 $assetDiv.append($assetImageDiv)
 
                 var $costDiv = $('<h5>$' +  commaSeparateNumber(asset.cost) + '</h5>')
                 $assetDiv.append($costDiv)
 
                 $.each(asset.boosts, function(index, boost) {
-                    var $boostDiv = $('<div style="display: flex; align-items: center;"></div>')
-                    var $boostImage = $('<img src=assets/images/icons/airport-features/' + boost.boostType + '.png>')
+                    var $boostSpan = $('<span style="white-space: nowrap;"></span>')
+                    var $boostImage = $('<img src=assets/images/icons/airport-features/' + boost.boostType + '.png style="vertical-align: middle;">')
                     $boostImage.attr('title', boost.label)
-                    $boostDiv.append($boostImage)
+                    $boostSpan.append($boostImage)
                     var boostText = commaSeparateNumber(boost.value)
                     if (boost.value > 0) {
                         boostText = "+" + boostText
@@ -57,8 +67,8 @@ function showAirportAssets(airport) {
                         boostText = "-" + boostText
                     }
 
-                    $boostDiv.append($('<span>' + boostText + '</span>'))
-                    $assetDiv.append($boostDiv)
+                    $boostSpan.append($('<span>' + boostText + '</span>'))
+                    $assetDiv.append($boostSpan)
                 })
                 $assetsDetailsDiv.append($assetDiv)
   	        })
@@ -135,6 +145,9 @@ function showAssetModal(asset) {
     $('#airportAssetDetailsModal .name').text(asset.name)
     $('#airportAssetDetailsModal .assetNameWarningDiv').hide()
 
+    //cleanup
+    $('#airportAssetDetailsModal div.table-row.property').remove()
+
     //general info is available already
     $('#airportAssetDetailsModal .assetType').text(asset.assetTypeLabel)
     $('#airportAssetDetailsModal .assetDescriptions').empty()
@@ -158,23 +171,15 @@ function showAssetModal(asset) {
     } else {
         $('#airportAssetDetailsModal .assetLevel').text('-')
     }
-    if (asset.upkeep) {
-        $('#airportAssetDetailsModal .assetExpense').text('$' + commaSeparateNumber(asset.upkeep))
-    } else {
-        $('#airportAssetDetailsModal .assetExpense').text('-')
-    }
-    $('#airportAssetDetailsModal .assetCost').text('$' + commaSeparateNumber(asset.cost))
 
-    if (asset.income) {
-        $('#airportAssetDetailsModal .assetIncome').text('$' + commaSeparateNumber(asset.income))
-    } else {
-        $('#airportAssetDetailsModal .assetIncome').text('-')
-    }
-    if (asset.profit) {
-        $('#airportAssetDetailsModal .assetProfit').text('$' + commaSeparateNumber(asset.profit))
-    } else {
-        $('#airportAssetDetailsModal .assetProfit').text('-')
-    }
+    $('#airportAssetDetailsModal .assetBoosts').empty() //wait for detailed load, as this might contain false boost from blueprints
+
+
+    $('#airportAssetDetailsModal .assetExpense').text('-')
+    $('#airportAssetDetailsModal .assetProfit').text('-')
+    $('#airportAssetDetailsModal .assetRevenue').text('-')
+
+    $('#airportAssetDetailsModal .assetCost').text('$' + commaSeparateNumber(asset.cost))
 
     $('#airportAssetDetailsModal .cost').text('$' + commaSeparateNumber(asset.cost))
     $('#airportAssetDetailsModal .constructionDuration').text(asset.constructionDuration + " weeks")
@@ -205,47 +210,171 @@ function showAssetModal(asset) {
         $('#airportAssetDetailsModal .sellValue').text('-')
     }
 
+
     //hide all action button until the ajax call finishes
     $('#airportAssetDetailsModal .buildButton').hide()
     $('#airportAssetDetailsModal .upgradeButton').hide()
     $('#airportAssetDetailsModal .sellButton').hide()
 
+    var url
     if (activeAirline) {
-        var url = "airlines/" + activeAirline.id + "/airport-asset/" + asset.id
-        $.ajax({
-            type: 'GET',
-            url: url,
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            success: function(assetDetails) {
-                if (owned) {
-                    $('#airportAssetDetailsModal .upgradeButton').show()
-                    $('#airportAssetDetailsModal .sellButton').show()
-                }
-                if (!asset.airline) {
-                    $('#airportAssetDetailsModal .buildButton').show()
-                }
-
-                if (assetDetails.rejection) {
-                    disableButton($('#airportAssetDetailsModal .upgradeButton'), assetDetails.rejection)
-                    disableButton($('#airportAssetDetailsModal .buildButton'), assetDetails.rejection)
-                } else {
-                    enableButton($('#airportAssetDetailsModal .upgradeButton'))
-                    enableButton($('#airportAssetDetailsModal .buildButton'))
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                    console.log(JSON.stringify(jqXHR));
-                    console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-            }
-        });
+        url = "airlines/" + activeAirline.id + "/airport-asset/" + asset.id
+    } else {
+        url = "airport-asset/" + asset.id
     }
+    $.ajax({
+        type: 'GET',
+        url: url,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(assetDetails) {
+            if (owned) {
+                $('#airportAssetDetailsModal .upgradeButton').show()
+                $('#airportAssetDetailsModal .sellButton').show()
+            }
+            if (!asset.airline) {
+                $('#airportAssetDetailsModal .buildButton').show()
+            }
+
+            if (assetDetails.rejection) {
+                disableButton($('#airportAssetDetailsModal .upgradeButton'), assetDetails.rejection)
+                disableButton($('#airportAssetDetailsModal .buildButton'), assetDetails.rejection)
+            } else {
+                enableButton($('#airportAssetDetailsModal .upgradeButton'))
+                enableButton($('#airportAssetDetailsModal .buildButton'))
+            }
+
+            if (assetDetails.boosts && assetDetails.boosts.length > 0) {
+                $('#airportAssetDetailsModal .assetBoosts').empty()
+                 $.each(assetDetails.boosts, function(index, boost) {
+                    var $boostSpan = $('<span style="white-space: nowrap;"></span>')
+                    var $boostImage = $('<img src=assets/images/icons/airport-features/' + boost.boostType + '.png style="vertical-align: middle;">')
+                    $boostImage.attr('title', boost.label)
+                    $boostSpan.append($boostImage)
+                    var boostText = commaSeparateNumber(boost.value)
+                    if (boost.value > 0) {
+                        boostText = "+" + boostText
+                    } else {
+                        boostText = "-" + boostText
+                    }
+                    $boostSpan.append($('<span>' + boostText + '</span>'))
+                    $('#airportAssetDetailsModal .assetBoosts').append($boostSpan)
+                })
+            } else {
+                $('#airportAssetDetailsModal .assetBoosts').text('-')
+            }
+
+            refreshBoostHistory(assetDetails.boostHistory, assetDetails.baseBoosts)
+            //add ??? mystery rows
+            if (asset.status === "UNDER_CONSTRUCTION") {
+                $.each(assetDetails.baseBoosts, function(index, entry) {
+                    var $row = $("<div class='table-row'></div>")
+
+                    $row.append("<div class='cell'>" + assetDetails.level + "</div>")
+                    var $boostImage = $('<img src="assets/images/icons/airport-features/' + entry.boostType + '.png" style="vertical-align: middle;">')
+                    var $cell = $("<div class='cell'></div>")
+                    $cell.append($boostImage)
+                    $cell.append('<span>' + entry.label + '</span>')
+                    $row.append($cell)
+                    $row.append("<div class='cell' align='right'>???</div>")
+                    $row.append("<div class='cell' align='right'>???</div>")
+                    $row.append('<div class="cell"><img src="assets/images/icons/construction.gif" style="vertical-align: middle;"></div>')
+                    $('#airportAssetDetailsModal .airportBoostHistoryTable .table-header').after($row)
+                })
+            }
+
+            //add public/private properties - this is different per asset type
+            $.each(assetDetails.publicProperties, function(key, value){
+                $('#airportAssetDetailsModal div.table-row.activeBoostsRow').after(generatePropertyRow(assetDetails.assetType, key, value))
+            })
+            $.each(assetDetails.privateProperties, function(key, value){
+                $('#airportAssetDetailsModal div.table-row.activeBoostsRow').after(generatePropertyRow(assetDetails.assetType, key, value))
+            })
+
+            if (typeof assetDetails.expense !== 'undefined') {
+                $('#airportAssetDetailsModal .assetExpense').text('$' + commaSeparateNumber(assetDetails.expense))
+                $('#airportAssetDetailsModal .assetProfit').text('$' + commaSeparateNumber(assetDetails.revenue - assetDetails.expense))
+            }
+            if (typeof assetDetails.revenue !== 'undefined') {
+                $('#airportAssetDetailsModal .assetRevenue').text('$' + commaSeparateNumber(assetDetails.revenue))
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+
 
     $('#airportAssetDetailsModal').fadeIn(200)
 }
 
+function generatePropertyRow(assetType, key, value) {
+    var label
+    var displayValue
 
+    if (assetType == "AIRPORT_HOTEL" ||
+        assetType == "GRAND_HOTEL_TOURIST" ||
+        assetType == "GRAND_HOTEL_BUSINESS" ||
+        assetType == "BEACH_RESORT" ||
+        assetType == "INN" ||
+        assetType == "HOTEL" ||
+        assetType == "LUXURIOUS_HOTEL") {
+        if (key == "rate") {
+            label = "Room Rate"
+            displayValue = "$" + value
+        } else if (key == "occupancy") {
+            label = "Occupancy"
+            displayValue = value
+        } else if (key == "capacity") {
+            label = "Capacity"
+            displayValue = value
+        }
+    }
+    var $row = $('<div class="table-row property"><div class="label" style="width: 50%"><h5>' + label + ':</h5></div><div class="value" style="width: 50%">' + displayValue + '</div></div>')
+    return $row
+}
 
+function refreshBoostHistory(history, baseBoosts) {
+    var $table = $('#airportAssetDetailsModal .airportBoostHistoryTable')
+    $table.find('div.table-row').remove()
 
+    $.each(history, function(index, entry) {
+        var $row = $("<div class='table-row'></div>")
+
+        $row.append("<div class='cell'>" + entry.level + "</div>")
+        var $boostImage = $('<img src="assets/images/icons/airport-features/' + entry.boostType + '.png" style="vertical-align: middle;">')
+        var $cell = $("<div class='cell'></div>")
+        $cell.append($boostImage)
+        $cell.append('<span>' + entry.label + '</span>')
+        $row.append($cell)
+        $row.append("<div class='cell' align='right'>+" + commaSeparateNumber(entry.gain) + "</div>")
+        $row.append("<div class='cell' align='right'>" + commaSeparateNumber(entry.value) + "</div>")
+        $row.append('<div class="cell"><img src="assets/images/icons/smiley-kiss.png" style="vertical-align: middle;"></div>') //TODO
+        $table.append($row)
+    })
+
+    //append base boosts
+    $.each(baseBoosts, function(index, entry) {
+        var $row = $("<div class='table-row'></div>")
+
+        $row.append("<div class='cell'>Base</div>")
+        var $boostImage = $('<img src="assets/images/icons/airport-features/' + entry.boostType + '.png" style="vertical-align: middle;">')
+        var $cell = $("<div class='cell'></div>")
+        $cell.append($boostImage)
+        $cell.append('<span>' + entry.label + '</span>')
+        $row.append($cell)
+        $row.append("<div class='cell' align='right'>-</div>")
+        $row.append("<div class='cell' align='right'>" + commaSeparateNumber(entry.value) + "</div>")
+        $row.append('<div class="cell"></div>')
+        $table.append($row)
+    })
+
+    //in case no boosts at all from this property
+    if (baseBoosts.length == 0) {
+        $emptyRow = $('<div class="table-row"><div class="cell">-</div><div class="cell">-</div><div class="cell">-</div><div class="cell">-</div><div class="cell"></div></div>')
+        $table.append($emptyRow)
+    }
+}
 
 

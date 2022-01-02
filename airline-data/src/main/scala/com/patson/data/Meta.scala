@@ -1969,7 +1969,13 @@ object Meta {
   }
 
   def createAirportAsset(connection : Connection): Unit = {
-    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_PROPERTY_TABLE)
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_PROPERTY_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_BOOST_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_PROPERTY_TABLE)
     statement.execute()
     statement.close()
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_BOOST_TABLE)
@@ -2001,6 +2007,8 @@ object Meta {
       "completion_cycle INTEGER, " +
       "revenue BIGINT, " +
       "expense BIGINT, " +
+      "roi DECIMAL(9,8), " +
+      "upgrade_applied TINYINT, " +
       "FOREIGN KEY(id) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -2008,21 +2016,46 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BOOST_TABLE + "(" +
-      "blueprint INTEGER, " +
+      "asset INTEGER, " +
       "boost_type VARCHAR(256), " +
       "value DECIMAL(12,2), " +
-      "PRIMARY KEY (blueprint, boost_type)," +
-      "FOREIGN KEY(blueprint) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      "PRIMARY KEY (asset, boost_type)," +
+      "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_PROPERTY_TABLE + "(" +
-      "blueprint INTEGER, " +
+      "asset INTEGER, " +
       "property VARCHAR(256), " +
       "value BIGINT, " +
-      "PRIMARY KEY (blueprint, property)," +
-      "FOREIGN KEY(blueprint) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      "PRIMARY KEY (asset, property)," +
+      "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BOOST_HISTORY_TABLE + "(" +
+      "asset INTEGER, " +
+      "boost_type VARCHAR(256), " +
+      "level SMALLINT, " +
+      "cycle INT, " + //not strictly necessary but nice for debugging
+      "value DECIMAL(12,2), " +
+      "gain DECIMAL(12,2), " +
+      "PRIMARY KEY (asset, boost_type, level)," +
+      "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_PROPERTY_HISTORY_TABLE + "(" +
+      "asset INTEGER, " +
+      "property VARCHAR(256), " +
+      "cycle INT, " +
+      "value BIGINT, " +
+      "PRIMARY KEY (asset, property, cycle)," +
+      "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

@@ -79,7 +79,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	
 	$("#airportDetailsCity").text(airport.city)
     $("#airportDetailsSize").text(airport.size)
-    $("#airportDetailsIncomeLevel").text(airport.incomeLevel) //ABC
+    $("#airportDetailsIncomeLevel").text(airport.incomeLevel)
 
     var $populationSpan = $('<span>' + commaSeparateNumber(airport.population) + '</span>')
     if (airport.populationBoost) {
@@ -157,9 +157,10 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 
                     if (airportBase.specializations) {
-                        var specializationList = $('<ul></ul>')
+                        var specializationList = $('<span></span>')
                         $.each(airportBase.specializations, function(index, specialization) {
-                            specializationList.append($('<li class="dot">' + specialization.label + '</li>'))
+                            //specializationList.append($('<li class="dot">' + specialization.label + '</li>'))
+                            specializationList.append($('<img src="assets/images/icons/specialization/' + specialization.id + '.png" title="' + specialization.label + '" style="vertical-align: middle;">'))
                         })
                         $('#airportBaseDetails .baseSpecializations').empty()
                         $('#airportBaseDetails .baseSpecializations').append(specializationList)

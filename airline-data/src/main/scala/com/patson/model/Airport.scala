@@ -285,7 +285,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   def initAssets(assets : List[AirportAsset]) = {
     this.assets = assets
     projectsLoaded = true
-    assetBoosts = assets.filter(_.status == AirportAssetStatus.COMPLETED).flatMap(_.boosts).groupBy(_.boostType)
+    assetBoosts = assets.flatMap(_.boosts).groupBy(_.boostType)
   }
 
   def addFeature(feature : AirportFeature) = {

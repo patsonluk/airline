@@ -75,13 +75,13 @@ object AssetBlueprintGenerator {
       case AMUSEMENT_PARK =>
         0.2
       case SUBWAY =>
-        0.2
+        0.8
       case STADIUM =>
         0.5
       case SCIENCE_PARK =>
         1
       case CONVENTION_CENTER =>
-        0.3
+        0.5
       case MUSEUM =>
         1
       case LANDMARK =>
@@ -89,7 +89,11 @@ object AssetBlueprintGenerator {
       case SOLAR_POWER_PLANT =>
         if (airport.size <= 4) 0.1 else 0.2 * Math.min(airport.size - 4, 3)
       case BEACH_RESORT =>
-        if (airport.size <= 4) 0.3 else if (airport.size == 5) 0.5 else if (airport.size == 6) 0.7 else 1
+        if (airport.features.map(_.featureType).contains(AirportFeatureType.VACATION_HUB)) {
+          1
+        } else {
+          if (airport.size <= 4) 0.3 else if (airport.size == 5) 0.5 else if (airport.size == 6) 0.7 else 1
+        }
       case SKI_RESORT =>
         if (airport.size <= 4) 0.3 else if (airport.size == 5) 0.5 else if (airport.size == 6) 0.7 else 1
       case TRAVEL_AGENCY =>
@@ -131,7 +135,7 @@ object AssetBlueprintGenerator {
 
   val getAirportBlueprintsLimit = (airport : Airport) => airport.size
 
-  val scienceParkIatas = List("SFO", "SEA", "SZX", "SIN", "LHR", "ICH", "TPE", "AMS", "BER", "BOS")
+  val scienceParkIatas = List("SFO", "SEA", "SZX", "SIN", "LHR", "ICN", "TPE", "AMS", "BER", "BOS")
 
   import AirportAssetType._
   val isApplicable = (assetType : AirportAssetType.Value, airport : Airport) => assetType match {

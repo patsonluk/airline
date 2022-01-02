@@ -1,16 +1,12 @@
 package controllers
 
-import com.patson.data.{AirlineSource, AirportAssetSource, AirportSource, CampaignSource, CycleSource, DelegateSource}
-import com.patson.model.campaign._
+import com.patson.data.{AirlineSource, AirportAssetSource, CycleSource}
 import com.patson.model._
-import com.patson.util.AirportCache
 import controllers.AuthenticationObject.AuthenticatedAirline
 import play.api.libs.json._
 import play.api.mvc._
 
 import javax.inject.Inject
-import scala.collection.mutable.ListBuffer
-import scala.math.BigDecimal.RoundingMode
 
 class AirportAssetApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   implicit object AirportAssetWrites extends Writes[AirportAsset] {
@@ -32,11 +28,18 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         "cost" -> entry.cost,
         "sellValue" -> entry.sellValue,
         "boosts" -> entry.boosts,
-        "id" -> entry.id
+        "id" -> entry.id,
+        "baseBoosts" -> entry.assetType.baseBoosts,
+        "publicProperties" -> entry.publicProperties()
       )
+
+
+
       entry.completionCycle.foreach { completionCycle =>
         result = result + ("completionDuration" -> JsNumber(completionCycle - CycleSource.loadCycle()))
       }
+
+
       result
     }
   }
@@ -44,19 +47,39 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
   object OwnedAirportAssetWrites extends Writes[AirportAsset] {
     def writes(entry : AirportAsset) : JsValue = {
       var result = AirportAssetWrites.writes(entry).asInstanceOf[JsObject]
-      result = result + ("expense" -> JsNumber(entry.expense)) + ("revenue" -> JsNumber(entry.revenue))
+      result = result + ("expense" -> JsNumber(entry.expense)) + ("revenue" -> JsNumber(entry.revenue)) + ("privateProperties" -> Json.toJson(entry.privateProperties()))
 
       result
     }
   }
 
+  implicit object AirportBoostHistoryWrites extends Writes[AirportAssetBoostHistory] {
+    def writes(entry : AirportAssetBoostHistory): JsValue = {
+      Json.obj(
+        "level" -> entry.level,
+        "boostType" -> entry.boostType.toString,
+        "label" -> AirportBoostType.getLabel(entry.boostType),
+        "value" ->  entry.value,
+        "gain" -> entry.gain
+      )
+    }
+  }
+
   def getAirportAssets(airportId : Int) = Action { request =>
     val assets = AirportAssetSource.loadAirportAssetsByAirport(airportId).map { asset =>
-      //for display purpose, set boosts for blueprints as well
+
       asset.status match {
-        case AirportAssetStatus.BLUEPRINT => {
+        case AirportAssetStatus.BLUEPRINT => { //for display purpose, set boosts for blueprints as well
           asset.boosts = asset.blueprint.assetType.baseBoosts
           asset
+        }
+        case AirportAssetStatus.UNDER_CONSTRUCTION => { //for display purpose, if level 1, display the blueprint boosts
+          if (asset.level == 1) {
+            asset.boosts = asset.blueprint.assetType.baseBoosts
+            asset
+          } else { //otherwise just display current boosts
+            asset
+          }
         }
         case _ => asset
       }
@@ -64,35 +87,54 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
     Ok(Json.toJson(assets))
   }
 
-  def getAirportAssetDetails(airlineId : Int, assetId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def getAirportAssetDetailsWithoutAirline(assetId : Int) = Action { request =>
+    getAirportAssetDetails(None, assetId)
+  }
+
+  def getAirportAssetDetailsWithAirline(airlineId : Int, assetId : Int) = AuthenticatedAirline(airlineId) { request =>
     val airline : Airline = request.user
+    getAirportAssetDetails(Some(airline), assetId)
+  }
+
+  private[this] def getAirportAssetDetails(airlineOption : Option[Airline], assetId : Int) = {
     AirportAssetSource.loadAirportAssetByAssetId(assetId) match {
       case Some(asset) =>
 
         asset.airline match {
           case Some(owner) =>
-            if (owner.id != airline.id) {
-              Forbidden(s"Airline $airline does not own $asset")
-            } else {
-              var result = Json.toJson(asset)(OwnedAirportAssetWrites).asInstanceOf[JsObject]
+            var result : JsObject =
+              if (airlineOption.isEmpty || owner.id != airlineOption.get.id) {
+                Json.toJson(asset).asInstanceOf[JsObject]
+              } else {
+                var ownerResult = Json.toJson(asset)(OwnedAirportAssetWrites).asInstanceOf[JsObject]
+                getRejection(airlineOption.get, asset).foreach { rejection =>
+                  ownerResult = ownerResult + ("rejection" -> JsString(rejection))
+                }
+                ownerResult
+              }
+            //load boost history
+            result = result + ("boostHistory" -> Json.toJson(AirportAssetSource.loadAirportBoostHistoryByAssetId(assetId).sortBy(_.boostType.id).sortBy(_.level)(Ordering.Int.reverse)))
+
+            Ok(result)
+          case None =>
+            var result = Json.toJson(asset).asInstanceOf[JsObject]
+            airlineOption.foreach { airline =>
               getRejection(airline, asset).foreach { rejection =>
                 result = result + ("rejection" -> JsString(rejection))
               }
-              Ok(result)
-            }
-          case None =>
-            var result = Json.toJson(asset).asInstanceOf[JsObject]
-            getRejection(airline, asset).foreach { rejection =>
-              result = result + ("rejection" -> JsString(rejection))
             }
             Ok(result)
-
         }
       case None => NotFound(s"Asset $assetId is not found")
     }
-
   }
 
+  /**
+   * Get rejection of building/upgrading the asset
+   * @param airline
+   * @param asset
+   * @return
+   */
   def getRejection(airline : Airline, asset : AirportAsset) : Option[String] = {
     asset.airline match {
       case Some(owner) =>
@@ -103,7 +145,12 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         } else if (asset.level >= AirportAsset.MAX_LEVEL) {
           Some(s"${asset.name} is already at max level")
         } else {
-          None
+          val cooldownDelta = asset.completionCycle.get + asset.assetType.upgradeCooldown - CycleSource.loadCycle()
+          if (cooldownDelta > 0) {
+            Some(s"${asset.name} can only be upgraded again in $cooldownDelta week(s)")
+          } else {
+            None
+          }
         }
       case None =>
         airline.getBases().find(_.airport.id == asset.blueprint.airport.id) match {

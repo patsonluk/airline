@@ -54,6 +54,10 @@ object MainSimulation extends App {
       val (flightLinkResult, loungeResult, linkRidershipDetails) = LinkSimulation.linkSimulation(cycle)
       println("Airport simulation")
       AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
+
+      println("Airport assets simulation")
+      AirportAssetSimulation.simulate(cycle, linkRidershipDetails)
+
       println("Airplane simulation")
       val airplanes = AirplaneSimulation.airplaneSimulation(cycle)
       println("Airline simulation")
@@ -62,7 +66,7 @@ object MainSimulation extends App {
       CountrySimulation.simulate(cycle)
       println("Airplane model simulation")
       AirplaneModelSimulation.simulate(cycle)
-      
+
       //purge log
       println("Purging logs")
       LogSource.deleteLogsBeforeCycle(cycle - 100)
@@ -81,6 +85,10 @@ object MainSimulation extends App {
       cycleEnd
   }
 
+  /**
+    * Things to be done after cycle ticked. These should be relatively short operations (data reconciliation etc)
+    * @param currentCycle
+    */
   def postCycle(currentCycle : Int) = {
     println("Oil simulation")
     OilSimulation.simulate(currentCycle) //simulate at the beginning of a new cycle

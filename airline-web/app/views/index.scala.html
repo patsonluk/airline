@@ -1140,7 +1140,7 @@
 											<div class="label"><h5>Specialization:</h5></div>
 											<div class="value">
 												<span class="baseSpecializations"></span>
-												<img src='@routes.Assets.versioned("images/icons/gear.png")' class='specialization button' style="vertical-align: middle;" onclick="showSpecializationModal()"/>
+												<img src='@routes.Assets.versioned("images/icons/gear.png")' class='specialization button' style="vertical-align: middle; margin-left: 20px;" onclick="showSpecializationModal()"/>
 											</div>
 										</div>
 										<div class="table-row">
@@ -4890,7 +4890,7 @@
 
 
   <div id="airportAssetDetailsModal" class="modal">
-	  <div class="modal-content"  style="width : 400px;">
+	  <div class="modal-content" style="width : 500px; max-width: 100%">
 		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
 		  <h4><span class="name"></span></h4>
 		  <div class="descriptions"></div>
@@ -4919,13 +4919,20 @@
 				  <div class="label" style="width: 50%"><h5>Level:</h5></div>
 				  <div class="value assetLevel" style="width: 50%"></div>
 			  </div>
+			  <div class="table-row activeBoostsRow">
+				  <div class="label" style="width: 50%"><h5>Active Boosts:</h5></div>
+				  <div class="value" style="width: 50%">
+					  <span class="assetBoosts"></span>
+<!--					  <span class="assetBoostHistoryIcon clickable" onmousedown="showAssetBoostHistory($('#airportAssetDetailsModal').data('boostHistory'))" onmouseout="hideAssetBoostHistory()"><img src='@routes.Assets.versioned("images/icons/information.png")'></span>-->
+				  </div>
+			  </div>
 			  <div class="table-row">
 				  <div class="label"><h5>Expense:</h5></div>
 				  <div class="value assetExpense"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="label"><h5>Income:</h5></div>
-				  <div class="value assetIncome"></div>
+				  <div class="label"><h5>Revenue:</h5></div>
+				  <div class="value assetRevenue"></div>
 			  </div>
 			  <div class="table-row">
 				  <div class="label"><h5>Profit:</h5></div>
@@ -4943,8 +4950,31 @@
 				  <div class="label"><h5>Sell Value:</h5></div>
 				  <div class="value sellValue"></div>
 			  </div>
-
 		  </div>
+		  <h5>Level History</h5>
+		  <div class="table data" style="width: 100%;">
+			  <div class="table-header">
+				  <div class="cell" style="width: 10%">Lv</div>
+				  <div class="cell" style="width: 40%">Boost</div>
+				  <div class="cell" style="width: 20%; align: right;">Growth</div>
+				  <div class="cell" style="width: 20%; align: right;">Value</div>
+				  <div class="cell" style="width: 10%">&nbsp;</div>
+			  </div>
+		  </div>
+		  <div style="max-height: 150px; width: 100%; overflow-y:auto;">
+			  <div class="table data airportBoostHistoryTable" style="max-height: 100%; width: 100%">
+				  <div class="table-header">
+					  <div class="cell" style="width: 10%; border-bottom: none;"></div>
+					  <div class="cell" style="width: 40%; border-bottom: none;"></div>
+					  <div class="cell" style="width: 20%; border-bottom: none;"></div>
+					  <div class="cell" style="width: 20%; border-bottom: none;"></div>
+					  <div class="cell" style="width: 10%; border-bottom: none;"></div>
+				  </div>
+			  </div>
+		  </div>
+
+
+
 		  <div class="button buildButton" onclick="promptConfirm('Build this Asset?', buildOrUpgradeAsset, $('#airportAssetDetailsModal').data('asset'))">Build</div>
 		  <div class="button upgradeButton" onclick="promptConfirm('Upgrade this Asset?', buildOrUpgradeAsset, $('#airportAssetDetailsModal').data('asset'))">Upgrade</div>
 		  <div class="button sellButton" onclick="promptConfirm('Sell this Asset?', sellAsset, $('#airportAssetDetailsModal').data('asset'))">Sell</div>
