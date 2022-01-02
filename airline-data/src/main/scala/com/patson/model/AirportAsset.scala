@@ -402,7 +402,7 @@ abstract class AirportAsset() extends IdObject{
             (1 + 0.1 * Math.max(-10, (Math.log(airport.population.toDouble / Computation.MAX_POPULATION))))  * 0.8 //Each e away, 10% less.
 
         val randomRatio = 0.8 + new Random(id).nextDouble() * 0.4   //20% fluctuation ie 0.8 - 1.2
-        (0.5 + (ratioToModelAirportPower * 3)) * randomRatio
+        (0.3 + (ratioToModelAirportPower * 2)) * randomRatio
     }
 
     val status : AirportAssetStatus.Value

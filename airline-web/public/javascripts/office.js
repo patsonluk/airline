@@ -52,7 +52,8 @@ function showOfficeCanvas() {
 	
 	updateAirlineDetails()
 	loadSheets();
-	updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
+	//updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
+	updateAirlineAssets()
 	updateCampaignSummary()
 	updateChampionedCountriesDetails()
 	updateChampionedAirportsDetails()
@@ -86,6 +87,47 @@ function updateCampaignSummary() {
             });
             if (result.length == 0) {
                 $campaignSummary.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div></div>")
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+    });
+}
+
+function updateAirlineAssets() {
+    $.ajax({
+        type: 'GET',
+        url: "airlines/" + activeAirline.id + "/airport-assets",
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            var $assetList = $("#officeCanvas .assetList")
+            $assetList.children("div.table-row").remove()
+
+            $.each(result, function(index, asset) {
+                var profit = asset.revenue - asset.expense
+                var margin
+                if (asset.expense == 0) {
+                    margin = "-"
+                } else {
+                    margin = (profit * 100.0 / asset.expense).toFixed(2)
+                }
+                var $row = $("<div class='table-row clickable'></div>")
+                $row.append("<div class='cell'>" + getCountryFlagImg(asset.airport.countryCode) + asset.airport.iata + "</div>")
+                $row.append("<div class='cell'>" + asset.name + "</div>")
+                $row.append("<div class='cell' style='align : right;'>" + asset.level + "</div>")
+                $row.append("<div class='cell' style='align : right;'>$" + commaSeparateNumber(profit) + "</div>")
+                $row.append("<div class='cell' style='align : right;'>" + margin  + "%</div>")
+
+                $row.click(function() {
+                    showAssetModal(asset)
+                })
+                $assetList.append($row)
+            });
+            if (result.length == 0) {
+                $assetList.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {

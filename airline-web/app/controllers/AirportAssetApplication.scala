@@ -33,13 +33,9 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         "publicProperties" -> entry.publicProperties()
       )
 
-
-
       entry.completionCycle.foreach { completionCycle =>
         result = result + ("completionDuration" -> JsNumber(completionCycle - CycleSource.loadCycle()))
       }
-
-
       result
     }
   }
@@ -85,6 +81,11 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
       }
     }.sortBy(_.cost)
     Ok(Json.toJson(assets))
+  }
+
+  def getAirportAssetsWithAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val assets = AirportAssetSource.loadAirportAssetsByAirline(airlineId)
+    Ok(Json.toJson(assets)(Writes.traversableWrites(OwnedAirportAssetWrites)))
   }
 
   def getAirportAssetDetailsWithoutAirline(assetId : Int) = Action { request =>

@@ -137,6 +137,7 @@ GET 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.get
 POST 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.saveCampaign(airlineId: Int)
 DELETE 	 /airlines/:airlineId/campaigns/:campaignId         controllers.CampaignApplication.deleteCampaign(airlineId: Int, campaignId : Int)
 GET 	 /airlines/:airlineId/campaign-airports/:airportId         controllers.CampaignApplication.getCampaignAirports(airlineId: Int, airportId: Int, radius : Int)
+GET	 	 /airlines/:airlineId/airport-assets	      controllers.AirportAssetApplication.getAirportAssetsWithAirline(airlineId : Int)
 GET	 	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.getAirportAssetDetailsWithAirline(airlineId : Int, assetId : Int)
 PUT	 	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.putAirportAsset(airlineId : Int, assetId : Int)
 DELETE	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.deleteAirportAsset(airlineId : Int, assetId : Int)

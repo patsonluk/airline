@@ -223,8 +223,8 @@ object AirportAssetSimulation {
     val neutralProfitFactor = 0.25 //start losing money < 0.25 performance
 
     val weeklyProfit = asset.value * asset.roi / 52 * (performanceFactor - neutralProfitFactor) / (1 - neutralProfitFactor)
-    //from profit, deduce expense by considering revenue = 0 .
-    val baseExpense = asset.value * asset.roi / 52 * neutralProfitFactor
+    //from profit, deduce expense by considering revenue = 0 at performanceFactor = 0.
+    val baseExpense = asset.value * asset.roi / 52 * (0 - neutralProfitFactor) / (1 - neutralProfitFactor) * -1
 
     val occupancy = Math.min(asset.capacity, potentialGuests)
     //expense increase slightly per occupancy
