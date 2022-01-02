@@ -361,7 +361,9 @@ function refreshBoostHistory(history, baseBoosts) {
         $row.append($cell)
         $row.append("<div class='cell' align='right'>+" + commaSeparateNumber(entry.gain) + "</div>")
         $row.append("<div class='cell' align='right'>" + commaSeparateNumber(entry.value) + "</div>")
-        $row.append('<div class="cell"><img src="assets/images/icons/smiley-kiss.png" style="vertical-align: middle;"></div>') //TODO
+        $upgradeFactorCell = $('<div class="cell"></div>')
+        $upgradeFactorCell.append(getUpgradeFactorIcon(entry.upgradeFactor))
+        $row.append($upgradeFactorCell)
         $table.append($row)
     })
 
@@ -389,3 +391,28 @@ function refreshBoostHistory(history, baseBoosts) {
 }
 
 
+function getUpgradeFactorIcon(value) {
+    var $icon = $('<img style="vertical-align: middle;">')
+    if (value >= 0.9) {
+        icon = "smiley-kiss.png"
+        description = "Awesome"
+    } else if (value >= 0.8) {
+        icon = "smiley-lol.png"
+        description = "Great"
+    } else if (value >= 0.7) {
+        icon = "smiley.png"
+        description = "Good"
+    } else if (value >= 0.5) {
+        icon = "smiley-neutral.png"
+        description = "So-so"
+    } else if (value >= 0.3) {
+        icon = "smiley-sad.png"
+        description = "Bad"
+    } else {
+        icon = "smiley-cry.png"
+        description = "Terrible"
+    }
+    $icon.attr('src', 'assets/images/icons/' + icon)
+    $icon.attr('title', description)
+    return $icon
+}

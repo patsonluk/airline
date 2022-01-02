@@ -60,12 +60,12 @@ object AirportAssetSimulation {
     allAssets.foreach { asset =>
       //check for changes due to upgrade
       checkUpgradeCompletion(asset) match {
-        case Some((newBoosts, newRoi)) =>
+        case Some((newBoosts, newRoi, upgradeFactor)) =>
           println(s"$asset upgrading to $newBoosts")
           asset.boosts = newBoosts.map(_._1)
           //save the boost history
           val newBoostHistory = newBoosts.map {
-            case (boost, gain) => AirportAssetBoostHistory(asset.id, asset.level, boost.boostType, boost.value, gain, currentCycle)
+            case (boost, gain) => AirportAssetBoostHistory(asset.id, asset.level, boost.boostType, boost.value, gain, upgradeFactor, currentCycle)
           }
           AirportAssetSource.saveAirportBoostHistory(newBoostHistory)
 
@@ -86,6 +86,7 @@ object AirportAssetSimulation {
       //TODO update airline finances (history/cash balance) or should this be done in Airline Sim?
     }
 
+    AirportAssetSource.deleteAirportPropertiesHistory(currentCycle - 100)
     AirportAssetSource.saveAirportPropertiesHistory(allAssetPropertiesHistory.toList)
 
   }
@@ -95,7 +96,7 @@ object AirportAssetSimulation {
     *
     * @return Some if there are new boosts. 2nd value in list tuple is boost gain
     */
-  def checkUpgradeCompletion(asset : AirportAsset) : Option[(List[(AirportBoost, Double)], Double)] = { //(new boost, new roi)
+  def checkUpgradeCompletion(asset : AirportAsset) : Option[(List[(AirportBoost, Double)], Double, Double)] = { //(new boost, new roi, upgrade factor)
     if (asset.status == AirportAssetStatus.COMPLETED && !asset.upgradeApplied) {
       val history = asset.boostHistory()
       if (history.isEmpty || history.map(_.level).max < asset.level) { //double check, the upgradeApplied flag is actually good enough
@@ -105,8 +106,8 @@ object AirportAssetSimulation {
           } else {
             asset.boosts
           }
-        val upgradeFactor = generateUpgradeFactor()
-        Some(computeNewBoosts(asset, previousLevelBoosts, upgradeFactor), computeNewRoi(asset, upgradeFactor))
+        val upgradeFactor = generateUpgradeFactor(asset)
+        Some(computeNewBoosts(asset, previousLevelBoosts, upgradeFactor), computeNewRoi(asset, upgradeFactor), upgradeFactor)
       } else {
         None
       }
@@ -118,8 +119,24 @@ object AirportAssetSimulation {
   /**
     * how successful the upgrade is, from 0 to 1
     */
-  def generateUpgradeFactor() : Double = {
-    Math.random() //TODO
+  def generateUpgradeFactor(asset : AirportAsset) : Double = {
+    //get performance factor up to last 10 weeks
+    val historyEntries = AirportAssetSource.loadAirportPropertyHistoryByAssetId(asset.id).sortBy(_.cycle).takeRight(10)
+    val performances = historyEntries.map { entry =>
+      val profit = entry.properties("revenue") - entry.properties("expense")
+      val actualRoi = profit * 52.0 / asset.value
+      val potentialRoi = asset.roi
+      val performance = Math.min(1.0, actualRoi / potentialRoi)
+      performance
+    }
+    if (performances.length == 0) {
+      Math.random()
+    } else {
+      val finalPerformance =  performances.sum / performances.length //from 0 to 1 . if no previous history (new asset) use 0.5
+      Math.random() * 0.5 + finalPerformance * 0.5 //50% performance 50% luck
+    }
+
+
   }
 
   def computeNewBoosts(asset : AirportAsset, previousLevelBoosts : List[AirportBoost], upgradeFactor : Double) : List[(AirportBoost, Double)] = { //2nd value is gain
@@ -265,7 +282,7 @@ object AirportAssetSimulation {
 
     val roomRate =
       if (revenue > 0) {
-        (revenue / occupancy / nightsPerGuest).toInt
+        (revenue / occupancy / nightsPerGuest * 0.8).toInt //*0.8, assume 20% income from something else
       } else {
         (costPerGuest * 1.5).toInt
       }

@@ -65,33 +65,33 @@ class AirportAssetSimulationSpec extends WordSpecLike with Matchers {
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 1, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.initRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 150 && rate < 250)
+      assert(rate > 100 && rate < 250)
 
       assetType = AirportAssetType.GRAND_HOTEL_BUSINESS
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 1, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.initRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 150 && rate < 350)
+      assert(rate > 100 && rate < 250)
 
       assetType = AirportAssetType.BEACH_RESORT
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 1, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.initRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 50 && rate < 200)
+      assert(rate > 40 && rate < 200)
 
 
       assetType = AirportAssetType.SKI_RESORT
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 1, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.initRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 150 && rate < 300)
+      assert(rate > 100 && rate < 200)
 
 
       assetType = AirportAssetType.INN
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 1, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.initRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 40 && rate < 100)
+      assert(rate > 30 && rate < 60)
 
       assetType = AirportAssetType.HOTEL
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 1, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.initRoi, Map.empty)
@@ -103,7 +103,7 @@ class AirportAssetSimulationSpec extends WordSpecLike with Matchers {
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 1, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.initRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 200 && rate < 500)
+      assert(rate > 150 && rate < 300)
     }
     "compute correct room rate on all Hotel types (level 10), max ROI".in {
       var assetType : AirportAssetType.Value = AirportAssetType.AIRPORT_HOTEL
@@ -117,13 +117,13 @@ class AirportAssetSimulationSpec extends WordSpecLike with Matchers {
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 10, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.maxRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 200 && rate < 700)
+      assert(rate > 100 && rate < 300)
 
       assetType = AirportAssetType.GRAND_HOTEL_BUSINESS
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 10, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.maxRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 300 && rate < 500)
+      assert(rate > 200 && rate < 400)
 
       assetType = AirportAssetType.BEACH_RESORT
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 10, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.maxRoi, Map.empty)
@@ -136,7 +136,7 @@ class AirportAssetSimulationSpec extends WordSpecLike with Matchers {
       asset = AirportHotelAsset(AirportAssetBlueprint(highIncomeAirport, assetType), Some(airline), "", 10, Some(0), AirportAssetStatus.COMPLETED, List.empty, 0, 0, roi = assetType.maxRoi, Map.empty)
       result = AirportAssetSimulation.simulateAirportHotelPerformance(asset, paxStats)
       rate = result.properties("rate")
-      assert(rate > 300 && rate < 500)
+      assert(rate > 250 && rate < 500)
 
 
       assetType = AirportAssetType.INN

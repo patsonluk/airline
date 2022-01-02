@@ -2044,6 +2044,7 @@ object Meta {
       "cycle INT, " + //not strictly necessary but nice for debugging
       "value DECIMAL(12,2), " +
       "gain DECIMAL(12,2), " +
+      "upgrade_factor DECIMAL(5,4), " +
       "PRIMARY KEY (asset, boost_type, level)," +
       "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

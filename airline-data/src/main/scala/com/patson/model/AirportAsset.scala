@@ -1,6 +1,6 @@
 package com.patson.model
 
-import com.patson.data.{AirportAssetSource, CycleSource}
+import com.patson.data.{AirportAssetSource, CycleSource, AirportSource}
 
 import scala.math.BigDecimal.RoundingMode
 import scala.util.Random
@@ -235,7 +235,7 @@ object AirportAssetType extends Enumeration {
         override val baseRequirement : Int = 1
 
         override val maxRoi : Double = 1.0 / 8
-        override val initRoi : Double = 1.0 / 40
+        override val initRoi : Double = 1.0 / 30
     }
     case class GolfCourseAssetType() extends AirportAssetType {
         override val label = "Golf Course"
@@ -264,8 +264,8 @@ object AirportAssetType extends Enumeration {
         override val baseCost : Long = 100000000
         override val baseRequirement : Int = 5
 
-        override val maxRoi : Double = 1.0 / 30
-        override val initRoi : Double = 1.0 / 70
+        override val maxRoi : Double = 1.0 / 25
+        override val initRoi : Double = 1.0 / 60
     }
     case class OfficeBuilding2AssetType() extends AirportAssetType {
         override val label = "Office Building II"
@@ -396,18 +396,37 @@ abstract class AirportAsset() extends IdObject{
     var upgradeApplied : Boolean = false
 
     val costModifier = {
-        val airport = blueprint.airport
         val ratioToModelAirportPower =
           (airport.income / Computation.MAX_INCOME) * 0.2 + //20% by income
             (1 + 0.1 * Math.max(-10, (Math.log(airport.population.toDouble / Computation.MAX_POPULATION))))  * 0.8 //Each e away, 10% less.
 
+        val featureRatio = AirportSource.loadAirportFeatures(airport.id).map { feature => //have to reload features, since the airport in blueprint is not full load, doing so might have cyclic dependencies issue
+          import com.patson.model.AirportFeatureType._
+            feature.featureType match {
+                case INTERNATIONAL_HUB =>
+                    feature.strength.toDouble / feature.MAX_STRENGTH * 0.7
+                case VACATION_HUB =>
+                    feature.strength.toDouble / feature.MAX_STRENGTH * 0.3
+                case FINANCIAL_HUB =>
+                    feature.strength.toDouble / feature.MAX_STRENGTH * 0.3
+                case GATEWAY_AIRPORT =>
+                    feature.strength.toDouble / feature.MAX_STRENGTH * 0.1
+                case _ => 0
+            }
+        }.sum
+
+
         val randomRatio = 0.8 + new Random(id).nextDouble() * 0.4   //20% fluctuation ie 0.8 - 1.2
-        (0.3 + (ratioToModelAirportPower * 2)) * randomRatio
+        (0.3 + (ratioToModelAirportPower * 2) + featureRatio * 2) * randomRatio
     }
 
     val status : AirportAssetStatus.Value
     val cost = (blueprint.assetType.baseCost * costModifier).toLong / 1000 * 1000 //zero last 3 digits
-    val value = cost * level
+    val value = cost * (status match {
+        case AirportAssetStatus.BLUEPRINT => 0
+        case AirportAssetStatus.UNDER_CONSTRUCTION => level - 1
+        case AirportAssetStatus.COMPLETED => level
+    })
     val sellValue = (value * 0.5).toLong
 
 
@@ -582,7 +601,7 @@ object AirportAssetStatus extends Enumeration {
 }
 
 //history entries are designed to be loosely coupled with asset itself, make no direct reference back nor asset has reference to it
-case class AirportAssetBoostHistory(assetId : Int, level : Int, boostType: AirportBoostType.Value, value : Double, gain : Double, cycle : Int)
+case class AirportAssetBoostHistory(assetId : Int, level : Int, boostType: AirportBoostType.Value, value : Double, gain : Double, upgradeFactor : Double, cycle : Int)
 case class AirportAssetPropertiesHistory(assetId : Int, properties : Map[String, Long], cycle : Int)
 
 

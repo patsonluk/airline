@@ -351,8 +351,9 @@ object AirportAssetSource {
         val level = resultSet.getInt("level")
         val value = resultSet.getDouble("value")
         val gain = resultSet.getDouble("gain")
+        val upgradeFactor = resultSet.getDouble("upgrade_factor")
         val cycle = resultSet.getInt("cycle")
-        result.append(AirportAssetBoostHistory(assetId, level, boostType, value, gain, cycle))
+        result.append(AirportAssetBoostHistory(assetId, level, boostType, value, gain, upgradeFactor, cycle))
       }
 
       result.toList
@@ -390,7 +391,7 @@ object AirportAssetSource {
 
 
   def saveAirportBoostHistory(entries : List[AirportAssetBoostHistory]) = {
-    val queryString = s"INSERT INTO $AIRPORT_ASSET_BOOST_HISTORY_TABLE (asset, boost_type, level, cycle, value, gain) VALUES(?,?,?,?,?,?)"
+    val queryString = s"INSERT INTO $AIRPORT_ASSET_BOOST_HISTORY_TABLE (asset, boost_type, level, cycle, value, gain, upgrade_factor) VALUES(?,?,?,?,?,?,?)"
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
@@ -402,6 +403,7 @@ object AirportAssetSource {
         preparedStatement.setInt(4, entry.cycle)
         preparedStatement.setDouble(5, entry.value)
         preparedStatement.setDouble(6, entry.gain)
+        preparedStatement.setDouble(7, entry.upgradeFactor)
 
         preparedStatement.executeUpdate()
       }

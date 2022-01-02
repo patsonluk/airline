@@ -937,6 +937,28 @@ object AirportSource {
     }
   }
 
+  def loadAirportFeatures(airportId : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
+      featureStatement.setInt(1, airportId)
+
+      val featureResultSet = featureStatement.executeQuery()
+      val features = ListBuffer[AirportFeature]()
+      while (featureResultSet.next()) {
+        val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
+        val strength = featureResultSet.getInt("strength")
+
+        features += AirportFeature(featureType, strength)
+      }
+      featureStatement.close()
+      features.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+
 //  def updateAirportImages(airports : List[Airport]) = {
 //    val connection = Meta.getConnection()
 //    try {

@@ -56,7 +56,8 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         "boostType" -> entry.boostType.toString,
         "label" -> AirportBoostType.getLabel(entry.boostType),
         "value" ->  entry.value,
-        "gain" -> entry.gain
+        "gain" -> entry.gain,
+        "upgradeFactor" -> entry.upgradeFactor
       )
     }
   }
