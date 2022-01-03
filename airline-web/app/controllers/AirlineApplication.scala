@@ -460,6 +460,13 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
               AirlineSource.deleteLounge(lounge)
             }
 
+            //delete assets
+            AirportAssetSource.loadAirportAssetsByAirline(airlineId).filter(_.airport.id == airportId).foreach { asset =>
+              AirportAssetSource.deleteAirportAsset(asset.id)
+              AirlineSource.adjustAirlineBalance(airlineId, asset.sellValue)
+              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.ASSET_TRANSACTION, asset.sellValue))
+            }
+
             AirlineSource.deleteAirlineBase(base)
 
             Ok(Json.toJson(base))
