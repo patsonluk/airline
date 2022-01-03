@@ -442,7 +442,7 @@ package object controllers {
         "countryCode" -> country.countryCode,
         "name" -> country.name,
         "airportPopulation" -> country.airportPopulation,
-        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "incomeLevel" -> Computation.getIncomeLevel(country.income).toInt,
         "openness" ->  country.openness
       )
     }
@@ -455,7 +455,7 @@ package object controllers {
         "countryCode" -> country.countryCode,
         "name" -> country.name,
         "airportPopulation" -> country.airportPopulation,
-        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "incomeLevel" -> Computation.getIncomeLevel(country.income).toInt,
         "openness" ->  country.openness,
         "mutualRelationship" -> mutualRelationship
       )
@@ -497,8 +497,7 @@ package object controllers {
 
   implicit object CityWrites extends Writes[City] {
     def writes(city: City): JsValue = {
-      val averageIncome = city.income
-      val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
+      val incomeLevel = Computation.getIncomeLevel(city.income).toInt
       JsObject(List(
         "id" -> JsNumber(city.id),
         "name" -> JsString(city.name),
@@ -506,7 +505,7 @@ package object controllers {
         "longitude" -> JsNumber(city.longitude),
         "countryCode" -> JsString(city.countryCode),
         "population" -> JsNumber(city.population),
-        "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
+        "incomeLevel" -> JsNumber(incomeLevel)))
     }
   }
 

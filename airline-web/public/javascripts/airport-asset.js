@@ -296,10 +296,12 @@ function showAssetModal(asset) {
 
             //add public/private properties - this is different per asset type
             $.each(assetDetails.publicProperties, function(key, value){
-                $('#airportAssetDetailsModal div.table-row.activeBoostsRow').after(generatePropertyRow(assetDetails.assetType, key, value))
+                var $row = $('<div class="table-row property"><div class="label" style="width: 50%"><h5>' + key + ':</h5></div><div class="value" style="width: 50%">' + value + '</div></div>')
+                $('#airportAssetDetailsModal div.table-row.activeBoostsRow').after($row)
             })
             $.each(assetDetails.privateProperties, function(key, value){
-                $('#airportAssetDetailsModal div.table-row.activeBoostsRow').after(generatePropertyRow(assetDetails.assetType, key, value))
+                var $row = $('<div class="table-row property"><div class="label" style="width: 50%"><h5>' + key + ':</h5></div><div class="value" style="width: 50%">' + value + '</div></div>')
+                $('#airportAssetDetailsModal div.table-row.activeBoostsRow').after($row)
             })
 
             if (typeof assetDetails.expense !== 'undefined') {
@@ -318,32 +320,6 @@ function showAssetModal(asset) {
 
 
     $('#airportAssetDetailsModal').fadeIn(200)
-}
-
-function generatePropertyRow(assetType, key, value) {
-    var label
-    var displayValue
-
-    if (assetType == "AIRPORT_HOTEL" ||
-        assetType == "GRAND_HOTEL_TOURIST" ||
-        assetType == "GRAND_HOTEL_BUSINESS" ||
-        assetType == "BEACH_RESORT" ||
-        assetType == "INN" ||
-        assetType == "HOTEL" ||
-        assetType == "LUXURIOUS_HOTEL") {
-        if (key == "rate") {
-            label = "Room Rate"
-            displayValue = "$" + value
-        } else if (key == "occupancy") {
-            label = "Occupancy"
-            displayValue = value
-        } else if (key == "capacity") {
-            label = "Capacity"
-            displayValue = value
-        }
-    }
-    var $row = $('<div class="table-row property"><div class="label" style="width: 50%"><h5>' + label + ':</h5></div><div class="value" style="width: 50%">' + displayValue + '</div></div>')
-    return $row
 }
 
 function refreshBoostHistory(history, baseBoosts) {

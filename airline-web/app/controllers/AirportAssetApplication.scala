@@ -30,7 +30,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         "boosts" -> entry.boosts,
         "id" -> entry.id,
         "baseBoosts" -> entry.assetType.baseBoosts,
-        "publicProperties" -> entry.publicProperties()
+        "publicProperties" -> computeAssetProperties(entry, entry.publicProperties())
       )
 
       entry.completionCycle.foreach { completionCycle =>
@@ -43,7 +43,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
   object OwnedAirportAssetWrites extends Writes[AirportAsset] {
     def writes(entry : AirportAsset) : JsValue = {
       var result = AirportAssetWrites.writes(entry).asInstanceOf[JsObject]
-      result = result + ("expense" -> JsNumber(entry.expense)) + ("revenue" -> JsNumber(entry.revenue)) + ("privateProperties" -> Json.toJson(entry.privateProperties()))
+      result = result + ("expense" -> JsNumber(entry.expense)) + ("revenue" -> JsNumber(entry.revenue)) + ("privateProperties" -> Json.toJson(computeAssetProperties(entry, entry.privateProperties())))
 
       result
     }
@@ -60,6 +60,22 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         "upgradeFactor" -> entry.upgradeFactor
       )
     }
+  }
+
+  def computeAssetProperties(asset : AirportAsset, rawProperties : Map[String, Long]) : Map[String, String] = {
+    val result = collection.mutable.Map[String, String]()
+    val formatter = java.text.NumberFormat.getIntegerInstance
+    asset match {
+      case hotel : HotelAsset =>
+        rawProperties.get("occupancy").foreach { occupancy =>
+          val occupancyString = formatter.format(occupancy) + " (" + (occupancy * 100 / hotel.capacity) + "%)"
+          result.put("Occupancy", occupancyString)
+        }
+        rawProperties.get("rate").foreach { rate =>
+          result.put("Room Rate", "$" + formatter.format(rate))
+        }
+    }
+    result.toMap
   }
 
   def getAirportAssets(airportId : Int) = Action { request =>
