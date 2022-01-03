@@ -74,6 +74,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         rawProperties.get("rate").foreach { rate =>
           result.put("Room Rate", "$" + formatter.format(rate))
         }
+      case _ =>
     }
     result.toMap
   }
