@@ -126,7 +126,7 @@ object AirportAssetSimulation {
       val profit = entry.properties("revenue") - entry.properties("expense")
       val actualRoi = profit * 52.0 / asset.value
       val potentialRoi = asset.roi
-      val performance = Math.min(1.0, actualRoi / potentialRoi)
+      val performance = Math.max(0, Math.min(1.0, actualRoi / potentialRoi))
       performance
     }
     if (performances.length == 0) {
