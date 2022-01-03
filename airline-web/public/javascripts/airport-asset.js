@@ -160,6 +160,9 @@ function showAssetModal(asset) {
     $('#airportAssetDetailsModal div.table-row.property').remove()
 
     //general info is available already
+    $('#airportAssetDetailsModal .assetAirport').empty()
+    $('#airportAssetDetailsModal .assetAirport').append(getAirportSpan(asset.airport))
+
     $('#airportAssetDetailsModal .assetType').text(asset.assetTypeLabel)
     $('#airportAssetDetailsModal .assetDescriptions').empty()
     $.each(asset.descriptions, function(index, description) {
