@@ -5,7 +5,7 @@ import com.patson.model._
 import org.scalatest.{Matchers, WordSpecLike}
 
 class AirportAssetSimulationSpec extends WordSpecLike with Matchers {
-  val highIncomeAirport = Airport.fromId(1).copy(baseIncome = 40000, basePopulation = 1000000)
+  val highIncomeAirport = Airport.fromId(1).copy(baseIncome = 50000, basePopulation = 1000000) //NA city with 1m pop, no charm
   val airline = Airline.fromId(1)
   "simulateHotelPerformance".must {
     "compute reasonable room rate on no/low/mid/high pax (Airport Hotel)".in {

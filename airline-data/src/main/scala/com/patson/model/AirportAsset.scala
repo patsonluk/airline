@@ -396,9 +396,9 @@ abstract class AirportAsset() extends IdObject{
     var upgradeApplied : Boolean = false
 
     val costModifier = {
-        val ratioToModelAirportPower =
-          (airport.income / Computation.MAX_INCOME) * 0.2 + //20% by income
-            (1 + 0.1 * Math.max(-10, (Math.log(airport.population.toDouble / Computation.MAX_POPULATION))))  * 0.8 //Each e away, 10% less.
+        val incomeModifier = 0.2 + (airport.income.toDouble / Computation.MAX_INCOME) * 0.8 //0.2 to 1
+
+        val populationModifier = (1 + 0.1 * Math.max(-10, (Math.log(airport.population.toDouble / Computation.MAX_POPULATION)))) //Each e away, 10% less.
 
         val featureRatio = AirportSource.loadAirportFeatures(airport.id).map { feature => //have to reload features, since the airport in blueprint is not full load, doing so might have cyclic dependencies issue
           import com.patson.model.AirportFeatureType._
@@ -417,7 +417,7 @@ abstract class AirportAsset() extends IdObject{
 
 
         val randomRatio = 0.8 + new Random(id).nextDouble() * 0.4   //20% fluctuation ie 0.8 - 1.2
-        (0.3 + (ratioToModelAirportPower * 2) + featureRatio * 2) * randomRatio
+        (4 + featureRatio * 6) * incomeModifier * populationModifier * randomRatio
     }
 
     val status : AirportAssetStatus.Value
