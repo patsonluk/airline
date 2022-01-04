@@ -174,20 +174,15 @@ object AirportAssetSimulation {
       val result : AssetSimulationResult = asset.assetType match {
         case CITY_TRANSIT => ???
         case AIRPORT_HOTEL | GRAND_HOTEL_TOURIST | GRAND_HOTEL_BUSINESS | BEACH_RESORT | SKI_RESORT | INN | HOTEL | LUXURIOUS_HOTEL =>
-          simulateAirportHotelPerformance(asset.asInstanceOf[HotelAsset], paxStats)
-        case AMUSEMENT_PARK => ???
+          simulateHotelAssetPerformance(asset.asInstanceOf[HotelAsset], paxStats)
+        case AMUSEMENT_PARK | STADIUM | MUSEUM | LANDMARK | SPORT_ARENA | CINEMA | GOLF_COURSE => ???
+          simulateAdmissionAssetPerformance(asset.asInstanceOf[AdmissionAsset], paxStats)
         case SUBWAY => ???
-        case STADIUM => ???
         case CONVENTION_CENTER => ???
-        case MUSEUM => ???
-        case LANDMARK => ???
         case SCIENCE_PARK => ???
         case SOLAR_POWER_PLANT => ???
         case TRAVEL_AGENCY => ???
-        case SPORT_ARENA => ???
         case GAME_ARCADE => ???
-        case CINEMA => ???
-        case GOLF_COURSE => ???
         case OFFICE_BUILDING_1 => ???
         case OFFICE_BUILDING_2 => ???
         case RESTAURANT => ???
@@ -207,7 +202,7 @@ object AirportAssetSimulation {
     val arrivalPax = arrivalTourist + arrivalBusiness
   }
 
-  def simulateAirportHotelPerformance(asset : HotelAsset, paxStats : PassengerStats): AssetSimulationResult = {
+  def simulateHotelAssetPerformance(asset : HotelAsset, paxStats : PassengerStats): AssetSimulationResult = {
     var potentialGuests : Int = asset.assetType match {
       case com.patson.model.AirportAssetType.AIRPORT_HOTEL =>
       //assume 30% transfer pax will use airport hotel, 5% arrival will use this
@@ -288,6 +283,109 @@ object AirportAssetSimulation {
       }
 
     val properties : Map[String, Long] = Map("occupancy" -> occupancy, "rate" -> roomRate)
+    AssetSimulationResult(revenue.toLong, expense.toLong, properties)
+  }
+
+  def simulateAdmissionAssetPerformance(asset : AdmissionAsset, paxStats : PassengerStats): AssetSimulationResult = {
+    var potentialGuests = asset.assetType match {
+      case com.patson.model.AirportAssetType.AMUSEMENT_PARK =>
+        (paxStats.arrivalTourist * 0.4 +
+          (if (asset.airport.incomeLevel >= 30) {
+            1
+          } else {
+            asset.airport.incomeLevel / 50
+          }) * asset.airport.population / 52 / 2).toInt //assuming income level 30, local pop visit it once every 2 years
+      case com.patson.model.AirportAssetType.STADIUM =>
+        (paxStats.arrivalPax * 0.1 +
+          (if (asset.airport.incomeLevel >= 20) {
+            1
+          } else {
+            asset.airport.incomeLevel / 25
+          }) * asset.airport.population / 52).toInt
+      case com.patson.model.AirportAssetType.MUSEUM =>
+        (paxStats.arrivalPax * 0.2 +
+          (if (asset.airport.incomeLevel >= 40) {
+            1
+          } else {
+            asset.airport.incomeLevel / 80
+          }) * asset.airport.population / 52 / 1.5).toInt
+      case com.patson.model.AirportAssetType.LANDMARK =>
+        (paxStats.arrivalTourist * 0.5 + paxStats.arrivalTourist * 0.2 +
+          (if (asset.airport.incomeLevel >= 25) {
+            1
+          } else {
+            asset.airport.incomeLevel / 30
+          }) * asset.airport.population / 52 / 10).toInt
+      case com.patson.model.AirportAssetType.SPORT_ARENA =>
+        (paxStats.arrivalPax * 0.15 +
+          (if (asset.airport.incomeLevel >= 25) {
+            1
+          } else {
+            asset.airport.incomeLevel / 30
+          }) * asset.airport.population / 52 * 4).toInt
+      case com.patson.model.AirportAssetType.CINEMA =>
+        (paxStats.arrivalPax * 0.15 +
+          (if (asset.airport.incomeLevel >= 20) {
+            1
+          } else {
+            asset.airport.incomeLevel / 25
+          }) * asset.airport.population / 52 * 12).toInt
+      case com.patson.model.AirportAssetType.GOLF_COURSE =>
+        (paxStats.arrivalPax * 0.03 +
+          (if (asset.airport.incomeLevel >= 45) {
+            1
+          } else {
+            asset.airport.incomeLevel / 120
+          }) * asset.airport.population / 52 / 100).toInt
+      case _ =>
+        println(s"Unknown admission type ${asset.assetType}")
+        0
+    }
+
+    potentialGuests = (potentialGuests * Util.getBellRandom(1, 0.2)).toInt
+
+    val potentialToCapRatio = potentialGuests.toDouble / asset.capacity
+    //potentialGuests has to be 5 times of capacity for 100% performance, otherwise at 70% for full capacity
+    val performanceFactor = if (potentialToCapRatio < 1) 0.7 * potentialToCapRatio else 0.7 + 0.3 * Math.min(1, potentialToCapRatio / 5)
+
+    val neutralProfitFactor = 0.6 //start losing money < 0.6 performance
+
+    val weeklyProfit = asset.value * asset.roi / 52 * (performanceFactor - neutralProfitFactor) / (1 - neutralProfitFactor)
+    val expense = asset.value * asset.roi / 52 * (0 - neutralProfitFactor) / (1 - neutralProfitFactor) * -1
+    val visitorsApprox = Math.min(potentialGuests, asset.capacity)
+    val revenue = expense + weeklyProfit
+
+    //a little bit different here, use ticket price step
+    val ticketStep = asset.assetType match {
+      case com.patson.model.AirportAssetType.AMUSEMENT_PARK =>
+        10
+      case com.patson.model.AirportAssetType.STADIUM =>
+        10
+      case com.patson.model.AirportAssetType.MUSEUM =>
+        5
+      case com.patson.model.AirportAssetType.LANDMARK =>
+        5
+      case com.patson.model.AirportAssetType.SPORT_ARENA =>
+        5
+      case com.patson.model.AirportAssetType.CINEMA =>
+        2
+      case com.patson.model.AirportAssetType.GOLF_COURSE =>
+        20
+      case _ =>
+        println(s"Unknown admission type ${asset.assetType}")
+        1
+    }
+    var ticketPriceApprox =
+      if (visitorsApprox == 0) {
+        0
+      } else {
+        revenue.toDouble / visitorsApprox
+      }
+    val ticketPrice = ((ticketPriceApprox / ticketStep).toInt + 1) * ticketStep
+    val visitors = (revenue / ticketPrice).toInt //adjust visitors
+
+
+    val properties : Map[String, Long] = Map("visitors" -> visitors, "rate" -> ticketPrice)
     AssetSimulationResult(revenue.toLong, expense.toLong, properties)
   }
 

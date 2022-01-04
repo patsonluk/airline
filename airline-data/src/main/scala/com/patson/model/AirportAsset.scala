@@ -29,6 +29,11 @@ object AirportAssetType extends Enumeration {
         override val privatePropertyKeys = List[String]("occupancy")
     }
 
+    abstract class AdmissionAssetType() extends AirportAssetType {
+        override val publicPropertyKeys = List[String]("capacity", "rate")
+        override val privatePropertyKeys = List[String]("visitors")
+    }
+
 
     import AirportBoostType._
 
@@ -68,7 +73,7 @@ object AirportAssetType extends Enumeration {
         override val initRoi : Double = 1.0 / 100
     }
 
-    case class MuseumAssetType() extends AirportAssetType {
+    case class MuseumAssetType() extends AdmissionAssetType {
         override val label = "Museum"
         override val constructionDuration : Int = 8 * 52
         //override val descriptions = List(s"Museum attracts tourists")
@@ -92,7 +97,7 @@ object AirportAssetType extends Enumeration {
         override val initRoi : Double = 1.0 / 50
     }
 
-    case class SportArenaAssetType() extends AirportAssetType {
+    case class SportArenaAssetType() extends AdmissionAssetType {
         override val label = "Sport Arena"
         override val constructionDuration : Int = 3 * 52
         //override val descriptions = List(s"Sport Arena")
@@ -136,7 +141,7 @@ object AirportAssetType extends Enumeration {
         override val maxRoi : Double = 1.0 / 35
         override val initRoi : Double = 1.0 / 60
     }
-    case class AmusementParkAssetType() extends AirportAssetType {
+    case class AmusementParkAssetType() extends AdmissionAssetType {
         override val label = "Amusement Park"
         override val constructionDuration : Int = 8 * 52
         override val baseBoosts : List[AirportBoost] = List(AirportBoost(VACATION_HUB, 5))
@@ -156,7 +161,7 @@ object AirportAssetType extends Enumeration {
         override val maxRoi : Double = 1.0 / 80
         override val initRoi : Double = 1.0 / 200
     }
-    case class StadiumAssetType() extends AirportAssetType {
+    case class StadiumAssetType() extends AdmissionAssetType {
         override val label = "Stadium"
         override val constructionDuration : Int = 8 * 52
         override val baseBoosts : List[AirportBoost] = List(AirportBoost(VACATION_HUB, 3), AirportBoost(FINANCIAL_HUB, 2))
@@ -176,7 +181,7 @@ object AirportAssetType extends Enumeration {
         override val maxRoi : Double = 1.0 / 100
         override val initRoi : Double = 1.0 / 500
     }
-    case class LandmarkAssetType() extends AirportAssetType {
+    case class LandmarkAssetType() extends AdmissionAssetType {
         override val label = "Landmark"
         override val constructionDuration : Int = 10 * 52
         override val baseBoosts : List[AirportBoost] = List(AirportBoost(INTERNATIONAL_HUB, 4))
@@ -217,14 +222,14 @@ object AirportAssetType extends Enumeration {
         override val maxRoi : Double = 1.0 / 15
         override val initRoi : Double = 1.0 / 50
     }
-    case class CinemaAssetType() extends AirportAssetType {
+    case class CinemaAssetType() extends AdmissionAssetType {
         override val label = "Cinema"
         override val constructionDuration : Int = 5 * 52
         override val baseBoosts : List[AirportBoost] = List(AirportBoost(INCOME, 0.50))
-        override val baseCost : Long = 200000000
+        override val baseCost : Long = 50000000
         override val baseRequirement : Int = 3
 
-        override val maxRoi : Double = 1.0 / 15
+        override val maxRoi : Double = 1.0 / 30
         override val initRoi : Double = 1.0 / 50
     }
     case class InnAssetType() extends HotelAssetType {
@@ -237,7 +242,7 @@ object AirportAssetType extends Enumeration {
         override val maxRoi : Double = 1.0 / 8
         override val initRoi : Double = 1.0 / 30
     }
-    case class GolfCourseAssetType() extends AirportAssetType {
+    case class GolfCourseAssetType() extends AdmissionAssetType {
         override val label = "Golf Course"
         override val constructionDuration : Int = 8 * 52
         override val baseBoosts : List[AirportBoost] = List(AirportBoost(INCOME, 1))
@@ -464,6 +469,11 @@ abstract class HotelAsset extends AirportAsset {
     val initialCapacity : Int
 }
 
+abstract class AdmissionAsset extends AirportAsset {
+    def capacity = initialCapacity * level
+    val initialCapacity : Int
+}
+
 case class SkiResortAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 200
 }
@@ -471,9 +481,13 @@ case class BeachResortAsset(override val blueprint : AirportAssetBlueprint, over
     override val initialCapacity = 200
 }
 case class ConventionCenterAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
-case class MuseumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class MuseumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+    override val initialCapacity = 5000
+}
 case class ResidentialComplexAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
-case class SportArenaAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class SportArenaAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+    override val initialCapacity = 2000
+}
 case class ShoppingMallAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
 case class GrandHotelTouristAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 300
@@ -481,23 +495,34 @@ case class GrandHotelTouristAsset(override val blueprint : AirportAssetBlueprint
 case class GrandHotelBusinessAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 300
 }
-case class AmusementParkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class AmusementParkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+    override val initialCapacity = 5000
+}
 case class SubwayAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
-case class StadiumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class StadiumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+    override val initialCapacity = 2000
+}
 case class ScienceParkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
-case class LandmarkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class LandmarkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+    override val initialCapacity = 5000
+}
 
 case class SolarPowerPlantAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
 case class TravelAgencyAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
 case class GameArcadeAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
-case class CinemaAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class CinemaAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+    override val initialCapacity = 4000
+}
+
 case class InnAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 25
 }
 case class LuxuriousHotelAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 50
 }
-case class GolfCourseAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class GolfCourseAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+    override val initialCapacity = 400
+}
 case class OfficeBuilding1Asset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
 case class AverageHotelAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 100
