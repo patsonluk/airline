@@ -165,9 +165,9 @@ object Constants {
   //val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
   val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline_v2?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8" + dbParams
   val DB_DRIVER = "com.mysql.jdbc.Driver"
-  val DATABASE_USER = "sa" 
-  val DATABASE_PASSWORD = "admin"
+  val DATABASE_USER = if (configFactory.hasPath("mysqldb.user")) configFactory.getString("mysqldb.user") else "sa"
+  val DATABASE_PASSWORD = if (configFactory.hasPath("mysqldb.password")) configFactory.getString("mysqldb.password") else "admin"
 
-  println(s"!!!!!!!!!!!!!!!FINAL DB str $DATABASE_CONNECTION")
+  println(s"!!!!!!!!!!!!!!!FINAL DB str $DATABASE_CONNECTION with user $DATABASE_USER")
   
 }
