@@ -27,7 +27,10 @@ object MainSimulation extends App {
   
   def mainFlow() = {
     val actor = actorSystem.actorOf(Props[MainSimulationActor])
-    actorSystem.scheduler.schedule(Duration.Zero, Duration(CYCLE_DURATION, TimeUnit.SECONDS), actor, Start)
+    val cancellable = actorSystem.scheduler.schedule(Duration.Zero, Duration(CYCLE_DURATION, TimeUnit.SECONDS), actor, Start)
+    while (!cancellable.isCancelled) {
+      Thread.sleep(10000)
+    }
   }
 
 
