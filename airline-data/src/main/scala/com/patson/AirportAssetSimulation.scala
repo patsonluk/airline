@@ -189,9 +189,9 @@ object AirportAssetSimulation {
         case CITY_TRANSIT => ???
         case AIRPORT_HOTEL | GRAND_HOTEL_TOURIST | GRAND_HOTEL_BUSINESS | BEACH_RESORT | SKI_RESORT | INN | HOTEL | LUXURIOUS_HOTEL =>
           simulateHotelAssetPerformance(asset.asInstanceOf[HotelAsset], paxStats)
-        case AMUSEMENT_PARK | STADIUM | MUSEUM | LANDMARK | SPORT_ARENA | CINEMA | GOLF_COURSE => ???
+        case AMUSEMENT_PARK | STADIUM | MUSEUM | LANDMARK | SPORT_ARENA | CINEMA | GOLF_COURSE =>
           simulateAdmissionAssetPerformance(asset.asInstanceOf[AdmissionAsset], paxStats)
-        case OFFICE_BUILDING_1 | OFFICE_BUILDING_2 | OFFICE_BUILDING_3 | OFFICE_BUILDING_4 | RESIDENTIAL_COMPLEX | SCIENCE_PARK | SHOPPING_MALL => ???
+        case OFFICE_BUILDING_1 | OFFICE_BUILDING_2 | OFFICE_BUILDING_3 | OFFICE_BUILDING_4 | RESIDENTIAL_COMPLEX | SCIENCE_PARK | SHOPPING_MALL =>
           simulateRentalAssetPerformance(asset.asInstanceOf[RentalAsset], paxStats)
         case SUBWAY | CONVENTION_CENTER | SOLAR_POWER_PLANT | TRAVEL_AGENCY | GAME_ARCADE | RESTAURANT =>
           simulateGenericAssetPerformance(asset, paxStats)

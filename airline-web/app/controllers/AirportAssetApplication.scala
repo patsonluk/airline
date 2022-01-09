@@ -62,6 +62,9 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
     }
   }
 
+
+
+
   def computeAssetProperties(asset : AirportAsset, rawProperties : Map[String, Long]) : Map[String, String] = {
     val result = collection.mutable.Map[String, String]()
     val formatter = java.text.NumberFormat.getIntegerInstance
@@ -74,7 +77,24 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         rawProperties.get("rate").foreach { rate =>
           result.put("Room Rate", "$" + formatter.format(rate))
         }
+      case asset : AdmissionAsset =>
+        rawProperties.get("visitors").foreach { visitors =>
+          val valueString = formatter.format(visitors)
+          result.put("Visitors", valueString)
+        }
+        rawProperties.get("rate").foreach { rate =>
+          result.put("Ticket Price", "$" + formatter.format(rate))
+        }
+      case asset : RentalAsset =>
+        rawProperties.get("leasedSpace").foreach { leasedSpace =>
+          val valueString = formatter.format(leasedSpace) + " (" + (leasedSpace * 100 / asset.space) + "%)"
+          result.put("Leased Floor Space", valueString)
+        }
+        rawProperties.get("rate100Point").foreach { rate100Point =>
+          result.put("Monthly Rent/sq. ft ", "$" + rate100Point.toDouble / 100)
+        }
       case _ =>
+
     }
     result.toMap
   }
