@@ -171,5 +171,7 @@ object Constants {
   val DB_DRIVER = "com.mysql.jdbc.Driver"
   val DATABASE_USER = "sa" 
   val DATABASE_PASSWORD = "admin"
+
+  println(s"Final JDBC Connection string : $DATABASE_CONNECTION with user $DATABASE_USER")
   
 }
