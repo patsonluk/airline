@@ -12,17 +12,27 @@ object AirportAssetSimulation {
   def computePaxStats(airportIds : Set[Int], linkRidershipDetails : Map[(PassengerGroup, Airport, Route), Int]) : Map[Int, PassengerStats] = {
 
     val arrivalGroupsByDestAirportIds = mutable.Map[Int, ListBuffer[(PassengerGroup, Int)]]() //key is arrival airport ID
+    val departureGroupsByAirportIds = mutable.Map[Int, ListBuffer[(PassengerGroup, Int)]]() //key is departure airport ID
     val transitGroupsByAirportIds =  mutable.Map[Int, ListBuffer[(PassengerGroup, Int)]]() //key is transit airport ID
 
     //init with keys that we care
     airportIds.foreach { airportId =>
       arrivalGroupsByDestAirportIds.put(airportId, ListBuffer())
+      departureGroupsByAirportIds.put(airportId, ListBuffer())
       transitGroupsByAirportIds.put(airportId, ListBuffer())
     }
+
+
 
     linkRidershipDetails.foreach {
       case((group, toAirport, route), passengerCount) =>
         arrivalGroupsByDestAirportIds.get(toAirport.id) match {
+          case Some(groups) => groups.append((group, passengerCount))
+          case None => //airports that we don't care (no assets), let's not build the list
+        }
+
+        val fromAirport = group.fromAirport
+        departureGroupsByAirportIds.get(fromAirport.id) match {
           case Some(groups) => groups.append((group, passengerCount))
           case None => //airports that we don't care (no assets), let's not build the list
         }
@@ -36,13 +46,17 @@ object AirportAssetSimulation {
             }
           }
         }
+
+
     }
 
     airportIds.map { airportId =>
       val stats = PassengerStats(
         transitGroupsByAirportIds(airportId).map(_._2).sum,
         arrivalGroupsByDestAirportIds(airportId).filter(_._1.passengerType != PassengerType.BUSINESS).map(_._2).sum,
-        arrivalGroupsByDestAirportIds(airportId).filter(_._1.passengerType == PassengerType.BUSINESS).map(_._2).sum
+        arrivalGroupsByDestAirportIds(airportId).filter(_._1.passengerType == PassengerType.BUSINESS).map(_._2).sum,
+        departureGroupsByAirportIds(airportId).filter(_._1.passengerType != PassengerType.BUSINESS).map(_._2).sum,
+        departureGroupsByAirportIds(airportId).filter(_._1.passengerType == PassengerType.BUSINESS).map(_._2).sum,
       )
       (airportId, stats)
     }.toMap
@@ -177,19 +191,14 @@ object AirportAssetSimulation {
           simulateHotelAssetPerformance(asset.asInstanceOf[HotelAsset], paxStats)
         case AMUSEMENT_PARK | STADIUM | MUSEUM | LANDMARK | SPORT_ARENA | CINEMA | GOLF_COURSE => ???
           simulateAdmissionAssetPerformance(asset.asInstanceOf[AdmissionAsset], paxStats)
+        case OFFICE_BUILDING_1 | OFFICE_BUILDING_2 | OFFICE_BUILDING_3 | OFFICE_BUILDING_4 | RESIDENTIAL_COMPLEX | SCIENCE_PARK | SHOPPING_MALL => ???
+          simulateRentalAssetPerformance(asset.asInstanceOf[RentalAsset], paxStats)
         case SUBWAY => ???
         case CONVENTION_CENTER => ???
-        case SCIENCE_PARK => ???
         case SOLAR_POWER_PLANT => ???
         case TRAVEL_AGENCY => ???
         case GAME_ARCADE => ???
-        case OFFICE_BUILDING_1 => ???
-        case OFFICE_BUILDING_2 => ???
         case RESTAURANT => ???
-        case OFFICE_BUILDING_3 => ???
-        case SHOPPING_MALL => ???
-        case OFFICE_BUILDING_4 => ???
-        case RESIDENTIAL_COMPLEX => ???
         case _ =>
           println(s"Missing business sim for ${asset.assetType}")
           AssetSimulationResult(0, 0, Map.empty)
@@ -198,8 +207,9 @@ object AirportAssetSimulation {
     }
   }
 
-  case class PassengerStats(transferPax : Long, arrivalTourist : Long, arrivalBusiness : Long) {
+  case class PassengerStats(transferPax : Long, arrivalTourist : Long, arrivalBusiness : Long, departureTourist : Long, departureBusiness : Long) {
     val arrivalPax = arrivalTourist + arrivalBusiness
+    val departurePax = departureTourist + departureBusiness
   }
 
   def simulateHotelAssetPerformance(asset : HotelAsset, paxStats : PassengerStats): AssetSimulationResult = {
@@ -229,7 +239,9 @@ object AirportAssetSimulation {
     potentialGuests = (potentialGuests * Util.getBellRandom(1)).toInt
 
     val potentialToCapRatio = potentialGuests.toDouble / asset.capacity
-    //potentialGuests has to be 10 times of capacity for 100% performance, otherwise at 50% for full capacity
+    //potentialGuests has to be
+    // 10 times of capacity => 100% performance
+    // 1 time of full capacity => 50% performance
     val performanceFactor = if (potentialToCapRatio < 1) 0.5 * potentialToCapRatio else 0.5 + 0.5 * Math.min(1, potentialToCapRatio / 10)
 
     val neutralProfitFactor = 0.25 //start losing money < 0.25 performance
@@ -238,7 +250,14 @@ object AirportAssetSimulation {
     //from profit, deduce expense by considering revenue = 0 at performanceFactor = 0.
     val baseExpense = asset.value * asset.roi / 52 * (0 - neutralProfitFactor) / (1 - neutralProfitFactor) * -1
 
-    val occupancy = Math.min(asset.capacity, potentialGuests)
+    //very easy to get to 80%, then harder
+    val occupancy : Int =
+      ((if (performanceFactor <= 0.5) { //80% max
+        0.8 * performanceFactor / 0.5
+      } else {
+        0.8 + (performanceFactor - 0.5) * 0.2 / 0.5
+      }) * asset.capacity).toInt
+
     //expense increase slightly per occupancy
     val costPerGuestPerNight = asset.assetType match {
       case com.patson.model.AirportAssetType.AIRPORT_HOTEL => 25
@@ -282,7 +301,93 @@ object AirportAssetSimulation {
         (costPerGuest * 1.5).toInt
       }
 
-    val properties : Map[String, Long] = Map("occupancy" -> occupancy, "rate" -> roomRate)
+    val properties : Map[String, Long] = Map("occupancy" -> occupancy, "rate" -> roomRate, "performance" -> (performanceFactor * 100).toLong)
+    AssetSimulationResult(revenue.toLong, expense.toLong, properties)
+  }
+
+  def simulateRentalAssetPerformance(asset : RentalAsset, paxStats : PassengerStats): AssetSimulationResult = {
+    val airport = asset.airport
+    var potentialLeases : Double = asset.assetType match {
+      case com.patson.model.AirportAssetType.OFFICE_BUILDING_1 => //depends heavily if the renter can travel to other places
+        airport.population * airport.incomeLevel / 50000 / 40 +
+        paxStats.departureBusiness.toDouble / 50
+      case com.patson.model.AirportAssetType.OFFICE_BUILDING_2 =>
+        airport.population * airport.incomeLevel / 70000 / 40 +
+        paxStats.departureBusiness.toDouble / 80
+      case com.patson.model.AirportAssetType.OFFICE_BUILDING_3 =>
+        airport.population * airport.incomeLevel / 90000 / 40 +
+        paxStats.departureBusiness.toDouble / 140
+      case com.patson.model.AirportAssetType.OFFICE_BUILDING_4 =>
+        airport.population * airport.incomeLevel / 130000 / 40 +
+        paxStats.departureBusiness.toDouble / 275
+      case com.patson.model.AirportAssetType.RESIDENTIAL_COMPLEX =>
+        airport.population * airport.incomeLevel / 250 / 30 +
+        paxStats.departurePax.toDouble / 2.5
+      case com.patson.model.AirportAssetType.SCIENCE_PARK =>
+        airport.population * airport.incomeLevel / 40000 / 40 +
+        paxStats.departureBusiness.toDouble / 450 +
+        paxStats.arrivalBusiness.toDouble / 450
+
+      case com.patson.model.AirportAssetType.SHOPPING_MALL =>
+        airport.population * airport.incomeLevel / 65000 / 40 +
+        paxStats.departurePax.toDouble / 2000 +
+        paxStats.arrivalPax.toDouble / 800
+
+      case _ => println(s"Unknown rental type for performance computation!! ${asset.assetType}")
+        0
+    }
+
+
+    val potentialDemandSpace =  potentialLeases * asset.spacePerLease * Util.getBellRandom(1, 0.1)
+
+    val potentialToCapRatio = potentialDemandSpace / asset.space
+    //potentialGuests has to be
+    // 2 times of capacity => 100% performance
+    // 1 time of full capacity => 50% performance
+    val performanceFactor = Math.min(1, potentialToCapRatio / 2)
+
+    val neutralProfitFactor = 0.2 //start losing money < 0.2 performance
+
+    //from profit, deduce expense by considering revenue = 0 at performanceFactor = 0.
+    val baseExpense = asset.value * asset.roi / 52 * (0 - neutralProfitFactor) / (1 - neutralProfitFactor) * -1
+
+    //very easy to get to 70%, then harder
+    val occupancyRate : Double =
+      if (performanceFactor <= 0.5) { //70% max
+        0.7 * performanceFactor / 0.5
+      } else {
+        0.7 + (performanceFactor - 0.5) * 0.3 / 0.5
+      }
+
+    val leasesSigned = (asset.maxLeaseCount * occupancyRate).toInt
+
+    //expense increase slightly per lease per week
+    val costPerLeasePerWeek = asset.assetType match {
+      case com.patson.model.AirportAssetType.OFFICE_BUILDING_1 => 50
+      case com.patson.model.AirportAssetType.OFFICE_BUILDING_2 => 100
+      case com.patson.model.AirportAssetType.OFFICE_BUILDING_3 => 150
+      case com.patson.model.AirportAssetType.OFFICE_BUILDING_4 => 200
+      case com.patson.model.AirportAssetType.RESIDENTIAL_COMPLEX => 50
+      case com.patson.model.AirportAssetType.SCIENCE_PARK => 2000
+      case com.patson.model.AirportAssetType.SHOPPING_MALL => 400
+      case _ =>
+        println(s"Unknown rental type for costPerLeasePerWeek!! ${asset.assetType}")
+        0
+    }
+
+    val expense = baseExpense + leasesSigned * costPerLeasePerWeek
+    val weeklyProfit = if (leasesSigned == 0) -1 * expense else asset.value * asset.roi / 52 * (performanceFactor - neutralProfitFactor) / (1 - neutralProfitFactor)
+
+    val revenue = expense + weeklyProfit
+
+    val leaseRate = //per sq ft per month (4 weeks)!
+      if (revenue > 0) {
+        (revenue * 4) / (leasesSigned * asset.spacePerLease)
+      } else {
+        (costPerLeasePerWeek * 4 * asset.maxLeaseCount).toDouble / asset.space * 1.5
+      }
+
+    val properties : Map[String, Long] = Map("leasedSpace" -> leasesSigned * asset.spacePerLease, "rate100Point" -> (leaseRate * 100).toLong, "performance" -> (performanceFactor * 100).toLong) //leaseRate * 100 to keep last 2 digits here
     AssetSimulationResult(revenue.toLong, expense.toLong, properties)
   }
 
@@ -303,7 +408,7 @@ object AirportAssetSimulation {
             asset.airport.incomeLevel / 25
           }) * asset.airport.population / 52).toInt
       case com.patson.model.AirportAssetType.MUSEUM =>
-        (paxStats.arrivalPax * 0.2 +
+        (paxStats.arrivalPax * 0.25 +
           (if (asset.airport.incomeLevel >= 40) {
             1
           } else {
@@ -385,7 +490,7 @@ object AirportAssetSimulation {
     val visitors = (revenue / ticketPrice).toInt //adjust visitors
 
 
-    val properties : Map[String, Long] = Map("visitors" -> visitors, "rate" -> ticketPrice)
+    val properties : Map[String, Long] = Map("visitors" -> visitors, "rate" -> ticketPrice, "performance" -> (performanceFactor * 100).toLong)
     AssetSimulationResult(revenue.toLong, expense.toLong, properties)
   }
 
