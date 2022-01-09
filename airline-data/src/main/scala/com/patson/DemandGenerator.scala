@@ -122,7 +122,7 @@ object DemandGenerator {
       val toAirportIncomeLevel = toAirport.incomeLevel
       
       val fromAirportAdjustedIncome : Double = if (fromAirport.income > Country.HIGH_INCOME_THRESHOLD) { //to make high income airport a little bit less overpowered
-        50000
+        Country.HIGH_INCOME_THRESHOLD + (fromAirport.income - Country.HIGH_INCOME_THRESHOLD) / 2
       } else if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) { //to make low income airport a bit more stronger
         val delta = Country.LOW_INCOME_THRESHOLD - fromAirport.income
         Country.LOW_INCOME_THRESHOLD + delta * 0.5 //so a 0 income country will be boosted to 7500, a 5000 income country will be boosted to 10000
@@ -168,9 +168,9 @@ object DemandGenerator {
       
       
       //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
-      val incomeLevel = Computation.getIncomeLevel(fromAirport.income)
-      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && incomeLevel > 25) {
-        adjustedDemand += baseDemand * (((incomeLevel - 25).toDouble / 10) * 2)       
+
+      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
+        adjustedDemand += baseDemand * (((fromAirport.incomeLevel - 25).toDouble / 10) * 2)
       }
       
       //adjustments : these zones do not have good ground transport
