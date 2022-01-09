@@ -193,12 +193,8 @@ object AirportAssetSimulation {
           simulateAdmissionAssetPerformance(asset.asInstanceOf[AdmissionAsset], paxStats)
         case OFFICE_BUILDING_1 | OFFICE_BUILDING_2 | OFFICE_BUILDING_3 | OFFICE_BUILDING_4 | RESIDENTIAL_COMPLEX | SCIENCE_PARK | SHOPPING_MALL => ???
           simulateRentalAssetPerformance(asset.asInstanceOf[RentalAsset], paxStats)
-        case SUBWAY => ???
-        case CONVENTION_CENTER => ???
-        case SOLAR_POWER_PLANT => ???
-        case TRAVEL_AGENCY => ???
-        case GAME_ARCADE => ???
-        case RESTAURANT => ???
+        case SUBWAY | CONVENTION_CENTER | SOLAR_POWER_PLANT | TRAVEL_AGENCY | GAME_ARCADE | RESTAURANT =>
+          simulateGenericAssetPerformance(asset, paxStats)
         case _ =>
           println(s"Missing business sim for ${asset.assetType}")
           AssetSimulationResult(0, 0, Map.empty)
@@ -491,6 +487,51 @@ object AirportAssetSimulation {
 
 
     val properties : Map[String, Long] = Map("visitors" -> visitors, "rate" -> ticketPrice, "performance" -> (performanceFactor * 100).toLong)
+    AssetSimulationResult(revenue.toLong, expense.toLong, properties)
+  }
+
+
+  def simulateGenericAssetPerformance(asset : AirportAsset, paxStats : PassengerStats): AssetSimulationResult = {
+    val airport = asset.airport
+
+
+    //the boundary # that the asset will reach max performance at level 1 (on its own per figure), neutralProfit Factor - at what performance 0 - 1 will it be profit = 0
+    val (boundaryPop, boundaryIncomeLevel, boundaryPaxStats, neutralProfitFactor) = asset.assetType match {
+      case com.patson.model.AirportAssetType.SUBWAY =>
+        (5000000, 35, PassengerStats(400000, 200000, 200000, 150000, 150000), 0.8)
+      case com.patson.model.AirportAssetType.CONVENTION_CENTER =>
+        (4000000, 40, PassengerStats(200000, 200000, 200000, 400000, 400000), 0.5)
+      case com.patson.model.AirportAssetType.SOLAR_POWER_PLANT =>
+        (200000, 40, PassengerStats(20000, 20000, 20000, 5000, 5000), 0.8)
+      case com.patson.model.AirportAssetType.TRAVEL_AGENCY =>
+        (500000, 40, PassengerStats(0, 0, 0, 10000, 10000), 0.4)
+      case com.patson.model.AirportAssetType.GAME_ARCADE =>
+        (150000, 40, PassengerStats(10000, 5000, 5000, 5000, 5000), 0.4)
+      case com.patson.model.AirportAssetType.RESTAURANT =>
+        (50000, 40, PassengerStats(5000, 2000, 2000, 2000, 2000), 0.6)
+
+      case _ => println(s"Unknown generic asset type for performance computation!! ${asset.assetType}")
+        (4000000, 40, PassengerStats(150000, 100000, 100000, 200000, 200000), 0.5)
+    }
+
+    var performanceFactor =
+      ((airport.population * airport.incomeLevel) / (boundaryPop * boundaryIncomeLevel) + //pop factor
+      paxStats.transferPax.toDouble / boundaryPaxStats.transferPax +
+      paxStats.arrivalTourist.toDouble / boundaryPaxStats.arrivalTourist +
+      paxStats.arrivalBusiness.toDouble / boundaryPaxStats.arrivalBusiness +
+      paxStats.departureTourist.toDouble / boundaryPaxStats.departureTourist +
+      paxStats.departureBusiness.toDouble / boundaryPaxStats.departureBusiness) / asset.level * Util.getBellRandom(1, 0.1)
+
+    performanceFactor = Math.min(1, performanceFactor)
+
+    //from profit, deduce expense by considering revenue = 0 at performanceFactor = 0.
+    val expense = asset.value * asset.roi / 52 * (0 - neutralProfitFactor) / (1 - neutralProfitFactor) * -1
+    val weeklyProfit = asset.value * asset.roi / 52 * (performanceFactor - neutralProfitFactor) / (1 - neutralProfitFactor)
+
+    val revenue = expense + weeklyProfit
+
+
+    val properties : Map[String, Long] = Map("performance" -> (performanceFactor * 100).toLong)
     AssetSimulationResult(revenue.toLong, expense.toLong, properties)
   }
 

@@ -791,4 +791,84 @@ class AirportAssetSimulationSpec extends WordSpecLike with Matchers {
     }
   }
 
+
+  "simulateGenericAssetPerformance".must {
+    "performance factor level 1 check".in {
+      var assetType : AirportAssetType.Value = AirportAssetType.SUBWAY
+      var airport = highIncomeAirport.copy(basePopulation = 3000000) //don't want to make something too easy to rely on only pop, this is a airline game after all
+      var asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+      var paxStats = PassengerStats(0, 0, 0, 0, 0)
+      var result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+      var performance = result.properties("performance")
+      assert(performance < 100 && performance > 75) //at the boundary of max performance
+
+      airport = airport.copy(basePopulation = 1) //check pax only
+      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+      paxStats = PassengerStats(125000, 25000, 25000, 25000, 25000)
+      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+      performance = result.properties("performance")
+      assert(performance < 100 && performance > 75)
+
+      assetType = AirportAssetType.CONVENTION_CENTER
+      airport = highIncomeAirport.copy(basePopulation = 3000000) //don't want to make something too easy to rely on only pop, this is a airline game after all
+      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+      paxStats = PassengerStats(0, 0, 0, 0, 0)
+      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+      performance = result.properties("performance")
+      assert(performance < 100 && performance > 75) //at the boundary of max performance
+
+      airport = airport.copy(basePopulation = 1) //check pax only
+      paxStats = PassengerStats(100000, 25000, 25000, 25000, 25000)
+      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+      performance = result.properties("performance")
+      assert(performance < 100 && performance > 75)
+
+      assetType = AirportAssetType.SOLAR_POWER_PLANT
+      airport = highIncomeAirport.copy(basePopulation = 150000) //don't want to make something too easy to rely on only pop, this is a airline game after all
+      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+      paxStats = PassengerStats(0, 0, 0, 0, 0)
+      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+      performance = result.properties("performance")
+      assert(performance < 100 && performance > 75) //at the boundary of max performance
+
+//      assetType = AirportAssetType.TRAVEL_AGENCY
+//      airport = highIncomeAirport.copy(basePopulation = 350000) //don't want to make something too easy to rely on only pop, this is a airline game after all
+//      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+//      paxStats = PassengerStats(0, 0, 0, 0, 0)
+//      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+//      performance = result.properties("performance")
+//      assert(performance < 100 && performance > 75) //at the boundary of max performance
+//
+//      assetType = AirportAssetType.GAME_ARCADE
+//      airport = highIncomeAirport.copy(basePopulation = 900000)
+//      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+//      paxStats = PassengerStats(0, 0, 0, 0, 0)
+//      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+//      performance = result.properties("performance")
+//      assert(performance < 100 && performance > 75) //at the boundary of max performance
+//
+//      airport = airport.copy(basePopulation = 1) //check pax only
+//      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+//      paxStats = PassengerStats(0, 0, 0, 450, 450)
+//      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+//      performance = result.properties("performance")
+//      assert(performance < 100 && performance > 75)
+//
+//      assetType = AirportAssetType.RESTAURANT
+//      airport = highIncomeAirport.copy(basePopulation = 450000)
+//      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+//      paxStats = PassengerStats(0, 0, 0, 0, 0)
+//      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+//      performance = result.properties("performance")
+//      assert(performance < 100 && performance > 75) //at the boundary of max performance
+//
+//      airport = airport.copy(basePopulation = 1) //check pax only
+//      asset = AirportAsset.getAirportAsset(AirportAssetBlueprint(airport, assetType), Some(airline), "", 1, Some(0), List.empty, 0, 0, roi = assetType.initRoi, false, Map.empty)
+//      paxStats = PassengerStats(0, 10000, 10000, 10000, 10000)
+//      result = AirportAssetSimulation.simulateGenericAssetPerformance(asset, paxStats)
+//      performance = result.properties("performance")
+//      assert(performance < 100 && performance > 75)
+    }
+  }
 }
