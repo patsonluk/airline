@@ -258,7 +258,7 @@ object AirportSource {
             airport.initFeatures(features.toList)
 
             //load assets
-            airport.initAssets(AirportAssetSource.loadAirportAssetsByAirport(airport.id, false))
+            airport.initAssets(AirportAssetSource.loadAirportAssetsByAirport(airport.id, Some(airport))) //pass the airport loaded so far to avoid cyclic load
           }
 
           val airlineAwareness = mutable.Map[Int, Double]()

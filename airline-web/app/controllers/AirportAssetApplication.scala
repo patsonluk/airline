@@ -29,7 +29,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         "sellValue" -> entry.sellValue,
         "boosts" -> entry.boosts,
         "id" -> entry.id,
-        "baseBoosts" -> entry.assetType.baseBoosts,
+        "baseBoosts" -> entry.baseBoosts,
         "publicProperties" -> computeAssetProperties(entry, entry.publicProperties())
       )
 
@@ -104,12 +104,12 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
 
       asset.status match {
         case AirportAssetStatus.BLUEPRINT => { //for display purpose, set boosts for blueprints as well
-          asset.boosts = asset.blueprint.assetType.baseBoosts
+          asset.boosts = asset.baseBoosts
           asset
         }
         case AirportAssetStatus.UNDER_CONSTRUCTION => { //for display purpose, if level 1, display the blueprint boosts
           if (asset.level == 1) {
-            asset.boosts = asset.blueprint.assetType.baseBoosts
+            asset.boosts = asset.baseBoosts
             asset
           } else { //otherwise just display current boosts
             asset

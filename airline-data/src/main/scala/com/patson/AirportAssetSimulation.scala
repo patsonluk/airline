@@ -116,7 +116,7 @@ object AirportAssetSimulation {
       if (history.isEmpty || history.map(_.level).max < asset.level) { //double check, the upgradeApplied flag is actually good enough
         val previousLevelBoosts =
           if (history.isEmpty) { //use basic as starting point
-            asset.blueprint.assetType.baseBoosts
+            asset.baseBoosts
           } else {
             asset.boosts
           }
@@ -155,7 +155,7 @@ object AirportAssetSimulation {
 
   def computeNewBoosts(asset : AirportAsset, previousLevelBoosts : List[AirportBoost], upgradeFactor : Double) : List[(AirportBoost, Double)] = { //2nd value is gain
     previousLevelBoosts.map { previousBoost =>
-      val maxGain = asset.assetType.baseBoosts.find(_.boostType == previousBoost.boostType).get.value * 0.2
+      val maxGain = asset.baseBoosts.find(_.boostType == previousBoost.boostType).get.value * 0.2
       var gain = maxGain * (0.2 + upgradeFactor * 0.8)
       if (AirportBoostType.getValueType(previousBoost.boostType) == classOf[Long]) {
         gain = gain.toLong

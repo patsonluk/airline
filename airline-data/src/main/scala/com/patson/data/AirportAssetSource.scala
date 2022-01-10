@@ -95,12 +95,12 @@ object AirportAssetSource {
     }
   }
 
-  def loadAirportAssetsByAirport(airportId : Int, loadAirport : Boolean = true) = {
-    loadAirportAssetsByBlueprintCriteria(List(("airport", airportId)), loadAirport)
+  def loadAirportAssetsByAirport(airportId : Int, loadedAirport : Option[Airport] = None) = {
+    loadAirportAssetsByBlueprintCriteria(List(("airport", airportId)), loadedAirport)
   }
 
 
-  private[this] def loadAirportAssetsByBlueprintCriteria(criteria : List[(String, Any)], loadAirport : Boolean = true) = {
+  private[this] def loadAirportAssetsByBlueprintCriteria(criteria : List[(String, Any)], loadedAirport : Option[Airport] = None) = {
     val connection = Meta.getConnection()
     try {
       var queryString = s"SELECT * FROM $AIRPORT_ASSET_BLUEPRINT_TABLE"
@@ -128,10 +128,9 @@ object AirportAssetSource {
         val id = resultSet.getInt("id") //same id as blueprint
         val airportId = resultSet.getInt("airport")
         val airport =
-          if (loadAirport) {
-            AirportCache.getAirport(airportId, false).get
-          } else {
-            Airport.fromId(airportId) //Since Airport loading might call this method, this is to avoid cyclic dependency
+          loadedAirport match {
+            case None => AirportCache.getAirport(airportId, false).get
+            case Some(loadedAirport) => loadedAirport
           }
 
         idToAssetBlueprint.put(id, AirportAssetBlueprint(airport, assetType, id))

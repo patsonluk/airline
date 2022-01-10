@@ -27,7 +27,8 @@ object Computation {
 
   def getMaxValues(): (Long, Double, Long, Long) = {
     val allAirports = AirportSource.loadAllAirports()
-    (allAirports.maxBy(_.power).power, allAirports.maxBy(_.incomeLevel).incomeLevel, allAirports.maxBy(_.population).population, allAirports.maxBy(_.income).income)
+    //take note that below should NOT use boosted values, should use base, otherwise it will incorrectly load some lazy vals of the Airport that is MAX
+    (allAirports.maxBy(_.basePower).basePower, allAirports.maxBy(_.baseIncomeLevel).baseIncomeLevel, allAirports.maxBy(_.basePopulation).basePopulation, allAirports.maxBy(_.baseIncome).baseIncome)
   }
 
   //distance vs max speed

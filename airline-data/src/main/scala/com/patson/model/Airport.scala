@@ -53,6 +53,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
   lazy val population = basePopulation + populationBoost
   lazy val power = income * population
+  val basePower = baseIncome * basePopulation
 
 
   lazy val features : List[AirportFeature] = computeFeatures()

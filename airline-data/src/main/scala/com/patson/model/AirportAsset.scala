@@ -159,7 +159,7 @@ object AirportAssetType extends Enumeration {
     case class SubwayAssetType() extends AirportAssetType {
         override val label = "Subway"
         override val constructionDuration : Int = 12 * 52
-        override val baseBoosts : List[AirportBoost] = List(AirportBoost(POPULATION, 100000))
+        override val baseBoosts : List[AirportBoost] = List(AirportBoost(POPULATION, 100000)) //base
         override val baseCost : Long = 4000000000L
         override val baseRequirement : Int = 11
 
@@ -389,9 +389,13 @@ object AirportAssetType extends Enumeration {
 
 
 abstract class AirportAsset() extends IdObject{
+    val TEST_SPEEDUP = 8 //TODO for testing ONLY, REMOVE FOR RELEASE
+
     val blueprint : AirportAssetBlueprint
     val airline : Option[Airline]
     val name : String
+
+    def baseBoosts = blueprint.assetType.baseBoosts
 
     val level : Int
     val completionCycle : Option[Int]
@@ -405,10 +409,10 @@ abstract class AirportAsset() extends IdObject{
     val airport = blueprint.airport
     var upgradeApplied : Boolean = false
 
-    val costModifier = {
-        val incomeModifier = 0.2 + (airport.income.toDouble / Computation.MAX_INCOME) * 0.8 //0.2 to 1
+    val costModifierConst = {
+        val incomeModifier = 0.2 + (airport.baseIncome.toDouble / Computation.MAX_INCOME) * 0.8 //0.2 to 1
 
-        val populationModifier = (1 + 0.1 * Math.max(-10, (Math.log(airport.population.toDouble / Computation.MAX_POPULATION)))) //Each e away, 10% less.
+        val populationModifier = (1 + 0.1 * Math.max(-10, (Math.log(airport.basePopulation.toDouble / Computation.MAX_POPULATION)))) //Each e away, 10% less.
 
         val featureRatio = AirportSource.loadAirportFeatures(airport.id).map { feature => //have to reload features, since the airport in blueprint is not full load, doing so might have cyclic dependencies issue
           import com.patson.model.AirportFeatureType._
@@ -430,6 +434,8 @@ abstract class AirportAsset() extends IdObject{
         (4 + featureRatio * 6) * incomeModifier * populationModifier * randomRatio
     }
 
+    def costModifier = costModifierConst
+
     val status : AirportAssetStatus.Value
     val cost = (blueprint.assetType.baseCost * costModifier).toLong / 1000 * 1000 //zero last 3 digits
     val value = cost * (status match {
@@ -442,7 +448,7 @@ abstract class AirportAsset() extends IdObject{
 
     def levelUp(name : String) = {
         val currentCycle = CycleSource.loadCycle()
-        val completionCycle = currentCycle + assetType.constructionDuration
+        val completionCycle = currentCycle + assetType.constructionDuration / TEST_SPEEDUP
 
         //do not generate new boosts here, should let only do it when upgrade is completed
         AirportAsset.getAirportAsset(blueprint, airline, name, level + 1, Some(completionCycle), boosts, revenue, expense, roi, false, properties, currentCycle)
@@ -517,7 +523,18 @@ case class GrandHotelBusinessAsset(override val blueprint : AirportAssetBlueprin
 case class AmusementParkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
     override val initialCapacity = 5000
 }
-case class SubwayAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class SubwayAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset {
+    override def costModifier : Double = super.costModifier +
+      Math.max(0, Math.log(airport.basePopulation.toDouble / 5000000) / Math.log(2))
+
+
+    override def baseBoosts : List[AirportBoost] = super.baseBoosts.map { baseBoost =>
+        baseBoost.boostType match {
+            case AirportBoostType.POPULATION => AirportBoost(AirportBoostType.POPULATION, (baseBoost.value + airport.basePopulation * 0.03).toLong / 1000 * 1000)
+            case _ => baseBoost
+        }
+    }
+}
 case class StadiumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
     override val initialCapacity = 2000
 }
@@ -568,7 +585,17 @@ case class OfficeBuilding4Asset(override val blueprint : AirportAssetBlueprint, 
 case class AirportHotelAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 500
 }
-case class CityTransitAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
+case class CityTransitAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset {
+    override def costModifier : Double = super.costModifier +
+      Math.max(0, Math.log(airport.basePopulation.toDouble / 1000000) / Math.log(2))
+
+    override def baseBoosts : List[AirportBoost] = super.baseBoosts.map { baseBoost =>
+        baseBoost.boostType match {
+            case AirportBoostType.POPULATION => AirportBoost(AirportBoostType.POPULATION, (baseBoost.value + airport.basePopulation * 0.025).toLong / 1000 * 1000)
+            case _ => baseBoost
+        }
+    }
+}
 
 
 object AirportAsset {
@@ -618,7 +645,7 @@ object AirportAsset {
 
     def buildNewAsset(airline : Airline, blueprint : AirportAssetBlueprint, name : String) : AirportAsset = {
         val currentCycle = CycleSource.loadCycle()
-        val completionCycle = currentCycle + blueprint.assetType.constructionDuration
+        val completionCycle = currentCycle + blueprint.assetType.constructionDuration  / TEST_SPEEDUP
 
         getAirportAsset(blueprint, Some(airline), name, 1, Some(completionCycle), List.empty, 0, 0, blueprint.assetType.initRoi, false, Map.empty, currentCycle)
     }
