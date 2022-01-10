@@ -1009,6 +1009,7 @@ function updateResetAirlineInfo() {
 	    	
 	    	$('.resetTooltip .airplanes').text(commaSeparateNumber(result.airplanes))
 	    	$('.resetTooltip .bases').text(commaSeparateNumber(result.bases))
+	    	$('.resetTooltip .assets').text(commaSeparateNumber(result.assets))
 	    	$('.resetTooltip .loans').text(commaSeparateNumber(result.loans))
 	    	$('.resetTooltip .oilContracts').text(commaSeparateNumber(result.oilContracts))
 	    	$('.resetTooltip .cash').text(commaSeparateNumber(result.existingBalance))

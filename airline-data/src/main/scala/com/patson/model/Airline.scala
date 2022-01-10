@@ -279,6 +279,12 @@ object Airline {
 
         //remove all airplanes
         AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
+
+        //remove all assets
+        AirportAssetSource.loadAirportAssetsByAirline(airlineId).foreach { asset =>
+          AirportAssetSource.deleteAirportAsset(asset.id)
+        }
+
         //remove all bases
         AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
         //remove all loans

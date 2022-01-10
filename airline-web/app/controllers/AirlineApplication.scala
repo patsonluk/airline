@@ -88,6 +88,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       JsObject(List(
       "airplanes" -> JsNumber(info.airplanes),
       "bases" -> JsNumber(info.bases),
+      "assets" -> JsNumber(info.assets),
       "loans" -> JsNumber(info.loans),
       "oilContracts" -> JsNumber(info.oilContracts),
       "existingBalance" -> JsNumber(info.existingBalance),

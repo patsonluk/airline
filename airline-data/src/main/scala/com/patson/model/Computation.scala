@@ -2,7 +2,7 @@ package com.patson.model
 
 import com.patson.PassengerSimulation.LINK_COST_TOLERANCE_FACTOR
 import com.patson.model.airplane._
-import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, BankSource, CountrySource, CycleSource, OilSource}
+import com.patson.data.{AirlineSource, AirplaneSource, AirportAssetSource, AirportSource, AllianceSource, BankSource, CountrySource, CycleSource, OilSource}
 import com.patson.Util
 import com.patson.util.{AirlineCache, AllianceRankingUtil}
 
@@ -230,15 +230,16 @@ object Computation {
     val currentCycle = CycleSource.loadCycle()
     val amountFromAirplanes = AirplaneSource.loadAirplanesByOwner(airlineId, false).map(Computation.calculateAirplaneSellValue(_).toLong).sum
     val amountFromBases = AirlineSource.loadAirlineBasesByAirline(airlineId).map(_.getValue * 0.2).sum.toLong //only get 20% back
+    val amountFromAssets = AirportAssetSource.loadAirportAssetsByAirline(airlineId).map(_.sellValue).sum
     val amountFromLoans = BankSource.loadLoansByAirline(airlineId).map(_.earlyRepayment(currentCycle) * -1).sum //repay all loans now
     val amountFromOilContracts = OilSource.loadOilContractsByAirline(airlineId).map(_.contractTerminationPenalty(currentCycle) * -1).sum //termination penalty
     val existingBalance = AirlineCache.getAirline(airlineId).get.airlineInfo.balance
     
-    ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromLoans, amountFromOilContracts, existingBalance)
+    ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromAssets, amountFromLoans, amountFromOilContracts, existingBalance)
   }
   
-  case class ResetAmountInfo(airplanes : Long, bases : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
-    val overall = airplanes + bases + loans + oilContracts + existingBalance
+  case class ResetAmountInfo(airplanes : Long, bases : Long, assets : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
+    val overall = airplanes + bases + assets + loans + oilContracts + existingBalance
   }
 
 //  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
