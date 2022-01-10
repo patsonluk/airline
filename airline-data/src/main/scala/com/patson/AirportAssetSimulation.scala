@@ -73,7 +73,7 @@ object AirportAssetSimulation {
 
     allAssets.foreach { asset =>
       //check for changes due to upgrade
-      checkUpgradeCompletion(asset) match {
+      checkUpgradeCompletion(asset, currentCycle + 1) match { //simulate one cycle ahead, otherwise the asset would be stuck at COMPLETED w/o bonus
         case Some((newBoosts, newRoi, upgradeFactor)) =>
           println(s"$asset upgrading to $newBoosts")
           asset.boosts = newBoosts.map(_._1)
@@ -110,8 +110,9 @@ object AirportAssetSimulation {
     *
     * @return Some if there are new boosts. 2nd value in list tuple is boost gain
     */
-  def checkUpgradeCompletion(asset : AirportAsset) : Option[(List[(AirportBoost, Double)], Double, Double)] = { //(new boost, new roi, upgrade factor)
-    if (asset.status == AirportAssetStatus.COMPLETED && !asset.upgradeApplied) {
+  def checkUpgradeCompletion(asset : AirportAsset, cycle : Int) : Option[(List[(AirportBoost, Double)], Double, Double)] = { //(new boost, new roi, upgrade factor)
+    //if (asset.status == AirportAssetStatus.COMPLETED && !asset.upgradeApplied) {
+    if (asset.completionCycle.get <= cycle && !asset.upgradeApplied) {
       val history = asset.boostHistory()
       if (history.isEmpty || history.map(_.level).max < asset.level) { //double check, the upgradeApplied flag is actually good enough
         val previousLevelBoosts =
