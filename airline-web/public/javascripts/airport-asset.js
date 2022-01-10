@@ -172,19 +172,10 @@ function showAssetModal(asset) {
 
     if (asset.status === "BLUEPRINT") {
         $('#airportAssetDetailsModal .assetStatus').text("Blueprint")
-        $('#airportAssetDetailsModal .assetNameInput').text('')
-        $('#airportAssetDetailsModal .assetNameInputDiv').show()
-        $('#airportAssetDetailsModal .assetName').hide()
     } else if (asset.status === "UNDER_CONSTRUCTION") {
         $('#airportAssetDetailsModal .assetStatus').text("Under Construction - Complete in " + asset.completionDuration + " week(s)")
-        $('#airportAssetDetailsModal .assetNameInput').text(asset.name)
-        $('#airportAssetDetailsModal .assetNameInputDiv').hide()
-        $('#airportAssetDetailsModal .assetName').show()
     } else {
         $('#airportAssetDetailsModal .assetStatus').text("Operating")
-        $('#airportAssetDetailsModal .assetNameInput').text(asset.name)
-        $('#airportAssetDetailsModal .assetNameInputDiv').show()
-        $('#airportAssetDetailsModal .assetName').hide()
     }
 
     if (asset.level) {
@@ -216,8 +207,8 @@ function showAssetModal(asset) {
             $('#airportAssetDetailsModal .assetNameInputDiv').show()
         } else {
             $('#airportAssetDetailsModal .assetName').text(asset.name)
-            $('#airportAssetDetailsModal .assetName').hide()
-            $('#airportAssetDetailsModal .assetNameInputDiv').show()
+            $('#airportAssetDetailsModal .assetName').show()
+            $('#airportAssetDetailsModal .assetNameInputDiv').hide()
         }
 
         var airlineLogo = getAirlineLogoImg(asset.airline.id)
