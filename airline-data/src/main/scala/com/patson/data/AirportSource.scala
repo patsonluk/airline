@@ -240,26 +240,27 @@ object AirportSource {
           runwayLength = resultSet.getInt("runway_length"))
         airport.id = resultSet.getInt("id")
         airportData += airport
-        if (fullLoad) {
-          if (fullLoad || loadFeatures) {
-            //load features first, as it might affect income level and pop, which both might affect later loading
-            val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
-            featureStatement.setInt(1, airport.id)
 
-            val featureResultSet = featureStatement.executeQuery()
-            val features = ListBuffer[AirportFeature]()
-            while (featureResultSet.next()) {
-              val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
-              val strength = featureResultSet.getInt("strength")
+        if (fullLoad || loadFeatures) {
+          //load features first, as it might affect income level and pop, which both might affect later loading
+          val featureStatement = connection.prepareStatement("SELECT * FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
+          featureStatement.setInt(1, airport.id)
 
-              features += AirportFeature(featureType, strength)
-            }
-            featureStatement.close()
-            airport.initFeatures(features.toList)
+          val featureResultSet = featureStatement.executeQuery()
+          val features = ListBuffer[AirportFeature]()
+          while (featureResultSet.next()) {
+            val featureType = AirportFeatureType.withName(featureResultSet.getString("feature_type"))
+            val strength = featureResultSet.getInt("strength")
 
-            //load assets
-            airport.initAssets(AirportAssetSource.loadAirportAssetsByAirport(airport.id, Some(airport))) //pass the airport loaded so far to avoid cyclic load
+            features += AirportFeature(featureType, strength)
           }
+          featureStatement.close()
+          airport.initFeatures(features.toList)
+        }
+
+        if (fullLoad) {
+          //load assets
+          airport.initAssets(AirportAssetSource.loadAirportAssetsByAirport(airport.id, Some(airport))) //pass the airport loaded so far to avoid cyclic load
 
           val airlineAwareness = mutable.Map[Int, Double]()
           val loyaltyStatement = connection.prepareStatement("SELECT airline, loyalty, awareness FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
