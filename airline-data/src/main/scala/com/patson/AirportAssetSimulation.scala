@@ -499,6 +499,8 @@ object AirportAssetSimulation {
     val (boundaryPop, boundaryIncomeLevel, boundaryPaxStats, neutralProfitFactor) = asset.assetType match {
       case com.patson.model.AirportAssetType.SUBWAY =>
         (5000000, 35, PassengerStats(400000, 200000, 200000, 150000, 150000), 0.8)
+      case com.patson.model.AirportAssetType.CITY_TRANSIT =>
+        (5000000, 35, PassengerStats(100000, 200000, 200000, 50000, 50000), 0.8)
       case com.patson.model.AirportAssetType.CONVENTION_CENTER =>
         (4000000, 40, PassengerStats(200000, 200000, 200000, 400000, 400000), 0.5)
       case com.patson.model.AirportAssetType.SOLAR_POWER_PLANT =>
