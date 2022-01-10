@@ -8,6 +8,7 @@ import scala.util.Random
 case class AirportAssetBlueprint(airport : Airport, assetType : AirportAssetType.Value, var id : Int = 0) extends IdObject
 
 object AirportAssetType extends Enumeration {
+    val TEST_SPEEDUP = 8 //TODO for testing ONLY, REMOVE FOR RELEASE
 
     abstract class AirportAssetType() extends super.Val {
         val constructionDuration : Int
@@ -389,8 +390,6 @@ object AirportAssetType extends Enumeration {
 
 
 abstract class AirportAsset() extends IdObject{
-    val TEST_SPEEDUP = 8 //TODO for testing ONLY, REMOVE FOR RELEASE
-
     val blueprint : AirportAssetBlueprint
     val airline : Option[Airline]
     val name : String
@@ -448,7 +447,7 @@ abstract class AirportAsset() extends IdObject{
 
     def levelUp(name : String) = {
         val currentCycle = CycleSource.loadCycle()
-        val completionCycle = currentCycle + assetType.constructionDuration / TEST_SPEEDUP
+        val completionCycle = currentCycle + assetType.constructionDuration / AirportAssetType.TEST_SPEEDUP
 
         //do not generate new boosts here, should let only do it when upgrade is completed
         AirportAsset.getAirportAsset(blueprint, airline, name, level + 1, Some(completionCycle), boosts, revenue, expense, roi, false, properties, currentCycle)
@@ -600,6 +599,7 @@ case class CityTransitAsset(override val blueprint : AirportAssetBlueprint, over
 
 object AirportAsset {
     val MAX_LEVEL = 10
+
     def getAirportAsset(id : Int, airport : Airport, assetType : AirportAssetType.Value, airline : Option[Airline], name : String, level : Int, completionCycle : Option[Int], boosts : List[AirportBoost], revenue : Long, expense : Long, roi : Double, upgradeApplied : Boolean ,properties : Map[String, Long], currentCycle : Int) : AirportAsset = {
         val blueprint = AirportAssetBlueprint(airport, assetType, id)
         getAirportAsset(blueprint, airline, name, level, completionCycle, boosts, revenue, expense, roi, upgradeApplied, properties, currentCycle)
@@ -645,7 +645,7 @@ object AirportAsset {
 
     def buildNewAsset(airline : Airline, blueprint : AirportAssetBlueprint, name : String) : AirportAsset = {
         val currentCycle = CycleSource.loadCycle()
-        val completionCycle = currentCycle + blueprint.assetType.constructionDuration  / TEST_SPEEDUP
+        val completionCycle = currentCycle + blueprint.assetType.constructionDuration  / AirportAssetType.TEST_SPEEDUP
 
         getAirportAsset(blueprint, Some(airline), name, 1, Some(completionCycle), List.empty, 0, 0, blueprint.assetType.initRoi, false, Map.empty, currentCycle)
     }
