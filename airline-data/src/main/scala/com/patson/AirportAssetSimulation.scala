@@ -138,15 +138,9 @@ object AirportAssetSimulation {
     //get performance factor up to last 10 weeks
     val historyEntries = AirportAssetSource.loadAirportPropertyHistoryByAssetId(asset.id).sortBy(_.cycle).takeRight(10)
 
-    println(s"GUF historyEntries for $asset : $historyEntries")
     val performances : Seq[Double] = historyEntries.map { entry =>
-      val profit = entry.properties("revenue") - entry.properties("expense")
-      val actualRoi = profit * 52.0 / asset.value
-      val potentialRoi = asset.roi
-      val performance = Math.max(0, Math.min(1.0, actualRoi / potentialRoi))
-      performance
+      entry.properties.get("performance").getOrElse(0) / 100.0
     }
-    println(s"GUF performances for $asset : $performances")
 
     if (performances.length == 0) {
       Math.random()
