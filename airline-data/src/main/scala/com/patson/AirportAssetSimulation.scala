@@ -139,7 +139,7 @@ object AirportAssetSimulation {
     val historyEntries = AirportAssetSource.loadAirportPropertyHistoryByAssetId(asset.id).sortBy(_.cycle).takeRight(10)
 
     val performances : Seq[Double] = historyEntries.map { entry =>
-      entry.properties.get("performance").getOrElse(0) / 100.0
+      entry.properties.get("performance").getOrElse(0L) / 100.0
     }
 
     if (performances.length == 0) {
