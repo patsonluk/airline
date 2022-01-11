@@ -205,10 +205,12 @@ function showAssetModal(asset) {
             $('#airportAssetDetailsModal .assetNameInput').val(asset.name)
             $('#airportAssetDetailsModal .assetName').hide()
             $('#airportAssetDetailsModal .assetNameInputDiv').show()
+            $('#airportAssetDetailsModal .assetOwnerRow').show()
         } else {
             $('#airportAssetDetailsModal .assetName').text(asset.name)
             $('#airportAssetDetailsModal .assetName').show()
             $('#airportAssetDetailsModal .assetNameInputDiv').hide()
+            $('#airportAssetDetailsModal .assetOwnerRow').hide()
         }
 
         var airlineLogo = getAirlineLogoImg(asset.airline.id)
@@ -223,6 +225,7 @@ function showAssetModal(asset) {
         $('#airportAssetDetailsModal .assetNameInputDiv').show()
         $('#airportAssetDetailsModal .assetOwner').text('-')
         $('#airportAssetDetailsModal .sellValue').text('-')
+        $('#airportAssetDetailsModal .assetOwnerRow').hide()
     }
 
 

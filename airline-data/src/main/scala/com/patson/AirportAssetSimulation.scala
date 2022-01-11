@@ -75,7 +75,7 @@ object AirportAssetSimulation {
       //check for changes due to upgrade
       checkUpgradeCompletion(asset, currentCycle + 1) match { //simulate one cycle ahead, otherwise the asset would be stuck at COMPLETED w/o bonus
         case Some((newBoosts, newRoi, upgradeFactor)) =>
-          println(s"$asset upgrading to $newBoosts")
+          println(s"$asset upgrading to $newBoosts with new Roi $newRoi upgrade factor $upgradeFactor")
           asset.boosts = newBoosts.map(_._1)
           //save the boost history
           val newBoostHistory = newBoosts.map {
@@ -137,13 +137,17 @@ object AirportAssetSimulation {
   def generateUpgradeFactor(asset : AirportAsset) : Double = {
     //get performance factor up to last 10 weeks
     val historyEntries = AirportAssetSource.loadAirportPropertyHistoryByAssetId(asset.id).sortBy(_.cycle).takeRight(10)
-    val performances = historyEntries.map { entry =>
+
+    println(s"GUF historyEntries for $asset : $historyEntries")
+    val performances : Seq[Double] = historyEntries.map { entry =>
       val profit = entry.properties("revenue") - entry.properties("expense")
       val actualRoi = profit * 52.0 / asset.value
       val potentialRoi = asset.roi
       val performance = Math.max(0, Math.min(1.0, actualRoi / potentialRoi))
       performance
     }
+    println(s"GUF performances for $asset : $performances")
+
     if (performances.length == 0) {
       Math.random()
     } else {
