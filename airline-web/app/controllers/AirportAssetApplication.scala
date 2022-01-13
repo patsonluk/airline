@@ -191,7 +191,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
             Some(s"${asset.name} can only be upgraded again in $cooldownDelta week(s)")
           } else {
             None
-//          }
+          }
         }
       case None =>
         airline.getBases().find(_.airport.id == asset.blueprint.airport.id) match {
