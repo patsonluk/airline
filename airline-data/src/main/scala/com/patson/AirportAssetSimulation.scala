@@ -316,7 +316,7 @@ object AirportAssetSimulation {
         paxStats.departureBusiness.toDouble / 275
       case com.patson.model.AirportAssetType.RESIDENTIAL_COMPLEX =>
         airport.population * airport.incomeLevel / 250 / 30 +
-        paxStats.departurePax.toDouble / 1.5
+        paxStats.departurePax.toDouble * 10
       case com.patson.model.AirportAssetType.SCIENCE_PARK =>
         airport.population * airport.incomeLevel / 40000 / 40 +
         paxStats.departureBusiness.toDouble / 450 +
