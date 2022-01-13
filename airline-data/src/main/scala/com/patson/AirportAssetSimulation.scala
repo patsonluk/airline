@@ -142,7 +142,7 @@ object AirportAssetSimulation {
       entry.properties.get("performance").getOrElse(0L) / 100.0
     }
 
-    if (performances.length == 0) {
+    if (performances.length == 0 || asset.level == 1) {
       Math.random()
     } else {
       val finalPerformance =  performances.sum / performances.length //from 0 to 1 . if no previous history (new asset) use 0.5
