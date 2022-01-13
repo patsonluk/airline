@@ -142,10 +142,10 @@ object AirportAssetSimulation {
       entry.properties.get("performance").getOrElse(0L) / 100.0
     }
 
-    if (performances.length == 0 || asset.level == 1) {
+    if (performances.length == 0 || asset.level == 1) {  //all rng for level 1
       Math.random()
     } else {
-      val finalPerformance =  performances.sum / performances.length //from 0 to 1 . if no previous history (new asset) use 0.5
+      val finalPerformance =  performances.sum / performances.length //from 0 to 1
       Math.random() * 0.5 + finalPerformance * 0.5 //50% performance 50% luck
     }
 
@@ -316,7 +316,7 @@ object AirportAssetSimulation {
         paxStats.departureBusiness.toDouble / 275
       case com.patson.model.AirportAssetType.RESIDENTIAL_COMPLEX =>
         airport.population * airport.incomeLevel / 250 / 30 +
-        paxStats.departurePax.toDouble / 2.5
+        paxStats.departurePax.toDouble / 1.5
       case com.patson.model.AirportAssetType.SCIENCE_PARK =>
         airport.population * airport.incomeLevel / 40000 / 40 +
         paxStats.departureBusiness.toDouble / 450 +
