@@ -185,10 +185,11 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
           Some(s"${asset.name} is already at max level")
         } else {
           //TODO no cooldown check during test
-//          val cooldownDelta = asset.completionCycle.get + asset.assetType.upgradeCooldown - CycleSource.loadCycle()
-//          if (cooldownDelta > 0) {
-//            Some(s"${asset.name} can only be upgraded again in $cooldownDelta week(s)")
-//          } else {
+          //val cooldownDelta = asset.completionCycle.get + asset.assetType.upgradeCooldown - CycleSource.loadCycle()
+          val cooldownDelta = asset.completionCycle.get - CycleSource.loadCycle()
+          if (cooldownDelta > 0) {
+            Some(s"${asset.name} can only be upgraded again in $cooldownDelta week(s)")
+          } else {
             None
 //          }
         }
