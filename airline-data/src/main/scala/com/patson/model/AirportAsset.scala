@@ -8,7 +8,7 @@ import scala.util.Random
 case class AirportAssetBlueprint(airport : Airport, assetType : AirportAssetType.Value, var id : Int = 0) extends IdObject
 
 object AirportAssetType extends Enumeration {
-    val TEST_SPEEDUP = 8 //TODO for testing ONLY, REMOVE FOR RELEASE
+    val TEST_SPEEDUP = 52 //TODO for testing ONLY, REMOVE FOR RELEASE
 
     abstract class AirportAssetType() extends super.Val {
         val constructionDuration : Int
