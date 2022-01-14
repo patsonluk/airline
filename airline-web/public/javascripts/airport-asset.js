@@ -193,6 +193,7 @@ function showAssetModal(asset) {
     $('#airportAssetDetailsModal .assetExpense').text('-')
     $('#airportAssetDetailsModal .assetProfit').text('-')
     $('#airportAssetDetailsModal .assetRevenue').text('-')
+    $('#airportAssetDetailsModal .assetPerformance').empty()
 
     $('#airportAssetDetailsModal .assetCost').text('$' + commaSeparateNumber(asset.cost))
 
@@ -318,6 +319,9 @@ function showAssetModal(asset) {
             if (typeof assetDetails.revenue !== 'undefined') {
                 $('#airportAssetDetailsModal .assetRevenue').text('$' + commaSeparateNumber(assetDetails.revenue))
             }
+            var fullStarSource = "assets/images/icons/star.png"
+            var $performanceBar = getHalfStepImageBarByValue(fullStarSource, null, 0.5, assetDetails.performanceApprox).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'})
+            $('#airportAssetDetailsModal .assetPerformance').append($performanceBar)
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));

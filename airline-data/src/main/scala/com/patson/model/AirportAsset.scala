@@ -394,7 +394,23 @@ abstract class AirportAsset() extends IdObject{
     val airline : Option[Airline]
     val name : String
 
-    def baseBoosts = blueprint.assetType.baseBoosts
+    def baseBoosts = blueprint.assetType.baseBoosts.find(_.boostType == AirportBoostType.INCOME) match {
+        case Some(_) => //need to create a new list
+            blueprint.assetType.baseBoosts.map { baseBoost =>
+                baseBoost.boostType match {
+                    case AirportBoostType.INCOME => //assuming that it was defined for level 40, up to triple the effect if income level = 0, half the affect for level 60
+                        val multiplier =
+                            if (airport.baseIncomeLevel < 40) {
+                                (1 + (40 - airport.baseIncomeLevel) / 20)
+                            } else {
+                                1 - Math.min(0.5, (airport.baseIncomeLevel - 40) / 40)
+                            }
+                        baseBoost.copy(value = baseBoost.value * multiplier)
+                    case _ => baseBoost
+                }
+            }
+        case None => blueprint.assetType.baseBoosts //can just use the list directly
+    }
 
     val level : Int
     val completionCycle : Option[Int]
@@ -469,6 +485,13 @@ abstract class AirportAsset() extends IdObject{
     def privateProperties() : Map[String, Long] = {
         properties.filter {
             case(key, _) => assetType.privatePropertyKeys.contains(key)
+        }
+    }
+
+    def performance = {
+        properties.get("performance") match {
+            case Some(performance) => performance
+            case None => 0
         }
     }
 

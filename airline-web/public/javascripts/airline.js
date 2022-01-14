@@ -2006,7 +2006,7 @@ function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStep
 		var image = $("<img src='" + fullStepImageSrc + "'>")
 		containerDiv.append(image)
     }
-    if (hasRemainder) {
+    if (hasRemainder && halfStepImageSrc) {
         var image = $("<img src='" + halfStepImageSrc + "'>")
     	containerDiv.append(image)
     }

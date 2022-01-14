@@ -43,7 +43,12 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
   object OwnedAirportAssetWrites extends Writes[AirportAsset] {
     def writes(entry : AirportAsset) : JsValue = {
       var result = AirportAssetWrites.writes(entry).asInstanceOf[JsObject]
-      result = result + ("expense" -> JsNumber(entry.expense)) + ("revenue" -> JsNumber(entry.revenue)) + ("privateProperties" -> Json.toJson(computeAssetProperties(entry, entry.privateProperties())))
+      val performanceApprox = Math.ceil(entry.performance.toDouble / 100 * 5).toInt
+      result = result +
+        ("expense" -> JsNumber(entry.expense)) +
+        ("revenue" -> JsNumber(entry.revenue)) +
+        ("performanceApprox" -> JsNumber(performanceApprox)) + //don't show the actual value. more fun if we hide some details :)
+        ("privateProperties" -> Json.toJson(computeAssetProperties(entry, entry.privateProperties())))
 
       result
     }
