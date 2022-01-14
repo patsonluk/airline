@@ -405,7 +405,7 @@ abstract class AirportAsset() extends IdObject{
                             } else {
                                 1 - Math.min(0.5, (airport.baseIncomeLevel - 40) / 40)
                             }
-                        baseBoost.copy(value = baseBoost.value * multiplier)
+                        baseBoost.copy(value = ((baseBoost.value * multiplier) * 100).toInt / 100.0) //keep 2 decimal
                     case _ => baseBoost
                 }
             }
@@ -498,20 +498,20 @@ abstract class AirportAsset() extends IdObject{
 }
 
 abstract class HotelAsset extends AirportAsset {
-    def capacity = initialCapacity * status match {
+    def capacity = initialCapacity * (status match {
         case AirportAssetStatus.BLUEPRINT => 0
         case AirportAssetStatus.UNDER_CONSTRUCTION => level - 1
         case AirportAssetStatus.COMPLETED => level
-    }
+    })
     val initialCapacity : Int
 }
 
 abstract class AdmissionAsset extends AirportAsset {
-    def capacity = initialCapacity * status match {
+    def capacity = initialCapacity * (status match {
         case AirportAssetStatus.BLUEPRINT => 0
         case AirportAssetStatus.UNDER_CONSTRUCTION => level - 1
         case AirportAssetStatus.COMPLETED => level
-    }
+    })
     val initialCapacity : Int
 }
 
@@ -519,11 +519,11 @@ abstract class RentalAsset extends AirportAsset {
     def space = spacePerLease * maxLeaseCount
     val spacePerLease : Int
     val leasePerLevel : Int
-    final def maxLeaseCount : Int = leasePerLevel * status match {
+    final def maxLeaseCount : Int = leasePerLevel * (status match {
         case AirportAssetStatus.BLUEPRINT => 0
         case AirportAssetStatus.UNDER_CONSTRUCTION => level - 1
         case AirportAssetStatus.COMPLETED => level
-    }
+    })
     final def initialSpace : Int = spacePerLease * leasePerLevel
 }
 
