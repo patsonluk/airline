@@ -72,7 +72,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       result = result + ("slogan" -> JsString(airline.slogan.getOrElse("")))
         
       alliance.foreach { alliance =>
-        result = result + ("allianceName" -> JsString(alliance.name))
+        result = result + ("allianceName" -> JsString(alliance.name)) +  ("allianceId" -> JsNumber(alliance.id))
       }
 
       if (!airlineModifiers.isEmpty) {

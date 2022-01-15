@@ -158,12 +158,11 @@ function updateAllianceTable(sortProperty, sortOrder) {
 	loadedAlliances.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
 	
 	$.each(loadedAlliances, function(index, alliance) {
-		var row = $("<div class='table-row clickable' data-alliance-id='" + alliance.id + "' onclick=\"selectAlliance($(this), '" + alliance.id + "')\"></div>")
+		var row = $("<div class='table-row clickable' data-alliance-id='" + alliance.id + "' onclick=\"selectAlliance('" + alliance.id + "')\"></div>")
 //		var countryFlagImg = ""
 //		if (airline.countryCode) {
 //			countryFlagImg = getCountryFlagImg(airline.countryCode)
 //		}
-		
 		row.append("<div class='cell'>" + alliance.name + "</div>")
 		if (alliance.leader) {
 			row.append("<div class='cell'>" + getAirlineLogoImg(alliance.leader.id) + alliance.leader.name + "</div>")
@@ -198,10 +197,11 @@ function toggleAllianceTableSortOrder(sortHeader) {
 	updateAllianceTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
-function selectAlliance(row, allianceId) {
+function selectAlliance(allianceId) {
 	//update table
-	row.siblings().removeClass("selected")
-	row.addClass("selected")
+	var $row = $("#allianceCanvas #allianceTable .table-row[data-alliance-id='" + allianceId + "']")
+	$row.siblings().removeClass("selected")
+	$row.addClass("selected")
 	loadAllianceDetails(allianceId)
 }
 
