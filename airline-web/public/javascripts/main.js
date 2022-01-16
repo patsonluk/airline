@@ -646,11 +646,13 @@ function populateNavigation(parent) { //change all the tabs to do fake url
     }
 
     parent.find('[data-link]').each(function() {
+        $(this).off('click.nav')
+
         var onclickFunction = $(this).attr("onclick")
         var path = $(this).data("link") != "/" ? ("nav-" + $(this).data("link")) : "/"
         //console.log(path + " " + onclickFunction)
 
-        $(this).click(function() {
+        $(this).on('click.nav', function() {
             history.pushState({ "onclickFunction" : onclickFunction }, null, path);
         })
 //

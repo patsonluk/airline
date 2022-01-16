@@ -659,13 +659,13 @@ function refreshLinkDetails(linkId) {
 	    	    success: function(linkConsumptions) {
 	    	    	$("#linkCompetitons .data-row").remove()
 	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
-    	    			var row = $("<div class='table-row data-row clickable' data-link='alliance'><div style='display: table-cell;'>" + linkConsumption.airlineName
+    	    			var row = $("<div class='table-row data-row clickable' data-link='rival'><div style='display: table-cell;'>" + linkConsumption.airlineName
                                   		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity)
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.frequency + "</div></div>")
                         row.click(function() {
-                            showRivalCanvas(linkConsumption.airlineId)
+                            showRivalsCanvas(linkConsumption.airlineId)
                         })
                         if (linkConsumption.airlineId == airlineId) {
                             $("#linkCompetitons .table-header").after(row) //self is always on top
@@ -674,6 +674,8 @@ function refreshLinkDetails(linkId) {
                         }
 
 	    	    	})
+
+	    	    	populateNavigation($('#linkCompetitons'))
 	    	    	if ($("#linkCompetitons .data-row").length == 0) {
 	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
 	    	    	}

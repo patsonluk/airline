@@ -511,7 +511,7 @@ function updateFacilityList(statistics) {
 	
 	$.each(statistics.lounges, function(index, loungeStats) {
 		var lounge = loungeStats.lounge
-		var row = $("<div class='table-row'></div>")
+		var row = $("<div class='table-row clickable' data-link='rival'></div>")
 		row.append("<div class='cell'>" +  getAirlineLogoImg(lounge.airlineId) + htmlEncode(lounge.airlineName) + "</div>")
 		row.append("<div class='cell'>" + lounge.name + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + lounge.level + "</div>")
@@ -526,6 +526,8 @@ function updateFacilityList(statistics) {
 		$('#airportDetailsLoungeList').append(row)
 		hasLounges = true
 	})
+
+	populateNavigation($('#airportCanvas'))
 	
 	if (!hasHeadquarters) {
 		var emptyRow = $("<div class='table-row'></div>")
@@ -843,7 +845,7 @@ function updateAirportLoyalistDetails(airport) {
 
 	    	plotPie(currentData, activeAirline ? activeAirline.name : null , $("#airportCanvas .loyalistPie"), "airlineName", "amount")
 	    	plotLoyalistHistoryChart(result.history, $("#airportCanvas .loyalistHistoryChart"))
-
+            populateNavigation($('#airportCanvas'))
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
