@@ -468,12 +468,14 @@ function updateFacilityList(statistics) {
 	var hasBases = false
 	var hasLounges = false
 	$.each(statistics.bases, function(index, base) {
-		var row = $("<div class='table-row'></div>")
+		var row = $("<div class='table-row clickable' data-link='rival'></div>")
 		row.append("<div class='cell'>" +  getAirlineLogoImg(base.airlineId) + base.airlineName + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + getCountryFlagImg(base.airlineCountryCode) + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + base.scale + "</div>")
-		
-		
+		row.click(function() {
+		    showRivalsCanvas(base.airlineId)
+		})
+
 		var linkCount = 0;
 		$.each(statistics.linkCountByAirline, function(index, entry) {
 			if (entry.airlineId == base.airlineId) {
@@ -516,6 +518,10 @@ function updateFacilityList(statistics) {
 		row.append("<div class='cell' style='text-align: right;'>" + lounge.status + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(loungeStats.selfVisitors) + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(loungeStats.allianceVisitors) + "</div>")
+		row.click(
+		    function() {
+        	   showRivalsCanvas(lounge.airlineId)
+        })
 		
 		$('#airportDetailsLoungeList').append(row)
 		hasLounges = true
@@ -826,8 +832,11 @@ function updateAirportLoyalistDetails(airport) {
                 var airlineName = deltaEntry.airlineName
                 var airlineId = deltaEntry.airlineId
                 var deltaText = (deltaEntry.passengers >= 0) ? ("+" + deltaEntry.passengers) : deltaEntry.passengers
-
-                $table.append('<div class="table-row"><div class="cell">' + getAirlineLogoImg(airlineId) + airlineName + '</div><div class="cell" style="text-align:right">' + deltaText + '</div></div>')
+                var $row = $('<div class="table-row clickable" data-link="rival"><div class="cell">' + getAirlineLogoImg(airlineId) + airlineName + '</div><div class="cell" style="text-align:right">' + deltaText + '</div></div>')
+                $row.click(function() {
+                    showRivalsCanvas(deltaEntry.airlineId)
+                })
+                $table.append($row)
             })
 
 	    	assignAirlineColors(currentData, "airlineId")
