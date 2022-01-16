@@ -234,7 +234,9 @@ function updateRivalBasicsDetails(airlineId) {
 	}
 	
 	$("#rivalsCanvas .airlineGrade").html(getGradeStarsImgs(rival.gradeValue))
-	
+
+	$("#rivalsCanvas .alliance").data("link", "alliance")
+	populateNavigation$("#rivalsCanvas .alliance")
 	if (rival.allianceName) {
 		$("#rivalsCanvas .alliance").text(rival.allianceName)
 		$("#rivalsCanvas .alliance").addClass("clickable")
@@ -247,6 +249,7 @@ function updateRivalBasicsDetails(airlineId) {
 		$("#rivalsCanvas .alliance").removeClass("clickable")
 		$("#rivalsCanvas .alliance").off("click.showAlliance")
 	}
+
 }
 
 function updateRivalFleet(airlineId) {
