@@ -18,14 +18,17 @@ class ColorApplication @Inject()(cc: ControllerComponents) extends AbstractContr
     val allianceLabelColors = internalGetAllianceLabelColors(request.user)
 
     val allAirlinesByAllianceId : Map[Int, List[Airline]] = AllianceSource.loadAllAlliances().map(entry => (entry.id, entry.members.map(_.airline))).toMap
-    val airlineTextColors : mutable.Map[Int, String] = allianceLabelColors.flatMap {
-      case (allianceId, color) => allAirlinesByAllianceId(allianceId).map(airline => (airline.id, color)).toMap
-    }.filter {
-      case (airlineId, color) => color != REVERT_COLOR
+    val airlineLabelColors : mutable.Map[Int, String] = mutable.Map()
+    allianceLabelColors.foreach {
+      case (allianceId, color) =>
+        allAirlinesByAllianceId(allianceId).foreach {
+          airline => airlineLabelColors.put(airline.id, color)
+        }
     }
 
-
-    Ok(Json.toJson(airlineTextColors))
+    Ok(Json.toJson(airlineLabelColors.filter {
+      case (airlineId, color) => color != REVERT_COLOR
+    }))
   }
 
   def getAllianceLabelColor(airlineId : Int, allianceId : Int) = AuthenticatedAirline(airlineId) { request =>
