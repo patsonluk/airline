@@ -78,7 +78,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 //		}
 
 		row.append("<div class='cell'><img src='" + getStatusLogo(airline.loginStatus) + "' title='" + getStatusTitle(airline.loginStatus) + "' style='vertical-align:middle;'/>")
-		var $nameDiv = $("<div class='cell' style='vertical-align:unset;'>" + getAirlineLogoImg(airline.id) + airline.name + getUserLevelImg(airline.userLevel) + getAdminImg(airline.adminStatus) + getUserModifiersSpan(airline.userModifiers) + getAirlineModifiersSpan(airline.airlineModifiers)
+		var $nameDiv = $("<div class='cell' style='vertical-align:unset;'>" + getAirlineSpan(airline.id, airline.name) + getUserLevelImg(airline.userLevel) + getAdminImg(airline.adminStatus) + getUserModifiersSpan(airline.userModifiers) + getAirlineModifiersSpan(airline.airlineModifiers)
 				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>").appendTo(row)
 		addAirlineTooltip($nameDiv, airline.id, airline.slogan, airline.name)
 		if (airline.headquartersAirportName) {
@@ -379,7 +379,7 @@ function showRivalMap() {
                         $("#linkPopupFrom").html(getCountryFlagImg(link.fromCountryCode) + "&nbsp;" + fromAirport)
                         $("#linkPopupTo").html(getCountryFlagImg(link.toCountryCode) + "&nbsp;" + toAirport)
                         $("#linkPopupCapacity").html(link.capacity.total)
-                        $("#linkPopupAirline").html(getAirlineLogoImg(link.airlineId) + "&nbsp;" + link.airlineName)
+                        $("#linkPopupAirline").html(getAirlineSpan(link.airlineId, link.airlineName))
 
                         infoWindow = new google.maps.InfoWindow({
                              maxWidth : 1200});

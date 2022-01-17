@@ -8,6 +8,7 @@ var selectedLink
 var currentTime
 var currentCycle
 var airlineColors = {}
+var airlineLabelColors = {}
 var polylines = []
 var airports = undefined
 
@@ -193,8 +194,8 @@ function loadUser(isLogin) {
 			  addAirlineSpecificMapControls(map)
               initPrompts()
 		  }
+		  updateAirlineLabelColors()
 
-		  
 	  },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	    	if (jqXHR.status == 401) {
@@ -249,6 +250,7 @@ function logout() {
 	    	console.log(message)
 	    	activeUser = null
 	    	activeAirline = null
+	    	airlineLabelColors = {}
 	    	hideUserSpecificElements()
 	    	$.removeCookie('sessionActive')
 	    	//refreshLoginBar()
@@ -612,6 +614,22 @@ function executeConfirmationTarget() {
 	}
 }
 
+function promptSelection(question, choices, targetFunction) {
+	$('#selectionModal .question').text(question)
+	$('#selectionModal .selections').empty()
+	$.each(choices, function(index, choice) {
+	    var $selectionButton = $('<div class="button">' + choice + '</div>')
+        $('#selectionModal .selections').append($selectionButton)
+        $selectionButton.click(function() {
+            targetFunction(choice)
+            closeModal($('#selectionModal'))
+        })
+	})
+
+	$('#selectionModal').fadeIn(200)
+}
+
+
 function updateAirlineColors() {
 	var url = "colors"
     $.ajax({
@@ -627,6 +645,30 @@ function updateAirlineColors() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function updateAirlineLabelColors(callback) {
+    //get airline label color
+    airlineLabelColors = {}
+    $.ajax({
+            type: 'GET',
+            url: "airlines/" + activeAirline.id + "/airline-label-colors",
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(result) {
+                $.each(result, function(index, entry) {
+                    airlineLabelColors[entry[0]] = entry[1]
+                })
+                if (callback) {
+                    callback()
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(JSON.stringify(jqXHR));
+                    console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            }
+    });
+
 }
 
 function assignAirlineColors(dataSet, colorProperty) {

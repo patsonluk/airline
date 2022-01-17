@@ -316,6 +316,7 @@ object Meta {
     createUserUuid(connection)
     createAirlineModifier(connection)
     createUserModifier(connection)
+    createAllianceLabelColor(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -1987,6 +1988,40 @@ object Meta {
     statement.close()
   }
 
+
+  def createAllianceLabelColor(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_LABEL_COLOR_BY_AIRLINE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_LABEL_COLOR_BY_AIRLINE_TABLE + "(" +
+      "airline INTEGER, " +
+      "target_alliance INTEGER," +
+      "color CHAR(20)," +
+      "PRIMARY KEY (airline, target_alliance)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(target_alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")"
+    )
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE + "(" +
+      "alliance INTEGER, " +
+      "target_alliance INTEGER," +
+      "color CHAR(20)," +
+      "PRIMARY KEY (alliance, target_alliance)," +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(target_alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")"
+    )
+    statement.execute()
+    statement.close()
+  }
 
 
 

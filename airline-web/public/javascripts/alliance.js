@@ -165,7 +165,7 @@ function updateAllianceTable(sortProperty, sortOrder) {
 //		}
 		row.append("<div class='cell'>" + alliance.name + "</div>")
 		if (alliance.leader) {
-			row.append("<div class='cell'>" + getAirlineLogoImg(alliance.leader.id) + alliance.leader.name + "</div>")
+			row.append("<div class='cell'>" + getAirlineSpan(alliance.leader.id, alliance.leader.name) + "</div>")
 		} else {
 			row.append("<div class='cell'>-</div>")
 		}
@@ -210,6 +210,7 @@ function loadAllianceDetails(allianceId) {
 	updateAllianceBonus(allianceId)
 	updateAllianceChampions(allianceId)
 	updateAllianceHistory(allianceId)
+	updateAllianceTagColor(allianceId)
 	$('#allianceDetails').fadeIn(200)
 }
 
@@ -223,7 +224,8 @@ function updateAllianceBasicsDetails(allianceId) {
 	} else {
 		$("#allianceDetails .allianceStatus").text(alliance.status)
 	}
-	
+
+
 	if (alliance.ranking) {
 		var rankingImg = getRankingImg(alliance.ranking)
 		if (rankingImg) {
@@ -239,7 +241,7 @@ function updateAllianceBasicsDetails(allianceId) {
 	$.each(alliance.members, function(index, member) {
 		var row = $("<div class='table-row clickable' style='height: 20px;' onclick='showAllianceMemberDetails($(this).data(\"member\"))'></div>")
 		row.data("member", member)
-		row.append("<div class='cell' style='vertical-align: middle;'>" + getAirlineLogoImg(member.airlineId) + member.airlineName + "</div>")
+		row.append("<div class='cell' style='vertical-align: middle;'>" + getAirlineSpan(member.airlineId, member.airlineName) + "</div>")
 		if (member.allianceRole == "Applicant") {
 			row.append("<div class='cell warning' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
 		} else {
@@ -423,6 +425,48 @@ function updateAllianceHistory(allianceId) {
 		var row = $("<div class='table-row'><div class='cell value' style='width: 30%;'>Week " + entry.cycle + "</div><div class='cell value' style='width: 70%;'>" + entry.description + "</div></div>")
 		$('#allianceHistory').append(row)
 	})
+}
+
+function updateAllianceTagColor(allianceId) {
+    if (activeAirline) {
+        $('#allianceDetails .tagColor.picker').off("change.setColor")
+
+        $('#allianceDetails .tagColor.picker').on("change.setColor", function() {
+            var newColor = $(this).val()
+
+           checkAllianceLabelColorAction(allianceId, function(airlineOverride) {
+            setAllianceLabelColor(allianceId, newColor, function() {
+                var selectedSortHeader = $('#allianceTableSortHeader .table-header .cell.selected')
+                updateAllianceTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
+                updateAllianceBasicsDetails(allianceId)
+            }, airlineOverride)
+           })
+
+        });
+
+        $.ajax({
+            type: 'GET',
+            url: "airlines/" + activeAirline.id + "/alliance-label-color?allianceId=" + allianceId,
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(result) {
+                if (result.color) {
+                    $('#allianceDetails .tagColor.picker').val('#' + result.color)
+                } else {
+                    $('#allianceDetails .tagColor.picker').val('')
+                }
+                $('#allianceDetails .tagColor').show()
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(JSON.stringify(jqXHR));
+                    console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            }
+        });
+
+
+    } else {
+        $('#allianceDetails .tagColor').hide()
+    }
 }
 
 
@@ -732,4 +776,26 @@ function hideAllianceMap() {
     updateAirportBaseMarkers([]) //revert base markers
     closeAlliancePopups()
     setActiveDiv($("#allianceCanvas"))
+}
+
+function checkResetAllianceLabelColor(targetAllianceId) {
+    checkAllianceLabelColorAction(targetAllianceId, function(airlineOverride) {
+        resetAllianceLabelColor(targetAllianceId, function() {
+            var selectedSortHeader = $('#allianceTableSortHeader .table-header .cell.selected')
+            updateAllianceTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
+            updateAllianceBasicsDetails(targetAllianceId)
+            $('#allianceDetails .tagColor.picker').val('')
+        },airlineOverride)
+    })
+}
+
+function checkAllianceLabelColorAction(targetAllianceId, colorAction) {
+    if (activeAirline.isAllianceAdmin) {
+        promptSelection("Do you want to apply this to all your alliance members or just your airline?", ["Alliance", "Airline"], function(changeType) {
+            var airlineOverride = (changeType === "Airline")
+            colorAction(airlineOverride)
+        })
+    } else {
+        colorAction(true)
+    }
 }

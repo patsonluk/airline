@@ -248,7 +248,7 @@ function updateAirportChampionDetails(airport) {
 	    	$(champions).each(function(index, championDetails) {
 	    		var row = $("<div class='table-row clickable' data-link='rival' onclick=\"showRivalsCanvas('" + championDetails.airlineId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
-	    		row.append("<div class='cell'>" + getAirlineLogoImg(championDetails.airlineId) + championDetails.airlineName + "</div>")
+	    		row.append("<div class='cell'>" + getAirlineSpan(championDetails.airlineId, championDetails.airlineName) + "</div>")
 	    		row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
 	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.loyalty + "</div>")
 	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
@@ -469,7 +469,7 @@ function updateFacilityList(statistics) {
 	var hasLounges = false
 	$.each(statistics.bases, function(index, base) {
 		var row = $("<div class='table-row clickable' data-link='rival'></div>")
-		row.append("<div class='cell'>" +  getAirlineLogoImg(base.airlineId) + base.airlineName + "</div>")
+		row.append("<div class='cell'>" +  getAirlineSpan(base.airlineId, base.airlineName) + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + getCountryFlagImg(base.airlineCountryCode) + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + base.scale + "</div>")
 		row.click(function() {
@@ -512,7 +512,7 @@ function updateFacilityList(statistics) {
 	$.each(statistics.lounges, function(index, loungeStats) {
 		var lounge = loungeStats.lounge
 		var row = $("<div class='table-row clickable' data-link='rival'></div>")
-		row.append("<div class='cell'>" +  getAirlineLogoImg(lounge.airlineId) + htmlEncode(lounge.airlineName) + "</div>")
+		row.append("<div class='cell'>" +  getAirlineSpan(lounge.airlineId, htmlEncode(lounge.airlineName)) + "</div>")
 		row.append("<div class='cell'>" + lounge.name + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + lounge.level + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + lounge.status + "</div>")
@@ -834,7 +834,7 @@ function updateAirportLoyalistDetails(airport) {
                 var airlineName = deltaEntry.airlineName
                 var airlineId = deltaEntry.airlineId
                 var deltaText = (deltaEntry.passengers >= 0) ? ("+" + deltaEntry.passengers) : deltaEntry.passengers
-                var $row = $('<div class="table-row clickable" data-link="rival"><div class="cell">' + getAirlineLogoImg(airlineId) + airlineName + '</div><div class="cell" style="text-align:right">' + deltaText + '</div></div>')
+                var $row = $('<div class="table-row clickable" data-link="rival"><div class="cell">' + getAirlineSpan(airlineId, airlineName) + '</div><div class="cell" style="text-align:right">' + deltaText + '</div></div>')
                 $row.click(function() {
                     showRivalsCanvas(deltaEntry.airlineId)
                 })

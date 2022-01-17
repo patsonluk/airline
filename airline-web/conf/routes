@@ -137,6 +137,12 @@ POST 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.sa
 DELETE 	 /airlines/:airlineId/campaigns/:campaignId         controllers.CampaignApplication.deleteCampaign(airlineId: Int, campaignId : Int)
 GET 	 /airlines/:airlineId/campaign-airports/:airportId         controllers.CampaignApplication.getCampaignAirports(airlineId: Int, airportId: Int, radius : Int)
 
+GET      /airlines/:airlineId/alliance-label-color         controllers.ColorApplication.getAllianceLabelColor(airlineId: Int, allianceId : Int)
+GET      /airlines/:airlineId/airline-label-colors         controllers.ColorApplication.getAirlineLabelColors(airlineId: Int)
+GET      /airlines/:airlineId/set-alliance-label-color-as-airline         controllers.ColorApplication.setAllianceLabelColorAsAirline(airlineId: Int, targetAllianceId : Int, color : String)
+GET      /airlines/:airlineId/set-alliance-label-color-as-alliance         controllers.ColorApplication.setAllianceLabelColorAsAlliance(airlineId: Int, targetAllianceId : Int, color : String)
+GET      /airlines/:airlineId/delete-alliance-label-color-as-airline         controllers.ColorApplication.deleteAllianceLabelColorAsAirline(airlineId: Int, targetAllianceId : Int)
+GET      /airlines/:airlineId/delete-alliance-label-color-as-alliance         controllers.ColorApplication.deleteAllianceLabelColorAsAlliance(airlineId: Int, targetAllianceId : Int)
 
 POST      /airlines/:airlineId/completed-tutorial/:tutorialId     controllers.TutorialApplication.saveCompletedTutorial(airlineId: Int, tutorialId: String, category : String)
 GET      /airlines/:airlineId/completed-tutorial               controllers.TutorialApplication.getCompletedTutorials(airlineId: Int)
