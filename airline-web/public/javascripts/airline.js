@@ -1977,7 +1977,7 @@ function updateRivalTables(result) {
     var yellowManSource = "assets/images/icons/man-yellow.png"
     $.each(airlineNameById, function(airlineId, airlineName) {
      	var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell' align='left'>" + getAirlineLogoImg(airlineId) + airlineName + "</div>")
+		row.append("<div class='cell' align='left'>" + getAirlineSpan(airlineId, airlineName) + "</div>")
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, fromAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, fromAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, toAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
@@ -1986,7 +1986,7 @@ function updateRivalTables(result) {
 
 		row = $("<div class='table-row'></div>")
 
-		row.append("<div class='cell' align='left'>" + getAirlineLogoImg(airlineId) + airlineName + "</div>")
+		row.append("<div class='cell' align='left'>" + getAirlineSpan(airlineId, airlineName) + "</div>")
         getCapacityImageBar(greenManSource, fromAirportCapacity[airlineId].economy, "economy").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
         getCapacityImageBar(blueManSource, fromAirportCapacity[airlineId].business, "business").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
         getCapacityImageBar(yellowManSource, fromAirportCapacity[airlineId].first, "first").appendTo($("<div class='cell' align='right'></div>").appendTo(row))

@@ -151,6 +151,9 @@ object Constants {
 
   val LINK_NEGOTIATION_DISCOUNT_TABLE = "link_negotiation_discount"
 
+  val ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE = "alliance_label_color_by_alliance"
+  val ALLIANCE_LABEL_COLOR_BY_AIRLINE_TABLE = "alliance_label_color_by_airline"
+
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"
   val SANTA_CLAUS_GUESS_TABLE = "santa_claus_guess"

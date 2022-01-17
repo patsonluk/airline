@@ -66,7 +66,7 @@ function updateLogTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + log.cycleAgo + " week(s) ago</div>")
 		row.append("<div class='cell'>" + log.severityText + "</div>")
 		row.append("<div class='cell'>" + log.categoryText + "</div>")
-		row.append("<div class='cell'>" + getAirlineLogoImg(log.airlineId) + log.airlineName + "</div>")
+		row.append("<div class='cell'>" + getAirlineSpan(log.airlineId, log.airlineName) + "</div>")
 		row.append("<div class='cell'>" + log.message + "</div>")
 
 		logTable.append(row)
@@ -90,7 +90,7 @@ function updateAlertTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + alert.cycle + "</div>")
 		row.append("<div class='cell'>" + alert.categoryText + "</div>")
 		row.append("<div class='cell'>" + alert.duration + " week(s)</div>")
-		row.append("<div class='cell'>" + getAirlineLogoImg(alert.airlineId) + alert.airlineName + "</div>")
+		row.append("<div class='cell'>" + getAirlineSpan(alert.airlineId, alert.airlineName) + "</div>")
 		row.append("<div class='cell'>" + alert.message + "</div>")
 
 		alertTable.append(row)

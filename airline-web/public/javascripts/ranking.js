@@ -95,7 +95,7 @@ function getRankingRow(ranking) {
 	row.append("<div class='cell'>" + ranking.rank + "</div>")
 	row.append("<div class='cell'>" + getMovementLabel(ranking.movement) + "</div>")
 	if (ranking.airlineId) {
-		var entry = getAirlineLogoImg(ranking.airlineId) + ranking.airlineName
+		var entry = getAirlineSpan(ranking.airlineId, ranking.airlineName)
 		if (ranking.rankInfo) {
 			entry += ' : ' + ranking.rankInfo
 		}

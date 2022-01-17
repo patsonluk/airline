@@ -631,7 +631,7 @@ function showOlympicsRankingModal() {
 function getOlympicsAirlineRankingRow(rank, entry) {
 	var row = $("<div class='table-row'></div>")
 	row.append("<div class='cell'>" + rank + "</div>")
-    row.append("<div class='cell'>" + getAirlineLogoImg(entry.airlineId) + entry.airlineName + "</div>")
+    row.append("<div class='cell'>" + getAirlineSpan(entry.airlineId, entry.airlineName) + "</div>")
     row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(entry.score) + "</div>")
 	return row
 }

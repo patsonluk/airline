@@ -152,7 +152,7 @@ function updateUsedAirplaneTable(sortProperty, sortOrder) {
 		row.data("airplane", usedAirplane)
 		row.append("<div class='cell'>" + usedAirplane.id + "</div>")
 
-		row.append("<div class='cell'>" +  getAirlineLogoImg(usedAirplane.ownerId) + usedAirplane.ownerName + "</div>")
+		row.append("<div class='cell'>" +  getAirlineSpan(usedAirplane.ownerId, usedAirplane.ownerName) + "</div>")
 
 		var priceColor
 		if (usedAirplane.dealerRatio >= 1.1) { //expensive
@@ -684,7 +684,7 @@ function updateTopOperatorsTable(stats) {
 	$.each(stats.topAirlines, function(index, entry) {
 		var row = $("<div class='table-row'></div>")
 		var airline = entry.airline
-		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) +  airline.name + "</div>")
+		row.append("<div class='cell'>" + getAirlineSpan(airline.id, airline.name) + "</div>")
 		row.append("<div class='cell' align='right'>" + entry.airplaneCount + "</div>")
 
 		var percentage = (entry.airplaneCount * 100.0 / stats.total).toFixed(2)
