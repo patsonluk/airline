@@ -219,7 +219,7 @@ function getAirlineLabelSpan(airlineId, airlineName) {
 	if (airlineLabelColors[airlineId]) {
 	    $airlineLabelSpan.css('color', '#' + airlineLabelColors[airlineId])
 	}
-	return $airlineLabelSpan
+	return $airlineLabelSpan.html()
 }
 
 function getAirlineSpan(airlineId, airlineName) {
