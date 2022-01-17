@@ -107,6 +107,7 @@ class ColorApplication @Inject()(cc: ControllerComponents) extends AbstractContr
           Forbidden(s"Cannot set alliance color : $currentAirline is not an admin of alliance")
         } else {
           ColorSource.deleteAllianceLabelColorFromAlliance(currentAllianceId, targetAllianceId)
+          ColorSource.deleteAllianceLabelColorFromAirline(currentAirline.id, targetAllianceId) //otherwise admin can have revert stuck at airline level and hard to get out
           Ok(Json.obj())
         }
       case None =>
