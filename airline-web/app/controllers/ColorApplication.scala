@@ -21,7 +21,7 @@ class ColorApplication @Inject()(cc: ControllerComponents) extends AbstractContr
     val airlineTextColors : mutable.Map[Int, String] = allianceLabelColors.flatMap {
       case (allianceId, color) => allAirlinesByAllianceId(allianceId).map(airline => (airline.id, color)).toMap
     }.filter {
-      case (airlineId, color) => color != REVERT_COLOR && airlineId != request.user.id
+      case (airlineId, color) => color != REVERT_COLOR
     }
 
 
