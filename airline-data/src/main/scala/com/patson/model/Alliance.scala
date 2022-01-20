@@ -1,8 +1,10 @@
 package com.patson.model
 
 import scala.collection.mutable.ListBuffer
-import com.patson.data.CountrySource
-import com.patson.util.ChampionUtil
+import com.patson.data.{AllianceSource, CountrySource, CycleSource}
+import com.patson.model.AllianceEvent.{BOOT_ALLIANCE, LEAVE_ALLIANCE, PROMOTE_LEADER, REJECT_ALLIANCE}
+import com.patson.util.{AirlineCache, ChampionUtil}
+import play.api.libs.json.Json
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -13,6 +15,33 @@ case class Alliance(name: String, creationCycle: Int, members: List[AllianceMemb
     } else {
       AllianceStatus.ESTABLISHED
     }
+  }
+
+  def removeMember(member : AllianceMember, removeSelf : Boolean) : Unit = {
+    import AllianceRole._
+    val targetAirlineId = member.airline.id
+    val currentCycle = CycleSource.loadCycle()
+    if (members.find(_.airline.id == targetAirlineId).isDefined) { //just to play safe
+      AllianceSource.deleteAllianceMember(targetAirlineId)
+      if (removeSelf) {
+        AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = name, airline = member.airline, event = LEAVE_ALLIANCE, cycle = currentCycle))
+        if (member.role == LEADER) {
+          members.filter(_.role == CO_LEADER).sortBy(_.joinedCycle).headOption match {
+            case Some(coLeader) =>
+              AllianceSource.saveAllianceMember(coLeader.copy(role = AllianceRole.LEADER))
+              AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = name, airline = coLeader.airline, event = PROMOTE_LEADER, cycle = currentCycle))
+            case None => AllianceSource.deleteAlliance(id) //no co-leader, remove the alliance
+          }
+        }
+      } else {
+        if (member.role == APPLICANT) {
+          AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = name, airline = member.airline, event = REJECT_ALLIANCE, cycle = currentCycle))
+        } else {
+          AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = name, airline = member.airline, event = BOOT_ALLIANCE, cycle = currentCycle))
+        }
+      }
+    }
+
   }
 }
 
@@ -25,10 +54,10 @@ case class AllianceMember(allianceId: Int, airline: Airline, role: AllianceRole.
 
 object AllianceRole extends Enumeration {
   type AllianceRole = Value
-  val LEADER, FOUNDING_MEMBER, MEMBER, APPLICANT = Value
+  val LEADER, CO_LEADER, MEMBER, APPLICANT = Value
 
   val isAdmin : AllianceRole => Boolean = (role : AllianceRole) => role match {
-    case LEADER => true
+    case LEADER | CO_LEADER => true
     case _ => false
   }
 }
@@ -37,7 +66,7 @@ case class AllianceHistory(allianceName: String, airline: Airline, event: Allian
 
 object AllianceEvent extends Enumeration {
   type AllianceEvent = Value
-  val FOUND_ALLIANCE, APPLY_ALLIANCE, JOIN_ALLIANCE, REJECT_ALLIANCE, LEAVE_ALLIANCE, BOOT_ALLIANCE, PROMOTE_LEADER = Value
+  val FOUND_ALLIANCE, APPLY_ALLIANCE, JOIN_ALLIANCE, REJECT_ALLIANCE, LEAVE_ALLIANCE, BOOT_ALLIANCE, PROMOTE_LEADER, PROMOTE_CO_LEADER, DEMOTE = Value
 }
 
 object Alliance {
