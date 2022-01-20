@@ -7,7 +7,7 @@ import com.patson.model.notice.{AirlineNotice, NoticeCategory}
 import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
 import com.typesafe.config.ConfigFactory
-import controllers.{AirlineTutorial, AirportUtil}
+import controllers.{AirlineTutorial, AirportUtil, SearchUtil}
 import models.PendingAction
 import play.api.libs.json.{JsNumber, Json}
 import websocket.chat.TriggerPing
@@ -111,6 +111,7 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
           AirportCache.invalidateAll()
           AirplaneOwnershipCache.invalidateAll()
           AirportUtil.refreshAirports()
+          SearchUtil.refreshAlliances() //as sim might have deleted alliances
           println(s"${self.path} invalidated cache")
       }
 
