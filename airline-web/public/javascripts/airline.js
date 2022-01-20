@@ -958,7 +958,7 @@ function updatePlanLinkInfo(linkInfo) {
 	$("#planLinkCompetitons .data-row").remove()
 	$.each(linkInfo.otherLinks, function(index, linkConsumption) {
 		if (linkConsumption.airlineId != activeAirline.id) {
-			$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+			$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
 				    	    			   + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity)
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality
