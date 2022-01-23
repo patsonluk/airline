@@ -247,7 +247,7 @@ function populateGoalAndAirlineStats(event) {
             $("#olympicsDetails .button.passengerReward").hide()
             $("#olympicsDetails .claimedPassengerRewardRow").hide()
             if (result.claimedPassengerReward) {
-                $("#olympicsDetails .claimedPassengerReward").text(result.claimedPassengerReward.description)
+                $("#olympicsDetails .claimedPassengerReward").text(result.claimedPassengerReward.redeemDescription)
                 $("#olympicsDetails .claimedPassengerRewardRow").show()
             } else if (result.unclaimedPassengerReward) {
                 $("#olympicsDetails .button.passengerReward").show() //show the claim button
@@ -559,7 +559,7 @@ function showEventRewardOptionsTable(eventId, rewardOptions) {
     $.each(rewardOptions, function(index, option) {
         var row = $("<div class='table-row'></div>")
         row.append("<div class='cell'><a href='#' class='round-button tick' onclick='pickEventReward(" + eventId + ", " + option.categoryId + ", " + option.optionId + ")'></a></div>")
-        row.append("<div class='cell label'>" + option.description + "</div>")
+        row.append("<div class='cell label'>" + option.redeemDescription + "</div>")
         table.append(row)
     });
 

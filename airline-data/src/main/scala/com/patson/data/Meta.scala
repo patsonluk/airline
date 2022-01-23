@@ -315,6 +315,7 @@ object Meta {
     createAdminLog(connection)
     createUserUuid(connection)
     createAirlineModifier(connection)
+    createAirlineModifierProperty(connection)
     createUserModifier(connection)
     createAllianceLabelColor(connection)
 
@@ -1959,12 +1960,30 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_MODIFIER_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "airline INTEGER, " +
       "modifier_name CHAR(20), " +
       "creation INTEGER," +
       "expiry INTEGER," +
-      "PRIMARY KEY (airline, modifier_name)," +
+      "INDEX " + AIRLINE_MODIFIER_INDEX_PREFIX + 1 + " (airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")"
+    )
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirlineModifierProperty(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_MODIFIER_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_MODIFIER_PROPERTY_TABLE + "(" +
+      "id INTEGER," +
+      "name VARCHAR(256), " +
+      "value INTEGER," +
+      "PRIMARY KEY(id, name)," +
+      "FOREIGN KEY(id) REFERENCES " + AIRLINE_MODIFIER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")"
     )
     statement.execute()
