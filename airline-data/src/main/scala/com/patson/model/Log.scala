@@ -4,11 +4,12 @@ case class Log(airline : Airline, message : String, category : LogCategory.Value
 
 object LogCategory extends Enumeration {
     type LogCategory = Value
-    val LINK, NEGOTIATION = Value
+    val LINK, NEGOTIATION, AIRPORT_RANK_CHANGE = Value
     
     val getDescription : LogCategory.Value => String = {
       case LINK => "Flight Route"
       case NEGOTIATION => "Negotiation"
+      case AIRPORT_RANK_CHANGE => "Airport Rank Change"
     }
 }
 
