@@ -559,7 +559,12 @@ function showEventRewardOptionsTable(eventId, rewardOptions) {
     $.each(rewardOptions, function(index, option) {
         var row = $("<div class='table-row'></div>")
         row.append("<div class='cell'><a href='#' class='round-button tick' onclick='pickEventReward(" + eventId + ", " + option.categoryId + ", " + option.optionId + ")'></a></div>")
-        row.append("<div class='cell label'>" + option.redeemDescription + "</div>")
+        if (option.redeemDescription) {
+            row.append("<div class='cell label'>" + option.redeemDescription + "</div>")
+        } else {
+            row.append("<div class='cell label'>" + option.description + "</div>")
+        }
+
         table.append(row)
     });
 
