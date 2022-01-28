@@ -568,11 +568,27 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     Ok(Json.obj("airlineGradeLookup" -> airlineGradeLookup))
   }
 
-  def getAirportChampions(airportId : Int) = Action {
-    var result = Json.arr()
+  def getAirportChampions(airportId : Int, airlineId : Option[Int]) = Action {
+    var result = Json.obj()
+    var champsJson = Json.arr()
+
     val airport = AirportCache.getAirport(airportId, true).get
-    ChampionUtil.loadAirportChampionInfoByAirport(airportId).sortBy(_.ranking).foreach { info =>
-      result = result.append(Json.toJson(info).asInstanceOf[JsObject] + ("loyalty" -> JsNumber(BigDecimal(airport.getAirlineLoyalty(info.loyalist.airline.id)).setScale(2, RoundingMode.HALF_EVEN))))
+    val champsSortedByRank = ChampionUtil.loadAirportChampionInfoByAirport(airportId).sortBy(_.ranking)
+    champsSortedByRank.foreach { info =>
+      champsJson = champsJson.append(Json.toJson(info).asInstanceOf[JsObject] + ("loyalty" -> JsNumber(BigDecimal(airport.getAirlineLoyalty(info.loyalist.airline.id)).setScale(2, RoundingMode.HALF_EVEN))))
+    }
+    result = result + ("champions" -> champsJson)
+    airlineId.foreach { airlineId =>
+      if (champsSortedByRank.find(_.loyalist.airline.id == airlineId).isEmpty) { //query airline not a champ, now see check ranking
+        val loyalistsSorted = LoyalistSource.loadLoyalistsByAirportId(airportId).sortBy(_.amount).reverse
+        loyalistsSorted.find(_.airline.id == airlineId) match {
+          case Some(entry) =>
+            val rank = loyalistsSorted.indexOf(entry) + 1
+            val loyalty = BigDecimal(airport.getAirlineLoyalty(airlineId)).setScale(2, RoundingMode.HALF_EVEN)
+            result = result + ("currentAirline" -> (Json.toJson(entry).asInstanceOf[JsObject] + ("ranking" -> JsNumber(rank)) + ("loyalty" -> JsNumber(loyalty))))
+          case None => //nothing
+        }
+      }
     }
     Ok(result)
   }
