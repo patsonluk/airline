@@ -152,11 +152,17 @@ object AirportSimulation {
       logs.appendAll(changes.map {
         case ChampionInfoChange(Some(previousRank), Some(newRank)) =>
           val reputationChange = BigDecimal.valueOf(newRank.reputationBoost - previousRank.reputationBoost).setScale(2, RoundingMode.HALF_UP)
-          Log(airline, s"${newRank.loyalist.airport.displayText} ranking ${previousRank.ranking} -> ${newRank.ranking}. Reputation change $reputationChange", LogCategory.AIRPORT_RANK_CHANGE, LogSeverity.INFO, currentCycle)
+          val displayChange =
+            if (reputationChange >= 0) {
+              "+" + reputationChange
+            } else {
+              reputationChange.toString
+            }
+          Log(airline, s"${newRank.loyalist.airport.displayText} ranking ${previousRank.ranking} -> ${newRank.ranking}. Reputation change $displayChange", LogCategory.AIRPORT_RANK_CHANGE, LogSeverity.INFO, currentCycle, immutable.Map("airportId" -> newRank.loyalist.airport.id.toString))
         case ChampionInfoChange(None, Some(newRank)) =>
-          Log(airline, s"${newRank.loyalist.airport.displayText} new ranking ${newRank.ranking}. Reputation gain ${BigDecimal.valueOf(newRank.reputationBoost).setScale(2, RoundingMode.HALF_UP)}", LogCategory.AIRPORT_RANK_CHANGE, LogSeverity.INFO, currentCycle)
+          Log(airline, s"${newRank.loyalist.airport.displayText} new ranking ${newRank.ranking}. Reputation change +${BigDecimal.valueOf(newRank.reputationBoost).setScale(2, RoundingMode.HALF_UP)}", LogCategory.AIRPORT_RANK_CHANGE, LogSeverity.INFO, currentCycle, immutable.Map("airportId" -> newRank.loyalist.airport.id.toString))
         case ChampionInfoChange(Some(previousRank), None) =>
-          Log(airline, s"${previousRank.loyalist.airport.displayText} lost ranking ${previousRank.ranking}. Reputation loss ${BigDecimal.valueOf(previousRank.reputationBoost).setScale(2, RoundingMode.HALF_UP)}", LogCategory.AIRPORT_RANK_CHANGE, LogSeverity.INFO, currentCycle)
+          Log(airline, s"${previousRank.loyalist.airport.displayText} lost ranking ${previousRank.ranking}. Reputation change -${BigDecimal.valueOf(previousRank.reputationBoost).setScale(2, RoundingMode.HALF_UP)}", LogCategory.AIRPORT_RANK_CHANGE, LogSeverity.INFO, currentCycle, immutable.Map("airportId" -> previousRank.loyalist.airport.id.toString))
         case _ => //should not happen
           Log(airline, s"Unknown rank change", LogCategory.AIRPORT_RANK_CHANGE, LogSeverity.INFO, currentCycle)
       })

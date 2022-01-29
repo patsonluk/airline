@@ -290,6 +290,7 @@ object Meta {
     createLoanInterestRate(connection)
     createResetUser(connection)
     createLog(connection)
+    createLogProperty(connection)
     createAlert(connection)
     createEvent(connection)
     createSantaClaus(connection)
@@ -1118,6 +1119,7 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + LOG_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "airline INTEGER, " +
       "message VARCHAR(512) CHARACTER SET 'utf8'," +
       "category INTEGER," +
@@ -1129,6 +1131,21 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + LOG_INDEX_1 + " ON " + LOG_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
+  }
+
+  def createLogProperty(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOG_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + LOG_PROPERTY_TABLE + "(" +
+      "log INTEGER," +
+      "property VARCHAR(256)," +
+      "value VARCHAR(256)," +
+      "FOREIGN KEY(log) REFERENCES " + LOG_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
     statement.execute()
     statement.close()
   }

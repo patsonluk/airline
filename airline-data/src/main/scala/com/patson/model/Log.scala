@@ -1,6 +1,6 @@
 package com.patson.model
 
-case class Log(airline : Airline, message : String, category : LogCategory.Value, severity : LogSeverity.Value, cycle : Int)
+case class Log(airline : Airline, message : String, category : LogCategory.Value, severity : LogSeverity.Value, cycle : Int, properties : Map[String, String] = Map.empty)
 
 object LogCategory extends Enumeration {
     type LogCategory = Value

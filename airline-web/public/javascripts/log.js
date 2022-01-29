@@ -67,7 +67,16 @@ function updateLogTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + log.severityText + "</div>")
 		row.append("<div class='cell'>" + log.categoryText + "</div>")
 		row.append("<div class='cell'>" + getAirlineSpan(log.airlineId, log.airlineName) + "</div>")
-		row.append("<div class='cell'>" + log.message + "</div>")
+		var $messageDiv = $("<div class='cell'>" + log.message + "</div>")
+		row.append($messageDiv)
+		if (log.properties.airportId) {
+		    row.addClass('clickable')
+            row.click(function() {
+                showAirportDetails(log.properties.airportId)
+            })
+            row.attr("data-link", "airport")
+            populateNavigation(row)
+        }
 
 		logTable.append(row)
 	});

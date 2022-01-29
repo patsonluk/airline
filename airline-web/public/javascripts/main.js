@@ -687,7 +687,7 @@ function populateNavigation(parent) { //change all the tabs to do fake url
         parent = $(":root")
     }
 
-    parent.find('[data-link]').each(function() {
+    parent.find('[data-link]').andSelf().filter('[data-link]').each(function() {
         $(this).off('click.nav')
 
         var onclickFunction = $(this).attr("onclick")
