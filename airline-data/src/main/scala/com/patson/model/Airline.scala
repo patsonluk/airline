@@ -296,12 +296,21 @@ object Airline {
         //remove all oil contract
         OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
 
+        airline.getAllianceId().foreach { allianceId =>
+          AllianceSource.loadAllianceById(allianceId).foreach { alliance =>
+            alliance.members.find(_.airline.id == airline.id).foreach { member =>
+              alliance.removeMember(member, true)
+            }
+          }
+        }
+
         AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
           AllianceSource.deleteAllianceMember(airlineId)
           if (allianceMember.role == AllianceRole.LEADER) { //remove the alliance
             AllianceSource.deleteAlliance(allianceMember.allianceId)
           }
         }
+
 
         AirlineSource.deleteReputationBreakdowns(airline.id)
 
