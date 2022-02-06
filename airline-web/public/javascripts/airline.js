@@ -659,12 +659,14 @@ function refreshLinkDetails(linkId) {
 	    	    success: function(linkConsumptions) {
 	    	    	$("#linkCompetitons .data-row").remove()
 	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
-    	    			var row = $("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+    	    			var row = $("<div class='table-row data-row clickable' data-link='rival'><div style='display: table-cell;'>" + linkConsumption.airlineName
                                   		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity)
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.frequency + "</div></div>")
-
+                        row.click(function() {
+                            showRivalsCanvas(linkConsumption.airlineId)
+                        })
                         if (linkConsumption.airlineId == airlineId) {
                             $("#linkCompetitons .table-header").after(row) //self is always on top
                         } else {
@@ -672,6 +674,8 @@ function refreshLinkDetails(linkId) {
                         }
 
 	    	    	})
+
+	    	    	populateNavigation($('#linkCompetitons'))
 	    	    	if ($("#linkCompetitons .data-row").length == 0) {
 	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
 	    	    	}
@@ -954,7 +958,7 @@ function updatePlanLinkInfo(linkInfo) {
 	$("#planLinkCompetitons .data-row").remove()
 	$.each(linkInfo.otherLinks, function(index, linkConsumption) {
 		if (linkConsumption.airlineId != activeAirline.id) {
-			$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + linkConsumption.airlineName
+			$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
 				    	    			   + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity)
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality
@@ -1973,7 +1977,7 @@ function updateRivalTables(result) {
     var yellowManSource = "assets/images/icons/man-yellow.png"
     $.each(airlineNameById, function(airlineId, airlineName) {
      	var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell' align='left'>" + getAirlineLogoImg(airlineId) + airlineName + "</div>")
+		row.append("<div class='cell' align='left'>" + getAirlineSpan(airlineId, airlineName) + "</div>")
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, fromAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, fromAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, toAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
@@ -1982,7 +1986,7 @@ function updateRivalTables(result) {
 
 		row = $("<div class='table-row'></div>")
 
-		row.append("<div class='cell' align='left'>" + getAirlineLogoImg(airlineId) + airlineName + "</div>")
+		row.append("<div class='cell' align='left'>" + getAirlineSpan(airlineId, airlineName) + "</div>")
         getCapacityImageBar(greenManSource, fromAirportCapacity[airlineId].economy, "economy").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
         getCapacityImageBar(blueManSource, fromAirportCapacity[airlineId].business, "business").appendTo($("<div class='cell' align='right'></div>").appendTo(row))
         getCapacityImageBar(yellowManSource, fromAirportCapacity[airlineId].first, "first").appendTo($("<div class='cell' align='right'></div>").appendTo(row))

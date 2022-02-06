@@ -21,7 +21,8 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
       "categoryText" -> JsString(LogCategory.getDescription(log.category)),
       "severity" -> JsNumber(log.severity.id),
       "severityText" -> JsString(LogSeverity.getDescription(log.severity)),
-      "cycleAgo" -> JsNumber(currentCycle - log.cycle)
+      "cycleAgo" -> JsNumber(currentCycle - log.cycle),
+      "properties" -> Json.toJson(log.properties)
       ))
   }
   

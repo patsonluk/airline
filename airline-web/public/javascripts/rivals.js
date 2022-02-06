@@ -38,7 +38,13 @@ function loadAllRivals(selectedAirline) {
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+        beforeSend: function() {
+            $('body .loadingSpinner').show()
+        },
+        complete: function(){
+            $('body .loadingSpinner').hide()
+        }
 	});
 }
 
@@ -72,7 +78,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 //		}
 
 		row.append("<div class='cell'><img src='" + getStatusLogo(airline.loginStatus) + "' title='" + getStatusTitle(airline.loginStatus) + "' style='vertical-align:middle;'/>")
-		var $nameDiv = $("<div class='cell' style='vertical-align:unset;'>" + getAirlineLogoImg(airline.id) + airline.name + getUserLevelImg(airline.userLevel) + getAdminImg(airline.adminStatus) + getUserModifiersSpan(airline.userModifiers) + getAirlineModifiersSpan(airline.airlineModifiers)
+		var $nameDiv = $("<div class='cell' style='vertical-align:unset;'>" + getAirlineSpan(airline.id, airline.name) + getUserLevelImg(airline.userLevel) + getAdminImg(airline.adminStatus) + getUserModifiersSpan(airline.userModifiers) + getAirlineModifiersSpan(airline.airlineModifiers)
 				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>").appendTo(row)
 		addAirlineTooltip($nameDiv, airline.id, airline.slogan, airline.name)
 		if (airline.headquartersAirportName) {
@@ -228,12 +234,22 @@ function updateRivalBasicsDetails(airlineId) {
 	}
 	
 	$("#rivalsCanvas .airlineGrade").html(getGradeStarsImgs(rival.gradeValue))
-	
+
+	$("#rivalsCanvas .alliance").data("link", "alliance")
+	populateNavigation($("#rivalsCanvas .alliance"))
 	if (rival.allianceName) {
 		$("#rivalsCanvas .alliance").text(rival.allianceName)
+		$("#rivalsCanvas .alliance").addClass("clickable")
+		$("#rivalsCanvas .alliance").on("click.showAlliance", function() {
+		    showAllianceCanvas()
+		    selectAlliance(rival.allianceId)
+		})
 	} else {
 		$("#rivalsCanvas .alliance").text('-')
+		$("#rivalsCanvas .alliance").removeClass("clickable")
+		$("#rivalsCanvas .alliance").off("click.showAlliance")
 	}
+
 }
 
 function updateRivalFleet(airlineId) {
@@ -363,7 +379,7 @@ function showRivalMap() {
                         $("#linkPopupFrom").html(getCountryFlagImg(link.fromCountryCode) + "&nbsp;" + fromAirport)
                         $("#linkPopupTo").html(getCountryFlagImg(link.toCountryCode) + "&nbsp;" + toAirport)
                         $("#linkPopupCapacity").html(link.capacity.total)
-                        $("#linkPopupAirline").html(getAirlineLogoImg(link.airlineId) + "&nbsp;" + link.airlineName)
+                        $("#linkPopupAirline").html(getAirlineSpan(link.airlineId, link.airlineName))
 
                         infoWindow = new google.maps.InfoWindow({
                              maxWidth : 1200});

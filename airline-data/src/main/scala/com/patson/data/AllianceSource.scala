@@ -307,8 +307,13 @@ object AllianceSource {
       }
       val resultSet = queryStatement.executeQuery()
 
+
       while (resultSet.next()) {
-        AllianceCache.invalidateAlliance(resultSet.getInt("id"))
+        val allianceId = resultSet.getInt("id")
+        AllianceCache.invalidateAlliance(allianceId)
+        loadAllianceMembersByAllianceId(allianceId, false).foreach { member =>
+          AirlineCache.invalidateAirline(member.airline.id)
+        }
       }
       resultSet.close()
       queryStatement.close()

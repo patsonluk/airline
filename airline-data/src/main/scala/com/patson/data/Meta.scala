@@ -101,7 +101,7 @@ object Meta {
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_FEATURE_TABLE)
     statement.execute()
     statement.close()
-    
+
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_TABLE)
     statement.execute()
     statement.close()
@@ -286,6 +286,7 @@ object Meta {
     createLoanInterestRate(connection)
     createResetUser(connection)
     createLog(connection)
+    createLogProperty(connection)
     createAlert(connection)
     createEvent(connection)
     createSantaClaus(connection)
@@ -311,7 +312,9 @@ object Meta {
     createAdminLog(connection)
     createUserUuid(connection)
     createAirlineModifier(connection)
+    createAirlineModifierProperty(connection)
     createUserModifier(connection)
+    createAllianceLabelColor(connection)
     createAirportAsset(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
@@ -1097,6 +1100,7 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + LOG_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "airline INTEGER, " +
       "message VARCHAR(512) CHARACTER SET 'utf8'," +
       "category INTEGER," +
@@ -1108,6 +1112,21 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + LOG_INDEX_1 + " ON " + LOG_TABLE + "(airline)")
+    statement.execute()
+    statement.close()
+  }
+
+  def createLogProperty(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LOG_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + LOG_PROPERTY_TABLE + "(" +
+      "log INTEGER," +
+      "property VARCHAR(256)," +
+      "value VARCHAR(256)," +
+      "FOREIGN KEY(log) REFERENCES " + LOG_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
     statement.execute()
     statement.close()
   }
@@ -1939,12 +1958,30 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_MODIFIER_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "airline INTEGER, " +
       "modifier_name CHAR(20), " +
       "creation INTEGER," +
       "expiry INTEGER," +
-      "PRIMARY KEY (airline, modifier_name)," +
+      "INDEX " + AIRLINE_MODIFIER_INDEX_PREFIX + 1 + " (airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")"
+    )
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirlineModifierProperty(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_MODIFIER_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_MODIFIER_PROPERTY_TABLE + "(" +
+      "id INTEGER," +
+      "name VARCHAR(256), " +
+      "value INTEGER," +
+      "PRIMARY KEY(id, name)," +
+      "FOREIGN KEY(id) REFERENCES " + AIRLINE_MODIFIER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")"
     )
     statement.execute()
@@ -2058,6 +2095,40 @@ object Meta {
       "PRIMARY KEY (asset, property, cycle)," +
       "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAllianceLabelColor(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_LABEL_COLOR_BY_AIRLINE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_LABEL_COLOR_BY_AIRLINE_TABLE + "(" +
+      "airline INTEGER, " +
+      "target_alliance INTEGER," +
+      "color CHAR(20)," +
+      "PRIMARY KEY (airline, target_alliance)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(target_alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")"
+    )
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE + "(" +
+      "alliance INTEGER, " +
+      "target_alliance INTEGER," +
+      "color CHAR(20)," +
+      "PRIMARY KEY (alliance, target_alliance)," +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(target_alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")"
+    )
     statement.execute()
     statement.close()
   }

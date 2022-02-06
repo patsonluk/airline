@@ -36,10 +36,11 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       "airlineName" -> JsString(allianceMember.airline.name),
       "allianceRole" -> JsString(allianceMember.role match {
         case LEADER => "Leader"
-        case FOUNDING_MEMBER => "Founding member"
+        case CO_LEADER => "Co-leader"
         case MEMBER => "Member"
         case APPLICANT => "Applicant"
       }),
+      "isAdmin" -> JsBoolean(AllianceRole.isAdmin(allianceMember.role)),
       "allianceId" -> JsNumber(allianceMember.allianceId),
       "allianceName" -> JsString(AllianceCache.getAlliance(allianceMember.allianceId).get.name)))
   }
@@ -55,13 +56,15 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       
     def getHistoryDescription(history : AllianceHistory) : String = {
       val eventAction = history.event match {
-        case FOUND_ALLIANCE => "founded alliance"
-        case APPLY_ALLIANCE => "applied for alliance" 
-        case JOIN_ALLIANCE => "joined alliance"
-        case REJECT_ALLIANCE => "was rejected by alliance"
-        case LEAVE_ALLIANCE => "left alliance"
-        case BOOT_ALLIANCE => "was removed from alliance"
-        case PROMOTE_LEADER => "was promoted to alliance leader of"
+        case FOUND_ALLIANCE => "founded"
+        case APPLY_ALLIANCE => "applied for"
+        case JOIN_ALLIANCE => "joined"
+        case REJECT_ALLIANCE => "was rejected by"
+        case LEAVE_ALLIANCE => "left"
+        case BOOT_ALLIANCE => "was removed from"
+        case PROMOTE_LEADER => "was promoted to leader of"
+        case PROMOTE_CO_LEADER => "was promoted to co-leader of"
+        case DEMOTE => "was demoted in"
       }
       history.airline.name + " " + eventAction + " " + history.allianceName
     }
@@ -150,11 +153,6 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         var allianceMemberJson = Json.arr()
         alliance.members.foreach { allianceMember =>
           var thisMemberJson = Json.toJson(allianceMember).asInstanceOf[JsObject]
-          if (isCurrentMember && allianceMember.role == APPLICANT) { //current airline is within this alliance, get more info about applicant
-            getApplyRejection(allianceMember.airline, alliance).foreach {
-              rejection => thisMemberJson = thisMemberJson + ("rejection" -> JsString(rejection))
-            }
-          }
           allianceMemberJson = allianceMemberJson.append(thisMemberJson)
           if (allianceMember.role == LEADER) {
             allianceJson = allianceJson.asInstanceOf[JsObject] + ("leader" -> Json.toJson(allianceMember.airline))
@@ -273,26 +271,102 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       }
     }
   }
-  
+
+  def getRemoveConsideration(targetMember : AllianceMember, currentMember : AllianceMember) : Either[String, String] = {
+    if (targetMember.allianceId != currentMember.allianceId) {
+      Left(s"Airline ${targetMember.airline} does not belong to alliance ${currentMember.allianceId}")
+    } else if (targetMember.airline.id == currentMember.airline.id) { //remove self
+      Right(s"Leave this alliance?")
+    } else if (!AllianceRole.isAdmin(currentMember.role)) {
+      Left(s"Current airline ${currentMember.airline} cannot remove airline ${targetMember.airline} from alliance as current airline is not admin")
+    } else if (currentMember.role.id >= targetMember.role.id) { //higher the id, lower the rank. Can only remove people at the lower rank
+      Left(s"Current airline ${currentMember.airline} of role ${currentMember.role} cannot remove airline ${targetMember.airline} of role ${targetMember.role} from alliance")
+    } else {
+      Right(s"Remove ${targetMember.airline.name} from the alliance?")
+    }
+  }
+
+  def getPromoteConsideration(targetMember : AllianceMember, currentMember : AllianceMember) : Either[String, String] = {
+    if (targetMember.allianceId != currentMember.allianceId) {
+      Left(s"Airline ${targetMember.airline} does not belong to alliance ${currentMember.allianceId}")
+    } else if (!AllianceRole.isAdmin(currentMember.role)) {
+      Left(s"Current airline ${currentMember.airline} cannot promote airline ${targetMember.airline} from alliance as current airline is not admin")
+    } else if (targetMember.role.id > AllianceRole.MEMBER.id) {
+      Left(s"Cannot promote non-member airline ${targetMember.airline} of role ${targetMember.role}")
+    } else if (currentMember.role.id >= targetMember.role.id) { //higher the id, lower the rank. Can only promote people at the lower rank
+      Left(s"Current airline ${currentMember.airline} of role ${currentMember.role} cannot promote airline ${targetMember.airline} of role ${targetMember.role} from alliance")
+    } else {
+      if (AllianceRole(targetMember.role.id - 1) == AllianceRole.LEADER) {
+        Right(s"Promote ${targetMember.airline.name} as the new Alliance Leader? Your airline will be demoted to Co-leader!")
+      } else {
+        Right(s"Promote ${targetMember.airline.name} as Alliance Co-Leader?")
+      }
+    }
+  }
+
+  def getDemoteConsideration(targetMember : AllianceMember, currentMember : AllianceMember) : Either[String, String] = {
+    if (targetMember.allianceId != currentMember.allianceId) {
+      Left(s"Airline ${targetMember.airline} does not belong to alliance ${currentMember.allianceId}")
+    } else if (currentMember.airline.id == targetMember.airline.id) {
+      Left(s"Airline ${targetMember.airline} cannot demote self")
+    } else if (targetMember.role.id >= AllianceRole.MEMBER.id) {
+      Left(s"Current airline ${currentMember.airline} of role ${currentMember.role} cannot demote airline ${targetMember.airline} of role ${targetMember.role} any further")
+    } else if (!AllianceRole.isAdmin(currentMember.role)) {
+      Left(s"Current airline ${currentMember.airline} cannot demote airline ${targetMember.airline} from alliance as current airline is not admin")
+    } else if (currentMember.role.id >= targetMember.role.id) { //higher the id, lower the rank. Can only remove people at the lower rank
+      Left(s"Current airline ${currentMember.airline} of role ${currentMember.role} cannot demote airline ${targetMember.airline} of role ${targetMember.role} in alliance")
+    } else {
+      Right(s"Demote ${targetMember.airline.name}?")
+    }
+  }
+
   def evaluateAlliance(airlineId : Int, allianceId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
     AllianceCache.getAlliance(allianceId, true) match {
       case None => NotFound("Alliance with id " + allianceId + " is not found")
       case Some(alliance) =>
-        var result = Json.obj() 
+        var result = Json.obj()
         alliance.members.find( _.airline.id == airlineId) match {
-          case Some(_) => result = result + ("isMember" -> JsBoolean(true)) //already a member
+          case Some(currentMember) =>  //already a member
+            //get member actions
+            var memberActionsJson = Json.arr()
+            alliance.members.foreach { targetMember =>
+              var memberJson = Json.obj("airlineId" -> targetMember.airline.id)
+              getRemoveConsideration(targetMember, currentMember) match {
+                case Left(rejection) => memberJson = memberJson + ("removeRejection" -> JsString(rejection))
+                case Right(prompt) =>  memberJson = memberJson + ("removePrompt" -> JsString(prompt))
+              }
+              getPromoteConsideration(targetMember, currentMember) match {
+                case Left(rejection) => memberJson = memberJson + ("promoteRejection" -> JsString(rejection))
+                case Right(prompt) =>  memberJson = memberJson + ("promotePrompt" -> JsString(prompt))
+              }
+              getDemoteConsideration(targetMember, currentMember) match {
+                case Left(rejection) => memberJson = memberJson + ("demoteRejection" -> JsString(rejection))
+                case Right(prompt) =>  memberJson = memberJson + ("demotePrompt" -> JsString(prompt))
+              }
+
+              if (AllianceRole.isAdmin(currentMember.role) && targetMember.role == AllianceRole.APPLICANT) {
+                getApplyRejection(targetMember.airline, alliance) match {
+                  case Some(rejection) => memberJson = memberJson + ("acceptRejection" -> JsString(rejection))
+                  case None => memberJson = memberJson + ("acceptPrompt" -> JsString(s"Accept ${targetMember.airline.name} into the alliance?"))
+                }
+
+              }
+
+              memberActionsJson = memberActionsJson.append(memberJson)
+            }
+            result = result + ("isMember" -> JsBoolean(true)) + ("memberActions" -> memberActionsJson)
           case None => getApplyRejection(request.user, alliance) match {
             case Some(rejection) => result = result + ("rejection" -> JsString(rejection))
             case None =>
               //nothing
           }
-            
+
         }
-        
+
         Ok(result)
     }
   }
-  
+
    def applyForAlliance(airlineId : Int, allianceId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
      AllianceCache.getAlliance(allianceId, true) match {
       case None => NotFound("Alliance with id " + allianceId + " is not found")
@@ -309,52 +383,36 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         }
     }
   }
-   
+
   def removeFromAlliance(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
-       val currentCycle = CycleSource.loadCycle
-       AllianceSource.loadAllianceMemberByAirline(request.user) match {
-          case None => BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline does not belong to any alliance")
-          case Some(currentAirlineAllianceMember) =>
-            val alliance = AllianceCache.getAlliance(currentAirlineAllianceMember.allianceId, false).get
-            if (airlineId == targetAirlineId) { //removing itself, ok!
-             AllianceSource.deleteAllianceMember(targetAirlineId)
-             AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = request.user, event = LEAVE_ALLIANCE, cycle = currentCycle))
-             if (currentAirlineAllianceMember.role == LEADER) { //remove the alliance
-               AllianceSource.deleteAlliance(currentAirlineAllianceMember.allianceId)
+     AllianceSource.loadAllianceMemberByAirline(request.user) match {
+       case None => BadRequest("Current airline " + request.user + " cannot remove airline id " + targetAirlineId + " from alliance as current airline does not belong to any alliance")
+       case Some(currentAirlineAllianceMember) =>
+         val alliance = AllianceCache.getAlliance(currentAirlineAllianceMember.allianceId, false).get
+         if (airlineId == targetAirlineId) { //removing itself, ok!
+           alliance.removeMember(currentAirlineAllianceMember, true)
 
-               SearchUtil.removeAlliance(alliance.id)
-             }
-             
-             Ok(Json.obj("removed" -> "alliance"))
-           } else { //check if current airline is leader and the target airline is within this alliance
-             if (currentAirlineAllianceMember.role != LEADER) {
-               BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline is not leader")
-             } else {
-               AirlineCache.getAirline(targetAirlineId) match {
-                 case None => NotFound("Airline with id " + targetAirlineId + " not found")
-                 case Some(targetAirline) =>
-                   AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
-                     case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
-                     case Some(allianceMember) =>
-                       if (allianceMember.allianceId != currentAirlineAllianceMember.allianceId) {
-                         BadRequest("Airline " + targetAirline + " does not belong to alliance " + alliance)
-                       } else { //OK ..removing
-                         AllianceSource.deleteAllianceMember(targetAirlineId)
-                         if (allianceMember.role == APPLICANT) {
-                           AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = REJECT_ALLIANCE, cycle = currentCycle))  
-                         } else {
-                           AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = BOOT_ALLIANCE, cycle = currentCycle))
-                         }
+           Ok(Json.obj("removed" -> "alliance"))
+         } else { //check if current airline has the right permission and the target airline is within this alliance
+           AirlineCache.getAirline(targetAirlineId) match {
+             case None => NotFound("Airline with id " + targetAirlineId + " not found")
+             case Some(targetAirline) =>
+               AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
+                 case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
+                 case Some(allianceMember) =>
+                   getRemoveConsideration(allianceMember, currentAirlineAllianceMember) match {
+                     case Left(rejection) => BadRequest(rejection)
+                     case Right(_) => //OK ..removing
+                       alliance.removeMember(allianceMember, false)
 
-                         Ok(Json.obj("removed" -> "member"))
-                       }
-                    }
+                       Ok(Json.obj("removed" -> "member"))
+                   }
                }
-             }
-          }
-    }
+           }
+         }
+     }
   }
- 
+
   def addToAlliance(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
        val currentCycle = CycleSource.loadCycle
 
@@ -362,8 +420,8 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           case None => BadRequest("Current airline " + request.user + " cannot add airline id "+ targetAirlineId + " to alliance as current airline does not belong to any alliance")
           case Some(currentAirlineAllianceMember) =>
             //check if current airline is leader and the target airline has applied to this alliance
-           if (currentAirlineAllianceMember.role != LEADER) {
-             BadRequest("Current airline " + request.user + " cannot remove airline id "+ targetAirlineId + " from alliance as current airline is not leader")
+           if (!AllianceRole.isAdmin(currentAirlineAllianceMember.role)) {
+             BadRequest("Current airline " + request.user + " cannot accept airline id "+ targetAirlineId + " from alliance as current airline is not leader")
            } else {
              val alliance = AllianceCache.getAlliance(currentAirlineAllianceMember.allianceId, false).get
              AirlineCache.getAirline(targetAirlineId, true) match {
@@ -392,35 +450,66 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
            }
     }
   }
-  
-  def promoteToAllianceLeader(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
-       val currentCycle = CycleSource.loadCycle
-       AllianceSource.loadAllianceMemberByAirline(request.user) match {
-          case None => BadRequest("Current airline " + request.user + " cannot add airline id "+ targetAirlineId + " to alliance as current airline does not belong to any alliance")
-          case Some(currentAirlineAllianceMember) =>
-            //check if current airline is leader and the target airline has applied to this alliance
-           if (currentAirlineAllianceMember.role != LEADER) {
-             BadRequest("Current airline " + request.user + " cannot promote airline id "+ targetAirlineId + " from alliance as current airline is not leader")
-           } else {
-             val alliance = AllianceCache.getAlliance(currentAirlineAllianceMember.allianceId, false).get
-             AirlineCache.getAirline(targetAirlineId) match {
-               case None => NotFound("Airline with id " + targetAirlineId + " not found")
-               case Some(targetAirline) =>
-                 AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
-                   case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
-                   case Some(allianceMember) =>
-                     if (allianceMember.allianceId != currentAirlineAllianceMember.allianceId) {
-                       BadRequest("Airline " + targetAirline + " does not belong to alliance " + alliance)
-                     } else { //OK ..promoting
-                       AllianceSource.saveAllianceMember(allianceMember.copy(role = LEADER))
-                       AllianceSource.saveAllianceMember(currentAirlineAllianceMember.copy(role = MEMBER))
-                       AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = PROMOTE_LEADER, cycle = currentCycle))
-                       
-                       Ok(Json.toJson(allianceMember))
-                     }
-                  }
-             }
-           }
+
+  def promoteMember(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
+    val currentCycle = CycleSource.loadCycle
+    AllianceSource.loadAllianceMemberByAirline(request.user) match {
+      case None => BadRequest("Current airline " + request.user + " cannot promote airline id " + targetAirlineId + " to alliance as current airline does not belong to any alliance")
+      case Some(currentMember) =>
+        val alliance = AllianceCache.getAlliance(currentMember.allianceId, false).get
+        AirlineCache.getAirline(targetAirlineId) match {
+          case None => NotFound("Airline with id " + targetAirlineId + " not found")
+          case Some(targetAirline) =>
+            AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
+              case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
+              case Some(targetMember) =>
+                getPromoteConsideration(targetMember, currentMember) match {
+                  case Left(rejection) => BadRequest(rejection)
+                  case Right(_) =>
+                    //OK ..promoting
+                    val newRole = AllianceRole(targetMember.role.id - 1)
+                    AllianceSource.saveAllianceMember(targetMember.copy(role = newRole))
+
+                    if (newRole == AllianceRole.LEADER && currentMember.role == AllianceRole.LEADER) { //promotion to leader, have to demote current leader then
+                      AllianceSource.saveAllianceMember(currentMember.copy(role = AllianceRole(AllianceRole.LEADER.id + 1)))
+                      AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = targetMember.airline, event = PROMOTE_LEADER, cycle = currentCycle))
+                    } else { //otherwise assume it is always to co-leader
+                      AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = targetMember.airline, event = PROMOTE_CO_LEADER, cycle = currentCycle))
+                    }
+
+                    Ok(Json.toJson(targetMember))
+                }
+            }
+
+        }
+    }
+  }
+
+  def demoteMember(airlineId : Int, targetAirlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
+    val currentCycle = CycleSource.loadCycle
+    AllianceSource.loadAllianceMemberByAirline(request.user) match {
+      case None => BadRequest("Current airline " + request.user + " cannot demote airline id " + targetAirlineId + " to alliance as current airline does not belong to any alliance")
+      case Some(currentMember) =>
+        val alliance = AllianceCache.getAlliance(currentMember.allianceId, false).get
+        AirlineCache.getAirline(targetAirlineId) match {
+          case None => NotFound("Airline with id " + targetAirlineId + " not found")
+          case Some(targetAirline) =>
+            AllianceSource.loadAllianceMemberByAirline(targetAirline) match {
+              case None => NotFound("Airline " + targetAirline + " does not belong to any alliance!")
+              case Some(targetMember) =>
+                getDemoteConsideration(targetMember, currentMember) match {
+                  case Left(rejection) => BadRequest(rejection)
+                  case Right(_) =>
+                    //OK ..demoting
+                    val newRole = AllianceRole(targetMember.role.id + 1)
+                    AllianceSource.saveAllianceMember(targetMember.copy(role = newRole))
+                    AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = targetMember.airline, event = DEMOTE, cycle = currentCycle))
+
+                    Ok(Json.toJson(targetMember))
+                }
+            }
+
+        }
     }
   }
   

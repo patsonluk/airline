@@ -70,6 +70,8 @@ object Constants {
   val AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE = "airline_base_specialization_last_update"
   val AIRLINE_REPUTATION_BREAKDOWN = "airline_reputation_breakdown"
   val AIRLINE_MODIFIER_TABLE = "airline_modifier"
+  val AIRLINE_MODIFIER_INDEX_PREFIX = "airline_modifier_index_"
+  val AIRLINE_MODIFIER_PROPERTY_TABLE = "airline_modifier_property"
 
   
   val INCOME_TABLE = "income"
@@ -120,6 +122,7 @@ object Constants {
   val OIL_INVENTORY_POLICY_TABLE = "oil_inventory_policy"
   val LOAN_INTEREST_RATE_TABLE = "loan_interest_rate"
   val LOG_TABLE = "log"
+  val LOG_PROPERTY_TABLE = "log_property"
   val LAST_CHAT_ID_TABLE = "last_chat_id"
   val CHAT_MESSAGE_TABLE = "chat_message"
   val LOG_INDEX_1 = "log_index_1"
@@ -154,6 +157,9 @@ object Constants {
   val CAMPAIGN_DELEGATE_TASK_TABLE = "campaign_delegate_task"
 
   val LINK_NEGOTIATION_DISCOUNT_TABLE = "link_negotiation_discount"
+
+  val ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE = "alliance_label_color_by_alliance"
+  val ALLIANCE_LABEL_COLOR_BY_AIRLINE_TABLE = "alliance_label_color_by_airline"
 
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"

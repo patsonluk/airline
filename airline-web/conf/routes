@@ -29,7 +29,7 @@ GET		 /airports/:airportId/link-consumptions	controllers.Application.getLinkCons
 #GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportProjects(airportId : Int)
 #PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
 GET	 	 /airports/:airportId/assets	      controllers.AirportAssetApplication.getAirportAssets(airportId : Int)
-GET	 	 /airports/:airportId/champions	      controllers.Application.getAirportChampions(airportId : Int)
+GET	 	 /airports/:airportId/champions	      controllers.Application.getAirportChampions(airportId : Int, airlineId: Option[Int])
 GET		 /airports/base/scale-details			  controllers.Application.getScaleDetails()
 GET      /airports/:airportId/generic-transits     controllers.GenericTransitApplication.getGenericTransits(airportId: Int)
 
@@ -112,7 +112,8 @@ GET		 /airlines/:airlineId/evaluate-alliance/:allianceId  controllers.AllianceAp
 GET		 /airlines/:airlineId/apply-for-alliance/:allianceId  controllers.AllianceApplication.applyForAlliance(airlineId : Int, allianceId : Int)
 GET		 /airlines/:airlineId/remove-alliance-member/:targetAirlineId  controllers.AllianceApplication.removeFromAlliance(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/accept-alliance-member/:targetAirlineId  controllers.AllianceApplication.addToAlliance(airlineId : Int, targetAirlineId : Int)
-GET		 /airlines/:airlineId/promote-alliance-member/:targetAirlineId  controllers.AllianceApplication.promoteToAllianceLeader(airlineId : Int, targetAirlineId : Int)
+GET		 /airlines/:airlineId/promote-alliance-member/:targetAirlineId  controllers.AllianceApplication.promoteMember(airlineId : Int, targetAirlineId : Int)
+GET		 /airlines/:airlineId/demote-alliance-member/:targetAirlineId  controllers.AllianceApplication.demoteMember(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/used-airplanes/models/:modelId	controllers.AirplaneApplication.getUsedAirplanes(airlineId : Int, modelId : Int)
 PUT		 /airlines/:airlineId/used-airplanes/airplanes/:airplaneId	controllers.AirplaneApplication.buyUsedAirplane(airlineId : Int, airplaneId : Int, homeAirportId : Int, configurationId : Int)
 PUT		 /airlines/:airlineId/airplanes/:airplaneId/home/:airportId  controllers.AirplaneApplication.updateAirplaneHome(airlineId : Int, airplaneId : Int, airportId: Int)
@@ -143,6 +144,14 @@ PUT	 	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAsse
 DELETE	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.deleteAirportAsset(airlineId : Int, assetId : Int)
 
 GET	 	 /airport-asset/:assetId	      controllers.AirportAssetApplication.getAirportAssetDetailsWithoutAirline(assetId : Int)
+
+GET      /airlines/:airlineId/alliance-label-color         controllers.ColorApplication.getAllianceLabelColor(airlineId: Int, allianceId : Int)
+GET      /airlines/:airlineId/airline-label-colors         controllers.ColorApplication.getAirlineLabelColors(airlineId: Int)
+GET      /airlines/:airlineId/set-alliance-label-color-as-airline         controllers.ColorApplication.setAllianceLabelColorAsAirline(airlineId: Int, targetAllianceId : Int, color : String)
+GET      /airlines/:airlineId/set-alliance-label-color-as-alliance         controllers.ColorApplication.setAllianceLabelColorAsAlliance(airlineId: Int, targetAllianceId : Int, color : String)
+GET      /airlines/:airlineId/delete-alliance-label-color-as-airline         controllers.ColorApplication.deleteAllianceLabelColorAsAirline(airlineId: Int, targetAllianceId : Int)
+GET      /airlines/:airlineId/delete-alliance-label-color-as-alliance         controllers.ColorApplication.deleteAllianceLabelColorAsAlliance(airlineId: Int, targetAllianceId : Int)
+
 
 POST      /airlines/:airlineId/completed-tutorial/:tutorialId     controllers.TutorialApplication.saveCompletedTutorial(airlineId: Int, tutorialId: String, category : String)
 GET      /airlines/:airlineId/completed-tutorial               controllers.TutorialApplication.getCompletedTutorials(airlineId: Int)

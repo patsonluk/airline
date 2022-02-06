@@ -72,7 +72,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       result = result + ("slogan" -> JsString(airline.slogan.getOrElse("")))
         
       alliance.foreach { alliance =>
-        result = result + ("allianceName" -> JsString(alliance.name))
+        result = result + ("allianceName" -> JsString(alliance.name)) +  ("allianceId" -> JsNumber(alliance.id))
       }
 
       if (!airlineModifiers.isEmpty) {
@@ -173,6 +173,12 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      val reputationBreakdowns = AirlineSource.loadReputationBreakdowns(airlineId)
      airlineJson = airlineJson + ("baseAirports"-> Json.toJson(bases)) + ("reputationBreakdowns" -> Json.toJson(reputationBreakdowns)) +
        ("delegatesInfo" -> Json.toJson(airline.getDelegateInfo()))
+     AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMembership =>
+       airlineJson = airlineJson +
+         ("allianceId" -> JsNumber(allianceMembership.allianceId)) +
+         ("allianceRole" -> JsString(allianceMembership.role.toString)) +
+         ("isAllianceAdmin" -> JsBoolean(AllianceRole.isAdmin(allianceMembership.role)))
+     }
      
      if (extendedInfo) {
        val links = LinkSource.loadFlightLinksByAirlineId(airlineId)

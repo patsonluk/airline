@@ -1,6 +1,6 @@
 package com.patson.model.event
 
-import com.patson.data.{AirlineSource, AirportSource, CountrySource, EventSource}
+import com.patson.data.{AirlineSource, AirportSource, CountrySource, CycleSource, EventSource}
 import com.patson.model._
 
 import scala.collection.mutable
@@ -123,7 +123,7 @@ object Olympics {
   }
 
   val voteRewardOptions : List[EventReward] = List(OlympicsVoteCashReward(), OlympicsVoteLoyaltyReward())
-  val passengerRewardOptions : List[EventReward] = List(OlympicsPassengerCashReward(), OlympicsPassengerLoyaltyReward(), OlympicsPassengerReputationReward())
+  val passengerRewardOptions : List[EventReward] = List(OlympicsPassengerCashReward(), OlympicsPassengerLoyaltyReward(), OlympicsPassengerReputationReward(), OlympicsPassengerDelegateReward())
 
   val getDemandMultiplier = (weekOfYear: Int) => {
       if (weekOfYear < Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION * 12) {
@@ -173,7 +173,7 @@ object RewardCategory extends Enumeration {
 
 object RewardOption extends Enumeration {
   type RewardOption = Value
-  val CASH, LOYALTY, REPUTATION = Value
+  val CASH, LOYALTY, REPUTATION, DELEGATE = Value
 }
 
 abstract class EventReward(val eventType : EventType.Value, val rewardCategory : RewardCategory.Value, val rewardOption : RewardOption.Value) {
@@ -186,6 +186,7 @@ abstract class EventReward(val eventType : EventType.Value, val rewardCategory :
   protected def applyReward(event: Event, airline : Airline)
 
   val description : String
+  def redeemDescription(eventId: Int, airlineId: Int) = description
 }
 
 object EventReward {
@@ -221,15 +222,20 @@ case class OlympicsPassengerCashReward() extends EventReward(EventType.OLYMPICS,
   val SCORE_MULTIPLIER = 500
 
 
+  def computeReward(eventId: Int, airlineId : Int) = {
+    val stats: Map[Int, BigDecimal] = EventSource.loadOlympicsAirlineStats (eventId, airlineId).toMap
+    val totalScore = stats.view.values.sum
+    Math.max((totalScore * 500).toLong, MIN_CASH_REWARD)
+  }
 
   override def applyReward(event: Event, airline : Airline) = {
-    val stats: Map[Int, BigDecimal] = EventSource.loadOlympicsAirlineStats (event.id, airline.id).toMap
-    val totalScore = stats.view.values.sum
-    val reward = Math.max((totalScore * 500).toLong, MIN_CASH_REWARD)
+    val reward = computeReward(event.id, airline.id)
     AirlineSource.adjustAirlineBalance(airline.id, reward)
   }
 
   override val description: String = "$20,000,000 or $500 * score (whichever is higher) cash reward"
+  override def redeemDescription(eventId: Int, airlineId : Int) = s"$$${java.text.NumberFormat.getIntegerInstance.format(computeReward(eventId, airlineId))} cash reward"
+
 }
 
 case class OlympicsPassengerLoyaltyReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.LOYALTY) {
@@ -251,5 +257,32 @@ case class OlympicsPassengerReputationReward() extends EventReward(EventType.OLY
   }
 
   override val description: String = s"+$REPUTATION_BONUS reputation boost (one time only, reputation will eventually drop back to normal level)"
+}
+
+case class OlympicsPassengerDelegateReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.DELEGATE) {
+  val BASE_BONUS = 2
+  val MAX_BONUS = 6
+  val DURATION = 52 * 4
+  override def applyReward(event: Event, airline : Airline) = {
+    val cycle = CycleSource.loadCycle()
+    val bonus = computeReward(event.id, airline.id)
+    AirlineSource.saveAirlineModifier(airline.id, DelegateBoostAirlineModifier(bonus, DURATION, cycle))
+  }
+
+  def computeReward(eventId: Int, airlineId : Int) = {
+    val stats: Map[Int, BigDecimal] = EventSource.loadOlympicsAirlineStats (eventId, airlineId).toMap
+    val totalScore = stats.view.values.sum
+    EventSource.loadOlympicsAirlineGoal(eventId, airlineId) match {
+      case Some(goal) =>
+        val overachieverRatio = Math.min(1.0, totalScore.toDouble / goal / 4) //at 400% then it claim 1.0 overachiever ratio
+        val extraBonus = ((MAX_BONUS - BASE_BONUS) * overachieverRatio).toInt //could be 0
+        BASE_BONUS + extraBonus
+      case None => 0
+    }
+
+  }
+
+  override val description: String = s"+$BASE_BONUS to $MAX_BONUS delegates for $DURATION weeks"
+  override def redeemDescription(eventId: Int, airlineId : Int) = s"${computeReward(eventId, airlineId)} extra delegates for $DURATION weeks"
 }
 

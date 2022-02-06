@@ -66,8 +66,17 @@ function updateLogTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + log.cycleAgo + " week(s) ago</div>")
 		row.append("<div class='cell'>" + log.severityText + "</div>")
 		row.append("<div class='cell'>" + log.categoryText + "</div>")
-		row.append("<div class='cell'>" + getAirlineLogoImg(log.airlineId) + log.airlineName + "</div>")
-		row.append("<div class='cell'>" + log.message + "</div>")
+		row.append("<div class='cell'>" + getAirlineSpan(log.airlineId, log.airlineName) + "</div>")
+		var $messageDiv = $("<div class='cell'>" + log.message + "</div>")
+		row.append($messageDiv)
+		if (log.properties.airportId) {
+		    row.addClass('clickable')
+            row.click(function() {
+                showAirportDetails(log.properties.airportId)
+            })
+            row.attr("data-link", "airport")
+            populateNavigation(row)
+        }
 
 		logTable.append(row)
 	});
@@ -90,7 +99,7 @@ function updateAlertTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + alert.cycle + "</div>")
 		row.append("<div class='cell'>" + alert.categoryText + "</div>")
 		row.append("<div class='cell'>" + alert.duration + " week(s)</div>")
-		row.append("<div class='cell'>" + getAirlineLogoImg(alert.airlineId) + alert.airlineName + "</div>")
+		row.append("<div class='cell'>" + getAirlineSpan(alert.airlineId, alert.airlineName) + "</div>")
 		row.append("<div class='cell'>" + alert.message + "</div>")
 
 		alertTable.append(row)
