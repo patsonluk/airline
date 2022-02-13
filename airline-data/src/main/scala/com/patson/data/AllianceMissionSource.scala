@@ -2,6 +2,7 @@ package com.patson.data
 
 import com.patson.data.Constants._
 import com.patson.model._
+import com.patson.model.alliance.AllianceMissionReward
 import com.patson.util.{AirlineCache, AirportCache}
 
 import java.sql.Statement
@@ -9,6 +10,14 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 object AllianceMissionSource {
+  def savePickedRewardOption(missionId : Int, airlineId : Int, reward : AllianceMissionReward) : Unit = ???
+
+  def saveStats(currentCycle : Int, stats : Long) : Unit = ???
+
+  def loadStatsByCycle(currentCycle : Int) : Option[Long] = {
+    ???
+  }
+
   val blueprintQueryColumns = List("airport", "mission_type", "id")
 
   def loadAllianceMissionsByAllianceId(allianceId : Int) = {
