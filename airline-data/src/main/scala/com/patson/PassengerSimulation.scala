@@ -209,8 +209,7 @@ object PassengerSimulation {
                     import RouteRejectionReason._
                     rejection match {
                       case TOTAL_COST => // do not retry
-                        //missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
-                        remainingDemandChunks.append((passengerGroup, toAirport, chunkSize)); //TODO there could be some bug in path finding that favor long route with cheap link, always retry for now
+                        missedDemandChunks.append((passengerGroup, toAirport, chunkSize));
                       case DISTANCE => //try again to see if there's any route within reasonable route distance
                         remainingDemandChunks.append((passengerGroup, toAirport, chunkSize));
                       case LINK_COST =>//try again to see if there's any route with better links
