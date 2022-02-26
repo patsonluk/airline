@@ -709,7 +709,8 @@ object PassengerSimulation {
           }
 
           if (isValid) {
-            val cost = linkConsideration.cost + connectionCost
+            val cost = Math.max(0, linkConsideration.cost + connectionCost) //just to avoid loop in graph
+
             val fromCost = distanceMap.get(linkConsideration.from.id)
             val newCost = fromCost + cost
 
