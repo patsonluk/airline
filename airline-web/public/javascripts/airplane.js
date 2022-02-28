@@ -1177,9 +1177,16 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
                         if (option.id == airplane.configurationId) {
                             configuration = option
                             matchingIndex = index
-                            plotSeatConfigurationBar($('#ownedAirplaneDetailModal .configurationBar'), configuration, airplane.capacity, result.spaceMultipliers)
                         }
                     })
+
+                    //just in case, sometimes it comes to a stale state
+                    if (configuration == null && result.configurations) {
+                        configuration = result.configurations[0]
+                    }
+
+                    plotSeatConfigurationBar($('#ownedAirplaneDetailModal .configurationBar'), configuration, airplane.capacity, result.spaceMultipliers)
+
                     if (result.configurations.length <= 1) { //then cannot change
                         $("#ownedAirplaneDetail .configuration-view .edit").hide()
                         $("#ownedAirplaneDetail .configuration-view .editDisabled").show()
