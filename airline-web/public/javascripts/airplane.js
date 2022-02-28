@@ -1183,6 +1183,7 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
                     //just in case, sometimes it comes to a stale state
                     if (configuration == null && result.configurations) {
                         configuration = result.configurations[0]
+                        matchingIndex = 0
                     }
 
                     plotSeatConfigurationBar($('#ownedAirplaneDetailModal .configurationBar'), configuration, airplane.capacity, result.spaceMultipliers)
