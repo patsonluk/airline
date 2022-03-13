@@ -55,6 +55,30 @@ abstract class AllianceMission() extends IdObject {
       }
     stats.toDouble / target
   }
+
+
+  val currentYear = (currentCycle : Int) => {
+    (currentCycle - startCycle) /  AllianceMission.WEEKS_PER_YEAR + 1
+  }
+
+  val isNewYear = (currentCycle : Int) => currentWeek(currentCycle) == 0
+  val currentWeek = (currentCycle : Int) => (currentCycle - startCycle) % AllianceMission.WEEKS_PER_YEAR //start from 0 to WEEKS_PER_YEAR
+
+  import AllianceMissionStatus._
+  val status = (currentCycle : Int) =>
+    if (isActive(currentCycle)) {
+      currentYear(currentCycle) match {
+        case 1 => SELECTION
+        case _ => IN_PROGRESS
+      }
+    } else {
+      CONCLUDED
+    }
+}
+
+object AllianceMissionStatus extends Enumeration {
+  type RewardCategory = Value
+  val SELECTION, IN_PROGRESS, CONCLUDED = Value
 }
 
 abstract class AccumulativeAllianceMission() extends AllianceMission {
@@ -111,6 +135,7 @@ object AllianceMission {
   }
 
   val REWARD_REDEMPTION_DURATION = 52 * 3
+  val WEEKS_PER_YEAR = 52
 }
 
 
