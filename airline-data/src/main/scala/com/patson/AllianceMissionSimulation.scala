@@ -1,8 +1,9 @@
 package com.patson
 
-import com.patson.data.{AirportSource, CycleSource, EventSource, LinkStatisticsSource}
+import com.patson.data.{AirportSource, AllianceMissionSource, CycleSource, EventSource, LinkStatisticsSource}
 import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVoteWithWeight, OlympicsVoteRound}
 import com.patson.model._
+import com.patson.model.alliance.AllianceMission
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.{MapView, mutable}
@@ -10,12 +11,19 @@ import scala.util.Random
 
 
 object AllianceMissionSimulation {
-  val MAX_HISTORY_DURATION = 40 * Olympics.WEEKS_PER_YEAR //40 years
+  val WEEKS_PER_YEAR = 52
+  val MAX_HISTORY_DURATION = 40 * WEEKS_PER_YEAR //40 years
+  val MISSION_DURATION = 12 * WEEKS_PER_YEAR// 12 years
 
   def simulate(cycle: Int): Unit = {
     //purge
+    AllianceMissionSource.deleteAllianceMissionsByCutoff(cycle - MAX_HISTORY_DURATION)
+
+
 //    EventSource.deleteEventsBeforeCycle(CycleSource.loadCycle() - MAX_HISTORY_DURATION)
-    val events = EventSource.loadEvents().sortBy(_.startCycle).reverse
+    val latestMissionByAllianceId : MapView[Int, AllianceMission] = AllianceMissionSource.loadAllianceMissionsAfterCutoff(cycle - MISSION_DURATION).groupBy(_.allianceId).view.mapValues {
+      missionsByAlliance => missionsByAlliance.sortBy(_.startCycle).last
+    }
 
     val currentOlympicsOption = events.find(_.eventType == EventType.OLYMPICS)map(_.asInstanceOf[Olympics])
 

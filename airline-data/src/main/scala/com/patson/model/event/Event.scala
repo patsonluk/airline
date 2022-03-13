@@ -163,7 +163,7 @@ case class OlympicsVoteRound(round : Int, votes : Map[Airport, Int])
 
 object EventType extends Enumeration {
     type EventType = Value
-    val OLYMPICS = Value
+    val OLYMPICS, ALLIANCE_MISSION = Value
 }
 
 object RewardCategory extends Enumeration {

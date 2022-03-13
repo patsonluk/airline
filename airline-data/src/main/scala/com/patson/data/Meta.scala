@@ -2133,6 +2133,50 @@ object Meta {
     statement.close()
   }
 
+  def createAllianceMission(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_TABLE + "(" +
+      "id INTEGER PRIMARY KEY, " +
+      "alliance INTEGER, " +
+      "FOREIGN KEY(id) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_PROPERTY_TABLE + "(" +
+      "mission INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (mission, property)," +
+      "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE + "(" +
+      "mission INTEGER, " +
+      "property VARCHAR(256), " +
+      "cycle INT, " +
+      "value BIGINT, " +
+      "PRIMARY KEY (mission, property, cycle)," +
+      "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
 
 
 

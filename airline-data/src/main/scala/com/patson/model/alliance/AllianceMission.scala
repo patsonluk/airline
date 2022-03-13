@@ -10,7 +10,9 @@ abstract class AllianceMission() extends IdObject {
   val startCycle : Int
   val duration : Int
   val target : Long
+  val allianceId : Int
   val endCycle = startCycle + duration
+  val properties: Map[String, Long]
 
   val isActive = (currentCycle : Int) => endCycle > currentCycle
 
@@ -74,9 +76,9 @@ object AllianceMissionType extends Enumeration {
 }
 
 import AllianceMissionType._
-case class TotalPaxMission(override val startCycle : Int, override val duration : Int, var id : Int = 0, target : Long) extends AccumulativeAllianceMission {
+case class TotalPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override val properties : Map[String, Long], var id : Int = 0) extends AccumulativeAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_PAX
-
+  override val target = properties("target")
   override def generateRewardOptions() : List[AllianceMissionReward] = {
     List(
       CashReward(missionId = id, id = 0, Map("base" -> target * 10, "multiplier" -> 5))
@@ -89,12 +91,13 @@ object AllianceMissionStatus extends Enumeration {
   val SELECTION, IN_PROGRESS, CONCLUDED = Value
 }
 
+case class AllianceMissionPropertiesHistory(missionId : Int, properties : Map[String, Long], cycle : Int)
 
 
 object AllianceMission {
-  def buildAllianceMission(missionType : AllianceMissionType, startCycle : Int, duration : Int, id : Int, properties : Map[String, Long]) : AllianceMission = {
+  def buildAllianceMission(missionType : AllianceMissionType, startCycle : Int, duration : Int, allianceId : Int, properties : Map[String, Long], id : Int) : AllianceMission = {
     missionType match {
-      case TOTAL_PAX => TotalPaxMission(startCycle, duration, id, properties("target"))
+      case TOTAL_PAX => TotalPaxMission(startCycle, duration, allianceId, properties, id)
       case TOTAL_PREMIUM_PAX => ???
       case TOTAL_LOUNGE_VISIT => ???
       case AIRPORT_RANKING => ???
