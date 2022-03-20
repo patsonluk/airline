@@ -709,7 +709,8 @@ object PassengerSimulation {
           }
 
           if (isValid) {
-            val cost = linkConsideration.cost + connectionCost
+            val cost = Math.max(0, linkConsideration.cost + connectionCost) //just to avoid loop in graph
+
             val fromCost = distanceMap.get(linkConsideration.from.id)
             val newCost = fromCost + cost
 
@@ -727,15 +728,15 @@ object PassengerSimulation {
     }
 
     val resultMap : scala.collection.mutable.Map[Airport, Route] = scala.collection.mutable.Map[Airport, Route]()
-    val maxHop = maxIteration * (maxIteration + 1) / 2
-    toAirports.foreach{ to =>  
+
+    toAirports.foreach{ to =>
       var walker = to.id
       var noSolution = false;
       var foundSolution = false
       var hasFlight = false
       var route = ListBuffer[LinkConsideration]()
       var hopCounter = 0
-      while (!foundSolution && !noSolution && hopCounter < maxIteration) {
+      while (!foundSolution && !noSolution) {
         val link = predecessorMap.get(walker)
         if (link != null) {
           route.prepend(link)
