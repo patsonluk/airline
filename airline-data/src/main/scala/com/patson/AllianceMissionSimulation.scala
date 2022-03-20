@@ -17,9 +17,7 @@ object AllianceMissionSimulation {
   val MAX_MISSION_CANDIDATES = 3 //how many options
 
 
-  def loadAllianceStats(alliances : List[Alliance]) : List[AllianceStats]= ???
-
-  def simulate(cycle: Int): Unit = {
+  def simulate(cycle: Int, allianceStats : List[AllianceStats]): Unit = {
     //purge
     AllianceMissionSource.deleteAllianceMissionsByCutoff(cycle - MAX_HISTORY_DURATION)
 
@@ -32,7 +30,7 @@ object AllianceMissionSimulation {
     import com.patson.model.alliance.AllianceMissionStatus._
     //get alliance stats
     val establishedAlliances = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED)
-    val establishedAllianceStats = loadAllianceStats(establishedAlliances).map( stats => (stats.alliance.id, stats)).toMap
+    val establishedAllianceStats = allianceStats.map( stats => (stats.alliance.id, stats)).toMap
     establishedAlliances.foreach { alliance =>
       validMissionByAllianceId.get(alliance.id) match {
         case None => generateMissionCandidates(establishedAllianceStats(alliance.id), cycle, MISSION_DURATION)

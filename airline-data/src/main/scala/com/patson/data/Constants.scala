@@ -162,6 +162,9 @@ object Constants {
   val ALLIANCE_MISSION_REWARD_TABLE = "alliance_mission_reward"
   val ALLIANCE_MISSION_REWARD_PROPERTY_TABLE = "alliance_mission_reward_property"
 
+  val ALLIANCE_STATS_TABLE = "alliance_stats"
+  val ALLIANCE_MISSION_STATS_TABLE = "alliance_mission_stats"
+
   val LINK_NEGOTIATION_DISCOUNT_TABLE = "link_negotiation_discount"
 
   val ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE = "alliance_label_color_by_alliance"

@@ -2155,6 +2155,17 @@ object Meta {
     statement.close()
 
 
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_STATS_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_STATS_TABLE)
+    statement.execute()
+    statement.close()
+
+
+
 
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
@@ -2206,6 +2217,29 @@ object Meta {
       "value BIGINT, " +
       "PRIMARY KEY (reward, property)," +
       "FOREIGN KEY(reward) REFERENCES " + ALLIANCE_MISSION_REWARD_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_STATS_TABLE + "(" +
+      "alliance INTEGER, " +
+      "cycle INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (alliance, cycle, property)," +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_STATS_TABLE + "(" +
+      "alliance INTEGER, " +
+      "cycle INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (alliance, cycle, property)," +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

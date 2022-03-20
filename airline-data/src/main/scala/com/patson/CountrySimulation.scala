@@ -53,6 +53,10 @@ object CountrySimulation {
             } //shortcut out?
         }
     }
-    CountrySource.saveCountryAirlineTitles(countryAirlineTitles.toList)
+
+    val result = countryAirlineTitles.toList
+    CountrySource.saveCountryAirlineTitles(result)
+
+    result
   }
 }
