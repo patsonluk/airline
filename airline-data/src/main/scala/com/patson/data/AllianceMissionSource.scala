@@ -81,9 +81,10 @@ object AllianceMissionSource {
         val duration = resultSet.getInt("duration")
         val allianceId = resultSet.getInt("alliance")
         val missionId = resultSet.getInt("id")
+        val status = AllianceMissionStatus.withName(resultSet.getString("status"))
 
 
-        missions += AllianceMission.buildAllianceMission(missionType, startCycle, duration, allianceId, idToProperties.getOrElse(missionId, Map.empty), missionId)
+        missions += AllianceMission.buildAllianceMission(missionType, startCycle, duration, allianceId, status, idToProperties.getOrElse(missionId, Map.empty), missionId)
       }
 
       missions.toList
@@ -275,7 +276,7 @@ object AllianceMissionSource {
 
       options.foreach { option =>
         val propertiesStatement = connection.prepareStatement(s"REPLACE INTO $ALLIANCE_MISSION_REWARD_PROPERTY_TABLE (reward, property, value) VALUES(?,?,?)")
-        option.properites.foreach {
+        option.properties.foreach {
           case (property, value) =>
             propertiesStatement.setInt(1, option.id)
             propertiesStatement.setString(2, property)

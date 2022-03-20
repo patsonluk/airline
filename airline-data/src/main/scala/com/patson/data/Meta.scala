@@ -2159,7 +2159,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "start_cycle INTEGER, " +
-      "duration INTEGER" +
+      "duration INTEGER," +
       "alliance INTEGER, " +
       "status VARCHAR(256), " +
       "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +

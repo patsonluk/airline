@@ -85,7 +85,7 @@ case class AllianceMissionResult(completionFactor : Double) {
 abstract class AccumulativeAllianceMission() extends AllianceMission {
   def getValueFromStats(stats : AllianceStats) : Long //which field in stats matter for this mission?
   override def updateStats(currentCycle : Int, newStats : AllianceStats): AllianceMissionPropertiesHistory = {
-    val newAccumulativeValue = AllianceMissionSource.loadPropertyHistory(id, currentCycle - 1).properties.getOrElse("accumulativeValue", 0) + getValueFromStats(newStats)
+    val newAccumulativeValue = AllianceMissionSource.loadPropertyHistory(id, currentCycle - 1).properties.getOrElse("accumulativeValue", 0L) + getValueFromStats(newStats)
 
     val newHistory = AllianceMissionPropertiesHistory(id, Map("accumulativeValue" -> newAccumulativeValue), currentCycle)
     AllianceMissionSource.saveAllianceMissionPropertiesHistory(List(newHistory))
@@ -93,7 +93,7 @@ abstract class AccumulativeAllianceMission() extends AllianceMission {
   }
 
   override def progress(cycle : Int) = {
-    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("accumulativeValue", 0) * 100 / properties("goal")).toInt
+    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("accumulativeValue", 0L) * 100 / properties("goal")).toInt
   }
 
   override def isSuccessful(finalProgress : AllianceMissionPropertiesHistory) = {
@@ -110,7 +110,7 @@ abstract class DiscreteAllianceMission() extends AllianceMission {
   }
 
   override def progress(cycle : Int) = {
-    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("discreteValue", 0) * 100 / properties("goal")).toInt
+    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("discreteValue", 0L) * 100 / properties("goal")).toInt
   }
 
   override def isSuccessful(finalProgress : AllianceMissionPropertiesHistory) = {
@@ -122,8 +122,8 @@ abstract class DurationAllianceMission() extends AllianceMission {
   def getValueFromStats(stats : AllianceStats) : Long //which field in stats matter for this mission?
   override def updateStats(currentCycle : Int, newStats : AllianceStats): AllianceMissionPropertiesHistory = {
     val threshold = properties("threshold") //should be above this threshold to be count as a successful week
-    var longestStreak = properties.getOrElse("longestStreak", 0)
-    var currentStreak = properties.getOrElse("currentStreak", 0)
+    var longestStreak = properties.getOrElse("longestStreak", 0L)
+    var currentStreak = properties.getOrElse("currentStreak", 0L)
     val weeklyValue = getValueFromStats(newStats)
     if (weeklyValue >= threshold) { //then successful this week
       currentStreak = currentStreak + 1
@@ -139,7 +139,7 @@ abstract class DurationAllianceMission() extends AllianceMission {
   }
 
   override def progress(cycle : Int) = {
-    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("longestStreak", 0) * 100 / properties("goal")).toInt
+    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("longestStreak", 0L) * 100 / properties("goal")).toInt
   }
 
   override def isSuccessful(finalProgress : AllianceMissionPropertiesHistory) = {
@@ -204,7 +204,7 @@ object AllianceMission {
 
   def generateTotalPaxCandidates(allianceStats : AllianceStats) = {
     val totalPax = allianceStats.totalPax.total
-    val (target, difficulty) =
+    val (target : Double, difficulty) =
       if (totalPax < 10000) {
         (totalPax + 10000, 1)
       } else if (totalPax < 100000) {
