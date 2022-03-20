@@ -2134,25 +2134,38 @@ object Meta {
   }
 
   def createAllianceMission(connection : Connection): Unit = {
-    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_TABLE)
-    statement.execute()
-    statement.close()
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_PROPERTY_TABLE)
+
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_PROPERTY_TABLE)
     statement.execute()
     statement.close()
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE)
     statement.execute()
     statement.close()
 
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_REWARD_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_REWARD_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_TABLE)
+    statement.execute()
+    statement.close()
+
+
+
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_TABLE + "(" +
-      "id INTEGER PRIMARY KEY, " +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "start_cycle INTEGER, " +
+      "duration INTEGER" +
       "alliance INTEGER, " +
-      "FOREIGN KEY(id) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "status VARCHAR(256), " +
       "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()
-
 
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_PROPERTY_TABLE + "(" +
       "mission INTEGER, " +
@@ -2173,6 +2186,26 @@ object Meta {
       "value BIGINT, " +
       "PRIMARY KEY (mission, property, cycle)," +
       "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_REWARD_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "mission INTEGER, " +
+      "reward_type VARCHAR(256), " +
+      "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_REWARD_PROPERTY_TABLE + "(" +
+      "reward INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (reward, property)," +
+      "FOREIGN KEY(reward) REFERENCES " + ALLIANCE_MISSION_REWARD_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

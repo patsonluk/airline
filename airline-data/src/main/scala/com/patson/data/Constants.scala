@@ -159,6 +159,8 @@ object Constants {
   val ALLIANCE_MISSION_TABLE = "alliance_mission"
   val ALLIANCE_MISSION_PROPERTY_TABLE = "alliance_mission_property"
   val ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE = "alliance_mission_property_history"
+  val ALLIANCE_MISSION_REWARD_TABLE = "alliance_mission_reward"
+  val ALLIANCE_MISSION_REWARD_PROPERTY_TABLE = "alliance_mission_reward_property"
 
   val LINK_NEGOTIATION_DISCOUNT_TABLE = "link_negotiation_discount"
 

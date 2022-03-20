@@ -1,11 +1,8 @@
 package com.patson.data
 
 import com.patson.data.Constants._
-import com.patson.model._
+import com.patson.model.alliance.AllianceMissionReward
 import com.patson.model.alliance._
-import com.patson.model.event.EventType
-import com.patson.util.{AirlineCache, AirportCache}
-import jdk.jfr.internal.Cutoff
 
 import java.sql.Statement
 import scala.collection.mutable
@@ -14,11 +11,6 @@ import scala.collection.mutable.ListBuffer
 object AllianceMissionSource {
   def savePickedRewardOption(missionId : Int, airlineId : Int, reward : AllianceMissionReward) : Unit = ???
 
-  def saveStats(currentCycle : Int, stats : Long) : Unit = ???
-
-  def loadStatsByCycle(currentCycle : Int) : Option[Long] = {
-    ???
-  }
 
   val blueprintQueryColumns = List("airport", "mission_type", "id")
 
@@ -41,25 +33,9 @@ object AllianceMissionSource {
   }
 
   def loadAllianceMissionsAfterCutoff(startCycleCutoff: Int) = {
-    val connection = Meta.getConnection()
-    try {
-      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $EVENT_TABLE WHERE start_cycle >= ?")
-      preparedStatement.setInt(1, startCycleCutoff)
+    var queryString = s"SELECT * FROM $ALLIANCE_MISSION_TABLE WHERE start_cycle >= ?"
 
-      val resultSet = preparedStatement.executeQuery()
-
-      val ids = ListBuffer[Int]()
-      while (resultSet.next()) {
-        val id = resultSet.getInt("id")
-        ids.append(id)
-      }
-
-      preparedStatement.close()
-
-      loadAllianceMissionsByIds(ids.toList)
-    } finally {
-      connection.close()
-    }
+    loadAllianceMissionsByQueryString(queryString, List(startCycleCutoff))
   }
 
   //criteria List[(key, operator, value)]
@@ -96,12 +72,12 @@ object AllianceMissionSource {
         ids.append(id)
       }
 
-      val idToProperties = loadAirportPropertiesByMissionIds(ids.toList)
+      val idToProperties = loadPropertiesByMissionIds(ids.toList)
 
       resultSet.beforeFirst()
       while (resultSet.next()) {
         val missionType = AllianceMissionType.withName(resultSet.getString("mission_type"))
-        val startCycle = resultSet.getInt("startCycle")
+        val startCycle = resultSet.getInt("start_cycle")
         val duration = resultSet.getInt("duration")
         val allianceId = resultSet.getInt("alliance")
         val missionId = resultSet.getInt("id")
@@ -117,7 +93,7 @@ object AllianceMissionSource {
   }
 
 
-  def loadAirportPropertiesByMissionIds(ids : List[Int]) : Map[Int, Map[String, Long]] = {
+  def loadPropertiesByMissionIds(ids : List[Int]) : Map[Int, Map[String, Long]] = {
     if (ids.isEmpty) {
       Map.empty
     } else {
@@ -152,18 +128,65 @@ object AllianceMissionSource {
   }
 
 
+  def saveAllianceMissions(missions : List[AllianceMission]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_TABLE(mission_type, start_cycle, duration, status) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      missions.foreach { mission =>
+        statement.setString(1, mission.missionType.toString)
+        statement.setInt(2, mission.startCycle)
+        statement.setInt(3, mission.duration)
+        statement.setString(4, mission.status.toString)
+        statement.executeUpdate()
+        statement.close()
+
+        val generatedKeys = statement.getGeneratedKeys
+        if (generatedKeys.next()) {
+          val generatedId = generatedKeys.getInt(1)
+          mission.id = generatedId
+        }
+      }
+      connection.commit()
+
+      missions.foreach { mission =>
+        updateAllianceMissionProperties(mission.id, mission.properties)
+      }
+
+    } finally {
+      connection.close()
+    }
+  }
+
+
   def updateAllianceMission(mission : AllianceMission) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $ALLIANCE_MISSION_PROPERTY_TABLE (mission, property, value) VALUES(?,?,?)")
-      mission.properties.foreach {
+      val missionStatement = connection.prepareStatement(s"UPDATE $ALLIANCE_MISSION_TABLE SET status = ? WHERE id = ?")
+      missionStatement.setString(1, mission.status.toString)
+      missionStatement.setInt(2, mission.id)
+      missionStatement.executeUpdate()
+      missionStatement.close()
+
+      updateAllianceMissionProperties(mission.id, mission.properties)
+    } finally {
+      connection.close()
+    }
+  }
+
+
+  def updateAllianceMissionProperties(missionId : Int, properties : Map[String, Long]) = {
+    val connection = Meta.getConnection()
+    try {
+      val propertiesStatement = connection.prepareStatement(s"REPLACE INTO $ALLIANCE_MISSION_PROPERTY_TABLE (mission, property, value) VALUES(?,?,?)")
+      properties.foreach {
         case (property, value) =>
-          preparedStatement.setInt(1, mission.id)
-          preparedStatement.setString(2, property)
-          preparedStatement.setLong(3, value)
-          preparedStatement.executeUpdate()
-          preparedStatement.close()
+          propertiesStatement.setInt(1, missionId)
+          propertiesStatement.setString(2, property)
+          propertiesStatement.setLong(3, value)
+          propertiesStatement.executeUpdate()
       }
+      propertiesStatement.close()
     } finally {
       connection.close()
     }
@@ -171,27 +194,24 @@ object AllianceMissionSource {
 
 
 
-  def loadAirportPropertyHistoryByMissionId(missionId : Int) : List[AllianceMissionPropertiesHistory] = {
-    val queryString = s"SELECT * FROM $ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE where mission = ?";
+  def loadPropertyHistory(missionId : Int, cycle : Int) : AllianceMissionPropertiesHistory = {
+    val queryString = s"SELECT * FROM $ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE where mission = ? AND cycle = ?";
 
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement(queryString)
-      preparedStatement.setObject(1, missionId)
+      preparedStatement.setInt(1, missionId)
+      preparedStatement.setInt(2, cycle)
 
       val resultSet = preparedStatement.executeQuery()
-      val result = mutable.Map[Int, mutable.Map[String, Long]]()
+      val cycleProperties = mutable.Map[String, Long]()
       while (resultSet.next()) {
         val propertyKey = resultSet.getString("property")
         val value = resultSet.getLong("value")
-        val cycle = resultSet.getInt("cycle")
-        val cycleProperties = result.getOrElseUpdate(cycle, mutable.Map[String, Long]())
         cycleProperties.put(propertyKey, value)
       }
 
-      result.map {
-        case(cycle, properties) => AllianceMissionPropertiesHistory(missionId, properties.toMap, cycle)
-      }.toList
+      AllianceMissionPropertiesHistory(missionId, cycleProperties.toMap, cycle)
     } finally {
       connection.close()
     }
@@ -222,14 +242,84 @@ object AllianceMissionSource {
   }
 
   def deleteAllianceMissionsByCutoff(cycleCutoff : Int) = { //anything before the cutoff will be purged
-    val queryString = s"DELETE FROM $EVENT_TABLE WHERE start_cycle < ? AND event_type = ?";
+    val queryString = s"DELETE FROM $ALLIANCE_MISSION_TABLE WHERE start_cycle < ? AND event_type = ?";
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement(queryString)
       preparedStatement.setInt(1, cycleCutoff)
-      preparedStatement.setInt(2, EventType.ALLIANCE_MISSION.id)
       preparedStatement.executeUpdate()
       preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def saveRewardOptions(options : List[AllianceMissionReward]) = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
+      options.foreach { option =>
+        statement.setInt(1, option.missionId)
+        statement.setString(2, option.rewardType.toString)
+        statement.executeUpdate()
+        statement.close()
+
+        val generatedKeys = statement.getGeneratedKeys
+        if (generatedKeys.next()) {
+          val generatedId = generatedKeys.getInt(1)
+          option.id = generatedId
+        }
+      }
+      connection.commit()
+
+      options.foreach { option =>
+        val propertiesStatement = connection.prepareStatement(s"REPLACE INTO $ALLIANCE_MISSION_REWARD_PROPERTY_TABLE (reward, property, value) VALUES(?,?,?)")
+        option.properites.foreach {
+          case (property, value) =>
+            propertiesStatement.setInt(1, option.id)
+            propertiesStatement.setString(2, property)
+            propertiesStatement.setLong(3, value)
+            propertiesStatement.executeUpdate()
+        }
+        propertiesStatement.close()
+      }
+
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadRewardOptions(missionId : Int) : List[AllianceMissionReward] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $ALLIANCE_MISSION_REWARD_TABLE WHERE mission = ?")
+
+      preparedStatement.setInt(1, missionId)
+
+      val resultSet = preparedStatement.executeQuery()
+      preparedStatement.close()
+      val options = ListBuffer[AllianceMissionReward]()
+
+
+      while (resultSet.next()) {
+        val rewardType = RewardType.withName(resultSet.getString("reward_type"))
+        val missionId = resultSet.getInt("mission")
+        val rewardId = resultSet.getInt("id")
+
+        val properties = mutable.HashMap[String, Long]()
+        val propertiesStatement = connection.prepareStatement(s"SELECT * FROM $ALLIANCE_MISSION_REWARD_PROPERTY_TABLE WHERE reward = ?")
+        propertiesStatement.setInt(1, rewardId)
+        val propertiesResultSet = propertiesStatement.executeQuery()
+        propertiesStatement.close()
+        while (propertiesResultSet.next()) {
+          properties.put(propertiesResultSet.getString("property"), propertiesResultSet.getLong("value"))
+        }
+
+        options += AllianceMissionReward.buildMissionReward(missionId, rewardType, properties.toMap, rewardId)
+      }
+
+      options.toList
     } finally {
       connection.close()
     }

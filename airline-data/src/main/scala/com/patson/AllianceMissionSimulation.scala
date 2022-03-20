@@ -1,9 +1,9 @@
 package com.patson
 
-import com.patson.data.{AirportSource, AllianceMissionSource, CycleSource, EventSource, LinkStatisticsSource, AllianceSource}
+import com.patson.data.{AirportSource, AllianceMissionSource, AllianceSource, CycleSource, EventSource, LinkStatisticsSource}
 import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVoteWithWeight, OlympicsVoteRound}
 import com.patson.model._
-import com.patson.model.alliance.AllianceMission
+import com.patson.model.alliance.{AllianceMission, AllianceMissionPropertiesHistory, AllianceMissionReward, AllianceMissionStatus, AllianceStats}
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.{MapView, mutable}
@@ -12,74 +12,73 @@ import scala.util.Random
 
 object AllianceMissionSimulation {
   val MAX_HISTORY_DURATION = 40 * AllianceMission.WEEKS_PER_YEAR //40 years
-  val MISSION_DURATION = 12 * AllianceMission.WEEKS_PER_YEAR// 12 years
+  val SELECTION_DURATION = 1 * AllianceMission.WEEKS_PER_YEAR //1 year
+  val MISSION_DURATION = 12 * AllianceMission.WEEKS_PER_YEAR// 11 years (first year is SELECTION)
+  val MAX_MISSION_CANDIDATES = 3 //how many options
 
+
+  def loadAllianceStats(alliances : List[Alliance]) : List[AllianceStats]= ???
 
   def simulate(cycle: Int): Unit = {
     //purge
     AllianceMissionSource.deleteAllianceMissionsByCutoff(cycle - MAX_HISTORY_DURATION)
 
 
+
 //    EventSource.deleteEventsBeforeCycle(CycleSource.loadCycle() - MAX_HISTORY_DURATION)
-    val latestMissionByAllianceId : MapView[Int, AllianceMission] = AllianceMissionSource.loadAllianceMissionsAfterCutoff(cycle - MISSION_DURATION).groupBy(_.allianceId).view.mapValues {
-      missionsByAlliance => missionsByAlliance.sortBy(_.startCycle).last
-    }
+    //find missions (could be candidates) within mission duration
+    val validMissionByAllianceId : Map[Int, List[AllianceMission]] = AllianceMissionSource.loadAllianceMissionsAfterCutoff(cycle - MISSION_DURATION).groupBy(_.allianceId)
 
-    AllianceSource.loadAllAlliances().foreach { alliance =>
-      if (alliance.status == AllianceStatus.ESTABLISHED) {
-        latestMissionByAllianceId.get(alliance.id) match {
-          case None => generateMissionOptions(alliance)
-          case Some(mission) =>
-            import com.patson.model.alliance.AllianceMissionStatus._
-            mission.status(cycle) match {
-              case SELECTION => //do nothing
-              case IN_PROGRESS =>
-                if (mission.currentWeek(cycle) == 0) { //check selection
-                  saveMissionSelection(alliance)
-                }
-                updateMissionProgress(alliance)
-              case CONCLUDED =>
-                generateMissionOptions(alliance)
+    import com.patson.model.alliance.AllianceMissionStatus._
+    //get alliance stats
+    val establishedAlliances = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED)
+    val establishedAllianceStats = loadAllianceStats(establishedAlliances).map( stats => (stats.alliance.id, stats)).toMap
+    establishedAlliances.foreach { alliance =>
+      validMissionByAllianceId.get(alliance.id) match {
+        case None => generateMissionCandidates(establishedAllianceStats(alliance.id), cycle, MISSION_DURATION)
+        case Some(validMissions) =>
+          validMissions.groupBy(_.startCycle).foreach {   //for now all of them should have same start cycle, but just in case...
+            case (startCycle, missions) =>
+              if (cycle == startCycle + SELECTION_DURATION) { //find the selected mission
+                val selectedMission = missions.find(_.status == SELECTED).getOrElse(missions(0)) //leader too busy? just take the first one
+                selectedMission.status = IN_PROGRESS //the selected one should be in progress now
+                AllianceMissionSource.updateAllianceMission(selectedMission) //persist the status
+              }
+          }
+
+          validMissions.find(_.status == IN_PROGRESS).foreach { activeMission => //should only be one for now
+            val currentProgress = updateMissionProgress(cycle, activeMission, establishedAllianceStats(alliance.id))
+            if (activeMission.startCycle + MISSION_DURATION >= cycle) { //the mission is over
+              concludeMission(activeMission, currentProgress)
+              generateMissionCandidates(establishedAllianceStats(alliance.id), cycle, MISSION_DURATION)
             }
-        }
+          }
       }
-
-    }
-
-  }
-
-  def generateMissionOptions(alliance : Alliance) = {
-    ???
-  }
-  def saveMissionSelection(alliance : Alliance) = ???
-
-  def updateMissionProgress(alliance : Alliance) = ???
-
-
-  val BASE_PASSENGER_GOAL = 2000
-  val GOAL_BASE_FACTOR = 0.90 //90% of the max possible pax?
-  def simulateOlympicsPassengerGoals(olympics: Olympics) = {
-    val allLinkStats = LinkStatisticsSource.loadLinkStatisticsByCriteria(List.empty)
-    val passengersByAirline: MapView[Airline, Int] = allLinkStats.groupBy(_.key.airline).view.mapValues(_.map(_.passengers).sum)
-    val totalPassengers = passengersByAirline.values.sum
-
-    var olympicsTotalPassengers = 0
-    for (i <- 0 until Olympics.WEEKS_PER_YEAR) {
-      olympicsTotalPassengers += Olympics.getDemandMultiplier(i) * DemandGenerator.OLYMPICS_DEMAND_BASE
-    }
-
-    val passengerGoalByAirline = passengersByAirline.mapValues { passengers =>
-      val goal = (passengers.toDouble / totalPassengers * olympicsTotalPassengers * GOAL_BASE_FACTOR).toInt
-      Math.max(BASE_PASSENGER_GOAL, goal)
-    }.toMap
-
-    passengerGoalByAirline
-  }
-
-  def simulateOlympicsEnding(olympics : Olympics) = {
-    Olympics.getSelectedAffectedAirports(olympics.id).foreach { airport =>
-      AirportSource.deleteAirportFeature(airport.id, AirportFeatureType.OLYMPICS_IN_PROGRESS)
     }
   }
-  
+
+  def generateMissionCandidates(allianceStats : AllianceStats, startCycle : Int, duration : Int) = {
+    var candidateMissions = AllianceMission.generateMissionCandidates(allianceStats).map { candidate =>
+      AllianceMission.buildAllianceMission(candidate.missionType, startCycle, duration, allianceStats.alliance.id, AllianceMissionStatus.CANDIDATE, candidate.properties)
+    }
+    if (candidateMissions.length > MAX_MISSION_CANDIDATES) {
+      candidateMissions = Random.shuffle(candidateMissions).take(MAX_MISSION_CANDIDATES)
+    }
+    AllianceMissionSource.saveAllianceMissions(candidateMissions)
+  }
+
+
+  def updateMissionProgress(currentCycle : Int, mission : AllianceMission, newStats : AllianceStats) = {
+    mission.updateStats(currentCycle, newStats)
+  }
+
+  def concludeMission(mission : AllianceMission, finalProgress : AllianceMissionPropertiesHistory) = {
+    val result = mission.isSuccessful(finalProgress)
+    if (result.isSuccessful) { //generate reward options
+      AllianceMissionReward.generateMissionRewardOptions(mission.id, result.completionFactor, mission.difficulty)
+    }
+    mission.status = AllianceMissionStatus.CONCLUDED
+    AllianceMissionSource.updateAllianceMission(mission)
+
+  }
 }
