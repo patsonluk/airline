@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 object MainSimulation extends App {
-  val CYCLE_DURATION : Int = 30 * 60
+  val CYCLE_DURATION : Int = 5 * 60
   var currentWeek: Int = 0
 
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
@@ -56,7 +56,7 @@ object MainSimulation extends App {
 
       val (flightLinkResult, loungeResult, linkRidershipDetails) = LinkSimulation.linkSimulation(cycle)
       println("Airport simulation")
-      AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
+      val airportChampionInfo = AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
 
       println("Airport assets simulation")
       AirportAssetSimulation.simulate(cycle, linkRidershipDetails)
@@ -66,7 +66,9 @@ object MainSimulation extends App {
       println("Airline simulation")
       AirlineSimulation.airlineSimulation(cycle, flightLinkResult, loungeResult, airplanes)
       println("Country simulation")
-      CountrySimulation.simulate(cycle)
+      val countryChampionInfo = CountrySimulation.simulate(cycle)
+
+      AllianceSimulation.simulate(cycle, flightLinkResult, loungeResult, airportChampionInfo, countryChampionInfo)
       println("Airplane model simulation")
       AirplaneModelSimulation.simulate(cycle)
 

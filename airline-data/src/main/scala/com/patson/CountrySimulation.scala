@@ -2,6 +2,7 @@ package com.patson
 
 import com.patson.data._
 import com.patson.model._
+import com.patson.util.CountryChampionInfo
 
 import scala.collection.mutable.ListBuffer
 
@@ -34,15 +35,18 @@ object CountrySimulation {
     val countriesByCode = CountrySource.loadAllCountries().map(entry => (entry.countryCode, entry)).toMap
     val airlinesById = AirlineSource.loadAllAirlines(fullLoad = false).map(airline => (airline.id, airline)).toMap
     val countryAirlineTitles = ListBuffer[CountryAirlineTitle]()
+    val countryChampionInfoEntries = ListBuffer[CountryChampionInfo]()
     marketSharesByCountryCode.foreach {
       case (countryCode, marketSharesByAirline) =>
-
         val orderedMarketShares: List[(Int, Long)] = marketSharesByAirline.toList.sortBy(_._2).reverse
         var nationalAirlineQuota = computeNationalAirlineCount(countriesByCode(countryCode))
         var partneredAirlineQuota = computePartneredAirlineCount(countriesByCode(countryCode))
-
+        var ranking = 0
         orderedMarketShares.foreach {
-          case (airlineId, _) =>
+          case (airlineId, pax) =>
+            ranking += 1
+            countryChampionInfoEntries.append(CountryChampionInfo(airlinesById(airlineId), countriesByCode(countryCode), pax, ranking))
+
             val airline = airlinesById(airlineId)
             if (nationalAirlineQuota > 0 && airline.getCountryCode() == Some(countryCode)) {
               countryAirlineTitles.append(CountryAirlineTitle(Country.fromCode(countryCode), airline, Title.NATIONAL_AIRLINE))
@@ -57,6 +61,6 @@ object CountrySimulation {
     val result = countryAirlineTitles.toList
     CountrySource.saveCountryAirlineTitles(result)
 
-    result
+    countryChampionInfoEntries.toList
   }
 }

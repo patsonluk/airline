@@ -15,7 +15,7 @@ object AllianceMissionSource {
   val blueprintQueryColumns = List("airport", "mission_type", "id")
 
   def loadAllianceMissionsByAllianceId(allianceId : Int) = {
-    loadAllianceMissionsByCriteria(List(("alliance", "=", allianceId)))
+    loadAllianceMissionsByCriteria(List(("alliance", allianceId)))
   }
 
   def loadAllianceMissionsByIds(ids : List[Int]) = {
@@ -39,7 +39,7 @@ object AllianceMissionSource {
   }
 
   //criteria List[(key, operator, value)]
-  def loadAllianceMissionsByCriteria(criteria : List[(String, String, Any)]) = {
+  def loadAllianceMissionsByCriteria(criteria : List[(String, Any)]) = {
     var queryString = s"SELECT * FROM $ALLIANCE_MISSION_TABLE"
 
     if (!criteria.isEmpty) {

@@ -155,10 +155,45 @@ object AllianceMissionType extends Enumeration {
 }
 
 import AllianceMissionType._
-case class TotalPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends AccumulativeAllianceMission {
+case class TotalPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_PAX
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalPax.total
+}
+
+case class TotalPremiumPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+  override val missionType : AllianceMissionType.Value = TOTAL_PREMIUM_PAX
+
+  override def getValueFromStats(stats : AllianceStats) : Long = stats.totalPax.firstVal + stats.totalPax.businessVal
+}
+
+case class TotalLoungeVisitMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+  override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
+
+  override def getValueFromStats(stats : AllianceStats) : Long = stats.totalLoungeVisit
+}
+
+case class TotalLoyalistMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+  override val missionType : AllianceMissionType.Value = TOTAL_LOYALIST
+
+  override def getValueFromStats(stats : AllianceStats) : Long = stats.totalLoyalist
+}
+
+
+case class AirportRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+  override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
+  val rankingRequirement = properties.get("rankingRequirement") //for example if it's = 2, then only ranking 2 or above will be counted
+  val scaleRequirement = properties.get("scaleRequirement") //airport size/scale requirement
+
+  override def getValueFromStats(stats : AllianceStats) : Long = stats.airportRankingCount(rankingRequirement, scaleRequirement)
+}
+
+case class CountryRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+  override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
+  val rankingRequirement = properties.get("rankingRequirement")
+  val populationRequirement = properties.get("populationRequirement")
+
+  override def getValueFromStats(stats : AllianceStats) : Long = stats.countryRankingCount(rankingRequirement, populationRequirement)
 }
 
 case class AllianceMissionPropertiesHistory(missionId : Int, properties : Map[String, Long], cycle : Int)
@@ -168,13 +203,13 @@ object AllianceMission {
   def buildAllianceMission(missionType : AllianceMissionType, startCycle : Int, duration : Int, allianceId : Int, status : AllianceMissionStatus.Value, properties : Map[String, Long], id : Int = 0) : AllianceMission = {
     missionType match {
       case TOTAL_PAX => TotalPaxMission(startCycle, duration, allianceId, status, properties, id)
-      case TOTAL_PREMIUM_PAX => ???
-      case TOTAL_LOUNGE_VISIT => ???
-      case AIRPORT_RANKING => ???
-      case COUNTRY_RANKING => ???
+      case TOTAL_PREMIUM_PAX => TotalPremiumPaxMission(startCycle, duration, allianceId, status, properties, id)
+      case TOTAL_LOUNGE_VISIT => TotalLoungeVisitMission(startCycle, duration, allianceId, status, properties, id)
+      case AIRPORT_RANKING => AirportRankingMission(startCycle, duration, allianceId, status, properties, id)
+      case COUNTRY_RANKING => CountryRankingMission(startCycle, duration, allianceId, status, properties, id)
       case CONTINENT_RANKING => ???
       case TOTAL_REPUTATION => ???
-      case TOTAL_LOYALIST => ???
+      case TOTAL_LOYALIST => TotalLoungeVisitMission(startCycle, duration, allianceId, status, properties, id)
       case SATISFACTION_FACTOR => ???
       case TOTAL_REVENUE => ???
     }
