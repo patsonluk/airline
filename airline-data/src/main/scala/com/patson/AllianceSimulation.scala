@@ -75,11 +75,14 @@ object AllianceSimulation {
   def buildAllianceStats(cycle : Int, alliances : List[Alliance], flightLinkResult : List[LinkConsumptionDetails], loungeVisits : List[LoungeConsumptionDetails],  airportChampionInfo : List[AirportChampionInfo], countryChampionInfo : List[CountryChampionInfo]) : List[AllianceStats] = {
     val linkResultByAllianceId : Map[Int, List[LinkConsumptionDetails]] = flightLinkResult.groupBy(_.link.airline.getAllianceId().get)
     val linkRidershipByAllianceId = mutable.HashMap[Int, LinkClassValues]()
+    val revenueByAllianceId =  mutable.HashMap[Int, Long]()
     linkResultByAllianceId.foreach {
       case(allianceId, linkResult) =>
         val soldSeats = linkResult.map(_.link.soldSeats)
+        val revenue = linkResult.map(_.revenue.toLong).sum
         val totalPaxByClass : Map[LinkClass, Int] = Map(ECONOMY -> soldSeats.map(_.economyVal).sum, BUSINESS -> soldSeats.map(_.businessVal).sum, FIRST -> soldSeats.map(_.firstVal).sum)
         linkRidershipByAllianceId.put(allianceId, LinkClassValues.getInstanceByMap(totalPaxByClass))
+        revenueByAllianceId.put(allianceId, revenue)
     }
 
     val loungeVisitsByAllianceId = loungeVisits.groupBy(_.lounge.allianceId.get).view.mapValues { consumptionEntries =>
@@ -108,13 +111,12 @@ object AllianceSimulation {
         linkRidershipByAllianceId.getOrElse(alliance.id, LinkClassValues.getInstance()),
         loungeVisitsByAllianceId.getOrElse(alliance.id, 0),
         loyalistByAllianceId.getOrElse(alliance.id, 0),
+        revenueByAllianceId.getOrElse(alliance.id, 0),
         airportRankingByAllianceId.getOrElse(alliance.id, List.empty),
         countryRankingByAllianceId.getOrElse(alliance.id, List.empty),
         cycle)
     }
   }
-
-  val COUNTRY_POPULATION_THRESHOLD = List(1_000_000, 10_000_000, 100_000_000)
 
   def getCountryPopulationThreshold(population : Long) : Long = {
     var walker = 0
@@ -127,5 +129,6 @@ object AllianceSimulation {
 
     walker
   }
-
+  val COUNTRY_POPULATION_THRESHOLD = List(1_000_000, 10_000_000, 100_000_000)
 }
+

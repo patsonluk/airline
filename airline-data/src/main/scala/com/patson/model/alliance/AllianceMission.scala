@@ -1,5 +1,6 @@
 package com.patson.model.alliance
 
+import com.patson.AllianceSimulation
 import com.patson.data.{AirlineSource, AirportSource, AllianceMissionSource, CountrySource, CycleSource}
 import com.patson.model._
 
@@ -179,6 +180,12 @@ case class TotalLoyalistMission(override val startCycle : Int, override val dura
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalLoyalist
 }
 
+case class TotalRevenueMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+  override val missionType : AllianceMissionType.Value = TOTAL_REVENUE
+
+  override def getValueFromStats(stats : AllianceStats) : Long = stats.totalRevenue
+}
+
 
 case class AirportRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
@@ -201,18 +208,19 @@ case class AllianceMissionPropertiesHistory(missionId : Int, properties : Map[St
 
 object AllianceMission {
   def buildAllianceMission(missionType : AllianceMissionType, startCycle : Int, duration : Int, allianceId : Int, status : AllianceMissionStatus.Value, properties : Map[String, Long], id : Int = 0) : AllianceMission = {
-    missionType match {
-      case TOTAL_PAX => TotalPaxMission(startCycle, duration, allianceId, status, properties, id)
-      case TOTAL_PREMIUM_PAX => TotalPremiumPaxMission(startCycle, duration, allianceId, status, properties, id)
-      case TOTAL_LOUNGE_VISIT => TotalLoungeVisitMission(startCycle, duration, allianceId, status, properties, id)
-      case AIRPORT_RANKING => AirportRankingMission(startCycle, duration, allianceId, status, properties, id)
-      case COUNTRY_RANKING => CountryRankingMission(startCycle, duration, allianceId, status, properties, id)
+    val missionFunction = missionType match {
+      case TOTAL_PAX => TotalPaxMission
+      case TOTAL_PREMIUM_PAX => TotalPremiumPaxMission
+      case TOTAL_LOUNGE_VISIT => TotalLoungeVisitMission
+      case AIRPORT_RANKING => AirportRankingMission
+      case COUNTRY_RANKING => CountryRankingMission
       case CONTINENT_RANKING => ???
       case TOTAL_REPUTATION => ???
-      case TOTAL_LOYALIST => TotalLoungeVisitMission(startCycle, duration, allianceId, status, properties, id)
+      case TOTAL_LOYALIST => TotalLoungeVisitMission
       case SATISFACTION_FACTOR => ???
-      case TOTAL_REVENUE => ???
+      case TOTAL_REVENUE => TotalRevenueMission
     }
+    missionFunction(startCycle, duration, allianceId, status, properties, id)
   }
 
   val REWARD_REDEMPTION_DURATION = 52 * 3
@@ -221,38 +229,161 @@ object AllianceMission {
 
   def generateMissionCandidates(allianceStats : AllianceStats) : List[AllianceMissionCandidate] = {
     AllianceMissionType.values.toList.flatMap { missionType =>
-      missionType match {
-        case TOTAL_PAX =>
-          generateTotalPaxCandidates(allianceStats : AllianceStats)
-        case TOTAL_PREMIUM_PAX => List.empty
-        case TOTAL_LOUNGE_VISIT => List.empty
-        case AIRPORT_RANKING => List.empty
-        case COUNTRY_RANKING =>List.empty
-        case CONTINENT_RANKING =>List.empty
-        case TOTAL_REPUTATION =>List.empty
-        case TOTAL_LOYALIST =>List.empty
-        case SATISFACTION_FACTOR =>List.empty
-        case TOTAL_REVENUE =>List.empty
+      val generateFunction : (AllianceMissionType.Value, AllianceStats) => List[AllianceMissionCandidate] = missionType match {
+        case TOTAL_PAX => generateTotalPaxCandidates
+        case TOTAL_PREMIUM_PAX =>generateTotalPremiumPaxCandidates
+        case TOTAL_LOUNGE_VISIT => generateTotalLoungeVisitCandidates
+        case AIRPORT_RANKING => generateAirportRankingCandidates
+        case COUNTRY_RANKING => generateCountryRankingCandidates
+        case CONTINENT_RANKING => emptyGenerateMissionCandidates
+        case TOTAL_REPUTATION => emptyGenerateMissionCandidates
+        case TOTAL_LOYALIST => generateTotalLoyalistCandidates
+        case SATISFACTION_FACTOR => emptyGenerateMissionCandidates
+        case TOTAL_REVENUE => generateTotalRevenueCandidates
       }
+      generateFunction(missionType, allianceStats)
     }
   }
+  def emptyGenerateMissionCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = List.empty
 
-  def generateTotalPaxCandidates(allianceStats : AllianceStats) = {
+  def generateTotalPaxCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
     val totalPax = allianceStats.totalPax.total
     val (target : Double, difficulty) =
       if (totalPax < 10000) {
-        (totalPax + 10000, 1)
+        (totalPax + 5000, 2)
       } else if (totalPax < 100000) {
-        (totalPax * 1.3, 2)
-      } else if (totalPax < 500000) {
         (totalPax * 1.2, 3)
+      } else if (totalPax < 500000) {
+        (totalPax * 1.15, 4)
       } else if (totalPax < 1000000) {
-        (totalPax * 1.1, 4)
+        (totalPax * 1.10, 5)
       } else {
-        (totalPax * 1.07, 5)
+        (totalPax * 1.08, 6)
       }
-    List(AllianceMissionCandidate(AllianceMissionType.TOTAL_PAX, Map("goal" -> target.toLong, "difficulty" -> difficulty.toLong)))
+    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)),
+         AllianceMissionCandidate(missionType, Map("threshold" -> (target * 1.1).toLong, "goal" -> 12, "difficulty" -> (difficulty.toLong + 1)))) //12 weeks
   }
+
+  def generateTotalPremiumPaxCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+    val totalPax = allianceStats.totalPax.businessVal + allianceStats.totalPax.firstVal
+    val (target : Double, difficulty) =
+      if (totalPax < 5000) {
+        (totalPax + 5000, 3)
+      } else if (totalPax < 10000) {
+        (totalPax * 1.2, 4)
+      } else if (totalPax < 50000) {
+        (totalPax * 1.15, 5)
+      } else if (totalPax < 200000) {
+        (totalPax * 1.10, 6)
+      } else {
+        (totalPax * 1.08, 7)
+      }
+    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)))
+  }
+
+  def generateTotalLoungeVisitCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+    val totalLoungeVisit = allianceStats.totalLoungeVisit
+    val (target : Double, difficulty) =
+      if (totalLoungeVisit < 2000) {
+        (totalLoungeVisit + 1000, 3)
+      } else if (totalLoungeVisit < 5000) {
+        (totalLoungeVisit * 1.2, 4)
+      } else if (totalLoungeVisit < 10000) {
+        (totalLoungeVisit * 1.15, 5)
+      } else if (totalLoungeVisit < 50000) {
+        (totalLoungeVisit * 1.10, 6)
+      } else {
+        (totalLoungeVisit * 1.08, 7)
+      }
+    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)))
+  }
+
+  def generateTotalRevenueCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+    val totalRevenue = allianceStats.totalRevenue
+    val (target : Double, difficulty) =
+      if (totalRevenue < 10_000_000) {
+        (totalRevenue + 5_000_000, 1)
+      } else if (totalRevenue < 100_000_000) {
+        (totalRevenue * 1.2, 2)
+      } else if (totalRevenue < 500_000_000) {
+        (totalRevenue * 1.15, 3)
+      } else if (totalRevenue < 1_000_000_000) {
+        (totalRevenue * 1.10, 4)
+      } else {
+        (totalRevenue * 1.06, 5)
+      }
+    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong))) //12 weeks
+  }
+
+  def generateTotalLoyalistCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+    val totalLoyalist = allianceStats.totalLoyalist
+    val (target : Double, difficulty) =
+      if (totalLoyalist < 100_000) {
+        (totalLoyalist + 10_000, 4)
+      } else if (totalLoyalist < 500_000) {
+        (totalLoyalist * 1.1, 5)
+      } else if (totalLoyalist < 5_000_000) {
+        (totalLoyalist * 1.08, 6)
+      } else if (totalLoyalist < 50_000_000) {
+        (totalLoyalist * 1.06, 7)
+      } else {
+        (totalLoyalist * 1.04, 8)
+      }
+    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 52, "difficulty" -> difficulty.toLong))) //a year
+  }
+
+  def generateCountryRankingCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+    val rankingRequirements = List(1, 2, 3)
+    val candidates = rankingRequirements.flatMap { rankingRequirement =>
+      var populationDifficulty = 1
+      AllianceSimulation.COUNTRY_POPULATION_THRESHOLD.map { populationRequirement =>
+        val (target : Double, baseDifficulty : Int) = {
+          val currentCount = allianceStats.countryRankingCount(Some(rankingRequirement), Some(populationRequirement.toLong))
+          if (currentCount < 5) {
+            (currentCount + 2, 0)
+          } else if (currentCount < 15) {
+            (currentCount + 2, 1)
+          } else {
+            (currentCount + 3, 2)
+          }
+        }
+        populationDifficulty += 1
+        val difficulty = baseDifficulty + populationDifficulty + (3 - rankingRequirement)
+        AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "populationRequirement" -> populationRequirement, "rankingRequirement" -> rankingRequirement, "goal" -> 52, "difficulty" -> difficulty.toLong)) //a year
+      }
+    }
+
+    candidates
+  }
+
+  def generateAirportRankingCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+    val rankingRequirements = List(1, 2, 3)
+    val scaleRequirements = List(None, Some(3), Some(4), Some(5))
+    val candidates = rankingRequirements.flatMap { rankingRequirement =>
+      scaleRequirements.map { scaleRequirement =>
+        val (target : Double, baseDifficulty : Int) = {
+          val currentCount = allianceStats.airportRankingCount(Some(rankingRequirement), scaleRequirement.map(_.toLong))
+          if (currentCount < 10) {
+            (currentCount + 2, 0)
+          } else if (currentCount < 30) {
+            (currentCount + 3, 1)
+          } else {
+            (currentCount + 4, 2)
+          }
+        }
+        val difficulty = baseDifficulty + scaleRequirement.getOrElse(0) + (3 - rankingRequirement)
+        var properties = Map("threshold" -> target.toLong, "rankingRequirement" -> rankingRequirement, "goal" -> 52, "difficulty" -> difficulty.toLong)  //a year
+        if (scaleRequirement.isDefined) {
+          properties = properties + ("" -> scaleRequirement.get)
+        }
+        AllianceMissionCandidate(missionType, properties)
+      }
+    }
+
+    candidates
+  }
+
+
 
 
 }

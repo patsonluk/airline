@@ -7,6 +7,7 @@ case class AllianceStats(alliance : Alliance,
                          totalPax : LinkClassValues,
                          totalLoungeVisit : Long,
                          totalLoyalist : Long,
+                         totalRevenue : Long,
                          airportRankingStats : List[AirportRankingCount],
                          countryRankingStats : List[CountryRankingCount],
                          cycle : Int) {
@@ -15,6 +16,7 @@ case class AllianceStats(alliance : Alliance,
     "businessPax" -> totalPax.businessVal.toLong,
     "firstPax" -> totalPax.firstVal.toLong,
     "loyalist" -> totalLoyalist,
+    "revenue" -> totalRevenue,
     "loungeVisit" -> totalLoungeVisit,
   ) ++ getAirportRankingProperties(airportRankingStats)
 
@@ -75,7 +77,8 @@ object AllianceStats {
       }
     }.toList
     val totalLoyalist = properties("loyalist")
-    AllianceStats(alliance, totalPax, totalLoungeVisit, totalLoyalist, airportRankingStats, countryRankingStats, cycle)
+    val totalRevenue = properties("revenue")
+    AllianceStats(alliance, totalPax, totalLoungeVisit, totalLoyalist, totalRevenue, airportRankingStats, countryRankingStats, cycle)
   }
 }
 
