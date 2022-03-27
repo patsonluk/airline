@@ -38,6 +38,13 @@ object AllianceMissionSource {
     loadAllianceMissionsByQueryString(queryString, List(startCycleCutoff))
   }
 
+  def loadAllianceMissionAfterCutoff(allianceId : Int, startCycleCutoff: Int) = {
+    var queryString = s"SELECT * FROM $ALLIANCE_MISSION_TABLE WHERE start_cycle >= ? AND alliance = ?"
+
+    val result = loadAllianceMissionsByQueryString(queryString, List(startCycleCutoff, allianceId))
+    result.headOption
+  }
+
   //criteria List[(key, operator, value)]
   def loadAllianceMissionsByCriteria(criteria : List[(String, Any)]) = {
     var queryString = s"SELECT * FROM $ALLIANCE_MISSION_TABLE"

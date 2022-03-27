@@ -514,15 +514,20 @@ object AllianceSource {
     }
 
   }
-  def loadAllianceStatsByCriteria(criteria : List[(String, Any)]) : List[AllianceStats]= {
+
+  def loadAllianceStatsByCycle(allianceId : Int, cycle : Int) : Option[AllianceStats] = {
+    loadAllianceStatsByCriteria(List(("alliance", "=", allianceId), ("cycle", "=", cycle))).headOption
+  }
+
+  def loadAllianceStatsByCriteria(criteria : List[(String, String, Any)]) : List[AllianceStats]= {
     internalLoadAllianceStatsByCriteria(ALLIANCE_STATS_TABLE, criteria)
   }
 
-  def loadAllianceMissionStatsByCriteria(criteria : List[(String, Any)]) : List[AllianceStats]= {
+  def loadAllianceMissionStatsByCriteria(criteria : List[(String, String, Any)]) : List[AllianceStats]= {
     internalLoadAllianceStatsByCriteria(ALLIANCE_MISSION_STATS_TABLE, criteria)
   }
 
-  def internalLoadAllianceStatsByCriteria(tableName : String, criteria : List[(String, Any)]) : List[AllianceStats]= {
+  def internalLoadAllianceStatsByCriteria(tableName : String, criteria : List[(String, String, Any)]) : List[AllianceStats]= {
     var queryString = s"SELECT * FROM $tableName";
 
     val connection = Meta.getConnection()
@@ -531,12 +536,16 @@ object AllianceSource {
       if (!criteria.isEmpty) {
         queryString += " WHERE "
         for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
+          queryString += criteria(i)._1 + " " + criteria(i)._2 + " ? AND "
         }
-        queryString += criteria.last._1 + " = ?"
+        queryString += criteria.last._1 + " " + criteria.last._2 + " ? "
       }
 
+
       val preparedStatement = connection.prepareStatement(queryString)
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._3)
+      }
 
       val resultSet = preparedStatement.executeQuery()
       val propertiesByAllianceAndCycle = scala.collection.mutable.Map[(Alliance, Int), scala.collection.mutable.Map[String, Long]]()

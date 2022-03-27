@@ -17,7 +17,17 @@ object AllianceMissionSimulation {
   val MAX_MISSION_CANDIDATES = 3 //how many options
 
   def main(args : Array[String]) : Unit = {
+    AllianceMissionSource.deleteAllianceMissionsByCutoff(0)
+
     simulate(1, List.empty)
+
+    for (i <- 1 + SELECTION_DURATION until (1 + MISSION_DURATION)) {
+      simulate(i, List.empty)
+      println(i)
+    }
+    simulate(1 + MISSION_DURATION, List.empty)
+
+
   }
 
   def simulate(cycle: Int, allianceStats : List[AllianceStats]): Unit = {
@@ -40,7 +50,7 @@ object AllianceMissionSimulation {
         case Some(validMissions) =>
           validMissions.groupBy(_.startCycle).foreach {   //for now all of them should have same start cycle, but just in case...
             case (startCycle, missions) =>
-              if (cycle == startCycle + SELECTION_DURATION) { //find the selected mission
+              if (cycle >= startCycle + SELECTION_DURATION) { //find the selected mission
                 val selectedMission = missions.find(_.status == SELECTED).getOrElse(missions(0)) //leader too busy? just take the first one
                 selectedMission.status = IN_PROGRESS //the selected one should be in progress now
                 AllianceMissionSource.updateAllianceMission(selectedMission) //persist the status
@@ -48,10 +58,10 @@ object AllianceMissionSimulation {
           }
 
           validMissions.find(_.status == IN_PROGRESS).foreach { activeMission => //should only be one for now
-            val currentProgress = updateMissionProgress(cycle, activeMission, establishedAllianceStats(alliance.id))
-            if (activeMission.startCycle + MISSION_DURATION >= cycle) { //the mission is over
+            val currentProgress = updateMissionProgress(cycle, activeMission, establishedAllianceStats.getOrElse(alliance.id, AllianceStats.empty(alliance, cycle)))
+            if (cycle >= activeMission.endCycle) { //the mission is over
               concludeMission(activeMission, currentProgress)
-              generateMissionCandidates(establishedAllianceStats(alliance.id), cycle, MISSION_DURATION)
+              generateMissionCandidates(establishedAllianceStats.getOrElse(alliance.id, AllianceStats.empty(alliance, cycle)), cycle, MISSION_DURATION)
             }
           }
       }

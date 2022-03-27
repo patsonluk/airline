@@ -15,6 +15,7 @@ abstract class AllianceMission() extends IdObject {
   val endCycle = startCycle + duration
   val properties: Map[String, Long]
   val difficulty = properties("difficulty").toInt
+  val description : String
 
   val isActive = (currentCycle : Int) => endCycle > currentCycle
   var id : Int
@@ -121,8 +122,10 @@ abstract class DiscreteAllianceMission() extends AllianceMission {
 
 abstract class DurationAllianceMission() extends AllianceMission {
   def getValueFromStats(stats : AllianceStats) : Long //which field in stats matter for this mission?
+
+  val durationGoal = properties("goal")
+  val threshold = properties("threshold")
   override def updateStats(currentCycle : Int, newStats : AllianceStats): AllianceMissionPropertiesHistory = {
-    val threshold = properties("threshold") //should be above this threshold to be count as a successful week
     var longestStreak = properties.getOrElse("longestStreak", 0L)
     var currentStreak = properties.getOrElse("currentStreak", 0L)
     val weeklyValue = getValueFromStats(newStats)
@@ -140,11 +143,11 @@ abstract class DurationAllianceMission() extends AllianceMission {
   }
 
   override def progress(cycle : Int) = {
-    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("longestStreak", 0L) * 100 / properties("goal")).toInt
+    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("longestStreak", 0L) * 100 / durationGoal).toInt
   }
 
   override def isSuccessful(finalProgress : AllianceMissionPropertiesHistory) = {
-    AllianceMissionResult(finalProgress.properties("longestStreak").toDouble / properties("goal"))
+    AllianceMissionResult(finalProgress.properties("longestStreak").toDouble / durationGoal)
   }
 }
 
@@ -158,30 +161,35 @@ object AllianceMissionType extends Enumeration {
 import AllianceMissionType._
 case class TotalPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_PAX
+  override val description = s"Transport >= ${threshold} PAX for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalPax.total
 }
 
 case class TotalPremiumPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_PREMIUM_PAX
+  override val description = s"Transport >= ${threshold} Business and First class PAX for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalPax.firstVal + stats.totalPax.businessVal
 }
 
 case class TotalLoungeVisitMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
+  override val description = s"Welcome >= ${threshold} Lounge Visitors for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalLoungeVisit
 }
 
 case class TotalLoyalistMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_LOYALIST
+  override val description = s"Maintain >= ${threshold} Loyalists in all airports for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalLoyalist
 }
 
 case class TotalRevenueMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_REVENUE
+  override val description = s"Achieve >= ${threshold} total Alliance Revenue for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalRevenue
 }
@@ -192,6 +200,16 @@ case class AirportRankingMission(override val startCycle : Int, override val dur
   val rankingRequirement = properties.get("rankingRequirement") //for example if it's = 2, then only ranking 2 or above will be counted
   val scaleRequirement = properties.get("scaleRequirement") //airport size/scale requirement
 
+  val scaleText = scaleRequirement match {
+    case Some(scale) => s"Scale $scale or above"
+    case None => "Any scale"
+  }
+  val rankText = rankingRequirement match  {
+    case Some(rank) => s"Rank $rank or above"
+    case None => "Any reputation giving rank"
+  }
+  override val description = s"Hold ${threshold} airports of ${scaleText} with $rankText for $durationGoal consecutive weeks"
+
   override def getValueFromStats(stats : AllianceStats) : Long = stats.airportRankingCount(rankingRequirement, scaleRequirement)
 }
 
@@ -199,6 +217,16 @@ case class CountryRankingMission(override val startCycle : Int, override val dur
   override val missionType : AllianceMissionType.Value = COUNTRY_RANKING
   val rankingRequirement = properties.get("rankingRequirement")
   val populationRequirement = properties.get("populationRequirement")
+
+  val populationText = populationRequirement match {
+    case Some(population) => s"Population $population or above"
+    case None => "Any population"
+  }
+  val rankText = rankingRequirement match  {
+    case Some(rank) => s"Rank $rank or above"
+    case None => "Any reputation giving rank"
+  }
+  override val description = s"Hold ${threshold} countries of ${populationText} with $rankText for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.countryRankingCount(rankingRequirement, populationRequirement)
 }

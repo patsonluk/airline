@@ -64,8 +64,6 @@ function loadCurrentAirlineMemberDetails() {
 			} else {
 				$("#currentAirlineMemberDetails .allianceStatus").text(alliance.status)
 			}
-    		
-    		
     		$('#toggleFormAllianceButton').hide()
     	} else {
     		$('#currentAirlineMemberDetails .allianceName').text('-')
@@ -78,6 +76,26 @@ function loadCurrentAirlineMemberDetails() {
     			$('#toggleFormAllianceButton').hide()
     		}
     	}
+
+    	if (allianceDetails.stats) {
+        	$('#currentAirlineMemberDetails .stats .totalPax').text(toLinkClassValueString(allianceDetails.stats.pax))
+            $('#currentAirlineMemberDetails .stats .totalLoyalist').text(commaSeparateNumber(allianceDetails.stats.loyalist))
+            $('#currentAirlineMemberDetails .stats .totalRevenue').text("$" + commaSeparateNumber(allianceDetails.stats.revenue))
+            $('#currentAirlineMemberDetails .stats .totalLoungeVisit').text(commaSeparateNumber(allianceDetails.stats.loungeVisit))
+            $('#currentAirlineMemberDetails .stats .championedAirports').text(commaSeparateNumber(allianceDetails.stats.championedAirports))
+            $('#currentAirlineMemberDetails .stats .championedCountries').text(commaSeparateNumber(allianceDetails.stats.championedCountries))
+    	} else {
+    	    $('#currentAirlineMemberDetails .stats .value').text('-')
+    	}
+
+    	if (allianceDetails.selectedMission) {
+    		$('#currentAirlineMemberDetails .mission .description').text(allianceDetails.selectedMission.description)
+            $('#currentAirlineMemberDetails .mission .progress').text(Math.floor(allianceDetails.selectedMission.progress * 100) + "%")
+            $('#currentAirlineMemberDetails .mission .status').text(allianceDetails.selectedMission.status)
+    	} else {
+    	    $('#currentAirlineMemberDetails .mission .value').text('-')
+    	}
+
     	
     	$('#currentAirlineAllianceHistory').children("div.table-row").remove()
     	if (allianceDetails.history) {

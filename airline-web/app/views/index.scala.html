@@ -2817,44 +2817,104 @@
 				</div>
 	<!--   			end rival canvas -->
 				<div id="allianceCanvas" class="canvas" style="height: 100%; display: none;">
-					<div class="verticalGroup" style="float: left;">
+					<div class="verticalGroup allianceCanvasLeftGroup" style="float: left;">
 						<div id="currentAirlineMemberDetails" style="width : 95%;" class="section">
-							<div style="width: 50%; margin-bottom: 15px; float: left;">
-								<h4>Your Airline Alliance</h4>
-								<div class="table" style="width: 100%;">
-									<div class="table-row">
-										<div class="cell label">Alliance Name:</div>
-										<div class="cell value">
-											<span class="allianceName"></span>
-											<span id="formAllianceSpan" style="display:none;">
-												<input type="text" id="inputAllianceName"/>
-												<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="formAlliance($('#inputAllianceName').val())"/>
-												<div class="warning" id="formAllianceWarning" style="display:none;"></div>
-											</span>
-											<img id="toggleFormAllianceButton" src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle; display: none;" onclick="toggleFormAlliance()"/>
+							<div style="width: 50%; float: left;">
+								<div style="margin-bottom: 15px;">
+									<h4>Your Airline Alliance</h4>
+									<div class="table" style="width: 100%;">
+										<div class="table-row">
+											<div class="cell label">Alliance Name:</div>
+											<div class="cell value">
+												<span class="allianceName"></span>
+												<span id="formAllianceSpan" style="display:none;">
+													<input type="text" id="inputAllianceName"/>
+													<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="formAlliance($('#inputAllianceName').val())"/>
+													<div class="warning" id="formAllianceWarning" style="display:none;"></div>
+												</span>
+												<img id="toggleFormAllianceButton" src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle; display: none;" onclick="toggleFormAlliance()"/>
+											</div>
+										</div>
+										<div class="table-row">
+											<div class="cell label">Role:</div>
+											<div class="cell value allianceRole"></div>
+										</div>
+										<div class="table-row">
+											<div class="cell label">Ranking:</div>
+											<div class="cell value allianceRanking"></div>
+										</div>
+										<div class="table-row">
+											<div class="cell label">Status:</div>
+											<div class="cell value allianceStatus"></div>
 										</div>
 									</div>
-									<div class="table-row">
-										<div class="cell label">Role:</div>
-										<div class="cell value allianceRole"></div>
-									</div>
-									<div class="table-row">
-										<div class="cell label">Ranking:</div>
-										<div class="cell value allianceRanking"></div>
-									</div>
-									<div class="table-row">
-										<div class="cell label">Status:</div>
-										<div class="cell value allianceStatus"></div>
+								</div>
+								<div stlye="max-height: 250px; overflow: auto;">
+									<h4>Your Alliance History</h4>
+									<div class="table" id="currentAirlineAllianceHistory" style="width: 100%;">
+
 									</div>
 								</div>
 							</div>
 
-							<div style="width: 50%; margin-bottom: 15px; max-height: 250px; float: right; overflow: auto;">
-								<h4>Your Alliance History</h4>
-								<div class="table" id="currentAirlineAllianceHistory" style="width: 100%;">
+							<div style="width: 50%; margin-bottom: 15px; float: right;">
+								<h4>Your Alliance Stats</h4>
+								<div class="table stats" style="width: 100%;">
 									<div class="table-row">
+										<div class="cell label">Total PAX (Y/J/F):</div>
+										<div class="cell value totalPax"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell label">Total Revenue:</div>
+										<div class="cell value totalRevenue"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell label">Total Loyalist:</div>
+										<div class="cell value totalLoyalist"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell label">Total Lounge Visit:</div>
+										<div class="cell value totalLoungeVisit"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell label">Championed Airports:</div>
+										<div class="cell value">
+											<div class="tooltip">
+												<img src='@routes.Assets.versioned("images/icons/information.png")'>
+												<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+												</span>
+											</div>
+											<span class="championedAirports"></span>
+										</div>
+									</div>
+									<div class="table-row">
+										<div class="cell label">Championed Countries:</div>
+										<div class="cell value">
+											<div class="tooltip">
+												<img src='@routes.Assets.versioned("images/icons/information.png")'>
+												<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+												</span>
+											</div>
+											<span class="championedCountries"></span>
+										</div>
 									</div>
 								</div>
+								<h4 style="margin-top: 15px;">Your Alliance Mission</h4>
+								<div class="table mission" style="width: 100%;">
+									<div class="table-row">
+										<div class="cell label">Current:</div>
+										<div class="cell value description"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell label">Current Progress:</div>
+										<div class="cell value progress"></div>
+									</div>
+									<div class="table-row">
+										<div class="cell label">Status:</div>
+										<div class="cell value status"></div>
+									</div>
+								</div>
+								<div class="button">Details</div>
 							</div>
 							<div style="clear: both;"></div>
 						</div>
@@ -2881,7 +2941,7 @@
 							</div>
 						</div>
 					</div>
-					<div id="allianceDetails" class="verticalGroup" style="float: left;">
+					<div id="allianceDetails" class="verticalGroup allianceCanvasRightGroup" style="float: left;">
 						<div class="section" style="width: 95%;">
 							<div>
 								<h4>Alliance Details</h4>

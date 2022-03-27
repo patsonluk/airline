@@ -18,7 +18,7 @@ case class AllianceStats(alliance : Alliance,
     "loyalist" -> totalLoyalist,
     "revenue" -> totalRevenue,
     "loungeVisit" -> totalLoungeVisit,
-  ) ++ getAirportRankingProperties(airportRankingStats)
+  ) ++ getAirportRankingProperties(airportRankingStats) ++ getCountryRankingProperties(countryRankingStats)
 
 
   def getAirportRankingProperties(airportRankingStats : List[AirportRankingCount]) = {

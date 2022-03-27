@@ -60,6 +60,7 @@ object AllianceSimulation {
     AllianceSource.saveAllianceStats(eligibleStats)
     AllianceSource.saveAllianceMissionStats(missionStats)
 
+    println("Alliance mission simulation")
     AllianceMissionSimulation.simulate(cycle, missionStats)
   }
 
