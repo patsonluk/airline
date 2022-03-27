@@ -2170,6 +2170,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "start_cycle INTEGER, " +
+      "mission_type VARCHAR(256), " +
       "duration INTEGER," +
       "alliance INTEGER, " +
       "status VARCHAR(256), " +

@@ -77,22 +77,22 @@ object AirlineSource {
           
           airlines += airline
         }
+
+        val allianceMembers = AllianceSource.loadAllianceMemberByAirlines(airlines.toList)
+        airlines.foreach { airline =>
+          allianceMembers.get(airline) match { //i don't like foreach or fold... hard to read
+            case Some(allianceMember) =>
+              if (allianceMember.role != AllianceRole.APPLICANT) {
+                airline.setAllianceId(allianceMember.allianceId)
+              }
+            case None => //do nothing
+          }
+        }
         
         if (fullLoad) {
           val airlineBases : scala.collection.immutable.Map[Int, List[AirlineBase]] = loadAirlineBasesByAirlines(airlines.toList).groupBy(_.airline.id)
           airlines.foreach { airline =>
             airline.setBases(airlineBases.getOrElse(airline.id, List.empty))
-          }
-          
-          val allianceMembers = AllianceSource.loadAllianceMemberByAirlines(airlines.toList)
-          airlines.foreach { airline =>
-            allianceMembers.get(airline) match { //i don't like foreach or fold... hard to read
-              case Some(allianceMember) =>
-                if (allianceMember.role != AllianceRole.APPLICANT) {
-                  airline.setAllianceId(allianceMember.allianceId)
-                }
-              case None => //do nothing
-            }
           }
         }
         

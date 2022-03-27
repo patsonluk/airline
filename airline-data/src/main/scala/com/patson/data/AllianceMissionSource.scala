@@ -133,14 +133,14 @@ object AllianceMissionSource {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_TABLE(mission_type, start_cycle, duration, status) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_TABLE(mission_type, start_cycle, duration, status, alliance) VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       missions.foreach { mission =>
         statement.setString(1, mission.missionType.toString)
         statement.setInt(2, mission.startCycle)
         statement.setInt(3, mission.duration)
         statement.setString(4, mission.status.toString)
+        statement.setInt(5, mission.allianceId)
         statement.executeUpdate()
-        statement.close()
 
         val generatedKeys = statement.getGeneratedKeys
         if (generatedKeys.next()) {
@@ -148,6 +148,7 @@ object AllianceMissionSource {
           mission.id = generatedId
         }
       }
+      statement.close()
       connection.commit()
 
       missions.foreach { mission =>
@@ -221,7 +222,7 @@ object AllianceMissionSource {
 
 
   def saveAllianceMissionPropertiesHistory(entries : List[AllianceMissionPropertiesHistory]) = {
-    val queryString = s"INSERT INTO $ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE (mission, property, cycle, value) VALUES(?,?,?,?)";
+    val queryString = s"REPLACE INTO $ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE (mission, property, cycle, value) VALUES(?,?,?,?)";
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
@@ -243,7 +244,7 @@ object AllianceMissionSource {
   }
 
   def deleteAllianceMissionsByCutoff(cycleCutoff : Int) = { //anything before the cutoff will be purged
-    val queryString = s"DELETE FROM $ALLIANCE_MISSION_TABLE WHERE start_cycle < ? AND event_type = ?";
+    val queryString = s"DELETE FROM $ALLIANCE_MISSION_TABLE WHERE start_cycle < ?";
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement(queryString)
@@ -259,7 +260,8 @@ object AllianceMissionSource {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
+      val statement = connection.prepareStatement(s"" +
+        s" INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
       options.foreach { option =>
         statement.setInt(1, option.missionId)
         statement.setString(2, option.rewardType.toString)

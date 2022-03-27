@@ -80,6 +80,8 @@ object AllianceStats {
     val totalRevenue = properties("revenue")
     AllianceStats(alliance, totalPax, totalLoungeVisit, totalLoyalist, totalRevenue, airportRankingStats, countryRankingStats, cycle)
   }
+
+  val empty = (alliance: Alliance, cycle: Int) => AllianceStats(alliance, LinkClassValues.getInstance(), 0, 0, 0, List.empty, List.empty, cycle)
 }
 
 case class AirportRankingCount(airportScale : Int, ranking : Int, count : Int)

@@ -188,7 +188,7 @@ case class TotalRevenueMission(override val startCycle : Int, override val durat
 
 
 case class AirportRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
-  override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
+  override val missionType : AllianceMissionType.Value = AIRPORT_RANKING
   val rankingRequirement = properties.get("rankingRequirement") //for example if it's = 2, then only ranking 2 or above will be counted
   val scaleRequirement = properties.get("scaleRequirement") //airport size/scale requirement
 
@@ -196,7 +196,7 @@ case class AirportRankingMission(override val startCycle : Int, override val dur
 }
 
 case class CountryRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
-  override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
+  override val missionType : AllianceMissionType.Value = COUNTRY_RANKING
   val rankingRequirement = properties.get("rankingRequirement")
   val populationRequirement = properties.get("populationRequirement")
 
@@ -248,88 +248,88 @@ object AllianceMission {
 
   def generateTotalPaxCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
     val totalPax = allianceStats.totalPax.total
-    val (target : Double, difficulty) =
+    val (target : Long, difficulty : Int) =
       if (totalPax < 10000) {
-        (totalPax + 5000, 2)
+        (totalPax + 5000L, 2)
       } else if (totalPax < 100000) {
-        (totalPax * 1.2, 3)
+        ((totalPax * 1.2).toLong, 3)
       } else if (totalPax < 500000) {
-        (totalPax * 1.15, 4)
+        ((totalPax * 1.15).toLong, 4)
       } else if (totalPax < 1000000) {
-        (totalPax * 1.10, 5)
+        ((totalPax * 1.10).toLong, 5)
       } else {
-        (totalPax * 1.08, 6)
+        ((totalPax * 1.08).toLong, 6)
       }
-    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)),
-         AllianceMissionCandidate(missionType, Map("threshold" -> (target * 1.1).toLong, "goal" -> 12, "difficulty" -> (difficulty.toLong + 1)))) //12 weeks
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)),
+         AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> (target * 1.1).toLong, "goal" -> 12, "difficulty" -> (difficulty.toLong + 1)))) //12 weeks
   }
 
   def generateTotalPremiumPaxCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
     val totalPax = allianceStats.totalPax.businessVal + allianceStats.totalPax.firstVal
-    val (target : Double, difficulty) =
+    val (target : Long, difficulty) =
       if (totalPax < 5000) {
-        (totalPax + 5000, 3)
+        (totalPax + 5000L, 3)
       } else if (totalPax < 10000) {
-        (totalPax * 1.2, 4)
+        ((totalPax * 1.2).toLong, 4)
       } else if (totalPax < 50000) {
-        (totalPax * 1.15, 5)
+        ((totalPax * 1.15).toLong, 5)
       } else if (totalPax < 200000) {
-        (totalPax * 1.10, 6)
+        ((totalPax * 1.10).toLong, 6)
       } else {
-        (totalPax * 1.08, 7)
+        ((totalPax * 1.08).toLong, 7)
       }
-    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)))
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)))
   }
 
   def generateTotalLoungeVisitCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
     val totalLoungeVisit = allianceStats.totalLoungeVisit
-    val (target : Double, difficulty) =
+    val (target : Long, difficulty) =
       if (totalLoungeVisit < 2000) {
-        (totalLoungeVisit + 1000, 3)
+        (totalLoungeVisit + 1000L, 3)
       } else if (totalLoungeVisit < 5000) {
-        (totalLoungeVisit * 1.2, 4)
+        ((totalLoungeVisit * 1.2).toLong, 4)
       } else if (totalLoungeVisit < 10000) {
-        (totalLoungeVisit * 1.15, 5)
+        ((totalLoungeVisit * 1.15).toLong, 5)
       } else if (totalLoungeVisit < 50000) {
-        (totalLoungeVisit * 1.10, 6)
+        ((totalLoungeVisit * 1.10).toLong, 6)
       } else {
-        (totalLoungeVisit * 1.08, 7)
+        ((totalLoungeVisit * 1.08).toLong, 7)
       }
-    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)))
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)))
   }
 
   def generateTotalRevenueCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
     val totalRevenue = allianceStats.totalRevenue
-    val (target : Double, difficulty) =
+    val (target : Long, difficulty) =
       if (totalRevenue < 10_000_000) {
-        (totalRevenue + 5_000_000, 1)
+        (totalRevenue + 5_000_000L, 1)
       } else if (totalRevenue < 100_000_000) {
-        (totalRevenue * 1.2, 2)
+        ((totalRevenue * 1.2).toLong, 2)
       } else if (totalRevenue < 500_000_000) {
-        (totalRevenue * 1.15, 3)
+        ((totalRevenue * 1.15).toLong, 3)
       } else if (totalRevenue < 1_000_000_000) {
-        (totalRevenue * 1.10, 4)
+        ((totalRevenue * 1.10).toLong, 4)
       } else {
-        (totalRevenue * 1.06, 5)
+        ((totalRevenue * 1.06).toLong, 5)
       }
-    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong))) //12 weeks
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong))) //12 weeks
   }
 
   def generateTotalLoyalistCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
     val totalLoyalist = allianceStats.totalLoyalist
-    val (target : Double, difficulty) =
+    val (target : Long, difficulty) =
       if (totalLoyalist < 100_000) {
-        (totalLoyalist + 10_000, 4)
+        (totalLoyalist + 10_000L, 4)
       } else if (totalLoyalist < 500_000) {
-        (totalLoyalist * 1.1, 5)
+        ((totalLoyalist * 1.1).toLong, 5)
       } else if (totalLoyalist < 5_000_000) {
-        (totalLoyalist * 1.08, 6)
+        ((totalLoyalist * 1.08).toLong, 6)
       } else if (totalLoyalist < 50_000_000) {
-        (totalLoyalist * 1.06, 7)
+        ((totalLoyalist * 1.06).toLong, 7)
       } else {
-        (totalLoyalist * 1.04, 8)
+        ((totalLoyalist * 1.04).toLong, 8)
       }
-    List(AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "goal" -> 52, "difficulty" -> difficulty.toLong))) //a year
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 52, "difficulty" -> difficulty.toLong))) //a year
   }
 
   def generateCountryRankingCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
@@ -337,19 +337,19 @@ object AllianceMission {
     val candidates = rankingRequirements.flatMap { rankingRequirement =>
       var populationDifficulty = 1
       AllianceSimulation.COUNTRY_POPULATION_THRESHOLD.map { populationRequirement =>
-        val (target : Double, baseDifficulty : Int) = {
+        val (target : Long, baseDifficulty : Int) = {
           val currentCount = allianceStats.countryRankingCount(Some(rankingRequirement), Some(populationRequirement.toLong))
           if (currentCount < 5) {
-            (currentCount + 2, 0)
+            (currentCount + 2L, 0)
           } else if (currentCount < 15) {
-            (currentCount + 2, 1)
+            (currentCount + 2L, 1)
           } else {
-            (currentCount + 3, 2)
+            (currentCount + 3L, 2)
           }
         }
         populationDifficulty += 1
         val difficulty = baseDifficulty + populationDifficulty + (3 - rankingRequirement)
-        AllianceMissionCandidate(missionType, Map("threshold" -> target.toLong, "populationRequirement" -> populationRequirement, "rankingRequirement" -> rankingRequirement, "goal" -> 52, "difficulty" -> difficulty.toLong)) //a year
+        AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "populationRequirement" -> populationRequirement, "rankingRequirement" -> rankingRequirement, "goal" -> 52, "difficulty" -> difficulty.toLong)) //a year
       }
     }
 
@@ -361,20 +361,20 @@ object AllianceMission {
     val scaleRequirements = List(None, Some(3), Some(4), Some(5))
     val candidates = rankingRequirements.flatMap { rankingRequirement =>
       scaleRequirements.map { scaleRequirement =>
-        val (target : Double, baseDifficulty : Int) = {
+        val (target : Long, baseDifficulty : Int) = {
           val currentCount = allianceStats.airportRankingCount(Some(rankingRequirement), scaleRequirement.map(_.toLong))
           if (currentCount < 10) {
-            (currentCount + 2, 0)
+            (currentCount + 2L, 0)
           } else if (currentCount < 30) {
-            (currentCount + 3, 1)
+            (currentCount + 3L, 1)
           } else {
-            (currentCount + 4, 2)
+            (currentCount + 4L, 2)
           }
         }
         val difficulty = baseDifficulty + scaleRequirement.getOrElse(0) + (3 - rankingRequirement)
-        var properties = Map("threshold" -> target.toLong, "rankingRequirement" -> rankingRequirement, "goal" -> 52, "difficulty" -> difficulty.toLong)  //a year
+        var properties = Map[String, Long]("threshold" -> target.toLong, "rankingRequirement" -> rankingRequirement, "goal" -> 52, "difficulty" -> difficulty.toLong)  //a year
         if (scaleRequirement.isDefined) {
-          properties = properties + ("" -> scaleRequirement.get)
+          properties = properties + ("scaleRequirement" -> scaleRequirement.get)
         }
         AllianceMissionCandidate(missionType, properties)
       }

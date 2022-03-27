@@ -118,7 +118,7 @@ object AllianceSource {
         connection.close()
       }
   }
-  
+
   def loadAllianceMemberByAirline(airline : Airline) : Option[AllianceMember] = {
     val connection = Meta.getConnection()
     try {
@@ -180,7 +180,7 @@ object AllianceSource {
       }
     }
   }
-  
+
   
   def loadAllianceHistoryByAirline(airlineId : Int) : List[AllianceHistory] = {
     loadAllianceHistoryByCriteria(List(("airline", airlineId)))
@@ -480,7 +480,7 @@ object AllianceSource {
   }
 
   def internalSaveAllianceStat(tableName : String, stats : List[AllianceStats]) = {
-    val queryString = s"INSERT INTO $tableName (alliance, cycle, property, value) VALUES(?,?,?,?)";
+    val queryString = s"REPLACE INTO $tableName (alliance, cycle, property, value) VALUES(?,?,?,?)";
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
@@ -502,7 +502,7 @@ object AllianceSource {
   }
 
   def deleteAllianceStatsBeforeCutoff(cutoff : Int) = {
-    val queryString = s"DELETE FROM $ALLIANCE_STATS_TABLE WHERE cycle < cutoff";
+    val queryString = s"DELETE FROM $ALLIANCE_STATS_TABLE WHERE cycle < ?";
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement(queryString)

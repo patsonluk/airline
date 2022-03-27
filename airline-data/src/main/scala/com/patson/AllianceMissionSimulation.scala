@@ -16,6 +16,9 @@ object AllianceMissionSimulation {
   val MISSION_DURATION = 12 * AllianceMission.WEEKS_PER_YEAR// 11 years (first year is SELECTION)
   val MAX_MISSION_CANDIDATES = 3 //how many options
 
+  def main(args : Array[String]) : Unit = {
+    simulate(1, List.empty)
+  }
 
   def simulate(cycle: Int, allianceStats : List[AllianceStats]): Unit = {
     //purge
@@ -33,7 +36,7 @@ object AllianceMissionSimulation {
     val establishedAllianceStats = allianceStats.map( stats => (stats.alliance.id, stats)).toMap
     establishedAlliances.foreach { alliance =>
       validMissionByAllianceId.get(alliance.id) match {
-        case None => generateMissionCandidates(establishedAllianceStats(alliance.id), cycle, MISSION_DURATION)
+        case None => generateMissionCandidates(establishedAllianceStats.getOrElse(alliance.id, AllianceStats.empty(alliance, cycle)), cycle, MISSION_DURATION)
         case Some(validMissions) =>
           validMissions.groupBy(_.startCycle).foreach {   //for now all of them should have same start cycle, but just in case...
             case (startCycle, missions) =>
@@ -59,9 +62,12 @@ object AllianceMissionSimulation {
     var candidateMissions = AllianceMission.generateMissionCandidates(allianceStats).map { candidate =>
       AllianceMission.buildAllianceMission(candidate.missionType, startCycle, duration, allianceStats.alliance.id, AllianceMissionStatus.CANDIDATE, candidate.properties)
     }
-    if (candidateMissions.length > MAX_MISSION_CANDIDATES) {
-      candidateMissions = Random.shuffle(candidateMissions).take(MAX_MISSION_CANDIDATES)
+
+    //randomly pick 3 mission types, and pick one for each type
+    candidateMissions = Random.shuffle(candidateMissions.groupBy(_.missionType).toList.filter(_._2.length > 0)).take(MAX_MISSION_CANDIDATES).map {
+      case(_, missionsByType) =>  missionsByType(Random.nextInt(missionsByType.length))
     }
+
     AllianceMissionSource.saveAllianceMissions(candidateMissions)
   }
 
