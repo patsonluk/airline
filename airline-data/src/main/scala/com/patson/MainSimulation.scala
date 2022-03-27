@@ -68,6 +68,7 @@ object MainSimulation extends App {
       println("Country simulation")
       val countryChampionInfo = CountrySimulation.simulate(cycle)
 
+      println("Alliance simulation")
       AllianceSimulation.simulate(cycle, flightLinkResult, loungeResult, airportChampionInfo, countryChampionInfo)
       println("Airplane model simulation")
       AirplaneModelSimulation.simulate(cycle)
