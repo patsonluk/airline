@@ -10,19 +10,23 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
   var allianceId : Option[Int] = None
   var bases : List[AirlineBase] = List.empty
-  
-  def setBalance(balance : Long) = { 
-    airlineInfo.balance = balance 
+
+  def setBalance(balance : Long) = {
+    airlineInfo.balance = balance
   }
+
   def setCurrentServiceQuality(serviceQuality : Double) {
     airlineInfo.currentServiceQuality = serviceQuality
   }
+
   def setTargetServiceQuality(targetServiceQuality : Int) {
     airlineInfo.targetServiceQuality = targetServiceQuality
   }
+
   def setReputation(reputation : Double) {
     airlineInfo.reputation = reputation
   }
+
   def setMaintenanceQuality(maintenanceQuality : Double) {
     airlineInfo.maintenanceQuality = maintenanceQuality
   }
@@ -34,6 +38,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setCountryCode(countryCode : String) = {
     airlineInfo.countryCode = Some(countryCode)
   }
+
   def getCountryCode() = {
     airlineInfo.countryCode
   }
@@ -41,6 +46,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setAirlineCode(airlineCode : String) = {
     airlineInfo.airlineCode = airlineCode
   }
+
   def getAirlineCode() = {
     airlineInfo.airlineCode
   }
@@ -48,6 +54,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setSkipTutorial(value : Boolean) = {
     airlineInfo.skipTutorial = value
   }
+
   def isSkipTutorial = {
     airlineInfo.skipTutorial
   }
@@ -55,10 +62,10 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setInitialized(value : Boolean) = {
     airlineInfo.initialized = value
   }
+
   def isInitialized = {
     airlineInfo.initialized
   }
-
 
 
   def setAllianceId(allianceId : Int) = {
@@ -70,22 +77,21 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   }
 
 
-
   def setBases(bases : List[AirlineBase]) {
     this.bases = bases
   }
 
-//  import FlightCategory._
-//  val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
-//      case DOMESTIC => None
-//      case REGIONAL => None
-//      case INTERCONTINENTAL =>
-//        if (airlineGrade.value <= 4) {
-//         Some(0)
-//        } else {
-//          Some((airlineGrade.value - 4) * 3)
-//        }
-//  }
+  //  import FlightCategory._
+  //  val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
+  //      case DOMESTIC => None
+  //      case REGIONAL => None
+  //      case INTERCONTINENTAL =>
+  //        if (airlineGrade.value <= 4) {
+  //         Some(0)
+  //        } else {
+  //          Some((airlineGrade.value - 4) * 3)
+  //        }
+  //  }
 
 
   def airlineGrade : AirlineGrade = {
@@ -94,19 +100,22 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   }
 
 
-
   def getBases() = bases
-  def getHeadQuarter() = bases.find( _.headquarter )
+
+  def getHeadQuarter() = bases.find(_.headquarter)
 
   def getBalance() = airlineInfo.balance
+
   def getCurrentServiceQuality() = airlineInfo.currentServiceQuality
+
   def getTargetServiceQuality() : Int = airlineInfo.targetServiceQuality
 
   def getReputation() = airlineInfo.reputation
+
   def getMaintenanceQuality() = airlineInfo.maintenanceQuality
 
   def getDefaultAirlineCode() : String = {
-    var code = name.split("\\s+").foldLeft("")( (foldString, nameToken) => {
+    var code = name.split("\\s+").foldLeft("")((foldString, nameToken) => {
       val firstCharacter = nameToken.charAt(0)
       if (Character.isLetter(firstCharacter)) {
         foldString + firstCharacter.toUpper
@@ -129,23 +138,25 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     val busyDelegates = DelegateSource.loadBusyDelegatesByAirline(id)
     val availableCount = delegateCount - busyDelegates.size
 
-    DelegateInfo(availableCount, busyDelegates)
+    DelegateInfo(availableCount, delegateBoost, busyDelegates)
   }
 
   val BASE_DELEGATE_COUNT = 5
   val DELEGATE_PER_LEVEL = 3
-  lazy val delegateCount = BASE_DELEGATE_COUNT + airlineGrade.value * DELEGATE_PER_LEVEL +
-    AirlineSource.loadAirlineModifierByAirlineId(id).map { modifier =>
-      modifier match {
-        case DelegateBoostAirlineModifier(amount, duration, creationCycle) => amount
-        case _ => 0
-      }
-    }.sum +
-    AirlineSource.loadAirlineBasesByAirline(id).flatMap(_.specializations).filter(_.isInstanceOf[DelegateSpecialization]).map(_.asInstanceOf[DelegateSpecialization].delegateBoost).sum
-
+  lazy val delegateCount = BASE_DELEGATE_COUNT +
+    airlineGrade.value * DELEGATE_PER_LEVEL +
+    AirlineSource.loadAirlineBasesByAirline(id).flatMap(_.specializations).filter(_.isInstanceOf[DelegateSpecialization]).map(_.asInstanceOf[DelegateSpecialization].delegateBoost).sum +
+    delegateBoost
+  lazy val delegateBoost = AirlineSource.loadAirlineModifierByAirlineId(id).map { modifier =>
+    modifier match {
+      case DelegateBoostAirlineModifier(amount, duration, creationCycle) => amount
+      case _ => 0
+    }
+  }.sum
 }
 
-case class DelegateInfo(availableCount : Int, busyDelegates: List[BusyDelegate])
+
+case class DelegateInfo(availableCount : Int, boost : Int, busyDelegates: List[BusyDelegate])
 
 case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "", var skipTutorial : Boolean = false, var initialized : Boolean = false)
 

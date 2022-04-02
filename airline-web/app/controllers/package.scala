@@ -709,7 +709,7 @@ package object controllers {
 
   implicit object DelegateInfoWrites extends Writes[DelegateInfo] {
     def writes(delegateInfo : DelegateInfo): JsValue = {
-      var result = Json.obj("availableCount" -> delegateInfo.availableCount).asInstanceOf[JsObject]
+      var result = Json.obj("availableCount" -> delegateInfo.availableCount, "boost" -> delegateInfo.boost).asInstanceOf[JsObject]
       val currentCycle = CycleSource.loadCycle()
       var busyDelegatesJson = Json.arr()
       val delegateWrites = new BusyDelegateWrites(currentCycle)
