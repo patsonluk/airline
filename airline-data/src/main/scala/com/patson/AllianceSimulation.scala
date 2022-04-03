@@ -48,7 +48,7 @@ object AllianceSimulation {
     val eligibleStats = buildAllianceStats(cycle, eligibleAlliances, eligibleFlightLinkResult, eligibleLoungeVisit, eligibleAirportChampionInfo, eligibleCountryChampionInfo)
 
     val missionAirlineIds = missionAirlines.map(_.id)
-    val missionFlightLinkResult = flightLinkResult.filter(linkResult => missionAirlineIds.contains(linkResult.link.airline))
+    val missionFlightLinkResult = flightLinkResult.filter(linkResult => missionAirlineIds.contains(linkResult.link.airline.id))
     val missionLoungeVisit = loungeResult.filter {
       case (lounge, _) => missionAirlineIds.contains(lounge.airline.id)
     }.map(_._2).toList
