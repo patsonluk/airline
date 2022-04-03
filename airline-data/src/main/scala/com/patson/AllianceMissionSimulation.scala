@@ -17,8 +17,8 @@ object AllianceMissionSimulation {
 //  val MISSION_DURATION = 12 * AllianceMission.WEEKS_PER_YEAR// 11 years (first year is SELECTION)
 
   //TODO test
-  val SELECTION_DURATION = 4 // 4 weeks
-  val MISSION_DURATION = 4 + AllianceMission.WEEKS_PER_YEAR// 1
+  val SELECTION_DURATION = 8 // 4 weeks
+  val MISSION_DURATION = 8 + AllianceMission.WEEKS_PER_YEAR * 2// 1
 
   //END TODO
 
