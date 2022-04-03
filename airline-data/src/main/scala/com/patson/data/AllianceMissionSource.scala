@@ -272,7 +272,7 @@ object AllianceMissionSource {
     try {
       connection.setAutoCommit(false)
       val statement = connection.prepareStatement(s"" +
-        s" INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
+        s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
       options.foreach { option =>
         statement.setInt(1, option.missionId)
         statement.setString(2, option.rewardType.toString)

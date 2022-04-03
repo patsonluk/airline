@@ -892,7 +892,7 @@ function showAllianceMissionModal(candidates, selectedMission) {
 
     $('#allianceMissionModal .allianceMissionCandidates').empty()
     $.each(candidates, function(index, candidate) {
-        var $candidateDiv = $('<div style="margin: 5px; padding: 10px; border-radius: 3px;">' + candidate.description + '</div>').appendTo($('#allianceMissionModal .allianceMissionCandidates'))
+        var $candidateDiv = $('<div style="margin: 5px; padding: 10px; border-radius: 0.5em;">' + candidate.description + '</div>').appendTo($('#allianceMissionModal .allianceMissionCandidates'))
         var $checkButton = $('<div class="round-button tick" style="margin-right: 10px;"></div>')
         if (phase == 1) {
             $checkButton.bind("click", function(){
@@ -901,20 +901,34 @@ function showAllianceMissionModal(candidates, selectedMission) {
                     updateAllianceMission(result.missionCandidates, result.selectedMission)
                     showAllianceMissionModal(result.missionCandidates, result.selectedMission)
                 })
+                showAllianceMissionRewards(candidate.potentialRewards, false)
             })
+        } else {
+            $checkButton.addClass('disabled')
         }
         //TODO enable/disable the button
 
         $candidateDiv.prepend($checkButton)
         if (selectedMission && candidate.id == selectedMission.id) {
+            $candidateDiv.find('.round-button').removeClass('disabled')
             $candidateDiv.addClass('selected')
         }
 
-        var $difficultyBar = generateSimpleImageBar("assets/images/icons/star.png", candidate.difficulty)
-        $difficultyBar.prop("title", "difficulty")
-        $difficultyBar.css("display", "inline-block")
-        $difficultyBar.css("margin-left", "10px")
+        var $difficultyBar = $('<div>Difficulty:</div>')
+        var $starBar = generateSimpleImageBar("assets/images/icons/star.png", candidate.difficulty)
+        $starBar.css('display', 'inline-block')
+        $starBar.css('vertical-align', 'text-bottom')
+        $starBar.css('margin', '5px 0px 0px 5px')
+        $difficultyBar.append($starBar)
         $candidateDiv.append($difficultyBar)
+
+        if ("lastWeekValue" in candidate) {
+            var $referenceBar = $("<div>Reference value from last week:</div>")
+            var $lastWeekValueSpan = $("<span style='margin-left: 5px;'></span>")
+            $lastWeekValueSpan.text(candidate["lastWeekValue"])
+            $referenceBar.append($lastWeekValueSpan)
+            $candidateDiv.append($referenceBar)
+        }
     })
 
     if (selectedMission) {
@@ -934,11 +948,34 @@ function showAllianceMissionModal(candidates, selectedMission) {
                 }
             }
         })
+        showAllianceMissionRewards(selectedMission.potentialRewards, selectedMission.progress >= 100)
+
     } else {
         $('#allianceMissionModal .mission .stats').hide()
+        $('#allianceMissionModal .allianceMissionCandidates').hide()
     }
 
     $("#allianceMissionModal").fadeIn(200)
+}
+
+function showAllianceMissionRewards(rewards, isSuccessful) {
+    $('#allianceMissionModal .allianceMissionRewards').empty()
+    $.each(rewards, function(index, reward) {
+        var $rewardDiv = $('<div class="section">' + reward.description + '</div>')
+        $rewardDiv.data("id", reward.id)
+        $lockStatusImg = $("<img>")
+        if (isSuccessful) {
+            $lockStatusImg.attr('src', 'assets/images/icons/unlock-tick.png')
+            $lockStatusImg.attr('title', 'Unlocked')
+        } else {
+            $lockStatusImg.attr('src', 'assets/images/icons/lock.png')
+            $lockStatusImg.attr('title', 'Not yet unlocked')
+        }
+
+        $rewardDiv.prepend($lockStatusImg)
+        $('#allianceMissionModal .allianceMissionRewards').append($rewardDiv)
+    })
+    $('#allianceMissionModal .allianceMissionRewards').show()
 }
 
 function selectAllianceMission(mission, callback) {

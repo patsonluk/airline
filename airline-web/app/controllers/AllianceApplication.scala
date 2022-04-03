@@ -7,7 +7,7 @@ import com.patson.model.AllianceEvent._
 import com.patson.model.AllianceRole._
 import com.patson.model.AllianceStatus._
 import com.patson.model.{AllianceHistory, AllianceMember, _}
-import com.patson.model.alliance.{AirportRankingCount, AllianceMissionStatus, AllianceStats, CountryRankingCount, AllianceMission}
+import com.patson.model.alliance.{AirportRankingCount, AllianceMission, AllianceMissionReward, AllianceMissionStatus, AllianceStats, CountryRankingCount}
 import com.patson.util.{AirlineCache, AirportChampionInfo, AllianceCache, AllianceRankingUtil, ChampionUtil, CountryChampionInfo}
 import controllers.AuthenticationObject.AuthenticatedAirline
 
@@ -188,11 +188,29 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
               var potentialMissions : List[AllianceMission] = missions.filter(_.status == AllianceMissionStatus.CANDIDATE)
               missions.filter(mission => mission.status == AllianceMissionStatus.IN_PROGRESS || mission.status == AllianceMissionStatus.SELECTED).foreach { selectedMission =>
-                result = result + ("selectedMission" -> Json.toJson(selectedMission))
+                var selectedMissionJson = Json.toJson(selectedMission).asInstanceOf[JsObject]
+                if (selectedMission.status == AllianceMissionStatus.IN_PROGRESS) {
+                  val progress = Math.max(selectedMission.progress(cycle).toDouble / 100, 1)
+                  selectedMissionJson = selectedMissionJson + ("potentialRewards" -> Json.toJson(AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, progress, selectedMission.difficulty)))
+                }
+                result = result + ("selectedMission" -> selectedMissionJson)
                 potentialMissions = potentialMissions :+ selectedMission
               }
 
-              result = result + ("missionCandidates" -> Json.toJson(potentialMissions.sortBy(_.id)))
+              var missionCandidatesJson = Json.arr()
+              potentialMissions.sortBy(_.id).foreach { potentialMission => //find the corresponding last week stat
+                var missionCandidateJson = Json.toJson(potentialMission).asInstanceOf[JsObject]
+                if (cycle <= potentialMission.startCycle + AllianceMissionSimulation.SELECTION_DURATION) { //add last week value to make selecting mission easier
+                  stats.foreach { stats =>
+                    missionCandidateJson = missionCandidateJson + ("lastWeekValue" -> JsNumber(potentialMission.getValueFromStats(stats)))
+                  }
+                  missionCandidateJson = missionCandidateJson + ("potentialRewards" -> Json.toJson(AllianceMissionReward.generateMissionRewardOptions(potentialMission.id, 1, potentialMission.difficulty)))
+                }
+
+                missionCandidatesJson = missionCandidatesJson.append(missionCandidateJson)
+              }
+
+              result = result + ("missionCandidates" -> missionCandidatesJson)
             }
           }
         }

@@ -12,8 +12,16 @@ import scala.util.Random
 
 object AllianceMissionSimulation {
   val MAX_HISTORY_DURATION = 40 * AllianceMission.WEEKS_PER_YEAR //40 years
-  val SELECTION_DURATION = 1 * AllianceMission.WEEKS_PER_YEAR //1 year
-  val MISSION_DURATION = 12 * AllianceMission.WEEKS_PER_YEAR// 11 years (first year is SELECTION)
+
+//  val SELECTION_DURATION = 1 * AllianceMission.WEEKS_PER_YEAR //1 year
+//  val MISSION_DURATION = 12 * AllianceMission.WEEKS_PER_YEAR// 11 years (first year is SELECTION)
+
+  //TODO test
+  val SELECTION_DURATION = 4 // 4 weeks
+  val MISSION_DURATION = 4 + AllianceMission.WEEKS_PER_YEAR// 1
+
+  //END TODO
+
   val MAX_MISSION_CANDIDATES = 3 //how many options
 
   def main(args : Array[String]) : Unit = {
@@ -107,7 +115,8 @@ object AllianceMissionSimulation {
   def concludeMission(mission : AllianceMission, finalProgress : AllianceMissionPropertiesHistory) = {
     val result = mission.isSuccessful(finalProgress)
     if (result.isSuccessful) { //generate reward options
-      AllianceMissionReward.generateMissionRewardOptions(mission.id, result.completionFactor, mission.difficulty)
+      val options = AllianceMissionReward.generateMissionRewardOptions(mission.id, result.completionFactor, mission.difficulty)
+      AllianceMissionSource.saveRewardOptions(options)
     }
     mission.status = AllianceMissionStatus.CONCLUDED
     AllianceMissionSource.updateAllianceMission(mission)

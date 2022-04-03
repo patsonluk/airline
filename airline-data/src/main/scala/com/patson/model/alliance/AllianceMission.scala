@@ -37,6 +37,7 @@ abstract class AllianceMission() extends IdObject {
       }
     }
   }
+  def getValueFromStats(stats : AllianceStats) : Long //which field in stats matter for this mission?
 
   lazy val rewardOptions =
     if (status == AllianceMissionStatus.CONCLUDED) {
@@ -89,7 +90,6 @@ case class AllianceMissionResult(completionFactor : Double) {
 }
 
 abstract class AccumulativeAllianceMission() extends AllianceMission {
-  def getValueFromStats(stats : AllianceStats) : Long //which field in stats matter for this mission?
   override def updateStats(currentCycle : Int, newStats : AllianceStats): AllianceMissionPropertiesHistory = {
     val newAccumulativeValue = AllianceMissionSource.loadPropertyHistory(id, currentCycle - 1).properties.getOrElse("accumulativeValue", 0L) + getValueFromStats(newStats)
 
@@ -108,7 +108,6 @@ abstract class AccumulativeAllianceMission() extends AllianceMission {
 }
 
 abstract class DiscreteAllianceMission() extends AllianceMission {
-  def getValueFromStats(stats : AllianceStats) : Long //which field in stats matter for this mission?
   override def updateStats(currentCycle : Int, newStats : AllianceStats): AllianceMissionPropertiesHistory = {
     val newHistory = AllianceMissionPropertiesHistory(id, Map("discreteValue" -> getValueFromStats(newStats)), currentCycle)
     AllianceMissionSource.saveAllianceMissionPropertiesHistory(List(newHistory))
@@ -125,8 +124,6 @@ abstract class DiscreteAllianceMission() extends AllianceMission {
 }
 
 abstract class DurationAllianceMission() extends AllianceMission {
-  def getValueFromStats(stats : AllianceStats) : Long //which field in stats matter for this mission?
-
   val durationGoal = properties("goal")
   val threshold = properties("threshold")
   override def updateStats(currentCycle : Int, newStats : AllianceStats): AllianceMissionPropertiesHistory = {
@@ -444,7 +441,6 @@ abstract class AllianceMissionReward() extends IdObject {
   val description : String
   var id : Int
   val properties : Map[String, Long]
-  def redeemDescription(missionId: Int, airlineId: Int) = description
 }
 
 object AllianceMissionReward {
@@ -469,9 +465,6 @@ object AllianceMissionReward {
         val amount = difficulty + extraBonus
         DelegateReward(missionId, Map("amount" -> amount.toLong, "duration" -> 10 * AllianceMission.WEEKS_PER_YEAR), 0)
     }
-
-    AllianceMissionSource.saveRewardOptions(options)
-
     options
   }
 }

@@ -5,7 +5,7 @@ import com.patson.data._
 import com.patson.data.airplane._
 import com.patson.model.{AirlineBaseSpecialization, AirlineCashFlow, AirlineIncome, Computation, _}
 import com.patson.model.airplane._
-import com.patson.model.alliance.{AllianceMission, AllianceMissionStatus}
+import com.patson.model.alliance.{AllianceMission, AllianceMissionStatus, AllianceMissionReward}
 import com.patson.model.event.EventReward
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo, ChampionUtil, CountryChampionInfo}
 import models.{AirportFacility, AirportWithChampion, FacilityType}
@@ -810,6 +810,15 @@ package object controllers {
         "statusText" -> statusText,
         "status" -> allianceMission.status.toString
 
+      )
+    }
+  }
+
+  implicit object AllianceMissionRewardWrites extends Writes[AllianceMissionReward] {
+    def writes(reward : AllianceMissionReward) : JsValue = {
+      Json.obj(
+        "id" -> reward.id,
+        "description" -> reward.description
       )
     }
   }
