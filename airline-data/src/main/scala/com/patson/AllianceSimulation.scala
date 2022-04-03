@@ -61,7 +61,7 @@ object AllianceSimulation {
     AllianceSource.saveAllianceMissionStats(missionStats)
 
     println("Alliance mission simulation")
-    AllianceMissionSimulation.simulate(cycle, missionStats)
+    AllianceMissionSimulation.simulate(cycle, eligibleStats.map(entry => (entry.alliance.id, entry)).toMap, missionStats.map(entry => (entry.alliance.id, entry)).toMap)
   }
 
   /**

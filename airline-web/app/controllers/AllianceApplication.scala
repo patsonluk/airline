@@ -1,6 +1,7 @@
 package controllers
 
 import com.patson.AllianceSimulation
+import com.patson.AllianceMissionSimulation
 import com.patson.data.{AirlineSource, AllianceMissionSource, AllianceSource, CycleSource, LinkSource}
 import com.patson.model.AllianceEvent._
 import com.patson.model.AllianceRole._
@@ -125,12 +126,13 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       var countryStatsJson = Json.arr()
       var index = 0
       val countryRankingStats = stats.countryRankingStats.sortBy(_.populationThreshold)
+      val formatter = java.text.NumberFormat.getIntegerInstance
       thresholds.foreach { threshold =>
         val populationDescription =
           if (thresholds.last != threshold) {
-            s"$threshold - ${thresholds(index + 1)}"
+            s"${formatter.format(threshold)} - ${formatter.format(thresholds(index + 1))}"
           } else {
-            s"${threshold}+"
+            s"${formatter.format(threshold)}+"
           }
         for (ranking <- 1 to 3) {
           val count = countryRankingStats.find(entry => entry.populationThreshold == threshold && entry.ranking == ranking).map(_.count).getOrElse(0)
@@ -157,10 +159,18 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         case AllianceMissionStatus.IN_PROGRESS => s"In Progress ${allianceMission.endCycle - currentCycle} week(s) remaining"
         case AllianceMissionStatus.CONCLUDED => s"Concluded"
       }
+
+
       Json.obj(
+        "id" -> allianceMission.id,
         "description" -> allianceMission.description,
-        "progress" -> allianceMission.progress(currentCycle),
-        "status" -> statusText
+        "stats" -> allianceMission.stats(currentCycle - 1).properties,
+        "tillNextPhase" -> AllianceMissionSimulation.cycleToNextPhase(allianceMission, currentCycle),
+        "progress" -> allianceMission.progress(currentCycle - 1),
+        "difficulty" -> allianceMission.difficulty,
+        "statusText" -> statusText,
+        "status" -> allianceMission.status.toString
+
       )
     }
   }
@@ -199,11 +209,15 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
               val stats = AllianceSource.loadAllianceStatsByCycle(alliance.id, cycle - 1)
               result = result + ("stats" -> Json.toJson(stats))
 
-              AllianceMissionSource.loadAllianceMissionsByAllianceId(alliance.id)
-                .filter(mission => mission.status == AllianceMissionStatus.IN_PROGRESS || mission.status == AllianceMissionStatus.SELECTED)
-                .foreach { selectedMission =>
+              val missions = AllianceMissionSource.loadAllianceMissionsAfterCutoff(alliance.id, cycle - AllianceMissionSimulation.MISSION_DURATION)
+
+              var potentialMissions : List[AllianceMission] = missions.filter(_.status == AllianceMissionStatus.CANDIDATE)
+              missions.filter(mission => mission.status == AllianceMissionStatus.IN_PROGRESS || mission.status == AllianceMissionStatus.SELECTED).foreach { selectedMission =>
                 result = result + ("selectedMission" -> Json.toJson(selectedMission))
+                potentialMissions = potentialMissions :+ selectedMission
               }
+
+              result = result + ("missionCandidates" -> Json.toJson(potentialMissions.sortBy(_.id)))
             }
           }
         }
@@ -220,7 +234,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
     Ok(result)
   }
-  
+
   def formAlliance(airlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
     formAllianceForm.bindFromRequest.fold(
       // Form has errors, redisplay it
@@ -628,8 +642,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         }
     }
   }
-  
-  
+
   
   def getApplyRejection(airline : Airline, alliance : Alliance) : Option[String] = {
     val approvedMembers = alliance.members.filter(_.role != AllianceRole.APPLICANT)

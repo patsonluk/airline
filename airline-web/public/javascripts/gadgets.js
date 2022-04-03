@@ -6,6 +6,17 @@ function htmlEncode(str){
   });
 }
 
+function generateSimpleImageBar(imageSrc, count) {
+    var containerDiv = $("<div>")
+
+    for (i = 0 ; i < count ; i ++) {
+		var image = $("<img src='" + imageSrc + "'>")
+		containerDiv.append(image)
+    }
+
+    return containerDiv
+}
+
 function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, callback) {
     generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, 10, callback)
 }

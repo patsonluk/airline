@@ -84,16 +84,52 @@ function loadCurrentAirlineMemberDetails() {
             $('#currentAirlineMemberDetails .stats .totalLoungeVisit').text(commaSeparateNumber(allianceDetails.stats.loungeVisit))
             $('#currentAirlineMemberDetails .stats .championedAirports').text(commaSeparateNumber(allianceDetails.stats.championedAirports))
             $('#currentAirlineMemberDetails .stats .championedCountries').text(commaSeparateNumber(allianceDetails.stats.championedCountries))
+
+            var $airportSummary = $('#currentAirlineMemberDetails .stats .allianceChampionAirportSummary')
+            $airportSummary.children("div.table-row").remove()
+
+            var $currentRow
+            $.each(allianceDetails.stats.airportStats, function(index, entry) {
+                var $row
+                if (index % 4 == 0) {
+                    $currentRow = $('<div class="table-row">')
+                    $airportSummary.append($currentRow)
+                    $currentRow.append('<div class="cell">' +  entry.scale + '</div>')
+                }
+                $currentRow.append('<div class="cell">' +  entry.count + '</div>')
+            })
+
+             var $countrySummary = $('#currentAirlineMemberDetails .stats .allianceChampionCountrySummary')
+            $countrySummary.children("div.table-row").remove()
+
+            $.each(allianceDetails.stats.countryStats, function(index, entry) {
+                if (index % 4 == 0) {
+                    $currentRow = $('<div class="table-row">')
+                    $countrySummary.append($currentRow)
+                    $currentRow.append('<div class="cell">' +  entry.population + '</div>')
+                }
+                $currentRow.append('<div class="cell">' +  entry.count + '</div>')
+            })
+
     	} else {
     	    $('#currentAirlineMemberDetails .stats .value').text('-')
     	}
 
     	if (allianceDetails.selectedMission) {
     		$('#currentAirlineMemberDetails .mission .description').text(allianceDetails.selectedMission.description)
-            $('#currentAirlineMemberDetails .mission .progress').text(Math.floor(allianceDetails.selectedMission.progress * 100) + "%")
-            $('#currentAirlineMemberDetails .mission .status').text(allianceDetails.selectedMission.status)
+            $('#currentAirlineMemberDetails .mission .progress').text(allianceDetails.selectedMission.progress + "%")
+            $('#currentAirlineMemberDetails .mission .status').text(allianceDetails.selectedMission.statusText)
     	} else {
     	    $('#currentAirlineMemberDetails .mission .value').text('-')
+    	}
+
+    	if (allianceDetails.missionCandidates && allianceDetails.missionCandidates.length > 0) {
+    	    $('#currentAirlineMemberDetails .button.missionDetails').show()
+    	    $('#currentAirlineMemberDetails .button.missionDetails').bind('click', function() {
+    	        showAllianceMissionModal(allianceDetails.missionCandidates, allianceDetails.selectedMission)
+    	    })
+    	} else {
+    	    $('#currentAirlineMemberDetails .button.missionDetails').hide()
     	}
 
     	
@@ -823,6 +859,98 @@ function showAllianceMemberDetails(allianceMember) {
     $("#allianceMemberModal .allianceMemberStatus").text(allianceMember.allianceRole)
     updateAirlineBaseList(allianceMember.airlineId, $("#allianceMemberModal .baseList"))
     $("#allianceMemberModal").fadeIn(200)
+}
+
+function showAllianceMissionModal(candidates, selectedMission) {
+    //update phase icons
+    var phase
+    var tillNextPhase
+    if (selectedMission) {
+        if (selectedMission.status == "SELECTED") {
+            phase = 1
+        } else if (selectedMission.status == "IN_PROGRESS") {
+            phase = 2
+        } else {
+            phase = 3
+        }
+        tillNextPhase = selectedMission.tillNextPhase
+    } else {
+        phase = 1
+        tillNextPhase = candidates[0].tillNextPhase
+
+    }
+    $('#allianceMissionModal .phase img').attr('src', 'assets/images/icons/12px/status-grey.png')
+    $('#allianceMissionModal .phase .tillNextPhase').text('')
+    $('#allianceMissionModal .phase[data-phase="' + phase + '"] img').attr('src', 'assets/images/icons/12px/status-green.png')
+    if (tillNextPhase > 0) {
+        $('#allianceMissionModal .phase[data-phase="' + phase + '"] .tillNextPhase').text("(" + tillNextPhase + " week(s) to advance to next phase)")
+    }
+
+    $('#allianceMissionModal .allianceMissionCandidates').empty()
+    $.each(candidates, function(index, candidate) {
+        var $candidateDiv = $('<div style="margin: 5px; padding: 10px; border-radius: 3px;">' + candidate.description + '</div>').appendTo($('#allianceMissionModal .allianceMissionCandidates'))
+        var $checkButton = $('<a href="#" class="round-button tick" style="margin-right: 10px;"></a>')
+        $checkButton.bind("click", function(){
+            selectAllianceMission(candidate, function() {
+                $('#allianceMissionModal .allianceMissionCandidates .selected').removeClass("selected")
+                $candidateDiv.addClass("selected")
+            })
+        })
+
+        $candidateDiv.prepend($checkButton)
+        if (selectedMission && candidate.id == selectedMission.id) {
+            $candidateDiv.addClass('selected')
+        }
+        if (phase == 1) {
+            $candidateDiv.addClass('clickable')
+        }
+        var $difficultyBar = generateSimpleImageBar("assets/images/icons/star.png", candidate.difficulty)
+        $difficultyBar.prop("title", "difficulty")
+        $difficultyBar.css("display", "inline-block")
+        $difficultyBar.css("margin-left", "10px")
+        $candidateDiv.append($difficultyBar)
+    })
+
+    if (selectedMission) {
+        $('#allianceMissionModal .mission .description').text(selectedMission.description)
+        $('#allianceMissionModal .mission .progress').text(selectedMission.progress + "%")
+        $('#allianceMissionModal .mission .status').text(selectedMission.statusText)
+
+        $.each($('#allianceMissionModal .mission .stats'), function(index, statsRow) {
+            var $statsRow = $(statsRow)
+            var key = $statsRow.data("key")
+            if (key) {
+                if (key in selectedMission.stats) {
+                    $statsRow.find('.value').text(commaSeparateNumber(selectedMission.stats[key]))
+                    $statsRow.show()
+                } else {
+                    $statsRow.hide()
+                }
+            }
+        })
+    } else {
+        $('#allianceMissionModal .mission .stats').hide()
+    }
+
+    $("#allianceMissionModal").fadeIn(200)
+}
+
+function selectAllianceMission(mission, callback) {
+    var url = "airlines/" + activeAirline.id + "/select-alliance-mission/" + mission.id
+	$.ajax({
+		type: 'GET',
+		url: url,
+		contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	callback()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(JSON.stringify(jqXHR));
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+
 }
 
 function closeAlliancePopups() {

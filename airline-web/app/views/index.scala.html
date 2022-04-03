@@ -2861,11 +2861,11 @@
 								<h4>Your Alliance Stats</h4>
 								<div class="table stats" style="width: 100%;">
 									<div class="table-row">
-										<div class="cell label">Total PAX (Y/J/F):</div>
+										<div class="cell label">Weekly PAX (Y/J/F):</div>
 										<div class="cell value totalPax"></div>
 									</div>
 									<div class="table-row">
-										<div class="cell label">Total Revenue:</div>
+										<div class="cell label">Weekly Revenue:</div>
 										<div class="cell value totalRevenue"></div>
 									</div>
 									<div class="table-row">
@@ -2873,36 +2873,54 @@
 										<div class="cell value totalLoyalist"></div>
 									</div>
 									<div class="table-row">
-										<div class="cell label">Total Lounge Visit:</div>
+										<div class="cell label">Weekly Lounge Visit:</div>
 										<div class="cell value totalLoungeVisit"></div>
 									</div>
 									<div class="table-row">
 										<div class="cell label">Championed Airports:</div>
-										<div class="cell value">
+										<div class="cell">
 											<div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
-												<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+												<span class="tooltiptext below" style="width: 350px;">
+													<div class="table data allianceChampionAirportSummary" style="width: 100%;">
+														<div class="table-header">
+															<div class="cell" style="width: 28%;">Scale</div>
+															<div class="cell" style="width: 20%;"><img src='@routes.Assets.versioned("images/icons/crown.png")' title="1st"></div>
+															<div class="cell" style="width: 20%;"><img src='@routes.Assets.versioned("images/icons/crown-silver.png")' title="2nd"></div>
+															<div class="cell" style="width: 20%;"><img src='@routes.Assets.versioned("images/icons/crown-bronze.png")' title="3rd"></div>
+															<div class="cell" style="width: 20%;">Other</div>
+														</div>
+													</div>
 												</span>
 											</div>
-											<span class="championedAirports"></span>
+											<span class="championedAirports value" style="display: inline-block;"></span>
 										</div>
 									</div>
 									<div class="table-row">
 										<div class="cell label">Championed Countries:</div>
-										<div class="cell value">
+										<div class="cell">
 											<div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
-												<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+												<span class="tooltiptext below" style="width: 350px;">
+													<div class="table data allianceChampionCountrySummary" style="width: 100%;">
+														<div class="table-header">
+															<div class="cell" style="width: 28%;">Population</div>
+															<div class="cell" style="width: 18%;"><img src='@routes.Assets.versioned("images/icons/crown.png")' title="1st"></div>
+															<div class="cell" style="width: 18%;"><img src='@routes.Assets.versioned("images/icons/crown-silver.png")' title="2nd"></div>
+															<div class="cell" style="width: 18%;"><img src='@routes.Assets.versioned("images/icons/crown-bronze.png")' title="3rd"></div>
+															<div class="cell" style="width: 18%;">Other</div>
+														</div>
+													</div>
 												</span>
 											</div>
-											<span class="championedCountries"></span>
+											<span class="championedCountries value" style="display: inline-block;"></span>
 										</div>
 									</div>
 								</div>
 								<h4 style="margin-top: 15px;">Your Alliance Mission</h4>
 								<div class="table mission" style="width: 100%;">
 									<div class="table-row">
-										<div class="cell label">Current:</div>
+										<div class="cell label">Mission:</div>
 										<div class="cell value description"></div>
 									</div>
 									<div class="table-row">
@@ -2914,7 +2932,7 @@
 										<div class="cell value status"></div>
 									</div>
 								</div>
-								<div class="button">Details</div>
+								<div class="button missionDetails">Details</div>
 							</div>
 							<div style="clear: both;"></div>
 						</div>
@@ -4729,6 +4747,42 @@
 
 			  <div class="button" onclick="closeModal($('#allianceMemberModal')); showRivalsCanvas($('#allianceMemberModal').data('airlineId'))">Details</div>
 			  <div class="button" onclick="closeModal($('#allianceMemberModal'))")>Cancel</div>
+		  </div>
+	  </div>
+
+	  <div id="allianceMissionModal" class="modal">
+		  <div class="modal-content"  style="width : 800px;">
+			  <span class="close" onclick="closeModal($('#allianceMissionModal'))">&times;</span>
+			  <h4 style="margin: 10px 0px;" class="phase" data-phase="1"><img>Phase 1: Select Mission Candidates&nbsp;<span class="tillNextPhase"></span></h4>
+			  <div class="allianceMissionCandidates">
+
+			  </div>
+			  <h4 style="margin: 10px 0px;" class="phase" data-phase="2"><img>Phase 2: Mission In Progress&nbsp;<span class="tillNextPhase"></span></h4>
+			  <div class="table mission" style="margin: 0px 10px;">
+				  <div class="table-row">
+					  <div class="label">Selected Mission:</div>
+					  <div class="value description"></div>
+				  </div>
+				  <div class="table-row stats" data-key="weeklyValue">
+					  <div class="label">Previous Week Value:</div>
+					  <div class="value"></div>
+				  </div>
+				  <div class="table-row stats" data-key="currentStreak">
+					  <div class="label">Current Streak:</div>
+					  <div class="value"></div>
+				  </div>
+				  <div class="table-row stats" data-key="longestStreak">
+					  <div class="label">Longest Streak:</div>
+					  <div class="value"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label">Current Progress:</div>
+					  <div class="value progress"></div>
+				  </div>
+			  </div>
+
+			  <h4 style="margin: 10px 0px;" class="phase" data-phase="3"><img>Phase 3: Mission Conclusion</h4>
+			  <h5>Rewards</h5>
 		  </div>
 	  </div>
 
