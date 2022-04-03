@@ -1,10 +1,12 @@
 package controllers
 
+import com.patson.AllianceMissionSimulation
 import com.patson.data.{AllianceMissionSource, AllianceSource, CycleSource}
 import com.patson.model._
 import com.patson.model.alliance.AllianceMissionStatus
 import controllers.AuthenticationObject.AuthenticatedAirline
 import play.api.mvc._
+import play.api.libs.json._
 
 import javax.inject.Inject
 
@@ -32,7 +34,14 @@ class AllianceMissionApplication @Inject()(cc: ControllerComponents) extends Abs
                   }
                   mission.status = AllianceMissionStatus.SELECTED
                   AllianceMissionSource.updateAllianceMission(mission)
-                  Ok("Updated")
+
+                  val missions = AllianceMissionSource.loadAllianceMissionsAfterCutoff(allianceMember.allianceId, cycle - AllianceMissionSimulation.MISSION_DURATION)
+
+                  var result = Json.obj("missionCandidates" -> missions.filter(entry => entry.status == AllianceMissionStatus.CANDIDATE || entry.status == AllianceMissionStatus.SELECTED).sortBy(_.id))
+                  missions.find(_.status == AllianceMissionStatus.SELECTED).foreach { selectedMission =>
+                    result = result + ("selectedMission" -> Json.toJson(selectedMission))
+                  }
+                  Ok(result)
                 }
               }
         } else {

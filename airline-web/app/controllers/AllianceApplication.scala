@@ -150,31 +150,6 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
 
-  implicit object AllianceMissionWrites extends Writes[AllianceMission] {
-    def writes(allianceMission : AllianceMission) : JsValue = {
-      val currentCycle = CycleSource.loadCycle()
-      val statusText = allianceMission.status match {
-        case AllianceMissionStatus.SELECTED => "Selected"
-        case AllianceMissionStatus.CANDIDATE => "Candidate"
-        case AllianceMissionStatus.IN_PROGRESS => s"In Progress ${allianceMission.endCycle - currentCycle} week(s) remaining"
-        case AllianceMissionStatus.CONCLUDED => s"Concluded"
-      }
-
-
-      Json.obj(
-        "id" -> allianceMission.id,
-        "description" -> allianceMission.description,
-        "stats" -> allianceMission.stats(currentCycle - 1).properties,
-        "tillNextPhase" -> AllianceMissionSimulation.cycleToNextPhase(allianceMission, currentCycle),
-        "progress" -> allianceMission.progress(currentCycle - 1),
-        "difficulty" -> allianceMission.difficulty,
-        "statusText" -> statusText,
-        "status" -> allianceMission.status.toString
-
-      )
-    }
-  }
-
 
     case class FormAlliance(allianceName : String)
   val formAllianceForm : Form[FormAlliance] = Form(

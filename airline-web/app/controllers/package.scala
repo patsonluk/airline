@@ -1,10 +1,11 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.patson.Util
+import com.patson.{AllianceMissionSimulation, Util}
 import com.patson.data._
 import com.patson.data.airplane._
 import com.patson.model.{AirlineBaseSpecialization, AirlineCashFlow, AirlineIncome, Computation, _}
 import com.patson.model.airplane._
+import com.patson.model.alliance.{AllianceMission, AllianceMissionStatus}
 import com.patson.model.event.EventReward
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo, ChampionUtil, CountryChampionInfo}
 import models.{AirportFacility, AirportWithChampion, FacilityType}
@@ -783,6 +784,31 @@ package object controllers {
       Json.obj(
         "title" -> title.title.toString,
         "description" -> title.description
+
+      )
+    }
+  }
+
+  implicit object AllianceMissionWrites extends Writes[AllianceMission] {
+    def writes(allianceMission : AllianceMission) : JsValue = {
+      val currentCycle = CycleSource.loadCycle()
+      val statusText = allianceMission.status match {
+        case AllianceMissionStatus.SELECTED => "Selected"
+        case AllianceMissionStatus.CANDIDATE => "Candidate"
+        case AllianceMissionStatus.IN_PROGRESS => s"In Progress ${allianceMission.endCycle - currentCycle} week(s) remaining"
+        case AllianceMissionStatus.CONCLUDED => s"Concluded"
+      }
+
+
+      Json.obj(
+        "id" -> allianceMission.id,
+        "description" -> allianceMission.description,
+        "stats" -> allianceMission.stats(currentCycle - 1).properties,
+        "tillNextPhase" -> AllianceMissionSimulation.cycleToNextPhase(allianceMission, currentCycle),
+        "progress" -> allianceMission.progress(currentCycle - 1),
+        "difficulty" -> allianceMission.difficulty,
+        "statusText" -> statusText,
+        "status" -> allianceMission.status.toString
 
       )
     }

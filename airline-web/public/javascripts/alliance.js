@@ -115,22 +115,7 @@ function loadCurrentAirlineMemberDetails() {
     	    $('#currentAirlineMemberDetails .stats .value').text('-')
     	}
 
-    	if (allianceDetails.selectedMission) {
-    		$('#currentAirlineMemberDetails .mission .description').text(allianceDetails.selectedMission.description)
-            $('#currentAirlineMemberDetails .mission .progress').text(allianceDetails.selectedMission.progress + "%")
-            $('#currentAirlineMemberDetails .mission .status').text(allianceDetails.selectedMission.statusText)
-    	} else {
-    	    $('#currentAirlineMemberDetails .mission .value').text('-')
-    	}
-
-    	if (allianceDetails.missionCandidates && allianceDetails.missionCandidates.length > 0) {
-    	    $('#currentAirlineMemberDetails .button.missionDetails').show()
-    	    $('#currentAirlineMemberDetails .button.missionDetails').bind('click', function() {
-    	        showAllianceMissionModal(allianceDetails.missionCandidates, allianceDetails.selectedMission)
-    	    })
-    	} else {
-    	    $('#currentAirlineMemberDetails .button.missionDetails').hide()
-    	}
+        updateAllianceMission(allianceDetails.missionCandidates, allianceDetails.selectedMission)
 
     	
     	$('#currentAirlineAllianceHistory').children("div.table-row").remove()
@@ -144,6 +129,25 @@ function loadCurrentAirlineMemberDetails() {
     		$('#currentAirlineAllianceHistory').append(row)
     	}
 	})
+}
+
+function updateAllianceMission(missionCandidates, selectedMission) {
+	if (selectedMission) {
+        $('#currentAirlineMemberDetails .mission .description').text(selectedMission.description)
+        $('#currentAirlineMemberDetails .mission .progress').text(selectedMission.progress + "%")
+        $('#currentAirlineMemberDetails .mission .status').text(selectedMission.statusText)
+    } else {
+        $('#currentAirlineMemberDetails .mission .value').text('-')
+    }
+
+    if (missionCandidates && missionCandidates.length > 0) {
+        $('#currentAirlineMemberDetails .button.missionDetails').show()
+        $('#currentAirlineMemberDetails .button.missionDetails').bind('click', function() {
+            showAllianceMissionModal(missionCandidates, selectedMission)
+        })
+    } else {
+        $('#currentAirlineMemberDetails .button.missionDetails').hide()
+    }
 }
 
 function loadAllAlliances() {
@@ -889,21 +893,23 @@ function showAllianceMissionModal(candidates, selectedMission) {
     $('#allianceMissionModal .allianceMissionCandidates').empty()
     $.each(candidates, function(index, candidate) {
         var $candidateDiv = $('<div style="margin: 5px; padding: 10px; border-radius: 3px;">' + candidate.description + '</div>').appendTo($('#allianceMissionModal .allianceMissionCandidates'))
-        var $checkButton = $('<a href="#" class="round-button tick" style="margin-right: 10px;"></a>')
-        $checkButton.bind("click", function(){
-            selectAllianceMission(candidate, function() {
-                $('#allianceMissionModal .allianceMissionCandidates .selected').removeClass("selected")
-                $candidateDiv.addClass("selected")
+        var $checkButton = $('<div class="round-button tick" style="margin-right: 10px;"></div>')
+        if (phase == 1) {
+            $checkButton.bind("click", function(){
+                selectAllianceMission(candidate, function(result) {
+                    $('#allianceMissionModal .allianceMissionCandidates .selected').removeClass("selected")
+                    updateAllianceMission(result.missionCandidates, result.selectedMission)
+                    showAllianceMissionModal(result.missionCandidates, result.selectedMission)
+                })
             })
-        })
+        }
+        //TODO enable/disable the button
 
         $candidateDiv.prepend($checkButton)
         if (selectedMission && candidate.id == selectedMission.id) {
             $candidateDiv.addClass('selected')
         }
-        if (phase == 1) {
-            $candidateDiv.addClass('clickable')
-        }
+
         var $difficultyBar = generateSimpleImageBar("assets/images/icons/star.png", candidate.difficulty)
         $difficultyBar.prop("title", "difficulty")
         $difficultyBar.css("display", "inline-block")
@@ -943,7 +949,7 @@ function selectAllianceMission(mission, callback) {
 		contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
-	    	callback()
+	    	callback(result)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));

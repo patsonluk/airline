@@ -167,21 +167,21 @@ import AllianceMission._
 
 case class TotalPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_PAX
-  override val description = s"Transport >= ${formatter.format(threshold)} PAX for $durationGoal consecutive weeks"
+  override val description = s"Transport >= ${formatter.format(threshold)} weekly PAX for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalPax.total
 }
 
 case class TotalPremiumPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_PREMIUM_PAX
-  override val description = s"Transport >= ${formatter.format(threshold)} Business and First class PAX for $durationGoal consecutive weeks"
+  override val description = s"Transport >= ${formatter.format(threshold)} weekly Business and First class PAX for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalPax.firstVal + stats.totalPax.businessVal
 }
 
 case class TotalLoungeVisitMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
-  override val description = s"Welcome >= ${formatter.format(threshold)} Lounge Visitors for $durationGoal consecutive weeks"
+  override val description = s"Welcome >= ${formatter.format(threshold)} weekly Lounge Visitors for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalLoungeVisit
 }
@@ -195,7 +195,7 @@ case class TotalLoyalistMission(override val startCycle : Int, override val dura
 
 case class TotalRevenueMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_REVENUE
-  override val description = s"Achieve >= ${formatter.format(threshold)} total Alliance Revenue for $durationGoal consecutive weeks"
+  override val description = s"Achieve >= ${formatter.format(threshold)} total weekly Alliance Revenue for $durationGoal consecutive weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalRevenue
 }
