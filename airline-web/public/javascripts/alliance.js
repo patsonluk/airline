@@ -142,7 +142,7 @@ function updateAllianceMission(missionCandidates, selectedMission) {
 
     if (missionCandidates && missionCandidates.length > 0) {
         $('#currentAirlineMemberDetails .button.missionDetails').show()
-        $('#currentAirlineMemberDetails .button.missionDetails').bind('click', function() {
+        $('#currentAirlineMemberDetails .button.missionDetails').unbind('click').bind('click', function() {
             showAllianceMissionModal(missionCandidates, selectedMission)
         })
     } else {
@@ -901,7 +901,6 @@ function showAllianceMissionModal(candidates, selectedMission) {
                     updateAllianceMission(result.missionCandidates, result.selectedMission)
                     showAllianceMissionModal(result.missionCandidates, result.selectedMission)
                 })
-                showAllianceMissionRewards(candidate.potentialRewards, false)
             })
         } else {
             $checkButton.addClass('disabled')
@@ -951,8 +950,9 @@ function showAllianceMissionModal(candidates, selectedMission) {
         showAllianceMissionRewards(selectedMission.potentialRewards, selectedMission.progress >= 100)
 
     } else {
+        $('#allianceMissionModal .mission .value').text('-')
         $('#allianceMissionModal .mission .stats').hide()
-        $('#allianceMissionModal .allianceMissionCandidates').hide()
+        //$('#allianceMissionModal .allianceMissionCandidates').hide()
     }
 
     $("#allianceMissionModal").fadeIn(200)
