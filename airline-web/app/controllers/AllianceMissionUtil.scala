@@ -25,7 +25,7 @@ object AllianceMissionUtil {
       val smallAirportScaleTopStats : List[(Int, Int)] = smallAirportTopRankings.view.mapValues(_.map(_.count).sum).toList.sortBy(_._1)
       val smallAirportScaleOtherCount : Int = smallAirportOtherRankings.view.mapValues(_.map(_.count).sum).map(_._2).sum
 
-      smallAirportScaleTopStats.foreach {
+      smallAirportScaleTopStats.sortBy(_._1).foreach {
         case (ranking, count) => airportStatsJson = airportStatsJson.append(Json.obj("scale" -> s"${smallAirportThreshold}-", "ranking" -> ranking, "count" -> count))
       }
       airportStatsJson = airportStatsJson.append(Json.obj("scale" -> s"${smallAirportThreshold}-", "ranking" -> "other", "count" -> smallAirportScaleOtherCount))
@@ -33,7 +33,7 @@ object AllianceMissionUtil {
       //For airport scale 4-7, key is ranking (1 - 3) value is count for that ranking
       for (scale <- smallAirportThreshold + 1 to largeAirportThreshold - 1) {
         val (topRankings, otherRankings) = stats.airportRankingStats.filter(_.airportScale == scale).partition(_.ranking <= 3)
-        topRankings.foreach {
+        topRankings.sortBy(_.ranking).foreach {
           case AirportRankingCount(_, ranking, count) => airportStatsJson = airportStatsJson.append(Json.obj("scale" -> scale, "ranking" -> ranking, "count" -> count))
         }
         airportStatsJson = airportStatsJson.append(Json.obj("scale" -> scale, "ranking" -> "other", "count" -> otherRankings.map(_.count).sum))
@@ -44,7 +44,7 @@ object AllianceMissionUtil {
       val largeAirportScaleTopStats : List[(Int, Int)] = largeAirportTopRankings.view.mapValues(_.map(_.count).sum).toList.sortBy(_._1)
       val largeAirportScaleOtherCount : Int = largeAirportOtherRankings.view.mapValues(_.map(_.count).sum).map(_._2).sum
 
-      largeAirportScaleTopStats.foreach {
+      largeAirportScaleTopStats.sortBy(_._1).foreach {
         case (ranking, count) => airportStatsJson = airportStatsJson.append(Json.obj("scale" -> s"${largeAirportThreshold}+", "ranking" -> ranking, "count" -> count))
       }
       airportStatsJson = airportStatsJson.append(Json.obj("scale" -> s"${largeAirportThreshold}+", "ranking" -> "other", "count" -> largeAirportScaleOtherCount))
@@ -53,7 +53,7 @@ object AllianceMissionUtil {
 
       result = result + ("championedAirports" -> JsNumber(stats.airportRankingStats.filter(_.ranking == 1).map(_.count).sum))
 
-      val thresholds = AllianceSimulation.COUNTRY_POPULATION_THRESHOLD
+      val thresholds = 0 :: AllianceSimulation.COUNTRY_POPULATION_THRESHOLD
       var countryStatsJson = Json.arr()
       var index = 0
       val countryRankingStats = stats.countryRankingStats.sortBy(_.populationThreshold)
