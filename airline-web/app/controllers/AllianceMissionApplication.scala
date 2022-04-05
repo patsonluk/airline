@@ -46,4 +46,27 @@ class AllianceMissionApplication @Inject()(cc: ControllerComponents) extends Abs
     }
   }
 
+  def getAllianceMissionStats(airlineId : Int, missionId : Int) = AuthenticatedAirline(airlineId) { request =>
+    AllianceMissionSource.loadAllianceMissionsById(missionId) match {
+      case None => NotFound("mission not found")
+      case Some(mission) =>
+        if (request.user.getAllianceId().isEmpty || request.user.getAllianceId().get != mission.allianceId) {
+          BadRequest(s"User ${request.user} should not attempt to load mission ${mission}")
+        } else {
+          val weeklyValues = AllianceSource.loadAllianceMissionStatsByCriteria(
+            List(("alliance", "=", mission.allianceId),
+              ("cycle", ">=", mission.startCycle + AllianceMissionSimulation.SELECTION_DURATION),
+              ("cycle", "<=", mission.endCycle))).sortBy(_.cycle).map { stats =>
+            val weeklyValue = mission.getValueFromStats(stats)
+            weeklyValue
+          }
+          var result = Json.obj("stats" -> weeklyValues)
+          mission.properties.get("threshold").foreach { threshold =>
+            result = result + ("threshold" -> JsNumber(threshold))
+          }
+          Ok(result)
+        }
+    }
+  }
+
 }

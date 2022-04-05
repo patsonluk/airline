@@ -230,6 +230,33 @@ object AllianceMissionSource {
     }
   }
 
+  def loadPropertyHistoryByRange(missionId : Int, fromCycle : Int, toCycle : Int) : List[AllianceMissionPropertiesHistory] = {
+    val queryString = s"SELECT * FROM $ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE where mission = ? AND cycle >= ? AND cycle <= ?";
+
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(queryString)
+      preparedStatement.setInt(1, missionId)
+      preparedStatement.setInt(2, fromCycle)
+      preparedStatement.setInt(3, toCycle)
+
+      val resultSet = preparedStatement.executeQuery()
+      val resultByCycle = mutable.Map[Int, mutable.Map[String, Long]]()
+      while (resultSet.next()) {
+        val cycle = resultSet.getInt("cycle")
+        val propertyKey = resultSet.getString("property")
+        val value = resultSet.getLong("value")
+        resultByCycle.getOrElseUpdate(cycle, mutable.Map[String, Long]()).put(propertyKey, value)
+      }
+
+      resultByCycle.toList.sortBy(_._1).map {
+        case (cycle, properties) => AllianceMissionPropertiesHistory(missionId, properties.toMap, cycle)
+      }
+    } finally {
+      connection.close()
+    }
+  }
+
 
 
   def saveAllianceMissionPropertiesHistory(entries : List[AllianceMissionPropertiesHistory]) = {

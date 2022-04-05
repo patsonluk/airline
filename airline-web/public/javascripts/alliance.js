@@ -866,6 +866,8 @@ function showAllianceMemberDetails(allianceMember) {
 }
 
 function showAllianceMissionModal(candidates, selectedMission) {
+    $('#allianceMissionModal .missionStatsGraph').hide()
+
     //update phase icons
     var phase
     var tillNextPhase
@@ -947,6 +949,24 @@ function showAllianceMissionModal(candidates, selectedMission) {
                 }
             }
         })
+        if (phase >= 2) { //only show stats graph if in progress
+            var url = "airlines/" + activeAirline.id + "/mission-stats/" + selectedMission.id
+            	$.ajax({
+            		type: 'GET',
+            		url: url,
+            		contentType: 'application/json; charset=utf-8',
+            	    dataType: 'json',
+            	    success: function(result) {
+            	        plotMissionStatsGraph(result.stats, result.threshold, $('#allianceMissionModal .missionStatsGraph'))
+            	    	$('#allianceMissionModal .missionStatsGraph').show()
+            	    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(JSON.stringify(jqXHR));
+                        console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            	    }
+            	});
+        }
+
         showAllianceMissionRewards(selectedMission.potentialRewards, selectedMission.progress >= 100)
 
     } else {

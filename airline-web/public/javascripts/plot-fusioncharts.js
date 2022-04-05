@@ -1182,6 +1182,66 @@ function plotLoyalistHistoryChart(loyalistHistory, container) {
 	})
 }
 
+function plotMissionStatsGraph(stats, threshold, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+
+	var data = []
+	var category = []
+
+	$.each(stats, function(i, entry) {
+		data.push({ value : entry })
+		category.push({ label : "week " + i})
+	})
+
+
+	var chartConfig = {
+                      	    		"xAxisname": "Week",
+                      	    		"yAxisName": "Achieved Value",
+                      	    		"useroundedges": "1",
+                      	    		"animation": "1",
+                      	    		"showBorder":"0",
+                      	    		"showValues": "0",
+                                      "toolTipBorderRadius": "2",
+                                      "toolTipPadding": "5",
+                                      "bgAlpha":"0",
+                                      "drawAnchors": "0",
+                                      "setAdaptiveYMin":"1",
+                                      "labelStep": "10"
+                      	    	}
+    checkDarkTheme(chartConfig)
+
+    var dataSource = {
+                        "chart": chartConfig,
+                        "categories" : [{ "category" : category}],
+                        "dataset" : [{ "seriesname": "Value", "data" : data}],
+                    }
+    if (threshold) {
+        dataSource["trendlines"] = [{
+                             	            "line": [
+                             	                {
+                             	                    "startvalue": threshold,
+                             	                    "color": "#A1D490",
+                             	                    "displayvalue": "Threshold",
+                             	                    "valueOnRight": "1",
+                             	                    "thickness": "2"
+                             	                }
+                             	            ]
+                             	        }]
+    }
+
+	var chart = container.insertFusionCharts({
+		type: 'msline',
+	    width: '100%',
+	    height: '100%',
+	    containerBackgroundOpacity :'0',
+	    dataFormat: 'json',
+		dataSource: dataSource
+	})
+}
+
+
 function checkDarkTheme(chartConfig, keepPallette) {
     if (document.documentElement.getAttribute("data-theme") === "dark") {
     //if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -1209,3 +1269,4 @@ function checkDarkTheme(chartConfig, keepPallette) {
     //                "legendIconBorderThickness": "3"
     }
 }
+
