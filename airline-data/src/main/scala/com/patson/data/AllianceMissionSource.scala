@@ -9,9 +9,6 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 object AllianceMissionSource {
-  def savePickedRewardOption(missionId : Int, airlineId : Int, reward : AllianceMissionReward) : Unit = ???
-
-
   val blueprintQueryColumns = List("airport", "mission_type", "id")
 
   def loadAllianceMissionsByAllianceId(allianceId : Int) = {
@@ -298,13 +295,13 @@ object AllianceMissionSource {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      val statement = connection.prepareStatement(s"" +
-        s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
+      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type, available, claimed) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       options.foreach { option =>
         statement.setInt(1, option.missionId)
         statement.setString(2, option.rewardType.toString)
+        statement.setBoolean(3, option.available)
+        statement.setBoolean(4, option.claimed)
         statement.executeUpdate()
-        statement.close()
 
         val generatedKeys = statement.getGeneratedKeys
         if (generatedKeys.next()) {
@@ -312,10 +309,12 @@ object AllianceMissionSource {
           option.id = generatedId
         }
       }
+      statement.close()
       connection.commit()
 
+      val propertiesStatement = connection.prepareStatement(s"REPLACE INTO $ALLIANCE_MISSION_REWARD_PROPERTY_TABLE (reward, property, value) VALUES(?,?,?)")
+
       options.foreach { option =>
-        val propertiesStatement = connection.prepareStatement(s"REPLACE INTO $ALLIANCE_MISSION_REWARD_PROPERTY_TABLE (reward, property, value) VALUES(?,?,?)")
         option.properties.foreach {
           case (property, value) =>
             propertiesStatement.setInt(1, option.id)
@@ -323,9 +322,25 @@ object AllianceMissionSource {
             propertiesStatement.setLong(3, value)
             propertiesStatement.executeUpdate()
         }
-        propertiesStatement.close()
       }
+      propertiesStatement.close()
+      connection.commit()
 
+    } finally {
+      connection.close()
+    }
+  }
+
+  def updateRewardOption(option : AllianceMissionReward) = {
+    val connection = Meta.getConnection()
+    try {
+      val statement = connection.prepareStatement(s"UPDATE $ALLIANCE_MISSION_REWARD_TABLE SET available = ?, claimed = ? WHERE id = ?")
+      statement.setBoolean(1, option.available)
+      statement.setBoolean(2, option.claimed)
+      statement.setInt(3, option.id)
+      statement.executeUpdate()
+
+      statement.close()
     } finally {
       connection.close()
     }
@@ -339,7 +354,6 @@ object AllianceMissionSource {
       preparedStatement.setInt(1, missionId)
 
       val resultSet = preparedStatement.executeQuery()
-      preparedStatement.close()
       val options = ListBuffer[AllianceMissionReward]()
 
 
@@ -347,18 +361,21 @@ object AllianceMissionSource {
         val rewardType = RewardType.withName(resultSet.getString("reward_type"))
         val missionId = resultSet.getInt("mission")
         val rewardId = resultSet.getInt("id")
+        val available = resultSet.getBoolean("available")
+        val claimed = resultSet.getBoolean("claimed")
 
         val properties = mutable.HashMap[String, Long]()
         val propertiesStatement = connection.prepareStatement(s"SELECT * FROM $ALLIANCE_MISSION_REWARD_PROPERTY_TABLE WHERE reward = ?")
         propertiesStatement.setInt(1, rewardId)
         val propertiesResultSet = propertiesStatement.executeQuery()
-        propertiesStatement.close()
         while (propertiesResultSet.next()) {
           properties.put(propertiesResultSet.getString("property"), propertiesResultSet.getLong("value"))
         }
+        propertiesStatement.close()
 
-        options += AllianceMissionReward.buildMissionReward(missionId, rewardType, properties.toMap, rewardId)
+        options += AllianceMissionReward.buildMissionReward(missionId, rewardType, available, claimed, properties.toMap, rewardId)
       }
+      preparedStatement.close()
 
       options.toList
     } finally {

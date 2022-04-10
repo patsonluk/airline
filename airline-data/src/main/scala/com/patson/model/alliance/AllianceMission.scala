@@ -431,27 +431,38 @@ object RewardType extends Enumeration {
 
 abstract class AllianceMissionReward() extends IdObject {
   def rewardType : RewardType.Value
+
   def missionId : Int
-  def apply(mission: AllianceMission, airline : Airline): Unit = {
-    applyReward(airline)
-    AllianceMissionSource.savePickedRewardOption(mission.id, airline.id, this)
+
+  def apply(mission : AllianceMission, airline : Airline) : Unit = {
+    if (!claimed && available) {
+      applyReward(airline)
+      this.claimed = true
+      AllianceMissionSource.updateRewardOption(this)
+    }
   }
+
   protected def applyReward(airline : Airline)
 
   val description : String
   var id : Int
   val properties : Map[String, Long]
+  var available : Boolean = false
+  var claimed : Boolean = false
 }
 
 object AllianceMissionReward {
-  def buildMissionReward(missionId : Int, rewardType: RewardType.Value, properties : Map[String, Long], id : Int) : AllianceMissionReward = {
+  def buildMissionReward(missionId : Int, rewardType: RewardType.Value, available : Boolean, claimed : Boolean, properties : Map[String, Long], id : Int) : AllianceMissionReward = {
     import RewardType._
-    rewardType match {
+    val reward = rewardType match {
       case CASH => CashReward(missionId, properties, id)
 //      case LOYALTY => ???
 //      case REPUTATION => ???
       case DELEGATE => DelegateReward(missionId, properties, id)
     }
+    reward.available = available
+    reward.claimed = claimed
+    reward
   }
 
   def generateMissionRewardOptions(missionId : Int, completionFactor : Double, difficulty: Int) : List[AllianceMissionReward] = {

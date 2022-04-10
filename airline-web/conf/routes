@@ -144,6 +144,7 @@ PUT	 	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAsse
 DELETE	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.deleteAirportAsset(airlineId : Int, assetId : Int)
 GET	 	 /airlines/:airlineId/select-alliance-mission/:missionId	      controllers.AllianceMissionApplication.selectAllianceMission(airlineId : Int, missionId : Int)
 GET      /airlines/:airlineId/mission-stats/:missionId      controllers.AllianceMissionApplication.getAllianceMissionStats(airlineId : Int, missionId : Int)
+GET	 	 /airlines/:airlineId/select-alliance-mission-reward/:missionId/:rewardId	      controllers.AllianceMissionApplication.selectAllianceMissionReward(airlineId : Int, missionId : Int, rewardId : Int)
 
 GET	 	 /airport-asset/:assetId	      controllers.AirportAssetApplication.getAirportAssetDetailsWithoutAirline(assetId : Int)
 

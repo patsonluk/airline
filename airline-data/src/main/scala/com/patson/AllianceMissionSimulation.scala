@@ -3,7 +3,8 @@ package com.patson
 import com.patson.data.{AirportSource, AllianceMissionSource, AllianceSource, CycleSource, EventSource, LinkStatisticsSource}
 import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVoteWithWeight, OlympicsVoteRound}
 import com.patson.model._
-import com.patson.model.alliance.{AllianceMission, AllianceMissionPropertiesHistory, AllianceMissionReward, AllianceMissionStatus, AllianceStats}
+import com.patson.model.alliance.{AllianceMission, AllianceMissionPropertiesHistory, AllianceMissionReward, AllianceMissionStatus, AllianceMissionType, AllianceStats, TotalLoungeVisitMission, TotalPaxMission}
+import com.patson.util.AllianceCache
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.{MapView, mutable}
@@ -25,17 +26,36 @@ object AllianceMissionSimulation {
   val MAX_MISSION_CANDIDATES = 3 //how many options
 
   def main(args : Array[String]) : Unit = {
-    AllianceMissionSource.deleteAllianceMissionsByCutoff(0)
+    val startCycle = CycleSource.loadCycle() - MISSION_DURATION
+    AllianceMissionSource.deleteAllianceMissionsByCutoff(CycleSource.loadCycle())
 
-    simulate(1, Map.empty, Map.empty)
+    val initStats = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED).map { alliance =>
+      (alliance.id, AllianceStats.empty(alliance, 1))
+    }.toMap
+    simulate(startCycle, initStats, initStats)
 
-    for (i <- 1 + SELECTION_DURATION until (1 + MISSION_DURATION)) {
-      simulate(i, Map.empty, Map.empty)
+    //select LOUNGE mission for test
+    AllianceMissionSource.loadAllianceMissionsByCriteria(List.empty).filter(_.missionType == AllianceMissionType.TOTAL_LOUNGE_VISIT).foreach { mission =>
+      mission.status = AllianceMissionStatus.SELECTED
+      AllianceMissionSource.updateAllianceMission(mission)
+      println(mission)
+    }
+
+    for (i <- startCycle + SELECTION_DURATION until (startCycle + MISSION_DURATION)) {
+      val stats =
+      AllianceMissionSource.loadAllianceMissionsByCriteria(List("status" -> "IN_PROGRESS")).map {
+        case mission : TotalLoungeVisitMission =>
+          println(mission)
+          val stats = AllianceStats.empty(AllianceCache.getAlliance(mission.allianceId).get, i).copy(totalLoungeVisit = mission.threshold)
+          (mission.allianceId, stats)
+        case mission => (mission.allianceId, AllianceStats.empty(AllianceCache.getAlliance(mission.allianceId).get, i))
+      }.toMap
+      simulate(i, stats, stats)
       println(i)
     }
-    simulate(1 + MISSION_DURATION, Map.empty, Map.empty)
 
-
+    val finishCycle = startCycle + MISSION_DURATION
+    simulate(finishCycle, Map.empty, Map.empty)
   }
 
   def cycleToNextPhase(mission: AllianceMission, currentCycle : Int) = { //remaining duration until next phase
@@ -56,7 +76,7 @@ object AllianceMissionSimulation {
 
 //    EventSource.deleteEventsBeforeCycle(CycleSource.loadCycle() - MAX_HISTORY_DURATION)
     //find missions (could be candidates) within mission duration
-    val validMissionByAllianceId : Map[Int, List[AllianceMission]] = AllianceMissionSource.loadAllianceMissionsAfterCutoff(cycle - MISSION_DURATION).groupBy(_.allianceId)
+    val validMissionByAllianceId : Map[Int, List[AllianceMission]] = AllianceMissionSource.loadAllianceMissionsAfterCutoff(cycle - MISSION_DURATION + 1).groupBy(_.allianceId)
 
     import com.patson.model.alliance.AllianceMissionStatus._
     //get alliance stats
@@ -116,6 +136,7 @@ object AllianceMissionSimulation {
     val result = mission.isSuccessful(finalProgress)
     if (result.isSuccessful) { //generate reward options
       val options = AllianceMissionReward.generateMissionRewardOptions(mission.id, result.completionFactor, mission.difficulty)
+      options.foreach(_.available = true)
       AllianceMissionSource.saveRewardOptions(options)
     }
     mission.status = AllianceMissionStatus.CONCLUDED

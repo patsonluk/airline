@@ -107,7 +107,9 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         if (allianceMember.role != AllianceRole.APPLICANT) {
           AllianceCache.getAlliance(allianceMember.allianceId).foreach { alliance =>
             if (alliance.status == AllianceStatus.ESTABLISHED) {
-              result = result ++ AllianceMissionUtil.buildMissionJson(allianceMember.allianceId)
+              result = result +
+                ("current" -> AllianceMissionUtil.buildCurrentMissionJson(allianceMember)) +
+                ("previous" -> AllianceMissionUtil.buildPreviousMissionJson(allianceMember))
             }
           }
         }
@@ -459,7 +461,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                          case Some(rejection) => BadRequest(rejection) //confirm once more as there could be other approved applicant now with conflicting base
                          case None =>
                            //OK ..adding
-                           AllianceSource.saveAllianceMember(allianceMember.copy(role = MEMBER))
+                           AllianceSource.saveAllianceMember(allianceMember.copy(role = MEMBER, joinedCycle = currentCycle))
                            AllianceSource.saveAllianceHistory(AllianceHistory(allianceName = alliance.name, airline = allianceMember.airline, event = JOIN_ALLIANCE, cycle = currentCycle))
 
                            Ok(Json.toJson(allianceMember))

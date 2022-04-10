@@ -115,7 +115,7 @@ function loadCurrentAirlineMemberDetails() {
     	    $('#currentAirlineMemberDetails .stats .value').text('-')
     	}
 
-        updateAllianceMission(allianceDetails.missionCandidates, allianceDetails.selectedMission)
+        updateAllianceMission(allianceDetails.current, allianceDetails.previous, allianceDetails.isAdmin)
 
     	
     	$('#currentAirlineAllianceHistory').children("div.table-row").remove()
@@ -131,22 +131,31 @@ function loadCurrentAirlineMemberDetails() {
 	})
 }
 
-function updateAllianceMission(missionCandidates, selectedMission) {
-	if (selectedMission) {
-        $('#currentAirlineMemberDetails .mission .description').text(selectedMission.description)
-        $('#currentAirlineMemberDetails .mission .progress').text(selectedMission.progress + "%")
-        $('#currentAirlineMemberDetails .mission .status').text(selectedMission.statusText)
+function updateAllianceMission(current, previous, isAdmin) {
+    if (current.selectedMission) {
+        $('#currentAirlineMemberDetails .mission .description').text(current.selectedMission.description)
+        $('#currentAirlineMemberDetails .mission .progress').text(current.selectedMission.progress + "%")
+        $('#currentAirlineMemberDetails .mission .status').text(current.selectedMission.statusText)
     } else {
         $('#currentAirlineMemberDetails .mission .value').text('-')
     }
 
-    if (missionCandidates && missionCandidates.length > 0) {
-        $('#currentAirlineMemberDetails .button.missionDetails').show()
-        $('#currentAirlineMemberDetails .button.missionDetails').unbind('click').bind('click', function() {
-            showAllianceMissionModal(missionCandidates, selectedMission)
+    if (current.missionCandidates && current.missionCandidates.length > 0) {
+        $('#currentAirlineMemberDetails .button.currentMission').show()
+        $('#currentAirlineMemberDetails .button.currentMission').unbind('click').bind('click', function() {
+            showAllianceMissionModal(current.missionCandidates, current.selectedMission, isAdmin)
         })
     } else {
-        $('#currentAirlineMemberDetails .button.missionDetails').hide()
+        $('#currentAirlineMemberDetails .button.currentMission').hide()
+    }
+
+    if (previous.missionCandidates && previous.selectedMission) {
+        $('#currentAirlineMemberDetails .button.previousMission').show()
+        $('#currentAirlineMemberDetails .button.previousMission').unbind('click').bind('click', function() {
+            showAllianceMissionModal(previous.missionCandidates, previous.selectedMission, isAdmin)
+        })
+    } else {
+        $('#currentAirlineMemberDetails .button.previousMission').hide()
     }
 }
 
@@ -865,7 +874,7 @@ function showAllianceMemberDetails(allianceMember) {
     $("#allianceMemberModal").fadeIn(200)
 }
 
-function showAllianceMissionModal(candidates, selectedMission) {
+function showAllianceMissionModal(candidates, selectedMission, isAdmin) {
     $('#allianceMissionModal .missionStatsGraph').hide()
 
     //update phase icons
@@ -897,13 +906,18 @@ function showAllianceMissionModal(candidates, selectedMission) {
         var $candidateDiv = $('<div style="margin: 5px; padding: 10px; border-radius: 0.5em;">' + candidate.description + '</div>').appendTo($('#allianceMissionModal .allianceMissionCandidates'))
         var $checkButton = $('<div class="round-button tick" style="margin-right: 10px;"></div>')
         if (phase == 1) {
-            $checkButton.bind("click", function(){
-                selectAllianceMission(candidate, function(result) {
-                    $('#allianceMissionModal .allianceMissionCandidates .selected').removeClass("selected")
-                    updateAllianceMission(result.missionCandidates, result.selectedMission)
-                    showAllianceMissionModal(result.missionCandidates, result.selectedMission)
+            if (isAdmin) {
+                $checkButton.bind("click", function(){
+                    selectAllianceMission(candidate, function(result) {
+                        $('#allianceMissionModal .allianceMissionCandidates .selected').removeClass("selected")
+                        updateAllianceMission(result.current, result.previous, result.isAdmin)
+                        showAllianceMissionModal(result.current.candidates, result.current.selectedMission, result.isAdmin)
+                    })
                 })
-            })
+            } else {
+                $checkButton.addClass('disabled')
+                $checkButton.prop('title', 'Only admins can select mission for alliance')
+            }
         } else {
             $checkButton.addClass('disabled')
         }
@@ -967,7 +981,7 @@ function showAllianceMissionModal(candidates, selectedMission) {
             	});
         }
 
-        showAllianceMissionRewards(selectedMission.potentialRewards, selectedMission.progress >= 100)
+        showAllianceMissionRewards(selectedMission.id, selectedMission.potentialRewards, selectedMission.progress >= 100, phase)
 
     } else {
         $('#allianceMissionModal .mission .value').text('-')
@@ -975,24 +989,64 @@ function showAllianceMissionModal(candidates, selectedMission) {
         //$('#allianceMissionModal .allianceMissionCandidates').hide()
     }
 
+    if (phase < 3) {
+        $('#allianceMissionModal .phase[data-phase="3"] .description').text("Potential Rewards")
+    } else {
+        var description = selectedMission.progress >= 100 ? "Successful" : "Failed"
+        $('#allianceMissionModal .phase[data-phase="3"] .description').text(description)
+    }
+
     $("#allianceMissionModal").fadeIn(200)
 }
 
-function showAllianceMissionRewards(rewards, isSuccessful) {
+function showAllianceMissionRewards(missionId, rewards, isSuccessful, phase) {
     $('#allianceMissionModal .allianceMissionRewards').empty()
     $.each(rewards, function(index, reward) {
         var $rewardDiv = $('<div class="section">' + reward.description + '</div>')
         $rewardDiv.data("id", reward.id)
         $lockStatusImg = $("<img>")
         if (isSuccessful) {
-            $lockStatusImg.attr('src', 'assets/images/icons/unlock-tick.png')
-            $lockStatusImg.attr('title', 'Unlocked')
+            if (reward.isAvailable) {
+                $lockStatusImg.attr('src', 'assets/images/icons/unlock-tick.png')
+                $lockStatusImg.attr('title', 'Unlocked')
+            } else {
+                if (reward.isClaimed) {
+                    $lockStatusImg.attr('src', 'assets/images/icons/tick.png')
+                    $lockStatusImg.attr('title', 'Claimed')
+                } else {
+                    $lockStatusImg.attr('src', 'assets/images/icons/cross.png')
+                    $lockStatusImg.attr('title', 'Not selected')
+                }
+            }
         } else {
             $lockStatusImg.attr('src', 'assets/images/icons/lock.png')
             $lockStatusImg.attr('title', 'Not yet unlocked')
         }
 
         $rewardDiv.prepend($lockStatusImg)
+        if (phase >= 3 && reward.isAvailable) {
+            $rewardDiv.addClass("clickable")
+            $rewardDiv.bind("click", function() {
+                promptConfirm("Do you want to claim this reward?", function() {
+                    var url = "airlines/" + activeAirline.id + "/select-alliance-mission-reward/" + missionId + "/" + reward.id
+                    $.ajax({
+                        type: 'GET',
+                        url: url,
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        success: function(result) {
+                            updateAirlineInfo(activeAirline.id)
+                            loadCurrentAirlineMemberDetails()
+                            closeModal($("#allianceMissionModal"))
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(JSON.stringify(jqXHR));
+                            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                        }
+                    })
+                })
+            })
+        }
         $('#allianceMissionModal .allianceMissionRewards').append($rewardDiv)
     })
     $('#allianceMissionModal .allianceMissionRewards').show()

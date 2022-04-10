@@ -2,8 +2,9 @@ package controllers
 
 import com.patson.{AllianceMissionSimulation, AllianceSimulation}
 import com.patson.data.{AllianceMissionSource, AllianceSource, CycleSource}
+import com.patson.model.{AllianceMember, AllianceRole}
 import com.patson.model.alliance.{AirportRankingCount, AllianceMission, AllianceMissionReward, AllianceMissionStatus, AllianceStats}
-import play.api.libs.json.{JsNumber, JsObject, JsValue, Json, Writes}
+import play.api.libs.json.{JsBoolean, JsNumber, JsObject, JsValue, Json, Writes}
 
 object AllianceMissionUtil {
   implicit object AllianceStatsWrites extends Writes[AllianceStats] {
@@ -81,7 +82,44 @@ object AllianceMissionUtil {
     }
   }
 
-  def buildMissionJson(allianceId : Int): JsObject = {
+  def buildPreviousMissionJson(allianceMember : AllianceMember): JsObject = {
+    val allianceId = allianceMember.allianceId
+    val cycle = CycleSource.loadCycle()
+    val missionsByStartCycle : List[(Int, List[AllianceMission])] = AllianceMissionSource.loadAllianceMissionsAfterCutoff(allianceId, cycle - 2 * AllianceMissionSimulation.MISSION_DURATION).groupBy(_.startCycle).toList.sortBy(_._1)
+
+    if (missionsByStartCycle.length >= 2) {
+      var result = Json.obj()
+      val previousMissions = missionsByStartCycle(1)._2
+      var potentialMissions : List[AllianceMission] = previousMissions
+      previousMissions.filter(mission => mission.status != AllianceMissionStatus.CANDIDATE).foreach { selectedMission =>
+        var selectedMissionJson = Json.toJson(selectedMission).asInstanceOf[JsObject]
+        val progress = Math.max(selectedMission.progress(cycle).toDouble / 100, 1)
+
+        val includeRewards = AllianceRole.isAccepted(allianceMember.role) && allianceMember.joinedCycle < selectedMission.startCycle
+
+        if (includeRewards) {
+          var rewards = AllianceMissionSource.loadRewardOptions(selectedMission.id)
+          if (rewards.isEmpty) { //not successful, just use "generated" reward for display
+            rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, progress, selectedMission.difficulty)
+          }
+
+          selectedMissionJson = selectedMissionJson + ("potentialRewards" -> Json.toJson(rewards))
+        }
+
+        result = result + ("selectedMission" -> selectedMissionJson)
+        potentialMissions = potentialMissions :+ selectedMission
+        result = result + ("missionCandidates" -> Json.toJson(potentialMissions))
+      }
+      result
+    } else {
+      Json.obj()
+    }
+  }
+
+
+
+  def buildCurrentMissionJson(allianceMember : AllianceMember): JsObject = {
+    val allianceId = allianceMember.allianceId
     val cycle = CycleSource.loadCycle()
     val stats = AllianceSource.loadAllianceStatsByCycle(allianceId, cycle - 1)
     var result = Json.obj()
@@ -89,14 +127,23 @@ object AllianceMissionUtil {
 
     val missions = AllianceMissionSource.loadAllianceMissionsAfterCutoff(allianceId, cycle - AllianceMissionSimulation.MISSION_DURATION)
 
-    var potentialMissions : List[AllianceMission] = missions.filter(_.status == AllianceMissionStatus.CANDIDATE)
-    missions.filter(mission => mission.status == AllianceMissionStatus.IN_PROGRESS || mission.status == AllianceMissionStatus.SELECTED).foreach { selectedMission =>
+    var potentialMissions : List[AllianceMission] = missions
+    missions.filter(mission => mission.status != AllianceMissionStatus.CANDIDATE).foreach { selectedMission =>
       var selectedMissionJson = Json.toJson(selectedMission).asInstanceOf[JsObject]
       val progress = Math.max(selectedMission.progress(cycle).toDouble / 100, 1)
-      selectedMissionJson = selectedMissionJson + ("potentialRewards" -> Json.toJson(AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, progress, selectedMission.difficulty)))
+
+      val includeRewards = AllianceRole.isAccepted(allianceMember.role) && allianceMember.joinedCycle < selectedMission.startCycle
+
+      if (includeRewards) {
+        var rewards = AllianceMissionSource.loadRewardOptions(selectedMission.id)
+        if (rewards.isEmpty) { //nothing saved yet. Just use "generated" reward for display
+          rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, progress, selectedMission.difficulty)
+        }
+
+        selectedMissionJson = selectedMissionJson + ("potentialRewards" -> Json.toJson(rewards))
+      }
 
       result = result + ("selectedMission" -> selectedMissionJson)
-      potentialMissions = potentialMissions :+ selectedMission
     }
 
     var missionCandidatesJson = Json.arr()
@@ -112,6 +159,7 @@ object AllianceMissionUtil {
     }
 
     result = result + ("missionCandidates" -> missionCandidatesJson)
+    result = result + ("isAdmin" -> JsBoolean(AllianceRole.isAdmin(allianceMember.role)))
     result
   }
 }

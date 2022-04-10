@@ -818,7 +818,9 @@ package object controllers {
     def writes(reward : AllianceMissionReward) : JsValue = {
       Json.obj(
         "id" -> reward.id,
-        "description" -> reward.description
+        "description" -> reward.description,
+        "isClaimed" -> reward.claimed,
+        "isAvailable" -> reward.available,
       )
     }
   }

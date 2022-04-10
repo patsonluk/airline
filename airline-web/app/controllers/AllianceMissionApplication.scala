@@ -35,7 +35,7 @@ class AllianceMissionApplication @Inject()(cc: ControllerComponents) extends Abs
                   mission.status = AllianceMissionStatus.SELECTED
                   AllianceMissionSource.updateAllianceMission(mission)
 
-                  Ok(AllianceMissionUtil.buildMissionJson(allianceMember.allianceId))
+                  Ok(Json.obj("current" -> AllianceMissionUtil.buildCurrentMissionJson(allianceMember), "previous" -> AllianceMissionUtil.buildPreviousMissionJson(allianceMember)))
                 }
               }
         } else {
@@ -66,6 +66,45 @@ class AllianceMissionApplication @Inject()(cc: ControllerComponents) extends Abs
           }
           Ok(result)
         }
+    }
+  }
+
+  def selectAllianceMissionReward(airlineId : Int, missionId : Int, rewardId : Int) = AuthenticatedAirline(airlineId) { request =>
+    AllianceSource.loadAllianceMemberByAirline(request.user) match {
+      case Some(allianceMember) =>
+        if (!AllianceRole.isAccepted(allianceMember.role)) {
+          BadRequest(s"${request.user} is not an accepted member ${allianceMember}")
+        } else {
+          //verify it's the correct mission
+          AllianceMissionSource.loadAllianceMissionsById(missionId) match {
+            case None => NotFound(s"Mission with id $missionId not found")
+            case Some(mission) =>
+              if (mission.allianceId != allianceMember.allianceId) {
+                BadRequest(s"${request.user} tried to pick reward from another alliance mission ${mission}")
+              } else if (allianceMember.joinedCycle >= mission.startCycle) {
+                BadRequest(s"${request.user} tried to pick reward from alliance mission ${mission} but joined after start time ${allianceMember}")
+              } else {
+                val rewardOptions = AllianceMissionSource.loadRewardOptions(missionId)
+                rewardOptions.find(_.id == rewardId) match {
+                  case None => NotFound(s"$rewardId not found in mission ${mission}")
+                  case Some(reward) =>
+                    if (reward.claimed || !reward.available) {
+                      BadRequest(s"Bad reward status ${reward}")
+                    } else { //claim it!
+                      reward.apply(mission, request.user)
+                      //update available status
+                      rewardOptions.foreach { option =>
+                        option.available = false
+                        AllianceMissionSource.updateRewardOption(option)
+                      }
+                    }
+                    Ok(Json.toJson(rewardOptions))
+                }
+              }
+          }
+        }
+      case None =>
+        NotFound(s"Airline ${request.user} is not in an alliance, cannot select mission $missionId")
     }
   }
 
