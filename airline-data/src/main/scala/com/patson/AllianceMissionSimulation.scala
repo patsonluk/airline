@@ -26,7 +26,7 @@ object AllianceMissionSimulation {
   val MAX_MISSION_CANDIDATES = 3 //how many options
 
   def main(args : Array[String]) : Unit = {
-    val startCycle = CycleSource.loadCycle() - MISSION_DURATION
+    val startCycle = CycleSource.loadCycle() - MISSION_DURATION - 1
     AllianceMissionSource.deleteAllianceMissionsByCutoff(CycleSource.loadCycle())
 
     val initStats = AllianceSource.loadAllAlliances().filter(_.status == AllianceStatus.ESTABLISHED).map { alliance =>
@@ -55,7 +55,7 @@ object AllianceMissionSimulation {
     }
 
     val finishCycle = startCycle + MISSION_DURATION
-    simulate(finishCycle, Map.empty, Map.empty)
+    simulate(finishCycle, initStats, initStats)
   }
 
   def cycleToNextPhase(mission: AllianceMission, currentCycle : Int) = { //remaining duration until next phase
@@ -76,7 +76,7 @@ object AllianceMissionSimulation {
 
 //    EventSource.deleteEventsBeforeCycle(CycleSource.loadCycle() - MAX_HISTORY_DURATION)
     //find missions (could be candidates) within mission duration
-    val validMissionByAllianceId : Map[Int, List[AllianceMission]] = AllianceMissionSource.loadAllianceMissionsAfterCutoff(cycle - MISSION_DURATION + 1).groupBy(_.allianceId)
+    val validMissionByAllianceId : Map[Int, List[AllianceMission]] = AllianceMissionSource.loadAllianceMissionsAfterCutoff(cycle - MISSION_DURATION).groupBy(_.allianceId)
 
     import com.patson.model.alliance.AllianceMissionStatus._
     //get alliance stats

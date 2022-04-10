@@ -15,7 +15,7 @@ object AllianceSimulation {
   def simulate(cycle : Int, flightLinkResult : List[LinkConsumptionDetails], loungeResult : Map[Lounge, LoungeConsumptionDetails], airportChampionInfo : List[AirportChampionInfo], countryChampionInfo : List[CountryChampionInfo]) = {
     AllianceSource.deleteAllianceStatsBeforeCutoff(cycle - AllianceMissionSimulation.MAX_HISTORY_DURATION)
 
-    val activeMissions = AllianceMissionSource.loadAllianceMissionsByCriteria(List(("status", AllianceMissionStatus.IN_PROGRESS.toString)))
+    val activeMissions =  AllianceMissionSource.loadAllianceMissionsAfterCutoff(cycle - AllianceMissionSimulation.MISSION_DURATION)
 
     val eligibleAirlines = ListBuffer[Airline]() //only process airlines with active membership with established alliance
 

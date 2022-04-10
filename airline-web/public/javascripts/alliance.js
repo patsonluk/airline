@@ -876,6 +876,7 @@ function showAllianceMemberDetails(allianceMember) {
 
 function showAllianceMissionModal(candidates, selectedMission, isAdmin) {
     $('#allianceMissionModal .missionStatsGraph').hide()
+    $('#allianceMissionModal .allianceMissionRewards').empty()
 
     //update phase icons
     var phase
@@ -910,8 +911,8 @@ function showAllianceMissionModal(candidates, selectedMission, isAdmin) {
                 $checkButton.bind("click", function(){
                     selectAllianceMission(candidate, function(result) {
                         $('#allianceMissionModal .allianceMissionCandidates .selected').removeClass("selected")
-                        updateAllianceMission(result.current, result.previous, result.isAdmin)
-                        showAllianceMissionModal(result.current.candidates, result.current.selectedMission, result.isAdmin)
+                        updateAllianceMission(result.current, result.previous, true)
+                        showAllianceMissionModal(result.current.missionCandidates, result.current.selectedMission, true)
                     })
                 })
             } else {
@@ -1000,7 +1001,6 @@ function showAllianceMissionModal(candidates, selectedMission, isAdmin) {
 }
 
 function showAllianceMissionRewards(missionId, rewards, isSuccessful, phase) {
-    $('#allianceMissionModal .allianceMissionRewards').empty()
     $.each(rewards, function(index, reward) {
         var $rewardDiv = $('<div class="section">' + reward.description + '</div>')
         $rewardDiv.data("id", reward.id)

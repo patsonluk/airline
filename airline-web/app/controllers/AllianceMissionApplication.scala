@@ -35,7 +35,9 @@ class AllianceMissionApplication @Inject()(cc: ControllerComponents) extends Abs
                   mission.status = AllianceMissionStatus.SELECTED
                   AllianceMissionSource.updateAllianceMission(mission)
 
-                  Ok(Json.obj("current" -> AllianceMissionUtil.buildCurrentMissionJson(allianceMember), "previous" -> AllianceMissionUtil.buildPreviousMissionJson(allianceMember)))
+                  Ok(Json.obj(
+                    "current" -> AllianceMissionUtil.buildCurrentMissionJson(allianceMember),
+                    "previous" -> AllianceMissionUtil.buildPreviousMissionJson(allianceMember)))
                 }
               }
         } else {
