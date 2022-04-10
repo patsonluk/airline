@@ -2207,6 +2207,7 @@ object Meta {
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "mission INTEGER, " +
       "reward_type VARCHAR(256), " +
+      "available TINYINT(1), " +
       "claimed TINYINT(1), " +
       "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
