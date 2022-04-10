@@ -1006,7 +1006,7 @@ function showAllianceMissionRewards(missionId, rewards, isSuccessful, phase) {
         $rewardDiv.data("id", reward.id)
         $lockStatusImg = $("<img>")
         if (isSuccessful) {
-            if (reward.isAvailable) {
+            if (phase == 2 || reward.isAvailable) {
                 $lockStatusImg.attr('src', 'assets/images/icons/unlock-tick.png')
                 $lockStatusImg.attr('title', 'Unlocked')
             } else {
