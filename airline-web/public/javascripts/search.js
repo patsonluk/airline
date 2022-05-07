@@ -9,6 +9,11 @@ function showSearchCanvas() {
 	$("#searchCanvas").css("display", "flex")
 	highlightTab($('.searchCanvasTab'))
 	$("#routeSearchResult").empty()
+	if (isMobileDevice()) {
+	   $('#searchCanvas .banner').hide()
+	} else {
+	   showBanner()
+    }
 	$("#historySearchResult .table-row").empty()
 	$('#searchCanvas .searchContainer input').val('')
 	$('#searchCanvas .searchContainer input').removeData("selectedId")
@@ -22,6 +27,34 @@ function showSearchCanvas() {
     updateNavigationArrows(titlesContainer)
 
     initializeHistorySearch()
+}
+
+function showBanner() {
+    $.ajax({
+            type: 'GET',
+            url: "banner",
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(result) {
+                if (result.bannerUrl) {
+                    $('#searchCanvas .banner img').attr('src', result.bannerUrl)
+                    $('#searchCanvas .banner').show()
+                } else {
+                    $('#searchCanvas .banner').hide()
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(JSON.stringify(jqXHR));
+                    console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            },
+            beforeSend: function() {
+                $('body .loadingSpinner').show()
+            },
+            complete: function(){
+                $('body .loadingSpinner').hide()
+            }
+        });
+
 }
 
 function initializeHistorySearch() {
@@ -76,6 +109,7 @@ function searchFlight(fromAirportId, toAirportId) {
             dataType: 'json',
             success: function(searchResult) {
                 $("#routeSearchResult").empty()
+                $("#searchCanvas .banner").hide()
 
                 $.each(searchResult, function(index, entry) {
                     var itineraryDiv = $("<div class='section itinerary' onclick='toggleSearchLinkDetails($(this))'></div>")
