@@ -92,10 +92,12 @@ public class GooglePhotoUtil {
 
     private static Random random = new Random();
     public static String drawBannerUrl() {
-        if (bannerUrls.isEmpty()) {
-            return null;
-        } else {
-            return bannerUrls.get(random.nextInt(bannerUrls.size()));
+        synchronized (bannerUrls) {
+            if (bannerUrls.isEmpty()) {
+                return null;
+            } else {
+                return bannerUrls.get(random.nextInt(bannerUrls.size()));
+            }
         }
     }
 
