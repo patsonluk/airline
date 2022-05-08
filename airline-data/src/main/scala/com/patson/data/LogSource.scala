@@ -99,21 +99,23 @@ object LogSource {
       resultSet.beforeFirst()
 
       val propertiesById = HashMap[Int, HashMap[String, String]]()
-      val propertyStatement = connection.prepareStatement(s"SELECT * FROM $LOG_PROPERTY_TABLE WHERE log IN (${ids.mkString(",")})")
-      try {
-        val propertyResultSet = propertyStatement.executeQuery()
-        while (propertyResultSet.next()) {
-          val logId = propertyResultSet.getInt("log")
-          val property = propertyResultSet.getString("property")
-          val value = propertyResultSet.getString("value")
-          val properties = propertiesById.getOrElseUpdate(logId, HashMap())
-          properties.put(property, value)
+      if (!ids.isEmpty) {
+        val propertyStatement = connection.prepareStatement(s"SELECT * FROM $LOG_PROPERTY_TABLE WHERE log IN (${ids.mkString(",")})")
+        try {
+          val propertyResultSet = propertyStatement.executeQuery()
+          while (propertyResultSet.next()) {
+            val logId = propertyResultSet.getInt("log")
+            val property = propertyResultSet.getString("property")
+            val value = propertyResultSet.getString("value")
+            val properties = propertiesById.getOrElseUpdate(logId, HashMap())
+            properties.put(property, value)
+          }
+
+        } finally {
+          propertyStatement.close()
         }
 
-      } finally {
-        propertyStatement.close()
       }
-
 
 
       while (resultSet.next()) {
