@@ -37,7 +37,7 @@ function showBanner() {
             dataType: 'json',
             success: function(result) {
                 if (result.bannerUrl) {
-                    $('#searchCanvas .banner img').attr('src', result.bannerUrl)
+                    $('#searchCanvas .banner img').attr('src', result.bannerUrl + "=w" + $('#searchCanvas .banner').width())
                     $('#searchCanvas .banner').show()
                 } else {
                     $('#searchCanvas .banner').hide()
