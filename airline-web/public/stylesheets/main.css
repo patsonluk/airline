@@ -376,6 +376,10 @@ div.section.clickable:hover, div.section.clickable.selected {
   box-shadow: var(--table-header-selected-shadow);
 }
 
+div.banner {
+  box-shadow: var(--table-selected-row-shadow);
+}
+
 
 .table.colored div.table-row:nth-child(even){
     background-color: var(--table-even-row-background-color);
