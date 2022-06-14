@@ -202,8 +202,10 @@ function loadUser(isLogin) {
 	    		showFloatMessage("Incorrect username or password")
 	    	} else if (jqXHR.status == 400) {
 	    		showFloatMessage("Session expired. Please log in again")
+		} else if (jqXHR.status == 403) {
+	    		showFloatMessage("You have been banned for violating the game rules. Please contact admins on Discord for assistance.")
 	    	} else {
-	    	    showFloatMessage("Error logging in, error code " + jqXHR.status + ". Please contact admins on Discord for assistance.")
+	    	    showFloatMessage("Error logging in, error code " + jqXHR.status + ". Please try again. Contact admins on Discord if the issue persists.")
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    	}
