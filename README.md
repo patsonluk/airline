@@ -25,7 +25,7 @@ Version 2 alpha at https://v2.airline-club.com
 11. Open another terminal, navigate to `airline-web`, run the web server by `activator run`
 12. The application should be accessible at `localhost:9000`
 
-## Google image util
+## Banners
 For the banners to work properly, need to setup google photo API. Download the oauth json and put it under airline-web/conf. Then run the app, the log should show an oauth url, use it, then it should generate a token under airline-web/google-tokens. Now for server deployment, copy the oauth json `google-oauth-credentials.json` AND the google-tokens (as folder) to the airline-web. 
 
 
