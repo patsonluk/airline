@@ -2,6 +2,9 @@ To properly setup emails need to download the gmail credentials json and authori
 
 Then copy the credentials json and put it to `conf` folder with name `gmail-credentials.json` and copy the `tokens` to the app directory
 
+Similarly the banner uses google oauth. Need to authorize locally by downloading the credentals json as `google-oauth-credentials.json` to conf folder.
+Then invoke the main method of `GooglePhotoUtil`, watch console, it should give u a URL, click on it and it should bring you to authorize it. Afterwards copy the `google-tokens` to the app directory
+
 For google map api (for image search from server)
 
 set `google.apiKey` in `application.conf`

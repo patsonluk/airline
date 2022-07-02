@@ -14,8 +14,9 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-remote" % "2.5.32",
   "default" %% "airline-data" % "2.0",
   "com.google.api-client" % "google-api-client" % "1.30.4",
-  "com.google.oauth-client" % "google-oauth-client-jetty" % "1.30.4",
+  "com.google.oauth-client" % "google-oauth-client-jetty" % "1.34.1",
   "com.google.apis" % "google-api-services-gmail" % "v1-rev103-1.25.0",
+  "com.google.photos.library" % "google-photos-library-client" % "1.7.2",
   "javax.mail" % "javax.mail-api" % "1.6.2",
   "com.sun.mail" % "javax.mail" % "1.6.2"
 )
