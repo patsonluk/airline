@@ -28,7 +28,7 @@ Version 2 alpha at https://v2.airline-club.com
 ## Banners
 Self notes, too much trouble for other people to set it up right now. Just do NOT enable the banner.
 
-For the banners to work properly, need to setup google photo API. Download the oauth json and put it under airline-web/conf. Then run the app, the log should show an oauth url, use it, then it should generate a token under airline-web/google-tokens. Now for server deployment, copy the oauth json `google-oauth-credentials.json` AND the google-tokens (as folder) to the airline-web. 
+For the banners to work properly, need to setup google photo API. Download the oauth json and put it under airline-web/conf. Then run the app, the log should show an oauth url, use it, then it should generate a token under airline-web/google-tokens. Now for server deployment, copy the oauth json `google-oauth-credentials.json` to `conf` AND the google-tokens (as folder) to the root of `airline-web`. 
 
 
 ## Attribution
