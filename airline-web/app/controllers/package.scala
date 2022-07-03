@@ -799,13 +799,14 @@ package object controllers {
         case AllianceMissionStatus.CONCLUDED => s"Concluded"
       }
 
+      val historyCycle = Math.min(currentCycle - 1, allianceMission.endCycle)
 
       Json.obj(
         "id" -> allianceMission.id,
         "description" -> allianceMission.description,
-        "stats" -> allianceMission.stats(currentCycle - 1).properties,
+        "stats" -> allianceMission.stats(historyCycle).properties,
         "tillNextPhase" -> AllianceMissionSimulation.cycleToNextPhase(allianceMission, currentCycle),
-        "progress" -> allianceMission.progress(currentCycle - 1),
+        "progress" -> allianceMission.progress(historyCycle),
         "difficulty" -> allianceMission.difficulty,
         "statusText" -> statusText,
         "status" -> allianceMission.status.toString

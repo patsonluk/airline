@@ -55,7 +55,7 @@ abstract class AllianceMission() extends IdObject {
       None
     }
 
-  def progress(currentCycle : Int) : Int //percentage
+  def progress(cycle : Int) : Int //percentage
 
   def stats(cycle : Int) : AllianceMissionPropertiesHistory = {
     AllianceMissionSource.loadPropertyHistory(id, cycle)

@@ -20,14 +20,13 @@ object AllianceMissionUtil {
       var potentialMissions : List[AllianceMission] = previousMissions
       previousMissions.filter(mission => mission.status != AllianceMissionStatus.CANDIDATE).foreach { selectedMission =>
         var selectedMissionJson = Json.toJson(selectedMission).asInstanceOf[JsObject]
-        val progress = Math.max(selectedMission.progress(cycle).toDouble / 100, 1)
 
         val includeRewards = AllianceRole.isAccepted(allianceMember.role) && allianceMember.joinedCycle < selectedMission.startCycle
 
         if (includeRewards) {
           var rewards = AllianceMissionSource.loadRewardOptions(selectedMission.id, allianceMember.airline.id)
           if (rewards.isEmpty) { //not successful, just use "generated" reward for display
-            rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, allianceMember.airline.id,  progress, selectedMission.difficulty)
+            rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, allianceMember.airline.id,  1, selectedMission.difficulty)
           }
 
           selectedMissionJson = selectedMissionJson + ("potentialRewards" -> Json.toJson(rewards))
@@ -56,14 +55,13 @@ object AllianceMissionUtil {
     var potentialMissions : List[AllianceMission] = missions
     missions.filter(mission => mission.status != AllianceMissionStatus.CANDIDATE).foreach { selectedMission =>
       var selectedMissionJson = Json.toJson(selectedMission).asInstanceOf[JsObject]
-      val progress = Math.max(selectedMission.progress(cycle).toDouble / 100, 1)
 
       val includeRewards = AllianceRole.isAccepted(allianceMember.role) && allianceMember.joinedCycle < selectedMission.startCycle
 
       if (includeRewards) {
         var rewards = AllianceMissionSource.loadRewardOptions(selectedMission.id, allianceMember.airline.id)
         if (rewards.isEmpty) { //nothing saved yet. Just use "generated" reward for display
-          rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, allianceMember.airline.id, progress, selectedMission.difficulty)
+          rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, allianceMember.airline.id, 1, selectedMission.difficulty)
         }
 
         selectedMissionJson = selectedMissionJson + ("potentialRewards" -> Json.toJson(rewards))
