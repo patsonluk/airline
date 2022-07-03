@@ -295,7 +295,7 @@ object AllianceMissionSource {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type, available, claimed) VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, airline, reward_type, available, claimed) VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       options.foreach { option =>
         statement.setInt(1, option.missionId)
         statement.setInt(2, option.airlineId)
