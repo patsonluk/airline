@@ -25,9 +25,9 @@ object AllianceMissionUtil {
         val includeRewards = AllianceRole.isAccepted(allianceMember.role) && allianceMember.joinedCycle < selectedMission.startCycle
 
         if (includeRewards) {
-          var rewards = AllianceMissionSource.loadRewardOptions(selectedMission.id)
+          var rewards = AllianceMissionSource.loadRewardOptions(selectedMission.id, allianceMember.airline.id)
           if (rewards.isEmpty) { //not successful, just use "generated" reward for display
-            rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, progress, selectedMission.difficulty)
+            rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, allianceMember.airline.id,  progress, selectedMission.difficulty)
           }
 
           selectedMissionJson = selectedMissionJson + ("potentialRewards" -> Json.toJson(rewards))
@@ -61,9 +61,9 @@ object AllianceMissionUtil {
       val includeRewards = AllianceRole.isAccepted(allianceMember.role) && allianceMember.joinedCycle < selectedMission.startCycle
 
       if (includeRewards) {
-        var rewards = AllianceMissionSource.loadRewardOptions(selectedMission.id)
+        var rewards = AllianceMissionSource.loadRewardOptions(selectedMission.id, allianceMember.airline.id)
         if (rewards.isEmpty) { //nothing saved yet. Just use "generated" reward for display
-          rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, progress, selectedMission.difficulty)
+          rewards = AllianceMissionReward.generateMissionRewardOptions(selectedMission.id, allianceMember.airline.id, progress, selectedMission.difficulty)
         }
 
         selectedMissionJson = selectedMissionJson + ("potentialRewards" -> Json.toJson(rewards))

@@ -86,7 +86,7 @@ class AllianceMissionApplication @Inject()(cc: ControllerComponents) extends Abs
               } else if (allianceMember.joinedCycle >= mission.startCycle) {
                 BadRequest(s"${request.user} tried to pick reward from alliance mission ${mission} but joined after start time ${allianceMember}")
               } else {
-                val rewardOptions = AllianceMissionSource.loadRewardOptions(missionId)
+                val rewardOptions = AllianceMissionSource.loadRewardOptions(missionId, airlineId)
                 rewardOptions.find(_.id == rewardId) match {
                   case None => NotFound(s"$rewardId not found in mission ${mission}")
                   case Some(reward) =>

@@ -295,12 +295,13 @@ object AllianceMissionSource {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type, available, claimed) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val statement = connection.prepareStatement(s"INSERT INTO $ALLIANCE_MISSION_REWARD_TABLE(mission, reward_type, available, claimed) VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
       options.foreach { option =>
         statement.setInt(1, option.missionId)
-        statement.setString(2, option.rewardType.toString)
-        statement.setBoolean(3, option.available)
-        statement.setBoolean(4, option.claimed)
+        statement.setInt(2, option.airlineId)
+        statement.setString(3, option.rewardType.toString)
+        statement.setBoolean(4, option.available)
+        statement.setBoolean(5, option.claimed)
         statement.executeUpdate()
 
         val generatedKeys = statement.getGeneratedKeys
@@ -346,12 +347,13 @@ object AllianceMissionSource {
     }
   }
 
-  def loadRewardOptions(missionId : Int) : List[AllianceMissionReward] = {
+  def loadRewardOptions(missionId : Int, airlineId : Int) : List[AllianceMissionReward] = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $ALLIANCE_MISSION_REWARD_TABLE WHERE mission = ?")
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $ALLIANCE_MISSION_REWARD_TABLE WHERE mission = ? AND airline = ?")
 
       preparedStatement.setInt(1, missionId)
+      preparedStatement.setInt(2, airlineId)
 
       val resultSet = preparedStatement.executeQuery()
       val options = ListBuffer[AllianceMissionReward]()
@@ -360,6 +362,7 @@ object AllianceMissionSource {
       while (resultSet.next()) {
         val rewardType = RewardType.withName(resultSet.getString("reward_type"))
         val missionId = resultSet.getInt("mission")
+        val airlineId = resultSet.getInt("airline")
         val rewardId = resultSet.getInt("id")
         val available = resultSet.getBoolean("available")
         val claimed = resultSet.getBoolean("claimed")
@@ -373,7 +376,7 @@ object AllianceMissionSource {
         }
         propertiesStatement.close()
 
-        options += AllianceMissionReward.buildMissionReward(missionId, rewardType, available, claimed, properties.toMap, rewardId)
+        options += AllianceMissionReward.buildMissionReward(missionId, airlineId, rewardType, available, claimed, properties.toMap, rewardId)
       }
       preparedStatement.close()
 

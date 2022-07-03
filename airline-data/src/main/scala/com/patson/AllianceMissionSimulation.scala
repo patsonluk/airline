@@ -15,11 +15,15 @@ object AllianceMissionSimulation {
   val MAX_HISTORY_DURATION = 40 * AllianceMission.WEEKS_PER_YEAR //40 years
 
 //  val SELECTION_DURATION = 1 * AllianceMission.WEEKS_PER_YEAR //1 year
-//  val MISSION_DURATION = 12 * AllianceMission.WEEKS_PER_YEAR// 11 years (first year is SELECTION)
+//  val ACTIVE_DURATION = 10 * AllianceMission.WEEKS_PER_YEAR// 10 years
 
   //TODO test
-  val SELECTION_DURATION = 8 // 4 weeks
-  val MISSION_DURATION = 8 + AllianceMission.WEEKS_PER_YEAR * 2// 1
+  val SELECTION_DURATION = 8 // 8 weeks
+  //val ACTIVE_DURATION = AllianceMission.WEEKS_PER_YEAR * 2// 2 years
+  val ACTIVE_DURATION = 20 // 20 weeks for test
+
+  val MISSION_DURATION = SELECTION_DURATION + ACTIVE_DURATION
+
 
   //END TODO
 
@@ -86,7 +90,7 @@ object AllianceMissionSimulation {
       validMissionByAllianceId.get(alliance.id) match {
         case None =>
           if (eligibleAllianceStats.contains(alliance.id)) {
-            generateMissionCandidates(eligibleAllianceStats(alliance.id), cycle, MISSION_DURATION)
+            generateMissionCandidates(eligibleAllianceStats(alliance.id), cycle)
           }
         case Some(validMissions) =>
           val inProgressMissions = validMissions.find(_.status == IN_PROGRESS) //should only be one for now
@@ -106,7 +110,7 @@ object AllianceMissionSimulation {
             if (cycle >= activeMission.endCycle) { //the mission is over
               concludeMission(activeMission, currentProgress)
               if (eligibleAllianceStats.contains(alliance.id)) {
-                generateMissionCandidates(eligibleAllianceStats(alliance.id), cycle, MISSION_DURATION)
+                generateMissionCandidates(eligibleAllianceStats(alliance.id), cycle)
               }
             }
           }
@@ -114,9 +118,9 @@ object AllianceMissionSimulation {
     }
   }
 
-  def generateMissionCandidates(allianceStats : AllianceStats, startCycle : Int, duration : Int) = {
-    var candidateMissions = AllianceMission.generateMissionCandidates(allianceStats).map { candidate =>
-      AllianceMission.buildAllianceMission(candidate.missionType, startCycle, duration, allianceStats.alliance.id, AllianceMissionStatus.CANDIDATE, candidate.properties)
+  def generateMissionCandidates(allianceStats : AllianceStats, startCycle : Int) = {
+    var candidateMissions = AllianceMission.generateMissionCandidates(ACTIVE_DURATION, allianceStats).map { candidate =>
+      AllianceMission.buildAllianceMission(candidate.missionType, startCycle, MISSION_DURATION, allianceStats.alliance.id, AllianceMissionStatus.CANDIDATE, candidate.properties)
     }
 
     //randomly pick 3 mission types, and pick one for each type
@@ -135,9 +139,14 @@ object AllianceMissionSimulation {
   def concludeMission(mission : AllianceMission, finalProgress : AllianceMissionPropertiesHistory) = {
     val result = mission.isSuccessful(finalProgress)
     if (result.isSuccessful) { //generate reward options
-      val options = AllianceMissionReward.generateMissionRewardOptions(mission.id, result.completionFactor, mission.difficulty)
-      options.foreach(_.available = true)
-      AllianceMissionSource.saveRewardOptions(options)
+      AllianceCache.getAlliance(mission.allianceId).foreach { alliance =>
+        alliance.members.filter(member => AllianceRole.isAccepted(member.role) && member.joinedCycle <= mission.startCycle).map(_.airline).foreach { airline =>
+          val options = AllianceMissionReward.generateMissionRewardOptions(mission.id, airline.id, result.completionFactor, mission.difficulty)
+          options.foreach(_.available = true)
+          AllianceMissionSource.saveRewardOptions(options)
+        }
+      }
+
     }
     mission.status = AllianceMissionStatus.CONCLUDED
     AllianceMissionSource.updateAllianceMission(mission)

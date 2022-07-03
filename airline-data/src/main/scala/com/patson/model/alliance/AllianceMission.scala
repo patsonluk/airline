@@ -13,7 +13,7 @@ abstract class AllianceMission() extends IdObject {
   val allianceId : Int
   var status : AllianceMissionStatus.Value
   val endCycle = startCycle + duration
-  val properties: Map[String, Long]
+  val properties : Map[String, Long]
   val difficulty = properties("difficulty").toInt
   val description : String
 
@@ -21,11 +21,12 @@ abstract class AllianceMission() extends IdObject {
   var id : Int
 
   def updateStats(currentCycle : Int, newStats : AllianceStats) : AllianceMissionPropertiesHistory
-  def hasPendingRewards(currentCycle : Int) : Boolean = {
+
+  def hasPendingRewards(currentCycle : Int, airlineId : Int) : Boolean = {
     if (isActive(currentCycle)) { //still ongoing
       false
     } else {
-      pickedReward match {
+      pickedReward(airlineId) match {
         case Some(_) => //picked already
           false
         case None =>
@@ -37,19 +38,19 @@ abstract class AllianceMission() extends IdObject {
       }
     }
   }
+
   def getValueFromStats(stats : AllianceStats) : Long //which field in stats matter for this mission?
 
-  lazy val rewardOptions =
+  def rewardOptions(airlineId : Int) =
     if (status == AllianceMissionStatus.CONCLUDED) {
-      AllianceMissionSource.loadRewardOptions(id)
+      AllianceMissionSource.loadRewardOptions(id, airlineId)
     } else {
       List.empty
     }
-  lazy val pickedReward : Option[AllianceMissionReward] =
+
+  def pickedReward(airlineId : Int) : Option[AllianceMissionReward] =
     if (status == AllianceMissionStatus.CONCLUDED) {
-      properties.get("pickedReward").flatMap { pickedReward =>
-        rewardOptions.find(_.id == pickedReward.toInt)
-      }
+      AllianceMissionSource.loadRewardOptions(id, airlineId).find(_.claimed)
     } else {
       None
     }
@@ -123,6 +124,7 @@ abstract class DiscreteAllianceMission() extends AllianceMission {
   }
 }
 
+//Fulfill the threshold continuously for a duration N
 abstract class DurationAllianceMission() extends AllianceMission {
   val durationGoal = properties("goal")
   val threshold = properties("threshold")
@@ -154,6 +156,33 @@ abstract class DurationAllianceMission() extends AllianceMission {
   }
 }
 
+//Fulfill the thresholds by N months, does not have to be continuous
+abstract class HitCountAllianceMission() extends AllianceMission {
+  val hitCountGoal = properties("goal")
+  val threshold = properties("threshold")
+  override def updateStats(currentCycle : Int, newStats : AllianceStats): AllianceMissionPropertiesHistory = {
+    val history = AllianceMissionSource.loadPropertyHistory(id, currentCycle - 1).properties
+
+    var hitCount = history.getOrElse("hitCount", 0L)
+
+    val weeklyValue = getValueFromStats(newStats)
+    if (weeklyValue >= threshold) { //then successful this week
+      hitCount = hitCount + 1
+    }
+    val newHistory = AllianceMissionPropertiesHistory(id, Map("weeklyValue" -> weeklyValue, "hitCount" -> hitCount), currentCycle)
+    AllianceMissionSource.saveAllianceMissionPropertiesHistory(List(newHistory))
+    newHistory
+  }
+
+  override def progress(cycle : Int) = {
+    (AllianceMissionSource.loadPropertyHistory(id, cycle).properties.getOrElse("hitCount", 0L) * 100.0 / hitCountGoal).toInt
+  }
+
+  override def isSuccessful(finalProgress : AllianceMissionPropertiesHistory) = {
+    AllianceMissionResult(finalProgress.properties("hitCount").toDouble / hitCountGoal)
+  }
+}
+
 object AllianceMissionType extends Enumeration {
   type AllianceMissionType = Value
   val TOTAL_PAX, TOTAL_PREMIUM_PAX, TOTAL_LOUNGE_VISIT, AIRPORT_RANKING, COUNTRY_RANKING, CONTINENT_RANKING, TOTAL_REPUTATION, TOTAL_LOYALIST, SATISFACTION_FACTOR, TOTAL_REVENUE = Value
@@ -162,43 +191,43 @@ object AllianceMissionType extends Enumeration {
 import AllianceMissionType._
 import AllianceMission._
 
-case class TotalPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+case class TotalPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends HitCountAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_PAX
-  override val description = s"Transport >= ${formatter.format(threshold)} weekly PAX for $durationGoal consecutive weeks"
+  override val description = s"Transport >= ${formatter.format(threshold)} weekly PAX for at least $hitCountGoal weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalPax.total
 }
 
-case class TotalPremiumPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+case class TotalPremiumPaxMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends HitCountAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_PREMIUM_PAX
-  override val description = s"Transport >= ${formatter.format(threshold)} weekly Business and First class PAX for $durationGoal consecutive weeks"
+  override val description = s"Transport >= ${formatter.format(threshold)} weekly Business and First class PAX for at least $hitCountGoal weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalPax.firstVal + stats.totalPax.businessVal
 }
 
-case class TotalLoungeVisitMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+case class TotalLoungeVisitMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends HitCountAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_LOUNGE_VISIT
-  override val description = s"Welcome >= ${formatter.format(threshold)} weekly Lounge Visitors for $durationGoal consecutive weeks"
+  override val description = s"Welcome >= ${formatter.format(threshold)} weekly Lounge Visitors for at least $hitCountGoal weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalLoungeVisit
 }
 
-case class TotalLoyalistMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+case class TotalLoyalistMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends HitCountAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_LOYALIST
-  override val description = s"Maintain >= ${formatter.format(threshold)} Loyalists in all airports for $durationGoal consecutive weeks"
+  override val description = s"Maintain >= ${formatter.format(threshold)} Loyalists in all airports for at least $hitCountGoal weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalLoyalist
 }
 
-case class TotalRevenueMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+case class TotalRevenueMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends HitCountAllianceMission {
   override val missionType : AllianceMissionType.Value = TOTAL_REVENUE
-  override val description = s"Achieve >= ${formatter.format(threshold)} total weekly Alliance Revenue for $durationGoal consecutive weeks"
+  override val description = s"Achieve >= ${formatter.format(threshold)} total weekly Alliance Revenue for at least $hitCountGoal weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.totalRevenue
 }
 
 
-case class AirportRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+case class AirportRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends HitCountAllianceMission {
   override val missionType : AllianceMissionType.Value = AIRPORT_RANKING
   val rankingRequirement = properties.get("rankingRequirement") //for example if it's = 2, then only ranking 2 or above will be counted
   val scaleRequirement = properties.get("scaleRequirement") //airport size/scale requirement
@@ -211,12 +240,12 @@ case class AirportRankingMission(override val startCycle : Int, override val dur
     case Some(rank) => s"Rank $rank or above"
     case None => "Any reputation giving rank"
   }
-  override val description = s"Hold ${threshold} airports of ${scaleText} with $rankText for $durationGoal consecutive weeks"
+  override val description = s"Hold ${threshold} airports of ${scaleText} with $rankText for at least $hitCountGoal weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.airportRankingCount(rankingRequirement, scaleRequirement)
 }
 
-case class CountryRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends DurationAllianceMission {
+case class CountryRankingMission(override val startCycle : Int, override val duration : Int, override val allianceId : Int, override var status : AllianceMissionStatus.Value,  override val properties : Map[String, Long], var id : Int = 0) extends HitCountAllianceMission {
   override val missionType : AllianceMissionType.Value = COUNTRY_RANKING
   val rankingRequirement = properties.get("rankingRequirement")
   val populationRequirement = properties.get("populationRequirement")
@@ -229,7 +258,7 @@ case class CountryRankingMission(override val startCycle : Int, override val dur
     case Some(rank) => s"Rank $rank or above"
     case None => "Any reputation giving rank"
   }
-  override val description = s"Hold ${threshold} countries of ${populationText} with $rankText for $durationGoal consecutive weeks"
+  override val description = s"Hold ${threshold} countries of ${populationText} with $rankText for at least $hitCountGoal weeks"
 
   override def getValueFromStats(stats : AllianceStats) : Long = stats.countryRankingCount(rankingRequirement, populationRequirement)
 }
@@ -259,9 +288,9 @@ object AllianceMission {
   val WEEKS_PER_YEAR = 52
 
 
-  def generateMissionCandidates(allianceStats : AllianceStats) : List[AllianceMissionCandidate] = {
+  def generateMissionCandidates(activeDuration : Int, allianceStats : AllianceStats) : List[AllianceMissionCandidate] = {
     AllianceMissionType.values.toList.flatMap { missionType =>
-      val generateFunction : (AllianceMissionType.Value, AllianceStats) => List[AllianceMissionCandidate] = missionType match {
+      val generateFunction : (AllianceMissionType.Value, Int, AllianceStats) => List[AllianceMissionCandidate] = missionType match {
         case TOTAL_PAX => generateTotalPaxCandidates
         case TOTAL_PREMIUM_PAX =>generateTotalPremiumPaxCandidates
         case TOTAL_LOUNGE_VISIT => generateTotalLoungeVisitCandidates
@@ -273,12 +302,12 @@ object AllianceMission {
         case SATISFACTION_FACTOR => emptyGenerateMissionCandidates
         case TOTAL_REVENUE => generateTotalRevenueCandidates
       }
-      generateFunction(missionType, allianceStats)
+      generateFunction(missionType, activeDuration, allianceStats)
     }
   }
-  def emptyGenerateMissionCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = List.empty
+  def emptyGenerateMissionCandidates(missionType : AllianceMissionType.Value, duration : Int, allianceStats : AllianceStats) = List.empty
 
-  def generateTotalPaxCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+  def generateTotalPaxCandidates(missionType : AllianceMissionType.Value, activeDuration : Int, allianceStats : AllianceStats) = {
     val totalPax = allianceStats.totalPax.total
     val (target : Long, difficulty : Int) =
       if (totalPax < 10000) {
@@ -292,11 +321,11 @@ object AllianceMission {
       } else {
         ((totalPax * 1.08).toLong, 6)
       }
-    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)),
-         AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> (target * 1.1).toLong, "goal" -> 12, "difficulty" -> (difficulty.toLong + 1)))) //12 weeks
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> activeDuration / 10, "difficulty" -> difficulty.toLong)),
+         AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> (target * 1.1).toLong, "goal" -> activeDuration / 10, "difficulty" -> (difficulty.toLong + 1)))) //12 weeks
   }
 
-  def generateTotalPremiumPaxCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+  def generateTotalPremiumPaxCandidates(missionType : AllianceMissionType.Value, activeDuration : Int, allianceStats : AllianceStats) = {
     val totalPax = allianceStats.totalPax.businessVal + allianceStats.totalPax.firstVal
     val (target : Long, difficulty) =
       if (totalPax < 5000) {
@@ -310,10 +339,10 @@ object AllianceMission {
       } else {
         ((totalPax * 1.08).toLong, 7)
       }
-    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)))
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> activeDuration / 10, "difficulty" -> difficulty.toLong)))
   }
 
-  def generateTotalLoungeVisitCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+  def generateTotalLoungeVisitCandidates(missionType : AllianceMissionType.Value, activeDuration : Int, allianceStats : AllianceStats) = {
     val totalLoungeVisit = allianceStats.totalLoungeVisit
     val (target : Long, difficulty) =
       if (totalLoungeVisit < 2000) {
@@ -327,10 +356,10 @@ object AllianceMission {
       } else {
         ((totalLoungeVisit * 1.08).toLong, 7)
       }
-    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong)))
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> activeDuration / 10, "difficulty" -> difficulty.toLong)))
   }
 
-  def generateTotalRevenueCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+  def generateTotalRevenueCandidates(missionType : AllianceMissionType.Value, activeDuration : Int, allianceStats : AllianceStats) = {
     val totalRevenue = allianceStats.totalRevenue
     val (target : Long, difficulty) =
       if (totalRevenue < 10_000_000) {
@@ -344,10 +373,10 @@ object AllianceMission {
       } else {
         ((totalRevenue * 1.06).toLong, 5)
       }
-    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 12, "difficulty" -> difficulty.toLong))) //12 weeks
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> activeDuration / 10, "difficulty" -> difficulty.toLong))) //12 weeks
   }
 
-  def generateTotalLoyalistCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+  def generateTotalLoyalistCandidates(missionType : AllianceMissionType.Value, activeDuration : Int, allianceStats : AllianceStats) = {
     val totalLoyalist = allianceStats.totalLoyalist
     val (target : Long, difficulty) =
       if (totalLoyalist < 100_000) {
@@ -361,10 +390,10 @@ object AllianceMission {
       } else {
         ((totalLoyalist * 1.04).toLong, 8)
       }
-    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> 52, "difficulty" -> difficulty.toLong))) //a year
+    List(AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "goal" -> activeDuration / 5, "difficulty" -> difficulty.toLong))) //a year
   }
 
-  def generateCountryRankingCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+  def generateCountryRankingCandidates(missionType : AllianceMissionType.Value, activeDuration : Int, allianceStats : AllianceStats) = {
     val rankingRequirements = List(1, 2, 3)
     val candidates = rankingRequirements.flatMap { rankingRequirement =>
       var populationDifficulty = 1
@@ -381,14 +410,14 @@ object AllianceMission {
         }
         populationDifficulty += 1
         val difficulty = baseDifficulty + populationDifficulty + (3 - rankingRequirement)
-        AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "populationRequirement" -> populationRequirement, "rankingRequirement" -> rankingRequirement, "goal" -> 52, "difficulty" -> difficulty.toLong)) //a year
+        AllianceMissionCandidate(missionType, Map[String, Long]("threshold" -> target.toLong, "populationRequirement" -> populationRequirement, "rankingRequirement" -> rankingRequirement, "goal" -> activeDuration / 5, "difficulty" -> difficulty.toLong)) //a year
       }
     }
 
     candidates
   }
 
-  def generateAirportRankingCandidates(missionType : AllianceMissionType.Value, allianceStats : AllianceStats) = {
+  def generateAirportRankingCandidates(missionType : AllianceMissionType.Value, activeDuration : Int, allianceStats : AllianceStats) = {
     val rankingRequirements = List(1, 2, 3)
     val scaleRequirements = List(None, Some(3), Some(4), Some(5))
     val candidates = rankingRequirements.flatMap { rankingRequirement =>
@@ -404,7 +433,7 @@ object AllianceMission {
           }
         }
         val difficulty = baseDifficulty + scaleRequirement.getOrElse(0) + (3 - rankingRequirement)
-        var properties = Map[String, Long]("threshold" -> target.toLong, "rankingRequirement" -> rankingRequirement, "goal" -> 52, "difficulty" -> difficulty.toLong)  //a year
+        var properties = Map[String, Long]("threshold" -> target.toLong, "rankingRequirement" -> rankingRequirement, "goal" -> activeDuration / 5, "difficulty" -> difficulty.toLong)  //a year
         if (scaleRequirement.isDefined) {
           properties = properties + ("scaleRequirement" -> scaleRequirement.get)
         }
@@ -433,6 +462,7 @@ abstract class AllianceMissionReward() extends IdObject {
   def rewardType : RewardType.Value
 
   def missionId : Int
+  def airlineId : Int
 
   def apply(mission : AllianceMission, airline : Airline) : Unit = {
     if (!claimed && available) {
@@ -452,29 +482,29 @@ abstract class AllianceMissionReward() extends IdObject {
 }
 
 object AllianceMissionReward {
-  def buildMissionReward(missionId : Int, rewardType: RewardType.Value, available : Boolean, claimed : Boolean, properties : Map[String, Long], id : Int) : AllianceMissionReward = {
+  def buildMissionReward(missionId : Int, airlineId : Int, rewardType: RewardType.Value, available : Boolean, claimed : Boolean, properties : Map[String, Long], id : Int) : AllianceMissionReward = {
     import RewardType._
     val reward = rewardType match {
-      case CASH => CashReward(missionId, properties, id)
+      case CASH => CashReward(missionId, airlineId, properties, id)
 //      case LOYALTY => ???
 //      case REPUTATION => ???
-      case DELEGATE => DelegateReward(missionId, properties, id)
+      case DELEGATE => DelegateReward(missionId, airlineId, properties, id)
     }
     reward.available = available
     reward.claimed = claimed
     reward
   }
 
-  def generateMissionRewardOptions(missionId : Int, completionFactor : Double, difficulty: Int) : List[AllianceMissionReward] = {
+  def generateMissionRewardOptions(missionId : Int, airlineId : Int, completionFactor : Double, difficulty: Int) : List[AllianceMissionReward] = {
     import RewardType._
     val options = RewardType.values.toList.map {
       case CASH =>
         val amount = 10_000_000 * Math.min(3, completionFactor) * Math.pow(2, difficulty - 1)
-        CashReward(missionId, Map("amount" -> amount.toLong), 0)
+        CashReward(missionId, airlineId, Map("amount" -> amount.toLong), 0)
       case DELEGATE =>
         val extraBonus = Math.min(3, completionFactor.toInt - 1)
         val amount = difficulty + extraBonus
-        DelegateReward(missionId, Map("amount" -> amount.toLong, "duration" -> 10 * AllianceMission.WEEKS_PER_YEAR), 0)
+        DelegateReward(missionId, airlineId, Map("amount" -> amount.toLong, "duration" -> 10 * AllianceMission.WEEKS_PER_YEAR), 0)
     }
     options
   }
@@ -493,7 +523,7 @@ object AllianceMissionReward {
 //  override val description: String = s"+$LOYALTY_BONUS loyalty bonus on airports around the host city until the end of Olympics"
 //}
 
-case class CashReward(override val missionId: Int, override val properties : Map[String, Long], override var id : Int) extends AllianceMissionReward() {
+case class CashReward(override val missionId: Int, override val airlineId : Int, override val properties : Map[String, Long], override var id : Int) extends AllianceMissionReward() {
   override val rewardType = RewardType.CASH
 
   override def applyReward(airline : Airline) = {
@@ -504,7 +534,7 @@ case class CashReward(override val missionId: Int, override val properties : Map
   override val description: String = s"$$${java.text.NumberFormat.getIntegerInstance.format(properties("amount"))} cash reward"
 }
 
-case class DelegateReward(override val missionId: Int, override val properties : Map[String, Long], override var id : Int) extends AllianceMissionReward() {
+case class DelegateReward(override val missionId: Int, override val airlineId : Int, override val properties : Map[String, Long], override var id : Int) extends AllianceMissionReward() {
 
   override val rewardType = RewardType.DELEGATE
   val delegateAmount = properties("amount").toInt

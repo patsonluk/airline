@@ -2205,11 +2205,13 @@ object Meta {
 
     statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_REWARD_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "airline INTEGER, " +
       "mission INTEGER, " +
       "reward_type VARCHAR(256), " +
       "available TINYINT(1), " +
       "claimed TINYINT(1), " +
-      "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()
