@@ -56,7 +56,7 @@ object MainSimulation extends App {
 
       val (flightLinkResult, loungeResult, linkRidershipDetails) = LinkSimulation.linkSimulation(cycle)
       println("Airport simulation")
-      AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
+      val airportChampionInfo = AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
 
       println("Airport assets simulation")
       AirportAssetSimulation.simulate(cycle, linkRidershipDetails)
@@ -66,7 +66,10 @@ object MainSimulation extends App {
       println("Airline simulation")
       AirlineSimulation.airlineSimulation(cycle, flightLinkResult, loungeResult, airplanes)
       println("Country simulation")
-      CountrySimulation.simulate(cycle)
+      val countryChampionInfo = CountrySimulation.simulate(cycle)
+
+      println("Alliance simulation")
+      AllianceSimulation.simulate(cycle, flightLinkResult, loungeResult, airportChampionInfo, countryChampionInfo)
       println("Airplane model simulation")
       AirplaneModelSimulation.simulate(cycle)
 

@@ -43,7 +43,7 @@ object AirportSimulation {
 
     //update the loyalist on airports based on link consumption
     println("Adjust loyalist by link consumptions")
-    simulateLoyalists(allAirports, linkRidershipDetails, cycle)
+    val championInfo = simulateLoyalists(allAirports, linkRidershipDetails, cycle)
 
     //check whether lounge is still active
     updateLoungeStatus(allAirports, linkRidershipDetails)
@@ -56,6 +56,8 @@ object AirportSimulation {
     //airportProjectSimulation(allAirports)
 
     AirportSource.purgeAirlineAppealBonus(cycle)
+
+    championInfo
   }
 
   def simulateAwareness(allAirports : List[Airport], linksByFromAirportId : immutable.Map[Int, List[Link]], linksByToAirportId : immutable.Map[Int, List[Link]]) = {
@@ -203,6 +205,8 @@ object AirportSimulation {
       println(s"Saving ${historyEntries.length} loyalist history entries")
       LoyalistSource.updateLoyalistHistory(historyEntries)
     }
+
+    newInfo
   }
 
   val MAX_LOYALIST_FLIP_RATIO = 1

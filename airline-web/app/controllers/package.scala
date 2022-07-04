@@ -1,10 +1,11 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.patson.Util
+import com.patson.{AllianceMissionSimulation, Util}
 import com.patson.data._
 import com.patson.data.airplane._
 import com.patson.model.{AirlineBaseSpecialization, AirlineCashFlow, AirlineIncome, Computation, _}
 import com.patson.model.airplane._
+import com.patson.model.alliance.{AllianceMission, AllianceMissionStatus, AllianceMissionReward}
 import com.patson.model.event.EventReward
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo, ChampionUtil, CountryChampionInfo}
 import models.{AirportFacility, AirportWithChampion, FacilityType}
@@ -709,7 +710,7 @@ package object controllers {
 
   implicit object DelegateInfoWrites extends Writes[DelegateInfo] {
     def writes(delegateInfo : DelegateInfo): JsValue = {
-      var result = Json.obj("availableCount" -> delegateInfo.availableCount).asInstanceOf[JsObject]
+      var result = Json.obj("availableCount" -> delegateInfo.availableCount, "boost" -> delegateInfo.boost).asInstanceOf[JsObject]
       val currentCycle = CycleSource.loadCycle()
       var busyDelegatesJson = Json.arr()
       val delegateWrites = new BusyDelegateWrites(currentCycle)
@@ -784,6 +785,43 @@ package object controllers {
         "title" -> title.title.toString,
         "description" -> title.description
 
+      )
+    }
+  }
+
+  implicit object AllianceMissionWrites extends Writes[AllianceMission] {
+    def writes(allianceMission : AllianceMission) : JsValue = {
+      val currentCycle = CycleSource.loadCycle()
+      val statusText = allianceMission.status match {
+        case AllianceMissionStatus.SELECTED => "Selected"
+        case AllianceMissionStatus.CANDIDATE => "Candidate"
+        case AllianceMissionStatus.IN_PROGRESS => s"In Progress ${allianceMission.endCycle - currentCycle} week(s) remaining"
+        case AllianceMissionStatus.CONCLUDED => s"Concluded"
+      }
+
+      val historyCycle = Math.min(currentCycle - 1, allianceMission.endCycle)
+
+      Json.obj(
+        "id" -> allianceMission.id,
+        "description" -> allianceMission.description,
+        "stats" -> allianceMission.stats(historyCycle).properties,
+        "tillNextPhase" -> AllianceMissionSimulation.cycleToNextPhase(allianceMission, currentCycle),
+        "progress" -> allianceMission.progress(historyCycle),
+        "difficulty" -> allianceMission.difficulty,
+        "statusText" -> statusText,
+        "status" -> allianceMission.status.toString
+
+      )
+    }
+  }
+
+  implicit object AllianceMissionRewardWrites extends Writes[AllianceMissionReward] {
+    def writes(reward : AllianceMissionReward) : JsValue = {
+      Json.obj(
+        "id" -> reward.id,
+        "description" -> reward.description,
+        "isClaimed" -> reward.claimed,
+        "isAvailable" -> reward.available,
       )
     }
   }

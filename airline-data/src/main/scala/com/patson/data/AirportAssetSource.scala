@@ -280,7 +280,7 @@ object AirportAssetSource {
 
 
       asset.boosts.foreach { boost =>
-        preparedStatement = connection.prepareStatement(s"INSERT INTO $AIRPORT_ASSET_BOOST_TABLE (asset, boost_type, value) VALUES(?,?,?)")
+        preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRPORT_ASSET_BOOST_TABLE (asset, boost_type, value) VALUES(?,?,?)")
         preparedStatement.setInt(1, asset.id)
         preparedStatement.setString(2, boost.boostType.toString)
         preparedStatement.setDouble(3, boost.value)
@@ -290,7 +290,7 @@ object AirportAssetSource {
 
       asset.properties.foreach {
         case (property, value) =>
-          preparedStatement = connection.prepareStatement(s"INSERT INTO $AIRPORT_ASSET_PROPERTY_TABLE (asset, property, value) VALUES(?,?,?)")
+          preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRPORT_ASSET_PROPERTY_TABLE (asset, property, value) VALUES(?,?,?)")
           preparedStatement.setInt(1, asset.id)
           preparedStatement.setString(2, property)
           preparedStatement.setLong(3, value)
@@ -390,7 +390,7 @@ object AirportAssetSource {
 
 
   def saveAirportBoostHistory(entries : List[AirportAssetBoostHistory]) = {
-    val queryString = s"INSERT INTO $AIRPORT_ASSET_BOOST_HISTORY_TABLE (asset, boost_type, level, cycle, value, gain, upgrade_factor) VALUES(?,?,?,?,?,?,?)"
+    val queryString = s"REPLACE INTO $AIRPORT_ASSET_BOOST_HISTORY_TABLE (asset, boost_type, level, cycle, value, gain, upgrade_factor) VALUES(?,?,?,?,?,?,?)"
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
@@ -415,7 +415,7 @@ object AirportAssetSource {
 
 
   def saveAirportPropertiesHistory(entries : List[AirportAssetPropertiesHistory]) = {
-    val queryString = s"INSERT INTO $AIRPORT_ASSET_PROPERTY_HISTORY_TABLE (asset, property, cycle, value) VALUES(?,?,?,?)";
+    val queryString = s"REPLACE INTO $AIRPORT_ASSET_PROPERTY_HISTORY_TABLE (asset, property, cycle, value) VALUES(?,?,?,?)";
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)

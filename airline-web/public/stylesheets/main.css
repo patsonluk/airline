@@ -384,7 +384,7 @@ body.christmas {
     box-shadow: var(--table-selected-row-shadow);
 }
 
-div.section.clickable:hover, div.section.clickable.selected {
+div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCandidates div.selected {
   background: var(--table-header-selected-background);
   box-shadow: var(--table-header-selected-shadow);
 }
@@ -993,7 +993,7 @@ img.flag {
     font-weight: bold;
 }
 
-.tick:hover:after, .number-button span {
+.tick:not(.disabled):hover:after, .selected .tick:not(.disabled):after, .number-button span {
     color:#83d244;
     text-shadow:0px 0px 6px #83d244;
 }
@@ -1031,12 +1031,12 @@ div {
      scrollbar-color: var(--scrollbar-color);
 }
 
-input:disabled, .button.disabled, .clickable.disabled {
+input:disabled, .button.disabled, .clickable.disabled, .round-button.disabled {
   color: #a0a0a0;
   position: relative;
 }
 
-input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover {
+input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover, .round-button.disabled:hover {
   cursor: not-allowed;
   color: #444444;
 }

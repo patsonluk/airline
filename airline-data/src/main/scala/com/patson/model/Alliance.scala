@@ -60,6 +60,11 @@ object AllianceRole extends Enumeration {
     case LEADER | CO_LEADER => true
     case _ => false
   }
+
+  val isAccepted : AllianceRole => Boolean = (role : AllianceRole) => role match {
+    case APPLICANT => false
+    case _ => true
+  }
 }
 
 case class AllianceHistory(allianceName: String, airline: Airline, event: AllianceEvent.Value, cycle: Int, var id: Int = 0)

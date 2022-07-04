@@ -44,6 +44,7 @@ object Version2_1Patcher extends App {
     dataSource.setMaxPoolSize(100)
     val connection = dataSource.getConnection
     Meta.createAirportAsset(connection)
+    Meta.createAllianceMission(connection)
 
     connection.close
   }

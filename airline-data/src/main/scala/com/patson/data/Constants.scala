@@ -156,6 +156,15 @@ object Constants {
   val CAMPAIGN_AREA_TABLE = "campaign_area"
   val CAMPAIGN_DELEGATE_TASK_TABLE = "campaign_delegate_task"
 
+  val ALLIANCE_MISSION_TABLE = "alliance_mission"
+  val ALLIANCE_MISSION_PROPERTY_TABLE = "alliance_mission_property"
+  val ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE = "alliance_mission_property_history"
+  val ALLIANCE_MISSION_REWARD_TABLE = "alliance_mission_reward"
+  val ALLIANCE_MISSION_REWARD_PROPERTY_TABLE = "alliance_mission_reward_property"
+
+  val ALLIANCE_STATS_TABLE = "alliance_stats"
+  val ALLIANCE_MISSION_STATS_TABLE = "alliance_mission_stats"
+
   val LINK_NEGOTIATION_DISCOUNT_TABLE = "link_negotiation_discount"
 
   val ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE = "alliance_label_color_by_alliance"
