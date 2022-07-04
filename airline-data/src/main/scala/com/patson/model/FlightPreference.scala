@@ -319,7 +319,7 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   override val flightDurationSensitivity = preferredLinkClass match {
     case FIRST => 0.55
     case BUSINESS => 0.4
-    case ECONOMY => 0.2
+    case ECONOMY => 0.25
   }
   override val loungeSensitivity : Double = 1
 
