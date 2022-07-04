@@ -1,6 +1,5 @@
 package com.patson.model.airplane
 
-import com.patson.data.AirplaneSource
 import com.patson.util.AirplaneOwnershipCache
 
 object AirplaneMaintenanceUtil {
@@ -11,9 +10,13 @@ object AirplaneMaintenanceUtil {
 
   val simpleCache: LoadingCache[Int, Double] = CacheBuilder.newBuilder.maximumSize(10000).build(new SimpleLoader())
 
-
   def getMaintenanceFactor(airlineId : Int) : Double = {
-    simpleCache.get(airlineId)
+    testFactor.getOrElse(simpleCache.get(airlineId))
+  }
+
+  var testFactor : Option[Double] = None //for testing...but kinda yike
+  def setTestFactor(factor : Option[Double]): Unit = {
+    testFactor = factor
   }
 
 

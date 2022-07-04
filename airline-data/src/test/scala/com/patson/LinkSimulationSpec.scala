@@ -3,15 +3,13 @@ package com.patson
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
-
 import com.patson.model._
 import com.patson.model.FlightType._
-import com.patson.model.airplane.Airplane
-import com.patson.model.airplane.Model
-
+import com.patson.model.airplane.{Airplane, AirplaneMaintenanceUtil, Model}
 import akka.actor.ActorSystem
 import akka.testkit.ImplicitSender
 import akka.testkit.TestKit
+
 import scala.collection.mutable.ListBuffer
  
 class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
@@ -19,8 +17,15 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
  
   def this() = this(ActorSystem("MySpec"))
  
-  override def afterAll {
+  override protected def beforeAll() : Unit = {
+    super.beforeAll()
+    AirplaneMaintenanceUtil.setTestFactor(Some(1))
+  }
+
+  override protected def afterAll() : Unit = {
+    AirplaneMaintenanceUtil.setTestFactor(None)
     TestKit.shutdownActorSystem(system)
+    super.afterAll()
   }
  
   val testAirline1 = Airline("airline 1")

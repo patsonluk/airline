@@ -3,11 +3,22 @@ package com.patson
 import com.patson.model._
 import com.patson.model.airplane.Model.Type._
 import com.patson.model.airplane._
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
  
-class AirplaneModelSpec extends WordSpecLike with Matchers {
+class AirplaneModelSpec extends WordSpecLike with Matchers with BeforeAndAfterAll {
   private val GOOD_PROFIT_MARGIN = Map(LIGHT -> 0.25, SMALL -> 0.20, REGIONAL -> 0.15, MEDIUM -> 0.05, LARGE -> 0.0, X_LARGE -> -0.05, JUMBO -> -0.1, SUPERSONIC -> -0.05)
   private val MAX_PROFIT_MARGIN = Map(LIGHT -> 0.6, SMALL -> 0.55, REGIONAL -> 0.50, MEDIUM -> 0.35, LARGE -> 0.3, X_LARGE -> 0.3, JUMBO -> 0.25, SUPERSONIC -> 0.3)
+
+  override protected def beforeAll() : Unit = {
+    super.beforeAll()
+//    AirplaneMaintenanceUtil.setTestFactor(Some(1))
+  }
+
+  override protected def afterAll() : Unit = {
+//    AirplaneMaintenanceUtil.setTestFactor(None)
+    super.afterAll()
+  }
+
   
   "all airplane models".must {
     "Generate good profit at MAX LF at suitable range".in {
