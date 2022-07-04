@@ -7,7 +7,7 @@ import scala.collection.mutable._
 import scala.collection.{immutable, mutable}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import com.patson.model.airplane.{Airplane, LinkAssignments}
+import com.patson.model.airplane.{Airplane, AirplaneMaintenanceUtil, LinkAssignments}
 import com.patson.model.event.Olympics
 
 import scala.util.Random
@@ -17,7 +17,7 @@ object LinkSimulation {
 
 
   private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
-  private val CREW_UNIT_COST = 12 //for now...
+  private val CREW_UNIT_COST = 10 //for now...
   
   private[this] val VIP_COUNT = 5
 
@@ -257,9 +257,9 @@ object LinkSimulation {
     inServiceAssignedAirplanes.foreach {
       case(airplane, _) =>
         //val maintenanceCost = (link.getAssignedAirplanes.toList.map(_._1).foldLeft(0)(_ + _.model.maintenanceCost) * link.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
-        maintenanceCost += (airplane.model.maintenanceCost * assignmentWeights(airplane) * flightLink.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
+        maintenanceCost += (airplane.model.baseMaintenanceCost * assignmentWeights(airplane) * flightLink.airline.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY).toInt
     }
-
+    maintenanceCost = (maintenanceCost * AirplaneMaintenanceUtil.getMaintenanceFactor(link.airline.id)).toInt
 
 
     val airportFees = flightLink.getAssignedModel() match {

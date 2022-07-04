@@ -1610,7 +1610,24 @@
 								</div>
 								<div class="hangar details" style="width: 100%; height: calc(100% - 30px); overflow:auto; display: none;">
 									<div class="section" style="width: 98%;">
-										<h4>Preferred Suppliers</h4>
+										<h4>Maintenance Cost Factor</h4>
+										<div class="maintenanceFactorSection">
+											<span class="factor" style="font-weight: bold; padding-left: 10px; font-size: x-large;">1.0</span>
+											<span class="tooltip">
+												<img src='@routes.Assets.versioned("images/icons/information.png")'>
+												<span class="tooltiptext alignLeft below" style="width: 400px;">
+													<div style="font-weight: bold;">
+														<span class="baseFactor"></span>&nbsp;+&nbsp;<span class="familyFactor"></span>&nbsp;*&nbsp;<span class="familyCount"></span>&nbsp;+&nbsp;<span class="modelFactor"></span>&nbsp;*&nbsp;<span class="modelCount"></span>&nbsp;=&nbsp;<span class="factor"></span>
+													</div>
+													<h4 style="margin-top: 10px">Airplane Family</h4>
+													<ul class="familyList"></ul>
+													<h4 style="margin-top: 10px">Airplane Model</h4>
+													<ul class="modelList"></ul>
+												</span>
+											</span>
+    										<div class="remarks" style="margin-top:10px;">Airplane maintenance cost is multiplied by this factor. Maintenance factor =&nbsp;<span class="baseFactor"></span>&nbsp;+&nbsp;<span class="familyFactor"></span>&nbsp;* Airplane Family # +&nbsp;<span class="modelFactor"></span>&nbsp;* Airplane Model #</div>
+										</div>
+										<h4 style="margin-top:10px;">Preferred Suppliers</h4>
 										<div class="preferredSuppliers" style="width: 100%; display: flex; flex-wrap: wrap;">
 											<div style='min-width : 200px; flex: 1; position: relative;' class='section LIGHT'>
 												<h4>Light Airplane Suppliers</h4>

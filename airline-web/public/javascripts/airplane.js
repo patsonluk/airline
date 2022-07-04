@@ -1328,6 +1328,7 @@ function selectAirplaneTab($selectedTab) {
 }
 
 function showAirplaneHangar() {
+    populateMaintenanceFactor()
     populatePreferredSuppliers()
     var $container = $('#airplaneCanvas .hangar .sectionContainer')
     $container.empty()
@@ -1335,6 +1336,47 @@ function showAirplaneHangar() {
 
     toggleUtilizationRate($container, $("#airplaneCanvas div.hangar .toggleUtilizationRateBox"))
     toggleCondition($container, $("#airplaneCanvas div.hangar .toggleConditionBox"))
+}
+
+function populateMaintenanceFactor() {
+    $.ajax({
+          type: 'GET',
+          url: "airlines/" + activeAirline.id + "/maintenance-factor",
+          contentType: 'application/json; charset=utf-8',
+          dataType: 'json',
+          success: function(result) {
+            $('div.maintenanceFactorSection .factor').text(Number(result.factor).toFixed(1))
+            $('div.maintenanceFactorSection .baseFactor').text(result.baseFactor)
+            $('div.maintenanceFactorSection .familyFactor').text(result.familyFactor)
+            $('div.maintenanceFactorSection .modelFactor').text(result.modelFactor)
+
+            var familyCount = result.families ? result.families.length : 0
+            $('div.maintenanceFactorSection .familyCount').text(familyCount)
+            var modelCount = result.models ? result.models.length : 0
+            $('div.maintenanceFactorSection .modelCount').text(modelCount)
+
+            $('div.maintenanceFactorSection .familyList').empty()
+            $.each(result.families, function(index, family) {
+                $('div.maintenanceFactorSection .familyList').append('<li>' + family + '</li>')
+            })
+            if (familyCount == 0) {
+                $('div.maintenanceFactorSection .familyList').append('<li>-</li>')
+            }
+
+            $('div.maintenanceFactorSection .modelList').empty()
+            $.each(result.models, function(index, model) {
+                $('div.maintenanceFactorSection .modelList').append('<li>' + model + '</li>')
+            })
+            if (modelCount == 0) {
+                $('div.maintenanceFactorSection .modelList').append('<li>-</li>')
+            }
+
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+                  console.log(JSON.stringify(jqXHR));
+                  console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+          }
+      });
 }
 
 function populatePreferredSuppliers() {
@@ -1387,7 +1429,6 @@ function populatePreferredSuppliers() {
                   console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
           }
       });
-
 }
 function populateHangarByModel($container) {
     $.each(loadedModelsOwnerInfo, function(index, modelOwnerInfo) {
