@@ -1072,8 +1072,74 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       }
       assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.25)
     }
+
+    "accept some links at 3 x suggested price with neutral quality and decent loyalty for SUPERSONIC flight of Speedy Eco pax".in {
+      val clonedFromAirport  = fromAirport.copy()
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
+
+      val toAirport = toAirportsList(2)
+      val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.calculateDuration(2000, distance)
+      val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
+      val price = suggestedPrice * 3
+      val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+      val quality = fromAirport.expectedQuality(linkType, ECONOMY)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      newLink.setQuality(quality)
+
+      var totalRoutes = 0
+      var totalAcceptedRoutes = 0;
+      for (i <- 0 until LOOP_COUNT) {
+        val preferredLinkClass = ECONOMY
+        val flightPreference = SpeedPreference(clonedFromAirport, ECONOMY)
+
+        val cost = flightPreference.computeCost(newLink, preferredLinkClass)
+        val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
+
+        val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
+        if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
+          totalAcceptedRoutes = totalAcceptedRoutes + 1
+        }
+        totalRoutes = totalRoutes + 1
+      }
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.5)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.8)
+    }
+
+    "accept some links at 1.4 x suggested price with neutral quality and decent loyalty for SUPERSONIC flight of Appeal First Class pax".in {
+      val clonedFromAirport  = fromAirport.copy()
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
+
+      val toAirport = toAirportsList(2)
+      val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
+      val duration = Computation.calculateDuration(2000, distance)
+      val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
+      val price = suggestedPrice * 1.4
+      val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
+      val quality = fromAirport.expectedQuality(linkType, FIRST)
+      val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+      newLink.setQuality(quality)
+
+      var totalRoutes = 0
+      var totalAcceptedRoutes = 0;
+      for (i <- 0 until LOOP_COUNT) {
+        val preferredLinkClass = FIRST
+        val flightPreference = AppealPreference(fromAirport, FIRST, loungeLevelRequired = 0, loyaltyRatio = 1.1, 0)
+
+        val cost = flightPreference.computeCost(newLink, preferredLinkClass)
+        val linkConsiderations = List[LinkConsideration] (LinkConsideration.getExplicit(newLink, cost, preferredLinkClass, false))
+
+        val route = Route(linkConsiderations, linkConsiderations.foldLeft(0.0) { _ + _.cost })
+        if (PassengerSimulation.getRouteRejection(route, clonedFromAirport, toAirport, preferredLinkClass).isEmpty) {
+          totalAcceptedRoutes = totalAcceptedRoutes + 1
+        }
+        totalRoutes = totalRoutes + 1
+      }
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.2)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.4)
+    }
     
-    "accept very few route with links are at 1.3 price with neutral quality and 0 loyalty".in { //will be less than single link cause each run fitler out some
+    "accept very few route with links are at 1.25 price with neutral quality and 0 loyalty".in { //will be less than single link cause each run fitler out some
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
       
@@ -1084,7 +1150,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
           val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, airportWalker, toAirport)
           val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
           val quality = fromAirport.expectedQuality(linkType, FIRST)
-          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * 1.3, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
+          val newLink = Link(airportWalker, toAirport, testAirline1, price = suggestedPrice * 1.25, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
           newLink.setQuality(quality)
           airportWalker = toAirport
           newLink }
