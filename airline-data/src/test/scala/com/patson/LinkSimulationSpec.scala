@@ -30,6 +30,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
  
   val testAirline1 = Airline("airline 1")
   val testAirline2 = Airline("airline 2")
+  testAirline1.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
+  testAirline2.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
   val fromAirport = Airport.fromId(1).copy(size = 3, baseIncome = Country.HIGH_INCOME_THRESHOLD, basePopulation = 1)
   fromAirport.initAirlineBases(List.empty)
   val toAirport = Airport.fromId(2).copy(size = 3)
@@ -520,8 +522,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val profitMargin4 = economyResult4.profit.toDouble / economyResult4.revenue.toDouble
       val profitMargin5 = economyResult5.profit.toDouble / economyResult5.revenue.toDouble
 
-      assert(profitMargin1 > 0.2 && profitMargin1 < 0.3)
-      assert(profitMargin2 > 0.1 && profitMargin2 < 0.2)
+      assert(profitMargin1 > 0.15 && profitMargin1 < 0.3)
+      assert(profitMargin2 > 0.05 && profitMargin2 < 0.2)
       assert(profitMargin3 > 0.0 && profitMargin3 < 0.1)
       assert(profitMargin4 > -0.1 && profitMargin4 < 0.05) //not profitable with standard price
       assert(profitMargin5 > -0.3 && profitMargin5 < 0.05) //not profitable with standard price
@@ -570,7 +572,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val profitMargin5 = economyResult5.profit.toDouble / economyResult5.revenue.toDouble
 
       assert(profitMargin1 > 0.3 && profitMargin1 < 0.4)
-      assert(profitMargin2 > 0.2 && profitMargin2 < 0.3)
+      assert(profitMargin2 > 0.15 && profitMargin2 < 0.3)
       assert(profitMargin3 > 0.05 && profitMargin3 < 0.2)
       assert(profitMargin4 > -0.1 && profitMargin4 < 0.1) //not profitable with standard price
       assert(profitMargin5 > -0.2 && profitMargin5 < 0) //not profitable with standard price

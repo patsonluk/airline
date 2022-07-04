@@ -24,7 +24,7 @@ class AirportAssetSimulationSpec extends WordSpecLike with Matchers {
       val lowRoomRate = result.properties("rate")
       val lowOccupancy = result.properties("occupancy")
       val lowProfit = result.revenue - result.expense
-      assert(lowProfit < 0)
+      assert(lowProfit / result.revenue < 0.1)
       assert(lowOccupancy > 0)
       assert(lowRoomRate > 50 && lowRoomRate < 100)
 

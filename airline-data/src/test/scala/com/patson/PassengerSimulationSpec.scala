@@ -6,6 +6,7 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.patson.PassengerSimulation.RouteRejectionReason
 import com.patson.model.FlightType._
 import com.patson.model._
+import com.patson.model.airplane.AirplaneMaintenanceUtil
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.jdk.CollectionConverters._
@@ -15,13 +16,23 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
   with WordSpecLike with Matchers with BeforeAndAfterAll {
  
   def this() = this(ActorSystem("MySpec"))
- 
-  override def afterAll {
+
+  override protected def beforeAll() : Unit = {
+    super.beforeAll()
+    AirplaneMaintenanceUtil.setTestFactor(Some(1))
+  }
+
+  override protected def afterAll() : Unit = {
+    AirplaneMaintenanceUtil.setTestFactor(None)
     TestKit.shutdownActorSystem(system)
+    super.afterAll()
   }
  
   val testAirline1 = Airline("airline 1", id = 1)
   val testAirline2 = Airline("airline 2", id = 2)
+
+
+
   val fromAirport = Airport.fromId(1).copy(baseIncome = 40000, basePopulation = 1) //income 40k . mid income country
   val airlineAppeal = AirlineAppeal(0, 100)
   fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
