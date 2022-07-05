@@ -112,7 +112,7 @@ function updateAirlineAssets() {
                 if (asset.expense == 0) {
                     margin = "-"
                 } else {
-                    margin = (profit * 100.0 / asset.expense).toFixed(2)
+                    margin = (profit * 100.0 / asset.revenue).toFixed(2)
                 }
                 var $row = $("<div class='table-row clickable'></div>")
                 $row.append("<div class='cell'>" + getCountryFlagImg(asset.airport.countryCode) + asset.airport.iata + "</div>")
